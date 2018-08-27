@@ -60,7 +60,7 @@
                 var i = 0;
                 var result;
                 var tile;
-                var layer = globeView.wgs84TileLayer;
+                var layer = globeView.tileLayer;
                 if (contour.length && contour.length > 0) {
                     for (; i < contour.length; i++) {
                         result = itowns.DEMUtils.getElevationValueAt(layer, contour[i], 0, tile);
@@ -210,7 +210,7 @@
                 var result;
                 var z = 0;
                 if (contour.length && contour.length > 0) {
-                    result = itowns.DEMUtils.getElevationValueAt(globeView.wgs84TileLayer, contour[0]);
+                    result = itowns.DEMUtils.getElevationValueAt(globeView.tileLayer, contour[0]);
                     if (result) {
                         z = result.z;
                     }
@@ -255,7 +255,7 @@
                 globeView.controls.setTilt(45, true);
             });
             var d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.tileLayer, d);
 
             function picking(event) {
                 var htmlInfo = document.getElementById('info');

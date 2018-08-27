@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import View, { VIEW_EVENTS } from '../View';
-import { RENDERING_PAUSED, MAIN_LOOP_EVENTS } from '../MainLoop';
+import { MAIN_LOOP_EVENTS } from '../MainLoop';
 import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
@@ -97,14 +97,14 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
     this.camera.camera3D.far = size * 10;
 
-    const wgs84TileLayer = new GlobeLayer('globe', options.object3d);
+    const tileLayer = new GlobeLayer('globe', options.object3d);
 
     const sun = new THREE.DirectionalLight();
     sun.position.set(-0.5, 0, 1);
     sun.updateMatrixWorld(true);
-    wgs84TileLayer.object3d.add(sun);
+    tileLayer.object3d.add(sun);
 
-    this.addLayer(wgs84TileLayer);
+    this.addLayer(tileLayer);
 
     // Atmosphere
     this.atmosphere = new Atmosphere();
@@ -113,7 +113,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
     this.camera.camera3D.layers.enable(atmosphereLayer);
 
-    wgs84TileLayer.object3d.add(this.atmosphere);
+    tileLayer.object3d.add(this.atmosphere);
     this.atmosphere.updateMatrixWorld(true);
 
 
@@ -151,9 +151,9 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
     this.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, () => {
         const v = new THREE.Vector3();
-        v.setFromMatrixPosition(wgs84TileLayer.object3d.matrixWorld);
+        v.setFromMatrixPosition(tileLayer.object3d.matrixWorld);
         var len = v.distanceTo(this.camera.camera3D.position);
-        v.setFromMatrixScale(wgs84TileLayer.object3d.matrixWorld);
+        v.setFromMatrixScale(tileLayer.object3d.matrixWorld);
 
         // Compute fog distance, this function makes it possible to have a shorter distance
         // when the camera approaches the ground
@@ -174,7 +174,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         }
     });
 
-    this.wgs84TileLayer = wgs84TileLayer;
+    this.tileLayer = tileLayer;
 
     const fn = () => {
         this.removeEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
@@ -200,7 +200,7 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
         }
     }
     const layerId = layer.id;
-    const layerPromise = View.prototype.addLayer.call(this, layer, this.wgs84TileLayer);
+    const layerPromise = View.prototype.addLayer.call(this, layer, this.tileLayer);
 
     this.dispatchEvent({
         type: GLOBE_VIEW_EVENTS.LAYER_ADDED,
@@ -219,14 +219,14 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
  */
 GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
     const layer = this.getLayers(l => l.id === layerId)[0];
-    if (layer && layer.type === 'color' && this.wgs84TileLayer.detach(layer)) {
+    if (layer && layer.type === 'color' && this.tileLayer.detach(layer)) {
         var cO = function cO(object) {
             if (object.removeColorLayer) {
                 object.removeColorLayer(layerId);
             }
         };
 
-        for (const root of this.wgs84TileLayer.level0Nodes) {
+        for (const root of this.tileLayer.level0Nodes) {
             root.traverse(cO);
         }
         const imageryLayers = this.getLayers(l => l.type === 'color');
@@ -236,7 +236,7 @@ GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
             }
         }
 
-        this.notifyChange(this.wgs84TileLayer);
+        this.notifyChange(this.tileLayer);
         this.dispatchEvent({
             type: GLOBE_VIEW_EVENTS.LAYER_REMOVED,
             layerId,
@@ -249,10 +249,10 @@ GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
 };
 
 GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
-    const picked = this.wgs84TileLayer.pickObjectsAt(this, mouse);
+    const picked = this.tileLayer.pickObjectsAt(this, mouse);
     const selectedId = picked.length ? picked[0].object.id : undefined;
 
-    for (const n of this.wgs84TileLayer.level0Nodes) {
+    for (const n of this.tileLayer.level0Nodes) {
         n.traverse((node) => {
             // only take of selectable nodes
             if (node.setSelected) {
@@ -269,119 +269,12 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
     this.notifyChange();
 };
 
-GlobeView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
-    const g = this.mainLoop.gfxEngine;
-    const currentWireframe = this.wgs84TileLayer.wireframe;
-    const currentOpacity = this.wgs84TileLayer.opacity;
-    const currentVisibility = this.wgs84TileLayer.visible;
-    if (currentWireframe) {
-        this.wgs84TileLayer.wireframe = false;
-    }
-    if (currentOpacity < 1.0) {
-        this.wgs84TileLayer.opacity = 1.0;
-    }
-    if (!currentVisibility) {
-        this.wgs84TileLayer.visible = true;
-    }
-
-    const restore = this.wgs84TileLayer.level0Nodes.map(n => n.pushRenderState(RendererConstant.DEPTH));
-    const buffer = g.renderViewToBuffer(
-        { camera: this.camera, scene: this.wgs84TileLayer.object3d },
-        { x, y, width, height });
-    restore.forEach(r => r());
-
-    if (this.wgs84TileLayer.wireframe !== currentWireframe) {
-        this.wgs84TileLayer.wireframe = currentWireframe;
-    }
-    if (this.wgs84TileLayer.opacity !== currentOpacity) {
-        this.wgs84TileLayer.opacity = currentOpacity;
-    }
-    if (this.wgs84TileLayer.visible !== currentVisibility) {
-        this.wgs84TileLayer.visible = currentVisibility;
-    }
-
-    return buffer;
-};
-
-const matrix = new THREE.Matrix4();
-const screen = new THREE.Vector2();
-const ray = new THREE.Ray();
-const direction = new THREE.Vector3();
-
-/**
- * Returns the world position (view's crs: referenceCrs) under view coordinates.
- * This position is computed with depth buffer.
- *
- * @param      {THREE.Vector2}  mouse  position in view coordinates (in pixel), if it's null so it's view's center.
- * @param      {THREE.Vector3}  [target=THREE.Vector3()] target the result will be copied into this Vector3. If not present a new one will be created.
- * @return     {THREE.Vector3}  the world position in view's crs: referenceCrs.
- */
-
-GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFromDepth(mouse, target = new THREE.Vector3()) {
-    if (!this.wgs84TileLayer || this.wgs84TileLayer.level0Nodes.length == 0) {
-        target = undefined;
-        return;
-    }
-    const l = this.mainLoop;
-    const viewPaused = l.scheduler.commandsWaitingExecutionCount() == 0 && l.renderingState == RENDERING_PAUSED;
-    const g = l.gfxEngine;
-    const dim = g.getWindowSize();
-    const camera = this.camera.camera3D;
-
-    mouse = mouse || dim.clone().multiplyScalar(0.5);
-    mouse.x = Math.floor(mouse.x);
-    mouse.y = Math.floor(mouse.y);
-
-    const prev = camera.layers.mask;
-    camera.layers.mask = 1 << this.wgs84TileLayer.threejsLayer;
-
-    // Render/Read to buffer
-    let buffer;
-    if (viewPaused) {
-        this._fullSizeDepthBuffer = this._fullSizeDepthBuffer || this.readDepthBuffer(0, 0, dim.x, dim.y);
-        const id = ((dim.y - mouse.y - 1) * dim.x + mouse.x) * 4;
-        buffer = this._fullSizeDepthBuffer.slice(id, id + 4);
-    } else {
-        buffer = this.readDepthBuffer(mouse.x, mouse.y, 1, 1);
-    }
-
-    screen.x = (mouse.x / dim.x) * 2 - 1;
-    screen.y = -(mouse.y / dim.y) * 2 + 1;
-
-    // Origin
-    ray.origin.copy(camera.position);
-
-    // Direction
-    ray.direction.set(screen.x, screen.y, 0.5);
-    // Unproject
-    matrix.multiplyMatrices(camera.matrixWorld, matrix.getInverse(camera.projectionMatrix));
-    ray.direction.applyMatrix4(matrix);
-    ray.direction.sub(ray.origin);
-
-    direction.set(0, 0, 1.0);
-    direction.applyMatrix4(matrix);
-    direction.sub(ray.origin);
-
-    const angle = direction.angleTo(ray.direction);
-    const orthoZ = g.depthBufferRGBAValueToOrthoZ(buffer, camera);
-    const length = orthoZ / Math.cos(angle);
-
-    target.addVectors(camera.position, ray.direction.setLength(length));
-
-    camera.layers.mask = prev;
-
-    if (target.length() > 10000000)
-        { return undefined; }
-
-    return target;
-};
-
 GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
     const coSun = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35).normalize();
 
     this.lightingPos = coSun.normalize();
 
-    const lighting = this.wgs84TileLayer.lighting;
+    const lighting = this.tileLayer.lighting;
     lighting.enable = value;
     lighting.position = coSun;
 
@@ -390,18 +283,18 @@ GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(val
 
     this.updateMaterialUniform('lightingEnabled', value);
     this.updateMaterialUniform('lightPosition', coSun);
-    this.notifyChange(this.wgs84TileLayer);
+    this.notifyChange(this.tileLayer);
 };
 
 GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
     const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
 
     this.updateMaterialUniform('lightPosition', lightingPos.clone().normalize());
-    this.notifyChange(this.wgs84TileLayer);
+    this.notifyChange(this.tileLayer);
 };
 
 GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
-    for (const n of this.wgs84TileLayer.level0Nodes) {
+    for (const n of this.tileLayer.level0Nodes) {
         n.traverse((obj) => {
             if (!obj.material || !obj.material.uniforms) {
                 return;

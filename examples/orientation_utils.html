@@ -17,7 +17,7 @@
         <script src="js/ThreeLoader.js"></script>
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
-            
+
             // Define initial camera position
             // Coordinate can be found on https://www.geoportail.gouv.fr/carte
             // setting is "coordonnée geographiques en degres decimaux"
@@ -46,7 +46,7 @@
             // Add elevation layer.
             var promises = [];
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
-            
+
             // Input data : a geoJson file, with point features, with orientation specific properties
             var panoramics = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson';
             var layer = {
@@ -63,7 +63,7 @@
                 // then get geographic informations (coordinates) using GeoJson parser
                 .then(function parseGeoJSON(orientations) { return itowns.GeoJsonParser.parse(orientations, layer);})
             );
-            
+
             // load collada model of a renault trafic
             promises.push(ThreeLoader.load('Collada',
              'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/renault_trafic_no_texture.dae')
@@ -75,48 +75,48 @@
                 // put the model in a group, to allow user to do other transformation (rotation..)
                 var group = new itowns.THREE.Group();
                 group.add(colladaModel);
-                return group; 
+                return group;
              }));
 
             var onGround = false;
 
             // wait for all layer to be loaded, we need for elevation layer
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
-                
+
                 // wait for all the promises
                 Promise.all(promises).then(function loadFeaturesModel(res) { loadFeatures(res[1], res[2]);});
 
                 globeView.controls.setTilt(20, true);
             })
-            
-            
+
+
             // place a 3d model oriented for each feature
             function loadFeatures(points, colladaModel) {
 
                 for (const feature of points.features) {
-                    
+
                     // clone the collada model
                     var model = colladaModel.clone();
-                    
+
                     // get coordinate from point feature
                     var coord = feature.vertices[0];
 
                     // set model position
                     model.position.copy(coord.xyz());
-                    
+
                     // set model orientation (using target parameter)
                     itowns.OrientationUtils.quaternionFromAttitude(feature.properties, coord, true, model.quaternion);
 
-                    // store base position                    
+                    // store base position
                     model.positionBase = model.position.clone();
-                    
+
                     // compute position on the ground
-                    var coord = feature.vertices[0]; 
-                    result = itowns.DEMUtils.getElevationValueAt(globeView.wgs84TileLayer, coord, 1, undefined);
+                    var coord = feature.vertices[0];
+                    result = itowns.DEMUtils.getElevationValueAt(globeView.tileLayer, coord, 1, undefined);
                     coord = coord.as('EPSG:4326');
                     coord.setAltitude(result.z);
                     model.positionOnGround = coord.as(globeView.referenceCrs).xyz();
-                    
+
                     // update matrix world and add the model
                     model.updateMatrixWorld();
                     globeView.scene.add(model);
@@ -132,7 +132,7 @@
 
             // add debug GUI
             var d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.tileLayer, d);
 
             // Add a checkbox to put the cars on the ground.
             folder = menuGlobe.gui.addFolder('Cars Layer');
