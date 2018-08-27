@@ -31,7 +31,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
     this.charts.push(new ThreeStatsChart('three-info', view.mainLoop.gfxEngine.renderer));
 
     const charts = this.charts;
-    const tileLayer = view.tileLayer || view.wgs84TileLayer || view.baseLayer;
+    const tileLayer = view.tileLayer;
 
     function debugChartUpdate(updateDuration) {
         const displayed = chartDivContainer.style.display != 'none';

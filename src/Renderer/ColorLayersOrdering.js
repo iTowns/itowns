@@ -30,12 +30,12 @@ export const ColorLayersOrdering = {
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerUp(layer, imageryLayers);
-            updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
+            updateLayersOrdering(view.tileLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
             });
-            view.notifyChange(view.wgs84TileLayer);
+            view.notifyChange(view.tileLayer);
         } else {
             throw new Error(`${layerId} isn't color layer`);
         }
@@ -54,12 +54,12 @@ export const ColorLayersOrdering = {
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerDown(layer, imageryLayers);
-            updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
+            updateLayersOrdering(view.tileLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
             });
-            view.notifyChange(view.wgs84TileLayer);
+            view.notifyChange(view.tileLayer);
         } else {
             throw new Error(`${layerId} isn't color layer`);
         }
@@ -79,12 +79,12 @@ export const ColorLayersOrdering = {
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerToIndex(layer, newIndex, imageryLayers);
-            updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
+            updateLayersOrdering(view.tileLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
             });
-            view.notifyChange(view.wgs84TileLayer);
+            view.notifyChange(view.tileLayer);
         } else {
             throw new Error(`${layerId} isn't color layer`);
         }

@@ -322,9 +322,9 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
             // Depending on the distance of the camera with obbs, we add a slowdown or constrain to the movement.
             // this constraint or deceleration is suitable for two types of movement MOVE_GLOBE and ORBIT.
             // This constraint or deceleration inversely proportional to the camera/obb distance
-            if (view.wgs84TileLayer) {
+            if (view.tileLayer) {
                 minDistanceZ = Infinity;
-                for (const tile of view.wgs84TileLayer.level0Nodes) {
+                for (const tile of view.tileLayer.level0Nodes) {
                     tile.traverse(getMinDistanceCameraBoundingSphereObbsUp);
                 }
             }

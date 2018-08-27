@@ -30,11 +30,9 @@ function PanoramaView(viewerDiv, coordinates, type, options = {}) {
     }
     camera.updateMatrixWorld();
 
-    const tileLayer = new PanoramaLayer('panorama', coordinates, type, options);
+    this.tileLayer = new PanoramaLayer('panorama', coordinates, type, options);
 
-    View.prototype.addLayer.call(this, tileLayer);
-
-    this.baseLayer = tileLayer;
+    View.prototype.addLayer.call(this, this.tileLayer);
 }
 
 PanoramaView.prototype = Object.create(View.prototype);
@@ -47,7 +45,7 @@ PanoramaView.prototype.addLayer = function addLayer(layer) {
     if (layer.type != 'color') {
         throw new Error(`Unsupported layer type ${layer.type} (PanoramaView only support 'color' layers)`);
     }
-    return View.prototype.addLayer.call(this, layer, this.baseLayer);
+    return View.prototype.addLayer.call(this, layer, this.tileLayer);
 };
 
 export default PanoramaView;

@@ -55,7 +55,7 @@
 
             // Add the UI Debug
             var d = new debug.Debug(view, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, view, view.wgs84TileLayer, d);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
             d.zoom = function() {

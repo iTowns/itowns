@@ -32,10 +32,10 @@ describe('globe', () => {
             this.test.fullTitle());
 
         const maxColorSamplerUnitsCount = await page
-            .evaluate(type => globeView.wgs84TileLayer.level0Nodes[0]
+            .evaluate(type => globeView.tileLayer.level0Nodes[0]
                 .material.textures[type].length, 1);
         const colorSamplerUnitsCount = await page.evaluate(() =>
-                globeView.wgs84TileLayer.countColorLayersTextures(globeView.getLayers(l => l.type === 'color')[0]));
+                globeView.tileLayer.countColorLayersTextures(globeView.getLayers(l => l.type === 'color')[0]));
         const limit = maxColorSamplerUnitsCount - colorSamplerUnitsCount;
 
         // add layers just below the capacity limit
