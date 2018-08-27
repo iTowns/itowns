@@ -2,7 +2,6 @@
 import * as THREE from 'three';
 import AnimationPlayer, { Animation } from '../../Core/AnimationPlayer';
 import Coordinates, { ellipsoidSizes } from '../../Core/Geographic/Coordinates';
-import { computeTileZoomFromDistanceCamera, computeDistanceCameraFromTileZoom } from '../../Process/GlobeTileProcessing';
 import StateControl from './StateControl';
 import CameraUtils from '../../utils/CameraUtils';
 
@@ -1069,7 +1068,7 @@ GlobeControls.prototype.isAnimationEnabled = function isAnimationEnabled() {
  * @return     {number}  The zoom .
  */
 GlobeControls.prototype.getZoom = function getZoom() {
-    return computeTileZoomFromDistanceCamera(this.getRange(), this._view);
+    return this._view.tileLayer.computeTileZoomFromDistanceCamera(this.getRange(), this._view.camera);
 };
 
 /**
@@ -1182,7 +1181,7 @@ GlobeControls.prototype.setCameraTargetGeoPosition = function setCameraTargetGeo
  */
 GlobeControls.prototype.lookAtCoordinate = function _lookAtCoordinate(params = {}, isAnimated = this.isAnimationEnabled()) {
     if (params.zoom) {
-        params.range = computeDistanceCameraFromTileZoom(params.zoom, this._view);
+        params.range = this._view.tileLayer.computeDistanceCameraFromTileZoom(params.zoom, this._view.camera);
     } else if (params.scale) {
         const gfx = this._view.mainLoop.gfxEngine;
         params.range = getRangeFromScale(params.scale, params.pitch, this.camera.fov, gfx.height);
