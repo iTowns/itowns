@@ -12,15 +12,13 @@ proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
 const projectionCache = {};
 
-export function ellipsoidSizes() {
-    return {
-        x: 6378137,
-        y: 6378137,
-        z: 6356752.3142451793,
-    };
-}
+export const ellipsoidSizes = {
+    x: 6378137,
+    y: 6378137,
+    z: 6356752.3142451793,
+};
 
-const ellipsoid = new Ellipsoid(ellipsoidSizes());
+const ellipsoid = new Ellipsoid(ellipsoidSizes);
 
 export const UNIT = {
     DEGREE: 1,

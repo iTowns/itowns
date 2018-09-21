@@ -42,8 +42,7 @@ function Atmosphere() {
         wireframe: false,
     });
 
-    var size = ellipsoidSizes();
-    var geometry = (new THREE.SphereGeometry(1.14, 64, 64)).scale(size.x, size.y, size.z);
+    var geometry = (new THREE.SphereGeometry(1.14, 64, 64)).scale(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
 
     THREE.Mesh.call(this, geometry, material);
 
@@ -68,7 +67,7 @@ function Atmosphere() {
         depthWrite: false,
     });
 
-    this.atmosphereIN = new THREE.Mesh((new THREE.SphereGeometry(1.002, 64, 64)).scale(size.x, size.y, size.z), materialAtmoIn);
+    this.atmosphereIN = new THREE.Mesh((new THREE.SphereGeometry(1.002, 64, 64)).scale(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z), materialAtmoIn);
 
     this.add(this.atmosphereIN);
 }

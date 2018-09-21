@@ -1122,8 +1122,7 @@ GlobeControls.prototype.pixelsToMeters = function pixelsToMeters(pixels, pixelPi
 
 GlobeControls.prototype.pixelsToDegrees = function pixelsToDegrees(pixels, pixelPitch = 0.28) {
     const chord = this.pixelsToMeters(pixels, pixelPitch);
-    const radius = ellipsoidSizes().x;
-    return THREE.Math.radToDeg(2 * Math.asin(chord / (2 * radius)));
+    return THREE.Math.radToDeg(2 * Math.asin(chord / (2 * ellipsoidSizes.x)));
 };
 
 /**

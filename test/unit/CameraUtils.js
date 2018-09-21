@@ -11,7 +11,7 @@ DEMUtils.getElevationValueAt = () => ({ z: 0 });
 
 const raycaster = new THREE.Raycaster();
 const center = new THREE.Vector2();
-const ellipsoid = new Ellipsoid(ellipsoidSizes());
+const ellipsoid = new Ellipsoid(ellipsoidSizes);
 
 function pickEllipsoid(camera) {
     raycaster.setFromCamera(center, camera);

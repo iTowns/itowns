@@ -8,7 +8,7 @@ import Ellipsoid from '../Core/Math/Ellipsoid';
 THREE.Object3D.DefaultUp.set(0, 0, 1);
 const targetPosition = new THREE.Vector3();
 const targetCoord = new Coordinates('EPSG:4326', 0, 0, 0);
-const ellipsoid = new Ellipsoid(ellipsoidSizes());
+const ellipsoid = new Ellipsoid(ellipsoidSizes);
 const rigs = [];
 const slerp = [];
 

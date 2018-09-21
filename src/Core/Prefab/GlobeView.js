@@ -84,7 +84,6 @@ export function createGlobeLayer(id, options = {}) {
  */
 function GlobeView(viewerDiv, coordCarto, options = {}) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
-    const size = ellipsoidSizes().x;
     // Setup View
     View.call(this, 'EPSG:4978', viewerDiv, options);
 
@@ -94,8 +93,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         coordCarto.latitude,
         coordCarto.altitude);
 
-    this.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
-    this.camera.camera3D.far = size * 10;
+    this.camera.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
+    this.camera.camera3D.far = ellipsoidSizes.x * 10;
 
     const tileLayer = new GlobeLayer('globe', options.object3d);
 
@@ -125,11 +124,11 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         this.camera.setPosition(positionCamera);
         this.camera.camera3D.lookAt(positionTargetCamera.as('EPSG:4978').xyz());
     } else {
-        this.controls = new GlobeControls(this, positionTargetCamera, coordCarto.altitude, size);
+        this.controls = new GlobeControls(this, positionTargetCamera, coordCarto.altitude, ellipsoidSizes.x);
         this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
     }
 
-    const mfogDistance = size * 160.0;
+    const mfogDistance = ellipsoidSizes.x * 160.0;
     this._renderState = RendererConstant.FINAL;
     this._fullSizeDepthBuffer = null;
 
@@ -157,7 +156,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
         // Compute fog distance, this function makes it possible to have a shorter distance
         // when the camera approaches the ground
-        this.fogDistance = mfogDistance * Math.pow((len - size * 0.99) * 0.25 / size, 1.5);
+        this.fogDistance = mfogDistance * Math.pow((len - ellipsoidSizes.x * 0.99) * 0.25 / ellipsoidSizes.x, 1.5);
 
         // get altitude camera
         coordCam.set(this.referenceCrs, this.camera.camera3D.position).as('EPSG:4326', coordGeoCam);
