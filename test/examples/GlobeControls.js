@@ -13,7 +13,7 @@ async function newGlobePage() {
             .getPickingPositionFromDepth = function fn(mouse, target = new itowns.THREE.Vector3()) {
                 const g = this.mainLoop.gfxEngine;
                 const dim = g.getWindowSize();
-                const ellipsoid = new itowns.Ellipsoid(itowns.ellipsoidSizes());
+                const ellipsoid = new itowns.Ellipsoid(itowns.ellipsoidSizes);
                 screen.copy(mouse || dim.clone().multiplyScalar(0.5));
                 screen.x = Math.floor(screen.x);
                 screen.y = Math.floor(screen.y);

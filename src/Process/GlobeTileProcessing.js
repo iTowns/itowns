@@ -31,9 +31,9 @@ export function preGlobeUpdate(context, layer) {
     worldToScaledEllipsoid.getInverse(layer.object3d.matrixWorld);
     worldToScaledEllipsoid.premultiply(
         new THREE.Matrix4().makeScale(
-            1 / ellipsoidSizes().x,
-            1 / ellipsoidSizes().y,
-            1 / ellipsoidSizes().z));
+            1 / ellipsoidSizes.x,
+            1 / ellipsoidSizes.y,
+            1 / ellipsoidSizes.z));
 
     // pre-horizon culling
     // cV is camera's position in worldToScaledEllipsoid system
@@ -154,14 +154,13 @@ export function globeSchemeTileWMTS(type) {
 }
 
 export function computeTileZoomFromDistanceCamera(distance, view) {
-    const sizeEllipsoid = ellipsoidSizes().x;
-    const preSinus = SIZE_TEXTURE_TILE * (SSE_SUBDIVISION_THRESHOLD * 0.5) / view.camera.preSSE / sizeEllipsoid;
+    const preSinus = SIZE_TEXTURE_TILE * (SSE_SUBDIVISION_THRESHOLD * 0.5) / view.camera.preSSE / ellipsoidSizes.x;
 
     let sinus = distance * preSinus;
     let zoom = Math.log(Math.PI / (2.0 * Math.asin(sinus))) / Math.log(2);
 
     const delta = Math.PI / Math.pow(2, zoom);
-    const circleChord = 2.0 * sizeEllipsoid * Math.sin(delta * 0.5);
+    const circleChord = 2.0 * ellipsoidSizes.x * Math.sin(delta * 0.5);
     const radius = circleChord * 0.5;
 
     // adjust with bounding sphere rayon
@@ -173,7 +172,7 @@ export function computeTileZoomFromDistanceCamera(distance, view) {
 
 export function computeDistanceCameraFromTileZoom(zoom, view) {
     const delta = Math.PI / Math.pow(2, zoom);
-    const circleChord = 2.0 * ellipsoidSizes().x * Math.sin(delta * 0.5);
+    const circleChord = 2.0 * ellipsoidSizes.x * Math.sin(delta * 0.5);
     const radius = circleChord * 0.5;
     const error = radius / SIZE_TEXTURE_TILE;
 

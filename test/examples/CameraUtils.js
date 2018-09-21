@@ -10,7 +10,7 @@ async function newGlobePage() {
         window.THREE = itowns.THREE;
         const raycaster = new itowns.THREE.Raycaster();
         const screen = new itowns.THREE.Vector2();
-        const ellipsoid = new itowns.Ellipsoid(itowns.ellipsoidSizes());
+        const ellipsoid = new itowns.Ellipsoid(itowns.ellipsoidSizes);
         globeView
             .getPickingPositionFromDepth = function fn(mouse, target = new itowns.THREE.Vector3()) {
                 const g = this.mainLoop.gfxEngine;
