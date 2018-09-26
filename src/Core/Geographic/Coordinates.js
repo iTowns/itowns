@@ -117,7 +117,8 @@ function _convert(coordsIn, newCrs, target) {
         if (is4326(coordsIn.crs) && newCrs === 'EPSG:4978') {
             ellipsoid.cartographicToCartesian(coordsIn, cartesian);
             target.set(newCrs, cartesian);
-            target._normal = coordsIn.geodesicNormal;
+            target._normal = coordsIn._normal;
+            target._normalNeedsUpdate = false;
             return target;
         }
 
@@ -184,27 +185,29 @@ function _convert(coordsIn, newCrs, target) {
 function Coordinates(crs, ...coordinates) {
     this._values = new Float64Array(3);
     this.set(crs, ...coordinates);
+    this._normalNeedsUpdate = true;
+    this._normal = new THREE.Vector3();
 
+    // this._normal = this._normal || computeGeodesicNormal(this);
     Object.defineProperty(this, 'geodesicNormal',
         {
             configurable: true,
-            get: () => {
-                this._normal = this._normal || computeGeodesicNormal(this);
-                return this._normal;
-            },
+            get: () => (this._normalNeedsUpdate ? computeGeodesicNormal(this) : this._normal),
         });
 }
 
 const planarNormal = new THREE.Vector3(0, 0, 1);
 
 function computeGeodesicNormal(coord) {
+    coord._normalNeedsUpdate = false;
     if (is4326(coord.crs)) {
-        return ellipsoid.geodeticSurfaceNormalCartographic(coord);
+        return ellipsoid.geodeticSurfaceNormalCartographic(coord, coord._normal);
     }
     // In globe mode (EPSG:4978), we compute the normal.
     if (coord.crs == 'EPSG:4978') {
-        return ellipsoid.geodeticSurfaceNormal(coord);
+        return ellipsoid.geodeticSurfaceNormal(coord, coord._normal);
     }
+    coord._normal.copy(planarNormal);
     // In planar mode, normal is the up vector.
     return planarNormal;
 }
@@ -225,7 +228,7 @@ Coordinates.prototype.set = function set(crs, ...coordinates) {
             this._values[i] = 0;
         }
     }
-    this._normal = undefined;
+    this._normalNeedsUpdate = true;
     return this;
 };
 
@@ -238,7 +241,7 @@ Coordinates.prototype.clone = function clone(target) {
         r = new Coordinates(this.crs, ...this._values);
     }
     if (this._normal) {
-        r._normal = this._normal.clone();
+        r._normal.copy(this._normal);
     }
     return r;
 };
