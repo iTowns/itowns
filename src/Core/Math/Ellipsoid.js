@@ -25,12 +25,12 @@ function Ellipsoid(size) {
         size.z === 0.0 ? 0.0 : 1.0 / (size.z * size.z));
 }
 
-Ellipsoid.prototype.geodeticSurfaceNormal = function geodeticSurfaceNormal(cartesian) {
-    var result = new THREE.Vector3(
+Ellipsoid.prototype.geodeticSurfaceNormal = function geodeticSurfaceNormal(cartesian, target = new THREE.Vector3()) {
+    target.set(
         cartesian.x() * this._oneOverRadiiSquared.x,
         cartesian.y() * this._oneOverRadiiSquared.y,
         cartesian.z() * this._oneOverRadiiSquared.z);
-    return result.normalize();
+    return target.normalize();
 };
 
 Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function geodeticSurfaceNormalCartographic(coordCarto, target = new THREE.Vector3()) {
