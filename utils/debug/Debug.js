@@ -48,13 +48,28 @@ function Debug(view, datDebugTool, chartDivContainer) {
         freeze: false,
     };
 
+    let before;
+    const startChart = () => {
+        before = Date.now();
+    };
+    const endChart = () => {
+        const duration = Date.now() - before;
+        // debug graphs update
+        debugChartUpdate(duration);
+    };
+
     // charts
     gui.add(state, 'displayCharts').name('Display charts').onChange((newValue) => {
         if (newValue) {
+            view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_START, startChart);
+            view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, endChart);
             chartDivContainer.style.display = 'flex';
         } else {
+            view.removeFrameRequester(MAIN_LOOP_EVENTS.UPDATE_START, startChart);
+            view.removeFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, endChart);
             chartDivContainer.style.display = 'none';
         }
+        view.notifyChange();
     });
 
     gui.add(state, 'debugCameraWindow').name('debug Camera').onChange((value) => {
@@ -103,17 +118,6 @@ function Debug(view, datDebugTool, chartDivContainer) {
             }
         };
     })());
-
-
-    let before;
-    view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_START, () => {
-        before = Date.now();
-    });
-    view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, () => {
-        const duration = Date.now() - before;
-        // debug graphs update
-        debugChartUpdate(duration);
-    });
 
     // Camera debug
     const helper = new CameraHelper(view.camera.camera3D);
