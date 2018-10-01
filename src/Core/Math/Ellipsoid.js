@@ -34,13 +34,13 @@ Ellipsoid.prototype.geodeticSurfaceNormal = function geodeticSurfaceNormal(carte
 };
 
 Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function geodeticSurfaceNormalCartographic(coordCarto, target = new THREE.Vector3()) {
-    var longitude = THREE.Math.degToRad(coordCarto.longitude());
-    var latitude = THREE.Math.degToRad(coordCarto.latitude());
-    var cosLatitude = Math.cos(latitude);
+    const longitude = THREE.Math.degToRad(coordCarto.longitude());
+    const latitude = THREE.Math.degToRad(coordCarto.latitude());
+    const cosLatitude = Math.cos(latitude);
 
-    var x = cosLatitude * Math.cos(longitude);
-    var y = cosLatitude * Math.sin(longitude);
-    var z = Math.sin(latitude);
+    const x = cosLatitude * Math.cos(longitude);
+    const y = cosLatitude * Math.sin(longitude);
+    const z = Math.sin(latitude);
 
     return target.set(x, y, z);
 };
@@ -53,18 +53,19 @@ Ellipsoid.prototype.setSize = function setSize(size) {
     this._radiiSquared = new THREE.Vector3(size.x * size.x, size.y * size.y, size.z * size.z);
 };
 
+const normal = new THREE.Vector3();
 Ellipsoid.prototype.cartographicToCartesian = function cartographicToCartesian(coordCarto, target = new THREE.Vector3()) {
-    const n = coordCarto.geodesicNormal.clone();
+    normal.copy(coordCarto.geodesicNormal);
 
-    target.multiplyVectors(this._radiiSquared, n);
+    target.multiplyVectors(this._radiiSquared, normal);
 
-    const gamma = Math.sqrt(n.dot(target));
+    const gamma = Math.sqrt(normal.dot(target));
 
     target.divideScalar(gamma);
 
-    n.multiplyScalar(coordCarto.altitude());
+    normal.multiplyScalar(coordCarto.altitude());
 
-    return target.add(n);
+    return target.add(normal);
 };
 
 /**
