@@ -59,20 +59,20 @@ function parseData(data, layer, extentDestination) {
     return supportedParsers.get(type)(data, options);
 }
 
+const error = (err, url, source) => {
+    source.handlingError(err, url);
+    throw err;
+};
 function FetchAndConvertSourceData(url, layer, extentSource, extentDestination) {
     const source = layer.source;
     // Fetch data
     return fetchData(url, source.format, source.networkOptions, extentSource)
         .then(fetchedData =>
     // Parse fetched data, it parses file to itowns's object
-             parseData(fetchedData, layer, extentDestination))
+             parseData(fetchedData, layer, extentDestination), err => error(err, url, source))
         .then(parsedData =>
     // Convert parsed data, it converts itowns's object to THREE's object
-            layer.convert(parsedData, extentDestination),
-            (err) => {
-                source.handlingError(err, url);
-                throw err;
-            });
+            layer.convert(parsedData, extentDestination), err => error(err, url, source));
 }
 
 export default {
