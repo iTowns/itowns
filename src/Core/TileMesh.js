@@ -26,7 +26,7 @@ function TileMesh(layer, geometry, material, extent, level) {
     this.obb = this.geometry.OBB.clone();
 
     this.boundingSphere = new THREE.Sphere();
-    this.OBB().box3D.getBoundingSphere(this.boundingSphere);
+    this.obb.box3D.getBoundingSphere(this.boundingSphere);
 
     this.frustumCulled = false;
 
@@ -48,7 +48,7 @@ TileMesh.prototype.constructor = TileMesh;
 
 TileMesh.prototype.updateMatrixWorld = function updateMatrixWorld(force) {
     THREE.Mesh.prototype.updateMatrixWorld.call(this, force);
-    this.OBB().update();
+    this.obb.update();
 };
 
 TileMesh.prototype.isVisible = function isVisible() {
@@ -129,8 +129,8 @@ TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
         return;
     }
     if (Math.floor(min) !== Math.floor(this.obb.z.min) || Math.floor(max) !== Math.floor(this.obb.z.max)) {
-        this.OBB().updateZ(min, max);
-        this.OBB().box3D.getBoundingSphere(this.boundingSphere);
+        this.obb.updateZ(min, max);
+        this.obb.box3D.getBoundingSphere(this.boundingSphere);
         this.updateGeometricError();
     }
 };
@@ -139,10 +139,6 @@ TileMesh.prototype.updateGeometricError = function updateGeometricError() {
     // The geometric error is calculated to have a correct texture display.
     // For the projection of a texture's texel to be less than or equal to one pixel
     this.geometricError = this.boundingSphere.radius / SIZE_TEXTURE_TILE;
-};
-
-TileMesh.prototype.OBB = function OBB() {
-    return this.obb;
 };
 
 TileMesh.prototype.removeColorLayer = function removeColorLayer(idLayer) {

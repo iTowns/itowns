@@ -302,7 +302,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     let minDistanceZ = Infinity;
     const getMinDistanceCameraBoundingSphereObbsUp = (tile) => {
         if (tile.level > 10 && tile.children.length == 1 && tile.geometry) {
-            const obb = tile.OBB();
+            const obb = tile.obb;
             const sphereCamera = { position: this.camera.position.clone(), radius: this.minDistanceCollision };
             if (obb.isSphereAboveXYBox(sphereCamera)) {
                 minDistanceZ = Math.min(sphereCamera.position.z - obb.box3D.max.z, minDistanceZ);

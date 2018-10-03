@@ -121,7 +121,7 @@ class GlobeLayer extends TiledGeometryLayer {
 
     // eslint-disable-next-line
     culling(node, camera) {
-        if (!camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld)) {
+        if (!camera.isBox3Visible(node.obb.box3D, node.obb.matrixWorld)) {
             return true;
         }
 
@@ -129,7 +129,7 @@ class GlobeLayer extends TiledGeometryLayer {
             return false;
         }
 
-        const points = node.OBB().topPointsWorld;
+        const points = node.obb.topPointsWorld;
 
         for (const point of points) {
             // see https://cesiumjs.org/2013/04/25/Horizon-culling/

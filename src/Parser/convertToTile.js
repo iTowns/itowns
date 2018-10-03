@@ -67,12 +67,12 @@ export default {
         tile.updateMatrix();
 
         if (parent) {
-            tile.setBBoxZ(parent.OBB().z.min, parent.OBB().z.max);
+            tile.setBBoxZ(parent.obb.z.min, parent.obb.z.max);
         } else if (layer.materialOptions && layer.materialOptions.useColorTextureElevation) {
             tile.setBBoxZ(layer.materialOptions.colorTextureElevationMinZ, layer.materialOptions.colorTextureElevationMaxZ);
         }
 
-        tile.add(tile.OBB());
+        tile.add(tile.obb);
 
         tile.material.setLightingOn(layer.lighting.enable);
         tile.material.uniforms.lightPosition.value = layer.lighting.position;

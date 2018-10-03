@@ -107,7 +107,7 @@ class PanoramaLayer extends TiledGeometryLayer {
 
     // eslint-disable-next-line
     culling(node, camera) {
-        return !camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld);
+        return !camera.isBox3Visible(node.obb.box3D, node.obb.matrixWorld);
     }
 
     /**
@@ -131,7 +131,7 @@ class PanoramaLayer extends TiledGeometryLayer {
             return false;
         }
 
-        const obb = node.OBB();
+        const obb = node.obb;
 
         obb.updateMatrixWorld();
         const onScreen = context.camera.box3SizeOnScreen(
