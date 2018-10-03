@@ -40,7 +40,7 @@ class PlanarLayer extends TiledGeometryLayer {
 
     // eslint-disable-next-line
     culling(node, camera) {
-        return !camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld);
+        return !camera.isBox3Visible(node.obb.box3D, node.obb.matrixWorld);
     }
 
     /**
@@ -74,7 +74,7 @@ class PlanarLayer extends TiledGeometryLayer {
             }
         }
 
-        const onScreen = context.camera.box3SizeOnScreen(node.OBB().box3D, node.matrixWorld);
+        const onScreen = context.camera.box3SizeOnScreen(node.obb.box3D, node.matrixWorld);
 
         // onScreen.x/y/z are [-1, 1] so divide by 2
         // (so x = 0.4 means the object width on screen is 40% of the total screen width)
