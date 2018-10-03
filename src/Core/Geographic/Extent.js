@@ -302,7 +302,7 @@ Extent.prototype.offsetScale = function offsetScale(bbox) {
  * @returns {Boolean}
  */
 Extent.prototype.intersectsExtent = function intersectsExtent(bbox) {
-    const other = bbox.as(this.crs());
+    const other = bbox.crs() == this.crs() ? bbox : bbox.as(this.crs());
     return !(this.west() >= other.east() ||
              this.east() <= other.west() ||
              this.south() >= other.north() ||
@@ -375,8 +375,9 @@ Extent.prototype.union = function union(extent) {
  * for the point to belong to this Extent object
  * @param {Coordinates} coordinates  The coordinates to belong
  */
+const c = new Coordinates('EPSG:4326', 0, 0, 0);
 Extent.prototype.expandByPoint = function expandByPoint(coordinates) {
-    const coords = coordinates.as(this.crs());
+    const coords = coordinates.crs == this.crs() ? coordinates : coordinates.as(this.crs(), c);
     const we = coords._values[0];
     if (we < this.west()) {
         this._values[CARDINAL.WEST] = we;
