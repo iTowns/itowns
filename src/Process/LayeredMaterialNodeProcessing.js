@@ -257,6 +257,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         extentsSource.push(extentSource);
     }
 
+    const parsedData = node.material.getLayerTextures(layer).map(t => t.parsedData);
     node.layerUpdateState[layer.id].newTry();
     const command = {
         /* mandatory */
@@ -264,7 +265,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         layer,
         extentsSource,
         extentsDestination,
-        parsedData: node.material.getLayerTextures(layer)[0].parsedData,
+        parsedData,
         requester: node,
         priority: nodeCommandQueuePriorityFunction(node),
         earlyDropFunction: refinementCommandCancellationFn,
