@@ -83,6 +83,7 @@ export default {
         const requester = command.requester;
         const extentsSource = command.extentsSource;
         const extentsDestination = command.extentsDestination || extentsSource;
+        const parsedData = command.parsedData || [];
 
         // TODO: Find best place to cancel Command
         if (requester &&
@@ -100,7 +101,7 @@ export default {
             const url = source.urlFromExtent(extSource);
 
             // Already fetched and parsed data that can be used
-            const validedParsedData = isValidData(command.parsedData, extDest, layer.isValidData) || source.parsedData;
+            const validedParsedData = isValidData(parsedData[i], extDest, layer.isValidData) || source.parsedData;
 
             // Tag to Cache data
             const tag = validedParsedData ? `${url},${extDest.toString(',')}` : url;
