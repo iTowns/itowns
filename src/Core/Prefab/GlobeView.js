@@ -96,7 +96,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.camera.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
     this.camera.camera3D.far = ellipsoidSizes.x * 10;
 
-    const tileLayer = new GlobeLayer('globe', options.object3d);
+    const tileLayer = new GlobeLayer('globe', options.object3d, options);
 
     const sun = new THREE.DirectionalLight();
     sun.position.set(-0.5, 0, 1);
