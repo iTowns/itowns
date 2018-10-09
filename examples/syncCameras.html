@@ -66,19 +66,19 @@
             var planarDiv = document.getElementById('planarDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             var planarView = new itowns.PlanarView(planarDiv, extent);
 
             var promises = [];
             // var THREE = itowns.THREE;
-            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var menuGlobe = new GuiTools('menuDiv', view);
             var overGlobe = true;
 
             // eslint-disable-next-line
             new itowns.PlanarControls(planarView, {});
 
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                return view.addLayer(layer);
             }
 
             viewerDiv.addEventListener('mousemove', function _() {
@@ -92,23 +92,23 @@
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
 
             // Listen for globe full initialisation event
-            globeView
+            view
                 .addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
                     function globeInitialized() {
                         // eslint-disable-next-line no-console
                         console.info('Globe initialized');
                         Promise.all(promises).then(function init() {
                             var planarCamera = planarView.camera.camera3D;
-                            var globeCamera = globeView.camera.camera3D;
+                            var globeCamera = view.camera.camera3D;
                             var params;
-                            menuGlobe.addImageryLayersGUI(globeView.getLayers(function filterColor(l) { return l.type === 'color'; }));
-                            menuGlobe.addElevationLayersGUI(globeView.getLayers(function filterElevation(l) { return l.type === 'elevation'; }));
+                            menuGlobe.addImageryLayersGUI(view.getLayers(function filterColor(l) { return l.type === 'color'; }));
+                            menuGlobe.addElevationLayersGUI(view.getLayers(function filterElevation(l) { return l.type === 'elevation'; }));
 
                             function sync() {
                                 if (overGlobe) {
                                     params = itowns.CameraUtils
                                         .getTransformCameraLookingAtTarget(
-                                            globeView, globeCamera);
+                                            view, globeCamera);
                                     itowns.CameraUtils
                                     .transformCameraToLookAtTarget(
                                             planarView, planarCamera, params);
@@ -118,11 +118,11 @@
                                             planarView, planarCamera);
                                     itowns.CameraUtils
                                         .transformCameraToLookAtTarget(
-                                                globeView, globeCamera, params);
+                                                view, globeCamera, params);
                                 }
                             }
                             sync();
-                            globeView
+                            view
                                 .addFrameRequester(itowns
                                     .MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, sync);
                             planarView
@@ -148,8 +148,8 @@
                     format: 'image/jpeg',
                 },
             });
-            var d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.tileLayer, d);
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
         </script>
     </body>
 </html>

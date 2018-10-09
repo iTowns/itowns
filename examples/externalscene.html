@@ -20,14 +20,14 @@
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
-            var globeView = new itowns.GlobeView(
+            var view = new itowns.GlobeView(
                     viewerDiv, positionOnGlobe, { scene3D: scene });
-            setupLoadingScreen(viewerDiv, globeView);
+            setupLoadingScreen(viewerDiv, view);
 
-            globeView.mainLoop.name = 'external-ML';
+            view.mainLoop.name = 'external-ML';
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer);
+                view.addLayer(layer);
             }
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);

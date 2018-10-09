@@ -1,29 +1,60 @@
 /* global describe, it */
 const assert = require('assert');
 
-async function newGlobePage() {
-    const page = await browser.newPage();
-    await loadExample(page, `http://localhost:${itownsPort}/examples/globe.html`,
-        this.test.fullTitle());
-    await page.evaluate(() => {
-        window.THREE = itowns.THREE;
-        const raycaster = new itowns.THREE.Raycaster();
-        const screen = new itowns.THREE.Vector2();
-        globeView
-            .getPickingPositionFromDepth = function fn(mouse, target = new itowns.THREE.Vector3()) {
-                const g = this.mainLoop.gfxEngine;
-                const dim = g.getWindowSize();
-                const ellipsoid = new itowns.Ellipsoid(itowns.ellipsoidSizes);
-                screen.copy(mouse || dim.clone().multiplyScalar(0.5));
-                screen.x = Math.floor(screen.x);
-                screen.y = Math.floor(screen.y);
-                screen.x = ((screen.x / dim.x) * 2) - 1;
-                screen.y = (-(screen.y / dim.y) * 2) + 1;
-                raycaster.setFromCamera(screen, this.camera.camera3D);
-                target.copy(ellipsoid.intersection(raycaster.ray));
+// global variables
+let page;
+let mouse;
+let middleWidth;
+let middleHeight;
+let initial;
 
-                return target;
+describe('GlobeControls with globe example', () => {
+    before(async function _() {
+        page = await browser.newPage();
+        await loadExample(page, `http://localhost:${itownsPort}/examples/globe.html`);
+        initial = await page.evaluate(() => {
+            window.THREE = itowns.THREE;
+            const raycaster = new itowns.THREE.Raycaster();
+            const screen = new itowns.THREE.Vector2();
+            view
+                .getPickingPositionFromDepth = function fn(mouse, target = new itowns.THREE.Vector3()) {
+                    const g = view.mainLoop.gfxEngine;
+                    const dim = g.getWindowSize();
+                    const ellipsoid = new itowns.Ellipsoid(itowns.ellipsoidSizes);
+                    screen.copy(mouse || dim.clone().multiplyScalar(0.5));
+                    screen.x = Math.floor(screen.x);
+                    screen.y = Math.floor(screen.y);
+                    screen.x = ((screen.x / dim.x) * 2) - 1;
+                    screen.y = (-(screen.y / dim.y) * 2) + 1;
+                    raycaster.setFromCamera(screen, view.camera.camera3D);
+                    target.copy(ellipsoid.intersection(raycaster.ray));
+
+                    return target;
+                };
+
+            const init = {
+                coord: view.controls.getLookAtCoordinate(),
+                heading: view.controls.getHeading(),
+                range: view.controls.getRange(),
+                tilt: view.controls.getTilt(),
             };
+
+            return Promise.resolve(init);
+        });
+
+        middleWidth = await page.evaluate(() => window.innerWidth / 2);
+        middleHeight = await page.evaluate(() => window.innerHeight / 2);
+        mouse = page.mouse;
+    });
+
+    // reset page state without reloading one
+    afterEach(async function _() {
+        await page.evaluate((init) => {
+            init.coord = new itowns.Coordinates(init.coord.crs, init.coord._values[0], init.coord._values[1], init.coord._values[2]);
+            view.controls.lookAtCoordinate(init, false);
+            view.notifyChange();
+        }, initial);
+        await mouse.move(0, 0);
     });
     return page;
 }
@@ -37,24 +68,24 @@ describe('GlobeControls with globe example', () => {
             new Promise((resolve) => {
                 const tilts = [];
                 const cb = (event) => {
-                    globeView.controls
+                    view.controls
                         .removeEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
-                    tilts.push(globeView.controls.getTilt());
+                    tilts.push(view.controls.getTilt());
                     tilts.push(event.new.tilt);
-                    const coord = globeView.controls.getLookAtCoordinate();
+                    const coord = view.controls.getLookAtCoordinate();
                     if (tilts.length === 3) {
                         resolve({ tilts, coord });
                     }
                 };
-                globeView.controls
+                view.controls
                     .addEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
 
                 const pCoord = new itowns.Coordinates('EPSG:4326', vC.longitude, vC.latitude, 0);
 
-                globeView.controls.lookAtCoordinate({ coord: pCoord }).then(() =>
-                    globeView.controls.setTilt(pTilt).then((p) => {
+                view.controls.lookAtCoordinate({ coord: pCoord }).then(() =>
+                    view.controls.setTilt(pTilt).then((p) => {
                         tilts.push(p.tilt);
-                        const coord = globeView.controls.getLookAtCoordinate();
+                        const coord = view.controls.getLookAtCoordinate();
                         if (tilts.length === 3) {
                             resolve({ tilts, coord });
                         }
@@ -79,17 +110,17 @@ describe('GlobeControls with globe example', () => {
             new Promise((resolve) => {
                 const checks = [];
                 const cb = (event) => {
-                    globeView.controls
+                    view.controls
                         .removeEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
-                    checks.push(globeView.controls.getTilt());
+                    checks.push(view.controls.getTilt());
                     checks.push(event.new.tilt);
                     if (checks.length === 3) {
                         resolve(checks);
                     }
                 };
-                globeView.controls
+                view.controls
                     .addEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
-                globeView.controls.setTilt(pTilt).then((p) => {
+                view.controls.setTilt(pTilt).then((p) => {
                     checks.push(p.tilt);
                     if (checks.length === 3) {
                         resolve(checks);
@@ -102,9 +133,9 @@ describe('GlobeControls with globe example', () => {
         await page.close();
     });
     it('should move like expected', async function _() {
-        const page = await newGlobePage.bind(this)();
-        const innerWidth = await page.evaluate(() => window.innerWidth);
-        const innerHeight = await page.evaluate(() => window.innerHeight);
+        await page.evaluate(() => {
+            view.controls.enableDamping = false;
+        });
 
         await page.evaluate(() => { globeView.controls.enableDamping = false; });
         const startCoord = await page.evaluate(() => globeView.controls.getLookAtCoordinate());
@@ -113,9 +144,10 @@ describe('GlobeControls with globe example', () => {
         await mouse.down();
         await mouse.move((innerWidth / 2) + 200, innerHeight / 2, { steps: 100 });
         await mouse.up();
-        const endCoord = await page.evaluate(() => globeView.controls.getLookAtCoordinate());
-        assert.ok((Math.round(startCoord._values[0] - endCoord._values[0])) >= 74);
-        await page.close();
+
+        const endCoord = await page.evaluate(() => view.controls.getLookAtCoordinate());
+
+        assert.ok((Math.round(initial.coord._values[0] - endCoord._values[0])) >= 74);
     });
     it('should zoom like expected with middle button', async function _() {
         const page = await newGlobePage.bind(this)();
@@ -127,17 +159,11 @@ describe('GlobeControls with globe example', () => {
         await mouse.down({ button: 'middle' });
         await mouse.move(innerWidth / 2, (innerHeight / 2) - 200, { steps: 100 });
         await mouse.up();
-        const endRange = await page.evaluate(() => globeView.controls.getRange());
-        assert.ok((startRange - endRange) > 20000000);
-        await page.close();
+        const endRange = await page.evaluate(() => Promise.resolve(view.controls.getRange()));
+        assert.ok((initial.range - endRange) > 20000000);
     });
     it('should change tilt like expected', async function _() {
-        const page = await newGlobePage.bind(this)();
-        const innerWidth = await page.evaluate(() => window.innerWidth);
-        const innerHeight = await page.evaluate(() => window.innerHeight);
-
-        await page.evaluate(() => { globeView.controls.enableDamping = false; });
-        const startTilt = await page.evaluate(() => globeView.controls.getTilt());
+        await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.keyboard.down('Control');
         const mouse = page.mouse;
         await mouse.move(innerWidth / 2, innerHeight / 2);
@@ -145,17 +171,11 @@ describe('GlobeControls with globe example', () => {
         await mouse.move(innerWidth / 2, (innerHeight / 2) - 200, { steps: 100 });
         await mouse.up();
         await page.keyboard.up('Control');
-        const endTilt = await page.evaluate(() => globeView.controls.getTilt());
-        assert.ok(startTilt - endTilt > 43);
-        await page.close();
+        const endTilt = await page.evaluate(() => view.controls.getTilt());
+        assert.ok(initial.tilt - endTilt > 43);
     });
     it('should change heading like expected', async function _() {
-        const page = await newGlobePage.bind(this)();
-        const innerWidth = await page.evaluate(() => window.innerWidth);
-        const innerHeight = await page.evaluate(() => window.innerHeight);
-
-        await page.evaluate(() => { globeView.controls.enableDamping = false; });
-        const startHeading = await page.evaluate(() => globeView.controls.getHeading());
+        await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.keyboard.down('Control');
         const mouse = page.mouse;
         await mouse.move(innerWidth / 2, innerHeight / 2);
@@ -163,9 +183,8 @@ describe('GlobeControls with globe example', () => {
         await mouse.move((innerWidth / 2) - 50, (innerHeight / 2), { steps: 100 });
         await mouse.up();
         await page.keyboard.up('Control');
-        const endHeading = await page.evaluate(() => globeView.controls.getHeading());
-        assert.ok(Math.floor(startHeading + endHeading) > 10);
-        await page.close();
+        const endHeading = await page.evaluate(() => view.controls.getHeading());
+        assert.ok(Math.floor(initial.heading + endHeading) > 10);
     });
     it('should zoom like expected with double click', async function _() {
         const page = await newGlobePage.bind(this)();
@@ -175,37 +194,33 @@ describe('GlobeControls with globe example', () => {
         const end = page.evaluate(() =>
             new Promise((resolve) => {
                 const endAni = () => {
-                    globeView.controls.removeEventListener('animation-ended', endAni);
-                    resolve(globeView.controls.getRange());
+                    view.controls.removeEventListener('animation-ended', endAni);
+                    resolve(view.controls.getRange());
                 };
-                globeView.controls.addEventListener('animation-ended', endAni);
+                view.controls.addEventListener('animation-ended', endAni);
             }));
 
-        await page.evaluate(() => { globeView.controls.enableDamping = false; });
-        await page.mouse.click(innerWidth / 2, innerHeight / 2, { clickCount: 2, delay: 100 });
-        const result = await end.then(er => (start * 0.6) - er);
+        await page.evaluate(() => { view.controls.enableDamping = false; });
+        await page.mouse.click(middleWidth, middleHeight, { clickCount: 2, delay: 100 });
+        const result = await end.then(er => (initial.range * 0.6) - er);
         assert.ok(Math.abs(result) < 100);
 
         await page.close();
     });
     it('should zoom like expected with mouse wheel', async function _() {
-        const page = await newGlobePage.bind(this)();
-        const innerWidth = await page.evaluate(() => window.innerWidth);
-        const innerHeight = await page.evaluate(() => window.innerHeight);
-        await page.evaluate(() => { globeView.controls.enableDamping = false; });
-        await page.mouse.move(innerWidth / 2, innerHeight / 2);
-        const initRange = await page.evaluate(() => globeView.controls.getRange());
+        await page.evaluate(() => { view.controls.enableDamping = false; });
+        await page.mouse.move(middleWidth, middleHeight);
         const finalRange = await page.evaluate(() =>
             new Promise((resolve) => {
-                globeView.mainLoop.addEventListener('command-queue-empty', () => {
-                    if (globeView.mainLoop.renderingState === 0) {
-                        resolve(globeView.controls.getRange());
+                view.mainLoop.addEventListener('command-queue-empty', () => {
+                    if (view.mainLoop.renderingState === 0) {
+                        resolve(view.controls.getRange());
                     }
                 });
                 const wheelEvent = new WheelEvent('mousewheel', {
                     deltaY: -50000,
                 });
-                globeView.mainLoop.gfxEngine.renderer.domElement
+                view.mainLoop.gfxEngine.renderer.domElement
                     .dispatchEvent(wheelEvent, document);
                 window.dispatchEvent(wheelEvent, document);
             }));

@@ -30,14 +30,14 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 
-            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var menuGlobe = new GuiTools('menuDiv', view);
 
-            setupLoadingScreen(viewerDiv, globeView);
+            setupLoadingScreen(viewerDiv, view);
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             // Add one imagery layer to the scene
@@ -56,9 +56,9 @@
 
                 // building coordinate
                 var coord = new itowns.Coordinates('EPSG:4326', 4.2165, 44.844, 1417);
-                var colladaID = globeView.mainLoop.gfxEngine.getUniqueThreejsLayer();
+                var colladaID = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
 
-                model.position.copy(coord.as(globeView.referenceCrs).xyz());
+                model.position.copy(coord.as(view.referenceCrs).xyz());
                 // align up vector with geodesic normal
                 model.lookAt(model.position.clone().add(coord.geodesicNormal));
                 // user rotate building to align with ortho image
@@ -67,18 +67,18 @@
 
                 // set camera's layer to do not disturb the picking
                 model.traverse(function _(obj) { obj.layers.set(colladaID); });
-                globeView.camera.camera3D.layers.enable(colladaID);
+                view.camera.camera3D.layers.enable(colladaID);
 
                 // update coordinate of the mesh
                 model.updateMatrixWorld();
 
-                globeView.scene.add(model);
-                globeView.notifyChange();
+                view.scene.add(model);
+                view.notifyChange();
             });
 
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
-                globeView.controls.lookAtCoordinate({ heading: 180, tilt: 60 });
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
+                view.controls.lookAtCoordinate({ heading: 180, tilt: 60 });
             });
         </script>
     </body>

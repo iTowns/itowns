@@ -29,13 +29,13 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 
-            var menuGlobe = new GuiTools('menuDiv', globeView);
-            setupLoadingScreen(viewerDiv, globeView);
+            var menuGlobe = new GuiTools('menuDiv', view);
+            setupLoadingScreen(viewerDiv, view);
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -54,14 +54,14 @@
                 var mesh = new THREE.Mesh(geometry, material);
 
                 // get the position on the globe, from the camera
-                var cameraTargetPosition = globeView.controls.getLookAtCoordinate();
+                var cameraTargetPosition = view.controls.getLookAtCoordinate();
 
                 // position of the mesh
                 var meshCoord = cameraTargetPosition;
                 meshCoord.setAltitude(cameraTargetPosition.altitude() + 30);
 
                 // position and orientation of the mesh
-                mesh.position.copy(meshCoord.as(globeView.referenceCrs).xyz());
+                mesh.position.copy(meshCoord.as(view.referenceCrs).xyz());
                 mesh.lookAt(new THREE.Vector3(0, 0, 0));
                 mesh.rotateX(Math.PI / 2);
 
@@ -69,18 +69,18 @@
                 mesh.updateMatrixWorld();
 
                 // add the mesh to the scene
-                globeView.scene.add(mesh);
+                view.scene.add(mesh);
 
                 // make the object usable from outside of the function
-                globeView.mesh = mesh;
+                view.mesh = mesh;
             }
 
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function globeInitialized() {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function globeInitialized() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 addMeshToScene();
-                globeView.controls.setTilt(60, true);
+                view.controls.setTilt(60, true);
             });
         </script>
     </body>

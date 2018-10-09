@@ -39,7 +39,7 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, dummyPositionOnGlobe, {
+            var view = new itowns.GlobeView(viewerDiv, dummyPositionOnGlobe, {
                 sseSubdivisionThreshold: 6,
                 noControls: true,
             });
@@ -52,7 +52,7 @@
             var camera;
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer);
+                view.addLayer(layer);
             }
 
             // Add one imagery layer to the scene
@@ -118,7 +118,7 @@
             rotationMatrix = parseAircraftConventionOrientationToMatrix(pictureInfos.panoramic);
 
             // eslint-disable-next-line no-unused-vars
-            camera = initCamera(globeView, pictureInfos.panoramic.image, coord,
+            camera = initCamera(view, pictureInfos.panoramic.image, coord,
                 pictureInfos.camera.enhToOrientationUp, pictureInfos.camera.enhToOrientationLookAt,
                 rotationMatrix,
                 pictureInfos.camera.orientationToCameraUp, pictureInfos.camera.orientationToCameraLookAt,
@@ -129,28 +129,28 @@
             plane = setupPictureFromCamera(camera, pictureInfos.panoramic.image, pictureInfos.opacity,
                 pictureInfos.distance);
 
-            setupViewCameraDecomposing(globeView, camera);
+            setupViewCameraDecomposing(view, camera);
 
             // open view camera FOV of 10° to see landscape around the picture.
-            globeView.camera.camera3D.fov += 10;
-            globeView.camera.camera3D.updateProjectionMatrix();
+            view.camera.camera3D.fov += 10;
+            view.camera.camera3D.updateProjectionMatrix();
 
             // uncomment to debug camera
-            // addCameraHelper(globeView, camera);
+            // addCameraHelper(view, camera);
 
             // eslint-disable-next-line no-new
-            new itowns.FirstPersonControls(globeView);
+            new itowns.FirstPersonControls(view);
 
-            /* global itowns, document, GuiTools, globeView, promises */
+            /* global itowns, document, GuiTools, view, promises */
             var menuGlobe = new GuiTools('menuDiv');
             // setup GUI
             function updatePlaneDistance() {
                 transformTexturedPlane(camera, pictureInfos.distance, plane);
             }
-            setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, globeView, 3000, 15000);
+            setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, view, 3000, 15000);
 
-            var d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.tileLayer, d);
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
         </script>
     </body>

@@ -21,14 +21,14 @@ describe('positionGlobe', () => {
         // wait cone creation
         await page.evaluate(() =>
             new Promise((resolve) => {
-                globeView.addFrameRequester('after_render', () => {
-                    if (globeView.mesh) {
+                view.addFrameRequester('after_render', () => {
+                    if (view.mesh) {
                         resolve();
                     } else {
-                        globeView.notifyChange();
+                        view.notifyChange();
                     }
                 });
-                globeView.notifyChange();
+                view.notifyChange();
             }));
 
         const value = await page.evaluate(() => {
@@ -37,16 +37,16 @@ describe('positionGlobe', () => {
 
             // compute the on screen cone position
             const coneCenter = new itowns.THREE.Vector3(0, 0, 0)
-                .applyMatrix4(globeView.mesh.matrixWorld);
-            coneCenter.applyMatrix4(globeView.camera._viewMatrix);
-            const mouse = globeView.normalizedToViewCoords(coneCenter);
+                .applyMatrix4(view.mesh.matrixWorld);
+            coneCenter.applyMatrix4(view.camera._viewMatrix);
+            const mouse = view.normalizedToViewCoords(coneCenter);
 
             // So read the depth buffer at cone's position
-            const valueVisible = globeView.readDepthBuffer(mouse.x, mouse.y, 1, 1);
+            const valueVisible = view.readDepthBuffer(mouse.x, mouse.y, 1, 1);
 
             // Then hide the cone, and re-read the value
-            globeView.mesh.material.visible = false;
-            const valueHidden = globeView.readDepthBuffer(mouse.x, mouse.y, 1, 1);
+            view.mesh.material.visible = false;
+            const valueHidden = view.readDepthBuffer(mouse.x, mouse.y, 1, 1);
 
             // Both should be equal, since currently readDepthBuffer only
             // supports special materials (see RendererConstant.DEPTH)
@@ -67,36 +67,36 @@ describe('positionGlobe', () => {
         // wait mesh creation
         await page.evaluate(() =>
             new Promise((resolve) => {
-                globeView.addFrameRequester('after_render', () => {
-                    if (globeView.mesh) {
+                view.addFrameRequester('after_render', () => {
+                    if (view.mesh) {
                         resolve();
                     } else {
-                        globeView.notifyChange();
+                        view.notifyChange();
                     }
                 });
-                globeView.notifyChange();
+                view.notifyChange();
             }));
 
         // Hide cone the cone and set range
         const destRange = 1500;
         await page.evaluate((range) => {
-            globeView.mesh.material.visible = false;
-            globeView.controls.setRange(range);
+            view.mesh.material.visible = false;
+            view.controls.setRange(range);
         }, destRange);
 
         // wait camera'transformation and get range value with globeControls method
         const controlsMethod = await page.evaluate(() =>
             new Promise((resolve) => {
                 const endAni = () => {
-                    globeView.controls.removeEventListener('animation-ended', endAni);
-                    resolve(globeView.controls.getRange());
+                    view.controls.removeEventListener('animation-ended', endAni);
+                    resolve(view.controls.getRange());
                 };
-                globeView.controls.addEventListener('animation-ended', endAni);
+                view.controls.addEventListener('animation-ended', endAni);
             }));
 
         // get range with depth buffer
-        const depthMethod = await page.evaluate(() => globeView
-            .getPickingPositionFromDepth().distanceTo(globeView.camera.camera3D.position));
+        const depthMethod = await page.evaluate(() => view
+            .getPickingPositionFromDepth().distanceTo(view.camera.camera3D.position));
 
         assert.ok(Math.abs(controlsMethod - destRange) < 2);
         assert.ok(Math.abs(depthMethod - destRange) < 2);

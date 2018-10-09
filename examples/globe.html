@@ -46,10 +46,10 @@
             var miniDiv = document.getElementById('miniDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            setupLoadingScreen(viewerDiv, globeView);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            setupLoadingScreen(viewerDiv, view);
             function addLayerCb(layer) {
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             // Dont' instance mini viewer if it's Test env
@@ -59,7 +59,7 @@
                 // since the mini globe will always be seen from a far point of view (see minDistance above)
                 maxSubdivisionLevel: 2,
                 // Don't instance default controls since miniview's camera will be synced
-                // on the main view's one (see globeView.addFrameRequester)
+                // on the main view's one (see view.addFrameRequester)
                 noControls: true,
             });
 
@@ -68,13 +68,13 @@
             // to see the main view "behind"
             miniView.mainLoop.gfxEngine.renderer.setClearColor(0x000000, 0);
 
-            // update miniview's camera with the globeView's camera position
-            globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, function updateMiniView() {
+            // update miniview's camera with the view's camera position
+            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, function updateMiniView() {
                 // clamp distance camera from globe
-                var distanceCamera = globeView.camera.camera3D.position.length();
+                var distanceCamera = view.camera.camera3D.position.length();
                 var distance = Math.min(Math.max(distanceCamera * 1.5, minDistance), maxDistance);
                 var camera = miniView.camera.camera3D;
-                var cameraTargetPosition = globeView.controls.getCameraTargetPosition();
+                var cameraTargetPosition = view.controls.getCameraTargetPosition();
                 // Update target miniview's camera
                 camera.position.copy(cameraTargetPosition).setLength(distance);
                 camera.lookAt(cameraTargetPosition);
@@ -93,15 +93,15 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
 
-            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var menuGlobe = new GuiTools('menuDiv', view);
             var divScaleWidget = document.querySelectorAll('.divScaleWidget')[0];
 
             function updateScaleWidget() {
-                var value = globeView.controls.pixelsToMeters(200);
+                var value = view.controls.pixelsToMeters(200);
                 value = Math.floor(value);
                 var digit = Math.pow(10, value.toString().length - 1);
                 value = Math.round(value / digit) * digit;
-                var pix = globeView.controls.metersToPixels(value);
+                var pix = view.controls.metersToPixels(value);
                 var unit = 'm';
                 if (value >= 1000) {
                     value /= 1000;
@@ -112,12 +112,12 @@
             }
 
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 updateScaleWidget();
             });
-            globeView.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
+            view.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
                 updateScaleWidget();
             });
         </script>

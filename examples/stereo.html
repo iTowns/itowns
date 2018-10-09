@@ -48,7 +48,7 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 
             // Eye separation value
             var eyeSep = 0.064;
@@ -56,7 +56,7 @@
             // Save StereoCamera update function
             var fnUpdateStereoCamera = itowns.THREE.StereoCamera.prototype.update;
 
-            setupLoadingScreen(viewerDiv, globeView);
+            setupLoadingScreen(viewerDiv, view);
 
             itowns.THREE.StereoCamera.prototype.update = function _update(camera) {
                 this.cameraL.far = camera.far;
@@ -68,7 +68,7 @@
             };
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             // Add one imagery layer to the scene
@@ -87,7 +87,7 @@
 
                 if (!effect) return;
 
-                globeView.notifyChange();
+                view.notifyChange();
             }
 
             function disableEffect() {
@@ -96,14 +96,14 @@
                 }
 
                 effect = null;
-                globeView.render = null;
+                view.render = null;
 
-                globeView.notifyChange();
+                view.notifyChange();
             }
 
             function enableEffect(_eff) {
                 var size;
-                var g = globeView.mainLoop.gfxEngine;
+                var g = view.mainLoop.gfxEngine;
                 var r = g.renderer;
 
                 if (effect) {
@@ -111,15 +111,15 @@
                 }
 
                 effect = _eff;
-                size = globeView.mainLoop.gfxEngine.getWindowSize();
+                size = view.mainLoop.gfxEngine.getWindowSize();
                 effect.setSize(size.x, size.y);
 
-                globeView.render = function render() {
+                view.render = function render() {
                     r.clear();
-                    effect.render(globeView.scene, globeView.camera.camera3D);
+                    effect.render(view.scene, view.camera.camera3D);
                 };
 
-                globeView.notifyChange();
+                view.notifyChange();
             }
 
             /**
@@ -130,8 +130,8 @@
             function enableAnaglyph() {
                 var _eff;
                 if (effect instanceof THREE.AnaglyphEffect) return;
-                _eff = new THREE.AnaglyphEffect(globeView.mainLoop.gfxEngine.renderer,
-                    globeView.camera.camera3D);
+                _eff = new THREE.AnaglyphEffect(view.mainLoop.gfxEngine.renderer,
+                    view.camera.camera3D);
                 enableEffect(_eff);
             }
 
@@ -144,8 +144,8 @@
             function enableParallax() {
                 var _eff;
                 if (effect instanceof THREE.ParallaxBarrierEffect) return;
-                _eff = new THREE.ParallaxBarrierEffect(globeView.mainLoop.gfxEngine.renderer,
-                    globeView.camera.camera3D);
+                _eff = new THREE.ParallaxBarrierEffect(view.mainLoop.gfxEngine.renderer,
+                    view.camera.camera3D);
                 enableEffect(_eff);
             }
 
@@ -155,23 +155,23 @@
             function enableStereo() {
                 var _eff;
                 if (effect instanceof THREE.StereoEffect) return;
-                _eff = new THREE.StereoEffect(globeView.mainLoop.gfxEngine.renderer,
-                    globeView.camera.camera3D);
+                _eff = new THREE.StereoEffect(view.mainLoop.gfxEngine.renderer,
+                    view.camera.camera3D);
                 enableEffect(_eff);
             }
 
-            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var menuGlobe = new GuiTools('menuDiv', view);
             var divScaleWidget = document.querySelectorAll('.divScaleWidget')[0];
 
-            var d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.tileLayer, d);
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
             function updateScaleWidget() {
-                var value = globeView.controls.pixelsToMeters(200);
+                var value = view.controls.pixelsToMeters(200);
                 value = Math.floor(value);
                 var digit = Math.pow(10, value.toString().length - 1);
                 value = Math.round(value / digit) * digit;
-                var pix = globeView.controls.metersToPixels(value);
+                var pix = view.controls.metersToPixels(value);
                 var unit = 'm';
                 if (value >= 1000) {
                     value /= 1000;
@@ -182,12 +182,12 @@
             }
 
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 updateScaleWidget();
             });
-            globeView.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
+            view.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
                 updateScaleWidget();
             });
         </script>

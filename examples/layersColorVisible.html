@@ -21,12 +21,12 @@
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            setupLoadingScreen(viewerDiv, globeView);
-            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            setupLoadingScreen(viewerDiv, view);
+            var menuGlobe = new GuiTools('menuDiv', view);
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
@@ -65,17 +65,17 @@
                 }
             }
 
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
             });
 
             // Use frame requester to update menu before rendering
-            globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, function () {
+            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, function () {
                 var layers = { id: [] };
-                // globeView.scene is THREE.js scene
-                getLayersColorVisible(globeView.scene, layers);
-                var colorLayers = globeView.getLayers(function (l) { return l.type == 'color'; });
+                // view.scene is THREE.js scene
+                getLayersColorVisible(view.scene, layers);
+                var colorLayers = view.getLayers(function (l) { return l.type == 'color'; });
 
                 colorLayers.forEach(function (layer) {
                     menuGlobe.hideFolder(layer.id, layers.id.indexOf(layer.id) == -1)

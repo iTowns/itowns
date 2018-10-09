@@ -21,12 +21,12 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 
-            setupLoadingScreen(viewerDiv, globeView);
+            setupLoadingScreen(viewerDiv, view);
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer);
+                view.addLayer(layer);
             }
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -38,12 +38,12 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
 
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
-                itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx').then(xml => itowns.GpxParser.parse(xml, { crs: globeView.referenceCrs })).then(function (gpx) {
+                itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx').then(xml => itowns.GpxParser.parse(xml, { crs: view.referenceCrs })).then(function (gpx) {
                     if (gpx) {
-                        globeView.scene.add(gpx);
-                        globeView.controls.setTilt(45, true);
+                        view.scene.add(gpx);
+                        view.controls.setTilt(45, true);
                     }
                 });
             });

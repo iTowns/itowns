@@ -19,7 +19,7 @@ describe('globe', () => {
             this.test.fullTitle());
 
         const level = await page.evaluate(() =>
-            globeView.pickObjectsAt(
+            view.pickObjectsAt(
                 { x: 221, y: 119 })[0].object.level);
 
         assert.equal(2, level);
@@ -32,10 +32,10 @@ describe('globe', () => {
             this.test.fullTitle());
 
         const maxColorSamplerUnitsCount = await page
-            .evaluate(type => globeView.tileLayer.level0Nodes[0]
+            .evaluate(type => view.tileLayer.level0Nodes[0]
                 .material.textures[type].length, 1);
         const colorSamplerUnitsCount = await page.evaluate(() =>
-                globeView.tileLayer.countColorLayersTextures(globeView.getLayers(l => l.type === 'color')[0]));
+                view.tileLayer.countColorLayersTextures(view.getLayers(l => l.type === 'color')[0]));
         const limit = maxColorSamplerUnitsCount - colorSamplerUnitsCount;
 
         // add layers just below the capacity limit
@@ -45,7 +45,7 @@ describe('globe', () => {
                 for (let i = 0; i < maxLayersCount; i++) {
                     const layerParams = Object.assign({}, params);
                     layerParams.id = `${layerParams.id}_${i}`;
-                    promises.push(globeView.addLayer(layerParams));
+                    promises.push(view.addLayer(layerParams));
                 }
                 return Promise.all(promises).then(() => true).catch(() => false);
             }), limit);
@@ -56,7 +56,7 @@ describe('globe', () => {
             itowns.Fetcher.json('./layers/JSONLayers/OrthosCRS.json').then((params) => {
                 const layerParams = Object.assign({}, params);
                 layerParams.id = 'max';
-                return globeView.addLayer(layerParams).then(() => false).catch(() => true);
+                return view.addLayer(layerParams).then(() => false).catch(() => true);
             }));
 
         assert.ok(underLimit);
@@ -70,8 +70,8 @@ describe('globe', () => {
             `http://localhost:${itownsPort}/examples/globe.html`,
             this.test.fullTitle());
 
-        const error = await page.evaluate(() => itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(globeView.addLayer).catch(() => true));
-        const colorLayersCount = await page.evaluate(() => globeView.getLayers(l => l.type === 'color').length);
+        const error = await page.evaluate(() => itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(view.addLayer).catch(() => true));
+        const colorLayersCount = await page.evaluate(() => view.getLayers(l => l.type === 'color').length);
 
         assert.ok(error && colorLayersCount === 1);
         page.close();

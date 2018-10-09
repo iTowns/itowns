@@ -52,12 +52,12 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var menuGlobe = new GuiTools('menuDiv', view);
 
-            setupLoadingScreen(viewerDiv, globeView);
+            setupLoadingScreen(viewerDiv, view);
             function addLayerCb(layer) {
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             // Add one imagery layer to the scene
@@ -69,7 +69,7 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
 
-            globeView.addLayer({
+            view.addLayer({
                 type: 'color',
                 id: 'Kml',
                 name: 'kml',
@@ -81,7 +81,7 @@
                 },
             });
 
-            globeView.addLayer({
+            view.addLayer({
                 type: 'color',
                 id: 'Gpx',
                 name: 'Ultra 2009',
@@ -93,7 +93,7 @@
                 },
             });
 
-            globeView.addLayer({
+            view.addLayer({
                 type: 'color',
                 id: 'ariege',
                 name: 'ariege',
@@ -111,11 +111,11 @@
             });
 
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function _() {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function _() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                itowns.ColorLayersOrdering.moveLayerToIndex(globeView, 'Ortho', 0);
-                new ToolTip(globeView, document.getElementById('viewerDiv'), document.getElementById('tooltipDiv'));
+                itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+                new ToolTip(view, document.getElementById('viewerDiv'), document.getElementById('tooltipDiv'));
             });
         </script>
     </body>
