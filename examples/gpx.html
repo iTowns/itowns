@@ -26,7 +26,7 @@
             setupLoadingScreen(viewerDiv, globeView);
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                globeView.addLayer(layer);
             }
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
