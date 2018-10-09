@@ -29,7 +29,7 @@ describe('multiglobe', () => {
 
         // verify that we properly updated the globe
         const { layer, level } = await page.evaluate(() => {
-            const pick = globeView.pickObjectsAt({ x: 200, y: 150 })[0];
+            const pick = view.pickObjectsAt({ x: 200, y: 150 })[0];
             return {
                 layer: pick.layer.id,
                 level: pick.object.level,

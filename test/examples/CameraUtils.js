@@ -11,7 +11,7 @@ async function newGlobePage() {
         const raycaster = new itowns.THREE.Raycaster();
         const screen = new itowns.THREE.Vector2();
         const ellipsoid = new itowns.Ellipsoid(itowns.ellipsoidSizes);
-        globeView
+        view
             .getPickingPositionFromDepth = function fn(mouse, target = new itowns.THREE.Vector3()) {
                 const g = this.mainLoop.gfxEngine;
                 const dim = g.getWindowSize();
@@ -34,9 +34,9 @@ describe('Camera utils with globe example', () => {
         const page = await newGlobePage.bind(this)();
         const params = { range: 10000 };
         const result = await page.evaluate((p) => {
-            const camera = globeView.camera.camera3D;
+            const camera = view.camera.camera3D;
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                globeView, camera, p).then(final => final.range);
+                view, camera, p).then(final => final.range);
         }, params);
 
         assert.ok(Math.abs(result - params.range) / params.range < 0.05);
@@ -48,9 +48,9 @@ describe('Camera utils with globe example', () => {
         const params = { longitude: 60, latitude: 40 };
         const result = await page.evaluate((p) => {
             const coord = new itowns.Coordinates('EPSG:4326', p.longitude, p.latitude, 0);
-            const camera = globeView.camera.camera3D;
+            const camera = view.camera.camera3D;
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                globeView, camera, { coord }).then(final => final.coord);
+                view, camera, { coord }).then(final => final.coord);
         }, params);
         assert.equal(Math.round(result._values[0]), params.longitude);
         assert.equal(Math.round(result._values[1]), params.latitude);
@@ -62,9 +62,9 @@ describe('Camera utils with globe example', () => {
         const params = { tilt: 50 };
 
         const result = await page.evaluate((p) => {
-            const camera = globeView.camera.camera3D;
+            const camera = view.camera.camera3D;
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                globeView, camera, p).then(final => final.tilt);
+                view, camera, p).then(final => final.tilt);
         }, params);
         assert.equal(Math.round(result), params.tilt);
         page.close();
@@ -75,9 +75,9 @@ describe('Camera utils with globe example', () => {
 
         const params = { heading: 170 };
         const result = await page.evaluate((p) => {
-            const camera = globeView.camera.camera3D;
+            const camera = view.camera.camera3D;
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                globeView, camera, p).then(final => final.heading);
+                view, camera, p).then(final => final.heading);
         }, params);
         assert.equal(Math.round(result), params.heading);
         page.close();
@@ -87,7 +87,7 @@ describe('Camera utils with globe example', () => {
         const page = await newGlobePage.bind(this)();
 
         const result = await page.evaluate(() => {
-            const camera = globeView.camera.camera3D;
+            const camera = view.camera.camera3D;
             const params = { heading: 17,
                 tilt: 44,
                 range: 200000,
@@ -95,7 +95,7 @@ describe('Camera utils with globe example', () => {
                 latitude: 46,
                 coord: new itowns.Coordinates('EPSG:4326', 3, 47, 0) };
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                globeView, camera, params).then(final => ({ params, final }));
+                view, camera, params).then(final => ({ params, final }));
         });
         assert.equal(Math.round(result.final.heading), result.params.heading);
         assert.equal(Math.round(result.final.tilt), result.params.tilt);
@@ -116,9 +116,9 @@ describe('Camera utils with globe example', () => {
                 latitude: 46,
                 coord: new itowns.Coordinates('EPSG:4326', 3, 47, 0),
                 time: 500 };
-            const camera = globeView.camera.camera3D;
+            const camera = view.camera.camera3D;
             return itowns.CameraUtils
-                .animateCameraToLookAtTarget(globeView, camera, params).then(final =>
+                .animateCameraToLookAtTarget(view, camera, params).then(final =>
                 ({ final, params }));
         });
         assert.equal(Math.round(result.final.heading), result.params.heading);

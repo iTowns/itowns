@@ -27,17 +27,17 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, {
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, {
                 handleCollision: false,
             });
-           globeView.controls.minDistance = 30;
+           view.controls.minDistance = 30;
 
-            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var menuGlobe = new GuiTools('menuDiv', view);
 
-            setupLoadingScreen(viewerDiv, globeView);
+            setupLoadingScreen(viewerDiv, view);
 
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                return view.addLayer(layer);
             }
 
             // Add one imagery layer to the scene
@@ -50,7 +50,7 @@
             // Input data : a geoJson file, with point features, with orientation specific properties
             var panoramics = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson';
             var layer = {
-                crsOut: globeView.referenceCrs,
+                crsOut: view.referenceCrs,
                 onGround: false,
             };
             // Input data are given in Lambert93 projection
@@ -81,12 +81,12 @@
             var onGround = false;
 
             // wait for all layer to be loaded, we need for elevation layer
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
 
                 // wait for all the promises
                 Promise.all(promises).then(function loadFeaturesModel(res) { loadFeatures(res[1], res[2]);});
 
-                globeView.controls.setTilt(20, true);
+                view.controls.setTilt(20, true);
             })
 
 
@@ -112,27 +112,27 @@
 
                     // compute position on the ground
                     var coord = feature.vertices[0];
-                    result = itowns.DEMUtils.getElevationValueAt(globeView.tileLayer, coord, 1, undefined);
+                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, coord, 1, undefined);
                     coord = coord.as('EPSG:4326');
                     coord.setAltitude(result.z);
-                    model.positionOnGround = coord.as(globeView.referenceCrs).xyz();
+                    model.positionOnGround = coord.as(view.referenceCrs).xyz();
 
                     // update matrix world and add the model
                     model.updateMatrixWorld();
-                    globeView.scene.add(model);
+                    view.scene.add(model);
 
                     // store the model
                     feature.model = model;
                 }
-                globeView.notifyChange();
+                view.notifyChange();
 
                 // store the features
                 layer.features = points.features;
             }
 
             // add debug GUI
-            var d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.tileLayer, d);
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
             // Add a checkbox to put the cars on the ground.
             folder = menuGlobe.gui.addFolder('Cars Layer');
@@ -141,7 +141,7 @@
                     feature.model.position.copy(layer.onGround? feature.model.positionOnGround : feature.model.positionBase);
                     feature.model.updateMatrixWorld();
                 }
-                globeView.notifyChange();
+                view.notifyChange();
             });
         </script>
     </body>

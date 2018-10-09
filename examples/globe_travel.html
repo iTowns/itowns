@@ -38,10 +38,10 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             var time = 50000;
             var pathTravel = [];
-            globeView.setRealisticLightingOn(true);
+            view.setRealisticLightingOn(true);
 
             pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', 2.0889, 42.809), range: 100000, time: time * 0.2 });
             pathTravel.push({ range: 13932, time: time * 0.2, tilt: 7.59, heading: -110.9 });
@@ -55,13 +55,13 @@
             pathTravel.push({ range: 16601, time: time * 0.2 });
 
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                return view.addLayer(layer);
             }
 
             function travel() {
-                var camera = globeView.camera.camera3D;
+                var camera = view.camera.camera3D;
                 return itowns.CameraUtils
-                    .sequenceAnimationsToLookAtTarget(globeView, camera, pathTravel);
+                    .sequenceAnimationsToLookAtTarget(view, camera, pathTravel);
             }
 
             // Add one imagery layer to the scene
@@ -74,7 +74,7 @@
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
 
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 Promise.all(promises).then(function _() {

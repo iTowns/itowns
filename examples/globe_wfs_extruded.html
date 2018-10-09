@@ -33,10 +33,10 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            setupLoadingScreen(viewerDiv, globeView);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            setupLoadingScreen(viewerDiv, view);
             function addLayerCb(layer) {
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
@@ -60,7 +60,7 @@
                 var i = 0;
                 var result;
                 var tile;
-                var layer = globeView.tileLayer;
+                var layer = view.tileLayer;
                 if (contour.length && contour.length > 0) {
                     for (; i < contour.length; i++) {
                         result = itowns.DEMUtils.getElevationValueAt(layer, contour[i], 0, tile);
@@ -89,7 +89,7 @@
                 return false;
             }
 
-            globeView.addLayer({
+            view.addLayer({
                 name: 'lyon_tcl_bus',
                 id: 'WFS Bus lines',
                 type: 'geometry',
@@ -142,7 +142,7 @@
                 var i;
                 var mesh;
                 if (meshes.length) {
-                    globeView.notifyChange();
+                    view.notifyChange();
                 }
                 for (i = 0; i < meshes.length; i++) {
                     mesh = meshes[i];
@@ -155,8 +155,8 @@
                 meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
             };
 
-            globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
-            globeView.addLayer({
+            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
+            view.addLayer({
                 id: 'WFS Buildings',
                 type: 'geometry',
                 update: itowns.FeatureProcessing.update,
@@ -210,7 +210,7 @@
                 var result;
                 var z = 0;
                 if (contour.length && contour.length > 0) {
-                    result = itowns.DEMUtils.getElevationValueAt(globeView.tileLayer, contour[0]);
+                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour[0]);
                     if (result) {
                         z = result.z;
                     }
@@ -219,7 +219,7 @@
                 return 0;
             }
 
-            globeView.addLayer({
+            view.addLayer({
                 type: 'geometry',
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
@@ -247,19 +247,19 @@
                 }
             });
 
-            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var menuGlobe = new GuiTools('menuDiv', view);
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                globeView.controls.setTilt(45, true);
+                view.controls.setTilt(45, true);
             });
-            var d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.tileLayer, d);
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
             function picking(event) {
                 var htmlInfo = document.getElementById('info');
-                var intersects = globeView.pickObjectsAt(event, 3, 'WFS Buildings');
+                var intersects = view.pickObjectsAt(event, 3, 'WFS Buildings');
                 var properties;
                 var info;
                 htmlInfo.innerHTML = ' ';
@@ -277,24 +277,24 @@
                 }
             }
 
-            for (let layer of globeView.getLayers()) {
+            for (let layer of view.getLayers()) {
                 // if (layer.id === 'WFS Bus lines') {
                 //     layer.whenReady.then( function _(layer) {
-                //         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
-                //         debug.GeometryDebug.addMaterialLineWidth(gui, globeView, layer, 1, 10);
+                //         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                //         debug.GeometryDebug.addMaterialLineWidth(gui, view, layer, 1, 10);
                 //     });
                 // }
                 if (layer.id === 'WFS Buildings') {
                     layer.whenReady.then( function _(layer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
-                        debug.GeometryDebug.addWireFrameCheckbox(gui, globeView, layer);
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
                         window.addEventListener('mousemove', picking, false);
                     });
                 }
                 // if (layer.id === 'WFS Route points') {
                 //     layer.whenReady.then( function _(layer) {
-                //         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
-                //         debug.GeometryDebug.addMaterialSize(gui, globeView, layer, 1, 50);
+                //         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                //         debug.GeometryDebug.addMaterialSize(gui, view, layer, 1, 50);
                 //     });
                 // }
             }

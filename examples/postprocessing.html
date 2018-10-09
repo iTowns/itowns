@@ -54,7 +54,7 @@
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 
             // Simple postprocessing setup
             //
@@ -62,7 +62,7 @@
             var quad = new itowns.THREE.Mesh(new itowns.THREE.PlaneBufferGeometry(2, 2), null);
             var cam = new itowns.THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
 
-            setupLoadingScreen(viewerDiv, globeView);
+            setupLoadingScreen(viewerDiv, view);
 
             quad.frustumCulled = false;
             quad.material = new itowns.THREE.ShaderMaterial({
@@ -78,15 +78,15 @@
             });
             postprocessScene.add(quad);
 
-            globeView.render = function render() {
-                var g = globeView.mainLoop.gfxEngine;
+            view.render = function render() {
+                var g = view.mainLoop.gfxEngine;
                 var r = g.renderer;
                 r.setRenderTarget(g.fullSizeRenderTarget);
                 r.clear();
                 r.setViewport(0, 0, g.getWindowSize().x, g.getWindowSize().y);
                 r.render(
-                    globeView.scene,
-                    globeView.camera.camera3D, g.fullSizeRenderTarget);
+                    view.scene,
+                    view.camera.camera3D, g.fullSizeRenderTarget);
 
                 quad.material.uniforms.tDiffuse.value = g.fullSizeRenderTarget.texture;
                 quad.material.uniforms.tSize.value.set(
@@ -101,7 +101,7 @@
             };
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer);
+                view.addLayer(layer);
             }
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);

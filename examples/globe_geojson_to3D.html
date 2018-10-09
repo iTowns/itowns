@@ -27,10 +27,10 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             // Add one imagery layer to the scene
@@ -65,13 +65,13 @@
                 zoom: { min: 7, max: 7 },
             };
 
-            globeView.addLayer(ariege).then(function menue(layer) {
+            view.addLayer(ariege).then(function menue(layer) {
                 var gui = debug.GeometryDebug
-                    .createGeometryDebugUI(menuGlobe.gui, globeView, layer);
-                debug.GeometryDebug.addWireFrameCheckbox(gui, globeView, layer);
+                    .createGeometryDebugUI(menuGlobe.gui, view, layer);
+                debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
             });
 
-            menuGlobe = new GuiTools('menuDiv', globeView);
+            menuGlobe = new GuiTools('menuDiv', view);
 </script>
 </body>
 </html>

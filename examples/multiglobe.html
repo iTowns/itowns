@@ -40,12 +40,12 @@
 
             // Create the first globe
             object3d = new itowns.THREE.Object3D();
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d });
-            setupLoadingScreen(viewerDiv, globeView);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d });
+            setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
 
             function addLayerCb(layer) {
-                globeView.addLayer(layer);
+                view.addLayer(layer);
             }
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
 
@@ -61,9 +61,9 @@
             globe2.noTextureColor = new itowns.THREE.Color(0xd0d5d8);
 
             // add globe2 to the view so it gets updated
-            itowns.View.prototype.addLayer.call(globeView, globe2);
+            itowns.View.prototype.addLayer.call(view, globe2);
             itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(osm) {
-                itowns.View.prototype.addLayer.call(globeView, osm, globe2);
+                itowns.View.prototype.addLayer.call(view, osm, globe2);
             });
 
             // Globe animation
@@ -85,10 +85,10 @@
 
                 if (t < 1) {
                     // animation is not finished, schedule a new view update
-                    globeView.notifyChange(globeView.camera.camera3D);
+                    view.notifyChange(view.camera.camera3D);
                 } else {
                     // animation is finished, remove the frame requester
-                    globeView.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
+                    view.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                 }
             }
 
@@ -98,8 +98,8 @@
                     front = 1 - front;
                     t = 0;
                     // schedule the animation
-                    globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
-                    globeView.notifyChange(globeView.camera.camera3D);
+                    view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
+                    view.notifyChange(view.camera.camera3D);
                 }
             }
             viewerDiv.focus();
@@ -107,7 +107,7 @@
 
             // Zoom on mouse-wheel
             var onMouseWheel = function onMouseWheel(event) {
-                var geo = new itowns.Coordinates('EPSG:4978', globeView.camera.camera3D.position).as('EPSG:4326');
+                var geo = new itowns.Coordinates('EPSG:4978', view.camera.camera3D.position).as('EPSG:4326');
                 // WebKit / Opera / Explorer 9
                 if (event.wheelDelta !== undefined) {
                     delta = event.wheelDelta;
@@ -121,8 +121,8 @@
                 } else {
                     geo.setAltitude(geo.altitude() * 1.1);
                 }
-                globeView.camera.camera3D.position.copy(geo.as('EPSG:4978').xyz());
-                globeView.notifyChange(globeView.camera.camera3D);
+                view.camera.camera3D.position.copy(geo.as('EPSG:4978').xyz());
+                view.notifyChange(view.camera.camera3D);
             };
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
             viewerDiv.addEventListener('mousewheel', onMouseWheel);

@@ -104,8 +104,8 @@ before(async () => {
                 if (typeof (view) === 'object') {
                     return Promise.resolve(view);
                 }
-                if (typeof (globeView) === 'object') {
-                    return Promise.resolve(globeView);
+                if (typeof (view) === 'object') {
+                    return Promise.resolve(view);
                 }
                 resolve(false);
                 return Promise.reject();
