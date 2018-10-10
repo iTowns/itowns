@@ -40,30 +40,32 @@
                 return view.addLayer(layer);
             }
 
-            // Add two elevation layers.
-            // These will deform iTowns globe geometry to represent terrain elevation.
-            // promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
-            // promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
-            // promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
 
             // Add a vector tile layer
-            itowns.Fetcher.json('https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json').then(function (style) {
+            promises.push(itowns.Fetcher.json('https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json').then(function (style) {
                 var supportedLayers = [];
                 var backgroundLayer;
 
                 style.layers.forEach(function(layer) {
                     if (layer.type === 'background') {
                         backgroundLayer = layer;
-                    } else if (['fill', 'line'].indexOf(layer.type) >= 0) {
+                    } else if (['fill', 'line'].indexOf(layer.type) >= 0 &&
+                        ['landcover', 'water', 'boundary', 'transportation', 'park'].indexOf(layer['source-layer']) >= 0 &&
+                        layer.id.indexOf('bridge') < 0 &&
+                        layer.id.indexOf('tunnel') < 0 &&
+                        layer.id.indexOf('admin_sub') < 0) {
                         supportedLayers.push(layer);
                     }
                 });
 
                 function isValidData(data, extentDestination) {
-                    return extentDestination.zoom - data.extent.zoom < 4;
+                    // re-use the same vector tiles by interval 4
+                    var z = extentDestination.zoom - 2;
+                    return extentDestination.zoom, z - z % 4 == data.extent.zoom - 2;
                 }
 
-                promises.push(view.addLayer({
+                return view.addLayer({
                     type: 'color',
                     id: 'MVT',
                     isValidData: isValidData,
@@ -72,7 +74,6 @@
                         // eslint-disable-next-line no-template-curly-in-string
                         url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
                         format: 'application/x-protobuf;type=mapbox-vector',
-                        projection: 'EPSG:4326',
                         origin: 'top',
                         attribution: {
                             name: 'OpenStreetMap',
@@ -83,20 +84,21 @@
                             max: 14,
                         },
                         tileMatrixSet: 'PM',
+                        projection: 'EPSG:3857',
                     },
+                    fx: 2.5,
                     style: mapboxStyle,
                     filter: mapboxFilter(supportedLayers),
                     backgroundLayer,
-                }));
-            });
+                });
+            }));
 
             var menuGlobe = new GuiTools('menuDiv', view, 300);
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 Promise.all(promises).then(function () {
                     menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.type === 'color'; }));
-                    menuGlobe.addElevationLayersGUI(view.getLayers(function (l) { return l.type === 'elevation'; }));
-                    // itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
                 }).catch(console.error);
             });
         </script>
