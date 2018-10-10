@@ -1,6 +1,120 @@
 import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import GeoJsonParser from './GeoJsonParser';
+import Coordinates from '../Core/Geographic/Coordinates';
+
+// This part is freely adapted from vector-tile-js
+// https://github.com/mapbox/vector-tile-js/blob/master/lib/vectortilefeature.js
+function signedArea(ring) {
+    let sum = 0;
+    for (let i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
+        p1 = ring[i];
+        p2 = ring[j];
+        sum += (p2.x - p1.x) * (p1.y + p2.y);
+    }
+    return sum;
+}
+
+function classifyRings(rings) {
+    const len = rings.length;
+
+    if (len <= 1) return [rings];
+
+    const polygons = [];
+    let polygon;
+    let ccw;
+
+    for (var i = 0; i < len; i++) {
+        var area = signedArea(rings[i]);
+        if (area === 0) continue;
+
+        if (ccw === undefined) ccw = area < 0;
+
+        if (ccw === area < 0) {
+            if (polygon) polygons.push(polygon);
+            polygon = [rings[i]];
+        } else {
+            polygon.push(rings[i]);
+        }
+    }
+    if (polygon) polygons.push(polygon);
+
+    return polygons;
+}
+
+const VectorTileFeature = { types: ['Unknown', 'Point', 'LineString', 'Polygon'] };
+// EPSG:3857
+// WGS84 bounds [-180.0, -85.06, 180.0, 85.06] (https://epsg.io/3857)
+const coord = new Coordinates('EPSG:4326', 180, 85.06);
+coord.as('EPSG:3857', coord);
+// Get bound dimension in 'EPSG:3857'
+const sizeX = coord._values[0] * 2;
+const sizeY = coord._values[1] * 2;
+
+function project(line, ox, oy, size) {
+    for (let j = 0; j < line.length; j++) {
+        const p = line[j];
+        line[j] = [((p.x + ox) / size - 0.5) * sizeX, (0.5 - (p.y + oy) / size) * sizeY];
+    }
+}
+
+function toGeoJSON(x, y, z) {
+    const size = this.extent * Math.pow(2, z);
+    const x0 = this.extent * x;
+    const y0 = this.extent * y;
+    let coords = this.loadGeometry();
+    let type = VectorTileFeature.types[this.type];
+
+
+    switch (this.type) {
+        case 1:
+            var points = [];
+            for (let i = 0; i < coords.length; i++) {
+                points[i] = coords[i][0];
+            }
+            coords = points;
+            project(coords, x0, y0, size);
+            break;
+
+        case 2:
+            for (let i = 0; i < coords.length; i++) {
+                project(coords[i], x0, y0, size);
+            }
+            break;
+
+        case 3:
+            coords = classifyRings(coords);
+            for (let i = 0; i < coords.length; i++) {
+                for (let j = 0; j < coords[i].length; j++) {
+                    project(coords[i][j], x0, y0, size);
+                }
+            }
+            break;
+        default:
+    }
+
+    if (coords.length === 1) {
+        coords = coords[0];
+    } else {
+        type = `Multi${type}`;
+    }
+
+    const result = {
+        type: 'Feature',
+        geometry: {
+            type,
+            coordinates: coords,
+        },
+        properties: this.properties,
+    };
+
+    if ('id' in this) {
+        result.id = this.id;
+    }
+
+    return result;
+}
+
 
 function readPBF(file, options) {
     const vectorTile = new VectorTile(new Protobuf(file));
@@ -27,10 +141,10 @@ function readPBF(file, options) {
             // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
             // Only if the layer.origin is top
             if (options.origin == 'top') {
-                feature = l.feature(i).toGeoJSON(extentSource.col, extentSource.row, extentSource.zoom);
+                feature = toGeoJSON.bind(l.feature(i))(extentSource.col, extentSource.row, extentSource.zoom);
             } else {
                 const y = 1 << extentSource.zoom;
-                feature = l.feature(i).toGeoJSON(extentSource.col, y - extentSource.row - 1, extentSource.zoom);
+                feature = toGeoJSON.bind(l.feature(i))(extentSource.col, y - extentSource.row - 1, extentSource.zoom);
             }
             if (layers.length > 1) {
                 feature.properties.vt_layer = layer_id;
