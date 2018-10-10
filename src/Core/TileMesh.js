@@ -195,12 +195,7 @@ TileMesh.prototype.getCoordsForSource = function getCoordsForSource(source) {
 };
 
 TileMesh.prototype.getZoomForLayer = function getZoomForLayer(layer) {
-    if (layer.source.protocol.indexOf('wmts') == 0) {
-        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.source.tileMatrixSet);
-        return this.wmtsCoords[layer.source.tileMatrixSet][0].zoom;
-    } else {
-        return this.level;
-    }
+    return this.getCoordsForSource(layer.source)[0].zoom || this.level;
 };
 
 /**
