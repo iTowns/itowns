@@ -72,6 +72,16 @@ Extent.prototype.isTiledCrs = function fnIsTiledCrs() {
     return this._crs.indexOf('WMTS:') == 0 || this._crs == 'TMS';
 };
 
+// EPSG:3857
+// WGS84 bounds [-180.0, -85.06, 180.0, 85.06] (https://epsg.io/3857)
+// Warning, some tiled source don't exactly match the same bound
+// It should be taken into account
+const coord = new Coordinates('EPSG:4326', 180, 85.06);
+coord.as('EPSG:3857', coord);
+// Get bound dimension in 'EPSG:3857'
+const sizeX = coord._values[0] * 2;
+const sizeY = coord._values[1] * 2;
+
 Extent.prototype.as = function as(crs) {
     assertCrsIsValid(crs);
 
@@ -79,20 +89,36 @@ Extent.prototype.as = function as(crs) {
         if (this._crs == 'WMTS:PM' || this._crs == 'TMS') {
             // Convert this to the requested crs by using 4326 as an intermediate state.
             const nbCol = Math.pow(2, this.zoom);
-            const size = 360 / nbCol;
-            // convert column PM to longitude EPSG:4326 degree
-            const west = 180 - size * (nbCol - this.col);
-            const east = 180 - size * (nbCol - (this.col + 1));
             const nbRow = nbCol;
             const sizeRow = 1.0 / nbRow;
             // convert row PM to Y PM
-            const Yn = 1 - sizeRow * (nbRow - (this.row));
-            const Ys = 1 - sizeRow * (nbRow - (this.row + 1));
-            // convert Y PM to latitude EPSG:4326 degree
-            const north = Projection.YToWGS84(Yn);
-            const south = Projection.YToWGS84(Ys);
-            // create intermediate EPSG:4326 and convert in new crs
-            return new Extent('EPSG:4326', { west, east, south, north }).as(crs);
+            const Yn = 1 - sizeRow * (nbRow - this.row);
+            const Ys = Yn + sizeRow;
+
+            // convert to EPSG:3857
+            if (crs == 'EPSG:3857') {
+                const west = (0.5 - sizeRow * (nbCol - this.col)) * sizeX;
+                const east = west + sizeRow * sizeX;
+                const south = (0.5 - Ys) * sizeY;
+                const north = (0.5 - Yn) * sizeY;
+                return new Extent('EPSG:3857', { west, east, south, north }).as(crs);
+            } else {
+                const size = 360 / nbCol;
+                // convert Y PM to latitude EPSG:4326 degree
+                const north = Projection.YToWGS84(Yn);
+                const south = Projection.YToWGS84(Ys);
+                // convert column PM to longitude EPSG:4326 degree
+                const west = 180 - size * (nbCol - this.col);
+                const east = west + size;
+
+                const extent = Extent('EPSG:4326', { west, east, south, north });
+                if (crs == 'EPSG:4326') {
+                    return extent;
+                } else {
+                    // convert in new crs
+                    return extent.as(crs);
+                }
+            }
         } else if (this._crs == 'WMTS:WGS84G' && crs == 'EPSG:4326') {
             const nbRow = Math.pow(2, this.zoom);
             const size = 180 / nbRow;
