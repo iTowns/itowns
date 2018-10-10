@@ -45,7 +45,13 @@ class TMSSource extends Source {
 
         this.format = this.format || 'image/png';
         this.url = source.url;
-        this.tileMatrixSet = source.tileMatrixSet || 'WGS84';
+        if (source.tileMatrixSet) {
+            this.tileMatrixSet = source.tileMatrixSet;
+        } else if (this.projection == 'EPSG:3857') {
+            this.tileMatrixSet = 'PM';
+        } else {
+            this.tileMatrixSet = 'WGS84';
+        }
     }
 
     urlFromExtent(extent) {
