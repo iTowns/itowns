@@ -258,7 +258,7 @@ function featureToMesh(feature, options) {
         return;
     }
 
-    var mesh;
+    let mesh;
     switch (feature.type) {
         case 'point':
         case 'multipoint': {
@@ -306,12 +306,9 @@ function featuresToThree(features, options) {
     }
 
     const group = new THREE.Group();
-    group.minAltitude = Infinity;
-
     for (const feature of features) {
         const mesh = featureToMesh(feature, options);
         group.add(mesh);
-        group.minAltitude = Math.min(mesh.minAltitude, group.minAltitude);
     }
 
     return group;
