@@ -1,3 +1,4 @@
+#include <itowns.precision_qualifier>
 #include <logdepthbuf_pars_vertex>
 #define EPSILON 1e-6
 
@@ -61,7 +62,7 @@ void main() {
                 float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
             #elif defined(COLOR_TEXTURE_ELEVATION)
                 float   dv  = max(texture2D( dTextures_00[0], vVv ).r, 0.);
-                dv = _minElevation + dv * (_maxElevation - _minElevation);
+                dv = MIN_ELEVATION + dv * (MAX_ELEVATION - MIN_ELEVATION);
             #else
 
             #error Must define either RGBA_TEXTURE_ELEVATION, DATA_TEXTURE_ELEVATION or COLOR_TEXTURE_ELEVATION
