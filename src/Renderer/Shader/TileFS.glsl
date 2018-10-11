@@ -1,4 +1,6 @@
+#include <itowns.precision_qualifier>
 #include <logdepthbuf_pars_fragment>
+#include <itowns.pitUV>
 
 // BUG CHROME 50 UBUNTU 16.04
 // Lose context on compiling shader with too many IF STATEMENT
@@ -58,6 +60,15 @@ vec4 applyLightColorToInvisibleEffect(vec4 color, float intensity) {
 #include <packing>
 uniform int  uuid;
 #endif
+
+vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS], vec4 offsetScale[TEX_UNITS], int id, vec2 uv) {
+    #pragma unroll_loop
+    for ( int i = 0; i < TEX_UNITS; i++ ) {
+        if ( id == i ) return texture2D(dTextures[ i ], pitUV(uv, offsetScale[ i ]));
+    }
+
+    return vec4(0.0);
+}
 
 void main() {
     #include <logdepthbuf_fragment>
