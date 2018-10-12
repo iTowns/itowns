@@ -11,11 +11,15 @@ export default {
         } else {
             if (obj.geometry) {
                 obj.geometry.dispose();
-                obj.geometry = null;
+                // the Object Removal Helper causes inconsistencies
+                // when it assigns null to a geometry present in the Cache.
+                // Actually, the cache can provide a mesh whose geometry is null.
+                // see https://github.com/iTowns/itowns/issues/869
+                // obj.geometry = null;
             }
             if (obj.material) {
                 obj.material.dispose();
-                obj.material = null;
+                // obj.material = null;
             }
         }
     },
@@ -43,11 +47,10 @@ export default {
     removeChildrenAndCleanup(layer, obj) {
         const toRemove = obj.children.filter(c => c.layer === layer);
 
+        obj.remove(...toRemove);
         if (obj.layer === layer) {
             this.cleanup(obj);
         }
-
-        obj.remove(...toRemove);
         return toRemove;
     },
 
@@ -63,10 +66,10 @@ export default {
         for (const c of toRemove) {
             this.removeChildrenAndCleanupRecursively(layer, c);
         }
+        obj.remove(...toRemove);
         if (obj.layer === layer) {
             this.cleanup(obj);
         }
-        obj.remove(...toRemove);
         return toRemove;
     },
 };
