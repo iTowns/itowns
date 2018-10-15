@@ -159,6 +159,9 @@ function readPBF(file, options) {
         crsOut: options.crsOut,
         filteringExtent: options.filteringExtent,
         filter: options.filter,
+        withNormal: options.withNormal,
+        withAltitude: options.withAltitude,
+        mergeFeatures: options.mergeFeatures,
         buildExtent: true,
     }).then((f) => {
         f.extent.zoom = extentSource.zoom;
@@ -182,6 +185,9 @@ export default {
      * @param {Extent} options.coords - Coordinates of the layer.
      * @param {Extent=} options.filteringExtent - Optional filter to reject features
      * outside of this extent.
+     * @param {boolean} [options.mergeFeatures=true] - If true all geometries are merged by type and multi-type
+     * @param {boolean} [options.withNormal=true] - If true each coordinate normal is computed
+     * @param {boolean} [options.withAltitude=true] - If true each coordinate altitude is kept
      * @param {function=} options.filter - Filter function to remove features.
      * @param {string=} options.origin - This option is to be set to the correct
      * value, bottom or top (default being bottom), if the computation of the

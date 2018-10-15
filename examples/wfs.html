@@ -35,6 +35,7 @@
             var view;
             var meshes;
             var p;
+            var color = new itowns.THREE.Color();
 
             // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946',
@@ -79,7 +80,8 @@
             new itowns.PlanarControls(view, {});
 
             // Request redraw
-            view.notifyChange();
+            // view.notifyChange();
+
 
             function setMaterialLineWidth(result) {
                 result.traverse(function _setLineWidth(mesh) {
@@ -90,8 +92,10 @@
             }
 
             function colorLine(properties) {
-                var rgb = properties.couleur.split(' ');
-                return new itowns.THREE.Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+                if (properties) {
+                    var rgb = properties.couleur.split(' ');
+                    return color.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+                }
             }
 
             view.addLayer({
@@ -121,11 +125,11 @@
 
             function colorBuildings(properties) {
                 if (properties.id.indexOf('bati_remarquable') === 0) {
-                    return new itowns.THREE.Color(0x5555ff);
+                    return color.set(0x5555ff);
                 } else if (properties.id.indexOf('bati_industriel') === 0) {
-                    return new itowns.THREE.Color(0xff5555);
+                    return color.set(0xff5555);
                 }
-                return new itowns.THREE.Color(0xeeeeee);
+                return color.set(0xeeeeee);
             }
 
             function extrudeBuildings(properties) {
@@ -148,6 +152,10 @@
                 meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
             }
 
+            function acceptFeature(properties) {
+                return !!properties.hauteur;
+            }
+
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
             view.addLayer({
                 id: 'wfsBuilding',
@@ -160,6 +168,7 @@
                     mesh.scale.z = 0.01;
                     meshes.push(mesh);
                 },
+                filter: acceptFeature,
                 projection: 'EPSG:3946',
                 source: {
                     url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
@@ -200,6 +209,7 @@
             view.addLayer({
                 id: 'wfsPoint',
                 type: 'geometry',
+                size: 100,
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     altitude: 0,
@@ -223,7 +233,28 @@
                 },
             }, view.tileLayer);
 
-            /* global, document, window, view */
+            function binarySearch(array, value) {
+                var guess,
+                    min = 0,
+                    max = array.length - 1;
+
+                while(min <= max){
+                    guess = Math.floor((min + max) / 2);
+                var indices = array[guess].indices;
+                var start = indices[0].offset;
+                var end = indices[indices.length - 1].offset + indices[indices.length - 1].count;
+
+                if(start <= value && value <= end)
+                    return guess;
+                else if(value > end)
+                    min = guess + 1;
+                else
+                    max = guess - 1;
+                }
+
+                return -1;
+            }
+
             function picking(event) {
                 var htmlInfo = document.getElementById('info');
                 var intersects = view.pickObjectsAt(event, 2, 'wfsBuilding');
@@ -232,7 +263,11 @@
                 htmlInfo.innerHTML = ' ';
 
                 if (intersects.length) {
-                    properties = intersects[0].object.properties;
+                    var geometry = intersects[0].object.feature.geometry;
+                    var idPt = (intersects[0].face.a) % (intersects[0].object.feature.vertices.length / 3);
+                    var id = binarySearch(geometry, idPt);
+                    properties = geometry[id].properties;
+
                     Object.keys(properties).map(function (objectKey) {
                         var value = properties[objectKey];
                         var key = objectKey.toString();
@@ -241,7 +276,7 @@
                             htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
                         }
                     });
-                    return intersects[0].object;
+                    return properties;
                 }
             }
 

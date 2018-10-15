@@ -51,6 +51,7 @@
             var panoramics = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson';
             var layer = {
                 crsOut: view.referenceCrs,
+                mergeFeatures: false,
                 onGround: false,
             };
             // Input data are given in Lambert93 projection
@@ -93,27 +94,27 @@
             // place a 3d model oriented for each feature
             function loadFeatures(points, colladaModel) {
 
-                for (const feature of points.features) {
+                for (var feature of points.features) {
 
                     // clone the collada model
                     var model = colladaModel.clone();
 
+                    var vertices = feature.vertices;
                     // get coordinate from point feature
-                    var coord = feature.vertices[0];
+                    var coord = new itowns.Coordinates(feature.crs, vertices[0], vertices[1], vertices[2]);
 
                     // set model position
                     model.position.copy(coord.xyz());
 
                     // set model orientation (using target parameter)
-                    itowns.OrientationUtils.quaternionFromAttitude(feature.properties, coord, true, model.quaternion);
+                    itowns.OrientationUtils.quaternionFromAttitude(feature.geometry[0].properties, coord, true, model.quaternion);
 
                     // store base position
                     model.positionBase = model.position.clone();
 
                     // compute position on the ground
-                    var coord = feature.vertices[0];
-                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, coord, 1, undefined);
                     coord = coord.as('EPSG:4326');
+                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, coord, 1, undefined);
                     coord.setAltitude(result.z);
                     model.positionOnGround = coord.as(view.referenceCrs).xyz();
 

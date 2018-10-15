@@ -55,29 +55,29 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
 
+            var color = new itowns.THREE.Color();
+            var tile;
             function altitudeLine(properties, contour) {
-                var altitudes = [];
-                var i = 0;
                 var result;
-                var tile;
-                var layer = view.tileLayer;
-                if (contour.length && contour.length > 0) {
-                    for (; i < contour.length; i++) {
-                        result = itowns.DEMUtils.getElevationValueAt(layer, contour[i], 0, tile);
-                        if (!result) {
-                            result = itowns.DEMUtils.getElevationValueAt(layer, contour[i], 0);
-                        }
-                        tile = [result.tile];
-                        altitudes.push(result.z + 2);
+                var z = 0;
+                if (contour) {
+                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0, tile);
+                    if (!result) {
+                        result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0);
                     }
-                    return altitudes;
+                    tile = [result.tile];
+                    if (result) {
+                        z = result.z;
+                    }
+                    return z + 5;
                 }
-                return 0;
             }
 
             function colorLine(properties) {
-                var rgb = properties.couleur.split(' ');
-                return new itowns.THREE.Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+                if (properties) {
+                    var rgb = properties.couleur.split(' ');
+                    return color.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+                }
             }
 
             function acceptFeatureBus(properties) {
@@ -113,17 +113,16 @@
                     },
                     zoom: { min: 9, max: 9 },
                     format: 'geojson',
-                    networkOptions: { crossOrigin: 'anonymous' },
                 }
             });
 
             function colorBuildings(properties) {
                 if (properties.id.indexOf('bati_remarquable') === 0) {
-                    return new itowns.THREE.Color(0x5555ff);
+                    return color.set(0x5555ff);
                 } else if (properties.id.indexOf('bati_industriel') === 0) {
-                    return new itowns.THREE.Color(0xff5555);
+                    return color.set(0xff5555);
                 }
-                return new itowns.THREE.Color(0xeeeeee);
+                return color.set(0xeeeeee);
             }
 
             function altitudeBuildings(properties) {
@@ -142,13 +141,13 @@
                 var i;
                 var mesh;
                 if (meshes.length) {
-                    view.notifyChange();
+                    view.notifyChange(view.camera.camera3D, true);
                 }
                 for (i = 0; i < meshes.length; i++) {
                     mesh = meshes[i];
-                    if (mesh.children.length) {
+                    if (mesh) {
                         mesh.scale.z = Math.min(
-                            1.0, mesh.scale.z + 0.016);
+                            1.0, mesh.scale.z + 0.02);
                         mesh.updateMatrixWorld(true);
                     }
                 }
@@ -171,7 +170,6 @@
                 filter: acceptFeature,
                 source: {
                     url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
-                    networkOptions: { crossOrigin: 'anonymous' },
                     protocol: 'wfs',
                     version: '2.0.0',
                     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
@@ -209,31 +207,33 @@
             function altitudePoint(properties, contour) {
                 var result;
                 var z = 0;
-                if (contour.length && contour.length > 0) {
-                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour[0]);
+                if (contour) {
+                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0, tile);
+                    if (!result) {
+                        result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0);
+                    }
+                    tile = [result.tile];
                     if (result) {
                         z = result.z;
                     }
                     return z + 5;
                 }
-                return 0;
             }
 
             view.addLayer({
                 type: 'geometry',
+                id: 'WFS Route points',
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     altitude: altitudePoint,
                     color: colorPoint }),
-                size: 5,
+                size: 100,
                 onMeshCreated: configPointMaterial,
                 filter: selectRoad,
                 source: {
                     url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
-                    networkOptions: { crossOrigin: 'anonymous' },
                     protocol: 'wfs',
                     version: '2.0.0',
-                    id: 'WFS Route points',
                     typeName: 'BDPR_BDD_FXX_LAMB93_20170911:pr',
                     zoom: { min: 12, max: 12 },
                     projection: 'EPSG:2154',
@@ -252,38 +252,66 @@
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                view.controls.setTilt(45, true);
+                view.controls.setTilt(45);
             });
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
-            function picking(event) {
-                var htmlInfo = document.getElementById('info');
-                var intersects = view.pickObjectsAt(event, 3, 'WFS Buildings');
-                var properties;
-                var info;
-                htmlInfo.innerHTML = ' ';
+            var binarySearch = function(array, value) {
+                var guess,
+                    min = 0,
+                    max = array.length - 1;
 
-                if (intersects.length) {
-                    properties = intersects[0].object.properties;
-                    Object.keys(properties).map(function (objectKey) {
-                        var value = properties[objectKey];
-                        var key = objectKey.toString();
-                        if (key[0] !== '_' && key !== 'geometry_name') {
-                            info = value.toString();
-                            htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
-                        }
-                    });
+                while(min <= max){
+                    guess = Math.floor((min + max) / 2);
+                var indices = array[guess].indices;
+                var start = indices[0].offset;
+                var end = indices[indices.length - 1].offset + indices[indices.length - 1].count;
+
+                if(start <= value && value <= end)
+                    return guess;
+                else if(value > end)
+                    min = guess + 1;
+                else
+                    max = guess - 1;
+                 }
+
+                 return -1;
+            }
+
+            function picking(event) {
+                if(view.controls.isPaused()) {
+                    var htmlInfo = document.getElementById('info');
+                    var intersects = view.pickObjectsAt(event, 3, 'WFS Buildings');
+                    var properties;
+                    var info;
+                    htmlInfo.innerHTML = ' ';
+
+                    if (intersects.length) {
+                        var geometry = intersects[0].object.feature.geometry;
+                        var idPt = (intersects[0].face.a) % (intersects[0].object.feature.vertices.length / 3);
+                        var id = binarySearch(geometry, idPt);
+                        properties = geometry[id].properties;
+
+                        Object.keys(properties).map(function (objectKey) {
+                            var value = properties[objectKey];
+                            var key = objectKey.toString();
+                            if (key[0] !== '_' && key !== 'geometry_name') {
+                                info = value.toString();
+                                htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
+                            }
+                        });
+                    }
                 }
             }
 
-            for (let layer of view.getLayers()) {
-                // if (layer.id === 'WFS Bus lines') {
-                //     layer.whenReady.then( function _(layer) {
-                //         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
-                //         debug.GeometryDebug.addMaterialLineWidth(gui, view, layer, 1, 10);
-                //     });
-                // }
+            for (var layer of view.getLayers()) {
+                if (layer.id === 'WFS Bus lines') {
+                    layer.whenReady.then( function _(layer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        debug.GeometryDebug.addMaterialLineWidth(gui, view, layer, 1, 10);
+                    });
+                }
                 if (layer.id === 'WFS Buildings') {
                     layer.whenReady.then( function _(layer) {
                         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
@@ -291,12 +319,12 @@
                         window.addEventListener('mousemove', picking, false);
                     });
                 }
-                // if (layer.id === 'WFS Route points') {
-                //     layer.whenReady.then( function _(layer) {
-                //         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
-                //         debug.GeometryDebug.addMaterialSize(gui, view, layer, 1, 50);
-                //     });
-                // }
+                if (layer.id === 'WFS Route points') {
+                    layer.whenReady.then( function _(layer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        debug.GeometryDebug.addMaterialSize(gui, view, layer, 1, 200);
+                    });
+                }
             }
         </script>
     </body>
