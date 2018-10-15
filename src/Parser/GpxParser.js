@@ -7,8 +7,6 @@
 import * as THREE from 'three';
 import Line from 'three.meshline';
 import Coordinates from '../Core/Geographic/Coordinates';
-import Capabilities from '../Core/System/Capabilities';
-import shaderUtils from '../Renderer/Shader/ShaderUtils';
 
 function _gpxToWayPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('wpt');
@@ -113,12 +111,6 @@ function _gpxToWTrackPointsMesh(gpxXML, options) {
                     sizeAttenuation: 0,
                     color: new THREE.Color(0xFF0000),
                 });
-
-                if (Capabilities.isLogDepthBufferSupported()) {
-                    material.fragmentShader = material.fragmentShader.replace(/.*/, '').substr(1);
-                    shaderUtils.patchMaterialForLogDepthSupport(material);
-                    console.warn('MeshLineMaterial shader has been patched to add log depth buffer support');
-                }
 
                 const pathMesh = new THREE.Mesh(line.geometry, material);
                 // update size screen uniform
