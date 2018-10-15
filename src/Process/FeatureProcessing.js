@@ -5,25 +5,21 @@ import ObjectRemovalHelper from './ObjectRemovalHelper';
 
 
 const vector = new THREE.Vector3();
-function applyOffset(obj, offset, quaternion, offsetAltitude) {
+function applyOffset(obj, offset, quaternion, offsetAltitude = 0) {
     if (obj.geometry) {
         if (obj.geometry instanceof THREE.BufferGeometry) {
-            for (let i = 0; i < obj.geometry.attributes.position.count; i++) {
-                const i3 = 3 * i;
-                vector.fromArray(obj.geometry.attributes.position.array, i3);
+            const count = obj.geometry.attributes.position.count * 3;
+            for (let i = 0; i < count; i += 3) {
+                vector.fromArray(obj.geometry.attributes.position.array, i);
                 vector.add(offset).applyQuaternion(quaternion);
-                if (offsetAltitude) {
-                    vector.z -= offsetAltitude;
-                }
-                vector.toArray(obj.geometry.attributes.position.array, i3);
+                vector.z -= offsetAltitude;
+                vector.toArray(obj.geometry.attributes.position.array, i);
             }
             obj.geometry.attributes.position.needsUpdate = true;
         } else {
             for (const v of obj.geometry.vertices) {
                 v.add(offset).applyQuaternion(quaternion);
-                if (offsetAltitude) {
-                    v.z -= offsetAltitude;
-                }
+                v.z -= offsetAltitude;
             }
             obj.geometry.verticesNeedUpdate = true;
         }
@@ -109,6 +105,7 @@ export default {
             result = result[0];
             if (result) {
                 const isApplied = !result.layer;
+                result.minAltitude = isNaN(result.minAltitude) ? 0 : result.minAltitude;
                 assignLayer(result, layer);
                 // call onMeshCreated callback if needed
                 if (layer.onMeshCreated) {
@@ -124,6 +121,7 @@ export default {
                 // if node's layer is attached to an Object with a non-identity transformation)
                 if (isApplied) {
                     // NOTE: now data source provider use cache on Mesh
+                    // TODO move transform in feature2Mesh
                     const tmp = node.extent.center().as(context.view.referenceCrs).xyz().negate();
                     quaternion.setFromRotationMatrix(node.matrixWorld).inverse();
                     // const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), node.extent.center().geodesicNormal).inverse();

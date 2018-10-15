@@ -171,6 +171,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     state = states.NONE;
 
     this.getStates = () => states;
+    this.isPaused = () => state == states.NONE;
 
     // Set to false to disable this control
     this.enabled = true;

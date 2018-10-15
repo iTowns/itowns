@@ -46,6 +46,7 @@ describe('Provide in Sources', function () {
     const featureLayer = new GeometryLayer('geom', new THREE.Group());
     featureLayer.update = FeatureProcessing.update;
     featureLayer.projection = 'EPSG:4978';
+    featureLayer.mergeFeatures = false;
     function extrude() {
         return 5000;
     }
@@ -174,9 +175,26 @@ describe('Provide in Sources', function () {
         tile.material.visible = true;
         tile.parent = { pendingSubdivision: false };
         tile.material.isColorLayerLoaded = () => true;
+        featureLayer.mergeFeatures = false;
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
             assert.equal(features[0].children.length, 3);
+        });
+    });
+    it('should get 1 mesh with WFS source and DataSourceProvider and mergeFeatures == true', () => {
+        const tile = new TileMesh(
+            colorlayer,
+            geom,
+            new LayeredMaterial(),
+            new Extent('EPSG:4326', -10, 0, 0, 10),
+            4);
+        tile.material.visible = true;
+        tile.parent = { pendingSubdivision: false };
+        tile.material.isColorLayerLoaded = () => true;
+        featureLayer.mergeFeatures = true;
+        featureLayer.update(context, featureLayer, tile);
+        DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
+            assert.equal(features[0].children.length, 0);
         });
     });
 });

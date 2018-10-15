@@ -47,7 +47,7 @@ function fetchData(url, format, networkOptions, extentSource) {
 function parseData(data, layer, extentDestination) {
     const type = data.isTexture || data.isFeature || layer.source.format;
     const options = {
-        buildExtent: true,
+        buildExtent: layer.type !== 'geometry',
         crsIn: layer.source.projection,
         crsOut: layer.projection,
         // TODO FIXME: error in filtering vector tile
@@ -55,6 +55,9 @@ function parseData(data, layer, extentDestination) {
         filteringExtent: layer.type === 'geometry' ? extentDestination : undefined,
         filter: layer.filter,
         origin: layer.source.origin,
+        mergeFeatures: layer.mergeFeatures === undefined ? true : layer.mergeFeatures,
+        withNormal: layer.type === 'geometry',
+        withAltitude: layer.type === 'geometry',
     };
     return supportedParsers.get(type)(data, options);
 }

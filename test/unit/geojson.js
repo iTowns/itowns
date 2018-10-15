@@ -16,12 +16,12 @@ function parse(geojson) {
 describe('GeoJsonParser', function () {
     it('should set all z coordinates to 1', () =>
         parse(holes).then((collection) => {
-            assert.ok(collection.features[0].vertices.every(v => v.z() == 1));
+            assert.ok(collection.features[0].vertices.every((v, i) => i == 0 || ((i + 1) % 3) != 0 || v == 0));
         }));
 
     it('should respect all z coordinates', () =>
         parse(gpx).then((collection) => {
-            assert.ok(collection.features[0].vertices.every(v => v.z() != 1));
+            assert.ok(collection.features[0].vertices.every((v, i) => i == 0 || ((i + 1) % 3) != 0 || v != 0));
         }));
 
     it('should return an empty collection', () =>
@@ -32,5 +32,41 @@ describe('GeoJsonParser', function () {
             filteringExtent: new Extent('EPSG:3946', 10, 20, 10, 20),
         }).then((collection) => {
             assert.ok(collection.features.length == 0);
+        }));
+    it('should return an merged collection', () =>
+        GeoJsonParser.parse(holes, {
+            crsIn: 'EPSG:3946',
+            crsOut: 'EPSG:3946',
+            mergeFeatures: true,
+
+        }).then((collection) => {
+            assert.ok(collection.features.length == 1);
+        }));
+    it('should return an no merged collection', () =>
+        GeoJsonParser.parse(holes, {
+            crsIn: 'EPSG:3946',
+            crsOut: 'EPSG:3946',
+            mergeFeatures: false,
+
+        }).then((collection) => {
+            assert.ok(collection.features.length == 3);
+        }));
+    it('should return an collection without altitude', () =>
+        GeoJsonParser.parse(holes, {
+            crsIn: 'EPSG:3946',
+            crsOut: 'EPSG:3946',
+            withAltitude: false,
+
+        }).then((collection) => {
+            assert.ok(collection.features[0].vertices.length == 32);
+        }));
+    it('should return an collection without normal', () =>
+        GeoJsonParser.parse(holes, {
+            crsIn: 'EPSG:3946',
+            crsOut: 'EPSG:3946',
+            withNormal: false,
+
+        }).then((collection) => {
+            assert.ok(collection.features[0].normals == undefined);
         }));
 });

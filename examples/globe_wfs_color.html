@@ -53,7 +53,7 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
 
             function isValidData(data) {
-                return data.features.length < 1000;
+                return data.features[0].geometry.length < 1000;
             }
 
             view.addLayer({

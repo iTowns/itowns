@@ -52,16 +52,17 @@
                 // Don't zoom too much on smart zoom
                smartZoomHeightMax: 100000,
             });
-            
+
             // Input data : a geoJson file, with point features, with orientation specific properties
             var panoramics = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson';
             var layer = {
                 crsOut: view.referenceCrs,
+                mergeFeatures: false,
             };
             // Input data are given in Lambert93 projection
             itowns.proj4.defs('EPSG:2154',
                 '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-            
+
             // Add a promise to load oriented point datas
             var promises = [];
             promises.push(
@@ -69,8 +70,8 @@
                 itowns.Fetcher.json(panoramics, {})
                 // then get geographic informations (coordinates) using GeoJson parser
                 .then(function parseGeoJSON(orientations) { return itowns.GeoJsonParser.parse(orientations, layer);})
-            );        
-            
+            );
+
             // load collada model of a renault trafic
             promises.push(ThreeLoader.load('Collada',
              'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/renault_trafic_no_texture.dae')
@@ -82,30 +83,31 @@
                 // put the model in a group, to allow user to do other transformation (rotation..)
                 var group = new itowns.THREE.Group();
                 group.add(colladaModel);
-                return group; 
+                return group;
              }));
 
             // wait for all the promises
             Promise.all(promises).then(function loadFeaturesModel(res) { loadFeatures(res[0], res[1]);});
-            
+
             // place a 3d model oriented for each feature
             function loadFeatures(collection, colladaModel) {
-   
-                for (const feature of collection.features) {                  
-                
+
+                for (const feature of collection.features) {
+
                     // clone the collada model
                     var model = colladaModel.clone();
+                    var vertices = feature.vertices;
 
                     // get coordinate from point feature
-                    var coord = feature.vertices[0];
+                    var coord = new itowns.Coordinates(feature.crs, vertices[0], vertices[1], vertices[2]);
 
                     // set model position to the ground
                     var position = coord.xyz();
                     position.z = 0;
                     model.position.copy(position);
-                                        
+
                     // set model orientation (quaternion is the target parameter)
-                    itowns.OrientationUtils.quaternionFromAttitude(feature.properties, undefined, false, model.quaternion);
+                    itowns.OrientationUtils.quaternionFromAttitude(feature.geometry[0].properties, undefined, false, model.quaternion);
 
                     model.updateMatrixWorld();
                     view.scene.add(model);

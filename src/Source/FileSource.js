@@ -100,9 +100,12 @@ class FileSource extends Source {
         this.parsedData = [];
         this.zoom = source.zoom || { min: 5, max: 21 };
         const options = {
-            buildExtent: true,
+            buildExtent: source.toTexture,
             crsIn: this.projection,
             crsOut,
+            withNormal: !source.toTexture,
+            withAltitude: !source.toTexture,
+            mergeFeatures: true,
         };
 
         this.whenReady = Fetcher.text(this.url, source.networkOptions).then(fileParser).then(parsedFile =>

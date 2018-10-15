@@ -1,12 +1,8 @@
-function pointIsOverLine(point, linePoints, epsilon) {
-    if (point.crs != linePoints[0].crs) {
-        throw new Error('crs must be the same');
-    }
-
+function pointIsOverLine(point, linePoints, epsilon, offset, count) {
     const x0 = point._values[0];
     const y0 = point._values[1];
     // for each segment of the line (j is i -1)
-    for (var i = 1, j = 0; i < linePoints.length; j = i++) {
+    for (var i = offset + 2, j = offset; i < offset + count; j = i, i += 2) {
         /* **********************************************************
             norm     : norm of vector P1P2
             distance : distance point P0 to line P1P2
@@ -26,10 +22,10 @@ function pointIsOverLine(point, linePoints, epsilon) {
             (P1)                            (P2)
         *********************************************************** */
 
-        const x1 = linePoints[i]._values[0];
-        const y1 = linePoints[i]._values[1];
-        const x2 = linePoints[j]._values[0];
-        const y2 = linePoints[j]._values[1];
+        const x1 = linePoints[i];
+        const y1 = linePoints[i + 1];
+        const x2 = linePoints[j];
+        const y2 = linePoints[j + 1];
 
         const Xp = x0 - x1;
         const Yp = y0 - y1;
@@ -50,33 +46,26 @@ function pointIsOverLine(point, linePoints, epsilon) {
     return false;
 }
 
-function getClosestPoint(point, points, epsilon) {
-    if (point.crs != points[0].crs) {
-        throw new Error('crs must be the same');
-    }
-
+function getClosestPoint(point, points, epsilon, offset, count) {
     const x0 = point._values[0];
     const y0 = point._values[1];
     let squaredEpsilon = epsilon * epsilon;
     let closestPoint;
-    for (var i = 0; i < points.length; ++i) {
-        const x1 = points[i]._values[0];
-        const y1 = points[i]._values[1];
+    for (var i = offset; i < offset + count; i += 2) {
+        const x1 = points[i];
+        const y1 = points[i + 1];
         const xP = x0 - x1;
         const yP = y0 - y1;
         const n = xP * xP + yP * yP;
         if (n < squaredEpsilon) {
-            closestPoint = points[i];
+            closestPoint = [points[i], points[i + 1]];
             squaredEpsilon = n;
         }
     }
     return closestPoint;
 }
 
-function pointIsInsidePolygon(point, polygonPoints) {
-    if (point.crs != polygonPoints[0].crs) {
-        throw new Error('crs must be the same');
-    }
+function pointIsInsidePolygon(point, polygonPoints, offset, count) {
     // ray-casting algorithm based on
     // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 
@@ -86,11 +75,12 @@ function pointIsInsidePolygon(point, polygonPoints) {
     let inside = false;
     // in first j is last point of polygon
     // for each segment of the polygon (j is i -1)
-    for (let i = 0, j = polygonPoints.length - 1; i < polygonPoints.length; j = i++) {
-        const xi = polygonPoints[i]._values[0];
-        const yi = polygonPoints[i]._values[1];
-        const xj = polygonPoints[j]._values[0];
-        const yj = polygonPoints[j]._values[1];
+    // debugger;
+    for (let i = offset, j = offset + count - 2; i < offset + count; j = i, i += 2) {
+        const xi = polygonPoints[i];
+        const yi = polygonPoints[i + 1];
+        const xj = polygonPoints[j];
+        const yj = polygonPoints[j + 1];
 
         // isIntersect semi-infinite ray horizontally with polygon's edge
         const isIntersect = ((yi > y) != (yj > y))
@@ -103,13 +93,14 @@ function pointIsInsidePolygon(point, polygonPoints) {
     return inside;
 }
 
-function isFeatureSingleGeometryUnderCoordinate(coordinate, type, coordinates, epsilon) {
-    if (type == 'linestring' && pointIsOverLine(coordinate, coordinates, epsilon)) {
+function isFeatureSingleGeometryUnderCoordinate(coordinate, type, coordinates, epsilon, offset, count) {
+    if ((type == 'linestring' || type == 'multilinestring') && pointIsOverLine(coordinate, coordinates, epsilon, offset, count)) {
         return true;
-    } else if (type == 'polygon' && pointIsInsidePolygon(coordinate, coordinates)) {
+    } else if ((type == 'polygon' || type == 'multipolygon') && pointIsInsidePolygon(coordinate, coordinates, offset, count)) {
         return true;
-    } else if (type == 'point') {
-        const closestPoint = getClosestPoint(coordinate, coordinates, epsilon);
+    } else if (type == 'point' || type == 'multipoint') {
+        // debugger;
+        const closestPoint = getClosestPoint(coordinate, coordinates, epsilon, offset, count);
         if (closestPoint) {
             return { coordinates: closestPoint };
         }
@@ -117,18 +108,19 @@ function isFeatureSingleGeometryUnderCoordinate(coordinate, type, coordinates, e
 }
 
 function isFeatureUnderCoordinate(coordinate, feature, epsilon, result) {
+    const featCoord = coordinate.as(feature.crs);
     for (const geometry of feature.geometry) {
-        const coordinates = feature.type == 'polygon' ?
-            feature.vertices.slice(geometry.indices[0].offset,
-                geometry.indices[0].offset + geometry.indices[0].count) :
-            feature.vertices;
-
-        const under = isFeatureSingleGeometryUnderCoordinate(coordinate, feature.type, coordinates, epsilon);
-        if (under) {
-            result.push({
-                feature,
-                coordinates: under.coordinates || coordinates,
-            });
+        if (geometry.extent == undefined || geometry.extent.isPointInside(featCoord, epsilon)) {
+            const offset = geometry.indices[0].offset * 2;
+            const count = geometry.indices[0].count * 2;
+            const under = isFeatureSingleGeometryUnderCoordinate(featCoord, feature.type, feature.vertices, epsilon, offset, count);
+            if (under) {
+                result.push({
+                    type: feature.type,
+                    geometry,
+                    coordinates: under.coordinates /* || coordinates */,
+                });
+            }
         }
     }
 }
@@ -154,7 +146,6 @@ export default {
         if (features.extent && !features.extent.isPointInside(coordinate, epsilon)) {
             return result;
         }
-
         if (Array.isArray(features.features)) {
             for (const feature of features.features) {
                 if (feature.extent && !feature.extent.isPointInside(coordinate, epsilon)) {

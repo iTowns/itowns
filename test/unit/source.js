@@ -95,7 +95,7 @@ describe('Source', function () {
         }, 'EPSG:4326');
 
         const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
-        source.whenReady.then(() => assert.equal(source.parsedData.features.length, 3));
+        source.whenReady.then(() => assert.equal(source.parsedData.features[0].geometry.length, 3));
         assert.ok(source.urlFromExtent(extent));
         assert.ok(source.protocol);
     });

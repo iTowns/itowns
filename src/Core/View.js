@@ -192,6 +192,10 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
                 providerPreprocessing = Promise.resolve();
             }
         } else if (layer.source) {
+            // TODO: move to dataSourceProvider
+            // Tempory fix, because sourceFile loads data in his constructor
+            // while it should be loaded in the provider
+            layer.source.toTexture = layer.type != 'geometry';
             const protocol = layer.source.protocol;
             layer.source = new (supportedSource.get(protocol))(layer.source, layer.projection);
             providerPreprocessing = layer.source.whenReady || providerPreprocessing;

@@ -37,11 +37,11 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
                 layer = layers[i];
                 result = itowns.FeaturesUtils.filterFeaturesUnderCoordinate(
                     geoCoord, layer.source.parsedData, precision);
-                result.sort(function compare(a, b) { return b.feature.type !== 'point'; });
+
                 for (p = 0; p < result.length; p++) {
                     visible = true;
-                    if (result[p].feature.type === 'polygon') {
-                        polygon = result[p].feature;
+                    if (result[p].type === 'multipolygon') {
+                        polygon = result[p].geometry;
                         color = polygon.properties.fill || layer.style.fill;
                         stroke = polygon.properties.stroke || layer.style.stroke;
                         name = 'polygon' + id;
@@ -50,20 +50,20 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
                         document.getElementById(name).style['-webkit-text-stroke'] = '1.25px ' + stroke;
                         document.getElementById(name).style.color = color;
                         ++id;
-                    } else if (result[p].feature.type === 'linestring') {
-                        line = result[p].feature;
+                    } else if (result[p].type === 'multilinestring') {
+                        line = result[p].geometry;
                         color = line.properties.stroke || layer.style.stroke;
                         symb = '<span style=color:' + color + ';>&#9473</span>';
                         tooltip.innerHTML += symb + ' ' + (line.name || layer.name) + '<br />';
-                    } else if (result[p].feature.type === 'point') {
-                        point = result[p].feature;
+                    } else if (result[p].type === 'multipoint') {
+                        point = result[p].geometry;
                         color = 'white';
                         name = 'point' + id;
                         symb = '<span id=' + name + ' style=color:' + color + ';>&#9679</span>';
                         label = point.properties.name || point.properties.description || layer.name;
                         tooltip.innerHTML += '<div>' + symb + ' ' + label + '<br></div>';
-                        tooltip.innerHTML += '<span class=coord>long ' + result[p].coordinates.longitude().toFixed(4) + '<br /></span>';
-                        tooltip.innerHTML += '<span class=coord>lati &nbsp; ' + result[p].coordinates.latitude().toFixed(4) + '<br /></span>';
+                        tooltip.innerHTML += '<span class=coord>long ' + result[p].coordinates[0].toFixed(4) + '<br /></span>';
+                        tooltip.innerHTML += '<span class=coord>lati &nbsp; ' + result[p].coordinates[1].toFixed(4) + '<br /></span>';
                         document.getElementById(name).style['-webkit-text-stroke'] = '1px red';
                         ++id;
                     }

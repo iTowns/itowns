@@ -1,3 +1,21 @@
+// TODO: move to GeometryLayer
+function addMaterialLayerProperty(layer, key, value) {
+    layer.defineLayerProperty(key, value, () => {
+        const root = layer.parent ? layer.parent.object3d : layer.object3d;
+        root.traverse((object) => {
+            if (object.layer == layer && object.material) {
+                object.material[key] = layer[key];
+            } else if (object.content && object.content.layer == layer) {
+                object.content.traverse((o) => {
+                    if (o.material) {
+                        o.material[key] = layer[key];
+                    }
+                });
+            }
+        });
+    });
+}
+
 export default {
 
     addWireFrameCheckbox(gui, view, layer) {
@@ -5,12 +23,12 @@ export default {
     },
 
     addMaterialSize(gui, view, layer, begin, end) {
-        layer.size = layer.size || 1;
+        addMaterialLayerProperty(layer, 'size', 1);
         gui.add(layer, 'size', begin, end).name('Size').onChange(() => view.notifyChange(layer));
     },
 
     addMaterialLineWidth(gui, view, layer, begin, end) {
-        layer.linewidth = layer.linewidth || 1;
+        addMaterialLayerProperty(layer, 'linewidth', 1);
         gui.add(layer, 'linewidth', begin, end).name('Line Width').onChange(() => view.notifyChange(layer));
     },
 
