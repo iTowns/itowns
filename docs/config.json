@@ -1,9 +1,13 @@
 {
+    "opts": {
+        "template": "node_modules/docdash",
+        "destination": "docs/out/"
+    },
     "templates": {
         "default": {
-            "layoutFile": "layout.tmpl",
+            "layoutFile": "docs/templates/layout.tmpl",
             "staticFiles": {
-                "paths": ["static_jsdoc"]
+                "paths": ["docs"]
             }
         }
     },

@@ -5,7 +5,7 @@
   "main": "lib/Main.js",
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\"",
-    "doc": "jsdoc -t node_modules/docdash --readme JSDOC.md -c jsdoc-config.json",
+    "doc": "jsdoc --readme docs/HOMEPAGE.md -c docs/config.json",
     "doclint": "npm run doc -- -t templates/silent",
     "test": "npm run lint -- --max-warnings=0 && npm run build && npm run test-examples && npm run test-with-coverage",
     "test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --require babel-core/register test/unit",
