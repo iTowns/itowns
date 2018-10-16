@@ -2,8 +2,6 @@ import * as THREE from 'three';
 
 const FRAMERATE = 60;
 const FRAME_DURATION = 1000 / FRAMERATE;
-// if is true console.log are enabled to sniff animation'state
-const debugAnimation = false;
 
 // player statut
 const PLAYER_STATE = {
@@ -24,20 +22,6 @@ const debugMsg =
         'End',
         'Pause',
     ];
-
-// if debugAnimation is true console.log are enabled to sniff animation'state
-let _DEBUG = null;
-
-if (debugAnimation) {
-    _DEBUG = function DEBUG(message, animation) {
-        if (animation) {
-            // eslint-disable-next-line no-console
-            console.info('Animation ', message, ' : ', animation.name);
-        }
-    };
-} else {
-    _DEBUG = function _DEBUG() {};
-}
 
 // Private functions
 // stop timer and re-init parameter
@@ -76,7 +60,10 @@ const finishAnimation = function finishAnimation(player) {
 
 const setPlayerState = function setPlayerState(player, state) {
     player.state = state;
-    _DEBUG(debugMsg[state], player.animation);
+    if (__DEBUG__ && player.animation) {
+        // eslint-disable-next-line no-console
+        console.info('Animation ', debugMsg[state], ' : ', player.animation.name);
+    }
 };
 
 /**
