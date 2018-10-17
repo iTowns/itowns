@@ -40,7 +40,7 @@ export default {
             start = start in defines ? defines[start] : parseInt(start, 10);
             end = end in defines ? defines[end] : parseInt(end, 10);
             for (var i = start; i < end; i++) {
-                unroll += snippet.replace(/\s+i\s+/g, ` ${i} `);
+                unroll += snippet.replace(/\bi\b/g, ` ${i} `);
             }
             return unroll;
         }
