@@ -81,18 +81,27 @@
 
             var onGround = false;
 
+            // Load camera calibrations
+            var calibrations = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/cameraCalibration.json';
+            
+            // Use the cameraCalibrationParser to create OrientedImageCamera from camera calibration description file.
+            promises.push(
+                itowns.Fetcher.json(calibrations, {})
+                .then(calibrations => itowns.CameraCalibrationParser.parse(calibrations, {near: 0.3, far: 0.6,}))
+            );
+
             // wait for all layer to be loaded, we need for elevation layer
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
 
                 // wait for all the promises
-                Promise.all(promises).then(function loadFeaturesModel(res) { loadFeatures(res[1], res[2]);});
+                Promise.all(promises).then(function loadFeaturesModel(res) { loadFeatures(res[1], res[2], res[3]);});
 
                 view.controls.setTilt(20, true);
             })
 
 
             // place a 3d model oriented for each feature
-            function loadFeatures(points, colladaModel) {
+            function loadFeatures(points, colladaModel, cameras) {
 
                 for (var feature of points.features) {
 
@@ -124,6 +133,21 @@
 
                     // store the model
                     feature.model = model;
+
+                    // Add cameras on the model
+                    for(const cam of cameras) {
+
+                        // add new cameras to the model
+                        var camera = new itowns.OrientedImageCamera();
+                        camera.copy(cam);
+                        model.add(camera);
+                        camera.updateMatrixWorld(true);
+
+                        // add camera helper to the scene
+                        var helper = new itowns.THREE.CameraHelper(camera);
+                        view.scene.add(helper);
+                        helper.updateMatrixWorld(true);
+                    }
                 }
                 view.notifyChange();
 
@@ -142,6 +166,7 @@
                     feature.model.position.copy(layer.onGround? feature.model.positionOnGround : feature.model.positionBase);
                     feature.model.updateMatrixWorld();
                 }
+                view.scene.updateMatrixWorld();
                 view.notifyChange();
             });
         </script>
