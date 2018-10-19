@@ -23,13 +23,25 @@ function applyRotation(view, camera3D, state) {
 }
 
 const MOVEMENTS = {
-    38: { method: 'translateZ', sign: -1 }, // FORWARD: up key
-    40: { method: 'translateZ', sign: 1 }, // BACKWARD: down key
+    38: { method: 'translateY', sign: -1 }, // FORWARD: up key
+    40: { method: 'translateY', sign: 1 }, // BACKWARD: down key
     37: { method: 'translateX', sign: -1 }, // STRAFE_LEFT: left key
     39: { method: 'translateX', sign: 1 }, // STRAFE_RIGHT: right key
-    33: { method: 'translateY', sign: 1 }, // UP: PageUp key
-    34: { method: 'translateY', sign: -1 }, // DOWN: PageDown key
+    33: { method: 'translateZ', sign: 1 }, // UP: PageUp key
+    34: { method: 'translateZ', sign: -1 }, // DOWN: PageDown key
 };
+
+function translateZPlanar(dt, sign) {
+    this.camera.position.z += sign * this.options.moveSpeed * dt / 1000;
+}
+
+const normal = new THREE.Vector3();
+function translateZGlobe(dt, sign) {
+    // compute geodesic normale
+    normal.copy(this.camera.position);
+    normal.normalize();
+    this.camera.position.add(normal.multiplyScalar(sign * this.options.moveSpeed * dt / 1000));
+}
 
 class FirstPersonControls extends THREE.EventDispatcher {
     /**
@@ -99,6 +111,12 @@ class FirstPersonControls extends THREE.EventDispatcher {
         if (options.focusOnClick) {
             domElement.addEventListener('click', () => domElement.focus());
         }
+
+        if (view.referenceCrs == 'EPSG:4978') {
+            this.translateZ = translateZGlobe;
+        } else {
+            this.translateZ = translateZPlanar;
+        }
     }
 
     isUserInteracting() {
@@ -145,8 +163,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
         }
 
         for (const move of this.moves) {
-            if (move.method === 'translateY') {
-                this.camera.position.z += move.sign * this.options.moveSpeed * dt / 1000;
+            if (move.method === 'translateZ') {
+                this.translateZ(move.sign, dt);
             } else {
                 this.camera[move.method](move.sign * this.options.moveSpeed * dt / 1000);
             }
