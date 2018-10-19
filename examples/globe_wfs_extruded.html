@@ -169,7 +169,7 @@
                 },
                 filter: acceptFeature,
                 source: {
-                    url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
+                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
                     protocol: 'wfs',
                     version: '2.0.0',
                     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
@@ -183,67 +183,6 @@
                         south: 45.437,
                         north: 46.03,
                     },
-                }
-            });
-
-            function configPointMaterial(result) {
-                var i = 0;
-                var mesh;
-                for (; i < result.children.length; i++) {
-                    mesh = result.children[i];
-
-                    mesh.material.sizeAttenuation = false;
-                }
-            }
-
-            function colorPoint(/* properties */) {
-                return new itowns.THREE.Color(0x7F180D);
-            }
-
-            function selectRoad(properties) {
-                return properties.gestion === 'CEREMA';
-            }
-
-            function altitudePoint(properties, contour) {
-                var result;
-                var z = 0;
-                if (contour) {
-                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0, tile);
-                    if (!result) {
-                        result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0);
-                    }
-                    tile = [result.tile];
-                    if (result) {
-                        z = result.z;
-                    }
-                    return z + 5;
-                }
-            }
-
-            view.addLayer({
-                type: 'geometry',
-                id: 'WFS Route points',
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    altitude: altitudePoint,
-                    color: colorPoint }),
-                size: 100,
-                onMeshCreated: configPointMaterial,
-                filter: selectRoad,
-                source: {
-                    url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
-                    protocol: 'wfs',
-                    version: '2.0.0',
-                    typeName: 'BDPR_BDD_FXX_LAMB93_20170911:pr',
-                    zoom: { min: 12, max: 12 },
-                    projection: 'EPSG:2154',
-                    ipr: 'IGN',
-                    format: 'application/json',
-                    extent: new itowns.Extent('EPSG:4326',
-                        -5.160007066832147,
-                        10.671941031325312,
-                        41.338373237911036,
-                        51.07519774631159).as('EPSG:2154'),
                 }
             });
 

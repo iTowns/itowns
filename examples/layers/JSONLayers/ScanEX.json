@@ -4,7 +4,7 @@
     "fx" :        2.5,
     "source": {
         "protocol":   "wmts",
-        "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+        "url":        "http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
         "format": "image/jpeg",
         "name": "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD",
         "attribution" : {
