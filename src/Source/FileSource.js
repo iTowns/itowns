@@ -100,7 +100,7 @@ class FileSource extends Source {
         this.parsedData = [];
         this.zoom = source.zoom || { min: 5, max: 21 };
         const options = {
-            buildExtent: source.toTexture,
+            buildExtent: true,
             crsIn: this.projection,
             crsOut,
             withNormal: !source.toTexture,
