@@ -171,7 +171,7 @@
                 filter: acceptFeature,
                 projection: 'EPSG:3946',
                 source: {
-                    url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
+                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
                     protocol: 'wfs',
                     version: '2.0.0',
                     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
@@ -187,51 +187,6 @@
                     },
                 },
             });
-
-            function configPointMaterial(result) {
-                var i = 0;
-                var mesh;
-                for (; i < result.children.length; i++) {
-                    mesh = result.children[i];
-
-                    mesh.material.size = 15;
-                    mesh.material.sizeAttenuation = false;
-                }
-            }
-
-            function colorPoint(properties) {
-                if (properties.gestion === 'CEREMA') {
-                    return new itowns.THREE.Color(0x7F180D);
-                }
-                return new itowns.THREE.Color(0xFFB300);
-            }
-
-            view.addLayer({
-                id: 'wfsPoint',
-                type: 'geometry',
-                size: 100,
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    altitude: 0,
-                    color: colorPoint }),
-                onMeshCreated: configPointMaterial,
-                source: {
-                    url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
-                    protocol: 'wfs',
-                    version: '2.0.0',
-                    id: 'WFS Route points',
-                    typeName: 'BDPR_BDD_FXX_LAMB93_20170911:pr',
-                    zoom: { min: 2, max: 2 },
-                    projection: 'EPSG:2154',
-                    ipr: 'IGN',
-                    format: 'application/json',
-                    extent: new itowns.Extent('EPSG:4326',
-                        -5.160007066832147,
-                        10.671941031325312,
-                        41.338373237911036,
-                        51.07519774631159).as('EPSG:2154'),
-                },
-            }, view.tileLayer);
 
             function binarySearch(array, value) {
                 var guess,

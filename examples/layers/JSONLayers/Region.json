@@ -3,7 +3,7 @@
     "id"        : "Region",
     "transparent" : true,
     "source": {
-        "url"       : "https://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/v/wms",
+        "url"       : "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/v/wms",
         "protocol"  : "wms",
         "version"   : "1.3.0",
         "name"      : "REGION.2016",
