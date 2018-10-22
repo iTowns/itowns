@@ -320,7 +320,7 @@ function getRig(camera) {
 
 /**
  * @typedef {Object} cameraTransformOptions
- * @property {Coordinate} [coordinate=currentCoordinate] Camera look at coordinate
+ * @property {Coordinate} [coord=currentCoordinate] Camera look at geographic coordinate
  * @property {Number} [tilt=currentTilt] camera's tilt, in degree
  * @property {Number} [heading=currentHeading] camera's heading, in degree
  * @property {Number} [range=currentRange] camera distance to target coordinate, in meter
