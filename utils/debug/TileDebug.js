@@ -98,7 +98,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
                 const l3js = l.threejsLayer;
 
                 if (layer.id == obb_layer_id) {
-                    helper = new OBBHelper(node.OBB(), `id:${node.id}`);
+                    helper = new OBBHelper(node.obb, `id:${node.id}`);
                     helper.children[0].layers.set(l3js);
                 } else if (layer.id == sb_layer_id) {
                     const color = new THREE.Color(Math.random(), Math.random(), Math.random());
@@ -139,7 +139,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             }
             if (layer.id == obb_layer_id) {
                 helper.setMaterialVisibility(true);
-                helper.update(node.OBB());
+                helper.update(node.obb);
             } else if (layer.id == sb_layer_id) {
                 helper.position.copy(node.boundingSphere.center);
                 helper.scale.multiplyScalar(node.boundingSphere.radius);
