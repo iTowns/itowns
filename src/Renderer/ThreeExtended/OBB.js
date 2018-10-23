@@ -1,133 +1,168 @@
 import * as THREE from 'three';
-import Coordinates from '../../Core/Geographic/Coordinates';
 import TileGeometry from '../../Core/TileGeometry';
 import BuilderEllipsoidTile from '../../Core/Prefab/Globe/BuilderEllipsoidTile';
 
-function OBB(min, max) {
-    THREE.Object3D.call(this);
-    this.box3D = new THREE.Box3(min.clone(), max.clone());
-    this.natBox = this.box3D.clone();
-    this.z = { min: 0, max: 0 };
-    this.topPointsWorld = [
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-    ];
-    this.update();
-}
-
-OBB.prototype = Object.create(THREE.Object3D.prototype);
-OBB.prototype.constructor = OBB;
-
-OBB.prototype.clone = function clone() {
-    const cOBB = new OBB(this.natBox.min, this.natBox.max);
-    cOBB.position.copy(this.position);
-    cOBB.quaternion.copy(this.quaternion);
-    return cOBB;
-};
-
-OBB.prototype.update = function update() {
-    this.updateMatrixWorld(true);
-    this._cPointsWorld(this._points(this.topPointsWorld));
-};
-
-OBB.prototype.updateZ = function updateZ(min, max) {
-    this.z = { min, max };
-    this.box3D.min.z = this.natBox.min.z + min;
-    this.box3D.max.z = this.natBox.max.z + max;
-    this.update();
-};
-
-OBB.prototype._points = function _points(points) {
-    // top points of bounding box
-    points[0].set(this.box3D.max.x, this.box3D.max.y, this.box3D.max.z);
-    points[1].set(this.box3D.min.x, this.box3D.max.y, this.box3D.max.z);
-    points[2].set(this.box3D.min.x, this.box3D.min.y, this.box3D.max.z);
-    points[3].set(this.box3D.max.x, this.box3D.min.y, this.box3D.max.z);
-    // bottom points of bounding box
-    if (points.length > 4) {
-        points[4].set(this.box3D.max.x, this.box3D.max.y, this.box3D.min.z);
-        points[5].set(this.box3D.min.x, this.box3D.max.y, this.box3D.min.z);
-        points[6].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
-        points[7].set(this.box3D.max.x, this.box3D.min.y, this.box3D.min.z);
-    }
-
-    return points;
-};
-
-OBB.prototype._cPointsWorld = function _cPointsWorld(points) {
-    var m = this.matrixWorld;
-
-    for (var i = 0, max = points.length; i < max; i++) {
-        points[i].applyMatrix4(m);
-    }
-
-    return points;
-};
-
-/**
- * Determines if the sphere is above the XY space of the box
- *
- * @param      {Sphere}   sphere  The sphere
- * @return     {boolean}  True if sphere is above the XY space of the box, False otherwise.
- */
-OBB.prototype.isSphereAboveXYBox = function isSphereAboveXYBox(sphere) {
-    const localSpherePosition = this.worldToLocal(sphere.position);
-    // get obb closest point to sphere center by clamping
-    const x = Math.max(this.box3D.min.x, Math.min(localSpherePosition.x, this.box3D.max.x));
-    const y = Math.max(this.box3D.min.y, Math.min(localSpherePosition.y, this.box3D.max.y));
-
-    // this is the same as isPointInsideSphere.position
-    const distance = Math.sqrt((x - localSpherePosition.x) * (x - localSpherePosition.x) +
-                           (y - localSpherePosition.y) * (y - localSpherePosition.y));
-
-    return distance < sphere.radius;
-};
-
-// Allocate these variables once and for all
-const tmp = {
-    epsg4978: new Coordinates('EPSG:4978', 0, 0),
-    cardinals: [],
-    normal: new THREE.Vector3(),
-    maxV: new THREE.Vector3(),
-    minV: new THREE.Vector3(),
-    translate: new THREE.Vector3(),
-    cardinal3D: new THREE.Vector3(),
-    transformNormalToZ: new THREE.Quaternion(),
-    alignTileOnWorldXY: new THREE.Quaternion(),
-    tangentPlaneAtOrigin: new THREE.Plane(),
-    zUp: new THREE.Vector3(0, 0, 1),
-};
-
-for (let i = 0; i < 9; i++) {
-    tmp.cardinals.push(new Coordinates('EPSG:4326'));
-}
-
 // get oriented bounding box of tile
 const builder = new BuilderEllipsoidTile();
-OBB.extentToOBB = function _extentToOBB(extent, minHeight = 0, maxHeight = 0) {
-    if (extent._crs != 'EPSG:4326') {
-        throw new Error('The extent crs is not a Geographic Coordinates (EPSG:4326)');
+
+class OBB extends THREE.Object3D {
+    /**
+     * Oriented bounding box
+     * @constructor
+     * @extends THREE.Object3D
+     * @param {THREE.Vector3}  min representing the lower (x, y, z) boundary of the box. Default is ( + Infinity, + Infinity, + Infinity ).
+     * @param {THREE.Vector3}  max representing the lower upper (x, y, z) boundary of the box. Default is ( - Infinity, - Infinity, - Infinity ).
+     */
+    constructor(min = new THREE.Vector3(+Infinity, +Infinity, +Infinity), max = new THREE.Vector3(-Infinity, -Infinity, -Infinity)) {
+        super();
+        this.box3D = new THREE.Box3(min.clone(), max.clone());
+        this.natBox = this.box3D.clone();
+        this.z = { min: 0, max: 0 };
+        this.topPointsWorld = [
+            new THREE.Vector3(),
+            new THREE.Vector3(),
+            new THREE.Vector3(),
+            new THREE.Vector3(),
+        ];
+        this.update();
     }
 
-    const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
-    const paramsGeometry = {
-        extent: sharableExtent,
-        level: 0,
-        segment: 2,
-        disableSkirt: true,
-    };
+    /**
+     * Creates a new instance of the object with same properties than original.
+     *
+     * @return     {OBB}  Copy of this object.
+     */
+    clone() {
+        return new OBB().copy(this);
+    }
 
-    const geometry = new TileGeometry(paramsGeometry, builder);
-    const obb = geometry.OBB;
-    obb.updateZ(minHeight, maxHeight);
-    obb.position.copy(position);
-    obb.quaternion.copy(quaternion);
-    obb.update();
+    /**
+     * Copy the property of OBB
+     *
+     * @param      {OBB}  cOBB OBB to copy
+     * @return     {OBB}  the copy
+     */
+    copy(cOBB) {
+        super.copy(cOBB);
+        this.box3D.copy(cOBB.box3D);
+        this.natBox.copy(cOBB.natBox);
+        this.z.min = cOBB.z.min;
+        this.z.max = cOBB.z.max;
+        for (let i = 0, max = this.topPointsWorld.length; i < max; i++) {
+            this.topPointsWorld[i].copy(cOBB.topPointsWorld[i]);
+        }
+        return this;
+    }
 
-    // Calling geometry.dispose() is not needed since this geometry never gets rendered
-    return obb;
-};
+    /**
+     * Update the top point world
+     *
+     * @return {Array<THREE.Vector3>} the top point world
+     */
+    update() {
+        this.updateMatrixWorld(true);
+        this.toPoints(this.topPointsWorld);
+
+        for (let i = 0, max = this.topPointsWorld.length; i < max; i++) {
+            this.topPointsWorld[i].applyMatrix4(this.matrixWorld);
+        }
+
+        return this.topPointsWorld;
+    }
+
+    /**
+     * Update z min and z max of oriented bounding box
+     *
+     * @param {number}  min The minimum of oriented bounding box
+     * @param {number}  max The maximum of oriented bounding box
+     */
+    updateZ(min, max) {
+        this.z = { min, max };
+        this.box3D.min.z = this.natBox.min.z + min;
+        this.box3D.max.z = this.natBox.max.z + max;
+        this.update();
+    }
+
+    /**
+     * Set bouding box value to points
+     *
+     * @param      {Array<THREE.Vector3>}  points  The points to set
+     * @return     {Array<THREE.Vector3>}  The points seted
+     */
+    toPoints(points) {
+        // top points of bounding box
+        points[0].set(this.box3D.max.x, this.box3D.max.y, this.box3D.max.z);
+        points[1].set(this.box3D.min.x, this.box3D.max.y, this.box3D.max.z);
+        points[2].set(this.box3D.min.x, this.box3D.min.y, this.box3D.max.z);
+        points[3].set(this.box3D.max.x, this.box3D.min.y, this.box3D.max.z);
+        // bottom points of bounding box
+        if (points.length > 4) {
+            points[4].set(this.box3D.max.x, this.box3D.max.y, this.box3D.min.z);
+            points[5].set(this.box3D.min.x, this.box3D.max.y, this.box3D.min.z);
+            points[6].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
+            points[7].set(this.box3D.max.x, this.box3D.min.y, this.box3D.min.z);
+        }
+
+        return points;
+    }
+
+    /**
+     * Determines if the sphere is above the XY space of the box
+     *
+     * @param      {Sphere}   sphere  The sphere
+     * @return     {boolean}  True if sphere is above the XY space of the box, False otherwise.
+     */
+    isSphereAboveXYBox(sphere) {
+        const localSpherePosition = this.worldToLocal(sphere.position);
+        // get obb closest point to sphere center by clamping
+        const x = Math.max(this.box3D.min.x, Math.min(localSpherePosition.x, this.box3D.max.x));
+        const y = Math.max(this.box3D.min.y, Math.min(localSpherePosition.y, this.box3D.max.y));
+
+        // this is the same as isPointInsideSphere.position
+        const distance = Math.sqrt((x - localSpherePosition.x) * (x - localSpherePosition.x) +
+                               (y - localSpherePosition.y) * (y - localSpherePosition.y));
+
+        return distance < sphere.radius;
+    }
+
+    /**
+     * Compute OBB from extent.
+     * The OBB resulted can be only in the system 'EPSG:3946'.
+     *
+     * @param      {Extent}        extent     The extent (with crs 'EPSG:4326') to compute oriented bounding box
+     * @param      {number}        minHeight  The minimum height of OBB
+     * @param      {number}        maxHeight  The maximum height of OBB
+     * @param      {OBB}  obb      The obb to copy result
+     * @return     {TileGeometry}  { description_of_the_return_value }
+     */
+    static extentToOBB(extent, minHeight = 0, maxHeight = 0, obb) {
+        if (extent._crs != 'EPSG:4326') {
+            throw new Error('The extent crs is not a Geographic Coordinates (EPSG:4326)');
+        }
+
+        const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
+        const paramsGeometry = {
+            extent: sharableExtent,
+            level: 0,
+            segment: 2,
+            disableSkirt: true,
+        };
+
+        const geometry = new TileGeometry(paramsGeometry, builder);
+        if (obb instanceof OBB) {
+            obb.copy(geometry.OBB);
+        } else {
+            obb = geometry.OBB;
+        }
+
+        obb.updateZ(minHeight, maxHeight);
+        obb.position.copy(position);
+        obb.quaternion.copy(quaternion);
+        obb.update();
+
+        // Calling geometry.dispose() is not needed since this geometry never gets rendered
+        return obb;
+    }
+}
 
 export default OBB;

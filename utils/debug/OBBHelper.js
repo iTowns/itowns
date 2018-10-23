@@ -79,7 +79,7 @@ OBBHelper.prototype.update = function update(OBB) {
     const position = this.geometry.attributes.position;
     const array = position.array;
 
-    OBB._points(points);
+    OBB.toPoints(points);
     let offset = 0;
     for (const pt of points) {
         pt.toArray(array, offset);
