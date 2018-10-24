@@ -20,9 +20,9 @@ const ShaderChunk = {
  * @return {Object} The target with installed chunks.
  */
 ShaderChunk.install = function install(target, chunks, path) {
-    if (!path) return Object.assign(target, this);
+    if (!path) { return Object.assign(target, this); }
     Object.keys(chunks).forEach((key) => {
-        if (key == 'install') return;
+        if (key == 'install') { return; }
         target[path + key] = chunks[key];
     });
 

@@ -101,7 +101,7 @@ let currentKey;
  * @property target {GlobeControls} dispatched on controls
  * @property type {string} orientation-changed
  */
- /**
+/**
  * Globe control range event. Fires when camera's range to target change
  * @event GlobeControls#range-changed
  * @property new {number} the new value of the range
@@ -109,7 +109,7 @@ let currentKey;
  * @property target {GlobeControls} dispatched on controls
  * @property type {string} range-changed
  */
- /**
+/**
  * Globe control camera's target event. Fires when camera's target change
  * @event GlobeControls#camera-target-changed
  * @property new {object}
@@ -466,7 +466,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         if (player.isPlaying()) {
             player.stop();
         }
-        if (this.enabled === false) return;
+        if (this.enabled === false) { return; }
 
         event.preventDefault();
         const coords = view.eventToViewCoords(event);
@@ -544,7 +544,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     function onMouseDown(event) {
         CameraUtils.stop(view, this.camera);
         player.stop().then(() => {
-            if (this.enabled === false) return;
+            if (this.enabled === false) { return; }
             event.preventDefault();
 
             updateTarget();
@@ -591,7 +591,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     }
 
     function ondblclick(event) {
-        if (this.enabled === false || currentKey) return;
+        if (this.enabled === false || currentKey) { return; }
         player.stop().then(() => {
             const point = view.getPickingPositionFromDepth(view.eventToViewCoords(event));
             const range = this.getRange();
@@ -650,7 +650,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     };
 
     function onMouseUp() {
-        if (this.enabled === false) return;
+        if (this.enabled === false) { return; }
 
         this.domElement.removeEventListener('mousemove', _handlerMouseMove, false);
         this.domElement.removeEventListener('mouseup', _handlerMouseUp, false);
@@ -678,7 +678,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
 
     function onMouseWheel(event) {
         player.stop().then(() => {
-            if (!this.enabled || !states.DOLLY.enable) return;
+            if (!this.enabled || !states.DOLLY.enable) { return; }
             CameraUtils.stop(view, this.camera);
             event.preventDefault();
             event.stopPropagation();
@@ -716,13 +716,13 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     }
 
     function onKeyUp() {
-        if (this.enabled === false || this.enableKeys === false) return;
+        if (this.enabled === false || this.enableKeys === false) { return; }
         currentKey = undefined;
     }
 
     function onKeyDown(event) {
         player.stop().then(() => {
-            if (this.enabled === false || this.enableKeys === false) return;
+            if (this.enabled === false || this.enableKeys === false) { return; }
             currentKey = event.keyCode;
             switch (event.keyCode) {
                 case states.PAN.up:
@@ -753,7 +753,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     function onTouchStart(event) {
         // CameraUtils.stop(view);
         player.stop().then(() => {
-            if (this.enabled === false) return;
+            if (this.enabled === false) { return; }
 
             state = states.touchToState(event.touches.length);
 
@@ -792,7 +792,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         if (player.isPlaying()) {
             player.stop();
         }
-        if (this.enabled === false) return;
+        if (this.enabled === false) { return; }
 
         event.preventDefault();
         event.stopPropagation();

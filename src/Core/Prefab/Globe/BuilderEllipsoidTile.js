@@ -32,8 +32,7 @@ BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
 
     var st1 = WGS84ToOneSubY(params.extent.south());
 
-    if (!isFinite(st1))
-        { st1 = 0; }
+    if (!isFinite(st1)) { st1 = 0; }
 
     var sizeTexture = 1.0 / params.nbRow;
 
@@ -86,8 +85,7 @@ BuilderEllipsoidTile.prototype.vProjecte = function vProjecte(v, params) {
 BuilderEllipsoidTile.prototype.getUV_PM = function getUV_PM(params) {
     var t = WGS84ToOneSubY(params.projected.latitude) * params.nbRow;
 
-    if (!isFinite(t))
-        { t = 0; }
+    if (!isFinite(t)) { t = 0; }
 
     return t - params.deltaUV1;
 };

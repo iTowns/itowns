@@ -12,17 +12,16 @@ describe('positionGlobe', function _() {
 
     it('bug #747', async () => {
         // wait cone creation
-        await page.evaluate(() =>
-            new Promise((resolve) => {
-                view.addFrameRequester('after_render', () => {
-                    if (view.mesh) {
-                        resolve();
-                    } else {
-                        view.notifyChange();
-                    }
-                });
-                view.notifyChange();
-            }));
+        await page.evaluate(() => new Promise((resolve) => {
+            view.addFrameRequester('after_render', () => {
+                if (view.mesh) {
+                    resolve();
+                } else {
+                    view.notifyChange();
+                }
+            });
+            view.notifyChange();
+        }));
 
         const value = await page.evaluate(() => {
             // bug was caused by the readDepthBuffer() returning an incorrect value
@@ -50,17 +49,16 @@ describe('positionGlobe', function _() {
     });
     it('should get picking position from depth', async () => {
         // wait mesh creation
-        await page.evaluate(() =>
-            new Promise((resolve) => {
-                view.addFrameRequester('after_render', () => {
-                    if (view.mesh) {
-                        resolve();
-                    } else {
-                        view.notifyChange();
-                    }
-                });
-                view.notifyChange();
-            }));
+        await page.evaluate(() => new Promise((resolve) => {
+            view.addFrameRequester('after_render', () => {
+                if (view.mesh) {
+                    resolve();
+                } else {
+                    view.notifyChange();
+                }
+            });
+            view.notifyChange();
+        }));
 
         // Hide cone the cone and set range
         const destRange = 1500;
@@ -70,14 +68,13 @@ describe('positionGlobe', function _() {
         }, destRange);
 
         // wait camera'transformation and get range value with globeControls method
-        const controlsMethod = await page.evaluate(() =>
-            new Promise((resolve) => {
-                const endAni = () => {
-                    view.controls.removeEventListener('animation-ended', endAni);
-                    resolve(view.controls.getRange());
-                };
-                view.controls.addEventListener('animation-ended', endAni);
-            }));
+        const controlsMethod = await page.evaluate(() => new Promise((resolve) => {
+            const endAni = () => {
+                view.controls.removeEventListener('animation-ended', endAni);
+                resolve(view.controls.getRange());
+            };
+            view.controls.addEventListener('animation-ended', endAni);
+        }));
 
         // get range with depth buffer
         const depthMethod = await page.evaluate(() => view

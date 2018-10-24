@@ -55,7 +55,7 @@ Sphere.prototype.intersectWithRayNoMiss = function intersectWithRayNoMiss(ray) {
 Sphere.prototype.intersectWithRay = function intersectWithRay(ray) {
     ray.closestPointToPoint(this.center, pc);
     const a = pc.length();
-    if (a > this.radius) return undefined;
+    if (a > this.radius) { return undefined; }
     const d = ray.direction.clone();
     const b = Math.sqrt(this.radius * this.radius - a * a);
     d.setLength(b);

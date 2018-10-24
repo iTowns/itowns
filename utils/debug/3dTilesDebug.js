@@ -104,10 +104,10 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
             update: debugIdUpdate,
             visible: false,
         }, _3dTileslayer).then((l) => {
-            gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
-                view.notifyChange();
-            });
+        gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
+            view.notifyChange();
         });
+    });
 
     // The sse Threshold for each tile
     gui.add(_3dTileslayer, 'sseThreshold', 0, 100).name('sseThreshold').onChange(() => {

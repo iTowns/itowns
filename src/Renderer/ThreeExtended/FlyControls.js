@@ -94,7 +94,6 @@ function onDocumentMouseWheel(event) {
  * - mouse click+drag: pitch and yaw movements (as looking at a panorama, not as in FPS games for instance)
  */
 class FlyControls extends THREE.EventDispatcher {
-
     /**
      * @Constructor
      * @param {View} view

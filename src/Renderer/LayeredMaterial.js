@@ -31,8 +31,7 @@ export function unpack1K(color, factor) {
 
 // Array not suported in IE
 var fillArray = function fillArray(array, remp) {
-    for (var i = 0; i < array.length; i++)
-        { array[i] = remp; }
+    for (var i = 0; i < array.length; i++) { array[i] = remp; }
 };
 
 var moveElementArray = function moveElementArray(array, oldIndex, newIndex) {

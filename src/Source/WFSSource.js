@@ -78,11 +78,11 @@ class WFSSource extends Source {
         this.version = source.version || '2.0.2';
 
         this.url = `${source.url
-                          }SERVICE=WFS&REQUEST=GetFeature&typeName=${this.typeName
-                          }&VERSION=${this.version
-                          }&SRSNAME=${this.projection
-                          }&outputFormat=${this.format
-                          }&BBOX=%bbox,${this.projection}`;
+        }SERVICE=WFS&REQUEST=GetFeature&typeName=${this.typeName
+        }&VERSION=${this.version
+        }&SRSNAME=${this.projection
+        }&outputFormat=${this.format
+        }&BBOX=%bbox,${this.projection}`;
 
         this.zoom = source.zoom || { min: 0, max: 21 };
     }

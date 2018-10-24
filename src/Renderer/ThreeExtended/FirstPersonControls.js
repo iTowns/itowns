@@ -192,7 +192,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
             this._state.rotateX = limitRotation(
                 this.camera,
                 ((coords.y - this._onMouseDownMouseY) * pxToAngleRatio) + this._stateOnMouseDown.rotateX,
-            this.options.verticalFOV);
+                this.options.verticalFOV);
 
             applyRotation(this.view, this.camera, this._state);
         }

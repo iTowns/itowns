@@ -147,7 +147,7 @@ Camera.prototype.box3SizeOnScreen = function box3SizeOnScreen(box3, matrixWorld)
     return tmp.box3.setFromPoints(pts);
 };
 
- /**
+/**
  * Test for collision between camera and a geometry layer (DTM/DSM) to adjust camera position
  * It could be modified later to handle an array of geometry layers
  * TODO Improve Coordinates class to handle altitude for any coordinate system (even projected one)

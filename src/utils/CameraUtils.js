@@ -229,8 +229,8 @@ class CameraRig extends THREE.Object3D {
         // translate to coordinate destination in planar projection
         if (view.referenceCrs != 'EPSG:4978') {
             animations.push(new TWEEN.Tween(this.position, tweenGroup)
-            .to(this.end.position, time)
-            .easing(params.easing));
+                .to(this.end.position, time)
+                .easing(params.easing));
         }
 
         // translate to altitude zero

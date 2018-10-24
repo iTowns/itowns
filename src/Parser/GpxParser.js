@@ -120,8 +120,7 @@ function _gpxToWTrackPointsMesh(gpxXML, options) {
             }
         }
         return masterObject;
-    }
-    else {
+    } else {
         return null;
     }
 }

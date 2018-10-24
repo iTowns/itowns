@@ -56,11 +56,11 @@ describe('PotreeBinParser', function () {
             // check colors
             assert.equal(colorAttr.itemSize, 4);
             assert.deepStrictEqual(colorAttr.array, Uint8Array.of(
-                        200, 201, 202, 203,
-                        204, 205, 206, 207,
-                        208, 209, 210, 211,
-                        212, 213, 214, 215,
-                        216, 217, 218, 219));
+                200, 201, 202, 203,
+                204, 205, 206, 207,
+                208, 209, 210, 211,
+                212, 213, 214, 215,
+                216, 217, 218, 219));
             // check classif
             assert.equal(classificationAttr.itemSize, 1);
             assert.deepStrictEqual(classificationAttr.array, Uint8Array.of(0, 3, 6, 9, 12));

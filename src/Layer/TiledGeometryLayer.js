@@ -322,7 +322,6 @@ class TiledGeometryLayer extends GeometryLayer {
             });
         }
     }
-
 }
 
 export default TiledGeometryLayer;

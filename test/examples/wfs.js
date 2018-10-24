@@ -12,8 +12,7 @@ describe('wfs', function _() {
 
     it('should pick the correct building', async () => {
         // test picking
-        const buildingId = await page.evaluate(() =>
-             picking({ x: 342, y: 243 }));
+        const buildingId = await page.evaluate(() => picking({ x: 342, y: 243 }));
         assert.equal(buildingId.id, 'bati_indifferencie.5751442');
     });
 });

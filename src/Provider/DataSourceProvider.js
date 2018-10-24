@@ -71,10 +71,10 @@ function FetchAndConvertSourceData(url, layer, extentSource, extentDestination) 
     // Fetch data
     return fetchData(url, source.format, source.networkOptions, extentSource)
         .then(fetchedData =>
-    // Parse fetched data, it parses file to itowns's object
-             parseData(fetchedData, layer, extentDestination), err => error(err, url, source))
+        // Parse fetched data, it parses file to itowns's object
+            parseData(fetchedData, layer, extentDestination), err => error(err, url, source))
         .then(parsedData =>
-    // Convert parsed data, it converts itowns's object to THREE's object
+        // Convert parsed data, it converts itowns's object to THREE's object
             layer.convert(parsedData, extentDestination), err => error(err, url, source));
 }
 

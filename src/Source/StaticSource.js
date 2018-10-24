@@ -5,8 +5,8 @@ import Extent from '../Core/Geographic/Extent';
 
 function _selectImagesFromSpatialIndex(index, images, extent) {
     return index.search(
-            extent.west(), extent.south(),
-            extent.east(), extent.north()).map(i => images[i]);
+        extent.west(), extent.south(),
+        extent.east(), extent.north()).map(i => images[i]);
 }
 
 function buildUrl(layer, image) {

@@ -29,10 +29,10 @@ Rectangle.prototype.getNorth = function getNorth() {
 // if Right2 < Right1 && Left2 > Left1 && Top2 < Top1 && Bottom2 > Bottom1
 // this is correct only for coordinate positive
 Rectangle.prototype.intersects = function intersects(rect) {
-    if (rect.getEast() < this._west) return false;
-    if (rect.getWest() > this._east) return false;
-    if (rect.getNorth() < this._south) return false;
-    if (rect.getSouth() > this._north) return false;
+    if (rect.getEast() < this._west) { return false; }
+    if (rect.getWest() > this._east) { return false; }
+    if (rect.getNorth() < this._south) { return false; }
+    if (rect.getSouth() > this._north) { return false; }
 
     return true;
 };

@@ -1,4 +1,4 @@
- /**
+/**
   * Calculates the minimum maximum elevation of xbil buffer
   *
   * @param      {number}  buffer       The buffer to parse
