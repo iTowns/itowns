@@ -1,5 +1,5 @@
 {
-    "presets": ["es2015"],
+    "presets": ["@babel/env"],
     "plugins": [
         ["babel-plugin-inline-import", {
             "extensions": [
@@ -7,7 +7,7 @@
                 ".glsl"
             ]
         }],
-        "transform-runtime",
+        ["@babel/plugin-transform-runtime"],
         ["minify-replace", {
             "replacements": [{
                 "identifierName": "__DEBUG__",
