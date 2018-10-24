@@ -1,11 +1,7 @@
 var fs = require('fs');
 var path = require('path');
-var webpack = require('webpack');
 
 const debugBuild = process.env.NODE_ENV === 'development';
-var definePlugin = new webpack.DefinePlugin({
-    __DEBUG__: debugBuild,
-});
 
 /*
    configuring babel:
@@ -35,7 +31,7 @@ replacementPluginConf[1].replacements.find(decl => decl.identifierName === '__DE
 
 module.exports = {
     entry: {
-        itowns: ['babel-polyfill', 'url-polyfill', 'whatwg-fetch', path.resolve(__dirname, 'src/MainBundle.js')],
+        itowns: ['@babel/polyfill', 'url-polyfill', 'whatwg-fetch', path.resolve(__dirname, 'src/MainBundle.js')],
         debug: [path.resolve(__dirname, 'utils/debug/Main.js')],
     },
     devtool: 'source-map',
@@ -46,10 +42,29 @@ module.exports = {
         libraryTarget: 'umd',
         umdNamedDefine: true,
     },
-    plugins: [
-        definePlugin,
-        new webpack.optimize.CommonsChunkPlugin({ name: 'itowns' }),
-    ],
+    optimization: {
+        splitChunks: {
+            chunks: 'async',
+            minSize: 30000,
+            maxSize: 0,
+            minChunks: 1,
+            maxAsyncRequests: 5,
+            maxInitialRequests: 3,
+            automaticNameDelimiter: '~',
+            name: true,
+            cacheGroups: {
+                vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    priority: -10,
+                },
+                default: {
+                    minChunks: 2,
+                    priority: -20,
+                    reuseExistingChunk: true,
+                },
+            },
+        },
+    },
     module: {
         rules: [
             {
