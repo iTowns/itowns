@@ -14,8 +14,7 @@
     "build": "webpack -p",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
     "start": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot",
-    "prepublishOnly": "npm run build && npm run transpile",
-    "prepare": "check-node-version --npm '>= 6' || echo \"We detected that you are using npm < 6, please use npm >= 6 if you want to make modification to package-lock.json, feel free to ignore the above error if not.\n\""
+    "prepublishOnly": "npm run build && npm run transpile"
   },
   "files": [
     "*.md",
