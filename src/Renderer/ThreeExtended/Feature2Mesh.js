@@ -352,8 +352,7 @@ function featureToMesh(feature, options) {
         case 'multipolygon': {
             if (options.extrude) {
                 mesh = featureToExtrudedPolygon(feature, options);
-            }
-            else {
+            } else {
                 mesh = featureToPolygon(feature, options);
             }
             break;
@@ -370,7 +369,7 @@ function featureToMesh(feature, options) {
 }
 
 function featuresToThree(features, options) {
-    if (!features || features.length == 0) return;
+    if (!features || features.length == 0) { return; }
 
     if (features.length == 1) {
         return featureToMesh(features[0], options);
@@ -404,7 +403,7 @@ export default {
      */
     convert(options = {}) {
         return function _convert(collection) {
-            if (!collection) return;
+            if (!collection) { return; }
 
             return featuresToThree(collection.features, options);
         };

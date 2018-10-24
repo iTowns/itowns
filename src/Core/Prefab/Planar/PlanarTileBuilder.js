@@ -48,8 +48,7 @@ PlanarTileBuilder.prototype.uProjecte = function uProjecte(u, params) {
 };
 
 // coord v tile to projected
-PlanarTileBuilder.prototype.vProjecte = function vProjecte(v, params)
-{
+PlanarTileBuilder.prototype.vProjecte = function vProjecte(v, params) {
     params.projected.y = params.extent.south() + v * (params.extent.north() - params.extent.south());
 };
 

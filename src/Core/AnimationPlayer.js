@@ -161,8 +161,7 @@ class AnimationPlayer extends THREE.EventDispatcher {
             this.dispatchEvent({
                 type: 'animation-frame',
             });
-        }
-        else {
+        } else {
             setPlayerState(this, PLAYER_STATE.END);
             finishAnimation(this);
         }

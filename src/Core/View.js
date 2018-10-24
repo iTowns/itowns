@@ -173,7 +173,7 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         }
         layer.defineLayerProperty('visible', true, () => _syncGeometryLayerVisibility(layer, view));
         _syncGeometryLayerVisibility(layer, view);
-    // Find projection layer, this is projection destination
+        // Find projection layer, this is projection destination
         layer.projection = view.referenceCrs;
     } else if (layer.source.tileMatrixSet === 'PM') {
         layer.projection = 'EPSG:3857';
@@ -692,7 +692,7 @@ View.prototype.getPickingPositionFromDepth = function fnGetPickingPositionFromDe
     const prev = camera.layers.mask;
     camera.layers.mask = 1 << this.tileLayer.threejsLayer;
 
-     // Render/Read to buffer
+    // Render/Read to buffer
     let buffer;
     if (viewPaused) {
         this._fullSizeDepthBuffer = this._fullSizeDepthBuffer || this.readDepthBuffer(0, 0, dim.x, dim.y);
@@ -727,8 +727,7 @@ View.prototype.getPickingPositionFromDepth = function fnGetPickingPositionFromDe
 
     camera.layers.mask = prev;
 
-    if (target.length() > 10000000)
-        { return undefined; }
+    if (target.length() > 10000000) { return undefined; }
 
     return target;
 };

@@ -162,10 +162,10 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             update: debugIdUpdate,
             visible: false,
         }, layer).then((l) => {
-            gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
-                view.notifyChange(l);
-            });
+        gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
+            view.notifyChange(l);
         });
+    });
     View.prototype.addLayer.call(view,
         {
             id: sb_layer_id,
@@ -173,8 +173,8 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             update: debugIdUpdate,
             visible: false,
         }, layer).then((l) => {
-            gui.add(l, 'visible').name('Bounding Spheres').onChange(() => {
-                view.notifyChange(l);
-            });
+        gui.add(l, 'visible').name('Bounding Spheres').onChange(() => {
+            view.notifyChange(l);
         });
+    });
 }

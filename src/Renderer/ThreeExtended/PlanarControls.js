@@ -423,9 +423,8 @@ function PlanarControls(view, options = {}) {
             newPos.lerpVectors(this.camera.position, pointUnderCursor, this.zoomInFactor);
             // initiate travel
             this.initiateTravel(newPos, this.zoomTravelTime, null, false);
-        }
         // Zoom OUT
-        else if (delta < 0 && this.camera.position.z < this.maxAltitude) {
+        } else if (delta < 0 && this.camera.position.z < this.maxAltitude) {
             // target position
             newPos.lerpVectors(this.camera.position, pointUnderCursor, -1 * this.zoomOutFactor);
             // initiate travel
@@ -512,15 +511,13 @@ function PlanarControls(view, options = {}) {
         // case where targetOrientation is a quaternion
         if (targetOrientation instanceof THREE.Quaternion) {
             travelEndRot.copy(targetOrientation);
-        }
-        // case where targetOrientation is a vector3
-        else if (targetOrientation instanceof THREE.Vector3) {
+        } else if (targetOrientation instanceof THREE.Vector3) {
+            // case where targetOrientation is a vector3
             if (targetPos === targetOrientation) {
                 this.camera.lookAt(targetOrientation);
                 travelEndRot.copy(this.camera.quaternion);
                 this.camera.quaternion.copy(travelStartRot);
-            }
-            else {
+            } else {
                 this.camera.position.copy(targetPos);
                 this.camera.lookAt(targetOrientation);
                 travelEndRot.copy(this.camera.quaternion);
@@ -536,10 +533,10 @@ function PlanarControls(view, options = {}) {
 
         if (this.instantTravel) {
             travelDuration = 0;
-        }
-        // case where travelTime is set to 'auto' : travelDuration will be a value between autoTravelTimeMin and autoTravelTimeMax
-        // depending on travel distance and travel angular difference
-        else if (travelTime === 'auto') {
+        } else if (travelTime === 'auto') {
+            // case where travelTime is set to 'auto' : travelDuration will be a value between autoTravelTimeMin and autoTravelTimeMax
+            // depending on travel distance and travel angular difference
+
             // a value between 0 and 1 according to the travel distance. Adjusted by autoTravelTimeDist parameter
             const normalizedDistance = Math.min(1, targetPos.distanceTo(this.camera.position) / this.autoTravelTimeDist);
 
@@ -555,9 +552,8 @@ function PlanarControls(view, options = {}) {
                 travelDuration *= 1 + 2 * angularDifference;
                 travelDuration = Math.min(travelDuration, this.autoTravelTimeMax);
             }
-        }
-        // case where traveltime !== 'auto' : travelTime is a duration in seconds given as parameter
-        else {
+        } else {
+            // case where traveltime !== 'auto' : travelTime is a duration in seconds given as parameter
             travelDuration = travelTime;
         }
     };
@@ -677,9 +673,8 @@ function PlanarControls(view, options = {}) {
         // check if there is valid geometry under cursor
         if (pointUnderCursor) {
             return pointUnderCursor;
-        }
-        // if not, we use the mathematical plane at altitude = groundLevel
-        else {
+        } else {
+            // if not, we use the mathematical plane at altitude = groundLevel
             return this.getWorldPointFromMathPlaneAtScreenXY(posXY, this.groundLevel);
         }
     };

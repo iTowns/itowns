@@ -42,11 +42,11 @@ ThreeLoader.getThreeJsLoader = function getThreeJsLoader(format) {
     // eslint-disable-next-line no-undef
     THREE = itowns.THREE;
     loadScriptAsync('https://cdn.rawgit.com/mrdoob/three.js/r' + itowns.THREE.REVISION + '/examples/js/loaders/' + format + 'Loader.js')
-    .then(function createLoader() {
-        deferredPromise.resolve(new itowns.THREE[format + 'Loader'](manager));
-    }).catch(function error(e) {
-        console.error('Error creating', format, 'loader : ', e);
-    });
+        .then(function createLoader() {
+            deferredPromise.resolve(new itowns.THREE[format + 'Loader'](manager));
+        }).catch(function error(e) {
+            console.error('Error creating', format, 'loader : ', e);
+        });
     return deferredPromise.promise;
 };
 

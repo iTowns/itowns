@@ -19,7 +19,7 @@ export default {
         let texture;
         if (data.isFeature) {
             const backgroundColor = (layer.backgroundLayer && layer.backgroundLayer.paint) ?
-               new THREE.Color(layer.backgroundLayer.paint['background-color']) :
+                new THREE.Color(layer.backgroundLayer.paint['background-color']) :
                 undefined;
 
             const extentTexture = extentDestination.as(layer.projection);

@@ -336,7 +336,7 @@ Coordinates.prototype.setAltitude = function setAltitude(altitude) {
     this._values[2] = altitude;
 };
 
- /**
+/**
  * Returns the longitude in geocentric coordinates. Coordinates must be in geocentric system (can be converted by using {@linkcode as()} ).
  * @example
  *

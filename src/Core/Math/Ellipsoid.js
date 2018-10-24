@@ -127,26 +127,20 @@ Ellipsoid.prototype.intersection = function intersection(ray) {
         ((O_C.x * O_C.x) / (this.size.x * this.size.x)) + ((O_C.y * O_C.y) / (this.size.y * this.size.y)) + ((O_C.z * O_C.z) / (this.size.z * this.size.z)) - 1;
 
     var d = ((b * b) - (4 * a * c));
-    if (d < 0 || a === 0 || b === 0 || c === 0)
-        { return false; }
+    if (d < 0 || a === 0 || b === 0 || c === 0) { return false; }
 
     d = Math.sqrt(d);
 
     var t1 = (-b + d) / (2 * a);
     var t2 = (-b - d) / (2 * a);
 
-    if (t1 <= EPSILON && t2 <= EPSILON) return false; // both intersections are behind the ray origin
+    if (t1 <= EPSILON && t2 <= EPSILON) { return false; } // both intersections are behind the ray origin
     // var back = (t1 <= EPSILON || t2 <= EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
     var t = 0;
-    if (t1 <= EPSILON)
-        { t = t2; }
-    else
-    if (t2 <= EPSILON)
-        { t = t1; }
-    else
-        { t = (t1 < t2) ? t1 : t2; }
+    if (t1 <= EPSILON) { t = t2; } else
+    if (t2 <= EPSILON) { t = t1; } else { t = (t1 < t2) ? t1 : t2; }
 
-    if (t < EPSILON) return false; // Too close to intersection
+    if (t < EPSILON) { return false; } // Too close to intersection
 
     var inter = new THREE.Vector3();
 

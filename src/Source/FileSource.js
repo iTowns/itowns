@@ -36,7 +36,7 @@ function fileParser(text) {
             throw new Error('Error parsing XML document');
         } else {
             throw new Error('Unsupported xml file, only valid KML and GPX are supported, but no <gpx> or <kml> tag found.',
-                    file);
+                file);
         }
     } else if (trimmedText.startsWith('{') || trimmedText.startsWith('[')) {
         parsedFile = JSON.parse(text);

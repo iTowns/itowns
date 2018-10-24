@@ -140,23 +140,22 @@ before(async () => {
         return result;
     };
 
-    global.waitNextRender = page =>
-        page.evaluate(() => new Promise((resolve) => {
-            __getView().then((v) => {
-                function resolveWhenDrawn() {
-                    v.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
+    global.waitNextRender = page => page.evaluate(() => new Promise((resolve) => {
+        __getView().then((v) => {
+            function resolveWhenDrawn() {
+                v.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
 
-                    // make sure the loading screen is hidden
-                    const container = document.getElementById('itowns-loader');
-                    if (container) {
-                        container.style.display = 'none';
-                    }
-                    resolve();
+                // make sure the loading screen is hidden
+                const container = document.getElementById('itowns-loader');
+                if (container) {
+                    container.style.display = 'none';
                 }
-                v.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
-                v.notifyChange();
-            });
-        }));
+                resolve();
+            }
+            v.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
+            v.notifyChange();
+        });
+    }));
 
     // For now the '--no-sandbox' flag is needed. Otherwise Chrome fails to start:
     //
@@ -176,7 +175,8 @@ before(async () => {
         executablePath: process.env.CHROME,
         headless: !process.env.DEBUG,
         devtools: !!process.env.DEBUG,
-        args });
+        args,
+    });
 
     // the page all tests will be tested in
     global.page = await browser.newPage();
@@ -222,7 +222,8 @@ afterEach(async () => {
                 init.coord.crs,
                 init.coord._values[0],
                 init.coord._values[1],
-                init.coord._values[2]);
+                init.coord._values[2],
+            );
             view.controls.lookAtCoordinate(init, false);
             view.notifyChange();
         } else if (view instanceof itowns.PlanarView) {

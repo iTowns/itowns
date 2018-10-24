@@ -52,6 +52,8 @@ module.exports = {
         'no-mixed-operators': ['error', { allowSamePrecedence: true }],
         'prefer-template': 'off',
         'prefer-rest-params': 'off',
+        'prefer-destructuring': 'off',
+        'function-paren-newline': 'off',
 
         // deactivated rules for `examples/`
         'no-console': 'off',

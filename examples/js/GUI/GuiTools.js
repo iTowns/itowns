@@ -4,7 +4,7 @@
  * Description: Classe pour créer un menu.
  */
 
- /* global dat,viewerDiv, itowns */
+/* global dat,viewerDiv, itowns */
 
 dat.GUI.prototype.removeFolder = function removeFolder(name) {
     var folder = this.__folders[name];

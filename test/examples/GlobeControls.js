@@ -35,33 +35,32 @@ describe('GlobeControls with globe example', function _() {
     it('should move and then tilt, like expected', async () => {
         const tilt = 45;
         const vCoord = { longitude: 22, latitude: 47 };
-        const result = await page.evaluate((pTilt, vC) =>
-            new Promise((resolve) => {
-                const tilts = [];
-                const cb = (event) => {
-                    view.controls
-                        .removeEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
-                    tilts.push(view.controls.getTilt());
-                    tilts.push(event.new.tilt);
+        const result = await page.evaluate((pTilt, vC) => new Promise((resolve) => {
+            const tilts = [];
+            const cb = (event) => {
+                view.controls
+                    .removeEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
+                tilts.push(view.controls.getTilt());
+                tilts.push(event.new.tilt);
+                const coord = view.controls.getLookAtCoordinate();
+                if (tilts.length === 3) {
+                    resolve({ tilts, coord });
+                }
+            };
+            view.controls
+                .addEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
+
+            const pCoord = new itowns.Coordinates('EPSG:4326', vC.longitude, vC.latitude, 0);
+
+            view.controls.lookAtCoordinate({ coord: pCoord })
+                .then(() => view.controls.setTilt(pTilt).then((p) => {
+                    tilts.push(p.tilt);
                     const coord = view.controls.getLookAtCoordinate();
                     if (tilts.length === 3) {
                         resolve({ tilts, coord });
                     }
-                };
-                view.controls
-                    .addEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
-
-                const pCoord = new itowns.Coordinates('EPSG:4326', vC.longitude, vC.latitude, 0);
-
-                view.controls.lookAtCoordinate({ coord: pCoord }).then(() =>
-                    view.controls.setTilt(pTilt).then((p) => {
-                        tilts.push(p.tilt);
-                        const coord = view.controls.getLookAtCoordinate();
-                        if (tilts.length === 3) {
-                            resolve({ tilts, coord });
-                        }
-                    }));
-            }), tilt, vCoord);
+                }));
+        }), tilt, vCoord);
 
         const tilts = result.tilts;
         const coord = result.coord;
@@ -76,27 +75,26 @@ describe('GlobeControls with globe example', function _() {
 
     it('should get same tilt with event, promise and getTilt, like expected', async () => {
         const tilt = 45;
-        const tilts = await page.evaluate(pTilt =>
-            new Promise((resolve) => {
-                const checks = [];
-                const cb = (event) => {
-                    view.controls
-                        .removeEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
-                    checks.push(view.controls.getTilt());
-                    checks.push(event.new.tilt);
-                    if (checks.length === 3) {
-                        resolve(checks);
-                    }
-                };
+        const tilts = await page.evaluate(pTilt => new Promise((resolve) => {
+            const checks = [];
+            const cb = (event) => {
                 view.controls
-                    .addEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
-                view.controls.setTilt(pTilt).then((p) => {
-                    checks.push(p.tilt);
-                    if (checks.length === 3) {
-                        resolve(checks);
-                    }
-                });
-            }), tilt);
+                    .removeEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
+                checks.push(view.controls.getTilt());
+                checks.push(event.new.tilt);
+                if (checks.length === 3) {
+                    resolve(checks);
+                }
+            };
+            view.controls
+                .addEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, cb);
+            view.controls.setTilt(pTilt).then((p) => {
+                checks.push(p.tilt);
+                if (checks.length === 3) {
+                    resolve(checks);
+                }
+            });
+        }), tilt);
         assert.ok(Math.abs(tilt - tilts[0]) < 0.000001);
         assert.ok(Math.abs(tilt - tilts[1]) < 0.000001);
         assert.ok(Math.abs(tilt - tilts[2]) < 0.000001);
@@ -155,14 +153,13 @@ describe('GlobeControls with globe example', function _() {
     });
 
     it('should zoom like expected with double click', async () => {
-        const end = page.evaluate(() =>
-            new Promise((resolve) => {
-                const endAni = () => {
-                    view.controls.removeEventListener('animation-ended', endAni);
-                    resolve(view.controls.getRange());
-                };
-                view.controls.addEventListener('animation-ended', endAni);
-            }));
+        const end = page.evaluate(() => new Promise((resolve) => {
+            const endAni = () => {
+                view.controls.removeEventListener('animation-ended', endAni);
+                resolve(view.controls.getRange());
+            };
+            view.controls.addEventListener('animation-ended', endAni);
+        }));
 
         await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.mouse.click(middleWidth, middleHeight, { clickCount: 2, delay: 100 });
@@ -173,21 +170,19 @@ describe('GlobeControls with globe example', function _() {
     it('should zoom like expected with mouse wheel', async () => {
         await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.mouse.move(middleWidth, middleHeight);
-        const finalRange = await page.evaluate(() =>
-            new Promise((resolve) => {
-                view.mainLoop.addEventListener('command-queue-empty', () => {
-                    if (view.mainLoop.renderingState === 0) {
-                        resolve(view.controls.getRange());
-                    }
-                });
-                const wheelEvent = new WheelEvent('mousewheel', {
-                    deltaY: -50000,
-                });
-                view.mainLoop.gfxEngine.renderer.domElement
-                    .dispatchEvent(wheelEvent, document);
-                window.dispatchEvent(wheelEvent, document);
-            }));
+        const finalRange = await page.evaluate(() => new Promise((resolve) => {
+            view.mainLoop.addEventListener('command-queue-empty', () => {
+                if (view.mainLoop.renderingState === 0) {
+                    resolve(view.controls.getRange());
+                }
+            });
+            const wheelEvent = new WheelEvent('mousewheel', {
+                deltaY: -50000,
+            });
+            view.mainLoop.gfxEngine.renderer.domElement
+                .dispatchEvent(wheelEvent, document);
+            window.dispatchEvent(wheelEvent, document);
+        }));
         assert.ok(initialPosition.range - finalRange > 2000000);
     });
 });
-

@@ -18,7 +18,7 @@ function signedArea(ring) {
 function classifyRings(rings) {
     const len = rings.length;
 
-    if (len <= 1) return [rings];
+    if (len <= 1) { return [rings]; }
 
     const polygons = [];
     let polygon;
@@ -26,18 +26,18 @@ function classifyRings(rings) {
 
     for (var i = 0; i < len; i++) {
         var area = signedArea(rings[i]);
-        if (area === 0) continue;
+        if (area === 0) { continue; }
 
-        if (ccw === undefined) ccw = area < 0;
+        if (ccw === undefined) { ccw = area < 0; }
 
         if (ccw === area < 0) {
-            if (polygon) polygons.push(polygon);
+            if (polygon) { polygons.push(polygon); }
             polygon = [rings[i]];
         } else {
             polygon.push(rings[i]);
         }
     }
-    if (polygon) polygons.push(polygon);
+    if (polygon) { polygons.push(polygon); }
 
     return polygons;
 }
@@ -121,7 +121,7 @@ function readPBF(file, options) {
     const extentSource = options.extentSource || file.coords;
     const layers = Object.keys(vectorTile.layers);
 
-    if (layers.length < 1) return;
+    if (layers.length < 1) { return; }
 
     const crsInId = Number(options.crsIn.slice(5));
 

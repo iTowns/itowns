@@ -35,8 +35,8 @@ class TMSSource extends Source {
         if (!source.extent) {
         // default to the full 3857 extent
             this.extent = new Extent('EPSG:3857',
-            -20037508.342789244, 20037508.342789244,
-            -20037508.342789255, 20037508.342789244);
+                -20037508.342789244, 20037508.342789244,
+                -20037508.342789255, 20037508.342789244);
         }
 
         this.zoom = source.zoom || { min: 0, max: 18 };

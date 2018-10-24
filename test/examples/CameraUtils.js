@@ -31,7 +31,8 @@ describe('Camera utils with globe example', function _() {
         const result = await page.evaluate((p) => {
             const camera = view.camera.camera3D;
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, p).then(final => final.range);
+                view, camera, p,
+            ).then(final => final.range);
         }, params);
 
         assert.ok(Math.abs(result - params.range) / params.range < 0.05);
@@ -42,7 +43,8 @@ describe('Camera utils with globe example', function _() {
             const coord = new itowns.Coordinates('EPSG:4326', p.longitude, p.latitude, 0);
             const camera = view.camera.camera3D;
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, { coord }).then(final => final.coord);
+                view, camera, { coord },
+            ).then(final => final.coord);
         }, params);
         assert.equal(Math.round(result._values[0]), params.longitude);
         assert.equal(Math.round(result._values[1]), params.latitude);
@@ -53,7 +55,8 @@ describe('Camera utils with globe example', function _() {
         const result = await page.evaluate((p) => {
             const camera = view.camera.camera3D;
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, p).then(final => final.tilt);
+                view, camera, p,
+            ).then(final => final.tilt);
         }, params);
         assert.equal(Math.round(result), params.tilt);
     });
@@ -63,7 +66,8 @@ describe('Camera utils with globe example', function _() {
         const result = await page.evaluate((p) => {
             const camera = view.camera.camera3D;
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, p).then(final => final.heading);
+                view, camera, p,
+            ).then(final => final.heading);
         }, params);
         assert.equal(Math.round(result), params.heading);
     });
@@ -71,14 +75,17 @@ describe('Camera utils with globe example', function _() {
     it('should heading, tilt, range and coordinate like expected', async () => {
         const result = await page.evaluate(() => {
             const camera = view.camera.camera3D;
-            const params = { heading: 17,
+            const params = {
+                heading: 17,
                 tilt: 44,
                 range: 200000,
                 longitude: 3,
                 latitude: 46,
-                coord: new itowns.Coordinates('EPSG:4326', 3, 47, 0) };
+                coord: new itowns.Coordinates('EPSG:4326', 3, 47, 0),
+            };
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, params).then(final => ({ params, final }));
+                view, camera, params,
+            ).then(final => ({ params, final }));
         });
         assert.equal(Math.round(result.final.heading), result.params.heading);
         assert.equal(Math.round(result.final.tilt), result.params.tilt);
@@ -96,11 +103,12 @@ describe('Camera utils with globe example', function _() {
                 longitude: 3,
                 latitude: 46,
                 coord: new itowns.Coordinates('EPSG:4326', 3, 47, 0),
-                time: 500 };
+                time: 500,
+            };
             const camera = view.camera.camera3D;
             return itowns.CameraUtils
-                .animateCameraToLookAtTarget(view, camera, params).then(final =>
-                ({ final, params }));
+                .animateCameraToLookAtTarget(view, camera, params)
+                .then(final => ({ final, params }));
         });
         assert.equal(Math.round(result.final.heading), result.params.heading);
         assert.equal(Math.round(result.final.tilt), result.params.tilt);
@@ -109,4 +117,3 @@ describe('Camera utils with globe example', function _() {
         assert.equal(Math.round(result.final.range / 1000) * 1000, result.params.range);
     });
 });
-

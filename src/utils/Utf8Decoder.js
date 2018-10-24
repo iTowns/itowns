@@ -1,5 +1,5 @@
 import {
-  TextDecoder as TextDecoderPolyfill,
+    TextDecoder as TextDecoderPolyfill,
 } from 'text-encoding-utf-8';
 
 export const TextDecoder = typeof global.TextDecoder === 'function' ? global.TextDecoder : TextDecoderPolyfill;

@@ -54,5 +54,7 @@ module.exports = {
 
         // turned off to use the this object in describe
         'prefer-arrow-callback': 'off',
+        
+        'prefer-destructuring': 'off',
     }
 }

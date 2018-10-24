@@ -12,7 +12,8 @@ describe('3dtiles', function _() {
 
     it('should return the dragon and the globe', async () => {
         const layers = await page.evaluate(
-            () => view.pickObjectsAt({ x: 195, y: 146 }).map(p => p.layer.id));
+            () => view.pickObjectsAt({ x: 195, y: 146 }).map(p => p.layer.id),
+        );
 
         assert.ok(layers.indexOf('globe') >= 0);
         assert.ok(layers.indexOf('3d-tiles-discrete-lod') >= 0);
@@ -25,11 +26,11 @@ describe('3dtiles', function _() {
 
         await waitUntilItownsIsIdle(this.test.fullTitle());
 
-        const pickingCount = await page.evaluate(() =>
-            view.pickObjectsAt(
-                { x: 200, y: 150 },
-                1,
-                '3d-tiles-request-volume').length);
+        const pickingCount = await page.evaluate(() => view.pickObjectsAt(
+            { x: 200, y: 150 },
+            1,
+            '3d-tiles-request-volume',
+        ).length);
         assert.ok(pickingCount > 0);
     });
 });
