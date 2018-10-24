@@ -1,4 +1,4 @@
-import togeojson from 'togeojson';
+import togeojson from '@mapbox/togeojson';
 import Source from './Source';
 import Fetcher from '../Provider/Fetcher';
 import Extent from '../Core/Geographic/Extent';
