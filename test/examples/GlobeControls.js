@@ -117,6 +117,7 @@ describe('GlobeControls with globe example', function _() {
     });
 
     it('should zoom like expected with middle button', async () => {
+        await page.evaluate(() => { view.controls.enableDamping = false; });
         const mouse = page.mouse;
         await mouse.move(middleWidth, middleHeight);
         await mouse.down({ button: 'middle' });
