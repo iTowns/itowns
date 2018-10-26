@@ -86,51 +86,35 @@ before(async () => {
         page.setViewport({ width: 400, height: 300 });
 
         await page.goto(url);
-        await page.waitFor('#viewerDiv > canvas');
 
-        // install a globally available __getView helper
+        await page.waitFor(() => typeof (view) === 'object');
+
         await page.evaluate(() => {
-            window.__getView = function _() {
-                if (typeof (view) === 'object') {
-                    return Promise.resolve(view);
-                }
-                if (typeof (view) === 'object') {
-                    return Promise.resolve(view);
-                }
-                resolve(false);
-                return Promise.reject();
-            };
+            itowns.CameraUtils.defaultStopPlaceOnGroundAtEnd = true;
         });
 
-        const result = await page.evaluate(() => new Promise((resolve) => {
-            __getView().then((v) => {
-                function resolveWhenReady() {
-                    v.removeEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, resolveWhenReady);
-                    resolve(true);
-                }
-                v.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, resolveWhenReady);
-            });
-        }));
+        await page.waitFor(() => view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0
+            && view.mainLoop.renderingState === 0
+            && view.getLayers().every(layer => layer.ready));
 
         await waitNextRender(page);
 
         await saveScreenshot(page, screenshotName);
 
-        return result;
+        return true;
     };
 
     // Use waitUntilItownsIsIdle to wait until itowns has finished all its work (= layer updates)
     global.waitUntilItownsIsIdle = async (screenshotName) => {
         const result = await page.evaluate(() => new Promise((resolve) => {
-            __getView().then((v) => {
-                function resolveWhenReady() {
-                    if (v.mainLoop.renderingState === 0) {
-                        v.mainLoop.removeEventListener('command-queue-empty', resolveWhenReady);
-                        resolve(true);
-                    }
+            itowns.CameraUtils.stop(view, view.camera.camera3D);
+            function resolveWhenReady() {
+                if (view.mainLoop.renderingState === 0) {
+                    view.mainLoop.removeEventListener('command-queue-empty', resolveWhenReady);
+                    resolve(true);
                 }
-                v.mainLoop.addEventListener('command-queue-empty', resolveWhenReady);
-            });
+            }
+            view.mainLoop.addEventListener('command-queue-empty', resolveWhenReady);
         }));
 
         await waitNextRender(page);
@@ -141,20 +125,18 @@ before(async () => {
     };
 
     global.waitNextRender = page => page.evaluate(() => new Promise((resolve) => {
-        __getView().then((v) => {
-            function resolveWhenDrawn() {
-                v.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
+        function resolveWhenDrawn() {
+            view.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
 
-                // make sure the loading screen is hidden
-                const container = document.getElementById('itowns-loader');
-                if (container) {
-                    container.style.display = 'none';
-                }
-                resolve();
+            // make sure the loading screen is hidden
+            const container = document.getElementById('itowns-loader');
+            if (container) {
+                container.style.display = 'none';
             }
-            v.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
-            v.notifyChange();
-        });
+            resolve();
+        }
+        view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
+        view.notifyChange();
     }));
 
     // For now the '--no-sandbox' flag is needed. Otherwise Chrome fails to start:
@@ -165,7 +147,7 @@ before(async () => {
     // for more information on developing with the SUID sandbox.
     // If you want to live dangerously and need an immediate workaround, you can try
     // using --no-sandbox.
-    const args = ['--no-sandbox'];
+    const args = [];
 
     if (process.env.REMOTE_DEBUGGING) {
         args.push(`--remote-debugging-port=${process.env.REMOTE_DEBUGGING}`);
