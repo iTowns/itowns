@@ -328,11 +328,18 @@ function getRig(camera) {
  * @property {boolean} [proxy=true] use proxy to handling camera's transformation. if proxy == true, other camera's transformation stops rig's transformation
  * @property {Number} [easing=TWEEN.Easing.Quartic.InOut] in and out easing animation
  * @property {function} [callback] callback call each animation's frame (params are current cameraTransform and worldTargetPosition)
+ * @property {boolean} [stopPlaceOnGroundAtEnd=defaultStopPlaceOnGroundAtEnd] stop place target on the ground at animation ending
  */
 /**
  * @module CameraUtils
  */
 export default {
+    /**
+     * Default value for option to stop place target
+     * on the ground at animation ending.
+     * Default value is false.
+     */
+    defaultStopPlaceOnGroundAtEnd: false,
     Easing: TWEEN.Easing,
     /**
      * Stop camera's animation
@@ -394,6 +401,11 @@ export default {
         }
         return rig.animateCameraToLookAtTarget(view, camera, params).promise.then((finished) => {
             const params = rig.getParams();
+            const stopPlaceOnGround = params.stopPlaceOnGroundAtEnd === undefined ?
+                this.defaultStopPlaceOnGroundAtEnd : params.stopPlaceOnGroundAtEnd;
+            if (stopPlaceOnGround) {
+                rig.stop(view);
+            }
             params.finished = finished;
             return params;
         });
