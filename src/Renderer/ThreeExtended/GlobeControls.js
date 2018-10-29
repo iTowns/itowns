@@ -802,7 +802,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                 const coords = view.eventToViewCoords(event);
                 const normalized = view.viewToNormalizedCoords(coords);
                 raycaster.setFromCamera(normalized, this.camera);
-                const intersection = raycaster.ray.intersectSphere(pickSphere);
+                raycaster.ray.intersectSphere(pickSphere, intersection);
                 // If there's intersection then move globe else we stop the move
                 if (intersection) {
                     normalizedIntersection.copy(intersection).normalize();
