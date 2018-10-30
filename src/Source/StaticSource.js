@@ -44,7 +44,7 @@ class StaticSource extends Source {
             if (!this.images.length) {
                 return;
             }
-            this._spatialIndex = flatbush(this.images.length);
+            this._spatialIndex = new flatbush(this.images.length);
             for (const image of this.images) {
                 this._spatialIndex.add(
                     image.extent.west(),
