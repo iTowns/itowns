@@ -106,22 +106,23 @@ describe('GlobeControls with globe example', function _() {
         });
 
         const mouse = page.mouse;
-        await mouse.move(middleWidth, middleHeight);
+        await mouse.move(middleWidth, middleHeight, { steps: 20 });
         await mouse.down();
-        await mouse.move(middleWidth + 200, middleHeight, { steps: 100 });
+        await mouse.move(middleWidth + 200, middleHeight, { steps: 50 });
         await mouse.up();
 
         const endCoord = await page.evaluate(() => view.controls.getLookAtCoordinate());
 
-        assert.ok((Math.round(initialPosition.coord._values[0] - endCoord._values[0])) >= 74);
+        const diffLongitude = initialPosition.coord._values[0] - endCoord._values[0];
+        assert.ok(Math.abs(Math.round(diffLongitude)) >= 25);
     });
 
     it('should zoom like expected with middle button', async () => {
         await page.evaluate(() => { view.controls.enableDamping = false; });
         const mouse = page.mouse;
-        await mouse.move(middleWidth, middleHeight);
+        await mouse.move(middleWidth, middleHeight, { steps: 20 });
         await mouse.down({ button: 'middle' });
-        await mouse.move(middleWidth, (middleHeight) - 200, { steps: 100 });
+        await mouse.move(middleWidth, (middleHeight) - 200, { steps: 50 });
         await mouse.up();
         const endRange = await page.evaluate(() => Promise.resolve(view.controls.getRange()));
         assert.ok((initialPosition.range - endRange) > 20000000);
@@ -133,7 +134,7 @@ describe('GlobeControls with globe example', function _() {
         const mouse = page.mouse;
         await mouse.move(middleWidth, middleHeight);
         await mouse.down();
-        await mouse.move(middleWidth, (middleHeight) - 200, { steps: 100 });
+        await mouse.move(middleWidth, (middleHeight) - 200, { steps: 20 });
         await mouse.up();
         await page.keyboard.up('Control');
         const endTilt = await page.evaluate(() => view.controls.getTilt());
@@ -144,9 +145,9 @@ describe('GlobeControls with globe example', function _() {
         await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.keyboard.down('Control');
         const mouse = page.mouse;
-        await mouse.move(middleWidth, middleHeight);
+        await mouse.move(middleWidth, middleHeight, { steps: 20 });
         await mouse.down();
-        await mouse.move((middleWidth) - 50, (middleHeight), { steps: 100 });
+        await mouse.move((middleWidth) - 50, (middleHeight), { steps: 10 });
         await mouse.up();
         await page.keyboard.up('Control');
         const endHeading = await page.evaluate(() => view.controls.getHeading());
@@ -163,14 +164,14 @@ describe('GlobeControls with globe example', function _() {
         }));
 
         await page.evaluate(() => { view.controls.enableDamping = false; });
-        await page.mouse.click(middleWidth, middleHeight, { clickCount: 2, delay: 100 });
+        await page.mouse.click(middleWidth, middleHeight, { clickCount: 2, delay: 50 });
         const result = await end.then(er => (initialPosition.range * 0.6) - er);
         assert.ok(Math.abs(result) < 100);
     });
 
     it('should zoom like expected with mouse wheel', async () => {
         await page.evaluate(() => { view.controls.enableDamping = false; });
-        await page.mouse.move(middleWidth, middleHeight);
+        await page.mouse.move(middleWidth, middleHeight, { steps: 20 });
         const finalRange = await page.evaluate(() => new Promise((resolve) => {
             view.mainLoop.addEventListener('command-queue-empty', () => {
                 if (view.mainLoop.renderingState === 0) {
