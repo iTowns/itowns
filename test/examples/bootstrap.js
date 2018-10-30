@@ -1,6 +1,7 @@
 /* global process, Promise */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const puppeteer = require('puppeteer');
+const { TimeoutError } = require('puppeteer/Errors');
 const net = require('net');
 const fs = require('fs');
 const http = require('http');
@@ -80,6 +81,12 @@ before(async () => {
     // global variable stored for resetting the page state
     global.initialPosition = {};
 
+    const layersAreInitialized = async () => {
+        await page.waitFor(() => view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0
+            && view.mainLoop.renderingState === 0
+            && view.getLayers().every(layer => layer.ready), { timeout: 20000 });
+    };
+
     // Helper function: returns true when all layers are
     // ready and rendering has been done
     global.loadExample = async (url, screenshotName) => {
@@ -93,9 +100,16 @@ before(async () => {
             itowns.CameraUtils.defaultStopPlaceOnGroundAtEnd = true;
         });
 
-        await page.waitFor(() => view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0
-            && view.mainLoop.renderingState === 0
-            && view.getLayers().every(layer => layer.ready));
+        try {
+            await layersAreInitialized();
+        } catch (e) {
+            if (e instanceof TimeoutError) {
+                await page.evaluate(() => {
+                    itowns.CameraUtils.stop(view, view.camera.camera3D);
+                });
+                await layersAreInitialized();
+            }
+        }
 
         await waitNextRender(page);
 
@@ -133,6 +147,11 @@ before(async () => {
             if (container) {
                 container.style.display = 'none';
             }
+            const divScaleWidget = document.querySelectorAll('.divScaleWidget');
+            if (divScaleWidget && divScaleWidget.length) {
+                divScaleWidget[0].style.display = 'none';
+            }
+
             resolve();
         }
         view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
