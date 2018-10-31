@@ -15,14 +15,6 @@ const PLAYER_STATE = {
     PAUSE: 3,
 };
 
-const debugMsg =
-    [
-        'Stop',
-        'Play',
-        'End',
-        'Pause',
-    ];
-
 // Private functions
 // stop timer and re-init parameter
 const resetTimer = function resetTimer(player) {
@@ -55,14 +47,6 @@ const finishAnimation = function finishAnimation(player) {
         player.resolve();
         player.resolve = null;
         player.promise = null;
-    }
-};
-
-const setPlayerState = function setPlayerState(player, state) {
-    player.state = state;
-    if (__DEBUG__ && player.animation) {
-        // eslint-disable-next-line no-console
-        console.info('Animation ', debugMsg[state], ' : ', player.animation.name);
     }
 };
 
@@ -112,7 +96,7 @@ class AnimationPlayer extends THREE.EventDispatcher {
         this.dispatchEvent({
             type: 'animation-started',
             animation });
-        setPlayerState(this, PLAYER_STATE.PLAY);
+        this.state = PLAYER_STATE.PLAY;
         resetTimer(this);
         this.id = setInterval(this.frame.bind(this), FRAME_DURATION);
         this.promise = new Promise((r) => { this.resolve = r; });
@@ -141,7 +125,7 @@ class AnimationPlayer extends THREE.EventDispatcher {
      * @return  {Promise<void>}  Promise is resolved when animation is stopped or finished
      */
     stop() {
-        setPlayerState(this, PLAYER_STATE.STOP);
+        this.state = PLAYER_STATE.STOP;
         finishAnimation(this);
         // needed to return promise to wait sync
         return Promise.resolve();
@@ -162,7 +146,7 @@ class AnimationPlayer extends THREE.EventDispatcher {
                 type: 'animation-frame',
             });
         } else {
-            setPlayerState(this, PLAYER_STATE.END);
+            this.state = PLAYER_STATE.END;
             finishAnimation(this);
         }
     }
