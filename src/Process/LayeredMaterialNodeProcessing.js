@@ -26,8 +26,8 @@ function getSourceExtent(node, extent, targetLevel, source) {
 }
 
 function initNodeImageryTexturesFromParent(node, parent, layer) {
-    const parentLayer = parent.material.getLayer(layer.id);
-    const nodeLayer = node.material.getLayer(layer.id);
+    const parentLayer = parent.material && parent.material.getLayer(layer.id);
+    const nodeLayer = node.material && node.material.getLayer(layer.id);
     if (parentLayer && nodeLayer && parentLayer.level > nodeLayer.level) {
         const coords = node.getCoordsForSource(layer.source);
         let index = 0;

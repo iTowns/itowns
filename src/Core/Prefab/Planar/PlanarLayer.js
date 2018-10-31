@@ -65,7 +65,7 @@ class PlanarLayer extends TiledGeometryLayer {
         // The induced geometric error is much too large and distorts the SSE
         const nodeLayer = node.material.getElevationLayer();
         const currentTexture = nodeLayer.textures[0];
-        if (currentTexture.extent) {
+        if (currentTexture && currentTexture.extent) {
             const offsetScale = nodeLayer.offsetScales[0];
             const ratio = offsetScale.z;
             // ratio is node size / texture size

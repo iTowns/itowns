@@ -200,7 +200,10 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         };
         const pop = (property) => {
             const value = options[property];
-            if (value !== undefined) delete options[property]; // so that setValues does not complain
+            // so that setValues does not complain
+            if (value !== undefined) {
+                delete options[property];
+            }
             return value;
         };
         if (pop('useRgbaTextureElevation')) {

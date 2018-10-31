@@ -12,7 +12,9 @@ function push(object3d, mode) {
 
     const setMode = m => ((node) => {
         const material = node.material;
-        if (material) material.mode = m;
+        if (material) {
+            material.mode = m;
+        }
     });
 
     object3d.traverse(setMode(mode));
