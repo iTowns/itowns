@@ -3,8 +3,13 @@ set -xe # Verbose output and exit with nonzero exit code if anything fails
 
 # There are two npm versions used in travis (.travis.yml)
 # and only one deploy is needed
-if [ "$TRAVIS_NODE_VERSION" != "node" ]; then
-	echo "Skipping deploy for npm version != node"
+# TEMP Node js 11.0.0 isn't supported for the moment 
+# if [ "$TRAVIS_NODE_VERSION" != "node" ]; then
+# 	echo "Skipping deploy for npm version != node"
+# 	exit 0
+# fi
+if [ "$TRAVIS_NODE_VERSION" != "10" ]; then
+	echo "Skipping deploy for npm version != 10"
 	exit 0
 fi
 
