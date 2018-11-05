@@ -64,17 +64,11 @@ describe('positionGlobe', function _() {
         const destRange = 1500;
         await page.evaluate((range) => {
             view.mesh.material.visible = false;
-            view.controls.setRange(range);
+            view.controls.setRange(range, false);
         }, destRange);
 
-        // wait camera'transformation and get range value with globeControls method
-        const controlsMethod = await page.evaluate(() => new Promise((resolve) => {
-            const endAni = () => {
-                view.controls.removeEventListener('animation-ended', endAni);
-                resolve(view.controls.getRange());
-            };
-            view.controls.addEventListener('animation-ended', endAni);
-        }));
+        // get range value with globeControls method
+        const controlsMethod = await page.evaluate(() => view.controls.getRange());
 
         // get range with depth buffer
         const depthMethod = await page.evaluate(() => view

@@ -45,7 +45,8 @@ export default {
 
         // build tile
         geometry._count++;
-        const material = new LayeredMaterial(layer.materialOptions);
+        const materialOptions = Object.assign({}, layer.materialOptions);
+        const material = new LayeredMaterial(materialOptions);
         const tile = new TileMesh(geometry, material, layer, extent, level);
         // TODO semble ne pas etre necessaire
         tile.layers.set(layer.threejsLayer);

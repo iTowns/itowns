@@ -30,3 +30,4 @@ export { default as DEMUtils } from './utils/DEMUtils';
 export { default as CameraUtils } from './utils/CameraUtils';
 export { default as OrientationUtils } from './utils/OrientationUtils';
 export { default as ShaderChunk } from './Renderer/Shader/ShaderChunk';
+export { getMaxColorSamplerUnitsCount } from './Renderer/LayeredMaterial';

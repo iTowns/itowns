@@ -40,6 +40,12 @@ function initNodeImageryTexturesFromParent(node, parent, layer) {
             }
             index++;
         }
+
+        if (__DEBUG__) {
+            if (index != coords.length) {
+                console.error(`non-coherent result ${index} vs ${coords.length}.`, coords);
+            }
+        }
     }
 }
 
