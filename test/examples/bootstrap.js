@@ -1,7 +1,7 @@
 /* global process, Promise */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const puppeteer = require('puppeteer');
-const { TimeoutError } = require('puppeteer/Errors');
+// const { TimeoutError } = require('puppeteer/Errors');
 const net = require('net');
 const fs = require('fs');
 const http = require('http');
