@@ -84,7 +84,7 @@ before(async () => {
     const layersAreInitialized = async () => {
         await page.waitFor(() => view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0
             && view.mainLoop.renderingState === 0
-            && view.getLayers().every(layer => layer.ready), { timeout: 20000 });
+            && view.getLayers().every(layer => layer.ready), { timeout: 60000 });
     };
 
     // Helper function: returns true when all layers are
