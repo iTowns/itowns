@@ -89,7 +89,7 @@ describe('Provide in Sources', function () {
         });
         const zoom = 4;
         const tile = new TileMesh(
-            colorlayer,
+            globelayer,
             geom,
             new LayeredMaterial(),
             new Extent('EPSG:4326', 0, 10, 0, 10),
@@ -124,7 +124,7 @@ describe('Provide in Sources', function () {
         });
         const zoom = 4;
         const tile = new TileMesh(
-            colorlayer,
+            globelayer,
             geom,
             new LayeredMaterial(),
             new Extent('EPSG:4326', 0, 10, 0, 10),
@@ -148,7 +148,7 @@ describe('Provide in Sources', function () {
     });
     it('should get 4 TileMesh from TileProvider', () => {
         const tile = new TileMesh(
-            colorlayer,
+            globelayer,
             geom,
             new LayeredMaterial(),
             new Extent('EPSG:4326', 0, 10, 0, 10),
@@ -167,7 +167,7 @@ describe('Provide in Sources', function () {
     });
     it('should get 3 meshs with WFS source and DataSourceProvider', () => {
         const tile = new TileMesh(
-            colorlayer,
+            globelayer,
             geom,
             new LayeredMaterial(),
             new Extent('EPSG:4326', 0, 10, 0, 10),
@@ -183,7 +183,7 @@ describe('Provide in Sources', function () {
     });
     it('should get 1 mesh with WFS source and DataSourceProvider and mergeFeatures == true', () => {
         const tile = new TileMesh(
-            colorlayer,
+            globelayer,
             geom,
             new LayeredMaterial(),
             new Extent('EPSG:4326', -10, 0, 0, 10),
