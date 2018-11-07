@@ -3,6 +3,8 @@ import Coordinates from '../../src/Core/Geographic/Coordinates';
 import ThreeStatsChart from './charts/ThreeStatsChart';
 import { MAIN_LOOP_EVENTS } from '../../src/Core/MainLoop';
 import PanoramaView from '../../src/Core/Prefab/PanoramaView';
+import OBB from '../../src/Renderer/ThreeExtended/OBB';
+import OBBHelper from './OBBHelper';
 
 /**
  * Create a debug instance attached to an itowns instance
@@ -130,6 +132,13 @@ function Debug(view, datDebugTool, chartDivContainer) {
     helper.visible = false;
     view.scene.add(helper);
 
+    // Displayed tiles boundind box
+    const displayedTilesObb = new OBB();
+    const displayedTilesObbHelper = new OBBHelper(displayedTilesObb);
+    displayedTilesObbHelper.visible = false;
+    view.scene.add(displayedTilesObb);
+    displayedTilesObb.add(displayedTilesObbHelper);
+
     function updateFogDistance(obj) {
         if (obj.setFog && fogDistance) {
             obj.setFog(fogDistance);
@@ -140,10 +149,21 @@ function Debug(view, datDebugTool, chartDivContainer) {
     const lookAtCameraDebug = new Vector3();
     function renderCameraDebug() {
         if (state.debugCameraWindow && debugCamera) {
-            const size = { x: g.width * 0.2, y: g.height * 0.2 };
+            const ratio = 0.25;
+            const size = { x: g.width * ratio, y: g.height * ratio };
             debugCamera.aspect = size.x / size.y;
             const camera = view.camera.camera3D;
             const coord = new Coordinates(view.referenceCrs, camera.position).as(tileLayer.extent._crs);
+            const extent = view.tileLayer.info.displayed.extent;
+            OBB.extentToOBB(extent, extent.min, extent.max, displayedTilesObb);
+            displayedTilesObbHelper.visible = true;
+            displayedTilesObbHelper.update(displayedTilesObb);
+
+            // Note Method to compute near and far...
+            // const bbox = displayedTilesObb.box3D.clone().applyMatrix4(displayedTilesObb.matrixWorld);
+            // const distance = bbox.distanceToPoint(view.camera.camera3D.position);
+            // console.log('distance', distance, distance + bbox.getBoundingSphere(sphere).radius * 2);
+
             if (view instanceof PanoramaView) {
                 debugCamera.position.set(0, 0, 100);
                 camera.localToWorld(debugCamera.position);
@@ -181,11 +201,11 @@ function Debug(view, datDebugTool, chartDivContainer) {
             r.setScissorTest(true);
             r.setClearColor(0xeeeeee);
             r.clear();
-            r.clearDepth();
             r.render(view.scene, debugCamera);
             r.setScissorTest(false);
             r.setClearColor(bClearColor);
             helper.visible = false;
+            displayedTilesObbHelper.visible = false;
             if (view.atmosphere) {
                 view.atmosphere.visible = true;
             }
