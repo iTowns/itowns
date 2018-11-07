@@ -17,12 +17,17 @@ dat.GUI.prototype.removeFolder = function removeFolder(name) {
     this.onResize();
 };
 
-dat.GUI.prototype.hideFolder = function hideFolder(name, value) {
+dat.GUI.prototype.colorLayerFolder = function colorLayerFolder(name, value) {
     var folder = this.__folders[name];
+    var title;
     if (!folder) {
         return;
     }
-    folder.__ul.hidden = value;
+    title = folder.__ul.getElementsByClassName('title')[0];
+
+    if (title.style) {
+        title.style.background = value;
+    }
 };
 
 function GuiTools(domId, view, w) {
@@ -114,6 +119,6 @@ GuiTools.prototype.addGUI = function addGUI(name, value, callback) {
     this.gui.add(this, name).onChange(callback);
 };
 
-GuiTools.prototype.hideFolder = function hideFolder(nameLayer, value) {
-    this.colorGui.hideFolder(nameLayer, value);
+GuiTools.prototype.colorLayerFolder = function colorLayerFolder(nameLayer, value) {
+    this.colorGui.colorLayerFolder(nameLayer, value);
 };

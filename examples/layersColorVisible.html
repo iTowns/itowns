@@ -15,70 +15,39 @@
         <script src="../dist/itowns.js"></script>
         <script src="js/loading_screen.js"></script>
         <script type="text/javascript">
-            /* global itowns,document,GuiTools*/
+            /* global itowns,document,GuiTools, setupLoadingScreen */
 
             var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
             var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            setupLoadingScreen(viewerDiv, view);
             var menuGlobe = new GuiTools('menuDiv', view);
+            setupLoadingScreen(viewerDiv, view);
 
             function addLayerCb(layer) {
+                layer.visible = true;
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
-            itowns.Fetcher.json('./layers/JSONLayers/Region.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/Cada.json').then(addLayerCb);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb);
 
-            function removeDups(a) {
-                var temp = {};
-                for (var i = 0; i < a.length; i++) {
-                    temp[a[i]] = true;
-                }
-                var result = [];
-                for (var val in temp) {
-                    result.push(val);
-                }
-                return result;
-            }
-
-            function getLayersColorVisible(node, layers) {
-                if (!node || !node.visible) {
-                    return;
-                }
-                if (node.level) {
-                    // if node.material.visible is true then the node is diplayed in viewer
-                    // if node.material.colorLayersId is defined then the node have color layers
-                    if (node.material.visible && node.material.colorLayersId) {
-                        // get all node's color layers
-                        var tileColorLayers = node.material.colorLayersId;
-                        layers.id = removeDups(layers.id.concat(tileColorLayers));
-                    }
-                }
-                if (node.children) {
-                    for (var child of node.children) {
-                        getLayersColorVisible(child, layers);
-                    }
-                }
-            }
-
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function _() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
+                // Open folder color
+                menuGlobe.colorGui.closed = false;
             });
 
             // Use frame requester to update menu before rendering
-            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, function () {
-                var layers = { id: [] };
-                // view.scene is THREE.js scene
-                getLayersColorVisible(view.scene, layers);
-                var colorLayers = view.getLayers(function (l) { return l.type == 'color'; });
+            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, function _() {
+                var dlayers = view.tileLayer.info.displayed.layers;
+                var layers = view.getLayers(function a(l) { return l.type !== 'geometry'; });
 
-                colorLayers.forEach(function (layer) {
-                    menuGlobe.hideFolder(layer.id, layers.id.indexOf(layer.id) == -1)
+                layers.forEach(function b(layer) {
+                    menuGlobe.colorLayerFolder(layer.id, dlayers.find(l => l.id == layer.id)? 'rgb(57, 167, 57)' : 'rgb(255, 125, 125)');
                 });
             });
         </script>
