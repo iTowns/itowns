@@ -32,6 +32,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
             protocol: 'dummy',
             extent: new Extent('EPSG:4326', 0, 0, 0, 0),
         },
+        info: { update: () => {} },
     };
 
     beforeEach('reset state', function () {
