@@ -99,7 +99,9 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
 
                 if (layer.id == obb_layer_id) {
                     helper = new OBBHelper(node.obb, `id:${node.id}`);
-                    helper.children[0].layers.set(l3js);
+                    if (helper.children[0]) {
+                        helper.children[0].layers.set(l3js);
+                    }
                 } else if (layer.id == sb_layer_id) {
                     const color = new THREE.Color(Math.random(), Math.random(), Math.random());
                     const material = new THREE.MeshBasicMaterial({ color: color.getHex(), wireframe: true });
