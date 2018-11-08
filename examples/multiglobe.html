@@ -44,17 +44,17 @@
             setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
 
-            function addLayerCb(layer) {
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                var layer = new itowns.ColorLayer(config.id, config);
                 view.addLayer(layer);
-            }
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+            });
 
             // Create a second smaller globe
             object3d = new itowns.THREE.Object3D();
             object3d.scale.divideScalar(3);
             object3d.position.y = 10000000;
             object3d.updateMatrixWorld();
-            const globe2 = itowns.createGlobeLayer('globe2', { object3d });
+            const globe2 = new itowns.GlobeLayer('globe2', object3d);
             object3ds.push(object3d);
 
             // define pole texture
@@ -63,7 +63,8 @@
             // add globe2 to the view so it gets updated
             itowns.View.prototype.addLayer.call(view, globe2);
             itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(osm) {
-                itowns.View.prototype.addLayer.call(view, osm, globe2);
+                var layer = new itowns.ColorLayer(osm.id, osm);
+                itowns.View.prototype.addLayer.call(view, layer, globe2);
             });
 
             // Globe animation

@@ -34,9 +34,6 @@
             var d = new debug.Debug(view, menuGlobe.gui);
             setupLoadingScreen(viewerDiv, view);
 
-            function addLayerCb(layer) {
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            }
 
             // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946',
@@ -45,20 +42,25 @@
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                var layer = new itowns.ColorLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
+            function addElevationLayerFromConfig(config) {
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             function isValidData(data) {
                 return data.features[0].geometry.length < 1000;
             }
 
-            view.addLayer({
-                type: 'color',
-                id: 'wfsBuilding',
+            var wfsBuildingLayer = new itowns.ColorLayer('wfsBuilding', {
                 transparent: true,
                 style: {
                     fill: 'red',
@@ -83,6 +85,7 @@
                     format: 'application/json',
                 },
             });
+            view.addLayer(wfsBuildingLayer);
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {

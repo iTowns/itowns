@@ -70,9 +70,7 @@
                     return extentDestination.zoom, z - z % 4 == data.extent.zoom - 2;
                 }
 
-                view.addLayer({
-                    type: 'color',
-                    id: 'MVT',
+                var mvtLayer = new itowns.ColorLayer('MVT', {
                     isValidData: isValidData,
                     source: {
                         protocol: 'xyz',
@@ -95,6 +93,7 @@
                     backgroundLayer,
                     projection: 'EPSG:3857',
                 });
+                view.addLayer(mvtLayer);
             });
 
             // Request redraw

@@ -77,10 +77,6 @@
             // eslint-disable-next-line
             new itowns.PlanarControls(planarView, {});
 
-            function addLayerCb(layer) {
-                return view.addLayer(layer);
-            }
-
             viewerDiv.addEventListener('mousemove', function _() {
                 overGlobe = true;
             }, false);
@@ -89,7 +85,10 @@
                 overGlobe = false;
             }, false);
 
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                var layer = new itowns.ColorLayer(config.id, config);
+                view.addLayer(layer);
+            }));
 
             // Listen for globe full initialisation event
             view
@@ -131,9 +130,7 @@
                         }).catch(console.error);
                     });
 
-            planarView.addLayer({
-                type: 'color',
-                id: 'wms_imagery',
+            var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
                 updateStrategy: {
                     type: itowns.STRATEGY_DICHOTOMY,
                     options: {},
@@ -148,6 +145,7 @@
                     format: 'image/jpeg',
                 },
             });
+            planarView.addLayer(wmsImageryLayer);
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
         </script>
