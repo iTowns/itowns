@@ -57,6 +57,7 @@ TileMesh.prototype.isVisible = function isVisible() {
 
 TileMesh.prototype.setDisplayed = function setDisplayed(show) {
     this.material.visible = show;
+    this.layer.info.update(this);
 };
 
 TileMesh.prototype.setVisibility = function setVisibility(show) {

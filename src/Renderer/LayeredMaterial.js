@@ -303,6 +303,10 @@ LayeredMaterial.prototype.setLayerTextures = function setLayerTextures(layer, te
         if (Array.isArray(textures)) {
             textures = textures[0];
         }
+        // Add save layer.id elevation to get info of displayed layer.
+        // These properties will soon be clearly exposed
+        // in a next soon refactoring of this material
+        this.elevationlayerId = layer.id;
         this._setTexture(textures, l_ELEVATION, 0, pitchs);
     } else if (layer.type === 'color') {
         const index = this.indexOfColorLayer(layer.id);

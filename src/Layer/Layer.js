@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from './LayerUpdateStrategy';
+import InfoLayer from './InfoLayer';
 
 class Layer extends THREE.EventDispatcher {
     /**
@@ -80,6 +81,8 @@ class Layer extends THREE.EventDispatcher {
         }
 
         this.defineLayerProperty('frozen', false);
+
+        this.info = new InfoLayer(this);
     }
 
     /**
