@@ -32,11 +32,10 @@
             setupLoadingScreen(viewerDiv, view);
             view.tileLayer.disableSkirt = true;
 
-            function addLayerCb(layer) {
-                return view.addLayer(layer);
-            }
-
-             itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
+                var layer = new itowns.ColorLayer(config.id, config);
+                view.addLayer(layer);
+            });
 
             view.camera.camera3D.position.set(259880, 6249400, 40);
 

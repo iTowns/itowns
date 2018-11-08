@@ -57,9 +57,7 @@
             setupLoadingScreen(viewerDiv, view);
 
             // Add an WMS imagery layer (see WMSProvider* for valid options)
-            view.addLayer({
-                type: 'color',
-                id: 'wms_imagery',
+            var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
                 transparent: false,
                 source: {
                     url: 'https://download.data.grandlyon.com/wms/grandlyon',
@@ -72,6 +70,7 @@
                     format: 'image/jpeg',
                 },
             });
+            view.addLayer(wmsImageryLayer);
 
             p = { coord: new itowns.Coordinates('EPSG:3946', 1840839, 5172718, 0), heading: -45, range: 1800, tilt: 30 };
             itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, p);
@@ -98,9 +97,7 @@
                 }
             }
 
-            view.addLayer({
-                type: 'geometry',
-                name: 'lyon_tcl_bus',
+            var lyonTclBusLayer = new itowns.GeometryLayer('lyon_tcl_bus', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     color: colorLine }),
@@ -122,6 +119,7 @@
                     format: 'geojson',
                 },
             });
+            view.addLayer(lyonTclBusLayer);
 
             function colorBuildings(properties) {
                 if (properties.id.indexOf('bati_remarquable') === 0) {
@@ -157,9 +155,8 @@
             }
 
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
-            view.addLayer({
-                id: 'wfsBuilding',
-                type: 'geometry',
+
+            var wfsBuildingLayer = new itowns.GeometryLayer('wfsBuilding', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     color: colorBuildings,
@@ -187,6 +184,7 @@
                     },
                 },
             });
+            view.addLayer(wfsBuildingLayer);
 
             function binarySearch(array, value) {
                 var guess,

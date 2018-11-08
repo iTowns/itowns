@@ -61,9 +61,7 @@
             setupLoadingScreen(viewerDiv, view);
 
             // Add an WMS imagery layer (see WMSProvider* for valid options)
-            view.addLayer({
-                id: 'wms_imagery',
-                type: 'color',
+            var colorLayer = new itowns.ColorLayer('wms_imagery', {
                 transparent: true,
                 source: {
                     extent: extent,
@@ -76,11 +74,10 @@
                     format: 'image/jpeg',
                 },
             });
+            view.addLayer(colorLayer);
 
             // Add an WMS elevation layer (see WMSProvider* for valid options)
-            view.addLayer({
-                id: 'wms_elevation',
-                type: 'elevation',
+            var elevationLayer = new itowns.ElevationLayer('wms_elevation', {
                 source: {
                     extent: extent,
                     url: 'https://download.data.grandlyon.com/wms/grandlyon',
@@ -92,10 +89,9 @@
                     format: 'image/jpeg',
                 },
             });
+            view.addLayer(elevationLayer);
 
-            view.addLayer({
-                type: 'color',
-                id: 'Kml',
+            var kmlLayer = new itowns.ColorLayer('Kml', {
                 transparent: true,
                 source: {
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.kml',
@@ -105,10 +101,9 @@
                     zoom: { min: 0, max: 6 },
                 },
             });
+            view.addLayer(kmlLayer);
 
-            view.addLayer({
-                type: 'color',
-                id: 'gpx',
+            var gpxLayer = new itowns.ColorLayer('Gpx', {
                 transparent: true,
                 style: {
                     stroke: 'blue',
@@ -120,10 +115,9 @@
                     zoom: { min: 0, max: 6 },
                 },
             });
+            view.addLayer(gpxLayer);
 
-            view.addLayer({
-                type: 'color',
-                id: 'geo',
+            var geoLayer = new itowns.ColorLayer('geo', {
                 transparent: true,
                 source: {
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import OBBHelper from './OBBHelper';
 import View from '../../src/Core/View';
+import Layer from '../../src/Layer/Layer';
 import GeometryDebug from './GeometryDebug';
 
 const invMatrixChangeUpVectorZtoY = new THREE.Matrix4().getInverse(new THREE.Matrix4().makeRotationX(Math.PI / 2));
@@ -97,13 +98,12 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
         }
     };
 
-    View.prototype.addLayer.call(view,
-        {
-            id: obb_layer_id,
-            type: 'debug',
-            update: debugIdUpdate,
-            visible: false,
-        }, _3dTileslayer).then((l) => {
+    const obbLayer = new Layer(obb_layer_id, 'debug', {
+        update: debugIdUpdate,
+        visible: false,
+    });
+
+    View.prototype.addLayer.call(view, obbLayer, _3dTileslayer).then((l) => {
         gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
             view.notifyChange();
         });

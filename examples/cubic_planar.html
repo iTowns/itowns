@@ -110,7 +110,6 @@
                 obj.updateMatrixWorld(true);
 
                 config = {
-                    object3d: obj,
                     // Since the elevation layer use color textures, specify min/max z
                     materialOptions: {
                         useColorTextureElevation: true,
@@ -120,13 +119,12 @@
                     disableSkirt: true,
                 };
 
-                tileLayer = itowns.createPlanarLayer('planar' + wms + index, extent, config);
+                tileLayer = new itowns.PlanarLayer('planar' + wms + index,
+                    extent, obj, config);
 
                 view.addLayer(tileLayer);
 
-                view.addLayer({
-                    type: 'color',
-                    id: 'wms_imagery' + wms + index,
+                var colorLayer = new itowns.ColorLayer('wms_imagery' + wms + index, {
                     source: {
                         protocol: 'wms',
                         url: 'https://download.data.grandlyon.com/wms/grandlyon',
@@ -136,11 +134,10 @@
                         format: 'image/jpeg',
                         extent,
                     },
-                }, tileLayer);
+                })
+                view.addLayer(colorLayer, tileLayer);
 
-                view.addLayer({
-                    id: 'wms_elevation' + wms + index,
-                    type: 'elevation',
+                var elevationLayer = new itowns.ElevationLayer('wms_elevation' + wms + index, {
                     source: {
                         protocol: 'wms',
                         extent,
@@ -151,7 +148,8 @@
                         format: 'image/jpeg',
                         url: 'https://download.data.grandlyon.com/wms/grandlyon',
                     },
-                }, tileLayer);
+                });
+                view.addLayer(elevationLayer, tileLayer);
             }
 
             // Since PlanarView doesn't create default controls, we manipulate directly three.js camera

@@ -56,22 +56,24 @@
             var menuGlobe = new GuiTools('menuDiv', view);
 
             setupLoadingScreen(viewerDiv, view);
-            function addLayerCb(layer) {
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            }
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                var layer = new itowns.ColorLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
+            function addElevationLayerFromConfig(config) {
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
-            view.addLayer({
-                type: 'color',
-                id: 'Kml',
+            var kmlLayer = new itowns.ColorLayer('Kml', {
                 name: 'kml',
                 transparent: true,
                 source: {
@@ -80,10 +82,9 @@
                     projection: 'EPSG:4326',
                 },
             });
+            view.addLayer(kmlLayer);
 
-            view.addLayer({
-                type: 'color',
-                id: 'Gpx',
+            var gpxLayer = new itowns.ColorLayer('Gpx', {
                 name: 'Ultra 2009',
                 transparent: true,
                 source: {
@@ -92,10 +93,9 @@
                     projection: 'EPSG:4326',
                 },
             });
+            view.addLayer(gpxLayer);
 
-            view.addLayer({
-                type: 'color',
-                id: 'ariege',
+            var ariegeLayer = new itowns.ColorLayer('ariege', {
                 name: 'ariege',
                 transparent: true,
                 style: {
@@ -109,6 +109,7 @@
                     projection: 'EPSG:4326',
                 },
             });
+            view.addLayer(ariegeLayer);
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function _() {

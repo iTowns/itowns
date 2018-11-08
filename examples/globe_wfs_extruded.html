@@ -35,9 +35,6 @@
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             setupLoadingScreen(viewerDiv, view);
-            function addLayerCb(layer) {
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            }
 
             // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946',
@@ -48,12 +45,19 @@
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                var layer = new itowns.ColorLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
+            function addElevationLayerFromConfig(config) {
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             var color = new itowns.THREE.Color();
             var tile;
@@ -89,10 +93,8 @@
                 return false;
             }
 
-            view.addLayer({
+            var lyonTclBusLayer = new itowns.GeometryLayer('WFS Bus lines', new itowns.THREE.Group(), {
                 name: 'lyon_tcl_bus',
-                id: 'WFS Bus lines',
-                type: 'geometry',
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     color: colorLine,
@@ -115,6 +117,7 @@
                     format: 'geojson',
                 }
             });
+            view.addLayer(lyonTclBusLayer);
 
             function colorBuildings(properties) {
                 if (properties.id.indexOf('bati_remarquable') === 0) {
@@ -155,9 +158,7 @@
             };
 
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
-            view.addLayer({
-                id: 'WFS Buildings',
-                type: 'geometry',
+            var wfsBuildingLayer = new itowns.GeometryLayer('WFS Building', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     color: colorBuildings,
@@ -185,6 +186,7 @@
                     },
                 }
             });
+            view.addLayer(wfsBuildingLayer);
 
             var menuGlobe = new GuiTools('menuDiv', view);
             // Listen for globe full initialisation event

@@ -48,9 +48,6 @@
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             setupLoadingScreen(viewerDiv, view);
-            function addLayerCb(layer) {
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            }
 
             // Dont' instance mini viewer if it's Test env
             miniView = new itowns.GlobeView(miniDiv, positionOnGlobe, {
@@ -81,17 +78,25 @@
                 miniView.notifyChange(camera);
             });
 
-            // Add one imagery layer to the miniview
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(layer) { miniView.addLayer(layer); });
 
-            // Add one imagery layer to the scene
+            // Add one imagery layer to the scene and the miniView
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                var layer = new itowns.ColorLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+
+                var miniLayer = new itowns.ColorLayer(config.id, config);
+                miniView.addLayer(miniLayer);
+            });
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
+            function addElevationLayerFromConfig(config) {
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             var menuGlobe = new GuiTools('menuDiv', view);
             var divScaleWidget = document.querySelectorAll('.divScaleWidget')[0];

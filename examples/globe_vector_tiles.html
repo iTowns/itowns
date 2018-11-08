@@ -36,11 +36,11 @@
             view.atmosphere.visible = false;
 
             setupLoadingScreen(viewerDiv, view);
-            function addLayerCb(layer) {
-                return view.addLayer(layer);
-            }
 
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                var layer = new itowns.ColorLayer(config.id, config);
+                return view.addLayer(layer);
+            }));
 
             // Add a vector tile layer
             promises.push(itowns.Fetcher.json('https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json').then(function (style) {
@@ -65,9 +65,7 @@
                     return extentDestination.zoom, z - z % 4 == data.extent.zoom - 2;
                 }
 
-                return view.addLayer({
-                    type: 'color',
-                    id: 'MVT',
+                var mvtLayer = new itowns.ColorLayer('MVT', {
                     isValidData: isValidData,
                     source: {
                         protocol: 'xyz',
@@ -91,6 +89,8 @@
                     filter: mapboxFilter(supportedLayers),
                     backgroundLayer,
                 });
+
+                return view.addLayer(mvtLayer);
             }));
 
             var menuGlobe = new GuiTools('menuDiv', view, 300);

@@ -3,6 +3,7 @@ import OBBHelper from './OBBHelper';
 import TileObjectChart from './charts/TileObjectChart';
 import TileVisibilityChart from './charts/TileVisibilityChart';
 import View from '../../src/Core/View';
+import Layer from '../../src/Layer/Layer';
 import ObjectRemovalHelper from '../../src/Process/ObjectRemovalHelper';
 import GeometryDebug from './GeometryDebug';
 
@@ -157,24 +158,23 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         }
     }
 
-    View.prototype.addLayer.call(view,
-        {
-            id: obb_layer_id,
-            type: 'debug',
-            update: debugIdUpdate,
-            visible: false,
-        }, layer).then((l) => {
+    const obbLayer = new Layer(obb_layer_id, 'debug', {
+        update: debugIdUpdate,
+        visible: false,
+    });
+
+    View.prototype.addLayer.call(view, obbLayer, layer).then((l) => {
         gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
             view.notifyChange(l);
         });
     });
-    View.prototype.addLayer.call(view,
-        {
-            id: sb_layer_id,
-            type: 'debug',
-            update: debugIdUpdate,
-            visible: false,
-        }, layer).then((l) => {
+
+    const sbLayer = new Layer(sb_layer_id, 'debug', {
+        update: debugIdUpdate,
+        visible: false,
+    });
+
+    View.prototype.addLayer.call(view, sbLayer, layer).then((l) => {
         gui.add(l, 'visible').name('Bounding Spheres').onChange(() => {
             view.notifyChange(l);
         });

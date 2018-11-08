@@ -47,9 +47,7 @@
             setupLoadingScreen(viewerDiv, view);
 
             // Add a TMS imagery layer
-            view.addLayer({
-                type: 'color',
-                id: 'OPENSM',
+            var opensmLayer = new itowns.ColorLayer('OPENSM', {
                 updateStrategy: {
                     type: itowns.STRATEGY_DICHOTOMY,
                 },
@@ -66,6 +64,8 @@
                     },
                 },
             });
+
+            view.addLayer(opensmLayer);
 
             // Request redraw
             view.notifyChange();

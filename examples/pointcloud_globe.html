@@ -58,10 +58,7 @@
                 setupLoadingScreen(viewerDiv, view);
 
                 view.controls.minDistance = 0;
-                function addLayerCb(layer) {
-                    view.addLayer(layer);
-                }
-
+                
                 // Configure Point Cloud layer
                 pointcloud = new itowns.GeometryLayer('eglise_saint_blaise_arles', view.scene);
                 pointcloud.file = fileName || 'infos/sources';
@@ -85,8 +82,14 @@
 
                 itowns.View.prototype.addLayer.call(view, pointcloud).then(onLayerReady);
 
-                itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
-                itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+                itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function _(config) {
+                    var layer = new itowns.ElevationLayer(config.id, config);
+                    view.addLayer(layer);
+                });
+                itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                    var layer = new itowns.ColorLayer(config.id, config);
+                    view.addLayer(layer);
+                });
             }
 
             showPointcloud("https://raw.githubusercontent.com/gmaillet/dataset/master/", "eglise_saint_blaise_arles.js");

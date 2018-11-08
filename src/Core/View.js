@@ -124,6 +124,7 @@ View.prototype = Object.create(THREE.EventDispatcher.prototype);
 View.prototype.constructor = View;
 
 function _createLayerFromConfig(config) {
+    console.warn('Deprecation warning: passing a layer as an object is deprecated. Instantiate the layer before adding it to the view instead.');
     switch (config.type) {
         case 'color':
             return new ColorLayer(config.id, config);

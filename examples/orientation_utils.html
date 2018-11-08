@@ -36,16 +36,18 @@
 
             setupLoadingScreen(viewerDiv, view);
 
-            function addLayerCb(layer) {
-                return view.addLayer(layer);
-            }
-
             // Add one imagery layer to the scene
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                var layer = new itowns.ColorLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
 
             // Add elevation layer.
             var promises = [];
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function _(config) {
+                var layer = new itowns.ElevationLayer(config.id, config);
+                return view.addLayer(layer);
+            }));
 
             // Input data : a geoJson file, with point features, with orientation specific properties
             var panoramics = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson';

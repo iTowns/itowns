@@ -67,9 +67,7 @@
             setupLoadingScreen(viewerDiv, view);
 
             // Add an WMS imagery layer (see WMSProvider* for valid options)
-            view.addLayer({
-                type: 'color',
-                id: 'wms_imagery',
+            var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
                 updateStrategy: {
                     type: itowns.STRATEGY_DICHOTOMY,
                     options: {},
@@ -85,10 +83,10 @@
                 },
             });
 
+            view.addLayer(wmsImageryLayer);
+
             // Add an WMS elevation layer (see WMSProvider* for valid options)
-            view.addLayer({
-                id: 'wms_elevation',
-                type: 'elevation',
+            var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
                 source: {
                     extent: extent,
                     url: 'https://download.data.grandlyon.com/wms/grandlyon',
@@ -99,6 +97,8 @@
                     format: 'image/jpeg',
                 },
             });
+
+            view.addLayer(wmsElevationLayer);
 
             p = { coord: extent.center(), heading: -49.6, range: 6200, tilt: 17 };
             itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, p);
