@@ -29,6 +29,7 @@
             "src/Layer/ElevationLayer.js",
             "src/Layer/GeometryLayer.js",
             "src/Layer/TiledGeometryLayer.js",
+            "src/Layer/InfoLayer.js",
 
             "src/Source/Source.js",
             "src/Source/WMTSSource.js",

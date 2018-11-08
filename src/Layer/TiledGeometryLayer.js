@@ -1,8 +1,10 @@
 import GeometryLayer from './GeometryLayer';
+import { InfoTiledGeometryLayer } from './InfoLayer';
 import Picking from '../Core/Picking';
 import convertToTile from '../Parser/convertToTile';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from '../Process/ObjectRemovalHelper';
+
 
 class TiledGeometryLayer extends GeometryLayer {
     /**
@@ -10,6 +12,7 @@ class TiledGeometryLayer extends GeometryLayer {
      *
      * @constructor
      * @extends GeometryLayer
+     * @property {InfoTiledGeometryLayer} info Statut information of layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -40,6 +43,7 @@ class TiledGeometryLayer extends GeometryLayer {
 
         this.schemeTile = schemeTile;
         this.builder = builder;
+        this.info = new InfoTiledGeometryLayer(this);
 
         if (!this.schemeTile) {
             throw new Error(`Cannot init tiled layer without schemeTile for layer ${this.id}`);
