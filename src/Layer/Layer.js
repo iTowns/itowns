@@ -32,9 +32,10 @@ class Layer extends THREE.EventDispatcher {
      *
      * @example
      * // Add and create a new Layer
-     * const newLayer = view.addLayer({options});
+     * const newLayer = new Layer('id', 'custom', options);
+     * view.addLayer(newLayer);
      *
-     * // Change layer's visibilty
+     * // Change layer's visibility
      * const layerToChange = view.getLayers(layer => layer.id == 'idLayerToChange')[0];
      * layerToChange.visible = false;
      * view.notifyChange(); // update viewer
@@ -72,12 +73,6 @@ class Layer extends THREE.EventDispatcher {
                 type: STRATEGY_MIN_NETWORK_TRAFFIC,
                 options: {},
             };
-        }
-
-        // TODO remove this warning and fallback after the release following v2.3.0
-        if (!this.format && this.options.mimetype) {
-            console.warn('layer.options.mimetype is deprecated, please use layer.format');
-            this.format = this.options.mimetype;
         }
 
         this.defineLayerProperty('frozen', false);

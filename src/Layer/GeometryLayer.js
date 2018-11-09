@@ -25,7 +25,8 @@ class GeometryLayer extends Layer {
      * contains three elements <code>name, protocol, extent</code>, these
      * elements will be available using <code>layer.name</code> or something
      * else depending on the property name.
-     * @param {WFSSource|FileSource} [config.source] data source
+     * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] -
+     * Description and options of the source.
      *
      * @throws {Error} <code>object3d</code> must be a valid
      * <code>THREE.Object3d</code>.
@@ -42,18 +43,6 @@ class GeometryLayer extends Layer {
      *
      * // Add the layer
      * view.addLayer(geometry);
-     *
-     * @example
-     * // Add and create a GeometryLayer
-     * view.addLayer({
-     *     id: 'buildings',
-     *     type: 'geometry',
-     *      source: {
-     *          url: 'http://server.geo/wfs?',
-     *          protocol: 'wfs',
-     *          format: 'application/json'
-     *      },
-     * });
      */
     constructor(id, object3d, config = {}) {
         super(id, 'geometry', config);

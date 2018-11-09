@@ -10,10 +10,10 @@ class WMTSSource extends Source {
      * @param {string} source.name name of layer wmts
      * @param {string} source.tileMatrixSet  define tile matrix set of wmts layer (ex: 'PM', 'WGS84')
      * @param {Array.<Object>} [source.tileMatrixSetLimits] The limits for the tile matrix set
-     * @param {number} source.tileMatrixSetLimits.minTileRow Minimum row for tiles at the level
-     * @param {number} source.tileMatrixSetLimits.maxTileRow Maximum row for tiles at the level
-     * @param {number} source.tileMatrixSetLimits.minTileCol Minimum col for tiles at the level
-     * @param {number} source.tileMatrixSetLimits.maxTileCol Maximum col for tiles at the level
+     * @param {number} [source.tileMatrixSetLimits.minTileRow] Minimum row for tiles at the level
+     * @param {number} [source.tileMatrixSetLimits.maxTileRow] Maximum row for tiles at the level
+     * @param {number} [source.tileMatrixSetLimits.minTileCol] Minimum col for tiles at the level
+     * @param {number} [source.tileMatrixSetLimits.maxTileCol] Maximum col for tiles at the level
      * @param {Object} [source.zoom]
      * @param {number} [source.zoom.min] layer's zoom minimum
      * @param {number} [source.zoom.max] layer's zoom maximum
