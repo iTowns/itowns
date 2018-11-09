@@ -71,16 +71,26 @@ export function createGlobeLayer(id, options = {}) {
 }
 
 /**
- * Creates the viewer Globe (the globe of iTowns).
- * The first parameter is the coordinates on wich the globe will be centered at the initialization.
- * The second one is the HTML div in wich the scene will be created.
+ * Creates a view of a globe.
+ *
  * @constructor
- * @example view = new GlobeView(viewer, positionOnGlobe);
- * // positionOnGlobe in latitude, longitude and altitude
- * @augments View
- * @param {HTMLDivElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
- * @param {object} coordCarto
- * @param {object=} options - see {@link View}
+ *
+ * @example
+ * var viewerDiv = document.getElementById('viewerDiv');
+ * var position = new itowns.Coordinates('WGS84', 2.35, 48.8, 25e6);
+ * var view = new itowns.GlobeView(viewerDiv, position);
+ *
+ * @example
+ * var viewerDiv = document.getElementById('viewerDiv');
+ * var position = { longitude: 2.35, latitude: 48.8, altitude: 25e6 };
+ * var view = new itowns.GlobeView(viewerDiv, position);
+ *
+ * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
+ * in the DOM.
+ * @param {object|Coordinates} coordCarto - An object containing three
+ * properties: longitude, latitude and altitude. It will help placing the camera
+ * on the globe at the creation.
+ * @param {object=} options - See options of {@link View}.
  */
 function GlobeView(viewerDiv, coordCarto, options = {}) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
@@ -88,10 +98,15 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     View.call(this, 'EPSG:4978', viewerDiv, options);
 
     // Configure camera
-    const positionCamera = new C.EPSG_4326(
-        coordCarto.longitude,
-        coordCarto.latitude,
-        coordCarto.altitude);
+    let positionCamera;
+    if (coordCarto instanceof Coordinates) {
+        positionCamera = coordCarto.as('EPSG:4326');
+    } else {
+        positionCamera = new C.EPSG_4326(
+            coordCarto.longitude,
+            coordCarto.latitude,
+            coordCarto.altitude);
+    }
 
     this.camera.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
     this.camera.camera3D.far = ellipsoidSizes.x * 10;
@@ -124,7 +139,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         this.camera.setPosition(positionCamera);
         this.camera.camera3D.lookAt(positionTargetCamera.as('EPSG:4978').xyz());
     } else {
-        this.controls = new GlobeControls(this, positionTargetCamera, coordCarto.altitude, ellipsoidSizes.x);
+        this.controls = new GlobeControls(this, positionTargetCamera, positionCamera.altitude(), ellipsoidSizes.x);
         this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
     }
 
