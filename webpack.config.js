@@ -65,8 +65,12 @@ module.exports = {
             {
                 test: /\.js$/,
                 include,
-                loader: 'babel-loader',
-                options: babelConf,
+                use: [
+                    'babel-inline-import-loader',
+                    {
+                        loader: 'babel-loader',
+                        options: babelConf,
+                    }],
             },
         ],
     },
