@@ -33,7 +33,9 @@ class ColorLayer extends Layer {
      * contains three elements <code>name, protocol, extent</code>, these
      * elements will be available using <code>layer.name</code> or something
      * else depending on the property name.
-     * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] data source
+     * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] -
+     * Description and options of the source.
+     *
      * @example
      * // Create a ColorLayer
      * const color = new ColorLayer('roads', {
@@ -47,19 +49,6 @@ class ColorLayer extends Layer {
      *
      * // Add the layer
      * view.addLayer(color);
-     *
-     * @example
-     * // Add and create a ColorLayer
-     * view.addLayer({
-     *     id: 'roads',
-     *     type: 'color',
-     *     source: {
-     *          url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
-     *          protocol: 'wmts',
-     *          format: 'image/png',
-     *     }
-     *     transparent: true
-     * });
      */
     constructor(id, config = {}) {
         super(id, 'color', config);

@@ -6,13 +6,15 @@ import CancelledCommandException from '../Core/Scheduler/CancelledCommandExcepti
 import ObjectRemovalHelper from '../Process/ObjectRemovalHelper';
 
 
+/**
+ * @property {InfoTiledGeometryLayer} info - Status information of layer
+ */
 class TiledGeometryLayer extends GeometryLayer {
     /**
      * A layer extending the {@link GeometryLayer}, but with a tiling notion.
      *
      * @constructor
      * @extends GeometryLayer
-     * @property {InfoTiledGeometryLayer} info Statut information of layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -28,6 +30,8 @@ class TiledGeometryLayer extends GeometryLayer {
      * contains three elements <code>name, protocol, extent</code>, these
      * elements will be available using <code>layer.name</code> or something
      * else depending on the property name.
+     * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] -
+     * Description and options of the source.
      *
      * @throws {Error} <code>object3d</code> must be a valid
      * <code>THREE.Object3d</code>.

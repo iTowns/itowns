@@ -18,7 +18,8 @@ class ElevationLayer extends Layer {
      * contains three elements <code>name, protocol, extent</code>, these
      * elements will be available using <code>layer.name</code> or something
      * else depending on the property name.
-     * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] data source
+     * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] -
+     * Description and options of the source.
      *
      * @example
      * // Create an ElevationLayer
@@ -32,18 +33,6 @@ class ElevationLayer extends Layer {
      *
      * // Add the layer
      * view.addLayer(elevation);
-     *
-     * @example
-     * // Add and create an ElevationLayer
-     * view.addLayer({
-     *     id: 'IGN_MNT',
-     *     type: 'elevation',
-     *     source: {
-     *          url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
-     *          protocol: 'wmts',
-     *          format: 'image/x-bil;bits=32',
-     *     },
-     * });
      */
     constructor(id, config = {}) {
         super(id, 'elevation', config);
