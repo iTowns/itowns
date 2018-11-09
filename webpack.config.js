@@ -29,10 +29,17 @@ babelConf.babelrc = false; // disabel babelrc reading, as we've just done it
 const replacementPluginConf = babelConf.plugins.find(plugin => Array.isArray(plugin) && plugin[0] === 'minify-replace');
 replacementPluginConf[1].replacements.find(decl => decl.identifierName === '__DEBUG__').replacement.value = debugBuild;
 
+const include = [
+    path.resolve(__dirname, 'src'),
+    path.resolve(__dirname, 'test'),
+    path.resolve(__dirname, 'utils'),
+];
+
 module.exports = {
+    context: path.resolve(__dirname),
     entry: {
-        itowns: ['@babel/polyfill', 'url-polyfill', 'whatwg-fetch', path.resolve(__dirname, 'src/MainBundle.js')],
-        debug: [path.resolve(__dirname, 'utils/debug/Main.js')],
+        itowns: ['@babel/polyfill', 'url-polyfill', 'whatwg-fetch', './src/MainBundle.js'],
+        debug: ['./utils/debug/Main.js'],
     },
     devtool: 'source-map',
     output: {
@@ -52,20 +59,12 @@ module.exports = {
             {
                 test: /\.js$/,
                 enforce: 'pre',
-                include: [
-                    path.resolve(__dirname, 'src'),
-                    path.resolve(__dirname, 'test'),
-                    path.resolve(__dirname, 'utils'),
-                ],
+                include,
                 loader: 'eslint-loader',
             },
             {
                 test: /\.js$/,
-                include: [
-                    path.resolve(__dirname, 'src'),
-                    path.resolve(__dirname, 'test'),
-                    path.resolve(__dirname, 'utils'),
-                ],
+                include,
                 loader: 'babel-loader',
                 options: babelConf,
             },
