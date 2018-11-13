@@ -23,24 +23,24 @@ function applyRotation(view, camera3D, state) {
 }
 
 const MOVEMENTS = {
-    38: { method: 'translateY', sign: -1 }, // FORWARD: up key
-    40: { method: 'translateY', sign: 1 }, // BACKWARD: down key
+    38: { method: 'translateZ', sign: -1 }, // FORWARD: up key
+    40: { method: 'translateZ', sign: 1 }, // BACKWARD: down key
     37: { method: 'translateX', sign: -1 }, // STRAFE_LEFT: left key
     39: { method: 'translateX', sign: 1 }, // STRAFE_RIGHT: right key
-    33: { method: 'translateZ', sign: 1 }, // UP: PageUp key
-    34: { method: 'translateZ', sign: -1 }, // DOWN: PageDown key
+    33: { method: 'translateY', sign: 1 }, // UP: PageUp key
+    34: { method: 'translateY', sign: -1 }, // DOWN: PageDown key
 };
 
-function translateZPlanar(dt, sign) {
-    this.camera.position.z += sign * this.options.moveSpeed * dt / 1000;
+function moveCameraVerticalPlanar(value) {
+    this.camera.position.z += value;
 }
 
 const normal = new THREE.Vector3();
-function translateZGlobe(dt, sign) {
+function moveCameraVerticalGlobe(value) {
     // compute geodesic normale
     normal.copy(this.camera.position);
     normal.normalize();
-    this.camera.position.add(normal.multiplyScalar(sign * this.options.moveSpeed * dt / 1000));
+    this.camera.position.add(normal.multiplyScalar(value));
 }
 
 class FirstPersonControls extends THREE.EventDispatcher {
@@ -113,9 +113,9 @@ class FirstPersonControls extends THREE.EventDispatcher {
         }
 
         if (view.referenceCrs == 'EPSG:4978') {
-            this.translateZ = translateZGlobe;
+            this.moveCameraVertical = moveCameraVerticalGlobe;
         } else {
-            this.translateZ = translateZPlanar;
+            this.moveCameraVertical = moveCameraVerticalPlanar;
         }
     }
 
@@ -163,8 +163,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
         }
 
         for (const move of this.moves) {
-            if (move.method === 'translateZ') {
-                this.translateZ(move.sign, dt);
+            if (move.method === 'translateY') {
+                this.moveCameraVertical(move.sign * this.options.moveSpeed * dt / 1000);
             } else {
                 this.camera[move.method](move.sign * this.options.moveSpeed * dt / 1000);
             }
