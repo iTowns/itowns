@@ -133,6 +133,8 @@
                 },
             });
 
+            view.addLayer(geoLayer);
+
             p = { coord: extent.center(), heading: -49.6, range: 6200, tilt: 17 };
             itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, p);
 
