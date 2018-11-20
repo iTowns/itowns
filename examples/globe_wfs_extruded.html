@@ -223,7 +223,7 @@
             function picking(event) {
                 if(view.controls.isPaused()) {
                     var htmlInfo = document.getElementById('info');
-                    var intersects = view.pickObjectsAt(event, 3, 'WFS Buildings');
+                    var intersects = view.pickObjectsAt(event, 3, 'WFS Building');
                     var properties;
                     var info;
                     htmlInfo.innerHTML = ' ';
@@ -253,7 +253,7 @@
                         debug.GeometryDebug.addMaterialLineWidth(gui, view, layer, 1, 10);
                     });
                 }
-                if (layer.id === 'WFS Buildings') {
+                if (layer.id === 'WFS Building') {
                     layer.whenReady.then( function _(layer) {
                         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
                         debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
