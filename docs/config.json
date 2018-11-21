@@ -46,6 +46,7 @@
             "src/Parser/CameraCalibrationParser.js",
 
             "src/Provider/URLBuilder.js",
+            "src/Provider/Fetcher.js",
 
             "src/Renderer/ColorLayersOrdering.js",
             "src/Renderer/ThreeExtended/OBB.js",
