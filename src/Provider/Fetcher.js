@@ -9,6 +9,7 @@ function checkResponse(response) {
         throw error;
     }
 }
+
 const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) => {
     checkResponse(response);
     return response.arrayBuffer();
@@ -20,15 +21,24 @@ const getTextureFloat = function getTextureFloat(buffer) {
     return texture;
 };
 
+/**
+ * Utilitary to fetch resources from a server using the {@link
+ * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch|fetch
+ * API}.
+ *
+ * @module Fetcher
+ */
 export default {
-
     /**
-     * Wrapper over fetch to get some text
+     * Wrapper over fetch to get some text.
      *
-     * @param {string} url
-     * @param {Object} options - fetch options (passed directly to fetch)
+     * @param {string} url - The URL of the resources to fetch.
+     * @param {Object} options - Fetch options (passed directly to
+     * <code>fetch()</code>), see {@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
+     * syntax for more information}.
      *
-     * @return {Promise}
+     * @return {Promise<string>} Promise containing the text.
      */
     text(url, options = {}) {
         return fetch(url, options).then((response) => {
@@ -38,12 +48,15 @@ export default {
     },
 
     /**
-     * Little wrapper over fetch to get some json
+     * Little wrapper over fetch to get some JSON.
      *
-     * @param {string} url
-     * @param {Object} options - fetch options (passed directly to fetch)
+     * @param {string} url - The URL of the resources to fetch.
+     * @param {Object} options - Fetch options (passed directly to
+     * <code>fetch()</code>), see {@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
+     * syntax for more information}.
      *
-     * @return {Promise}
+     * @return {Promise<Object>} Promise containing the JSON object.
      */
     json(url, options = {}) {
         return fetch(url, options).then((response) => {
@@ -53,12 +66,15 @@ export default {
     },
 
     /**
-     * Wrapper over fetch to get some xml.
+     * Wrapper over fetch to get some XML.
      *
-     * @param {string} url
-     * @param {Object} options - fetch options (passed directly to fetch)
+     * @param {string} url - The URL of the resources to fetch.
+     * @param {Object} options - Fetch options (passed directly to
+     * <code>fetch()</code>), see {@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
+     * syntax for more information}.
      *
-     * @return {Promise}
+     * @return {Promise<Document>} Promise containing the XML Document.
      */
     xml(url, options = {}) {
         return fetch(url, options).then((response) => {
@@ -68,14 +84,18 @@ export default {
     },
 
     /**
-     * Wrapper around TextureLoader.
+     * Wrapper around {@link THREE.TextureLoader}.
      *
-     * @param {string} url
-     * @param {Object} options - options to pass to TextureLoader. Note that
-     * THREE.js docs mention withCredentials, but it is not actually used in TextureLoader.js.
-     * @param {string} options.crossOrigin - passed directly to html elements supporting it
+     * @param {string} url - The URL of the resources to fetch.
+     * @param {Object} options - Fetch options (passed directly to
+     * <code>fetch()</code>), see {@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
+     * syntax for more information}.  Note that THREE.js docs mentions
+     * <code>withCredentials</code>, but it is not actually used in {@link
+     * THREE.TextureLoader}.
      *
-     * @return {Promise}
+     * @return {Promise<THREE.Texture>} Promise containing the {@link
+     * THREE.Texture}.
      */
     texture(url, options = {}) {
         let res;
@@ -91,15 +111,31 @@ export default {
         textureLoader.load(url, res, () => {}, rej);
         return promise;
     },
+
     /**
-     * Wrapper over fetch to get some ArrayBuffer
+     * Wrapper over fetch to get some ArrayBuffer.
      *
-     * @param {string} url
-     * @param {Object} options - fetch options (passed directly to fetch)
+     * @param {string} url - The URL of the resources to fetch.
+     * @param {Object} options - Fetch options (passed directly to
+     * <code>fetch()</code>), see {@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
+     * syntax for more information}.
      *
-     * @return {Promise}
+     * @return {Promise<ArrayBuffer>} Promise containing the ArrayBuffer.
      */
     arrayBuffer,
+
+    /**
+     * Wrapper over fetch to get some {@link THREE.DataTexture}.
+     *
+     * @param {string} url - The URL of the resources to fetch.
+     * @param {Object} options - Fetch options (passed directly to
+     * <code>fetch()</code>), see {@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
+     * syntax for more information}.
+     *
+     * @return {Promise<THREE.DataTexture>} Promise containing the DataTexture.
+     */
     textureFloat(url, options = {}) {
         return arrayBuffer(url, options).then((buffer) => {
             const floatArray = new Float32Array(buffer);
