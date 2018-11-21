@@ -149,7 +149,7 @@
             new itowns.FirstPersonControls(view);
 
             /* global itowns, document, GuiTools, view, promises */
-            var menuGlobe = new GuiTools('menuDiv');
+            var menuGlobe = new GuiTools('menuDiv', view);
             // setup GUI
             function updatePlaneDistance() {
                 transformTexturedPlane(camera, pictureInfos.distance, plane);
