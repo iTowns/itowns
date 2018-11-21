@@ -128,7 +128,7 @@ function featureToPoint(feature, options) {
     const colors = new Uint8Array(ptsIn.length);
 
     const batchIds = options.batchId ?  new Uint32Array(ptsIn.length / 3) : undefined;
-    let FeatureId = 0;
+    let featureId = 0;
 
     coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
 
@@ -139,11 +139,11 @@ function featureToPoint(feature, options) {
         fillColorArray(colors, count, color, start);
 
         if (batchIds) {
-            const id = options.batchId(geometry.properties, FeatureId);
+            const id = options.batchId(geometry.properties, featureId);
             for (let i = start; i < start + count; i++) {
                 batchIds[i] = id;
             }
-            FeatureId++;
+            featureId++;
         }
     }
 
@@ -164,7 +164,7 @@ function featureToLine(feature, options) {
     const count = ptsIn.length / 3;
 
     const batchIds = options.batchId ?  new Uint32Array(count) : undefined;
-    let FeatureId = 0;
+    let featureId = 0;
 
     coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
     const geom = new THREE.BufferGeometry();
@@ -195,11 +195,11 @@ function featureToLine(feature, options) {
                 }
             }
             if (batchIds) {
-                const id = options.batchId(geometry.properties, FeatureId);
+                const id = options.batchId(geometry.properties, featureId);
                 for (let i = start; i < end; i++) {
                     batchIds[i] = id;
                 }
-                FeatureId++;
+                featureId++;
             }
         }
         geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
@@ -211,7 +211,7 @@ function featureToLine(feature, options) {
         fillColorArray(colors, count, color);
         geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         if (batchIds) {
-            const id = options.batchId(feature.geometry.properties, FeatureId);
+            const id = options.batchId(feature.geometry.properties, featureId);
             for (let i = 0; i < count; i++) {
                 batchIds[i] = id;
             }
@@ -232,7 +232,7 @@ function featureToPolygon(feature, options) {
     vertices.minAltitude = Infinity;
 
     const batchIds = options.batchId ?  new Uint32Array(vertices.length / 3) : undefined;
-    let FeatureId = 0;
+    let featureId = 0;
 
     for (const geometry of feature.geometry) {
         const altitude = getProperty('altitude', options, 0, geometry.properties);
@@ -264,11 +264,11 @@ function featureToPolygon(feature, options) {
         }
 
         if (batchIds) {
-            const id = options.batchId(geometry.properties, FeatureId);
+            const id = options.batchId(geometry.properties, featureId);
             for (let i = start; i < end; i++) {
                 batchIds[i] = id;
             }
-            FeatureId++;
+            featureId++;
         }
     }
 
@@ -311,7 +311,7 @@ function featureToExtrudedPolygon(feature, options) {
     vertices.minAltitude = Infinity;
 
     const batchIds = options.batchId ?  new Uint32Array(vertices.length / 3) : undefined;
-    let FeatureId = 0;
+    let featureId = 0;
 
     for (const geometry of feature.geometry) {
         const altitude = getProperty('altitude', options, 0, geometry.properties);
@@ -355,11 +355,11 @@ function featureToExtrudedPolygon(feature, options) {
         }
 
         if (batchIds) {
-            const id = options.batchId(geometry.properties, FeatureId);
+            const id = options.batchId(geometry.properties, featureId);
             for (let i = start; i < endTop; i++) {
                 batchIds[i] = id;
             }
-            FeatureId++;
+            featureId++;
         }
     }
 
@@ -453,7 +453,7 @@ export default {
      * @param {number|function} options.altitude - define the base altitude of the mesh
      * @param {number|function} options.extrude - if defined, polygons will be extruded by the specified amount
      * @param {object|function} options.color - define per feature color
-     * @param {function} options.batchId - optional function to create batchId attribute. It is passed the feature property and the feature index
+     * @param {function} [options.batchId] - optional function to create batchId attribute. It is passed the feature property and the feature index
      * @return {function}
      */
     convert(options = {}) {
