@@ -1,12 +1,10 @@
 {
-  "type": "color",
   "id": "Cadastre",
   "title": "Parcelles cadastrales",
   "visible": false,
   "opacity": 1,
   "transparent": true,
   "source": {
-    "protocol": "wmts",
     "url": "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
     "networkOptions": {
       "crossOrigin": "omit"

@@ -26,12 +26,14 @@
             setupLoadingScreen(viewerDiv, view);
 
             function addColorLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ColorLayer(config.id, config);
                 layer.visible = true;
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }

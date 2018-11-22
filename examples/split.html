@@ -59,15 +59,24 @@
                 return view.addLayer(layer);
             }
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json')
+                .then(function _(c) {
+                    c.source = new itowns.WMTSSource(c.source);
+                    return c;
+                })
                 .then(addColorLayerFromConfig)
                 .then(function _(l) { orthoLayer = l; }));
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json')
+                .then(function _(c) {
+                    c.source = new itowns.TMSSource(c.source);
+                    return c;
+                })
                 .then(addColorLayerFromConfig)
                 .then(function _(l) { osmLayer = l; }));
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer);
             }

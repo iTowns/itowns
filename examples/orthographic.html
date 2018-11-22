@@ -46,23 +46,26 @@
             itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, { tilt: 90 });
             setupLoadingScreen(viewerDiv, view);
 
+            // Add a TMS imagery source
+            var opensmSource = new itowns.TMSSource({
+                isInverted: true,
+                // eslint-disable-next-line no-template-curly-in-string
+                url: 'http://c.tile.stamen.com/watercolor/${z}/${x}/${y}.jpg',
+                networkOptions: { crossOrigin: 'anonymous' },
+                extent: [extent.west(), extent.east(), extent.south(), extent.north()],
+                projection: 'EPSG:3857',
+                attribution: {
+                    name: 'OpenStreetMap',
+                    url: 'http://www.openstreetmap.org/',
+                },
+            });
+
             // Add a TMS imagery layer
             var opensmLayer = new itowns.ColorLayer('OPENSM', {
                 updateStrategy: {
                     type: itowns.STRATEGY_DICHOTOMY,
                 },
-                source: {
-                    protocol: 'xyz',
-                    // eslint-disable-next-line no-template-curly-in-string
-                    url: 'http://c.tile.stamen.com/watercolor/${z}/${x}/${y}.jpg',
-                    networkOptions: { crossOrigin: 'anonymous' },
-                    extent: [extent.west(), extent.east(), extent.south(), extent.north()],
-                    projection: 'EPSG:3857',
-                    attribution: {
-                        name: 'OpenStreetMap',
-                        url: 'http://www.openstreetmap.org/',
-                    },
-                },
+                source: opensmSource,
             });
 
             view.addLayer(opensmLayer);

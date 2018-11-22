@@ -39,13 +39,15 @@
 
             // Add one imagery layer to the scene
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                var layer = new itowns.ColorLayer(config.id, config);
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
 
             // Add elevation layer.
             var promises = [];
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
                 return view.addLayer(layer);
             }));

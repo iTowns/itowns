@@ -26,15 +26,16 @@
 
             view.mainLoop.name = 'external-ML';
 
-            function addLayerCb(layer) {
-                view.addLayer(layer);
-            }
-
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ColorLayer(config.id, config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer);
             });
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer);
+            });
         </script>
     </body>
 </html>

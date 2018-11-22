@@ -1,8 +1,7 @@
 {
-    "type": "color",
     "id": "OPENSM",
     "source": {
-        "protocol": "xyz",
+        "isInverted": true,
         "format": "image/png",
         "url": "http://osm.oslandia.io/styles/klokantech-basic/${z}/${x}/${y}.png",
         "attribution": {

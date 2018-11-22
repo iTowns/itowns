@@ -1,5 +1,4 @@
 {
-    "type":       "elevation",
     "id":         "IGN_MNT",
     "noDataValue" : -99999,
     "updateStrategy": {
@@ -9,7 +8,6 @@
         }
     },
     "source": {
-        "protocol":   "wmts",
         "url":        "http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
         "format": "image/x-bil;bits=32",
         "attribution" : {

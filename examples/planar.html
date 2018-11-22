@@ -63,36 +63,40 @@
             view = new itowns.PlanarView(viewerDiv, extent, config);
             setupLoadingScreen(viewerDiv, view);
 
-            // Add an WMS imagery layer (see WMSProvider* for valid options)
+            // Add a WMS imagery source
+            var wmsImagerySource = new itowns.WMSSource({
+                extent: extent,
+                name: 'Ortho2009_vue_ensemble_16cm_CC46',
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                version: '1.3.0',
+                projection: 'EPSG:3946',
+                format: 'image/jpeg',
+            });
+
+            // Add a WMS imagery layer
             var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
                 updateStrategy: {
                     type: itowns.STRATEGY_DICHOTOMY,
                     options: {},
                 },
-                source: {
-                    extent: extent,
-                    name: 'Ortho2009_vue_ensemble_16cm_CC46',
-                    protocol: 'wms',
-                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                    version: '1.3.0',
-                    projection: 'EPSG:3946',
-                    format: 'image/jpeg',
-                },
+                source: wmsImagerySource,
             });
 
             view.addLayer(wmsImageryLayer);
 
-            // Add an WMS elevation layer (see WMSProvider* for valid options)
+            // Add a WMS elevation source
+            var wmsElevationSource = new itowns.WMSSource({
+                extent: extent,
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                name: 'MNT2012_Altitude_10m_CC46',
+                projection: 'EPSG:3946',
+                heightMapWidth: 256,
+                format: 'image/jpeg',
+            });
+
+            // Add a WMS elevation layer
             var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
-                source: {
-                    extent: extent,
-                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                    protocol: 'wms',
-                    name: 'MNT2012_Altitude_10m_CC46',
-                    projection: 'EPSG:3946',
-                    heightMapWidth: 256,
-                    format: 'image/jpeg',
-                },
+                source: wmsElevationSource,
             });
 
             view.addLayer(wmsElevationLayer);

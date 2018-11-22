@@ -61,39 +61,48 @@
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                var layer = new itowns.ColorLayer(config.id, config);
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
+            var kmlSource = new itowns.FileSource({
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
+                    projection: 'EPSG:4326',
+                }, view.tileLayer.extent.crs());
+
             var kmlLayer = new itowns.ColorLayer('Kml', {
                 name: 'kml',
                 transparent: true,
-                source: {
-                    protocol: 'file',
-                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
-                    projection: 'EPSG:4326',
-                },
+                source: kmlSource,
             });
             view.addLayer(kmlLayer);
+
+            var gpxSource = new itowns.FileSource({
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
+                    projection: 'EPSG:4326',
+                }, view.tileLayer.extent.crs());
 
             var gpxLayer = new itowns.ColorLayer('Gpx', {
                 name: 'Ultra 2009',
                 transparent: true,
-                source: {
-                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
-                    protocol: 'file',
-                    projection: 'EPSG:4326',
-                },
+                source: gpxSource,
             });
             view.addLayer(gpxLayer);
+
+            var ariegeSource = new itowns.FileSource({
+                    url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
+                    projection: 'EPSG:4326',
+                }, view.tileLayer.extent.crs());
 
             var ariegeLayer = new itowns.ColorLayer('ariege', {
                 name: 'ariege',
@@ -103,11 +112,7 @@
                     fillOpacity: 0.5,
                     stroke: 'white',
                 },
-                source: {
-                    url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
-                    protocol: 'file',
-                    projection: 'EPSG:4326',
-                },
+                source: ariegeSource,
             });
             view.addLayer(ariegeLayer);
 
