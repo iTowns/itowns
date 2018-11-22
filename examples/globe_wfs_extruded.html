@@ -14,6 +14,7 @@
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/loading_screen.js"></script>
+        <script src="js/proj4defs/3946.js"></script>
         <script src="../dist/debug.js"></script>
         <div class="help" style="left: unset; right: 0;">
             <p><b>Information Batiment</b></p>
@@ -35,12 +36,6 @@
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             setupLoadingScreen(viewerDiv, view);
-
-            // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
-            itowns.proj4.defs('EPSG:3946',
-                '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-            itowns.proj4.defs('EPSG:2154',
-                '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
