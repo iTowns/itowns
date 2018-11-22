@@ -3,7 +3,7 @@ import LayerUpdateState from 'Layer/LayerUpdateState';
 import { ImageryLayers } from 'Layer/Layer';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 import { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
-import computeMinMaxElevation from 'Parser/XbilParser';
+import { computeMinMaxElevation, checkNodeElevationTextureValidity, insertSignificantValuesFromParent } from 'Parser/XbilParser';
 
 // max retry loading before changing the status to definitiveError
 const MAX_RETRY = 4;
@@ -22,34 +22,6 @@ function getSourceExtent(node, extent, targetLevel, source) {
             parent.extent.zoom = parent.level;
         }
         return parent.extent;
-    }
-}
-
-// TODO Move to XBilParser
-function getIndiceWithPitch(i, pitch, w) {
-    // Return corresponding indice in parent tile using pitch
-    const currentX = (i % w) / w;  // normalized
-    const currentY = Math.floor(i / w) / w; // normalized
-    const newX = pitch.x + currentX * pitch.z;
-    const newY = pitch.y + currentY * pitch.w;
-    const newIndice = Math.floor(newY * w) * w + Math.floor(newX * w);
-    return newIndice;
-}
-
-// TODO Move to XBilParser
-// This function replaces noDataValue by significant values from parent texture
-function insertSignificantValuesFromParent(data, node, parent, layer) {
-    const nodeParent = parent.material && parent.material.getElevationLayer();
-    const parentTexture = nodeParent && nodeParent.textures[0];
-    if (parentTexture) {
-        const coords = node.getCoordsForSource(layer.source);
-        const pitch = coords[0].offsetToParent(parentTexture.coords);
-
-        for (let i = 0, l = data.length; i < l; ++i) {
-            if (data[i] === layer.noDataValue) {
-                data[i] = parentTexture.image.data[getIndiceWithPitch(i, pitch, 256)];
-            }
-        }
     }
 }
 
@@ -83,17 +55,6 @@ function refinementCommandCancellationFn(cmd) {
     }
 
     return !cmd.requester.material.visible;
-}
-
-// TODO Move to XBilParser
-function checkNodeElevationTextureValidity(texture, noDataValue) {
-    // We check if the elevation texture has some significant values through corners
-    const tData = texture.image.data;
-    const l = tData.length;
-    return tData[0] > noDataValue &&
-           tData[l - 1] > noDataValue &&
-           tData[Math.sqrt(l) - 1] > noDataValue &&
-           tData[l - Math.sqrt(l)] > noDataValue;
 }
 
 export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
@@ -378,16 +339,21 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
                     elevation.texture.flipY = false;
                     elevation.texture.needsUpdate = true;
                 }
-
-                if (elevation.texture.image.data) {
-                    if (!checkNodeElevationTextureValidity(elevation.texture, layer.noDataValue)) {
+                const dataElevation = elevation.texture.image.data;
+                if (dataElevation) {
+                    if (!checkNodeElevationTextureValidity(dataElevation, layer.noDataValue)) {
                         // Quick check to avoid using elevation texture with no data
                         // value. If we have no data values, we use value from the
                         // parent tile. We should later implement multi elevation layer
                         // to choose the one to use at each level.
-                        insertSignificantValuesFromParent(elevation.texture.image.data, node, parent, layer);
+                        const nodeParent = parent.material && parent.material.getElevationLayer();
+                        const parentTexture = nodeParent && nodeParent.textures[0];
+                        if (parentTexture) {
+                            const coords = node.getCoordsForSource(layer.source);
+                            const pitch = coords[0].offsetToParent(parentTexture.coords);
+                            insertSignificantValuesFromParent(dataElevation, parentTexture.image.data, layer.noDataValue, pitch);
+                        }
                     }
-
 
                     const { min, max } = computeMinMaxElevation(elevation.texture.image.data);
                     elevation.min = !min ? 0 : min;
