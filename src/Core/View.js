@@ -194,8 +194,13 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
             // Tempory fix, because sourceFile loads data in his constructor
             // while it should be loaded in the provider
             layer.source.toTexture = layer.type != 'geometry';
-            const protocol = layer.source.protocol;
-            layer.source = new (supportedSource.get(protocol))(layer.source, layer.projection);
+
+            if (!layer.source.isSource) {
+                console.warn('Deprecation warning: passing a source as an object is deprecated. Instantiate the source before adding it to the layer instead.');
+                const protocol = layer.source.protocol;
+                layer.source = new (supportedSource.get(protocol))(layer.source, layer.projection);
+            }
+
             providerPreprocessing = layer.source.whenReady || providerPreprocessing;
         }
 

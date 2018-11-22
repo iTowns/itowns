@@ -2,38 +2,66 @@ import Source from './Source';
 import URLBuilder from '../Provider/URLBuilder';
 import Extent from '../Core/Geographic/Extent';
 
+/**
+ * @classdesc
+ * An object defining the source of resources to get from a {@link
+ * https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification|TMS} server. It
+ * inherits from {@link Source}.
+ *
+ * @extends Source
+ *
+ * @property {boolean} isTMSSource - Used to checkout whether this source is a
+ * TMSSource. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ * @property {boolean} isInverted - The isInverted property is to be set to the
+ * correct value, true or false (default being false) if the computation of the
+ * coordinates needs to be inverted to match the same scheme as OSM, Google Maps
+ * or other system. See {@link
+ * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/|this
+ * link} for more information.
+ * @property {string} tileMatrixSet - Tile matrix set of the layer, used in the
+ * generation of the coordinates to build the url. Default value is 'WGS84'.
+ * @property {Object} zoom - Object containing the minimum and maximum values of
+ * the level, to zoom in the source.
+ * @property {number} zoom.min - The minimum level of the source. Default value
+ * is 0.
+ * @property {number} zoom.max - The maximum level of the source. Default value
+ * is 18.
+ *
+ * @example
+ * // Create the source
+ * const tmsSource = new itowns.TMSSource({
+ *     format: 'image/png',
+ *     url: 'http://osm.io/styles/${z}/${x}/${y}.png',
+ *     attribution: {
+ *         name: 'OpenStreetMap',
+ *         url: 'http://www.openstreetmap.org/',
+ *     },
+ *     tileMatrixSet: 'PM',
+ * });
+ *
+ * // Create the layer
+ * const colorLayer = new itowns.ColorLayer('OPENSM', {
+ *     source: tmsSource,
+ * });
+ *
+ * // Add the layer
+ * view.addLayer(colorLayer);
+ */
 class TMSSource extends Source {
     /**
-     * Tiled images source
-     * @constructor
-     * @extends Source
-     * @param {sourceParams}  source
-     * @param {string} [source.origin] origin row coordinate: 'top' or 'bottom'
-     * @param {Object} [source.zoom]
-     * @param {number} [source.zoom.min] layer's zoom minimum
-     * @param {number} [source.zoom.max] layer's zoom maximum
-     * @param {string} [source.tileMatrixSet='WGS84']  define tile matrix set of tms layer (ex: 'PM', 'WGS84')
+     * @param {Object} source - An object that can contain all properties of a
+     * TMSSource. Only <code>url</code> is mandatory.
      *
-     * @example <caption>Add color layer with tms source</caption>
-     * const colorlayer = new ColorLayer('OPENSM', {
-     *     source: {
-     *         protocol: 'xyz',
-     *         format: 'image/png',
-     *         url: 'http://osm.io/styles/${z}/${x}/${y}.png',
-     *         attribution: {
-     *             name: 'OpenStreetMap',
-     *             url: 'http://www.openstreetmap.org/',
-     *         },
-     *         tileMatrixSet: 'PM',
-     *     }
-     * });
-     * // Add the layer
-     * view.addLayer(colorlayer);
-    */
+     * @constructor
+     */
     constructor(source) {
         super(source);
+
+        this.isTMSSource = true;
+
         if (!source.extent) {
-        // default to the full 3857 extent
+            // default to the full 3857 extent
             this.extent = new Extent('EPSG:3857',
                 -20037508.342789244, 20037508.342789244,
                 -20037508.342789255, 20037508.342789244);
@@ -41,7 +69,12 @@ class TMSSource extends Source {
 
         this.zoom = source.zoom || { min: 0, max: 18 };
 
-        this.origin = source.origin || (source.protocol == 'xyz' ? 'top' : 'bottom');
+        this.isInverted = source.isInverted || false;
+        // to remove in 2.7.0
+        if (source.origin) {
+            console.warn('Deprecation warning: origin is not supported anymore, use isInverted instead');
+            this.isInverted = (source.origin == 'top');
+        }
 
         this.format = this.format || 'image/png';
         this.url = source.url;

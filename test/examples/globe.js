@@ -32,11 +32,12 @@ describe('globe', function _() {
 
         // add layers just below the capacity limit
         const underLimit = await page.evaluate(maxLayersCount => itowns.Fetcher.json('./layers/JSONLayers/OrthosCRS.json').then((params) => {
+            // eslint-disable-next-line no-param-reassign
+            params.source = new itowns.WMTSSource(params.source);
             const promises = [];
             for (let i = 0; i < maxLayersCount; i++) {
-                const layerParams = Object.assign({}, params);
-                layerParams.id = `${layerParams.id}_${i}`;
-                promises.push(view.addLayer(layerParams));
+                const layer = new itowns.ColorLayer(`${params.id}_${i}`, params);
+                promises.push(view.addLayer(layer));
             }
             return Promise.all(promises).then(() => true).catch(() => false);
         }), limit);

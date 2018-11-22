@@ -1,45 +1,44 @@
 import Extent from '../Core/Geographic/Extent';
-/**
- * @typedef {Object} NetworkOptions - Options for fetching resources over the
- * network. For json or xml fetching, this object is passed as it is to fetch
- * as the init object, see [fetch documentation]{@link https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters}.
- * @property {string} crossOrigin For textures, only this property is used. Its
- * value is directly assigned to the crossorigin property of html tags.
- * @property * Same properties as the init parameter of fetch
- */
 
 /**
- * @typedef {object} sourceParams
- * @property {string} protocol source's protocol (wmts, wms, wfs, file, tms, static)
- * @property {string} url Base URL of the repository or of the file(s) to load
- * @property {NetworkOptions} [networkOptions = { crossOrigin: 'anonymous' }] the base url to fetch data source
- * @property {string} [projection] data's projection
- * @property {Extent} [extent] data's extent
- * @property {Attribution} [attribution] Attribution The intellectual property rights for the source
- * @property {string} [format] data format
+ * @classdesc
+ * Sources are object containing informations on how to fetch resources, from a
+ * set source.
  *
+ * To extend a Source, it is necessary to implement two functions: {@link
+ * Source#urlFromExtent} and {@link Source#extentInsideLimit}.
+ *
+ * @property {boolean} isSource - Used to checkout whether this source is a
+ * Source. Default is true. You should not change this, as it is used internally
+ * for optimisation.
+ * @property {string} url - The url of the resources that are fetched.
+ * @property {string} format - The format of the resources that are fetched.
+ * @property {Object} networkOptions - Fetch options (passed directly to
+ * <code>fetch()</code>), see {@link
+ * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
+ * syntax for more information}. By default, set to <code>{ crossOrigin:
+ * 'anonymous' }</code>.
+ * @property {string} projection - The projection of the resources.
+ * @property {string} attribution - The intellectual property rights for the
+ * resources.
+ * @property {Extent} extent - The extent of the resources.
  */
-
 class Source {
     /**
-     * Source are parameters to fetch source
+     * @param {Object} source - An object that can contain all properties of a
+     * Source. Only the <code>url</code> property is mandatory.
      *
-     * To extend {@link Source}, it is necessary to implement 2 functions:
-     * {@link Source#urlFromExtent} and {@link Source#extentInsideLimit}
-     * @param  {sourceParams}  source  object to set source
-     *
+     * @constructor
      */
     constructor(source) {
-        if (!source.protocol) {
-            throw new Error('New Source: protocol is required');
-        }
+        this.isSource = true;
 
         if (!source.url) {
             throw new Error('New Source: url is required');
         }
 
+        this.url = source.url;
         this.format = source.format;
-        this.protocol = source.protocol;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.projection = source.projection;
         this.attribution = source.attribution;
@@ -58,10 +57,12 @@ class Source {
         console.warn(`err ${this}`, err);
     }
     /**
-     * Generate url from extent. This url is link to fetch data inside the extent.
+     * Generates an url from an extent. This url is a link to fetch the
+     * resources inside the extent.
      *
-     * @param      {Extent}  extent  extent to convert in url
-     * @return     {string}  url from extent
+     * @param {Extent} extent - Extent to convert in url.
+
+     * @return {string} The URL constructed from the extent.
      */
     // eslint-disable-next-line
     urlFromExtent(extent) {
@@ -69,10 +70,11 @@ class Source {
     }
 
     /**
-     * test if the extent is inside data's source
+     * Tests if an extent is inside the source limits.
      *
-     * @param      {Extent}   extent extent to test
-     * @return     {boolean}  return of test
+     * @param {Extent} extent - Extent to test.
+
+     * @return {boolean} True if the extent is inside the limit, false otherwise.
      */
     // eslint-disable-next-line
     extentInsideLimit(extent) {
@@ -80,10 +82,11 @@ class Source {
     }
 
     /**
-     * test if all extents are inside data's source
+     * Tests if an array of extents is inside the source limits.
      *
-     * @param      {Array.<Extent>}   extents  The extents to test
-     * @return     {boolean}  test result
+     * @param {Array.<Extent>} extents - Array of extents to test.
+
+     * @return {boolean} True if all extents are inside, false otherwise.
      */
     extentsInsideLimit(extents) {
         for (const extent of extents) {

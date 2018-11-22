@@ -1,45 +1,70 @@
 import Source from './Source';
 import URLBuilder from '../Provider/URLBuilder';
 
+/**
+ * @classdesc
+ * An object defining the source of images to get from a
+ * {@link http://www.opengeospatial.org/standards/wms|WMS} server. It inherits
+ * from {@link Source}.
+ *
+ * @extends Source
+ *
+ * @property {boolean} isWMSSource - Used to checkout whether this source is a
+ * WMSSource. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ * @property {string} name - The name of the layer, used in the generation of
+ * the url.
+ * @property {string} version - The version of the WMS server to request on.
+ * Default value is '1.3.0'.
+ * @property {string} style - The style to query on the WMS server. Default
+ * value is 'normal'.
+ * @property {number} heightMapWidth - The size of the image to fetch, in pixel.
+ * Default value is 256.
+ * @property {string} axisOrder - The order of the axis, that helps building the
+ * BBOX to put in the url requesting a resource. Default value is 'wsen', other
+ * value can be 'swne'.
+ * @property {boolean} transparent - Tells if the image to fetch needs
+ * transparency support. Default value is false.
+ * @property {Object} zoom - Object containing the minimum and maximum values of
+ * the level, to zoom in the source.
+ * @property {number} zoom.min - The minimum level of the source. Default value
+ * is 0.
+ * @property {number} zoom.max - The maximum level of the source. Default value
+ * is 21.
+ *
+ * @example
+ * // Create the source
+ * const wmsSource = new itowns.WMSSource({
+ *     url: 'https://server.geo/wms',
+ *     version: '1.3.0',
+ *     name: 'REGION.2016',
+ *     style: '',
+ *     projection: 'EPSG:3857',
+ *     extent: {
+ *         west: '-6880639.13557728',
+ *         east: '6215707.87974825',
+ *         south: '-2438399.00148845',
+ *         north: '7637050.03850605',
+ *     },
+ *     transparent: true,
+ * });
+ *
+ * // Create the layer
+ * const colorlayer = new itowns.ColorLayer('Region', {
+ *     source: wmsSource,
+ * });
+ *
+ * // Add the layer
+ * view.addLayer(colorlayer);
+ */
 class WMSSource extends Source {
     /**
-     * Images source
+     * @param {Object} source - An object that can contain all properties of a
+     * WMSSource. <code>url</code>, <code>name</code>, <code>extent</code> and
+     * <code>projection</code> are mandatory.
+     *
      * @constructor
-     * @extends Source
-     * @param {sourceParams}  source
-     * @param {string} source.name name of layer wms
-     * @param {Extent} source.extent extent of wms source
-     * @param {string} [source.style=''] style of layer wms
-     * @param {number} [source.heightMapWidth=256] size texture in pixel
-     * @param {string} [source.version='1.3.0'] wms version
-     * @param {string} [source.axisOrder] wms axis order ('wsen' or 'swne')
-     * @param {boolean} [source.transparent=false] source return texture with transparence
-     * @param {Object} [source.zoom]
-     * @param {number} [source.zoom.min] layer's zoom minimum
-     * @param {number} [source.zoom.max] layer's zoom maximum
-     *
-     * @example <caption>Add color layer with wms source</caption>
-     * const colorlayer = new ColorLayer('Region', {
-     *     source: {
-     *         url: 'https://wxs.fr/wms',
-     *         protocol: 'wms',
-     *         version: '1.3.0',
-     *         name: 'REGION.2016',
-     *         style: '',
-     *         projection: 'EPSG:3857',
-     *         extent: {
-     *             west: '-6880639.13557728',
-     *             east: '6215707.87974825',
-     *             south: '-2438399.00148845',
-     *             north: '7637050.03850605',
-     *         },
-     *         transparent: true,
-     *     },
-     * });
-     * // Add the layer
-     * view.addLayer(colorlayer);
-     *
-    */
+     */
     constructor(source) {
         if (!source.name) {
             throw new Error('source.name is required.');
@@ -54,6 +79,7 @@ class WMSSource extends Source {
         }
         super(source);
 
+        this.isWMSSource = true;
         this.name = source.name;
         this.zoom = source.zoom || { min: 0, max: 21 };
         this.format = this.format || 'image/png';

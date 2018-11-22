@@ -161,10 +161,10 @@ TileMesh.prototype.changeSequenceLayers = function changeSequenceLayers(sequence
 };
 
 TileMesh.prototype.getCoordsForSource = function getCoordsForSource(source) {
-    if (source.protocol.indexOf('wmts') == 0) {
+    if (source.isWMTSSource) {
         OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, source.tileMatrixSet);
         return this.wmtsCoords[source.tileMatrixSet];
-    } else if (source.protocol == 'wms' && this.extent.crs() != source.projection) {
+    } else if (source.isWMSSource && this.extent.crs() != source.projection) {
         if (source.projection == 'EPSG:3857') {
             const tilematrixset = 'PM';
             OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, tilematrixset);
@@ -172,14 +172,14 @@ TileMesh.prototype.getCoordsForSource = function getCoordsForSource(source) {
         } else {
             throw new Error('unsupported projection wms for this viewer');
         }
-    } else if (source.protocol == 'tms' || source.protocol == 'xyz') {
+    } else if (source.isTMSSource) {
         // Special globe case: use the P(seudo)M(ercator) coordinates
         if (is4326(this.extent.crs()) &&
                 (source.extent.crs() == 'EPSG:3857' || is4326(source.extent.crs()))) {
             OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, 'PM');
             return this.wmtsCoords.PM;
         } else {
-            return OGCWebServiceHelper.computeTMSCoordinates(this, source.extent, source.origin);
+            return OGCWebServiceHelper.computeTMSCoordinates(this, source.extent, source.isInverted);
         }
     } else if (source.extent.crs() == this.extent.crs()) {
         // Currently extent.as() always clone the extent, even if the output

@@ -140,7 +140,7 @@ function readPBF(file, options) {
             // We need to move from TMS to Google/Bing/OSM coordinates
             // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
             // Only if the layer.origin is top
-            if (options.origin == 'top') {
+            if (options.isInverted) {
                 feature = toGeoJSON.bind(l.feature(i))(extentSource.col, extentSource.row, extentSource.zoom);
             } else {
                 const y = 1 << extentSource.zoom;
@@ -189,10 +189,12 @@ export default {
      * @param {boolean} [options.withNormal=true] - If true each coordinate normal is computed
      * @param {boolean} [options.withAltitude=true] - If true each coordinate altitude is kept
      * @param {function=} options.filter - Filter function to remove features.
-     * @param {string=} options.origin - This option is to be set to the correct
-     * value, bottom or top (default being bottom), if the computation of the
-     * coordinates needs to be inverted to same scheme as OSM, Google Maps or
-     * other system. See [this link]{@link https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates} for more informations.
+     * @param {string=} options.isInverted - This option is to be set to the
+     * correct value, true or false (default being false), if the computation of
+     * the coordinates needs to be inverted to same scheme as OSM, Google Maps
+     * or other system. See [this link]{@link
+     * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates}
+     * for more informations.
      *
      * @return {Promise} A Promise resolving with a Feature or an array a
      * Features.

@@ -34,7 +34,6 @@ global.URL = function URL() {
 const paramsWMS = {
     url: 'http://',
     name: 'name',
-    protocol: 'wms',
     format: 'image/png',
     extent: [-90, 90, -45, 45],
     projection: 'EPSG:4326',
@@ -43,21 +42,16 @@ const paramsWMS = {
 const paramsWMTS = {
     url: 'http://',
     name: 'name',
-    protocol: 'wmts',
     format: 'image/png',
 };
 
 const paramsTMS = {
     url: 'http://',
-    protocol: 'tms',
 };
 
 describe('Source', function () {
     it('Should instance and throw error for Source', function () {
-        const source = new Source({
-            url: 'http://',
-            protocol: 'unknow' });
-        assert.ok(source.protocol);
+        const source = new Source({ url: 'http://'  });
         assert.throws(source.urlFromExtent, Error);
         assert.throws(source.extentInsideLimit, Error);
         assert.throws(source.extentsInsideLimit, Error);
@@ -65,7 +59,7 @@ describe('Source', function () {
     it('Should instance and use WMTSSource', function () {
         const source = new WMTSSource(paramsWMTS);
         const extent = new Extent('WMTS:PM', 5, 0, 0);
-        assert.ok(source.protocol);
+        assert.ok(source.isWMTSSource);
         assert.ok(source.urlFromExtent(extent));
         assert.ok(source.extentInsideLimit(extent));
         assert.ok(source.extentsInsideLimit([extent, extent]));
@@ -73,7 +67,7 @@ describe('Source', function () {
     it('Should instance and use WMSSource', function () {
         const source = new WMSSource(paramsWMS);
         const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
-        assert.ok(source.protocol);
+        assert.ok(source.isWMSSource);
         assert.ok(source.urlFromExtent(extent));
         assert.ok(source.extentInsideLimit(extent));
         assert.ok(source.extentsInsideLimit([extent, extent]));
@@ -81,7 +75,7 @@ describe('Source', function () {
     it('Should instance and use TMSSource', function () {
         const source = new TMSSource(paramsTMS);
         const extent = new Extent('WMTS:PM', 5, 0, 0);
-        assert.ok(source.protocol);
+        assert.ok(source.isTMSSource);
         assert.ok(source.urlFromExtent(extent));
         assert.ok(source.extentInsideLimit(extent));
         assert.ok(source.extentsInsideLimit([extent, extent]));
@@ -90,23 +84,21 @@ describe('Source', function () {
         Fetcher.text = function () { return geojson.promise; };
         const source = new FileSource({
             url: '..',
-            protocol: 'file',
             projection: 'EPSG:4326',
         }, 'EPSG:4326');
 
         const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
         source.whenReady.then(() => assert.equal(source.parsedData.features[0].geometry.length, 3));
         assert.ok(source.urlFromExtent(extent));
-        assert.ok(source.protocol);
+        assert.ok(source.isFileSource);
     });
     it('Should instance and use StaticSource', function () {
         Fetcher.json = function () { return Promise.resolve({}); };
         const source = new StaticSource({
             url: 'http://itowns.org',
-            protocol: 'file',
             extent: [-90, 90, -45, 45],
             projection: 'EPSG:4326',
         });
-        assert.ok(source.protocol);
+        assert.ok(source.isStaticSource);
     });
 });

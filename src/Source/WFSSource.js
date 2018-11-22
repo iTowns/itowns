@@ -1,68 +1,95 @@
 import Source from './Source';
 import URLBuilder from '../Provider/URLBuilder';
 
+/**
+ * @classdesc
+ * An object defining the source of resources to get from a
+ * {@link http://www.opengeospatial.org/standards/wfs|WFS} server. It inherits
+ * from {@link Source}.
+ *
+ * @extends Source
+ *
+ * @property {boolean} isWFSSource - Used to checkout whether this source is a
+ * WFSSource. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ * @property {string} typeName - The name of the feature to get, used in the
+ * generation of the url.
+ * @property {string} version - The version of the WFS server to request on.
+ * Default value is '2.0.2'.
+ * @property {Object} zoom - Object containing the minimum and maximum values of
+ * the level, to zoom in the source.
+ * @property {number} zoom.min - The minimum level of the source. Default value
+ * is 0.
+ * @property {number} zoom.max - The maximum level of the source. Default value
+ * is 21.
+ *
+ * @example
+ * // Add color layer with WFS source
+ * // Create the source
+ * const wfsSource = new itowns.WFSSource({
+ *     url: 'http://wxs.fr/wfs',
+ *     version: '2.0.0',
+ *     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable',
+ *     projection: 'EPSG:4326',
+ *     extent: {
+ *         west: 4.568,
+ *         east: 5.18,
+ *         south: 45.437,
+ *         north: 46.03,
+ *     },
+ *     zoom: { min: 14, max: 14 },
+ *     format: 'application/json',
+ * });
+ *
+ * // Create the layer
+ * const colorlayer = new itowns.ColorLayer('color_build', {
+ *     style: {
+ *         fill: 'red',
+ *         fillOpacity: 0.5,
+ *         stroke: 'white',
+ *     },
+ *     source: wfsSource,
+ * });
+ *
+ * // Add the layer
+ * view.addLayer(colorlayer);
+ *
+ * @example
+ * // Add geometry layer with WFS source
+ * // Create the source
+ * const wfsSource = new itowns.WFSSource({
+ *     url: 'http://wxs.fr/wfs',
+ *     version: '2.0.0',
+ *     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable',
+ *     projection: 'EPSG:4326',
+ *     extent: {
+ *         west: 4.568,
+ *         east: 5.18,
+ *         south: 45.437,
+ *         north: 46.03,
+ *     },
+ *     zoom: { min: 14, max: 14 },
+ *     format: 'application/json',
+ * });
+ *
+ * // Create the layer
+ * const geometryLayer = new itowns.GeometryLayer('mesh_build', {
+ *     update: itowns.FeatureProcessing.update,
+ *     convert: itowns.Feature2Mesh.convert({ extrude: () => 50 }),
+ *     source: wfsSource,
+ * });
+ *
+ * // Add the layer
+ * view.addLayer(geometryLayer);
+ */
 class WFSSource extends Source {
     /**
-     * Features source
+     * @param {Object} source - An object that can contain all properties of a
+     * WFSSource. <code>url</code>, <code>typeName</code> and
+     * <code>projection</code> are mandatory.
+     *
      * @constructor
-     * @extends Source
-     *
-     * @param {sourceParams}  source
-     * @param {string} source.typeName Name of the feature type to describe
-     * @param {string} source.projection crs of wfs
-     * @param {string} [source.version='2.0.2'] wfs protocol version
-     * @param {Object} [source.zoom]
-     * @param {number} [source.zoom.min] layer's zoom minimum
-     * @param {number} [source.zoom.max] layer's zoom maximum
-     *
-     * @example <caption>Add color layer with wfs source</caption>
-     * const colorlayer = new ColorLayer('color_build', {
-     *     style: {
-     *         fill: 'red',
-     *         fillOpacity: 0.5,
-     *         stroke: 'white',
-     *     },
-     *     source: {
-     *        url: 'http://wxs.fr/wfs',
-     *        protocol: 'wfs',
-     *        version: '2.0.0',
-     *        typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable',
-     *        projection: 'EPSG:4326',
-     *        extent: {
-     *            west: 4.568,
-     *            east: 5.18,
-     *            south: 45.437,
-     *            north: 46.03,
-     *        },
-     *        format: 'application/json',
-     *     }
-     * });
-     * // Add the layer
-     * view.addLayer(colorlayer);
-     *
-     * @example <caption>Add geometry layer with wfs source</caption>
-     * const geometrylayer = new GeometryLayer('mesh_build', {
-     *     update: itowns.FeatureProcessing.update,
-     *     convert: itowns.Feature2Mesh.convert({ extrude: () => 50 }),
-     *     source: {
-     *        protocol: 'wfs',
-     *        url: 'http://wxs.fr/wfs',
-     *        version: '2.0.0',
-     *        typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable',
-     *        projection: 'EPSG:4326',
-     *        extent: {
-     *            west: 4.568,
-     *            east: 5.18,
-     *            south: 45.437,
-     *            north: 46.03,
-     *        },
-     *        zoom: { min: 14, max: 14 },
-     *        format: 'application/json',
-     *     }
-     * });
-     * // Add the layer
-     * view.addLayer(geometrylayer);
-    */
+     */
     constructor(source) {
         if (!source.typeName) {
             throw new Error('source.typeName is required in wfs source.');
@@ -73,6 +100,7 @@ class WFSSource extends Source {
         }
         super(source);
 
+        this.isWFSSource = true;
         this.typeName = source.typeName;
         this.format = this.format || 'application/json';
         this.version = source.version || '2.0.2';

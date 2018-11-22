@@ -50,45 +50,67 @@ function fileParser(text) {
     return parsedFile;
 }
 
+/**
+ * @classdesc
+ * An object defining the source of a single resource to get from a direct
+ * access. It inherits from {@link Source}.
+ *
+ * A source of this type can only load three types of files: Geojson, GPX and
+ * KML.
+ *
+ * @extends Source
+ *
+ * @property {boolean} isFileSource - Used to checkout whether this source is a
+ * FileSource. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ * @property {Array} parsedData - Once the file has been loaded and parsed using
+ * the GeoJsonParser, the resulting data is stored in this property.
+ *
+ * @example
+ * // Create a layer
+ * const ariege = new itowns.GeometryLayer('ariege', new itowns.THREE.Group());
+ *
+ * // Specify update method and conversion
+ * ariege.update = itowns.FeatureProcessing.update;
+ * ariege.convert = itowns.Feature2Mesh.convert({
+ *     color: () => new itowns.THREE.Color(0xffcc00),
+ *     extrude: () => 5000,
+ * });
+ *
+ * // Create and append the source
+ * ariege.source = new itowns.FileSource({
+ *     url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
+ *     projection: 'EPSG:4326',
+ *     format: 'application/json',
+ *     zoom: { min: 7, max: 7 },
+ * });
+ *
+ * view.addLayer(ariege);
+ *
+ * @example
+ * // Create the source
+ * const gpxSource = new itowns.FileSource({
+ *     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
+ *     projection: 'EPSG:4326',
+ * });
+ *
+ * // Create the layer
+ * const gpxLayer = new itowns.ColorLayer('Gpx', {
+ *     name: 'Ultra 2009',
+ *     transparent: true,
+ *     source: gpxSource,
+ * });
+ *
+ * // Add the layer
+ * view.addLayer(gpxLayer);
+ */
 class FileSource extends Source {
     /**
-     * File source to use file in {@link GeometryLayer}, {@link ColorLayer} or {@link ElevationLayer}.
+     * @param {Object} source - An object that can contain all properties of a
+     * FileSource. Only <code>url</code> and <code>projection</code> are mandatory.
+     * @param {string} crsOut - The projection of the output data after parsing.
+     *
      * @constructor
-     * @extends Source
-     *
-     * @param      {sourceParams}  source  The source
-     * @param      {string}  source.projection  Data system projection, it needed to parse data
-     * @param      {string}  crsOut  crd output data
-     *
-     * @example <caption>add geometry layer with geojson file </caption>
-     * const ariege = new itowns.GeometryLayer('ariege', new itowns.THREE.Group());
-     * ariege.update = itowns.FeatureProcessing.update;
-     * ariege.convert = itowns.Feature2Mesh.convert({
-     *      color: () => new itowns.THREE.Color(0xffcc00),
-     *      extrude: () => 5000,
-     * });
-     * ariege.source = {
-     *      protocol: 'file',
-     *      url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
-     *      projection: 'EPSG:4326',
-     *      format: 'application/json',
-     *      zoom: { min: 7, max: 7 },
-     * };
-     * view.addLayer(ariege);
-     *
-     * @example <caption>add color layer with geojson file </caption>
-     * globeView.addLayer({
-     *     type: 'color',
-     *     id: 'Gpx',
-     *     name: 'Ultra 2009',
-     *     transparent: true,
-     *     source: {
-     *         url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
-     *         protocol: 'file',
-     *         projection: 'EPSG:4326',
-     *     },
-     * });
-     *
      */
     constructor(source, crsOut) {
         if (!source.projection) {
@@ -96,6 +118,7 @@ class FileSource extends Source {
         }
         super(source);
 
+        this.isFileSource = true;
         this.url = source.url;
         this.parsedData = [];
         this.zoom = source.zoom || { min: 5, max: 21 };
