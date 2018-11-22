@@ -34,6 +34,7 @@
             view.tileLayer.disableSkirt = true;
 
             itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
+                config.source = new itowns.TMSSource(config.source);
                 var layer = new itowns.ColorLayer(config.id, config);
                 view.addLayer(layer);
             });

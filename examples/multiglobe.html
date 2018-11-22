@@ -45,7 +45,8 @@
             object3ds.push(object3d);
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                var layer = new itowns.ColorLayer(config.id, config);
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
                 view.addLayer(layer);
             });
 
@@ -63,6 +64,7 @@
             // add globe2 to the view so it gets updated
             itowns.View.prototype.addLayer.call(view, globe2);
             itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(osm) {
+                osm.source = new itowns.TMSSource(osm.source);
                 var layer = new itowns.ColorLayer(osm.id, osm);
                 itowns.View.prototype.addLayer.call(view, layer, globe2);
             });

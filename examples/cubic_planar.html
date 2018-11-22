@@ -121,30 +121,30 @@
 
                 view.addLayer(tileLayer);
 
+                var colorSource = new itowns.WMSSource({
+                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                    version: '1.3.0',
+                    name: wms,
+                    projection: 'EPSG:3946',
+                    format: 'image/jpeg',
+                    extent,
+                });
                 var colorLayer = new itowns.ColorLayer('wms_imagery' + wms + index, {
-                    source: {
-                        protocol: 'wms',
-                        url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                        version: '1.3.0',
-                        name: wms,
-                        projection: 'EPSG:3946',
-                        format: 'image/jpeg',
-                        extent,
-                    },
-                })
+                    source: colorSource,
+                });
                 view.addLayer(colorLayer, tileLayer);
 
+                var elevationSource = new itowns.WMSSource({
+                    extent,
+                    version: '1.3.0',
+                    name: 'MNT2012_Altitude_10m_CC46',
+                    projection: 'EPSG:3946',
+                    heightMapWidth: 256,
+                    format: 'image/jpeg',
+                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                });
                 var elevationLayer = new itowns.ElevationLayer('wms_elevation' + wms + index, {
-                    source: {
-                        protocol: 'wms',
-                        extent,
-                        version: '1.3.0',
-                        name: 'MNT2012_Altitude_10m_CC46',
-                        projection: 'EPSG:3946',
-                        heightMapWidth: 256,
-                        format: 'image/jpeg',
-                        url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                    },
+                    source: elevationSource,
                 });
                 view.addLayer(elevationLayer, tileLayer);
             }

@@ -51,19 +51,20 @@
             view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true });
             setupLoadingScreen(viewerDiv, view);
 
-            // Add an WMS imagery layer (see WMSProvider* for valid options)
+            var wmsImagerySource = new itowns.WMSSource({
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                networkOptions: { crossOrigin: 'anonymous' },
+                version: '1.3.0',
+                name: 'Ortho2009_vue_ensemble_16cm_CC46',
+                projection: 'EPSG:3946',
+                extent: extent,
+                format: 'image/jpeg',
+            });
+
+            // Add a WMS imagery layer
             var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
                 transparent: false,
-                source: {
-                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                    networkOptions: { crossOrigin: 'anonymous' },
-                    protocol: 'wms',
-                    version: '1.3.0',
-                    name: 'Ortho2009_vue_ensemble_16cm_CC46',
-                    projection: 'EPSG:3946',
-                    extent: extent,
-                    format: 'image/jpeg',
-                },
+                source: wmsImagerySource,
             });
             view.addLayer(wmsImageryLayer);
 
@@ -92,27 +93,28 @@
                 }
             }
 
+            var lyonTclBusSource = new itowns.WFSSource({
+                url: 'https://download.data.grandlyon.com/wfs/rdata?',
+                protocol: 'wfs',
+                version: '2.0.0',
+                id: 'tcl_bus',
+                typeName: 'tcl_sytral.tcllignebus',
+                projection: 'EPSG:3946',
+                extent: {
+                    west: 1822174.60,
+                    east: 1868247.07,
+                    south: 5138876.75,
+                    north: 5205890.19,
+                },
+                zoom: { min: 2, max: 2 },
+                format: 'geojson',
+            });
             var lyonTclBusLayer = new itowns.GeometryLayer('lyon_tcl_bus', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     color: colorLine }),
                 onMeshCreated: setMaterialLineWidth,
-                source: {
-                    url: 'https://download.data.grandlyon.com/wfs/rdata?',
-                    protocol: 'wfs',
-                    version: '2.0.0',
-                    id: 'tcl_bus',
-                    typeName: 'tcl_sytral.tcllignebus',
-                    projection: 'EPSG:3946',
-                    extent: {
-                        west: 1822174.60,
-                        east: 1868247.07,
-                        south: 5138876.75,
-                        north: 5205890.19,
-                    },
-                    zoom: { min: 2, max: 2 },
-                    format: 'geojson',
-                },
+                source: lyonTclBusSource,
             });
             view.addLayer(lyonTclBusLayer);
 
@@ -151,6 +153,21 @@
 
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
 
+            var wfsBuildingSource = new itowns.WFSSource({
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                version: '2.0.0',
+                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                projection: 'EPSG:4326',
+                ipr: 'IGN',
+                format: 'application/json',
+                zoom: { min: 5, max: 5 },
+                extent: {
+                    west: 4.568,
+                    east: 5.18,
+                    south: 45.437,
+                    north: 46.03,
+                },
+            });
             var wfsBuildingLayer = new itowns.GeometryLayer('wfsBuilding', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
@@ -162,22 +179,7 @@
                 },
                 filter: acceptFeature,
                 projection: 'EPSG:3946',
-                source: {
-                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-                    protocol: 'wfs',
-                    version: '2.0.0',
-                    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
-                    projection: 'EPSG:4326',
-                    ipr: 'IGN',
-                    format: 'application/json',
-                    zoom: { min: 5, max: 5 },
-                    extent: {
-                        west: 4.568,
-                        east: 5.18,
-                        south: 45.437,
-                        north: 46.03,
-                    },
-                },
+                source: wfsBuildingSource,
             });
             view.addLayer(wfsBuildingLayer);
 

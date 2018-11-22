@@ -57,72 +57,79 @@
             view = new itowns.PlanarView(viewerDiv, extent, config);
             setupLoadingScreen(viewerDiv, view);
 
-            // Add an WMS imagery layer (see WMSProvider* for valid options)
-            var colorLayer = new itowns.ColorLayer('wms_imagery', {
-                transparent: true,
-                source: {
-                    extent: extent,
-                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                    networkOptions: { crossOrigin: 'anonymous' },
-                    name: 'Ortho2009_vue_ensemble_16cm_CC46',
-                    protocol: 'wms',
-                    version: '1.3.0',
-                    projection: 'EPSG:3946',
-                    format: 'image/jpeg',
-                },
+            // Add a WMS imagery source
+            var wmsImagerySource = new itowns.WMSSource({
+                extent: extent,
+                name: 'Ortho2009_vue_ensemble_16cm_CC46',
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                version: '1.3.0',
+                projection: 'EPSG:3946',
+                format: 'image/jpeg',
             });
-            view.addLayer(colorLayer);
 
-            // Add an WMS elevation layer (see WMSProvider* for valid options)
-            var elevationLayer = new itowns.ElevationLayer('wms_elevation', {
-                source: {
-                    extent: extent,
-                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                    protocol: 'wms',
-                    networkOptions: { crossOrigin: 'anonymous' },
-                    name: 'MNT2012_Altitude_10m_CC46',
-                    projection: 'EPSG:3946',
-                    heightMapWidth: 256,
-                    format: 'image/jpeg',
+            // Add a WMS imagery layer
+            var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
+                updateStrategy: {
+                    type: itowns.STRATEGY_DICHOTOMY,
+                    options: {},
                 },
+                source: wmsImagerySource,
             });
-            view.addLayer(elevationLayer);
 
-            var kmlLayer = new itowns.ColorLayer('Kml', {
-                transparent: true,
-                source: {
+            view.addLayer(wmsImageryLayer);
+
+            // Add a WMS elevation source
+            var wmsElevationSource = new itowns.WMSSource({
+                extent: extent,
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                name: 'MNT2012_Altitude_10m_CC46',
+                projection: 'EPSG:3946',
+                heightMapWidth: 256,
+                format: 'image/jpeg',
+            });
+
+            // Add a WMS elevation layer
+            var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
+                source: wmsElevationSource,
+            });
+
+            view.addLayer(wmsElevationLayer);
+
+            var kmlSource = new itowns.FileSource({
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.kml',
-                    protocol: 'file',
                     projection: 'EPSG:4326',
                     extent: extent,
                     zoom: { min: 0, max: 6 },
-                },
+                }, view.tileLayer.extent.crs());
+            var kmlLayer = new itowns.ColorLayer('Kml', {
+                transparent: true,
+                source: kmlSource,
             });
             view.addLayer(kmlLayer);
 
+            var kmlSource = new itowns.FileSource({
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.gpx',
+                    projection: 'EPSG:4326',
+                    zoom: { min: 0, max: 6 },
+                }, view.tileLayer.extent.crs());
             var gpxLayer = new itowns.ColorLayer('Gpx', {
                 transparent: true,
                 style: {
                     stroke: 'blue',
                 },
-                source: {
-                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.gpx',
-                    protocol: 'file',
-                    projection: 'EPSG:4326',
-                    zoom: { min: 0, max: 6 },
-                },
+                source: kmlSource,
             });
             view.addLayer(gpxLayer);
 
-            var geoLayer = new itowns.ColorLayer('geo', {
-                transparent: true,
-                source: {
+            var geoSource = new itowns.FileSource({
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',
-                    protocol: 'file',
                     projection: 'EPSG:3946',
                     extent: extent,
                     zoom: { min: 0, max: 6 },
-                },
+                }, view.tileLayer.extent.crs());
+            var geoLayer = new itowns.ColorLayer('geo', {
+                transparent: true,
+                source: geoSource,
                 style: {
                     fill: 'orange',
                     fillOpacity: 0.2,

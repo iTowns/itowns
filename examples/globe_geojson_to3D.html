@@ -34,13 +34,15 @@
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                var layer = new itowns.ColorLayer(config.id, config);
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
@@ -61,13 +63,12 @@
                 color: color,
                 extrude: extrude });
 
-            ariege.source = {
+            ariege.source = new itowns.FileSource({
                 url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
-                protocol: 'file',
                 projection: 'EPSG:4326',
                 format: 'application/json',
                 zoom: { min: 7, max: 7 },
-            };
+            }, view.referenceCrs);
 
             view.addLayer(ariege).then(function menue(layer) {
                 var gui = debug.GeometryDebug

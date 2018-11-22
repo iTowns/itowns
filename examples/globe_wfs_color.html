@@ -38,13 +38,15 @@
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                var layer = new itowns.ColorLayer(config.id, config);
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
@@ -55,6 +57,22 @@
                 return data.features[0].geometry.length < 1000;
             }
 
+            var wfsBuildingSource = new itowns.WFSSource({
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                version: '2.0.0',
+                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                zoom: { max: 20, min: 13 },
+                projection: 'EPSG:4326',
+                extent: {
+                    west: 4.568,
+                    east: 5.18,
+                    south: 45.437,
+                    north: 46.03,
+                },
+                ipr: 'IGN',
+                format: 'application/json',
+            });
+
             var wfsBuildingLayer = new itowns.ColorLayer('wfsBuilding', {
                 transparent: true,
                 style: {
@@ -63,22 +81,7 @@
                     stroke: 'white',
                 },
                 isValidData: isValidData,
-                source: {
-                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-                    protocol: 'wfs',
-                    version: '2.0.0',
-                    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
-                    zoom: { max: 20, min: 13 },
-                    projection: 'EPSG:4326',
-                    extent: {
-                        west: 4.568,
-                        east: 5.18,
-                        south: 45.437,
-                        north: 46.03,
-                    },
-                    ipr: 'IGN',
-                    format: 'application/json',
-                },
+                source: wfsBuildingSource,
             });
             view.addLayer(wfsBuildingLayer);
 
