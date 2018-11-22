@@ -13,6 +13,7 @@
         <div id="viewerDiv"></div>
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
+        <script src="js/proj4defs/2154.js"></script>
         <script src="js/loading_screen.js"></script>
         <script src="js/ThreeLoader.js"></script>
         <script src="../dist/debug.js"></script>
@@ -56,8 +57,6 @@
                 mergeFeatures: false,
                 onGround: false,
             };
-            // Input data are given in Lambert93 projection
-            itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
             // Add a promise to load oriented point datas
             promises.push(
