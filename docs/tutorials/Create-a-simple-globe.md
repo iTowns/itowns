@@ -59,19 +59,22 @@ result in a simple blue globe like below.
 ## Adding a color layer
 
 Now that we have a globe, let's display data on it. For this, let's use a basic
-layer composed of aerial photos.
+layer composed of aerial photos. To define this, we also need to describe our
+source.
 
 ```js
-var colorLayer = new itowns.ColorLayer('Ortho', {
-    source: {
-        protocol: 'wmts',
-        url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-        name: 'ORTHOIMAGERY.ORTHOPHOTOS',
-        tileMatrixSet: 'PM',
-        format: 'image/jpeg',
-    }
+var orthoSource = new itowns.WMTSSource({
+    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+    name: 'ORTHOIMAGERY.ORTHOPHOTOS',
+    tileMatrixSet: 'PM',
+    format: 'image/jpeg',
 });
-view.addLayer(colorLayer);
+
+var orthoLayer = new itowns.ColorLayer('Ortho', {
+    source: orthoSource,
+});
+
+view.addLayer(orthoLayer);
 ```
 
 We want to create and add a layer containing images. The best candidate here is
@@ -81,9 +84,8 @@ don't tell the layer where to look to get the data. For achieving this, we can
 declare a source in the options.
 
 Images that we choose to display are coming from a WMTS server. So the source
-used will be a {@link WMTSSource}. To declare this source, four elements are
+used will be a {@link WMTSSource}. To declare this source, three elements are
 needed:
-- a `protocol`, selecting the type of source we need, in our case `wmts`
 - an `url`, describing the path to the WMTS service
 - a `name`, used to build the URL for each image
 - a `tileMatrixSet`, for the same purpose
@@ -91,27 +93,30 @@ needed:
 A `format` will also be specified in our case, as we are looking for jpeg
 images.
 
-Then, having all the necessary things, the layer can simply be added to the view
-using [`addLayer`](View#addLayer). The result is as below.
+Then, having all the necessary things, the layer can simply be created and added
+to the view using [`addLayer`](View#addLayer). The result is as below.
 
 ![Simple GlobeView with ColorLayer](tutorials/images/Create-a-simple-globe-2.png)
-
 
 ## Adding an elevation layer
 
 We can add more depth to the current globe by providing an elevation layer. The
-process is quite similar to adding a `ColorLayer`.
+process is quite similar to adding a `ColorLayer`. We are also still using a
+`WMTSSource`, but it needs to be created again as it is different from the
+previous one.
 
 ```js
-var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
-    source: {
-        protocol: 'wmts',
-        url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-        name: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
-        tileMatrixSet: 'WGS84G',
-        format: 'image/x-bil;bits=32'
-    }
+var elevationSource = new itowns.WMTSSource({
+    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+    name: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
+    tileMatrixSet: 'WGS84G',
+    format: 'image/x-bil;bits=32'
 });
+
+var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
+    source: elevationSource,
+});
+
 view.addLayer(elevationLayer);
 ```
 
@@ -119,9 +124,9 @@ Two things have changed:
 - the layer created, which is an {@link ElevationLayer} instead
 - the configuration, adapted to fit the source
 
-Now we can zoom in and see some moutains !
+Now we can zoom in and see some mountains !
 
-![Simple Globe with moutains](tutorials/images/Create-a-simple-globe-3.png)
+![Simple Globe with mountains](tutorials/images/Create-a-simple-globe-3.png)
 
 ## Result
 
@@ -149,26 +154,30 @@ with an elevation layer and an color layer. Here is the final code:
             var position = new itowns.Coordinates('WGS84', 2.35, 48.8, 25e6);
             var view = new itowns.GlobeView(viewerDiv, position);
 
-            var colorLayer = new itowns.ColorLayer('Ortho', {
-                source: {
-                    protocol: 'wmts',
-                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-                    name: 'ORTHOIMAGERY.ORTHOPHOTOS',
-                    tileMatrixSet: 'PM',
-                    format: 'image/jpeg'
-                }
+            var orthoSource = new itowns.WMTSSource({
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                name: 'ORTHOIMAGERY.ORTHOPHOTOS',
+                tileMatrixSet: 'PM',
+                format: 'image/jpeg',
             });
-            view.addLayer(colorLayer);
+
+            var orthoLayer = new itowns.ColorLayer('Ortho', {
+                source: orthoSource,
+            });
+
+            view.addLayer(orthoLayer);
+
+            var elevationSource = new itowns.WMTSSource({
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                name: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
+                tileMatrixSet: 'WGS84G',
+                format: 'image/x-bil;bits=32'
+            });
 
             var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
-                source: {
-                    protocol: 'wmts',
-                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-                    name: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
-                    tileMatrixSet: 'WGS84G',
-                    format: 'image/x-bil;bits=32'
-                }
+                source: elevationSource,
             });
+
             view.addLayer(elevationLayer);
         </script>
      </body>
