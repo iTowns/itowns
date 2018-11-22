@@ -54,7 +54,7 @@ function parseData(data, layer, extentDestination) {
         // filteringExtent: extentDestination.as(layer.projection),
         filteringExtent: layer.type === 'geometry' ? extentDestination : undefined,
         filter: layer.filter,
-        origin: layer.source.origin,
+        isInverted: layer.source.isInverted,
         mergeFeatures: layer.mergeFeatures === undefined ? true : layer.mergeFeatures,
         withNormal: layer.type === 'geometry',
         withAltitude: layer.type === 'geometry',

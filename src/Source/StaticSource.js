@@ -29,6 +29,7 @@ class StaticSource extends Source {
         }
         super(source);
 
+        this.isStaticSource = true;
         this.zoom = { min: 0, max: 0 };
         this.url = new URL(source.url, window.location);
         this.whenReady = Fetcher.json(this.url.href).then((metadata) => {

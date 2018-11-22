@@ -1,50 +1,83 @@
 import Source from './Source';
 import URLBuilder from '../Provider/URLBuilder';
 
+/**
+ * @classdesc
+ * An object defining the source of resources to get from a
+ * {@link http://www.opengeospatial.org/standards/wmts|WMTS} server. It inherits
+ * from {@link Source}.
+ *
+ * @extends Source
+ *
+ * @property {boolean} isWMTSSource - Used to checkout whether this source is a
+ * WMTSSource. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ * @property {string} name - The name of the layer, used in the generation of
+ * the url.
+ * @property {string} version - The version of the WMTS server to request on.
+ * Default value is '1.0.0'.
+ * @property {string} style - The style to query on the WMTS server. Default
+ * value is 'normal'.
+ * @property {string} tileMatrixSet - Tile matrix set of the layer, used in the
+ * generation of the url. Default value is 'WGS84'.
+ * @property {Object} tileMatrixSetLimits - Limits of the tile matrix
+ * set. Each limit has for key its level number, and their properties are the
+ * <code>minTileRow</code>, <code>maxTileRow</code>, <code>minTileCol</code> and
+ * <code>maxTileCol</code>.
+ * @property {number} tileMatrixSetLimits.minTileRow - Minimum row for tiles at
+ * the specified level.
+ * @property {number} tileMatrixSetLimits.maxTileRow - Maximum row for tiles at
+ * the specified level.
+ * @property {number} tileMatrixSetLimits.minTileCol - Minimum column for tiles
+ * at the specified level.
+ * @property {number} tileMatrixSetLimits.maxTileCol - Maximum column for tiles
+ * at the specified level.
+ * @property {Object} zoom - Object containing the minimum and maximum values of
+ * the level, to zoom in the source.
+ * @property {number} zoom.min - The minimum level of the source. Default value
+ * is 2.
+ * @property {number} zoom.max - The maximum level of the source. Default value
+ * is 20.
+ *
+ * @example
+ * // Create the source
+ * const wmtsSource = new itowns.WMTSSource({
+ *     name: 'DARK',
+ *     tileMatrixSet: 'PM',
+ *     url: 'http://server.geo/wmts',
+ *     format: 'image/jpg',
+ * });
+ *
+ * // Create the layer
+ * const colorLayer = new itowns.ColorLayer('darkmap', {
+ *     source: wmtsSource,
+ * });
+ *
+ * // Add the layer
+ * view.addLayer(colorLayer);
+ */
 class WMTSSource extends Source {
     /**
-     * Tiles images source
+     * @param {Object} source - An object that can contain all properties of a
+     * WMTSSource. Only <code>url</code> and <code>name</code> are mandatory.
+     *
      * @constructor
-     * @extends Source
-     * @param {sourceParams}  source
-     * @param {string} source.name name of layer wmts
-     * @param {string} source.tileMatrixSet  define tile matrix set of wmts layer (ex: 'PM', 'WGS84')
-     * @param {Array.<Object>} [source.tileMatrixSetLimits] The limits for the tile matrix set
-     * @param {number} [source.tileMatrixSetLimits.minTileRow] Minimum row for tiles at the level
-     * @param {number} [source.tileMatrixSetLimits.maxTileRow] Maximum row for tiles at the level
-     * @param {number} [source.tileMatrixSetLimits.minTileCol] Minimum col for tiles at the level
-     * @param {number} [source.tileMatrixSetLimits.maxTileCol] Maximum col for tiles at the level
-     * @param {Object} [source.zoom]
-     * @param {number} [source.zoom.min] layer's zoom minimum
-     * @param {number} [source.zoom.max] layer's zoom maximum
-     *
-     * @example <caption>Add color layer with wmts source</caption>
-     * const colorlayer = new ColorLayer('darkmap', {
-     *     source: {
-     *          protocol: 'wmts',
-     *          name: 'DARK',
-     *          tileMatrixSet: 'PM',
-     *          url: 'http://server.geo/wmts',
-     *          format: 'image/jpg',
-     *     }
-     * });
-     * // Add the layer
-     * view.addLayer(colorlayer);
-     *
      */
     constructor(source) {
-        super(source);
-
         if (!source.name) {
             throw new Error('New WMTSSource: name is required');
         }
+
+        super(source);
+
+        this.isWMTSSource = true;
 
         this.format = this.format || 'image/png';
         this.version = source.version || '1.0.0';
         this.tileMatrixSet = source.tileMatrixSet || 'WGS84';
         this.style = source.style || 'normal';
         this.name = source.name;
-        this.url = `${source.url}` +
+        this.url = `${this.url}` +
             `?LAYER=${this.name}` +
             `&FORMAT=${this.format}` +
             '&SERVICE=WMTS' +

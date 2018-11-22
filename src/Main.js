@@ -41,3 +41,14 @@ export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STR
 export { ColorLayersOrdering } from './Renderer/ColorLayersOrdering';
 export { default as GlobeLayer } from './Core/Prefab/Globe/GlobeLayer';
 export { default as PlanarLayer } from './Core/Prefab/Planar/PlanarLayer';
+
+// Sources provided by default in iTowns
+// A custom source should at least implements Source
+// See http://www.itowns-project.org/itowns/API_Doc/Source.html
+export { default as Source } from './Source/Source';
+export { default as FileSource } from './Source/FileSource';
+export { default as StaticSource } from './Source/StaticSource';
+export { default as TMSSource } from './Source/TMSSource';
+export { default as WFSSource } from './Source/WFSSource';
+export { default as WMSSource } from './Source/WMSSource';
+export { default as WMTSSource } from './Source/WMTSSource';

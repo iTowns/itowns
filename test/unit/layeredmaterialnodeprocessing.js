@@ -5,6 +5,8 @@ import TileMesh from '../../src/Core/TileMesh';
 import Extent from '../../src/Core/Geographic/Extent';
 import OBB from '../../src/Renderer/ThreeExtended/OBB';
 import LayeredMaterial from '../../src/Renderer/LayeredMaterial';
+import Layer from '../../src/Layer/Layer';
+import Source from '../../src/Source/Source';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../src/Layer/LayerUpdateStrategy';
 
 describe('updateLayeredMaterialNodeImagery', function () {
@@ -26,14 +28,15 @@ describe('updateLayeredMaterialNodeImagery', function () {
         },
     };
 
-    const layer = {
-        id: 'foo',
-        source: {
-            protocol: 'dummy',
-            extent: new Extent('EPSG:4326', 0, 0, 0, 0),
-        },
+    const source = new Source({
+        url: 'http://',
+        extent: new Extent('EPSG:4326', 0, 0, 0, 0),
+    });
+
+    const layer = new Layer('foo', 'bar', {
+        source,
         info: { update: () => {} },
-    };
+    });
 
     beforeEach('reset state', function () {
         // clear commands array
@@ -45,16 +48,11 @@ describe('updateLayeredMaterialNodeImagery', function () {
             options: {},
         };
         layer.visible = true;
-        layer.source = {
-            protocol: 'dummy',
-            extentsInsideLimit: () => true,
-            extentInsideLimit: () => true,
-            zoom: {
-                min: 0,
-                max: 10,
-            },
-            extent: { crs: () => 'EPSG:4326' },
-        };
+
+        source.extentsInsideLimit = () => true;
+        source.extentInsideLimit = () => true;
+        source.zoom = { min: 0, max: 10 };
+        source.extent = { crs: () => 'EPSG:4326' };
     });
 
 
@@ -120,8 +118,8 @@ describe('updateLayeredMaterialNodeImagery', function () {
             level);
         tile.material.visible = true;
         tile.parent = { };
-        layer.source.protocol = 'wmts';
-        layer.source.tileMatrixSet = 'WGS84G';
+        source.isWMTSSource = true;
+        source.tileMatrixSet = 'WGS84G';
         // Emulate a situation where tile inherited a level 1 texture
         tile.material.indexOfColorLayer = () => 0;
         tile.material.isColorLayerDownscaled = () => true;
