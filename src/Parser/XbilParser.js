@@ -7,7 +7,7 @@
   * @param      {THREE.Vector4}  pitch  The pitch,  restrict zone to parse
   * @return     {Object}  The minimum maximum elevation.
   */
-function computeMinMaxElevation(buffer, width, height, pitch) {
+export function computeMinMaxElevation(buffer, width, height, pitch) {
     let min = 1000000;
     let max = -1000000;
 
@@ -45,4 +45,30 @@ function computeMinMaxElevation(buffer, width, height, pitch) {
     return { min, max };
 }
 
-export default computeMinMaxElevation;
+// We check if the elevation texture has some significant values through corners
+export function checkNodeElevationTextureValidity(data, noDataValue) {
+    const l = data.length;
+    return data[0] > noDataValue &&
+           data[l - 1] > noDataValue &&
+           data[Math.sqrt(l) - 1] > noDataValue &&
+           data[l - Math.sqrt(l)] > noDataValue;
+}
+
+function getIndiceWithPitch(i, pitch, w) {
+    // Return corresponding indice in parent tile using pitch
+    const currentX = (i % w) / w;  // normalized
+    const currentY = Math.floor(i / w) / w; // normalized
+    const newX = pitch.x + currentX * pitch.z;
+    const newY = pitch.y + currentY * pitch.w;
+    const newIndice = Math.floor(newY * w) * w + Math.floor(newX * w);
+    return newIndice;
+}
+
+// This function replaces noDataValue by significant values from parent texture
+export function insertSignificantValuesFromParent(data, dataParent, noDataValue, pitch) {
+    for (let i = 0, l = data.length; i < l; ++i) {
+        if (data[i] === noDataValue) {
+            data[i] = dataParent[getIndiceWithPitch(i, pitch, 256)];
+        }
+    }
+}
