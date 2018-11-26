@@ -59,7 +59,7 @@
             object3ds.push(object3d);
 
             // define pole texture
-            globe2.noTextureColor = new itowns.THREE.Color(0xd0d5d8);
+            globe2.diffuse = new itowns.THREE.Color(0xd0d5d8);
 
             // add globe2 to the view so it gets updated
             itowns.View.prototype.addLayer.call(view, globe2);

@@ -32,10 +32,11 @@ export class InfoTiledGeometryLayer extends InfoLayer {
                 get: () => {
                     let layers = [];
                     this.displayed.tiles.forEach((tile) => {
-                        layers = [...new Set([...layers, ...tile.material.colorLayersId, tile.material.elevationlayerId])];
+                        const m = tile.material;
+                        layers = [...new Set([...layers, ...m.colorLayerIds.filter(id => m.getLayer(id)), ...m.elevationLayerIds])];
                     });
 
-                    return this.layer.attachedLayers.filter(l => layers.indexOf(l.id) >= 0);
+                    return this.layer.attachedLayers.filter(l => layers.includes(l.id));
                 },
             });
         Object.defineProperty(

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import Camera from '../Renderer/Camera';
 import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from './MainLoop';
 import c3DEngine from '../Renderer/c3DEngine';
-import RendererConstant from '../Renderer/RendererConstant';
+import RenderMode from '../Renderer/RenderMode';
 
 import { getMaxColorSamplerUnitsCount } from '../Renderer/LayeredMaterial';
 
@@ -646,7 +646,7 @@ View.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
         this.tileLayer.visible = true;
     }
 
-    const restore = this.tileLayer.level0Nodes.map(n => n.pushRenderState(RendererConstant.DEPTH));
+    const restore = this.tileLayer.level0Nodes.map(n => RenderMode.push(n, RenderMode.MODES.DEPTH));
     const buffer = g.renderViewToBuffer(
         { camera: this.camera, scene: this.tileLayer.object3d },
         { x, y, width, height });

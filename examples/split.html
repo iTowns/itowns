@@ -102,14 +102,13 @@
                 window.removeEventListener('mousemove', splitSliderMove, true);
             }
 
-            function changeLayerVisibility(ortho, osm) {
-                var material;
-
+            function changeLayerVisibility(orthoVisible, osmVisible) {
                 view.scene.traverse(function _(obj) {
-                    if (obj.material && obj.material.setLayerVisibility && obj.material.visible) {
-                        material = obj.material;
-                        material.setLayerVisibility(orthoLayer, ortho);
-                        material.setLayerVisibility(osmLayer, osm);
+                    if (obj.material && obj.material.visible && obj.material.getLayer) {
+                        var ortho = obj.material.getLayer(orthoLayer.id);
+                        var osm = obj.material.getLayer(osmLayer.id);
+                        if (ortho) ortho.visible = orthoVisible;
+                        if (osm) osm.visible = osmVisible;
                     }
                 });
             }

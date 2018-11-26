@@ -43,18 +43,8 @@
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             viewerDiv = document.getElementById('viewerDiv');
 
-            // Since the elevation layer use color textures, specify min/max z
-            config = {
-                materialOptions: {
-                    useColorTextureElevation: true,
-                    colorTextureElevationMinZ: 37,
-                    colorTextureElevationMaxZ: 240,
-                },
-                disableSkirt: true,
-            };
-
             // Instanciate PlanarView*
-            view = new itowns.PlanarView(viewerDiv, extent, config);
+            view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true });
             setupLoadingScreen(viewerDiv, view);
 
             // Add a WMS imagery source
@@ -67,8 +57,13 @@
                 format: 'image/jpeg',
             });
 
-            // Add a WMS imagery layer
-            var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
+            view.addLayer(colorLayer);
+
+            // Add an WMS elevation layer (see WMSProvider* for valid options)
+            var elevationLayer = new itowns.ElevationLayer('wms_elevation', {
+                useColorTextureElevation: true,
+                colorTextureElevationMinZ: 37,
+                colorTextureElevationMaxZ: 240,
                 updateStrategy: {
                     type: itowns.STRATEGY_DICHOTOMY,
                     options: {},

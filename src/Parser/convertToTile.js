@@ -46,7 +46,7 @@ export default {
         // build tile
         geometry._count++;
         const material = new LayeredMaterial(layer.materialOptions);
-        const tile = new TileMesh(layer, geometry, material, extent, level);
+        const tile = new TileMesh(geometry, material, layer, extent, level);
         // TODO semble ne pas etre necessaire
         tile.layers.set(layer.threejsLayer);
 
@@ -62,27 +62,25 @@ export default {
         tile.quaternion.copy(quaternion);
 
         tile.material.transparent = layer.opacity < 1.0;
-        tile.material.uniforms.opacity.value = layer.opacity;
-        tile.setVisibility(false);
+        tile.material.opacity = layer.opacity;
+        tile.visible = false;
         tile.updateMatrix();
 
         if (parent) {
             tile.setBBoxZ(parent.obb.z.min, parent.obb.z.max);
-        } else if (layer.materialOptions && layer.materialOptions.useColorTextureElevation) {
-            tile.setBBoxZ(layer.materialOptions.colorTextureElevationMinZ, layer.materialOptions.colorTextureElevationMaxZ);
         }
 
         tile.add(tile.obb);
 
-        tile.material.setLightingOn(layer.lighting.enable);
-        tile.material.uniforms.lightPosition.value = layer.lighting.position;
+        tile.material.lightingEnable = layer.lighting.enable;
+        tile.material.lightPosition = layer.lighting.position;
 
-        if (layer.noTextureColor) {
-            tile.material.uniforms.noTextureColor.value.copy(layer.noTextureColor);
+        if (layer.diffuse) {
+            tile.material.diffuse = layer.diffuse;
         }
 
         if (__DEBUG__) {
-            tile.material.uniforms.showOutline = { value: layer.showOutline || false };
+            tile.material.showOutline = layer.showOutline || false;
             tile.material.wireframe = layer.wireframe || false;
         }
 

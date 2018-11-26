@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import TileMesh from './TileMesh';
-import RendererConstant from '../Renderer/RendererConstant';
+import RenderMode from '../Renderer/RenderMode';
 import { unpack1K } from '../Renderer/LayeredMaterial';
 
 function hideEverythingElse(view, object, threejsLayer = 0) {
@@ -23,7 +23,7 @@ function screenCoordsToNodeId(view, tileLayer, viewCoords, radius) {
 
     viewCoords = viewCoords || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
 
-    const restore = tileLayer.level0Nodes.map(n => n.pushRenderState(RendererConstant.ID));
+    const restore = tileLayer.level0Nodes.map(n => RenderMode.push(n, RenderMode.MODES.ID));
 
     const undoHide = hideEverythingElse(view, tileLayer.object3d, tileLayer.threejsLayer);
 
