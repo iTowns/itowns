@@ -1,4 +1,3 @@
-import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterialConstants';
 import { chooseNextLevelToFetch } from '../Layer/LayerUpdateStrategy';
 import LayerUpdateState from '../Layer/LayerUpdateState';
 import { ImageryLayers } from '../Layer/Layer';
@@ -26,67 +25,7 @@ function getSourceExtent(node, extent, targetLevel, source) {
     }
 }
 
-function initNodeImageryTexturesFromParent(node, parent, layer) {
-    if (parent.material && parent.material.isColorLayerLoaded(layer)) {
-        const coords = node.getCoordsForSource(layer.source);
-        const offsetTextures = node.material.getLayerTextureOffset(layer.id);
-
-        let textureIndex = offsetTextures;
-        for (const c of coords) {
-            for (const texture of parent.material.getLayerTextures(layer)) {
-                if (c.isInside(texture.coords)) {
-                    const result = c.offsetToParent(texture.coords);
-                    node.material.textures[l_COLOR][textureIndex] = texture;
-                    node.material.offsetScale[l_COLOR][textureIndex] = result;
-                    textureIndex++;
-                    break;
-                }
-            }
-        }
-
-        if (__DEBUG__) {
-            if ((textureIndex - offsetTextures) != coords.length) {
-                console.error(`non-coherent result ${textureIndex} ${offsetTextures} vs ${coords.length}.`, coords);
-            }
-        }
-        const index = node.material.indexOfColorLayer(layer.id);
-        node.material.layerTexturesCount[index] = coords.length;
-        node.material.loadedTexturesCount[l_COLOR] += coords.length;
-    }
-}
-
-function initNodeElevationTextureFromParent(node, parent, layer) {
-    // Inherit parent's elevation texture. Note that contrary to color layers the elevation level of the
-    // node might not be EMPTY_TEXTURE_ZOOM in this init function. That's because we can have
-    // multiple elevation layers (thus multiple calls to initNodeElevationTextureFromParent) but a given
-    // node can only use 1 elevation texture
-    if (parent.material && parent.material.getElevationLayerLevel() > node.material.getElevationLayerLevel()) {
-        const coords = node.getCoordsForSource(layer.source);
-
-        const texture = parent.material.textures[l_ELEVATION][0];
-        const pitch = coords[0].offsetToParent(parent.material.textures[l_ELEVATION][0].coords);
-        const elevation = {
-            texture,
-            pitch,
-        };
-
-        // If the texture resolution has a poor precision for this node, we don't
-        // extract min-max from the texture (too few information), we instead chose
-        // to use parent's min-max.
-        const useMinMaxFromParent = node.level - texture.coords.zoom > 6;
-        if (!useMinMaxFromParent) {
-            const { min, max } = computeMinMaxElevation(
-                texture.image.data,
-                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-                pitch);
-            elevation.min = min;
-            elevation.max = max;
-        }
-
-        node.setTextureElevation(layer, elevation, pitch);
-    }
-}
-
+// TODO Move to XBilParser
 function getIndiceWithPitch(i, pitch, w) {
     // Return corresponding indice in parent tile using pitch
     const currentX = (i % w) / w;  // normalized
@@ -97,29 +36,30 @@ function getIndiceWithPitch(i, pitch, w) {
     return newIndice;
 }
 
-function insertSignificantValuesFromParent(texture, node, parent, layer) {
-    if (parent.material && parent.material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
+// TODO Move to XBilParser
+// This function replaces noDataValue by significant values from parent texture
+function insertSignificantValuesFromParent(data, node, parent, layer) {
+    const nodeParent = parent.material && parent.material.getElevationLayer();
+    const parentTexture = nodeParent && nodeParent.textures[0];
+    if (parentTexture) {
         const coords = node.getCoordsForSource(layer.source);
-        const textureParent = parent.material.textures[l_ELEVATION][0];
-        const pitch = coords[0].offsetToParent(parent.material.textures[l_ELEVATION][0].coords);
-        const tData = texture.image.data;
-        const l = tData.length;
+        const pitch = coords[0].offsetToParent(parentTexture.coords);
 
-        for (var i = 0; i < l; ++i) {
-            if (tData[i] === layer.noDataValue) {
-                tData[i] = textureParent.image.data[getIndiceWithPitch(i, pitch, 256)];
+        for (let i = 0, l = data.length; i < l; ++i) {
+            if (data[i] === layer.noDataValue) {
+                data[i] = parentTexture.image.data[getIndiceWithPitch(i, pitch, 256)];
             }
         }
     }
 }
 
-function nodeCommandQueuePriorityFunction(node) {
+function materialCommandQueuePriorityFunction(material) {
     // We know that 'node' is visible because commands can only be
     // issued for visible nodes.
 
     // TODO: need priorization of displayed nodes
-    if (node.isDisplayed()) {
-        // Then prefer displayed() node over non-displayed one
+    if (material.visible) {
+        // Then prefer displayed node over non-displayed one
         return 100;
     } else {
         return 10;
@@ -137,14 +77,15 @@ function refinementCommandCancellationFn(cmd) {
     // Cancel the command if the tile already has a better texture.
     // This is only needed for elevation layers, because we may have several
     // concurrent layers but we can only use one texture.
-    if (cmd.layer.type == 'elevation' &&
-        cmd.targetLevel <= cmd.requester.material.getElevationLayerLevel()) {
+    if (cmd.layer.type == 'elevation' && cmd.requester.material.getElevationLayer() &&
+        cmd.targetLevel <= cmd.requester.material.getElevationLayer().level) {
         return true;
     }
 
-    return !cmd.requester.isDisplayed();
+    return !cmd.requester.material.visible;
 }
 
+// TODO Move to XBilParser
 function checkNodeElevationTextureValidity(texture, noDataValue) {
     // We check if the elevation texture has some significant values through corners
     const tData = texture.image.data;
@@ -157,7 +98,13 @@ function checkNodeElevationTextureValidity(texture, noDataValue) {
 
 export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     const material = node.material;
+    if (!parent || !material) {
+        return;
+    }
+
     const extentsDestination = node.getCoordsForSource(layer.source);
+
+    let nodeLayer = material.getLayer(layer.id);
 
     // Initialisation
     if (node.layerUpdateState[layer.id] === undefined) {
@@ -168,10 +115,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             // because even if this tile is outside of the layer, it could inherit it's
             // parent texture
             if (!layer.noTextureParentOutsideLimit &&
-                parent &&
                 parent.material &&
-                parent.material.indexOfColorLayer &&
-                parent.material.indexOfColorLayer(layer.id) >= 0) {
+                parent.material.getLayer &&
+                parent.material.getLayer(layer.id)) {
                 // ok, we're going to inherit our parent's texture
             } else {
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
@@ -179,13 +125,19 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             }
         }
 
-        if (material.indexOfColorLayer(layer.id) === -1) {
-            material.pushLayer(layer, node.getCoordsForSource(layer.source));
-            const imageryLayers = context.view.getLayers(l => l.type === 'color');
-            const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
+        if (!nodeLayer) {
+            // Create new MaterialLayer
+            const tileMT = layer.options.tileMatrixSet || extentsDestination[0].crs();
+            nodeLayer = material.addLayer(layer, tileMT);
+
+            // TODO: Sequence must be returned by parent geometry layer
+            const colorLayers = context.view.getLayers(l => l.type === 'color');
+            const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(colorLayers);
             material.setSequence(sequence);
 
-            initNodeImageryTexturesFromParent(node, parent, layer);
+            // Init the new MaterialLayer by parent
+            const parentLayer = parent.material && parent.material.getLayer(layer.id);
+            nodeLayer.initFromParent(parentLayer, extentsDestination);
         }
 
         // Proposed new process, two separate processes:
@@ -194,23 +146,24 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
         // The two-step allows you to filter out unnecessary requests
         // Indeed in the second pass, their state (not visible or not displayed) can block them to fetch
-        const minLevel = layer.source.zoom.min;
-        if (node.material.getColorLayerLevelById(layer.id) >= minLevel) {
+        if (nodeLayer.level >= layer.source.zoom.min) {
             context.view.notifyChange(node, false);
             return;
         }
     }
 
     // Node is hidden, no need to update it
-    if (!node.isDisplayed()) {
+    if (!material.visible) {
         return;
     }
 
     // TODO: move this to defineLayerProperty() declaration
     // to avoid mixing layer's network updates and layer's params
     // Update material parameters
-    material.setLayerVisibility(layer, layer.visible);
-    material.setLayerOpacity(layer, layer.opacity);
+    if (nodeLayer) {
+        nodeLayer.visible = layer.visible;
+        nodeLayer.opacity = layer.opacity;
+    }
 
     const ts = Date.now();
     // An update is pending / or impossible -> abort
@@ -224,7 +177,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
             return;
         }
-    } else if (!material.isColorLayerDownscaled(layer, node.getZoomForLayer(layer))) {
+    } else if (nodeLayer.level >= node.getZoomForLayer(layer)) {
         // default decision method
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return;
@@ -236,10 +189,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     }
 
     const failureParams = node.layerUpdateState[layer.id].failureParams;
-    const currentLevel = node.material.getColorLayerLevelById(layer.id);
-    const nodeLevel = extentsDestination[0].zoom || node.level;
-    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, nodeLevel, currentLevel, layer, failureParams);
-    if (targetLevel <= currentLevel) {
+    const destinationLevel = extentsDestination[0].zoom || node.level;
+    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, destinationLevel, nodeLayer.level, layer, failureParams);
+    if (targetLevel <= nodeLayer.level) {
         return;
     }
 
@@ -257,7 +209,6 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         extentsSource.push(extentSource);
     }
 
-    const parsedData = node.material.getLayerTextures(layer).map(t => t.parsedData);
     node.layerUpdateState[layer.id].newTry();
     const command = {
         /* mandatory */
@@ -265,21 +216,21 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         layer,
         extentsSource,
         extentsDestination,
-        parsedData,
+        parsedData: layer.source.parsedData,
         requester: node,
-        priority: nodeCommandQueuePriorityFunction(node),
+        priority: materialCommandQueuePriorityFunction(material),
         earlyDropFunction: refinementCommandCancellationFn,
     };
 
     return context.scheduler.execute(command).then(
         (result) => {
-            if (node.material === null) {
+            if (material === null) {
                 return;
             }
 
+            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(extentsSource[i]));
             if (result) {
-                const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(extentsSource[i]));
-                node.material.setLayerTextures(layer, result, pitchs);
+                nodeLayer.setTextures(result, pitchs);
             } else {
                 // TODO: null texture is probably an error
                 // Maybe add an error counter for the node/layer,
@@ -309,6 +260,11 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 }
 
 export function updateLayeredMaterialNodeElevation(context, layer, node, parent) {
+    const material = node.material;
+    if (!parent || !material) {
+        return;
+    }
+
     // TODO: we need either
     //  - compound or exclusive layers
     //  - support for multiple elevation layers
@@ -316,16 +272,33 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // Elevation is currently handled differently from color layers.
     // This is caused by a LayeredMaterial limitation: only 1 elevation texture
     // can be used (where a tile can have N textures x M layers)
-    const material = node.material;
-    let currentElevation = material.getElevationLayerLevel();
-
+    const extentsDestination = node.getCoordsForSource(layer.source);
+    const tileMT = layer.options.tileMatrixSet || extentsDestination[0].crs();
     // Init elevation layer, and inherit from parent if possible
+    let nodeLayer = material.getElevationLayer();
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
-        initNodeElevationTextureFromParent(node, parent, layer);
-        currentElevation = material.getElevationLayerLevel();
-        const minLevel = layer.source.zoom.min;
-        if (currentElevation >= minLevel) {
+        if (!nodeLayer) {
+            nodeLayer = material.addLayer(layer, tileMT);
+            material.setSequenceElevation(layer.id);
+        }
+
+        const parentLayer = parent.material && parent.material.getLayer(layer.id);
+        nodeLayer.initFromParent(parentLayer, extentsDestination);
+
+        // If the texture resolution has a poor precision for this node, we don't
+        // extract min-max from the texture (too few information), we instead chose
+        // to use parent's min-max.
+        const useMinMaxFromParent = extentsDestination[0].zoom - nodeLayer.zoom > 6;
+        if (nodeLayer.textures[0] && !useMinMaxFromParent) {
+            const { min, max } =  computeMinMaxElevation(
+                nodeLayer.textures[0].image.data,
+                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+                nodeLayer.offsetScales[0]);
+            node.setBBoxZ(min, max);
+        }
+
+        if (nodeLayer.level >= layer.source.zoom.min) {
             context.view.notifyChange(node, false);
             return;
         }
@@ -336,24 +309,23 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
 
     // Possible conditions to *not* update the elevation texture
     if (layer.frozen ||
-            !node.isDisplayed() ||
+            !material.visible ||
             !node.layerUpdateState[layer.id].canTryUpdate(ts)) {
         return;
     }
 
     // Does this tile needs a new texture?
-    if (layer.canTileTextureBeImproved) {
+    if (layer.source.canTileTextureBeImproved) {
         // if the layer has a custom method -> use it
-        if (!layer.canTileTextureBeImproved(layer, node)) {
+        if (!layer.source.canTileTextureBeImproved(layer, node)) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
             return;
         }
     }
 
-    const extentsDestination = node.getCoordsForSource(layer.source);
-    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, extentsDestination[0].zoom, currentElevation, layer);
+    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, extentsDestination[0].zoom, nodeLayer.level, layer);
 
-    if (targetLevel <= currentElevation) {
+    if (targetLevel <= nodeLayer.level) {
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return Promise.resolve();
     }
@@ -377,43 +349,62 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         extentsSource,
         extentsDestination,
         requester: node,
-        priority: nodeCommandQueuePriorityFunction(node),
+        priority: materialCommandQueuePriorityFunction(material),
         earlyDropFunction: refinementCommandCancellationFn,
     };
 
     return context.scheduler.execute(command).then(
         (textures) => {
-            const terrain = { texture: textures[0] };
+            const elevation = {
+                texture: textures[0],
+                pitch: extentsDestination[0].offsetToParent(extentsSource[0]),
+            };
 
-            // TODO: this check is maybe useless
-            // see in dataSourceProvider
-            if (node.material === null) {
-                return;
-            }
-
-            // Do not apply the new texture if its level is < than the current one.
-            // This is only needed for elevation layers, because we may have several
-            // concurrent layers but we can only use one texture.
-            if (targetLevel <= node.material.getElevationLayerLevel()) {
+            // Do not apply the new texture if its level is < than the current
+            // one.  This is only needed for elevation layers, because we may
+            // have several concurrent layers but we can only use one texture.
+            if (targetLevel <= nodeLayer.level) {
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
                 return;
             }
 
             node.layerUpdateState[layer.id].success();
 
-            if (terrain.texture && terrain.texture.image.data && !checkNodeElevationTextureValidity(terrain.texture, layer.noDataValue)) {
-                // Quick check to avoid using elevation texture with no data value
-                // If we have no data values, we use value from the parent tile
-                // We should later implement multi elevation layer to choose the one to use at each level
-                insertSignificantValuesFromParent(terrain.texture, node, parent, layer);
+            if (elevation.texture) {
+                if (elevation.texture.flipY) {
+                    // DataTexture default to false, so make sure other Texture
+                    // types do the same (eg image texture).  See UV construction
+                    // for more details.
+                    elevation.texture.flipY = false;
+                    elevation.texture.needsUpdate = true;
+                }
+
+                if (elevation.texture.image.data) {
+                    if (!checkNodeElevationTextureValidity(elevation.texture, layer.noDataValue)) {
+                        // Quick check to avoid using elevation texture with no data
+                        // value. If we have no data values, we use value from the
+                        // parent tile. We should later implement multi elevation layer
+                        // to choose the one to use at each level.
+                        insertSignificantValuesFromParent(elevation.texture.image.data, node, parent, layer);
+                    }
+
+
+                    const { min, max } = computeMinMaxElevation(elevation.texture.image.data);
+                    elevation.min = !min ? 0 : min;
+                    elevation.max = !max ? 0 : max;
+                } else if (layer.useColorTextureElevation) {
+                    elevation.min = layer.colorTextureElevationMinZ;
+                    elevation.max = layer.colorTextureElevationMaxZ;
+                }
             }
 
-            if (terrain.texture && terrain.texture.image.data) {
-                const { min, max } = computeMinMaxElevation(terrain.texture.image.data);
-                terrain.min = !min ? 0 : min;
-                terrain.max = !max ? 0 : max;
+            node.setBBoxZ(elevation.min, elevation.max);
+            nodeLayer = material.getLayer(layer.id);
+            if (!nodeLayer) {
+                nodeLayer = material.addLayer(layer, tileMT);
             }
-            node.setTextureElevation(layer, terrain, extentsDestination[0].offsetToParent(extentsSource[0]));
+            material.setSequenceElevation(layer.id);
+            nodeLayer.setTexture(0, elevation.texture, elevation.pitch);
         },
         (err) => {
             if (err instanceof CancelledCommandException) {
@@ -431,4 +422,15 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
                 }
             }
         });
+}
+
+export function removeLayeredMaterialNodeLayer(layerId) {
+    return function removeLayeredMaterialNodeLayer(node) {
+        if (node.material && node.material.removeLayer) {
+            node.material.removeLayer(layerId);
+        }
+        if (node.layerUpdateState && node.layerUpdateState[layerId]) {
+            delete node.layerUpdateState[layerId];
+        }
+    };
 }

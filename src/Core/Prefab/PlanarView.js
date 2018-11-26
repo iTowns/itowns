@@ -2,7 +2,6 @@ import * as THREE from 'three';
 
 import View from '../View';
 import { MAIN_LOOP_EVENTS } from '../MainLoop';
-import RendererConstant from '../../Renderer/RendererConstant';
 import CameraUtils from '../../utils/CameraUtils';
 
 import PlanarLayer from './Planar/PlanarLayer';
@@ -33,7 +32,6 @@ function PlanarView(viewerDiv, extent, options = {}) {
     const p = { coord: extent.center(), range: max, tilt: 20, heading: 0 };
     CameraUtils.transformCameraToLookAtTarget(this, camera3D, p);
 
-    this._renderState = RendererConstant.FINAL;
     this._fullSizeDepthBuffer = null;
     this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
         if (this._fullSizeDepthBuffer != null) {
@@ -58,11 +56,10 @@ PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 
     for (const n of this.tileLayer.level0Nodes) {
         n.traverse((node) => {
-            // only take of selectable nodes
-            if (node.setSelected) {
-                node.setSelected(node.id === selectedId);
-
-                if (node.id === selectedId) {
+            if (node.material) {
+                const selected = node.id === selectedId;
+                node.material.overlayAlpha = selected ? 0.5 : 0;
+                if (selected) {
                     // eslint-disable-next-line no-console
                     console.info(node);
                 }

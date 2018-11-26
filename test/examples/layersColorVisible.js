@@ -19,7 +19,7 @@ describe('layersColorVisible', function _() {
     it('should display correct color layer', async () => {
         // test displayed tile
         const layer = await page.evaluate(() => view.tileLayer.info.displayed.layers[0].id);
-        const count = await page.evaluate(() => view.tileLayer.info.displayed.layers.length);
+        const count = await page.evaluate(() => view.tileLayer.info.displayed.layers.filter(l => l.type === 'color').length);
         assert.equal(count, 1);
         assert.equal(layer, 'Ortho');
     });

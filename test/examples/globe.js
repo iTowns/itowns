@@ -24,9 +24,9 @@ describe('globe', function _() {
         assert.ok(error && colorLayersCount === 1);
     });
     it('should not add layers beyond the capabilities', async () => {
-        const maxColorSamplerUnitsCount = await page
-            .evaluate(type => view.tileLayer.level0Nodes[0]
-                .material.textures[type].length, 1);
+        const maxColorSamplerUnitsCount = await page.evaluate(
+            () => itowns.getMaxColorSamplerUnitsCount(),
+        );
         const colorSamplerUnitsCount = await page.evaluate(() => view.tileLayer.countColorLayersTextures(view.getLayers(l => l.type === 'color')[0]));
         const limit = maxColorSamplerUnitsCount - colorSamplerUnitsCount;
 

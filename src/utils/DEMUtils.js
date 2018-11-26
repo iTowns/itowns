@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import Coordinates from '../Core/Geographic/Coordinates';
-import { l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
 
 const FAST_READ_Z = 0;
 const PRECISE_READ_Z = 1;
@@ -169,7 +168,8 @@ function tileAt(pt, tile) {
                 return t;
             }
         }
-        if (tile.material.isElevationLayerLoaded()) {
+        const tileLayer = tile.material.getElevationLayer();
+        if (tileLayer && tileLayer.level >= 0) {
             return tile;
         }
         return undefined;
@@ -219,6 +219,8 @@ function _readTextureValueAt(layer, texture, ...uv) {
         ctx.drawImage(texture.image, minx, miny, dw, dh, 0, 0, dw, dh);
         const d = ctx.getImageData(0, 0, dw, dh);
 
+        const elevationLayer = layer.attachedLayers.filter(l => l.type == 'elevation')[0];
+
         const result = [];
         for (let i = 0; i < uv.length; i += 2) {
             const ox = uv[i] - minx;
@@ -226,8 +228,8 @@ function _readTextureValueAt(layer, texture, ...uv) {
 
             // d is 4 bytes per pixel
             result.push(THREE.Math.lerp(
-                layer.materialOptions.colorTextureElevationMinZ,
-                layer.materialOptions.colorTextureElevationMaxZ,
+                elevationLayer.colorTextureElevationMinZ,
+                elevationLayer.colorTextureElevationMaxZ,
                 d.data[4 * oy * dw + 4 * ox] / 255));
         }
         if (uv.length === 2) {
@@ -372,7 +374,8 @@ function _readZ(layer, method, coord, nodes, cache) {
     }
 
     const tile = tileWithValidElevationTexture;
-    const src = tileWithValidElevationTexture.material.textures[l_ELEVATION][0];
+    const tileLayer = tile.material.getElevationLayer();
+    const src = tileLayer.textures[0];
 
     // check cache value if existing
     if (cache) {
@@ -381,11 +384,8 @@ function _readZ(layer, method, coord, nodes, cache) {
         }
     }
 
-    // Assuming that tiles are split in 4 children, we lookup the parent that
-    // really owns this texture
-    const stepsUpInHierarchy = Math.round(Math.log2(1.0 /
-        tileWithValidElevationTexture.material.offsetScale[l_ELEVATION][0].z));
-    for (let i = 0; i < stepsUpInHierarchy; i++) {
+    // we lookup the parent that really owns this texture
+    for (let i = tile.level; i < tileLayer.level; i++) {
         tileWithValidElevationTexture = tileWithValidElevationTexture.parent;
     }
 

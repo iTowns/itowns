@@ -38,7 +38,6 @@
             var p;
             var menuGlobe;
             var d;
-            var config;
 
             // Define geographic extent: CRS, min/max X, min/max Y
             extent = new itowns.Extent(
@@ -49,18 +48,8 @@
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             viewerDiv = document.getElementById('viewerDiv');
 
-            // Since the elevation layer use color textures, specify min/max z
-            config = {
-                materialOptions: {
-                    useColorTextureElevation: true,
-                    colorTextureElevationMinZ: 37,
-                    colorTextureElevationMaxZ: 240,
-                },
-                disableSkirt: true,
-            };
-
             // Instanciate PlanarView*
-            view = new itowns.PlanarView(viewerDiv, extent, config);
+            view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true });
             setupLoadingScreen(viewerDiv, view);
 
             // Add a WMS imagery source
@@ -96,6 +85,9 @@
 
             // Add a WMS elevation layer
             var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
+                useColorTextureElevation: true,
+                colorTextureElevationMinZ: 37,
+                colorTextureElevationMaxZ: 240,
                 source: wmsElevationSource,
             });
 

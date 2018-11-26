@@ -35,14 +35,11 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     };
 
     // tiles outline
-    gui.add(layer, 'showOutline').name('Show tiles outline').onChange((newValue) => {
+    gui.add(layer, 'showOutline').name('Show tiles').onChange((newValue) => {
         layer.showOutline = newValue;
 
         applyToNodeFirstMaterial(view, layer.object3d, layer, (material) => {
-            if (material.uniforms) {
-                material.uniforms.showOutline = { value: newValue };
-                material.needsUpdate = true;
-            }
+            material.showOutline = newValue;
         });
     });
 
@@ -120,23 +117,29 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
                 // because once a node is invisible, children are not removed
                 // any more
                 // FIXME a proper way of notifying tile deletion to children layers should be implemented
-                node.setDisplayed = function setDisplayed(show) {
-                    this.material.visible = show;
-                    if (!show) {
-                        let i = this.children.length;
-                        while (i--) {
-                            const c = this.children[i];
-                            if (c.layer === sb_layer_id) {
-                                if (c.dispose) {
-                                    c.dispose();
-                                } else {
-                                    c.material.dispose();
+                const descriptor = Object.getOwnPropertyDescriptor(node.material, 'visible');
+                const getVisible = descriptor.get || (() => descriptor.value);
+                const setVisible = descriptor.set || ((value) => { descriptor.value = value; });
+                Object.defineProperty(node.material, 'visible', {
+                    get: getVisible,
+                    set: (value) => {
+                        setVisible(value);
+                        if (!value) {
+                            let i = node.children.length;
+                            while (i--) {
+                                const c = node.children[i];
+                                if (c.layer === sb_layer_id) {
+                                    if (c.dispose) {
+                                        c.dispose();
+                                    } else {
+                                        c.material.dispose();
+                                    }
+                                    node.children.splice(i, 1);
                                 }
-                                this.children.splice(i, 1);
                             }
                         }
-                    }
-                };
+                    },
+                });
             } else {
                 helper = helpers[0];
             }
