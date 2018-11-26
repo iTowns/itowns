@@ -43,27 +43,37 @@ and open the template in the editor.
             var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             var menuGlobe = new GuiTools('menuDiv', view);
 
+            function createWMTSSourceFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                return config;
+            }
+
             function addColorLayerFromConfig(config) {
                 var layer = new itowns.ColorLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
-            itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(addColorLayerFromConfig);
 
-            itowns.Fetcher.json('examples/layers/JSONLayers/Cada.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Administrative.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Transport.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Railways.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Denomination.json').then(addColorLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Region.json')
+                .then(function _(config) {
+                    config.source = new itowns.WMSSource(config.source);
+                    return config;
+                }).then(addColorLayerFromConfig);
+
+            itowns.Fetcher.json('examples/layers/JSONLayers/Cada.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Administrative.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Transport.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Railways.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Denomination.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
 
             function addElevationLayerFromConfig(config) {
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
-            itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(createWMTSSourceFromConfig).then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(createWMTSSourceFromConfig).then(addElevationLayerFromConfig);
 
             menuGlobe.addGUI('RealisticLighting', false, view.setRealisticLightingOn.bind(view));
 
