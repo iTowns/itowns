@@ -99,3 +99,10 @@ body {
     border: 2px solid #775555;
     vertical-align: middle;
 }
+
+#timeSliderDiv {
+    right: unset;
+    left: 50%;
+    transform: translate(-50%,0%);
+    padding: 10px;
+}

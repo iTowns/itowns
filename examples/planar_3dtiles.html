@@ -1,0 +1,197 @@
+<html>
+    <head>
+        <title>Itowns - 3D Tiles planar example</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div class="help">
+            <p>Key bindings</p>
+            <ul>
+                <li>Left-Click: camera translation (drag)</li>
+                <li>Right-Click: camera translation (pan)</li>
+                <li>Ctrl + Left-Click: camera rotation (orbit)</li>
+                <li>Spacebar / Wheel-Click: smart zoom</li>
+                <li>Mouse Wheel: zoom in/out</li>
+                <li>T: orient camera to a top view</li>
+                <li>Y: move camera to start position</li>
+            </ul>
+        </div>
+        <div id="timeSliderDiv" class="help">
+            <h3>Date selection</h3>
+            <input type="range" id="timeSlider" min="2009" max="2015" step="3">
+            <!--The following three lines allow to display dates under the
+            slider since list and labels of range input types are not
+            compatible with Firefox and Chrome yet. See
+            https://developer.mozilla.org/fr/docs/Web/HTML/Element/Input/range
+            -->
+            <div style="position:absolute;text-align:left">2009</div>
+            <div style="position:absolute;width:85%;text-align:center">2012</div>
+            <div style="text-align:right">2015</div>
+        </div>
+        <div id="viewerDiv"></div>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="js/proj4defs/3946.js"></script>
+        <script type="text/javascript">
+            // # Planar (EPSG:3946) viewer
+
+            // Define geographic extent: CRS, min/max X, min/max Y
+            var extent = new itowns.Extent(
+                'EPSG:3946',
+                1837860.980127206, 1847648.6685636174,
+                5169347.42659997, 5180280.0400808845);
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instantiate PlanarView*
+            var view = new itowns.PlanarView(viewerDiv, extent, {
+                disableSkirt: true
+            });
+            setupLoadingScreen(viewerDiv, view);
+
+            // Add a WMS imagery source
+            var wmsImagerySource = new itowns.WMSSource({
+                extent: extent,
+                name: 'Ortho2009_vue_ensemble_16cm_CC46',
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                version: '1.3.0',
+                projection: 'EPSG:3946',
+                format: 'image/jpeg',
+            });
+
+            // Add a WMS imagery layer
+            var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
+                updateStrategy: {
+                    type: itowns.STRATEGY_DICHOTOMY,
+                    options: {},
+                },
+                source: wmsImagerySource,
+            });
+
+            view.addLayer(wmsImageryLayer);
+
+            // Add a WMS elevation source
+            var wmsElevationSource = new itowns.WMSSource({
+                extent: extent,
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                name: 'MNT2012_Altitude_10m_CC46',
+                projection: 'EPSG:3946',
+                heightMapWidth: 256,
+                format: 'image/jpeg',
+            });
+
+            // Add a WMS elevation layer
+            var wmsElevationLayer = new
+            itowns.ElevationLayer('wms_elevation', {
+                useColorTextureElevation: true,
+                colorTextureElevationMinZ: 37,
+                colorTextureElevationMaxZ: 240,
+                source: wmsElevationSource,
+            });
+
+            view.addLayer(wmsElevationLayer);
+
+            // Camera
+            p = { coord: extent.center(), heading: -49.6, range: 3000, tilt:
+                    17 };
+            itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, p);
+
+            // Lights
+            var dirLight = new itowns.THREE.DirectionalLight(0xffffff, 1);
+            dirLight.position.set(-0.9, 0.3, 1);
+            dirLight.updateMatrixWorld();
+            view.scene.add( dirLight );
+
+            var ambLight = new itowns.THREE.AmbientLight(0xffffff, 0.2);
+            view.scene.add( ambLight );
+
+            // Controls
+            new itowns.PlanarControls(view, {});
+
+            // Menu
+            var menu = new GuiTools('menuDiv', view);
+            menu.addImageryLayersGUI(
+                view.getLayers(function gui(l) { return l.type === 'color'; }));
+            var d = new debug.Debug(view, menu.gui);
+            debug.createTileDebugUI(menu.gui, view, view.tileLayer, d);
+
+            // 3D Tiles
+
+            // Creates a 3D Tiles layer of Lyon for the specified year and adds
+            // it to the view and to the menu
+            function add3dTilesLayer(view, menu, $3dTilesLayerBaseId, year) {
+                var layer = new itowns.GeometryLayer($3dTilesLayerBaseId + year,
+                    new itowns.THREE.Group());
+                layer.name = 'Lyon-' + year;
+                layer.url =
+                    'https://threedtilesets.alpha.grandlyon.com/TileSet_Lyon_' +
+                    year + '_full/tileset.json';
+                layer.protocol = '3d-tiles';
+                layer.overrideMaterials = true;
+
+                itowns.View.prototype.addLayer.call(view, layer);
+                debug.create3dTilesDebugUI(menu.gui, view, layer, d);
+            }
+
+            // Add a 3D Tiles Layer of Lyon in 2012
+            var $3dTilesLayerBaseId = '3d-tiles-layer-';
+            add3dTilesLayer(view, menu, $3dTilesLayerBaseId, '2012');
+
+            // Time Slider management
+
+            // Displays the 3d-tiles layer identified by IdLayerToDisplay and
+            // hide others 3d-tiles layers
+            function toggleLayersVisibility(view, IdLayerToDisplay) {
+                for (var layer of view.getLayers(layer => layer.protocol ===
+                    '3d-tiles')) {
+                    if (layer.id !== IdLayerToDisplay && layer.visible ===
+                        true) {
+                        layer.visible = false;
+                        view.notifyChange(layer);
+                    }
+                    else if (layer.id === IdLayerToDisplay && layer.visible ===
+                    false) {
+                        layer.visible = true;
+                        view.notifyChange(layer);
+                    }
+                }
+            }
+
+            // Triggered when the user changes the date of timeSlider.
+            // This function creates a 3D Tiles layer of Lyon at the selected
+            // date if it doesn't exist and calls toggleLayersVisibility to
+            // display the correct 3D Tiles layer
+            function displayLayerAtSelectedDate() {
+                var newDate = document.getElementById("timeSlider").value;
+                var layerId = this.$3dTilesLayerBaseId + newDate;
+
+                if (!this.view.getLayerById(layerId)) {
+                    add3dTilesLayer(this.view, this.menu,
+                        this.$3dTilesLayerBaseId, newDate);
+                }
+                toggleLayersVisibility(this.view, layerId);
+            }
+
+            // Add a callback on the time slider
+            var callbackParams = {};
+            callbackParams.view = view;
+            callbackParams.menu = menu;
+            callbackParams.$3dTilesLayerBaseId = $3dTilesLayerBaseId;
+            document.getElementById("timeSlider").addEventListener('input',
+                displayLayerAtSelectedDate.bind(callbackParams), false);
+
+            // Request redraw
+            view.notifyChange();
+
+        </script>
+    </body>
+</html>
