@@ -75,7 +75,8 @@ export default {
         const b3dmHeader = {};
 
         // Magic type is unsigned char [4]
-        b3dmHeader.magic = utf8Decoder.decode(new Uint8Array(buffer, 0, 4));
+        const magicNumberByteLength = 4;
+        b3dmHeader.magic = utf8Decoder.decode(new Uint8Array(buffer, 0, magicNumberByteLength));
         if (b3dmHeader.magic) {
             // Version, byteLength, batchTableJSONByteLength, batchTableBinaryByteLength and batchTable types are uint32
             b3dmHeader.version = view.getUint32(byteOffset, true);
@@ -96,12 +97,13 @@ export default {
             b3dmHeader.BTBinaryLength = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
+            const headerByteLength = byteOffset + magicNumberByteLength;
             const promises = [];
             // Parse batch table
             if (b3dmHeader.BTJSONLength > 0) {
-                // sizeBegin in the index where the batch table starts. 28
-                // is the byte length of the b3dm header
-                const sizeBegin = 28 + b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength;
+                // sizeBegin is an index to the beginning of the batch table
+                const sizeBegin = headerByteLength + b3dmHeader.FTJSONLength +
+                    b3dmHeader.FTBinaryLength;
                 promises.push(BatchTableParser.parse(
                     buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin)));
             } else {
@@ -121,9 +123,10 @@ export default {
                     }
 
                     // RTC managed
-                    applyOptionalCesiumRTC(buffer.slice(28 + b3dmHeader.FTJSONLength +
-                        b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
-                        b3dmHeader.BTBinaryLength), gltf.scene);
+                    applyOptionalCesiumRTC(buffer.slice(headerByteLength +
+                        b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength +
+                        b3dmHeader.BTJSONLength + b3dmHeader.BTBinaryLength),
+                    gltf.scene);
 
                     const init_mesh = function f_init(mesh) {
                         mesh.frustumCulled = false;
@@ -151,9 +154,9 @@ export default {
                     resolve(gltf);
                 };
 
-                const gltfBuffer = buffer.slice(28 + b3dmHeader.FTJSONLength +
-                    b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
-                    b3dmHeader.BTBinaryLength);
+                const gltfBuffer = buffer.slice(headerByteLength +
+                    b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength +
+                    b3dmHeader.BTJSONLength + b3dmHeader.BTBinaryLength);
 
                 const version = new DataView(gltfBuffer, 0, 20).getUint32(4, true);
 
