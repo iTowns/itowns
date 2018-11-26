@@ -23,6 +23,7 @@ The following people have contributed to iTowns 2.
   * [Nicolas Saul](https://github.com/NikoSaul)
   * [Emmanuel Schmück](https://github.com/EmmanuelSchmuck/)
   * [Marie Lamure](https://github.com/mlamure)
+  * [Vincent Jaillot](https://github.com/jailln)
 
 The following organizations supported iTowns2 :
 * IGN ( http://www.ign.fr )
