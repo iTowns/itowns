@@ -97,7 +97,10 @@ export default {
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
             const promises = [];
+            // Parse batch table
             if (b3dmHeader.BTJSONLength > 0) {
+                // sizeBegin in the index where the batch table starts. 28
+                // is the byte length of the b3dm header
                 const sizeBegin = 28 + b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength;
                 promises.push(BatchTableParser.parse(
                     buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin)));

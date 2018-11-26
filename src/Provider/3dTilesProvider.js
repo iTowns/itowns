@@ -203,7 +203,9 @@ function executeCommand(command) {
     const metadata = command.metadata;
     const tile = new THREE.Object3D();
     configureTile(tile, layer, metadata, command.requester);
-    const path = metadata.content ? metadata.content.url : undefined;
+    // Patch for supporting 3D Tiles pre 1.0 (metadata.content.url) and 1.0
+    // (metadata.content.uri)
+    const path = metadata.content && (metadata.content.url || metadata.content.uri);
 
     const setLayer = (obj) => {
         obj.layers.set(layer.threejsLayer);
