@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CRS_DEFINES, ELEVATION_MODES } from './LayeredMaterial';
+import { CRS_DEFINES, ELEVATION_MODES } from 'Renderer/LayeredMaterial';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
 

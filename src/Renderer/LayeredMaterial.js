@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import TileVS from './Shader/TileVS.glsl';
-import TileFS from './Shader/TileFS.glsl';
-import ShaderUtils from './Shader/ShaderUtils';
-import Capabilities from '../Core/System/Capabilities';
-import RenderMode from './RenderMode';
-import MaterialLayer from './MaterialLayer';
+import TileVS from 'Renderer/Shader/TileVS.glsl';
+import TileFS from 'Renderer/Shader/TileFS.glsl';
+import ShaderUtils from 'Renderer/Shader/ShaderUtils';
+import Capabilities from 'Core/System/Capabilities';
+import RenderMode from 'Renderer/RenderMode';
+import MaterialLayer from 'Renderer/MaterialLayer';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
 

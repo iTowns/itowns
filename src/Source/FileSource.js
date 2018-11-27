@@ -1,8 +1,8 @@
 import togeojson from '@mapbox/togeojson';
-import Source from './Source';
-import Fetcher from '../Provider/Fetcher';
-import Extent from '../Core/Geographic/Extent';
-import GeoJsonParser from '../Parser/GeoJsonParser';
+import Source from 'Source/Source';
+import Fetcher from 'Provider/Fetcher';
+import Extent from 'Core/Geographic/Extent';
+import GeoJsonParser from 'Parser/GeoJsonParser';
 
 function getExtentFromGpxFile(file) {
     const bound = file.getElementsByTagName('bounds')[0];

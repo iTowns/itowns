@@ -1,7 +1,7 @@
 import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
-import GeoJsonParser from './GeoJsonParser';
-import Coordinates from '../Core/Geographic/Coordinates';
+import GeoJsonParser from 'Parser/GeoJsonParser';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 // This part is freely adapted from vector-tile-js
 // https://github.com/mapbox/vector-tile-js/blob/master/lib/vectortilefeature.js

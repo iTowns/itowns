@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import Ellipsoid from '../Math/Ellipsoid';
+import Ellipsoid from 'Core/Math/Ellipsoid';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 

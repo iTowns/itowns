@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Coordinates from '../Core/Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 const FAST_READ_Z = 0;
 const PRECISE_READ_Z = 1;

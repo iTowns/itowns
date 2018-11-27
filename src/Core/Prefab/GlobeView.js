@@ -1,16 +1,16 @@
 import * as THREE from 'three';
 
-import View, { VIEW_EVENTS } from '../View';
-import { MAIN_LOOP_EVENTS } from '../MainLoop';
-import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
-import GlobeControls from '../../Controls/GlobeControls';
-import { removeLayeredMaterialNodeLayer } from '../../Process/LayeredMaterialNodeProcessing';
+import View, { VIEW_EVENTS } from 'Core/View';
+import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
+import GlobeControls from 'Controls/GlobeControls';
+import { removeLayeredMaterialNodeLayer } from 'Process/LayeredMaterialNodeProcessing';
 
-import GlobeLayer from './Globe/GlobeLayer';
-import Atmosphere from './Globe/Atmosphere';
-import CoordStars from '../Geographic/CoordStars';
+import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
+import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
+import CoordStars from 'Core/Geographic/CoordStars';
 
-import Coordinates, { C, ellipsoidSizes } from '../Geographic/Coordinates';
+import Coordinates, { C, ellipsoidSizes } from 'Core/Geographic/Coordinates';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.

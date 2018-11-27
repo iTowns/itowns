@@ -1,4 +1,4 @@
-import { MODE } from '../../src/Renderer/PointsMaterial';
+import { MODE } from 'Renderer/PointsMaterial';
 
 function isInHierarchy(elt, hierarchyNode) {
     if (elt.name.length > hierarchyNode.length) {

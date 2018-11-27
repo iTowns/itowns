@@ -1,5 +1,5 @@
-import Projection from '../Core/Geographic/Projection';
-import Extent from '../Core/Geographic/Extent';
+import Projection from 'Core/Geographic/Projection';
+import Extent from 'Core/Geographic/Extent';
 
 export const SIZE_TEXTURE_TILE = 256;
 

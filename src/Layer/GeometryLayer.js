@@ -1,5 +1,5 @@
-import Layer from './Layer';
-import Picking from '../Core/Picking';
+import Layer from 'Layer/Layer';
+import Picking from 'Core/Picking';
 
 /**
  * Fires when the opacity of the layer has changed.

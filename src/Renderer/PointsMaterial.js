@@ -1,7 +1,7 @@
 import { Vector4, Uniform, NoBlending, NormalBlending, RawShaderMaterial } from 'three';
-import PointsVS from './Shader/PointsVS.glsl';
-import PointsFS from './Shader/PointsFS.glsl';
-import Capabilities from '../Core/System/Capabilities';
+import PointsVS from 'Renderer/Shader/PointsVS.glsl';
+import PointsFS from 'Renderer/Shader/PointsFS.glsl';
+import Capabilities from 'Core/System/Capabilities';
 
 export const MODE = {
     COLOR: 0,

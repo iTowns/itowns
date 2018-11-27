@@ -13,13 +13,10 @@ module.exports = {
       impliedStrict: true
     }
   },
- settings: {
+ 'settings': {
     'import/resolver': {
-      alias: {
-        map: [
-          ['threeExamples', patchedPath],
-        ],
-        extensions: ['.ts', '.js', '.jsx', '.json']
+       'webpack': {
+          'config': 'webpack.config.js',
       }
     }
   },

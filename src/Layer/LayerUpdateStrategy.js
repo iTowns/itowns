@@ -1,4 +1,4 @@
-import { EMPTY_TEXTURE_ZOOM } from '../Renderer/MaterialLayer';
+import { EMPTY_TEXTURE_ZOOM } from 'Renderer/MaterialLayer';
 /**
  * This modules implements various layer update strategies.
  *

@@ -1,9 +1,9 @@
 import { CameraHelper, Color, Vector3 } from 'three';
-import Coordinates from '../../src/Core/Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
+import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+import PanoramaView from 'Core/Prefab/PanoramaView';
+import OBB from 'Renderer/OBB';
 import ThreeStatsChart from './charts/ThreeStatsChart';
-import { MAIN_LOOP_EVENTS } from '../../src/Core/MainLoop';
-import PanoramaView from '../../src/Core/Prefab/PanoramaView';
-import OBB from '../../src/Renderer/OBB';
 import OBBHelper from './OBBHelper';
 
 /**

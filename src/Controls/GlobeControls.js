@@ -1,9 +1,9 @@
 /* globals window */
 import * as THREE from 'three';
-import AnimationPlayer, { Animation } from '../Core/AnimationPlayer';
-import Coordinates, { ellipsoidSizes } from '../Core/Geographic/Coordinates';
-import StateControl from './StateControl';
-import CameraUtils from '../utils/CameraUtils';
+import AnimationPlayer, { Animation } from 'Core/AnimationPlayer';
+import Coordinates, { ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import CameraUtils from 'utils/CameraUtils';
+import StateControl from 'Controls/StateControl';
 
 // private members
 const EPS = 0.000001;

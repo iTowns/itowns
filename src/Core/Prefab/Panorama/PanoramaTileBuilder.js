@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import OBB from '../../../Renderer/OBB';
-import Coordinates from '../../Geographic/Coordinates';
+import OBB from 'Renderer/OBB';
+import Coordinates from 'Core/Geographic/Coordinates';
+import Extent from 'Core/Geographic/Extent';
 import ProjectionType from './Constants';
-import Extent from '../../Geographic/Extent';
 
 function PanoramaTileBuilder(type, ratio) {
     this.tmp = {

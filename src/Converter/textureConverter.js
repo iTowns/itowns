@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Feature2Texture from './Feature2Texture';
+import Feature2Texture from 'Converter/Feature2Texture';
 
 const textureLayer = (texture) => {
     texture.generateMipmaps = false;

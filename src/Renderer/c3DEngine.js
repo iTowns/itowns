@@ -7,8 +7,8 @@
 /* global Uint8Array, Float64Array, document, window, Image */
 
 import * as THREE from 'three';
-import Capabilities from '../Core/System/Capabilities';
-import { unpack1K } from './LayeredMaterial';
+import Capabilities from 'Core/System/Capabilities';
+import { unpack1K } from 'Renderer/LayeredMaterial';
 
 function c3DEngine(rendererOrDiv, options = {}) {
     const NOIE = !Capabilities.isInternetExplorer();

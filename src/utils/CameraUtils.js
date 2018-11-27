@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import TWEEN from '@tweenjs/tween.js';
-import DEMUtils from './DEMUtils';
-import { MAIN_LOOP_EVENTS } from '../Core/MainLoop';
-import Coordinates, { ellipsoidSizes } from '../Core/Geographic/Coordinates';
-import Ellipsoid from '../Core/Math/Ellipsoid';
+import DEMUtils from 'utils/DEMUtils';
+import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+import Coordinates, { ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import Ellipsoid from 'Core/Math/Ellipsoid';
 
 THREE.Object3D.DefaultUp.set(0, 0, 1);
 const targetPosition = new THREE.Vector3();

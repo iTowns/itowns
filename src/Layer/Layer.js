@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from './LayerUpdateStrategy';
-import InfoLayer from './InfoLayer';
+import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
+import InfoLayer from 'Layer/InfoLayer';
 
 class Layer extends THREE.EventDispatcher {
     /**

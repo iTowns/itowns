@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import Coordinates from '../../Geographic/Coordinates';
-import Projection from '../../Geographic/Projection';
-import OBB from '../../../Renderer/OBB';
-import Extent from '../../Geographic/Extent';
+import Coordinates from 'Core/Geographic/Coordinates';
+import Projection from 'Core/Geographic/Projection';
+import OBB from 'Renderer/OBB';
+import Extent from 'Core/Geographic/Extent';
 
 const axisZ = new THREE.Vector3(0, 0, 1);
 const axisY = new THREE.Vector3(0, 1, 0);
