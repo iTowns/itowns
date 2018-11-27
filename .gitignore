@@ -9,4 +9,4 @@
 /docs/out/
 coverage
 .nyc_output/
-src/Renderer/ThreeExtended/jsPatched/
+/src/ThreeExtended/

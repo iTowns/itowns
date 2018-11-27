@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MAIN_LOOP_EVENTS } from '../../Core/MainLoop';
+import { MAIN_LOOP_EVENTS } from '../Core/MainLoop';
 
 // Note: we could use existing three.js controls (like https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/FirstPersonControls.js)
 // but including these controls in itowns allows use to integrate them tightly with itowns.

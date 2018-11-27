@@ -8,7 +8,7 @@ To patch Three.js examples add file path in `Array filesExamples` in file `./thr
 
 ```js
 module.exports = {
-    patchedPath: './src/Renderer/ThreeExtended/jsPatched/',
+    patchedPath: './ThreeExtended/',
     filesExamples: [
         './loaders/GLTFLoader.js',
         './loaders/deprecated/LegacyGLTFLoader.js',
@@ -25,5 +25,5 @@ module.exports = {
 By example, you could be imported in itowns by:
 
 ```js
-import GLTFLoader from 'threeExamples/loaders/GLTFLoader';
+import GLTFLoader from './ThreeExtended/loaders/GLTFLoader';
 ```

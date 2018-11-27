@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import GLTFLoader from 'threeExamples/loaders/GLTFLoader';
-import LegacyGLTFLoader from 'threeExamples/loaders/deprecated/LegacyGLTFLoader';
+import GLTFLoader from '../ThreeExtended/loaders/GLTFLoader';
+import LegacyGLTFLoader from '../ThreeExtended/loaders/deprecated/LegacyGLTFLoader';
 
 import BatchTableParser from './BatchTableParser';
 import Capabilities from '../Core/System/Capabilities';

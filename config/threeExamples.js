@@ -1,5 +1,5 @@
 module.exports = {
-    patchedPath: './src/Renderer/ThreeExtended/jsPatched/',
+    patchedPath: './src/ThreeExtended/',
     filesExamples: [
         './loaders/GLTFLoader.js',
         './loaders/deprecated/LegacyGLTFLoader.js',

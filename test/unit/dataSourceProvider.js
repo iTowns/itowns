@@ -4,7 +4,7 @@ import { updateLayeredMaterialNodeImagery } from '../../src/Process/LayeredMater
 import FeatureProcessing from '../../src/Process/FeatureProcessing';
 import TileMesh from '../../src/Core/TileMesh';
 import Extent from '../../src/Core/Geographic/Extent';
-import OBB from '../../src/Renderer/ThreeExtended/OBB';
+import OBB from '../../src/Renderer/OBB';
 import DataSourceProvider, { supportedFetchers } from '../../src/Provider/DataSourceProvider';
 import TileProvider from '../../src/Provider/TileProvider';
 import WMTSSource from '../../src/Source/WMTSSource';
@@ -14,7 +14,7 @@ import LayerUpdateState from '../../src/Layer/LayerUpdateState';
 import ColorLayer from '../../src/Layer/ColorLayer';
 import GeometryLayer from '../../src/Layer/GeometryLayer';
 import GlobeLayer from '../../src/Core/Prefab/Globe/GlobeLayer';
-import Feature2Mesh from '../../src/Renderer/ThreeExtended/Feature2Mesh';
+import Feature2Mesh from '../../src/Parser/Feature2Mesh';
 
 const holes = require('../data/geojson/holes.geojson.json');
 

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Coordinates from '../../Geographic/Coordinates';
 import Projection from '../../Geographic/Projection';
-import OBB from '../../../Renderer/ThreeExtended/OBB';
+import OBB from '../../../Renderer/OBB';
 import Extent from '../../Geographic/Extent';
 
 const axisZ = new THREE.Vector3(0, 0, 1);
