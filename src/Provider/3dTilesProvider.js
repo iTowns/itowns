@@ -5,7 +5,7 @@ import Fetcher from 'Provider/Fetcher';
 import OBB from 'Renderer/OBB';
 import Extent from 'Core/Geographic/Extent';
 import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from 'Process/3dTilesProcessing';
-import utf8Decoder from 'utils/Utf8Decoder';
+import utf8Decoder from 'Utils/Utf8Decoder';
 
 
 export function $3dTilesIndex(tileset, baseURL) {

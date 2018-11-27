@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import View from 'Core/View';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
-import CameraUtils from 'utils/CameraUtils';
+import CameraUtils from 'Utils/CameraUtils';
 
 import PlanarLayer from './Planar/PlanarLayer';
 

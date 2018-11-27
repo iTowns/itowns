@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
-import DEMUtils from 'utils/DEMUtils';
+import DEMUtils from 'Utils/DEMUtils';
 
 function Camera(crs, width, height, options = {}) {
     Object.defineProperty(this, 'crs', { get: () => crs });

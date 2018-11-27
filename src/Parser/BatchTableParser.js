@@ -1,4 +1,4 @@
-import utf8Decoder from 'utils/Utf8Decoder';
+import utf8Decoder from 'Utils/Utf8Decoder';
 
 export default {
     /** @module BatchTableParser */
