@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import GLTFLoader from './GLTFLoader';
-import LegacyGLTFLoader from './LegacyGLTFLoader';
+import GLTFLoader from 'threeExamples/loaders/GLTFLoader';
+import LegacyGLTFLoader from 'threeExamples/loaders/deprecated/LegacyGLTFLoader';
+
 import BatchTableParser from './BatchTableParser';
 import Capabilities from '../Core/System/Capabilities';
 import shaderUtils from '../Renderer/Shader/ShaderUtils';
@@ -161,7 +162,7 @@ export default {
                 const version = new DataView(gltfBuffer, 0, 20).getUint32(4, true);
 
                 if (version === 1) {
-                    legacyGLTFLoader.parse(gltfBuffer, onload, urlBase);
+                    legacyGLTFLoader.parse(gltfBuffer, urlBase, onload);
                 } else {
                     glTFLoader.parse(gltfBuffer, urlBase, onload);
                 }

@@ -14,7 +14,8 @@
     "build": "webpack -p",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
     "start": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot",
-    "prepublishOnly": "npm run build && npm run transpile"
+    "prepublishOnly": "npm run build && npm run transpile",
+    "prepare": "node ./config/prepare.js && node ./config/replace.config.js"
   },
   "files": [
     "*.md",
@@ -60,12 +61,14 @@
     "babel-plugin-inline-import": "^3.0.0",
     "babel-plugin-minify-dead-code-elimination": "^0.5.0",
     "babel-plugin-minify-replace": "^0.5.0",
+    "babel-plugin-module-resolver": "^3.1.1",
     "chart.js": "^2.7.3",
+    "copyfiles": "^2.1.0",
     "cross-env": "^5.2.0",
     "docdash": "^1.0.0",
     "eslint": "^5.8.0",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-import-resolver-webpack": "^0.10.1",
+    "eslint-import-resolver-alias": "^1.1.1",
     "eslint-loader": "^2.1.1",
     "eslint-plugin-import": "^2.14.0",
     "jsdoc": "^3.5.5",
@@ -74,6 +77,7 @@
     "nyc": "^13.1.0",
     "proj4": "^2.5.0",
     "puppeteer": "^1.10.0",
+    "replace-in-file": "^3.4.2",
     "three": "^0.98.0",
     "three.meshline": "^1.1.0",
     "url-polyfill": "^1.1.0",

@@ -1,5 +1,6 @@
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
+const { patchedPath } = require('./config/threeExamples.js');
 
 const debugBuild = process.env.NODE_ENV === 'development';
 
@@ -24,6 +25,7 @@ for (var preset of babelConf.presets) {
     preset.push({ modules: false });
     newPresets.push(preset);
 }
+
 babelConf.presets = newPresets;
 babelConf.babelrc = false; // disabel babelrc reading, as we've just done it
 const replacementPluginConf = babelConf.plugins.find(plugin => Array.isArray(plugin) && plugin[0] === 'minify-replace');
@@ -37,6 +39,11 @@ const include = [
 
 module.exports = {
     context: path.resolve(__dirname),
+    resolve: {
+        alias: {
+            threeExamples: patchedPath,
+        },
+    },
     entry: {
         itowns: ['@babel/polyfill', 'url-polyfill', 'whatwg-fetch', './src/MainBundle.js'],
         debug: ['./utils/debug/Main.js'],
