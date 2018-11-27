@@ -1,7 +1,7 @@
 import GeometryLayer from './GeometryLayer';
 import { InfoTiledGeometryLayer } from './InfoLayer';
 import Picking from '../Core/Picking';
-import convertToTile from '../Parser/convertToTile';
+import convertToTile from '../Converter/convertToTile';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from '../Process/ObjectRemovalHelper';
 

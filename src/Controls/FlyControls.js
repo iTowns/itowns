@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MAIN_LOOP_EVENTS } from '../../Core/MainLoop';
+import { MAIN_LOOP_EVENTS } from '../Core/MainLoop';
 
 const MOVEMENTS = {
     38: { method: 'translateZ', sign: -1 }, // FORWARD: up key

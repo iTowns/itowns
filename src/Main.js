@@ -18,12 +18,12 @@ export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } 
 export { default as OrientedImageCamera } from './Renderer/OrientedImageCamera';
 export { default as PointsMaterial } from './Renderer/PointsMaterial';
 export { default as PointCloudProcessing } from './Process/PointCloudProcessing';
-export { default as Feature2Mesh } from './Renderer/ThreeExtended/Feature2Mesh';
-export { default as FlyControls } from './Renderer/ThreeExtended/FlyControls';
-export { default as FirstPersonControls } from './Renderer/ThreeExtended/FirstPersonControls';
-export { default as PlanarControls } from './Renderer/ThreeExtended/PlanarControls';
-export { default as FeaturesUtils } from './Renderer/ThreeExtended/FeaturesUtils';
-export { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
+export { default as FlyControls } from './Controls/FlyControls';
+export { default as FirstPersonControls } from './Controls/FirstPersonControls';
+export { default as PlanarControls } from './Controls/PlanarControls';
+export { CONTROL_EVENTS } from './Controls/GlobeControls';
+export { default as Feature2Mesh } from './Converter/Feature2Mesh';
+export { default as FeaturesUtils } from './utils/FeaturesUtils';
 export { default as DEMUtils } from './utils/DEMUtils';
 export { default as CameraUtils } from './utils/CameraUtils';
 export { default as OrientationUtils } from './utils/OrientationUtils';

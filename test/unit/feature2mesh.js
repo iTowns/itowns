@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import proj4 from 'proj4';
 import assert from 'assert';
 import GeoJsonParser from '../../src/Parser/GeoJsonParser';
-import Feature2Mesh from '../../src/Renderer/ThreeExtended/Feature2Mesh';
+import Feature2Mesh from '../../src/Parser/Feature2Mesh';
 
 const geojson = require('../data/geojson/holes.geojson.json');
 

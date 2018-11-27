@@ -62,7 +62,7 @@ patchs.push(() => replace({
     },
 }));
 
-// Add import from jsPatched
+// Add import from threeExtented
 patchs.push(() => replace({
     files,
     from: declareNewSpaceName,

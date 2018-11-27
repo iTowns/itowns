@@ -1,6 +1,6 @@
 import Layer from './Layer';
 import { updateLayeredMaterialNodeElevation } from '../Process/LayeredMaterialNodeProcessing';
-import textureConverter from '../Parser/textureConverter';
+import textureConverter from '../Converter/textureConverter';
 
 class ElevationLayer extends Layer {
     /**

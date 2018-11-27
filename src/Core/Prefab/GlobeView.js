@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import View, { VIEW_EVENTS } from '../View';
 import { MAIN_LOOP_EVENTS } from '../MainLoop';
 import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
-import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
+import GlobeControls from '../../Controls/GlobeControls';
 import { removeLayeredMaterialNodeLayer } from '../../Process/LayeredMaterialNodeProcessing';
 
 import GlobeLayer from './Globe/GlobeLayer';

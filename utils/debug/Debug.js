@@ -3,7 +3,7 @@ import Coordinates from '../../src/Core/Geographic/Coordinates';
 import ThreeStatsChart from './charts/ThreeStatsChart';
 import { MAIN_LOOP_EVENTS } from '../../src/Core/MainLoop';
 import PanoramaView from '../../src/Core/Prefab/PanoramaView';
-import OBB from '../../src/Renderer/ThreeExtended/OBB';
+import OBB from '../../src/Renderer/OBB';
 import OBBHelper from './OBBHelper';
 
 /**

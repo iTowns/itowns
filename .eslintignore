@@ -1,2 +1,2 @@
 examples/js/GUI/dat.gui
-src/Renderer/ThreeExtended/jsPatched/*
+src/ThreeExtended/*

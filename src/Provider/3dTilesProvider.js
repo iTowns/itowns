@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import B3dmParser from '../Parser/B3dmParser';
 import PntsParser from '../Parser/PntsParser';
 import Fetcher from './Fetcher';
-import OBB from '../Renderer/ThreeExtended/OBB';
+import OBB from '../Renderer/OBB';
 import Extent from '../Core/Geographic/Extent';
 import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from '../Process/3dTilesProcessing';
 import utf8Decoder from '../utils/Utf8Decoder';
