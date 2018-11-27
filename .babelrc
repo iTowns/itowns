@@ -1,6 +1,11 @@
 {
-    "presets": ["@babel/env"],
+    "presets": ["@babel/preset-env"],
     "plugins": [
+        ["module-resolver",  { "root": ["./"],
+            "alias": {
+                "threeExamples": "./src/Renderer/ThreeExtended/jsPatched/"
+            }
+        } ],
         ["babel-plugin-inline-import", {
             "extensions": [
                 ".json",
@@ -20,3 +25,5 @@
         ["minify-dead-code-elimination"]
     ]
 }
+
+

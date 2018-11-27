@@ -1,3 +1,5 @@
+const { patchedPath } = require('./config/threeExamples.js');
+
 module.exports = {
  root: true,
  'extends': [
@@ -12,10 +14,15 @@ module.exports = {
     }
   },
  settings: {
-     'import/resolver': {
-         'webpack': {}
-     }
- },
+    'import/resolver': {
+      alias: {
+        map: [
+          ['threeExamples', patchedPath],
+        ],
+        extensions: ['.ts', '.js', '.jsx', '.json']
+      }
+    }
+  },
   env: {
     browser: true,
     es6: true,
