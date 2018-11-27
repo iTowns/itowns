@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CRS_DEFINES, ELEVATION_MODES } from 'Renderer/LayeredMaterial';
+import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent } from 'Parser/XbilParser';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
 
@@ -106,6 +107,16 @@ class MaterialLayer {
                     console.error(`non-coherent result ${index} vs ${extents.length}.`, extents);
                 }
             }
+        }
+    }
+
+    replaceNoDataValueFromParent(parent, nodatavalue) {
+        const dataElevation = this.textures[0].image.data;
+        const parentTexture = parent && parent.textures[0];
+        if (dataElevation && parentTexture && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
+            const coords = this.textures[0].coords;
+            const pitch = coords.offsetToParent(parentTexture.coords);
+            insertSignificantValuesFromParent(dataElevation, parentTexture.image.data, nodatavalue, pitch);
         }
     }
 

@@ -3,7 +3,7 @@ import LayerUpdateState from 'Layer/LayerUpdateState';
 import { ImageryLayers } from 'Layer/Layer';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 import { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
-import { computeMinMaxElevation, checkNodeElevationTextureValidity, insertSignificantValuesFromParent } from 'Parser/XbilParser';
+import { computeMinMaxElevation } from 'Parser/XbilParser';
 
 // max retry loading before changing the status to definitiveError
 const MAX_RETRY = 4;
@@ -332,35 +332,13 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             node.layerUpdateState[layer.id].success();
 
             if (elevation.texture) {
-                if (elevation.texture.flipY) {
-                    // DataTexture default to false, so make sure other Texture
-                    // types do the same (eg image texture).  See UV construction
-                    // for more details.
-                    elevation.texture.flipY = false;
-                    elevation.texture.needsUpdate = true;
-                }
-                const dataElevation = elevation.texture.image.data;
-                if (dataElevation) {
-                    if (!checkNodeElevationTextureValidity(dataElevation, layer.noDataValue)) {
-                        // Quick check to avoid using elevation texture with no data
-                        // value. If we have no data values, we use value from the
-                        // parent tile. We should later implement multi elevation layer
-                        // to choose the one to use at each level.
-                        const nodeParent = parent.material && parent.material.getElevationLayer();
-                        const parentTexture = nodeParent && nodeParent.textures[0];
-                        if (parentTexture) {
-                            const coords = node.getCoordsForSource(layer.source);
-                            const pitch = coords[0].offsetToParent(parentTexture.coords);
-                            insertSignificantValuesFromParent(dataElevation, parentTexture.image.data, layer.noDataValue, pitch);
-                        }
-                    }
-
+                if (layer.useColorTextureElevation) {
+                    elevation.min = layer.colorTextureElevationMinZ;
+                    elevation.max = layer.colorTextureElevationMaxZ;
+                } else {
                     const { min, max } = computeMinMaxElevation(elevation.texture.image.data);
                     elevation.min = !min ? 0 : min;
                     elevation.max = !max ? 0 : max;
-                } else if (layer.useColorTextureElevation) {
-                    elevation.min = layer.colorTextureElevationMinZ;
-                    elevation.max = layer.colorTextureElevationMaxZ;
                 }
             }
 
@@ -371,6 +349,8 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             }
             material.setSequenceElevation(layer.id);
             nodeLayer.setTexture(0, elevation.texture, elevation.pitch);
+            const nodeParent = parent.material && parent.material.getElevationLayer();
+            nodeLayer.replaceNoDataValueFromParent(nodeParent, layer.noDataValue);
         },
         (err) => {
             if (err instanceof CancelledCommandException) {
