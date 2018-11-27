@@ -50,18 +50,19 @@
             "src/Provider/Fetcher.js",
 
             "src/Renderer/OrientedImageMaterial.js",
-
             "src/Renderer/ColorLayersOrdering.js",
-            "src/Renderer/ThreeExtended/OBB.js",
+            "src/Renderer/OBB.js",
             "src/Renderer/OrientedImageCamera.js",
-            "src/Renderer/ThreeExtended/Feature2Mesh.js",
-            "src/Renderer/ThreeExtended/GlobeControls.js",
-            "src/Renderer/ThreeExtended/StateControl.js",
-            "src/Renderer/ThreeExtended/PlanarControls.js",
-            "src/Renderer/ThreeExtended/FirstPersonControls.js",
 
-            "src/utils/CameraUtils.js",
-            "src/utils/OrientationUtils.js"
+            "src/Controls/GlobeControls.js",
+            "src/Controls/StateControl.js",
+            "src/Controls/PlanarControls.js",
+            "src/Controls/FirstPersonControls.js",
+
+            "src/Converter/Feature2Mesh.js",
+
+            "src/Utils/CameraUtils.js",
+            "src/Utils/OrientationUtils.js"
         ]
     }
 }
