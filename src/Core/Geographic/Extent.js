@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import Coordinates, { crsIsGeographic, assertCrsIsValid, reasonnableEpsilonForCRS, is4326 } from '../Geographic/Coordinates';
-import Projection from '../Geographic/Projection';
+import Coordinates, { crsIsGeographic, assertCrsIsValid, reasonnableEpsilonForCRS, is4326 } from 'Core/Geographic/Coordinates';
+import Projection from 'Core/Geographic/Projection';
 
 /**
  * Extent is a SIG-area (so 2D)

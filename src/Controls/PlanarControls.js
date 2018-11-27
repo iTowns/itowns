@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MAIN_LOOP_EVENTS } from '../Core/MainLoop';
+import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 
 // event keycode
 const keys = {

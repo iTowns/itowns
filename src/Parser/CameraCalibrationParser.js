@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import OrientedImageCamera from '../Renderer/OrientedImageCamera';
+import OrientedImageCamera from 'Renderer/OrientedImageCamera';
 
 /**
  * The CameraCalibrationParser module provide a [parse]{@link module:CameraCalibrationParser.parse}

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import utf8Decoder from 'utils/Utf8Decoder';
+
 import BatchTableParser from './BatchTableParser';
-import utf8Decoder from '../utils/Utf8Decoder';
 
 export default {
     /** @module PntsParser */

@@ -6,7 +6,7 @@
 
 
 import * as THREE from 'three';
-import Coordinates from '../Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 function Ellipsoid(size) {
     // Constructor

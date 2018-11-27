@@ -4,8 +4,8 @@
  * Description: Outils de projections cartographiques et de convertion
  */
 import { Math as MathExt } from 'three';
-import Coordinates from './Coordinates';
-import Extent from './Extent';
+import Coordinates from 'Core/Geographic/Coordinates';
+import Extent from 'Core/Geographic/Extent';
 
 const PI_OV_FOUR = Math.PI / 4;
 const PI_OV_TWO = Math.PI / 2;

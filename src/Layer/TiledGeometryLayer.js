@@ -1,9 +1,9 @@
-import GeometryLayer from './GeometryLayer';
-import { InfoTiledGeometryLayer } from './InfoLayer';
-import Picking from '../Core/Picking';
-import convertToTile from '../Converter/convertToTile';
-import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
-import ObjectRemovalHelper from '../Process/ObjectRemovalHelper';
+import GeometryLayer from 'Layer/GeometryLayer';
+import { InfoTiledGeometryLayer } from 'Layer/InfoLayer';
+import Picking from 'Core/Picking';
+import convertToTile from 'Converter/convertToTile';
+import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
+import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
 
 /**

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import TileGeometry from '../Core/TileGeometry';
-import BuilderEllipsoidTile from '../Core/Prefab/Globe/BuilderEllipsoidTile';
+import TileGeometry from 'Core/TileGeometry';
+import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
 
 // get oriented bounding box of tile
 const builder = new BuilderEllipsoidTile();

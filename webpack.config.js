@@ -40,9 +40,7 @@ const include = [
 module.exports = {
     context: path.resolve(__dirname),
     resolve: {
-        alias: {
-            threeExamples: patchedPath,
-        },
+        modules: [path.resolve(__dirname, 'src'), 'node_modules'],
     },
     entry: {
         itowns: ['@babel/polyfill', 'url-polyfill', 'whatwg-fetch', './src/MainBundle.js'],

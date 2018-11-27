@@ -4,10 +4,10 @@
  * and open the template in the editor.
  */
 import * as THREE from 'three';
-import TileGeometry from '../Core/TileGeometry';
-import TileMesh from '../Core/TileMesh';
-import LayeredMaterial from '../Renderer/LayeredMaterial';
-import Cache from '../Core/Scheduler/Cache';
+import TileGeometry from 'Core/TileGeometry';
+import TileMesh from 'Core/TileMesh';
+import LayeredMaterial from 'Renderer/LayeredMaterial';
+import Cache from 'Core/Scheduler/Cache';
 
 export default {
     convert(requester, extent, layer) {

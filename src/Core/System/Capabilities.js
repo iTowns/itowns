@@ -1,5 +1,5 @@
-import SampleTestFS from '../../Renderer/Shader/SampleTestFS.glsl';
-import SampleTestVS from '../../Renderer/Shader/SampleTestVS.glsl';
+import SampleTestFS from 'Renderer/Shader/SampleTestFS.glsl';
+import SampleTestVS from 'Renderer/Shader/SampleTestVS.glsl';
 
 // default values
 let logDepthBufferSupported = false;

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import TiledGeometryLayer from '../../../Layer/TiledGeometryLayer';
+import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
 import PlanarTileBuilder from './PlanarTileBuilder';
 
 class PlanarLayer extends TiledGeometryLayer {

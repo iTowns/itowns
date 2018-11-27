@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 
-import TiledGeometryLayer from '../../../Layer/TiledGeometryLayer';
-import { ellipsoidSizes } from '../../Geographic/Coordinates';
-import Extent from '../../Geographic/Extent';
-import BuilderEllipsoidTile from './BuilderEllipsoidTile';
-import { SIZE_TEXTURE_TILE } from '../../../Provider/OGCWebServiceHelper';
+import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
+import { ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import Extent from 'Core/Geographic/Extent';
+import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
+import { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
 
 // matrix to convert sphere to ellipsoid
 const worldToScaledEllipsoid = new THREE.Matrix4();

@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import textureVS from './Shader/ProjectiveTextureVS.glsl';
-import textureFS from './Shader/ProjectiveTextureFS.glsl';
-import ShaderUtils from './Shader/ShaderUtils';
-import Capabilities from '../Core/System/Capabilities';
+import Capabilities from 'Core/System/Capabilities';
+import textureVS from 'Renderer/Shader/ProjectiveTextureVS.glsl';
+import textureFS from 'Renderer/Shader/ProjectiveTextureFS.glsl';
+import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 
 var ndcToTextureMatrix = new THREE.Matrix4().set(
     1, 0, 0, 1,

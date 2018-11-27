@@ -1,6 +1,6 @@
-import Source from './Source';
-import URLBuilder from '../Provider/URLBuilder';
-import Extent from '../Core/Geographic/Extent';
+import Source from 'Source/Source';
+import URLBuilder from 'Provider/URLBuilder';
+import Extent from 'Core/Geographic/Extent';
 
 /**
  * @classdesc

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import View from '../View';
+import View from 'Core/View';
 import PanoramaLayer from './Panorama/PanoramaLayer';
 
 export function createPanoramaLayer(id, coordinates, type, options = {}) {

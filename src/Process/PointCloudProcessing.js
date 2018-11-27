@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
+import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 
 // Draw a cube with lines (12 lines).
 function cube(size) {

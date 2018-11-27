@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-import TiledGeometryLayer from '../../../Layer/TiledGeometryLayer';
-import Extent from '../../Geographic/Extent';
+import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
+import Extent from 'Core/Geographic/Extent';
 import PanoramaTileBuilder from './PanoramaTileBuilder';
 import ProjectionType from './Constants';
 

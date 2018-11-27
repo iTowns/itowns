@@ -1,25 +1,25 @@
 /* global window */
 import * as THREE from 'three';
-import Camera from '../Renderer/Camera';
-import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from './MainLoop';
-import c3DEngine from '../Renderer/c3DEngine';
-import RenderMode from '../Renderer/RenderMode';
+import Camera from 'Renderer/Camera';
+import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from 'Core/MainLoop';
+import c3DEngine from 'Renderer/c3DEngine';
+import RenderMode from 'Renderer/RenderMode';
 
-import { getMaxColorSamplerUnitsCount } from '../Renderer/LayeredMaterial';
+import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 
-import Layer from '../Layer/Layer';
-import ColorLayer from '../Layer/ColorLayer';
-import ElevationLayer from '../Layer/ElevationLayer';
-import GeometryLayer from '../Layer/GeometryLayer';
+import Layer from 'Layer/Layer';
+import ColorLayer from 'Layer/ColorLayer';
+import ElevationLayer from 'Layer/ElevationLayer';
+import GeometryLayer from 'Layer/GeometryLayer';
 
-import Scheduler from './Scheduler/Scheduler';
-import Picking from './Picking';
-import WMTSSource from '../Source/WMTSSource';
-import WMSSource from '../Source/WMSSource';
-import WFSSource from '../Source/WFSSource';
-import TMSSource from '../Source/TMSSource';
-import StaticSource from '../Source/StaticSource';
-import FileSource from '../Source/FileSource';
+import Scheduler from 'Core/Scheduler/Scheduler';
+import Picking from 'Core/Picking';
+import WMTSSource from 'Source/WMTSSource';
+import WMSSource from 'Source/WMSSource';
+import WFSSource from 'Source/WFSSource';
+import TMSSource from 'Source/TMSSource';
+import StaticSource from 'Source/StaticSource';
+import FileSource from 'Source/FileSource';
 
 const supportedSource = new Map([
     ['wmts', WMTSSource],

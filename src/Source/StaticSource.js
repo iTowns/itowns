@@ -1,7 +1,7 @@
 import flatbush from 'flatbush';
-import Source from './Source';
-import Fetcher from '../Provider/Fetcher';
-import Extent from '../Core/Geographic/Extent';
+import Source from 'Source/Source';
+import Fetcher from 'Provider/Fetcher';
+import Extent from 'Core/Geographic/Extent';
 
 function _selectImagesFromSpatialIndex(index, images, extent) {
     return index.search(

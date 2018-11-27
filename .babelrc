@@ -1,7 +1,7 @@
 {
     "presets": ["@babel/preset-env"],
     "plugins": [
-        ["module-resolver",  { "root": ["./"] } ],
+        ["module-resolver",  { "root": ["./src"] } ],
         ["babel-plugin-inline-import", {
             "extensions": [
                 ".json",

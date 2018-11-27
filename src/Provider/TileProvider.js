@@ -1,4 +1,4 @@
-import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
+import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 
 export default {
     executeCommand(command) {

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Extent from '../Core/Geographic/Extent';
+import Extent from 'Core/Geographic/Extent';
 
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw) {
     const command = {

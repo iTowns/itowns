@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import OBBHelper from './OBBHelper';
+import View from 'Core/View';
+import Layer from 'Layer/Layer';
+import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import TileObjectChart from './charts/TileObjectChart';
 import TileVisibilityChart from './charts/TileVisibilityChart';
-import View from '../../src/Core/View';
-import Layer from '../../src/Layer/Layer';
-import ObjectRemovalHelper from '../../src/Process/ObjectRemovalHelper';
 import GeometryDebug from './GeometryDebug';
+import OBBHelper from './OBBHelper';
 
 function applyToNodeFirstMaterial(view, root, layer, cb) {
     root.traverse((object) => {

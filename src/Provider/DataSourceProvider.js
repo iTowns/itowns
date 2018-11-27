@@ -1,8 +1,8 @@
-import GeoJsonParser from '../Parser/GeoJsonParser';
-import VectorTileParser from '../Parser/VectorTileParser';
-import Fetcher from './Fetcher';
-import Cache from '../Core/Scheduler/Cache';
-import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
+import GeoJsonParser from 'Parser/GeoJsonParser';
+import VectorTileParser from 'Parser/VectorTileParser';
+import Fetcher from 'Provider/Fetcher';
+import Cache from 'Core/Scheduler/Cache';
+import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 
 export const supportedFetchers = new Map([
     ['image/png', Fetcher.texture],

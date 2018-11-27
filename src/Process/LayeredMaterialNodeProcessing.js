@@ -1,9 +1,9 @@
-import { chooseNextLevelToFetch } from '../Layer/LayerUpdateStrategy';
-import LayerUpdateState from '../Layer/LayerUpdateState';
-import { ImageryLayers } from '../Layer/Layer';
-import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
-import { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
-import computeMinMaxElevation from '../Parser/XbilParser';
+import { chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
+import LayerUpdateState from 'Layer/LayerUpdateState';
+import { ImageryLayers } from 'Layer/Layer';
+import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
+import { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
+import computeMinMaxElevation from 'Parser/XbilParser';
 
 // max retry loading before changing the status to definitiveError
 const MAX_RETRY = 4;

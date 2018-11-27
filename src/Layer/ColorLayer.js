@@ -1,6 +1,6 @@
-import Layer from './Layer';
-import { updateLayeredMaterialNodeImagery } from '../Process/LayeredMaterialNodeProcessing';
-import textureConverter from '../Converter/textureConverter';
+import Layer from 'Layer/Layer';
+import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
+import textureConverter from 'Converter/textureConverter';
 
 /**
  * Fires when the visiblity of the layer has changed.

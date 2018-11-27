@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 import Line from 'three.meshline';
-import Coordinates from '../Core/Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 function _gpxToWayPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('wpt');

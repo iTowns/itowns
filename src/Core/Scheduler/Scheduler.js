@@ -5,10 +5,10 @@
  */
 
 import PriorityQueue from 'js-priority-queue';
-import DataSourceProvider from '../../Provider/DataSourceProvider';
-import TileProvider from '../../Provider/TileProvider';
-import $3dTilesProvider from '../../Provider/3dTilesProvider';
-import PointCloudProvider from '../../Provider/PointCloudProvider';
+import DataSourceProvider from 'Provider/DataSourceProvider';
+import TileProvider from 'Provider/TileProvider';
+import $3dTilesProvider from 'Provider/3dTilesProvider';
+import PointCloudProvider from 'Provider/PointCloudProvider';
 import CancelledCommandException from './CancelledCommandException';
 
 var instanceScheduler = null;

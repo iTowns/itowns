@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
-import { is4326 } from './Geographic/Coordinates';
+import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
+import { is4326 } from 'Core/Geographic/Coordinates';
 
 /**
  * A TileMesh is a THREE.Mesh with a geometricError and an OBB
