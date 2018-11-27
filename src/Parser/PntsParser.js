@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import utf8Decoder from 'utils/Utf8Decoder';
+import utf8Decoder from 'Utils/Utf8Decoder';
 
 import BatchTableParser from './BatchTableParser';
 

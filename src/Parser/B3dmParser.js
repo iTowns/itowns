@@ -4,7 +4,7 @@ import GLTFLoader from 'ThreeExtended/loaders/GLTFLoader';
 import LegacyGLTFLoader from 'ThreeExtended/loaders/deprecated/LegacyGLTFLoader';
 import BatchTableParser from 'Parser/BatchTableParser';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
-import utf8Decoder from 'utils/Utf8Decoder';
+import utf8Decoder from 'Utils/Utf8Decoder';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 // For gltf rotation
