@@ -57,13 +57,8 @@
                 format: 'image/jpeg',
             });
 
-            view.addLayer(colorLayer);
-
             // Add an WMS elevation layer (see WMSProvider* for valid options)
-            var elevationLayer = new itowns.ElevationLayer('wms_elevation', {
-                useColorTextureElevation: true,
-                colorTextureElevationMinZ: 37,
-                colorTextureElevationMaxZ: 240,
+            var wmsImageryLayer = new itowns.ColorLayer('wms_Jmagery', {
                 updateStrategy: {
                     type: itowns.STRATEGY_DICHOTOMY,
                     options: {},
@@ -85,6 +80,9 @@
 
             // Add a WMS elevation layer
             var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
+                useColorTextureElevation: true,
+                colorTextureElevationMinZ: 37,
+                colorTextureElevationMaxZ: 240,
                 source: wmsElevationSource,
             });
 
