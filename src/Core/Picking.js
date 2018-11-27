@@ -49,7 +49,7 @@ function screenCoordsToNodeId(view, tileLayer, viewCoords, radius) {
         const unpack = unpack1K(depthRGBA, 256 ** 3);
 
         const _id = Math.round(unpack);
-        if (ids.indexOf(_id) < 0) {
+        if (!ids.includes(_id)) {
             ids.push(_id);
         }
     });
@@ -120,7 +120,7 @@ export default {
         const _ids = screenCoordsToNodeId(_view, layer, viewCoords, radius);
 
         const extractResult = (node) => {
-            if (_ids.indexOf(node.id) >= 0 && node instanceof TileMesh) {
+            if (_ids.includes(node.id) && node instanceof TileMesh) {
                 results.push({
                     object: node,
                     layer,

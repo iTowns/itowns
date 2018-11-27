@@ -315,7 +315,7 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         layer.whenReady.then((layer) => {
             this.notifyChange(parentLayer || layer, false);
             if (!this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END] ||
-                    this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].indexOf(this._allLayersAreReadyCallback) == -1) {
+                !this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].includes(this._allLayersAreReadyCallback)) {
                 this.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
             }
             resolve(layer);
@@ -452,8 +452,7 @@ View.prototype.addFrameRequester = function addFrameRequester(when, frameRequest
  * @param {FrameRequester} frameRequester
  */
 View.prototype.removeFrameRequester = function removeFrameRequester(when, frameRequester) {
-    const index = this._frameRequesters[when].indexOf(frameRequester);
-    if (index >= 0) {
+    if (this._frameRequesters[when].includes(frameRequester)) {
         this._delayedFrameRequesterRemoval.push({ when, frameRequester });
     } else {
         console.error('Invalid call to removeFrameRequester: frameRequester isn\'t registered');

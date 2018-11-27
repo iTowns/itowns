@@ -215,7 +215,7 @@ function readFeature(crsIn, crsOut, json, filteringExtent, options, featureMerge
 
     // copy other properties
     for (const key of Object.keys(json)) {
-        if (keyProperties.indexOf(key.toLowerCase()) < 0) {
+        if (!keyProperties.includes(key.toLowerCase())) {
             properties[key] = json[key];
         }
     }
