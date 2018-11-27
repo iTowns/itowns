@@ -15,7 +15,7 @@ function _WebGLShader(renderer, type, string) {
 }
 
 function isFirefox() {
-    return navigator && navigator.userAgent && navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    return navigator && navigator.userAgent && navigator.userAgent.toLowerCase().includes('firefox');
 }
 
 export default {
