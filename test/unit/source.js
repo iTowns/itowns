@@ -1,14 +1,14 @@
 import assert from 'assert';
 import fs from 'fs';
 import Path from 'path';
-import Source from '../../src/Source/Source';
-import WMTSSource from '../../src/Source/WMTSSource';
-import WMSSource from '../../src/Source/WMSSource';
-import TMSSource from '../../src/Source/TMSSource';
-import FileSource from '../../src/Source/FileSource';
-import StaticSource from '../../src/Source/StaticSource';
-import Fetcher from '../../src/Provider/Fetcher';
-import Extent from '../../src/Core/Geographic/Extent';
+import Source from 'Source/Source';
+import WMTSSource from 'Source/WMTSSource';
+import WMSSource from 'Source/WMSSource';
+import TMSSource from 'Source/TMSSource';
+import FileSource from 'Source/FileSource';
+import StaticSource from 'Source/StaticSource';
+import Fetcher from 'Provider/Fetcher';
+import Extent from 'Core/Geographic/Extent';
 
 function defer() {
     var deferredPromise = {};

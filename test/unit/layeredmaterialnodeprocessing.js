@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import assert from 'assert';
-import { updateLayeredMaterialNodeImagery } from '../../src/Process/LayeredMaterialNodeProcessing';
-import TileMesh from '../../src/Core/TileMesh';
-import Extent from '../../src/Core/Geographic/Extent';
-import OBB from '../../src/Renderer/OBB';
-import Layer from '../../src/Layer/Layer';
-import Source from '../../src/Source/Source';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../src/Layer/LayerUpdateStrategy';
+import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
+import TileMesh from 'Core/TileMesh';
+import Extent from 'Core/Geographic/Extent';
+import OBB from 'Renderer/OBB';
+import Layer from 'Layer/Layer';
+import Source from 'Source/Source';
+import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 
 describe('updateLayeredMaterialNodeImagery', function () {
     // Misc var to initialize a TileMesh instance

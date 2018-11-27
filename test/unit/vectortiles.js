@@ -1,7 +1,7 @@
 import fs from 'fs';
 import assert from 'assert';
-import VectorTileParser from '../../src/Parser/VectorTileParser';
-import Extent from '../../src/Core/Geographic/Extent';
+import VectorTileParser from 'Parser/VectorTileParser';
+import Extent from 'Core/Geographic/Extent';
 
 // this PBF file comes from https://github.com/mapbox/vector-tile-js
 // it contains two square polygons

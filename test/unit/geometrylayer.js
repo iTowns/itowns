@@ -1,7 +1,7 @@
 import assert from 'assert';
 import * as THREE from 'three';
-import GeometryLayer from '../../src/Layer/GeometryLayer';
-import ColorLayer from '../../src/Layer/ColorLayer';
+import GeometryLayer from 'Layer/GeometryLayer';
+import ColorLayer from 'Layer/ColorLayer';
 
 describe('GeometryLayer', function () {
     const geometry = new GeometryLayer('geometry', new THREE.Group());

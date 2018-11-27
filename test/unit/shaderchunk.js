@@ -1,6 +1,6 @@
 import assert from 'assert';
 import * as THREE from 'three';
-import ShaderChunk from '../../src/Renderer/Shader/ShaderChunk';
+import ShaderChunk from 'Renderer/Shader/ShaderChunk';
 
 describe('ShaderChunk', function () {
     it('should install correctly the chunks', () => {

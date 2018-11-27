@@ -1,7 +1,7 @@
 /* eslint-disable no-template-curly-in-string */
 import assert from 'assert';
-import URLBuilder from '../../src/Provider/URLBuilder';
-import Extent from '../../src/Core/Geographic/Extent';
+import URLBuilder from 'Provider/URLBuilder';
+import Extent from 'Core/Geographic/Extent';
 
 const layer = {};
 

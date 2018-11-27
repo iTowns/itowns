@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { Box3, Vector3 } from 'three';
-import Coordinates from '../../src/Core/Geographic/Coordinates';
-import Extent from '../../src/Core/Geographic/Extent';
+import Coordinates from 'Core/Geographic/Coordinates';
+import Extent from 'Core/Geographic/Extent';
 
 describe('Extent constructors', function () {
     const minX = 0;

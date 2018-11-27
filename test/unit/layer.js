@@ -1,6 +1,6 @@
 import assert from 'assert';
-import Layer, { ImageryLayers } from '../../src/Layer/Layer';
-import ColorLayer from '../../src/Layer/ColorLayer';
+import Layer, { ImageryLayers } from 'Layer/Layer';
+import ColorLayer from 'Layer/ColorLayer';
 
 describe('Layer', function () {
     it('should emit an event on property changed', function () {
