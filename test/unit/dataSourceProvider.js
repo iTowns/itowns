@@ -1,20 +1,20 @@
 import * as THREE from 'three';
 import assert from 'assert';
-import { updateLayeredMaterialNodeImagery } from '../../src/Process/LayeredMaterialNodeProcessing';
-import FeatureProcessing from '../../src/Process/FeatureProcessing';
-import TileMesh from '../../src/Core/TileMesh';
-import Extent from '../../src/Core/Geographic/Extent';
-import OBB from '../../src/Renderer/OBB';
-import DataSourceProvider, { supportedFetchers } from '../../src/Provider/DataSourceProvider';
-import TileProvider from '../../src/Provider/TileProvider';
-import WMTSSource from '../../src/Source/WMTSSource';
-import WMSSource from '../../src/Source/WMSSource';
-import WFSSource from '../../src/Source/WFSSource';
-import LayerUpdateState from '../../src/Layer/LayerUpdateState';
-import ColorLayer from '../../src/Layer/ColorLayer';
-import GeometryLayer from '../../src/Layer/GeometryLayer';
-import GlobeLayer from '../../src/Core/Prefab/Globe/GlobeLayer';
-import Feature2Mesh from '../../src/Parser/Feature2Mesh';
+import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
+import FeatureProcessing from 'Process/FeatureProcessing';
+import TileMesh from 'Core/TileMesh';
+import Extent from 'Core/Geographic/Extent';
+import OBB from 'Renderer/OBB';
+import DataSourceProvider, { supportedFetchers } from 'Provider/DataSourceProvider';
+import TileProvider from 'Provider/TileProvider';
+import WMTSSource from 'Source/WMTSSource';
+import WMSSource from 'Source/WMSSource';
+import WFSSource from 'Source/WFSSource';
+import LayerUpdateState from 'Layer/LayerUpdateState';
+import ColorLayer from 'Layer/ColorLayer';
+import GeometryLayer from 'Layer/GeometryLayer';
+import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
+import Feature2Mesh from 'Converter/Feature2Mesh';
 
 const holes = require('../data/geojson/holes.geojson.json');
 

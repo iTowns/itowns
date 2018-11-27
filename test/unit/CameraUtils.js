@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import assert from 'assert';
-import Coordinates, { ellipsoidSizes } from '../../src/Core/Geographic/Coordinates';
-import Ellipsoid from '../../src/Core//Math/Ellipsoid';
-import CameraUtils from '../../src/utils/CameraUtils';
-import DEMUtils from '../../src/utils/DEMUtils';
+import Coordinates, { ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import Ellipsoid from 'Core//Math/Ellipsoid';
+import CameraUtils from 'Utils/CameraUtils';
+import DEMUtils from 'Utils/DEMUtils';
 
 THREE.Object3D.DefaultUp = new THREE.Vector3(0, 0, 1);
 

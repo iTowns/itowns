@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
 import assert from 'assert';
-import Extent from '../../src/Core/Geographic/Extent';
-import BuilderEllipsoidTile from '../../src/Core/Prefab/Globe/BuilderEllipsoidTile';
-import PlanarTileBuilder from '../../src/Core/Prefab/Planar/PlanarTileBuilder';
-import TileGeometry from '../../src/Core/TileGeometry';
-import OBB from '../../src/Renderer/OBB';
+import Extent from 'Core/Geographic/Extent';
+import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
+import PlanarTileBuilder from 'Core/Prefab/Planar/PlanarTileBuilder';
+import TileGeometry from 'Core/TileGeometry';
+import OBB from 'Renderer/OBB';
 
 const max = new THREE.Vector3(10, 10, 10);
 const min = new THREE.Vector3(-10, -10, -10);

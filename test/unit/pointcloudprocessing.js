@@ -1,5 +1,5 @@
 import assert from 'assert';
-import PointCloudProcessing from '../../src/Process/PointCloudProcessing';
+import PointCloudProcessing from 'Process/PointCloudProcessing';
 
 const context = { camera: { height: 1, camera3D: { fov: 1 } } };
 
