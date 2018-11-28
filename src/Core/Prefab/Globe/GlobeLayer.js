@@ -98,17 +98,6 @@ class GlobeLayer extends TiledGeometryLayer {
         cameraPosition.copy(context.camera.camera3D.position).applyMatrix4(worldToScaledEllipsoid);
         magnitudeSquared = cameraPosition.lengthSq() - 1.0;
 
-        // pre-sse
-        const canvasSize = context.view.mainLoop.gfxEngine.getWindowSize();
-        const hypothenuse = canvasSize.length();
-        const radAngle = context.view.camera.camera3D.fov * Math.PI / 180;
-        const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypothenuse / canvasSize.x);
-        context.camera.preSSE = hypothenuse * (2.0 * Math.tan(HYFOV * 0.5));
-
-        // Leaving the correct SSE below to be added later, as it is too heavy for now.
-        // const FOV = THREE.Math.degToRad(context.camera.camera3D.fov);
-        // context.camera.preSSE = context.camera.height / (2.0 * Math.tan(FOV * 0.5));
-
         return super.preUpdate(context, changeSources);
     }
 
@@ -196,7 +185,7 @@ class GlobeLayer extends TiledGeometryLayer {
 
         // TODO: node.geometricError is computed using a hardcoded 18 level
         // The computation of node.geometricError is surely false
-        const sse = context.camera.preSSE * (node.geometricError * subdivisionVector.x) / distance;
+        const sse = context.camera._preSSE * (node.geometricError * subdivisionVector.x) / distance;
 
         return this.sseSubdivisionThreshold < sse;
     }
