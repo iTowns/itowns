@@ -223,19 +223,10 @@ function _cleanupObject3D(n) {
 }
 
 // this is a layer
-export function pre3dTilesUpdate(context) {
+export function pre3dTilesUpdate() {
     if (!this.visible) {
         return [];
     }
-
-    // pre-sse
-    const hypotenuse = Math.sqrt(context.camera.width * context.camera.width + context.camera.height * context.camera.height);
-    const radAngle = context.camera.camera3D.fov * Math.PI / 180;
-
-    // TODO: not correct -> see new preSSE
-    // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
-    const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / context.camera.width);
-    context.camera.preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
 
     // Elements removed are added in the layer._cleanableTiles list.
     // Since we simply push in this array, the first item is always
@@ -290,7 +281,7 @@ export function computeNodeSSE(camera, node) {
         // This test is needed in case geometricError = distance = 0
         return Infinity;
     }
-    return camera.preSSE * (node.geometricError / node.distance);
+    return camera._preSSE * (node.geometricError / node.distance);
 }
 
 export function init3dTilesLayer(view, scheduler, layer) {
