@@ -35,7 +35,7 @@ body {
     position: absolute;
     z-index: 0;
     top: 0;
-    left: 0;
+    right: 0;
     color: #eee;
     font: 11px 'Lucida Grande',sans-serif;
     line-height: normal;
