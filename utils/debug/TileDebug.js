@@ -32,6 +32,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     const state = {
         objectChart: true,
         visibilityChart: true,
+        sseHelper: false,
     };
 
     // tiles outline
@@ -181,5 +182,35 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         gui.add(l, 'visible').name('Bounding Spheres').onChange(() => {
             view.notifyChange(l);
         });
+    });
+
+    const circle = document.getElementById('circle');
+    const centerNode = new THREE.Vector3();
+    function picking(event) {
+        const selectNode = view.selectNodeAt(event, false);
+        if (selectNode) {
+            circle.style.display = 'table-cell';
+            centerNode.copy(selectNode.boundingSphere.center).applyMatrix4(selectNode.matrixWorld);
+            const project = centerNode.project(view.camera.camera3D);
+            const coords = view.normalizedToViewCoords(project);
+            const size = selectNode.px;
+
+            circle.style['line-height'] = `${size}px`;
+            circle.style.width = `${size}px`;
+            circle.style.height = `${size}px`;
+            circle.style.left = `${coords.x - size  * 0.5}px`;
+            circle.style.top = `${coords.y - size * 0.5}px`;
+            circle.innerHTML = `${Math.floor(size)} px`;
+        } else {
+            circle.style.display = 'none';
+        }
+    }
+
+    gui.add(state, 'sseHelper').name('Sse helper').onChange((v) => {
+        if (v) {
+            window.addEventListener('mousemove', picking, false);
+        } else {
+            window.removeEventListener('mousemove', picking);
+        }
     });
 }
