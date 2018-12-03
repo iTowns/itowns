@@ -255,24 +255,47 @@ GlobeView.prototype.removeLayer = function removeLayer(layerId) {
     }
 };
 
-GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
-    const picked = this.tileLayer.pickObjectsAt(this, mouse);
-    const selectedId = picked.length ? picked[0].object.id : undefined;
+let _showInfo;
+let showOutline;
+let selectedNode;
+let selectedId;
+
+const selecteNode = (node) => {
+    if (node.material) {
+        const selected = node.id === selectedId;
+        node.material.overlayAlpha = selected ? 0.5 : 0;
+        node.material.showOutline = selected ? true : showOutline;
+        if (selected) {
+            selectedNode = node;
+            if (_showInfo) {
+                // eslint-disable-next-line no-console
+                console.info(node);
+            }
+        }
+    }
+};
+
+/**
+ * Select tile node on globe
+ *
+ * @param      {Object} mouseOrEvt - mouse position in window coordinates (0, 0 = top-left)
+ * or MouseEvent or TouchEvent
+ * @param      {boolean}  showInfo  The show information
+ * @return     {TileMesh}   { description_of_the_return_value }
+ */
+GlobeView.prototype.selectNodeAt = function selectNodeAt(mouseOrEvt, showInfo = true) {
+    const picked = this.tileLayer.pickObjectsAt(this, mouseOrEvt);
+    selectedId = picked.length ? picked[0].object.id : undefined;
+    selectedNode = undefined;
+    _showInfo = showInfo;
+    showOutline = this.tileLayer.showOutline;
 
     for (const n of this.tileLayer.level0Nodes) {
-        n.traverse((node) => {
-            if (node.material) {
-                const selected = node.id === selectedId;
-                node.material.overlayAlpha = selected ? 0.5 : 0;
-                if (selected) {
-                    // eslint-disable-next-line no-console
-                    console.info(node);
-                }
-            }
-        });
+        n.traverse(selecteNode);
     }
 
     this.notifyChange();
+    return selectedNode;
 };
 
 GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
