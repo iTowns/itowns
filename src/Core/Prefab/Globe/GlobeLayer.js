@@ -108,7 +108,7 @@ class GlobeLayer extends TiledGeometryLayer {
 
     // eslint-disable-next-line
     culling(node, camera) {
-        if (!camera.isBox3Visible(node.obb.box3D, node.obb.matrixWorld)) {
+        if (super.culling(node, camera)) {
             return true;
         }
 
