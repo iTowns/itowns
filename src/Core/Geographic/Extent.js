@@ -88,7 +88,7 @@ Extent.prototype.as = function as(crs) {
     if (this.isTiledCrs()) {
         if (this._crs == 'WMTS:PM' || this._crs == 'TMS') {
             // Convert this to the requested crs by using 4326 as an intermediate state.
-            const nbCol = Math.pow(2, this.zoom);
+            const nbCol = 2 ** this.zoom;
             const nbRow = nbCol;
             const sizeRow = 1.0 / nbRow;
             // convert row PM to Y PM
@@ -120,7 +120,7 @@ Extent.prototype.as = function as(crs) {
                 }
             }
         } else if (this._crs == 'WMTS:WGS84G' && crs == 'EPSG:4326') {
-            const nbRow = Math.pow(2, this.zoom);
+            const nbRow = 2 ** this.zoom;
             const size = 180 / nbRow;
             const north = size * (nbRow - this.row) - 90;
             const south = size * (nbRow - (this.row + 1)) - 90;
@@ -177,7 +177,7 @@ Extent.prototype.offsetToParent = function offsetToParent(other, target = new TH
     }
     if (this.isTiledCrs()) {
         const diffLevel = this.zoom - other.zoom;
-        const diff = Math.pow(2, diffLevel);
+        const diff = 2 ** diffLevel;
         const invDiff = 1 / diff;
 
         const r = (this.row - (this.row % diff)) * invDiff;
@@ -286,7 +286,7 @@ Extent.prototype.isInside = function isInside(other, epsilon) {
             return false;
         } else {
             const diffLevel = this.zoom - other.zoom;
-            const diff = Math.pow(2, diffLevel);
+            const diff = 2 ** diffLevel;
             const invDiff = 1 / diff;
 
             const r = (this.row - (this.row % diff)) * invDiff;
@@ -433,7 +433,7 @@ Extent.prototype.extentParent = function extentParent(levelParent) {
     if (this.isTiledCrs()) {
         if (levelParent && levelParent < this.zoom) {
             const diffLevel = this.zoom - levelParent;
-            const diff = Math.pow(2, diffLevel);
+            const diff = 2 ** diffLevel;
             const invDiff = 1 / diff;
 
             const r = (this.row - (this.row % diff)) * invDiff;

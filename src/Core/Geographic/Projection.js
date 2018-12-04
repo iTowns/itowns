@@ -56,7 +56,7 @@ const Projection = {
         var zoom = Math.floor(
             Math.log(Math.PI / MathExt.degToRad(dim.y)) / LOG_TWO + 0.5);
 
-        var nY = Math.pow(2, zoom);
+        var nY = 2 ** zoom;
         var nX = 2 * nY;
 
         var uX = Math.PI * 2 / nX;
@@ -83,7 +83,7 @@ const Projection = {
 function WMTS_WGS84ToWMTS_PM(cWMTS, bbox) {
     var wmtsBox = [];
     var level = cWMTS.zoom + 1;
-    var nbRow = Math.pow(2, level);
+    var nbRow = 2 ** level;
 
     var sizeRow = 1.0 / nbRow;
 

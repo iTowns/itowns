@@ -223,7 +223,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     };
 
     this.getDollyScale = function getDollyScale() {
-        return Math.pow(0.95, this.zoomSpeed);
+        return 0.95 ** this.zoomSpeed;
     };
 
     this.rotateLeft = function rotateLeft(angle = 0) {

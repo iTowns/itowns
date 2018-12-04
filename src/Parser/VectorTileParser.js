@@ -59,7 +59,7 @@ function project(line, ox, oy, size) {
 }
 
 function toGeoJSON(x, y, z) {
-    const size = this.extent * Math.pow(2, z);
+    const size = this.extent * 2 ** z;
     const x0 = this.extent * x;
     const y0 = this.extent * y;
     let coords = this.loadGeometry();
