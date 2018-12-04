@@ -45,11 +45,6 @@ class PlanarLayer extends TiledGeometryLayer {
         this.maxSubdivisionLevel = this.maxSubdivisionLevel || 5.0;
         this.maxDeltaElevation = this.maxDeltaElevation || 4.0;
     }
-
-    // eslint-disable-next-line
-    culling(node, camera) {
-        return !camera.isBox3Visible(node.obb.box3D, node.obb.matrixWorld);
-    }
 }
 
 export default PlanarLayer;
