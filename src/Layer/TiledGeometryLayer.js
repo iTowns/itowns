@@ -256,6 +256,11 @@ class TiledGeometryLayer extends GeometryLayer {
         return layers.length;
     }
 
+    // eslint-disable-next-line
+    culling(node, camera) {
+        return !camera.isBox3Visible(node.obb.box3D, node.obb.matrixWorld);
+    }
+
     /**
      * Tell if a node has enough elevation or color textures to subdivide.
      * Subdivision is prevented if:

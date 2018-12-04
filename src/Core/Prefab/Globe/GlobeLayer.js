@@ -13,11 +13,6 @@ let magnitudeSquared = 0.0;
 
 // vectors for operation purpose
 const cullingVector = new THREE.Vector3();
-const subdivisionVector = new THREE.Vector3();
-const boundingSphereCenter = new THREE.Vector3();
-
-// subdivison ratio
-let subdivisionRatio = 0;
 
 /**
  * @property {boolean} isGlobeLayer - Used to checkout whether this layer is a
@@ -87,8 +82,6 @@ class GlobeLayer extends TiledGeometryLayer {
                 1 / ellipsoidSizes.x,
                 1 / ellipsoidSizes.y,
                 1 / ellipsoidSizes.z));
-
-        subdivisionRatio = 1 / 2 ** this.maxDeltaElevationLevel;
     }
 
     preUpdate(context, changeSources) {
@@ -113,7 +106,7 @@ class GlobeLayer extends TiledGeometryLayer {
 
     // eslint-disable-next-line
     culling(node, camera) {
-        if (!camera.isBox3Visible(node.obb.box3D, node.obb.matrixWorld)) {
+        if (super.culling(node, camera)) {
             return true;
         }
 
