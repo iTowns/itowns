@@ -87,7 +87,7 @@ class GeometryLayer extends Layer {
                     object.material.wireframe = this.wireframe;
                 } else if (object.content && object.content.layer == this) {
                     object.content.traverse((o) => {
-                        if (o.material) {
+                        if (o.material && o.layer == this) {
                             o.material.wireframe = this.wireframe;
                         }
                     });
