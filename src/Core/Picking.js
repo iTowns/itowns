@@ -46,7 +46,7 @@ function screenCoordsToNodeId(view, tileLayer, viewCoords, radius) {
         const idx = (y * 2 * radius + x) * 4;
         const data = buffer.slice(idx, idx + 4);
         depthRGBA.fromArray(data).divideScalar(255.0);
-        const unpack = unpack1K(depthRGBA, Math.pow(256, 3));
+        const unpack = unpack1K(depthRGBA, 256 ** 3);
 
         const _id = Math.round(unpack);
         if (ids.indexOf(_id) < 0) {

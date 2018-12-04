@@ -70,7 +70,7 @@ class PlanarLayer extends TiledGeometryLayer {
                 const offsetScale = nodeLayer.offsetScales[0];
                 const ratio = offsetScale.z;
                 // ratio is node size / texture size
-                if (ratio < 1 / Math.pow(2, maxDeltaElevationLevel)) {
+                if (ratio < 1 / (2 ** maxDeltaElevationLevel)) {
                     return false;
                 }
             }

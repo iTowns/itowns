@@ -90,7 +90,7 @@ Atmosphere.prototype._initRealisticLighning = function _initRealisticLighning() 
 
     var uniformsSky = {
         v3LightPosition: { value: LIGHTING_POSITION.clone().normalize() },
-        v3InvWavelength: { value: new THREE.Vector3(1 / Math.pow(atmosphere.wavelength[0], 4), 1 / Math.pow(atmosphere.wavelength[1], 4), 1 / Math.pow(atmosphere.wavelength[2], 4)) },
+        v3InvWavelength: { value: new THREE.Vector3(1 / atmosphere.wavelength[0] ** 4, 1 / atmosphere.wavelength[1] ** 4, 1 / atmosphere.wavelength[2] ** 4) },
         fCameraHeight: { value: 0.0 },
         fCameraHeight2: { value: 0.0 },
         fInnerRadius: { value: atmosphere.innerRadius },

@@ -84,7 +84,7 @@ class GlobeLayer extends TiledGeometryLayer {
                 1 / ellipsoidSizes.y,
                 1 / ellipsoidSizes.z));
 
-        subdivisionRatio = 1 / Math.pow(2, this.maxDeltaElevationLevel);
+        subdivisionRatio = 1 / 2 ** this.maxDeltaElevationLevel;
     }
 
     preUpdate(context, changeSources) {
@@ -202,7 +202,7 @@ class GlobeLayer extends TiledGeometryLayer {
         let sinus = distance * preSinus;
         let zoom = Math.log(Math.PI / (2.0 * Math.asin(sinus))) / Math.log(2);
 
-        const delta = Math.PI / Math.pow(2, zoom);
+        const delta = Math.PI / 2 ** zoom;
         const circleChord = 2.0 * ellipsoidSizes.x * Math.sin(delta * 0.5);
         const radius = circleChord * 0.5;
 
@@ -214,7 +214,7 @@ class GlobeLayer extends TiledGeometryLayer {
     }
 
     computeDistanceCameraFromTileZoom(zoom, camera) {
-        const delta = Math.PI / Math.pow(2, zoom);
+        const delta = Math.PI / 2 ** zoom;
         const circleChord = 2.0 * ellipsoidSizes.x * Math.sin(delta * 0.5);
         const radius = circleChord * 0.5;
         const error = radius / SIZE_TEXTURE_TILE;

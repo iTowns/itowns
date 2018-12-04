@@ -7,7 +7,7 @@ module.exports = {
    'eslint-config-airbnb-base/rules/strict',
  ],
   parserOptions: {
-    ecmaVersion: 6,
+    ecmaVersion: 7,
     sourceType: 'module',
     ecmaFeatures: {
       impliedStrict: true

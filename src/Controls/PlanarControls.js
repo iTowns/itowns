@@ -868,7 +868,7 @@ function onContextMenu(event) {
 function smooth(value) {
     // p between 1.0 and 1.5 (empirical)
     const p = 1.20;
-    return Math.pow((value * value * (3 - 2 * value)), p);
+    return (value ** 2 * (3 - 2 * value)) ** p;
 }
 
 export default PlanarControls;

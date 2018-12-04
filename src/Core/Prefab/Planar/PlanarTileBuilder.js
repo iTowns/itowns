@@ -18,7 +18,7 @@ PlanarTileBuilder.prototype.constructor = PlanarTileBuilder;
 // prepare params
 // init projected object -> params.projected
 PlanarTileBuilder.prototype.Prepare = function Prepare(params) {
-    params.nbRow = Math.pow(2.0, params.zoom + 1.0);
+    params.nbRow = 2 ** (params.zoom + 1.0);
     params.projected = new THREE.Vector3();
 };
 

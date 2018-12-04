@@ -170,7 +170,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
         // Compute fog distance, this function makes it possible to have a shorter distance
         // when the camera approaches the ground
-        this.fogDistance = mfogDistance * Math.pow((len - ellipsoidSizes.x * 0.99) * 0.25 / ellipsoidSizes.x, 1.5);
+        this.fogDistance = mfogDistance * ((len - ellipsoidSizes.x * 0.99) * 0.25 / ellipsoidSizes.x) ** 1.5;
 
         // get altitude camera
         coordCam.set(this.referenceCrs, this.camera.camera3D.position).as('EPSG:4326', coordGeoCam);
