@@ -1,5 +1,4 @@
 import { EventDispatcher } from 'three';
-import Layer from 'Layer/Layer';
 import Cache from 'Core/Scheduler/Cache';
 
 export const RENDERING_PAUSED = 0;
@@ -127,7 +126,7 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
     // replace layer with their parent where needed
     updateSources.forEach((src) => {
         const layer = src.layer || src;
-        if (layer instanceof Layer) {
+        if (layer.isLayer) {
             const parentLayer = view.getParentLayer(layer);
             if (parentLayer) {
                 // add the parent layer to update sources

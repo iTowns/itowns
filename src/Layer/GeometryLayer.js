@@ -6,6 +6,11 @@ import Picking from 'Core/Picking';
  * @event GeometryLayer#opacity-property-changed
  */
 
+/**
+ * @property {boolean} isGeometryLayer - Used to checkout whether this layer is
+ * a GeometryLayer. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ */
 class GeometryLayer extends Layer {
     /**
      * A layer usually managing a geometry to display on a view. For example, it
@@ -46,6 +51,8 @@ class GeometryLayer extends Layer {
      */
     constructor(id, object3d, config = {}) {
         super(id, 'geometry', config);
+
+        this.isGeometryLayer = true;
 
         if (!object3d || !object3d.isObject3D) {
             throw new Error(`Missing/Invalid object3d parameter (must be a

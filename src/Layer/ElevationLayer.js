@@ -2,6 +2,11 @@ import Layer from 'Layer/Layer';
 import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
 
+/**
+ * @property {boolean} isElevationLayer - Used to checkout whether this layer is
+ * an ElevationLayer. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ */
 class ElevationLayer extends Layer {
     /**
      * A simple layer, managing an elevation texture to add some reliefs on the
@@ -36,6 +41,7 @@ class ElevationLayer extends Layer {
      */
     constructor(id, config = {}) {
         super(id, 'elevation', config);
+        this.isElevationLayer = true;
     }
 
     update(context, layer, node, parent) {

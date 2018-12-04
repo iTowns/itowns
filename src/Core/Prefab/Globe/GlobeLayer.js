@@ -20,6 +20,11 @@ const boundingSphereCenter = new THREE.Vector3();
 // subdivison ratio
 let subdivisionRatio = 0;
 
+/**
+ * @property {boolean} isGlobeLayer - Used to checkout whether this layer is a
+ * GlobeLayer. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ */
 class GlobeLayer extends TiledGeometryLayer {
     /**
      * A {@link TiledGeometryLayer} to use with a {@link GlobeView}. It has
@@ -61,6 +66,7 @@ class GlobeLayer extends TiledGeometryLayer {
 
         super(id, object3d || new THREE.Group(), schemeTile, builder, config);
 
+        this.isGlobeLayer = true;
         this.options.defaultPickingRadius = 5;
         this.minSubdivisionLevel = this.minSubdivisionLevel || 2.0;
         this.maxSubdivisionLevel = this.maxSubdivisionLevel || 18.0;

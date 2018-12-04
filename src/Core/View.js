@@ -155,7 +155,7 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
 };
 
 function _preprocessLayer(view, layer, provider, parentLayer) {
-    if (!(layer instanceof Layer)) {
+    if (!layer.isLayer) {
         layer = _createLayerFromConfig(layer);
     }
 
@@ -585,7 +585,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...whe
     radius = radius || 0;
 
     for (const source of sources) {
-        if (source instanceof Layer ||
+        if (source.isLayer ||
             typeof (source) === 'string') {
             const layer = (typeof (source) === 'string') ?
                 layerIdToLayer(this, source) :

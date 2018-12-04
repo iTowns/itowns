@@ -3,6 +3,11 @@ import * as THREE from 'three';
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
 import PlanarTileBuilder from './PlanarTileBuilder';
 
+/**
+ * @property {boolean} isPlanarLayer - Used to checkout whether this layer is a
+ * PlanarLayer. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ */
 class PlanarLayer extends TiledGeometryLayer {
     /**
      * A {@link TiledGeometryLayer} to use with a {@link PlanarView}. It has
@@ -34,6 +39,7 @@ class PlanarLayer extends TiledGeometryLayer {
      */
     constructor(id, extent, object3d, config = {}) {
         super(id, object3d || new THREE.Group(), [extent], new PlanarTileBuilder(), config);
+        this.isPlanarLayer = true;
         this.extent = extent;
     }
 
