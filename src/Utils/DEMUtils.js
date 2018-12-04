@@ -384,8 +384,10 @@ function _readZ(layer, method, coord, nodes, cache) {
         }
     }
 
-    // we lookup the parent that really owns this texture
-    for (let i = tile.level; i < tileLayer.level; i++) {
+    // Assuming that tiles are split in 4 children, we lookup the parent that
+    // really owns this texture
+    const stepsUpInHierarchy = Math.round(Math.log2(1.0 / tileLayer.offsetScales[0].z));
+    for (let i = 0; i < stepsUpInHierarchy; i++) {
         tileWithValidElevationTexture = tileWithValidElevationTexture.parent;
     }
 
