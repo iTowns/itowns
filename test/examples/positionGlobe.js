@@ -47,25 +47,16 @@ describe('positionGlobe', function _() {
 
         assert.deepEqual(value.visible, value.hidden);
     });
-    it('should get picking position from depth', async () => {
-        // wait mesh creation
-        await page.evaluate(() => new Promise((resolve) => {
-            view.addFrameRequester('after_render', () => {
-                if (view.mesh) {
-                    resolve();
-                } else {
-                    view.notifyChange();
-                }
-            });
-            view.notifyChange();
-        }));
-
+    it('should get picking position from depth, with error inferiour to 2‰', async () => {
         // Hide cone the cone and set range
         const destRange = 1500;
         await page.evaluate((range) => {
             view.mesh.material.visible = false;
-            view.controls.setRange(range, false);
+            return view.controls.setRange(range, false);
         }, destRange);
+
+        // Wait itowns loading new elevation data
+        await waitUntilItownsIsIdle();
 
         // get range value with globeControls method
         const controlsMethod = await page.evaluate(() => view.controls.getRange());
@@ -74,7 +65,7 @@ describe('positionGlobe', function _() {
         const depthMethod = await page.evaluate(() => view
             .getPickingPositionFromDepth().distanceTo(view.camera.camera3D.position));
 
-        assert.ok(Math.abs(controlsMethod - destRange) < 2);
-        assert.ok(Math.abs(depthMethod - destRange) < 2);
+        assert.ok(Math.abs(controlsMethod - destRange) / destRange < 0.002);
+        assert.ok(Math.abs(depthMethod - destRange) / destRange < 0.002);
     });
 });
