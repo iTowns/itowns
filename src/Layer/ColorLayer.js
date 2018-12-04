@@ -16,6 +16,11 @@ import textureConverter from 'Converter/textureConverter';
  * @event ColorLayer#sequence-property-changed
  */
 
+/**
+ * @property {boolean} isColorLayer - Used to checkout whether this layer is a
+ * ColorLayer. Default is true. You should not change this, as it is used
+ * internally for optimisation.
+ */
 class ColorLayer extends Layer {
     /**
      * A simple layer, usually managing a texture to display on a view. For example,
@@ -52,6 +57,7 @@ class ColorLayer extends Layer {
      */
     constructor(id, config = {}) {
         super(id, 'color', config);
+        this.isColorLayer = true;
         this.style = config.style || {};
         this.defineLayerProperty('visible', true);
         this.defineLayerProperty('opacity', 1.0);

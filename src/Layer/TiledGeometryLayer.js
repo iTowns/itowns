@@ -8,6 +8,9 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
 /**
  * @property {InfoTiledGeometryLayer} info - Status information of layer
+ * @property {boolean} isTiledGeometryLayer - Used to checkout whether this
+ * layer is a TiledGeometryLayer. Default is true. You should not change this,
+ * as it is used internally for optimisation.
  */
 class TiledGeometryLayer extends GeometryLayer {
     /**
@@ -38,6 +41,8 @@ class TiledGeometryLayer extends GeometryLayer {
      */
     constructor(id, object3d, schemeTile, builder, config) {
         super(id, object3d, config);
+
+        this.isTiledGeometryLayer = true;
 
         this.protocol = 'tile';
         this.lighting = {

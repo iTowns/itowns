@@ -2,6 +2,11 @@ import * as THREE from 'three';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
 
+/**
+ * @property {boolean} isLayer - Used to checkout whether this layer is a Layer.
+ * Default is true. You should not change this, as it is used internally for
+ * optimisation.
+ */
 class Layer extends THREE.EventDispatcher {
     /**
      * Don't use directly constructor to instance a new Layer. Instead, use
@@ -52,6 +57,8 @@ class Layer extends THREE.EventDispatcher {
      */
     constructor(id, type, config = {}) {
         super();
+
+        this.isLayer = true;
 
         Object.assign(this, config);
 
