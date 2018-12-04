@@ -1,10 +1,9 @@
 import * as THREE from 'three';
-
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
 import { ellipsoidSizes } from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
-import { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
+import { SIZE_DIAGONAL_TEXTURE } from 'Provider/OGCWebServiceHelper';
 
 // matrix to convert sphere to ellipsoid
 const worldToScaledEllipsoid = new THREE.Matrix4();
@@ -70,7 +69,6 @@ class GlobeLayer extends TiledGeometryLayer {
         this.options.defaultPickingRadius = 5;
         this.minSubdivisionLevel = this.minSubdivisionLevel || 2.0;
         this.maxSubdivisionLevel = this.maxSubdivisionLevel || 18.0;
-        this.sseSubdivisionThreshold = this.sseSubdivisionThreshold || 1.0;
         this.maxDeltaElevation = this.maxDeltaElevation || 4.0;
 
         this.extent = this.schemeTile[0].clone();
@@ -142,57 +140,9 @@ class GlobeLayer extends TiledGeometryLayer {
         return true;
     }
 
-    /**
-     * Test the subdvision of a node, compared to this layer.
-     *
-     * @param {Object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
-     * @param {GlobeLayer} layer - This layer, parameter to be removed.
-     * @param {TileMesh} node - The node to test.
-     *
-     * @return {boolean} - True if the node is subdivisable, otherwise false.
-     */
-    subdivision(context, layer, node) {
-        if (node.level < this.minSubdivisionLevel) {
-            return true;
-        }
-
-        if (this.maxSubdivisionLevel <= node.level) {
-            return false;
-        }
-
-        // Prevent to subdivise the node if the current elevation level
-        // we must avoid a tile, with level 20, inherits a level 3 elevation texture.
-        // The induced geometric error is much too large and distorts the SSE
-        const nodeLayer = node.material.getElevationLayer();
-        if (nodeLayer) {
-            const currentTexture = nodeLayer.textures[0];
-            if (currentTexture && currentTexture.extent) {
-                const offsetScale = nodeLayer.offsetScales[0];
-                const ratio = offsetScale.z;
-                // ratio is node size / texture size
-                if (ratio < subdivisionRatio) {
-                    return false;
-                }
-            }
-        }
-
-        subdivisionVector.setFromMatrixScale(node.matrixWorld);
-        boundingSphereCenter.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
-        const distance = Math.max(
-            0.0,
-            context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
-
-        // TODO: node.geometricError is computed using a hardcoded 18 level
-        // The computation of node.geometricError is surely false
-        const sse = context.camera._preSSE * (node.geometricError * subdivisionVector.x) / distance;
-
-        return this.sseSubdivisionThreshold < sse;
-    }
-
     computeTileZoomFromDistanceCamera(distance, camera) {
         const preSinus =
-            SIZE_TEXTURE_TILE * (this.sseSubdivisionThreshold * 0.5) / camera.preSSE / ellipsoidSizes.x;
+            SIZE_DIAGONAL_TEXTURE * (this.sseSubdivisionThreshold * 0.5) / camera._preSSE / ellipsoidSizes.x;
 
         let sinus = distance * preSinus;
         let zoom = Math.log(Math.PI / (2.0 * Math.asin(sinus))) / Math.log(2);
@@ -212,9 +162,9 @@ class GlobeLayer extends TiledGeometryLayer {
         const delta = Math.PI / 2 ** zoom;
         const circleChord = 2.0 * ellipsoidSizes.x * Math.sin(delta * 0.5);
         const radius = circleChord * 0.5;
-        const error = radius / SIZE_TEXTURE_TILE;
+        const error = radius / SIZE_DIAGONAL_TEXTURE;
 
-        return camera.preSSE * error / (this.sseSubdivisionThreshold * 0.5) + radius;
+        return camera._preSSE * error / (this.sseSubdivisionThreshold * 0.5) + radius;
     }
 }
 

@@ -1,7 +1,9 @@
 import Projection from 'Core/Geographic/Projection';
 import Extent from 'Core/Geographic/Extent';
 
+// Size in pixel
 export const SIZE_TEXTURE_TILE = 256;
+export const SIZE_DIAGONAL_TEXTURE = Math.pow(2 * (SIZE_TEXTURE_TILE * SIZE_TEXTURE_TILE), 0.5);
 
 const tileCoord = new Extent('WMTS:WGS84G', 0, 0, 0);
 
