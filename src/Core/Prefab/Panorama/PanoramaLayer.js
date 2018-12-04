@@ -8,6 +8,15 @@ import ProjectionType from './Constants';
 const textureSize = new THREE.Vector2(512, 256);
 const center = new THREE.Vector3();
 
+/**
+ * @deprecated
+ *
+ * This layer is going to be removed after 2.7.0, along with StaticSource and
+ * PanoramaView.
+ *
+ * See https://github.com/iTowns/itowns/issues/739
+ * See https://github.com/iTowns/itowns/issues/901
+ */
 class PanoramaLayer extends TiledGeometryLayer {
     /**
      * A {@link TiledGeometryLayer} to use with a {@link PanoramaView}. It has
@@ -41,6 +50,7 @@ class PanoramaLayer extends TiledGeometryLayer {
      * <code>THREE.Object3d</code>.
      */
     constructor(id, coordinates, type, config) {
+        console.warn('Deprecation warning: this layer is going to be removed in iTowns 2.7.0, please consider stop using it.');
         let schemeTile;
         if (type === ProjectionType.SPHERICAL) {
             // equirectangular -> spherical geometry

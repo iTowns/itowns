@@ -14,6 +14,15 @@ function buildUrl(layer, image) {
         + image;
 }
 
+/**
+ * @deprecated
+ *
+ * This source is going to be removed after 2.7.0, along with PanoramaLayer and
+ * PanoramaView.
+ *
+ * See https://github.com/iTowns/itowns/issues/739
+ * See https://github.com/iTowns/itowns/issues/901
+ */
 class StaticSource extends Source {
     /**
      * Images source to panorama layer {@link PanoramaLayer}
@@ -24,6 +33,7 @@ class StaticSource extends Source {
      * @param {string}  source.extent It's extent of panoramic's images
     */
     constructor(source) {
+        console.warn('Deprecation warning: this source is going to be removed in iTowns 2.7.0, please consider stop using it.');
         if (!source.extent) {
             throw new Error('layer.extent is required');
         }

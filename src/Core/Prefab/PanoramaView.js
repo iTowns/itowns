@@ -8,7 +8,22 @@ export function createPanoramaLayer(id, coordinates, type, options = {}) {
     return new PanoramaLayer(id, coordinates, type, options);
 }
 
+/**
+ * @deprecated
+ *
+ * This view is going to be removed after 2.7.0, along with StaticSource and
+ * PanoramaLayer.
+ *
+ * See https://github.com/iTowns/itowns/issues/739
+ * See https://github.com/iTowns/itowns/issues/901
+ *
+ * @param {Object} viewerDiv
+ * @param {Coordinates} coordinates
+ * @param {number} type
+ * @param {Object} [options]
+ */
 function PanoramaView(viewerDiv, coordinates, type, options = {}) {
+    console.warn('Deprecation warning: this view is going to be removed in iTowns 2.7.0, please consider stop using it.');
     THREE.Object3D.DefaultUp.set(0, 0, 1);
 
     // Setup View
