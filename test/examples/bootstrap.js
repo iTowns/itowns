@@ -121,10 +121,10 @@ before(async () => {
     // Use waitUntilItownsIsIdle to wait until itowns has finished all its work (= layer updates)
     global.waitUntilItownsIsIdle = async (screenshotName) => {
         const result = await page.evaluate(() => new Promise((resolve) => {
-            itowns.CameraUtils.stop(view, view.camera.camera3D);
             function resolveWhenReady() {
                 if (view.mainLoop.renderingState === 0) {
                     view.mainLoop.removeEventListener('command-queue-empty', resolveWhenReady);
+                    itowns.CameraUtils.stop(view, view.camera.camera3D);
                     resolve(true);
                 }
             }
