@@ -1,10 +1,14 @@
+import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
 import { InfoTiledGeometryLayer } from 'Layer/InfoLayer';
 import Picking from 'Core/Picking';
 import convertToTile from 'Converter/convertToTile';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
+import { SIZE_DIAGONAL_TEXTURE } from 'Provider/OGCWebServiceHelper';
 
+const subdivisionVector = new THREE.Vector3();
+const boundingSphereCenter = new THREE.Vector3();
 
 /**
  * @property {InfoTiledGeometryLayer} info - Status information of layer
@@ -49,6 +53,8 @@ class TiledGeometryLayer extends GeometryLayer {
             enable: false,
             position: { x: -0.5, y: 0.0, z: 1.0 },
         };
+
+        this.sseSubdivisionThreshold = this.sseSubdivisionThreshold || 1.0;
 
         this.schemeTile = schemeTile;
         this.builder = builder;
@@ -342,6 +348,57 @@ class TiledGeometryLayer extends GeometryLayer {
                 }
             });
         }
+    }
+
+    /**
+     * Test the subdvision of a node, compared to this layer.
+     *
+     * @param {Object} context - The context of the update; see the {@link
+     * MainLoop} for more informations.
+     * @param {PlanarLayer} layer - This layer, parameter to be removed.
+     * @param {TileMesh} node - The node to test.
+     *
+     * @return {boolean} - True if the node is subdivisable, otherwise false.
+     */
+    subdivision(context, layer, node) {
+        if (node.level < this.minSubdivisionLevel) {
+            return true;
+        }
+
+        if (this.maxSubdivisionLevel <= node.level) {
+            return false;
+        }
+
+        // Prevent to subdivise the node if the current elevation level
+        // we must avoid a tile, with level 20, inherits a level 3 elevation texture.
+        // The induced geometric error is much too large and distorts the SSE
+        const nodeLayer = node.material.getElevationLayer();
+        if (nodeLayer) {
+            const currentTexture = nodeLayer.textures[0];
+            if (currentTexture && currentTexture.extent) {
+                const offsetScale = nodeLayer.offsetScales[0];
+                const ratio = offsetScale.z;
+                // ratio is node size / texture size
+                if (ratio < 1 / Math.pow(2, this.maxDeltaElevationLevel)) {
+                    return false;
+                }
+            }
+        }
+
+        subdivisionVector.setFromMatrixScale(node.matrixWorld);
+        boundingSphereCenter.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
+        const distance = Math.max(
+            0.0,
+            context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
+
+        // Size projection on pixel of bounding
+        node.screenSize = context.camera._preSSE * (2 * node.boundingSphere.radius * subdivisionVector.x) / distance;
+
+        // The screen space error is calculated to have a correct texture display.
+        // For the projection of a texture's texel to be less than or equal to one pixel
+        const sse = node.screenSize / (SIZE_DIAGONAL_TEXTURE * 2);
+
+        return this.sseSubdivisionThreshold < sse;
     }
 }
 

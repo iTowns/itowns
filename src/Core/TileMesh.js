@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
+import OGCWebServiceHelper from 'Provider/OGCWebServiceHelper';
 import { is4326 } from 'Core/Geographic/Coordinates';
 
 /**
@@ -27,7 +27,6 @@ class TileMesh extends THREE.Mesh {
         this.obb = this.geometry.OBB.clone();
         this.boundingSphere = new THREE.Sphere();
         this.obb.box3D.getBoundingSphere(this.boundingSphere);
-        this.updateGeometricError();
         this.wmtsCoords = {};
 
         this.frustumCulled = false;
@@ -63,7 +62,6 @@ class TileMesh extends THREE.Mesh {
         if (Math.floor(min) !== Math.floor(this.obb.z.min) || Math.floor(max) !== Math.floor(this.obb.z.max)) {
             this.obb.updateZ(min, max);
             this.obb.box3D.getBoundingSphere(this.boundingSphere);
-            this.updateGeometricError();
         }
     }
 
@@ -100,15 +98,6 @@ class TileMesh extends THREE.Mesh {
 
     getZoomForLayer(layer) {
         return this.getCoordsForSource(layer.source)[0].zoom || this.level;
-    }
-
-    /**
-     * Update the geometric error based on the bounding sphere radius.
-     */
-    updateGeometricError() {
-        // The geometric error is calculated to have a correct texture display.
-        // For the projection of a texture's texel to be less than or equal to one pixel
-        this.geometricError = this.boundingSphere.radius / SIZE_TEXTURE_TILE;
     }
 
     /**
