@@ -9,8 +9,11 @@ import { computeMinMaxElevation } from 'Parser/XbilParser';
 const MAX_RETRY = 4;
 
 function getSourceExtent(node, extent, targetLevel, source) {
+    // source.getSourceExtents is to StaticSource
     if (source && source.getSourceExtents) {
-        return source.getSourceExtents(extent).extent;
+        const ext = source.getSourceExtents(extent).extent;
+        ext.zoom = node.level;
+        return ext;
     } else if (extent.isTiledCrs()) {
         return extent.extentParent(targetLevel);
     } else {
@@ -134,7 +137,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
     if (layer.source.canTileTextureBeImproved) {
         // if the layer has a custom method -> use it
-        if (!layer.source.canTileTextureBeImproved(node.extent, material.getLayerTextures(layer)[0])) {
+        if (!layer.source.canTileTextureBeImproved(node.extent, nodeLayer.textures[0])) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
             return;
         }
@@ -278,7 +281,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // Does this tile needs a new texture?
     if (layer.source.canTileTextureBeImproved) {
         // if the layer has a custom method -> use it
-        if (!layer.source.canTileTextureBeImproved(layer, node)) {
+        if (!layer.source.canTileTextureBeImproved(layer, nodeLayer.textures[0])) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
             return;
         }
