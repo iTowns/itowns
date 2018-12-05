@@ -40,7 +40,7 @@ class StaticSource extends Source {
         super(source);
 
         this.isStaticSource = true;
-        this.zoom = { min: 0, max: 0 };
+        this.zoom = { min: 0, max: 3 };
         this.url = new URL(source.url, window.location);
         this.whenReady = Fetcher.json(this.url.href).then((metadata) => {
             this.images = [];
@@ -101,7 +101,7 @@ class StaticSource extends Source {
         if (!s) {
             return false;
         }
-        if (!texture.image) {
+        if (!texture || !texture.image) {
             return true;
         }
 
