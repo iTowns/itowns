@@ -444,6 +444,43 @@ function featuresToThree(features, options) {
 /**
  * @module Feature2Mesh
  */
+/**
+* @example <caption>Example usage of batchId with featureId.</caption>
+* view.addLayer({
+*     id: 'WFS Buildings',
+*     type: 'geometry',
+*     update: itowns.FeatureProcessing.update,
+*     convert: itowns.Feature2Mesh.convert({
+*         color: colorBuildings,
+*         batchId: (property, featureId) => featureId,
+*         altitude: altitudeBuildings,
+*         extrude: extrudeBuildings }),
+*     onMeshCreated: function scaleZ(mesh) {
+*         mesh.scale.z = 0.01;
+*         meshes.push(mesh);
+*     },
+*     filter: acceptFeature,
+*     source,
+* });
+*
+* @example <caption>Example usage of batchId with property.</caption>
+* view.addLayer({
+*     id: 'WFS Buildings',
+*     type: 'geometry',
+*     update: itowns.FeatureProcessing.update,
+*     convert: itowns.Feature2Mesh.convert({
+*         color: colorBuildings,
+*         batchId: (property, featureId) => property.house ? 10 : featureId,
+*         altitude: altitudeBuildings,
+*         extrude: extrudeBuildings }),
+*     onMeshCreated: function scaleZ(mesh) {
+*         mesh.scale.z = 0.01;
+*         meshes.push(mesh);
+*     },
+*     filter: acceptFeature,
+*     source,
+* });
+**/
 export default {
     /**
      * Return a function that converts [Features]{@link module:GeoJsonParser} to Meshes. Feature collection will be converted to a
