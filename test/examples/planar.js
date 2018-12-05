@@ -10,6 +10,19 @@ describe('planar', function _() {
         assert.ok(result);
     });
 
+    it('should subdivise planar correctly', async () => {
+        const displayedTiles = await page.evaluate(() => {
+            r = {};
+            [...view.tileLayer.info.displayed.tiles]
+            // eslint-disable-next-line
+                .forEach(t => (!r[t.level] ? r[t.level] = 1 : r[t.level]++));
+            return r;
+        });
+        assert.equal(displayedTiles['1'], 1);
+        assert.equal(displayedTiles['2'], 6);
+        assert.equal(displayedTiles['3'], 5);
+    });
+
     it('should get picking position from depth', async function __() {
         const length = 1500;
 

@@ -17,6 +17,18 @@ describe('globe', function _() {
 
         assert.equal(2, level);
     });
+
+    it('should subdivise globe correctly', async () => {
+        const displayedTiles = await page.evaluate(() => {
+            r = {};
+            [...view.tileLayer.info.displayed.tiles]
+            // eslint-disable-next-line
+                .forEach(t => (!r[t.level] ? r[t.level] = 1 : r[t.level]++));
+            return r;
+        });
+        assert.equal(displayedTiles['2'], 26);
+    });
+
     it('should not add layer with id already used', async () => {
         const error = await page.evaluate(() => itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(view.addLayer).catch(() => true));
         const colorLayersCount = await page.evaluate(() => view.getLayers(l => l.type === 'color').length);
