@@ -50,7 +50,7 @@ export function chooseNextLevelToFetch(strategy, node, nodeLevel = node.level, c
     let nextLevelToFetch;
     const maxZoom = layer.source.zoom ? layer.source.zoom.max : Infinity;
     if (failureParams) {
-        nextLevelToFetch = _dichotomy(failureParams.targetLevel, currentLevel, layer.options);
+        nextLevelToFetch = _dichotomy(failureParams.targetLevel, currentLevel, layer.source);
     } else {
         switch (strategy) {
             case STRATEGY_GROUP:
@@ -61,7 +61,7 @@ export function chooseNextLevelToFetch(strategy, node, nodeLevel = node.level, c
                 break;
             }
             case STRATEGY_DICHOTOMY:
-                nextLevelToFetch = _dichotomy(nodeLevel, currentLevel, layer.options);
+                nextLevelToFetch = _dichotomy(nodeLevel, currentLevel, layer.source);
                 break;
             // default strategy
             case STRATEGY_MIN_NETWORK_TRAFFIC:
