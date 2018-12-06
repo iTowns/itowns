@@ -140,8 +140,8 @@ function Debug(view, datDebugTool, chartDivContainer) {
     displayedTilesObb.add(displayedTilesObbHelper);
 
     function updateFogDistance(obj) {
-        if (obj.setFog && fogDistance) {
-            obj.setFog(fogDistance);
+        if (obj.material && fogDistance) {
+            obj.material.fogDistance = fogDistance;
         }
     }
 
