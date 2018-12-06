@@ -35,7 +35,6 @@ function c3DEngine(rendererOrDiv, options = {}) {
     this.fullSizeRenderTarget = new THREE.WebGLRenderTarget(this.width, this.height);
     this.fullSizeRenderTarget.texture.minFilter = THREE.LinearFilter;
     this.fullSizeRenderTarget.texture.magFilter = THREE.NearestFilter;
-    this.fullSizeRenderTarget.texture.generateMipmaps = false;
     this.fullSizeRenderTarget.depthBuffer = true;
     this.fullSizeRenderTarget.depthTexture = new THREE.DepthTexture();
     this.fullSizeRenderTarget.depthTexture.type = THREE.UnsignedShortType;
