@@ -18,7 +18,7 @@ function hideEverythingElse(view, object, threejsLayer = 0) {
 
 const depthRGBA = new THREE.Vector4();
 // TileMesh picking support function
-function screenCoordsToNodeId(view, tileLayer, viewCoords, radius) {
+function screenCoordsToNodeId(view, tileLayer, viewCoords, radius = 0) {
     const dim = view.mainLoop.gfxEngine.getWindowSize();
 
     viewCoords = viewCoords || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));

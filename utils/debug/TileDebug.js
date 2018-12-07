@@ -1,6 +1,8 @@
 import * as THREE from 'three';
+import TWEEN from '@tweenjs/tween.js';
 import View from 'Core/View';
 import Layer from 'Layer/Layer';
+import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import TileObjectChart from './charts/TileObjectChart';
 import TileVisibilityChart from './charts/TileVisibilityChart';
@@ -21,7 +23,7 @@ let showOutline;
 let selectedNode;
 let selectedId;
 
-function selectNode(node) {
+function selectTile(node) {
     if (node.material) {
         const selected = node.id === selectedId;
         node.material.overlayAlpha = selected ? 0.5 : 0;
@@ -37,15 +39,15 @@ function selectNode(node) {
 }
 
 /**
- * Select tile node on globe
+ * Select tile
  *
  * @param      {View} view
  * @param      {Object} mouseOrEvt - mouse position in window coordinates (0, 0 = top-left)
- * or MouseEvent or TouchEvent
- * @param      {boolean}  showInfo  The show information
- * @return     {TileMesh}   { description_of_the_return_value }
+ * or MouseEvent or TouchEvent.
+ * @param      {boolean}  [showInfo=true] Show tile information in console.
+ * @return     {TileMesh} Selected tile.
  */
-function selectNodeAt(view, mouseOrEvt, showInfo = true) {
+function selectTileAt(view, mouseOrEvt, showInfo = true) {
     const picked = view.tileLayer.pickObjectsAt(view, mouseOrEvt);
     selectedId = picked.length ? picked[0].object.id : undefined;
     selectedNode = undefined;
@@ -53,7 +55,7 @@ function selectNodeAt(view, mouseOrEvt, showInfo = true) {
     showOutline = view.tileLayer.showOutline;
 
     for (const n of view.tileLayer.level0Nodes) {
-        n.traverse(selectNode);
+        n.traverse(selectTile);
     }
 
     view.notifyChange();
@@ -76,6 +78,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     const state = {
         objectChart: true,
         visibilityChart: true,
+        sseHelper: false,
     };
 
     // tiles outline
@@ -226,18 +229,85 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             view.notifyChange(l);
         });
     });
+
+
+    const viewerDiv = document.getElementById('viewerDiv');
+    const circle = document.createElement('span');
+    circle.className = 'circleBase';
+
+    viewerDiv.appendChild(circle);
+
+    const centerNode = new THREE.Vector3();
+    let actualNode;
+
+    const animationFrameRequester = () => {
+        TWEEN.update();
+        view.notifyChange();
+    };
+
+    const removeAnimationRequester = () => {
+        TWEEN.removeAll();
+        if (view._frameRequesters[MAIN_LOOP_EVENTS.BEFORE_RENDER].includes(animationFrameRequester)) {
+            view.removeFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, animationFrameRequester);
+        }
+    };
+
+    function picking(event) {
+        const selectNode = selectTileAt(view, event, false);
+        if (selectNode) {
+            circle.style.display = 'table-cell';
+            centerNode.copy(selectNode.boundingSphere.center).applyMatrix4(selectNode.matrixWorld);
+            const project = centerNode.project(view.camera.camera3D);
+            const coords = view.normalizedToViewCoords(project);
+            const size = selectNode.screenSize;
+
+            if (actualNode != selectNode) {
+                const actualSize = Number(circle.style.width.replace('px', ''));
+                actualNode = selectNode;
+                removeAnimationRequester();
+                new TWEEN.Tween({ size: actualSize })
+                    .to({ size }, 500)
+                    .easing(TWEEN.Easing.Sinusoidal.In)
+                    .easing(TWEEN.Easing.Exponential.Out)
+                    .onUpdate((object) => {
+                        circle.style['line-height'] = `${object.size}px`;
+                        circle.style.width = `${object.size}px`;
+                        circle.style.height = `${object.size}px`;
+                        circle.innerHTML = `${Math.floor(object.size)} px`;
+                        circle.style.left = `${coords.x - object.size  * 0.5}px`;
+                        circle.style.top = `${coords.y - object.size * 0.5}px`;
+                    })
+                    .onComplete(removeAnimationRequester)
+                    .start();
+
+                view.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, animationFrameRequester);
+            }
+        } else {
+            circle.style.display = 'none';
+        }
+    }
+
+    gui.add(state, 'sseHelper').name('Sse helper').onChange((v) => {
+        if (v) {
+            window.addEventListener('mousemove', picking, false);
+        } else {
+            circle.style.display = 'none';
+            removeAnimationRequester();
+            window.removeEventListener('mousemove', picking);
+        }
+    });
     let currKey = null;
 
     window.addEventListener('mousedown', (event) => {
         if (currKey == 83) {
-            selectNodeAt(view, event);
+            selectTileAt(view, event);
         }
     });
 
     window.addEventListener('keydown', (event) => {
         currKey = event.which;
     });
-    window.addEventListener('keyup', (event) => {
+    window.addEventListener('keyup', () => {
         currKey = null;
     });
 }
