@@ -558,10 +558,6 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                 case states.PANORAMIC:
                     rotateStart.copy(coords);
                     break;
-                case states.SELECT:
-                    // If the key 'S' is down, the view selects node under mouse
-                    view.selectNodeAt(coords);
-                    break;
                 case states.MOVE_GLOBE: {
                     // update picking on sphere
                     if (view.getPickingPositionFromDepth(coords, pickingPoint)) {

@@ -50,24 +50,4 @@ PlanarView.prototype.addLayer = function addLayer(layer) {
     return View.prototype.addLayer.call(this, layer, this.tileLayer);
 };
 
-PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
-    const picked = this.tileLayer.pickObjectsAt(this, mouse);
-    const selectedId = picked.length ? picked[0].object.id : undefined;
-
-    for (const n of this.tileLayer.level0Nodes) {
-        n.traverse((node) => {
-            if (node.material) {
-                const selected = node.id === selectedId;
-                node.material.overlayAlpha = selected ? 0.5 : 0;
-                if (selected) {
-                    // eslint-disable-next-line no-console
-                    console.info(node);
-                }
-            }
-        });
-    }
-
-    this.notifyChange();
-};
-
 export default PlanarView;

@@ -16,6 +16,50 @@ function applyToNodeFirstMaterial(view, root, layer, cb) {
     view.notifyChange();
 }
 
+let _showInfo;
+let showOutline;
+let selectedNode;
+let selectedId;
+
+function selectNode(node) {
+    if (node.material) {
+        const selected = node.id === selectedId;
+        node.material.overlayAlpha = selected ? 0.5 : 0;
+        node.material.showOutline = selected ? true : showOutline;
+        if (selected) {
+            selectedNode = node;
+            if (_showInfo) {
+                // eslint-disable-next-line no-console
+                console.info(node);
+            }
+        }
+    }
+}
+
+/**
+ * Select tile node on globe
+ *
+ * @param      {View} view
+ * @param      {Object} mouseOrEvt - mouse position in window coordinates (0, 0 = top-left)
+ * or MouseEvent or TouchEvent
+ * @param      {boolean}  showInfo  The show information
+ * @return     {TileMesh}   { description_of_the_return_value }
+ */
+function selectNodeAt(view, mouseOrEvt, showInfo = true) {
+    const picked = view.tileLayer.pickObjectsAt(view, mouseOrEvt);
+    selectedId = picked.length ? picked[0].object.id : undefined;
+    selectedNode = undefined;
+    _showInfo = showInfo;
+    showOutline = view.tileLayer.showOutline;
+
+    for (const n of view.tileLayer.level0Nodes) {
+        n.traverse(selectNode);
+    }
+
+    view.notifyChange();
+    return selectedNode;
+}
+
 export default function createTileDebugUI(datDebugTool, view, layer, debugInstance) {
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, layer);
 
@@ -181,5 +225,19 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         gui.add(l, 'visible').name('Bounding Spheres').onChange(() => {
             view.notifyChange(l);
         });
+    });
+    let currKey = null;
+
+    window.addEventListener('mousedown', (event) => {
+        if (currKey == 83) {
+            selectNodeAt(view, event);
+        }
+    });
+
+    window.addEventListener('keydown', (event) => {
+        currKey = event.which;
+    });
+    window.addEventListener('keyup', (event) => {
+        currKey = null;
     });
 }
