@@ -71,14 +71,6 @@ class StateControl {
             keyboard: CONTROL_KEYS.SHIFT,
             enable: true,
         };
-        /**
-         * object selection
-         */
-        this.SELECT = {
-            mouseButton: THREE.MOUSE.LEFT,
-            keyboard: CONTROL_KEYS.S,
-            enable: true,
-        };
     }
 
     /**
