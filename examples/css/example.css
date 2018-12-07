@@ -78,3 +78,24 @@ body {
     right: 0;
     bottom: 0;
 }
+
+.circleBase {
+    display: none;
+    border-radius: 50%;
+    margin-top: 0px;
+    margin-left: 0px;
+    padding: 0px;
+    position: absolute;
+    z-index: 1000;
+    font-family: 'Open Sans',
+    sans-serif;
+    font-size: 20px;
+    line-height: 0px;
+    text-align: center;
+    pointer-events: none;
+    width: 10px;
+    height: 10px;
+    background: rgba(160, 160, 160, .4);
+    border: 2px solid #775555;
+    vertical-align: middle;
+}
