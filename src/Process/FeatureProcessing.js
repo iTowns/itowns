@@ -62,6 +62,16 @@ export default {
             return;
         }
 
+        if (node.layerUpdateState[layer.id] === undefined) {
+            node.layerUpdateState[layer.id] = new LayerUpdateState();
+        }
+
+        const ts = Date.now();
+
+        if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+            return;
+        }
+
         const features = node.children.filter(n => n.layer == layer);
 
         if (features.length > 0) {
@@ -78,16 +88,6 @@ export default {
                 return;
             }
             extentsSource.push(extentDest);
-        }
-
-        if (node.layerUpdateState[layer.id] === undefined) {
-            node.layerUpdateState[layer.id] = new LayerUpdateState();
-        }
-
-        const ts = Date.now();
-
-        if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
-            return;
         }
 
         node.layerUpdateState[layer.id].newTry();
