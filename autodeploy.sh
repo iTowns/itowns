@@ -51,7 +51,7 @@ mkdir -p out/itowns/dist
 # Copy build results
 cp -R dist/*.js out/itowns/dist/
 # generate the API documentation
-npm run doc -- -d out/itowns/API_Doc
+npm run doc -- -d out/itowns/docs
 
 # Copy examples
 cp -R examples out/itowns/
