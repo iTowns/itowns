@@ -1,0 +1,11 @@
+<?js
+    var self = this;
+    var params = obj;
+?>
+
+<?js if (params && params.length) { ?>
+    <?js params.forEach(function(param, i) { ?>
+        <?js= param.name ?>:
+            <?js= self.partial('type.tmpl', param.type.names).trim() ?><?js if (i + 1 < params.length) { ?>, <?js } ?>
+    <?js }); ?>
+<?js } ?>

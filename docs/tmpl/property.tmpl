@@ -1,0 +1,17 @@
+<?js
+    var property = obj;
+    var self = this;
+?>
+
+<div class="property">
+    <h3>
+        <span class="property-name"><?js= property.name ?></span>
+        : <?js= self.partial('type.tmpl', property.type.names).trim() ?>
+    </h3>
+
+    <?js if (property.description) { ?>
+        <div class="description">
+            <?js= property.description ?>
+        </div>
+    <?js } ?>
+</div>

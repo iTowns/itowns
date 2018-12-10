@@ -1,0 +1,32 @@
+<?js
+    var self = this;
+    var tutorials = obj.tutorials;
+    var packages = obj.packages;
+?>
+
+<h2>Tutorials</h2>
+<div>
+    <ul class="nav-section">
+    <?js tutorials.children.forEach(function(tutorial) { ?>
+        <li class="nav-item">
+        <a class="nav-link" href="#tutorials/<?js= tutorial.name ?>"><?js= tutorial.title ?></a>
+        </li>
+    <?js }); ?>
+    </ul>
+</div>
+
+<h2>API</h2>
+<?js for (const p in packages) { ?>
+    <div class="package">
+        <h3 class="nav-section"><?js= p ?></h3>
+        <ul>
+        <?js for (const i in packages[p]) { ?>
+            <?js const m = packages[p][i].split('.')[0]; ?>
+            <li class="nav-item">
+            <a class="nav-link" href="#api/<?js= p ?>/<?js= m ?>"><?js= m ?></a>
+            </li>
+        <?js } ?>
+        </ul>
+    </div>
+<?js } ?>
+

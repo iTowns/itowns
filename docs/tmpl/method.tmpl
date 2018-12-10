@@ -1,0 +1,33 @@
+<?js
+    var method = obj;
+    var self = this;
+?>
+
+<div class="method">
+    <h3>
+        <span class="method-name"><?js= method.name ?></span>
+        (<?js= self.partial('params-inline.tmpl', method.params) ?>)
+        <?js if (method.returns && method.returns.length) { ?>:
+            <?js method.returns.forEach(function(value) { ?>
+                <?js= self.partial('type.tmpl', value.type.names) ?>
+            <?js }); ?>
+        <?js } ?>
+    </h3>
+
+    <?js if (method.params && method.params.length) { ?>
+        <?js= self.partial('params.tmpl', method.params) ?>
+    <?js } ?>
+
+    <?js if (method.kind != 'class') { ?>
+        <?js if (method.description) { ?>
+            <div class="description">
+                <?js= method.description ?>
+            </div>
+        <?js } ?>
+
+        <?js if (method.examples && method.examples.length) { ?>
+            <h4>Example</h4>
+            <?js= self.partial('examples.tmpl', method.examples) ?>
+        <?js } ?>
+    <?js } ?>
+</div>

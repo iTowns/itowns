@@ -1,0 +1,12 @@
+<?js
+    var self = this;
+
+    if (obj.meta) {
+    var path = self.linkToSource(meta.filename, meta.path);
+?>
+        <h2>Source</h2>
+        <a target="_blank" href="https://github.com/itowns/itowns/blob/master/<?js= path ?>">
+            <?js= path ?>
+        </a>
+
+<?js } ?>

@@ -1,0 +1,5 @@
+<span class="type"><?js
+    var types = obj;
+    types.forEach(function(type, i) {
+        type = type.replace('<', '&lt;');
+?>{@link <?js= type ?>}<?js if (i + 1 < types.length) { ?>|<?js } ?><?js }); ?></span>
