@@ -1,12 +1,12 @@
 {
     "opts": {
-        "template": "node_modules/docdash",
+        "template": "docs/",
         "destination": "docs/out/",
-        "tutorials": "docs/tutorials/"
+        "tutorials": "docs/tutorials/",
+        "navigation": "docs/navigation.json"
     },
     "templates": {
         "default": {
-            "layoutFile": "docs/templates/layout.tmpl",
             "staticFiles": {
                 "paths": ["docs"]
             }

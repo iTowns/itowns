@@ -1,0 +1,146 @@
+/** color
+ * https://color.adobe.com/create/color-wheel/?base=1&rule=Triad&selected=1&name=My%20Color%20Theme&mode=rgb&rgbvalues=0.3777157360406091,0.5683627654250581,0.7,0.6395939086294415,0.8527918781726119,1,1,0.6440848843767284,0.6395939086294415,0.8,0.7982219664802797,0.43167512690355325,0.7,0.6986131779623956,0.4127157360406091&swatchOrder=0,1,2,3,4
+ */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    color: #202020;
+    font-size: 13px;
+}
+
+.scroll-section {
+    height: 100%;
+    position: absolute;
+    overflow: auto;
+}
+
+nav {
+    width: 220px;
+}
+
+#content {
+    height: 100%;
+    width: calc(100% - 220px);
+}
+
+nav img {
+    margin-top: 20px;
+}
+
+.nav-section {
+    margin-top: 0px;
+}
+
+nav .package {
+    padding-bottom: 20px;
+}
+
+#homepage iframe {
+    width: 100%;
+}
+
+section {
+    padding: 20px;
+}
+
+a, a:visited{
+    cursor: pointer;
+    color: #6091b2;
+}
+
+a:hover {
+    text-decoration: dashed underline;
+    color: #6091b2aa;
+}
+
+h1, h2, h3, h4, h5 {
+    font-weight: normal;
+    color: #4b4b4b;
+}
+
+h1 {
+    font-size: 42px;
+}
+
+header h1 {
+    color: #6091b2;
+}
+
+h2 {
+    font-size: 24px;
+    margin-top: 32px;
+}
+
+header h2, article h2 {
+    color: #ffa4a3;
+}
+
+h3 {
+    font-size: 16px;
+    margin-top: 26px;
+}
+
+h4 {
+    font-size: 16px;
+    margin-top: 18px;
+}
+
+.property h3, .method h3 {
+    font-family: Consolas, monospace;
+}
+
+.method .type, .property .type {
+    color: #968d86;
+}
+
+.method-name, .property-name {
+    color: #6091b2;
+}
+
+ul.params {
+    padding-left: 20px;
+}
+
+#goToHome {
+    cursor: pointer;
+}
+
+.filterBlock {
+    margin: 10px 0px;
+}
+
+#filterInput {
+    width: 170px;
+    padding: 5px;
+}
+
+#clearFilterButton {
+    position: absolute;
+    left: 180px;
+    top: 124px;
+}
+
+.hidden {
+    display: none;
+}
+
+code {
+    padding: 1px 5px;
+}
+
+code, .prettyprint code {
+    background-color: #6091b220;
+}
+
+hr {
+    color: #ccc0b640;
+    margin-top: 26px;
+}
+
+p, ul, ol {
+    max-width: 780px;
+    text-align: justify;
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title><?js= title ?></title>
+
+    <script src="../../scripts/prettify/prettify.js"> </script>
+    <script src="../../scripts/prettify/lang-css.js"> </script>
+    <link type="text/css" rel="stylesheet" href="../../styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="../../styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="../../styles/itowns.css">
+</head>
+
+<body>
+
+<?js
+    var self = this;
+?>
+
+<section>
+
+<article>
+<?js if (content.kind === 'class' || content.kind === 'module') { ?>
+    <h1>
+        <?js= content.name ?>
+        <?js if (content.augments && content.augments.length) { ?>
+            <span class="extends">extends {@link <?js= content.augments[0] ?>}</span>
+        <?js } ?>
+    </h1>
+
+    <?js if (content.description) { ?>
+        <div class="description"><?js= content.description ?></div>
+    <?js } else if (content.classdesc) { ?>
+        <div class="description"><?js= content.classdesc ?></div>
+    <?js } ?>
+
+    <?js if (content.kind === 'class') { ?>
+        <h2>Constructor</h2>
+        <?js= self.partial('method.tmpl', content) ?>
+    <?js } ?>
+
+    <?js if (content.examples && content.examples.length) { ?>
+        <h2>Example</h2>
+        <?js= self.partial('examples.tmpl', content.examples) ?>
+    <?js } ?>
+
+    <?js if (content.properties && content.properties.length) { ?>
+        <h2>Properties</h2>
+        <?js content.properties.forEach(function(property, i) { ?>
+            <?js= self.partial('property.tmpl', property) ?>
+            <?js if (i < content.properties.length - 1) { ?><hr/><?js } ?>
+        <?js }); ?>
+    <?js } ?>
+
+    <?js
+        var methods = self.find({kind: 'function', scope: 'instance', memberof: content.longname});
+        if (methods && methods.length) {
+    ?>
+        <h2>Methods</h2>
+        <?js methods.forEach(function(method, i) { ?>
+            <?js= self.partial('method.tmpl', method) ?>
+            <?js if (i < methods.length - 1) { ?><hr/><?js } ?>
+        <?js }); ?>
+    <?js } ?>
+
+    <?js
+        var statics = self.find({kind: 'function', scope: 'static', memberof: content.longname});
+        if (statics && statics.length) {
+    ?>
+        <h2>Static Methods</h2>
+        <?js statics.forEach(function(static, i) { ?>
+            <?js= self.partial('method.tmpl', static) ?>
+            <?js if (i < statics.length - 1) { ?><hr/><?js } ?>
+        <?js }); ?>
+    <?js } ?>
+<?js } ?>
+
+<?js= self.partial('source.tmpl', content) ?>
+
+</article>
+
+</section>
+
+<script> prettyPrint(); </script>
+<script src="../../scripts/linenumber.js"> </script>
+</body>
+</html>
+
+

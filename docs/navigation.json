@@ -1,0 +1,70 @@
+{
+    "Base": [
+        "Cache",
+        "Scheduler",
+        "TileMesh"
+    ],
+
+    "View": [
+        "View",
+        "GlobeView"
+    ],
+
+    "Geographic": [
+        "Coordinates",
+        "Extent",
+        "OrientationUtils",
+        "OBB"
+    ],
+
+    "Layer": [
+        "Layer",
+        "ColorLayer",
+        "ElevationLayer",
+        "GeometryLayer",
+        "TiledGeometryLayer",
+        "InfoTiledGeometryLayer",
+        "ColorLayersOrdering",
+
+        "GlobeLayer",
+        "PanoramaLayer",
+        "PlanarLayer"
+    ],
+
+    "Source": [
+        "Source",
+        "WMTSSource",
+        "WMSSource",
+        "WFSSource",
+        "TMSSource",
+        "StaticSource",
+        "FileSource",
+
+        "URLBuilder",
+        "Fetcher"
+    ],
+
+    "Parser": [
+        "GeoJsonParser",
+        "GpxParser",
+        "VectorTileParser",
+        "CameraCalibrationParser"
+    ],
+
+    "Converter": [
+        "Feature2Mesh"
+    ],
+
+    "Controls": [
+        "GlobeControls",
+        "StateControl",
+        "PlanarControls",
+        "FirstPersonControls",
+        "OrientedImageCamera",
+        "CameraUtils"
+    ],
+
+    "Renderer": [
+        "OrientedImageMaterial"
+    ]
+}

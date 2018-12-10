@@ -1,0 +1,21 @@
+<?js
+    var self = this;
+    var params = self.rank(obj);
+?>
+
+<ul class="params">
+    <?js params.forEach(function(param, i) { ?>
+    <li>
+        <code><?js= param.name ?></code>
+        <?js if (param.defaultvalue) { ?>(default: <code><?js= param.defaultvalue ?></code>)
+        <?js } else if (param.optional) { ?>(optional)<?js } ?>
+        <?js if (param.description) { ?>
+            &mdash; <span><?js= param.description ?></span>
+        <?js } ?>
+
+        <?js if (param.subprop && param.subprop.length) { ?>
+            <?js= self.partial('params.tmpl', param.subprop) ?>
+        <?js } ?>
+    </li>
+    <?js }); ?>
+</ul>

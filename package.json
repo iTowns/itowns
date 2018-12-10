@@ -65,7 +65,6 @@
     "chart.js": "^2.7.3",
     "copyfiles": "^2.1.0",
     "cross-env": "^5.2.0",
-    "docdash": "^1.0.1",
     "eslint": "^5.9.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-import-resolver-webpack": "^0.10.1",
