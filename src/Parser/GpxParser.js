@@ -160,10 +160,12 @@ function _gpxToMesh(gpxXML, options = {}) {
     return gpxMesh;
 }
 
+/**
+ * @module GpxParser
+ */
 export default {
-    /** @module GpxParser */
-    /** Parse gpx file and convert to THREE.Mesh
-     * @function parse
+    /**
+     * Parse gpx file and convert to THREE.Mesh
      * @param {string} xml - the gpx file or xml.
      * @param {Object=} options - additional properties.
      * @param {string} options.crs - the default CRS of Three.js coordinates. Should be a cartesian CRS.
@@ -179,7 +181,6 @@ export default {
      *         viewer.notifyChange();
      *      }
      * });
-     *
      */
     parse(xml, options = {}) {
         if (!(xml instanceof XMLDocument)) {

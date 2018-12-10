@@ -19,10 +19,9 @@ import Extent from 'Core/Geographic/Extent';
  * containing the fetched resource. If this property is set, it overrides the
  * chosen fetcher method with <code>format</code>.
  * @property {Object} networkOptions - Fetch options (passed directly to
- * <code>fetch()</code>), see {@link
- * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
- * syntax for more information}. By default, set to <code>{ crossOrigin:
- * 'anonymous' }</code>.
+ * <code>fetch()</code>), see [the syntax for more information]{@link
+ * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+ * By default, set to <code>{ crossOrigin: 'anonymous' }</code>.
  * @property {string} projection - The projection of the resources.
  * @property {string} attribution - The intellectual property rights for the
  * resources.

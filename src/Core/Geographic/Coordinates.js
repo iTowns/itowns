@@ -164,7 +164,10 @@ function _convert(coordsIn, newCrs, target) {
 }
 
 /**
- * Build a Coordinates object, given a {@link http://inspire.ec.europa.eu/theme/rs|crs} and a number of coordinates value. Coordinates can be in geocentric system, geographic system or an instance of {@link https://threejs.org/docs/#api/math/Vector3|THREE.Vector3}.
+ * Build a Coordinates object, given a [crs]{@link
+ * http://inspire.ec.europa.eu/theme/rs} and a number of coordinates value.
+ * Coordinates can be in geocentric system, geographic system or an instance of
+ * [THREE.Vector3]{@link https://threejs.org/docs/#api/math/Vector3}.
  * If crs = 'EPSG:4326', coordinates must be in geographic system.
  * If crs = 'EPSG:4978', coordinates must be in geocentric system.
  * @constructor
@@ -445,7 +448,7 @@ Coordinates.prototype.xyz = function xyz(target) {
 };
 
 /**
- * Returns coordinates in the wanted {@link http://inspire.ec.europa.eu/theme/rs|CRS}.
+ * Returns coordinates in the wanted [CRS]{@link http://inspire.ec.europa.eu/theme/rs}.
  * @example
  *
  * const position = { longitude: 2.33, latitude: 48.24, altitude: 24999549 };
@@ -466,7 +469,7 @@ Coordinates.prototype.xyz = function xyz(target) {
  *
  * new Coordinates('EPSG:4978', x: 20885167, y: 849862, z: 23385912).as('EPSG:4326'); // Geographic system
  *
- * @param      {string} - {@link http://inspire.ec.europa.eu/theme/rs|crs} : Geocentric (ex: 'EPSG:4326') or Geographic (ex: 'EPSG:4978').
+ * @param      {string} - [crs]{@link http://inspire.ec.europa.eu/theme/rs} : Geocentric (ex: 'EPSG:4326') or Geographic (ex: 'EPSG:4978').
  * @return     {Position} - position
  */
 

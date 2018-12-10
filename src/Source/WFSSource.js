@@ -4,7 +4,7 @@ import URLBuilder from 'Provider/URLBuilder';
 /**
  * @classdesc
  * An object defining the source of resources to get from a
- * {@link http://www.opengeospatial.org/standards/wfs|WFS} server. It inherits
+ * [WFS]{@link http://www.opengeospatial.org/standards/wfs} server. It inherits
  * from {@link Source}.
  *
  * @extends Source

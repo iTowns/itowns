@@ -4,7 +4,7 @@ import URLBuilder from 'Provider/URLBuilder';
 /**
  * @classdesc
  * An object defining the source of resources to get from a
- * {@link http://www.opengeospatial.org/standards/wmts|WMTS} server. It inherits
+ * [WMTS]{@link http://www.opengeospatial.org/standards/wmts} server. It inherits
  * from {@link Source}.
  *
  * @extends Source
