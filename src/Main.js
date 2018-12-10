@@ -39,7 +39,7 @@ export { default as ElevationLayer } from 'Layer/ElevationLayer';
 export { default as GeometryLayer } from 'Layer/GeometryLayer';
 export { default as TiledGeometryLayer } from 'Layer/TiledGeometryLayer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from 'Layer/LayerUpdateStrategy';
-export { ColorLayersOrdering } from 'Renderer/ColorLayersOrdering';
+export { default as ColorLayersOrdering } from 'Renderer/ColorLayersOrdering';
 export { default as GlobeLayer } from 'Core/Prefab/Globe/GlobeLayer';
 export { default as PlanarLayer } from 'Core/Prefab/Planar/PlanarLayer';
 

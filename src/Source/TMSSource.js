@@ -4,8 +4,8 @@ import Extent from 'Core/Geographic/Extent';
 
 /**
  * @classdesc
- * An object defining the source of resources to get from a {@link
- * https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification|TMS} server. It
+ * An object defining the source of resources to get from a [TMS]{@link
+ * https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification} server. It
  * inherits from {@link Source}.
  *
  * @extends Source

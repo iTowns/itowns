@@ -4,7 +4,7 @@ import URLBuilder from 'Provider/URLBuilder';
 /**
  * @classdesc
  * An object defining the source of images to get from a
- * {@link http://www.opengeospatial.org/standards/wms|WMS} server. It inherits
+ * [WMS]{@link http://www.opengeospatial.org/standards/wms} server. It inherits
  * from {@link Source}.
  *
  * @extends Source

@@ -120,7 +120,7 @@ displayed, but it is hidden under the elevation layer. If we remove the
 elevation layer, we can see some shapes on the ground, indicating that buildings
 have indeed been added. So let's place the data on the elevation layer !
 
-![Flat buildings on GeometryLayer](tutorials/images/Display-a-geometry-layer-1.png)
+![Flat buildings on GeometryLayer](images/Display-a-geometry-layer-1.png)
 
 ## Placing the data on the ground
 
@@ -189,7 +189,7 @@ function setAltitude(properties) {
 But now we can't see completely our buildings again. What can we do about that
 ? Let's give them volume !
 
-![Still flat buildings on GeometryLayer](tutorials/images/Display-a-geometry-layer-2.png)
+![Still flat buildings on GeometryLayer](images/Display-a-geometry-layer-2.png)
 
 ## Extruding the data
 
@@ -223,7 +223,7 @@ The parameter `properties` of the `setExtrusion` method is the same that in
 we could use to set the height of the building. Moving around with this gives a
 nice view of our buildings:
 
-![Extruded buildings on GeometryLayer](tutorials/images/Display-a-geometry-layer-3.png)
+![Extruded buildings on GeometryLayer](images/Display-a-geometry-layer-3.png)
 
 ## Coloring the data
 
@@ -257,7 +257,7 @@ view.addLayer(geometryLayer);
 For each building, a new color is created (using `THREE.Color`), and the result
 here results in all buildings being in a light gray.
 
-![Extruded and colored buildings on GeometryLayer](tutorials/images/Display-a-geometry-layer-4.png)
+![Extruded and colored buildings on GeometryLayer](images/Display-a-geometry-layer-4.png)
 
 ## Result
 

@@ -54,7 +54,7 @@ export const VIEW_EVENTS = {
  * @param {?MainLoop} options.mainLoop - {@link MainLoop} instance to use, otherwise a default one will be constructed
  * @param {?(WebGLRenderer|object)} options.renderer - {@link WebGLRenderer} instance to use, otherwise
  * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
- * configure the renderer (see {@link c3DEngine}.  If not present, a new <canvas> will be created and
+ * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
  * added to viewerDiv (mutually exclusive with mainLoop)
  * @param {?Scene} options.scene3D - {@link Scene} instance to use, otherwise a default one will be constructed
  * @constructor

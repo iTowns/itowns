@@ -65,15 +65,17 @@ var quaternionENUFromGeodesicNormal = (() => {
 
 const ENUQuat = new THREE.Quaternion();
 
+/**
+ * @module OrientationUtils
+ */
 export default {
-
     /**
-     * @function localQuaternionFromAttitude
      * @param {Attitude} attitude - [Attitude]{@link module:OrientationParser~Attitude}
      * with properties: (omega, phi, kappa), (roll, pitch, heading) or none.
      * Note that convergence of the meridians is not taken into account.
      * @param {THREE.Quaternion} target Quaternion to set
-     * @returns {THREE.Quaternion} Quaternion representing the rotation
+     *
+     * @return {THREE.Quaternion} Quaternion representing the rotation
      */
     localQuaternionFromAttitude(attitude, target = new THREE.Quaternion()) {
         if ((attitude.roll !== undefined) || (attitude.pitch !== undefined) || (attitude.heading !== undefined)) {
@@ -86,12 +88,12 @@ export default {
     },
 
     /**
-     * @function globeQuaternionFromAttitude
      * @param {Attitude} attitude - [Attitude]{@link module:OrientationParser~Attitude}
      * with properties: (omega, phi, kappa), (roll, pitch, heading) or none.
      * @param {Coordinates} coordinate position on the globe
      * @param {THREE.Quaternion} target Quaternion to set
-     * @returns {THREE.Quaternion} Quaternion representing the rotation
+     *
+     * @return {THREE.Quaternion} Quaternion representing the rotation
      */
     globeQuaternionFromAttitude(attitude, coordinate, target = new THREE.Quaternion()) {
         quaternionENUFromGeodesicNormal(coordinate.geodesicNormal, ENUQuat);
@@ -103,13 +105,13 @@ export default {
     /** Read rotation information (roll pitch heading or omega phi kappa),
      * Create a ThreeJs quaternion representing a rotation.
      *
-     * @function quaternionFromAttitude
      * @param {Attitude} attitude - [Attitude]{@link module:OrientationParser~Attitude}
      * @param {Coordinates} coordinate position the oject (used to apply another rotation on Globe CRS)
      * @param {Boolean} needsENUFromGeodesicNormal should be true on globe CRS.
      * If true, we will apply another rotation : The rotation use to create ENU local space at coordinate parameter position.
      * @param {THREE.Quaternion} target Quaternion to set
-     * @returns {THREE.Quaternion} Quaternion representing the rotation
+     *
+     * @return {THREE.Quaternion} Quaternion representing the rotation
      */
     quaternionFromAttitude(attitude, coordinate, needsENUFromGeodesicNormal, target = new THREE.Quaternion()) {
         if (needsENUFromGeodesicNormal) {

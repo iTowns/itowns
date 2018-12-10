@@ -15,17 +15,24 @@ function updateLayersOrdering(geometryLayer, imageryLayers) {
 
 export const COLOR_LAYERS_ORDER_CHANGED = 'layers-order-changed';
 
-export const ColorLayersOrdering = {
+/**
+ * Utilitary to organize {@link ColorLayer} in a {@link View}.
+ *
+ * @module ColorLayersOrdering
+ */
+export default {
     /**
-     * Moves up in the layer list. This function has no effect if the layer is moved to its current index.
-     * @function moveLayerUp
-     * @param      {View}  view the viewer
-     * @param      {string}  layerId   The layer's idendifiant
+     * Moves up in the layer list. This function has no effect if the layer is
+     * moved to its current index.
+     *
+     * @param {View} view - The view in which the layer is moved up.
+     * @param {string} layerId - The ID of the layer to move.
+     *
      * @example
      * itowns.ColorLayersOrdering.moveLayerUp(viewer, 'idLayerToUp');
      */
-    moveLayerUp: function moveLayerUp(view, layerId) {
-        const imageryLayers = view.getLayers(l => l.type === 'color');
+    moveLayerUp(view, layerId) {
+        const imageryLayers = view.getLayers(l => l.isColorLayer);
         const layer = view.getLayers(l => l.id === layerId)[0];
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
@@ -41,15 +48,17 @@ export const ColorLayersOrdering = {
         }
     },
     /**
-     * Moves down in the layer list. This function has no effect if the layer is moved to its current index.
-     * @function moveLayerDown
-     * @param      {View}  view the viewer
-     * @param      {string}  layerId   The layer's idendifiant
+     * Moves down in the layer list. This function has no effect if the layer is
+     * moved to its current index.
+     *
+     * @param {View} view - The view in which the layer is moved down.
+     * @param {string} layerId - The ID of the layer to move.
+     *
      * @example
      * itowns.ColorLayersOrdering.moveLayerDown(viewer, 'idLayerToDown');
      */
-    moveLayerDown: function moveLayerDown(view, layerId) {
-        const imageryLayers = view.getLayers(l => l.type === 'color');
+    moveLayerDown(view, layerId) {
+        const imageryLayers = view.getLayers(l => l.isColorLayer);
         const layer = view.getLayers(l => l.id === layerId)[0];
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
@@ -65,20 +74,22 @@ export const ColorLayersOrdering = {
         }
     },
     /**
-     * Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index.
-     * @function moveLayerToIndex
-     * @param      {View}  view the viewer
-     * @param      {string}  layerId   The layer's idendifiant
-     * @param      {number}  newIndex   The new index
+     * Moves a specific layer to a specific index in the layer list. This
+     * function has no effect if the layer is moved to its current index.
+     *
+     * @param {View} view - The view in which the layer is moved.
+     * @param {string} layerId - The ID of the layer to move.
+     * @param {number} index - The index to move the layer to.
+     *
      * @example
      * itowns.ColorLayersOrdering.moveLayerToIndex(viewer, 'idLayerToChangeIndex', 2);
      */
-    moveLayerToIndex: function moveLayerToIndex(view, layerId, newIndex) {
-        const imageryLayers = view.getLayers(l => l.type === 'color');
+    moveLayerToIndex(view, layerId, index) {
+        const imageryLayers = view.getLayers(l => l.isColorLayer);
         const layer = view.getLayers(l => l.id === layerId)[0];
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
-            ImageryLayers.moveLayerToIndex(layer, newIndex, imageryLayers);
+            ImageryLayers.moveLayerToIndex(layer, index, imageryLayers);
             updateLayersOrdering(view.tileLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },

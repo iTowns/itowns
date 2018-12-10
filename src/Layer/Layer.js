@@ -28,7 +28,7 @@ class Layer extends THREE.EventDispatcher {
      *  plane the layer is attached to</li>
      *  <li><code>geometry</code>, used for complex layer containing meshes,
      *  like a WFS layer with extruded buildings</li>
-     * <ul>
+     * </ul>
      * @param {Object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements <code>name, protocol, extent</code>, these

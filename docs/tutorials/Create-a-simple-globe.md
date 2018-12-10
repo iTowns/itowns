@@ -47,14 +47,14 @@ on the globe.
 This object needs to contain three properties: `longitude`, `latitude` and
 `altitude`, as in any World Geodetic System 84 (WGS84) coordinates. So we can
 either pass an object created by hand, like `{ longitude: 2.35, latitude: 48.8,
-altitude: 25e6 }` or create a {@link Coordinates} in the WGS84 system. A {@link}
+altitude: 25e6 }` or create a {@link Coordinates} in the WGS84 system. A {@link
 Coordinates} in this reference system has the three asked properties set, so it
 also answers our needs here.
 
 Then, having those two objects, the {@link GlobeView} can be created. It should
 result in a simple blue globe like below.
 
-![Simple GlobeView](tutorials/images/Create-a-simple-globe-1.png)
+![Simple GlobeView](images/Create-a-simple-globe-1.png)
 
 ## Adding a color layer
 
@@ -96,7 +96,7 @@ images.
 Then, having all the necessary things, the layer can simply be created and added
 to the view using [`addLayer`](View#addLayer). The result is as below.
 
-![Simple GlobeView with ColorLayer](tutorials/images/Create-a-simple-globe-2.png)
+![Simple GlobeView with ColorLayer](images/Create-a-simple-globe-2.png)
 
 ## Adding an elevation layer
 
@@ -126,7 +126,7 @@ Two things have changed:
 
 Now we can zoom in and see some mountains !
 
-![Simple Globe with mountains](tutorials/images/Create-a-simple-globe-3.png)
+![Simple Globe with mountains](images/Create-a-simple-globe-3.png)
 
 ## Result
 

@@ -22,9 +22,8 @@ const getTextureFloat = function getTextureFloat(buffer) {
 };
 
 /**
- * Utilitary to fetch resources from a server using the {@link
- * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch|fetch
- * API}.
+ * Utilitary to fetch resources from a server using the [fetch API]{@link
+ * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch}.
  *
  * @module Fetcher
  */
@@ -34,9 +33,8 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to
-     * <code>fetch()</code>), see {@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
-     * syntax for more information}.
+     * <code>fetch()</code>), see [the syntax for more information]{@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      *
      * @return {Promise<string>} Promise containing the text.
      */
@@ -52,9 +50,8 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to
-     * <code>fetch()</code>), see {@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
-     * syntax for more information}.
+     * <code>fetch()</code>), see [the syntax for more information]{@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      *
      * @return {Promise<Object>} Promise containing the JSON object.
      */
@@ -70,9 +67,8 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to
-     * <code>fetch()</code>), see {@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
-     * syntax for more information}.
+     * <code>fetch()</code>), see [the syntax for more information]{@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      *
      * @return {Promise<Document>} Promise containing the XML Document.
      */
@@ -88,11 +84,10 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to
-     * <code>fetch()</code>), see {@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
-     * syntax for more information}.  Note that THREE.js docs mentions
-     * <code>withCredentials</code>, but it is not actually used in {@link
-     * THREE.TextureLoader}.
+     * <code>fetch()</code>), see [the syntax for more information]{@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * Note that THREE.js docs mentions <code>withCredentials</code>, but it is
+     * not actually used in {@link THREE.TextureLoader}.
      *
      * @return {Promise<THREE.Texture>} Promise containing the {@link
      * THREE.Texture}.
@@ -117,9 +112,8 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to
-     * <code>fetch()</code>), see {@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
-     * syntax for more information}.
+     * <code>fetch()</code>), see [the syntax for more information]{@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      *
      * @return {Promise<ArrayBuffer>} Promise containing the ArrayBuffer.
      */
@@ -130,9 +124,8 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to
-     * <code>fetch()</code>), see {@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
-     * syntax for more information}.
+     * <code>fetch()</code>), see [the syntax for more information]{@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      *
      * @return {Promise<THREE.DataTexture>} Promise containing the DataTexture.
      */
