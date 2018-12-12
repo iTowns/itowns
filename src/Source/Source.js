@@ -13,6 +13,11 @@ import Extent from 'Core/Geographic/Extent';
  * for optimisation.
  * @property {string} url - The url of the resources that are fetched.
  * @property {string} format - The format of the resources that are fetched.
+ * @property {function} fetcher - The method used to fetch the resources from
+ * the source. iTowns provides some methods in {@link Fetcher}, but it can be
+ * specified a custom one. This method should return a <code>Promise</code>
+ * containing the fetched resource. If this property is set, it overrides the
+ * chosen fetcher method with <code>format</code>.
  * @property {Object} networkOptions - Fetch options (passed directly to
  * <code>fetch()</code>), see {@link
  * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax|the
@@ -39,6 +44,7 @@ class Source {
 
         this.url = source.url;
         this.format = source.format;
+        this.fetcher = source.fetcher;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.projection = source.projection;
         this.attribution = source.attribution;

@@ -5,42 +5,22 @@ import Cache from 'Core/Scheduler/Cache';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 
 export const supportedFetchers = new Map([
-    ['image/png', Fetcher.texture],
-    ['image/jpg', Fetcher.texture],
-    ['image/jpeg', Fetcher.texture],
     ['image/x-bil;bits=32', Fetcher.textureFloat],
     ['geojson', Fetcher.json],
     ['application/json', Fetcher.json],
-    ['application/json', Fetcher.json],
     ['application/x-protobuf;type=mapbox-vector', Fetcher.arrayBuffer],
 ]);
-
-function noParsingNeeded(data) {
-    return data;
-}
 
 const supportedParsers = new Map([
     ['geojson', GeoJsonParser.parse],
     ['application/json', GeoJsonParser.parse],
     ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
-    [true, noParsingNeeded],
+    [true, data => data],
 ]);
 
 function isValidData(data, extentDestination, validFn) {
     if (data && (!validFn || validFn(data, extentDestination))) {
         return data;
-    }
-}
-
-function fetchData(url, format, networkOptions, extentSource) {
-    const fetcher = supportedFetchers.get(format);
-    if (fetcher) {
-        return fetcher(url, networkOptions).then((d) => {
-            d.coords = extentSource;
-            return d;
-        });
-    } else {
-        throw new Error('Not supported format, not found fetcher in DataSourceProvider.supportedFetchers');
     }
 }
 
@@ -68,11 +48,15 @@ const error = (err, url, source) => {
 };
 function FetchAndConvertSourceData(url, layer, extentSource, extentDestination) {
     const source = layer.source;
+    const fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
+
     // Fetch data
-    return fetchData(url, source.format, source.networkOptions, extentSource)
-        .then(fetchedData =>
-        // Parse fetched data, it parses file to itowns's object
-            parseData(fetchedData, layer, extentDestination), err => error(err, url, source))
+    return fetcher(url, source.networkOptions)
+        .then((fetchedData) => {
+            fetchedData.coords = extentSource;
+            // Parse fetched data, it parses file to itowns's object
+            return parseData(fetchedData, layer, extentDestination);
+        }, err => error(err, url, source))
         .then(parsedData =>
         // Convert parsed data, it converts itowns's object to THREE's object
             layer.convert(parsedData, extentDestination), err => error(err, url, source));
