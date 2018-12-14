@@ -16,7 +16,7 @@
         "transparent" : true,
         "featureInfoMimeType" : "",
         "dateTime"  : "",
-        "heightMapWidth" : 256,
+        "width" : 256,
         "waterMask"      : false,
         "updateStrategy": {
             "type": 0,

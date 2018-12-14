@@ -18,8 +18,10 @@ import URLBuilder from 'Provider/URLBuilder';
  * Default value is '1.3.0'.
  * @property {string} style - The style to query on the WMS server. Default
  * value is 'normal'.
- * @property {number} heightMapWidth - The size of the image to fetch, in pixel.
- * Default value is 256.
+ * @property {number} width - The width of the image to fetch, in pixel.
+ * Default value is the height if set or 256.
+ * @property {number} height - The height of the image to fetch, in pixel.
+ * Default value is the width if set or 256.
  * @property {string} axisOrder - The order of the axis, that helps building the
  * BBOX to put in the url requesting a resource. Default value is 'wsen', other
  * value can be 'swne'.
@@ -84,7 +86,15 @@ class WMSSource extends Source {
         this.zoom = source.zoom || { min: 0, max: 21 };
         this.format = this.format || 'image/png';
         this.style = source.style || '';
-        this.width = source.heightMapWidth || 256;
+
+        // TODO: remove in 2.7.0
+        if (source.heightMapWidth) {
+            console.warn('source.heightMapWidth is deprecated, please use source.width instead.');
+            source.width = source.width || source.heightMapWidth;
+        }
+
+        this.width = source.width || source.height || 256;
+        this.height = source.height || source.width || 256;
         this.version = source.version || '1.3.0';
         this.transparent = source.transparent || false;
 
@@ -109,7 +119,7 @@ class WMSSource extends Source {
             this.format}&TRANSPARENT=${
             this.transparent}&BBOX=%bbox&${
             crsPropName}=${
-            this.projection}&WIDTH=${this.width}&HEIGHT=${this.width}`;
+            this.projection}&WIDTH=${this.width}&HEIGHT=${this.height}`;
     }
 
     urlFromExtent(extent) {
