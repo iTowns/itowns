@@ -18,6 +18,9 @@ import URLBuilder from 'Provider/URLBuilder';
  * Default value is '1.0.0'.
  * @property {string} style - The style to query on the WMTS server. Default
  * value is 'normal'.
+ * @property {string} projection - The projection in which to fetch the data. If
+ * not specified, it is deduced from <code>tileMatrixSet</code>. Default value
+ * is 'EPSG:3857'.
  * @property {string} tileMatrixSet - Tile matrix set of the layer, used in the
  * generation of the url. Default value is 'WGS84'.
  * @property {Object} tileMatrixSetLimits - Limits of the tile matrix
@@ -59,7 +62,8 @@ import URLBuilder from 'Provider/URLBuilder';
 class WMTSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * WMTSSource. Only <code>url</code> and <code>name</code> are mandatory.
+     * WMTSSource and {@link Source}. Only <code>url</code> and
+     * <code>name</code> are mandatory.
      *
      * @constructor
      */

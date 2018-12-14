@@ -16,9 +16,9 @@ import Extent from 'Core/Geographic/Extent';
  * @property {boolean} isInverted - The isInverted property is to be set to the
  * correct value, true or false (default being false) if the computation of the
  * coordinates needs to be inverted to match the same scheme as OSM, Google Maps
- * or other system. See {@link
- * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/|this
- * link} for more information.
+ * or other system. See [this link]{@link
+ * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/}
+ * for more information.
  * @property {string} tileMatrixSet - Tile matrix set of the layer, used in the
  * generation of the coordinates to build the url. Default value is 'WGS84'.
  * @property {Object} zoom - Object containing the minimum and maximum values of
@@ -51,7 +51,7 @@ import Extent from 'Core/Geographic/Extent';
 class TMSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * TMSSource. Only <code>url</code> is mandatory.
+     * TMSSource and {@link Source}. Only <code>url</code> is mandatory.
      *
      * @constructor
      */

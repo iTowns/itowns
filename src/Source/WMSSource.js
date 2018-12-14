@@ -59,9 +59,9 @@ import URLBuilder from 'Provider/URLBuilder';
  */
 class WMSSource extends Source {
     /**
-     * @param {Object} source - An object that can contain all properties of a
-     * WMSSource. <code>url</code>, <code>name</code>, <code>extent</code> and
-     * <code>projection</code> are mandatory.
+     * @param {Object} source - An object that can contain all properties of
+     * WMSSource and {@link Source}. <code>url</code>, <code>name</code>,
+     * <code>extent</code> and <code>projection</code> are mandatory.
      *
      * @constructor
      */

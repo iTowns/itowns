@@ -85,7 +85,7 @@ import URLBuilder from 'Provider/URLBuilder';
 class WFSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * WFSSource. <code>url</code>, <code>typeName</code> and
+     * WFSSource and {@link Source}. <code>url</code>, <code>typeName</code> and
      * <code>projection</code> are mandatory.
      *
      * @constructor
