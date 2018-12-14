@@ -5,8 +5,8 @@ import Extent from 'Core/Geographic/Extent';
  * Sources are object containing informations on how to fetch resources, from a
  * set source.
  *
- * To extend a Source, it is necessary to implement two functions: {@link
- * Source#urlFromExtent} and {@link Source#extentInsideLimit}.
+ * To extend a Source, it is necessary to implement two functions:
+ * <code>urlFromExtent</code> and <code>extentInsideLimit</code>.
  *
  * @property {boolean} isSource - Used to checkout whether this source is a
  * Source. Default is true. You should not change this, as it is used internally

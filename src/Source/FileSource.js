@@ -107,7 +107,8 @@ function fileParser(text) {
 class FileSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * FileSource. Only <code>url</code> and <code>projection</code> are mandatory.
+     * FileSource and {@link Source}. Only <code>url</code> and
+     * <code>projection</code> are mandatory.
      * @param {string} crsOut - The projection of the output data after parsing.
      *
      * @constructor
