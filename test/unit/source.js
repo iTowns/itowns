@@ -72,6 +72,18 @@ describe('Source', function () {
         assert.ok(source.extentInsideLimit(extent));
         assert.ok(source.extentsInsideLimit([extent, extent]));
     });
+    it('Should use vendor specific parameters for the creation of the WMS url', function () {
+        paramsWMS.vendorSpecific = {
+            buffer: 4096,
+            format_options: 'dpi:300;quantizer:octree',
+            tiled: true,
+        };
+        const source = new WMSSource(paramsWMS);
+        const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const url = source.urlFromExtent(extent);
+        const end = '&buffer=4096&format_options=dpi:300;quantizer:octree&tiled=true';
+        assert.ok(url.endsWith(end));
+    });
     it('Should instance and use TMSSource', function () {
         const source = new TMSSource(paramsTMS);
         const extent = new Extent('WMTS:PM', 5, 0, 0);
