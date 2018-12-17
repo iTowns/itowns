@@ -33,6 +33,12 @@ import URLBuilder from 'Provider/URLBuilder';
  * is 0.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 21.
+ * @property {Object} vendorSpecific - An object containing vendor specific
+ * parameters. See for example a [list of these parameters for GeoServer]{@link
+ * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html}. This
+ * object is read simply with the <code>key</code> being the name of the
+ * parameter and <code>value</code> being the value of the parameter. If used,
+ * this property should be set in the constructor parameters.
  *
  * @example
  * // Create the source
@@ -120,6 +126,13 @@ class WMSSource extends Source {
             this.transparent}&BBOX=%bbox&${
             crsPropName}=${
             this.projection}&WIDTH=${this.width}&HEIGHT=${this.height}`;
+
+        this.vendorSpecific = source.vendorSpecific;
+        for (const name in this.vendorSpecific) {
+            if (Object.prototype.hasOwnProperty.call(this.vendorSpecific, name)) {
+                this.url = `${this.url}&${name}=${this.vendorSpecific[name]}`;
+            }
+        }
     }
 
     urlFromExtent(extent) {
