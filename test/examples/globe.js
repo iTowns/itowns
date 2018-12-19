@@ -26,7 +26,7 @@ describe('globe', function _() {
                 .forEach(t => (!r[t.level] ? r[t.level] = 1 : r[t.level]++));
             return r;
         });
-        assert.equal(displayedTiles['2'], 26);
+        assert.equal(displayedTiles['2'], 20);
     });
 
     it('should not add layer with id already used', async () => {

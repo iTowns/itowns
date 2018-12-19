@@ -13,7 +13,7 @@ describe('layersColorVisible', function _() {
     it('should display correct count of tiles', async () => {
         // test displayed tile
         const count = await page.evaluate(() => view.tileLayer.info.displayed.tiles.size);
-        assert.equal(count, 26);
+        assert.equal(count, 20);
     });
 
     it('should display correct color layer', async () => {
