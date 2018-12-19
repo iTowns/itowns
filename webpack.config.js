@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { patchedPath } = require('./config/threeExamples.js');
 
 const debugBuild = process.env.NODE_ENV === 'development';
 
