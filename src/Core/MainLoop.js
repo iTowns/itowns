@@ -143,6 +143,12 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
             // Filter updateSources that are relevant for the geometryLayer
             const srcs = filterChangeSources(updateSources, geometryLayer);
             if (srcs.size > 0) {
+                // pre update attached layer
+                for (const attachedLayer of geometryLayer.attachedLayers) {
+                    if (attachedLayer.ready && attachedLayer.preUpdate) {
+                        attachedLayer.preUpdate(context, srcs);
+                    }
+                }
                 // `preUpdate` returns an array of elements to update
                 const elementsToUpdate = geometryLayer.preUpdate(context, srcs);
                 // `update` is called in `updateElements`.
