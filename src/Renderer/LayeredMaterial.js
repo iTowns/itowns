@@ -86,7 +86,6 @@ function setUniformProperty(object, property, initValue) {
         set: (value) => {
             if (object.uniforms[property].value != value) {
                 object.uniforms[property].value = value;
-                object.uniformsNeedUpdate = true;
             }
         },
     });
@@ -196,7 +195,6 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         if (this.elevationLayerIds.some(id => this.getLayer(id))) {
             updateLayersUniforms(this.getUniformByType('elevation'), [this.getElevationLayer()], this.defines.NUM_VS_TEXTURES);
         }
-        this.uniformsNeedUpdate = true;
         this.layersNeedUpdate = false;
     }
 
