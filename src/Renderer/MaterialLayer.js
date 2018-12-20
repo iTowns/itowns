@@ -10,7 +10,6 @@ function defineLayerProperty(layer, property, initValue, defaultValue) {
         get: () => _value,
         set: (value) => {
             if (_value !== value) {
-                layer.material.uniformsNeedUpdate = true;
                 _value = value;
             }
         },
@@ -34,8 +33,6 @@ class MaterialLayer {
                 if (_valueOpacity !== value) {
                     if (value === 0 || _valueOpacity === 0) {
                         this.material.layersNeedUpdate = true;
-                    } else {
-                        this.material.uniformsNeedUpdate = true;
                     }
                     _valueOpacity = value;
                 }
