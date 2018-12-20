@@ -1,10 +1,12 @@
 #include <itowns/precision_qualifier>
 #include <logdepthbuf_pars_fragment>
 #include <itowns/pitUV>
-#include <itowns/fog_pars_fragment>
 #include <itowns/color_layers_pars_fragment>
+#if MODE == MODE_FINAL
+#include <itowns/fog_pars_fragment>
 #include <itowns/overlay_pars_fragment>
 #include <itowns/lighting_pars_fragment>
+#endif
 #include <itowns/mode_pars_fragment>
 
 uniform vec3        diffuse;
