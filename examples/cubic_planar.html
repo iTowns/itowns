@@ -106,18 +106,8 @@
                 parent.add(obj);
                 obj.updateMatrixWorld(true);
 
-                config = {
-                    // Since the elevation layer use color textures, specify min/max z
-                    materialOptions: {
-                        useColorTextureElevation: true,
-                        colorTextureElevationMinZ: -600,
-                        colorTextureElevationMaxZ: 400,
-                    },
-                    disableSkirt: true,
-                };
-
                 tileLayer = new itowns.PlanarLayer('planar' + wms + index,
-                    extent, obj, config);
+                    extent, obj, { disableSkirt: true });
 
                 view.addLayer(tileLayer);
 
@@ -145,6 +135,9 @@
                 });
                 var elevationLayer = new itowns.ElevationLayer('wms_elevation' + wms + index, {
                     source: elevationSource,
+                    useColorTextureElevation: true,
+                    colorTextureElevationMinZ: 37,
+                    colorTextureElevationMaxZ: 240,
                 });
                 view.addLayer(elevationLayer, tileLayer);
             }
