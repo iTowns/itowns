@@ -72,7 +72,7 @@ patchs.push(() => replace({
             return match + [...importTables[basename]].map((n) => {
                 const from = path.dirname(filesExamples.find(f => path.basename(f, '.js') === basename)).replace('.', '');
                 const to = path.dirname(filesExamples.find(f => path.basename(f, '.js') === n)).replace('.', '');
-                const relative = path.relative(`_/${from}`, `_/${to}`);
+                const relative = path.relative(`_/${from}`, `_/${to}`).replace('\\', '\/');
                 if (relative == '') {
                     return `import ${n} from './${n}';`;
                 } else {
