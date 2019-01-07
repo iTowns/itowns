@@ -18,13 +18,6 @@ class OBB extends THREE.Object3D {
         this.box3D = new THREE.Box3(min.clone(), max.clone());
         this.natBox = this.box3D.clone();
         this.z = { min: 0, max: 0 };
-        this.topPointsWorld = [
-            new THREE.Vector3(),
-            new THREE.Vector3(),
-            new THREE.Vector3(),
-            new THREE.Vector3(),
-        ];
-        this.update();
     }
 
     /**
@@ -48,26 +41,15 @@ class OBB extends THREE.Object3D {
         this.natBox.copy(cOBB.natBox);
         this.z.min = cOBB.z.min;
         this.z.max = cOBB.z.max;
-        for (let i = 0, max = this.topPointsWorld.length; i < max; i++) {
-            this.topPointsWorld[i].copy(cOBB.topPointsWorld[i]);
-        }
         return this;
     }
 
     /**
      * Update the top point world
      *
-     * @return {Array<THREE.Vector3>} the top point world
      */
     update() {
         this.updateMatrixWorld(true);
-        this.toPoints(this.topPointsWorld);
-
-        for (let i = 0, max = this.topPointsWorld.length; i < max; i++) {
-            this.topPointsWorld[i].applyMatrix4(this.matrixWorld);
-        }
-
-        return this.topPointsWorld;
     }
 
     /**
@@ -80,7 +62,6 @@ class OBB extends THREE.Object3D {
         this.z = { min, max };
         this.box3D.min.z = this.natBox.min.z + min;
         this.box3D.max.z = this.natBox.max.z + max;
-        this.update();
     }
 
     /**
@@ -95,13 +76,10 @@ class OBB extends THREE.Object3D {
         points[1].set(this.box3D.min.x, this.box3D.max.y, this.box3D.max.z);
         points[2].set(this.box3D.min.x, this.box3D.min.y, this.box3D.max.z);
         points[3].set(this.box3D.max.x, this.box3D.min.y, this.box3D.max.z);
-        // bottom points of bounding box
-        if (points.length > 4) {
-            points[4].set(this.box3D.max.x, this.box3D.max.y, this.box3D.min.z);
-            points[5].set(this.box3D.min.x, this.box3D.max.y, this.box3D.min.z);
-            points[6].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
-            points[7].set(this.box3D.max.x, this.box3D.min.y, this.box3D.min.z);
-        }
+        points[4].set(this.box3D.max.x, this.box3D.max.y, this.box3D.min.z);
+        points[5].set(this.box3D.min.x, this.box3D.max.y, this.box3D.min.z);
+        points[6].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
+        points[7].set(this.box3D.max.x, this.box3D.min.y, this.box3D.min.z);
 
         return points;
     }
@@ -160,7 +138,7 @@ class OBB extends THREE.Object3D {
         obb.updateZ(minHeight, maxHeight);
         obb.position.copy(position);
         obb.quaternion.copy(quaternion);
-        obb.update();
+        obb.updateMatrixWorld(true);
 
         // Calling geometry.dispose() is not needed since this geometry never gets rendered
         return obb;
