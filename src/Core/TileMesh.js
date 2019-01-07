@@ -37,17 +37,6 @@ class TileMesh extends THREE.Mesh {
     }
 
     /**
-     * Update the global transform of the object and its children.
-     * Update the OBB of the object.
-     *
-     * @param {Boolean} force
-     */
-    updateMatrixWorld(force) {
-        super.updateMatrixWorld(force);
-        this.obb.update();
-    }
-
-    /**
      * If specified, update the min and max elevation of the OBB
      * and updates accordingly the bounding sphere and the geometric error
      *

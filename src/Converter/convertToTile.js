@@ -9,6 +9,8 @@ import TileMesh from 'Core/TileMesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
 import Cache from 'Core/Scheduler/Cache';
 
+const dimensions = new THREE.Vector2();
+
 export default {
     convert(requester, extent, layer) {
         const builder = layer.builder;
@@ -82,6 +84,19 @@ export default {
         if (__DEBUG__) {
             tile.material.showOutline = layer.showOutline || false;
             tile.material.wireframe = layer.wireframe || false;
+        }
+
+        if (layer.isGlobeLayer) {
+            // Computes a point used for horizon culling.
+            // If the point is below the horizon,
+            // the tile is guaranteed to be below the horizon as well.
+            tile.horizonCullingPoint = tile.extent.center().as('EPSG:4978').xyz();
+            tile.extent.dimensions(dimensions).multiplyScalar(THREE.Math.DEG2RAD);
+
+            // alpha is maximum angle between two points of tile
+            const alpha = dimensions.length();
+            const h = Math.abs(1.0 / Math.cos(alpha * 0.5));
+            tile.horizonCullingPoint.setLength(h * tile.horizonCullingPoint.length());
         }
 
         return Promise.resolve(tile);

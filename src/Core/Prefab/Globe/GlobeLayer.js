@@ -12,7 +12,7 @@ const cameraPosition = new THREE.Vector3();
 let magnitudeSquared = 0.0;
 
 // vectors for operation purpose
-const cullingVector = new THREE.Vector3();
+const scaledHorizonCullingPoint = new THREE.Vector3();
 
 /**
  * @property {boolean} isGlobeLayer - Used to checkout whether this layer is a
@@ -114,23 +114,15 @@ class GlobeLayer extends TiledGeometryLayer {
             return false;
         }
 
-        const points = node.obb.topPointsWorld;
+        // see https://cesiumjs.org/2013/04/25/Horizon-culling/
+        scaledHorizonCullingPoint.copy(node.horizonCullingPoint).applyMatrix4(worldToScaledEllipsoid);
+        scaledHorizonCullingPoint.sub(cameraPosition);
 
-        for (const point of points) {
-            // see https://cesiumjs.org/2013/04/25/Horizon-culling/
-            cullingVector.copy(point);
-            cullingVector.applyMatrix4(worldToScaledEllipsoid).sub(cameraPosition);
+        const vtMagnitudeSquared = scaledHorizonCullingPoint.lengthSq();
+        const dot = -scaledHorizonCullingPoint.dot(cameraPosition);
+        const isOccluded = magnitudeSquared < 0 ? dot > 0 : magnitudeSquared < dot && magnitudeSquared < ((dot * dot) / vtMagnitudeSquared);
 
-            const vtMagnitudeSquared = cullingVector.lengthSq();
-            const dot = -cullingVector.dot(cameraPosition);
-            const isOccluded = magnitudeSquared < dot && magnitudeSquared < ((dot * dot) / vtMagnitudeSquared);
-
-            if (!isOccluded) {
-                return false;
-            }
-        }
-
-        return true;
+        return isOccluded;
     }
 
     computeTileZoomFromDistanceCamera(distance, camera) {
