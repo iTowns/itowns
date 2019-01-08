@@ -50,7 +50,7 @@ class GeometryLayer extends Layer {
      * view.addLayer(geometry);
      */
     constructor(id, object3d, config = {}) {
-        super(id, 'geometry', config);
+        super(id, config);
 
         this.isGeometryLayer = true;
 

@@ -40,7 +40,7 @@ class ElevationLayer extends Layer {
      * view.addLayer(elevation);
      */
     constructor(id, config = {}) {
-        super(id, 'elevation', config);
+        super(id, config);
         this.isElevationLayer = true;
     }
 

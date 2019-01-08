@@ -27,17 +27,17 @@ function isValidData(data, extentDestination, validFn) {
 function parseData(data, layer, extentDestination) {
     const type = data.isTexture || data.isFeature || layer.source.format;
     const options = {
-        buildExtent: layer.type !== 'geometry',
+        buildExtent: !layer.isGeometryLayer,
         crsIn: layer.source.projection,
         crsOut: layer.projection,
         // TODO FIXME: error in filtering vector tile
         // filteringExtent: extentDestination.as(layer.projection),
-        filteringExtent: layer.type === 'geometry' ? extentDestination : undefined,
+        filteringExtent: layer.isGeometryLayer ? extentDestination : undefined,
         filter: layer.filter,
         isInverted: layer.source.isInverted,
         mergeFeatures: layer.mergeFeatures === undefined ? true : layer.mergeFeatures,
-        withNormal: layer.type === 'geometry',
-        withAltitude: layer.type === 'geometry',
+        withNormal: layer.isGeometryLayer,
+        withAltitude: layer.isGeometryLayer,
     };
     return supportedParsers.get(type)(data, options);
 }

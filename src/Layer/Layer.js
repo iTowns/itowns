@@ -19,16 +19,6 @@ class Layer extends THREE.EventDispatcher {
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
-     * @param {string} type - The type of the layer, used to determine
-     * operations to do on a layer later in the rendering loop. There are three
-     * type of layers in itowns:
-     * <ul>
-     *  <li><code>color</code>, used for simple layer containing a texture</li>
-     *  <li><code>elevation</code>, used for adding an elevation to the globe or
-     *  plane the layer is attached to</li>
-     *  <li><code>geometry</code>, used for complex layer containing meshes,
-     *  like a WFS layer with extruded buildings</li>
-     * </ul>
      * @param {Object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements <code>name, protocol, extent</code>, these
@@ -37,7 +27,7 @@ class Layer extends THREE.EventDispatcher {
      *
      * @example
      * // Add and create a new Layer
-     * const newLayer = new Layer('id', 'custom', options);
+     * const newLayer = new Layer('id', options);
      * view.addLayer(newLayer);
      *
      * // Change layer's visibility
@@ -55,8 +45,15 @@ class Layer extends THREE.EventDispatcher {
      * layerToListen.addEventListener('visible-property-changed', (event) => console.log(event));
      * layerToListen.addEventListener('opacity-property-changed', (event) => console.log(event));
      */
-    constructor(id, type, config = {}) {
+    constructor(id, config = {}) {
         super();
+
+        if (typeof config == 'string') {
+            console.warn('Deprecation warning: layer.type is deprecated, use a boolean flag instead as a property of the layer');
+            this.type = config;
+            // eslint-disable-next-line
+            config = arguments[2] || {};
+        }
 
         this.isLayer = true;
 
@@ -64,11 +61,6 @@ class Layer extends THREE.EventDispatcher {
 
         Object.defineProperty(this, 'id', {
             value: id,
-            writable: false,
-        });
-
-        Object.defineProperty(this, 'type', {
-            value: type,
             writable: false,
         });
 

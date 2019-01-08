@@ -56,7 +56,7 @@ class ColorLayer extends Layer {
      * view.addLayer(color);
      */
     constructor(id, config = {}) {
-        super(id, 'color', config);
+        super(id, config);
         this.isColorLayer = true;
         this.style = config.style || {};
         this.defineLayerProperty('visible', true);

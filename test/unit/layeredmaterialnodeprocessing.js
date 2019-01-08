@@ -38,7 +38,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         extent: new Extent('EPSG:4326', 0, 0, 0, 0),
     });
 
-    const layer = new Layer('foo', 'bar', {
+    const layer = new Layer('foo', {
         source,
         info: { update: () => {} },
     });

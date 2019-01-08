@@ -52,7 +52,7 @@ function refinementCommandCancellationFn(cmd) {
     // Cancel the command if the tile already has a better texture.
     // This is only needed for elevation layers, because we may have several
     // concurrent layers but we can only use one texture.
-    if (cmd.layer.type == 'elevation' && cmd.requester.material.getElevationLayer() &&
+    if (cmd.layer.isElevationLayer && cmd.requester.material.getElevationLayer() &&
         cmd.targetLevel <= cmd.requester.material.getElevationLayer().level) {
         return true;
     }
@@ -95,7 +95,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             nodeLayer = material.addLayer(layer, tileMT);
 
             // TODO: Sequence must be returned by parent geometry layer
-            const colorLayers = context.view.getLayers(l => l.type === 'color');
+            const colorLayers = context.view.getLayers(l => l.isColorLayer);
             const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(colorLayers);
             material.setSequence(sequence);
 

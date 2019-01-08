@@ -105,7 +105,7 @@
 
             if (view.isDebugMode) {
                 menuGlobe = new GuiTools('menuDiv', view);
-                menuGlobe.addImageryLayersGUI(view.getLayers(function gui(l) { return l.type === 'color'; }));
+                menuGlobe.addImageryLayersGUI(view.getLayers(function gui(l) { return l.isColorLayer; }));
                 d = new debug.Debug(view, menuGlobe.gui);
                 debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
             }
