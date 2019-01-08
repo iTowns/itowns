@@ -31,7 +31,7 @@ describe('globe', function _() {
 
     it('should not add layer with id already used', async () => {
         const error = await page.evaluate(() => itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(view.addLayer).catch(() => true));
-        const colorLayersCount = await page.evaluate(() => view.getLayers(l => l.type === 'color').length);
+        const colorLayersCount = await page.evaluate(() => view.getLayers(l => l.isColorLayer).length);
 
         assert.ok(error && colorLayersCount === 1);
     });
@@ -39,7 +39,7 @@ describe('globe', function _() {
         const maxColorSamplerUnitsCount = await page.evaluate(
             () => itowns.getMaxColorSamplerUnitsCount(),
         );
-        const colorSamplerUnitsCount = await page.evaluate(() => view.tileLayer.countColorLayersTextures(view.getLayers(l => l.type === 'color')[0]));
+        const colorSamplerUnitsCount = await page.evaluate(() => view.tileLayer.countColorLayersTextures(view.getLayers(l => l.isColorLayer)[0]));
         const limit = maxColorSamplerUnitsCount - colorSamplerUnitsCount;
 
         // add layers just below the capacity limit

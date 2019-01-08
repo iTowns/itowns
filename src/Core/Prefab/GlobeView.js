@@ -204,11 +204,11 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
     if (!layer) {
         return new Promise((resolve, reject) => reject(new Error('layer is undefined')));
     }
-    if (layer.type == 'color') {
-        const colorLayerCount = this.getLayers(l => l.type === 'color').length;
+    if (layer.isColorLayer) {
+        const colorLayerCount = this.getLayers(l => l.isColorLayer).length;
         layer.sequence = colorLayerCount;
-    } else if (layer.type == 'elevation') {
-        if (layer.source.protocol === 'wmts' && layer.source.tileMatrixSet !== 'WGS84G') {
+    } else if (layer.isElevationLayer) {
+        if (layer.source.isWMTSSource && layer.source.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }
     }
@@ -232,11 +232,11 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
  */
 GlobeView.prototype.removeLayer = function removeLayer(layerId) {
     const layer = this.getLayers(l => l.id === layerId)[0];
-    if (layer && layer.type === 'color' && this.tileLayer.detach(layer)) {
+    if (layer && layer.isColorLayer && this.tileLayer.detach(layer)) {
         for (const root of this.tileLayer.level0Nodes) {
             root.traverse(removeLayeredMaterialNodeLayer(layerId));
         }
-        const imageryLayers = this.getLayers(l => l.type === 'color');
+        const imageryLayers = this.getLayers(l => l.isColorLayer);
         for (const color of imageryLayers) {
             if (color.sequence > layer.sequence) {
                 color.sequence--;

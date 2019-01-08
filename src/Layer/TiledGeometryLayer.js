@@ -139,9 +139,9 @@ class TiledGeometryLayer extends GeometryLayer {
         }
 
         context.colorLayers = context.view.getLayers(
-            (l, a) => a && a.id == this.id && l.type == 'color');
+            (l, a) => a && a.id == this.id && l.isColorLayer);
         context.elevationLayers = context.view.getLayers(
-            (l, a) => a && a.id == this.id && l.type == 'elevation');
+            (l, a) => a && a.id == this.id && l.isElevationLayer);
 
         context.maxElevationLevel = -1;
         for (const e of context.elevationLayers) {

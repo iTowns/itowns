@@ -219,7 +219,7 @@ function _readTextureValueAt(layer, texture, ...uv) {
         ctx.drawImage(texture.image, minx, miny, dw, dh, 0, 0, dw, dh);
         const d = ctx.getImageData(0, 0, dw, dh);
 
-        const elevationLayer = layer.attachedLayers.filter(l => l.type == 'elevation')[0];
+        const elevationLayer = layer.attachedLayers.filter(l => l.isElevationLayer)[0];
 
         const result = [];
         for (let i = 0; i < uv.length; i += 2) {

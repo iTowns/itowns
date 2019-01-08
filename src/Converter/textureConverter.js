@@ -32,9 +32,9 @@ export default {
             throw (new Error('Data type is not supported to convert into texture'));
         }
 
-        if (layer.type === 'color') {
+        if (layer.isColorLayer) {
             return textureColorLayer(texture, layer.transparent);
-        } else if (layer.type === 'elevation') {
+        } else if (layer.isElevationLayer) {
             if (texture.flipY) {
                 // DataTexture default to false, so make sure other Texture types
                 // do the same (eg image texture)

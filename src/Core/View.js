@@ -166,7 +166,7 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         }
     }
 
-    if (layer.type == 'geometry' || layer.type == 'debug') {
+    if (layer.isGeometryLayer || layer.type == 'debug') {
         if (parentLayer || layer.type == 'debug') {
             // layer.threejsLayer *must* be assigned before preprocessing,
             // because TileProvider.preprocessDataLayer function uses it.
@@ -193,7 +193,7 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
             // TODO: move to dataSourceProvider
             // Tempory fix, because sourceFile loads data in his constructor
             // while it should be loaded in the provider
-            layer.source.toTexture = layer.type != 'geometry';
+            layer.source.toTexture = !layer.isGeometryLayer;
 
             if (!layer.source.isSource) {
                 console.warn('Deprecation warning: passing a source as an object is deprecated. Instantiate the source before adding it to the layer instead.');
@@ -224,39 +224,6 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
  * the preprocessing operation is done. This promise is also returned by
  * `addLayer` allowing to chain call.
  *
- * @example
- * // Add Color Layer
- * view.addLayer({
- *      type: 'elevation',
- *      id: 'iElevation',
- * });
- *
- * // Example to add an OPENSM Layer
- * view.addLayer({
- *   type: 'color',
- *   id: 'OPENSM',
- *   fx: 2.5,
- *   source: {
- *      protocol:   'xyz',
- *      url:  'http://b.tile.openstreetmap.fr/osmfr/${z}/${x}/${y}.png',
- *      format: 'image/png',
- *       attribution : {
- *           name: 'OpenStreetMap',
- *           url: 'http://www.openstreetmap.org/',
- *       },
- *       tileMatrixSet: 'PM',
- *    },
- * });
- *
- * // Add Elevation Layer and do something once it's ready
- * var layer = view.addLayer({
- *      type: 'elevation',
- *      id: 'iElevation',
- * }).then(() => { .... });
- *
- * // One can also attach a callback to the same promise with a layer instance.
- * layer.whenReady.then(() => { ... });
- *
  * @param {LayerOptions|Layer|GeometryLayer} layer
  * @param {Layer=} parentLayer
  * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
@@ -281,8 +248,8 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         }
         layer = _preprocessLayer(this, layer, provider, parentLayer);
         if (parentLayer) {
-            if (layer.type == 'color') {
-                const layerColors = this.getLayers(l => l.type === 'color');
+            if (layer.isColorLayer) {
+                const layerColors = this.getLayers(l => l.isColorLayer);
 
                 const sumColorLayers = parentLayer.countColorLayersTextures(...layerColors, layer);
 
@@ -346,11 +313,11 @@ View.prototype.notifyChange = function notifyChange(changeSource = undefined, ne
  * // get all layers
  * view.getLayers();
  * // get all color layers
- * view.getLayers(layer => layer.type === 'color');
+ * view.getLayers(layer => layer.isColorLayer);
  * // get all elevation layers
- * view.getLayers(layer => layer.type === 'elevation');
+ * view.getLayers(layer => layer.isElevationLayer);
  * // get all geometry layers
- * view.getLayers(layer => layer.type === 'geometry');
+ * view.getLayers(layer => layer.isGeometryLayer);
  * // get one layer with id
  * view.getLayers(layer => layer.id === 'itt');
  * @param {function(Layer):boolean} filter
@@ -579,7 +546,7 @@ function layerIdToLayer(view, layerId) {
 View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...where) {
     const results = [];
     const sources = where.length == 0 ?
-        this.getLayers(l => l.type == 'geometry') :
+        this.getLayers(l => l.isGeometryLayer) :
         [...where];
     const mouse = (mouseOrEvt instanceof Event) ? this.eventToViewCoords(mouseOrEvt) : mouseOrEvt;
     radius = radius || 0;
