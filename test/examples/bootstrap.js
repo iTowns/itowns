@@ -87,12 +87,17 @@ before(async () => {
             && view.getLayers().every(layer => layer.ready), { timeout: 60000 });
     };
 
-    // Helper function: returns true when all layers are
-    // ready and rendering has been done
+    // Helper function: returns true if there are no errors on the page
+    // and when all layers are ready and rendering has been done
     global.loadExample = async (url, screenshotName) => {
         page.setViewport({ width: 400, height: 300 });
 
+        const pageErrors = [];
+        page.on('pageerror', (e) => { pageErrors.push(e); });
+
         await page.goto(url);
+
+        pageErrors.forEach((e) => { throw e; });
 
         await page.waitFor(() => typeof (view) === 'object');
 
