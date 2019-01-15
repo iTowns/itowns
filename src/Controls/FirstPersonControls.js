@@ -182,7 +182,9 @@ class FirstPersonControls extends THREE.EventDispatcher {
     // Event callback functions
     // Mouse movement handling
     onMouseDown(event) {
-        event.preventDefault();
+        // next line is commented because, when I uncomment it, key binding doesn't work any more.
+        // event.preventDefault();
+
         this._isMouseDown = true;
 
         const coords = this.view.eventToViewCoords(event);

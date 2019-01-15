@@ -17,6 +17,7 @@ export { default as PointsMaterial } from 'Renderer/PointsMaterial';
 export { default as PointCloudProcessing } from 'Process/PointCloudProcessing';
 export { default as FlyControls } from 'Controls/FlyControls';
 export { default as FirstPersonControls } from 'Controls/FirstPersonControls';
+export { default as StreetControls } from 'Controls/StreetControls';
 export { default as PlanarControls } from 'Controls/PlanarControls';
 export { CONTROL_EVENTS } from 'Controls/GlobeControls';
 export { default as Feature2Mesh } from 'Converter/Feature2Mesh';
@@ -35,6 +36,7 @@ export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
 export { default as GeometryLayer } from 'Layer/GeometryLayer';
 export { default as TiledGeometryLayer } from 'Layer/TiledGeometryLayer';
+export { default as OrientedImageLayer } from 'Layer/OrientedImageLayer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from 'Layer/LayerUpdateStrategy';
 export { default as ColorLayersOrdering } from 'Renderer/ColorLayersOrdering';
 export { default as GlobeLayer } from 'Core/Prefab/Globe/GlobeLayer';
@@ -50,6 +52,7 @@ export { default as TMSSource } from 'Source/TMSSource';
 export { default as WFSSource } from 'Source/WFSSource';
 export { default as WMSSource } from 'Source/WMSSource';
 export { default as WMTSSource } from 'Source/WMTSSource';
+export { default as OrientedImageSource } from 'Source/OrientedImageSource';
 
 // Parsers provided by default in iTowns
 // Custom parser can be implemented as wanted, as long as the main function

@@ -42,7 +42,7 @@ function GuiTools(domId, view, w) {
         this.view = view;
         view.addEventListener('layers-order-changed', (function refreshColorGui() {
             var i;
-            var colorLayers = view.getLayers(function filter(l) { return l.type === 'color'; });
+            var colorLayers = view.getLayers(function filter(l) { return l.isColorLayer; });
             for (i = 0; i < colorLayers.length; i++) {
                 this.removeLayersGUI(colorLayers[i].id);
             }
@@ -53,16 +53,16 @@ function GuiTools(domId, view, w) {
 }
 
 GuiTools.prototype.addLayerGUI = function fnAddLayerGUI(layer) {
-    if (layer.type === 'color') {
+    if (layer.isColorLayer) {
         this.addImageryLayerGUI(layer);
-    } else if (layer.type === 'elevation') {
+    } else if (layer.isElevationLayer) {
         this.addElevationLayerGUI(layer);
     }
 };
 
 GuiTools.prototype.addLayersGUI = function fnAddLayersGUI() {
-    function filterColor(l) { return l.type === 'color'; }
-    function filterElevation(l) { return l.type === 'elevation'; }
+    function filterColor(l) { return l.isColorLayer; }
+    function filterElevation(l) { return l.isElevationLayer; }
     this.addImageryLayersGUI(this.view.getLayers(filterColor));
     this.addElevationLayersGUI(this.view.getLayers(filterElevation));
     // eslint-disable-next-line no-console
