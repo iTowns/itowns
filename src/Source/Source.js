@@ -26,6 +26,40 @@ import Extent from 'Core/Geographic/Extent';
  * @property {string} attribution - The intellectual property rights for the
  * resources.
  * @property {Extent} extent - The extent of the resources.
+ * @property {function} parser - The method used to parse the resources attached
+ * to the layer. iTowns provides some parsers, visible in the
+ * <code>Parser/</code> folder. If the method is custom, it should return a
+ * <code>Promise</code> containing the parsed resource. If this property is set,
+ * it overrides the default selected parser method with
+ * <code>source.format</code>. If <code>source.format</code> is also empty, no
+ * parsing action is done.
+ * <br><br>
+ * When calling this method, two parameters are passed:
+ * <ul>
+ *  <li>the fetched data, i.e. the data to parse</li>
+ *  <li>an object containing severals properties, set when this method is
+ *  called: it is specific to each call, so the value of each property can vary
+ *  depending on the current fetched tile for example</li>
+ * </ul>
+ *
+ * The properties of the second parameter are:
+ * <ul>
+ *  <li><code>buildExtent : boolean</code> - True if the layer does not inherit
+ *  from {@link GeometryLayer}.</li>
+ *  <li><code>crsIn : string</code> - The projection of the source.</li>
+ *  <li><code>crsOut : string</code> - The projection of the layer.</li>
+ *  <li><code>filteringExtent : Extent</code> - If the layer inherits from
+ *  {@link GeometryLayer}, it is set to the extent of destination, otherwise it
+ *  is undefined.</li>
+ *  <li><code>filter : function</code> - Property of the layer.</li>
+ *  <li><code>mergeFeatures : boolean (default true)</code> - Property of the
+ *  layer, default to true.</li>
+ *  <li><code>withNormal : boolean</code> - True if the layer inherits from
+ *  {@link GeometryLayer}.</li>
+ *  <li><code>withAltitude : boolean</code> - True if the layer inherits from
+ *  {@link GeometryLayer}.</li>
+ *  <li><code>isInverted : string</code> - Property of the source.</li>
+ * </ul>
  */
 class Source {
     /**
@@ -44,6 +78,7 @@ class Source {
         this.url = source.url;
         this.format = source.format;
         this.fetcher = source.fetcher;
+        this.parser = source.parser;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.projection = source.projection;
         this.attribution = source.attribution;

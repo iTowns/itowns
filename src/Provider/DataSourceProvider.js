@@ -15,31 +15,12 @@ const supportedParsers = new Map([
     ['geojson', GeoJsonParser.parse],
     ['application/json', GeoJsonParser.parse],
     ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
-    [true, data => data],
 ]);
 
 function isValidData(data, extentDestination, validFn) {
     if (data && (!validFn || validFn(data, extentDestination))) {
         return data;
     }
-}
-
-function parseData(data, layer, extentDestination) {
-    const type = data.isTexture || data.isFeature || layer.source.format;
-    const options = {
-        buildExtent: !layer.isGeometryLayer,
-        crsIn: layer.source.projection,
-        crsOut: layer.projection,
-        // TODO FIXME: error in filtering vector tile
-        // filteringExtent: extentDestination.as(layer.projection),
-        filteringExtent: layer.isGeometryLayer ? extentDestination : undefined,
-        filter: layer.filter,
-        isInverted: layer.source.isInverted,
-        mergeFeatures: layer.mergeFeatures === undefined ? true : layer.mergeFeatures,
-        withNormal: layer.isGeometryLayer,
-        withAltitude: layer.isGeometryLayer,
-    };
-    return supportedParsers.get(type)(data, options);
 }
 
 const error = (err, url, source) => {
@@ -49,16 +30,31 @@ const error = (err, url, source) => {
 function FetchAndConvertSourceData(url, layer, extentSource, extentDestination) {
     const source = layer.source;
     const fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
+    const parser = source.parser || supportedParsers.get(source.format) || (data => data);
+
+    const parsingOptions = {
+        buildExtent: !layer.isGeometryLayer,
+        crsIn: source.projection,
+        crsOut: layer.projection,
+        // TODO FIXME: error in filtering vector tile
+        // filteringExtent: extentDestination.as(layer.projection),
+        filteringExtent: layer.isGeometryLayer ? extentDestination : undefined,
+        filter: layer.filter,
+        isInverted: source.isInverted,
+        mergeFeatures: layer.mergeFeatures === undefined ? true : layer.mergeFeatures,
+        withNormal: layer.isGeometryLayer,
+        withAltitude: layer.isGeometryLayer,
+    };
 
     // Fetch data
     return fetcher(url, source.networkOptions)
         .then((fetchedData) => {
             fetchedData.coords = extentSource;
             // Parse fetched data, it parses file to itowns's object
-            return parseData(fetchedData, layer, extentDestination);
+            return parser(fetchedData, parsingOptions);
         }, err => error(err, url, source))
         .then(parsedData =>
-        // Convert parsed data, it converts itowns's object to THREE's object
+            // Convert parsed data, it converts itowns's object to THREE's object
             layer.convert(parsedData, extentDestination), err => error(err, url, source));
 }
 
