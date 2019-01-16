@@ -51,6 +51,7 @@ class StreetControls extends FirstPersonControls {
         this.player.addEventListener('animation-frame', this.updateView.bind(this));
 
         // twos positions used by this control : current and next
+        this.previousPosition = undefined;
         this.currentPosition = undefined;
         this.nextPosition = undefined;
     }
@@ -61,6 +62,10 @@ class StreetControls extends FirstPersonControls {
 
     setNextPosition(newNextPosition) {
         this.nextPosition = newNextPosition;
+    }
+
+    setPreviousPosition(newPreviousPosition) {
+        this.previousPosition = newPreviousPosition;
     }
 
     /**
@@ -93,15 +98,33 @@ class StreetControls extends FirstPersonControls {
      * @param { THREE.Vector3 }  positionTo  Destination of the movement.
      */
     moveCameraTo(positionTo) {
+        if (!positionTo) {
+            return;
+        }
         this.positionFrom.copy(this.camera.position);
         this.positionTo = positionTo;
         this.player.play(this.animationMoveCamera);
     }
 
+    moveCameraToCurrentPosition() {
+        this.moveCameraTo(this.currentPosition);
+    }
+
     onKeyDown(e) {
         super.onKeyDown(e);
+
+        // key Z to move to next position
         if (e.keyCode == 90) {
             this.moveCameraTo(this.nextPosition);
+        }
+        // key S to move to previous position
+        if (e.keyCode == 83) {
+            this.moveCameraTo(this.previousPosition);
+        }
+        // key A to set to camera to current position looking at next position
+        if (e.keyCode == 65) {
+            this.setCameraToCurrentPosition();
+            this.view.notifyChange(this.view.camera.camera3D);
         }
     }
 
