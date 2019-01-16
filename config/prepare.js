@@ -1,5 +1,14 @@
 const chalk = require('chalk');
 
+// Verify Puppeteer configuration
+const pupSkip = process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD;
+
+if (!pupSkip) {
+    console.log(chalk.yellow(`Warning PUPPETEER_SKIP_CHROMIUM_DOWNLOAD is undefined,
+the installation'll be longer because Puppeteer'll download Chromium,
+only needed for testing. Read CODING.md for more information.\n`));
+}
+
 // Check node version to prevent error in THREE examples installation
 const nodeMajorVersion = process.versions.node.split('.')[0];
 const minNodeMajorVersion = 10;
