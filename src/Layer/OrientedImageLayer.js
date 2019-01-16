@@ -27,6 +27,7 @@ function updatePano(context, camera, layer) {
 
         // callback to indicate current pano has changed
         layer.onPanoChanged({
+            previousPanoPosition: layer.getPreviousPano() ? layer.getPreviousPano().position : undefined,
             currentPanoPosition: layer.getCurrentPano().position,
             nextPanoPosition: layer.getNextPano().position,
         });
@@ -104,7 +105,9 @@ class OrientedImageLayer extends GeometryLayer {
 
         this.background = config.background || createBackground(config.backgroundDistance);
 
-        this.object3d.add(this.background);
+        if (this.background) {
+            this.object3d.add(this.background);
+        }
 
         // currentPano is the current point, means it's the closest from the camera
         this.currentPano = undefined;
@@ -170,6 +173,11 @@ class OrientedImageLayer extends GeometryLayer {
 
     getCurrentPano() {
         return this.currentPano;
+    }
+
+    getPreviousPano() {
+        var index = (this.currentPano.index - 1) % this.panos.length;
+        return this.panos[index];
     }
 }
 
