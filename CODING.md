@@ -5,6 +5,7 @@
 ### Node.js
 
 iTowns uses NPM as the build tool. If you haven't already, install Node.js: https://nodejs.org/
+You must have Node.js 10 or superior to develop in iTowns core.
 
 ## Building
 

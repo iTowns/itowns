@@ -62,6 +62,7 @@
     "babel-plugin-minify-dead-code-elimination": "^0.5.0",
     "babel-plugin-minify-replace": "^0.5.0",
     "babel-plugin-module-resolver": "^3.1.1",
+    "chalk": "^2.4.2",
     "chart.js": "^2.7.3",
     "copyfiles": "^2.1.0",
     "cross-env": "^5.2.0",
