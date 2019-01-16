@@ -13,6 +13,7 @@
            <p>Key bindings</p>
            <ul>
              <li>Z: camera move to next panoramic</li>
+             <li>S: camera move to previous panoramic</li>
             </ul>
         </div>
         <div id="viewerDiv"></div>
@@ -112,6 +113,7 @@
                     calibration: calibration,
                     projection: view.referenceCrs,
                     onPanoChanged: (e) => {
+                        view.controls.setPreviousPosition(e.previousPanoPosition);
                         view.controls.setCurrentPosition(e.currentPanoPosition);
                         view.controls.setNextPosition(e.nextPanoPosition);
                     }
