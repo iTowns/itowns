@@ -68,15 +68,19 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
                 }
 
                 if (helper && !metadata.boundingVolume.region) {
-                    // compensate B3dm orientation correction
-                    const gltfUpAxis = _3dTileslayer.asset.gltfUpAxis;
-                    helper.updateMatrix();
-                    if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
-                        helper.matrix.premultiply(invMatrixChangeUpVectorZtoY);
-                    } else if (gltfUpAxis === 'X') {
-                        helper.matrix.premultiply(invMatrixChangeUpVectorZtoX);
+                    // In 3D Tiles 1.0, gltfUpAxis has been deprecated and
+                    // bounding boxes are z-up
+                    if (layer.parent.asset.version !== '1.0') {
+                        // compensate B3dm orientation correction
+                        const gltfUpAxis = _3dTileslayer.asset.gltfUpAxis;
+                        helper.updateMatrix();
+                        if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
+                            helper.matrix.premultiply(invMatrixChangeUpVectorZtoY);
+                        } else if (gltfUpAxis === 'X') {
+                            helper.matrix.premultiply(invMatrixChangeUpVectorZtoX);
+                        }
+                        helper.applyMatrix(new THREE.Matrix4());
                     }
-                    helper.applyMatrix(new THREE.Matrix4());
 
                     node.add(helper);
                     helper.updateMatrixWorld();
