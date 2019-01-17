@@ -1,8 +1,8 @@
-function pointIsOverLine(point, linePoints, epsilon, offset, count) {
+function pointIsOverLine(point, linePoints, epsilon, offset, count, size) {
     const x0 = point._values[0];
     const y0 = point._values[1];
     // for each segment of the line (j is i -1)
-    for (var i = offset + 2, j = offset; i < offset + count; j = i, i += 2) {
+    for (var i = offset + size, j = offset; i < offset + count; j = i, i += size) {
         /* **********************************************************
             norm     : norm of vector P1P2
             distance : distance point P0 to line P1P2
@@ -46,12 +46,12 @@ function pointIsOverLine(point, linePoints, epsilon, offset, count) {
     return false;
 }
 
-function getClosestPoint(point, points, epsilon, offset, count) {
+function getClosestPoint(point, points, epsilon, offset, count, size) {
     const x0 = point._values[0];
     const y0 = point._values[1];
     let squaredEpsilon = epsilon * epsilon;
     let closestPoint;
-    for (var i = offset; i < offset + count; i += 2) {
+    for (var i = offset; i < offset + count; i += size) {
         const x1 = points[i];
         const y1 = points[i + 1];
         const xP = x0 - x1;
@@ -65,7 +65,7 @@ function getClosestPoint(point, points, epsilon, offset, count) {
     return closestPoint;
 }
 
-function pointIsInsidePolygon(point, polygonPoints, offset, count) {
+function pointIsInsidePolygon(point, polygonPoints, offset, count, size) {
     // ray-casting algorithm based on
     // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 
@@ -76,7 +76,7 @@ function pointIsInsidePolygon(point, polygonPoints, offset, count) {
     // in first j is last point of polygon
     // for each segment of the polygon (j is i -1)
     // debugger;
-    for (let i = offset, j = offset + count - 2; i < offset + count; j = i, i += 2) {
+    for (let i = offset, j = offset + count - size; i < offset + count; j = i, i += size) {
         const xi = polygonPoints[i];
         const yi = polygonPoints[i + 1];
         const xj = polygonPoints[j];
@@ -93,14 +93,13 @@ function pointIsInsidePolygon(point, polygonPoints, offset, count) {
     return inside;
 }
 
-function isFeatureSingleGeometryUnderCoordinate(coordinate, type, coordinates, epsilon, offset, count) {
-    if ((type == 'linestring' || type == 'multilinestring') && pointIsOverLine(coordinate, coordinates, epsilon, offset, count)) {
+function isFeatureSingleGeometryUnderCoordinate(coordinate, type, coordinates, epsilon, offset, count, size) {
+    if ((type == 'linestring' || type == 'multilinestring') && pointIsOverLine(coordinate, coordinates, epsilon, offset, count, size)) {
         return true;
-    } else if ((type == 'polygon' || type == 'multipolygon') && pointIsInsidePolygon(coordinate, coordinates, offset, count)) {
+    } else if ((type == 'polygon' || type == 'multipolygon') && pointIsInsidePolygon(coordinate, coordinates, offset, count, size)) {
         return true;
     } else if (type == 'point' || type == 'multipoint') {
-        // debugger;
-        const closestPoint = getClosestPoint(coordinate, coordinates, epsilon, offset, count);
+        const closestPoint = getClosestPoint(coordinate, coordinates, epsilon, offset, count, size);
         if (closestPoint) {
             return { coordinates: closestPoint };
         }
@@ -111,9 +110,9 @@ function isFeatureUnderCoordinate(coordinate, feature, epsilon, result) {
     const featCoord = coordinate.as(feature.crs);
     for (const geometry of feature.geometry) {
         if (geometry.extent == undefined || geometry.extent.isPointInside(featCoord, epsilon)) {
-            const offset = geometry.indices[0].offset * 2;
-            const count = geometry.indices[0].count * 2;
-            const under = isFeatureSingleGeometryUnderCoordinate(featCoord, feature.type, feature.vertices, epsilon, offset, count);
+            const offset = geometry.indices[0].offset * feature.size;
+            const count = geometry.indices[0].count * feature.size;
+            const under = isFeatureSingleGeometryUnderCoordinate(featCoord, feature.type, feature.vertices, epsilon, offset, count, feature.size);
             if (under) {
                 result.push({
                     type: feature.type,
