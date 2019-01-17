@@ -2,7 +2,7 @@
 // eslint-disable-next-line no-unused-vars
 function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
     var mouseDown = 0;
-    var layers = viewer.getLayers(function _(l) { return l.source && l.source.protocol === 'file'; });
+    var layers = viewer.getLayers(function _(l) { return l.source && l.source.isFileSource; });
 
     document.body.onmousedown = function onmousedown() {
         ++mouseDown;
