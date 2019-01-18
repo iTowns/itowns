@@ -234,6 +234,10 @@ class TiledGeometryLayer extends GeometryLayer {
                     node.material.fogDistance = context.view.fogDistance;
                 }
 
+                if (context.horizon != undefined) {
+                    node.material.horizonDistance = context.horizon;
+                }
+
                 if (!requestChildrenUpdate) {
                     return ObjectRemovalHelper.removeChildren(this, node);
                 }

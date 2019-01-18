@@ -11,6 +11,7 @@
 
 uniform vec3        diffuse;
 uniform float       opacity;
+uniform float       horizonDistance;
 varying vec3        vUv; // WGS84.x/PM.x, WGS84.y, PM.y
 
 void main() {
@@ -51,6 +52,10 @@ void main() {
     #include <itowns/fog_fragment>
     #include <itowns/lighting_fragment>
     #include <itowns/overlay_fragment>
+
+    // if (fogDepth > horizonDistance && fogDepth < (horizonDistance + 20000.0)) {
+    //     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    // }
 
 #endif
 }
