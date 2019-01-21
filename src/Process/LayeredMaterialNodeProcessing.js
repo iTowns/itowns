@@ -339,7 +339,10 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
                     elevation.min = layer.colorTextureElevationMinZ;
                     elevation.max = layer.colorTextureElevationMaxZ;
                 } else {
-                    const { min, max } = computeMinMaxElevation(elevation.texture.image.data);
+                    const { min, max } = computeMinMaxElevation(elevation.texture.image.data,
+                        SIZE_TEXTURE_TILE,
+                        SIZE_TEXTURE_TILE,
+                        elevation.pitch);
                     elevation.min = !min ? 0 : min;
                     elevation.max = !max ? 0 : max;
                 }
