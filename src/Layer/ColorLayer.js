@@ -63,7 +63,7 @@ class ColorLayer extends Layer {
         this.defineLayerProperty('opacity', 1.0);
         this.defineLayerProperty('sequence', 0);
         this.transparent = config.transparent || (this.opacity < 1.0);
-        this.noTextureParentOutsideLimit = config.source ? config.source.protocol == 'file' : false;
+        this.noTextureParentOutsideLimit = config.source ? config.source.isFileSource : false;
     }
 
     update(context, layer, node, parent) {
