@@ -23,7 +23,7 @@ function wrapTo180(angle) {
 }
 
 function tileLayer(view) {
-    return view.getLayers(l => l.protocol == 'tile')[0];
+    return view.getLayers(l => l.isTiledGeometryLayer)[0];
 }
 
 function getLookAtFromMath(view, camera) {
