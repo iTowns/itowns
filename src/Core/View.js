@@ -95,8 +95,8 @@ function View(crs, viewerDiv, options = {}) {
     window.addEventListener('resize', () => {
         // If the user gave us a container (<div>) then itowns' size is
         // the container's size. Otherwise we use window' size.
-        const newSize = new THREE.Vector2(viewerDiv.clientWidth, viewerDiv.clientHeight);
-        this.mainLoop.gfxEngine.onWindowResize(newSize.x, newSize.y);
+        this.mainLoop.gfxEngine.onWindowResize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+        this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
         this.notifyChange(this.camera.camera3D);
     }, false);
 
@@ -118,6 +118,8 @@ function View(crs, viewerDiv, options = {}) {
             this.removeFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
         }
     };
+
+    this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
 }
 
 View.prototype = Object.create(THREE.EventDispatcher.prototype);

@@ -194,6 +194,9 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED });
     };
 
+    // GlobeView needs this.camera.resize to set perpsective matrix camera
+    this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+
     this.addEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
 }
 

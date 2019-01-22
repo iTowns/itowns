@@ -14,33 +14,32 @@ function Camera(crs, width, height, options = {}) {
     this._viewMatrix = new THREE.Matrix4();
     this.width = width;
     this.height = height;
+    this.resize(width, height);
 
     this._preSSE = Infinity;
 }
 
-function resize(camera, width, height) {
-    camera.width = width;
-    camera.height = height;
+Camera.prototype.resize = function resize(width, height) {
+    this.width = width;
+    this.height = height;
     const ratio = width / height;
 
-    if (camera.camera3D.aspect !== ratio) {
-        camera.camera3D.aspect = ratio;
-        if (camera.camera3D.isOrthographicCamera) {
-            const halfH = (camera.camera3D.right - camera.camera3D.left) * 0.5 / ratio;
-            const y = (camera.camera3D.top + camera.camera3D.bottom) * 0.5;
-            camera.camera3D.top = y + halfH;
-            camera.camera3D.bottom = y - halfH;
+    if (this.camera3D.aspect !== ratio) {
+        this.camera3D.aspect = ratio;
+        if (this.camera3D.isOrthographicCamera) {
+            const halfH = (this.camera3D.right - this.camera3D.left) * 0.5 / ratio;
+            const y = (this.camera3D.top + this.camera3D.bottom) * 0.5;
+            this.camera3D.top = y + halfH;
+            this.camera3D.bottom = y - halfH;
         }
     }
 
-    if (camera.camera3D.updateProjectionMatrix) {
-        camera.camera3D.updateProjectionMatrix();
+    if (this.camera3D.updateProjectionMatrix) {
+        this.camera3D.updateProjectionMatrix();
     }
-}
+};
 
-Camera.prototype.update = function update(width, height) {
-    resize(this, width, height);
-
+Camera.prototype.update = function update() {
     // update matrix
     this.camera3D.updateMatrixWorld();
 
