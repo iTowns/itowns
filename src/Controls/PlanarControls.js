@@ -330,7 +330,8 @@ function PlanarControls(view, options = {}) {
     this.initiateRotation = function initiateRotation() {
         this.state = STATE.ROTATE;
 
-        centerPoint.copy(this.getWorldPointAtScreenXY({ x: 0.5 * this.domElement.clientWidth, y: 0.5 * this.domElement.clientHeight }));
+
+        centerPoint.copy(this.getWorldPointAtScreenXY({ x: 0.5 * this.view.mainLoop.gfxEngine.width, y: 0.5 * this.view.mainLoop.gfxEngine.height }));
 
         const r = this.camera.position.distanceTo(centerPoint);
         phi = Math.acos((this.camera.position.z - centerPoint.z) / r);
@@ -353,8 +354,8 @@ function PlanarControls(view, options = {}) {
         return () => {
             // angle deltas
             // deltaMousePosition is computed in onMouseMove / onMouseDown s
-            const thetaDelta = -this.rotateSpeed * deltaMousePosition.x / this.domElement.clientWidth;
-            const phiDelta = -this.rotateSpeed * deltaMousePosition.y / this.domElement.clientHeight;
+            const thetaDelta = -this.rotateSpeed * deltaMousePosition.x / this.view.mainLoop.gfxEngine.width;
+            const phiDelta = -this.rotateSpeed * deltaMousePosition.y / this.view.mainLoop.gfxEngine.height;
 
             // the vector from centerPoint (focus point) to camera position
             const offset = this.camera.position.clone().sub(centerPoint);
@@ -612,7 +613,7 @@ function PlanarControls(view, options = {}) {
         const targetQuat = new THREE.Quaternion();
 
         // the top view position is above the camera focus point, at an altitude = distanceToPoint
-        topViewPos.copy(this.getWorldPointAtScreenXY({ x: 0.5 * this.domElement.clientWidth, y: 0.5 * this.domElement.clientHeight }));
+        topViewPos.copy(this.getWorldPointAtScreenXY({ x: 0.5 * this.view.mainLoop.gfxEngine.width, y: 0.5 * this.view.mainLoop.gfxEngine.height }));
         topViewPos.z += Math.min(this.maxAltitude, this.camera.position.distanceTo(topViewPos));
 
         targetQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0);
@@ -644,7 +645,7 @@ function PlanarControls(view, options = {}) {
     this.getWorldPointFromMathPlaneAtScreenXY = (() => {
         const vector = new THREE.Vector3();
         return (posXY, altitude) => {
-            vector.set((posXY.x / this.domElement.clientWidth) * 2 - 1, -(posXY.y / this.domElement.clientHeight) * 2 + 1, 0.5);
+            vector.set((posXY.x / this.view.mainLoop.gfxEngine.width) * 2 - 1, -(posXY.y / this.view.mainLoop.gfxEngine.height) * 2 + 1, 0.5);
             vector.unproject(this.camera);
             // dir = direction toward the point on the plane
             const dir = vector.sub(this.camera.position).normalize();
