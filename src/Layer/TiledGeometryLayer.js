@@ -396,6 +396,10 @@ class TiledGeometryLayer extends GeometryLayer {
             0.0,
             context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
 
+        if (context.horizon && distance > context.horizon) {
+            return false;
+        }
+
         // Size projection on pixel of bounding
         node.screenSize = context.camera._preSSE * (2 * node.boundingSphere.radius * subdivisionVector.x) / distance;
 
