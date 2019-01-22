@@ -58,6 +58,7 @@ function Camera(crs, width, height, options = {}) {
     this._viewMatrix = new THREE.Matrix4();
     this.width = width;
     this.height = height;
+    this._viewMatrixNeedsUpdate = true;
     this.resize(width, height);
 
     this._preSSE = Infinity;
@@ -93,15 +94,14 @@ Camera.prototype.resize = function resize(width, height) {
 
     if (this.camera3D.updateProjectionMatrix) {
         this.camera3D.updateProjectionMatrix();
+        this._viewMatrixNeedsUpdate = true;
     }
 };
 
 Camera.prototype.update = function update() {
     // update matrix
     this.camera3D.updateMatrixWorld();
-
-    // keep our visibility testing matrix ready
-    this._viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
+    this._viewMatrixNeedsUpdate = true;
 };
 
 /**
@@ -180,6 +180,11 @@ Camera.prototype.isBox3Visible = function isBox3Visible(box3, matrixWorld) {
 };
 
 Camera.prototype.isSphereVisible = function isSphereVisible(sphere, matrixWorld) {
+    if (this._viewMatrixNeedsUpdate) {
+        // update visibility testing matrix
+        this._viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
+        this._viewMatrixNeedsUpdate = false;
+    }
     if (matrixWorld) {
         tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
         tmp.frustum.setFromMatrix(tmp.matrix);
