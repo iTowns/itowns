@@ -6,46 +6,7 @@ import * as THREE from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import DEMUtils from 'Utils/DEMUtils';
 
-function Camera(crs, width, height, options = {}) {
-    Object.defineProperty(this, 'crs', { get: () => crs });
-
-    this.camera3D = options.camera ? options.camera : new THREE.PerspectiveCamera(30, width / height);
-
-    this._viewMatrix = new THREE.Matrix4();
-    this.width = width;
-    this.height = height;
-    this.resize(width, height);
-
-    this._preSSE = Infinity;
-}
-
-Camera.prototype.resize = function resize(width, height) {
-    this.width = width;
-    this.height = height;
-    const ratio = width / height;
-
-    if (this.camera3D.aspect !== ratio) {
-        this.camera3D.aspect = ratio;
-        if (this.camera3D.isOrthographicCamera) {
-            const halfH = (this.camera3D.right - this.camera3D.left) * 0.5 / ratio;
-            const y = (this.camera3D.top + this.camera3D.bottom) * 0.5;
-            this.camera3D.top = y + halfH;
-            this.camera3D.bottom = y - halfH;
-        }
-    }
-
-    if (this.camera3D.updateProjectionMatrix) {
-        this.camera3D.updateProjectionMatrix();
-    }
-};
-
-Camera.prototype.update = function update() {
-    // update matrix
-    this.camera3D.updateMatrixWorld();
-
-    // keep our visibility testing matrix ready
-    this._viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
-
+function updatePreSse(camera, height, fov) {
     // sse = projected geometric error on screen plane from distance
     // We're using an approximation, assuming that the geometric error of all
     // objects is perpendicular to the camera view vector (= we always compute
@@ -68,8 +29,8 @@ Camera.prototype.update = function update() {
     //
     // We pre-compute the preSSE (= constant part of the screen space error formula) once here
 
-    const verticalFOV = THREE.Math.degToRad(this.camera3D.fov);
-    const verticalPreSSE = this.height / (2.0 * Math.tan(verticalFOV * 0.5));
+    const verticalFOV = THREE.Math.degToRad(fov);
+    const verticalPreSSE = height / (2.0 * Math.tan(verticalFOV * 0.5));
 
     // Note: the preSSE for the horizontal FOV is the same value
     // focale = (this.height * 0.5) / Math.tan(verticalFOV * 0.5);
@@ -86,9 +47,62 @@ Camera.prototype.update = function update() {
     // horizontalPreSSE = this.width / (2.0 * Math.tan(verticalFOV * 0.5) * this.width / this.height)
     //                  = this.height / 2.0 * Math.tan(verticalFOV * 0.5)
     //                  = verticalPreSSE
-    this._preSSE = verticalPreSSE;
+    camera._preSSE = verticalPreSSE;
+}
+
+function Camera(crs, width, height, options = {}) {
+    Object.defineProperty(this, 'crs', { get: () => crs });
+
+    this.camera3D = options.camera ? options.camera : new THREE.PerspectiveCamera(30, width / height);
+
+    this._viewMatrix = new THREE.Matrix4();
+    this.width = width;
+    this.height = height;
+    this.resize(width, height);
+
+    this._preSSE = Infinity;
+
+    if (this.camera3D.isPerspectiveCamera) {
+        let fov = this.camera3D.fov;
+        Object.defineProperty(this.camera3D, 'fov', {
+            get: () => fov,
+            set: (newFov) => {
+                fov = newFov;
+                updatePreSse(this, this.height, fov);
+            },
+        });
+    }
+}
+
+Camera.prototype.resize = function resize(width, height) {
+    this.width = width;
+    this.height = height;
+
+    const ratio = width / height;
+    updatePreSse(this, this.height, this.camera3D.fov);
+
+    if (this.camera3D.aspect !== ratio) {
+        this.camera3D.aspect = ratio;
+        if (this.camera3D.isOrthographicCamera) {
+            const halfH = (this.camera3D.right - this.camera3D.left) * 0.5 / ratio;
+            const y = (this.camera3D.top + this.camera3D.bottom) * 0.5;
+            this.camera3D.top = y + halfH;
+            this.camera3D.bottom = y - halfH;
+        }
+    }
+
+    if (this.camera3D.updateProjectionMatrix) {
+        this.camera3D.updateProjectionMatrix();
+    }
 };
 
+Camera.prototype.update = function update() {
+    // update matrix
+    this.camera3D.updateMatrixWorld();
+
+    // keep our visibility testing matrix ready
+    this._viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
+};
 
 /**
  * Return the position in the requested CRS, or in camera's CRS if undefined.
