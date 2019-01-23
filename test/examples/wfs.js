@@ -15,4 +15,10 @@ describe('wfs', function _() {
         const buildingId = await page.evaluate(() => picking({ x: 342, y: 243 }));
         assert.equal(buildingId.id, 'bati_indifferencie.5751442');
     });
+    it('should remove GeometryLayer', async () => {
+        const countGeometryLayerStart = await page.evaluate(() => view.getLayers(l => l.isGeometryLayer).length);
+        await page.evaluate(() => view.removeLayer('lyon_tcl_bus'));
+        const countGeometryLayerEnd = await page.evaluate(() => view.getLayers(l => l.isGeometryLayer).length);
+        assert.ok(countGeometryLayerStart - countGeometryLayerEnd === 1);
+    });
 });

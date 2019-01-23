@@ -9,4 +9,10 @@ describe('globe_wfs_extruded', function _() {
     it('should run', async () => {
         assert.ok(result);
     });
+    it('should remove GeometryLayer', async () => {
+        const countGeometryLayerStart = await page.evaluate(() => view.getLayers(l => l.isGeometryLayer).length);
+        await page.evaluate(() => view.removeLayer('WFS Bus lines'));
+        const countGeometryLayerEnd = await page.evaluate(() => view.getLayers(l => l.isGeometryLayer).length);
+        assert.ok(countGeometryLayerStart - countGeometryLayerEnd === 1);
+    });
 });

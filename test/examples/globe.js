@@ -65,4 +65,16 @@ describe('globe', function _() {
         assert.ok(underLimit);
         assert.ok(errorOverLimit);
     });
+    it('should remove color Layer', async () => {
+        const colorLayersCountStart = await page.evaluate(() => view.getLayers(l => l.isColorLayer).length);
+        await page.evaluate(() => view.removeLayer('Ortho'));
+        const colorLayersCountEnd = await page.evaluate(() => view.getLayers(l => l.isColorLayer).length);
+        assert.ok(colorLayersCountStart - colorLayersCountEnd === 1);
+    });
+    it('should remove elevation Layers', async () => {
+        await page.evaluate(() => view.removeLayer('MNT_WORLD_SRTM3'));
+        await page.evaluate(() => view.removeLayer('IGN_MNT_HIGHRES'));
+        const elevationLayersCount = await page.evaluate(() => view.getLayers(l => l.isElevationLayer).length);
+        assert.ok(elevationLayersCount === 0);
+    });
 });

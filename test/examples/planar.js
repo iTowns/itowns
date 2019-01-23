@@ -52,4 +52,17 @@ describe('planar', function _() {
         const diffRange = Math.abs(theoricalRange - result.depthMethod);
         assert.ok(diffRange < 2);
     });
+
+    it('should remove color Layer', async () => {
+        const colorLayersCountStart = await page.evaluate(() => view.getLayers(l => l.isColorLayer).length);
+        await page.evaluate(() => view.removeLayer('wms_imagery'));
+        const colorLayersCountEnd = await page.evaluate(() => view.getLayers(l => l.isColorLayer).length);
+        assert.ok(colorLayersCountStart - colorLayersCountEnd === 1);
+    });
+
+    it('should remove elevation Layers', async () => {
+        await page.evaluate(() => view.removeLayer('wms_elevation'));
+        const elevationLayersCount = await page.evaluate(() => view.getLayers(l => l.isElevationLayer).length);
+        assert.ok(elevationLayersCount === 0);
+    });
 });
