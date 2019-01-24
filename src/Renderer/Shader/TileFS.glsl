@@ -53,6 +53,12 @@ void main() {
     #include <itowns/lighting_fragment>
     #include <itowns/overlay_fragment>
 
+    float a = horizonDistance / ( 800.0 * 6378137.0);
+    float factor = 10.0 / (1.0 + exp(-a*(fogDepth - horizonDistance)));
+
+    gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0, 0.0, 0.0), factor);
+
+
     // if (fogDepth > horizonDistance && fogDepth < (horizonDistance + 20000.0)) {
     //     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
     // }

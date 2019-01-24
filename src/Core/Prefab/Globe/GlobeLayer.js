@@ -97,7 +97,8 @@ class GlobeLayer extends TiledGeometryLayer {
         const distanceToHorizon = (distanceToCenter ** 2 - ellipsoidSizes.x ** 2) ** 0.5;
         const distanceToGround = Math.max(distanceToCenter - ellipsoidSizes.x, 0);
         const factor = Math.min(distanceToGround / ellipsoidSizes.x, 1.0) ** 0.25;
-        context.horizon = distanceToHorizon - (distanceToHorizon - distanceToGround) * 0.75 * (1 - factor);
+        // context.horizon = distanceToHorizon - (distanceToHorizon - distanceToGround) * 0.75 * (1 - factor);
+        context.horizon = distanceToHorizon - (distanceToHorizon - distanceToGround) * 0.2 * (1 - factor);
 
         return super.preUpdate(context, changeSources);
     }
