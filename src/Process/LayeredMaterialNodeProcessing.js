@@ -254,12 +254,17 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         // extract min-max from the texture (too few information), we instead chose
         // to use parent's min-max.
         const useMinMaxFromParent = extentsDestination[0].zoom - nodeLayer.zoom > 6;
-        if (nodeLayer.textures[0] && !useMinMaxFromParent) {
-            const { min, max } =  computeMinMaxElevation(
-                nodeLayer.textures[0].image.data,
-                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-                nodeLayer.offsetScales[0]);
-            node.setBBoxZ(min, max);
+        if (nodeLayer.textures[0]) {
+            if (!useMinMaxFromParent) {
+                const { min, max } =  computeMinMaxElevation(
+                    nodeLayer.textures[0].image.data,
+                    SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+                    nodeLayer.offsetScales[0]);
+                node.setBBoxZ(min, max);
+            } else {
+                // TODO: to verify we don't pass here,
+                // To follow issue, see #1011 https://github.com/iTowns/itowns/issues/1011
+            }
         }
 
         if (nodeLayer.level >= layer.source.zoom.min) {
