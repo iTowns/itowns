@@ -15,7 +15,7 @@ It can connect to WMS/WMTS/TMS servers including elevation data and load many di
 
 ## API documentation and examples
 
-**[API Documentation](http://www.itowns-project.org/itowns/API_Doc/)**
+**[API Documentation](http://www.itowns-project.org/itowns/docs/)**
 
 
 **Examples**
