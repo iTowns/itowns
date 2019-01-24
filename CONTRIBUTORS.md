@@ -25,6 +25,9 @@ The following people have contributed to iTowns 2.
   * [Marie Lamure](https://github.com/mlamure)
   * [Vincent Jaillot](https://github.com/jailln)
 
+* [virtualcitySYSTEMS](https://www.virtualcitysystems.de/)
+  * [Ben Kuster](https://github.com/bkuster)
+  
 The following organizations supported iTowns2 :
 * IGN ( http://www.ign.fr )
 * Oslandia ( http://www.oslandia.com )
