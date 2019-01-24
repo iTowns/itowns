@@ -36,11 +36,9 @@ const tmpBox3 = new THREE.Box3();
 const tmpSphere = new THREE.Sphere();
 function boundingVolumeToExtent(crs, volume, transform) {
     if (volume.region) {
-        return new Extent('EPSG:4326',
-            THREE.Math.radToDeg(volume.region[0]),
-            THREE.Math.radToDeg(volume.region[2]),
-            THREE.Math.radToDeg(volume.region[1]),
-            THREE.Math.radToDeg(volume.region[3]));
+        const box = tmpBox3.copy(volume.region.box3D)
+            .applyMatrix4(volume.region.matrixWorld);
+        return Extent.fromBox3(crs, box);
     } else if (volume.box) {
         const box = tmpBox3.copy(volume.box).applyMatrix4(transform);
         return Extent.fromBox3(crs, box);
