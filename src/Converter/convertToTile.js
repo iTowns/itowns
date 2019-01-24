@@ -52,7 +52,7 @@ export default {
         // TODO semble ne pas etre necessaire
         tile.layers.set(layer.threejsLayer);
 
-        if (parent && parent instanceof TileMesh) {
+        if (parent && parent.isTileMesh) {
             // get parent extent transformation
             const pTrans = builder.computeSharableExtent(parent.extent);
             // place relative to his parent

@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import TileMesh from 'Core/TileMesh';
 import RenderMode from 'Renderer/RenderMode';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 
@@ -120,7 +119,7 @@ export default {
         const _ids = screenCoordsToNodeId(_view, layer, viewCoords, radius);
 
         const extractResult = (node) => {
-            if (_ids.includes(node.id) && node instanceof TileMesh) {
+            if (_ids.includes(node.id) && node.isTileMesh) {
                 results.push({
                     object: node,
                     layer,
