@@ -34,6 +34,7 @@ class TileMesh extends THREE.Mesh {
         this.rotationAutoUpdate = false;
 
         this.layerUpdateState = {};
+        this.isTileMesh = true;
     }
 
     /**
