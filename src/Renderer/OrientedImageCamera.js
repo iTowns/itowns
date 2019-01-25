@@ -15,7 +15,7 @@ class OrientedImageCamera extends THREE.PerspectiveCamera {
      * @param {number} skew - shear transform parameter (default: 0)
      * @param {number} aspect - aspect ratio of the camera (default: size.x/size.y).
      */
-    constructor(size = 1024, focal = 1024, center, near = 0.1, far = 1000, skew, aspect) {
+    constructor(size = 1024, focal = 1024, center, near = 0.1, far = 10000, skew, aspect) {
         size = size.isVector2 ? size : new THREE.Vector2(size, size);
         aspect = aspect || size.x / size.y;
         super(undefined, aspect, near, far);
