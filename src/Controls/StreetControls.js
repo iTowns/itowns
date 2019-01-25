@@ -54,6 +54,13 @@ class StreetControls extends FirstPersonControls {
         this.previousPosition = undefined;
         this.currentPosition = undefined;
         this.nextPosition = undefined;
+
+        // store key binding to go to next position, default to Z
+        this.keyGoToNextPosition = 90;
+        // store key binding to go to previous position, default to S
+        this.keyGoToPreviousPosition = 83;
+        // store key binding to set camera to current position, default to A
+        this.keySetCameraToCurrentPosition = 65;
     }
 
     setCurrentPosition(newCurrentPosition) {
@@ -113,16 +120,16 @@ class StreetControls extends FirstPersonControls {
     onKeyDown(e) {
         super.onKeyDown(e);
 
-        // key Z to move to next position
-        if (e.keyCode == 90) {
+        // key to move to next position (default to Z)
+        if (e.keyCode == this.keyGoToNextPosition) {
             this.moveCameraTo(this.nextPosition);
         }
-        // key S to move to previous position
-        if (e.keyCode == 83) {
+        // key to move to previous position (default to S)
+        if (e.keyCode == this.keyGoToPreviousPosition) {
             this.moveCameraTo(this.previousPosition);
         }
-        // key A to set to camera to current position looking at next position
-        if (e.keyCode == 65) {
+        // key to set to camera to current position looking at next position (default to A)
+        if (e.keyCode == this.keySetCameraToCurrentPosition) {
             this.setCameraToCurrentPosition();
             this.view.notifyChange(this.view.camera.camera3D);
         }
