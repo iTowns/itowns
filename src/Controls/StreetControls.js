@@ -20,7 +20,12 @@ function moveCameraExp(root, progress) {
  * </ul>
  * <ul> Bindings added
  * <li><b> keys Z : </b> Move camera to the next position </li>
+ * <li><b> keys S : </b> Move camera to the previous position </li>
+ * <li><b> keys A : </b> Set camera to current position </li>
  * </ul>
+ * @property {number} keyGoToNextPosition key code to go to next position, default to 90 for key Z
+ * @property {number} keyGoToPreviousPosition key code to go to previous position, default to 83 for key S
+ * @property {number} keySetCameraToCurrentPosition key code set camera to current position, default to 65 for key  A
  * @extends FirstPersonControls
  */
 class StreetControls extends FirstPersonControls {
@@ -55,11 +60,8 @@ class StreetControls extends FirstPersonControls {
         this.currentPosition = undefined;
         this.nextPosition = undefined;
 
-        // store key binding to go to next position, default to Z
         this.keyGoToNextPosition = 90;
-        // store key binding to go to previous position, default to S
         this.keyGoToPreviousPosition = 83;
-        // store key binding to set camera to current position, default to A
         this.keySetCameraToCurrentPosition = 65;
     }
 
