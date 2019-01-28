@@ -9,6 +9,7 @@ The following people have contributed to iTowns 2.
   * [Quoc Dinh Nguyen](https://github.com/qdnguyen)
   * [Grégoire Maillet](https://github.com/gmaillet)
   * [Guillaume Liégard](https://github.com/gliegard)
+  * [Adrien Berthet](https://github.com/zarov)
 
 * [Oslandia](http://www.oslandia.com)
   * [Vincent Picavet](https://github.com/vpicavet)
@@ -27,7 +28,7 @@ The following people have contributed to iTowns 2.
 
 * [virtualcitySYSTEMS](https://www.virtualcitysystems.de/)
   * [Ben Kuster](https://github.com/bkuster)
-  
+
 The following organizations supported iTowns2 :
 * IGN ( http://www.ign.fr )
 * Oslandia ( http://www.oslandia.com )
