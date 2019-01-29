@@ -4,7 +4,6 @@ import View, { VIEW_EVENTS } from 'Core/View';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
 import GlobeControls from 'Controls/GlobeControls';
-import { removeLayeredMaterialNodeLayer } from 'Process/LayeredMaterialNodeProcessing';
 
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
@@ -234,27 +233,12 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
  * @return     {boolean}
  */
 GlobeView.prototype.removeLayer = function removeLayer(layerId) {
-    const layer = this.getLayers(l => l.id === layerId)[0];
-    if (layer && layer.isColorLayer && this.tileLayer.detach(layer)) {
-        for (const root of this.tileLayer.level0Nodes) {
-            root.traverse(removeLayeredMaterialNodeLayer(layerId));
-        }
-        const imageryLayers = this.getLayers(l => l.isColorLayer);
-        for (const color of imageryLayers) {
-            if (color.sequence > layer.sequence) {
-                color.sequence--;
-            }
-        }
-
-        this.notifyChange(this.tileLayer);
+    if (View.prototype.removeLayer.call(this, layerId)) {
         this.dispatchEvent({
             type: GLOBE_VIEW_EVENTS.LAYER_REMOVED,
             layerId,
         });
-
         return true;
-    } else {
-        throw new Error(`${layerId} isn't color layer`);
     }
 };
 

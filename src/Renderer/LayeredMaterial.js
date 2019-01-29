@@ -192,8 +192,10 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         colorlayers.sort((a, b) => this.colorLayerIds.indexOf(a.id) - this.colorLayerIds.indexOf(b.id));
         updateLayersUniforms(this.getUniformByType('color'), colorlayers, this.defines.NUM_FS_TEXTURES);
 
-        if (this.elevationLayerIds.some(id => this.getLayer(id))) {
-            updateLayersUniforms(this.getUniformByType('elevation'), [this.getElevationLayer()], this.defines.NUM_VS_TEXTURES);
+        if (this.elevationLayerIds.some(id => this.getLayer(id)) ||
+            (this.uniforms.elevationTextureCount.value && !this.elevationLayerIds.length)) {
+            const elevationLayer = this.getElevationLayer() ? [this.getElevationLayer()] : [];
+            updateLayersUniforms(this.getUniformByType('elevation'), elevationLayer, this.defines.NUM_VS_TEXTURES);
         }
         this.layersNeedUpdate = false;
     }
@@ -221,6 +223,12 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         if (index > -1) {
             this.layers[index].dispose();
             this.layers.splice(index, 1);
+            const idSeq = this.colorLayerIds.indexOf(layerId);
+            if (idSeq > -1) {
+                this.colorLayerIds.splice(idSeq, 1);
+            } else {
+                this.elevationLayerIds = [];
+            }
         }
     }
 

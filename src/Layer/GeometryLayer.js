@@ -1,6 +1,26 @@
 import Layer from 'Layer/Layer';
 import Picking from 'Core/Picking';
 
+function disposeMesh(obj) {
+    if (obj.dispose) {
+        obj.dispose();
+    } else {
+        if (obj.geometry) {
+            obj.geometry.dispose();
+        }
+        if (obj.material) {
+            obj.material.dispose();
+        }
+    }
+}
+
+function traverse(obj, callback) {
+    for (const child of obj.children) {
+        traverse(child, callback);
+    }
+    callback(obj);
+}
+
 /**
  * Fires when the opacity of the layer has changed.
  * @event GeometryLayer#opacity-property-changed
@@ -155,6 +175,26 @@ class GeometryLayer extends Layer {
         this.attachedLayers = this.attachedLayers.filter(attached => attached.id != layer.id);
         layer.parent = undefined;
         return this.attachedLayers.length < count;
+    }
+
+    /**
+     * All layer's meshs are removed from scene and disposed from video device.
+     */
+    delete() {
+        // if Layer is attached
+        if (this.parent) {
+            traverse(this.parent.object3d, (obj) => {
+                if (obj.layer && obj.layer.id == this.id) {
+                    obj.parent.remove(obj);
+                    disposeMesh(obj);
+                }
+            });
+        } else {
+            if (this.object3d.parent) {
+                this.object3d.parent.remove(this.object3d);
+            }
+            this.object3d.traverse(disposeMesh);
+        }
     }
 
     /**

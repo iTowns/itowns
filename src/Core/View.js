@@ -43,6 +43,7 @@ export const VIEW_EVENTS = {
      * @property type {string} layers-initialized
      */
     LAYERS_INITIALIZED: 'layers-initialized',
+    LAYER_REMOVED: 'layer-removed',
 };
 
 /**
@@ -290,6 +291,51 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
             resolve(layer);
         });
     });
+};
+
+/**
+ * Removes a specific imagery layer from the current layer list. This removes layers inserted with attach().
+ * @example
+ * view.removeLayer('layerId');
+ * @param      {string}   layerId      The identifier
+ * @return     {boolean}
+ */
+View.prototype.removeLayer = function removeLayer(layerId) {
+    const layer = this.getLayerById(layerId);
+    if (layer) {
+        const parentLayer = layer.parent;
+
+        // Remove and dispose all nodes
+        layer.delete();
+
+        // Detach layer if it's attached
+        if (parentLayer && !parentLayer.detach(layer)) {
+            throw new Error(`Error to detach ${layerId} from ${parentLayer.id}`);
+        } else if (parentLayer == undefined) {
+            // Remove layer from viewer
+            this._layers.splice(this._layers.findIndex(l => l.id == layerId), 1);
+        }
+        if (layer.isColorLayer) {
+            // Update color layers sequence
+            const imageryLayers = this.getLayers(l => l.isColorLayer);
+            for (const color of imageryLayers) {
+                if (color.sequence > layer.sequence) {
+                    color.sequence--;
+                }
+            }
+        }
+
+        this.notifyChange(parentLayer || this.camera.camera3D, true);
+
+        this.dispatchEvent({
+            type: VIEW_EVENTS.LAYER_REMOVED,
+            layerId,
+        });
+
+        return true;
+    } else {
+        throw new Error(`${layerId} doesn't exist`);
+    }
 };
 
 /**
