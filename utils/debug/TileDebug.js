@@ -139,7 +139,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             let helper;
             if (helpers.length == 0) {
                 // add the ability to hide all the debug obj for one layer at once
-                const l = context.view.getLayers(l => l.id === layer.id)[0];
+                const l = context.view.getLayerById(layer.id);
                 const l3js = l.threejsLayer;
 
                 if (layer.id == obb_layer_id) {

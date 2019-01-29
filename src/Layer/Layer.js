@@ -31,17 +31,17 @@ class Layer extends THREE.EventDispatcher {
      * view.addLayer(newLayer);
      *
      * // Change layer's visibility
-     * const layerToChange = view.getLayers(layer => layer.id == 'idLayerToChange')[0];
+     * const layerToChange = view.getLayerById('idLayerToChange');
      * layerToChange.visible = false;
      * view.notifyChange(); // update viewer
      *
      * // Change layer's opacity
-     * const layerToChange = view.getLayers(layer => layer.id == 'idLayerToChange')[0];
+     * const layerToChange = view.getLayerById('idLayerToChange');
      * layerToChange.opacity = 0.5;
      * view.notifyChange(); // update viewer
      *
      * // Listen properties
-     * const layerToListen = view.getLayers(layer => layer.id == 'idLayerToListen')[0];
+     * const layerToListen = view.getLayerById('idLayerToListen');
      * layerToListen.addEventListener('visible-property-changed', (event) => console.log(event));
      * layerToListen.addEventListener('opacity-property-changed', (event) => console.log(event));
      */

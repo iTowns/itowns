@@ -62,7 +62,7 @@
                         }
                     });
 
-                    layers.push(view.getLayers(function (l) { return (l.id == _id); })[0]);
+                    layers.push(view.getLayerById(_id));
                     index ++;
                 }
                 view.camera.camera3D.far = 10000;
