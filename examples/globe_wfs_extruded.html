@@ -114,7 +114,7 @@
                     altitude: altitudeLine }),
                 linewidth: 5,
                 filter: acceptFeatureBus,
-                source: lyonTclBusSource 
+                source: lyonTclBusSource
             });
             view.addLayer(lyonTclBusLayer);
 
@@ -149,7 +149,7 @@
                     mesh = meshes[i];
                     if (mesh) {
                         mesh.scale.z = Math.min(
-                            1.0, mesh.scale.z + 0.02);
+                            1.0, mesh.scale.z + 0.1);
                         mesh.updateMatrixWorld(true);
                     }
                 }
@@ -178,6 +178,7 @@
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     color: colorBuildings,
+                    batchId: function (property, featureId) { return featureId; },
                     altitude: altitudeBuildings,
                     extrude: extrudeBuildings }),
                 onMeshCreated: function scaleZ(mesh) {
@@ -199,41 +200,19 @@
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
-            var binarySearch = function(array, value) {
-                var guess,
-                    min = 0,
-                    max = array.length - 1;
-
-                while(min <= max){
-                    guess = Math.floor((min + max) / 2);
-                var indices = array[guess].indices;
-                var start = indices[0].offset;
-                var end = indices[indices.length - 1].offset + indices[indices.length - 1].count;
-
-                if(start <= value && value <= end)
-                    return guess;
-                else if(value > end)
-                    min = guess + 1;
-                else
-                    max = guess - 1;
-                 }
-
-                 return -1;
-            }
-
             function picking(event) {
                 if(view.controls.isPaused()) {
                     var htmlInfo = document.getElementById('info');
                     var intersects = view.pickObjectsAt(event, 3, 'WFS Building');
                     var properties;
                     var info;
+                    var batchId;
+
                     htmlInfo.innerHTML = ' ';
 
                     if (intersects.length) {
-                        var geometry = intersects[0].object.feature.geometry;
-                        var idPt = (intersects[0].face.a) % (intersects[0].object.feature.vertices.length / 3);
-                        var id = binarySearch(geometry, idPt);
-                        properties = geometry[id].properties;
+                        batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
+                        properties = intersects[0].object.feature.geometry[batchId].properties;
 
                         Object.keys(properties).map(function (objectKey) {
                             var value = properties[objectKey];
