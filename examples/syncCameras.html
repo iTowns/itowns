@@ -99,8 +99,8 @@
                             var planarCamera = planarView.camera.camera3D;
                             var globeCamera = view.camera.camera3D;
                             var params;
-                            menuGlobe.addImageryLayersGUI(view.getLayers(function filterColor(l) { return l.type === 'color'; }));
-                            menuGlobe.addElevationLayersGUI(view.getLayers(function filterElevation(l) { return l.type === 'elevation'; }));
+                            menuGlobe.addImageryLayersGUI(view.getLayers(function filterColor(l) { return l.isColorLayer; }));
+                            menuGlobe.addElevationLayersGUI(view.getLayers(function filterElevation(l) { return l.isElevationLayer; }));
 
                             function sync() {
                                 if (overGlobe) {

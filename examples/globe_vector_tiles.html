@@ -99,7 +99,7 @@
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.type === 'color'; }));
+                    menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.isColorLayer; }));
                     itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
                 }).catch(console.error);
             });
