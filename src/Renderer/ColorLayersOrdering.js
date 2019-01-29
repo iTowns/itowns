@@ -33,7 +33,7 @@ export default {
      */
     moveLayerUp(view, layerId) {
         const imageryLayers = view.getLayers(l => l.isColorLayer);
-        const layer = view.getLayers(l => l.id === layerId)[0];
+        const layer = view.getLayerById(layerId);
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerUp(layer, imageryLayers);
@@ -59,7 +59,7 @@ export default {
      */
     moveLayerDown(view, layerId) {
         const imageryLayers = view.getLayers(l => l.isColorLayer);
-        const layer = view.getLayers(l => l.id === layerId)[0];
+        const layer = view.getLayerById(layerId);
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerDown(layer, imageryLayers);
@@ -86,7 +86,7 @@ export default {
      */
     moveLayerToIndex(view, layerId, index) {
         const imageryLayers = view.getLayers(l => l.isColorLayer);
-        const layer = view.getLayers(l => l.id === layerId)[0];
+        const layer = view.getLayerById(layerId);
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerToIndex(layer, index, imageryLayers);

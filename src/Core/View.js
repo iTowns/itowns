@@ -236,8 +236,8 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
             reject(new Error('layer is undefined'));
             return;
         }
-        const duplicate = this.getLayers((l => l.id == layer.id));
-        if (duplicate.length > 0) {
+        const duplicate = this.getLayerById(layer.id);
+        if (duplicate) {
             reject(new Error(`Invalid id '${layer.id}': id already used`));
             return;
         }
@@ -339,6 +339,21 @@ View.prototype.getLayers = function getLayers(filter) {
     }
     return result;
 };
+
+/**
+ * Gets the layer by identifier.
+ *
+ * @param {String}  layerId  The layer identifier
+ * @return {Layer}  The layer by identifier.
+ */
+
+View.prototype.getLayerById = function getLayerById(layerId) {
+    const layers = this.getLayers(l => l.id === layerId);
+    if (layers.length) {
+        return layers[0];
+    }
+};
+
 
 /**
  * @param {Layer} layer
@@ -517,14 +532,6 @@ View.prototype.normalizedToViewCoords = function normalizedToViewCoords(ndcCoord
     return _eventCoords;
 };
 
-function layerIdToLayer(view, layerId) {
-    const lookup = view.getLayers(l => l.id == layerId);
-    if (!lookup.length) {
-        throw new Error(`Invalid layer id used as where argument (value = ${layerId})`);
-    }
-    return lookup[0];
-}
-
 /**
  * Return objects from some layers/objects3d under the mouse in this view.
  *
@@ -557,7 +564,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...whe
         if (source.isLayer ||
             typeof (source) === 'string') {
             const layer = (typeof (source) === 'string') ?
-                layerIdToLayer(this, source) :
+                this.getLayerById(source) :
                 source;
 
             const parentLayer = this.getParentLayer(layer);
