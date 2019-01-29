@@ -139,6 +139,14 @@ class Layer extends THREE.EventDispatcher {
     convert(data) {
         return data;
     }
+
+    /**
+     * Remove and dispose all objects from layer.
+     */
+    // eslint-disable-next-line
+    delete() {
+        console.warn('Function delete doesn\'t exist for this layer');
+    }
 }
 
 export default Layer;

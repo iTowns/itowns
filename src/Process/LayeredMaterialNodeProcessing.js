@@ -240,12 +240,13 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     const tileMT = layer.options.tileMatrixSet || extentsDestination[0].crs();
     // Init elevation layer, and inherit from parent if possible
     let nodeLayer = material.getElevationLayer();
+    if (!nodeLayer) {
+        nodeLayer = material.addLayer(layer, tileMT);
+        material.setSequenceElevation(layer.id);
+    }
+
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
-        if (!nodeLayer) {
-            nodeLayer = material.addLayer(layer, tileMT);
-            material.setSequenceElevation(layer.id);
-        }
 
         const parentLayer = parent.material && parent.material.getLayer(layer.id);
         nodeLayer.initFromParent(parentLayer, extentsDestination);
@@ -385,6 +386,9 @@ export function removeLayeredMaterialNodeLayer(layerId) {
     return function removeLayeredMaterialNodeLayer(node) {
         if (node.material && node.material.removeLayer) {
             node.material.removeLayer(layerId);
+            if (node.material.elevationLayerIds[0] == layerId) {
+                node.setBBoxZ(0, 0);
+            }
         }
         if (node.layerUpdateState && node.layerUpdateState[layerId]) {
             delete node.layerUpdateState[layerId];

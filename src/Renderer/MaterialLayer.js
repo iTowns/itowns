@@ -83,7 +83,6 @@ class MaterialLayer {
         this.textures = [];
         this.offsetScales = [];
         this.level = EMPTY_TEXTURE_ZOOM;
-        this.type = layer.type;
         this.material = material;
     }
 

@@ -1,5 +1,5 @@
 import Layer from 'Layer/Layer';
-import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
+import { updateLayeredMaterialNodeImagery, removeLayeredMaterialNodeLayer } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
 
 /**
@@ -72,6 +72,15 @@ class ColorLayer extends Layer {
 
     convert(data, extentDestination) {
         return textureConverter.convert(data, extentDestination, this);
+    }
+
+    /**
+    * All layer's textures are removed from scene and disposed from video device.
+    */
+    delete() {
+        for (const root of this.parent.level0Nodes) {
+            root.traverse(removeLayeredMaterialNodeLayer(this.id));
+        }
     }
 }
 
