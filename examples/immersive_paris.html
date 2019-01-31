@@ -51,7 +51,7 @@
             // open camera fov
             view.camera.camera3D.fov = 75;
             view.camera.camera3D.updateProjectionMatrix();
-            
+
             // disable atmosphere
             view.atmosphere.visible = false;
 
@@ -93,7 +93,7 @@
             // Url of a a JSON file with calibration for all cameras. see [CameraCalibrationParser]{@link module:CameraCalibrationParser.parse}
             // in this example, we have the ladybug, it's a set of 6 cameras
             var calibrationUrl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/cameraCalibration.json';
-            
+
             // Fetch the two files
             var promises = [];
             var networkOptions = {crossOrigin: ''};
@@ -124,7 +124,7 @@
 
                     // prepare WFS source for the buildings
                     var wfsBuildingSource = new itowns.WFSSource({
-                        url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                        url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
                         version: '2.0.0',
                         typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
                         projection: 'EPSG:4326',
@@ -163,7 +163,7 @@
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
-                
+
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
 
@@ -171,7 +171,7 @@
                 view.controls.setCameraToCurrentPosition();
                 view.notifyChange(view.camera.camera3D);
             });
-            
+
         </script>
     </body>
 </html>
