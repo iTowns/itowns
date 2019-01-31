@@ -7,6 +7,83 @@ import Extent from 'Core/Geographic/Extent';
 import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from 'Process/3dTilesProcessing';
 import utf8Decoder from 'Utils/Utf8Decoder';
 
+/**
+ * Class mapping 3D Tiles extensions names to their associated parsing methods
+ */
+class $3DTilesExtensions {
+    /**
+     * Creates a $3DTilesExtensions object which has a map as attribute.
+     */
+    constructor() {
+        this.extensionsMap = new Map();
+    }
+
+    /**
+     * Register a 3D Tiles extension: Maps an extension name to its parser
+     * @param {String} extensionName - Name of the extension
+     * @param {Function} parser - The function for parsing the extension
+     */
+    registerExtension(extensionName, parser) {
+        this.extensionsMap.set(extensionName, parser);
+    }
+
+    /**
+     * Get the parser of a given extension
+     * @param {String} extensionName - Name of the extension
+     * @returns {Function} - The function for parsing the extension
+     */
+    getParser(extensionName) {
+        return this.extensionsMap.get(extensionName);
+    }
+
+    /**
+     * Test if an extension is registered
+     * @param {String} extensionName - Name of the extension
+     * @returns {boolean} - true if the extension is registered and false
+     * otherwise
+     */
+    isExtensionRegistered(extensionName) {
+        return this.extensionsMap.has(extensionName);
+    }
+}
+
+/**
+ * Global object holding 3D Tiles extensions. Extensions must be registered
+ * with their parser by the client.
+ * @type {$3DTilesExtensions}
+ */
+export const $3dTilesExtensions = new $3DTilesExtensions();
+
+/**
+ * Abstract class for 3DTiles Extensions. Extensions implemented by the user
+ * must inherit from this class. An example of extension can be found in
+ * ../Parser/BatchTableHierarchyExtensionParser.js
+ */
+export class $3dTilesAbstractExtension {
+    /**
+     * Constructor of the class. Throws an error if one tries to instanciate
+     * this abstract class
+     */
+    constructor() {
+        if (this.constructor === $3dTilesAbstractExtension) {
+            throw new TypeError('Abstract class "AbstractExtension" ' +
+                'cannot be instantiated directly');
+        }
+    }
+
+    /**
+     * Method to get the displayable information related to a given feature
+     * from an extension. All extensions must implement it (event if it
+     * returns an empty object).
+     * @param {integer} featureId - id of the feature
+     */
+    // disable warning saying that we don't use 'this' in this method
+    // eslint-disable-next-line
+    getPickingInfo(featureId) {
+        throw new Error('You must implement getPickingInfo function ' +
+            'in your extension');
+    }
+}
 
 export function $3dTilesIndex(tileset, baseURL) {
     let counter = 1;
@@ -94,6 +171,23 @@ function preprocessDataLayer(layer, view, scheduler) {
     layer._cleanableTiles = [];
     return Fetcher.json(layer.url, layer.networkOptions).then((tileset) => {
         layer.tileset = tileset;
+        // Verify that extensions of the tileset have been registered to
+        // $3dTilesExtensions
+        if (tileset.extensionsUsed) {
+            for (const extensionUsed of tileset.extensionsUsed) {
+                // if current extension is not registered
+                if (!$3dTilesExtensions.isExtensionRegistered(extensionUsed)) {
+                    if (tileset.extensionsRequired &&
+                        tileset.extensionsRequired.includes(extensionUsed)) {
+                        console.error(
+                            `3D Tiles tileset required extension "${extensionUsed}" must be registered to $3dTilesExtensions global object of iTowns to be parsed and used.`);
+                    } else {
+                        console.warn(
+                            `3D Tiles tileset used extension "${extensionUsed}" must be registered to $3dTilesExtensions global object of iTowns to be parsed and used.`);
+                    }
+                }
+            }
+        }
         const urlPrefix = layer.url.slice(0, layer.url.lastIndexOf('/') + 1);
         layer.tileIndex = new $3dTilesIndex(tileset, urlPrefix);
         layer.asset = tileset.asset;
