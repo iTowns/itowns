@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Itowns - 3d-tiles hierarchy example</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div class="help">
+            <p><b>Feature Information:</b></p>
+            <div id="featureInfo"></div>
+        </div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            // Note: The following positions and camera parameters have been
+            // obtained manually using view.controls.getCameraCoordinate() ;
+            // view.controls.getCameraTargetPosition() ;
+            // view.controls.getCameraOrientation()
+            var positionOnGlobe = {
+                longitude: -75.61349109370566,
+                latitude: 40.04425929988183,
+                altitude: 45.52006505522877
+            };
+
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+
+            view.controls.lookAtCoordinate({range: 200, tilt: 10, heading:
+                    -145}, false);
+
+            setupLoadingScreen(viewerDiv, view);
+
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
+
+            // Add Open Street Map orthographic layer
+            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json')
+                .then(function _(config) {
+                    config.source = new itowns.TMSSource(config.source);
+                    var layer = new itowns.ColorLayer('Ortho', config);
+                    view.addLayer(layer)
+                        .then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                });
+
+            // Create a new 3D tiles layer with batch table hierarchy extension
+            var $3dTilesLayerBTHierarchy = new itowns.GeometryLayer(
+                '3d-tiles-bt-hierarchy', new itowns.THREE.Group());
+            $3dTilesLayerBTHierarchy.name = 'BTHierarchy';
+            $3dTilesLayerBTHierarchy.url =
+                'https://raw.githubusercontent.com/AnalyticalGraphicsInc/cesium/master/Apps/SampleData/Cesium3DTiles/Hierarchy/BatchTableHierarchy/tileset.json';
+            $3dTilesLayerBTHierarchy.protocol = '3d-tiles';
+            $3dTilesLayerBTHierarchy.overrideMaterials = true;
+
+            // Create and define 3D Tiles extensions needed in this example
+            itowns.$3dTilesExtensions.registerExtension(
+                "3DTILES_batch_table_hierarchy",
+                itowns.BatchTableHierarchyExtensionParser.parse);
+
+            // Add event for picking the 3D tiles layer
+            itowns.View.prototype.addLayer.call(view,
+                $3dTilesLayerBTHierarchy)
+                .then(function _() {
+                    window.addEventListener('mousemove', picking, false);
+                });
+
+            // Add a debug UI
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view,
+                $3dTilesLayerBTHierarchy,
+                d);
+
+            // Picking
+
+            // Finds the batch table of an object in a 3D Tiles layer. This is
+            // for instance needed when picking because we pick the geometric
+            // object which is not at the same level in the layer structure as
+            // the  batch table. More details here on itowns internal
+            // organization of 3DTiles:
+            // https://github.com/MEPP-team/RICT/blob/master/Doc/iTowns/Doc.md#itowns-internal-organisation-of-3d-tiles-data
+            function findBatchTable(object) {
+                if (object.batchTable) {
+                    return object.batchTable;
+                } else if (object.parent) {
+                    return findBatchTable(object.parent);
+                } else {
+                    return undefined;
+                }
+            }
+
+            function picking(event) {
+                var htmlInfo = document.getElementById('featureInfo');
+                // Remove content already displayed
+                while (htmlInfo.firstChild) {
+                    htmlInfo.removeChild(htmlInfo.firstChild);
+                }
+
+                var intersects = view.pickObjectsAt(
+                    event,
+                    5,
+                    $3dTilesLayerBTHierarchy);
+
+                for (var i = 0; i < intersects.length; i++) {
+                    // interAttributes are glTF attributes of b3dm tiles (i.e.
+                    // position, normal, batch id)
+                    var interAttributes = intersects[i].object.geometry.attributes;
+                    if (interAttributes && interAttributes._BATCHID) {
+                        // face is a Face3 object of THREE which is a
+                        // triangular face. face.a is its first vertex
+                        var vertex = intersects[i].face.a;
+                        // get batch id of the face
+                        var batchID = interAttributes._BATCHID.array[vertex];
+                        var batchTable = findBatchTable(
+                            intersects[i].object);
+
+                        // Print Batch id and batch table attributes in an
+                        // ui element
+                        var item = document.createElement('li');
+                        item.appendChild(
+                            document.createTextNode('Batch id: '));
+                        item.appendChild(document.createTextNode(batchID));
+                        var list = document.createElement('ul');
+                        list.appendChild(item);
+                        htmlInfo.appendChild(list);
+
+                        var featureDisplayableInfo =
+                            batchTable.getPickingInfo(batchID);
+                        htmlInfo.appendChild(createHTMLListFromObject(
+                            featureDisplayableInfo));
+                        return;
+                    }
+                }
+            }
+        </script>
+    </body>
+</html>
