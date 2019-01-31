@@ -10,6 +10,7 @@ export { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 export { default as View } from 'Core/View';
 export { VIEW_EVENTS } from 'Core/View';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from 'Process/3dTilesProcessing';
+export { $3dTilesExtensions, $3dTilesAbstractExtension } from 'Provider/3dTilesProvider';
 export { default as FeatureProcessing } from 'Process/FeatureProcessing';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 export { default as OrientedImageCamera } from 'Renderer/OrientedImageCamera';
