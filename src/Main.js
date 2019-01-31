@@ -61,3 +61,4 @@ export { default as OrientedImageSource } from 'Source/OrientedImageSource';
 export { default as GpxParser } from 'Parser/GpxParser';
 export { default as GeoJsonParser } from 'Parser/GeoJsonParser';
 export { default as CameraCalibrationParser } from 'Parser/CameraCalibrationParser';
+export { default as BatchTableHierarchyExtensionParser } from 'Parser/BatchTableHierarchyExtensionParser';
