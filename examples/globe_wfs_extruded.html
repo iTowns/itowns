@@ -186,6 +186,7 @@
                     meshes.push(mesh);
                 },
                 filter: acceptFeature,
+                overrideAltitudeInToZero: true,
                 source: wfsBuildingSource
             });
             view.addLayer(wfsBuildingLayer);

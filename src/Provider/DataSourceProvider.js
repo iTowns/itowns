@@ -39,6 +39,7 @@ function FetchAndConvertSourceData(url, layer, extentSource, extentDestination) 
         // TODO FIXME: error in filtering vector tile
         // filteringExtent: extentDestination.as(layer.projection),
         filteringExtent: layer.isGeometryLayer ? extentDestination : undefined,
+        overrideAltitudeInToZero: layer.overrideAltitudeInToZero,
         filter: layer.filter,
         isInverted: source.isInverted,
         mergeFeatures: layer.mergeFeatures === undefined ? true : layer.mergeFeatures,
