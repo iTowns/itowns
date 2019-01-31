@@ -1,4 +1,6 @@
 import utf8Decoder from 'Utils/Utf8Decoder';
+import { $3dTilesExtensions } from '../Provider/3dTilesProvider';
+
 /** Class representing a 3D Tiles batch table */
 class BatchTable {
     /**
@@ -23,15 +25,22 @@ class BatchTable {
             this.batchLength =
                 this.content[Object.keys(this.content)[0]].length;
         }
+        // Array storing extensions of the batch table. Key is
+        // extension name (registered in $3dTilesExtensions global object).
+        // Value is the object returned by the parser associated with the
+        // extensions (mapping is done in $3dTilesExtensions global object)
+        this.extensions = {};
     }
 
     /**
      * Creates and returns a javascript object holding the displayable
-     * information from the batch table
+     * information from the batch table and from extensions of the batch table
+     * for a given feature
      * @param {integer} featureId - id of the feature
      * @returns {Object} - displayable information relative to the batch table
-     * for the feature with id=featureId. Object is
-     * formatted as follow: {BatchTable: {BatchTableFeatureProperties}
+     * and its extensions for the feature with id=featureId. Object is
+     * formatted as follow: {BatchTable: {BatchTableFeatureProperties},
+     * ExtensionName: {ExtensionDisplayableInfo}}
      */
     getPickingInfo(featureId) {
         const featureDisplayableInfo = {};
@@ -52,7 +61,35 @@ class BatchTable {
                 table.`);
         }
         const BTDisplayableInfo = { BatchTable: featureDisplayableInfo };
+        // loop through extensions and append their displayable
+        // information to featureDisplayableInfo
+        if (this.extensions) {
+            Object.keys(this.extensions)
+                .forEach((extName) => {
+                    const extDisplayableInfo = {
+                        [extName]: this.extensions[extName].getPickingInfo(
+                            featureId),
+                    };
+                    Object.assign(BTDisplayableInfo, extDisplayableInfo);
+                });
+        }
         return BTDisplayableInfo;
+    }
+
+    /**
+     * Remove an extension from this.content. Must be called when an extension
+     * has been parsed and added to this.extensions
+     * @param {string} extensionName - the name of the extension to remove
+     */
+    removeExtensionFromContent(extensionName) {
+        // Delete extension from content
+        if (this.content.extensions[extensionName]) {
+            delete this.content.extensions[extensionName];
+        }
+        // Delete extensions from content if empty
+        if (Object.keys(this.content.extensions).length === 0) {
+            delete this.content.extensions;
+        }
     }
 }
 
@@ -81,6 +118,29 @@ export default {
         const content = utf8Decoder.decode(new Uint8Array(jsonBuffer));
         const json = JSON.parse(content);
 
-        return Promise.resolve(new BatchTable(json, binary));
+        const batchTable = new BatchTable(json, binary);
+
+        const promises = [];
+        // When an extension is found, we call its parser and append the
+        // returned object to batchTable.extensions
+        // Extensions must be registered in $3dTilesExtensions global object
+        // where an extension name is mapped to a parser.
+        if (json.extensions) {
+            Object.keys(json.extensions)
+                .forEach((extName) => {
+                    if ($3dTilesExtensions.isExtensionRegistered(extName)) {
+                        const extensionParser = $3dTilesExtensions.getParser(
+                            extName);
+                        promises.push(extensionParser(json.extensions[extName])
+                            .then((extObject) => {
+                                batchTable.extensions[extName] = extObject;
+                                batchTable.removeExtensionFromContent(extName);
+                            }));
+                    }
+                });
+        }
+        // values[0] is the results of the first promise pushed in promises,
+        // i.e. batchTable
+        return Promise.all(promises).then(() => batchTable);
     },
 };
