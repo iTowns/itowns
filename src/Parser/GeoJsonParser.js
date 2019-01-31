@@ -23,7 +23,7 @@ function readCRS(json) {
 
 const coordIn = new Coordinates('EPSG:4978', 0, 0, 0);
 const coordOut = new Coordinates('EPSG:4978', 0, 0, 0);
-function readCoordinates(crsIn, crsOut, coordinates, extent, target, normals, size) {
+function readCoordinates(crsIn, crsOut, coordinates, extent, target, normals, size, overrideAltitudeInToZero = false) {
     // coordinates is a list of pair [[x1, y1], [x2, y2], ..., [xn, yn]]
     let offset = 0;
     // let cIn = coordIn;
@@ -39,7 +39,7 @@ function readCoordinates(crsIn, crsOut, coordinates, extent, target, normals, si
     target = target || new Array(coordinates.length);
     let z = 0;
     for (const pair of coordinates) {
-        if (size == 3 && typeof pair[2] == 'number') {
+        if (!overrideAltitudeInToZero && size == 3 && typeof pair[2] == 'number') {
             z = pair[2];
         }
 
@@ -93,7 +93,7 @@ const GeometryToCoordinates = {
 
         const extent = options.buildExtent ? new Extent(crsOut, Infinity, -Infinity, Infinity, -Infinity) : undefined;
         const offset = feature.vertices.length / feature.size;
-        readCoordinates(crsIn, crsOut, coordsIn, extent, feature.vertices, feature.normals, feature.size);
+        readCoordinates(crsIn, crsOut, coordsIn, extent, feature.vertices, feature.normals, feature.size, options.overrideAltitudeInToZero);
 
         feature.geometry.push({ extent, indices: [{ offset, count: 1 }] });
         return feature;
@@ -107,13 +107,13 @@ const GeometryToCoordinates = {
         const extent = options.buildExtent ? new Extent(crsOut, Infinity, -Infinity, Infinity, -Infinity) : undefined;
         let offset = feature.vertices.length / feature.size;
         // read contour first
-        readCoordinates(crsIn, crsOut, coordsIn[0], extent, feature.vertices, feature.normals, feature.size);
+        readCoordinates(crsIn, crsOut, coordsIn[0], extent, feature.vertices, feature.normals, feature.size, options.overrideAltitudeInToZero);
 
         const indices = [{ offset, count: coordsIn[0].length }];
         offset += coordsIn[0].length;
         // Then read optional holes
         for (let i = 1; i < coordsIn.length; i++) {
-            readCoordinates(crsIn, crsOut, coordsIn[i], extent, feature.vertices, feature.normals, feature.size);
+            readCoordinates(crsIn, crsOut, coordsIn[i], extent, feature.vertices, feature.normals, feature.size, options.overrideAltitudeInToZero);
             const count = coordsIn[i].length;
             indices.push({ offset, count });
             offset += count;
@@ -130,7 +130,7 @@ const GeometryToCoordinates = {
 
         const extent = options.buildExtent ? new Extent(crsOut, Infinity, -Infinity, Infinity, -Infinity) : undefined;
         const offset = feature.vertices.length / feature.size;
-        readCoordinates(crsIn, crsOut, coordsIn, extent, feature.vertices, feature.normals, feature.size);
+        readCoordinates(crsIn, crsOut, coordsIn, extent, feature.vertices, feature.normals, feature.size, options.overrideAltitudeInToZero);
 
         const indices = [{ offset, count: feature.vertices.length / feature.size - offset }];
         feature.geometry.push({ extent, indices });
@@ -369,6 +369,8 @@ export default {
      * @param {boolean} [options.mergeFeatures=true] - If true all geometries are merged by type and multi-type
      * @param {boolean} [options.withNormal=true] - If true each coordinate normal is computed
      * @param {boolean} [options.withAltitude=true] - If true each coordinate altitude is kept
+     * @param {boolean} [options.overrideAltitudeInToZero=false] - If true, the altitude of the source data isn't taken into account for 3D geometry convertions.
+     * the altitude will be override to 0. This can be useful if you don't have a DEM or provide a new one when converting (with Layer.convert).
      *
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
