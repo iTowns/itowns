@@ -12,8 +12,8 @@
     <body>
         <div id="viewerDiv"></div>
         <div class="help">
-            <p><b>Batch Table Information:</b></p>
-            <ul id="info"></ul>
+            <p><b>Feature Information:</b></p>
+            <div id="featureInfo"></div>
         </div>
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
@@ -73,49 +73,67 @@
             }
             menuGlobe.gui.add(d, 'zoom').name('Go to point cloud');
 
-// Picking example - - - - - - - - - - -- - - - -- - - - -- - - - -- - - - -- - - - -- - - - -
-            function findBatchTableParent(object) {
+            // Picking
+
+            // Finds the batch table of an object in a 3D Tiles layer. This is
+            // for instance needed when picking because we pick the geometric
+            // object which is not at the same level in the layer structure as
+            // the  batch table. More details here on itowns internal
+            // organization of 3DTiles:
+            // https://github.com/MEPP-team/RICT/blob/master/Doc/iTowns/Doc.md#itowns-internal-organisation-of-3d-tiles-data
+            function findBatchTable(object) {
                 if (object.batchTable) {
                     return object.batchTable;
-                }
-                else if (object.parent) {
-                    return findBatchTableParent(object.parent);
+                } else if (object.parent) {
+                    return findBatchTable(object.parent);
                 } else {
                     return undefined;
                 }
             }
-            function picking(event) {
-                var htmlInfo = document.getElementById('info');
-                htmlInfo.innerHTML = ' ';
 
-                const intersects = view.pickObjectsAt(
+            function picking(event) {
+                var htmlInfo = document.getElementById('featureInfo');
+                // Remove content already displayed
+                while (htmlInfo.firstChild) {
+                    htmlInfo.removeChild(htmlInfo.firstChild);
+                }
+
+                var intersects = view.pickObjectsAt(
                     event,
                     5,
                     $3dTilesLayerRequestVolume);
 
                 for (var i = 0; i < intersects.length; i++) {
-                    var interAttributes = intersects[i].object.geometry.attributes;
-                    if (interAttributes) {
-                        if (interAttributes._BATCHID) {
-                            var face = intersects[i].face.a;
-                            var batchID = interAttributes._BATCHID.array[face];
-                            var batchTable = findBatchTableParent(intersects[i].object);
+                    // interAttributes are glTF attributes of b3dm tiles
+                    // (i.e. position, normal, batch id)
+                    var interAttributes =
+                        intersects[i].object.geometry.attributes;
+                    if (interAttributes && interAttributes._BATCHID) {
+                        // face is a Face3 object of THREE which is a triangular
+                        // face. face.a is its first vertex
+                        var vertex = intersects[i].face.a;
+                        // get batch id of the face
+                        var batchID = interAttributes._BATCHID.array[vertex];
+                        var batchTable = findBatchTable(
+                            intersects[i].object);
 
-                            htmlInfo.innerHTML +='<li><b> Batch id: </b>'+ batchID +'</li>';
-                            Object.keys(batchTable).map(function(objectKey) {
-                                var value = batchTable[objectKey][batchID];
-                                // if the value is a integer or not
-                                var info = Number.isInteger(value) ? value.toString() : value.toFixed(3).toString();
-                                htmlInfo.innerHTML +='<li><b>' + objectKey.toString() + ': </b>'+ info +'</li>';
-                                return true;
-                            });
+                        // Print Batch id and batch table attributes in an ui element.
+                        var item = document.createElement('li');
+                        item.appendChild(
+                            document.createTextNode('Batch id: '));
+                        item.appendChild(document.createTextNode(batchID));
+                        var list = document.createElement('ul');
+                        list.appendChild(item);
+                        htmlInfo.appendChild(list);
 
-                            return;
-                        }
+                        var featureDisplayableInfo =
+                            batchTable.getPickingInfo(batchID);
+                        htmlInfo.appendChild(createHTMLListFromObject(
+                            featureDisplayableInfo));
+                        return;
                     }
                 }
             }
-
         </script>
     </body>
 </html>

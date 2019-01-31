@@ -122,3 +122,31 @@ GuiTools.prototype.addGUI = function addGUI(name, value, callback) {
 GuiTools.prototype.colorLayerFolder = function colorLayerFolder(nameLayer, value) {
     this.colorGui.colorLayerFolder(nameLayer, value);
 };
+
+// Recursive function that creates an HTML List from a javascript
+// object
+// eslint-disable-next-line no-unused-vars
+function createHTMLListFromObject(jsObject) {
+    var list = document.createElement('ul');
+    // For each property of the object
+    Object.keys(jsObject).forEach(function _(property) {
+        // create item
+        var item = document.createElement('li');
+        // append property name
+        item.appendChild(document.createTextNode(property));
+
+        if (typeof jsObject[property] === 'object') {
+            // if property value is an object, then recurse to
+            // create a list from it
+            item.appendChild(
+                createHTMLListFromObject(jsObject[property]));
+        } else {
+            // else append the value of the property to the item
+            item.appendChild(document.createTextNode(': '));
+            item.appendChild(
+                document.createTextNode(jsObject[property]));
+        }
+        list.appendChild(item);
+    });
+    return list;
+}

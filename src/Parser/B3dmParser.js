@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import Capabilities from 'Core/System/Capabilities';
 import GLTFLoader from 'ThreeExtended/loaders/GLTFLoader';
 import LegacyGLTFLoader from 'ThreeExtended/loaders/deprecated/LegacyGLTFLoader';
-import BatchTableParser from 'Parser/BatchTableParser';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import utf8Decoder from 'Utils/Utf8Decoder';
+import BatchTableParser from './BatchTableParser';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 // For gltf rotation
@@ -105,11 +105,14 @@ export default {
                 const sizeBegin = headerByteLength + b3dmHeader.FTJSONLength +
                     b3dmHeader.FTBinaryLength;
                 promises.push(BatchTableParser.parse(
-                    buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin)));
+                    buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin), b3dmHeader.BTBinaryLength));
             } else {
                 promises.push(Promise.resolve({}));
             }
             // TODO: missing feature table
+            if (b3dmHeader.FTJSONLength > 0) {
+                console.warn('3D Tiles feature table not supported yet.');
+            }
             promises.push(new Promise((resolve/* , reject */) => {
                 const onload = (gltf) => {
                     for (const scene of gltf.scenes) {
