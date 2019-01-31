@@ -2,7 +2,7 @@
     "id":         "ScanEX",
     "fx" :        2.5,
     "source": {
-        "url":        "http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
+        "url":        "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
         "format": "image/jpeg",
         "name": "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD",
         "attribution" : {
