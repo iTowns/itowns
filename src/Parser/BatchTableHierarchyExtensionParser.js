@@ -1,11 +1,11 @@
 import { $3dTilesAbstractExtension } from '../Provider/3dTilesProvider';
 
-/** Class for storing and accessing information relative to the
+/** @classdesc
+ * Class for storing and accessing information relative to the
  *  [3DTILES_batch_table_hierarchy extension]{@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions/3DTILES_batch_table_hierarchy}
  *  of 3D Tiles */
 class BatchTableHierarchyExtension extends $3dTilesAbstractExtension {
     /**
-     * Creates a BatchTableHierarchyExtension object
      * @param {Object} json - json holding the extension
      */
     constructor(json) {
@@ -94,11 +94,15 @@ class BatchTableHierarchyExtension extends $3dTilesAbstractExtension {
     }
 }
 
+/**
+ * @module BatchTableHierarchyExtensionParser
+ */
 export default {
-    /** @module BatchTableHierarchyExtensionParser */
     /**
-     * Parses a 3D_Tiles_BatchTableHierarchy Extension and returns a Promise
-     * that resolves with a BatchTableHierarchyExtension object
+     * Parses a
+     * [3DTILES_batch_table_hierarchy extension]{@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions/3DTILES_batch_table_hierarchy}
+     * and returns a Promise that resolves with a BatchTableHierarchyExtension
+     * object.
      * @param {Object} json - json holding the extension
      * @return {Promise} - a promise that resolves with a
      *     BatchTableHierarchyExtension object.

@@ -1,10 +1,11 @@
 import utf8Decoder from 'Utils/Utf8Decoder';
 import { $3dTilesExtensions } from '../Provider/3dTilesProvider';
 
-/** Class representing a 3D Tiles batch table */
+/** @classdesc
+ * Class representing a 3D Tiles batch table
+ */
 class BatchTable {
     /**
-     * Creates a batch table object
      * @param {Object} json - batch table json part
      * @param {ArrayBuffer} binary - buffer representing the batch table
      * binary part (not supported yet)
@@ -93,12 +94,12 @@ class BatchTable {
     }
 }
 
+/**
+ * @module BatchTableParser
+ */
 export default {
-    /** @module BatchTableParser */
-
-    /** Parse batch table buffer and returns a promise that resolves with a
+    /** Parse a batch table buffer and returns a promise that resolves with a
      *  BatchTable object.
-     * @function parse
      * @param {ArrayBuffer} buffer - the batch table buffer.
      * @param {integer} BTBinaryLength - length of the binary part of the
      * batch table

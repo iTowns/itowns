@@ -48,10 +48,11 @@ function applyOptionalCesiumRTC(data, gltf) {
     }
 }
 
+/**
+ * @module B3dmParser
+ */
 export default {
-    /** @module B3dmParser */
     /** Parse b3dm buffer and extract THREE.Scene and batch table
-     * @function parse
      * @param {ArrayBuffer} buffer - the b3dm buffer.
      * @param {Object} options - additional properties.
      * @param {string=} [options.gltfUpAxis='Y'] - embedded glTF model up axis.
