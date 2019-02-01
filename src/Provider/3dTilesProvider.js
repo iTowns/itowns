@@ -7,13 +7,11 @@ import Extent from 'Core/Geographic/Extent';
 import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from 'Process/3dTilesProcessing';
 import utf8Decoder from 'Utils/Utf8Decoder';
 
-/**
- * Class mapping 3D Tiles extensions names to their associated parsing methods
+
+/** @classdesc
+ * Class mapping 3D Tiles extensions names to their associated parsing methods.
  */
 class $3DTilesExtensions {
-    /**
-     * Creates a $3DTilesExtensions object which has a map as attribute.
-     */
     constructor() {
         this.extensionsMap = new Map();
     }
@@ -54,16 +52,12 @@ class $3DTilesExtensions {
  */
 export const $3dTilesExtensions = new $3DTilesExtensions();
 
-/**
+/** @classdesc
  * Abstract class for 3DTiles Extensions. Extensions implemented by the user
- * must inherit from this class. An example of extension can be found in
- * ../Parser/BatchTableHierarchyExtensionParser.js
+ * must inherit from this class. Example of extension extending this class:
+ *  [BatchTableHierarchyExtension]{@link BatchTableHierarchyExtension}
  */
 export class $3dTilesAbstractExtension {
-    /**
-     * Constructor of the class. Throws an error if one tries to instanciate
-     * this abstract class
-     */
     constructor() {
         if (this.constructor === $3dTilesAbstractExtension) {
             throw new TypeError('Abstract class "AbstractExtension" ' +

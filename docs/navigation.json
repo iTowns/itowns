@@ -40,8 +40,10 @@
         "TMSSource",
         "StaticSource",
         "FileSource",
-        "OrientedImageSource",
+        "OrientedImageSource"
+    ],
 
+    "Provider": [
         "URLBuilder",
         "Fetcher"
     ],
@@ -50,7 +52,10 @@
         "GeoJsonParser",
         "GpxParser",
         "VectorTileParser",
-        "CameraCalibrationParser"
+        "CameraCalibrationParser",
+        "B3dmParser",
+        "BatchTableParser",
+        "BatchTableHierarchyExtensionParser"
     ],
 
     "Converter": [
@@ -69,5 +74,12 @@
 
     "Renderer": [
         "OrientedImageMaterial"
+    ],
+
+    "3D Tiles": [
+        "BatchTable",
+        "$3DTilesExtensions",
+        "$3dTilesAbstractExtension",
+        "BatchTableHierarchyExtension"
     ]
 }

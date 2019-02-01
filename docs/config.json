@@ -43,13 +43,17 @@
             "src/Source/FileSource.js",
             "src/Source/OrientedImageSource.js",
 
+            "src/Provider/URLBuilder.js",
+            "src/Provider/Fetcher.js",
+            "src/Provider/3dTilesProvider.js",
+
             "src/Parser/GeoJsonParser.js",
             "src/Parser/GpxParser.js",
             "src/Parser/VectorTileParser.js",
             "src/Parser/CameraCalibrationParser.js",
-
-            "src/Provider/URLBuilder.js",
-            "src/Provider/Fetcher.js",
+            "src/Parser/B3dmParser.js",
+            "src/Parser/BatchTableParser.js",
+            "src/Parser/BatchTableHierarchyExtensionParser.js",
 
             "src/Renderer/OrientedImageMaterial.js",
             "src/Renderer/ColorLayersOrdering.js",
