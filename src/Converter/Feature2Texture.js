@@ -52,7 +52,7 @@ function _drawPolygon(ctx, vertices, indices, origin, scale, properties = {}, st
     }
 
     // fill polygon
-    if (indices && (style.fill || properties.fill)) {
+    if (style.fill || properties.fill) {
         ctx.fillStyle = style.fill || properties.fill;
         ctx.globalAlpha = style.fillOpacity || properties['fill-opacity'] || 1.0;
         ctx.fill();
