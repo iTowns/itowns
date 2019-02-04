@@ -11,8 +11,6 @@ import $3dTilesProvider from 'Provider/3dTilesProvider';
 import PointCloudProvider from 'Provider/PointCloudProvider';
 import CancelledCommandException from './CancelledCommandException';
 
-var instanceScheduler = null;
-
 function queueOrdering(a, b) {
     const cmp = b.priority - a.priority;
     // Prioritize recent commands
@@ -108,10 +106,6 @@ function _instanciateQueue() {
  */
 function Scheduler() {
     // Constructor
-    if (instanceScheduler !== null) {
-        throw new Error('Cannot instantiate more than one Scheduler');
-    }
-
     this.defaultQueue = _instanciateQueue();
     this.hostQueues = new Map();
 
