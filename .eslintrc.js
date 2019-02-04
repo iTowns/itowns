@@ -1,5 +1,3 @@
-const { patchedPath } = require('./config/threeExamples.js');
-
 module.exports = {
  root: true,
  'extends': [
