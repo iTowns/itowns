@@ -130,9 +130,6 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             return;
         }
 
-        if (!enabled) {
-            return;
-        }
         const helpers = node.children.filter(n => n.layer == layer);
 
         if (node.material && node.material.visible) {
