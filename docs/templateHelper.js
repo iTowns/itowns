@@ -53,8 +53,6 @@ var ids = {};
 // each container gets its own html file
 var containers = ['class', 'module', 'external', 'namespace', 'mixin', 'interface'];
 
-var tutorials;
-
 var linkMap = {
     // two-way lookup
     longnameToUrl: {},
