@@ -81,9 +81,8 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
                     node.add(helper);
                     helper.updateMatrixWorld();
                 }
-            } else {
-                helper = node.userData.obb;
             }
+
             if (helper) {
                 helper.visible = true;
                 if (typeof helper.setMaterialVisibility === 'function') {
