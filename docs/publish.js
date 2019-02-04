@@ -2,7 +2,6 @@
 
 const fs = require('jsdoc/fs');
 const path = require('jsdoc/path');
-const taffy = require('taffydb').taffy;
 const template = require('jsdoc/template');
 
 const helper = require('./templateHelper');
