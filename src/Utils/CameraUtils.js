@@ -473,7 +473,7 @@ export default {
         }
 
         if (Math.abs(first.coord._values[0] - second.coord._values[0]) > 0.1 ||
-            Math.abs(first.coord._values[1] - second.coord._values[1] > 0.1)) {
+            Math.abs(first.coord._values[1] - second.coord._values[1]) > 0.1) {
             diff = diff || {};
             diff.coord = {
                 previous: first.coord,
