@@ -4,7 +4,7 @@
  * Description: 3DEngine est l'interface avec le framework webGL.
  */
 
-/* global Uint8Array, Float64Array, document, window, Image */
+/* global Uint8Array, document, window, Image */
 
 import * as THREE from 'three';
 import Capabilities from 'Core/System/Capabilities';
