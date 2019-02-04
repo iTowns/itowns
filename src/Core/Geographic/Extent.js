@@ -111,7 +111,7 @@ Extent.prototype.as = function as(crs) {
                 const west = 180 - size * (nbCol - this.col);
                 const east = west + size;
 
-                const extent = Extent('EPSG:4326', { west, east, south, north });
+                const extent = new Extent('EPSG:4326', { west, east, south, north });
                 if (crs == 'EPSG:4326') {
                     return extent;
                 } else {
