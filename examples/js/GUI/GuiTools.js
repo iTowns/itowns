@@ -128,6 +128,8 @@ GuiTools.prototype.colorLayerFolder = function colorLayerFolder(nameLayer, value
 // eslint-disable-next-line no-unused-vars
 function createHTMLListFromObject(jsObject) {
     var list = document.createElement('ul');
+    // Change the padding (top: 0, right:0, bottom:0 and left:1.5)
+    list.style.padding = '0 0 0 1.5rem';
     // For each property of the object
     Object.keys(jsObject).forEach(function _(property) {
         // create item
