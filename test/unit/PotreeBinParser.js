@@ -32,10 +32,10 @@ describe('PotreeBinParser', function () {
             // intensity
             dv.setInt16(i * numbyte + 12, 100 + i, true);
             // color
-            dv.setUint8(i * numbyte + 14, 200 + 4 * i, true);
-            dv.setUint8(i * numbyte + 15, 201 + 4 * i, true);
-            dv.setUint8(i * numbyte + 16, 202 + 4 * i, true);
-            dv.setUint8(i * numbyte + 17, 203 + 4 * i, true);
+            dv.setUint8(i * numbyte + 14, 200 + 4 * i);
+            dv.setUint8(i * numbyte + 15, 201 + 4 * i);
+            dv.setUint8(i * numbyte + 16, 202 + 4 * i);
+            dv.setUint8(i * numbyte + 17, 203 + 4 * i);
 
             // classification
             dv.setUint8(i * numbyte + 18, i * 3);
