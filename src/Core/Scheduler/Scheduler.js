@@ -131,7 +131,7 @@ Scheduler.prototype.runCommand = function runCommand(command, queue, executingCo
     const provider = this.getProtocolProvider(protocol);
 
     if (!provider) {
-        throw new Error('No known provider for layer', command.layer.id);
+        throw new Error(`No known provider for layer ${command.layer.id}`);
     }
 
     queue.execute(command, provider, executingCounterUpToDate).then(() => {
