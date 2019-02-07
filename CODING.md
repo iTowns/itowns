@@ -42,9 +42,9 @@ Or you can download it manually, and then:
 Then tests can be ran with four differents methods:
 * `npm run test`: build and ran all tests in iTowns
 * `npm run test-unit`: ran unit tests only
-* `npm run test-examples`: ran tests of examples only, use
-  `node_modules/mocha/bin/mocha -t 30000 test/examples/bootstrap.js
-  test/examples/<test_case>.js` to run a single example
+* `npm run test-functional`: ran functional testing with examples only, use
+  `node_modules/mocha/bin/mocha -t 30000 test/functional/bootstrap.js
+  test/functional/<test_case>.js` to run a single example
 * `npm run test-with-coverage`: build and ran all tests in iTowns and generate a
   report on the coverage of the tests
 
