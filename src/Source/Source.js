@@ -1,5 +1,7 @@
 import Extent from 'Core/Geographic/Extent';
 
+let uid = 0;
+
 /**
  * @classdesc
  * Sources are object containing informations on how to fetch resources, from a
@@ -11,6 +13,8 @@ import Extent from 'Core/Geographic/Extent';
  * @property {boolean} isSource - Used to checkout whether this source is a
  * Source. Default is true. You should not change this, as it is used internally
  * for optimisation.
+ * @property {number} uid - Unique uid mainly used to store data linked to this
+ * source into Cache.
  * @property {string} url - The url of the resources that are fetched.
  * @property {string} format - The format of the resources that are fetched.
  * @property {function} fetcher - The method used to fetch the resources from
@@ -74,6 +78,8 @@ class Source {
         if (!source.url) {
             throw new Error('New Source: url is required');
         }
+
+        this.uid = uid++;
 
         this.url = source.url;
         this.format = source.format;

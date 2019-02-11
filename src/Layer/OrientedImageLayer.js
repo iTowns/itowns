@@ -33,9 +33,10 @@ function updatePano(context, camera, layer) {
         });
 
         // prepare informations about the needed textures
-        const imagesInfo = layer.cameras.map(cam =>  ({
+        const imagesInfo = layer.cameras.map(cam => ({
             cameraId: cam.name,
             panoId: newPano.id,
+            toString: (separator = '') => (`${cam.name}${separator}${newPano.id}`),
         }));
 
         const command = {

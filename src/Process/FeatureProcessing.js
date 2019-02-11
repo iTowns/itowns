@@ -50,6 +50,12 @@ function assignLayer(object, layer) {
     }
 }
 
+function extentInsideSource(extent, source) {
+    return !source.extentInsideLimit(extent) ||
+        (source.parsedData &&
+        !source.parsedData.extent.isPointInside(extent.center()));
+}
+
 const quaternion = new THREE.Quaternion();
 export default {
     update(context, layer, node) {
@@ -83,8 +89,8 @@ export default {
 
         const extentsSource = [];
         for (const extentDest of extentsDestination) {
-            if (!layer.source.extentInsideLimit(extentDest) || (layer.source.parsedData &&
-                !layer.source.parsedData.extent.isPointInside(extentDest.center()))) {
+            if (extentInsideSource(extentDest, layer.source)) {
+                node.layerUpdateState[layer.id].noMoreUpdatePossible();
                 return;
             }
             extentsSource.push(extentDest);
@@ -104,6 +110,17 @@ export default {
             // if request return empty json, WFSProvider.getFeatures return undefined
             result = result[0];
             if (result) {
+                // special case for FileSource, as it is not tiled and we need
+                // to attach it to the correct node
+                if (layer.source && layer.source.isFileSource) {
+                    for (const extentSrc of extentsSource) {
+                        if (extentInsideSource(extentSrc, layer.source)) {
+                            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+                            return;
+                        }
+                    }
+                }
+
                 const isApplied = !result.layer;
                 result.minAltitude = isNaN(result.minAltitude) ? 0 : result.minAltitude;
                 assignLayer(result, layer);
