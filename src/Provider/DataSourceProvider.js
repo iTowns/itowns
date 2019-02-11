@@ -27,18 +27,22 @@ const error = (err, url, source) => {
     source.handlingError(err, url);
     throw err;
 };
-function FetchAndConvertSourceData(url, layer, extentSource, extentDestination) {
-    const source = layer.source;
-    const fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
-    const parser = source.parser || supportedParsers.get(source.format) || (data => data);
 
-    const parsingOptions = {
-        buildExtent: !layer.isGeometryLayer,
+function convertSourceData(data, extDest, layer) {
+    return layer.convert(data, extDest, layer);
+}
+
+function parseSourceData(data, extSrc, extDest, layer) {
+    const source = layer.source;
+    const parser = source.parser || supportedParsers.get(source.format) || (d => Promise.resolve(d));
+
+    const options = {
+        buildExtent: source.isFileSource || !layer.isGeometryLayer,
         crsIn: source.projection,
         crsOut: layer.projection,
         // TODO FIXME: error in filtering vector tile
         // filteringExtent: extentDestination.as(layer.projection),
-        filteringExtent: layer.isGeometryLayer ? extentDestination : undefined,
+        filteringExtent: !source.isFileSource && layer.isGeometryLayer ? extDest : undefined,
         overrideAltitudeInToZero: layer.overrideAltitudeInToZero,
         filter: layer.filter,
         isInverted: source.isInverted,
@@ -47,16 +51,26 @@ function FetchAndConvertSourceData(url, layer, extentSource, extentDestination) 
         withAltitude: layer.isGeometryLayer,
     };
 
+    data.coords = extSrc;
+
+    return parser(data, options).then((parsedFile) => {
+        if (source.isFileSource) {
+            source.parsedData = parsedFile;
+            if (parsedFile.extent._crs != 'EPSG:4978') {
+                source.extent = parsedFile.extent || source.extent;
+            }
+        }
+
+        return parsedFile;
+    });
+}
+
+function fetchSourceData(url, layer) {
+    const source = layer.source;
+    const fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
+
     // Fetch data
-    return fetcher(url, source.networkOptions)
-        .then((fetchedData) => {
-            fetchedData.coords = extentSource;
-            // Parse fetched data, it parses file to itowns's object
-            return parser(fetchedData, parsingOptions);
-        }, err => error(err, url, source))
-        .then(parsedData =>
-            // Convert parsed data, it converts itowns's object to THREE's object
-            layer.convert(parsedData, extentDestination), err => error(err, url, source));
+    return fetcher(url, source.networkOptions);
 }
 
 export default {
@@ -88,7 +102,10 @@ export default {
             const validedParsedData = isValidData(parsedData[i], extDest, layer.isValidData) || source.parsedData;
 
             // Tag to Cache data
-            const tag = validedParsedData ? `${url},${extDest.toString(',')}` : url;
+            let tag = `${source.uid}-${extSource.toString('-')}`;
+            if (layer.isGeometryLayer && source.isFileSource) {
+                tag = `${source.uid}`;
+            }
 
             // Get converted source data, in cache
             let convertedSourceData = Cache.get(tag);
@@ -96,11 +113,17 @@ export default {
             // If data isn't in cache
             if (!convertedSourceData) {
                 if (validedParsedData) {
-                    // Use parsed data
-                    convertedSourceData = layer.convert(validedParsedData, extDest, layer);
+                    // Convert
+                    convertedSourceData = convertSourceData(validedParsedData, extDest, layer);
+                } else if (source.fetchedData) {
+                    // Parse and convert
+                    convertedSourceData = parseSourceData(source.fetchedData, extSource, extDest, layer)
+                        .then(parsedData => convertSourceData(parsedData, extDest, layer), err => error(err, url, source));
                 } else {
-                    // Fetch and convert
-                    convertedSourceData = FetchAndConvertSourceData(url, layer, extSource, extDest);
+                    // Fetch, parse and convert
+                    convertedSourceData = fetchSourceData(url, layer)
+                        .then(fetchedData => parseSourceData(fetchedData, extSource, extDest, layer), err => error(err, url, source))
+                        .then(parsedData => convertSourceData(parsedData, extDest, layer), err => error(err, url, source));
                 }
                 // Put converted data in cache
                 Cache.set(tag, convertedSourceData, Cache.POLICIES.TEXTURE);
