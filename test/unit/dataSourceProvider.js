@@ -65,7 +65,6 @@ describe('Provide in Sources', function () {
     featureLayer.source = new WFSSource({
         url: 'http://',
         typeName: 'name',
-        protocol: 'wms',
         format: 'application/json',
         extent: [-90, 90, -45, 45],
         projection: 'EPSG:4326',
@@ -86,7 +85,6 @@ describe('Provide in Sources', function () {
         colorlayer.source = new WMTSSource({
             url: 'http://',
             name: 'name',
-            protocol: 'wmts',
             format: 'image/png',
             tileMatrixSet: 'WGS84G',
             zoom: {
@@ -112,7 +110,6 @@ describe('Provide in Sources', function () {
         colorlayer.source = new WMSSource({
             url: 'http://',
             name: 'name',
-            protocol: 'wms',
             format: 'image/png',
             extent: [-90, 90, -45, 45],
             projection: 'EPSG:4326',
