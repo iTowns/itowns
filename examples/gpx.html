@@ -25,9 +25,6 @@
 
             setupLoadingScreen(viewerDiv, view);
 
-            function addLayerCb(layer) {
-                view.addLayer(layer);
-            }
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
@@ -46,15 +43,59 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
+            // update the waypoint
+            var distance, scale;
+            function updatePointScale(renderer, scene, camera) {
+                distance = camera.position.distanceTo(this.geometry.boundingSphere.center);
+                scale = Math.max(2, Math.min(100, distance / renderer.getSize().height));
+                this.scale.set(scale, scale, scale);
+                this.updateMatrixWorld();
+            }
+
+            var waypointGeometry = new itowns.THREE.BoxGeometry(1, 1, 80);
+            var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
             // Listen for globe full initialisation event
+            var waypoints = [];
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
-                itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx').then(xml => itowns.GpxParser.parse(xml, { crs: view.referenceCrs })).then(function (gpx) {
-                    if (gpx) {
-                        view.scene.add(gpx);
-                        view.controls.setTilt(45, true);
-                    }
-                });
+                itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
+                    .then(gpx => itowns.GpxParser.parse(gpx, {
+                        buildExtent: true,
+                        crsIn: 'EPSG:4326',
+                        crsOut: view.referenceCrs,
+                        mergeFeatures: true,
+                    }))
+                    .then(features => itowns.Feature2Mesh.convert({
+                        color: new itowns.THREE.Color(0xff0000),
+                    })(features))
+                    .then(function (mesh) {
+                        if (mesh) {
+                            mesh.traverse((m) => {
+                                if (m.type == 'Line') {
+                                    m.material.linewidth = 5;
+                                }
+
+                                if (m.type == 'Points') {
+                                    var vertices = m.feature.vertices;
+                                    for (var i = 0; i < vertices.length; i++) {
+                                        var waypoint = new itowns.THREE.Mesh(waypointGeometry, waypointMaterial);
+                                        waypoint.position.set(
+                                            vertices[i * 3],
+                                            vertices[i * 3 + 1],
+                                            vertices[i * 3 + 2]);
+                                        waypoint.lookAt(0, 0, 0);
+                                        waypoint.onBeforeRender = updatePointScale;
+                                        waypoint.updateMatrixWorld();
+                                        waypoints.push(waypoint);
+                                    }
+                                }
+                            });
+                            mesh.add(...waypoints);
+                            mesh.updateMatrixWorld();
+                            view.scene.add(mesh);
+                            view.controls.setTilt(45, true);
+                        }
+                    });
             });
         </script>
     </body>
