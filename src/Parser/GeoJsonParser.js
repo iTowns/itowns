@@ -289,6 +289,23 @@ function readFeatures(crsIn, crsOut, features, filteringExtent, options) {
 }
 
 /**
+ * @typedef {Object} geojsonParserOptions
+ * @property {string} crsOut - The CRS to convert the input coordinates
+ * to.
+ * @property {string} crsIn - Override the data CRS.
+ * @property {Extent} [filteringExtent] - Optional filter to reject
+ * features outside of this extent.
+ * @property {boolean} [buildExtent=false] - If true the geometry will
+ * have an extent property containing the area covered by the geom
+ * @property {function} [filter] - Filter function to remove features
+ * @property {boolean} [mergeFeatures=true] - If true all geometries are merged by type and multi-type
+ * @property {boolean} [withNormal=true] - If true each coordinate normal is computed
+ * @property {boolean} [withAltitude=true] - If true each coordinate altitude is kept
+ * @property {boolean} [overrideAltitudeInToZero=false] - If true, the altitude of the source data isn't taken into account for 3D geometry convertions.
+ * the altitude will be override to 0. This can be useful if you don't have a DEM or provide a new one when converting (with Layer.convert).
+ */
+
+/**
  * The GeoJsonParser module provide a [parse]{@link module:GeoJsonParser.parse}
  * method that takes a GeoJSON in and gives an object formatted for iTowns
  * containing all necessary informations to display this GeoJSON.
@@ -357,20 +374,7 @@ export default {
      * module:GeoJsonParser~FeatureCollection}.
      *
      * @param {string} json - The GeoJSON file content to parse.
-     * @param {Object} options - Options controlling the parsing.
-     * @param {string} options.crsOut - The CRS to convert the input coordinates
-     * to.
-     * @param {string} options.crsIn - Override the data CRS.
-     * @param {Extent} [options.filteringExtent] - Optional filter to reject
-     * features outside of this extent.
-     * @param {boolean} [options.buildExtent=false] - If true the geometry will
-     * have an extent property containing the area covered by the geom
-     * @param {function} [options.filter] - Filter function to remove features
-     * @param {boolean} [options.mergeFeatures=true] - If true all geometries are merged by type and multi-type
-     * @param {boolean} [options.withNormal=true] - If true each coordinate normal is computed
-     * @param {boolean} [options.withAltitude=true] - If true each coordinate altitude is kept
-     * @param {boolean} [options.overrideAltitudeInToZero=false] - If true, the altitude of the source data isn't taken into account for 3D geometry convertions.
-     * the altitude will be override to 0. This can be useful if you don't have a DEM or provide a new one when converting (with Layer.convert).
+     * @param {geojsonParserOptions} options - Options controlling the parsing.
      *
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.

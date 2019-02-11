@@ -60,5 +60,6 @@ export { default as OrientedImageSource } from 'Source/OrientedImageSource';
 // takes the data as the first argument and options as the second.
 export { default as GpxParser } from 'Parser/GpxParser';
 export { default as GeoJsonParser } from 'Parser/GeoJsonParser';
+export { default as KMLParser } from 'Parser/KMLParser';
 export { default as CameraCalibrationParser } from 'Parser/CameraCalibrationParser';
 export { default as BatchTableHierarchyExtensionParser } from 'Parser/BatchTableHierarchyExtensionParser';
