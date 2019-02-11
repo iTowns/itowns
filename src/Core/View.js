@@ -191,11 +191,6 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
                 providerPreprocessing = Promise.resolve();
             }
         } else if (layer.source) {
-            // TODO: move to dataSourceProvider
-            // Tempory fix, because sourceFile loads data in his constructor
-            // while it should be loaded in the provider
-            layer.source.toTexture = !layer.isGeometryLayer;
-
             if (!layer.source.isSource) {
                 console.warn('Deprecation warning: passing a source as an object is deprecated. Instantiate the source before adding it to the layer instead.');
                 const protocol = layer.source.protocol;
