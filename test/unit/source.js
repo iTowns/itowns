@@ -92,16 +92,43 @@ describe('Source', function () {
         assert.ok(source.extentInsideLimit(extent));
         assert.ok(source.extentsInsideLimit([extent, extent]));
     });
-    it('Should instance and use FileSource', function () {
+    it('Should instance and use FileSource with url', function () {
         Fetcher.text = function () { return geojson.promise; };
         const source = new FileSource({
             url: '..',
             projection: 'EPSG:4326',
-        }, 'EPSG:4326');
+        });
 
         const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
-        source.whenReady.then(() => assert.equal(source.parsedData.features[0].geometry.length, 3));
         assert.ok(source.urlFromExtent(extent));
+        assert.ok(!source.fetchedData);
+        assert.ok(!source.parsedData);
+        assert.ok(source.isFileSource);
+    });
+    it('Should instance and use FileSource with fetchedData', function () {
+        Fetcher.text = function () { return geojson.promise; };
+        const source = new FileSource({
+            fetchedData: { foo: 'bar' },
+            projection: 'EPSG:4326',
+        });
+
+        const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
+        assert.ok(source.urlFromExtent(extent).startsWith('fake-file-url'));
+        assert.ok(source.fetchedData);
+        assert.ok(!source.parsedData);
+        assert.ok(source.isFileSource);
+    });
+    it('Should instance and use FileSource with parsedData', function () {
+        Fetcher.text = function () { return geojson.promise; };
+        const source = new FileSource({
+            parsedData: { foo: 'bar' },
+            projection: 'EPSG:4326',
+        });
+
+        const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
+        assert.ok(source.urlFromExtent(extent).startsWith('fake-file-url'));
+        assert.ok(!source.fetchedData);
+        assert.ok(source.parsedData);
         assert.ok(source.isFileSource);
     });
     it('Should instance and use StaticSource', function () {
