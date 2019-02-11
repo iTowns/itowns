@@ -93,24 +93,28 @@
                     projection: 'EPSG:4326',
                     extent: extent,
                     zoom: { min: 0, max: 6 },
-                }, view.tileLayer.extent.crs());
+                    fetcher: itowns.Fetcher.xml,
+                    parser: itowns.KMLParser.parse,
+                });
             var kmlLayer = new itowns.ColorLayer('Kml', {
                 transparent: true,
                 source: kmlSource,
             });
             view.addLayer(kmlLayer);
 
-            var kmlSource = new itowns.FileSource({
+            var gpxSource = new itowns.FileSource({
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.gpx',
                     projection: 'EPSG:4326',
                     zoom: { min: 0, max: 6 },
-                }, view.tileLayer.extent.crs());
+                    fetcher: itowns.Fetcher.xml,
+                    parser: itowns.GpxParser.parse,
+                });
             var gpxLayer = new itowns.ColorLayer('Gpx', {
                 transparent: true,
                 style: {
                     stroke: 'blue',
                 },
-                source: kmlSource,
+                source: gpxSource,
             });
             view.addLayer(gpxLayer);
 
@@ -119,7 +123,9 @@
                     projection: 'EPSG:3946',
                     extent: extent,
                     zoom: { min: 0, max: 6 },
-                }, view.tileLayer.extent.crs());
+                    fetcher: itowns.Fetcher.json,
+                    parser: itowns.GeoJsonParser.parse,
+                });
             var geoLayer = new itowns.ColorLayer('geo', {
                 transparent: true,
                 source: geoSource,

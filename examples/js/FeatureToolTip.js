@@ -35,6 +35,9 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
             // convert degree precision
             for (i = 0; i < layers.length; i++) {
                 layer = layers[i];
+
+                if (!layer.source.parsedData) { continue; }
+
                 result = itowns.FeaturesUtils.filterFeaturesUnderCoordinate(
                     geoCoord, layer.source.parsedData, precision);
 

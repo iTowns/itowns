@@ -68,7 +68,7 @@
                 projection: 'EPSG:4326',
                 format: 'application/json',
                 zoom: { min: 7, max: 7 },
-            }, view.referenceCrs);
+            });
 
             view.addLayer(ariege).then(function menue(layer) {
                 var gui = debug.GeometryDebug
