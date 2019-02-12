@@ -1,5 +1,4 @@
-'use strict';
-
+const env = require('jsdoc/env');
 const fs = require('jsdoc/fs');
 const path = require('jsdoc/path');
 const template = require('jsdoc/template');
@@ -12,28 +11,28 @@ let view;
 let data;
 
 function find(spec) {
-    let res = helper.find(data, spec);
+    const res = helper.find(data, spec);
     return res.sort((a, b) => {
         const A = a.name.toUpperCase();
         const B = b.name.toUpperCase();
 
-        if (A < B) return -1;
-        if (A > B) return 1;
+        if (A < B) { return -1; }
+        if (A > B) { return 1; }
         return 0;
     });
 }
 
 function linkToSource(filename, path) {
     const location = path.split('src')[1];
-    return 'src' + location + '/' + filename;
+    return `src${location}/${filename}`;
 }
 
 function rank(properties) {
     const res = [];
     let parent;
 
-    properties.forEach(property => {
-        if (property.name.startsWith(parent + '.')) {
+    properties.forEach((property) => {
+        if (property.name.startsWith(`${parent}.`)) {
             res[res.length - 1].subprop.push(property);
         } else {
             property.subprop = [];
@@ -50,17 +49,17 @@ function sortByPackage(members, navList) {
     const invertedNavList = {};
 
     for (const type in navList) {
-        navList[type].forEach(e => invertedNavList[e] = type);
+        navList[type].forEach((e) => { invertedNavList[e] = type; });
         packages[type] = [];
     }
 
     for (const type in members) {
         const member = members[type];
-        if (!member || type == 'globals' || type == 'tutorials') continue;
-        member.forEach(m => {
+        if (!member || type == 'globals' || type == 'tutorials') { continue; }
+        member.forEach((m) => {
             const p = invertedNavList[m.name] || invertedNavList[m.memberof];
-            if (!p) return;
-            packages[p].push(m)
+            if (!p) { return; }
+            packages[p].push(m);
         });
     }
 
@@ -82,16 +81,16 @@ function buildPages(packages) {
         fs.mkPath(path.join(outDir, 'api', packageName));
 
         // first pass for registering links
-        packages[packageName].forEach(page => {
-            page.url = 'api/' + packageName + '/' + page.name + '.html';
+        packages[packageName].forEach((page) => {
+            page.url = `api/${packageName}/${page.name}.html`;
             helper.registerLink(page.longname, page.url);
         });
-    };
+    }
 
     for (const packageName in packages) {
         // second pass to generate pages
-        packages[packageName].forEach(page => {
-            generate(page.name + ' - iTowns documentation', page, page.url);
+        packages[packageName].forEach((page) => {
+            generate(`${page.name} - iTowns documentation`, page, page.url);
         });
     }
 }
@@ -101,22 +100,22 @@ function buildTutorials(tutorials) {
 
     fs.mkPath(path.join(outDir, 'tutorials'));
 
-    tutorials.children.forEach(tutorial => {
-        const url = path.join('tutorials', tutorial.name + '.html');
-        generate('Tutorial: ' + tutorial.title, tutorial.parse(), url, 'tutorial.tmpl');
+    tutorials.children.forEach((tutorial) => {
+        const url = path.join('tutorials', `${tutorial.name}.html`);
+        generate(`Tutorial: ${tutorial.title}`, tutorial.parse(), url, 'tutorial.tmpl');
     });
 
     // Copy images resources
     const fromDir = path.join(__dirname, 'tutorials/images');
     const images = fs.ls(fromDir, 3);
-    images.forEach(filename => {
+    images.forEach((filename) => {
         const toDir = path.join(fs.toDir(filename.replace(fromDir, outDir)), 'tutorials/images');
         fs.mkPath(toDir);
         fs.copyFileSync(filename, toDir);
     });
 }
 
-exports.publish = function(taffyData, opts, tutorials) {
+exports.publish = function publish(taffyData, opts, tutorials) {
     const conf = env.conf.templates || {};
     conf.default = conf.default || {};
 
@@ -124,7 +123,7 @@ exports.publish = function(taffyData, opts, tutorials) {
 
     // Setup the template
     const templatePath = path.normalize(opts.template);
-    view = new template.Template( path.join(templatePath, 'tmpl') );
+    view = new template.Template(path.join(templatePath, 'tmpl'));
     view.find = find;
     view.linkToSource = linkToSource;
     view.rank = rank;
@@ -132,7 +131,7 @@ exports.publish = function(taffyData, opts, tutorials) {
     // Copy static resources
     const fromDir = path.join(templatePath, 'static');
     const staticFiles = fs.ls(fromDir, 3);
-    staticFiles.forEach(filename => {
+    staticFiles.forEach((filename) => {
         const toDir = fs.toDir(filename.replace(fromDir, outDir));
         fs.mkPath(toDir);
         fs.copyFileSync(filename, toDir);
