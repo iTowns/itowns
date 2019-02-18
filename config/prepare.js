@@ -1,4 +1,5 @@
 const chalk = require('chalk');
+const { execSync } = require('child_process');
 
 // Verify Puppeteer configuration
 const pupSkip = process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD;
@@ -21,9 +22,7 @@ if (nodeMajorVersion < minNodeMajorVersion) {
     console.log(chalk.green('Node.js version :', process.versions.node));
 }
 
-const regex = new RegExp(/npm\/([^ ]+)/g);
-const npmVersion = regex.exec(process.env.npm_config_user_agent)[1];
-
+const npmVersion = execSync('npm --version');
 if (npmVersion) {
     console.log(chalk.green('Npm version :', npmVersion), '\n');
 }
