@@ -45,7 +45,7 @@
             });
 
             // limit camera far, to increase performance
-            view.camera.camera3D.far = 100;
+            view.camera.camera3D.far = 10000;
             view.camera.camera3D.near = 0.1;
 
             // open camera fov
@@ -107,7 +107,7 @@
                 // Create oriented image layer
                 var olayer = new itowns.OrientedImageLayer('demo_orientedImage', {
                     // Radius in meter of the sphere used as a background.
-                    backgroundDistance: 80,
+                    backgroundDistance: 1200,
                     source: orientedImageSource,
                     orientation: orientation,
                     calibration: calibration,
@@ -140,7 +140,7 @@
                     });
 
                     // create geometry layer for the buildings
-                    var wfsBuildingLayer = new itowns.GeometryLayer('WFS Building', new itowns.THREE.Group(), {
+                    var wfsBuildingLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
                         update: itowns.FeatureProcessing.update,
                         convert: itowns.Feature2Mesh.convert({
                             altitude: altitudeBuildings,
@@ -152,8 +152,11 @@
                         overrideAltitudeInToZero: true,
                     });
 
-                    // add the created building layer
-                    view.addLayer(wfsBuildingLayer);
+                    // add the created building layer, and debug UI
+                    view.addLayer(wfsBuildingLayer).then(function addDebugUI(buildingLayer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, buildingLayer);
+                        debug.GeometryDebug.addWireFrameCheckbox(gui, view, buildingLayer);
+                    });
                 });
 
             });
@@ -161,6 +164,9 @@
             /* global itowns, document, GuiTools, view, promises */
             var menuGlobe = new GuiTools('menuDiv');
             menuGlobe.view = view;
+
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
@@ -171,6 +177,7 @@
                 // set camera to current panoramic
                 view.controls.setCameraToCurrentPosition();
                 view.notifyChange(view.camera.camera3D);
+
             });
 
         </script>
