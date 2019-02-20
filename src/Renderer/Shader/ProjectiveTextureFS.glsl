@@ -14,6 +14,6 @@ void main(void)
     }
 
     if (color.a > 0.0) color /= color.a;
-    color.a = 1.;
+    color.a = opacity;
     gl_FragColor = color;
 }

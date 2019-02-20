@@ -1,6 +1,7 @@
 uniform sampler2D projectiveTexture[NUM_TEXTURES];
 varying vec4      projectiveTextureCoords[NUM_TEXTURES];
 uniform float     projectiveTextureAlphaBorder;
+uniform float     opacity;
 
 struct Distortion {
     vec2 size;

@@ -50,7 +50,7 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
     constructor(cameras, options = {}) {
         options.side = options.side !== undefined ? options.side : THREE.DoubleSide;
         options.transparent = options.transparent !== undefined ? options.transparent : true;
-        options.opacity = options.opacity !== undefined ? options.opacity : 0.1;
+        options.opacity = options.opacity !== undefined ? options.opacity : 1;
         super(options);
 
         this.defines.NUM_TEXTURES = cameras.length;
@@ -91,6 +91,7 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
             this.group.add(camera);
         }
 
+        this.uniforms.opacity = new THREE.Uniform(this.opacity);
         this.uniforms.projectiveTextureAlphaBorder = new THREE.Uniform(this.alphaBorder);
         this.uniforms.projectiveTextureDistortion = new THREE.Uniform(distortion);
         this.uniforms.projectiveTextureMatrix = new THREE.Uniform(textureMatrix);
