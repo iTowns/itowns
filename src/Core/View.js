@@ -612,6 +612,10 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...whe
             const layer = (typeof (source) === 'string') ?
                 this.getLayerById(source) :
                 source;
+            if (!layer || !layer.ready) {
+                console.warn('view.pickObjectAt : layer is not ready : ', source);
+                continue;
+            }
 
             const parentLayer = this.getParentLayer(layer);
             if (!parentLayer) {
