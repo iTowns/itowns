@@ -115,7 +115,10 @@ class AnimationPlayer extends THREE.EventDispatcher {
         const promise = new Promise((r) => { this.resolveWait = r; });
         const timew = Math.floor(FRAME_DURATION * waitingFrame);
         window.clearInterval(this.waitTimer);
-        this.waitTimer = window.setTimeout(() => { this.play(animation).then(() => this.resolveWait()); }, timew);
+        const self = this;
+        this.waitTimer = window.setTimeout(() => {
+            self.play(animation).then(() => self.resolveWait());
+        }, timew);
         return promise;
     }
 

@@ -145,10 +145,9 @@ export default {
                 node.layerUpdateState[layer.id].failure(0, true);
             } else {
                 node.layerUpdateState[layer.id].failure(Date.now());
-                setTimeout(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000,
-                    () => {
-                        context.view.notifyChange(layer, false);
-                    });
+                window.setTimeout(context.view.notifyChange,
+                    node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000,
+                    layer, false);
             }
         });
     },
