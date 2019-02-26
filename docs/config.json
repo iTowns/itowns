@@ -52,6 +52,7 @@
             "src/Parser/B3dmParser.js",
             "src/Parser/BatchTableParser.js",
             "src/Parser/BatchTableHierarchyExtensionParser.js",
+            "src/Parser/ShapefileParser.js",
 
             "src/Renderer/OrientedImageMaterial.js",
             "src/Renderer/ColorLayersOrdering.js",

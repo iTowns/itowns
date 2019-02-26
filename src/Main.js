@@ -60,3 +60,4 @@ export { default as GeoJsonParser } from 'Parser/GeoJsonParser';
 export { default as KMLParser } from 'Parser/KMLParser';
 export { default as CameraCalibrationParser } from 'Parser/CameraCalibrationParser';
 export { default as BatchTableHierarchyExtensionParser } from 'Parser/BatchTableHierarchyExtensionParser';
+export { default as ShapefileParser } from 'Parser/ShapefileParser';

@@ -54,7 +54,8 @@
         "CameraCalibrationParser",
         "B3dmParser",
         "BatchTableParser",
-        "BatchTableHierarchyExtensionParser"
+        "BatchTableHierarchyExtensionParser",
+        "ShapefileParser"
     ],
 
     "Converter": [

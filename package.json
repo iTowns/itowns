@@ -42,6 +42,7 @@
     "earcut": "^2.1.5",
     "js-priority-queue": "^0.1.5",
     "pbf": "^3.1.0",
+    "shpjs": "^3.4.3",
     "text-encoding-utf-8": "^1.0.2"
   },
   "peerDependencies": {
