@@ -73,6 +73,17 @@
             <?js if (i < statics.length - 1) { ?><hr/><?js } ?>
         <?js }); ?>
     <?js } ?>
+
+    <?js
+        var typedefs = self.find({kind: 'typedef', memberof: content.longname });
+        if (typedefs && typedefs.length) {
+    ?>
+        <h2>Types</h2>
+        <?js typedefs.forEach(function(typedef, i) { ?>
+            <?js= self.partial('typedef.tmpl', typedef) ?>
+            <?js if (i < typedefs.length - 1) { ?><hr/><?js } ?>
+        <?js }); ?>
+    <?js } ?>
 <?js } ?>
 
 <?js= self.partial('source.tmpl', content) ?>

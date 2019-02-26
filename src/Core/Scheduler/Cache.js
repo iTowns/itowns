@@ -27,8 +27,7 @@ const Cache = {
      * Cache policies for flushing. Those policies can be used when something is
      * [set]{@link Cache.set} into the Cache, as the lifetime property.
      *
-     * @name module:Cache
-     * @typedef {Object} module:Cache.POLICIES
+     * @typedef {Object} POLICIES
      *
      * @property INFINITE - The entry is never flushed, except when the
      * <code>all</code> flag is set to <code>true</code> when calling {@link
