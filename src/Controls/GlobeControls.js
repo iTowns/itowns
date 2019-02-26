@@ -1171,7 +1171,7 @@ GlobeControls.prototype.setCameraTargetGeoPosition = function setCameraTargetGeo
  * Zoom parameter is ignored if range is set
  * The tilt's interval is between 4 and 89.5 degree
  *
- * @param      {cameraTransformOptions}   params camera transformation to apply
+ * @param      {CameraUtils~CameraTransformOptions}   params camera transformation to apply
  * @param      {number}   [params.zoom]   zoom
  * @param      {number}   [params.scale]   scale
  * @param      {boolean}  isAnimated  Indicates if animated

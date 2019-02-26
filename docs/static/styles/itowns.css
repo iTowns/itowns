@@ -88,15 +88,15 @@ h4 {
     margin-top: 18px;
 }
 
-.property h3, .method h3 {
+.property h3, .method h3, .typedef h3 {
     font-family: Consolas, monospace;
 }
 
-.method .type, .property .type {
+.method .type, .property .type, .typedef .type {
     color: #968d86;
 }
 
-.method-name, .property-name {
+.method-name, .property-name, .typedef-name {
     color: #6091b2;
 }
 

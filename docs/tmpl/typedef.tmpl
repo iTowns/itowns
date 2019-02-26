@@ -1,0 +1,19 @@
+<?js
+    var typedef = obj;
+    var self = this;
+?>
+
+<div class="typedef">
+    <h3>
+        <span class="typedef-name"><?js= typedef.name ?></span>
+        : <?js= self.partial('type.tmpl', typedef.type.names).trim() ?>
+    </h3>
+
+    <?js= self.partial('params.tmpl', typedef.properties) ?>
+
+    <?js if (typedef.description) { ?>
+        <div class="description">
+            <?js= typedef.description ?>
+        </div>
+    <?js } ?>
+</div>

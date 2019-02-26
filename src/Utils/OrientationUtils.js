@@ -49,18 +49,6 @@ var quaternionENUFromGeodesicNormal = (() => {
     };
 })();
 
-/**
- *
- * @typedef Attitude
- * @type {Object}
- *
- * @property {Number} omega - angle in degrees
- * @property {Number} phi - angle in degrees
- * @property {Number} kappa - angle in degrees
- * @property {Number} roll - angle in degrees
- * @property {Number} pitch - angle in degrees
- * @property {Number} heading - angle in degrees
- */
 
 
 const ENUQuat = new THREE.Quaternion();
@@ -70,9 +58,20 @@ const ENUQuat = new THREE.Quaternion();
  */
 export default {
     /**
-     * @param {Attitude} attitude - [Attitude]{@link module:OrientationParser~Attitude}
-     * with properties: (omega, phi, kappa), (roll, pitch, heading) or none.
-     * Note that convergence of the meridians is not taken into account.
+     * @typedef {Object} Attitude
+     *
+     * @property {Number} omega - angle in degrees
+     * @property {Number} phi - angle in degrees
+     * @property {Number} kappa - angle in degrees
+     * @property {Number} roll - angle in degrees
+     * @property {Number} pitch - angle in degrees
+     * @property {Number} heading - angle in degrees
+     */
+
+    /**
+     * @param {Attitude} attitude - Attitude with properties:
+     * (omega, phi, kappa), (roll, pitch, heading) or none. Note that
+     * convergence of the meridians is not taken into account.
      * @param {THREE.Quaternion} target Quaternion to set
      *
      * @return {THREE.Quaternion} Quaternion representing the rotation
@@ -88,8 +87,8 @@ export default {
     },
 
     /**
-     * @param {Attitude} attitude - [Attitude]{@link module:OrientationParser~Attitude}
-     * with properties: (omega, phi, kappa), (roll, pitch, heading) or none.
+     * @param {Attitude} attitude - Attitude with properties:
+     * (omega, phi, kappa), (roll, pitch, heading) or none.
      * @param {Coordinates} coordinate position on the globe
      * @param {THREE.Quaternion} target Quaternion to set
      *
@@ -105,7 +104,8 @@ export default {
     /** Read rotation information (roll pitch heading or omega phi kappa),
      * Create a ThreeJs quaternion representing a rotation.
      *
-     * @param {Attitude} attitude - [Attitude]{@link module:OrientationParser~Attitude}
+     * @param {Attitude} attitude - Attitude with properties:
+     * (omega, phi, kappa), (roll, pitch, heading) or none.
      * @param {Coordinates} coordinate position the oject (used to apply another rotation on Globe CRS)
      * @param {Boolean} needsENUFromGeodesicNormal should be true on globe CRS.
      * If true, we will apply another rotation : The rotation use to create ENU local space at coordinate parameter position.

@@ -14,7 +14,7 @@ export default {
      * module:GeoJsonParser~FeatureCollection}.
      *
      * @param {XMLDocument} gpx - The GPX file content to parse.
-     * @param {geojsonParserOptions} options - Options controlling the parsing.
+     * @param {GeoJsonParser~GeoJsonParserOptions} options - Options controlling the parsing.
      *
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
