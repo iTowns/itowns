@@ -18,26 +18,7 @@ function applyToNodeFirstMaterial(view, root, layer, cb) {
     view.notifyChange();
 }
 
-let _showInfo;
-let showOutline;
 let selectedNode;
-let selectedId;
-
-function selectTile(node) {
-    if (node.material) {
-        const selected = node.id === selectedId;
-        node.material.overlayAlpha = selected ? 0.5 : 0;
-        node.material.showOutline = selected ? true : showOutline;
-        if (selected) {
-            selectedNode = node;
-            if (_showInfo) {
-                // eslint-disable-next-line no-console
-                console.info(node);
-            }
-        }
-    }
-}
-
 /**
  * Select tile
  *
@@ -48,17 +29,24 @@ function selectTile(node) {
  * @return     {TileMesh} Selected tile.
  */
 function selectTileAt(view, mouseOrEvt, showInfo = true) {
-    const picked = view.tileLayer.pickObjectsAt(view, mouseOrEvt);
-    selectedId = picked.length ? picked[0].object.id : undefined;
-    selectedNode = undefined;
-    _showInfo = showInfo;
-    showOutline = view.tileLayer.showOutline;
-
-    for (const n of view.tileLayer.level0Nodes) {
-        n.traverse(selectTile);
+    if (selectedNode) {
+        selectedNode.material.overlayAlpha = 0;
+        selectedNode.material.showOutline = view.tileLayer.showOutline;
+        view.notifyChange(selectedNode);
     }
 
-    view.notifyChange();
+    const picked = view.tileLayer.pickObjectsAt(view, mouseOrEvt);
+    selectedNode = picked.length ? picked[0].object : undefined;
+
+    if (selectedNode) {
+        if (showInfo) {
+            // eslint-disable-next-line no-console
+            console.info(selectedNode);
+        }
+        selectedNode.material.overlayAlpha = 0.5;
+        selectedNode.material.showOutline = true;
+        view.notifyChange(selectedNode);
+    }
     return selectedNode;
 }
 
