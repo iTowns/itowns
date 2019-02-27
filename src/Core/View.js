@@ -133,10 +133,9 @@ function _createLayerFromConfig(config) {
             return new ColorLayer(config.id, config);
         case 'elevation':
             return new ElevationLayer(config.id, config);
-        case 'geometry':
-            return new GeometryLayer(config.id, new THREE.Group(), config);
+        case 'geometry' :
         case 'debug':
-            return new Layer(config.id, 'debug', config);
+            return new GeometryLayer(config.id, new THREE.Group(), config);
         default:
             throw new Error(`Unknown layer type ${config.type}: please
                 specify a valid one`);
@@ -169,8 +168,8 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         }
     }
 
-    if (layer.isGeometryLayer || layer.type == 'debug') {
-        if (parentLayer || layer.type == 'debug') {
+    if (layer.isGeometryLayer) {
+        if (parentLayer) {
             // layer.threejsLayer *must* be assigned before preprocessing,
             // because TileProvider.preprocessDataLayer function uses it.
             layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();

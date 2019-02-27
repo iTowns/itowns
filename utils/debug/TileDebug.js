@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import TWEEN from '@tweenjs/tween.js';
 import View from 'Core/View';
-import Layer from 'Layer/Layer';
+import GeometryLayer from 'Layer/GeometryLayer';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import TileObjectChart from './charts/TileObjectChart';
@@ -193,7 +193,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         }
     }
 
-    const obbLayer = new Layer(obb_layer_id, 'debug', {
+    const obbLayer = new GeometryLayer(obb_layer_id, new THREE.Object3D(), {
         update: debugIdUpdate,
         visible: false,
     });
@@ -204,7 +204,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         });
     });
 
-    const sbLayer = new Layer(sb_layer_id, 'debug', {
+    const sbLayer = new GeometryLayer(sb_layer_id, new THREE.Object3D(), {
         update: debugIdUpdate,
         visible: false,
     });

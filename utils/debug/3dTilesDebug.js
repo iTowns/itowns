@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import View from 'Core/View';
-import Layer from 'Layer/Layer';
+import GeometryLayer from 'Layer/GeometryLayer';
 import GeometryDebug from './GeometryDebug';
 import OBBHelper from './OBBHelper';
 
@@ -97,7 +97,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
         }
     };
 
-    const obbLayer = new Layer(obb_layer_id, 'debug', {
+    const obbLayer = new GeometryLayer(obb_layer_id, new THREE.Object3D(), {
         update: debugIdUpdate,
         visible: false,
     });

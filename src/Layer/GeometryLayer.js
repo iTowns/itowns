@@ -116,7 +116,7 @@ class GeometryLayer extends Layer {
         });
 
         this.attachedLayers = [];
-        this.visible = true;
+        this.visible = config.visible == undefined ? true : config.visible;
 
         // Attached layers expect to receive the visual representation of a
         // layer (= THREE object with a material).  So if a layer's update
