@@ -36,8 +36,13 @@ describe('3dtiles', function _() {
 
     it('should remove GeometryLayer', async () => {
         const countGeometryLayerStart = await page.evaluate(() => view.getLayers(l => l.isGeometryLayer).length);
+        const attachedGeometricLayerCount = await page.evaluate(() => {
+            const attachedLayers = view.getLayerById('3d-tiles-discrete-lod').attachedLayers.filter(l => l.isGeometryLayer);
+            return attachedLayers.length;
+        });
         await page.evaluate(() => view.removeLayer('3d-tiles-discrete-lod'));
         const countGeometryLayerEnd = await page.evaluate(() => view.getLayers(l => l.isGeometryLayer).length);
-        assert.ok(countGeometryLayerStart - countGeometryLayerEnd === 1);
+        // the attached GeometryLayers are, also, removed.
+        assert.equal(countGeometryLayerStart - countGeometryLayerEnd, 1 + attachedGeometricLayerCount);
     });
 });
