@@ -128,7 +128,8 @@ function Debug(view, datDebugTool, chartDivContainer) {
     debugCamera.updateProjectionMatrix();
     const g = view.mainLoop.gfxEngine;
     const r = g.renderer;
-    let fogDistance = view.fogDistance;
+    const layerAtmosphere = view.getLayerById('atmosphere');
+    let fogDistance = layerAtmosphere.fog.distance;
     helper.visible = false;
     view.scene.add(helper);
 
@@ -186,8 +187,8 @@ function Debug(view, datDebugTool, chartDivContainer) {
             }
 
             debugCamera.updateProjectionMatrix();
-            if (view.atmosphere) {
-                view.atmosphere.visible = false;
+            if (layerAtmosphere) {
+                layerAtmosphere.object3d.visible = false;
             }
             fogDistance = 10e10;
             for (const obj of tileLayer.level0Nodes) {
@@ -206,10 +207,10 @@ function Debug(view, datDebugTool, chartDivContainer) {
             r.setClearColor(bClearColor);
             helper.visible = false;
             displayedTilesObbHelper.visible = false;
-            if (view.atmosphere) {
-                view.atmosphere.visible = true;
+            if (layerAtmosphere) {
+                layerAtmosphere.object3d.visible = true;
             }
-            fogDistance = view.fogDistance;
+            fogDistance = layerAtmosphere.fog.distance;
             for (const obj of tileLayer.level0Nodes) {
                 obj.traverseVisible(updateFogDistance);
             }

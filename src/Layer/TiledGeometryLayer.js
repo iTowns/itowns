@@ -49,10 +49,6 @@ class TiledGeometryLayer extends GeometryLayer {
         this.isTiledGeometryLayer = true;
 
         this.protocol = 'tile';
-        this.lighting = {
-            enable: false,
-            position: { x: -0.5, y: 0.0, z: 1.0 },
-        };
 
         this.sseSubdivisionThreshold = this.sseSubdivisionThreshold || 1.0;
 
@@ -229,11 +225,6 @@ class TiledGeometryLayer extends GeometryLayer {
             }
 
             if (node.material.visible) {
-                // update uniforms
-                if (context.view.fogDistance != undefined) {
-                    node.material.fogDistance = context.view.fogDistance;
-                }
-
                 if (!requestChildrenUpdate) {
                     return ObjectRemovalHelper.removeChildren(this, node);
                 }

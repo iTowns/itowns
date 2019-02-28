@@ -7,7 +7,6 @@ import RenderMode from 'Renderer/RenderMode';
 
 import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 
-import Layer from 'Layer/Layer';
 import ColorLayer from 'Layer/ColorLayer';
 import ElevationLayer from 'Layer/ElevationLayer';
 import GeometryLayer from 'Layer/GeometryLayer';

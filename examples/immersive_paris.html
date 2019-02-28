@@ -53,7 +53,7 @@
             view.camera.camera3D.updateProjectionMatrix();
 
             // disable atmosphere
-            view.atmosphere.visible = false;
+            view.getLayerById('atmosphere').visible = false;
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js

@@ -40,7 +40,7 @@ var skyShader = {
             type: 'f',
             value: 0.8,
         },
-        sunPosition: {
+        v3LightPosition: {
             type: 'v3',
             value: new THREE.Vector3(),
         },
@@ -69,7 +69,7 @@ var skyShader = {
     fragmentShader: [
 
         'uniform sampler2D skySampler;',
-        'uniform vec3 sunPosition;',
+        'uniform vec3 v3LightPosition;',
         'uniform vec3 up;',
         'varying vec3 vWorldPosition;',
 
@@ -179,11 +179,11 @@ var skyShader = {
         '{',
         'vec3 up2 = normalize(cameraPosition.xyz);',
 
-        'float sunfade = 1.0-clamp(1.0-exp((sunPosition.y/450000.0)),0.0,1.0);',
+        'float sunfade = 1.0-clamp(1.0-exp((v3LightPosition.y/450000.0)),0.0,1.0);',
 
         'float reileighCoefficient = reileigh - (1.0* (1.0-sunfade));',
 
-        'vec3 sunDirection = normalize(sunPosition);',
+        'vec3 sunDirection = normalize(v3LightPosition);',
 
         'float sunE = sunIntensity(dot(sunDirection, up2));',
 
@@ -261,25 +261,22 @@ var skyShader = {
 
 };
 
-function Sky() {
-    var skyUniforms = THREE.UniformsUtils.clone(skyShader.uniforms);
+class Sky extends THREE.Mesh {
+    constructor() {
+        var skyUniforms = THREE.UniformsUtils.clone(skyShader.uniforms);
 
-    var skyMat = new THREE.ShaderMaterial({
-        fragmentShader: skyShader.fragmentShader,
-        vertexShader: skyShader.vertexShader,
-        uniforms: skyUniforms,
-        side: THREE.BackSide,
-    });
+        var skyMat = new THREE.ShaderMaterial({
+            fragmentShader: skyShader.fragmentShader,
+            vertexShader: skyShader.vertexShader,
+            uniforms: skyUniforms,
+            side: THREE.BackSide,
+            transparent: true,
+            depthWrite: false,
+        });
 
-    var skyGeo = new THREE.SphereBufferGeometry(40000, 32, 15);
-    var skyMesh = new THREE.Mesh(skyGeo, skyMat);
-
-
-    // Expose variables
-    this.mesh = skyMesh;
-    this.uniforms = skyUniforms;
+        var skyGeo = new THREE.SphereBufferGeometry(40000, 32, 15);
+        super(skyGeo, skyMat);
+    }
 }
-// Sky.prototype = Object.create(THREE.EventDispatcher.prototype);
-Sky.prototype.constructor = Sky;
 
 export default Sky;
