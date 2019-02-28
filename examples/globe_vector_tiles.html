@@ -33,7 +33,7 @@
             // define pole texture
             view.tileLayer.noTextureColor = new itowns.THREE.Color(0x95c1e1);
 
-            view.atmosphere.visible = false;
+            view.getLayerById('atmosphere').visible = false;
 
             setupLoadingScreen(viewerDiv, view);
 

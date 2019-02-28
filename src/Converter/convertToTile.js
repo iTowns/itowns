@@ -74,9 +74,6 @@ export default {
 
         tile.add(tile.obb);
 
-        tile.material.lightingEnable = layer.lighting.enable;
-        tile.material.lightPosition = layer.lighting.position;
-
         if (layer.diffuse) {
             tile.material.diffuse = layer.diffuse;
         }

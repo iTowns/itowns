@@ -61,7 +61,11 @@ and open the template in the editor.
             itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json')
                 .then(createWMTSSourceFromConfig).then(addElevationLayerFromConfig);
 
-            menuGlobe.addGUI('RealisticLighting', false, view.setRealisticLightingOn.bind(view));
+            const atmosphere = view.getLayerById('atmosphere');
+            menuGlobe.addGUI('RealisticLighting', false, function (v) {
+                atmosphere.setRealisticOn(v);
+                view.notifyChange(atmosphere);
+            });
 
             // eslint-disable-next-line prefer-arrow-callback
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function m() {

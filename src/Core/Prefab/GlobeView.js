@@ -7,7 +7,6 @@ import GlobeControls from 'Controls/GlobeControls';
 
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
-import CoordStars from 'Core/Geographic/CoordStars';
 
 import Coordinates, { C, ellipsoidSizes } from 'Core/Geographic/Coordinates';
 
@@ -118,18 +117,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     tileLayer.object3d.add(sun);
 
     this.addLayer(tileLayer);
-
-    // Atmosphere
-    this.atmosphere = new Atmosphere();
-
-    const atmosphereLayer = this.mainLoop.gfxEngine.getUniqueThreejsLayer();
-    this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
-    this.camera.camera3D.layers.enable(atmosphereLayer);
-
-    tileLayer.object3d.add(this.atmosphere);
-    this.atmosphere.updateMatrixWorld(true);
-
-
     // Configure controls
     const positionTargetCamera = positionCamera.clone();
     positionTargetCamera.setAltitude(0);
@@ -142,17 +129,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
     }
 
-    const mfogDistance = ellipsoidSizes.x * 160.0;
     this._fullSizeDepthBuffer = null;
-
-    const renderer = this.mainLoop.gfxEngine.renderer;
-
-    const coordCam = new Coordinates(this.referenceCrs, 0, 0, 0);
-    const coordGeoCam = new C.EPSG_4326();
-    const skyBaseColor = new THREE.Color(0x93d5f8);
-    const colorSky = new THREE.Color();
-    const spaceColor = new THREE.Color(0x030508);
-    const limitAlti = 600000;
 
     this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
         if (this._fullSizeDepthBuffer != null) {
@@ -161,32 +138,9 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         }
     });
 
-    this.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, () => {
-        const v = new THREE.Vector3();
-        v.setFromMatrixPosition(tileLayer.object3d.matrixWorld);
-        var len = v.distanceTo(this.camera.camera3D.position);
-        v.setFromMatrixScale(tileLayer.object3d.matrixWorld);
-
-        // Compute fog distance, this function makes it possible to have a shorter distance
-        // when the camera approaches the ground
-        this.fogDistance = mfogDistance * ((len - ellipsoidSizes.x * 0.99) * 0.25 / ellipsoidSizes.x) ** 1.5;
-
-        // get altitude camera
-        coordCam.set(this.referenceCrs, this.camera.camera3D.position).as('EPSG:4326', coordGeoCam);
-        const altitude = coordGeoCam.altitude();
-
-        // If the camera altitude is below limitAlti,
-        // we interpolate between the sky color and the space color
-        if (altitude < limitAlti) {
-            const t = (limitAlti - altitude) / limitAlti;
-            colorSky.copy(spaceColor).lerp(skyBaseColor, t);
-            renderer.setClearColor(colorSky, renderer.getClearAlpha());
-        } else {
-            renderer.setClearColor(spaceColor, renderer.getClearAlpha());
-        }
-    });
-
     this.tileLayer = tileLayer;
+
+    this.addLayer(new Atmosphere());
 
     const fn = () => {
         this.removeEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
@@ -239,40 +193,6 @@ GlobeView.prototype.removeLayer = function removeLayer(layerId) {
             layerId,
         });
         return true;
-    }
-};
-
-GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
-    const coSun = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35).normalize();
-
-    this.lightingPos = coSun.normalize();
-
-    const lighting = this.tileLayer.lighting;
-    lighting.enable = value;
-    lighting.position = coSun;
-
-    this.atmosphere.setRealisticOn(value);
-    this.atmosphere.updateLightingPos(coSun);
-
-    this.updateMaterialProperty('lightingEnabled', value);
-    this.updateMaterialProperty('lightPosition', coSun);
-    this.notifyChange(this.tileLayer);
-};
-
-GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
-    const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
-
-    this.updateMaterialProperty('lightPosition', lightingPos.clone().normalize());
-    this.notifyChange(this.tileLayer);
-};
-
-GlobeView.prototype.updateMaterialProperty = function updateMaterialProperty(property, value) {
-    for (const n of this.tileLayer.level0Nodes) {
-        n.traverse((obj) => {
-            if (obj.material && obj.material[property] !== undefined) {
-                obj.material[property] = value;
-            }
-        });
     }
 };
 

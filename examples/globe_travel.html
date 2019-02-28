@@ -41,7 +41,8 @@
             var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             var time = 50000;
             var pathTravel = [];
-            view.setRealisticLightingOn(true);
+            const atmosphere = view.getLayerById('atmosphere');
+            atmosphere.setRealisticOn(value);
 
             pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', 2.0889, 42.809), range: 100000, time: time * 0.2 });
             pathTravel.push({ range: 13932, time: time * 0.2, tilt: 7.59, heading: -110.9 });
