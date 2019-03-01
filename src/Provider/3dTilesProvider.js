@@ -188,16 +188,16 @@ function preprocessDataLayer(layer, view, scheduler) {
         return init3dTilesLayer(view, scheduler, layer, tileset.root);
     });
 }
-
+const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 function getBox(volume, inverseTileTransform) {
     if (volume.region) {
         const region = volume.region;
-        const extent = new Extent('EPSG:4326',
+        extent.set(
             THREE.Math.radToDeg(region[0]),
             THREE.Math.radToDeg(region[2]),
             THREE.Math.radToDeg(region[1]),
             THREE.Math.radToDeg(region[3]));
-        const box = OBB.extentToOBB(extent, region[4], region[5]);
+        const box = new OBB().setFromExtent(extent);
         // at this point box.matrix = box.epsg4978_from_local, so
         // we transform it in parent_from_local by using parent's epsg4978_from_local
         // which from our point of view is epsg4978_from_parent.

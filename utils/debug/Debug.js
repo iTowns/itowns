@@ -159,7 +159,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
             const camera = view.camera.camera3D;
             const coord = new Coordinates(view.referenceCrs, camera.position).as(tileLayer.extent._crs);
             const extent = view.tileLayer.info.displayed.extent;
-            OBB.extentToOBB(extent, extent.min, extent.max, displayedTilesObb);
+            displayedTilesObb.setFromExtent(extent);
             displayedTilesObbHelper.visible = true;
             displayedTilesObbHelper.update(displayedTilesObb);
 
