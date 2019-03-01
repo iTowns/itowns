@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import TileGeometry from 'Core/TileGeometry';
 import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
+import { crsIsGeocentric } from 'Core/Geographic/Coordinates';
 
 // get oriented bounding box of tile
 const builder = new BuilderEllipsoidTile();
+const size = new THREE.Vector3();
+const center = new THREE.Vector3();
 
 class OBB extends THREE.Object3D {
     /**
@@ -18,6 +21,7 @@ class OBB extends THREE.Object3D {
         this.box3D = new THREE.Box3(min.clone(), max.clone());
         this.natBox = this.box3D.clone();
         this.z = { min: 0, max: 0 };
+        return this;
     }
 
     /**
@@ -110,38 +114,38 @@ class OBB extends THREE.Object3D {
      * @param      {Extent}        extent     The extent (with crs 'EPSG:4326') to compute oriented bounding box
      * @param      {number}        minHeight  The minimum height of OBB
      * @param      {number}        maxHeight  The maximum height of OBB
-     * @param      {OBB}  obb      The obb to copy result
-     * @return     {TileGeometry}  { description_of_the_return_value }
+     * @return     {OBB}           return this object
      */
-    static extentToOBB(extent, minHeight = 0, maxHeight = 0, obb) {
-        if (extent._crs != 'EPSG:4326') {
-            throw new Error('The extent crs is not a Geographic Coordinates (EPSG:4326)');
-        }
+    setFromExtent(extent, minHeight = extent[4] || 0, maxHeight = extent[5] || 0) {
+        if (extent._crs == 'EPSG:4326') {
+            const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
+            // Compute the minimum count of segment to build tile
+            const segment = Math.max(Math.floor(sharableExtent.dimensions().x / 90 + 1), 2);
+            const paramsGeometry = {
+                extent: sharableExtent,
+                level: 0,
+                segment,
+                disableSkirt: true,
+            };
 
-        const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
-        // Compute the minimum count of segment to build tile
-        const segment = Math.max(Math.floor(sharableExtent.dimensions().x / 90 + 1), 2);
-        const paramsGeometry = {
-            extent: sharableExtent,
-            level: 0,
-            segment,
-            disableSkirt: true,
-        };
+            // Calling geometry.dispose() is not needed since this geometry never gets rendered
+            const geometry = new TileGeometry(paramsGeometry, builder);
+            this.copy(geometry.OBB);
 
-        const geometry = new TileGeometry(paramsGeometry, builder);
-        if (obb instanceof OBB) {
-            obb.copy(geometry.OBB);
+            this.updateZ(minHeight, maxHeight);
+            this.position.copy(position);
+            this.quaternion.copy(quaternion);
+            this.updateMatrixWorld(true);
+        } else if (!extent.isTiledCrs() && crsIsGeocentric(extent.crs())) {
+            extent.center().xyz(this.position);
+            const dim = extent.dimensions();
+            size.set(dim.x, dim.y, Math.abs(maxHeight - minHeight));
+            this.box3D.setFromCenterAndSize(center, size);
+            this.updateMatrixWorld(true);
         } else {
-            obb = geometry.OBB;
+            throw new Error('Unsupported extent crs');
         }
-
-        obb.updateZ(minHeight, maxHeight);
-        obb.position.copy(position);
-        obb.quaternion.copy(quaternion);
-        obb.updateMatrixWorld(true);
-
-        // Calling geometry.dispose() is not needed since this geometry never gets rendered
-        return obb;
+        return this;
     }
 }
 
