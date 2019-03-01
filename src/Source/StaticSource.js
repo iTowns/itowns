@@ -33,10 +33,10 @@ class StaticSource extends Source {
      * @param {string}  source.extent It's extent of panoramic's images
     */
     constructor(source) {
-        console.warn('Deprecation warning: this source is going to be removed in iTowns 2.7.0, please consider stop using it.');
-        if (!source.extent) {
-            throw new Error('layer.extent is required');
-        }
+        console.warn('Deprecation warning: this source is going to be removed in iTowns 2.9.0, please consider stop using it.');
+        // if (!source.extent) {
+        //     throw new Error('layer.extent is required');
+        // }
         super(source);
 
         this.isStaticSource = true;

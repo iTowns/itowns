@@ -48,19 +48,18 @@
                     var pano = panoramas[i];
                     var url = new URL(pano['images'], urls[index]);
                     var _id = url.pathname;
-                    view.addLayer({
-                        visible: index == activeIndex,
-                        type: 'color',
-                        id: _id,
-                        source: {
-                            url: url.href,
-                            protocol: 'static',
-                            projection: 'EPSG:4326',
-                        },
+                    var source = new itowns.StaticSource({
+                        url: url.href,
+                        protocol: 'static',
+                        projection: 'EPSG:4326',
                         updateStrategy: {
                             type: itowns.STRATEGY_DICHOTOMY,
                         }
                     });
+                    view.addLayer(new itowns.ColorLayer(_id,{
+                        visible: index == activeIndex,
+                        source,
+                    }));
 
                     layers.push(view.getLayerById(_id));
                     index ++;
