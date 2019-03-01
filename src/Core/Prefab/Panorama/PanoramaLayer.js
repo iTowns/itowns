@@ -50,7 +50,7 @@ class PanoramaLayer extends TiledGeometryLayer {
      * <code>THREE.Object3d</code>.
      */
     constructor(id, coordinates, type, config) {
-        console.warn('Deprecation warning: this layer is going to be removed in iTowns 2.7.0, please consider stop using it.');
+        console.warn('Deprecation warning: this layer is going to be removed in iTowns 2.9.0, please consider stop using it.');
         let schemeTile;
         if (type === ProjectionType.SPHERICAL) {
             // equirectangular -> spherical geometry

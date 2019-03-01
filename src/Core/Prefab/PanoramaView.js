@@ -23,7 +23,7 @@ export function createPanoramaLayer(id, coordinates, type, options = {}) {
  * @param {Object} [options]
  */
 function PanoramaView(viewerDiv, coordinates, type, options = {}) {
-    console.warn('Deprecation warning: this view is going to be removed in iTowns 2.7.0, please consider stop using it.');
+    console.warn('Deprecation warning: this view is going to be removed in iTowns 2.9.0, please consider stop using it.');
     THREE.Object3D.DefaultUp.set(0, 0, 1);
 
     // Setup View
@@ -57,8 +57,8 @@ PanoramaView.prototype.addLayer = function addLayer(layer) {
     if (!layer) {
         return new Promise((resolve, reject) => reject(new Error('layer is undefined')));
     }
-    if (!layer.isColorLayer) {
-        throw new Error(`Unsupported layer type ${layer.type} (PanoramaView only support 'color' layers)`);
+    if (!(layer.isColorLayer || layer.isGeometryLayer)) {
+        throw new Error('Unsupported layer to add');
     }
     return View.prototype.addLayer.call(this, layer, this.tileLayer);
 };

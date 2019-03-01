@@ -128,8 +128,11 @@ function Debug(view, datDebugTool, chartDivContainer) {
     debugCamera.updateProjectionMatrix();
     const g = view.mainLoop.gfxEngine;
     const r = g.renderer;
+    let fogDistance = 10e10;
     const layerAtmosphere = view.getLayerById('atmosphere');
-    let fogDistance = layerAtmosphere.fog.distance;
+    if (layerAtmosphere) {
+        fogDistance = layerAtmosphere.fog.distance;
+    }
     helper.visible = false;
     view.scene.add(helper);
 
@@ -189,10 +192,10 @@ function Debug(view, datDebugTool, chartDivContainer) {
             debugCamera.updateProjectionMatrix();
             if (layerAtmosphere) {
                 layerAtmosphere.object3d.visible = false;
-            }
-            fogDistance = 10e10;
-            for (const obj of tileLayer.level0Nodes) {
-                obj.traverseVisible(updateFogDistance);
+                fogDistance = 10e10;
+                for (const obj of tileLayer.level0Nodes) {
+                    obj.traverseVisible(updateFogDistance);
+                }
             }
             helper.visible = true;
             helper.updateMatrixWorld(true);
@@ -210,9 +213,11 @@ function Debug(view, datDebugTool, chartDivContainer) {
             if (layerAtmosphere) {
                 layerAtmosphere.object3d.visible = true;
             }
-            fogDistance = layerAtmosphere.fog.distance;
-            for (const obj of tileLayer.level0Nodes) {
-                obj.traverseVisible(updateFogDistance);
+            if (layerAtmosphere) {
+                fogDistance = layerAtmosphere.fog.distance;
+                for (const obj of tileLayer.level0Nodes) {
+                    obj.traverseVisible(updateFogDistance);
+                }
             }
         }
     }
