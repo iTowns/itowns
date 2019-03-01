@@ -44,9 +44,10 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             // update the waypoint
-            var distance, scale;
+            var distance, scale, point = new itowns.THREE.Vector3();
             function updatePointScale(renderer, scene, camera) {
-                distance = camera.position.distanceTo(this.geometry.boundingSphere.center);
+                point.copy(this.geometry.boundingSphere.center).applyMatrix4(this.matrixWorld);;
+                distance = camera.position.distanceTo(point);
                 scale = Math.max(2, Math.min(100, distance / renderer.getSize().height));
                 this.scale.set(scale, scale, scale);
                 this.updateMatrixWorld();
