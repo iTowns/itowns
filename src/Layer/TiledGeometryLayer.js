@@ -6,6 +6,7 @@ import convertToTile from 'Converter/convertToTile';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { SIZE_DIAGONAL_TEXTURE } from 'Provider/OGCWebServiceHelper';
+import { ImageryLayers } from 'Layer/Layer';
 
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
@@ -146,6 +147,11 @@ class TiledGeometryLayer extends GeometryLayer {
         if (context.maxElevationLevel == -1) {
             context.maxElevationLevel = Infinity;
         }
+
+        // Prepare ColorLayer sequence order
+        // In this moment, there is only one color layers sequence, because they are attached to tileLayer.
+        // In future, the sequence must be returned by parent geometry layer.
+        context.ColorLayerSequenceOrder = ImageryLayers.getColorLayersIdOrderedBySequence(context.colorLayers);
 
         let commonAncestor;
         for (const source of sources.values()) {

@@ -1,6 +1,5 @@
 import { chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
 import LayerUpdateState from 'Layer/LayerUpdateState';
-import { ImageryLayers } from 'Layer/Layer';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 import { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
 import { computeMinMaxElevation } from 'Parser/XbilParser';
@@ -93,11 +92,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             // Create new MaterialLayer
             const tileMT = layer.options.tileMatrixSet || extentsDestination[0].crs();
             nodeLayer = material.addLayer(layer, tileMT);
-
-            // TODO: Sequence must be returned by parent geometry layer
-            const colorLayers = context.view.getLayers(l => l.isColorLayer);
-            const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(colorLayers);
-            material.setSequence(sequence);
+            material.setSequence(context.ColorLayerSequenceOrder);
 
             // Init the new MaterialLayer by parent
             const parentLayer = parent.material && parent.material.getLayer(layer.id);
