@@ -116,7 +116,7 @@ class OBB extends THREE.Object3D {
      * @param      {number}        maxHeight  The maximum height of OBB
      * @return     {OBB}           return this object
      */
-    setFromExtent(extent, minHeight = extent[4] || 0, maxHeight = extent[5] || 0) {
+    setFromExtent(extent, minHeight = extent.min || 0, maxHeight = extent.max || 0) {
         if (extent._crs == 'EPSG:4326') {
             const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
             // Compute the minimum count of segment to build tile
