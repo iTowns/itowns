@@ -7,22 +7,36 @@ const files = filesExamples.map(f => path.resolve(__dirname.replace('config', ''
 
 const threeSpaceName = 'THREE';
 const spaceName = 'threeExamples';
+const patchs = [];
 
 // Start patching
 // change THREE namespace to new namespace
 // and search build import from three examples and set in importTables
-const from = files.map(file => new RegExp(`THREE.${path.basename(file, '.js')}`, 'g'));
+const from = files.map(file => new RegExp(`${threeSpaceName}.${path.basename(file, '.js')}`, 'g'));
+const from2Pass = [];
+from.push(new RegExp(`(?<=\\b${threeSpaceName}.)\\b\\w+(?=\\s=)`, 'g'));
+
 const importTables = {};
-baseNames.forEach((n) => { importTables[n] = new Set(); });
+const exportTables = {};
+baseNames.forEach((n) => {
+    importTables[n] = new Set();
+    exportTables[n] = new Set();
+});
 const to = (match, n, pat, file) => {
     const basename = path.basename(file, '.js');
     if (match.startsWith(threeSpaceName)) {
         if (match.endsWith(basename)) {
             return match.replace(threeSpaceName, spaceName);
         } else {
-            importTables[basename].add(match.replace(`${threeSpaceName}.`, ''));
-            return match.replace(`${threeSpaceName}.`, '');
+            const to = match.replace(`${threeSpaceName}.`, '');
+            importTables[basename].add(to);
+            return to;
         }
+    } else {
+        from2Pass.push(new RegExp(`${threeSpaceName}.${match}`, 'g'));
+        from2Pass.push(new RegExp(`${match}\\s=`, 'g'));
+        exportTables[basename].add(match);
+        return match;
     }
 };
 
@@ -37,12 +51,21 @@ const starting_promise = replace({
     console.log(`\t${t.map(f => path.basename(f)).join('\n\t')}`);
 });
 
-const patchs = [];
+patchs.push(() => replace({
+    files,
+    from: from2Pass,
+    to: (match) => {
+        if (match.endsWith('=')) {
+            return `const ${match}`;
+        }
+        return match.replace(`${threeSpaceName}.`, '');
+    },
+}));
+
 // New header file:
 // Message Header
 // import * as THREE from 'three';
 // Declare New SpaceName
-
 const modifiedFile = '// This file has been added and patched after installing the NPM modules (via NPM script \'prepare\')\n';
 const importTHREE = 'import * as THREE from \'three\';\n';
 const declareNewSpaceName = `const ${spaceName} = {};\n`;
@@ -59,6 +82,20 @@ patchs.push(() => replace({
     to: (match, n, pat, file) => {
         const basename = path.basename(file, '.js');
         return `\nexport default ${spaceName}.${basename};\n`;
+    },
+}));
+
+// Export alls other functions in ending file
+patchs.push(() => replace({
+    files,
+    from: /.*$/i,
+    to: (match, n, pat, file) => {
+        const basename = path.basename(file, '.js');
+        if (exportTables[basename] && exportTables[basename].size) {
+            exportTables[basename].toString();
+            return `export {${[...exportTables[basename]].join()}};\n`;
+        }
+        return match;
     },
 }));
 
@@ -109,6 +146,3 @@ patchs.push(() => replace({
 
 // Chain all patchs, Warning the order of patchs is important
 patchs.reduce((prev, cur) => prev.then(cur), starting_promise);
-
-
-
