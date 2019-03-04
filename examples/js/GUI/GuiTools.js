@@ -30,6 +30,10 @@ dat.GUI.prototype.colorLayerFolder = function colorLayerFolder(name, value) {
     }
 };
 
+dat.GUI.prototype.hasFolder = function hasFolder(name) {
+    return this.__folders[name];
+};
+
 function GuiTools(domId, view, w) {
     var width = w || 245;
     this.gui = new dat.GUI({ autoPlace: false, width: width });
@@ -70,6 +74,7 @@ GuiTools.prototype.addLayersGUI = function fnAddLayersGUI() {
 };
 
 GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
+    if (this.colorGui.hasFolder(layer.id)) { return; }
     var folder = this.colorGui.addFolder(layer.id);
     folder.add({ visible: layer.visible }, 'visible').onChange((function updateVisibility(value) {
         layer.visible = value;
@@ -86,6 +91,7 @@ GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
 };
 
 GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
+    if (this.elevationGui.hasFolder(layer.id)) { return; }
     var folder = this.elevationGui.addFolder(layer.id);
     folder.add({ frozen: layer.frozen }, 'frozen').onChange(function refreshFrozenGui(value) {
         layer.frozen = value;
