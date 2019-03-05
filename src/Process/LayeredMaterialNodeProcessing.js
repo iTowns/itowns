@@ -215,9 +215,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
                 const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
                 node.layerUpdateState[layer.id].failure(Date.now(), definitiveError, { targetLevel });
                 if (!definitiveError) {
-                    window.setTimeout(context.view.notifyChange,
-                        node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000,
-                        node, false);
+                    window.setTimeout(() => {
+                        context.view.notifyChange(node, false);
+                    }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
                 }
             }
         });
@@ -374,9 +374,9 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
                 const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
                 node.layerUpdateState[layer.id].failure(Date.now(), definitiveError);
                 if (!definitiveError) {
-                    window.setTimeout(context.view.notifyChange,
-                        node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000,
-                        node, false);
+                    window.setTimeout(() => {
+                        context.view.notifyChange(node, false);
+                    }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
                 }
             }
         });
