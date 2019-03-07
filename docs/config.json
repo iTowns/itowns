@@ -21,7 +21,6 @@
             "src/Core/Geographic/Extent.js",
             "src/Core/Prefab/GlobeView.js",
             "src/Core/Prefab/Globe/GlobeLayer.js",
-            "src/Core/Prefab/Panorama/PanoramaLayer.js",
             "src/Core/Prefab/Planar/PlanarLayer.js",
             "src/Core/Scheduler/Cache.js",
             "src/Core/Scheduler/Scheduler.js",
@@ -39,7 +38,6 @@
             "src/Source/WMSSource.js",
             "src/Source/WFSSource.js",
             "src/Source/TMSSource.js",
-            "src/Source/StaticSource.js",
             "src/Source/FileSource.js",
             "src/Source/OrientedImageSource.js",
 

@@ -6,7 +6,6 @@ import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
 import TMSSource from 'Source/TMSSource';
 import FileSource from 'Source/FileSource';
-import StaticSource from 'Source/StaticSource';
 import Fetcher from 'Provider/Fetcher';
 import Extent from 'Core/Geographic/Extent';
 
@@ -103,14 +102,5 @@ describe('Source', function () {
         source.whenReady.then(() => assert.equal(source.parsedData.features[0].geometry.length, 3));
         assert.ok(source.urlFromExtent(extent));
         assert.ok(source.isFileSource);
-    });
-    it('Should instance and use StaticSource', function () {
-        Fetcher.json = function () { return Promise.resolve({}); };
-        const source = new StaticSource({
-            url: 'http://itowns.org',
-            extent: [-90, 90, -45, 45],
-            projection: 'EPSG:4326',
-        });
-        assert.ok(source.isStaticSource);
     });
 });

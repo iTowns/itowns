@@ -28,7 +28,6 @@
         "OrientedImageLayer",
 
         "GlobeLayer",
-        "PanoramaLayer",
         "PlanarLayer"
     ],
 

@@ -17,7 +17,6 @@ import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
 import WFSSource from 'Source/WFSSource';
 import TMSSource from 'Source/TMSSource';
-import StaticSource from 'Source/StaticSource';
 import FileSource from 'Source/FileSource';
 
 const supportedSource = new Map([
@@ -27,7 +26,6 @@ const supportedSource = new Map([
     ['wms', WMSSource],
     ['tms', TMSSource],
     ['xyz', TMSSource],
-    ['static', StaticSource],
 ]);
 
 export const VIEW_EVENTS = {

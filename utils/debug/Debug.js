@@ -1,7 +1,6 @@
 import { CameraHelper, Color, Vector3 } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
-import PanoramaView from 'Core/Prefab/PanoramaView';
 import OBB from 'Renderer/OBB';
 import ThreeStatsChart from './charts/ThreeStatsChart';
 import OBBHelper from './OBBHelper';
@@ -168,26 +167,20 @@ function Debug(view, datDebugTool, chartDivContainer) {
             // const distance = bbox.distanceToPoint(view.camera.camera3D.position);
             // console.log('distance', distance, distance + bbox.getBoundingSphere(sphere).radius * 2);
 
-            if (view instanceof PanoramaView) {
-                debugCamera.position.set(0, 0, 100);
-                camera.localToWorld(debugCamera.position);
-                debugCamera.lookAt(camera.position);
-            } else {
-                // Compute position camera debug
-                const altitudeCameraDebug = 1.5 * coord._values[2];
-                coord._values[2] = altitudeCameraDebug;
-                coord.as(view.referenceCrs).xyz(debugCamera.position);
-                // Compute recoil camera
-                camera.worldToLocal(debugCamera.position);
-                debugCamera.position.z += altitudeCameraDebug;
-                camera.localToWorld(debugCamera.position);
-                // Compute target camera debug
-                lookAtCameraDebug.copy(view.camera.camera3D.position);
-                camera.worldToLocal(lookAtCameraDebug);
-                lookAtCameraDebug.z -= altitudeCameraDebug * 1.5;
-                camera.localToWorld(lookAtCameraDebug);
-                debugCamera.lookAt(lookAtCameraDebug);
-            }
+            // Compute position camera debug
+            const altitudeCameraDebug = 1.5 * coord._values[2];
+            coord._values[2] = altitudeCameraDebug;
+            coord.as(view.referenceCrs).xyz(debugCamera.position);
+            // Compute recoil camera
+            camera.worldToLocal(debugCamera.position);
+            debugCamera.position.z += altitudeCameraDebug;
+            camera.localToWorld(debugCamera.position);
+            // Compute target camera debug
+            lookAtCameraDebug.copy(view.camera.camera3D.position);
+            camera.worldToLocal(lookAtCameraDebug);
+            lookAtCameraDebug.z -= altitudeCameraDebug * 1.5;
+            camera.localToWorld(lookAtCameraDebug);
+            debugCamera.lookAt(lookAtCameraDebug);
 
             debugCamera.updateProjectionMatrix();
             if (layerAtmosphere) {

@@ -3,8 +3,6 @@ export { default as Extent } from 'Core/Geographic/Extent';
 export { default as Ellipsoid } from 'Core/Math/Ellipsoid';
 export { default as GlobeView, GLOBE_VIEW_EVENTS, createGlobeLayer } from 'Core/Prefab/GlobeView';
 export { default as PlanarView, createPlanarLayer } from 'Core/Prefab/PlanarView';
-export { default as PanoramaView, createPanoramaLayer } from 'Core/Prefab/PanoramaView';
-export { default as Panorama } from 'Core/Prefab/Panorama/Constants';
 export { default as Fetcher } from 'Provider/Fetcher';
 export { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 export { default as View } from 'Core/View';
@@ -48,7 +46,6 @@ export { default as PlanarLayer } from 'Core/Prefab/Planar/PlanarLayer';
 // See http://www.itowns-project.org/itowns/API_Doc/Source.html
 export { default as Source } from 'Source/Source';
 export { default as FileSource } from 'Source/FileSource';
-export { default as StaticSource } from 'Source/StaticSource';
 export { default as TMSSource } from 'Source/TMSSource';
 export { default as WFSSource } from 'Source/WFSSource';
 export { default as WMSSource } from 'Source/WMSSource';
