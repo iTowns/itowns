@@ -83,21 +83,15 @@
                 var r = g.renderer;
                 r.setRenderTarget(g.fullSizeRenderTarget);
                 r.clear();
-                r.setViewport(0, 0, g.getWindowSize().x, g.getWindowSize().y);
-                r.render(
-                    view.scene,
-                    view.camera.camera3D, g.fullSizeRenderTarget);
+                r.render(view.scene, view.camera.camera3D);
 
                 quad.material.uniforms.tDiffuse.value = g.fullSizeRenderTarget.texture;
                 quad.material.uniforms.tSize.value.set(
                     g.fullSizeRenderTarget.width, g.fullSizeRenderTarget.height);
 
-                r.setRenderTarget();
+                r.setRenderTarget(null);
                 r.clear();
-                r.setViewport(0, 0, g.getWindowSize().x, g.getWindowSize().y);
-                r.render(
-                    postprocessScene,
-                    cam);
+                r.render(postprocessScene, cam);
             };
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {

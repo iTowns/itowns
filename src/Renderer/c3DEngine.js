@@ -40,7 +40,6 @@ function c3DEngine(rendererOrDiv, options = {}) {
     this.fullSizeRenderTarget.depthTexture.type = THREE.UnsignedShortType;
 
     this.renderView = function renderScene(view) {
-        this.renderer.setViewport(0, 0, this.width, this.height);
         this.renderer.clear();
         this.renderer.render(view.scene, view.camera.camera3D);
     }.bind(this);
@@ -191,7 +190,7 @@ c3DEngine.prototype.renderViewToRenderTarget = function renderViewToRenderTarget
 
     // Don't use setViewport / setScissor on renderer because they would affect
     // on screen rendering as well. Instead set them on the render target.
-    this.fullSizeRenderTarget.viewport.set(0, 0, target.width, target.height);
+    // Example : this.fullSizeRenderTarget.viewport.set(0, 0, target.width, target.height);
     if (zone) {
         this.fullSizeRenderTarget.scissor.set(
             zone.x,
@@ -203,7 +202,7 @@ c3DEngine.prototype.renderViewToRenderTarget = function renderViewToRenderTarget
 
     this.renderer.setRenderTarget(target);
     this.renderer.clear(true, true, false);
-    this.renderer.render(view.scene, view.camera.camera3D, target);
+    this.renderer.render(view.scene, view.camera.camera3D);
     this.renderer.setRenderTarget(current);
 
     this.fullSizeRenderTarget.scissorTest = false;
