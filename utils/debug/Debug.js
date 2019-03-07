@@ -200,14 +200,16 @@ function Debug(view, datDebugTool, chartDivContainer) {
             helper.visible = true;
             helper.updateMatrixWorld(true);
             bClearColor.copy(r.getClearColor());
-            r.setViewport(g.width - size.x, g.height - size.y, size.x, size.y);
-            r.setScissor(g.width - size.x, g.height - size.y, size.x, size.y);
+            r.setViewport(g.width - size.x, 0, size.x, size.y);
+            r.setScissor(g.width - size.x, 0, size.x, size.y);
             r.setScissorTest(true);
             r.setClearColor(0xeeeeee);
             r.clear();
             r.render(view.scene, debugCamera);
             r.setScissorTest(false);
             r.setClearColor(bClearColor);
+            r.setViewport(0, 0, g.width, g.height);
+
             helper.visible = false;
             displayedTilesObbHelper.visible = false;
             if (layerAtmosphere) {

@@ -100,10 +100,11 @@
                 if (effect && effect.dispose) {
                     effect.dispose();
                 }
-
+                var g = view.mainLoop.gfxEngine;
+                var size = g.getWindowSize();
                 effect = null;
                 view.render = null;
-
+                g.renderer.setViewport(0, 0, size.x, size.y);
                 view.notifyChange();
             }
 

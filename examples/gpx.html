@@ -45,10 +45,12 @@
 
             // update the waypoint
             var distance, scale, point = new itowns.THREE.Vector3();
+            var size = new itowns.THREE.Vector2();
             function updatePointScale(renderer, scene, camera) {
                 point.copy(this.geometry.boundingSphere.center).applyMatrix4(this.matrixWorld);;
                 distance = camera.position.distanceTo(point);
-                scale = Math.max(2, Math.min(100, distance / renderer.getSize().height));
+                renderer.getSize(size);
+                scale = Math.max(2, Math.min(100, distance / size.y));
                 this.scale.set(scale, scale, scale);
                 this.updateMatrixWorld();
             }
