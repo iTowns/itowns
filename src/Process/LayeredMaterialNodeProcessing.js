@@ -8,13 +8,8 @@ import { computeMinMaxElevation } from 'Parser/XbilParser';
 // max retry loading before changing the status to definitiveError
 const MAX_RETRY = 4;
 
-function getSourceExtent(node, extent, targetLevel, source) {
-    // source.getSourceExtents is to StaticSource
-    if (source && source.getSourceExtents) {
-        const ext = source.getSourceExtents(extent).extent;
-        ext.zoom = node.level;
-        return ext;
-    } else if (extent.isTiledCrs()) {
+function getSourceExtent(node, extent, targetLevel) {
+    if (extent.isTiledCrs()) {
         return extent.extentParent(targetLevel);
     } else {
         const parent = node.findAncestorFromLevel(targetLevel);
@@ -135,13 +130,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         return;
     }
 
-    if (layer.source.canTileTextureBeImproved) {
-        // if the layer has a custom method -> use it
-        if (!layer.source.canTileTextureBeImproved(node.extent, nodeLayer.textures[0])) {
-            node.layerUpdateState[layer.id].noMoreUpdatePossible();
-            return;
-        }
-    } else if (nodeLayer.level >= node.getZoomForLayer(layer)) {
+    if (nodeLayer.level >= node.getZoomForLayer(layer)) {
         // default decision method
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return;
@@ -162,7 +151,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     // Get equivalent of extent destination in source
     const extentsSource = [];
     for (const extentDestination of extentsDestination) {
-        const extentSource = getSourceExtent(node, extentDestination, targetLevel, layer.source);
+        const extentSource = getSourceExtent(node, extentDestination, targetLevel);
         if (extentSource && !layer.source.extentInsideLimit(extentSource)) {
             // Retry extentInsideLimit because you must check with the targetLevel
             // if the first test extentInsideLimit returns that it is out of limits
@@ -282,15 +271,6 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             !material.visible ||
             !node.layerUpdateState[layer.id].canTryUpdate(ts)) {
         return;
-    }
-
-    // Does this tile needs a new texture?
-    if (layer.source.canTileTextureBeImproved) {
-        // if the layer has a custom method -> use it
-        if (!layer.source.canTileTextureBeImproved(layer, nodeLayer.textures[0])) {
-            node.layerUpdateState[layer.id].noMoreUpdatePossible();
-            return;
-        }
     }
 
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, extentsDestination[0].zoom, nodeLayer.level, layer);
