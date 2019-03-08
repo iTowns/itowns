@@ -158,13 +158,14 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     }
 
     node.layerUpdateState[layer.id].newTry();
+    const parsedData = layer.source.isFileSource ? layer.source.parsedData : nodeLayer.textures.map(t => t.parsedData);
     const command = {
-        /* mandatory */
+        /* mandatory... */
         view: context.view,
         layer,
         extentsSource,
         extentsDestination,
-        parsedData: layer.source.parsedData,
+        parsedData,
         requester: node,
         priority: materialCommandQueuePriorityFunction(material),
         earlyDropFunction: refinementCommandCancellationFn,
