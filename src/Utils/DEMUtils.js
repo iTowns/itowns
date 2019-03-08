@@ -114,7 +114,7 @@ export default {
                 }
                 geometry.verticesNeedUpdate = true;
                 return success;
-            } else if (geometry instanceof THREE.BufferGeometry) {
+            } else if (geometry.isBufferGeometry) {
                 if (options.cache) {
                     options.cache.length = geometry.attributes.position.count;
                 }

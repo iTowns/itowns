@@ -257,7 +257,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     this._mouseToPan = function _mouseToPan(deltaX, deltaY) {
         const gfx = view.mainLoop.gfxEngine;
         state = states.PAN;
-        if (this.camera instanceof THREE.PerspectiveCamera) {
+        if (this.camera.isPerspectiveCamera) {
             let targetDistance = this.camera.position.distanceTo(this.getCameraTargetPosition());
             // half of the fov is center to top of screen
             targetDistance *= 2 * Math.tan(THREE.Math.degToRad(this.camera.fov * 0.5));
@@ -265,7 +265,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
             // we actually don't use screenWidth, since perspective camera is fixed to screen height
             this.panLeft(deltaX * targetDistance / gfx.width * this.camera.aspect);
             this.panUp(deltaY * targetDistance / gfx.height);
-        } else if (this.camera instanceof THREE.OrthographicCamera) {
+        } else if (this.camera.isOrthographicCamera) {
             // orthographic
             this.panLeft(deltaX * (this.camera.right - this.camera.left) / gfx.width);
             this.panUp(deltaY * (this.camera.top - this.camera.bottom) / gfx.height);
@@ -277,9 +277,9 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
             dollyScale = this.getDollyScale();
         }
 
-        if (this.camera instanceof THREE.PerspectiveCamera) {
+        if (this.camera.isPerspectiveCamera) {
             orbitScale /= dollyScale;
-        } else if (this.camera instanceof THREE.OrthographicCamera) {
+        } else if (this.camera.isOrthographicCamera) {
             this.camera.zoom = THREE.Math.clamp(this.camera.zoom * dollyScale, this.minZoom, this.maxZoom);
             this.camera.updateProjectionMatrix();
             view.notifyChange(this.camera);
@@ -291,9 +291,9 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
             dollyScale = this.getDollyScale();
         }
 
-        if (this.camera instanceof THREE.PerspectiveCamera) {
+        if (this.camera.isPerspectiveCamera) {
             orbitScale *= dollyScale;
-        } else if (this.camera instanceof THREE.OrthographicCamera) {
+        } else if (this.camera.isOrthographicCamera) {
             this.camera.zoom = THREE.Math.clamp(this.camera.zoom / dollyScale, this.minZoom, this.maxZoom);
             this.camera.updateProjectionMatrix();
             view.notifyChange(this.camera);

@@ -632,7 +632,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...whe
                     }
                 }
             }
-        } else if (source instanceof THREE.Object3D) {
+        } else if (source.isObject3D) {
             Picking.pickObjectsAt(
                 this,
                 mouse,

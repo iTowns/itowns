@@ -219,7 +219,7 @@ Coordinates.prototype.set = function set(crs, ...coordinates) {
     _crsToUnitWithError(crs);
     this.crs = crs;
 
-    if (coordinates.length == 1 && coordinates[0] instanceof THREE.Vector3) {
+    if (coordinates.length == 1 && coordinates[0].isVector3) {
         this._values[0] = coordinates[0].x;
         this._values[1] = coordinates[0].y;
         this._values[2] = coordinates[0].z;
