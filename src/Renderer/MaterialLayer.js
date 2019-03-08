@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { CRS_DEFINES, ELEVATION_MODES } from 'Renderer/LayeredMaterial';
 import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent } from 'Parser/XbilParser';
 
@@ -119,7 +118,7 @@ class MaterialLayer {
     dispose() {
         // TODO: WARNING  verify if textures to dispose aren't attached with ancestor
         for (const texture of this.textures) {
-            if (texture instanceof THREE.Texture) {
+            if (texture.isTexture) {
                 texture.dispose();
             }
         }

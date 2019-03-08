@@ -498,7 +498,7 @@ function PlanarControls(view, options = {}) {
         // update cursor
         this.updateMouseCursorType();
 
-        travelUseRotation = this.enableRotation && (targetOrientation instanceof THREE.Quaternion || targetOrientation instanceof THREE.Vector3);
+        travelUseRotation = this.enableRotation && (targetOrientation.isQuaternion || targetOrientation.isVector3);
         travelUseSmooth = useSmooth;
 
         // start position (current camera position)
@@ -510,9 +510,9 @@ function PlanarControls(view, options = {}) {
         // setup the end rotation :
 
         // case where targetOrientation is a quaternion
-        if (targetOrientation instanceof THREE.Quaternion) {
+        if (targetOrientation.isQuaternion) {
             travelEndRot.copy(targetOrientation);
-        } else if (targetOrientation instanceof THREE.Vector3) {
+        } else if (targetOrientation.isVector3) {
             // case where targetOrientation is a vector3
             if (targetPos === targetOrientation) {
                 this.camera.lookAt(targetOrientation);

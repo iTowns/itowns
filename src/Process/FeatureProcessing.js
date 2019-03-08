@@ -7,7 +7,7 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 const vector = new THREE.Vector3();
 function applyOffset(obj, offset, quaternion, offsetAltitude = 0) {
     if (obj.geometry) {
-        if (obj.geometry instanceof THREE.BufferGeometry) {
+        if (obj.geometry.isBufferGeometry) {
             const count = obj.geometry.attributes.position.count * 3;
             for (let i = 0; i < count; i += 3) {
                 vector.fromArray(obj.geometry.attributes.position.array, i);
