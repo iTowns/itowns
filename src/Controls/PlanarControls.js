@@ -498,7 +498,7 @@ function PlanarControls(view, options = {}) {
         // update cursor
         this.updateMouseCursorType();
 
-        travelUseRotation = this.enableRotation && (targetOrientation.isQuaternion || targetOrientation.isVector3);
+        travelUseRotation = this.enableRotation && targetOrientation && (targetOrientation.isQuaternion || targetOrientation.isVector3);
         travelUseSmooth = useSmooth;
 
         // start position (current camera position)
@@ -510,20 +510,22 @@ function PlanarControls(view, options = {}) {
         // setup the end rotation :
 
         // case where targetOrientation is a quaternion
-        if (targetOrientation.isQuaternion) {
-            travelEndRot.copy(targetOrientation);
-        } else if (targetOrientation.isVector3) {
-            // case where targetOrientation is a vector3
-            if (targetPos === targetOrientation) {
-                this.camera.lookAt(targetOrientation);
-                travelEndRot.copy(this.camera.quaternion);
-                this.camera.quaternion.copy(travelStartRot);
-            } else {
-                this.camera.position.copy(targetPos);
-                this.camera.lookAt(targetOrientation);
-                travelEndRot.copy(this.camera.quaternion);
-                this.camera.quaternion.copy(travelStartRot);
-                this.camera.position.copy(travelStartPos);
+        if (travelUseRotation) {
+            if (targetOrientation.isQuaternion) {
+                travelEndRot.copy(targetOrientation);
+            } else if (targetOrientation.isVector3) {
+                // case where targetOrientation is a vector3
+                if (targetPos === targetOrientation) {
+                    this.camera.lookAt(targetOrientation);
+                    travelEndRot.copy(this.camera.quaternion);
+                    this.camera.quaternion.copy(travelStartRot);
+                } else {
+                    this.camera.position.copy(targetPos);
+                    this.camera.lookAt(targetOrientation);
+                    travelEndRot.copy(this.camera.quaternion);
+                    this.camera.quaternion.copy(travelStartRot);
+                    this.camera.position.copy(travelStartPos);
+                }
             }
         }
 
