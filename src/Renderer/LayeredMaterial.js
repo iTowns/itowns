@@ -22,7 +22,7 @@ export function unpack1K(color, factor) {
 
 export const CRS_DEFINES = [
     ['WGS84', 'WGS84G', 'TMS', 'EPSG:3946', 'EPSG:4326', 'WMTS:WGS84G'],
-    ['PM', 'WMTS:PM'],
+    ['PM', 'WMTS:PM', 'EPSG:3857'],
 ];
 
 // Max sampler color count to LayeredMaterial
@@ -232,12 +232,17 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         }
     }
 
-    addLayer(layer, tileMT) {
+    addLayer(layer) {
         if (layer.id in this.layers) {
             console.warn('The "{layer.id}" layer was already present in the material, overwritting.');
         }
-        const lml = new MaterialLayer(this, layer, tileMT);
+        const lml = new MaterialLayer(this, layer);
         this.layers.push(lml);
+        if (layer.isColorLayer) {
+            this.setSequence(layer.parent.colorLayersOrder);
+        } else {
+            this.setSequenceElevation(layer.id);
+        }
         return lml;
     }
 

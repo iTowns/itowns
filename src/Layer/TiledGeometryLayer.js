@@ -151,7 +151,7 @@ class TiledGeometryLayer extends GeometryLayer {
         // Prepare ColorLayer sequence order
         // In this moment, there is only one color layers sequence, because they are attached to tileLayer.
         // In future, the sequence must be returned by parent geometry layer.
-        context.ColorLayerSequenceOrder = ImageryLayers.getColorLayersIdOrderedBySequence(context.colorLayers);
+        this.colorLayersOrder = ImageryLayers.getColorLayersIdOrderedBySequence(context.colorLayers);
 
         let commonAncestor;
         for (const source of sources.values()) {

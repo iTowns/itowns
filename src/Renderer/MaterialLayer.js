@@ -16,12 +16,12 @@ function defineLayerProperty(layer, property, initValue, defaultValue) {
 }
 
 class MaterialLayer {
-    constructor(material, layer, tileMT) {
+    constructor(material, layer) {
         this.id = layer.id;
         this.textureOffset = 0; // will be updated in updateUniforms()
-        this.crs = CRS_DEFINES.findIndex(crs => crs.includes(tileMT || 'WGS84'));
+        this.crs = CRS_DEFINES.findIndex(crs => crs.includes(layer.projection || 'WGS84'));
         if (this.crs == -1) {
-            console.error('Unknown crs:', tileMT);
+            console.error('Unknown crs:', layer.projection);
         }
 
         // Define color properties
