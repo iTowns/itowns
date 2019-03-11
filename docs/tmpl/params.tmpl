@@ -6,7 +6,7 @@
 <ul class="params">
     <?js params.forEach(function(param, i) { ?>
     <li>
-        <code><?js= param.name ?></code>
+        <code><?js= param.name ?><?js if (param.fromTypedef) { ?>: <?js= self.partial('type.tmpl', param.type.names).trim() ?><?js } ?></code>
         <?js if (param.defaultvalue) { ?>(default: <code><?js= param.defaultvalue ?></code>)
         <?js } else if (param.optional) { ?>(optional)<?js } ?>
         <?js if (param.description) { ?>

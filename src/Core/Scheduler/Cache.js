@@ -29,11 +29,11 @@ const Cache = {
      *
      * @typedef {Object} POLICIES
      *
-     * @property INFINITE - The entry is never flushed, except when the
+     * @property {number} INFINITE - The entry is never flushed, except when the
      * <code>all</code> flag is set to <code>true</code> when calling {@link
      * Cache.flush}.
-     * @property TEXTURE - Shortcut for texture resources. Time is 15 minutes.
-     * @property ELEVATION - Shortcut for elevation resources. Time is 15
+     * @property {number} TEXTURE - Shortcut for texture resources. Time is 15 minutes.
+     * @property {number} ELEVATION - Shortcut for elevation resources. Time is 15
      * minutes.
      */
     POLICIES: {
