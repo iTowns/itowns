@@ -175,7 +175,7 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         _syncGeometryLayerVisibility(layer, view);
         // Find projection layer, this is projection destination
         layer.projection = view.referenceCrs;
-    } else if (layer.source.tileMatrixSet === 'PM') {
+    } else if (layer.source.tileMatrixSet === 'PM' || layer.source.projection == 'EPSG:3857') {
         layer.projection = 'EPSG:3857';
     } else {
         layer.projection = parentLayer.extent.crs();

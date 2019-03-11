@@ -85,10 +85,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
         if (!nodeLayer) {
             // Create new MaterialLayer
-            const tileMT = layer.options.tileMatrixSet || extentsDestination[0].crs();
-            nodeLayer = material.addLayer(layer, tileMT);
-            material.setSequence(context.ColorLayerSequenceOrder);
-
+            nodeLayer = material.addLayer(layer);
             // Init the new MaterialLayer by parent
             const parentLayer = parent.material && parent.material.getLayer(layer.id);
             nodeLayer.initFromParent(parentLayer, extentsDestination);
@@ -221,12 +218,10 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // This is caused by a LayeredMaterial limitation: only 1 elevation texture
     // can be used (where a tile can have N textures x M layers)
     const extentsDestination = node.getCoordsForSource(layer.source);
-    const tileMT = layer.options.tileMatrixSet || extentsDestination[0].crs();
     // Init elevation layer, and inherit from parent if possible
     let nodeLayer = material.getElevationLayer();
     if (!nodeLayer) {
-        nodeLayer = material.addLayer(layer, tileMT);
-        material.setSequenceElevation(layer.id);
+        nodeLayer = material.addLayer(layer);
     }
 
     if (node.layerUpdateState[layer.id] === undefined) {
@@ -327,11 +322,6 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             }
 
             node.setBBoxZ(elevation.min, elevation.max);
-            nodeLayer = material.getLayer(layer.id);
-            if (!nodeLayer) {
-                nodeLayer = material.addLayer(layer, tileMT);
-            }
-            material.setSequenceElevation(layer.id);
             nodeLayer.setTexture(0, elevation.texture, elevation.pitch);
             const nodeParent = parent.material && parent.material.getElevationLayer();
             nodeLayer.replaceNoDataValueFromParent(nodeParent, layer.noDataValue);
