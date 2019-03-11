@@ -19,7 +19,7 @@ function LayerUpdateState() {
     this.errorCount = 0;
 }
 
-LayerUpdateState.prototype.canTryUpdate = function canTryUpdate(timestamp) {
+LayerUpdateState.prototype.canTryUpdate = function canTryUpdate(timestamp = Date.now()) {
     switch (this.state) {
         case UPDATE_STATE.IDLE: {
             return true;
