@@ -9,6 +9,7 @@
         : <?js= self.partial('type.tmpl', typedef.type.names).trim() ?>
     </h3>
 
+    <?js typedef.properties.forEach(function(p) { p.fromTypedef = true; }) ?>
     <?js= self.partial('params.tmpl', typedef.properties) ?>
 
     <?js if (typedef.description) { ?>
