@@ -119,9 +119,8 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         nodeLayer.opacity = layer.opacity;
     }
 
-    const ts = Date.now();
     // An update is pending / or impossible -> abort
-    if (!layer.visible || !node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+    if (!layer.visible || !node.layerUpdateState[layer.id].canTryUpdate()) {
         return;
     }
 
@@ -259,13 +258,10 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         }
     }
 
-    // Try to update
-    const ts = Date.now();
-
     // Possible conditions to *not* update the elevation texture
     if (layer.frozen ||
             !material.visible ||
-            !node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+            !node.layerUpdateState[layer.id].canTryUpdate()) {
         return;
     }
 

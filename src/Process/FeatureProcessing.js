@@ -72,9 +72,7 @@ export default {
             node.layerUpdateState[layer.id] = new LayerUpdateState();
         }
 
-        const ts = Date.now();
-
-        if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+        if (!node.layerUpdateState[layer.id].canTryUpdate()) {
             return;
         }
 
