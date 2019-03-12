@@ -71,4 +71,14 @@ describe('Extent constructors', function () {
         // SE
         assert.deepStrictEqual(subdivided[3]._values, new Float64Array([0, 10, -10, 0]));
     });
+
+    it('should return the correct dimension of the extent', function () {
+        const extent = new Extent('EPSG:4326', -15, 10, -10, 10);
+        const dimensions = extent.dimensions();
+
+        // Width
+        assert.equal(dimensions.x, 25);
+        // Height
+        assert.equal(dimensions.y, 20);
+    });
 });

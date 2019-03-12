@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import Coordinates from '../Core/Geographic/Coordinates';
 
 const pt = new THREE.Vector2();
 
@@ -65,7 +66,7 @@ function drawPoint(ctx, x, y, origin, scale, style = {}) {
     pt.multiply(scale);
 
     ctx.beginPath();
-    ctx.arc(Math.round(pt.x), Math.round(pt.y), Math.round(style.radius) || 3, 0, 2 * Math.PI, false);
+    ctx.arc(Math.round(pt.x), Math.round(pt.y), style.radius, 0, 2 * Math.PI, false);
     ctx.fillStyle = style.fill || 'white';
     ctx.fill();
     ctx.lineWidth = style.lineWidth || 1.0;
@@ -73,19 +74,37 @@ function drawPoint(ctx, x, y, origin, scale, style = {}) {
     ctx.stroke();
 }
 
+const coord = new Coordinates('EPSG:4326', 0, 0, 0);
+
 function drawFeature(ctx, feature, origin, scale, extent, style = {}) {
+    const extentDim = extent.dimensions();
     let gStyle = style;
+    let px;
+
     for (const geometry of feature.geometry) {
         const properties = geometry.properties;
 
         if (typeof (style) == 'function') {
             gStyle = style(properties, feature);
         }
+
+        gStyle.radius = Math.round(gStyle.radius) || 3;
+
+        // cross multiplication to know in the extent system the real size of
+        // the point
+        px = gStyle.radius * (extentDim.x / 256);
+
         if (feature.type === 'point') {
-            drawPoint(ctx, feature.vertices[0], feature.vertices[1], origin, scale, gStyle);
+            coord.set(extent.crs(), feature.vertices[0], feature.vertices[1]);
+            if (extent.isPointInside(coord, px)) {
+                drawPoint(ctx, feature.vertices[0], feature.vertices[1], origin, scale, gStyle);
+            }
         } else if (feature.type === 'multipoint') {
             for (var i = 0; i < feature.vertices.length; i += feature.size) {
-                drawPoint(ctx, feature.vertices[i], feature.vertices[i + 1], origin, scale, gStyle);
+                coord.set(extent.crs(), feature.vertices[i], feature.vertices[i + 1]);
+                if (extent.isPointInside(coord, px)) {
+                    drawPoint(ctx, feature.vertices[i], feature.vertices[i + 1], origin, scale, gStyle);
+                }
             }
         } else if (geometry.extent.intersectsExtent(extent)) {
             drawPolygon(ctx, feature.vertices, geometry.indices, origin, scale, properties, gStyle, feature.size);
@@ -117,9 +136,9 @@ export default {
 
             const scale = new THREE.Vector2(ctx.canvas.width / dimension.x, ctx.canvas.width / dimension.y);
 
+            const ex = collection.crs == extent.crs() ? extent : extent.as(collection.crs);
             // Draw the canvas
             for (const feature of collection.features) {
-                const ex = feature.crs == extent.crs() ? extent : extent.as(feature.crs);
                 drawFeature(ctx, feature, origin, scale, ex, style);
             }
 
@@ -139,4 +158,3 @@ export default {
         return texture;
     },
 };
-
