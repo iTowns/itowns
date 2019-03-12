@@ -11,6 +11,33 @@ import Cache from 'Core/Scheduler/Cache';
 
 const dimensions = new THREE.Vector2();
 
+function setTileFromTiledLayer(tile, tileLayer) {
+    tile.material.transparent = tileLayer.opacity < 1.0;
+    tile.material.opacity = tileLayer.opacity;
+
+    if (tileLayer.diffuse) {
+        tile.material.diffuse = tileLayer.diffuse;
+    }
+
+    if (__DEBUG__) {
+        tile.material.showOutline = tileLayer.showOutline || false;
+        tile.material.wireframe = tileLayer.wireframe || false;
+    }
+
+    if (tileLayer.isGlobeLayer) {
+        // Computes a point used for horizon culling.
+        // If the point is below the horizon,
+        // the tile is guaranteed to be below the horizon as well.
+        tile.horizonCullingPoint = tile.extent.center().as('EPSG:4978').xyz();
+        tile.extent.dimensions(dimensions).multiplyScalar(THREE.Math.DEG2RAD);
+
+        // alpha is maximum angle between two points of tile
+        const alpha = dimensions.length();
+        const h = Math.abs(1.0 / Math.cos(alpha * 0.5));
+        tile.horizonCullingPoint.setLength(h * tile.horizonCullingPoint.length());
+    }
+}
+
 export default {
     convert(requester, extent, layer) {
         const builder = layer.builder;
@@ -45,12 +72,14 @@ export default {
             };
         }
 
-        // build tile
+        // build tile mesh
         geometry._count++;
         const material = new LayeredMaterial(layer.materialOptions);
         const tile = new TileMesh(geometry, material, layer, extent, level);
-        // TODO semble ne pas etre necessaire
-        tile.layers.set(layer.threejsLayer);
+
+        // Commented because layer.threejsLayer is undefined;
+        // Fix me: conflict with object3d added in view.scene;
+        // tile.layers.set(layer.threejsLayer);
 
         if (parent && parent.isTileMesh) {
             // get parent extent transformation
@@ -62,9 +91,6 @@ export default {
 
         tile.position.copy(position);
         tile.quaternion.copy(quaternion);
-
-        tile.material.transparent = layer.opacity < 1.0;
-        tile.material.opacity = layer.opacity;
         tile.visible = false;
         tile.updateMatrix();
 
@@ -74,27 +100,7 @@ export default {
 
         tile.add(tile.obb);
 
-        if (layer.diffuse) {
-            tile.material.diffuse = layer.diffuse;
-        }
-
-        if (__DEBUG__) {
-            tile.material.showOutline = layer.showOutline || false;
-            tile.material.wireframe = layer.wireframe || false;
-        }
-
-        if (layer.isGlobeLayer) {
-            // Computes a point used for horizon culling.
-            // If the point is below the horizon,
-            // the tile is guaranteed to be below the horizon as well.
-            tile.horizonCullingPoint = tile.extent.center().as('EPSG:4978').xyz();
-            tile.extent.dimensions(dimensions).multiplyScalar(THREE.Math.DEG2RAD);
-
-            // alpha is maximum angle between two points of tile
-            const alpha = dimensions.length();
-            const h = Math.abs(1.0 / Math.cos(alpha * 0.5));
-            tile.horizonCullingPoint.setLength(h * tile.horizonCullingPoint.length());
-        }
+        setTileFromTiledLayer(tile, layer);
 
         return Promise.resolve(tile);
     },
