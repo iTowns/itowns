@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import LayerUpdateState from 'Layer/LayerUpdateState';
-import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
-
+import handlingError from 'Process/handlerNodeError';
 
 const vector = new THREE.Vector3();
 function applyOffset(obj, offset, quaternion, offsetAltitude = 0) {
@@ -153,17 +152,6 @@ export default {
                 node.layerUpdateState[layer.id].failure(1, true);
             }
         },
-        (err) => {
-            if (err instanceof CancelledCommandException) {
-                node.layerUpdateState[layer.id].success();
-            } else if (err instanceof SyntaxError) {
-                node.layerUpdateState[layer.id].failure(0, true);
-            } else {
-                node.layerUpdateState[layer.id].failure(Date.now());
-                window.setTimeout(() => {
-                    context.view.notifyChange(layer, false);
-                }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
-            }
-        });
+        err => handlingError(err, node, layer, node.level, context.view));
     },
 };

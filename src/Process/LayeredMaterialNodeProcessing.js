@@ -1,11 +1,8 @@
 import { chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
 import LayerUpdateState from 'Layer/LayerUpdateState';
-import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 import { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
 import { computeMinMaxElevation } from 'Parser/XbilParser';
-
-// max retry loading before changing the status to definitiveError
-const MAX_RETRY = 4;
+import handlingError from 'Process/handlerNodeError';
 
 function getSourceExtent(node, extent, targetLevel) {
     if (extent.isTiledCrs()) {
@@ -39,10 +36,6 @@ function refinementCommandCancellationFn(cmd) {
     if (!cmd.requester.parent || !cmd.requester.material) {
         return true;
     }
-    if (cmd.force) {
-        return false;
-    }
-
     // Cancel the command if the tile already has a better texture.
     // This is only needed for elevation layers, because we may have several
     // concurrent layers but we can only use one texture.
@@ -52,6 +45,19 @@ function refinementCommandCancellationFn(cmd) {
     }
 
     return !cmd.requester.material.visible;
+}
+
+function buildCommand(view, layer, extentsSource, extentsDestination, requester, parsedData) {
+    return {
+        view,
+        layer,
+        extentsSource,
+        extentsDestination,
+        requester,
+        parsedData,
+        priority: materialCommandQueuePriorityFunction(requester.material),
+        earlyDropFunction: refinementCommandCancellationFn,
+    };
 }
 
 export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
@@ -155,53 +161,16 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
     node.layerUpdateState[layer.id].newTry();
     const parsedData = layer.source.isFileSource ? layer.source.parsedData : nodeLayer.textures.map(t => t.parsedData);
-    const command = {
-        /* mandatory... */
-        view: context.view,
-        layer,
-        extentsSource,
-        extentsDestination,
-        parsedData,
-        requester: node,
-        priority: materialCommandQueuePriorityFunction(material),
-        earlyDropFunction: refinementCommandCancellationFn,
-    };
+    const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, parsedData);
 
     return context.scheduler.execute(command).then(
         (result) => {
-            if (material === null) {
-                return;
-            }
-
+            // TODO: Handle error : result is undefined in provider. throw error
             const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(extentsSource[i]));
-            if (result) {
-                nodeLayer.setTextures(result, pitchs);
-            } else {
-                // TODO: null texture is probably an error
-                // Maybe add an error counter for the node/layer,
-                // and stop retrying after X attempts.
-            }
-
+            nodeLayer.setTextures(result, pitchs);
             node.layerUpdateState[layer.id].success();
-
-            return result;
         },
-        (err) => {
-            if (err instanceof CancelledCommandException) {
-                node.layerUpdateState[layer.id].success();
-            } else {
-                if (__DEBUG__) {
-                    console.warn('Imagery texture update error for', node, err);
-                }
-                const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
-                node.layerUpdateState[layer.id].failure(Date.now(), definitiveError, { targetLevel });
-                if (!definitiveError) {
-                    window.setTimeout(() => {
-                        context.view.notifyChange(node, false);
-                    }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
-                }
-            }
-        });
+        err => handlingError(err, node, layer, targetLevel, context.view));
 }
 
 export function updateLayeredMaterialNodeElevation(context, layer, node, parent) {
@@ -278,17 +247,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     }
 
     node.layerUpdateState[layer.id].newTry();
-
-    const command = {
-        /* mandatory */
-        view: context.view,
-        layer,
-        extentsSource,
-        extentsDestination,
-        requester: node,
-        priority: materialCommandQueuePriorityFunction(material),
-        earlyDropFunction: refinementCommandCancellationFn,
-    };
+    const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node);
 
     return context.scheduler.execute(command).then(
         (textures) => {
@@ -326,22 +285,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             const nodeParent = parent.material && parent.material.getElevationLayer();
             nodeLayer.replaceNoDataValueFromParent(nodeParent, layer.noDataValue);
         },
-        (err) => {
-            if (err instanceof CancelledCommandException) {
-                node.layerUpdateState[layer.id].success();
-            } else {
-                if (__DEBUG__) {
-                    console.warn('Elevation texture update error for', node, err);
-                }
-                const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
-                node.layerUpdateState[layer.id].failure(Date.now(), definitiveError);
-                if (!definitiveError) {
-                    window.setTimeout(() => {
-                        context.view.notifyChange(node, false);
-                    }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
-                }
-            }
-        });
+        err => handlingError(err, node, layer, targetLevel, context.view));
 }
 
 export function removeLayeredMaterialNodeLayer(layerId) {
