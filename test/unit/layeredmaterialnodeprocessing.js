@@ -7,17 +7,14 @@ import OBB from 'Renderer/OBB';
 import Layer from 'Layer/Layer';
 import Source from 'Source/Source';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
+import MaterialLayer from 'Renderer/MaterialLayer';
 
 describe('updateLayeredMaterialNodeImagery', function () {
     // Misc var to initialize a TileMesh instance
     const geom = new THREE.Geometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-
-    const nodeLayer = { };
-    const material = {
-        getLayer: () => nodeLayer,
-    };
+    const material = {};
 
     // Mock scheduler
     const context = {
@@ -42,6 +39,9 @@ describe('updateLayeredMaterialNodeImagery', function () {
         source,
         info: { update: () => {} },
     });
+
+    const nodeLayer = new MaterialLayer(material, layer);
+    material.getLayer = () => nodeLayer;
 
     beforeEach('reset state', function () {
         // clear commands array

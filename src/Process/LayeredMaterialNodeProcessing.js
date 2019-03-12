@@ -8,14 +8,7 @@ function getSourceExtent(node, extent, targetLevel) {
     if (extent.isTiledCrs()) {
         return extent.extentParent(targetLevel);
     } else {
-        const parent = node.findAncestorFromLevel(targetLevel);
-        if (parent.extent) {
-            // Needed to initNodeElevationTextureFromParent, insertSignificantValuesFromParent,
-            // isColorLayerDownscaled
-            // Must be removed
-            parent.extent.zoom = parent.level;
-        }
-        return parent.extent;
+        return node.findAncestorFromLevel(targetLevel).extent;
     }
 }
 
