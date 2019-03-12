@@ -147,7 +147,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     const extentsSource = [];
     for (const extentDestination of extentsDestination) {
         const extentSource = getSourceExtent(node, extentDestination, targetLevel);
-        if (extentSource && !layer.source.extentInsideLimit(extentSource)) {
+        if (!layer.source.isFileSource && extentSource && !layer.source.extentInsideLimit(extentSource)) {
             // Retry extentInsideLimit because you must check with the targetLevel
             // if the first test extentInsideLimit returns that it is out of limits
             // and the node inherits from its parent, then it'll still make a command to fetch texture.
