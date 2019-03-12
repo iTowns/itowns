@@ -15,6 +15,7 @@ import ColorLayer from 'Layer/ColorLayer';
 import GeometryLayer from 'Layer/GeometryLayer';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Feature2Mesh from 'Converter/Feature2Mesh';
+import MaterialLayer from 'Renderer/MaterialLayer';
 
 const holes = require('../data/geojson/holes.geojson.json');
 
@@ -28,11 +29,7 @@ describe('Provide in Sources', function () {
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
     const zoom = 4;
-
-    const nodeLayer = { };
-    const material = {
-        getLayer: () => nodeLayer,
-    };
+    const material = { };
 
     // Mock scheduler
     const context = {
@@ -49,6 +46,8 @@ describe('Provide in Sources', function () {
     };
 
     const colorlayer = new ColorLayer();
+    const nodeLayer = new MaterialLayer(material, colorlayer);
+    material.getLayer = () => nodeLayer;
     const globelayer = new GlobeLayer('globe', new THREE.Group());
     const featureLayer = new GeometryLayer('geom', new THREE.Group());
     featureLayer.update = FeatureProcessing.update;

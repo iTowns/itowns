@@ -22,6 +22,14 @@ class TileMesh extends THREE.Mesh {
         this.layer = layer;
         this.extent = extent;
         this.level = level;
+        // Set equivalent tiled extent zoom
+        // Is used to set zoom for each texture fetched with no tiled extent
+        // It's more simple to set zoom here instead of reverse ingeneer
+        // Removable with a table pixel/extent.size
+        if (!this.extent.zoom) {
+            this.extent.zoom = level;
+        }
+
         this.material.objectId = this.id;
 
         this.obb = this.geometry.OBB.clone();
