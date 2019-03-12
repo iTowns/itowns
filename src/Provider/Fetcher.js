@@ -136,4 +136,68 @@ export default {
             return texture;
         });
     },
+
+    /**
+     * Wrapper over fetch to get a bunch of files sharing the same name, but
+     * different extensions.
+     *
+     * @param {string} baseUrl - The shared URL of the resources to fetch.
+     * @param {Object} extensions - An object containing arrays. The keys of each
+     * of this array are available fetch type, such as <code>text</code>,
+     * <code>json</code> or even <code>arrayBuffer</code>. The arrays contains
+     * the extensions to append after the <code>baseUrl</code> (see example
+     * below).
+     * @param {Object} options - Fetch options (passed directly to
+     * <code>fetch()</code>), see [the syntax for more information]{@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     *
+     * @return {Promise[]} An array of promises, containing all the files,
+     * organized by their extensions (see the example below).
+     *
+     * @example
+     * itowns.Fetcher.multiple('http://geo.server/shapefile', {
+     *     // will fetch:
+     *     // - http://geo.server/shapefile.shp
+     *     // - http://geo.server/shapefile.dbf
+     *     // - http://geo.server/shapefile.shx
+     *     // - http://geo.server/shapefile.prj
+     *     arrayBuffer: ['shp', 'dbf', 'shx'],
+     *     text: ['prj'],
+     * }).then(function _(result) {
+     *     // result looks like:
+     *     result = {
+     *         shp: ArrayBuffer
+     *         dbf: ArrayBuffer
+     *         shx: ArrayBuffer
+     *         prj: string
+     *     };
+     * });
+     */
+    multiple(baseUrl, extensions, options = {}) {
+        const promises = [];
+        let url;
+
+        for (const fetchType in extensions) {
+            if (!this[fetchType]) {
+                throw new Error(`${fetchType} is not a valid Fetcher method.`);
+            } else {
+                for (const extension of extensions[fetchType]) {
+                    url = `${baseUrl}.${extension}`;
+                    promises.push(this[fetchType](url, options).then(result => ({
+                        type: extension,
+                        result,
+                    })));
+                }
+            }
+        }
+
+        return Promise.all(promises).then((result) => {
+            const all = {};
+            for (const res of result) {
+                all[res.type] = res.result;
+            }
+
+            return Promise.resolve(all);
+        });
+    },
 };
