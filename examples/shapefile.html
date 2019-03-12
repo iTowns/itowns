@@ -41,20 +41,12 @@
 
             // Load all the necessary files for a shapefile, parse them and
             // display them.
-            Promise.all([
-                itowns.Fetcher.arrayBuffer('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/shapefile/velib-disponibilite-en-temps-reel.shp'),
-                itowns.Fetcher.arrayBuffer('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/shapefile/velib-disponibilite-en-temps-reel.dbf'),
-                itowns.Fetcher.arrayBuffer('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/shapefile/velib-disponibilite-en-temps-reel.shx'),
-                itowns.Fetcher.text('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/shapefile/velib-disponibilite-en-temps-reel.prj'),
-            ]).then(function _(res) {
-                return itowns.ShapefileParser.parse({
-                    shp: res[0],
-                    dbf: res[1],
-                    shx: res[2],
-                    prj: res[3],
-                }, {
+            itowns.Fetcher.multiple('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/shapefile/velib-disponibilite-en-temps-reel', {
+                arrayBuffer: ['shp', 'dbf', 'shx'],
+                text: ['prj'],
+            }).then(function _(res) {
+                return itowns.ShapefileParser.parse(res, {
                     buildExtent: true,
-                    crsIn: 'EPSG:4326',
                     crsOut: view.tileLayer.extent.crs(),
                 });
             }).then(function _(feature) {
