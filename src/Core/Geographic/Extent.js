@@ -247,22 +247,32 @@ Extent.prototype.center = function center(target) {
     return c;
 };
 
+/**
+ * Returns the dimension of the extent, in a <code>THREE.Vector2</code>.
+ *
+ * @param {THREE.Vector2} [target] - The target to assign the result in.
+ *
+ * @return {THREE.Vector2}
+ */
 Extent.prototype.dimensions = function dimensions(target) {
-    target = target || { x: 0, y: 0 };
+    target = target || new THREE.Vector2();
     target.x = Math.abs(this.east() - this.west());
     target.y = Math.abs(this.north() - this.south());
     return target;
 };
 
 /**
- * Return true if coord is inside the bounding box.
+ * Return true if <code>coord</code> is inside the bounding box.
  *
  * @param {Coordinates} coord
- * @param {number} epsilon coord is inside the extent (+/- epsilon)
+ * @param {number} [epsilon=0] - to take into account when comparing to the
+ * point.
+ *
  * @return {boolean}
  */
 Extent.prototype.isPointInside = function isPointInside(coord, epsilon = 0) {
     const c = (this.crs() == coord.crs) ? coord : coord.as(this.crs());
+
     // TODO this ignores altitude
     if (crsIsGeographic(this.crs())) {
         return c.longitude() <= this.east() + epsilon &&
