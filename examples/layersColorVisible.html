@@ -52,11 +52,12 @@
 
             // Use frame requester to update menu before rendering
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, function _() {
-                var dlayers = view.tileLayer.info.displayed.layers;
-                var layers = view.getLayers(function a(l) { return l.isGeometryLayer; });
+                var displayedLayers = view.tileLayer.info.displayed.layers;
+                
+                var allLayers = view.getLayers(function a(l) { return l.isColorLayer || l.isElevationLayer; });
 
-                layers.forEach(function b(layer) {
-                    menuGlobe.colorLayerFolder(layer.id, dlayers.find(l => l.id == layer.id)? 'rgb(57, 167, 57)' : 'rgb(255, 125, 125)');
+                allLayers.forEach(function b(layer) {
+                    menuGlobe.colorLayerFolder(layer.id, displayedLayers.find(displayedLayer => displayedLayer.id == layer.id) ? 'rgb(57, 167, 57)' : 'rgb(255, 125, 125)');
                 });
             });
         </script>
