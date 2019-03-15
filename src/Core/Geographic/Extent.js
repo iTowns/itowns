@@ -381,6 +381,16 @@ Extent.prototype.set = function set(...values) {
     return this;
 };
 
+Extent.prototype.copy = function copy(extent) {
+    this._crs = extent._crs;
+    if (this.isTiledCrs()) {
+        this.set(extent.zoom, extent.row, extent.col);
+    } else {
+        this.set(...extent._values);
+    }
+    return this;
+};
+
 Extent.prototype.union = function union(extent) {
     if (extent.crs() != this.crs()) {
         throw new Error('unsupported union between 2 diff crs');
