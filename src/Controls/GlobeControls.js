@@ -767,11 +767,15 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                             state = states.NONE;
                         }
                         break; }
+                    case states.ORBIT:
                     case states.DOLLY: {
-                        const dx = event.touches[0].pageX - event.touches[1].pageX;
-                        const dy = event.touches[0].pageY - event.touches[1].pageY;
+                        const x = event.touches[0].pageX;
+                        const y = event.touches[0].pageY;
+                        const dx = x - event.touches[1].pageX;
+                        const dy = y - event.touches[1].pageY;
                         const distance = Math.sqrt(dx * dx + dy * dy);
                         dollyStart.set(0, distance);
+                        rotateStart.set(x, y);
                         break; }
                     case states.PAN:
                         panStart.set(event.touches[0].pageX, event.touches[0].pageY);
