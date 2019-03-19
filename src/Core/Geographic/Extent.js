@@ -424,14 +424,16 @@ Extent.prototype.union = function union(extent) {
 const c = new Coordinates('EPSG:4326', 0, 0, 0);
 Extent.prototype.expandByPoint = function expandByPoint(coordinates) {
     const coords = coordinates.crs == this.crs() ? coordinates : coordinates.as(this.crs(), c);
-    const we = coords._values[0];
+    this.expandByValues(coords._values[0], coords._values[1]);
+};
+
+Extent.prototype.expandByValues = function expandByValues(we, sn) {
     if (we < this.west()) {
         this._values[CARDINAL.WEST] = we;
     }
     if (we > this.east()) {
         this._values[CARDINAL.EAST] = we;
     }
-    const sn = coords._values[1];
     if (sn < this.south()) {
         this._values[CARDINAL.SOUTH] = sn;
     }
