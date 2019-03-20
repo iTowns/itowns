@@ -77,9 +77,6 @@ if (enableTargetHelper) {
     helpers.target = new THREE.AxesHelper(500000);
 }
 
-// Handle function
-let _handlerMouseMove;
-let _handlerMouseUp;
 // current downed key
 let currentKey;
 
@@ -541,6 +538,8 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         spherical.setFromVector3(targetPosition);
     };
 
+    const _onMouseMoveListener = onMouseMove.bind(this);
+    const _onMouseUpListener = onMouseUp.bind(this);
     function onMouseDown(event) {
         CameraUtils.stop(view, this.camera);
         player.stop().then(() => {
@@ -578,9 +577,9 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                 default:
             }
             if (state != states.NONE) {
-                this.domElement.addEventListener('mousemove', _handlerMouseMove, false);
-                this.domElement.addEventListener('mouseup', _handlerMouseUp, false);
-                this.domElement.addEventListener('mouseleave', _handlerMouseUp, false);
+                this.domElement.addEventListener('mousemove', _onMouseMoveListener, false);
+                this.domElement.addEventListener('mouseup', _onMouseUpListener, false);
+                this.domElement.addEventListener('mouseleave', _onMouseUpListener, false);
                 this.dispatchEvent(this.startEvent);
             }
         });
@@ -648,9 +647,9 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     function onMouseUp() {
         if (this.enabled === false) { return; }
 
-        this.domElement.removeEventListener('mousemove', _handlerMouseMove, false);
-        this.domElement.removeEventListener('mouseup', _handlerMouseUp, false);
-        this.domElement.removeEventListener('mouseleave', _handlerMouseUp, false);
+        this.domElement.removeEventListener('mousemove', _onMouseMoveListener, false);
+        this.domElement.removeEventListener('mouseup', _onMouseUpListener, false);
+        this.domElement.removeEventListener('mouseleave', _onMouseUpListener, false);
         this.dispatchEvent(this.endEvent);
 
         player.stop();
@@ -861,49 +860,68 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         onMouseUp.bind(this)();
     }
 
+    const _onMouseDownListener = onMouseDown.bind(this);
+    const _onMouseWheelListener = onMouseWheel.bind(this);
+    const _ondblclickListener = ondblclick.bind(this);
+    const _onTouchStartListener = onTouchStart.bind(this);
+    const _onTouchEndListener = onTouchEnd.bind(this);
+    const _onTouchMoveListener = onTouchMove.bind(this);
+    const _onKeyDownListener = onKeyDown.bind(this);
+    const _onKeyUpListener = onKeyUp.bind(this);
+    const _onContextMenuListener = (event) => {
+        event.preventDefault();
+    };
+    const _updateListener = this.update;
+    const _onBlurListener = () => {
+        onKeyUp.bind(this)();
+        onMouseUp.bind(this)();
+    };
+
     this.dispose = function dispose() {
-        // this.domElement.removeEventListener( 'contextmenu', onContextMenu, false );
-        this.domElement.removeEventListener('mousedown', onMouseDown, false);
-        this.domElement.removeEventListener('mousewheel', onMouseWheel, false);
-        this.domElement.removeEventListener('DOMMouseScroll', onMouseWheel, false); // firefox
+        this.domElement.removeEventListener('contextmenu', _onContextMenuListener, false);
 
-        this.domElement.removeEventListener('touchstart', onTouchStart, false);
-        this.domElement.removeEventListener('touchend', onTouchEnd, false);
-        this.domElement.removeEventListener('touchmove', onTouchMove, false);
+        this.domElement.removeEventListener('mousedown', _onMouseDownListener, false);
+        this.domElement.removeEventListener('mousemove', _onMouseMoveListener, false);
+        this.domElement.removeEventListener('mousewheel', _onMouseWheelListener, false);
+        this.domElement.removeEventListener('DOMMouseScroll', _onMouseWheelListener, false); // firefox
+        this.domElement.removeEventListener('mouseup', _onMouseUpListener, false);
+        this.domElement.removeEventListener('mouseleave', _onMouseUpListener, false);
+        this.domElement.removeEventListener('dblclick', _ondblclickListener, false);
 
-        this.domElement.removeEventListener('mousemove', onMouseMove, false);
-        this.domElement.removeEventListener('mouseup', onMouseUp, false);
+        this.domElement.removeEventListener('touchstart', _onTouchStartListener, false);
+        this.domElement.removeEventListener('touchend', _onTouchEndListener, false);
+        this.domElement.removeEventListener('touchmove', _onTouchMoveListener, false);
 
-        window.removeEventListener('keydown', onKeyDown, false);
+        player.removeEventListener('animation-frame', _updateListener);
+
+        window.removeEventListener('keydown', _onKeyDownListener, false);
+        window.removeEventListener('keyup', _onKeyUpListener, false);
+
+        window.removeEventListener('blur', _onBlurListener);
 
         this.dispatchEvent({ type: 'dispose' });
     };
 
     // Instance all
-    this.domElement.addEventListener('contextmenu', (event) => {
-        event.preventDefault();
-    }, false);
-    this.domElement.addEventListener('mousedown', onMouseDown.bind(this), false);
-    this.domElement.addEventListener('mousewheel', onMouseWheel.bind(this), false);
-    this.domElement.addEventListener('dblclick', ondblclick.bind(this), false);
-    this.domElement.addEventListener('DOMMouseScroll', onMouseWheel.bind(this), false); // firefox
+    this.domElement.addEventListener('contextmenu', _onContextMenuListener, false);
+    this.domElement.addEventListener('mousedown', _onMouseDownListener, false);
+    this.domElement.addEventListener('mousewheel', _onMouseWheelListener, false);
+    this.domElement.addEventListener('dblclick', _ondblclickListener, false);
+    this.domElement.addEventListener('DOMMouseScroll', _onMouseWheelListener, false); // firefox
 
-    this.domElement.addEventListener('touchstart', onTouchStart.bind(this), false);
-    this.domElement.addEventListener('touchend', onTouchEnd.bind(this), false);
-    this.domElement.addEventListener('touchmove', onTouchMove.bind(this), false);
+    this.domElement.addEventListener('touchstart', _onTouchStartListener, false);
+    this.domElement.addEventListener('touchend', _onTouchEndListener, false);
+    this.domElement.addEventListener('touchmove', _onTouchMoveListener, false);
 
     // refresh control for each animation's frame
-    player.addEventListener('animation-frame', this.update);
+    player.addEventListener('animation-frame', _updateListener);
 
     // TODO: Why windows
-    window.addEventListener('keydown', onKeyDown.bind(this), false);
-    window.addEventListener('keyup', onKeyUp.bind(this), false);
+    window.addEventListener('keydown', _onKeyDownListener, false);
+    window.addEventListener('keyup', _onKeyUpListener, false);
 
     // Reset key/mouse when window loose focus
-    window.addEventListener('blur', () => {
-        onKeyUp.bind(this)();
-        onMouseUp.bind(this)();
-    });
+    window.addEventListener('blur', _onBlurListener);
 
     view.scene.add(cameraTarget);
     if (enableTargetHelper) {
@@ -914,9 +932,6 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         helpers.picking.layers.set(layerTHREEjs);
         this.camera.layers.enable(layerTHREEjs);
     }
-
-    _handlerMouseMove = onMouseMove.bind(this);
-    _handlerMouseUp = onMouseUp.bind(this);
 
     positionObject(targetCoordinate.as('EPSG:4978').xyz(), cameraTarget);
 
