@@ -77,9 +77,6 @@ if (enableTargetHelper) {
     helpers.target = new THREE.AxesHelper(500000);
 }
 
-// Handle function
-let _handlerMouseMove;
-let _handlerMouseUp;
 // current downed key
 let currentKey;
 
@@ -541,6 +538,8 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         spherical.setFromVector3(targetPosition);
     };
 
+    const _onMouseMoveListener = onMouseMove.bind(this);
+    const _onMouseUpListener = onMouseUp.bind(this);
     function onMouseDown(event) {
         CameraUtils.stop(view, this.camera);
         player.stop().then(() => {
@@ -578,9 +577,9 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                 default:
             }
             if (state != states.NONE) {
-                this.domElement.addEventListener('mousemove', _handlerMouseMove, false);
-                this.domElement.addEventListener('mouseup', _handlerMouseUp, false);
-                this.domElement.addEventListener('mouseleave', _handlerMouseUp, false);
+                this.domElement.addEventListener('mousemove', _onMouseMoveListener, false);
+                this.domElement.addEventListener('mouseup', _onMouseUpListener, false);
+                this.domElement.addEventListener('mouseleave', _onMouseUpListener, false);
                 this.dispatchEvent(this.startEvent);
             }
         });
@@ -648,9 +647,9 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     function onMouseUp() {
         if (this.enabled === false) { return; }
 
-        this.domElement.removeEventListener('mousemove', _handlerMouseMove, false);
-        this.domElement.removeEventListener('mouseup', _handlerMouseUp, false);
-        this.domElement.removeEventListener('mouseleave', _handlerMouseUp, false);
+        this.domElement.removeEventListener('mousemove', _onMouseMoveListener, false);
+        this.domElement.removeEventListener('mouseup', _onMouseUpListener, false);
+        this.domElement.removeEventListener('mouseleave', _onMouseUpListener, false);
         this.dispatchEvent(this.endEvent);
 
         player.stop();
@@ -858,8 +857,6 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     }
 
     const _onMouseDownListener = onMouseDown.bind(this);
-    const _onMouseMoveListener = onMouseMove.bind(this);
-    const _onMouseUpListener = onMouseUp.bind(this);
     const _onMouseWheelListener = onMouseWheel.bind(this);
     const _ondblclickListener = ondblclick.bind(this);
     const _onTouchStartListener = onTouchStart.bind(this);
@@ -931,9 +928,6 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         helpers.picking.layers.set(layerTHREEjs);
         this.camera.layers.enable(layerTHREEjs);
     }
-
-    _handlerMouseMove = _onMouseMoveListener;
-    _handlerMouseUp = _onMouseUpListener;
 
     positionObject(targetCoordinate.as('EPSG:4978').xyz(), cameraTarget);
 
