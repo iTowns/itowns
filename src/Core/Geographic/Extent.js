@@ -503,4 +503,24 @@ Extent.prototype.subdivision = function subdivision() {
     return [northWest, northEast, southWest, southEast];
 };
 
+Extent.prototype.copyWithTransform = function copyWithTransform(t, s, toCopy) {
+    if (!toCopy.isTiledCrs()) {
+        this._crs = toCopy._crs;
+        this._values[0] = (toCopy._values[0] - t.x) / s.x;
+        this._values[1] = (toCopy._values[1] - t.x) / s.x;
+        if (this._values[0] > this._values[1]) {
+            const temp = this._values[0];
+            this._values[0] = this._values[1];
+            this._values[1] = temp;
+        }
+        this._values[2] = (toCopy._values[2] - t.y) / s.y;
+        this._values[3] = (toCopy._values[3] - t.y) / s.y;
+        if (this._values[2] > this._values[3]) {
+            const temp = this._values[2];
+            this._values[2] = this._values[3];
+            this._values[3] = temp;
+        }
+    }
+};
+
 export default Extent;
