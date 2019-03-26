@@ -143,6 +143,10 @@ function createHTMLListFromObject(jsObject) {
         // append property name
         item.appendChild(document.createTextNode(property));
 
+        if (jsObject[property] === null) {
+            jsObject[property] = 'null';
+        }
+
         if (typeof jsObject[property] === 'object') {
             // if property value is an object, then recurse to
             // create a list from it
