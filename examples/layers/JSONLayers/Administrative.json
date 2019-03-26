@@ -1,14 +1,14 @@
 {
   "id": "Administrative",
   "title": "Administrative delimitations",
-  "visible": false,
+  "visible": true,
   "opacity": 1,
   "transparent": true,
   "source": {
     "url": "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
     "tileMatrixSet": "PM",
     "format": "image/png",
-    "name": "ADMINISTRATIVEUNITS.BOUNDARIES",
+    "name": "LIMITES_ADMINISTRATIVES_EXPRESS.LATEST",
     "style": "normal",
     "zoom": {
       "min": 5,
