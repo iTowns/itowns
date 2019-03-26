@@ -14,48 +14,48 @@ const CARDINAL = {
     NORTH: 3,
 };
 
-/**
- * @class      Extent
- * @param      {string}          crs     projection crs (ex: 'EPSG:4326')
- * @param      {(Array|object|Number)}  values  west, east, south and north values
- */
-function Extent(crs, ...values) {
+function Extent(crs, v0, v1, v2, v3) {
     this._crs = crs;
 
     if (this.isTiledCrs()) {
-        if (values.length == 3) {
-            this.zoom = values[0];
-            this.row = values[1];
-            this.col = values[2];
+        if (v0 !== undefined) {
+            this.zoom = v0;
+            this.row = v1;
+            this.col = v2;
 
             if (this.zoom < 0) {
-                throw new Error(`invlid WTMS values ${values}`);
+                throw new Error('invlid WTMS values');
             }
         } else {
-            throw new Error(`Unsupported constructor args '${values}'`);
+            throw new Error('Unsupported constructor args');
         }
-    } else if (values.length === 2 &&
-        values[0] instanceof Coordinates &&
-        values[1] instanceof Coordinates) {
+    } else if (v0 instanceof Coordinates) {
+        // seem never used
         this._values = new Float64Array(4);
-        this._values[CARDINAL.WEST] = values[0]._values[0];
-        this._values[CARDINAL.EAST] = values[1]._values[0];
-        this._values[CARDINAL.SOUTH] = values[0]._values[1];
-        this._values[CARDINAL.NORTH] = values[1]._values[1];
-    } else if (values.length == 1 && values[0].west != undefined) {
+        this._values[CARDINAL.WEST] = v0._values[0];
+        this._values[CARDINAL.EAST] = v1._values[0];
+        this._values[CARDINAL.SOUTH] = v0._values[1];
+        this._values[CARDINAL.NORTH] = v1._values[1];
+    } else if (v0 && v0.west !== undefined) {
         this._values = new Float64Array(4);
-        this._values[CARDINAL.WEST] = values[0].west;
-        this._values[CARDINAL.EAST] = values[0].east;
-        this._values[CARDINAL.SOUTH] = values[0].south;
-        this._values[CARDINAL.NORTH] = values[0].north;
-    } else if (values.length == 4) {
+        this._values[CARDINAL.WEST] = v0.west;
+        this._values[CARDINAL.EAST] = v0.east;
+        this._values[CARDINAL.SOUTH] = v0.south;
+        this._values[CARDINAL.NORTH] = v0.north;
+    } else if (v0.length == 4) {
         this._values = new Float64Array(4);
         Object.keys(CARDINAL).forEach((key) => {
             const cardinal = CARDINAL[key];
-            this._values[cardinal] = values[cardinal];
+            this._values[cardinal] = v0[cardinal];
         });
+    } else if (v0 !== undefined) {
+        this._values = new Float64Array(4);
+        this._values[CARDINAL.WEST] = v0;
+        this._values[CARDINAL.EAST] = v1;
+        this._values[CARDINAL.SOUTH] = v2;
+        this._values[CARDINAL.NORTH] = v3;
     } else {
-        throw new Error(`Unsupported constructor args '${values}'`);
+        throw new Error('Unsupported constructor args');
     }
 }
 
@@ -63,7 +63,7 @@ Extent.prototype.clone = function clone() {
     if (this.isTiledCrs()) {
         return new Extent(this._crs, this.zoom, this.row, this.col);
     } else {
-        const result = new Extent(this._crs, ...this._values);
+        const result = new Extent(this._crs, this._values[0], this._values[1], this._values[2], this._values[3]);
         return result;
     }
 };
@@ -367,16 +367,16 @@ Extent.prototype.intersect = function intersect(other) {
 };
 
 
-Extent.prototype.set = function set(...values) {
+Extent.prototype.set = function set(v0, v1, v2, v3) {
     if (this.isTiledCrs()) {
-        this.zoom = values[0];
-        this.row = values[1];
-        this.col = values[2];
+        this.zoom = v0;
+        this.row = v1;
+        this.col = v2;
     } else {
-        Object.keys(CARDINAL).forEach((key) => {
-            const cardinal = CARDINAL[key];
-            this._values[cardinal] = values[cardinal];
-        });
+        this._values[CARDINAL.WEST] = v0;
+        this._values[CARDINAL.EAST] = v1;
+        this._values[CARDINAL.SOUTH] = v2;
+        this._values[CARDINAL.NORTH] = v3;
     }
     return this;
 };
@@ -386,7 +386,7 @@ Extent.prototype.copy = function copy(extent) {
     if (this.isTiledCrs()) {
         this.set(extent.zoom, extent.row, extent.col);
     } else {
-        this.set(...extent._values);
+        this.set(extent._values[0], extent._values[1], extent._values[2], extent._values[3]);
     }
     return this;
 };
