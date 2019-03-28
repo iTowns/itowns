@@ -157,6 +157,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
      * appears unneeded.
      */
     update(dt, updateLoopRestarted, force) {
+        if (this.enabled == false) { return; }
+
         // dt will not be relevant when we just started rendering, we consider a 1-frame move in this case
         if (updateLoopRestarted) {
             dt = 16;
@@ -182,6 +184,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
     // Event callback functions
     // Mouse movement handling
     onMouseDown(event) {
+        if (this.enabled == false) { return; }
+
         // next line is commented because, when I uncomment it, key binding doesn't work any more.
         // event.preventDefault();
 
@@ -195,10 +199,14 @@ class FirstPersonControls extends THREE.EventDispatcher {
     }
 
     onMouseUp() {
+        if (this.enabled == false) { return; }
+
         this._isMouseDown = false;
     }
 
     onMouseMove(event) {
+        if (this.enabled == false) { return; }
+
         if (this._isMouseDown === true) {
             // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
             // (where deltaH is the vertical amount we moved, and H the renderer height)
@@ -220,6 +228,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
 
     // Mouse wheel
     onMouseWheel(event) {
+        if (this.enabled == false) { return; }
+
         let delta = 0;
         if (event.wheelDelta !== undefined) {
             delta = -event.wheelDelta;
@@ -245,6 +255,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
 
     // Keyboard handling
     onKeyUp(e) {
+        if (this.enabled == false) { return; }
+
         const move = MOVEMENTS[e.keyCode];
         if (move) {
             this.moves.delete(move);
@@ -254,6 +266,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
     }
 
     onKeyDown(e) {
+        if (this.enabled == false) { return; }
+
         const move = MOVEMENTS[e.keyCode];
         if (move) {
             this.moves.add(move);
