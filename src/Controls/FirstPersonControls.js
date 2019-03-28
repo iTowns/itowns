@@ -60,6 +60,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
      */
     constructor(view, options = {}) {
         super();
+        this.isFirstPersonControls = true;
         this.camera = view.camera.camera3D;
         this.view = view;
         this.moves = new Set();
