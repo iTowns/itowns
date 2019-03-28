@@ -159,6 +159,8 @@ class StreetControls extends FirstPersonControls {
     }
 
     onMouseUp(event) {
+        if (this.enabled == false) { return; }
+
         super.onMouseUp();
         if (this._stateOnMouseDrag) {
             this._stateOnMouseDrag = false;
@@ -168,6 +170,8 @@ class StreetControls extends FirstPersonControls {
     }
 
     onMouseMove(event) {
+        if (this.enabled == false) { return; }
+
         super.onMouseMove(event);
 
         if (this._isMouseDown) {
@@ -335,6 +339,8 @@ class StreetControls extends FirstPersonControls {
     }
 
     onKeyDown(e) {
+        if (this.enabled == false) { return; }
+
         super.onKeyDown(e);
 
         // key to move to next position (default to Z)
