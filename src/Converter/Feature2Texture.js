@@ -1,5 +1,8 @@
 import * as THREE from 'three';
+import Extent from 'Core/Geographic/Extent';
 import Coordinates from '../Core/Geographic/Coordinates';
+
+const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
 const pt = new THREE.Vector2();
 
@@ -95,13 +98,13 @@ function drawFeature(ctx, feature, origin, scale, extent, style = {}) {
         px = gStyle.radius * (extentDim.x / 256);
 
         if (feature.type === 'point') {
-            coord.set(extent.crs(), feature.vertices[0], feature.vertices[1]);
+            coord.set(extent.crs, feature.vertices[0], feature.vertices[1]);
             if (extent.isPointInside(coord, px)) {
                 drawPoint(ctx, feature.vertices[0], feature.vertices[1], origin, scale, gStyle);
             }
         } else if (feature.type === 'multipoint') {
             for (var i = 0; i < feature.vertices.length; i += feature.size) {
-                coord.set(extent.crs(), feature.vertices[i], feature.vertices[i + 1]);
+                coord.set(extent.crs, feature.vertices[i], feature.vertices[i + 1]);
                 if (extent.isPointInside(coord, px)) {
                     drawPoint(ctx, feature.vertices[i], feature.vertices[i + 1], origin, scale, gStyle);
                 }
@@ -121,7 +124,7 @@ export default {
         if (collection) {
             // A texture is instancied drawn canvas
             // origin and dimension are used to transform the feature's coordinates to canvas's space
-            const origin = new THREE.Vector2(extent.west(), extent.south());
+            const origin = new THREE.Vector2(extent.west, extent.south);
             const dimension = extent.dimensions();
             const c = document.createElement('canvas');
 
@@ -135,8 +138,7 @@ export default {
             ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
 
             const scale = new THREE.Vector2(ctx.canvas.width / dimension.x, ctx.canvas.width / dimension.y);
-
-            const ex = collection.crs == extent.crs() ? extent : extent.as(collection.crs);
+            const ex = collection.crs == extent.crs ? extent : extent.as(collection.crs, _extent);
             // Draw the canvas
             for (const feature of collection.features) {
                 drawFeature(ctx, feature, origin, scale, ex, style);

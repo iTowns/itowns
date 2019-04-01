@@ -45,7 +45,7 @@ export default {
         const level = (parent !== undefined) ? (parent.level + 1) : 0;
 
         const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
-        const south = sharableExtent.south().toFixed(6);
+        const south = sharableExtent.south.toFixed(6);
         const segment = layer.options.segments || 16;
         const key = `${builder.type}_${layer.disableSkirt ? 0 : 1}_${segment}_${level}_${south}`;
 

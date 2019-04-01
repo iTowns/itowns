@@ -44,12 +44,12 @@ PlanarTileBuilder.prototype.VertexNormal = function VertexNormal() {
 
 // coord u tile to projected
 PlanarTileBuilder.prototype.uProjecte = function uProjecte(u, params) {
-    params.projected.x = params.extent.west() + u * (params.extent.east() - params.extent.west());
+    params.projected.x = params.extent.west + u * (params.extent.east - params.extent.west);
 };
 
 // coord v tile to projected
 PlanarTileBuilder.prototype.vProjecte = function vProjecte(v, params) {
-    params.projected.y = params.extent.south() + v * (params.extent.north() - params.extent.south());
+    params.projected.y = params.extent.south + v * (params.extent.north - params.extent.south);
 };
 
 // get oriented bounding box of tile
@@ -62,7 +62,7 @@ PlanarTileBuilder.prototype.computeSharableExtent = function fnComputeSharableEx
     // compute sharable extent to pool the geometries
     // the geometry in common extent is identical to the existing input
     // with a translation
-    const sharableExtent = new Extent(extent.crs(), 0, Math.abs(extent.west() - extent.east()), 0, Math.abs(extent.north() - extent.south()));
+    const sharableExtent = new Extent(extent.crs, 0, Math.abs(extent.west - extent.east), 0, Math.abs(extent.north - extent.south));
     return {
         sharableExtent,
         quaternion,

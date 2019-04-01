@@ -52,7 +52,7 @@
                 // eslint-disable-next-line no-template-curly-in-string
                 url: 'http://c.tile.stamen.com/watercolor/${z}/${x}/${y}.jpg',
                 networkOptions: { crossOrigin: 'anonymous' },
-                extent: [extent.west(), extent.east(), extent.south(), extent.north()],
+                extent,
                 projection: 'EPSG:3857',
                 attribution: {
                     name: 'OpenStreetMap',

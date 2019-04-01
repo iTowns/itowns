@@ -46,7 +46,7 @@ export class InfoTiledGeometryLayer extends InfoLayer {
             'extent',
             {
                 get: () => {
-                    const extent = new Extent(this.layer.extent.crs(), Infinity, -Infinity, Infinity, -Infinity);
+                    const extent = new Extent(this.layer.extent.crs, Infinity, -Infinity, Infinity, -Infinity);
                     extent.min = +Infinity;
                     extent.max = -Infinity;
                     this.displayed.tiles.forEach((tile) => {

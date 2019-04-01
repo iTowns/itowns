@@ -47,7 +47,7 @@
             }).then(function _(res) {
                 return itowns.ShapefileParser.parse(res, {
                     buildExtent: true,
-                    crsOut: view.tileLayer.extent.crs(),
+                    crsOut: view.tileLayer.extent.crs,
                 });
             }).then(function _(feature) {
                 var velibSource = new itowns.FileSource({

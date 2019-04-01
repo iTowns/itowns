@@ -1,5 +1,9 @@
 import Source from 'Source/Source';
 
+import Extent from 'Core/Geographic/Extent';
+
+const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
+
 /**
  * @classdesc
  * An object defining the source of a single resource to get from a direct
@@ -37,7 +41,7 @@ import Source from 'Source/Source';
  * const kmlLayer = new itowns.ColorLayer('Kml', {
  *     name: 'kml',
  *     transparent: true,
- *     projection: view.tileLayer.extent.crs(),
+ *     projection: view.tileLayer.extent.crs,
  *     source: kmlSource,
  * });
  *
@@ -80,7 +84,7 @@ import Source from 'Source/Source';
  *         return itowns.GeoJsonParser.parse(geojson, {
  *             buildExtent: true,
  *             crsIn: 'EPSG:4326',
- *             crsOut: view.tileLayer.extent.crs(),
+ *             crsOut: view.tileLayer.extent.crs,
  *             mergeFeatures: true,
  *             withNormal: false,
  *             withAltitude: false,
@@ -134,7 +138,7 @@ class FileSource extends Source {
     }
 
     extentInsideLimit(extent) {
-        const localExtent = this.projection == extent.crs() ? extent : extent.as(this.projection);
+        const localExtent = this.projection == extent.crs ? extent : extent.as(this.projection, ext);
         return (extent.zoom == undefined || !(extent.zoom < this.zoom.min || extent.zoom > this.zoom.max)) &&
             this.extent.intersectsExtent(localExtent);
     }

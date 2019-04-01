@@ -15,7 +15,7 @@ function PlanarView(viewerDiv, extent, options = {}) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
 
     // Setup View
-    View.call(this, extent.crs(), viewerDiv, options);
+    View.call(this, extent.crs, viewerDiv, options);
 
     // Configure camera
     const dim = extent.dimensions();

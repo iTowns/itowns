@@ -123,7 +123,7 @@ class CameraRig extends THREE.Object3D {
 
     setTargetFromCoordinate(view, coord) {
         // clamp altitude to seaLevel
-        coord.as(tileLayer(view).extent.crs(), this.coord);
+        coord.as(tileLayer(view).extent.crs, this.coord);
         const altitude = Math.max(0, this.coord._values[2]);
         this.coord._values[2] = altitude;
         // adjust target's position with clamped altitude
@@ -252,7 +252,7 @@ class CameraRig extends THREE.Object3D {
             if (params.callback) {
                 params.callback(this);
             }
-            targetCoord.set(view.referenceCrs, this.targetWorldPosition).as(tileLayer(view).extent.crs(), this.coord);
+            targetCoord.set(view.referenceCrs, this.targetWorldPosition).as(tileLayer(view).extent.crs, this.coord);
             view.notifyChange(camera);
         };
 

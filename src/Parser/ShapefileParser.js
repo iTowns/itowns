@@ -28,7 +28,7 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
  *     }, {
  *         buildExtent: true,
  *         crsIn: 'EPSG:4326',
- *         crsOut: view.tileLayer.extent.crs(),
+ *         crsOut: view.tileLayer.extent.crs,
  *     });
  * }).then(function _(geojson) {
  *     var source = new FileSource({ parsedData: geojson });

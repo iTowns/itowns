@@ -126,10 +126,10 @@ describe('Provide in Sources', function () {
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
             assert.equal(textures[0].coords.zoom, zoom);
-            assert.equal(textures[0].coords.west(), tile.extent.west());
-            assert.equal(textures[0].coords.east(), tile.extent.east());
-            assert.equal(textures[0].coords.north(), tile.extent.north());
-            assert.equal(textures[0].coords.south(), tile.extent.south());
+            assert.equal(textures[0].coords.west, tile.extent.west);
+            assert.equal(textures[0].coords.east, tile.extent.east);
+            assert.equal(textures[0].coords.north, tile.extent.north);
+            assert.equal(textures[0].coords.south, tile.extent.south);
         });
     });
     it('should get 4 TileMesh from TileProvider', () => {
@@ -141,10 +141,10 @@ describe('Provide in Sources', function () {
         globelayer.subdivideNode(context, tile);
         TileProvider.executeCommand(context.scheduler.commands[0]).then((tiles) => {
             assert.equal(tiles.length, 4);
-            assert.equal(tiles[0].extent.west(), tile.extent.west());
-            assert.equal(tiles[0].extent.east(), tile.extent.east() * 0.5);
-            assert.equal(tiles[0].extent.north(), tile.extent.north());
-            assert.equal(tiles[0].extent.south(), tile.extent.north() * 0.5);
+            assert.equal(tiles[0].extent.west, tile.extent.west);
+            assert.equal(tiles[0].extent.east, tile.extent.east * 0.5);
+            assert.equal(tiles[0].extent.north, tile.extent.north);
+            assert.equal(tiles[0].extent.south, tile.extent.north * 0.5);
         });
     });
     it('should get 3 meshs with WFS source and DataSourceProvider', () => {

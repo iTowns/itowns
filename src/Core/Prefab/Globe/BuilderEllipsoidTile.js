@@ -30,7 +30,7 @@ BuilderEllipsoidTile.prototype.constructor = BuilderEllipsoidTile;
 BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
     params.nbRow = 2 ** (params.level + 1.0);
 
-    var st1 = WGS84ToOneSubY(params.extent.south());
+    var st1 = WGS84ToOneSubY(params.extent.south);
 
     if (!isFinite(st1)) { st1 = 0; }
 
@@ -101,13 +101,13 @@ BuilderEllipsoidTile.prototype.computeSharableExtent = function fnComputeSharabl
     // TODO: It should be possible to use equatorial plan symetrie,
     // but we should be reverse UV on tile
     // Common geometry is looking for only on longitude
-    const sizeLongitude = Math.abs(extent.west() - extent.east()) / 2;
-    const sharableExtent = new Extent(extent.crs(), -sizeLongitude, sizeLongitude, extent.south(), extent.north());
+    const sizeLongitude = Math.abs(extent.west - extent.east) / 2;
+    const sharableExtent = new Extent(extent.crs, -sizeLongitude, sizeLongitude, extent.south, extent.north);
 
     // compute rotation to transform tile to position it on ellipsoid
     // this transformation take into account the transformation of the parents
-    const rotLon = THREE.Math.degToRad(extent.west() - sharableExtent.west());
-    const rotLat = THREE.Math.degToRad(90 - extent.center().latitude());
+    const rotLon = THREE.Math.degToRad(extent.west - sharableExtent.west);
+    const rotLat = THREE.Math.degToRad(90 - extent.center(this.tmp.coords[0]).latitude());
     quatToAlignLongitude.setFromAxisAngle(axisZ, rotLon);
     quatToAlignLatitude.setFromAxisAngle(axisY, rotLat);
     quatToAlignLongitude.multiply(quatToAlignLatitude);

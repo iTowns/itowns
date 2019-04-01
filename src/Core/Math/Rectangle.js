@@ -4,10 +4,10 @@
  */
 
 function Rectangle(options) {
-    this._west = options.west() || 0;
-    this._south = options.south() || 0;
-    this._east = options.east() || 0;
-    this._north = options.north() || 0;
+    this._west = options.west || 0;
+    this._south = options.south || 0;
+    this._east = options.east || 0;
+    this._north = options.north || 0;
 }
 
 Rectangle.prototype.getWest = function getWest() {

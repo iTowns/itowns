@@ -78,7 +78,7 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
             node.add(tile);
             tile.updateMatrixWorld();
 
-            const extent = boundingVolumeToExtent(layer.extent.crs(), tile.boundingVolume, tile.matrixWorld);
+            const extent = boundingVolumeToExtent(layer.extent.crs, tile.boundingVolume, tile.matrixWorld);
             tile.traverse((obj) => {
                 obj.extent = extent;
             });

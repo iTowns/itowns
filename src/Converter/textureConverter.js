@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import Feature2Texture from 'Converter/Feature2Texture';
+import Extent from 'Core/Geographic/Extent';
+
+const extentTexture = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
 const textureLayer = (texture) => {
     texture.generateMipmaps = false;
@@ -22,7 +25,7 @@ export default {
                 new THREE.Color(layer.backgroundLayer.paint['background-color']) :
                 undefined;
 
-            const extentTexture = extentDestination.as(layer.projection);
+            extentDestination.as(layer.projection, extentTexture);
             texture = Feature2Texture.createTextureFromFeature(data, extentTexture, 256, layer.style, backgroundColor);
             texture.parsedData = data;
             texture.coords = extentDestination;

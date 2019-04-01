@@ -1,7 +1,10 @@
+import * as THREE from 'three';
 import { CRS_DEFINES, ELEVATION_MODES } from 'Renderer/LayeredMaterial';
 import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent } from 'Parser/XbilParser';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
+
+const pitch = new THREE.Vector4();
 
 function defineLayerProperty(layer, property, initValue, defaultValue) {
     let _value = initValue !== undefined ? initValue : defaultValue;
@@ -110,7 +113,7 @@ class MaterialLayer {
         const parentTexture = parent && parent.textures[0];
         if (dataElevation && parentTexture && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
             const coords = this.textures[0].coords;
-            const pitch = coords.offsetToParent(parentTexture.coords);
+            coords.offsetToParent(parentTexture.coords, pitch);
             insertSignificantValuesFromParent(dataElevation, parentTexture.image.data, nodatavalue, pitch);
         }
     }

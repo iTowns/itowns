@@ -11,6 +11,7 @@ import Ellipsoid from 'Core/Math/Ellipsoid';
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
 const projectionCache = {};
+const dimension = new THREE.Vector2();
 
 export const ellipsoidSizes = {
     x: 6378137,
@@ -488,20 +489,17 @@ Coordinates.prototype.as = function as(crs, target) {
  * @return {Vector2} normalized offset in extent
  */
 Coordinates.prototype.offsetInExtent = function offsetInExtent(extent, target) {
-    if (this.crs != extent.crs()) {
+    if (this.crs != extent.crs) {
         throw new Error('unsupported mix');
     }
 
-    const dimension = {
-        x: Math.abs(extent.east() - extent.west()),
-        y: Math.abs(extent.north() - extent.south()),
-    };
+    extent.dimensions(dimension);
 
     const x = crsIsGeocentric(this.crs) ? this.x() : this.longitude();
     const y = crsIsGeocentric(this.crs) ? this.y() : this.latitude();
 
-    const originX = (x - extent.west()) / dimension.x;
-    const originY = (extent.north() - y) / dimension.y;
+    const originX = (x - extent.west) / dimension.x;
+    const originY = (extent.north - y) / dimension.y;
 
     target = target || new THREE.Vector2();
     target.set(originX, originY);

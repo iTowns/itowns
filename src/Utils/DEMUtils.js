@@ -357,7 +357,7 @@ const temp = {
 };
 
 function _readZ(layer, method, coord, nodes, cache) {
-    const pt = coord.as(layer.extent.crs(), temp.coord1);
+    const pt = coord.as(layer.extent.crs, temp.coord1);
 
     let tileWithValidElevationTexture = null;
     // first check in cache

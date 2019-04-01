@@ -61,10 +61,10 @@ function readCoordinates(crsIn, crsOut, coordinates, extent, target, normals, si
 
         // expand extent if present
         if (extent) {
-            if (extent.crs() == crsIn) {
-                extent.expandByPoint(coordIn);
+            if (extent.crs == crsIn) {
+                extent.expandByCoordinates(coordIn);
             } else {
-                extent.expandByPoint(cOut);
+                extent.expandByCoordinates(cOut);
             }
         }
         offset += size;
