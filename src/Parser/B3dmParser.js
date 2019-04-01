@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Capabilities from 'Core/System/Capabilities';
 import GLTFLoader from 'ThreeExtended/loaders/GLTFLoader';
+import DRACOLoader from 'ThreeExtended/loaders/DRACOLoader';
 import LegacyGLTFLoader from 'ThreeExtended/loaders/deprecated/LegacyGLTFLoader';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import utf8Decoder from 'Utils/Utf8Decoder';
@@ -51,6 +52,35 @@ function applyOptionalCesiumRTC(data, gltf) {
 /**
  * @module B3dmParser
  */
+/**
+ * Enable Draco decoding for gltf.
+ * @param {string} path to draco library folder.
+ * This library is mandatory to load b3dm with Draco compression.
+ * @param {object} config optional configuration for Draco compression.
+ *
+ * The Draco library files are in folder itowns/examples/libs/draco/.
+ * You are obliged to indicate this path when you want enable the Draco Decoding.
+ *
+ * For more information on Draco, read file in /itowns/examples/libs/draco/README.md.
+ *
+ * @example <caption>Enable draco decoder</caption>
+ * // if you copied the folder from /itowns/examples/libs/draco/ to your root project,
+ * // You could set path with './'.
+ * itowns.enableDracoLoader('./');
+ */
+export function enableDracoLoader(path, config) {
+    if (!path) {
+        throw new Error('Path to draco folder is mandatory');
+    }
+    DRACOLoader.setDecoderPath(path);
+    if (config) {
+        DRACOLoader.setDecoderConfig(config);
+    }
+    const dracoLoader = new DRACOLoader();
+    glTFLoader.setDRACOLoader(dracoLoader);
+    DRACOLoader.getDecoderModule();
+}
+
 export default {
     /** Parse b3dm buffer and extract THREE.Scene and batch table
      * @param {ArrayBuffer} buffer - the b3dm buffer.
