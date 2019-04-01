@@ -146,7 +146,7 @@ class WFSSource extends Source {
     }
 
     urlFromExtent(extent) {
-        return URLBuilder.bbox(extent.as(this.projection), this);
+        return URLBuilder.bbox(extent, this);
     }
 
     extentInsideLimit(extent) {
@@ -156,4 +156,3 @@ class WFSSource extends Source {
 }
 
 export default WFSSource;
-

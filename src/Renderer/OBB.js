@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import TileGeometry from 'Core/TileGeometry';
 import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
-import { crsIsGeocentric } from 'Core/Geographic/Coordinates';
+import Coordinates, { crsIsGeocentric } from 'Core/Geographic/Coordinates';
 
 // get oriented bounding box of tile
 const builder = new BuilderEllipsoidTile();
 const size = new THREE.Vector3();
+const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();
+const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
 class OBB extends THREE.Object3D {
     /**
@@ -117,10 +119,10 @@ class OBB extends THREE.Object3D {
      * @return     {OBB}           return this object
      */
     setFromExtent(extent, minHeight = extent.min || 0, maxHeight = extent.max || 0) {
-        if (extent._crs == 'EPSG:4326') {
+        if (extent.crs == 'EPSG:4326') {
             const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
             // Compute the minimum count of segment to build tile
-            const segment = Math.max(Math.floor(sharableExtent.dimensions().x / 90 + 1), 2);
+            const segment = Math.max(Math.floor(sharableExtent.dimensions(dimension).x / 90 + 1), 2);
             const paramsGeometry = {
                 extent: sharableExtent,
                 level: 0,
@@ -136,10 +138,10 @@ class OBB extends THREE.Object3D {
             this.position.copy(position);
             this.quaternion.copy(quaternion);
             this.updateMatrixWorld(true);
-        } else if (!extent.isTiledCrs() && crsIsGeocentric(extent.crs())) {
-            extent.center().xyz(this.position);
-            const dim = extent.dimensions();
-            size.set(dim.x, dim.y, Math.abs(maxHeight - minHeight));
+        } else if (!extent.isTiledCrs() && crsIsGeocentric(extent.crs)) {
+            extent.center(coord).xyz(this.position);
+            extent.dimensions(dimension);
+            size.set(dimension.x, dimension.y, Math.abs(maxHeight - minHeight));
             this.box3D.setFromCenterAndSize(center, size);
             this.updateMatrixWorld(true);
         } else {

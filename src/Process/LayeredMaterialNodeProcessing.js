@@ -6,7 +6,7 @@ import handlingError from 'Process/handlerNodeError';
 
 function getSourceExtent(node, extent, targetLevel) {
     if (extent.isTiledCrs()) {
-        return extent.extentParent(targetLevel);
+        return extent.tiledExtentParent(targetLevel);
     } else {
         return node.findAncestorFromLevel(targetLevel).extent;
     }
@@ -159,7 +159,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     return context.scheduler.execute(command).then(
         (result) => {
             // TODO: Handle error : result is undefined in provider. throw error
-            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(extentsSource[i]));
+            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(extentsSource[i], nodeLayer.offsetScales[i]));
             nodeLayer.setTextures(result, pitchs);
             node.layerUpdateState[layer.id].success();
         },
@@ -246,7 +246,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         (textures) => {
             const elevation = {
                 texture: textures[0],
-                pitch: extentsDestination[0].offsetToParent(extentsSource[0]),
+                pitch: extentsDestination[0].offsetToParent(extentsSource[0], nodeLayer.offsetScales[0]),
             };
 
             // Do not apply the new texture if its level is < than the current

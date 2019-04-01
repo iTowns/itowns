@@ -1,5 +1,11 @@
+import * as THREE from 'three';
 import Projection from 'Core/Geographic/Projection';
 import Extent from 'Core/Geographic/Extent';
+import Coordinates from 'Core/Geographic/Coordinates';
+
+const c = new Coordinates('EPSG:4326', 180, 85.06);
+const layerDimension = new THREE.Vector2();
+const tileDimension = new THREE.Vector2();
 
 // Size in pixel
 export const SIZE_TEXTURE_TILE = 256;
@@ -31,23 +37,24 @@ export default {
     // See link below for more information
     // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
     computeTMSCoordinates(tile, extent, isInverted) {
-        extent = tile.extent.crs() == extent.crs() ? extent : extent.as(tile.extent.crs());
-        const c = tile.extent.center();
-        const layerDimension = extent.dimensions();
+        extent = tile.extent.crs == extent.crs ? extent : extent.as(tile.extent.crs, extent);
+        tile.extent.center(c);
+        extent.dimensions(layerDimension);
+        tile.extent.dimensions(tileDimension);
 
         // Each level has 2^n * 2^n tiles...
         // ... so we count how many tiles of the same width as tile we can fit in the layer
-        const tileCount = Math.round(layerDimension.x / tile.extent.dimensions().x);
+        const tileCount = Math.round(layerDimension.x / tileDimension.x);
         // ... 2^zoom = tilecount => zoom = log2(tilecount)
         const zoom = Math.floor(Math.log2(tileCount));
 
         // Now that we have computed zoom, we can deduce x and y (or row / column)
-        const x = (c.x() - extent.west()) / layerDimension.x;
+        const x = (c.x() - extent.west) / layerDimension.x;
         let y;
         if (isInverted) {
-            y = (extent.north() - c.y()) / layerDimension.y;
+            y = (extent.north - c.y()) / layerDimension.y;
         } else {
-            y = (c.y() - extent.south()) / layerDimension.y;
+            y = (c.y() - extent.south) / layerDimension.y;
         }
 
         return [new Extent('TMS', zoom, Math.floor(y * tileCount), Math.floor(x * tileCount))];

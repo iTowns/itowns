@@ -13,10 +13,10 @@ describe('Extent constructors', function () {
         const withCoords = new Extent('EPSG:4326',
             new Coordinates('EPSG:4326', minX, minY),
             new Coordinates('EPSG:4326', maxX, maxY));
-        assert.equal(minX, withCoords.west());
-        assert.equal(maxX, withCoords.east());
-        assert.equal(minY, withCoords.south());
-        assert.equal(maxY, withCoords.north());
+        assert.equal(minX, withCoords.west);
+        assert.equal(maxX, withCoords.east);
+        assert.equal(minY, withCoords.south);
+        assert.equal(maxY, withCoords.north);
     });
 
     it('should build the expected extent using keywords', function () {
@@ -26,10 +26,10 @@ describe('Extent constructors', function () {
             north: maxY,
             west: minX,
         });
-        assert.equal(minX, withKeywords.west());
-        assert.equal(maxX, withKeywords.east());
-        assert.equal(minY, withKeywords.south());
-        assert.equal(maxY, withKeywords.north());
+        assert.equal(minX, withKeywords.west);
+        assert.equal(maxX, withKeywords.east);
+        assert.equal(minY, withKeywords.south);
+        assert.equal(maxY, withKeywords.north);
     });
 
     it('should build the expected extent using values', function () {
@@ -38,10 +38,10 @@ describe('Extent constructors', function () {
             maxX,
             minY,
             maxY);
-        assert.equal(minX, withValues.west());
-        assert.equal(maxX, withValues.east());
-        assert.equal(minY, withValues.south());
-        assert.equal(maxY, withValues.north());
+        assert.equal(minX, withValues.west);
+        assert.equal(maxX, withValues.east);
+        assert.equal(minY, withValues.south);
+        assert.equal(maxY, withValues.north);
     });
 
     it('should build the expected extent from box3', function () {
@@ -50,10 +50,10 @@ describe('Extent constructors', function () {
             new Vector3(Math.random(), Math.random()));
         const fromBox = Extent.fromBox3('EPSG:4978', box);
 
-        assert.equal(fromBox.west(), box.min.x);
-        assert.equal(fromBox.east(), box.max.x);
-        assert.equal(fromBox.north(), box.max.y);
-        assert.equal(fromBox.south(), box.min.y);
+        assert.equal(fromBox.west, box.min.x);
+        assert.equal(fromBox.east, box.max.x);
+        assert.equal(fromBox.north, box.max.y);
+        assert.equal(fromBox.south, box.min.y);
     });
 
     it('should subdivide the extent in four piece', function () {

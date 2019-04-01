@@ -178,7 +178,7 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
     } else if (layer.source.tileMatrixSet === 'PM' || layer.source.projection == 'EPSG:3857') {
         layer.projection = 'EPSG:3857';
     } else {
-        layer.projection = parentLayer.extent.crs();
+        layer.projection = parentLayer.extent.crs;
     }
 
     if (!layer.whenReady) {

@@ -2,8 +2,12 @@ import * as THREE from 'three';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import handlingError from 'Process/handlerNodeError';
+import Coordinates from 'Core/Geographic/Coordinates';
 
+const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 const vector = new THREE.Vector3();
+const tmp = new THREE.Vector3();
+
 function applyOffset(obj, offset, quaternion, offsetAltitude = 0) {
     if (obj.geometry) {
         if (obj.geometry.isBufferGeometry) {
@@ -52,7 +56,7 @@ function assignLayer(object, layer) {
 function extentInsideSource(extent, source) {
     return !source.extentInsideLimit(extent) ||
         (source.parsedData &&
-        !source.parsedData.extent.isPointInside(extent.center()));
+        !source.parsedData.extent.isPointInside(extent.center(coord)));
 }
 
 const quaternion = new THREE.Quaternion();
@@ -136,7 +140,7 @@ export default {
                 if (isApplied) {
                     // NOTE: now data source provider use cache on Mesh
                     // TODO move transform in feature2Mesh
-                    const tmp = node.extent.center().as(context.view.referenceCrs).xyz().negate();
+                    node.extent.center(coord).as(context.view.referenceCrs, coord).xyz(tmp).negate();
                     quaternion.setFromRotationMatrix(node.matrixWorld).inverse();
                     // const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), node.extent.center().geodesicNormal).inverse();
                     applyOffset(result, tmp, quaternion, result.minAltitude);

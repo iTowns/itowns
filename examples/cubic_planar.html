@@ -83,7 +83,7 @@
             scale = new itowns.THREE.Vector3(1, 1, 1).divideScalar(extent.dimensions().x);
 
             // Instanciate View
-            view = new itowns.View(extent.crs(), viewerDiv);
+            view = new itowns.View(extent.crs, viewerDiv);
             setupLoadingScreen(viewerDiv, view);
 
             view.mainLoop.gfxEngine.renderer.setClearColor(0x999999);

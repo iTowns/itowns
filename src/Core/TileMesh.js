@@ -67,7 +67,7 @@ class TileMesh extends THREE.Mesh {
         if (source.isWMTSSource) {
             OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, source.tileMatrixSet);
             return this.wmtsCoords[source.tileMatrixSet];
-        } else if (source.isWMSSource && this.extent.crs() != source.projection) {
+        } else if (source.isWMSSource && this.extent.crs != source.projection) {
             if (source.projection == 'EPSG:3857') {
                 const tilematrixset = 'PM';
                 OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, tilematrixset);
@@ -77,20 +77,20 @@ class TileMesh extends THREE.Mesh {
             }
         } else if (source.isTMSSource) {
             // Special globe case: use the P(seudo)M(ercator) coordinates
-            if (is4326(this.extent.crs()) &&
-                    (source.extent.crs() == 'EPSG:3857' || is4326(source.extent.crs()))) {
+            if (is4326(this.extent.crs) &&
+                    (source.extent.crs == 'EPSG:3857' || is4326(source.extent.crs))) {
                 OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, 'PM');
                 return this.wmtsCoords.PM;
             } else {
                 return OGCWebServiceHelper.computeTMSCoordinates(this, source.extent, source.isInverted);
             }
-        } else if (source.extent.crs() == this.extent.crs()) {
+        } else if (source.extent.crs == this.extent.crs) {
             // Currently extent.as() always clone the extent, even if the output
             // crs is the same.
             // So we avoid using it if both crs are the same.
             return [this.extent];
         } else {
-            return [this.extent.as(source.extent.crs())];
+            return [this.extent.as(source.extent.crs)];
         }
     }
 

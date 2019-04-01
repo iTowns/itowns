@@ -1,3 +1,6 @@
+import Extent from 'Core/Geographic/Extent';
+
+const extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
 /**
  * @module URLBuilder
  */
@@ -71,11 +74,11 @@ export default {
      */
     bbox: function bbox(bbox, layer) {
         const precision = layer.projection == 'EPSG:4326' ? 9 : 2;
-        const box = bbox.as(layer.projection);
-        const w = box.west().toFixed(precision);
-        const s = box.south().toFixed(precision);
-        const e = box.east().toFixed(precision);
-        const n = box.north().toFixed(precision);
+        bbox.as(layer.projection, extent);
+        const w = extent.west.toFixed(precision);
+        const s = extent.south.toFixed(precision);
+        const e = extent.east.toFixed(precision);
+        const n = extent.north.toFixed(precision);
 
         let bboxInUnit = layer.axisOrder || 'wsen';
         bboxInUnit = bboxInUnit.replace('w', `${w},`)

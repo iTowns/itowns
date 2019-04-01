@@ -70,12 +70,12 @@ const Projection = {
 
     UnitaryToLongitudeWGS84(u, bbox) {
         bbox.dimensions(dim);
-        return bbox.west() + u * dim.x;
+        return bbox.west + u * dim.x;
     },
 
     UnitaryToLatitudeWGS84(v, bbox) {
         bbox.dimensions(dim);
-        return bbox.south() + v * dim.y;
+        return bbox.south + v * dim.y;
     },
 };
 
@@ -87,8 +87,8 @@ function WMTS_WGS84ToWMTS_PM(cWMTS, bbox) {
 
     var sizeRow = 1.0 / nbRow;
 
-    var yMin = Projection.WGS84ToY(WGS84LatitudeClamp(bbox.north()));
-    var yMax = Projection.WGS84ToY(WGS84LatitudeClamp(bbox.south()));
+    var yMin = Projection.WGS84ToY(WGS84LatitudeClamp(bbox.north));
+    var yMax = Projection.WGS84ToY(WGS84LatitudeClamp(bbox.south));
 
     let maxRow;
 

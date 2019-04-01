@@ -27,7 +27,7 @@ view.getPickingPositionFromDepth = function getPickingPositionFromDepth() {
 view.referenceCrs = 'EPSG:4978';
 view.getLayers = () => [{
     extent: {
-        crs() {
+        crs {
             return 'EPSG:4326';
         },
     },

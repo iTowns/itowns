@@ -140,7 +140,7 @@ class WMSSource extends Source {
     }
 
     extentInsideLimit(extent) {
-        const localExtent = this.projection == extent.crs() ? extent : extent.as(this.projection);
+        const localExtent = this.projection == extent.crs ? extent : extent.as(this.projection);
         return (extent.zoom == undefined || !(extent.zoom < this.zoom.min || extent.zoom > this.zoom.max)) &&
             this.extent.intersectsExtent(localExtent);
     }
