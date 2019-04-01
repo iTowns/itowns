@@ -27,9 +27,7 @@ view.getPickingPositionFromDepth = function getPickingPositionFromDepth() {
 view.referenceCrs = 'EPSG:4978';
 view.getLayers = () => [{
     extent: {
-        crs {
-            return 'EPSG:4326';
-        },
+        crs: 'EPSG:4326',
     },
 }];
 view.addFrameRequester = () => {};
@@ -102,4 +100,3 @@ describe('Camera utils unit test', function () {
         });
     });
 });
-
