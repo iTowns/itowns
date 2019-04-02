@@ -185,6 +185,7 @@ describe('GlobeControls with globe example', function _() {
                 .dispatchEvent(wheelEvent, document);
             window.dispatchEvent(wheelEvent, document);
         }));
-        assert.ok(initialPosition.range - finalRange > 2000000);
+        // On the travis server, the range is negative.
+        assert.ok(Math.abs(initialPosition.range - finalRange) > 2000000);
     });
 });
