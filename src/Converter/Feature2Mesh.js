@@ -98,6 +98,7 @@ function coordinatesToVertices(ptsIn, normals, target, altitude = 0, extrude = 0
  * @param {number} count
  * @param {boolean} isClockWise - Wrapping direction
  */
+/*
 function addExtrudedPolygonSideFaces(indices, length, offset, count, isClockWise) {
     // loop over contour length, and for each point of the contour,
     // add indices to make two triangle, that make the side face
@@ -125,6 +126,90 @@ function addExtrudedPolygonSideFaces(indices, length, offset, count, isClockWise
         }
     }
 }
+*/
+
+// Ugly conversion, many coordinates created
+// Todo: avoid converting to 4326
+function addExtrudedPolygonSideFacesWithDup(vEdges, uvsEdges, uvs, arrVertices, vertices, indices, length, offset, count, isClockWise) {
+    // loop over contour length, and for each point of the contour,
+    // add indices to make two triangle, that make the side face
+    const startIndice = indices.length;
+    indices.length += (count - 1) * 6;
+
+
+    for (let i = offset, j = startIndice; i < offset + count - 1; ++i, ++j) {
+        if (isClockWise) {
+            // first triangle indices
+
+            indices[j] = i; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+            indices[++j] = i + length; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+            indices[++j] = i + 1; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+
+            // second triangle indicesw
+            indices[++j] = i + 1; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+            indices[++j] = i + length; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+            indices[++j] = i + length + 1; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+
+            const uvCoordA = new Coordinates('EPSG:4978', vertices[indices[j - 5] * 3], vertices[indices[j - 5] * 3 + 1], vertices[indices[j - 5] * 3 + 2]).as('EPSG:4326');
+            const uvCoordB = new Coordinates('EPSG:4978', vertices[indices[j - 4] * 3], vertices[indices[j - 4] * 3 + 1], vertices[indices[j - 4] * 3 + 2]).as('EPSG:4326');
+            // const uvCoordC = new Coordinates('EPSG:4978', vertices[indices[j - 3] * 3], vertices[indices[j - 3] * 3 + 1], vertices[indices[j - 3] * 3 + 2]).as('EPSG:4326');
+            const uvCoordD = new Coordinates('EPSG:4978', vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]).as('EPSG:4326');
+
+            const h = uvCoordA._values[2] - uvCoordB._values[2];// uvCoordB._values[2] - uvCoordA._values[2];
+            const l = Math.sqrt((uvCoordD._values[0] - uvCoordB._values[0]) * (uvCoordD._values[0] - uvCoordB._values[0]) + (uvCoordB._values[1] * uvCoordB._values[1]) * (uvCoordD._values[1] * uvCoordD._values[1]));
+
+            uvs.push(0, h);
+            uvs.push(0, 0);
+            uvs.push(l, h);
+            uvs.push(l, h);
+            uvs.push(0, 0);
+            uvs.push(l, 0);
+
+            // For lines:
+            vEdges.push(vertices[indices[j - 5] * 3], vertices[indices[j - 5] * 3 + 1], vertices[indices[j - 5] * 3 + 2]);
+            vEdges.push(vertices[indices[j - 4] * 3], vertices[indices[j - 4] * 3 + 1], vertices[indices[j - 4] * 3 + 2]);
+
+            vEdges.push(vertices[indices[j - 5] * 3], vertices[indices[j - 5] * 3 + 1], vertices[indices[j - 5] * 3 + 2]);
+            vEdges.push(vertices[indices[j - 3] * 3], vertices[indices[j - 3] * 3 + 1], vertices[indices[j - 3] * 3 + 2]);
+        } else {
+            // first triangle indices
+            indices[j] = i + length; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+            indices[++j] = i; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+            indices[++j] = i + length + 1; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+            // second triangle indices
+            indices[++j] = i + length + 1; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+            indices[++j] = i; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+            indices[++j] = i + 1; arrVertices.push(vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]);
+
+
+            const uvCoordA = new Coordinates('EPSG:4978', vertices[indices[j - 5] * 3], vertices[indices[j - 5] * 3 + 1], vertices[indices[j - 5] * 3 + 2]).as('EPSG:4326');
+            const uvCoordB = new Coordinates('EPSG:4978', vertices[indices[j - 4] * 3], vertices[indices[j - 4] * 3 + 1], vertices[indices[j - 4] * 3 + 2]).as('EPSG:4326');
+            // const uvCoordC = new Coordinates('EPSG:4978', vertices[indices[j - 3] * 3], vertices[indices[j - 3] * 3 + 1], vertices[indices[j - 3] * 3 + 2]).as('EPSG:4326');
+            const uvCoordD = new Coordinates('EPSG:4978', vertices[indices[j] * 3], vertices[indices[j] * 3 + 1], vertices[indices[j] * 3 + 2]).as('EPSG:4326');
+
+            const h = uvCoordA._values[2] - uvCoordB._values[2];// uvCoordB._values[2] - uvCoordA._values[2];
+            const l = Math.sqrt((uvCoordD._values[0] - uvCoordB._values[0]) * (uvCoordD._values[0] - uvCoordB._values[0]) + (uvCoordD._values[1] - uvCoordB._values[1]) * (uvCoordD._values[1] - uvCoordB._values[1]));
+
+            uvs.push(0, h);
+            uvs.push(0, 0);
+            uvs.push(l, h);
+            uvs.push(l, h);
+            uvs.push(0, 0);
+            uvs.push(l, 0);
+
+            // For lines:
+
+            vEdges.push(vertices[indices[j - 5] * 3], vertices[indices[j - 5] * 3 + 1], vertices[indices[j - 5] * 3 + 2]);
+            vEdges.push(vertices[indices[j - 4] * 3], vertices[indices[j - 4] * 3 + 1], vertices[indices[j - 4] * 3 + 2]);
+
+            vEdges.push(vertices[indices[j - 5] * 3], vertices[indices[j - 5] * 3 + 1], vertices[indices[j - 5] * 3 + 2]);
+            vEdges.push(vertices[indices[j - 3] * 3], vertices[indices[j - 3] * 3 + 1], vertices[indices[j - 3] * 3 + 2]);
+
+            // vEdges.push(vertices[indices[j-4] * 3 ], vertices[indices[j-4] * 3 +1], vertices[indices[j-4] * 3 +2]);
+        }
+    }
+}
+
 
 const pointMaterial = new THREE.PointsMaterial();
 function featureToPoint(feature, options) {
@@ -133,7 +218,7 @@ function featureToPoint(feature, options) {
     const vertices = new Float32Array(ptsIn.length);
     const colors = new Uint8Array(ptsIn.length);
 
-    const batchIds = options.batchId ?  new Uint32Array(ptsIn.length / 3) : undefined;
+    const batchIds = options.batchId ? new Uint32Array(ptsIn.length / 3) : undefined;
     let featureId = 0;
 
     coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
@@ -146,7 +231,9 @@ function featureToPoint(feature, options) {
 
         if (batchIds) {
             const id = options.batchId(geometry.properties, featureId);
-            fillBatchIdArray(id, batchIds, start, start + count);
+            for (let i = start; i < start + count; i++) {
+                batchIds[i] = id;
+            }
             featureId++;
         }
     }
@@ -159,7 +246,9 @@ function featureToPoint(feature, options) {
     return new THREE.Points(geom, pointMaterial);
 }
 
-var lineMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors });
+var lineMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors, transparent: true, opacity: 0.2 });
+
+// Modified version for geovis team
 function featureToLine(feature, options) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
@@ -167,12 +256,15 @@ function featureToLine(feature, options) {
     const colors = new Uint8Array(ptsIn.length);
     const count = ptsIn.length / 3;
 
-    const batchIds = options.batchId ?  new Uint32Array(count) : undefined;
+    const batchIds = options.batchId ? new Uint32Array(count) : undefined;
     let featureId = 0;
 
     coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
+    // console.log(vertices);
     const geom = new THREE.BufferGeometry();
-    geom.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+    var verticesUnindexed = [];
+    var speed = [];
 
     if (feature.geometry.length > 1) {
         const countIndices = (count - feature.geometry.length) * 2;
@@ -194,32 +286,56 @@ function featureToLine(feature, options) {
                 if (j < 0xffff) {
                     indices[i++] = j;
                     indices[i++] = j + 1;
+
+                    // Modification for unindexed and multiple lines overlapping. We add also other attributes such as random speed
+                    verticesUnindexed.push(vertices[j * 3], vertices[j * 3 + 1], vertices[j * 3 + 2], vertices[(j + 1) * 3], vertices[(j + 1) * 3 + 1], vertices[(j + 1) * 3 + 2]);
+                    speed.push(Math.random(), Math.random());
+                    // We deplicate with noise the lines
+                    var nDup = 0;
+                    var coefNoise = 0.0;
+                    for (var k = 0; k < nDup; ++k) {
+                        verticesUnindexed.push(vertices[j * 3] + Math.random() * coefNoise, vertices[j * 3 + 1] + Math.random() * coefNoise, vertices[j * 3 + 2] + Math.random() * coefNoise,
+                            vertices[(j + 1) * 3] + Math.random() * coefNoise, vertices[(j + 1) * 3 + 1] + Math.random() * coefNoise, vertices[(j + 1) * 3 + 2] + Math.random() * coefNoise);
+                        speed.push(Math.random(), Math.random());
+                    }
                 } else {
                     break;
                 }
             }
             if (batchIds) {
                 const id = options.batchId(geometry.properties, featureId);
-                fillBatchIdArray(id, batchIds, start, end);
+                for (let i = start; i < end; i++) {
+                    batchIds[i] = id;
+                }
                 featureId++;
             }
         }
-        geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+        //  itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+        // geom.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+        geom.addAttribute('position', new THREE.BufferAttribute(new Float32Array(verticesUnindexed), 3));
+        //   geom.addAttribute('positionLambert93', new THREE.BufferAttribute(new Float32Array(verticesUnindexed), 3));
+        geom.addAttribute('speed', new THREE.BufferAttribute(new Float32Array(speed), 1));
+        // geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         if (batchIds) { geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
-        geom.setIndex(new THREE.BufferAttribute(indices, 1));
-        return new THREE.LineSegments(geom, lineMaterial);
+        // geom.setIndex(new THREE.BufferAttribute(indices, 1));
+        // console.log(geom);
+        return new THREE.LineSegments(geom, /* materialLiness */ lineMaterial);
     } else {
         const color = getProperty('color', options, randomColor, feature.geometry.properties);
         fillColorArray(colors, count, color);
         geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         if (batchIds) {
             const id = options.batchId(feature.geometry.properties, featureId);
-            fillBatchIdArray(id, batchIds, 0, count);
+            for (let i = 0; i < count; i++) {
+                batchIds[i] = id;
+            }
             geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
         }
+
         return new THREE.Line(geom, lineMaterial);
     }
 }
+
 
 const color = new THREE.Color();
 const material = new THREE.MeshBasicMaterial();
@@ -231,7 +347,7 @@ function featureToPolygon(feature, options) {
     const indices = [];
     vertices.minAltitude = Infinity;
 
-    const batchIds = options.batchId ?  new Uint32Array(vertices.length / 3) : undefined;
+    const batchIds = options.batchId ? new Uint32Array(vertices.length / 3) : undefined;
     let featureId = 0;
 
     for (const geometry of feature.geometry) {
@@ -265,12 +381,15 @@ function featureToPolygon(feature, options) {
 
         if (batchIds) {
             const id = options.batchId(geometry.properties, featureId);
-            fillBatchIdArray(id, batchIds, start, end);
+            for (let i = start; i < end; i++) {
+                batchIds[i] = id;
+            }
             featureId++;
         }
     }
 
     const geom = new THREE.BufferGeometry();
+    geom.isBufferGeometry = true;
     geom.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     if (batchIds) { geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
@@ -294,8 +413,11 @@ function area(contour, offset, count) {
     return a * 0.5;
 }
 
+
 function featureToExtrudedPolygon(feature, options) {
+    // console.log("featureToExtrudedPolygon", feature);
     const ptsIn = feature.vertices;
+    // const originalCoords = feature.vertices.slice();  // We clone original coord
     const offset = feature.geometry[0].indices[0].offset;
     const count = feature.geometry[0].indices[0].count;
     const isClockWise = area(ptsIn, offset, count) < 0;
@@ -308,6 +430,24 @@ function featureToExtrudedPolygon(feature, options) {
 
     vertices.minAltitude = Infinity;
 
+    // Alex mod to have 3 meshes with uvmap in degree: 1 for the roof, 1 for wall and 1 for edges
+    var verticesRoofWithDup = [];
+    var verticesWallsWithDup = [];
+    var uvsRoofWithDup = [];
+    var uvsWallsWithDup = [];
+    var verticesEdges = [];
+    var uvsEdges = [];
+
+
+
+
+    const attributeNames = options.attributes ? Object.keys(options.attributes) : [];
+    for (const attributeName of attributeNames) {
+        const attribute = options.attributes[attributeName];
+        attribute.normalized = attribute.normalized || false;
+        attribute.itemSize = attribute.itemSize || 1;
+        attribute.array = new (attribute.type)(2 * totalVertices * attribute.itemSize);
+    }
     const batchIds = options.batchId ?  new Uint32Array(vertices.length / 3) : undefined;
     let featureId = 0;
 
@@ -341,35 +481,168 @@ function featureToExtrudedPolygon(feature, options) {
 
         for (let i = 0; i < triangles.length; i++) {
             indices[startIndice + i] = triangles[i] + startTop;
+            verticesRoofWithDup.push(geomVertices[triangles[i] * 3 + 0]);
+            verticesRoofWithDup.push(geomVertices[triangles[i] * 3 + 1]);
+            verticesRoofWithDup.push(geomVertices[triangles[i] * 3 + 2]);
+
+            var posWGS = new THREE.Vector3(geomVertices[triangles[i] * 3 + 0], geomVertices[triangles[i] * 3 + 1], geomVertices[triangles[i] * 3 + 2]);
+            var c = new Coordinates('EPSG:4978', posWGS.x, posWGS.y, posWGS.z).as('EPSG:4326'); // Geocentric coordinates
+            uvsRoofWithDup.push((c._values[0]), (c._values[1]));
         }
 
         for (const indice of geometry.indices) {
-            addExtrudedPolygonSideFaces(
+            addExtrudedPolygonSideFacesWithDup(
+                verticesEdges,
+                uvsEdges,
+                uvsWallsWithDup,
+                verticesWallsWithDup,
+                vertices,
                 indices,
                 totalVertices,
                 indice.offset,
                 indice.count,
                 isClockWise);
         }
-
         if (batchIds) {
             const id = options.batchId(geometry.properties, featureId);
             fillBatchIdArray(id, batchIds, start, end);
             fillBatchIdArray(id, batchIds, startTop, endTop);
             featureId++;
         }
+
+        for (const attributeName of attributeNames) {
+            const attribute = options.attributes[attributeName];
+            const value = attribute.value(geometry.properties, featureId, false);
+            const valueTop = attribute.value(geometry.properties, featureId, true);
+            if (value.isColor) {
+                fillColorArray(attribute.array, count, value, start);
+                fillColorArray(attribute.array, count, valueTop, startTop);
+            } else if (Array.isArray(value)) {
+                const itemSize = value.length;
+                for (let i = start; i < end; i++) {
+                    for (let j = 0; j < itemSize; ++j) {
+                        const offset = itemSize * i + j;
+                        attribute.array[offset] = value[j];
+                        attribute.array[offset + itemSize * totalVertices] = valueTop[j];
+                    }
+                }
+            } else {
+                for (let i = start; i < end; i++) {
+                    attribute.array[i] = value;
+                }
+                for (let i = startTop; i < endTop; i++) {
+                    attribute.array[i] = valueTop;
+                }
+            }
+        }
+        featureId++;
     }
 
+    // Shader test for roof
+    function createMaterial(vShader, fShader) {
+        const uniforms = {
+            waterLevel: { type: 'f', value: 0.0 },
+            opacity: { type: 'f', value: 1.0 },
+            z0: { type: 'f', value: 0.0 },
+            z1: { type: 'f', value: 2.0 },
+            // color0: {type: 'c', value: new THREE.Color(0x888888)},
+            color0: { type: 'c', value: new THREE.Color(0x006600) },
+            color1: { type: 'c', value: new THREE.Color(0xbb0000) },
+            // color1: {type: 'c', value: new THREE.Color(0x4444ff)},
+        };
+
+        const meshMaterial = new THREE.ShaderMaterial({
+            // uniforms: uniforms,
+            uniforms,
+            vertexShader: vShader,
+            fragmentShader: fShader,
+            transparent: true,
+            opacity: 0.5,
+            side: THREE.DoubleSide,
+        });
+        return meshMaterial;
+    }
+
+    const vertexShader = `
+    #include <logdepthbuf_pars_vertex>
+    uniform float waterLevel;
+    uniform float opacity;
+    uniform vec3 color0;
+    uniform vec3 color1;
+    uniform float z0;
+    uniform float z1;
+
+    varying vec2 vUv;
+
+    void main(){
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        #include <logdepthbuf_vertex>
+    }
+    `;
+
+    const fragmentShader = `
+    #include <logdepthbuf_pars_fragment>
+    varying vec2 vUv;
+    void main(){
+        #include <logdepthbuf_fragment>
+        vec2 normUV = vec2(mod(vUv.x * 10000., 1.), mod(vUv.y * 10000., 1.));
+        gl_FragColor = vec4(normUV.x, normUV.y,0., 1.);
+    }
+    `;
+
+    const shadMat = createMaterial(vertexShader, fragmentShader);
+
+    // WALLS
+    // console.log(uvsWallsWithDup);
     const geom = new THREE.BufferGeometry();
-    geom.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+    geom.isBufferGeometry = true;
+    geom.addAttribute('position', new THREE.BufferAttribute(new Float32Array(verticesWallsWithDup /* verticesRoofWithDup *//* newVertices */) /* vertices */, 3));
+    geom.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvsWallsWithDup) /* vertices */, 2));
     if (batchIds) { geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
-
-    geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
-
-    const mesh = new THREE.Mesh(geom, material);
+    // console.log(uvsWallsWithDup);
+    // geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+    /*   for (const attributeName of attributeNames) {
+            const attribute = options.attributes[attributeName];
+            geom.addAttribute(attributeName, new THREE.BufferAttribute(attribute.array, attribute.itemSize, attribute.normalized));
+        }
+    */
+    //   geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
+    // var texture = new THREE.TextureLoader().load('./textures/slatetile.jpg');
+    var mat = new THREE.MeshBasicMaterial({ /* map: texture */  color: new THREE.Color(Math.random() * 0xffff00),  wireframe: true });
+    const mesh = new THREE.Mesh(geom, mat);
     mesh.minAltitude = vertices.minAltitude;
-    return mesh;
+
+
+    // ROOF
+    const geomRoof = new THREE.BufferGeometry();
+    geomRoof.addAttribute('position', new THREE.BufferAttribute(new Float32Array(verticesRoofWithDup /* newVertices */) /* vertices */, 3));
+    geomRoof.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvsRoofWithDup) /* vertices */, 2));
+    if (batchIds) { geomRoof.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
+    // var textureRoof = new THREE.TextureLoader().load('./textures/slatetile.jpg');
+    // var matRoof = new THREE.MeshBasicMaterial({ /* map: textureRoof, */  color: new THREE.Color(Math.random() * 0xffff00), wireframe: true });
+    const meshRoof = new THREE.Mesh(geomRoof, shadMat/* matRoof */);
+    meshRoof.minAltitude = vertices.minAltitude;
+
+    // EDGES
+    const geomEdges = new THREE.BufferGeometry();
+    // console.log(verticesEdges);
+    geomEdges.addAttribute('position', new THREE.BufferAttribute(new Float32Array(verticesEdges /* newVertices */) /* vertices */, 3));
+    // if (batchIds) { geomEdges.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
+    // geomEdges.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvsEdges)/*vertices*/, 2));
+    // var textureEdges = new THREE.TextureLoader().load('./textures/slatetile.jpg');
+    var matEdges = new THREE.LineBasicMaterial({ /* map:textureEdges, */ /* color: new THREE.Color(Math.random() * 0xffff00), */ });
+    const meshEdges = new THREE.LineSegments(geomEdges, matEdges);
+    meshEdges.minAltitude = vertices.minAltitude;
+
+
+    var meshGroup = new THREE.Group();
+    meshGroup.add(mesh);
+    meshGroup.add(meshRoof);
+    meshGroup.add(meshEdges);
+
+    // console.log("meshGroup: ",meshGroup);
+    return meshGroup; // mesh;
 }
 
 /**
@@ -383,6 +656,7 @@ function featureToExtrudedPolygon(feature, options) {
  * @return {THREE.Mesh} mesh
  */
 function featureToMesh(feature, options) {
+    // console.log("featureToMeshfeatureToMeshfeatureToMesh ", feature);
     if (!feature.vertices) {
         return;
     }
@@ -412,8 +686,8 @@ function featureToMesh(feature, options) {
     }
 
     // set mesh material
-    mesh.material.vertexColors = THREE.VertexColors;
-    mesh.material.color = new THREE.Color(0xffffff);
+    // mesh.material.vertexColors = THREE.VertexColors;
+    // mesh.material.color = new THREE.Color(0xffffff);
 
     mesh.feature = feature;
     return mesh;
