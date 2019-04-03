@@ -37,11 +37,13 @@ function fillColorArray(colors, length, color, offset = 0) {
     }
 }
 
+/*
 function fillBatchIdArray(batchId, batchIdArray, start, end) {
     for (let i = start; i < end; i++) {
         batchIdArray[i] = batchId;
     }
 }
+*/
 
 /**
  * Convert coordinates to vertices positionned at a given altitude
@@ -438,9 +440,6 @@ function featureToExtrudedPolygon(feature, options) {
     var verticesEdges = [];
     var uvsEdges = [];
 
-
-
-
     const attributeNames = options.attributes ? Object.keys(options.attributes) : [];
     for (const attributeName of attributeNames) {
         const attribute = options.attributes[attributeName];
@@ -448,8 +447,11 @@ function featureToExtrudedPolygon(feature, options) {
         attribute.itemSize = attribute.itemSize || 1;
         attribute.array = new (attribute.type)(2 * totalVertices * attribute.itemSize);
     }
-    const batchIds = options.batchId ?  new Uint32Array(vertices.length / 3) : undefined;
+    const batchIds = options.batchId ?  [] /* new Uint32Array(vertices.length / 3) */ : undefined;
+    const batchIdsWalls = options.batchId ?  [] /* new Uint32Array(vertices.length / 3) */ : undefined;
     let featureId = 0;
+    let id;
+
 
     for (const geometry of feature.geometry) {
         const altitude = getProperty('altitude', options, 0, geometry.properties);
@@ -479,6 +481,10 @@ function featureToExtrudedPolygon(feature, options) {
         const startIndice = indices.length;
         indices.length += triangles.length;
 
+        if (batchIds) {
+            id = options.batchId(geometry.properties, featureId);
+        }
+
         for (let i = 0; i < triangles.length; i++) {
             indices[startIndice + i] = triangles[i] + startTop;
             verticesRoofWithDup.push(geomVertices[triangles[i] * 3 + 0]);
@@ -488,7 +494,15 @@ function featureToExtrudedPolygon(feature, options) {
             var posWGS = new THREE.Vector3(geomVertices[triangles[i] * 3 + 0], geomVertices[triangles[i] * 3 + 1], geomVertices[triangles[i] * 3 + 2]);
             var c = new Coordinates('EPSG:4978', posWGS.x, posWGS.y, posWGS.z).as('EPSG:4326'); // Geocentric coordinates
             uvsRoofWithDup.push((c._values[0]), (c._values[1]));
+
+            // BatchIDS new
+            if (batchIds) {
+                // const id = options.batchId(geometry.properties, featureId);
+                batchIds.push(id);
+            }
         }
+
+        var l0 = verticesWallsWithDup.length;
 
         for (const indice of geometry.indices) {
             addExtrudedPolygonSideFacesWithDup(
@@ -503,39 +517,18 @@ function featureToExtrudedPolygon(feature, options) {
                 indice.count,
                 isClockWise);
         }
-        if (batchIds) {
-            const id = options.batchId(geometry.properties, featureId);
-            fillBatchIdArray(id, batchIds, start, end);
-            fillBatchIdArray(id, batchIds, startTop, endTop);
-            featureId++;
-        }
 
-        for (const attributeName of attributeNames) {
-            const attribute = options.attributes[attributeName];
-            const value = attribute.value(geometry.properties, featureId, false);
-            const valueTop = attribute.value(geometry.properties, featureId, true);
-            if (value.isColor) {
-                fillColorArray(attribute.array, count, value, start);
-                fillColorArray(attribute.array, count, valueTop, startTop);
-            } else if (Array.isArray(value)) {
-                const itemSize = value.length;
-                for (let i = start; i < end; i++) {
-                    for (let j = 0; j < itemSize; ++j) {
-                        const offset = itemSize * i + j;
-                        attribute.array[offset] = value[j];
-                        attribute.array[offset + itemSize * totalVertices] = valueTop[j];
-                    }
-                }
-            } else {
-                for (let i = start; i < end; i++) {
-                    attribute.array[i] = value;
-                }
-                for (let i = startTop; i < endTop; i++) {
-                    attribute.array[i] = valueTop;
-                }
+        var l = (verticesWallsWithDup.length - l0) / 3; // We added n trianges  = l / 3  (3 for x,y,z)
+        // BatchIDS new
+        if (batchIdsWalls) {
+            for (var h = 0; h < l; h++) {
+                batchIdsWalls.push(id);
             }
         }
-        featureId++;
+
+        if (batchIds) {
+            featureId++;
+        }
     }
 
     // Shader test for roof
@@ -599,14 +592,10 @@ function featureToExtrudedPolygon(feature, options) {
     geom.isBufferGeometry = true;
     geom.addAttribute('position', new THREE.BufferAttribute(new Float32Array(verticesWallsWithDup /* verticesRoofWithDup *//* newVertices */) /* vertices */, 3));
     geom.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvsWallsWithDup) /* vertices */, 2));
-    if (batchIds) { geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
+    if (batchIdsWalls) { geom.addAttribute('batchId', new THREE.BufferAttribute(new Float32Array(batchIdsWalls), 1)); }
     // console.log(uvsWallsWithDup);
     // geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-    /*   for (const attributeName of attributeNames) {
-            const attribute = options.attributes[attributeName];
-            geom.addAttribute(attributeName, new THREE.BufferAttribute(attribute.array, attribute.itemSize, attribute.normalized));
-        }
-    */
+
     //   geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     // var texture = new THREE.TextureLoader().load('./textures/slatetile.jpg');
     var mat = new THREE.MeshBasicMaterial({ /* map: texture */  color: new THREE.Color(Math.random() * 0xffff00),  wireframe: true });
@@ -618,7 +607,8 @@ function featureToExtrudedPolygon(feature, options) {
     const geomRoof = new THREE.BufferGeometry();
     geomRoof.addAttribute('position', new THREE.BufferAttribute(new Float32Array(verticesRoofWithDup /* newVertices */) /* vertices */, 3));
     geomRoof.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvsRoofWithDup) /* vertices */, 2));
-    if (batchIds) { geomRoof.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
+    if (batchIds) { geomRoof.addAttribute('batchId', new THREE.BufferAttribute(new Float32Array(batchIds), 1)); }
+
     // var textureRoof = new THREE.TextureLoader().load('./textures/slatetile.jpg');
     // var matRoof = new THREE.MeshBasicMaterial({ /* map: textureRoof, */  color: new THREE.Color(Math.random() * 0xffff00), wireframe: true });
     const meshRoof = new THREE.Mesh(geomRoof, shadMat/* matRoof */);
@@ -656,7 +646,6 @@ function featureToExtrudedPolygon(feature, options) {
  * @return {THREE.Mesh} mesh
  */
 function featureToMesh(feature, options) {
-    // console.log("featureToMeshfeatureToMeshfeatureToMesh ", feature);
     if (!feature.vertices) {
         return;
     }
@@ -686,10 +675,17 @@ function featureToMesh(feature, options) {
     }
 
     // set mesh material
-    // mesh.material.vertexColors = THREE.VertexColors;
-    // mesh.material.color = new THREE.Color(0xffffff);
-
-    mesh.feature = feature;
+    if (mesh.isGroup) {
+        mesh.children.forEach((child) => {
+            // child.material.vertexColors = THREE.VertexColors;
+            // child.material.color = new THREE.Color(0xffffff);
+            child.feature = feature;
+        });
+    } else {
+        mesh.material.vertexColors = THREE.VertexColors;
+        mesh.material.color = new THREE.Color(0xffffff);
+        mesh.feature = feature;
+    }
     return mesh;
 }
 
