@@ -461,24 +461,28 @@ class Extent {
         if (extent.crs != this.crs) {
             throw new Error('unsupported union between 2 diff crs');
         }
-        const west = extent.west;
-        if (west < this.west) {
-            this._values[CARDINAL.WEST] = west;
-        }
+        if (this.west === Infinity) {
+            this.copy(extent);
+        } else {
+            const west = extent.west;
+            if (west < this.west) {
+                this._values[CARDINAL.WEST] = west;
+            }
 
-        const east = extent.east;
-        if (east > this.east) {
-            this._values[CARDINAL.EAST] = east;
-        }
+            const east = extent.east;
+            if (east > this.east) {
+                this._values[CARDINAL.EAST] = east;
+            }
 
-        const south = extent.south;
-        if (south < this.south) {
-            this._values[CARDINAL.SOUTH] = south;
-        }
+            const south = extent.south;
+            if (south < this.south) {
+                this._values[CARDINAL.SOUTH] = south;
+            }
 
-        const north = extent.north;
-        if (north > this.north) {
-            this._values[CARDINAL.NORTH] = north;
+            const north = extent.north;
+            if (north > this.north) {
+                this._values[CARDINAL.NORTH] = north;
+            }
         }
     }
 
