@@ -17,6 +17,7 @@
             "src/Core/MainLoop.js",
             "src/Core/TileMesh.js",
             "src/Core/View.js",
+            "src/Core/Feature.js",
             "src/Core/Geographic/Coordinates.js",
             "src/Core/Geographic/Extent.js",
             "src/Core/Prefab/GlobeView.js",

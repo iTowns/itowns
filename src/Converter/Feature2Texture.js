@@ -69,6 +69,11 @@ function drawPoint(ctx, x, y, origin, scale, style = {}) {
     pt.multiply(scale);
 
     ctx.beginPath();
+    const opacity = style.pointOpacity || 1.0;
+    if (opacity !== ctx.globalAlpha) {
+        ctx.globalAlpha = opacity;
+    }
+
     ctx.arc(Math.round(pt.x), Math.round(pt.y), style.radius, 0, 2 * Math.PI, false);
     ctx.fillStyle = style.fill || 'white';
     ctx.fill();
@@ -81,36 +86,38 @@ const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
 function drawFeature(ctx, feature, origin, scale, extent, style = {}) {
     const extentDim = extent.dimensions();
+    const scaleRadius = extentDim.x / ctx.canvas.width;
     let gStyle = style;
     let px;
 
     for (const geometry of feature.geometry) {
-        const properties = geometry.properties;
+        if (geometry.extent.intersectsExtent(extent)) {
+            const properties = geometry.properties;
 
-        if (typeof (style) == 'function') {
-            gStyle = style(properties, feature);
-        }
-
-        gStyle.radius = Math.round(gStyle.radius) || 3;
-
-        // cross multiplication to know in the extent system the real size of
-        // the point
-        px = gStyle.radius * (extentDim.x / 256);
-
-        if (feature.type === 'point') {
-            coord.set(extent.crs, feature.vertices[0], feature.vertices[1]);
-            if (extent.isPointInside(coord, px)) {
-                drawPoint(ctx, feature.vertices[0], feature.vertices[1], origin, scale, gStyle);
+            if (typeof (style) == 'function') {
+                gStyle = style(properties, feature);
             }
-        } else if (feature.type === 'multipoint') {
-            for (var i = 0; i < feature.vertices.length; i += feature.size) {
-                coord.set(extent.crs, feature.vertices[i], feature.vertices[i + 1]);
-                if (extent.isPointInside(coord, px)) {
-                    drawPoint(ctx, feature.vertices[i], feature.vertices[i + 1], origin, scale, gStyle);
+
+            gStyle.radius = Math.round(gStyle.radius) || 3;
+
+            // cross multiplication to know in the extent system the real size of
+            // the point
+            px = gStyle.radius * scaleRadius;
+
+            if (feature.type === 'point') {
+                for (const indice of geometry.indices) {
+                    const offset = indice.offset * feature.size;
+                    const count = offset + indice.count * feature.size;
+                    for (let j = offset; j < count; j += feature.size) {
+                        coord.set(extent.crs, feature.vertices[j], feature.vertices[j + 1]);
+                        if (extent.isPointInside(coord, px)) {
+                            drawPoint(ctx, feature.vertices[j], feature.vertices[j + 1], origin, scale, gStyle);
+                        }
+                    }
                 }
+            } else {
+                drawPolygon(ctx, feature.vertices, geometry.indices, origin, scale, properties, gStyle, feature.size);
             }
-        } else if (geometry.extent.intersectsExtent(extent)) {
-            drawPolygon(ctx, feature.vertices, geometry.indices, origin, scale, properties, gStyle, feature.size);
         }
     }
 }
