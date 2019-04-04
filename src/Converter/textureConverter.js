@@ -20,7 +20,7 @@ function textureColorLayer(texture, transparent) {
 export default {
     convert(data, extentDestination, layer) {
         let texture;
-        if (data.isFeature) {
+        if (data.isFeatureCollection) {
             const backgroundColor = (layer.backgroundLayer && layer.backgroundLayer.paint) ?
                 new THREE.Color(layer.backgroundLayer.paint['background-color']) :
                 undefined;

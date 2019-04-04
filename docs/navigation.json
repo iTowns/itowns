@@ -2,7 +2,10 @@
     "Base": [
         "Cache",
         "Scheduler",
-        "TileMesh"
+        "TileMesh",
+        "Feature",
+        "FeatureGeometry",
+        "FeatureCollection"
     ],
 
     "View": [

@@ -94,11 +94,11 @@ function pointIsInsidePolygon(point, polygonPoints, offset, count, size) {
 }
 
 function isFeatureSingleGeometryUnderCoordinate(coordinate, type, coordinates, epsilon, offset, count, size) {
-    if ((type == 'linestring' || type == 'multilinestring') && pointIsOverLine(coordinate, coordinates, epsilon, offset, count, size)) {
+    if ((type == 'line') && pointIsOverLine(coordinate, coordinates, epsilon, offset, count, size)) {
         return true;
-    } else if ((type == 'polygon' || type == 'multipolygon') && pointIsInsidePolygon(coordinate, coordinates, offset, count, size)) {
+    } else if ((type == 'polygon') && pointIsInsidePolygon(coordinate, coordinates, offset, count, size)) {
         return true;
-    } else if (type == 'point' || type == 'multipoint') {
+    } else if (type == 'point') {
         const closestPoint = getClosestPoint(coordinate, coordinates, epsilon, offset, count, size);
         if (closestPoint) {
             return { coordinates: closestPoint };
