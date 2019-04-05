@@ -154,6 +154,9 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         setUniformProperty(this, 'overlayColor', new THREE.Color(1.0, 0.3, 0.0));
         setUniformProperty(this, 'objectId', 0);
 
+        // Z displacement (used for water flooding for example)
+        setUniformProperty(this, 'zDisplacement', 0);
+
         // > 0 produces gaps,
         // < 0 causes oversampling of textures
         // = 0 causes sampling artefacts due to bad estimation of texture-uv gradients

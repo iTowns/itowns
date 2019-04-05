@@ -213,6 +213,10 @@ class TiledGeometryLayer extends GeometryLayer {
             return undefined;
         }
 
+        if (node.layer.name === 'water') {
+            node.material.uniforms.zDisplacement.value = node.layer.zDisplacement;
+        }
+
         // do proper culling
         node.visible = !this.culling(node, context.camera);
 

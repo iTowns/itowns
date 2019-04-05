@@ -29,12 +29,14 @@
             var meshes = [];
             var linesBus = [];
             var scaler;
+            var waterHeightAtStart = 0.1;
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var options = {segments:128};  // We specify a high resolution grid (Each tile is 128* 128 * 2 triangles)
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { options });
             setupLoadingScreen(viewerDiv, view);
 
             // Add one imagery layer to the scene
@@ -80,43 +82,6 @@
                     return color.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
                 }
             }
-
-            function acceptFeatureBus(properties) {
-                var line = properties.ligne + properties.sens;
-                if (linesBus.indexOf(line) === -1) {
-                    linesBus.push(line);
-                    return true;
-                }
-                return false;
-            }
-
-            var lyonTclBusSource = new itowns.WFSSource({
-                protocol: 'wfs',
-                url: 'https://download.data.grandlyon.com/wfs/rdata?',
-                version: '2.0.0',
-                typeName: 'tcl_sytral.tcllignebus',
-                projection: 'EPSG:3946',
-                extent: {
-                    west: 1822174.60,
-                    east: 1868247.07,
-                    south: 5138876.75,
-                    north: 5205890.19,
-                },
-                zoom: { min: 9, max: 9 },
-                format: 'geojson',
-            });
-
-            var lyonTclBusLayer = new itowns.GeometryLayer('WFS Bus lines', new itowns.THREE.Group(), {
-                name: 'lyon_tcl_bus',
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    color: colorLine,
-                    altitude: altitudeLine }),
-                linewidth: 5,
-                filter: acceptFeatureBus,
-                source: lyonTclBusSource
-            });
-            view.addLayer(lyonTclBusLayer);
 
             function colorBuildings(properties) {
                 if (properties.id.indexOf('bati_remarquable') === 0) {
@@ -202,53 +167,57 @@
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
-            function picking(event) {
-                if(view.controls.isPaused()) {
-                    var htmlInfo = document.getElementById('info');
-                    var intersects = view.pickObjectsAt(event, 3, 'WFS Building');
-                    var properties;
-                    var info;
-                    var batchId;
 
-                    htmlInfo.innerHTML = ' ';
 
-                    if (intersects.length) {
-                        batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
-                        properties = intersects[0].object.feature.geometry[batchId].properties;
 
-                        Object.keys(properties).map(function (objectKey) {
-                            var value = properties[objectKey];
-                            var key = objectKey.toString();
-                            if (key[0] !== '_' && key !== 'geometry_name') {
-                                info = value.toString();
-                                htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
-                            }
-                        });
-                    }
-                }
-            }
+            
+/*************************************** WATER A.D ***********************************************/
 
-            for (var layer of view.getLayers()) {
-                if (layer.id === 'WFS Bus lines') {
-                    layer.whenReady.then( function _(layer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
-                        debug.GeometryDebug.addMaterialLineWidth(gui, view, layer, 1, 10);
-                    });
-                }
-                if (layer.id === 'WFS Building') {
-                    layer.whenReady.then( function _(layer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
-                        debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
-                        window.addEventListener('mousemove', picking, false);
-                    });
-                }
-                if (layer.id === 'WFS Route points') {
-                    layer.whenReady.then( function _(layer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
-                        debug.GeometryDebug.addMaterialSize(gui, view, layer, 1, 200);
-                    });
-                }
-            }
+menuGlobe.gui.add({ HauteurdEau: waterHeightAtStart }, 'HauteurdEau').min(0.1).max(6).onChange((
+        function updateWaterLevel(value) {
+            adjustAltitude(value);
+        }));
+
+
+function adjustAltitude(value) {
+    // A.D Here we specify the Z displacement for the water
+    var displacement = value;
+    globeWater.zDisplacement = displacement;
+    view.notifyChange(globeWater);
+}
+
+
+// Here we create the Tile geometry for the water using a globe with specific vertex displacement
+let object3d = new itowns.THREE.Object3D();
+let segments = 128;
+const globeWater = itowns.createGlobeLayer('globeWater', { object3d, segments });
+globeWater.zDisplacement = waterHeightAtStart;
+globeWater.name = "water";
+globeWater.disableSkirt = true;
+globeWater.opacity = 0.999; // So we can handle transparency check for nice shading
+// We can maybe specify a more refined geometry for the water using segments option
+// But as the we represent the water as flat (no wave, ellipsoid like) we can keep a light geomtry
+// globe2.noTextureColor = new itowns.THREE.Color(0xd0d5d8);
+
+// add globeWater to the view so it gets updated
+itowns.View.prototype.addLayer.call(view, globeWater);
+//globeWater.addLayer(IGN_MNT_HR);
+//itowns.View.prototype.addLayer.call(globeView, IGN_MNT_HR, globeWater);
+
+// UGLY WAY. NEED TO REUSE IGN_MNT_HR  (TODO: check already used ID problem)
+// We give the water the information of the ground to make some rendering
+// using water height and other stuff
+// DONE, we change the ID, it should use the itowns cache so we share the data between globe and water
+        //IGN_MNT_HR.id = 'HR_DTM_forWater';
+        //itowns.View.prototype.addLayer.call(view, IGN_MNT_HR, globeWater);
+// Ortho.id = 'Ortho_forWater';
+// itowns.View.prototype.addLayer.call(globeView, Ortho, globeWater);
+/* itowns.Fetcher.json('src/layers/IGN_MNS_HIGHRES.json').then(function _(litto3D) {
+     //worldDTM.id = 'toto';
+     itowns.View.prototype.addLayer.call(globeView, litto3D, globeWater);
+ });
+ */
+
         </script>
     </body>
 </html>

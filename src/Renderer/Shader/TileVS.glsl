@@ -8,6 +8,7 @@ attribute vec3      normal;
 
 uniform mat4 modelMatrix;
 uniform bool lightingEnabled;
+uniform float zDisplacement;
 
 #if MODE == MODE_FINAL
 #include <fog_pars_vertex>
@@ -19,6 +20,7 @@ void main() {
 
         #include <begin_vertex>
         #include <itowns/elevation_vertex>
+        transformed += zDisplacement * normal;
         #include <project_vertex>
         #include <logdepthbuf_vertex>
 #if MODE == MODE_FINAL
