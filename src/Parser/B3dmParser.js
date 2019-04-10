@@ -11,9 +11,9 @@ const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2
 // For gltf rotation
 const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
 
-const glTFLoader = new GLTFLoader();
+export const glTFLoader = new GLTFLoader();
 
-const legacyGLTFLoader = new LegacyGLTFLoader();
+export const legacyGLTFLoader = new LegacyGLTFLoader();
 
 function filterUnsupportedSemantics(obj) {
     // see GLTFLoader GLTFShader.prototype.update function

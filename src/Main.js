@@ -61,4 +61,4 @@ export { default as KMLParser } from 'Parser/KMLParser';
 export { default as CameraCalibrationParser } from 'Parser/CameraCalibrationParser';
 export { default as BatchTableHierarchyExtensionParser } from 'Parser/BatchTableHierarchyExtensionParser';
 export { default as ShapefileParser } from 'Parser/ShapefileParser';
-export { enableDracoLoader } from 'Parser/B3dmParser';
+export { enableDracoLoader, glTFLoader, legacyGLTFLoader } from 'Parser/B3dmParser';
