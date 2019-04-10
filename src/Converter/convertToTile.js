@@ -4,10 +4,9 @@
  * and open the template in the editor.
  */
 import * as THREE from 'three';
-import TileGeometry from 'Core/TileGeometry';
 import TileMesh from 'Core/TileMesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
-import Cache from 'Core/Scheduler/Cache';
+import newTileGeometry from 'Core/Prefab/TileBuilder';
 
 const dimensions = new THREE.Vector2();
 
@@ -44,64 +43,45 @@ export default {
         const parent = requester;
         const level = (parent !== undefined) ? (parent.level + 1) : 0;
 
-        const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
-        const south = sharableExtent.south.toFixed(6);
-        const segment = layer.options.segments || 16;
-        const key = `${builder.type}_${layer.disableSkirt ? 0 : 1}_${segment}_${level}_${south}`;
+        const paramsGeometry = {
+            extent,
+            level,
+            segment: layer.options.segments || 16,
+            disableSkirt: layer.disableSkirt,
+        };
 
-        let geometry = Cache.get(key);
-        // build geometry if doesn't exist
-        if (!geometry) {
-            const paramsGeometry = {
-                extent: sharableExtent,
-                level,
-                segment,
-                disableSkirt: layer.disableSkirt,
-            };
+        return newTileGeometry(builder, paramsGeometry).then((result) => {
+            // build tile mesh
+            result.geometry._count++;
+            const material = new LayeredMaterial(layer.materialOptions);
+            const tile = new TileMesh(result.geometry, material, layer, extent, level);
 
-            geometry = new TileGeometry(paramsGeometry, builder);
-            Cache.set(key, geometry);
+            // Commented because layer.threejsLayer is undefined;
+            // Fix me: conflict with object3d added in view.scene;
+            // tile.layers.set(layer.threejsLayer);
 
-            geometry._count = 0;
-            geometry.dispose = () => {
-                geometry._count--;
-                if (geometry._count == 0) {
-                    THREE.BufferGeometry.prototype.dispose.call(geometry);
-                    Cache.delete(key);
-                }
-            };
-        }
+            if (parent && parent.isTileMesh) {
+                // get parent extent transformation
+                const pTrans = builder.computeSharableExtent(parent.extent);
+                // place relative to his parent
+                result.position.sub(pTrans.position).applyQuaternion(pTrans.quaternion.inverse());
+                result.quaternion.premultiply(pTrans.quaternion);
+            }
 
-        // build tile mesh
-        geometry._count++;
-        const material = new LayeredMaterial(layer.materialOptions);
-        const tile = new TileMesh(geometry, material, layer, extent, level);
+            tile.position.copy(result.position);
+            tile.quaternion.copy(result.quaternion);
+            tile.visible = false;
+            tile.updateMatrix();
 
-        // Commented because layer.threejsLayer is undefined;
-        // Fix me: conflict with object3d added in view.scene;
-        // tile.layers.set(layer.threejsLayer);
+            if (parent) {
+                tile.setBBoxZ(parent.obb.z.min, parent.obb.z.max);
+            }
 
-        if (parent && parent.isTileMesh) {
-            // get parent extent transformation
-            const pTrans = builder.computeSharableExtent(parent.extent);
-            // place relative to his parent
-            position.sub(pTrans.position).applyQuaternion(pTrans.quaternion.inverse());
-            quaternion.premultiply(pTrans.quaternion);
-        }
+            tile.add(tile.obb);
 
-        tile.position.copy(position);
-        tile.quaternion.copy(quaternion);
-        tile.visible = false;
-        tile.updateMatrix();
+            setTileFromTiledLayer(tile, layer);
 
-        if (parent) {
-            tile.setBBoxZ(parent.obb.z.min, parent.obb.z.max);
-        }
-
-        tile.add(tile.obb);
-
-        setTileFromTiledLayer(tile, layer);
-
-        return Promise.resolve(tile);
+            return tile;
+        });
     },
 };
