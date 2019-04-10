@@ -92,7 +92,6 @@ class GlobeLayer extends TiledGeometryLayer {
         return super.preUpdate(context, changeSources);
     }
 
-    // eslint-disable-next-line class-methods-use-this
     countColorLayersTextures(...layers) {
         let occupancy = 0;
         for (const layer of layers) {
@@ -104,7 +103,6 @@ class GlobeLayer extends TiledGeometryLayer {
         return occupancy;
     }
 
-    // eslint-disable-next-line
     culling(node, camera) {
         if (super.culling(node, camera)) {
             return true;
