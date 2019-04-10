@@ -3,8 +3,7 @@ module.exports = {
     filesExamples: [
         './loaders/GLTFLoader.js',
         './loaders/deprecated/LegacyGLTFLoader.js',
-        './loaders/DDSLoader.js',
         './loaders/DRACOLoader.js',
-        './utils/BufferGeometryUtils.js',
+        './loaders/DDSLoader.js',
     ],
 };

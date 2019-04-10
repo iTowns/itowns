@@ -17,6 +17,9 @@
     "prepublishOnly": "npm run build && npm run transpile",
     "prepare": "node ./config/prepare.js && node ./config/replace.config.js"
   },
+  "nyc": {
+    "exclude": "**/*ThreeExtended"
+  },
   "files": [
     "*.md",
     "dist",

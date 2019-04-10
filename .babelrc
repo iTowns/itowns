@@ -5,7 +5,8 @@
         ["babel-plugin-inline-import", {
             "extensions": [
                 ".json",
-                ".glsl"
+                ".glsl",
+                ".gltf"
             ]
         }],
         ["@babel/plugin-transform-runtime"],
@@ -21,5 +22,3 @@
         ["minify-dead-code-elimination"]
     ]
 }
-
-
