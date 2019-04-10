@@ -128,11 +128,11 @@ class OBB extends THREE.Object3D {
                 level: 0,
                 segment,
                 disableSkirt: true,
+                builder,
             };
 
-            // Calling geometry.dispose() is not needed since this geometry never gets rendered
-            const geometry = new TileGeometry(paramsGeometry, builder);
-            this.copy(geometry.OBB);
+            const geometry = new TileGeometry(paramsGeometry);
+            this.copy(builder.OBB(geometry.boundingBox));
 
             this.updateZ(minHeight, maxHeight);
             this.position.copy(position);
