@@ -248,7 +248,6 @@ class TiledGeometryLayer extends GeometryLayer {
         return convertToTile.convert(requester, extent, this);
     }
 
-    // eslint-disable-next-line class-methods-use-this
     countColorLayersTextures(...layers) {
         return layers.length;
     }

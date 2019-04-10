@@ -101,6 +101,7 @@ module.exports = {
     'new-cap': 'off',
     'no-continue': 'off',
     'no-console': [ 'warn', { allow: ['warn', 'error'] } ],
+    'class-methods-use-this' : 'off',
   },
   "globals": {
     "__DEBUG__": false
