@@ -93,12 +93,6 @@ class WMSSource extends Source {
         this.format = this.format || 'image/png';
         this.style = source.style || '';
 
-        // TODO: remove in 2.7.0
-        if (source.heightMapWidth) {
-            console.warn('source.heightMapWidth is deprecated, please use source.width instead.');
-            source.width = source.width || source.heightMapWidth;
-        }
-
         this.width = source.width || source.height || 256;
         this.height = source.height || source.width || 256;
         this.version = source.version || '1.3.0';
