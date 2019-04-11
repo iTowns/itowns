@@ -47,14 +47,6 @@ class Layer extends THREE.EventDispatcher {
      */
     constructor(id, config = {}) {
         super();
-
-        if (typeof config == 'string') {
-            console.warn('Deprecation warning: layer.type is deprecated, use a boolean flag instead as a property of the layer');
-            this.type = config;
-            // eslint-disable-next-line
-            config = arguments[2] || {};
-        }
-
         this.isLayer = true;
 
         Object.assign(this, config);
@@ -195,4 +187,3 @@ export const ImageryLayers = {
         return copy.map(l => l.id);
     },
 };
-
