@@ -1,46 +1,8 @@
+import * as THREE from 'three';
 import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
-import GeoJsonParser from 'Parser/GeoJsonParser';
 import Coordinates from 'Core/Geographic/Coordinates';
-
-// This part is freely adapted from vector-tile-js
-// https://github.com/mapbox/vector-tile-js/blob/master/lib/vectortilefeature.js
-function signedArea(ring) {
-    let sum = 0;
-    for (let i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
-        p1 = ring[i];
-        p2 = ring[j];
-        sum += (p2.x - p1.x) * (p1.y + p2.y);
-    }
-    return sum;
-}
-
-function classifyRings(rings) {
-    const len = rings.length;
-
-    if (len <= 1) { return [rings]; }
-
-    const polygons = [];
-    let polygon;
-    let ccw;
-
-    for (var i = 0; i < len; i++) {
-        var area = signedArea(rings[i]);
-        if (area === 0) { continue; }
-
-        if (ccw === undefined) { ccw = area < 0; }
-
-        if (ccw === area < 0) {
-            if (polygon) { polygons.push(polygon); }
-            polygon = [rings[i]];
-        } else {
-            polygon.push(rings[i]);
-        }
-    }
-    if (polygon) { polygons.push(polygon); }
-
-    return polygons;
-}
+import { FeatureCollection } from 'Core/Feature';
 
 const VectorTileFeature = { types: ['Unknown', 'Point', 'LineString', 'Polygon'] };
 // EPSG:3857
@@ -48,125 +10,114 @@ const VectorTileFeature = { types: ['Unknown', 'Point', 'LineString', 'Polygon']
 const coord = new Coordinates('EPSG:4326', 180, 85.06);
 coord.as('EPSG:3857', coord);
 // Get bound dimension in 'EPSG:3857'
-const sizeX = coord._values[0] * 2;
-const sizeY = coord._values[1] * 2;
+const globalExtent = new THREE.Vector3(coord.x() * 2, coord.y() * 2, 1);
 
-function project(line, ox, oy, size) {
-    for (let j = 0; j < line.length; j++) {
-        const p = line[j];
-        line[j] = [((p.x + ox) / size - 0.5) * sizeX, (0.5 - (p.y + oy) / size) * sizeY];
-    }
-}
+function vtFeatureToFeatureGeometry(vtFeature, geometry) {
+    geometry.properties = vtFeature.properties;
+    const pbf = vtFeature._pbf;
+    pbf.pos = vtFeature._geometry;
 
-function toGeoJSON(x, y, z) {
-    const size = this.extent * 2 ** z;
-    const x0 = this.extent * x;
-    const y0 = this.extent * y;
-    let coords = this.loadGeometry();
-    let type = VectorTileFeature.types[this.type];
+    const end = pbf.readVarint() + pbf.pos;
+    let cmd = 1;
+    let length = 0;
+    let x = 0;
+    let y = 0;
+    let count = 0;
+    let firstPoint;
+    while (pbf.pos < end) {
+        if (length <= 0) {
+            const cmdLen = pbf.readVarint();
+            cmd = cmdLen & 0x7;
+            length = cmdLen >> 3;
+        }
 
+        length--;
 
-    switch (this.type) {
-        case 1:
-            var points = [];
-            for (let i = 0; i < coords.length; i++) {
-                points[i] = coords[i][0];
-            }
-            coords = points;
-            project(coords, x0, y0, size);
-            break;
+        if (cmd === 1 || cmd === 2) {
+            x += pbf.readSVarint();
+            y += pbf.readSVarint();
 
-        case 2:
-            for (let i = 0; i < coords.length; i++) {
-                project(coords[i], x0, y0, size);
-            }
-            break;
-
-        case 3:
-            coords = classifyRings(coords);
-            for (let i = 0; i < coords.length; i++) {
-                for (let j = 0; j < coords[i].length; j++) {
-                    project(coords[i][j], x0, y0, size);
+            if (cmd === 1) { // moveTo
+                if (count) {
+                    geometry.closeSubGeometry(count);
                 }
+                count = 0;
+                firstPoint = undefined;
             }
-            break;
-        default:
+            count++;
+            geometry.pushCoordinatesValues(x, y);
+            if (count == 1) {
+                firstPoint = [x, y];
+            }
+        } else if (cmd === 7) {
+            if (count && firstPoint) {
+                count++;
+                geometry.pushCoordinatesValues(firstPoint[0], firstPoint[1]);
+                firstPoint = undefined;
+            }
+        } else {
+            throw new Error(`unknown command ${cmd}`);
+        }
     }
 
-    if (coords.length === 1) {
-        coords = coords[0];
-    } else {
-        type = `Multi${type}`;
+    if (count) {
+        geometry.closeSubGeometry(count);
     }
-
-    const result = {
-        type: 'Feature',
-        geometry: {
-            type,
-            coordinates: coords,
-        },
-        properties: this.properties,
-    };
-
-    if ('id' in this) {
-        result.id = this.id;
-    }
-
-    return result;
 }
 
-
+function vtFeatureToFeature(vtFeature, features) {
+    const feature = features.getFeatureByType(vtFeature.type - 1);
+    const geometry = feature.bindNewGeometry();
+    vtFeatureToFeatureGeometry(vtFeature, geometry);
+    feature.updateExtent(geometry);
+}
+const defaultFilter = () => true;
 function readPBF(file, options) {
     const vectorTile = new VectorTile(new Protobuf(file));
     const extentSource = options.extentSource || file.coords;
     const layers = Object.keys(vectorTile.layers);
 
-    if (layers.length < 1) { return; }
+    if (layers.length < 1) {
+        return;
+    }
 
-    const crsInId = Number(options.crsIn.slice(5));
+    // x,y,z tile coordinates
+    const x = extentSource.col;
+    const z = extentSource.zoom;
+    // We need to move from TMS to Google/Bing/OSM coordinates
+    // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
+    // Only if the layer.origin is top
+    const y = options.isInverted ? extentSource.row : (1 << z) - extentSource.row - 1;
 
-    // We need to create a featureCollection as VectorTile does no support it
-    const geojson = {
-        type: 'FeatureCollection',
-        features: [],
-        crs: { type: 'EPSG', properties: { code: crsInId } },
-    };
+    options.buildExtent = true;
+    options.mergeFeatures = true;
+
+    const features = new FeatureCollection('EPSG:3857', options);
+    features.filter = options.filter || defaultFilter;
+
+    const vFeature = vectorTile.layers[layers[0]];
+    const size = vFeature.extent * 2 ** z;
+    const center = -0.5 * size;
+    features.scale.set(size, -size, 1).divide(globalExtent);
+    features.translation.set(-(vFeature.extent * x + center), -(vFeature.extent * y + center), 0).divide(features.scale);
 
     layers.forEach((layer_id) => {
-        const l = vectorTile.layers[layer_id];
-
-        for (let i = 0; i < l.length; i++) {
-            let feature;
-            // We need to move from TMS to Google/Bing/OSM coordinates
-            // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
-            // Only if the layer.origin is top
-            if (options.isInverted) {
-                feature = toGeoJSON.bind(l.feature(i))(extentSource.col, extentSource.row, extentSource.zoom);
-            } else {
-                const y = 1 << extentSource.zoom;
-                feature = toGeoJSON.bind(l.feature(i))(extentSource.col, y - extentSource.row - 1, extentSource.zoom);
+        const layer = vectorTile.layers[layer_id];
+        for (let i = 0; i < layer.length; i++) {
+            const vtFeature = layer.feature(i);
+            const type = VectorTileFeature.types[vtFeature.type];
+            vtFeature.properties.vt_layer = layer.name;
+            if (features.filter(vtFeature.properties, { type })) {
+                vtFeatureToFeature(vtFeature, features);
             }
-            if (layers.length > 1) {
-                feature.properties.vt_layer = layer_id;
-            }
-
-            geojson.features.push(feature);
         }
     });
 
-    return GeoJsonParser.parse(geojson, {
-        crsIn: options.crsIn,
-        crsOut: options.crsOut,
-        filteringExtent: options.filteringExtent,
-        filter: options.filter,
-        withNormal: options.withNormal,
-        withAltitude: options.withAltitude,
-        mergeFeatures: options.mergeFeatures,
-        buildExtent: true,
-    }).then((f) => {
-        f.extent.zoom = extentSource.zoom;
-        return f;
-    });
+    features.removeEmptyFeature();
+    features.updateExtent();
+
+    features.extent.zoom = extentSource.zoom;
+    return Promise.resolve(features);
 }
 
 /**

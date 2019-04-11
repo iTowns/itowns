@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Earcut from 'earcut';
 import Coordinates from 'Core/Geographic/Coordinates';
+import { FEATURE_TYPES } from 'Core/Feature';
 
 function getProperty(name, options, defaultValue, ...args) {
     const property = options[name];
@@ -389,26 +390,19 @@ function featureToMesh(feature, options) {
 
     var mesh;
     switch (feature.type) {
-        case 'point':
-        case 'multipoint': {
+        case FEATURE_TYPES.POINT:
             mesh = featureToPoint(feature, options);
             break;
-        }
-        case 'line':
-        case 'linestring':
-        case 'multilinestring': {
+        case FEATURE_TYPES.LINE:
             mesh = featureToLine(feature, options);
             break;
-        }
-        case 'polygon':
-        case 'multipolygon': {
+        case FEATURE_TYPES.POLYGON:
             if (options.extrude) {
                 mesh = featureToExtrudedPolygon(feature, options);
             } else {
                 mesh = featureToPolygon(feature, options);
             }
             break;
-        }
         default:
     }
 

@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
 
 function defaultExtent(crs) {
@@ -10,7 +11,6 @@ function _extendBuffer(feature, size) {
         feature.normals.length = feature.vertices.length;
     }
 }
-
 
 /**
  * @property {Extent} extent - The 2D extent containing all the points
@@ -33,6 +33,7 @@ class FeatureGeometry {
         this.indices = [];
         this._feature = feature;
         this.properties = {};
+        this._currentExtent = feature.extent ? defaultExtent(feature.crs) : undefined;
     }
     /**
      * Add a new marker to indicate the starting of sub geometry and extends the vertices buffer.
@@ -42,10 +43,12 @@ class FeatureGeometry {
      */
     startSubGeometry(count) {
         const last = this.indices.length - 1;
+        const extent = this.extent ? defaultExtent(this._feature.crs) : undefined;
         const offset = last > -1 ?
             this.indices[last].offset + this.indices[last].count :
             this._feature.vertices.length / this.size;
-        this.indices.push({ offset, count });
+        this.indices.push({ offset, count, extent });
+        this._currentExtent = extent;
         _extendBuffer(this._feature, count);
     }
 
@@ -60,7 +63,9 @@ class FeatureGeometry {
         const offset = last > -1 ?
             this.indices[last].offset + this.indices[last].count :
             this._feature.vertices.length / this.size - count;
-        this.indices.push({ offset, count });
+        this.indices.push({ offset, count, extent: this._currentExtent });
+        this.extent.union(this._currentExtent);
+        this._currentExtent = this.extent ? defaultExtent(this._feature.crs) : undefined;
     }
     /**
      * Push new coordinates in vertices buffer.
@@ -76,8 +81,8 @@ class FeatureGeometry {
 
         this._feature._pushValues(this._feature, coord._values[0], coord._values[1], coord._values[2]);
         // expand extent if present
-        if (this.extent) {
-            this.extent.expandByCoordinates(coord);
+        if (this._currentExtent) {
+            this._currentExtent.expandByCoordinates(coord);
         }
     }
 
@@ -92,8 +97,8 @@ class FeatureGeometry {
     pushCoordinatesValues(long, lat, alt) {
         this._feature._pushValues(this._feature, long, lat, alt);
         // expand extent if present
-        if (this.extent) {
-            this.extent.expandByValuesCoordinates(long, lat, alt);
+        if (this._currentExtent) {
+            this._currentExtent.expandByValuesCoordinates(long, lat, alt);
         }
     }
     /**
@@ -102,6 +107,18 @@ class FeatureGeometry {
      */
     get size() {
         return this._feature.size;
+    }
+
+    /**
+     * update geometry extent with the last sub geometry extent.
+     */
+    updateExtent() {
+        if (this.extent) {
+            const last = this.indices[this.indices.length - 1];
+            if (last) {
+                this.extent.union(last.extent);
+            }
+        }
     }
 }
 
@@ -117,9 +134,9 @@ function push3DValues(feature, value0, value1, value2) {
 }
 
 export const FEATURE_TYPES = {
-    POINT: 'point',
-    POLYGON: 'polygon',
-    LINE: 'line',
+    POINT: 0,
+    POLYGON: 1,
+    LINE: 2,
 };
 
 /**
@@ -202,6 +219,8 @@ export default Feature;
  * composing the collection.
  * @property {string} crs - Geographic or Geocentric coordinates system.
  * @property {boolean} isFeatureCollection - Used to check whether this is FeatureCollection.
+ * @property {THREE.Vector3} translation - Apply translation on vertices and extent to transform on coordinates system.
+ * @property {THREE.Vector3} scale - Apply scale on vertices and extent to transform on coordinates system.
  *
  * An object regrouping a list of [features]{@link Feature} and the extent of this collection.
  */
@@ -212,6 +231,8 @@ export class FeatureCollection {
         this.features = [];
         this.optionsFeature = options || {};
         this.extent = options.buildExtent ? defaultExtent(crs) : undefined;
+        this.translation = new THREE.Vector3();
+        this.scale = new THREE.Vector3(1, 1, 1);
     }
 
     /**
