@@ -25,6 +25,7 @@ supportedFetchers.set('image/png', () => Promise.resolve(new THREE.Texture()));
 supportedFetchers.set('application/json', () => Promise.resolve(holes));
 
 // Mock document object for Mocha.
+// Warning is overloaded by view test unit
 global.document = {
     createElement: () => ({
         getContext: () => ({

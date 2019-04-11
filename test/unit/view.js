@@ -17,6 +17,7 @@ global.document = {
             stroke: () => { },
             fill: () => { },
             arc: () => { },
+            setTransform: () => { },
             canvas: {
                 width: 256,
                 height: 256,
