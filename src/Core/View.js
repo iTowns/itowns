@@ -7,10 +7,6 @@ import RenderMode from 'Renderer/RenderMode';
 
 import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 
-import ColorLayer from 'Layer/ColorLayer';
-import ElevationLayer from 'Layer/ElevationLayer';
-import GeometryLayer from 'Layer/GeometryLayer';
-
 import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 import WMTSSource from 'Source/WMTSSource';
@@ -123,22 +119,6 @@ function View(crs, viewerDiv, options = {}) {
 View.prototype = Object.create(THREE.EventDispatcher.prototype);
 View.prototype.constructor = View;
 
-function _createLayerFromConfig(config) {
-    console.warn('Deprecation warning: passing a layer as an object is deprecated. Instantiate the layer before adding it to the view instead.');
-    switch (config.type) {
-        case 'color':
-            return new ColorLayer(config.id, config);
-        case 'elevation':
-            return new ElevationLayer(config.id, config);
-        case 'geometry' :
-        case 'debug':
-            return new GeometryLayer(config.id, new THREE.Group(), config);
-        default:
-            throw new Error(`Unknown layer type ${config.type}: please
-                specify a valid one`);
-    }
-}
-
 const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer, view) {
     if (layer.object3d) {
         layer.object3d.visible = layer.visible;
@@ -154,10 +134,6 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
 };
 
 function _preprocessLayer(view, layer, provider, parentLayer) {
-    if (!layer.isLayer) {
-        layer = _createLayerFromConfig(layer);
-    }
-
     if (parentLayer && !layer.extent) {
         layer.extent = parentLayer.extent;
         if (layer.source && !layer.source.extent) {

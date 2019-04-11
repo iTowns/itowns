@@ -4,7 +4,7 @@ import ColorLayer from 'Layer/ColorLayer';
 
 describe('Layer', function () {
     it('should emit an event on property changed', function () {
-        const layer = new Layer('testId', 'testType');
+        const layer = new Layer('testId');
         layer.defineLayerProperty('test', 0);
         layer.addEventListener('test-property-changed', (e) => {
             assert.equal(e.type, 'test-property-changed');
