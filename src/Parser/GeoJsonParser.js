@@ -37,6 +37,7 @@ const toFeature = {
             coord.set(crsIn, pair[0], pair[1], useAlti ? pair[2] : 0);
             geometry.pushCoordinates(coord);
         }
+        geometry.updateExtent();
     },
     default(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
         if (filteringExtent && firstPtIsOut(filteringExtent, coordsIn, crsIn)) {
@@ -109,14 +110,14 @@ function toFeatureType(jsonType) {
 
 const keyProperties = ['type', 'geometry', 'properties'];
 
-function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, featureMerge = {}) {
+function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, featureCollection) {
     if (options.filter && !options.filter(json.properties, json.geometry)) {
         return;
     }
 
     const jsonType = json.geometry.type.toLowerCase();
     const featureType = toFeatureType(jsonType);
-    const feature = options.mergeFeatures ? featureMerge.getFeatureByType(featureType) : new Feature(featureType, crsOut, options);
+    const feature = options.mergeFeatures ? featureCollection.getFeatureByType(featureType) : new Feature(featureType, crsOut, options);
     const geometryCount = feature.geometryCount;
     const coordinates = jsonType != 'point' ? json.geometry.coordinates : [json.geometry.coordinates];
     const setAltitude = !options.overrideAltitudeInToZero && options.withAltitude;

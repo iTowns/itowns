@@ -1,3 +1,5 @@
+import { FEATURE_TYPES } from 'Core/Feature';
+
 function pointIsOverLine(point, linePoints, epsilon, offset, count, size) {
     const x0 = point._values[0];
     const y0 = point._values[1];
@@ -94,11 +96,11 @@ function pointIsInsidePolygon(point, polygonPoints, offset, count, size) {
 }
 
 function isFeatureSingleGeometryUnderCoordinate(coordinate, type, coordinates, epsilon, offset, count, size) {
-    if ((type == 'line') && pointIsOverLine(coordinate, coordinates, epsilon, offset, count, size)) {
+    if ((type == FEATURE_TYPES.LINE) && pointIsOverLine(coordinate, coordinates, epsilon, offset, count, size)) {
         return true;
-    } else if ((type == 'polygon') && pointIsInsidePolygon(coordinate, coordinates, offset, count, size)) {
+    } else if ((type == FEATURE_TYPES.POLYGON) && pointIsInsidePolygon(coordinate, coordinates, offset, count, size)) {
         return true;
-    } else if (type == 'point') {
+    } else if (type == FEATURE_TYPES.POINT) {
         const closestPoint = getClosestPoint(coordinate, coordinates, epsilon, offset, count, size);
         if (closestPoint) {
             return { coordinates: closestPoint };

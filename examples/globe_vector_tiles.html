@@ -28,12 +28,13 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { maxSubdivisionLevel: 13 });
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 
             // define pole texture
             view.tileLayer.noTextureColor = new itowns.THREE.Color(0x95c1e1);
 
             view.getLayerById('atmosphere').visible = false;
+            view.getLayerById('atmosphere').fog.enable = false;
 
             setupLoadingScreen(viewerDiv, view);
 
@@ -60,10 +61,13 @@
                     }
                 });
 
+                function inter(z) {
+                    return z - (z % 5);
+                }
+
                 function isValidData(data, extentDestination) {
-                    // re-use the same vector tiles by interval 4
-                    var z = extentDestination.zoom - 2;
-                    return extentDestination.zoom, z - z % 4 == data.extent.zoom - 2;
+                    const isValid = inter(extentDestination.zoom) == inter(data.extent.zoom);
+                    return isValid;
                 }
 
                 var mvtSource = new itowns.TMSSource({
@@ -75,8 +79,8 @@
                         url: 'http://www.openstreetmap.org/',
                     },
                     zoom: {
-                        min: 2,
-                        max: 14,
+                        min: 0,
+                        max: 13,
                     },
                     tileMatrixSet: 'PM',
                     projection: 'EPSG:3857',
@@ -86,10 +90,10 @@
                 var mvtLayer = new itowns.ColorLayer('MVT', {
                     isValidData: isValidData,
                     source: mvtSource,
-                    fx: 2.5,
                     style: mapboxStyle,
                     filter: mapboxFilter(supportedLayers),
                     backgroundLayer,
+                    fx: 2.5,
                 });
 
                 return view.addLayer(mvtLayer);
@@ -103,6 +107,11 @@
                     itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
                 }).catch(console.error);
             });
+
+            if (view.isDebugMode) {
+                const d = new debug.Debug(view, menuGlobe.gui);
+                debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+            }
         </script>
     </body>
 </html>
