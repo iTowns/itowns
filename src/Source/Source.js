@@ -89,11 +89,7 @@ class Source {
         this.projection = source.projection;
         this.attribution = source.attribution;
         if (source.extent && !(source.extent instanceof Extent)) {
-            if (Array.isArray(source.extent)) {
-                this.extent = new Extent(this.projection, ...source.extent);
-            } else {
-                this.extent = new Extent(this.projection, source.extent);
-            }
+            this.extent = new Extent(this.projection, source.extent);
         } else {
             this.extent = source.extent;
         }
@@ -102,6 +98,7 @@ class Source {
     handlingError(err) {
         console.warn(`err ${this}`, err);
     }
+
     /**
      * Generates an url from an extent. This url is a link to fetch the
      * resources inside the extent.
@@ -112,7 +109,7 @@ class Source {
      */
     // eslint-disable-next-line
     urlFromExtent(extent) {
-        throw new Error('In extented Source, you have to implement the method urlFromExtent!');
+        throw new Error('In extended Source, you have to implement the method urlFromExtent!');
     }
 
     /**

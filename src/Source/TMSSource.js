@@ -70,11 +70,6 @@ class TMSSource extends Source {
         this.zoom = source.zoom || { min: 0, max: 18 };
 
         this.isInverted = source.isInverted || false;
-        // to remove in 2.7.0
-        if (source.origin) {
-            console.warn('Deprecation warning: origin is not supported anymore, use isInverted instead');
-            this.isInverted = (source.origin == 'top');
-        }
 
         this.format = this.format || 'image/png';
         this.url = source.url;
