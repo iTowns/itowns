@@ -30,52 +30,56 @@ layer to a more precise one.
             var position = new itowns.Coordinates('WGS84', 2.35, 48.8, 1e3);
             var view = new itowns.GlobeView(viewerDiv, position);
 
-            var colorLayer = new itowns.ColorLayer('Ortho', {
-                source: {
-                    protocol: 'wmts',
-                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-                    name: 'ORTHOIMAGERY.ORTHOPHOTOS',
-                    tileMatrixSet: 'PM',
-                    format: 'image/jpeg'
-                }
+            var colorSource = new itowns.WMTSSource({
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                name: 'ORTHOIMAGERY.ORTHOPHOTOS',
+                tileMatrixSet: 'PM',
+                format: 'image/jpeg'
             });
+
+            var colorLayer = new itowns.ColorLayer('Ortho', {
+                source: colorSource,
+            });
+
             view.addLayer(colorLayer);
 
-            var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
-                source: {
-                    protocol: 'wmts',
-                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-                    name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
-                    tileMatrixSet: 'WGS84G',
-                    format: 'image/x-bil;bits=32',
-                    tileMatrixSetLimits: {
-                        11: {
-                            minTileRow: 442,
-                            maxTileRow: 1267,
-                            minTileCol: 1344,
-                            maxTileCol: 2683
-                        },
-                        12: {
-                            minTileRow: 885,
-                            maxTileRow: 2343,
-                            minTileCol: 3978,
-                            maxTileCol: 5126
-                        },
-                        13: {
-                            minTileRow: 1770,
-                            maxTileRow: 4687,
-                            minTileCol: 7957,
-                            maxTileCol: 10253
-                        },
-                        14: {
-                            minTileRow: 3540,
-                            maxTileRow: 9375,
-                            minTileCol: 15914,
-                            maxTileCol: 20507
-                        }
+            var elevationSource = new itowns.WMTSSource({
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+                tileMatrixSet: 'WGS84G',
+                format: 'image/x-bil;bits=32',
+                tileMatrixSetLimits: {
+                    11: {
+                        minTileRow: 442,
+                        maxTileRow: 1267,
+                        minTileCol: 1344,
+                        maxTileCol: 2683
+                    },
+                    12: {
+                        minTileRow: 885,
+                        maxTileRow: 2343,
+                        minTileCol: 3978,
+                        maxTileCol: 5126
+                    },
+                    13: {
+                        minTileRow: 1770,
+                        maxTileRow: 4687,
+                        minTileCol: 7957,
+                        maxTileCol: 10253
+                    },
+                    14: {
+                        minTileRow: 3540,
+                        maxTileRow: 9375,
+                        minTileCol: 15914,
+                        maxTileCol: 20507
                     }
                 }
             });
+
+            var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
+                source: elevationSource,
+            });
+
             view.addLayer(elevationLayer);
         </script>
      </body>
@@ -86,20 +90,23 @@ layer to a more precise one.
 
 We want to create and add a layer containing geometries. The best candidate here
 is of course {@link GeometryLayer}. Reading the documentation, adding this type
-of layer is similar to the other layers.
+of layer is similar to the other layers. So before declaring the layer, let's
+instantiate the source.
 
 ```js
+var geometrySource = new itowns.WFSSource({
+    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+    projection: 'EPSG:4326',
+    zoom: { min: 14, max: 14 },
+});
+
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+    source: geometrySource,
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert(),
-    source: {
-        protocol: 'wfs',
-        url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-        typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-        projection: 'EPSG:4326',
-        zoom: { min: 14, max: 14 },
-    }
 });
+
 view.addLayer(geometryLayer);
 ```
 
@@ -132,19 +139,21 @@ function setAltitude(properties) {
     console.log(properties);
 }
 
+var geometrySource = new itowns.WFSSource({
+    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+    projection: 'EPSG:4326',
+    zoom: { min: 14, max: 14 },
+});
+
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+    source: geometrySource,
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
         altitude: setAltitude
     }),
-    source: {
-        protocol: 'wfs',
-        url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-        typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-        projection: 'EPSG:4326',
-        zoom: { min: 14, max: 14 },
-    }
 });
+
 view.addLayer(geometryLayer);
 ```
 
@@ -165,7 +174,7 @@ z_min: 83.7
 ```
 
 Reading the documentation of the database we are querying ([section 9.1, page
-84](http://professionnels.ign.fr/doc/DC_BDTOPO_2-2.pdf), in french), we have an
+84](http://professionnels.ign.fr/doc/DC_BDTOPO_3-0.pdf), in french), we have an
 explanation on each property. To help us place the data correctly, let's use the
 `z_min` property:
 
@@ -201,20 +210,22 @@ function setExtrusion(properties) {
     return properties.hauteur;
 }
 
+var geometrySource = new itowns.WFSSource({
+    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+    projection: 'EPSG:4326',
+    zoom: { min: 14, max: 14 },
+});
+
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+    source: geometrySource,
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
         altitude: setAltitude,
-        extrude: setExtrusion
+        extrude: setExtrusion,
     }),
-    source: {
-        protocol: 'wfs',
-        url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-        typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-        projection: 'EPSG:4326',
-        zoom: { min: 14, max: 14 },
-    }
 });
+
 view.addLayer(geometryLayer);
 ```
 
@@ -236,21 +247,23 @@ function setColor(properties) {
     return new itowns.THREE.Color(0xaaaaaa);
 }
 
+var geometrySource = new itowns.WFSSource({
+    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+    projection: 'EPSG:4326',
+    zoom: { min: 14, max: 14 },
+});
+
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+    source: geometrySource,
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
         altitude: setAltitude,
         extrude: setExtrusion,
         color: setColor
     }),
-    source: {
-        protocol: 'wfs',
-        url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-        typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-        projection: 'EPSG:4326',
-        zoom: { min: 14, max: 14 },
-    }
 });
+
 view.addLayer(geometryLayer);
 ```
 
@@ -285,56 +298,60 @@ layer on a globe, and change some things on this layer. Here is the final code:
             var position = new itowns.Coordinates('WGS84', 2.35, 48.8, 1e3);
             var view = new itowns.GlobeView(viewerDiv, position);
 
-            var colorLayer = new itowns.ColorLayer('Ortho', {
-                source: {
-                    protocol: 'wmts',
-                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-                    name: 'ORTHOIMAGERY.ORTHOPHOTOS',
-                    tileMatrixSet: 'PM',
-                    format: 'image/jpeg'
-                }
+            var colorSource = new itowns.WMTSSource({
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                name: 'ORTHOIMAGERY.ORTHOPHOTOS',
+                tileMatrixSet: 'PM',
+                format: 'image/jpeg'
             });
+
+            var colorLayer = new itowns.ColorLayer('Ortho', {
+                source: colorSource,
+            });
+
             view.addLayer(colorLayer);
 
-            var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
-                source: {
-                    protocol: 'wmts',
-                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-                    name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
-                    tileMatrixSet: 'WGS84G',
-                    format: 'image/x-bil;bits=32',
-                    tileMatrixSetLimits: {
-                        11: {
-                            minTileRow: 442,
-                            maxTileRow: 1267,
-                            minTileCol: 1344,
-                            maxTileCol: 2683
-                        },
-                        12: {
-                            minTileRow: 885,
-                            maxTileRow: 2343,
-                            minTileCol: 3978,
-                            maxTileCol: 5126
-                        },
-                        13: {
-                            minTileRow: 1770,
-                            maxTileRow: 4687,
-                            minTileCol: 7957,
-                            maxTileCol: 10253
-                        },
-                        14: {
-                            minTileRow: 3540,
-                            maxTileRow: 9375,
-                            minTileCol: 15914,
-                            maxTileCol: 20507
-                        }
+            var elevationSource = new itowns.WMTSSource({
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+                tileMatrixSet: 'WGS84G',
+                format: 'image/x-bil;bits=32',
+                tileMatrixSetLimits: {
+                    11: {
+                        minTileRow: 442,
+                        maxTileRow: 1267,
+                        minTileCol: 1344,
+                        maxTileCol: 2683
+                    },
+                    12: {
+                        minTileRow: 885,
+                        maxTileRow: 2343,
+                        minTileCol: 3978,
+                        maxTileCol: 5126
+                    },
+                    13: {
+                        minTileRow: 1770,
+                        maxTileRow: 4687,
+                        minTileCol: 7957,
+                        maxTileCol: 10253
+                    },
+                    14: {
+                        minTileRow: 3540,
+                        maxTileRow: 9375,
+                        minTileCol: 15914,
+                        maxTileCol: 20507
                     }
                 }
             });
+
+            var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
+                source: elevationSource,
+            });
+
             view.addLayer(elevationLayer);
 
             function setAltitude(properties) {
-                return properties.z_min - properties.hauteur;
+                return -properties.hauteur;
             }
 
             function setExtrusion(properties) {
@@ -345,21 +362,23 @@ layer on a globe, and change some things on this layer. Here is the final code:
                 return new itowns.THREE.Color(0xaaaaaa);
             }
 
+            var geometrySource = new itowns.WFSSource({
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+                projection: 'EPSG:4326',
+                zoom: { min: 14, max: 14 },
+            });
+
             var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+                source: geometrySource,
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
                     altitude: setAltitude,
                     extrude: setExtrusion,
                     color: setColor
                 }),
-                source: {
-                    protocol: 'wfs',
-                    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-                    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-                    projection: 'EPSG:4326',
-                    zoom: { min: 14, max: 14 },
-                }
             });
+
             view.addLayer(geometryLayer);
         </script>
      </body>
