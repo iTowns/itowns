@@ -1,0 +1,22 @@
+<?js
+    var event = obj;
+    var self = this;
+?>
+
+<div class="event">
+    <h3>
+        <span class="event-name"><?js= event.name ?></span>
+    </h3>
+
+    <?js if (event.description) { ?>
+        <div class="description">
+            <?js= event.description ?>
+        </div>
+    <?js } ?>
+
+    <?js if (event.properties) { ?>
+        <h4>Properties</h4>
+        <?js event.properties.forEach(function(p) { p.fromTypedef = true; }) ?>
+        <?js= self.partial('params.tmpl', event.properties) ?>
+    <?js } ?>
+</div>
