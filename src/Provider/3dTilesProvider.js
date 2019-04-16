@@ -101,8 +101,9 @@ export function $3dTilesIndex(tileset, baseURL) {
 
         // getBox only use inverseTileTransform for volume.region so let's not
         // compute the inverse matrix each time
+        // Assumes that node.boundingVolume is defined if node.viewerRequestVolume is undefined
         if ((node.viewerRequestVolume && node.viewerRequestVolume.region)
-            || (node.boundingVolume && node.boundingVolume.region)) {
+            || node.boundingVolume.region) {
             if (node._worldFromLocalTransform) {
                 inverseTileTransform.getInverse(node._worldFromLocalTransform);
             } else {

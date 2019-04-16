@@ -64,8 +64,10 @@ class FeatureGeometry {
             this.indices[last].offset + this.indices[last].count :
             this._feature.vertices.length / this.size - count;
         this.indices.push({ offset, count, extent: this._currentExtent });
-        this.extent.union(this._currentExtent);
-        this._currentExtent = this.extent ? defaultExtent(this._feature.crs) : undefined;
+        if (this.extent) {
+            this.extent.union(this._currentExtent);
+            this._currentExtent = defaultExtent(this._feature.crs);
+        }
     }
     /**
      * Push new coordinates in vertices buffer.
@@ -230,7 +232,7 @@ export class FeatureCollection {
         this.crs = crs;
         this.features = [];
         this.optionsFeature = options || {};
-        this.extent = options.buildExtent ? defaultExtent(crs) : undefined;
+        this.extent = this.optionsFeature.buildExtent ? defaultExtent(crs) : undefined;
         this.translation = new THREE.Vector3();
         this.scale = new THREE.Vector3(1, 1, 1);
     }
