@@ -1,7 +1,15 @@
 <?js
     var examples = obj;
+    var self = this;
 ?>
 
 <?js examples.forEach(function(example) { ?>
-    <pre class="prettyprint source lang-js"><code><?js= example ?></code></pre>
+    <?js
+        example = self.caption(example);
+        if (example.caption) {
+    ?>
+        <?js= example.caption ?>
+    <?js } ?>
+
+    <pre class="prettyprint source lang-js"><code><?js= example.content ?></code></pre>
 <?js }); ?>
