@@ -84,6 +84,17 @@
             <?js if (i < typedefs.length - 1) { ?><hr/><?js } ?>
         <?js }); ?>
     <?js } ?>
+
+    <?js
+        var events = self.find({kind: 'event', memberof: content.longname });
+        if (events && events.length) {
+    ?>
+        <h2>Events</h2>
+        <?js events.forEach(function(event, i) { ?>
+            <?js= self.partial('events.tmpl', event) ?>
+            <?js if (i < events.length - 1) { ?><hr/><?js } ?>
+        <?js }); ?>
+    <?js } ?>
 <?js } ?>
 
 <?js= self.partial('source.tmpl', content) ?>

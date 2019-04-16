@@ -88,7 +88,7 @@ h4 {
     margin-top: 18px;
 }
 
-.property h3, .method h3, .typedef h3 {
+.property h3, .method h3, .typedef h3, .event h3 {
     font-family: Consolas, monospace;
 }
 
@@ -96,7 +96,7 @@ h4 {
     color: #968d86;
 }
 
-.method-name, .property-name, .typedef-name {
+.method-name, .property-name, .typedef-name, .event-name {
     color: #6091b2;
 }
 
