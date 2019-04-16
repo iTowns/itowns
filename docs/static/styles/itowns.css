@@ -14,16 +14,21 @@ html, body {
 .scroll-section {
     height: 100%;
     position: absolute;
-    overflow: auto;
-}
-
-nav {
-    width: 220px;
 }
 
 #content {
-    height: 100%;
-    width: calc(100% - 220px);
+    width: 100%;
+}
+
+section {
+    max-width: 50rem;
+    margin: auto;
+    padding: 2rem;
+}
+
+nav {
+    padding: 0 2rem;
+    overflow: auto;
 }
 
 nav img {
@@ -38,8 +43,8 @@ nav .package {
     padding-bottom: 20px;
 }
 
-#homepage iframe {
-    width: 100%;
+#homepage {
+    height: 400px;
 }
 
 section {
@@ -49,15 +54,16 @@ section {
 a, a:visited{
     cursor: pointer;
     color: #6091b2;
+    text-decoration: underline;
 }
 
 a:hover {
-    text-decoration: dashed underline;
+    text-decoration: underline;
     color: #6091b2aa;
 }
 
 h1, h2, h3, h4, h5 {
-    font-weight: normal;
+    font-weight: bold;
     color: #4b4b4b;
 }
 
@@ -67,6 +73,7 @@ h1 {
 
 header h1 {
     color: #6091b2;
+    width: max-content;
 }
 
 h2 {
@@ -90,6 +97,7 @@ h4 {
 
 .property h3, .method h3, .typedef h3, .event h3 {
     font-family: Consolas, monospace;
+    width: max-content;
 }
 
 .method .type, .property .type, .typedef .type {
@@ -113,14 +121,13 @@ ul.params {
 }
 
 #filterInput {
-    width: 170px;
     padding: 5px;
 }
 
 #clearFilterButton {
     position: absolute;
-    left: 180px;
-    top: 124px;
+    right: 4rem;
+    top: 142px;
 }
 
 .hidden {
@@ -133,6 +140,10 @@ code {
 
 code, .prettyprint code {
     background-color: #6091b220;
+}
+
+.prettyprint.source {
+    width: max-content;
 }
 
 hr {
