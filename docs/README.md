@@ -15,13 +15,10 @@ The API reference is written in the source of itowns, using
 exposed methods and classes in itowns, and some internal others.
 
 When documenting something, don't forget to check the presence of your file
-inside those two files:
+inside `docs/config.json`.
 
-- `docs/config.json`
-- `docs/navigation.json`
-
-If the file you are editing is not present, add it to each list, in the correct
-package for `navigations.json`.
+If the file you are editing is not present, add it to the `navigation` list, in
+the correct package.
 
 #### How to document a class
 
