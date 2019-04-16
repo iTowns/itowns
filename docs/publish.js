@@ -44,6 +44,15 @@ function rank(properties) {
     return res;
 }
 
+function caption(example) {
+    const c = example.match(/(<caption>[\s\S]*<\/caption>)\n/g) || [];
+    const e = example.split(c[0]);
+    return {
+        caption: c[0],
+        content: e[0] || e[1],
+    };
+}
+
 function sortByPackage(members, navList) {
     const packages = {};
     const invertedNavList = {};
@@ -127,6 +136,7 @@ exports.publish = function publish(taffyData, opts, tutorials) {
     view.find = find;
     view.linkToSource = linkToSource;
     view.rank = rank;
+    view.caption = caption;
 
     // Copy static resources
     const fromDir = path.join(templatePath, 'static');
