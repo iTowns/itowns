@@ -17,8 +17,12 @@
 
 <body data-spy="scroll" data-target="nav" onload="onLoad()">
 
+<div id="main">
+    <iframe id="content" class="scroll-section" frameborder="0" height="100%"></iframe>
+</div>
+
 <nav class="scroll-section">
-    <img id="goToHome" src="images/itowns_logo.png" width="190px" onclick="goTo('home.html', 'home')"/>
+    <img id="goToHome" src="images/itowns_logo.png" width="230px" onclick="goTo('home.html', 'home')"/>
     <div class="filterBlock">
         <input type="text" id="filterInput" placeholder="Type to filter"
         autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -26,10 +30,6 @@
     </div>
     <?js= self.partial('nav.tmpl', content) ?>
 </nav>
-
-<div id="main">
-    <iframe id="content" class="scroll-section" frameborder="0" height="100%"></iframe>
-</div>
 
 <script> prettyPrint(); </script>
 <script src="scripts/linenumber.js"> </script>

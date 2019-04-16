@@ -34,7 +34,7 @@ html
 body
 {
     font-family: 'Open Sans', sans-serif;
-    line-height: 1.5;
+    line-height: 1.6;
     color: #4d4e53;
     background-color: white;
 }
@@ -74,14 +74,6 @@ code {
     margin: 0;
 }
 
-#main {
-    float: right;
-    width: calc(100% - 230px);
-    border-left: 1px solid #cccccc;
-    margin-left: -1px;
-    padding: 0px 10px 0px 20px;
-}
-
 article dl {
     margin-bottom: 40px;
 }
@@ -112,7 +104,6 @@ nav
 {
     display: block;
     float: left;
-    width: 200px;
     box-sizing: border-box;
     border-right: 1px solid #ccc;
     padding-left: 10px;
