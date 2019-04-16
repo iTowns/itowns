@@ -10,10 +10,10 @@ visualize a simple earth, with an elevation layer and a color layer.
         <meta charset="UTF-8">
         <title>Simple globe with iTowns</title>
         <style>
-            html: { height: 100%; }
-            body: { margin: 0; overflow: hidden; height: 100%; }
-            #viewerDiv: { margin: auto; height: 100%; width: 100%; padding: 0; }
-            canvas: { display: block }
+            html { height: 100%; }
+            body { margin: 0; overflow: hidden; height: 100%; }
+            #viewerDiv { margin: auto; height: 100%; width: 100%; padding: 0; }
+            canvas { display: block }
         </style>
      </head>
      <body>
