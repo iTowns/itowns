@@ -82,7 +82,7 @@ class Extent {
             this._values = new Float64Array([v0._values[0], v1._values[0], v0._values[1], v1._values[1]]);
         } else if (v0 && v0.west !== undefined) {
             this._values = new Float64Array([v0.west, v0.east, v0.south, v0.north]);
-        } else if (v0.length == 4) {
+        } else if (v0 && v0.length == 4) {
             this._values = new Float64Array(v0);
         } else if (v0 !== undefined) {
             this._values = new Float64Array([v0, v1, v2, v3]);

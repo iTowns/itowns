@@ -57,7 +57,7 @@ function parseSourceData(data, extSrc, extDest, layer) {
         if (source.isFileSource) {
             source.parsedData = parsedFile;
             if (parsedFile.extent && parsedFile.extent.crs != 'EPSG:4978') {
-                source.extent = parsedFile.extent || source.extent;
+                source.extent = parsedFile.extent;
             }
         }
 

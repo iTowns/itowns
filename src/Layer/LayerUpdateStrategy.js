@@ -66,7 +66,6 @@ export function chooseNextLevelToFetch(strategy, node, nodeLevel = node.level, c
             // default strategy
             case STRATEGY_MIN_NETWORK_TRAFFIC:
             default:
-                nodeLevel = failureParams ? Math.ceil((currentLevel + failureParams.targetLevel) / 2) : nodeLevel;
                 nextLevelToFetch = _minimizeNetworkTraffic(node, nodeLevel, currentLevel);
         }
     }
