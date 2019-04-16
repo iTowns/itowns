@@ -148,8 +148,7 @@ exports.publish = function publish(taffyData, opts, tutorials) {
     });
 
     // Get the navigation configuration
-    let navList = fs.readFileSync(opts.navigation, { encoding: 'utf-8' });
-    navList = JSON.parse(navList);
+    const navList = opts.navigation;
 
     // Sort all the data that will be used by packages
     data = helper.prune(taffyData);

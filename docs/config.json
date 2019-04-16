@@ -1,9 +1,96 @@
 {
     "opts": {
+        "recurse": true,
         "template": "docs/",
         "destination": "docs/out/",
         "tutorials": "docs/tutorials/",
-        "navigation": "docs/navigation.json"
+        "navigation": {
+            "Base": [
+                "Cache",
+                "Scheduler",
+                "TileMesh",
+                "Feature",
+                "FeatureGeometry",
+                "FeatureCollection"
+            ],
+
+            "View": [
+                "View",
+                "GlobeView"
+            ],
+
+            "Geographic": [
+                "Coordinates",
+                "Extent",
+                "OrientationUtils",
+                "OBB"
+            ],
+
+            "Layer": [
+                "Layer",
+                "ColorLayer",
+                "ElevationLayer",
+                "GeometryLayer",
+                "TiledGeometryLayer",
+                "InfoTiledGeometryLayer",
+                "ColorLayersOrdering",
+                "OrientedImageLayer",
+
+                "GlobeLayer",
+                "PlanarLayer"
+            ],
+
+            "Source": [
+                "Source",
+                "WMTSSource",
+                "WMSSource",
+                "WFSSource",
+                "TMSSource",
+                "FileSource",
+                "OrientedImageSource"
+            ],
+
+            "Provider": [
+                "URLBuilder",
+                "Fetcher"
+            ],
+
+            "Parser": [
+                "GeoJsonParser",
+                "GpxParser",
+                "VectorTileParser",
+                "CameraCalibrationParser",
+                "B3dmParser",
+                "BatchTableParser",
+                "BatchTableHierarchyExtensionParser",
+                "ShapefileParser"
+            ],
+
+            "Converter": [
+                "Feature2Mesh"
+            ],
+
+            "Controls": [
+                "GlobeControls",
+                "StateControl",
+                "PlanarControls",
+                "FirstPersonControls",
+                "StreetControls",
+                "OrientedImageCamera",
+                "CameraUtils"
+            ],
+
+            "Renderer": [
+                "OrientedImageMaterial"
+            ],
+
+            "3D Tiles": [
+                "BatchTable",
+                "$3DTilesExtensions",
+                "$3dTilesAbstractExtension",
+                "BatchTableHierarchyExtension"
+            ]
+        }
     },
     "templates": {
         "default": {
@@ -13,63 +100,7 @@
         }
     },
     "source": {
-        "include": [
-            "src/Core/MainLoop.js",
-            "src/Core/TileMesh.js",
-            "src/Core/View.js",
-            "src/Core/Feature.js",
-            "src/Core/Geographic/Coordinates.js",
-            "src/Core/Geographic/Extent.js",
-            "src/Core/Prefab/GlobeView.js",
-            "src/Core/Prefab/Globe/GlobeLayer.js",
-            "src/Core/Prefab/Planar/PlanarLayer.js",
-            "src/Core/Scheduler/Cache.js",
-            "src/Core/Scheduler/Scheduler.js",
-
-            "src/Layer/Layer.js",
-            "src/Layer/ColorLayer.js",
-            "src/Layer/ElevationLayer.js",
-            "src/Layer/GeometryLayer.js",
-            "src/Layer/TiledGeometryLayer.js",
-            "src/Layer/InfoLayer.js",
-            "src/Layer/OrientedImageLayer.js",
-
-            "src/Source/Source.js",
-            "src/Source/WMTSSource.js",
-            "src/Source/WMSSource.js",
-            "src/Source/WFSSource.js",
-            "src/Source/TMSSource.js",
-            "src/Source/FileSource.js",
-            "src/Source/OrientedImageSource.js",
-
-            "src/Provider/URLBuilder.js",
-            "src/Provider/Fetcher.js",
-            "src/Provider/3dTilesProvider.js",
-
-            "src/Parser/GeoJsonParser.js",
-            "src/Parser/GpxParser.js",
-            "src/Parser/VectorTileParser.js",
-            "src/Parser/CameraCalibrationParser.js",
-            "src/Parser/B3dmParser.js",
-            "src/Parser/BatchTableParser.js",
-            "src/Parser/BatchTableHierarchyExtensionParser.js",
-            "src/Parser/ShapefileParser.js",
-
-            "src/Renderer/OrientedImageMaterial.js",
-            "src/Renderer/ColorLayersOrdering.js",
-            "src/Renderer/OBB.js",
-            "src/Renderer/OrientedImageCamera.js",
-
-            "src/Controls/GlobeControls.js",
-            "src/Controls/StateControl.js",
-            "src/Controls/PlanarControls.js",
-            "src/Controls/FirstPersonControls.js",
-            "src/Controls/StreetControls.js",
-
-            "src/Converter/Feature2Mesh.js",
-
-            "src/Utils/CameraUtils.js",
-            "src/Utils/OrientationUtils.js"
-        ]
+        "include": [ "src" ],
+        "exclude": [ "src/ThreeExtended" ]
     }
 }
