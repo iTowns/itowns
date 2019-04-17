@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import Coordinates, { crsIsGeographic, assertCrsIsValid, reasonnableEpsilonForCRS, is4326 } from 'Core/Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
+import CRS from 'Core/Geographic/Crs';
 import Projection from 'Core/Geographic/Projection';
 
 /**
@@ -115,7 +116,7 @@ class Extent {
      * @return {Extent}
      */
     as(crs, target) {
-        assertCrsIsValid(crs);
+        CRS.isValid(crs);
         if (this.isTiledCrs()) {
             if (this.crs == 'WMTS:PM' || this.crs == 'TMS') {
                 if (!target) {
@@ -178,7 +179,7 @@ class Extent {
         if (!target) {
             target = new Extent('EPSG:4326', [0, 0, 0, 0]);
         }
-        if (this.crs != crs && !(is4326(this.crs) && is4326(crs))) {
+        if (this.crs != crs && !(CRS.is4326(this.crs) && CRS.is4326(crs))) {
             // Compute min/max in x/y by projecting 8 cardinal points,
             // and then taking the min/max of each coordinates.
             const center = this.center(_c);
@@ -291,7 +292,7 @@ class Extent {
     isPointInside(coord, epsilon = 0) {
         const c = (this.crs == coord.crs) ? coord : coord.as(this.crs, _c);
         // TODO this ignores altitude
-        if (crsIsGeographic(this.crs)) {
+        if (CRS.isGeographic(this.crs)) {
             return c.longitude() <= this.east + epsilon &&
                    c.longitude() >= this.west - epsilon &&
                    c.latitude() <= this.north + epsilon &&
@@ -326,7 +327,7 @@ class Extent {
             }
         } else {
             extent.as(this.crs, _extent);
-            epsilon = epsilon == undefined ? reasonnableEpsilonForCRS(this.crs) : epsilon;
+            epsilon = epsilon == undefined ? CRS.reasonnableEpsilon(this.crs) : epsilon;
             return this.east - _extent.east <= epsilon &&
                    _extent.west - this.west <= epsilon &&
                    this.north - _extent.north <= epsilon &&

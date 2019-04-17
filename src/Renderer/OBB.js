@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import TileGeometry from 'Core/TileGeometry';
 import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
-import Coordinates, { crsIsGeocentric } from 'Core/Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
+import CRS from 'Core/Geographic/Crs';
 
 // get oriented bounding box of tile
 const builder = new BuilderEllipsoidTile();
@@ -138,7 +139,7 @@ class OBB extends THREE.Object3D {
             this.position.copy(position);
             this.quaternion.copy(quaternion);
             this.updateMatrixWorld(true);
-        } else if (!extent.isTiledCrs() && crsIsGeocentric(extent.crs)) {
+        } else if (!extent.isTiledCrs() && CRS.isMetricUnit(extent.crs)) {
             extent.center(coord).xyz(this.position);
             extent.dimensions(dimension);
             size.set(dimension.x, dimension.y, Math.abs(maxHeight - minHeight));

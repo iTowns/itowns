@@ -21,6 +21,7 @@
 
             "Geographic": [
                 "Coordinates",
+                "CRS",
                 "Extent",
                 "OrientationUtils",
                 "OBB"

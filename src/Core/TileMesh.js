@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import OGCWebServiceHelper from 'Provider/OGCWebServiceHelper';
-import { is4326 } from 'Core/Geographic/Coordinates';
+import CRS from 'Core/Geographic/Crs';
 
 /**
  * A TileMesh is a THREE.Mesh with a geometricError and an OBB
@@ -77,8 +77,8 @@ class TileMesh extends THREE.Mesh {
             }
         } else if (source.isTMSSource) {
             // Special globe case: use the P(seudo)M(ercator) coordinates
-            if (is4326(this.extent.crs) &&
-                    (source.extent.crs == 'EPSG:3857' || is4326(source.extent.crs))) {
+            if (CRS.is4326(this.extent.crs) &&
+                    (source.extent.crs == 'EPSG:3857' || CRS.is4326(source.extent.crs))) {
                 OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, 'PM');
                 return this.wmtsCoords.PM;
             } else {
