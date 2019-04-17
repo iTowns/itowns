@@ -1,18 +1,13 @@
-import * as THREE from 'three';
+import { Vector2, Vector3 } from 'three';
 import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { worldDimension3857 } from 'Core/Geographic/Extent';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 
 const VectorTileFeature = { types: ['Unknown', 'Point', 'LineString', 'Polygon'] };
-// EPSG:3857
-// WGS84 bounds [-180.0, -85.06, 180.0, 85.06] (https://epsg.io/3857)
-const coord = new Coordinates('EPSG:4326', 180, 85.06);
-coord.as('EPSG:3857', coord);
-// Get bound dimension in 'EPSG:3857'
-const globalExtent = new THREE.Vector3(coord.x() * 2, coord.y() * 2, 1);
-const lastPoint = new THREE.Vector2();
-const firstPoint = new THREE.Vector2();
+const globalExtent = new Vector3(worldDimension3857.x, worldDimension3857.y, 1);
+const lastPoint = new Vector2();
+const firstPoint = new Vector2();
 
 
 // Classify option, it allows to classify a full polygon and its holes.
