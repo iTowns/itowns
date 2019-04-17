@@ -14,9 +14,9 @@ const projectionCache = {};
 const dimension = new THREE.Vector2();
 
 export const ellipsoidSizes = {
-    x: 6378137,
-    y: 6378137,
-    z: 6356752.3142451793,
+    x: proj4.WGS84.a,
+    y: proj4.WGS84.a,
+    z: proj4.WGS84.b,
 };
 
 const ellipsoid = new Ellipsoid(ellipsoidSizes);
