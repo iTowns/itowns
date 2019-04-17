@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import Coordinates from 'Core/Geographic/Coordinates';
-import { FeatureCollection } from 'Core/Feature';
+import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 
 const VectorTileFeature = { types: ['Unknown', 'Point', 'LineString', 'Polygon'] };
 // EPSG:3857
@@ -11,8 +11,19 @@ const coord = new Coordinates('EPSG:4326', 180, 85.06);
 coord.as('EPSG:3857', coord);
 // Get bound dimension in 'EPSG:3857'
 const globalExtent = new THREE.Vector3(coord.x() * 2, coord.y() * 2, 1);
+const lastPoint = new THREE.Vector2();
+const firstPoint = new THREE.Vector2();
 
-function vtFeatureToFeatureGeometry(vtFeature, geometry) {
+
+// Classify option, it allows to classify a full polygon and its holes.
+// Each polygon with its holes are in one FeatureGeometry.
+// A polygon is determined by its clockwise direction and the holes are in the opposite direction.
+// Clockwise direction is determined by Shoelace formula https://en.wikipedia.org/wiki/Shoelace_formula
+// Draw polygon with canvas doesn't need to classify however it is necessary for meshs.
+function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
+    let geometry = feature.bindNewGeometry();
+    classify = classify && (feature.type === FEATURE_TYPES.POLYGON);
+
     geometry.properties = vtFeature.properties;
     const pbf = vtFeature._pbf;
     pbf.pos = vtFeature._geometry;
@@ -23,7 +34,8 @@ function vtFeatureToFeatureGeometry(vtFeature, geometry) {
     let x = 0;
     let y = 0;
     let count = 0;
-    let firstPoint;
+    let sum = 0;
+
     while (pbf.pos < end) {
         if (length <= 0) {
             const cmdLen = pbf.readVarint();
@@ -37,23 +49,35 @@ function vtFeatureToFeatureGeometry(vtFeature, geometry) {
             x += pbf.readSVarint();
             y += pbf.readSVarint();
 
-            if (cmd === 1) { // moveTo
+            if (cmd === 1) {
                 if (count) {
+                    if (classify && sum > 0 && geometry.indices.length > 0) {
+                        feature.updateExtent(geometry);
+                        geometry = feature.bindNewGeometry();
+                        geometry.properties = vtFeature.properties;
+                    }
                     geometry.closeSubGeometry(count);
+                    geometry.getLastSubGeometry().ccw = sum < 0;
                 }
                 count = 0;
-                firstPoint = undefined;
+                sum = 0;
             }
             count++;
             geometry.pushCoordinatesValues(x, y);
             if (count == 1) {
-                firstPoint = [x, y];
+                firstPoint.set(x, y);
+                lastPoint.set(x, y);
+            } else if (classify && count > 1) {
+                sum += (lastPoint.x - x) * (lastPoint.y + y);
+                lastPoint.set(x, y);
             }
         } else if (cmd === 7) {
-            if (count && firstPoint) {
+            if (count) {
                 count++;
-                geometry.pushCoordinatesValues(firstPoint[0], firstPoint[1]);
-                firstPoint = undefined;
+                geometry.pushCoordinatesValues(firstPoint.x, firstPoint.y);
+                if (classify) {
+                    sum += (lastPoint.x - firstPoint.x) * (lastPoint.y + firstPoint.y);
+                }
             }
         } else {
             throw new Error(`unknown command ${cmd}`);
@@ -61,16 +85,17 @@ function vtFeatureToFeatureGeometry(vtFeature, geometry) {
     }
 
     if (count) {
+        if (classify && sum > 0 && geometry.indices.length > 0) {
+            feature.updateExtent(geometry);
+            geometry = feature.bindNewGeometry();
+            geometry.properties = vtFeature.properties;
+        }
         geometry.closeSubGeometry(count);
+        geometry.getLastSubGeometry().ccw = sum < 0;
     }
-}
-
-function vtFeatureToFeature(vtFeature, features) {
-    const feature = features.getFeatureByType(vtFeature.type - 1);
-    const geometry = feature.bindNewGeometry();
-    vtFeatureToFeatureGeometry(vtFeature, geometry);
     feature.updateExtent(geometry);
 }
+
 const defaultFilter = () => true;
 function readPBF(file, options) {
     const vectorTile = new VectorTile(new Protobuf(file));
@@ -91,6 +116,8 @@ function readPBF(file, options) {
 
     options.buildExtent = true;
     options.mergeFeatures = true;
+    options.withAltitude = false;
+    options.withNormal = false;
 
     const features = new FeatureCollection('EPSG:3857', options);
     features.filter = options.filter || defaultFilter;
@@ -108,15 +135,15 @@ function readPBF(file, options) {
             const type = VectorTileFeature.types[vtFeature.type];
             vtFeature.properties.vt_layer = layer.name;
             if (features.filter(vtFeature.properties, { type })) {
-                vtFeatureToFeature(vtFeature, features);
+                const feature = features.getFeatureByType(vtFeature.type - 1);
+                vtFeatureToFeatureGeometry(vtFeature, feature);
             }
         }
     });
 
     features.removeEmptyFeature();
     features.updateExtent();
-
-    features.extent.zoom = extentSource.zoom;
+    features.extent = extentSource;
     return Promise.resolve(features);
 }
 

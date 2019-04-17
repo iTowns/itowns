@@ -12,6 +12,8 @@ function _extendBuffer(feature, size) {
     }
 }
 
+const defaultNormal = new THREE.Vector3(0, 0, 1);
+
 /**
  * @property {Extent} extent - The 2D extent containing all the points
  * composing the geometry.
@@ -69,6 +71,11 @@ class FeatureGeometry {
             this._currentExtent = defaultExtent(this._feature.crs);
         }
     }
+
+    getLastSubGeometry() {
+        const last = this.indices.length - 1;
+        return this.indices[last];
+    }
     /**
      * Push new coordinates in vertices buffer.
      * @param {Coordinates} coord The coordinates to push.
@@ -94,9 +101,14 @@ class FeatureGeometry {
     *
     * @param {number} long The longitude coordinate.
     * @param {number} lat The latitude coordinate.
-    * @param {number} alt The altitude coordinate.
+    * @param {number} [alt=0] The altitude coordinate.
+    * @param {THREE.Vector3} [normal=THREE.Vector3(0,0,1)] the normal on coordinates.
     */
-    pushCoordinatesValues(long, lat, alt) {
+    pushCoordinatesValues(long, lat, alt = 0, normal = defaultNormal) {
+        if (this._feature.normals) {
+            normal.toArray(this._feature.normals, this._feature._pos);
+        }
+
         this._feature._pushValues(this._feature, long, lat, alt);
         // expand extent if present
         if (this._currentExtent) {
@@ -129,7 +141,7 @@ function push2DValues(feature, value0, value1) {
     feature.vertices[feature._pos++] = value1;
 }
 
-function push3DValues(feature, value0, value1, value2) {
+function push3DValues(feature, value0, value1, value2 = 0) {
     feature.vertices[feature._pos++] = value0;
     feature.vertices[feature._pos++] = value1;
     feature.vertices[feature._pos++] = value2;
@@ -137,8 +149,8 @@ function push3DValues(feature, value0, value1, value2) {
 
 export const FEATURE_TYPES = {
     POINT: 0,
-    POLYGON: 1,
-    LINE: 2,
+    LINE: 1,
+    POLYGON: 2,
 };
 
 /**
