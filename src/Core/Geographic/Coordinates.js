@@ -7,8 +7,7 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
 import Ellipsoid from 'Core/Math/Ellipsoid';
-
-proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
+import CRS from 'Core/Geographic/Crs';
 
 const projectionCache = {};
 const dimension = new THREE.Vector2();
@@ -21,71 +20,14 @@ export const ellipsoidSizes = {
 
 const ellipsoid = new Ellipsoid(ellipsoidSizes);
 
-export const UNIT = {
-    DEGREE: 1,
-    METER: 2,
-};
-
-function _unitFromProj4Unit(projunit) {
-    if (projunit === 'degrees') {
-        return UNIT.DEGREE;
-    } else if (projunit === 'm') {
-        return UNIT.METER;
-    } else {
-        return undefined;
-    }
-}
-
-export function crsToUnit(crs) {
-    switch (crs) {
-        case 'EPSG:4326' : return UNIT.DEGREE;
-        case 'EPSG:4978' : return UNIT.METER;
-        default: {
-            const p = proj4.defs(crs);
-            if (!p) {
-                return undefined;
-            }
-            return _unitFromProj4Unit(p.units);
-        }
-    }
-}
-
-export function reasonnableEpsilonForCRS(crs) {
-    if (is4326(crs)) {
-        return 0.01;
-    } else {
-        return 0.001;
-    }
-}
-
-function _crsToUnitWithError(crs) {
-    const u = crsToUnit(crs);
-    if (crs === undefined || u === undefined) {
-        throw new Error(`Invalid crs paramater value '${crs}'`);
-    }
-    return u;
-}
-
-export function assertCrsIsValid(crs) {
-    _crsToUnitWithError(crs);
-}
-
-export function crsIsGeographic(crs) {
-    return (_crsToUnitWithError(crs) != UNIT.METER);
-}
-
-export function crsIsGeocentric(crs) {
-    return (_crsToUnitWithError(crs) == UNIT.METER);
-}
-
 function _assertIsGeographic(crs) {
-    if (!crsIsGeographic(crs)) {
+    if (!CRS.isGeographic(crs)) {
         throw new Error(`Can't query crs ${crs} long/lat`);
     }
 }
 
-function _assertIsGeocentric(crs) {
-    if (!crsIsGeocentric(crs)) {
+function _assertIsMetric(crs) {
+    if (!CRS.isMetricUnit(crs)) {
         throw new Error(`Can't query crs ${crs} x/y/z`);
     }
 }
@@ -104,10 +46,6 @@ function instanceProj4(crsIn, crsOut) {
     return p;
 }
 
-export function is4326(crs) {
-    return crs.indexOf('EPSG:4326') == 0;
-}
-
 // Only support explicit conversions
 const cartesian = new THREE.Vector3();
 function _convert(coordsIn, newCrs, target) {
@@ -115,7 +53,7 @@ function _convert(coordsIn, newCrs, target) {
     if (newCrs === coordsIn.crs) {
         return target.copy(coordsIn);
     } else {
-        if (is4326(coordsIn.crs) && newCrs === 'EPSG:4978') {
+        if (CRS.is4326(coordsIn.crs) && newCrs === 'EPSG:4978') {
             ellipsoid.cartographicToCartesian(coordsIn, cartesian);
             target.set(newCrs, cartesian);
             target._normal = coordsIn._normal;
@@ -123,7 +61,7 @@ function _convert(coordsIn, newCrs, target) {
             return target;
         }
 
-        if (coordsIn.crs === 'EPSG:4978' && is4326(newCrs)) {
+        if (coordsIn.crs === 'EPSG:4978' && CRS.is4326(newCrs)) {
             ellipsoid.cartesianToCartographic({
                 x: coordsIn._values[0],
                 y: coordsIn._values[1],
@@ -149,7 +87,7 @@ function _convert(coordsIn, newCrs, target) {
                 const p = instanceProj4(target.crs, newCrs).forward([target._values[0], target._values[1]]);
                 target.set(newCrs, p[0], p[1], target._values[2]);
                 return target;
-            } else if (is4326(crsIn) && newCrs == 'EPSG:3857') {
+            } else if (CRS.is4326(crsIn) && newCrs == 'EPSG:3857') {
                 val1 = THREE.Math.clamp(val1, -89.999999, 89.999999);
                 const p = instanceProj4(crsIn, newCrs).forward([val0, val1]);
                 return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
@@ -204,7 +142,7 @@ const planarNormal = new THREE.Vector3(0, 0, 1);
 
 function computeGeodesicNormal(coord) {
     coord._normalNeedsUpdate = false;
-    if (is4326(coord.crs)) {
+    if (CRS.is4326(coord.crs)) {
         return ellipsoid.geodeticSurfaceNormalCartographic(coord, coord._normal);
     }
     // In globe mode (EPSG:4978), we compute the normal.
@@ -217,7 +155,7 @@ function computeGeodesicNormal(coord) {
 }
 
 Coordinates.prototype.set = function set(crs, ...coordinates) {
-    _crsToUnitWithError(crs);
+    CRS.isValid(crs);
     this.crs = crs;
 
     if (coordinates.length == 1 && coordinates[0].isVector3) {
@@ -361,7 +299,7 @@ Coordinates.prototype.setAltitude = function setAltitude(altitude) {
  */
 
 Coordinates.prototype.x = function x() {
-    _assertIsGeocentric(this.crs);
+    _assertIsMetric(this.crs);
     return this._values[0];
 };
 
@@ -386,7 +324,7 @@ Coordinates.prototype.x = function x() {
  */
 
 Coordinates.prototype.y = function y() {
-    _assertIsGeocentric(this.crs);
+    _assertIsMetric(this.crs);
     return this._values[1];
 };
 
@@ -411,7 +349,7 @@ Coordinates.prototype.y = function y() {
  */
 
 Coordinates.prototype.z = function z() {
-    _assertIsGeocentric(this.crs);
+    _assertIsMetric(this.crs);
     return this._values[2];
 };
 
@@ -442,7 +380,7 @@ Coordinates.prototype.z = function z() {
  */
 
 Coordinates.prototype.xyz = function xyz(target) {
-    _assertIsGeocentric(this.crs);
+    _assertIsMetric(this.crs);
     const v = target || new THREE.Vector3();
     v.fromArray(this._values);
     return v;
@@ -475,7 +413,7 @@ Coordinates.prototype.xyz = function xyz(target) {
  */
 
 Coordinates.prototype.as = function as(crs, target) {
-    if (crs === undefined || crsToUnit(crs) === undefined) {
+    if (crs === undefined || CRS.toUnit(crs) === undefined) {
         throw new Error(`Invalid crs paramater value '${crs}'`);
     }
     return _convert(this, crs, target);
@@ -495,8 +433,8 @@ Coordinates.prototype.offsetInExtent = function offsetInExtent(extent, target) {
 
     extent.dimensions(dimension);
 
-    const x = crsIsGeocentric(this.crs) ? this.x() : this.longitude();
-    const y = crsIsGeocentric(this.crs) ? this.y() : this.latitude();
+    const x = CRS.isGeographic(this.crs) ? this.longitude() : this.x();
+    const y = CRS.isGeographic(this.crs) ? this.latitude() : this.y();
 
     const originX = (x - extent.west) / dimension.x;
     const originY = (extent.north - y) / dimension.y;
