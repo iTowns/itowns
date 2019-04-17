@@ -125,10 +125,10 @@ describe('Extent', function () {
 
     it('should convert extent WMTS:PM to EPSG:3857 like expected', function () {
         const withValues = new Extent('WMTS:PM', 0, 0, 0).as('EPSG:3857');
-        assert.equal(-20037508.342789244, withValues.west);
-        assert.equal(20037508.342789244, withValues.east);
-        assert.equal(-20048966.104014594, withValues.south);
-        assert.equal(20048966.104014594, withValues.north);
+        assert.equal(-20026376.39, withValues.west);
+        assert.equal(20026376.39, withValues.east);
+        assert.equal(-20048966.1, withValues.south);
+        assert.equal(20048966.1, withValues.north);
     });
 
     it('should convert extent WMTS:PM to EPSG:4326 like expected', function () {

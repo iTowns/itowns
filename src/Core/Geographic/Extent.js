@@ -40,15 +40,12 @@ cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
 cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
 cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
 
+const _c = new Coordinates('EPSG:4326', 0, 0);
 // EPSG:3857
-// WGS84 bounds [-180.0, -85.06, 180.0, 85.06] (https://epsg.io/3857)
+// WGS84 bounds [-20026376.39 -20048966.10 20026376.39 20048966.10] (https://epsg.io/3857)
 // Warning, some tiled source don't exactly match the same bound
 // It should be taken into account
-const _c = new Coordinates('EPSG:4326', 180, 85.06);
-_c.as('EPSG:3857', _c);
-// Get bound dimension in 'EPSG:3857'
-const sizeX = _c._values[0] * 2;
-const sizeY = _c._values[1] * 2;
+export const worldDimension3857 = { x: 20026376.39 * 2, y: 20048966.10 * 2 };
 
 class Extent {
     /**
@@ -134,10 +131,10 @@ class Extent {
 
                 // convert to EPSG:3857
                 if (crs == 'EPSG:3857') {
-                    const west = (0.5 - sizeRow * (nbCol - this.col)) * sizeX;
-                    const east = west + sizeRow * sizeX;
-                    const south = (0.5 - Ys) * sizeY;
-                    const north = (0.5 - Yn) * sizeY;
+                    const west = (0.5 - sizeRow * (nbCol - this.col)) * worldDimension3857.x;
+                    const east = west + sizeRow * worldDimension3857.x;
+                    const south = (0.5 - Ys) * worldDimension3857.y;
+                    const north = (0.5 - Yn) * worldDimension3857.y;
                     target.set(west, east, south, north);
                     target.crs = 'EPSG:3857';
                     return target.as(crs, target);
