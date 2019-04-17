@@ -35,16 +35,19 @@
     <?js } ?>
 
     <?js if (content.kind === 'class') { ?>
+        <hr class="title-divider"/>
         <h2>Constructor</h2>
         <?js= self.partial('method.tmpl', content) ?>
     <?js } ?>
 
     <?js if (content.examples && content.examples.length) { ?>
+        <hr class="title-divider"/>
         <h2>Example</h2>
         <?js= self.partial('examples.tmpl', content.examples) ?>
     <?js } ?>
 
     <?js if (content.properties && content.properties.length) { ?>
+        <hr class="title-divider"/>
         <h2>Properties</h2>
         <?js content.properties.forEach(function(property, i) { ?>
             <?js= self.partial('property.tmpl', property) ?>
@@ -56,6 +59,7 @@
         var methods = self.find({kind: 'function', scope: 'instance', memberof: content.longname});
         if (methods && methods.length) {
     ?>
+        <hr class="title-divider"/>
         <h2>Methods</h2>
         <?js methods.forEach(function(method, i) { ?>
             <?js= self.partial('method.tmpl', method) ?>
@@ -67,6 +71,7 @@
         var statics = self.find({kind: 'function', scope: 'static', memberof: content.longname});
         if (statics && statics.length) {
     ?>
+        <hr class="title-divider"/>
         <h2>Static Methods</h2>
         <?js statics.forEach(function(static, i) { ?>
             <?js= self.partial('method.tmpl', static) ?>
@@ -78,6 +83,7 @@
         var typedefs = self.find({kind: 'typedef', memberof: content.longname });
         if (typedefs && typedefs.length) {
     ?>
+        <hr class="title-divider"/>
         <h2>Types</h2>
         <?js typedefs.forEach(function(typedef, i) { ?>
             <?js= self.partial('typedef.tmpl', typedef) ?>
@@ -89,6 +95,7 @@
         var events = self.find({kind: 'event', memberof: content.longname });
         if (events && events.length) {
     ?>
+        <hr class="title-divider"/>
         <h2>Events</h2>
         <?js events.forEach(function(event, i) { ?>
             <?js= self.partial('events.tmpl', event) ?>
