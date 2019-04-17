@@ -131,13 +131,17 @@ const pointMaterial = new THREE.PointsMaterial();
 function featureToPoint(feature, options) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
-    const vertices = new Float32Array(ptsIn.length);
     const colors = new Uint8Array(ptsIn.length);
-
     const batchIds = options.batchId ?  new Uint32Array(ptsIn.length / 3) : undefined;
     let featureId = 0;
 
-    coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
+    let vertices;
+    if (options.altitude !== 0) {
+        vertices = new Float32Array(ptsIn.length);
+        coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
+    } else {
+        vertices = new Float32Array(ptsIn);
+    }
 
     for (const geometry of feature.geometry) {
         const color = getProperty('color', options, randomColor, geometry.properties);
@@ -164,14 +168,19 @@ var lineMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColor
 function featureToLine(feature, options) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
-    const vertices = new Float32Array(ptsIn.length);
     const colors = new Uint8Array(ptsIn.length);
     const count = ptsIn.length / 3;
 
     const batchIds = options.batchId ?  new Uint32Array(count) : undefined;
     let featureId = 0;
 
-    coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
+    let vertices;
+    if (options.altitude !== 0) {
+        vertices = new Float32Array(ptsIn.length);
+        coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
+    } else {
+        vertices = new Float32Array(ptsIn);
+    }
     const geom = new THREE.BufferGeometry();
     geom.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
 
@@ -210,7 +219,7 @@ function featureToLine(feature, options) {
         geom.setIndex(new THREE.BufferAttribute(indices, 1));
         return new THREE.LineSegments(geom, lineMaterial);
     } else {
-        const color = getProperty('color', options, randomColor, feature.geometry.properties);
+        const color = getProperty('color', options, randomColor, feature.geometry[0].properties);
         fillColorArray(colors, count, color);
         geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         if (batchIds) {
@@ -227,7 +236,7 @@ const material = new THREE.MeshBasicMaterial();
 function featureToPolygon(feature, options) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
-    const vertices = new Float32Array(ptsIn.length);
+    const vertices = new Float32Array(ptsIn);
     const colors = new Uint8Array(ptsIn.length);
     const indices = [];
     vertices.minAltitude = Infinity;
@@ -236,21 +245,20 @@ function featureToPolygon(feature, options) {
     let featureId = 0;
 
     for (const geometry of feature.geometry) {
-        const altitude = getProperty('altitude', options, 0, geometry.properties);
-        const color = getProperty('color', options, randomColor, geometry.properties);
-
         const start = geometry.indices[0].offset;
         // To avoid integer overflow with indice value (16 bits)
         if (start > 0xffff) {
             console.warn('Feature to Polygon: integer overflow, too many points in polygons');
             break;
         }
-
+        const color = getProperty('color', options, randomColor, geometry.properties);
         const lastIndice = geometry.indices.slice(-1)[0];
         const end = lastIndice.offset + lastIndice.count;
         const count = end - start;
-
-        coordinatesToVertices(ptsIn, normals, vertices, altitude, 0, start, count);
+        const altitude = getProperty('altitude', options, 0, geometry.properties);
+        if (altitude !== 0) {
+            coordinatesToVertices(ptsIn, normals, vertices, altitude, 0, start, count);
+        }
         fillColorArray(colors, count, color, start);
 
         const geomVertices = vertices.slice(start * 3, end * 3);
