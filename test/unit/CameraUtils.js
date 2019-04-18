@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import assert from 'assert';
-import Coordinates, { ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
 import Ellipsoid from 'Core//Math/Ellipsoid';
 import CameraUtils from 'Utils/CameraUtils';
 import DEMUtils from 'Utils/DEMUtils';
@@ -11,7 +11,7 @@ DEMUtils.getElevationValueAt = () => ({ z: 0 });
 
 const raycaster = new THREE.Raycaster();
 const center = new THREE.Vector2();
-const ellipsoid = new Ellipsoid(ellipsoidSizes);
+const ellipsoid = new Ellipsoid();
 
 function pickEllipsoid(camera) {
     raycaster.setFromCamera(center, camera);

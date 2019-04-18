@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import TWEEN from '@tweenjs/tween.js';
 import DEMUtils from 'Utils/DEMUtils';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
-import Coordinates, { ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 
 THREE.Object3D.DefaultUp.set(0, 0, 1);
 const targetPosition = new THREE.Vector3();
 const targetCoord = new Coordinates('EPSG:4326', 0, 0, 0);
-const ellipsoid = new Ellipsoid(ellipsoidSizes);
+const ellipsoid = new Ellipsoid();
 const rigs = [];
 
 const deferred = () => {

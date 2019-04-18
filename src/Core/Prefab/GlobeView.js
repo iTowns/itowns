@@ -8,7 +8,8 @@ import GlobeControls from 'Controls/GlobeControls';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
 
-import Coordinates, { ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
+import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.

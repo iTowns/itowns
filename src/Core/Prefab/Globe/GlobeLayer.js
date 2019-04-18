@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
-import { ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 import Extent from 'Core/Geographic/Extent';
 import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
 import { SIZE_DIAGONAL_TEXTURE } from 'Provider/OGCWebServiceHelper';
