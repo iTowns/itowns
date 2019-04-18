@@ -444,22 +444,4 @@ Coordinates.prototype.offsetInExtent = function offsetInExtent(extent, target) {
     return target;
 };
 
-export const C = {
-
-    /**
-     * Return a Coordinates object from a position object. The object just
-     * needs to have x, y, z properties.
-     *
-     * @param {string} crs - The crs of the original position
-     * @param {Object} position - the position to transform
-     * @param {number} position.x - the x component of the position
-     * @param {number} position.y - the y component of the position
-     * @param {number} position.z - the z component of the position
-     * @return {Coordinates}
-     */
-    EPSG_4326: function EPSG_4326(...args) {
-        return new Coordinates('EPSG:4326', ...args);
-    },
-};
-
 export default Coordinates;

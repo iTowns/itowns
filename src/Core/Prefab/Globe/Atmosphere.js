@@ -7,7 +7,7 @@
 
 import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
-import { C, ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import Coordinates, { ellipsoidSizes } from 'Core/Geographic/Coordinates';
 import CoordStars from 'Core/Geographic/CoordStars';
 import Sky from './SkyShader';
 import skyFS from './Shaders/skyFS.glsl';
@@ -20,8 +20,8 @@ import GlowVS from './Shaders/GlowVS.glsl';
 const LIGHTING_POSITION = new THREE.Vector3(1, 0, 0);
 const v = new THREE.Vector3();
 
-const coordCam = new C.EPSG_4326();
-const coordGeoCam = new C.EPSG_4326();
+const coordCam = new Coordinates('EPSG:4326');
+const coordGeoCam = new Coordinates('EPSG:4326');
 const skyBaseColor = new THREE.Color(0x93d5f8);
 const colorSky = new THREE.Color();
 const spaceColor = new THREE.Color(0x030508);
