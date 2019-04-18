@@ -8,7 +8,7 @@ import GlobeControls from 'Controls/GlobeControls';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
 
-import Coordinates, { C, ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import Coordinates, { ellipsoidSizes } from 'Core/Geographic/Coordinates';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -100,7 +100,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     if (coordCarto instanceof Coordinates) {
         positionCamera = coordCarto.as('EPSG:4326');
     } else {
-        positionCamera = new C.EPSG_4326(
+        positionCamera = new Coordinates('EPSG:4326',
             coordCarto.longitude,
             coordCarto.latitude,
             coordCarto.altitude);
