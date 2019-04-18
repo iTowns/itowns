@@ -1,9 +1,9 @@
 // Geographic tools
 export { default as Extent } from 'Core/Geographic/Extent';
-export { default as Coordinates, ellipsoidSizes } from 'Core/Geographic/Coordinates';
+export { default as Coordinates } from 'Core/Geographic/Coordinates';
 export { default as CRS } from 'Core/Geographic/Crs';
 
-export { default as Ellipsoid } from 'Core/Math/Ellipsoid';
+export { default as Ellipsoid, ellipsoidSizes } from 'Core/Math/Ellipsoid';
 export { default as GlobeView, GLOBE_VIEW_EVENTS, createGlobeLayer } from 'Core/Prefab/GlobeView';
 export { default as PlanarView, createPlanarLayer } from 'Core/Prefab/PlanarView';
 export { default as Fetcher } from 'Provider/Fetcher';

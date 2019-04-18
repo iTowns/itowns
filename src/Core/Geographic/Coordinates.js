@@ -12,13 +12,7 @@ import CRS from 'Core/Geographic/Crs';
 const projectionCache = {};
 const dimension = new THREE.Vector2();
 
-export const ellipsoidSizes = {
-    x: proj4.WGS84.a,
-    y: proj4.WGS84.a,
-    z: proj4.WGS84.b,
-};
-
-const ellipsoid = new Ellipsoid(ellipsoidSizes);
+const ellipsoid = new Ellipsoid();
 
 function _assertIsGeographic(crs) {
     if (!CRS.isGeographic(crs)) {

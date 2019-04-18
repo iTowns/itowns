@@ -1,7 +1,8 @@
 /* globals window */
 import * as THREE from 'three';
 import AnimationPlayer, { Animation } from 'Core/AnimationPlayer';
-import Coordinates, { ellipsoidSizes } from 'Core/Geographic/Coordinates';
+import Coordinates from 'Core/Geographic/Coordinates';
+import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 import CameraUtils from 'Utils/CameraUtils';
 import StateControl from 'Controls/StateControl';
 
