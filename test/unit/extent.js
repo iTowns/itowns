@@ -74,13 +74,25 @@ describe('Extent', function () {
         assert.equal(subdivided.length, 4);
 
         // NW
-        assert.deepStrictEqual(subdivided[0]._values, new Float64Array([-10, 0, 0, 10]));
+        assert.strictEqual(subdivided[0].west, -10);
+        assert.strictEqual(subdivided[0].east, 0);
+        assert.strictEqual(subdivided[0].south, 0);
+        assert.strictEqual(subdivided[0].north, 10);
         // NE
-        assert.deepStrictEqual(subdivided[1]._values, new Float64Array([0, 10, 0, 10]));
+        assert.strictEqual(subdivided[1].west, 0);
+        assert.strictEqual(subdivided[1].east, 10);
+        assert.strictEqual(subdivided[1].south, 0);
+        assert.strictEqual(subdivided[1].north, 10);
         // SW
-        assert.deepStrictEqual(subdivided[2]._values, new Float64Array([-10, 0, -10, 0]));
+        assert.strictEqual(subdivided[2].west, -10);
+        assert.strictEqual(subdivided[2].east, 0);
+        assert.strictEqual(subdivided[2].south, -10);
+        assert.strictEqual(subdivided[2].north, 0);
         // SE
-        assert.deepStrictEqual(subdivided[3]._values, new Float64Array([0, 10, -10, 0]));
+        assert.strictEqual(subdivided[3].west, 0);
+        assert.strictEqual(subdivided[3].east, 10);
+        assert.strictEqual(subdivided[3].south, -10);
+        assert.strictEqual(subdivided[3].north, 0);
     });
 
     it('should return the correct dimension of the extent', function () {
