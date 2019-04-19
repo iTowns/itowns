@@ -8,13 +8,6 @@ import Projection from 'Core/Geographic/Projection';
  * It can use explicit coordinates (e.g: lon/lat) or implicit (WMTS coordinates)
  */
 
-const CARDINAL = {
-    WEST: 0,
-    EAST: 1,
-    SOUTH: 2,
-    NORTH: 3,
-};
-
 const _dim = new THREE.Vector2();
 const _dim2 = new THREE.Vector2();
 const r = { row: 0, col: 0, invDiff: 0 };
@@ -54,9 +47,11 @@ class Extent {
      * If crs is tiled projection (WMTS or TMS), the extent is defined by zoom, row and column.
      *
      * @param {String} crs projection of limit values.
-     * @param {number|Array.<number>|Coordinates|Object} v0 west value, zoom value, Array of values [west, east, south and north],
-     * Coordinates of west-south corner or object {west, east, south and north}
-     * @param {number|Coordinates} [v1] east value, row value or Coordinates of east-north corner
+     * @param {number|Array.<number>|Coordinates|Object} v0 west value, zoom
+     * value, Array of values [west, east, south and north], Coordinates of
+     * west-south corner or object {west, east, south and north}
+     * @param {number|Coordinates} [v1] east value, row value or Coordinates of
+     * east-north corner
      * @param {number} [v2] south value or column value
      * @param {number} [v3] north value
      */
@@ -64,29 +59,17 @@ class Extent {
         this.crs = crs;
 
         if (this.isTiledCrs()) {
-            if (v0 !== undefined) {
-                this.zoom = v0;
-                this.row = v1;
-                this.col = v2;
-
-                if (this.zoom < 0) {
-                    throw new Error('invlid WTMS values');
-                }
-            } else {
-                throw new Error('Unsupported constructor args');
-            }
-        } else if (v0 instanceof Coordinates) {
-            // seem never used
-            this._values = new Float64Array([v0._values[0], v1._values[0], v0._values[1], v1._values[1]]);
-        } else if (v0 && v0.west !== undefined) {
-            this._values = new Float64Array([v0.west, v0.east, v0.south, v0.north]);
-        } else if (v0 && v0.length == 4) {
-            this._values = new Float64Array(v0);
-        } else if (v0 !== undefined) {
-            this._values = new Float64Array([v0, v1, v2, v3]);
+            this.zoom = 0;
+            this.row = 0;
+            this.col = 0;
         } else {
-            throw new Error('Unsupported constructor args');
+            this.west = 0;
+            this.east = 0;
+            this.south = 0;
+            this.north = 0;
         }
+
+        this.set(v0, v1, v2, v3);
     }
 
     /**
@@ -97,7 +80,7 @@ class Extent {
         if (this.isTiledCrs()) {
             return new Extent(this.crs, this.zoom, this.row, this.col);
         } else {
-            return new Extent(this.crs, this._values);
+            return new Extent(this.crs, this.west, this.east, this.south, this.north);
         }
     }
 
@@ -218,38 +201,6 @@ class Extent {
     }
 
     /**
-     * Return the west value
-     * @return {number}
-     */
-    get west() {
-        return this._values[CARDINAL.WEST];
-    }
-
-    /**
-     * Return the east value
-     * @return {number}
-     */
-    get east() {
-        return this._values[CARDINAL.EAST];
-    }
-
-    /**
-     * Return the north value
-     * @return {number}
-     */
-    get north() {
-        return this._values[CARDINAL.NORTH];
-    }
-
-    /**
-    * Return the south value
-    * @return {number}
-    */
-    get south() {
-        return this._values[CARDINAL.SOUTH];
-    }
-
-    /**
      * Return the center of Extent
      * @param {Coordinates} target copy the center to the target.
      * @return {Coordinates}
@@ -260,9 +211,9 @@ class Extent {
         }
         this.dimensions(_dim);
         if (target) {
-            target.set(this.crs, this._values[0] + _dim.x * 0.5, this._values[2] + _dim.y * 0.5);
+            target.set(this.crs, this.west + _dim.x * 0.5, this.south + _dim.y * 0.5);
         } else {
-            target = new Coordinates(this.crs, this._values[0] + _dim.x * 0.5, this._values[2] + _dim.y * 0.5);
+            target = new Coordinates(this.crs, this.west + _dim.x * 0.5, this.south + _dim.y * 0.5);
         }
         return target;
     }
@@ -416,23 +367,55 @@ class Extent {
     /**
      * Set west, east, south and north values.
      * Or if tiled extent, set zoom, row and column values
-     * @param {number} v0 west or zoom value
-     * @param {number} v1 east or row value
-     * @param {number} v2 south or column value
-     * @param {number} v3 north value
+     *
+     * @param {number|Array.<number>|Coordinates|Object} v0 west value, zoom
+     * value, Array of values [west, east, south and north], Coordinates of
+     * west-south corner or object {west, east, south and north}
+     * @param {number|Coordinates} [v1] east value, row value or Coordinates of
+     * east-north corner
+     * @param {number} [v2] south value or column value
+     * @param {number} [v3] north value
+     *
      * @return {Extent}
      */
     set(v0, v1, v2, v3) {
         if (this.isTiledCrs()) {
-            this.zoom = v0;
-            this.row = v1;
-            this.col = v2;
+            if (v0 !== undefined) {
+                if (this.zoom < 0) {
+                    throw new Error('Invalid zoom value for tiled extent');
+                }
+
+                this.zoom = v0;
+                this.row = v1;
+                this.col = v2;
+            } else {
+                throw new Error('Invalid values to set');
+            }
+        } else if (v0 instanceof Coordinates) {
+            // seem never used
+            this.west = v0._values[0];
+            this.east = v1._values[0];
+            this.south = v0._values[1];
+            this.north = v1._values[1];
+        } else if (v0 && v0.west !== undefined) {
+            this.west = v0.west;
+            this.east = v0.east;
+            this.south = v0.south;
+            this.north = v0.north;
+        } else if (v0 && v0.length == 4) {
+            this.west = v0[0];
+            this.east = v0[1];
+            this.south = v0[2];
+            this.north = v0[3];
+        } else if (v0 !== undefined) {
+            this.west = v0;
+            this.east = v1;
+            this.south = v2;
+            this.north = v3;
         } else {
-            this._values[CARDINAL.WEST] = v0;
-            this._values[CARDINAL.EAST] = v1;
-            this._values[CARDINAL.SOUTH] = v2;
-            this._values[CARDINAL.NORTH] = v3;
+            throw new Error('No values to set in the extent');
         }
+
         return this;
     }
 
@@ -443,12 +426,7 @@ class Extent {
      */
     copy(extent) {
         this.crs = extent.crs;
-        if (this.isTiledCrs()) {
-            this.set(extent.zoom, extent.row, extent.col);
-        } else {
-            this.set(extent._values[0], extent._values[1], extent._values[2], extent._values[3]);
-        }
-        return this;
+        return this.set(extent);
     }
 
     /**
@@ -464,22 +442,22 @@ class Extent {
         } else {
             const west = extent.west;
             if (west < this.west) {
-                this._values[CARDINAL.WEST] = west;
+                this.west = west;
             }
 
             const east = extent.east;
             if (east > this.east) {
-                this._values[CARDINAL.EAST] = east;
+                this.east = east;
             }
 
             const south = extent.south;
             if (south < this.south) {
-                this._values[CARDINAL.SOUTH] = south;
+                this.south = south;
             }
 
             const north = extent.north;
             if (north > this.north) {
-                this._values[CARDINAL.NORTH] = north;
+                this.north = north;
             }
         }
     }
@@ -503,16 +481,16 @@ class Extent {
     */
     expandByValuesCoordinates(we, sn) {
         if (we < this.west) {
-            this._values[CARDINAL.WEST] = we;
+            this.west = we;
         }
         if (we > this.east) {
-            this._values[CARDINAL.EAST] = we;
+            this.east = we;
         }
         if (sn < this.south) {
-            this._values[CARDINAL.SOUTH] = sn;
+            this.south = sn;
         }
         if (sn > this.north) {
-            this._values[CARDINAL.NORTH] = sn;
+            this.north = sn;
         }
     }
 
@@ -581,19 +559,19 @@ class Extent {
     transformedCopy(t, s, extent) {
         if (!extent.isTiledCrs()) {
             this.crs = extent.crs;
-            this._values[0] = (extent._values[0] + t.x) * s.x;
-            this._values[1] = (extent._values[1] + t.x) * s.x;
-            if (this._values[0] > this._values[1]) {
-                const temp = this._values[0];
-                this._values[0] = this._values[1];
-                this._values[1] = temp;
+            this.west = (extent.west + t.x) * s.x;
+            this.east = (extent.east + t.x) * s.x;
+            if (this.west > this.east) {
+                const temp = this.west;
+                this.west = this.east;
+                this.east = temp;
             }
-            this._values[2] = (extent._values[2] + t.y) * s.y;
-            this._values[3] = (extent._values[3] + t.y) * s.y;
-            if (this._values[2] > this._values[3]) {
-                const temp = this._values[2];
-                this._values[2] = this._values[3];
-                this._values[3] = temp;
+            this.south = (extent.south + t.y) * s.y;
+            this.north = (extent.north + t.y) * s.y;
+            if (this.south > this.north) {
+                const temp = this.south;
+                this.south = this.north;
+                this.north = temp;
             }
         }
     }
