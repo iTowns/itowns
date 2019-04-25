@@ -48,7 +48,7 @@ Then tests can be ran with four differents methods:
 * `npm run test`: build and ran all tests in iTowns
 * `npm run test-unit`: ran unit tests only
 * `npm run test-functional`: ran functional testing with examples only, use
-  `node_modules/mocha/bin/mocha -t 30000 test/functional/bootstrap.js
+  `npx mocha -t 30000 test/functional/bootstrap.js
   test/functional/<test_case>.js` to run a single example
 * `npm run test-with-coverage`: build and ran all tests in iTowns and generate a
   report on the coverage of the tests
@@ -68,6 +68,17 @@ When running tests on examples, some environment variables can be set:
 Note: Chrome in headless mode doesn't support the WebGL `EXT_frag_depth`
 extension. So rendering may differ and some bugs can only be present in headless
 mode.
+
+### Useful commands for continuous testing
+
+If you wish to have unit tests to continuously run, you can append to your
+running command `-- --watch`. You will be getting in this case `npm run
+test-unit -- --watch`.
+
+If you want to work on a single test and debug it, without having all the extra
+output, you can use this command `npm run base-test-unit test/unit/3dtiles.js`
+and of course replace 3dtiles.js with the correct filename. You can also append
+the `-- --watch` flag as well.
 
 ## Contribute back
 
