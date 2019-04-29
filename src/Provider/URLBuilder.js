@@ -11,12 +11,9 @@ export default {
      * The layer object needs to have an url property, which should have some
      * specific strings that will be replaced by coordinates.
      * <ul>
-     * <li><code>${x}</code> or <code>%COL</code> will be replaced by
-     * <code>coords.col</code></li>
-     * <li><code>${y}</code> or <code>%ROW</code> will be replaced by
-     * <code>coords.row</code></li>
-     * <li><code>${z}</code> or <code>%TILEMATRIX</code> will be replaced by
-     * <code>coords.zoom</code></li>
+     * <li>`${x}` or `%COL` will be replaced by `coords.col`</li>
+     * <li>`${y}` or `%ROW` will be replaced by `coords.row`</li>
+     * <li>`${z}` or `%TILEMATRIX` will be replaced by `coords.zoom`</li>
      * </ul>
      *
      * @example
@@ -50,13 +47,12 @@ export default {
      * Builds an URL knowing the bounding box and the layer to query.
      * <br><br>
      * The layer object needs to have an url property, which should have the
-     * string <code>%bbox</code> in it. This string will be replaced by the four
-     * cardinal points composing the bounding box.
+     * string `%bbox` in it. This string will be replaced by the four cardinal
+     * points composing the bounding box.
      * <br><br>
-     * Order of the points can be specified in the <code>axisOrder</code>
-     * property in layer, using the letters <code>w, s, e, n</code> respectively
-     * for <code>WEST, SOUTH, EAST, NORTH</code>. The default order is
-     * <code>wsen</code>.
+     * Order of the points can be specified in the `axisOrder` property in
+     * layer, using the letters `w, s, e, n` respectively for `WEST, SOUTH,
+     * EAST, NORTH`. The default order is `wsen`.
      *
      * @example
      * extent = new Extent('EPSG:4326', 12, 14, 35, 46);

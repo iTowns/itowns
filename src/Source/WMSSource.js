@@ -36,9 +36,9 @@ import URLBuilder from 'Provider/URLBuilder';
  * @property {Object} vendorSpecific - An object containing vendor specific
  * parameters. See for example a [list of these parameters for GeoServer]{@link
  * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html}. This
- * object is read simply with the <code>key</code> being the name of the
- * parameter and <code>value</code> being the value of the parameter. If used,
- * this property should be set in the constructor parameters.
+ * object is read simply with the `key` being the name of the parameter and
+ * `value` being the value of the parameter. If used, this property should be
+ * set in the constructor parameters.
  *
  * @example
  * // Create the source
@@ -68,8 +68,8 @@ import URLBuilder from 'Provider/URLBuilder';
 class WMSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of
-     * WMSSource and {@link Source}. <code>url</code>, <code>name</code>,
-     * <code>extent</code> and <code>projection</code> are mandatory.
+     * WMSSource and {@link Source}. `url`, `name`, `extent` and `projection`
+     * are mandatory.
      *
      * @constructor
      */

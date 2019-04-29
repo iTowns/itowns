@@ -35,9 +35,9 @@ class ColorLayer extends Layer {
      * {@link View} that already has a layer going by that id.
      * @param {Object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
-     * contains three elements <code>name, protocol, extent</code>, these
-     * elements will be available using <code>layer.name</code> or something
-     * else depending on the property name.
+     * contains three elements `name, protocol, extent`, these elements will be
+     * available using `layer.name` or something else depending on the property
+     * name.
      * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] -
      * Description and options of the source.
      *

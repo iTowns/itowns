@@ -93,8 +93,7 @@ export default {
      * Get the unit to use with the CRS.
      *
      * @param {string} crs - The CRS to get the unit from.
-     * @return {number} Either <code>UNIT.METER</code>, <code>UNIT.DEGREE</code>
-     * or <code>undefined</code>.
+     * @return {number} Either `UNIT.METER`, `UNIT.DEGREE` or `undefined`.
      */
     toUnit,
 

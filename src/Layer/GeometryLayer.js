@@ -43,18 +43,17 @@ class GeometryLayer extends Layer {
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
      * @param {THREE.Object3d} object3d - The object3d used to contain the
-     * geometry of the GeometryLayer. It is usually a <code>THREE.Group</code>,
-     * but it can be anything inheriting from a <code>THREE.Object3d</code>.
+     * geometry of the GeometryLayer. It is usually a `THREE.Group`, but it can
+     * be anything inheriting from a `THREE.Object3d`.
      * @param {Object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
-     * contains three elements <code>name, protocol, extent</code>, these
-     * elements will be available using <code>layer.name</code> or something
-     * else depending on the property name.
+     * contains three elements `name, protocol, extent`, these elements will be
+     * available using `layer.name` or something else depending on the property
+     * name.
      * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] -
      * Description and options of the source.
      *
-     * @throws {Error} <code>object3d</code> must be a valid
-     * <code>THREE.Object3d</code>.
+     * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      *
      * @example
      * // Create a GeometryLayer
@@ -147,10 +146,10 @@ class GeometryLayer extends Layer {
 
     /**
      * Attach another layer to this one. Layers attached to a GeometryLayer will
-     * be available in <code>geometryLayer.attachedLayers</code>.
+     * be available in `geometryLayer.attachedLayers`.
      *
-     * @param {Layer} layer - The layer to attach, that must have an
-     * <code>update</code> method.
+     * @param {Layer} layer - The layer to attach, that must have an `update`
+     * method.
      */
     attach(layer) {
         if (!layer.update) {
@@ -203,7 +202,7 @@ class GeometryLayer extends Layer {
      *
      * @param {View} view - The view instance.
      * @param {Object} coordinates - The coordinates to pick in the view. It
-     * should have at least <code>x</code> and <code>y</code> properties.
+     * should have at least `x` and `y` properties.
      * @param {number} radius - Radius of the picking circle.
      *
      * @return {Array} An array containing all targets picked under the
@@ -214,11 +213,11 @@ class GeometryLayer extends Layer {
     }
 
     /**
-     * Change the opacity of an object, according to the value of the
-     * <code>opacity</code> property of this layer.
+     * Change the opacity of an object, according to the value of the `opacity`
+     * property of this layer.
      *
      * @param {Object} object - The object to change the opacity from. It is
-     * usually a <code>THREE.Object3d</code> or an implementation of it.
+     * usually a `THREE.Object3d` or an implementation of it.
      */
     changeOpacity(object) {
         if (object.material) {

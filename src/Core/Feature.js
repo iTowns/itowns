@@ -17,14 +17,12 @@ const defaultNormal = new THREE.Vector3(0, 0, 1);
 /**
  * @property {Extent} extent - The 2D extent containing all the points
  * composing the geometry.
- * @property {Object[]} indices - Contains the indices
- * that define the geometry. Objects stored in this array have two
- * properties, an <code>offset</code> and a <code>count</code>. The offset
- * is related to the overall number of vertices in the Feature.
+ * @property {Object[]} indices - Contains the indices that define the geometry.
+ * Objects stored in this array have two properties, an `offset` and a `count`.
+ * The offset is related to the overall number of vertices in the Feature.
  *
  * @property {Object} properties - Properties of the geometry. It can be
- * anything specified in the GeoJSON under the <code>properties</code>
- * property.
+ * anything specified in the GeoJSON under the `properties` property.
  */
 class FeatureGeometry {
     /**
@@ -55,9 +53,9 @@ class FeatureGeometry {
     }
 
     /**
-     * After you have pushed new the coordinates of sub geometry without <code>startSubGeometry</code>,
-     * this function close sub geometry. The sub geometry stored in indices,
-     * see constructor for more information.
+     * After you have pushed new the coordinates of sub geometry without
+     * `startSubGeometry`, this function close sub geometry. The sub geometry
+     * stored in indices, see constructor for more information.
      * @param {number} count count of vertices
      */
     closeSubGeometry(count) {
@@ -158,8 +156,8 @@ export const FEATURE_TYPES = {
  * This class improves and simplifies the construction and conversion of geographic data structures.
  * It's an intermediary structure between geomatic formats and THREE objects.
  *
- * @property {string} type - Geometry type, can be <code>point</code>, <code>line</code>,
- * or <code>polygon</code> or
+ * @property {string} type - Geometry type, can be `point`, `line`, or
+ * `polygon`.
  * @property {number[]} vertices - All the vertices of the Feature.
  * @property {number[]} normals - All the normals of the Feature.
  * @property {number} size - the number of values of the array that should be associated with a coordinates.
@@ -250,8 +248,8 @@ export class FeatureCollection {
     }
 
     /**
-     * Update FeatureCollection extent with <code>extent</code> or
-     * all features extent if <code>extent</code> is <code>undefined</code>.
+     * Update FeatureCollection extent with `extent` or all features extent if
+     * `extent` is `undefined`.
      * @param {Extent} extent
      */
     updateExtent(extent) {
@@ -271,7 +269,7 @@ export class FeatureCollection {
     }
 
     /**
-     * Push the <code>feature</code> in FeatureCollection.
+     * Push the `feature` in FeatureCollection.
      * @param {Feature} feature
      */
     pushFeature(feature) {
@@ -280,8 +278,8 @@ export class FeatureCollection {
     }
 
     /**
-     * Returns the Feature by type if <code>mergeFeatures</code> is <code>true</code>
-     * or returns the new instance of typed Feature.
+     * Returns the Feature by type if `mergeFeatures` is `true` or returns the
+     * new instance of typed Feature.
      *
      * @param {string} type the type requested
      * @returns {Feature}

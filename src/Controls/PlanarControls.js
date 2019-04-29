@@ -31,8 +31,8 @@ const vectorZero = new THREE.Vector3();
  *
  * @typedef {Object} PlanarControls~PlanarControlsOptions
  *
- * @property {boolean} [enableRotation=true] Enable the rotation with the
- * <code>CTRL + Left mouse button</code> and in animations, like the smart zoom.
+ * @property {boolean} [enableRotation=true] Enable the rotation with the `CTRL
+ * + Left mouse button` and in animations, like the smart zoom.
  * @property {number} [rotateSpeed=2.0] Rotate speed.
  * @property {number} [maxPanSpeed=15] Pan speed when close to maxAltitude.
  * @property {number} [minPanSpeed=0.05] Pan speed when close to the ground.
@@ -44,11 +44,11 @@ const vectorZero = new THREE.Vector3();
  * @property {number} [maxAltitude=12000] Maximum altitude reachable when panning.
  * @property {number} [groundLevel=200] Minimum altitude reachable when panning.
  * @property {number} [autoTravelTimeMin=1.5] Minimum duration for animated
- * travels with the <code>auto</code> parameter.
+ * travels with the `auto` parameter.
  * @property {number} [autoTravelTimeMax=4]  Maximum duration for animated
- * travels with the <code>auto</code> parameter.
+ * travels with the `auto` parameter.
  * @property {number} [autoTravelTimeDist=20000] Maximum travel distance for
- * animated travel with the <code>auto</code> parameter.
+ * animated travel with the `auto` parameter.
  * @property {number} [smartZoomHeightMin=75] Minimum height above ground
  * reachable after a smart zoom.
  * @property {number} [smartZoomHeightMax=500] Maximum height above ground
@@ -470,11 +470,10 @@ function PlanarControls(view, options = {}) {
      *
      * @param {THREE.Vector3} targetPos - The target position of the camera
      * (reached at the end).
-     * @param {number} travelTime - Set to <code>auto</code>, or set to a
-     * duration in seconds. If set to <code>auto</code> : travel time will be
-     * set to a duration between <code>autoTravelTimeMin</code> and
-     * <code>autoTravelTimeMax</code> according to the distance and the angular
-     * difference between start and finish.
+     * @param {number} travelTime - Set to `auto`, or set to a duration in
+     * seconds. If set to `auto` : travel time will be set to a duration between
+     * `autoTravelTimeMin` and `autoTravelTimeMax` according to the distance and
+     * the angular difference between start and finish.
      * @param {(string|THREE.Vector3|THREE.Quaternion)} targetOrientation -
      * Define the target rotation of the camera:
      * <ul>

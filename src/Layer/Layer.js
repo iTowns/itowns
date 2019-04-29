@@ -21,9 +21,9 @@ class Layer extends THREE.EventDispatcher {
      * {@link View} that already has a layer going by that id.
      * @param {Object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
-     * contains three elements <code>name, protocol, extent</code>, these
-     * elements will be available using <code>layer.name</code> or something
-     * else depending on the property name.
+     * contains three elements `name, protocol, extent`, these elements will be
+     * available using `layer.name` or something else depending on the property
+     * name.
      *
      * @example
      * // Add and create a new Layer
@@ -76,10 +76,9 @@ class Layer extends THREE.EventDispatcher {
      * executed when the property changes.
      * <br><br>
      * When changing the property, it also emits an event, named following this
-     * convention: <code>${propertyName}-property-changed</code>, with
-     * <code>${propertyName}</code> being replaced by the name of the property.
-     * For example, if the added property name is <code>frozen</code>, it will
-     * emit a <code>frozen-property-changed</code>.
+     * convention: `${propertyName}-property-changed`, with `${propertyName}`
+     * being replaced by the name of the property.  For example, if the added
+     * property name is `frozen`, it will emit a `frozen-property-changed`.
      * <br><br>
      * @example <caption>The emitted event has some properties assigned to it</caption>
      * event = {

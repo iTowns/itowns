@@ -10,12 +10,11 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
  * access. It inherits from {@link Source}. There is multiple ways of adding a
  * resource here:
  * <ul>
- *  <li>add the file like any other sources, using the <code>url</code>
+ *  <li>add the file like any other sources, using the `url` property.</li>
+ *  <li>fetch the file, and give the data to the source using the `fetchedData`
  *  property.</li>
- *  <li>fetch the file, and give the data to the source using the
- *  <code>fetchedData</code> property.</li>
  *  <li>fetch the file, parse it and git the parsed data to the source using the
- *  <code>parsedData</code> property.</li>
+ *  `parsedData` property.</li>
  * </ul>
  * See the examples below for real use cases.
  *
@@ -101,9 +100,9 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
 class FileSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * FileSource and {@link Source}. Only <code>projection</code> is mandatory,
-     * but if it presents in <code>parsedData</code> under the property
-     * <code>projection</code> or <code>crs</code>, it is fine.
+     * FileSource and {@link Source}. Only `projection` is mandatory, but if it
+     * presents in `parsedData` under the property `projection` or `crs`, it is
+     * fine.
      * @param {string} crsOut - The projection of the output data after parsing.
      *
      * @constructor

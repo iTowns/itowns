@@ -11,8 +11,10 @@ tutorials.
 ### API reference
 
 The API reference is written in the source of itowns, using
-[JSDoc](http://usejsdoc.org/). This is a classic documentation, explaining all
-exposed methods and classes in itowns, and some internal others.
+[JSDoc](http://usejsdoc.org/), along with support for the
+[Markdown](https://commonmark.org/help/) syntax. This is a
+classic documentation, explaining all exposed methods and classes in itowns, and
+some internal others.
 
 When documenting something, don't forget to check the presence of your file
 inside `docs/config.json`.

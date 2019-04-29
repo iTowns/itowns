@@ -30,8 +30,7 @@ const Cache = {
      * @typedef {Object} POLICIES
      *
      * @property {number} INFINITE - The entry is never flushed, except when the
-     * <code>all</code> flag is set to <code>true</code> when calling {@link
-     * Cache.flush}.
+     * `all` flag is set to `true` when calling {@link Cache.flush}.
      * @property {number} TEXTURE - Shortcut for texture resources. Time is 15 minutes.
      * @property {number} ELEVATION - Shortcut for elevation resources. Time is 15
      * minutes.
@@ -116,20 +115,19 @@ const Cache = {
      * Flush the cache: entries that have been present for too long since the
      * last time they were used, are removed from the cache. By default, the
      * time is the current time, but the interval can be reduced by doing
-     * something like <code>Cache.flush(Date.now() - reductionTime)</code>. If
-     * you want to clear the whole cache, use {@link Cache.clear} instead.
+     * something like `Cache.flush(Date.now() - reductionTime)`. If you want to
+     * clear the whole cache, use {@link Cache.clear} instead.
      *
      * @name module:Cache.flush
      * @function
      *
      * @param {number} [time]
      *
-     * @return {Object} Statistics about the flush: <code>before</code>
-     * gives the number of entries before flushing, <code>after</code> the
-     * number after flushing, <code>hit</code> the number of total successful
-     * hit on resources in the cache, and </code>miss</code> the number of
-     * failed hit. The hit and miss are based since the last flush, and are
-     * reset on every flush.
+     * @return {Object} Statistics about the flush: `before` gives the number of
+     * entries before flushing, `after` the number after flushing, `hit` the
+     * number of total successful hit on resources in the cache, and `miss` the
+     * number of failed hit. The hit and miss are based since the last flush,
+     * and are reset on every flush.
      */
     flush: (time = Date.now()) => {
         const before = data.size;

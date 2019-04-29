@@ -387,25 +387,25 @@ View.prototype.getParentLayer = function getParentLayer(layer) {
  * @function
  *
  * @description
- * Method that will be called each time the <code>MainLoop</code> updates. This
- * function will be given as parameter the delta (in ms) between this update and
- * the previous one, and whether or not we just started to render again. This
- * update is considered as the "next" update if <code>view.notifyChange</code>
- * was called during a precedent update. If <code>view.notifyChange</code> has
- * been called by something else (other micro/macrotask, UI events etc...), then
- * this update is considered as being the "first". It can also receive optional
- * arguments, depending on the attach point of this function.  Currently only
- * <code>BEFORE_LAYER_UPDATE / AFTER_LAYER_UPDATE</code> attach points provide
- * an additional argument: the layer being updated.
+ * Method that will be called each time the `MainLoop` updates. This function
+ * will be given as parameter the delta (in ms) between this update and the
+ * previous one, and whether or not we just started to render again. This update
+ * is considered as the "next" update if `view.notifyChange` was called during a
+ * precedent update. If `view.notifyChange` has been called by something else
+ * (other micro/macrotask, UI events etc...), then this update is considered as
+ * being the "first". It can also receive optional arguments, depending on the
+ * attach point of this function. Currently only `BEFORE_LAYER_UPDATE /
+ * AFTER_LAYER_UPDATE` attach points provide an additional argument: the layer
+ * being updated.
  * <br><br>
  *
- * This means that if a <code>frameRequester</code> function wants to animate something, it
- * should keep on calling <code>view.notifyChange</code> until its task is done.
+ * This means that if a `frameRequester` function wants to animate something, it
+ * should keep on calling `view.notifyChange` until its task is done.
  * <br><br>
  *
- * Implementors of <code>frameRequester</code> should keep in mind that this
- * function will be potentially called at each frame, thus care should be given
- * about performance.
+ * Implementors of `frameRequester` should keep in mind that this function will
+ * be potentially called at each frame, thus care should be given about
+ * performance.
  * <br><br>
  *
  * Typical frameRequesters are controls, module wanting to animate moves or UI

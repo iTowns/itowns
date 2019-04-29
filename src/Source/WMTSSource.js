@@ -19,14 +19,13 @@ import URLBuilder from 'Provider/URLBuilder';
  * @property {string} style - The style to query on the WMTS server. Default
  * value is 'normal'.
  * @property {string} projection - The projection in which to fetch the data. If
- * not specified, it is deduced from <code>tileMatrixSet</code>. Default value
- * is 'EPSG:3857'.
+ * not specified, it is deduced from `tileMatrixSet`. Default value is
+ * 'EPSG:3857'.
  * @property {string} tileMatrixSet - Tile matrix set of the layer, used in the
  * generation of the url. Default value is 'WGS84'.
- * @property {Object} tileMatrixSetLimits - Limits of the tile matrix
- * set. Each limit has for key its level number, and their properties are the
- * <code>minTileRow</code>, <code>maxTileRow</code>, <code>minTileCol</code> and
- * <code>maxTileCol</code>.
+ * @property {Object} tileMatrixSetLimits - Limits of the tile matrix set. Each
+ * limit has for key its level number, and their properties are the
+ * `minTileRow`, `maxTileRow`, `minTileCol` and `maxTileCol`.
  * @property {number} tileMatrixSetLimits.minTileRow - Minimum row for tiles at
  * the specified level.
  * @property {number} tileMatrixSetLimits.maxTileRow - Maximum row for tiles at
@@ -62,8 +61,7 @@ import URLBuilder from 'Provider/URLBuilder';
 class WMTSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * WMTSSource and {@link Source}. Only <code>url</code> and
-     * <code>name</code> are mandatory.
+     * WMTSSource and {@link Source}. Only `url` and `name` are mandatory.
      *
      * @constructor
      */
