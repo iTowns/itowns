@@ -219,7 +219,7 @@ class Extent {
     }
 
     /**
-    * Returns the dimension of the extent, in a <code>THREE.Vector2</code>.
+    * Returns the dimension of the extent, in a `THREE.Vector2`.
     *
     * @param {THREE.Vector2} [target] - The target to assign the result in.
     *
@@ -232,7 +232,7 @@ class Extent {
     }
 
     /**
-     * Return true if <code>coord</code> is inside the bounding box.
+     * Return true if `coord` is inside the bounding box.
      *
      * @param {Coordinates} coord
      * @param {number} [epsilon=0] - to take into account when comparing to the
@@ -257,7 +257,7 @@ class Extent {
     }
 
     /**
-     * Return true if <code>extent</code> is inside this extent.
+     * Return true if `extent` is inside this extent.
      *
      * @param {Extent} extent the extent to check
      * @param {number} epsilon to take into account when comparing to the
@@ -549,9 +549,8 @@ class Extent {
     }
 
     /**
-     * Apply transform and copy this extent to input.
-     * The <code>transformedCopy</code> doesn't handle
-     * the issue of overflow of geographic limits.
+     * Apply transform and copy this extent to input.  The `transformedCopy`
+     * doesn't handle the issue of overflow of geographic limits.
      * @param {THREE.Vector2} t translation transform
      * @param {THREE.Vector2} s scale transform
      * @param {Extent} extent Extent to copy after transformation.

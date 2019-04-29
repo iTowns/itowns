@@ -22,20 +22,18 @@ class PlanarLayer extends TiledGeometryLayer {
      * @param {Extent} extent - The extent to define the layer within.
      * @param {THREE.Object3d} [object3d=THREE.Group] - The object3d used to
      * contain the geometry of the TiledGeometryLayer. It is usually a
-     * <code>THREE.Group</code>, but it can be anything inheriting from a
-     * <code>THREE.Object3d</code>.
+     * `THREE.Group`, but it can be anything inheriting from a `THREE.Object3d`.
      * @param {Object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
-     * contains three elements <code>name, protocol, extent</code>, these
-     * elements will be available using <code>layer.name</code> or something
-     * else depending on the property name.
+     * contains three elements `name, protocol, extent`, these elements will be
+     * available using `layer.name` or something else depending on the property
+     * name.
      * @param {number} [config.maxSubdivisionLevel=5] - Maximum subdivision
      * level for this tiled layer.
      * @param {number} [config.maxDeltaElevationLevel=4] - Maximum delta between
      * two elevations tile.
      *
-     * @throws {Error} <code>object3d</code> must be a valid
-     * <code>THREE.Object3d</code>.
+     * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
     constructor(id, extent, object3d, config = {}) {
         super(id, object3d || new THREE.Group(), [extent], new PlanarTileBuilder(), config);

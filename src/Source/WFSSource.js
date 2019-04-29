@@ -25,9 +25,9 @@ import URLBuilder from 'Provider/URLBuilder';
  * @property {Object} vendorSpecific - An object containing vendor specific
  * parameters. See for example a [list of these parameters for GeoServer]{@link
  * https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html}. This
- * object is read simply with the <code>key</code> being the name of the
- * parameter and <code>value</code> being the value of the parameter. If used,
- * this property should be set in the constructor parameters.
+ * object is read simply with the `key` being the name of the parameter and
+ * `value` being the value of the parameter. If used, this property should be
+ * set in the constructor parameters.
  *
  * @example
  * // Add color layer with WFS source
@@ -91,8 +91,8 @@ import URLBuilder from 'Provider/URLBuilder';
 class WFSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * WFSSource and {@link Source}. <code>url</code>, <code>typeName</code> and
-     * <code>projection</code> are mandatory.
+     * WFSSource and {@link Source}. `url`, `typeName` and `projection` are
+     * mandatory.
      *
      * @constructor
      */

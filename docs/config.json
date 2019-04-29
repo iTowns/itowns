@@ -103,5 +103,6 @@
     "source": {
         "include": [ "src" ],
         "exclude": [ "src/ThreeExtended" ]
-    }
+    },
+    "plugins": ["plugins/markdown"]
 }

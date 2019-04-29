@@ -28,21 +28,19 @@ class TiledGeometryLayer extends GeometryLayer {
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
      * @param {THREE.Object3d} object3d - The object3d used to contain the
-     * geometry of the TiledGeometryLayer. It is usually a
-     * <code>THREE.Group</code>, but it can be anything inheriting from a
-     * <code>THREE.Object3d</code>.
+     * geometry of the TiledGeometryLayer. It is usually a `THREE.Group`, but it
+     * can be anything inheriting from a `THREE.Object3d`.
      * @param {Array} schemeTile - extents Array of root tiles
      * @param {Object} builder - builder geometry object
      * @param {Object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
-     * contains three elements <code>name, protocol, extent</code>, these
-     * elements will be available using <code>layer.name</code> or something
-     * else depending on the property name.
+     * contains three elements `name, protocol, extent`, these elements will be
+     * available using `layer.name` or something else depending on the property
+     * name.
      * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] -
      * Description and options of the source.
      *
-     * @throws {Error} <code>object3d</code> must be a valid
-     * <code>THREE.Object3d</code>.
+     * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
     constructor(id, object3d, schemeTile, builder, config) {
         super(id, object3d, config);
@@ -86,7 +84,7 @@ class TiledGeometryLayer extends GeometryLayer {
      *
      * @param {View} view - The view instance.
      * @param {Object} coordinates - The coordinates to pick in the view. It
-     * should have at least <code>x</code> and <code>y</code> properties.
+     * should have at least `x` and `y` properties.
      * @param {number} radius - Radius of the picking circle.
      *
      * @return {Array} An array containing all targets picked under the
@@ -99,23 +97,21 @@ class TiledGeometryLayer extends GeometryLayer {
     /**
      * Does pre-update work on the context:
      * <ul>
-     *  <li>update the <code>colorLayers</code> and
-     *  <code>elevationLayers</code></li>
-     *  <li>update the <code>maxElevationLevel</code></li>
+     *  <li>update the `colorLayers` and `elevationLayers`</li>
+     *  <li>update the `maxElevationLevel`</li>
      * </ul>
      *
      * Once this work is done, it returns a list of nodes to update. Depending
-     * on the origin of <code>sources</code>, it can return a few things:
+     * on the origin of `sources`, it can return a few things:
      * <ul>
-     *  <li>if <code>sources</code> is empty, it returns the first node of the
-     *  layer (stored as <code>level0Nodes</code>), which will trigger the
-     *  update of the whole tree</li>
+     *  <li>if `sources` is empty, it returns the first node of the layer
+     *  (stored as `level0Nodes`), which will trigger the update of the whole
+     *  tree</li>
      *  <li>if the update is triggered by a camera move, the whole tree is
      *  returned too</li>
-     *  <li>if <code>source.layer</code> is this layer, it means that
-     *  <code>source</code> is a node; a common ancestor will be found if there
-     *  are multiple sources, with the default common ancestor being the first
-     *  source itself</li>
+     *  <li>if `source.layer` is this layer, it means that `source` is a node; a
+     *  common ancestor will be found if there are multiple sources, with the
+     *  default common ancestor being the first source itself</li>
      *  <li>else it returns the whole tree</li>
      * </ul>
      *

@@ -8,7 +8,7 @@ let uid = 0;
  * set source.
  *
  * To extend a Source, it is necessary to implement two functions:
- * <code>urlFromExtent</code> and <code>extentInsideLimit</code>.
+ * `urlFromExtent` and `extentInsideLimit`.
  *
  * @property {boolean} isSource - Used to checkout whether this source is a
  * Source. Default is true. You should not change this, as it is used internally
@@ -19,24 +19,23 @@ let uid = 0;
  * @property {string} format - The format of the resources that are fetched.
  * @property {function} fetcher - The method used to fetch the resources from
  * the source. iTowns provides some methods in {@link Fetcher}, but it can be
- * specified a custom one. This method should return a <code>Promise</code>
- * containing the fetched resource. If this property is set, it overrides the
- * chosen fetcher method with <code>format</code>.
+ * specified a custom one. This method should return a `Promise` containing the
+ * fetched resource. If this property is set, it overrides the chosen fetcher
+ * method with `format`.
  * @property {Object} networkOptions - Fetch options (passed directly to
- * <code>fetch()</code>), see [the syntax for more information]{@link
+ * `fetch()`), see [the syntax for more information]{@link
  * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
- * By default, set to <code>{ crossOrigin: 'anonymous' }</code>.
+ * By default, set to `{ crossOrigin: 'anonymous' }`.
  * @property {string} projection - The projection of the resources.
  * @property {string} attribution - The intellectual property rights for the
  * resources.
  * @property {Extent} extent - The extent of the resources.
  * @property {function} parser - The method used to parse the resources attached
- * to the layer. iTowns provides some parsers, visible in the
- * <code>Parser/</code> folder. If the method is custom, it should return a
- * <code>Promise</code> containing the parsed resource. If this property is set,
- * it overrides the default selected parser method with
- * <code>source.format</code>. If <code>source.format</code> is also empty, no
- * parsing action is done.
+ * to the layer. iTowns provides some parsers, visible in the `Parser/` folder.
+ * If the method is custom, it should return a `Promise` containing the parsed
+ * resource. If this property is set, it overrides the default selected parser
+ * method with `source.format`. If `source.format` is also empty, no parsing
+ * action is done.
  * <br><br>
  * When calling this method, two parameters are passed:
  * <ul>
@@ -48,27 +47,27 @@ let uid = 0;
  *
  * The properties of the second parameter are:
  * <ul>
- *  <li><code>buildExtent : boolean</code> - True if the layer does not inherit
- *  from {@link GeometryLayer}.</li>
- *  <li><code>crsIn : string</code> - The projection of the source.</li>
- *  <li><code>crsOut : string</code> - The projection of the layer.</li>
- *  <li><code>filteringExtent : Extent</code> - If the layer inherits from
- *  {@link GeometryLayer}, it is set to the extent of destination, otherwise it
- *  is undefined.</li>
- *  <li><code>filter : function</code> - Property of the layer.</li>
- *  <li><code>mergeFeatures : boolean (default true)</code> - Property of the
- *  layer, default to true.</li>
- *  <li><code>withNormal : boolean</code> - True if the layer inherits from
- *  {@link GeometryLayer}.</li>
- *  <li><code>withAltitude : boolean</code> - True if the layer inherits from
- *  {@link GeometryLayer}.</li>
- *  <li><code>isInverted : string</code> - Property of the source.</li>
+ *  <li>`buildExtent : boolean` - True if the layer does not inherit from {@link
+ *  GeometryLayer}.</li>
+ *  <li>`crsIn : string` - The projection of the source.</li>
+ *  <li>`crsOut : string` - The projection of the layer.</li>
+ *  <li>`filteringExtent : Extent` - If the layer inherits from {@link
+ *  GeometryLayer}, it is set to the extent of destination, otherwise it is
+ *  undefined.</li>
+ *  <li>`filter : function` - Property of the layer.</li>
+ *  <li>`mergeFeatures : boolean (default true)` - Property of the layer,
+ *  default to true.</li>
+ *  <li>`withNormal : boolean` - True if the layer inherits from {@link
+ *  GeometryLayer}.</li>
+ *  <li>`withAltitude : boolean` - True if the layer inherits from {@link
+ *  GeometryLayer}.</li>
+ *  <li>`isInverted : string` - Property of the source.</li>
  * </ul>
  */
 class Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * Source. Only the <code>url</code> property is mandatory.
+     * Source. Only the `url` property is mandatory.
      *
      * @constructor
      */

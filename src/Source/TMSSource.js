@@ -51,7 +51,7 @@ import Extent from 'Core/Geographic/Extent';
 class TMSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * TMSSource and {@link Source}. Only <code>url</code> is mandatory.
+     * TMSSource and {@link Source}. Only `url` is mandatory.
      *
      * @constructor
      */

@@ -219,9 +219,8 @@ Scheduler.prototype.execute = function execute(command) {
  * tiles, given the current position of the camera on the map. For simple layers
  * like a GPX trace, it gets the data once.
  * <br><br>
- * It passes a <code>command</code> object as a parameter, with the
- * <code>view</code> and the <code>layer</code> always present. The other
- * parameters are optional.
+ * It passes a `command` object as a parameter, with the `view` and the `layer`
+ * always present. The other parameters are optional.
  *
  * @function
  * @name Provider#executeCommand
@@ -252,8 +251,8 @@ Scheduler.prototype.execute = function execute(command) {
  * current provider will be overwritten by the given provider.
  *
  * @param {string} protocol - The name of the protocol to add. This is the
- * <code>protocol</code> parameter put inside the configuration when adding a
- * layer. The capitalization of the name is not taken into account here.
+ * `protocol` parameter put inside the configuration when adding a layer. The
+ * capitalization of the name is not taken into account here.
  * @param {Provider} provider - The provider to link to the protocol, that must
  * respect the {@link Provider} interface description.
  *

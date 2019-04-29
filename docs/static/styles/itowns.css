@@ -163,3 +163,7 @@ p, ul, ol {
     max-width: 780px;
     text-align: justify;
 }
+
+.params p {
+    display: inline;
+}
