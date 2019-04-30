@@ -63,8 +63,8 @@ const Projection = {
         var uY = Math.PI / nY;
 
         bbox.center(center);
-        var col = Math.floor((Math.PI + MathExt.degToRad(center.longitude())) / uX);
-        var row = Math.floor(nY - (PI_OV_TWO + MathExt.degToRad(center.latitude())) / uY);
+        var col = Math.floor((Math.PI + MathExt.degToRad(center.longitude)) / uX);
+        var row = Math.floor(nY - (PI_OV_TWO + MathExt.degToRad(center.latitude)) / uY);
         return target.set(zoom, row, col);
     },
 

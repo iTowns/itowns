@@ -119,7 +119,7 @@ Camera.prototype.position = function position(crs) {
  * @param {Coordinates} position the new position of the camera
  */
 Camera.prototype.setPosition = function setPosition(position) {
-    this.camera3D.position.copy(position.as(this.crs).xyz());
+    this.camera3D.position.copy(position.as(this.crs));
 };
 
 const tmp = {
@@ -224,11 +224,11 @@ Camera.prototype.adjustAltitudeToAvoidCollisionWithLayer = function adjustAltitu
     if (elevationLayer !== undefined) {
         const elevationUnderCamera = DEMUtils.getElevationValueAt(elevationLayer, camLocation);
         if (elevationUnderCamera != undefined) {
-            const difElevation = camLocation.altitude() - (elevationUnderCamera.z + minDistanceCollision);
+            const difElevation = camLocation.altitude - (elevationUnderCamera.z + minDistanceCollision);
             // We move the camera to avoid collisions if too close to terrain
             if (difElevation < 0) {
-                camLocation.setAltitude(elevationUnderCamera.z + minDistanceCollision);
-                view.camera.camera3D.position.copy(camLocation.as(view.referenceCrs).xyz());
+                camLocation.altitude = elevationUnderCamera.z + minDistanceCollision;
+                view.camera.camera3D.position.copy(camLocation.as(view.referenceCrs));
                 view.notifyChange(this.camera3D);
             }
         }

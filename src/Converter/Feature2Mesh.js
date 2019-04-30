@@ -68,7 +68,7 @@ function coordinatesToVertices(ptsIn, normals, target, altitude = 0, extrude = 0
     } else if (Array.isArray(altitude)) {
         fnAltitude = id => altitude[(id - startIn) / 3];
     } else {
-        fnAltitude = id => altitude({}, coord.set(coord.crs, ptsIn[id], ptsIn[id + 1], ptsIn[id + 2]));
+        fnAltitude = id => altitude({}, coord.setFromArray(ptsIn, id));
     }
 
     for (let i = startIn, j = offsetOut; i < endIn; i += 3, j += 3) {
@@ -426,7 +426,8 @@ function featuresToThree(features, options) {
     if (!features || features.length == 0) { return; }
 
     if (features.length == 1) {
-        coord.set(features[0].crs, 0, 0, 0);
+        coord.crs = features[0].crs;
+        coord.setFromValues(0, 0, 0);
         return featureToMesh(features[0], options);
     }
 
@@ -434,7 +435,8 @@ function featuresToThree(features, options) {
     group.minAltitude = Infinity;
 
     for (const feature of features) {
-        coord.set(feature.crs, 0, 0, 0);
+        coord.crs = feature.crs;
+        coord.setFromValues(0, 0, 0);
         const mesh = featureToMesh(feature, options);
         group.add(mesh);
         group.minAltitude = Math.min(mesh.minAltitude, group.minAltitude);

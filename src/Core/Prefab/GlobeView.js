@@ -93,7 +93,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
     // Configure camera
     let positionCamera;
-    if (coordCarto instanceof Coordinates) {
+    if (coordCarto.isCoordinates) {
         positionCamera = coordCarto.as('EPSG:4326');
     } else {
         positionCamera = new Coordinates('EPSG:4326',
@@ -115,13 +115,13 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.addLayer(tileLayer);
     // Configure controls
     const positionTargetCamera = positionCamera.clone();
-    positionTargetCamera.setAltitude(0);
+    positionTargetCamera.altitude = 0;
 
     if (options.noControls) {
         this.camera.setPosition(positionCamera);
-        this.camera.camera3D.lookAt(positionTargetCamera.as('EPSG:4978').xyz());
+        this.camera.camera3D.lookAt(positionTargetCamera.as('EPSG:4978').toVector3());
     } else {
-        this.controls = new GlobeControls(this, positionTargetCamera, positionCamera.altitude(), ellipsoidSizes.x);
+        this.controls = new GlobeControls(this, positionTargetCamera, positionCamera.altitude, ellipsoidSizes.x);
         this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
     }
 

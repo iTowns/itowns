@@ -106,7 +106,7 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
                     const offset = indice.offset * feature.size;
                     const count = offset + indice.count * feature.size;
                     for (let j = offset; j < count; j += feature.size) {
-                        coord.set(extent.crs, feature.vertices[j], feature.vertices[j + 1]);
+                        coord.setFromArray(feature.vertices, j);
                         if (extent.isPointInside(coord, px)) {
                             drawPoint(ctx, feature.vertices[j], feature.vertices[j + 1], geometryStyle, invCtxScale);
                         }
@@ -135,6 +135,8 @@ export default {
             // origin and dimension are used to transform the feature's coordinates to canvas's space
             extent.dimensions(dimension);
             const c = document.createElement('canvas');
+
+            coord.crs = extent.crs;
 
             c.width = sizeTexture;
             c.height = sizeTexture;

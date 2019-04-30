@@ -124,10 +124,10 @@ class CameraRig extends THREE.Object3D {
     setTargetFromCoordinate(view, coord) {
         // clamp altitude to seaLevel
         coord.as(tileLayer(view).extent.crs, this.coord);
-        const altitude = Math.max(0, this.coord._values[2]);
-        this.coord._values[2] = altitude;
+        const altitude = Math.max(0, this.coord.z);
+        this.coord.z = altitude;
         // adjust target's position with clamped altitude
-        this.coord.as(view.referenceCrs).xyz(targetPosition);
+        this.coord.as(view.referenceCrs).toVector3(targetPosition);
         if (view.referenceCrs == 'EPSG:4978') {
             // ellipsoid geocentric projection
             this.lookAt(targetPosition);
@@ -142,7 +142,7 @@ class CameraRig extends THREE.Object3D {
     }
 
     // set rig's objects transformation from camera's position and target's position
-    setFromPositions(view, cameraPosition, targetPosition) {
+    setFromPositions(view, cameraPosition) {
         this.setTargetFromCoordinate(view, new Coordinates(view.referenceCrs, targetPosition));
         this.target.rotation.set(0, 0, 0);
         this.updateMatrixWorld(true);
@@ -186,7 +186,7 @@ class CameraRig extends THREE.Object3D {
 
     setfromCamera(view, camera) {
         getGroundTargetFromCamera(view, camera, targetPosition);
-        this.setFromPositions(view, camera.position, targetPosition);
+        this.setFromPositions(view, camera.position);
     }
 
     copyObject3D(rig) {
@@ -252,7 +252,8 @@ class CameraRig extends THREE.Object3D {
             if (params.callback) {
                 params.callback(this);
             }
-            targetCoord.set(view.referenceCrs, this.targetWorldPosition).as(tileLayer(view).extent.crs, this.coord);
+            targetCoord.crs = view.referenceCrs;
+            targetCoord.setFromVector3(this.targetWorldPosition).as(tileLayer(view).extent.crs, this.coord);
             view.notifyChange(camera);
         };
 
@@ -472,8 +473,8 @@ export default {
             };
         }
 
-        if (Math.abs(first.coord._values[0] - second.coord._values[0]) > 0.000001 ||
-            Math.abs(first.coord._values[1] - second.coord._values[1]) > 0.000001) {
+        if (Math.abs(first.coord.x - second.coord.x) > 0.000001 ||
+            Math.abs(first.coord.y - second.coord.y) > 0.000001) {
             diff = diff || {};
             diff.coord = {
                 previous: first.coord,

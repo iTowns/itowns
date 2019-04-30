@@ -25,7 +25,7 @@ export default {
     getElevationValueAt(layer, coord, method = FAST_READ_Z, tileHint) {
         const result = _readZ(layer, method, coord, tileHint || layer.level0Nodes);
         if (result) {
-            return { z: result.coord._values[2], texture: result.texture, tile: result.tile };
+            return { z: result.coord.z, texture: result.texture, tile: result.tile };
         }
     },
 
@@ -356,6 +356,21 @@ const temp = {
     offset: new THREE.Vector2(),
 };
 
+const dimension = new THREE.Vector2();
+
+function offsetInExtent(point, extent, target = new THREE.Vector2()) {
+    if (point.crs != extent.crs) {
+        throw new Error(`Unsupported mix: ${point.crs} and ${extent.crs}`);
+    }
+
+    extent.dimensions(dimension);
+
+    const originX = (point.x - extent.west) / dimension.x;
+    const originY = (extent.north - point.y) / dimension.y;
+
+    return target.set(originX, originY);
+}
+
 function _readZ(layer, method, coord, nodes, cache) {
     const pt = coord.as(layer.extent.crs, temp.coord1);
 
@@ -392,7 +407,7 @@ function _readZ(layer, method, coord, nodes, cache) {
     }
 
     // offset = offset from top-left
-    const offset = pt.offsetInExtent(tileWithValidElevationTexture.extent, temp.offset);
+    offsetInExtent(pt, tileWithValidElevationTexture.extent, temp.offset);
 
     // At this point we have:
     //   - tileWithValidElevationTexture.texture.image which is the current image
@@ -404,9 +419,9 @@ function _readZ(layer, method, coord, nodes, cache) {
     //     at (offset.x, offset.y) and we're done
     //   - the correct one: emulate the vertex shader code
     if (method == PRECISE_READ_Z) {
-        pt._values[2] = _readZCorrect(layer, src, offset, tile.extent.dimensions(), tileWithValidElevationTexture.extent.dimensions());
+        pt.z = _readZCorrect(layer, src, temp.offset, tile.extent.dimensions(), tileWithValidElevationTexture.extent.dimensions());
     } else {
-        pt._values[2] = _readZFast(layer, src, offset);
+        pt.z = _readZFast(layer, src, temp.offset);
     }
     return { coord: pt, texture: src, tile };
 }
@@ -415,14 +430,14 @@ function _readZ(layer, method, coord, nodes, cache) {
 function _updateVector3(layer, method, nodes, vecCRS, vec, offset, matrices = {}, coords, cache) {
     const coord = coords || new Coordinates(vecCRS);
     if (matrices.worldFromLocal) {
-        coord.set(vecCRS, temp.v.copy(vec).applyMatrix4(matrices.worldFromLocal));
+        coord.setFromVector3(temp.v.copy(vec).applyMatrix4(matrices.worldFromLocal));
     } else {
-        coord.set(vecCRS, vec);
+        coord.setFromVector3(vec);
     }
     const result = _readZ(layer, method, coord, nodes, cache);
     if (result) {
-        result.coord._values[2] += offset;
-        result.coord.as(vecCRS, temp.coord2).xyz(vec);
+        result.coord.z += offset;
+        result.coord.as(vecCRS, temp.coord2).toVector3(vec);
         if (matrices.localFromWorld) {
             vec.applyMatrix4(matrices.localFromWorld);
         }

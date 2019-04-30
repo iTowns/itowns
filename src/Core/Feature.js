@@ -86,7 +86,7 @@ export class FeatureGeometry {
             coord.geodesicNormal.toArray(this._feature.normals, this._feature._pos);
         }
 
-        this._feature._pushValues(this._feature, coord._values[0], coord._values[1], coord._values[2]);
+        this._feature._pushValues(this._feature, coord.x, coord.y, coord.z);
         // expand extent if present
         if (this._currentExtent) {
             this._currentExtent.expandByCoordinates(coord);

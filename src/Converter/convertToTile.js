@@ -27,7 +27,7 @@ function setTileFromTiledLayer(tile, tileLayer) {
         // Computes a point used for horizon culling.
         // If the point is below the horizon,
         // the tile is guaranteed to be below the horizon as well.
-        tile.horizonCullingPoint = tile.extent.center().as('EPSG:4978').xyz();
+        tile.horizonCullingPoint = tile.extent.center().as('EPSG:4978').toVector3();
         tile.extent.dimensions(dimensions).multiplyScalar(THREE.Math.DEG2RAD);
 
         // alpha is maximum angle between two points of tile

@@ -1,8 +1,8 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 
 function pointIsOverLine(point, linePoints, epsilon, offset, count, size) {
-    const x0 = point._values[0];
-    const y0 = point._values[1];
+    const x0 = point.x;
+    const y0 = point.y;
     // for each segment of the line (j is i -1)
     for (var i = offset + size, j = offset; i < offset + count; j = i, i += size) {
         /* **********************************************************
@@ -49,8 +49,8 @@ function pointIsOverLine(point, linePoints, epsilon, offset, count, size) {
 }
 
 function getClosestPoint(point, points, epsilon, offset, count, size) {
-    const x0 = point._values[0];
-    const y0 = point._values[1];
+    const x0 = point.x;
+    const y0 = point.y;
     let squaredEpsilon = epsilon * epsilon;
     let closestPoint;
     for (var i = offset; i < offset + count; i += size) {
@@ -71,8 +71,8 @@ function pointIsInsidePolygon(point, polygonPoints, offset, count, size) {
     // ray-casting algorithm based on
     // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 
-    const x = point._values[0];
-    const y = point._values[1];
+    const x = point.x;
+    const y = point.y;
 
     let inside = false;
     // in first j is last point of polygon

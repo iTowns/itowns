@@ -93,7 +93,7 @@ const CoordStars = {
         var dayMilliSec = 24 * 3600000;
         var longitude = sun.ascension + ((date % dayMilliSec) / dayMilliSec) * -360 + 180; // cause midday
         var coSunCarto = new Coordinates('EPSG:4326', longitude, lat, 50000000)
-            .as('EPSG:4978').xyz();
+            .as('EPSG:4978').toVector3();
 
         return coSunCarto;
     },

@@ -37,7 +37,7 @@ const xyz = new Coordinates('EPSG:4978', 0, 0, 0);
 const c = new Coordinates('EPSG:4326', 0, 0, 0);
 // Position object on globe
 function positionObject(newPosition, object) {
-    xyz.set('EPSG:4978', newPosition).as('EPSG:4326', c);
+    xyz.setFromVector3(newPosition).as('EPSG:4326', c);
     object.position.copy(newPosition);
     object.lookAt(c.geodesicNormal.add(newPosition));
     object.rotateX(Math.PI * 0.5);
@@ -934,7 +934,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         this.camera.layers.enable(layerTHREEjs);
     }
 
-    positionObject(targetCoordinate.as('EPSG:4978').xyz(), cameraTarget);
+    positionObject(targetCoordinate.as('EPSG:4978', xyz), cameraTarget);
 
     this.lookAtCoordinate({
         coord: targetCoordinate,

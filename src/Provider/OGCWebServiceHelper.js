@@ -49,12 +49,12 @@ export default {
         const zoom = Math.floor(Math.log2(tileCount));
 
         // Now that we have computed zoom, we can deduce x and y (or row / column)
-        const x = (c.x() - extent.west) / layerDimension.x;
+        const x = (c.x - extent.west) / layerDimension.x;
         let y;
         if (isInverted) {
-            y = (extent.north - c.y()) / layerDimension.y;
+            y = (extent.north - c.y) / layerDimension.y;
         } else {
-            y = (c.y() - extent.south) / layerDimension.y;
+            y = (c.y - extent.south) / layerDimension.y;
         }
 
         return [new Extent('TMS', zoom, Math.floor(y * tileCount), Math.floor(x * tileCount))];
