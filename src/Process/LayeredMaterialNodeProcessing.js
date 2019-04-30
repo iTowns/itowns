@@ -161,7 +161,11 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             // TODO: Handle error : result is undefined in provider. throw error
             const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(extentsSource[i], nodeLayer.offsetScales[i]));
             nodeLayer.setTextures(result, pitchs);
-            node.layerUpdateState[layer.id].success();
+            if (layer.source.isFileSource) {
+                node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            } else {
+                node.layerUpdateState[layer.id].success();
+            }
         },
         err => handlingError(err, node, layer, targetLevel, context.view));
 }
