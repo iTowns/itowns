@@ -100,9 +100,8 @@
                     var coord = new itowns.Coordinates(feature.crs, vertices[0], vertices[1], vertices[2]);
 
                     // set model position to the ground
-                    var position = coord.xyz();
-                    position.z = 0;
-                    model.position.copy(position);
+                    model.position.copy(coord);
+                    model.position.z = 0;
 
                     // set model orientation (quaternion is the target parameter)
                     itowns.OrientationUtils.quaternionFromAttitude(feature.geometry[0].properties, undefined, false, model.quaternion);

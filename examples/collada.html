@@ -57,7 +57,7 @@
             }
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            
+
             // ThreeLoader can load each format proposed in ThreeJs examples loaders : https://github.com/mrdoob/three.js/tree/dev/examples/js/loaders
             var promiseCollada = ThreeLoader.load('Collada', 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae')
             .then(collada => {
@@ -67,7 +67,7 @@
                 var coord = new itowns.Coordinates('EPSG:4326', 4.2165, 44.844, 1417);
                 var colladaID = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
 
-                model.position.copy(coord.as(view.referenceCrs).xyz());
+                model.position.copy(coord.as(view.referenceCrs));
                 // align up vector with geodesic normal
                 model.lookAt(model.position.clone().add(coord.geodesicNormal));
                 // user rotate building to align with ortho image
