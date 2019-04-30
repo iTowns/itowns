@@ -166,14 +166,22 @@ class Extent {
             // Compute min/max in x/y by projecting 8 cardinal points,
             // and then taking the min/max of each coordinates.
             const center = this.center(_c);
-            cardinals[0].set(this.crs, this.west, this.north);
-            cardinals[1].set(this.crs, center._values[0], this.north);
-            cardinals[2].set(this.crs, this.east, this.north);
-            cardinals[3].set(this.crs, this.east, center._values[1]);
-            cardinals[4].set(this.crs, this.east, this.south);
-            cardinals[5].set(this.crs, center._values[0], this.south);
-            cardinals[6].set(this.crs, this.west, this.south);
-            cardinals[7].set(this.crs, this.west, center._values[1]);
+            cardinals[0].crs = this.crs;
+            cardinals[0].setFromValues(this.west, this.north);
+            cardinals[1].crs = this.crs;
+            cardinals[1].setFromValues(center.x, this.north);
+            cardinals[2].crs = this.crs;
+            cardinals[2].setFromValues(this.east, this.north);
+            cardinals[3].crs = this.crs;
+            cardinals[3].setFromValues(this.east, center.y);
+            cardinals[4].crs = this.crs;
+            cardinals[4].setFromValues(this.east, this.south);
+            cardinals[5].crs = this.crs;
+            cardinals[5].setFromValues(center.x, this.south);
+            cardinals[6].crs = this.crs;
+            cardinals[6].setFromValues(this.west, this.south);
+            cardinals[7].crs = this.crs;
+            cardinals[7].setFromValues(this.west, center.y);
 
             let north = -Infinity;
             let south = Infinity;
@@ -183,14 +191,14 @@ class Extent {
             for (let i = 0; i < cardinals.length; i++) {
                 // convert the coordinate.
                 cardinals[i].as(crs, _c);
-                north = Math.max(north, _c._values[1]);
-                south = Math.min(south, _c._values[1]);
-                east = Math.max(east, _c._values[0]);
-                west = Math.min(west, _c._values[0]);
+                north = Math.max(north, _c.y);
+                south = Math.min(south, _c.y);
+                east = Math.max(east, _c.x);
+                west = Math.min(west, _c.x);
             }
 
-            target.set(west, east, south, north);
             target.crs = crs;
+            target.set(west, east, south, north);
             return target;
         }
 
@@ -205,16 +213,15 @@ class Extent {
      * @param {Coordinates} target copy the center to the target.
      * @return {Coordinates}
      */
-    center(target) {
+    center(target = new Coordinates(this.crs)) {
         if (this.isTiledCrs()) {
             throw new Error('Invalid operation for WMTS bbox');
         }
         this.dimensions(_dim);
-        if (target) {
-            target.set(this.crs, this.west + _dim.x * 0.5, this.south + _dim.y * 0.5);
-        } else {
-            target = new Coordinates(this.crs, this.west + _dim.x * 0.5, this.south + _dim.y * 0.5);
-        }
+
+        target.crs = this.crs;
+        target.setFromValues(this.west + _dim.x * 0.5, this.south + _dim.y * 0.5, target.z);
+
         return target;
     }
 
@@ -243,17 +250,10 @@ class Extent {
     isPointInside(coord, epsilon = 0) {
         const c = (this.crs == coord.crs) ? coord : coord.as(this.crs, _c);
         // TODO this ignores altitude
-        if (CRS.isGeographic(this.crs)) {
-            return c.longitude() <= this.east + epsilon &&
-                   c.longitude() >= this.west - epsilon &&
-                   c.latitude() <= this.north + epsilon &&
-                   c.latitude() >= this.south - epsilon;
-        } else {
-            return c.x() <= this.east + epsilon &&
-                   c.x() >= this.west - epsilon &&
-                   c.y() <= this.north + epsilon &&
-                   c.y() >= this.south - epsilon;
-        }
+        return c.x <= this.east + epsilon &&
+               c.x >= this.west - epsilon &&
+               c.y <= this.north + epsilon &&
+               c.y >= this.south - epsilon;
     }
 
     /**
@@ -391,12 +391,12 @@ class Extent {
             } else {
                 throw new Error('Invalid values to set');
             }
-        } else if (v0 instanceof Coordinates) {
+        } else if (v0.isCoordinates) {
             // seem never used
-            this.west = v0._values[0];
-            this.east = v1._values[0];
-            this.south = v0._values[1];
-            this.north = v1._values[1];
+            this.west = v0.x;
+            this.east = v1.x;
+            this.south = v0.y;
+            this.north = v1.y;
         } else if (v0 && v0.west !== undefined) {
             this.west = v0.west;
             this.east = v0.east;
@@ -469,7 +469,7 @@ class Extent {
      */
     expandByCoordinates(coordinates) {
         const coords = coordinates.crs == this.crs ? coordinates : coordinates.as(this.crs, _c);
-        this.expandByValuesCoordinates(coords._values[0], coords._values[1]);
+        this.expandByValuesCoordinates(coords.x, coords.y);
     }
 
     /**
@@ -533,17 +533,17 @@ class Extent {
         this.center(_c);
 
         const northWest = new Extent(this.crs,
-            this.west, _c._values[0],
-            _c._values[1], this.north);
+            this.west, _c.x,
+            _c.y, this.north);
         const northEast = new Extent(this.crs,
-            _c._values[0], this.east,
-            _c._values[1], this.north);
+            _c.x, this.east,
+            _c.y, this.north);
         const southWest = new Extent(this.crs,
-            this.west, _c._values[0],
-            this.south, _c._values[1]);
+            this.west, _c.x,
+            this.south, _c.y);
         const southEast = new Extent(this.crs,
-            _c._values[0], this.east,
-            this.south, _c._values[1]);
+            _c.x, this.east,
+            this.south, _c.y);
 
         return [northWest, northEast, southWest, southEast];
     }

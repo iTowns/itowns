@@ -19,19 +19,17 @@ class Ellipsoid {
     }
 
     geodeticSurfaceNormal(cartesian, target = new THREE.Vector3()) {
-        return cartesian.xyz(target).multiply(this._invRadiiSquared).normalize();
+        return cartesian.toVector3(target).multiply(this._invRadiiSquared).normalize();
     }
 
     geodeticSurfaceNormalCartographic(coordCarto, target = new THREE.Vector3()) {
-        const longitude = THREE.Math.degToRad(coordCarto.longitude());
-        const latitude = THREE.Math.degToRad(coordCarto.latitude());
+        const longitude = THREE.Math.degToRad(coordCarto.longitude);
+        const latitude = THREE.Math.degToRad(coordCarto.latitude);
         const cosLatitude = Math.cos(latitude);
 
-        const x = cosLatitude * Math.cos(longitude);
-        const y = cosLatitude * Math.sin(longitude);
-        const z = Math.sin(latitude);
-
-        return target.set(x, y, z);
+        return target.set(cosLatitude * Math.cos(longitude),
+            cosLatitude * Math.sin(longitude),
+            Math.sin(latitude));
     }
 
     setSize(size) {
@@ -53,7 +51,7 @@ class Ellipsoid {
 
         target.divideScalar(gamma);
 
-        normal.multiplyScalar(coordCarto.altitude());
+        normal.multiplyScalar(coordCarto.altitude);
 
         return target.add(normal);
     }
@@ -87,10 +85,7 @@ class Ellipsoid {
 
         const h = (rsqXY * Math.cos(phi)) + position.z * Math.sin(phi) - a * Math.sqrt(1 - e * Math.sin(phi) * Math.sin(phi));
 
-        return target.set('EPSG:4326',
-            THREE.Math.radToDeg(theta),
-            THREE.Math.radToDeg(phi),
-            h);
+        return target.setFromValues(THREE.Math.radToDeg(theta), THREE.Math.radToDeg(phi), h);
     }
 
     cartographicToCartesianArray(coordCartoArray) {
@@ -140,10 +135,10 @@ class Ellipsoid {
     }
 
     computeDistance(coordCarto1, coordCarto2) {
-        var longitude1 = THREE.Math.degToRad(coordCarto1.longitude());
-        var latitude1 = THREE.Math.degToRad(coordCarto1.latitude());
-        var longitude2 = THREE.Math.degToRad(coordCarto2.longitude());
-        var latitude2 = THREE.Math.degToRad(coordCarto2.latitude());
+        var longitude1 = THREE.Math.degToRad(coordCarto1.longitude);
+        var latitude1 = THREE.Math.degToRad(coordCarto1.latitude);
+        var longitude2 = THREE.Math.degToRad(coordCarto2.longitude);
+        var latitude2 = THREE.Math.degToRad(coordCarto2.latitude);
 
         var distRad = Math.acos(Math.sin(latitude1) * Math.sin(latitude2) + Math.cos(latitude1) * Math.cos(latitude2) * Math.cos(longitude2 - longitude1));
 

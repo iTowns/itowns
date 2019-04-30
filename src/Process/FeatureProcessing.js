@@ -140,7 +140,7 @@ export default {
                 if (isApplied) {
                     // NOTE: now data source provider use cache on Mesh
                     // TODO move transform in feature2Mesh
-                    node.extent.center(coord).as(context.view.referenceCrs, coord).xyz(tmp).negate();
+                    node.extent.center(coord).as(context.view.referenceCrs, coord).toVector3(tmp).negate();
                     quaternion.setFromRotationMatrix(node.matrixWorld).inverse();
                     // const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), node.extent.center().geodesicNormal).inverse();
                     applyOffset(result, tmp, quaternion, result.minAltitude);

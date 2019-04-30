@@ -25,7 +25,7 @@ class PlanarTileBuilder {
     // get center tile in cartesian 3D
     center(extent) {
         extent.center(this.tmp.coords);
-        center.set(this.tmp.coords.x(), this.tmp.coords.y(), 0);
+        center.set(this.tmp.coords.x, this.tmp.coords.y, 0);
         return center;
     }
 

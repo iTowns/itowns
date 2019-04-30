@@ -119,8 +119,9 @@ class Atmosphere extends GeometryLayer {
 
         const renderer = context.view.mainLoop.gfxEngine.renderer;
         // get altitude camera
-        coordCam.set(context.view.referenceCrs, cameraPosition).as('EPSG:4326', coordGeoCam);
-        const altitude = coordGeoCam.altitude();
+        coordCam.crs = context.view.referenceCrs;
+        coordCam.setFromVector3(cameraPosition).as('EPSG:4326', coordGeoCam);
+        const altitude = coordGeoCam.altitude;
 
         // If the camera altitude is below limitAlti,
         // we interpolate between the sky color and the space color

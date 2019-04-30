@@ -25,7 +25,8 @@ function readCRS(json) {
 const coord = new Coordinates('EPSG:4978', 0, 0, 0);
 // filter with the first point
 const firstPtIsOut = (extent, aCoords, crs) => {
-    coord.set(crs, aCoords[0][0], aCoords[0][1], 0);
+    coord.crs = crs;
+    coord.setFromArray(aCoords[0]);
     return !extent.isPointInside(coord);
 };
 const toFeature = {
@@ -35,7 +36,8 @@ const toFeature = {
 
         // coordinates is a list of pair [[x1, y1], [x2, y2], ..., [xn, yn]]
         for (const pair of coordinates) {
-            coord.set(crsIn, pair[0], pair[1], useAlti ? pair[2] : 0);
+            coord.crs = crsIn;
+            coord.setFromValues(pair[0], pair[1], useAlti ? pair[2] : 0);
             geometry.pushCoordinates(coord);
         }
         geometry.updateExtent();

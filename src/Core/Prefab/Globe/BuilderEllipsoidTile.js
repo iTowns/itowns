@@ -41,7 +41,7 @@ class BuilderEllipsoidTile {
         // transformation to align tile's normal to z axis
         params.quatNormalToZ = new THREE.Quaternion().setFromAxisAngle(
             axisY,
-            -(Math.PI * 0.5 - THREE.Math.degToRad(params.extent.center().latitude())));
+            -(Math.PI * 0.5 - THREE.Math.degToRad(params.extent.center().latitude)));
 
         // let's avoid building too much temp objects
         params.projected = { longitude: 0, latitude: 0 };
@@ -50,17 +50,16 @@ class BuilderEllipsoidTile {
     // get center tile in cartesian 3D
     center(extent) {
         return extent.center(this.tmp.coords[0])
-            .as('EPSG:4978', this.tmp.coords[1]).xyz();
+            .as('EPSG:4978', this.tmp.coords[1]).toVector3();
     }
 
     // get position 3D cartesian
     vertexPosition(params) {
-        this.tmp.coords[0].set(
-            'EPSG:4326',
+        this.tmp.coords[0].setFromValues(
             params.projected.longitude,
             params.projected.latitude);
 
-        this.tmp.coords[0].as('EPSG:4978', this.tmp.coords[1]).xyz(this.tmp.position);
+        this.tmp.coords[0].as('EPSG:4978', this.tmp.coords[1]).toVector3(this.tmp.position);
         return this.tmp.position;
     }
 
@@ -102,7 +101,7 @@ class BuilderEllipsoidTile {
         // compute rotation to transform tile to position it on ellipsoid
         // this transformation take into account the transformation of the parents
         const rotLon = THREE.Math.degToRad(extent.west - sharableExtent.west);
-        const rotLat = THREE.Math.degToRad(90 - extent.center(this.tmp.coords[0]).latitude());
+        const rotLat = THREE.Math.degToRad(90 - extent.center(this.tmp.coords[0]).latitude);
         quatToAlignLongitude.setFromAxisAngle(axisZ, rotLon);
         quatToAlignLatitude.setFromAxisAngle(axisY, rotLat);
         quatToAlignLongitude.multiply(quatToAlignLatitude);

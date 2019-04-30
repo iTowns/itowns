@@ -140,7 +140,7 @@ class OBB extends THREE.Object3D {
             this.quaternion.copy(quaternion);
             this.updateMatrixWorld(true);
         } else if (!extent.isTiledCrs() && CRS.isMetricUnit(extent.crs)) {
-            extent.center(coord).xyz(this.position);
+            extent.center(coord).toVector3(this.position);
             extent.dimensions(dimension);
             size.set(dimension.x, dimension.y, Math.abs(maxHeight - minHeight));
             this.box3D.setFromCenterAndSize(center, size);
