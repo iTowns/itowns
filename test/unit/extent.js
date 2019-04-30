@@ -163,8 +163,8 @@ describe('Extent', function () {
     it('should return center of extent expected', function () {
         const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
         const center = withValues.center();
-        assert.equal(5, center.longitude());
-        assert.equal(1, center.latitude());
+        assert.equal(5, center.longitude);
+        assert.equal(1, center.latitude);
     });
     it('should return dimensions of extent expected', function () {
         const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);

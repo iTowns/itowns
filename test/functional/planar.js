@@ -28,7 +28,7 @@ describe('planar', function _() {
 
         // get range with depth buffer and altitude
         await page.evaluate((l) => {
-            const lookat = extent.center().xyz();
+            const lookat = extent.center().toVector3();
 
             view.camera.camera3D.position.copy(lookat);
             view.camera.camera3D.position.z = l;

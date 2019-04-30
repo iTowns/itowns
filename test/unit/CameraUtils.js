@@ -46,8 +46,8 @@ describe('Camera utils unit test', function () {
         const params = { range, coord };
         CameraUtils.transformCameraToLookAtTarget(view, camera, params).then((result) => {
             assert.ok(equalToFixed(result.range, params.range, 1));
-            assert.ok(equalToFixed(result.coord.longitude(), params.coord.longitude(), 4));
-            assert.ok(equalToFixed(result.coord.latitude(), params.coord.latitude(), 4));
+            assert.ok(equalToFixed(result.coord.longitude, params.coord.longitude, 4));
+            assert.ok(equalToFixed(result.coord.latitude, params.coord.latitude, 4));
         });
     });
     it('should set range like expected', function () {
@@ -59,10 +59,10 @@ describe('Camera utils unit test', function () {
     });
     it('should look at coordinate like expected', function () {
         const params = { coord: coord.clone() };
-        params.coord.set(coord.crs, params.coord.longitude() + 1, params.coord.latitude() + 1, 0);
+        params.coord.setFromValues(params.coord.longitude + 1, params.coord.latitude + 1, 0);
         CameraUtils.transformCameraToLookAtTarget(view, camera, params).then((result) => {
-            assert.ok(equalToFixed(result.coord.longitude(), params.coord.longitude(), 4));
-            assert.ok(equalToFixed(result.coord.latitude(), params.coord.latitude(), 4));
+            assert.ok(equalToFixed(result.coord.longitude, params.coord.longitude, 4));
+            assert.ok(equalToFixed(result.coord.latitude, params.coord.latitude, 4));
         });
     });
     it('should tilt like expected', function () {
@@ -79,24 +79,24 @@ describe('Camera utils unit test', function () {
     });
     it('should heading, tilt, range and coordinate like expected', function () {
         const params = { heading: 17, tilt: 80, range: 20000, coord: coord.clone() };
-        params.coord.set(coord.crs, params.coord.longitude() + 5, params.coord.latitude() + 5, 0);
+        params.coord.setFromValues(params.coord.longitude + 5, params.coord.latitude + 5, 0);
         CameraUtils.transformCameraToLookAtTarget(view, camera, params).then((result) => {
             assert.ok(equalToFixed(result.heading, params.heading, 4));
             assert.ok(equalToFixed(result.tilt, params.tilt, 4));
             assert.ok(equalToFixed(result.range, params.range, 1));
-            assert.ok(equalToFixed(result.coord.longitude(), params.coord.longitude(), 4));
-            assert.ok(equalToFixed(result.coord.latitude(), params.coord.latitude(), 4));
+            assert.ok(equalToFixed(result.coord.longitude, params.coord.longitude, 4));
+            assert.ok(equalToFixed(result.coord.latitude, params.coord.latitude, 4));
         });
     });
     it('should heading, tilt, range and coordinate like expected with animation (200ms)', function () {
         const params = { heading: 17, tilt: 80, range: 20000, coord: coord.clone(), time: 200 };
-        params.coord.set(coord.crs, params.coord.longitude() + 3, params.coord.latitude() + 4, 0);
+        params.coord.setFromValues(params.coord.longitude + 3, params.coord.latitude + 4, 0);
         CameraUtils.animateCameraToLookAtTarget(view, camera, params).then((result) => {
             assert.ok(equalToFixed(result.heading, params.heading, 4));
             assert.ok(equalToFixed(result.tilt, params.tilt, 4));
             assert.ok(equalToFixed(result.range, params.range, 1));
-            assert.ok(equalToFixed(result.coord.longitude(), params.coord.longitude(), 4));
-            assert.ok(equalToFixed(result.coord.latitude(), params.coord.latitude(), 4));
+            assert.ok(equalToFixed(result.coord.longitude, params.coord.longitude, 4));
+            assert.ok(equalToFixed(result.coord.latitude, params.coord.latitude, 4));
         });
     });
 });

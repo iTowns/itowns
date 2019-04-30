@@ -23,8 +23,8 @@ describe('camera', function () {
         const coordinates = new Coordinates('EPSG:4326', 40, 52, 2002);
         camera.setPosition(coordinates);
         const resultCoordinates = camera.position('EPSG:4326');
-        assert.ok(resultCoordinates.longitude() == coordinates.longitude());
-        assert.ok(resultCoordinates.latitude().toFixed(8) == coordinates.latitude());
-        assert.ok(resultCoordinates.altitude().toFixed(8) == coordinates.altitude());
+        assert.ok(resultCoordinates.longitude == coordinates.longitude);
+        assert.ok(resultCoordinates.latitude.toFixed(8) == coordinates.latitude);
+        assert.ok(resultCoordinates.altitude.toFixed(8) == coordinates.altitude);
     });
 });
