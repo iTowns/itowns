@@ -4,7 +4,7 @@
 // set object ENH orientation: X to the east, Y (green) to the north, Z (blue) look to the sky.
 function placeObjectFromCoordinate(object, coord) {
     // set object position to the coordinate
-    coord.xyz(object.position);
+    coord.toVector3(object.position);
     // set ENH orientation, looking at the sky (Z axis), so Y axis look to the north..
     object.lookAt(coord.geodesicNormal.clone().add(object.position));
 }
@@ -94,7 +94,7 @@ function setupPictureFromCamera(camera, imageUrl, opacity, distance) {
 // BUT keep the geodesic normal as Up vector
 // eslint-disable-next-line no-unused-vars
 function setupViewCameraLookingAtObject(camera, coord, objectToLookAt) {
-    camera.position.copy(coord.xyz());
+    camera.position.copy(coord);
     camera.up.copy(coord.geodesicNormal);
     camera.lookAt(objectToLookAt.getWorldPosition());
 }

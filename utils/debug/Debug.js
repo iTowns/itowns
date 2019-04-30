@@ -168,9 +168,9 @@ function Debug(view, datDebugTool, chartDivContainer) {
             // console.log('distance', distance, distance + bbox.getBoundingSphere(sphere).radius * 2);
 
             // Compute position camera debug
-            const altitudeCameraDebug = 1.5 * coord._values[2];
-            coord._values[2] = altitudeCameraDebug;
-            coord.as(view.referenceCrs).xyz(debugCamera.position);
+            const altitudeCameraDebug = 1.5 * coord.z;
+            coord.z = altitudeCameraDebug;
+            coord.as(view.referenceCrs).toVector3(debugCamera.position);
             // Compute recoil camera
             camera.worldToLocal(debugCamera.position);
             debugCamera.position.z += altitudeCameraDebug;

@@ -99,7 +99,7 @@
             for (index = 0; index < wmsLayers.length; index++) {
                 wms = wmsLayers[index];
                 obj = new itowns.THREE.Object3D();
-                offset = extent.center().xyz().negate().applyEuler(cubeTransformations[index].rotation);
+                offset = extent.center().toVector3().negate().applyEuler(cubeTransformations[index].rotation);
                 offset.add(cubeTransformations[index].position.divide(scale));
                 obj.position.copy(offset);
                 obj.rotation.copy(cubeTransformations[index].rotation);

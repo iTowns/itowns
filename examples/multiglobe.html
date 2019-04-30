@@ -120,11 +120,11 @@
                 }
 
                 if (delta > 0) {
-                    geo.setAltitude(geo.altitude() * 0.9);
+                    geo.altitude *= 0.9;
                 } else {
-                    geo.setAltitude(geo.altitude() * 1.1);
+                    geo.altitude *= 1.1;
                 }
-                view.camera.camera3D.position.copy(geo.as('EPSG:4978').xyz());
+                view.camera.camera3D.position.copy(geo.as('EPSG:4978'));
                 view.notifyChange(view.camera.camera3D);
             };
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);

@@ -86,7 +86,7 @@
 
             // Load camera calibrations
             var calibrations = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/cameraCalibration.json';
-            
+
             // Use the cameraCalibrationParser to create OrientedImageCamera from camera calibration description file.
             promises.push(
                 itowns.Fetcher.json(calibrations, {})
@@ -116,7 +116,7 @@
                     var coord = new itowns.Coordinates(feature.crs, vertices[0], vertices[1], vertices[2]);
 
                     // set model position
-                    model.position.copy(coord.xyz());
+                    model.position.copy(coord);
 
                     // set model orientation (using target parameter)
                     itowns.OrientationUtils.quaternionFromAttitude(feature.geometry[0].properties, coord, true, model.quaternion);
@@ -127,8 +127,8 @@
                     // compute position on the ground
                     coord = coord.as('EPSG:4326');
                     result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, coord, 1, undefined);
-                    coord.setAltitude(result.z);
-                    model.positionOnGround = coord.as(view.referenceCrs).xyz();
+                    coord.altitude = result.z;
+                    model.positionOnGround = coord.as(view.referenceCrs).toVector3();
 
                     // update matrix world and add the model
                     model.updateMatrixWorld();
