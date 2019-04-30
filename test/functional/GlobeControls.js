@@ -66,8 +66,8 @@ describe('GlobeControls with globe example', function _() {
         const coord = result.coord;
         const eps = 0.000001;
 
-        assert.ok(Math.abs(vCoord.longitude - coord._values[0]) < eps);
-        assert.ok(Math.abs(vCoord.latitude - coord._values[1]) < eps);
+        assert.ok(Math.abs(vCoord.longitude - coord.x) < eps);
+        assert.ok(Math.abs(vCoord.latitude - coord.y) < eps);
         assert.ok(Math.abs(tilt - tilts[0]) < eps);
         assert.ok(Math.abs(tilt - tilts[1]) < eps);
         assert.ok(Math.abs(tilt - tilts[2]) < eps);
@@ -113,7 +113,7 @@ describe('GlobeControls with globe example', function _() {
 
         const endCoord = await page.evaluate(() => view.controls.getLookAtCoordinate());
 
-        const diffLongitude = initialPosition.coord._values[0] - endCoord._values[0];
+        const diffLongitude = initialPosition.coord.x - endCoord.x;
         assert.ok(Math.abs(Math.round(diffLongitude)) >= 25);
     });
 

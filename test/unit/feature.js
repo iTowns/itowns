@@ -43,9 +43,9 @@ describe('Feature', function () {
         const featureLine = new Feature(FEATURE_TYPES.LINE, 'EPSG:3857', options_A);
         const geometry = featureLine.bindNewGeometry();
 
-        coord.set('EPSG:4326', -10, -10, 0);
+        coord.setFromValues(-10, -10, 0);
         geometry.pushCoordinates(coord);
-        coord.set('EPSG:4326', 10, 10, 0);
+        coord.setFromValues(10, 10, 0);
         geometry.pushCoordinates(coord);
         geometry.closeSubGeometry(2);
 

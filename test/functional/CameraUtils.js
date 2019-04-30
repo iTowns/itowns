@@ -46,8 +46,8 @@ describe('Camera utils with globe example', function _() {
                 view, camera, { coord },
             ).then(final => final.coord);
         }, params);
-        assert.equal(Math.round(result._values[0]), params.longitude);
-        assert.equal(Math.round(result._values[1]), params.latitude);
+        assert.equal(Math.round(result.x), params.longitude);
+        assert.equal(Math.round(result.y), params.latitude);
     });
 
     it('should tilt like expected', async () => {
@@ -89,8 +89,8 @@ describe('Camera utils with globe example', function _() {
         });
         assert.equal(Math.round(result.final.heading), result.params.heading);
         assert.equal(Math.round(result.final.tilt), result.params.tilt);
-        assert.equal(Math.round(result.final.coord._values[0]), result.params.coord._values[0]);
-        assert.equal(Math.round(result.final.coord._values[1]), result.params.coord._values[1]);
+        assert.equal(Math.round(result.final.coord.x), result.params.coord.x);
+        assert.equal(Math.round(result.final.coord.y), result.params.coord.y);
         assert.equal(Math.round(result.final.range / 10000) * 10000, result.params.range);
     });
 
@@ -112,8 +112,8 @@ describe('Camera utils with globe example', function _() {
         });
         assert.equal(Math.round(result.final.heading), result.params.heading);
         assert.equal(Math.round(result.final.tilt), result.params.tilt);
-        assert.equal(Math.round(result.final.coord._values[0]), result.params.coord._values[0]);
-        assert.equal(Math.round(result.final.coord._values[1]), result.params.coord._values[1]);
+        assert.equal(Math.round(result.final.coord.x), result.params.coord.x);
+        assert.equal(Math.round(result.final.coord.y), result.params.coord.y);
         assert.equal(Math.round(result.final.range / 1000) * 1000, result.params.range);
     });
 });

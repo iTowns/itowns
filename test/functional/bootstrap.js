@@ -235,9 +235,9 @@ afterEach(async () => {
             // eslint-disable-next-line no-param-reassign
             init.coord = new itowns.Coordinates(
                 init.coord.crs,
-                init.coord._values[0],
-                init.coord._values[1],
-                init.coord._values[2],
+                init.coord.x,
+                init.coord.y,
+                init.coord.z,
             );
             view.controls.lookAtCoordinate(init, false);
             view.notifyChange();
