@@ -1,0 +1,51 @@
+<html>
+    <head>
+        <title>Itowns - TIFF Parser with tiled images</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../node_modules/utif/UTIF.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
+        <script src="js/TIFFParser.js"></script>
+        <script type="text/javascript">
+            // # Simple Globe viewer
+
+            // Define initial camera position
+            var positionOnGlobe = { longitude: 1.411667, latitude: 43.6074422,
+                altitude: 25000000 };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var menuGlobe = new GuiTools('menuDiv', view);
+            setupLoadingScreen(viewerDiv, view);
+
+            // Add one imagery layer to the scene, read from TIFFs.
+            var tiffSource = new itowns.TMSSource({
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geoid/localcolors/tiff/${z}/localcolors_${x}_${y}.tif',
+                tileMatrixSet: 'WGS84G',
+                parser: TIFFParser.parse,
+                fetcher: itowns.Fetcher.arrayBuffer,
+                zoom: { min: 0, max: 4 },
+            });
+
+            tiffSource.isInverted = true;
+
+            var tiffLayer = new itowns.ColorLayer('tiff', {
+                source: tiffSource,
+            });
+
+            view.addLayer(tiffLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+        </script>
+    </body>
+</html>
