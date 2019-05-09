@@ -9,20 +9,6 @@ import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 
 import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
-import WMTSSource from 'Source/WMTSSource';
-import WMSSource from 'Source/WMSSource';
-import WFSSource from 'Source/WFSSource';
-import TMSSource from 'Source/TMSSource';
-import FileSource from 'Source/FileSource';
-
-const supportedSource = new Map([
-    ['wmts', WMTSSource],
-    ['file', FileSource],
-    ['wfs', WFSSource],
-    ['wms', WMSSource],
-    ['tms', TMSSource],
-    ['xyz', TMSSource],
-]);
 
 export const VIEW_EVENTS = {
     /**
@@ -165,12 +151,6 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
                 providerPreprocessing = Promise.resolve();
             }
         } else if (layer.source) {
-            if (!layer.source.isSource) {
-                console.warn('Deprecation warning: passing a source as an object is deprecated. Instantiate the source before adding it to the layer instead.');
-                const protocol = layer.source.protocol;
-                layer.source = new (supportedSource.get(protocol))(layer.source, layer.projection);
-            }
-
             providerPreprocessing = layer.source.whenReady || providerPreprocessing;
         }
 
