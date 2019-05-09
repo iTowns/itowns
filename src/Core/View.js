@@ -144,23 +144,19 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
     }
 
     if (!layer.whenReady) {
-        let providerPreprocessing = Promise.resolve();
         if (provider && provider.preprocessDataLayer) {
-            providerPreprocessing = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler, parentLayer);
-            if (!(providerPreprocessing && providerPreprocessing.then)) {
-                providerPreprocessing = Promise.resolve();
-            }
-        } else if (layer.source) {
-            providerPreprocessing = layer.source.whenReady || providerPreprocessing;
+            layer.whenReady = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler, parentLayer);
+        } else if (layer.source && layer.source.whenReady) {
+            layer.whenReady = layer.source.whenReady;
+        } else {
+            layer.whenReady = Promise.resolve();
         }
-
-        // the last promise in the chain must return the layer
-        layer.whenReady = providerPreprocessing.then(() => {
-            layer.ready = true;
-            return layer;
-        });
     }
 
+    layer.whenReady = layer.whenReady.then(() => {
+        layer.ready = true;
+        return layer;
+    });
 
     return layer;
 }
