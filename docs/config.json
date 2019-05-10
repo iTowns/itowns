@@ -11,7 +11,8 @@
                 "TileMesh",
                 "Feature",
                 "FeatureGeometry",
-                "FeatureCollection"
+                "FeatureCollection",
+                "Style"
             ],
 
             "View": [

@@ -112,10 +112,11 @@
             var gpxLayer = new itowns.ColorLayer('Gpx', {
                 transparent: true,
                 style: {
-                    stroke: 'blue',
+                    stroke: { color: 'blue'},
                 },
                 source: gpxSource,
             });
+
             view.addLayer(gpxLayer);
 
             var geoSource = new itowns.FileSource({
@@ -130,9 +131,13 @@
                 transparent: true,
                 source: geoSource,
                 style: {
-                    fill: 'orange',
-                    fillOpacity: 0.2,
-                    stroke: 'white',
+                    fill: { 
+                        color: 'orange',
+                        opacity: 0.2,
+                    },
+                    stroke: {
+                        color:'white'
+                    },
                 },
             });
 

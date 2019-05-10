@@ -54,11 +54,16 @@
                     parsedData: feature,
                 });
 
-                var velibLayer = new itowns.ColorLayer('velib', { source: velibSource });
+                var velibLayer = new itowns.ColorLayer('velib', { source: velibSource,
+                    style: {
+                        point: {
+                            color: 'white',
+                            line: 'green',
+                        }
+                    }});
 
                 view.addLayer(velibLayer);
             });
         </script>
     </body>
 </html>
-

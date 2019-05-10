@@ -76,9 +76,14 @@
             var wfsBuildingLayer = new itowns.ColorLayer('wfsBuilding', {
                 transparent: true,
                 style: {
-                    fill: 'red',
-                    fillOpacity: 0.5,
-                    stroke: 'white',
+                    fill: {
+                        color: 'red',
+                        opacity: 0.5
+                    },
+                    stroke: { 
+                        color: 'white',
+                        width: 2.0,
+                    },
                 },
                 isValidData: isValidData,
                 source: wfsBuildingSource,

@@ -1,5 +1,6 @@
 import Coordinates from 'Core/Geographic/Coordinates';
 import Feature, { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
+import Style from '../Core/Style';
 
 function readCRS(json) {
     if (json.crs) {
@@ -46,6 +47,7 @@ const toFeature = {
 
         const geometry = feature.bindNewGeometry();
         geometry.properties = properties;
+        geometry.properties.style = new Style().setFromGeojsonProperties(properties, feature.type);
         this.populateGeometry(crsIn, coordsIn, geometry, setAltitude);
         feature.updateExtent(geometry);
     },
@@ -56,6 +58,7 @@ const toFeature = {
         }
         const geometry = feature.bindNewGeometry();
         geometry.properties = properties;
+        geometry.properties.style = new Style().setFromGeojsonProperties(properties, feature.type);
 
         // Then read contour and holes
         for (let i = 0; i < coordsIn.length; i++) {

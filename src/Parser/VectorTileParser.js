@@ -3,11 +3,13 @@ import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import { worldDimension3857 } from 'Core/Geographic/Extent';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
+import { featureFilter } from '@mapbox/mapbox-gl-style-spec';
+import Style from 'Core/Style';
 
-const VectorTileFeature = { types: ['Unknown', 'Point', 'LineString', 'Polygon'] };
 const globalExtent = new Vector3(worldDimension3857.x, worldDimension3857.y, 1);
 const lastPoint = new Vector2();
 const firstPoint = new Vector2();
+const styleCache = new Map();
 
 
 // Classify option, it allows to classify a full polygon and its holes.
@@ -95,9 +97,9 @@ const defaultFilter = () => true;
 function readPBF(file, options) {
     const vectorTile = new VectorTile(new Protobuf(file));
     const extentSource = options.extentSource || file.coords;
-    const layers = Object.keys(vectorTile.layers);
+    const sourceLayers = Object.keys(vectorTile.layers);
 
-    if (layers.length < 1) {
+    if (sourceLayers.length < 1) {
         return;
     }
 
@@ -115,21 +117,37 @@ function readPBF(file, options) {
     options.withNormal = false;
 
     const features = new FeatureCollection('EPSG:3857', options);
+    // TODO remove defaultFilter;
     features.filter = options.filter || defaultFilter;
 
-    const vFeature = vectorTile.layers[layers[0]];
+    const vFeature = vectorTile.layers[sourceLayers[0]];
     const size = vFeature.extent * 2 ** z;
     const center = -0.5 * size;
     features.scale.set(size, -size, 1).divide(globalExtent);
     features.translation.set(-(vFeature.extent * x + center), -(vFeature.extent * y + center), 0).divide(features.scale);
 
-    layers.forEach((layer_id) => {
-        const layer = vectorTile.layers[layer_id];
-        for (let i = 0; i < layer.length; i++) {
-            const vtFeature = layer.feature(i);
-            const type = VectorTileFeature.types[vtFeature.type];
-            vtFeature.properties.vt_layer = layer.name;
-            if (features.filter(vtFeature.properties, { type })) {
+    const allLayers = features.filter;
+    if (!features.filter.loaded) {
+        allLayers.forEach((l) => {
+            l.filterExpression = featureFilter(l.filter);
+        });
+        features.filter.loaded = true;
+    }
+
+    sourceLayers.forEach((layer_id) => {
+        const sourceLayer = vectorTile.layers[layer_id];
+        const layersStyle = allLayers.filter(l => sourceLayer.name == l['source-layer']);
+        for (let i = 0; i < sourceLayer.length; i++) {
+            const vtFeature = sourceLayer.feature(i);
+            const layerStyle = layersStyle.filter(l => l.filterExpression({ zoom: extentSource.zoom }, vtFeature))[0];
+            if (layerStyle) {
+                const properties = vtFeature.properties;
+                properties.style = styleCache.get(layerStyle.id);
+                if (!properties.style) {
+                    properties.style = new Style();
+                    properties.style.setFromVectorTileLayer(layerStyle);
+                    styleCache.set(layerStyle.id, properties.style);
+                }
                 const feature = features.getFeatureByType(vtFeature.type - 1);
                 vtFeatureToFeatureGeometry(vtFeature, feature);
             }
