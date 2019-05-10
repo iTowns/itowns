@@ -9,9 +9,9 @@ const paints = [{
 }, {
     'fill-color': 'rgba(0, 0, 0, 0.5)',
 }, {
-    'fill-color': 'hsla(0, 0%, 0%, 0.3)',
+    'fill-color': 'hsla(0, 10%, 0%, 0.3)',
 }, {
-    'line-color': 'hsla(0, 0%, 0%, 0.3)',
+    'line-color': 'hsla(0, 0%, 50%, 0.3)',
     'line-width': 3,
     'line-opacity': 0.4,
 },
@@ -52,26 +52,28 @@ describe('Vector tiles', function () {
             assert.equal(square2[0], square2[4 * size]);
             assert.equal(square2[1], square2[4 * size + 1]);
         }));
-    it('should parse style', () => {
+    it('should parse hsl to style fill color and opacity', () =>
         parse(multipolygon, paints[0], 'fill').then((collection) => {
             const style = collection.features[0].geometry[0].properties.style;
-            assert.equal(style.fill.color, paints[0]['fill-color']);
+            assert.equal(style.fill.color, paints[0]['fill-color'].replace(/ /g, ''));
             assert.equal(style.fill.opacity, 0.5);
-        });
+        }));
+    it('should parse rgba to style fill opacity', () =>
         parse(multipolygon, paints[1], 'fill').then((collection) => {
             const style = collection.features[0].geometry[0].properties.style;
             assert.equal(style.fill.opacity, 0.5);
-        });
+        }));
+    it('should parse hsla to style fill color and opacity', () =>
         parse(multipolygon, paints[2], 'fill').then((collection) => {
             const style = collection.features[0].geometry[0].properties.style;
             assert.equal(style.fill.opacity, 0.3);
-            assert.equal(style.fill.color, paints[2]['fill-color']);
-        });
+            assert.equal(style.fill.color, 'hsl(0,10%,0%)');
+        }));
+    it('should parse line to style line', () =>
         parse(multipolygon, paints[3], 'line').then((collection) => {
             const style = collection.features[0].geometry[0].properties.style;
             assert.equal(style.stroke.opacity, 0.4);
             assert.equal(style.stroke.width, 3);
-            assert.equal(style.stroke.color, paints[2]['fill-color']);
-        });
-    });
+            assert.equal(style.stroke.color, 'hsl(0,0%,50%)');
+        }));
 });
