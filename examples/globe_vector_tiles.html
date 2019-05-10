@@ -15,7 +15,6 @@
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/loading_screen.js"></script>
-        <script src="js/VectorTileStyleSupport.js"></script>
         <script src="../dist/debug.js"></script>
         <script>
             // # Simple Globe viewer + a vector tile layer
@@ -90,8 +89,7 @@
                 var mvtLayer = new itowns.ColorLayer('MVT', {
                     isValidData: isValidData,
                     source: mvtSource,
-                    style: mapboxStyle,
-                    filter: mapboxFilter(supportedLayers),
+                    filter: supportedLayers,
                     backgroundLayer,
                     fx: 2.5,
                 });

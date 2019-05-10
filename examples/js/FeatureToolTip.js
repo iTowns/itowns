@@ -27,7 +27,8 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
         var label;
         var line;
         var point;
-        // var
+        var style;
+
         tooltip.innerHTML = '';
         tooltip.style.display = 'none';
         if (geoCoord) {
@@ -38,15 +39,15 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
 
                 if (!layer.source.parsedData) { continue; }
 
-                result = itowns.FeaturesUtils.filterFeaturesUnderCoordinate(
-                    geoCoord, layer.source.parsedData, precision);
+                result = itowns.FeaturesUtils.filterFeaturesUnderCoordinate(geoCoord, layer.source.parsedData, precision);
 
                 for (p = 0; p < result.length; p++) {
                     visible = true;
                     if (result[p].type === itowns.FEATURE_TYPES.POLYGON) {
                         polygon = result[p].geometry;
-                        color = polygon.properties.fill || layer.style.fill;
-                        stroke = polygon.properties.stroke || layer.style.stroke;
+                        style = layer.style.isStyle ? layer.style : polygon.properties.style;
+                        color = style.fill.color;
+                        stroke = style.stroke.color;
                         name = 'polygon' + id;
                         symb = '<span id=' + name + ' >&#9724</span>';
                         tooltip.innerHTML += symb + ' ' + (polygon.properties.name || polygon.properties.nom || polygon.properties.description || layer.name) + '<br />';
@@ -55,19 +56,21 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
                         ++id;
                     } else if (result[p].type === itowns.FEATURE_TYPES.LINE) {
                         line = result[p].geometry;
-                        color = line.properties.stroke || layer.style.stroke;
+                        style = layer.style.isStyle ? layer.style : line.properties.style;
+                        color = style.stroke.color;
                         symb = '<span style=color:' + color + ';>&#9473</span>';
                         tooltip.innerHTML += symb + ' ' + (line.name || layer.name) + '<br />';
                     } else if (result[p].type === itowns.FEATURE_TYPES.POINT) {
                         point = result[p].geometry;
-                        color = 'white';
+                        style = layer.style.isStyle ? layer.style : point.properties.style;
+                        color = style.point.color;
                         name = 'point' + id;
                         symb = '<span id=' + name + ' style=color:' + color + ';>&#9679</span>';
                         label = point.properties.name || point.properties.description || layer.name;
                         tooltip.innerHTML += '<div>' + symb + ' ' + label + '<br></div>';
                         tooltip.innerHTML += '<span class=coord>long ' + result[p].coordinates[0].toFixed(4) + '<br /></span>';
                         tooltip.innerHTML += '<span class=coord>lati &nbsp; ' + result[p].coordinates[1].toFixed(4) + '<br /></span>';
-                        document.getElementById(name).style['-webkit-text-stroke'] = '1px red';
+                        document.getElementById(name).style['-webkit-text-stroke'] = '1px ' + style.point.line;
                         ++id;
                     }
                 }

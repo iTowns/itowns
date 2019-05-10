@@ -109,7 +109,13 @@
                         transparent: true,
                         source: gpxSource,
                         style: {
-                            stroke: 'red'
+                            stroke: {
+                                color: 'red',
+                            },
+                            point: {
+                                color: 'white',
+                                line: 'red',
+                            }
                         },
                     });
 
@@ -136,9 +142,13 @@
                         name: 'ariege',
                         transparent: true,
                         style: {
-                            fill: 'orange',
-                            fillOpacity: 0.5,
-                            stroke: 'white',
+                            fill: {
+                              color: 'orange',  
+                              opacity: 0.5,
+                            },
+                            stroke: {
+                                color:'white',
+                            },
                         },
                         source: ariegeSource,
                     });
@@ -155,5 +165,3 @@
         </script>
     </body>
 </html>
-
-

@@ -5,21 +5,21 @@ import Coordinates from 'Core/Geographic/Coordinates';
 
 const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
-function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], properties, style = {}, size, extent, invCtxScale) {
+function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style = {}, size, extent, invCtxScale) {
     if (vertices.length === 0) {
         return;
     }
 
     if (style.length) {
         for (const s of style) {
-            _drawPolygon(ctx, vertices, indices, properties, s, size, extent, invCtxScale);
+            _drawPolygon(ctx, vertices, indices, s, size, extent, invCtxScale);
         }
     } else {
-        _drawPolygon(ctx, vertices, indices, properties, style, size, extent, invCtxScale);
+        _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale);
     }
 }
 
-function _drawPolygon(ctx, vertices, indices, properties = {}, style, size, extent, invCtxScale) {
+function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale) {
     // build contour
     ctx.beginPath();
     for (const indice of indices) {
@@ -34,39 +34,36 @@ function _drawPolygon(ctx, vertices, indices, properties = {}, style, size, exte
     }
 
     // draw line polygon
-    if (style.stroke || properties.stroke) {
-        strokeStyle(style, properties, ctx, invCtxScale);
+    if (style.stroke.color) {
+        strokeStyle(style, ctx, invCtxScale);
         ctx.stroke();
     }
 
     // fill polygon
-    if (style.fill || properties.fill) {
-        fillStyle(style, properties, ctx);
+    if (style.fill.color) {
+        fillStyle(style, ctx);
         ctx.fill();
     }
 }
 
-function fillStyle(style, properties, ctx) {
-    const fill = style.fill || properties.fill;
-    if (ctx.fillStyle !== fill) {
-        ctx.fillStyle = fill;
+function fillStyle(style, ctx) {
+    if (ctx.fillStyle !== style.fill.color) {
+        ctx.fillStyle = style.fill.color;
     }
-    const alpha = style.fillOpacity || properties['fill-opacity'] || 1.0;
-    if (alpha !== ctx.globalAlpha && typeof alpha == 'number') {
-        ctx.globalAlpha = alpha;
+    if (style.fill.opacity !== ctx.globalAlpha) {
+        ctx.globalAlpha = style.fill.opacity;
     }
 }
 
-function strokeStyle(style, properties, ctx, invCtxScale) {
-    const stroke = style.stroke || properties.stroke;
-    if (ctx.strokeStyle !== stroke) {
-        ctx.strokeStyle = stroke;
+function strokeStyle(style, ctx, invCtxScale) {
+    if (ctx.strokeStyle !== style.stroke.color) {
+        ctx.strokeStyle = style.stroke.color;
     }
-    const width = Math.round((style.strokeWidth || properties['stroke-width'] || 2.0)) * invCtxScale;
+    const width = Math.round((style.stroke.width || 2.0)) * invCtxScale;
     if (ctx.lineWidth !== width) {
         ctx.lineWidth = width;
     }
-    const alpha = style.strokeOpacity || properties['stroke-opacity'] || 1.0;
+    const alpha = style.stroke.opacity == undefined ? 1.0 : style.stroke.opacity;
     if (alpha !== ctx.globalAlpha && typeof alpha == 'number') {
         ctx.globalAlpha = alpha;
     }
@@ -74,54 +71,49 @@ function strokeStyle(style, properties, ctx, invCtxScale) {
 
 function drawPoint(ctx, x, y, style = {}, invCtxScale) {
     ctx.beginPath();
-    const opacity = style.pointOpacity || 1.0;
+    const opacity = style.point.opacity == undefined ? 1.0 : style.point.opacity;
     if (opacity !== ctx.globalAlpha) {
         ctx.globalAlpha = opacity;
     }
 
-    ctx.arc(x, y, style.radius, 0, 2 * Math.PI, false);
-    ctx.fillStyle = style.fill || 'white';
-    ctx.fill();
-    ctx.lineWidth = (style.lineWidth || 1.0) * invCtxScale;
-    ctx.strokeStyle = style.stroke || 'red';
-    ctx.stroke();
+    ctx.arc(x, y, (style.point.radius || 3.0) * invCtxScale, 0, 2 * Math.PI, false);
+    if (style.point.color) {
+        ctx.fillStyle = style.point.color;
+        ctx.fill();
+    }
+    if (style.point.line) {
+        ctx.lineWidth = (style.point.width || 1.0) * invCtxScale;
+        ctx.strokeStyle = style.point.line;
+        ctx.stroke();
+    }
 }
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
-function drawFeature(ctx, feature, extent, style = {}, invCtxScale) {
+function drawFeature(ctx, feature, extent, style, invCtxScale) {
     const extentDim = extent.dimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
-    let gStyle = style;
-    let px;
 
     for (const geometry of feature.geometry) {
         if (geometry.extent.intersectsExtent(extent)) {
             const properties = geometry.properties;
-
-            if (typeof (style) == 'function') {
-                gStyle = style(properties, feature);
-            }
-
-            gStyle.radius = Math.round(gStyle.radius * invCtxScale) || 3 * invCtxScale;
-
-            // cross multiplication to know in the extent system the real size of
-            // the point
-            px = gStyle.radius * scaleRadius;
-
+            const geometryStyle = style.isStyle ? style : properties.style;
             if (feature.type === FEATURE_TYPES.POINT) {
+                // cross multiplication to know in the extent system the real size of
+                // the point
+                const px = (Math.round(geometryStyle.point.radius * invCtxScale) || 3 * invCtxScale) * scaleRadius;
                 for (const indice of geometry.indices) {
                     const offset = indice.offset * feature.size;
                     const count = offset + indice.count * feature.size;
                     for (let j = offset; j < count; j += feature.size) {
                         coord.set(extent.crs, feature.vertices[j], feature.vertices[j + 1]);
                         if (extent.isPointInside(coord, px)) {
-                            drawPoint(ctx, feature.vertices[j], feature.vertices[j + 1], gStyle, invCtxScale);
+                            drawPoint(ctx, feature.vertices[j], feature.vertices[j + 1], geometryStyle, invCtxScale);
                         }
                     }
                 }
             } else {
-                drawPolygon(ctx, feature.vertices, geometry.indices, properties, gStyle, feature.size, extent, invCtxScale);
+                drawPolygon(ctx, feature.vertices, geometry.indices, geometryStyle, feature.size, extent, invCtxScale);
             }
         }
     }

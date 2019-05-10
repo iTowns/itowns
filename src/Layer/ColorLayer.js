@@ -1,6 +1,7 @@
 import Layer from 'Layer/Layer';
 import { updateLayeredMaterialNodeImagery, removeLayeredMaterialNodeLayer } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
+import Style from 'Core/Style';
 
 /**
  * Fires when the visiblity of the layer has changed.
@@ -58,7 +59,7 @@ class ColorLayer extends Layer {
     constructor(id, config = {}) {
         super(id, config);
         this.isColorLayer = true;
-        this.style = config.style || {};
+        this.style = config.style ? new Style(config.style) : {};
         this.defineLayerProperty('visible', true);
         this.defineLayerProperty('opacity', 1.0);
         this.defineLayerProperty('sequence', 0);

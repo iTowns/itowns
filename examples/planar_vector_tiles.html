@@ -12,7 +12,6 @@
         <div id="viewerDiv"></div>
         <script src="../dist/itowns.js"></script>
         <script src="js/loading_screen.js"></script>
-        <script src="js/VectorTileStyleSupport.js"></script>
         <script>
             // # Planar view with one single layer of vector tile
 
@@ -90,8 +89,7 @@
                 var mvtLayer = new itowns.ColorLayer('MVT', {
                     isValidData: isValidData,
                     source: mvtSource,
-                    filter: mapboxFilter(supportedLayers),
-                    style: mapboxStyle,
+                    filter: supportedLayers,
                     backgroundLayer,
                     projection: 'EPSG:3857',
                 });
