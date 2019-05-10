@@ -10,7 +10,7 @@ export { default as Fetcher } from 'Provider/Fetcher';
 export { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 export { default as View } from 'Core/View';
 export { VIEW_EVENTS } from 'Core/View';
-export { FEATURE_TYPES } from 'Core/Feature';
+export { default as Feature, FeatureCollection, FeatureGeometry, FEATURE_TYPES } from 'Core/Feature';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from 'Process/3dTilesProcessing';
 export { $3dTilesExtensions, $3dTilesAbstractExtension } from 'Provider/3dTilesProvider';
 export { default as FeatureProcessing } from 'Process/FeatureProcessing';

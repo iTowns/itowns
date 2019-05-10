@@ -24,7 +24,7 @@ const defaultNormal = new THREE.Vector3(0, 0, 1);
  * @property {Object} properties - Properties of the geometry. It can be
  * anything specified in the GeoJSON under the `properties` property.
  */
-class FeatureGeometry {
+export class FeatureGeometry {
     /**
      * @param {Feature} feature geometry
      */
