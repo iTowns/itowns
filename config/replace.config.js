@@ -48,7 +48,7 @@ const starting_promise = replace({
     // eslint-disable-next-line no-console
     console.log('Patched Files:');
     // eslint-disable-next-line no-console
-    console.log(`\t${t.map(f => path.basename(f)).join('\n\t')}`);
+    console.log(`\t${t.map(f => path.basename(f.file)).join('\n\t')}`);
 });
 
 patchs.push(() => replace({
