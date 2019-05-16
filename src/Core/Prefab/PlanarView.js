@@ -6,11 +6,6 @@ import CameraUtils from 'Utils/CameraUtils';
 
 import PlanarLayer from './Planar/PlanarLayer';
 
-export function createPlanarLayer(id, extent, options) {
-    console.warn('createPlanarLayer is deprecated, use the PlanarLayer class instead.');
-    return new PlanarLayer(id, extent, options.object3d, options);
-}
-
 function PlanarView(viewerDiv, extent, options = {}) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
 

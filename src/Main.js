@@ -4,8 +4,8 @@ export { default as Coordinates } from 'Core/Geographic/Coordinates';
 export { default as CRS } from 'Core/Geographic/Crs';
 
 export { default as Ellipsoid, ellipsoidSizes } from 'Core/Math/Ellipsoid';
-export { default as GlobeView, GLOBE_VIEW_EVENTS, createGlobeLayer } from 'Core/Prefab/GlobeView';
-export { default as PlanarView, createPlanarLayer } from 'Core/Prefab/PlanarView';
+export { default as GlobeView, GLOBE_VIEW_EVENTS } from 'Core/Prefab/GlobeView';
+export { default as PlanarView } from 'Core/Prefab/PlanarView';
 export { default as Fetcher } from 'Provider/Fetcher';
 export { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 export { default as View } from 'Core/View';
