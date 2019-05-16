@@ -64,11 +64,6 @@ export const GLOBE_VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED,
 };
 
-export function createGlobeLayer(id, options = {}) {
-    console.warn('createGlobeLayer is deprecated, use the GlobeLayer class instead.');
-    return new GlobeLayer(id, options.object3d, options);
-}
-
 /**
  * Creates a view of a globe.
  *
