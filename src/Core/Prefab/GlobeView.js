@@ -157,6 +157,11 @@ class GlobeView extends View {
         if (layer.isColorLayer) {
             const colorLayerCount = this.getLayers(l => l.isColorLayer).length;
             layer.sequence = colorLayerCount;
+            if ((layer.source.isWMTSSource || layer.source.isTMSSource)
+                && layer.source.tileMatrixSet !== 'WGS84G'
+                && layer.source.tileMatrixSet !== 'PM') {
+                throw new Error('Only WGS84G and PM tileMatrixSet are currently supported for WMTS/TMS color layers');
+            }
         } else if (layer.isElevationLayer) {
             if (layer.source.isWMTSSource && layer.source.tileMatrixSet !== 'WGS84G') {
                 throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');

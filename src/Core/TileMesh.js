@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import OGCWebServiceHelper from 'Provider/OGCWebServiceHelper';
-import CRS from 'Core/Geographic/Crs';
+import Projection from 'Core/Geographic/Projection';
 
 /**
  * A TileMesh is a THREE.Mesh with a geometricError and an OBB
@@ -35,7 +35,11 @@ class TileMesh extends THREE.Mesh {
         this.obb = this.geometry.OBB.clone();
         this.boundingSphere = new THREE.Sphere();
         this.obb.box3D.getBoundingSphere(this.boundingSphere);
-        this.wmtsCoords = {};
+        this.tilesetExtents = {};
+
+        // Compute it one time only
+        this.tilesetExtents.WGS84G = [Projection.extent_Epsg4326_To_WmtsWgs84g(this.extent)];
+        this.tilesetExtents.PM = Projection.computeWmtsPm(this.tilesetExtents.WGS84G[0], this.extent);
 
         this.frustumCulled = false;
         this.matrixAutoUpdate = false;
@@ -63,31 +67,14 @@ class TileMesh extends THREE.Mesh {
         }
     }
 
-    getCoordsForSource(source) {
-        if (source.isWMTSSource) {
-            OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, source.tileMatrixSet);
-            return this.wmtsCoords[source.tileMatrixSet];
-        } else if (source.isWMSSource && this.extent.crs != source.projection) {
-            if (source.projection == 'EPSG:3857') {
-                const tilematrixset = 'PM';
-                OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, tilematrixset);
-                return this.wmtsCoords[tilematrixset];
-            } else {
-                throw new Error('unsupported projection wms for this viewer');
-            }
-        } else if (source.isTMSSource) {
-            // Special globe case: use the P(seudo)M(ercator) coordinates
-            if (CRS.is4326(this.extent.crs) &&
-                    (source.extent.crs == 'EPSG:3857' || CRS.is4326(source.extent.crs))) {
-                OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, 'PM');
-                return this.wmtsCoords.PM;
-            } else {
-                return OGCWebServiceHelper.computeTMSCoordinates(this, source.extent, source.isInverted);
-            }
+    getExtentsForSource(source) {
+        // TODO: The only case that needs a dependency on the source, an
+        // alternative may be found to have only the CRS as a parameter
+        if (source.isTMSSource && !this.layer.isGlobeLayer) {
+            return OGCWebServiceHelper.computeTMSCoordinates(this, source.extent, source.isInverted);
+        } else if (Array.isArray(this.tilesetExtents[source.tileMatrixSet])) {
+            return this.tilesetExtents[source.tileMatrixSet];
         } else if (source.extent.crs == this.extent.crs) {
-            // Currently extent.as() always clone the extent, even if the output
-            // crs is the same.
-            // So we avoid using it if both crs are the same.
             return [this.extent];
         } else {
             return [this.extent.as(source.extent.crs)];
@@ -95,7 +82,7 @@ class TileMesh extends THREE.Mesh {
     }
 
     getZoomForLayer(layer) {
-        return this.getCoordsForSource(layer.source)[0].zoom || this.level;
+        return this.getExtentsForSource(layer.source)[0].zoom || this.level;
     }
 
     /**

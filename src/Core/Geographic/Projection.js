@@ -12,6 +12,10 @@ const PI_OV_TWO = Math.PI / 2;
 const INV_TWO_PI = 1.0 / (Math.PI * 2);
 const LOG_TWO = Math.log(2.0);
 
+// TODO: Clamp to 85.0511288° because:
+// longitude 180° to X EPSG:3857 = 20037508.34m
+// To get a square, we convert Y 20037508.34m to latitude, we get 85.0511288°
+// Change it when we will change worldDimension3857 in Extent.js
 function WGS84LatitudeClamp(latitude) {
     return Math.min(84, Math.max(-86, latitude));
 }
@@ -21,96 +25,72 @@ const center = new Coordinates('EPSG:4326', 0, 0, 0);
 
 const Projection = {
     /**
-     * Convert latitude to y coordinate in TileMatrixSet
-     * @param {number} latitude - latitude in degrees
-     * @return {number}
+     * Convert latitude to y coordinate in pseudo mercator (EPSG:3857)
+     * @param {number} latitude - latitude in degrees (EPSG:4326)
+     * @return {number} y coordinate in pseudo mercator
      */
-    WGS84ToY(latitude) {
+    latitudeToY_PM(latitude) {
         return 0.5 - Math.log(Math.tan(PI_OV_FOUR + MathExt.degToRad(latitude) * 0.5)) * INV_TWO_PI;
     },
 
     /**
-     * Convert from y coordinate in TileMatrixSet to WGS84 latitude
-     * @param {number} y - coords in TileMatrixSet
-     * @return {number} - latitude in degrees
+     * Convert from y coordinate pseudo mercator (EPSG:3857) to latitude
+     * @param {number} y - y coordinate in pseudo mercator
+     * @return {number} - latitude in degrees (EPSG:4326)
      */
-    YToWGS84(y) {
-        return MathExt.radToDeg(
-            2 * (Math.atan(Math.exp(-(y - 0.5) / INV_TWO_PI)) - PI_OV_FOUR));
+    y_PMTolatitude(y) {
+        return MathExt.radToDeg(2 * (Math.atan(Math.exp(-(y - 0.5) / INV_TWO_PI)) - PI_OV_FOUR));
     },
 
-    getCoordWMTS_WGS84(tileCoord, bbox, tileMatrixSet) {
-        // TODO: PM, WGS84G are hard-coded reference to IGN's TileMatrixSet
-        if (tileMatrixSet === 'PM') {
-            return WMTS_WGS84ToWMTS_PM(tileCoord, bbox);
-        } else if (tileMatrixSet === 'WGS84G') {
-            return [tileCoord.clone()];
-        } else {
-            throw new Error(`Unsupported TileMatrixSet '${tileMatrixSet}'`);
+    computeWmtsPm(extent_wmtsWgs84g, extent_epsg4326) {
+        const extents_WMTS_PM = [];
+        const level = extent_wmtsWgs84g.zoom + 1;
+        const nbRow = 2 ** level;
+
+        const sizeRow = 1.0 / nbRow;
+
+        const yMin = Projection.latitudeToY_PM(WGS84LatitudeClamp(extent_epsg4326.north));
+        const yMax = Projection.latitudeToY_PM(WGS84LatitudeClamp(extent_epsg4326.south));
+
+        let maxRow;
+
+        const min = yMin / sizeRow;
+        const max = yMax / sizeRow;
+
+        const minRow = Math.floor(min);
+        // ]N; N+1] => N
+        maxRow = Math.ceil(max) - 1;
+        // make sure we don't exceed boundaries
+        maxRow = Math.min(maxRow, nbRow - 1);
+
+        const minCol = extent_wmtsWgs84g.col;
+        const maxCol = minCol;
+
+        for (let r = maxRow; r >= minRow; r--) {
+            for (let c = minCol; c <= maxCol; c++) {
+                extents_WMTS_PM.push(new Extent('WMTS:PM', level, r, c));
+            }
         }
+
+        return extents_WMTS_PM;
     },
 
-    WGS84toWMTS(bbox, target = new Extent('WMTS:WGS84G', 0, 0, 0)) {
-        bbox.dimensions(dim);
+    extent_Epsg4326_To_WmtsWgs84g(extent_epsg4326, extent_wmtsWgs84g = new Extent('WMTS:WGS84G', 0, 0, 0)) {
+        extent_epsg4326.dimensions(dim);
 
-        var zoom = Math.floor(
-            Math.log(Math.PI / MathExt.degToRad(dim.y)) / LOG_TWO + 0.5);
+        const zoom = Math.floor(Math.log(Math.PI / MathExt.degToRad(dim.y)) / LOG_TWO + 0.5);
 
-        var nY = 2 ** zoom;
-        var nX = 2 * nY;
+        const nY = 2 ** zoom;
+        const nX = 2 * nY;
 
-        var uX = Math.PI * 2 / nX;
-        var uY = Math.PI / nY;
+        const uX = Math.PI * 2 / nX;
+        const uY = Math.PI / nY;
 
-        bbox.center(center);
-        var col = Math.floor((Math.PI + MathExt.degToRad(center.longitude)) / uX);
-        var row = Math.floor(nY - (PI_OV_TWO + MathExt.degToRad(center.latitude)) / uY);
-        return target.set(zoom, row, col);
-    },
-
-    UnitaryToLongitudeWGS84(u, bbox) {
-        bbox.dimensions(dim);
-        return bbox.west + u * dim.x;
-    },
-
-    UnitaryToLatitudeWGS84(v, bbox) {
-        bbox.dimensions(dim);
-        return bbox.south + v * dim.y;
+        extent_epsg4326.center(center);
+        const col = Math.floor((Math.PI + MathExt.degToRad(center.longitude)) / uX);
+        const row = Math.floor(nY - (PI_OV_TWO + MathExt.degToRad(center.latitude)) / uY);
+        return extent_wmtsWgs84g.set(zoom, row, col);
     },
 };
-
-
-function WMTS_WGS84ToWMTS_PM(cWMTS, bbox) {
-    var wmtsBox = [];
-    var level = cWMTS.zoom + 1;
-    var nbRow = 2 ** level;
-
-    var sizeRow = 1.0 / nbRow;
-
-    var yMin = Projection.WGS84ToY(WGS84LatitudeClamp(bbox.north));
-    var yMax = Projection.WGS84ToY(WGS84LatitudeClamp(bbox.south));
-
-    let maxRow;
-
-    const min = yMin / sizeRow;
-    const max = yMax / sizeRow;
-
-    const minRow = Math.floor(min);
-    // ]N; N+1] => N
-    maxRow = Math.ceil(max) - 1;
-    // make sure we don't exceed boundaries
-    maxRow = Math.min(maxRow, nbRow - 1);
-
-    var minCol = cWMTS.col;
-    var maxCol = minCol;
-
-    for (let r = maxRow; r >= minRow; r--) {
-        for (let c = minCol; c <= maxCol; c++) {
-            wmtsBox.push(new Extent('WMTS:PM', level, r, c));
-        }
-    }
-
-    return wmtsBox;
-}
 
 export default Projection;

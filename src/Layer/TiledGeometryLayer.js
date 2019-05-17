@@ -273,7 +273,7 @@ class TiledGeometryLayer extends GeometryLayer {
         let nodeLayer = node.material.getElevationLayer();
 
         for (const e of context.elevationLayers) {
-            const extents = node.getCoordsForSource(e.source);
+            const extents = node.getExtentsForSource(e.source);
             if (!e.frozen && e.ready && e.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
                 // no stop subdivision in the case of a loading error
                 if (layerUpdateState[e.id] && layerUpdateState[e.id].inError()) {
@@ -291,7 +291,7 @@ class TiledGeometryLayer extends GeometryLayer {
             if (layerUpdateState[c.id] && layerUpdateState[c.id].inError()) {
                 continue;
             }
-            const extents = node.getCoordsForSource(c.source);
+            const extents = node.getExtentsForSource(c.source);
             nodeLayer = node.material.getLayer(c.id);
             if (c.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
                 return false;

@@ -85,7 +85,7 @@ export default {
             return features;
         }
 
-        const extentsDestination = node.getCoordsForSource(layer.source);
+        const extentsDestination = node.getExtentsForSource(layer.source);
         extentsDestination.forEach((e) => { e.zoom = node.level; });
 
         const extentsSource = [];
