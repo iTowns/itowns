@@ -1,30 +1,6 @@
 <html>
     <head>
         <title>Itowns - Globe + color layers from vector data</title>
-
-        <style type="text/css">
-            .tooltip {
-                display: none;
-                background-image: linear-gradient(rgba(80, 80, 80,0.95), rgba(60, 60, 60,0.95));
-                box-shadow: -1px 2px 5px 1px rgba(0, 0, 0, 0.5);
-                margin-top: 20px;
-                margin-left: 20px;
-                padding: 10px;
-                position: absolute;
-                z-index: 1000;
-                color: #CECECE;
-                font-family: 'Open Sans', sans-serif;
-                font-size: 14px;
-                line-height: 18px;
-                text-align: left;
-            }
-            .coord {
-                font-size: 12px;
-                padding-left:20px;
-                color: #93B7C0;
-                text-shadow: 0px 1px 0px rgba(200,200,200,.3), 0px -1px 0px rgba(30,30,30,.7);
-            }
-        </style>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
@@ -33,9 +9,7 @@
         <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
     </head>
     <body>
-        <div id="viewerDiv" class="viewer">
-            <span id="tooltipDiv" class="tooltip"></span>
-        </div>
+        <div id="viewerDiv" class="viewer"></div>
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/loading_screen.js"></script>
@@ -143,7 +117,7 @@
                         transparent: true,
                         style: {
                             fill: {
-                              color: 'orange',  
+                              color: 'orange',
                               opacity: 0.5,
                             },
                             stroke: {
@@ -158,9 +132,7 @@
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function _() {
-                Promise.all(promises).then(new ToolTip(view,
-                    document.getElementById('viewerDiv'),
-                    document.getElementById('tooltipDiv')));
+                Promise.all(promises).then(new ToolTip(view));
             });
         </script>
     </body>
