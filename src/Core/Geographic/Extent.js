@@ -125,8 +125,8 @@ class Extent {
                 } else {
                     const size = 360 / nbCol;
                     // convert Y PM to latitude EPSG:4326 degree
-                    const north = Projection.YToWGS84(Yn);
-                    const south = Projection.YToWGS84(Ys);
+                    const north = Projection.y_PMTolatitude(Yn);
+                    const south = Projection.y_PMTolatitude(Ys);
                     // convert column PM to longitude EPSG:4326 degree
                     const west = 180 - size * (nbCol - this.col);
                     const east = west + size;

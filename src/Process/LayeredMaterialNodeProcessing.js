@@ -59,7 +59,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         return;
     }
 
-    const extentsDestination = node.getCoordsForSource(layer.source);
+    const extentsDestination = node.getExtentsForSource(layer.source);
 
     let nodeLayer = material.getLayer(layer.id);
 
@@ -179,7 +179,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // Elevation is currently handled differently from color layers.
     // This is caused by a LayeredMaterial limitation: only 1 elevation texture
     // can be used (where a tile can have N textures x M layers)
-    const extentsDestination = node.getCoordsForSource(layer.source);
+    const extentsDestination = node.getExtentsForSource(layer.source);
     // Init elevation layer, and inherit from parent if possible
     let nodeLayer = material.getElevationLayer();
     if (!nodeLayer) {

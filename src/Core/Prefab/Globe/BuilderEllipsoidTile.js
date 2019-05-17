@@ -10,7 +10,7 @@ const quatToAlignLongitude = new THREE.Quaternion();
 const quatToAlignLatitude = new THREE.Quaternion();
 
 function WGS84ToOneSubY(latitude) {
-    return 1.0 - Projection.WGS84ToY(latitude);
+    return 1.0 - Projection.latitudeToY_PM(latitude);
 }
 
 class BuilderEllipsoidTile {
@@ -21,6 +21,7 @@ class BuilderEllipsoidTile {
                 new Coordinates('EPSG:4326', 0, 0),
                 new Coordinates('EPSG:4326', 0, 0)],
             position: new THREE.Vector3(),
+            dimension: new THREE.Vector2(),
         };
     }
     // prepare params
@@ -45,6 +46,7 @@ class BuilderEllipsoidTile {
 
         // let's avoid building too much temp objects
         params.projected = { longitude: 0, latitude: 0 };
+        params.extent.dimensions(this.tmp.dimension);
     }
 
     // get center tile in cartesian 3D
@@ -70,12 +72,12 @@ class BuilderEllipsoidTile {
 
     // coord u tile to projected
     uProjecte(u, params) {
-        params.projected.longitude = Projection.UnitaryToLongitudeWGS84(u, params.extent);
+        params.projected.longitude = params.extent.west + u * this.tmp.dimension.x;
     }
 
     // coord v tile to projected
     vProjecte(v, params) {
-        params.projected.latitude = Projection.UnitaryToLatitudeWGS84(v, params.extent);
+        params.projected.latitude = params.extent.south + v * this.tmp.dimension.y;
     }
 
     // Compute uv 1, if isn't defined the uv1 isn't computed

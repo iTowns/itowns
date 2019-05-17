@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import Projection from 'Core/Geographic/Projection';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 
@@ -11,26 +10,7 @@ const tileDimension = new THREE.Vector2();
 export const SIZE_TEXTURE_TILE = 256;
 export const SIZE_DIAGONAL_TEXTURE = Math.pow(2 * (SIZE_TEXTURE_TILE * SIZE_TEXTURE_TILE), 0.5);
 
-const tileCoord = new Extent('WMTS:WGS84G', 0, 0, 0);
-
 export default {
-    computeTileMatrixSetCoordinates(tile, tileMatrixSet) {
-        tileMatrixSet = tileMatrixSet || 'WGS84G';
-        if (!(tileMatrixSet in tile.wmtsCoords)) {
-            if (tile.wmtsCoords.WGS84G) {
-                const c = tile.wmtsCoords.WGS84G[0];
-                tileCoord.zoom = c.zoom;
-                tileCoord.col = c.col;
-                tileCoord.row = c.row;
-            } else {
-                Projection.WGS84toWMTS(tile.extent, tileCoord);
-                tile.wmtsCoords.WGS84G = [tileCoord.clone()];
-            }
-
-            tile.wmtsCoords[tileMatrixSet] =
-                Projection.getCoordWMTS_WGS84(tileCoord, tile.extent, tileMatrixSet);
-        }
-    },
     // The isInverted parameter is to be set to the correct value, true or false
     // (default being false) if the computation of the coordinates needs to be
     // inverted to match the same scheme as OSM, Google Maps or other system.
