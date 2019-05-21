@@ -8,9 +8,10 @@ class BatchTable {
     /**
      * @param {Object} json - batch table json part
      * @param {ArrayBuffer} binary - buffer representing the batch table
+     * @param {number} batchLength the length of the batch.
      * binary part (not supported yet)
      */
-    constructor(json, binary) {
+    constructor(json, binary, batchLength) {
         if (binary !== undefined) {
             console.warn('Binary batch table content not supported yet.');
         }
@@ -19,7 +20,9 @@ class BatchTable {
         // Compute the length of the batch (i.e. the number of features)
         // Note: The batchLength could also be retrieved from the feature table
         // which is currently not supported
-        if (Object.keys(this.content).length === 0) {
+        if (batchLength != undefined) {
+            this.batchLength = batchLength;
+        } else if (Object.keys(this.content).length === 0) {
             console.warn('Batch table is empty.');
             this.batchLength = 0;
         } else {
@@ -103,10 +106,11 @@ export default {
      * @param {ArrayBuffer} buffer - the batch table buffer.
      * @param {integer} BTBinaryLength - length of the binary part of the
      * batch table
+     * @param {number} BATCH_LENGTH the length of the batch.
      * @return {Promise} - a promise that resolves with a BatchTable object.
      *
      */
-    parse(buffer, BTBinaryLength) {
+    parse(buffer, BTBinaryLength, BATCH_LENGTH) {
         // Batch table has a json part and can have a binary part (not
         // supported yet)
         let binary;
@@ -119,7 +123,7 @@ export default {
         const content = utf8Decoder.decode(new Uint8Array(jsonBuffer));
         const json = JSON.parse(content);
 
-        const batchTable = new BatchTable(json, binary);
+        const batchTable = new BatchTable(json, binary, BATCH_LENGTH);
 
         const promises = [];
         // When an extension is found, we call its parser and append the

@@ -37,17 +37,6 @@ function filterUnsupportedSemantics(obj) {
         }
     }
 }
-// parse for RTC values
-function applyOptionalCesiumRTC(data, gltf) {
-    const headerView = new DataView(data, 0, 20);
-    const contentArray = new Uint8Array(data, 20, headerView.getUint32(12, true));
-    const content = utf8Decoder.decode(new Uint8Array(contentArray));
-    const json = JSON.parse(content);
-    if (json.extensions && json.extensions.CESIUM_RTC) {
-        gltf.position.fromArray(json.extensions.CESIUM_RTC.center);
-        gltf.updateMatrixWorld(true);
-    }
-}
 
 /**
  * @module B3dmParser
@@ -80,6 +69,8 @@ export function enableDracoLoader(path, config) {
     glTFLoader.setDRACOLoader(dracoLoader);
     DRACOLoader.getDecoderModule();
 }
+
+const FT_RTC = new THREE.Vector3();
 
 export default {
     /** Parse b3dm buffer and extract THREE.Scene and batch table
@@ -130,20 +121,40 @@ export default {
 
             const headerByteLength = byteOffset + magicNumberByteLength;
             const promises = [];
+            let FTJSON = {};
+            if (b3dmHeader.FTJSONLength > 0) {
+                const sizeBegin = headerByteLength;
+                const jsonBuffer = buffer.slice(sizeBegin, b3dmHeader.FTJSONLength + sizeBegin);
+                const content = utf8Decoder.decode(new Uint8Array(jsonBuffer));
+                FTJSON = JSON.parse(content);
+                if (FTJSON.RTC_CENTER) {
+                    FT_RTC.fromArray(FTJSON.RTC_CENTER);
+                } else {
+                    FT_RTC.set(0, 0, 0);
+                }
+            }
+            if (b3dmHeader.FTBinaryLength > 0) {
+                console.warn('3D Tiles feature table binary not supported yet.');
+            }
+
             // Parse batch table
             if (b3dmHeader.BTJSONLength > 0) {
                 // sizeBegin is an index to the beginning of the batch table
                 const sizeBegin = headerByteLength + b3dmHeader.FTJSONLength +
                     b3dmHeader.FTBinaryLength;
                 promises.push(BatchTableParser.parse(
-                    buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin), b3dmHeader.BTBinaryLength));
+                    buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin), b3dmHeader.BTBinaryLength, FTJSON.BATCH_LENGTH));
             } else {
                 promises.push(Promise.resolve({}));
             }
-            // TODO: missing feature table
-            if (b3dmHeader.FTJSONLength > 0) {
-                console.warn('3D Tiles feature table not supported yet.');
-            }
+
+            const posGltf = headerByteLength +
+                b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength +
+                b3dmHeader.BTJSONLength + b3dmHeader.BTBinaryLength;
+
+            const gltfBuffer = buffer.slice(posGltf);
+            const headerView = new DataView(gltfBuffer, 0, 20);
+
             promises.push(new Promise((resolve/* , reject */) => {
                 const onload = (gltf) => {
                     for (const scene of gltf.scenes) {
@@ -156,11 +167,17 @@ export default {
                         gltf.scene.applyMatrix(matrixChangeUpVectorZtoX);
                     }
 
-                    // RTC managed
-                    applyOptionalCesiumRTC(buffer.slice(headerByteLength +
-                        b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength +
-                        b3dmHeader.BTJSONLength + b3dmHeader.BTBinaryLength),
-                    gltf.scene);
+                    // Apply relative center from Feature table.
+                    gltf.scene.position.copy(FT_RTC);
+
+                    // Apply relative center from gltf json.
+                    const contentArray = new Uint8Array(gltfBuffer, 20, headerView.getUint32(12, true));
+                    const content = utf8Decoder.decode(new Uint8Array(contentArray));
+                    const json = JSON.parse(content);
+                    if (json.extensions && json.extensions.CESIUM_RTC) {
+                        gltf.scene.position.fromArray(json.extensions.CESIUM_RTC.center);
+                        gltf.scene.updateMatrixWorld(true);
+                    }
 
                     const init_mesh = function f_init(mesh) {
                         mesh.frustumCulled = false;
@@ -188,11 +205,7 @@ export default {
                     resolve(gltf);
                 };
 
-                const gltfBuffer = buffer.slice(headerByteLength +
-                    b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength +
-                    b3dmHeader.BTJSONLength + b3dmHeader.BTBinaryLength);
-
-                const version = new DataView(gltfBuffer, 0, 20).getUint32(4, true);
+                const version = headerView.getUint32(4, true);
 
                 if (version === 1) {
                     legacyGLTFLoader.parse(gltfBuffer, urlBase, onload);
