@@ -24,9 +24,10 @@ See the [node website](https://nodejs.org) to install node and npm.
    * You can then require `src/Main.js` in your code
 * Test and lint changes: see test, lint and test-examples npm script
 
-## Debuging
+## Debugging
 * `babel-inline-import-loader` prevents the source map debug in browser.
    if you want launch server and debug with the original source map, run : `npm run debug`.
+* To debug iTowns package on your side project. You can link iTowns package with `npm link ../path/iTowns/` in project folder and auto-transpile to `lib/` when iTowns sources are modified with command `npm run watch` in iTowns folder.
 
 ## Testing
 
