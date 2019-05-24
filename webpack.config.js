@@ -36,49 +36,54 @@ const include = [
     path.resolve(__dirname, 'utils'),
 ];
 
-module.exports = {
-    context: path.resolve(__dirname),
-    resolve: {
-        modules: [path.resolve(__dirname, 'src'), 'node_modules'],
-    },
-    entry: {
-        itowns: ['@babel/polyfill', 'url-polyfill', 'whatwg-fetch', './src/MainBundle.js'],
-        debug: ['./utils/debug/Main.js'],
-    },
-    devtool: 'source-map',
-    output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: '[name].js',
-        library: '[name]',
-        libraryTarget: 'umd',
-        umdNamedDefine: true,
-    },
-    optimization: {
-        runtimeChunk: {
-            name: 'itowns',
+module.exports = (env) => {
+    const babelLoaderOptions = [];
+    if (!(env && env.noInline)) {
+        babelLoaderOptions.push('babel-inline-import-loader');
+    }
+    babelLoaderOptions.push({
+        loader: 'babel-loader',
+        options: babelConf,
+    });
+    return {
+        context: path.resolve(__dirname),
+        resolve: {
+            modules: [path.resolve(__dirname, 'src'), 'node_modules'],
         },
-    },
-    module: {
-        rules: [
-            {
-                test: /\.js$/,
-                enforce: 'pre',
-                include,
-                loader: 'eslint-loader',
+        entry: {
+            itowns: ['@babel/polyfill', 'url-polyfill', 'whatwg-fetch', './src/MainBundle.js'],
+            debug: ['./utils/debug/Main.js'],
+        },
+        devtool: 'source-map',
+        output: {
+            path: path.resolve(__dirname, 'dist'),
+            filename: '[name].js',
+            library: '[name]',
+            libraryTarget: 'umd',
+            umdNamedDefine: true,
+        },
+        optimization: {
+            runtimeChunk: {
+                name: 'itowns',
             },
-            {
-                test: /\.js$/,
-                include,
-                use: [
-                    'babel-inline-import-loader',
-                    {
-                        loader: 'babel-loader',
-                        options: babelConf,
-                    }],
-            },
-        ],
-    },
-    devServer: {
-        publicPath: '/dist/',
-    },
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.js$/,
+                    enforce: 'pre',
+                    include,
+                    loader: 'eslint-loader',
+                },
+                {
+                    test: /\.js$/,
+                    include,
+                    use: babelLoaderOptions,
+                },
+            ],
+        },
+        devServer: {
+            publicPath: '/dist/',
+        },
+    };
 };
