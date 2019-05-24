@@ -14,6 +14,7 @@
     "build": "webpack -p",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
     "start": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot",
+    "debug": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot --env.noInline=true",
     "prepublishOnly": "npm run build && npm run transpile",
     "prepare": "node ./config/prepare.js && node ./config/replace.config.js"
   },
