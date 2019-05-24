@@ -52,6 +52,7 @@ const renderer = {
     capabilities: {
         logarithmicDepthBuffer: true,
     },
+    debug: {},
     setClearColor: () => {},
     getRenderTarget: () => { },
     setRenderTarget: () => {},

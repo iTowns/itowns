@@ -119,6 +119,7 @@ function c3DEngine(rendererOrDiv, options = {}) {
     this.renderer.setClearColor(0x030508);
     this.renderer.autoClear = false;
     this.renderer.sortObjects = true;
+    this.renderer.debug.checkShaderErrors = __DEBUG__;
 
     if (!renderer) {
         this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
