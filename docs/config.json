@@ -91,6 +91,10 @@
                 "$3DTilesExtensions",
                 "$3dTilesAbstractExtension",
                 "BatchTableHierarchyExtension"
+            ],
+
+            "Plugins": [
+                "DragNDrop"
             ]
         }
     },
@@ -102,7 +106,7 @@
         }
     },
     "source": {
-        "include": [ "src" ],
+        "include": [ "src", "examples/js" ],
         "exclude": [ "src/ThreeExtended" ]
     },
     "plugins": ["plugins/markdown"]
