@@ -23,8 +23,8 @@ function find(spec) {
 }
 
 function linkToSource(filename, path) {
-    const location = path.split('src')[1];
-    return `src${location}/${filename}`;
+    const location = path.split('itowns/')[1];
+    return `${location}/${filename}`;
 }
 
 function rank(properties) {

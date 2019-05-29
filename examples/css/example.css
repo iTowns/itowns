@@ -37,7 +37,8 @@ body {
     top: 0;
     right: 0;
     color: #eee;
-    font: 11px 'Lucida Grande',sans-serif;
+    font: 16px 'Lucida Grande',sans-serif;
+    max-width: 20rem;
     line-height: normal;
     text-shadow: 0 -1px 0 #111;
     padding: 0 1rem;
