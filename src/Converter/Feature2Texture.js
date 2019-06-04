@@ -5,21 +5,21 @@ import Coordinates from 'Core/Geographic/Coordinates';
 
 const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
-function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style = {}, size, extent, invCtxScale) {
+function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style = {}, size, extent, invCtxScale, canBeFilled) {
     if (vertices.length === 0) {
         return;
     }
 
     if (style.length) {
         for (const s of style) {
-            _drawPolygon(ctx, vertices, indices, s, size, extent, invCtxScale);
+            _drawPolygon(ctx, vertices, indices, s, size, extent, invCtxScale, canBeFilled);
         }
     } else {
-        _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale);
+        _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled);
     }
 }
 
-function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale) {
+function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled) {
     // build contour
     ctx.beginPath();
     for (const indice of indices) {
@@ -33,14 +33,14 @@ function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale) 
         }
     }
 
-    // draw line polygon
+    // draw line or edge of polygon
     if (style.stroke.color) {
         strokeStyle(style, ctx, invCtxScale);
         ctx.stroke();
     }
 
-    // fill polygon
-    if (style.fill.color) {
+    // fill polygon only
+    if (canBeFilled && style.fill.color) {
         fillStyle(style, ctx);
         ctx.fill();
     }
@@ -113,7 +113,7 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
                     }
                 }
             } else {
-                drawPolygon(ctx, feature.vertices, geometry.indices, geometryStyle, feature.size, extent, invCtxScale);
+                drawPolygon(ctx, feature.vertices, geometry.indices, geometryStyle, feature.size, extent, invCtxScale, (feature.type == FEATURE_TYPES.POLYGON));
             }
         }
     }
