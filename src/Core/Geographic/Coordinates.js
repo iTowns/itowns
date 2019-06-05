@@ -104,9 +104,9 @@ class Coordinates {
      * @return {Coordinates} This Coordinates.
      */
     setFromValues(v0 = 0, v1 = 0, v2 = 0) {
-        this.x = v0;
-        this.y = v1;
-        this.z = v2;
+        this.x = v0 == undefined ? 0 : v0;
+        this.y = v1 == undefined ? 0 : v1;
+        this.z = v2 == undefined ? 0 : v2;
 
         this._normalNeedsUpdate = true;
         return this;
@@ -122,14 +122,7 @@ class Coordinates {
      * @return {Coordinates} This Coordinates.
      */
     setFromArray(array, offset = 0) {
-        this.x = array[offset];
-        this.y = array[offset + 1];
-        // special case for as() below, intentionally not mentioned in the
-        // documentation
-        this.z = array[offset + 2];
-
-        this._normalNeedsUpdate = true;
-        return this;
+        return this.setFromValues(array[offset], array[offset + 1], array[offset + 2]);
     }
 
     /**
@@ -142,12 +135,7 @@ class Coordinates {
      * @return {Coordinates} This Coordinates.
      */
     setFromVector3(v0) {
-        this.x = v0.x;
-        this.y = v0.y;
-        this.z = v0.z;
-
-        this._normalNeedsUpdate = true;
-        return this;
+        return this.setFromValues(v0.x, v0.y, v0.z);
     }
 
     /**
