@@ -220,7 +220,7 @@ class Extent {
         this.dimensions(_dim);
 
         target.crs = this.crs;
-        target.setFromValues(this.west + _dim.x * 0.5, this.south + _dim.y * 0.5, target.z);
+        target.setFromValues(this.west + _dim.x * 0.5, this.south + _dim.y * 0.5);
 
         return target;
     }
