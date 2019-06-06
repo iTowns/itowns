@@ -50,8 +50,7 @@ class GeometryLayer extends Layer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
-     * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] -
-     * Description and options of the source.
+     * @param {Source} [config.source] - Description and options of the source.
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      *
