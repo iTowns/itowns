@@ -112,6 +112,11 @@ class Style {
             this.point.color = color;
             this.point.opacity = opacity;
             this.point.radius = 1.5;
+        } else if (layer.type === 'circle') {
+            const { color, opacity } = rgba2rgb(layer.paint['circle-color']);
+            this.point.color = color;
+            this.point.opacity = opacity;
+            this.point.radius = layer.paint['circle-radius'];
         }
         return this;
     }
