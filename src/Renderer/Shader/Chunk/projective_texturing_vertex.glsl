@@ -1,2 +1,2 @@
-for(int i = 0; i < NUM_TEXTURES; ++i)
+for(int i = 0; i < ORIENTED_IMAGES_COUNT; ++i)
     projectiveTextureCoords[i] = projectiveTextureMatrix[i] * mvPosition;

@@ -112,6 +112,7 @@
                     orientation: orientation,
                     calibration: calibration,
                     projection: view.referenceCrs,
+                    useMask: false,
                     onPanoChanged: (e) => {
                         view.controls.setPreviousPosition(e.previousPanoPosition);
                         view.controls.setCurrentPosition(e.currentPanoPosition);

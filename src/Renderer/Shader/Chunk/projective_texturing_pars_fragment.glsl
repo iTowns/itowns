@@ -1,7 +1,9 @@
-uniform sampler2D projectiveTexture[NUM_TEXTURES];
-varying vec4      projectiveTextureCoords[NUM_TEXTURES];
+uniform sampler2D projectiveTexture[ORIENTED_IMAGES_COUNT];
+uniform sampler2D mask[ORIENTED_IMAGES_COUNT];
+varying vec4      projectiveTextureCoords[ORIENTED_IMAGES_COUNT];
 uniform float     projectiveTextureAlphaBorder;
 uniform float     opacity;
+uniform bool      boostLight;
 
 struct Distortion {
     vec2 size;
@@ -12,7 +14,7 @@ struct Distortion {
 #endif
 };
 
-uniform Distortion projectiveTextureDistortion[NUM_TEXTURES];
+uniform Distortion projectiveTextureDistortion[ORIENTED_IMAGES_COUNT];
 
 float getAlphaBorder(vec2 p)
 {
@@ -49,7 +51,7 @@ void distort(inout vec2 p, vec4 polynom, vec3 l1l2, vec2 pps)
 }
 #endif
 
-vec4 projectiveTextureColor(vec4 coords, Distortion distortion, sampler2D texture)
+vec4 projectiveTextureColor(vec4 coords, Distortion distortion, sampler2D texture, sampler2D mask)
 {
     vec3 p = coords.xyz / coords.w;
     if(p.z * p.z < 1.) {
@@ -59,14 +61,21 @@ vec4 projectiveTextureColor(vec4 coords, Distortion distortion, sampler2D textur
         p.xy /= distortion.size;
 #endif
 
-        float d = getAlphaBorder(p.xy);
+        float d = getAlphaBorder(p.xy) * texture2D(mask, p.xy).r;
+
         if(d > 0.) {
 
 #if DEBUG_ALPHA_BORDER
-            vec3 r = texture2D(texture, p.xy).rgb;
-            return vec4( r.r * d, r.g, r.b, 1.0);
+        vec3 r = texture2D(texture, p.xy).rgb;
+        return vec4( r.r * d, r.g, r.b, 1.0);
 #else
-            return d * texture2D(texture, p.xy);
+        vec4 color = texture2D(texture, p.xy);
+        color.a *= d;
+        if (boostLight) {
+            return vec4(sqrt(color.rgb), color.a);
+        } else {
+            return color;
+        }
 #endif
 
         }
