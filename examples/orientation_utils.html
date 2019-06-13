@@ -90,7 +90,7 @@
             // Use the cameraCalibrationParser to create OrientedImageCamera from camera calibration description file.
             promises.push(
                 itowns.Fetcher.json(calibrations, {})
-                .then(calibrations => itowns.CameraCalibrationParser.parse(calibrations, {near: 0.3, far: 0.6,}))
+                .then(calibrations => itowns.CameraCalibrationParser.parse(calibrations, { useMask: false, near: 0.3, far: 0.6 }))
             );
 
             // wait for all layer to be loaded, we need for elevation layer

@@ -7,22 +7,13 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import OrientationUtils from 'Utils/OrientationUtils';
 
 const coord = new Coordinates('EPSG:4978', 0, 0, 0);
+const commandCancellation = cmd => cmd.requester.id !== cmd.layer.currentPano.id;
 
 function updatePano(context, camera, layer) {
-    // look for the closest oriented image
-    let minD = Infinity;
-    let minI = -1;
-    for (let i = 0; i < layer.panos.length; i++) {
-        const position = layer.panos[i].position;
-        const D = camera.position.distanceTo(position);
-        if (D < minD) {
-            minD = D;
-            minI = i;
-        }
-    }
+    const newPano = layer.mostNearPano(camera.position);
     // detection of oriented image change
-    const newPano = layer.panos[minI];
-    if (newPano && layer.currentPano != newPano) {
+    const currentId = layer.currentPano ? layer.currentPano.id : undefined;
+    if (newPano && currentId != newPano.id) {
         layer.currentPano = newPano;
 
         // callback to indicate current pano has changed
@@ -31,13 +22,14 @@ function updatePano(context, camera, layer) {
             currentPanoPosition: layer.getCurrentPano().position,
             nextPanoPosition: layer.getNextPano().position,
         });
-
         // prepare informations about the needed textures
+        const panoCameras = newPano.geometry[0].properties.idSensors;
+
         const imagesInfo = layer.cameras.map(cam => ({
             cameraId: cam.name,
             panoId: newPano.id,
             toString: (separator = '') => (`${cam.name}${separator}${newPano.id}`),
-        }));
+        })).filter(info => !panoCameras || panoCameras.includes(info.cameraId));
 
         const command = {
             layer,
@@ -46,11 +38,18 @@ function updatePano(context, camera, layer) {
             view: context.view,
             threejsLayer: layer.threejsLayer,
             requester: newPano,
+            earlyDropFunction: commandCancellation,
         };
 
         // async call to scheduler to get textures
         context.scheduler.execute(command)
-            .then(textures => layer.material.setTextures(textures, newPano));
+            .then((textures) => {
+                if (newPano.id === layer.currentPano.id) {
+                    layer.material.setTextures(textures, newPano, layer.getCamerasNameFromFeature(newPano));
+                    layer.material.updateUniforms(context.camera.camera3D);
+                    context.view.notifyChange(layer, true);
+                }
+            }, () => {});
     }
 }
 
@@ -105,6 +104,7 @@ class OrientedImageLayer extends GeometryLayer {
         super(id, new THREE.Group(), config);
 
         this.background = config.background || createBackground(config.backgroundDistance);
+        this.isOrientedImageLayer = true;
 
         if (this.background) {
             this.object3d.add(this.background);
@@ -115,6 +115,9 @@ class OrientedImageLayer extends GeometryLayer {
 
         // store a callback to fire event when current panoramic change
         this.onPanoChanged = config.onPanoChanged || (() => {});
+
+        // function to get cameras name from panoramic feature
+        this.getCamerasNameFromFeature = config.getCamerasNameFromFeature || (() => {});
 
         // panos is an array of feature point, representing many panoramics.
         // for each point, there is a position and a quaternion attribute.
@@ -144,10 +147,10 @@ class OrientedImageLayer extends GeometryLayer {
         });
 
         // array of cameras, represent the projective texture configuration for each panoramic.
-        const p2 = CameraCalibrationParser.parse(config.calibration, {}).then((c) => {
+        const p2 = CameraCalibrationParser.parse(config.calibration, config).then((c) => {
             this.cameras = c;
             // create the material
-            this.material = new OrientedImageMaterial(this.cameras);
+            this.material = new OrientedImageMaterial(this.cameras, config);
         });
 
 
@@ -162,9 +165,17 @@ class OrientedImageLayer extends GeometryLayer {
     update() {
     }
 
+    set boostLight(value) {
+        this.material.uniforms.boostLight.value = value;
+    }
+
+    get boostLight() {
+        return this.material.uniforms.boostLight.value;
+    }
+
     preUpdate(context) {
-        this.material.updateUniforms(context.camera.camera3D);
         updatePano(context, context.camera.camera3D, this);
+        this.material.updateUniforms(context.camera.camera3D);
         updateBackground(this);
     }
 
@@ -191,6 +202,19 @@ class OrientedImageLayer extends GeometryLayer {
         super.delete();
         this.material.visible = false;
         console.warn('You need to replace OrientedImageLayer.material applied on each object. This issue will be fixed when OrientedImageLayer will be a ColorLayer. the material visibility is set to false. To follow issue see https://github.com/iTowns/itowns/issues/1018');
+    }
+
+    mostNearPano(position) {
+        let minDistance = Infinity;
+        let nearPano;
+        for (const pano of this.panos) {
+            const distance = position.distanceTo(pano.position);
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearPano = pano;
+            }
+        }
+        return nearPano;
     }
 }
 

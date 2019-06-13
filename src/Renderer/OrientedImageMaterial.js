@@ -4,12 +4,17 @@ import textureVS from 'Renderer/Shader/ProjectiveTextureVS.glsl';
 import textureFS from 'Renderer/Shader/ProjectiveTextureFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 
-var ndcToTextureMatrix = new THREE.Matrix4().set(
+const ndcToTextureMatrix = new THREE.Matrix4().set(
     1, 0, 0, 1,
     0, 1, 0, 1,
     0, 0, 2, 0,
     0, 0, 0, 2);
 
+const noMask = new THREE.DataTexture(new Uint8Array([255, 255, 255]), 1, 1, THREE.RGBFormat, THREE.UnsignedByteType);
+const noTexture = new THREE.Texture();
+noMask.needsUpdate = true;
+
+const rawShaderMaterial = new THREE.RawShaderMaterial();
 /**
  * @classdesc OrientedImageMaterial is a custom shader material used to do projective texture mapping.<br/>
  *
@@ -51,44 +56,52 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
         options.side = options.side !== undefined ? options.side : THREE.DoubleSide;
         options.transparent = options.transparent !== undefined ? options.transparent : true;
         options.opacity = options.opacity !== undefined ? options.opacity : 1;
-        super(options);
 
-        this.defines.NUM_TEXTURES = cameras.length;
+        // Filter the rawShaderMaterial options
+        const rawShaderMaterialOptions = {};
+        for (const key in options) {
+            if (Object.prototype.hasOwnProperty.call(options, key)) {
+                const currentValue = rawShaderMaterial[key];
+                if (currentValue !== undefined) {
+                    rawShaderMaterialOptions[key] = options[key];
+                }
+            }
+        }
+        super(rawShaderMaterialOptions);
+
+        this.defines.ORIENTED_IMAGES_COUNT = options.OrientedImagesCount !== undefined ? options.OrientedImagesCount : cameras.length;
 
         // verify that number of textures doesn't exceed GPU capabilities
         const maxTexturesUnits = Capabilities.getMaxTextureUnitsCount();
-        if (this.defines.NUM_TEXTURES > maxTexturesUnits) {
+        if (this.defines.ORIENTED_IMAGES_COUNT > maxTexturesUnits) {
             console.warn(`OrientedImageMaterial: Can't project ${cameras.length} textures, because it's more than GPU capabilities maximum texture units (${maxTexturesUnits})`);
 
             // Clamp number of textures used
-            this.defines.NUM_TEXTURES = maxTexturesUnits - 1;
-            console.warn(`OrientedImageMaterial: We'll use only the first ${this.defines.NUM_TEXTURES} cameras.`);
+            this.defines.ORIENTED_IMAGES_COUNT = maxTexturesUnits - 1;
+            console.warn(`OrientedImageMaterial: We'll use only the first ${this.defines.ORIENTED_IMAGES_COUNT} cameras.`);
         }
 
-        this.defines.USE_DISTORTION = Number(cameras.some(camera => camera.distortion !== undefined));
+        if (options.useBaseMaterial) {
+            this.defines.USE_BASE_MATERIAL = true;
+        }
+        this.defines.USE_DISTORTION = Number(cameras.some(camera => camera.distortion.pps !== null));
         this.alphaBorder = options.alphaBorder | 20;
         this.defines.DEBUG_ALPHA_BORDER = options.debugAlphaBorder | 0;
         this.cameras = cameras;
+
         const textureMatrix = [];
         const texture = [];
+        const mask = [];
         const distortion = [];
         this.group = new THREE.Group();
 
-        for (let i = 0; i < this.defines.NUM_TEXTURES; ++i) {
-            const camera = cameras[i];
-            camera.needsUpdate = true;
-            camera.textureMatrix = new THREE.Matrix4();
-            camera.textureMatrixWorldInverse = new THREE.Matrix4();
+        for (let i = 0; i < this.defines.ORIENTED_IMAGES_COUNT; ++i) {
+            texture[i] = noTexture;
+            mask[i] = noMask;
             textureMatrix[i] = new THREE.Matrix4();
-            texture[i] = new THREE.Texture();
-            distortion[i] = {};
-            distortion[i].size = camera.size;
-            if (camera.distortion) {
-                distortion[i].polynom = camera.distortion.polynom;
-                distortion[i].pps = camera.distortion.pps;
-                distortion[i].l1l2 = camera.distortion.l1l2;
-            }
-            this.group.add(camera);
+            cameras[i].needsUpdate = true;
+            distortion[i] = cameras[i].distortion;
+            this.group.add(cameras[i]);
         }
 
         this.uniforms.opacity = new THREE.Uniform(this.opacity);
@@ -96,6 +109,14 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
         this.uniforms.projectiveTextureDistortion = new THREE.Uniform(distortion);
         this.uniforms.projectiveTextureMatrix = new THREE.Uniform(textureMatrix);
         this.uniforms.projectiveTexture = new THREE.Uniform(texture);
+        this.uniforms.mask = new THREE.Uniform(mask);
+        this.uniforms.boostLight = new THREE.Uniform(false);
+
+        this.uniforms.noProjectiveMaterial = new THREE.Uniform({
+            lightDirection: new THREE.Vector3(0.5, 0.5, -0.5),
+            ambient: new THREE.Color(0.1, 0.1, 0.1),
+            opacity: 0.75,
+        });
 
         if (Capabilities.isLogDepthBufferSupported()) {
             this.defines.USE_LOGDEPTHBUF = 1;
@@ -110,23 +131,34 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
      * Set new textures and new position/orientation of the camera set.
      * @param {THREE.Texture} textures - Array of [THREE.Texture]{@link https://threejs.org/docs/#api/en/textures/Texture}.
      * @param {Object} feature - New position / orientation of the set of cameras
+     * @param {Array} camerasNames - camera names of panoramic feature
      * @param {THREE.Vector3} feature.position - New position.
      * @param {THREE.Quaternion} feature.quaternion - New orientation.
      */
-    setTextures(textures, feature) {
+    setTextures(textures, feature, camerasNames) {
         if (!textures) { return; }
         this.group.position.copy(feature.position);
         this.group.quaternion.copy(feature.quaternion);
-        this.group.updateMatrixWorld(true); // update the matrixWorldInverse of the cameras
 
-        for (let i = 0; i < textures.length && i < this.defines.NUM_TEXTURES; ++i) {
-            var oldTexture = this.uniforms.projectiveTexture.value[i];
+        for (let i = 0; i < textures.length && i < this.defines.ORIENTED_IMAGES_COUNT; ++i) {
+            this.uniforms.projectiveTexture.value[i].dispose();
             this.uniforms.projectiveTexture.value[i] = textures[i];
-            if (oldTexture) {
-                oldTexture.dispose();
+
+            // check camera changes
+            if (camerasNames) {
+                const currentCamera = this.group.children[i];
+                if (camerasNames[i] != currentCamera.name) {
+                    const camera = this.cameras.find(cam => cam.name === camerasNames[i]);
+                    this.uniforms.mask.value[i] = camera.maskTexture || noMask;
+                    this.uniforms.mask.value[i].needsUpdate = true;
+                    this.uniforms.projectiveTextureDistortion.value[i] = camera.distortion;
+                    this.group.children[i] = camera;
+                    camera.parent = this.group;
+                }
             }
-            this.cameras[i].needsUpdate = true;
+            this.group.children[i].needsUpdate = true;
         }
+        this.group.updateMatrixWorld(true); // update the matrixWorldInverse of the cameras
     }
 
     /**
@@ -135,12 +167,11 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
      * @param {THREE.Camera} viewCamera - Camera of the scene.
      */
     updateUniforms(viewCamera) {
-        for (var i = 0; i < this.defines.NUM_TEXTURES; ++i) {
-            const camera = this.cameras[i];
+        for (var i = 0; i < this.group.children.length; ++i) {
+            const camera = this.group.children[i];
             if (camera.needsUpdate) {
-                camera.updateMatrixWorld(true);
-                camera.textureMatrix.multiplyMatrices(ndcToTextureMatrix, camera.projectionMatrix);
-                camera.textureMatrixWorldInverse.multiplyMatrices(camera.textureMatrix, camera.matrixWorldInverse);
+                camera.textureMatrixWorldInverse.multiplyMatrices(ndcToTextureMatrix, camera.projectionMatrix);
+                camera.textureMatrixWorldInverse.multiply(camera.matrixWorldInverse);
                 camera.needsUpdate = false;
             }
             this.uniforms.projectiveTextureMatrix.value[i].multiplyMatrices(camera.textureMatrixWorldInverse, viewCamera.matrixWorld);

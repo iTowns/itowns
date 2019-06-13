@@ -21,17 +21,22 @@ THREE.Matrix4.prototype.setMatrix3 = function setMatrix3(m) {
     return this;
 };
 
+const textureLoader = new THREE.TextureLoader();
 const matrix3 = new THREE.Matrix3();
 // the json format encodes the following transformation:
 // extrinsics: p_local = rotation * (p_world - position)
 // intrinsics: p_pixel = projection * p_local
 // distortion: p_raw = distortion(p_pixel)
-function parseCalibration(calibration, options) {
+function parseCalibration(calibration, options = {}) {
+    const useMask = options.useMask == undefined ? true : options.useMask;
+    const imageYDown = options.imageYDown == undefined ? true : options.imageYDown;
     // parse intrinsics
     const proj = calibration.projection;
     const size = new THREE.Vector2().fromArray(calibration.size);
     const focal = new THREE.Vector2(proj[0], proj[4]);
-    const center = new THREE.Vector2(proj[2], proj[5]);
+    // Center of image,  convention in digital image is Y dow
+    // To transform image space to webGl texture. It could inverse Y axis.
+    const center = new THREE.Vector2(proj[2], imageYDown ? size.y - proj[5] : proj[5]);
     const skew = proj[1];
     const camera = new OrientedImageCamera(size, focal, center, options.near, options.far, skew);
 
@@ -41,27 +46,30 @@ function parseCalibration(calibration, options) {
     // calibration.rotation is row-major but fromArray expects a column-major array, yielding the transposed matrix
     const rotationInverse = matrix3.fromArray(calibration.rotation);
     camera.matrix.setMatrix3(rotationInverse);
-    // local axes for cameras is (X right, Y up, Z back) rather than (X right, Y down, Z front)
-    camera.scale.set(1, -1, -1);
     camera.quaternion.setFromRotationMatrix(camera.matrix);
-    camera.matrix.compose(camera.position, camera.quaternion, camera.scale);
 
-    // parse distortion
+    // local axes for cameras is (X right, Y up, Z back) rather than (X right, Y down, Z front)
+    camera.rotateX(Math.PI);
+
     if (calibration.distortion) {
-        camera.distortion = {
-            pps: new THREE.Vector2().fromArray(calibration.distortion.pps),
-            polynom: new THREE.Vector4().fromArray(calibration.distortion.poly357),
-            l1l2: new THREE.Vector3().set(0, 0, 0),
-        };
-        camera.distortion.polynom.w = calibration.distortion.limit * calibration.distortion.limit;
-        if (calibration.distortion.l1l2) {
-            camera.distortion.l1l2.fromArray(calibration.distortion.l1l2);
-            camera.distortion.l1l2.z = calibration.distortion.etats;
-        }
+        camera.distortion.setFromMicmacCalibration(calibration.distortion, imageYDown);
     }
 
+    camera.maskPath = calibration.mask;
     camera.name = calibration.id;
-    return camera;
+
+    let resolve;
+    const deferred = new Promise((r) => { resolve = r; });
+    if (useMask && camera.maskPath) {
+        textureLoader.load(camera.maskPath,
+            (mask) => {
+                camera.maskTexture = mask;
+                resolve(camera);
+            });
+    } else {
+        resolve(camera);
+    }
+    return deferred;
 }
 
 export default {
@@ -94,6 +102,6 @@ export default {
         if (typeof (json) === 'string') {
             json = JSON.parse(json);
         }
-        return Promise.resolve(json.map(calibration => parseCalibration(calibration, options)));
+        return Promise.all(json.map(calibration => parseCalibration(calibration, options)));
     },
 };

@@ -1,2 +1,2 @@
-uniform mat4 projectiveTextureMatrix[NUM_TEXTURES];
-varying vec4 projectiveTextureCoords[NUM_TEXTURES];
+uniform mat4 projectiveTextureMatrix[ORIENTED_IMAGES_COUNT];
+varying vec4 projectiveTextureCoords[ORIENTED_IMAGES_COUNT];
