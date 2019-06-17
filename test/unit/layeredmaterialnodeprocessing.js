@@ -13,7 +13,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
     // Misc var to initialize a TileMesh instance
     const geom = new THREE.Geometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
-    const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
+    const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
     const material = {};
 
     // Mock scheduler
@@ -32,7 +32,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
 
     const source = new Source({
         url: 'http://',
-        extent: new Extent('EPSG:4326', 0, 0, 0, 0),
+        extent,
     });
 
     const layer = new Layer('foo', {
