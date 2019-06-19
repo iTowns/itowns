@@ -55,6 +55,10 @@ body {
     padding: 0 1rem;
 }
 
+.help a {
+    color: lightcoral;
+}
+
 @media (max-width: 600px) {
     .help {
         display: none;
