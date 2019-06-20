@@ -2,7 +2,6 @@ import * as THREE from 'three';
 
 import View, { VIEW_EVENTS } from 'Core/View';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
-import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
 import GlobeControls from 'Controls/GlobeControls';
 
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
@@ -51,17 +50,17 @@ import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 
 /**
  * Globe's EVENT
- * @property GLOBE_INITIALIZED {string} emit one time when globe is initialized
- * @property LAYER_ADDED {string} emit when layer id added in viewer
- * @property LAYER_REMOVED {string} emit when layer id removed in viewer
- * @property COLOR_LAYERS_ORDER_CHANGED {string} emit when  color layers order change
+ * @property GLOBE_INITIALIZED {string} Deprecated: emit one time when globe is initialized (use VIEW_EVENTS.INITIALIZED instead).
+ * @property LAYER_ADDED {string} Deprecated: emit when layer id added in viewer (use VIEW_EVENTS.LAYER_ADDED instead).
+ * @property LAYER_REMOVED {string} Deprecated: emit when layer id removed in viewer (use VIEW_EVENTS.LAYER_REMOVED instead).
+ * @property COLOR_LAYERS_ORDER_CHANGED {string} Deprecated: emit when  color layers order change (use VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED instead).
  */
 
 export const GLOBE_VIEW_EVENTS = {
-    GLOBE_INITIALIZED: 'initialized',
-    LAYER_ADDED: 'layer-added',
-    LAYER_REMOVED: 'layer-removed',
-    COLOR_LAYERS_ORDER_CHANGED,
+    GLOBE_INITIALIZED: VIEW_EVENTS.INITIALIZED,
+    LAYER_ADDED: VIEW_EVENTS.LAYER_ADDED,
+    LAYER_REMOVED: VIEW_EVENTS.LAYER_REMOVED,
+    COLOR_LAYERS_ORDER_CHANGED: VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED,
 };
 
 class GlobeView extends View {
@@ -139,15 +138,8 @@ class GlobeView extends View {
 
         this.addLayer(new Atmosphere());
 
-        const fn = () => {
-            this.removeEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
-            this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED });
-        };
-
         // GlobeView needs this.camera.resize to set perpsective matrix camera
         this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
-
-        this.addEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
     }
 
     addLayer(layer) {
@@ -167,32 +159,8 @@ class GlobeView extends View {
                 throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
             }
         }
-        const layerId = layer.id;
-        const layerPromise = super.addLayer(layer, this.tileLayer);
 
-        this.dispatchEvent({
-            type: GLOBE_VIEW_EVENTS.LAYER_ADDED,
-            layerId,
-        });
-
-        return layerPromise;
-    }
-
-    /**
-     * Removes a specific imagery layer from the current layer list. This removes layers inserted with attach().
-     * @example
-     * view.removeLayer('layerId');
-     * @param      {string}   layerId      The identifier
-     * @return     {boolean}
-     */
-    removeLayer(layerId) {
-        if (View.prototype.removeLayer.call(this, layerId)) {
-            this.dispatchEvent({
-                type: GLOBE_VIEW_EVENTS.LAYER_REMOVED,
-                layerId,
-            });
-            return true;
-        }
+        return super.addLayer(layer, this.tileLayer);
     }
 }
 
