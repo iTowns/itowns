@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import Camera from 'Renderer/Camera';
 import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from 'Core/MainLoop';
+import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
 import c3DEngine from 'Renderer/c3DEngine';
 import RenderMode from 'Renderer/RenderMode';
 
@@ -23,6 +24,9 @@ export const VIEW_EVENTS = {
      */
     LAYERS_INITIALIZED: 'layers-initialized',
     LAYER_REMOVED: 'layer-removed',
+    LAYER_ADDED: 'layer-added',
+    INITIALIZED: 'initialized',
+    COLOR_LAYERS_ORDER_CHANGED,
 };
 
 const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer, view) {
@@ -164,6 +168,13 @@ class View extends THREE.EventDispatcher {
         };
 
         this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+
+        const fn = () => {
+            this.removeEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
+            this.dispatchEvent({ type: VIEW_EVENTS.INITIALIZED });
+        };
+
+        this.addEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
     }
 
 
@@ -239,6 +250,11 @@ class View extends THREE.EventDispatcher {
                 }
                 resolve(layer);
             });
+
+            this.dispatchEvent({
+                type: VIEW_EVENTS.LAYER_ADDED,
+                layerId: layer.id,
+            });
         });
     }
 
@@ -274,7 +290,7 @@ class View extends THREE.EventDispatcher {
                 }
             }
 
-            this.notifyChange(parentLayer || this.camera.camera3D, true);
+            this.notifyChange(this.camera);
 
             this.dispatchEvent({
                 type: VIEW_EVENTS.LAYER_REMOVED,
