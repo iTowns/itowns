@@ -30,6 +30,7 @@ export { default as CameraUtils } from 'Utils/CameraUtils';
 export { default as OrientationUtils } from 'Utils/OrientationUtils';
 export { default as ShaderChunk } from 'Renderer/Shader/ShaderChunk';
 export { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
+export { default as Capabilities } from 'Core/System/Capabilities';
 
 // Layers provided by default in iTowns
 // A custom layer should at least implements Layer
