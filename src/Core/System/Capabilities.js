@@ -4,6 +4,7 @@ import SampleTestVS from 'Renderer/Shader/SampleTestVS.glsl';
 // default values
 let logDepthBufferSupported = false;
 let maxTexturesUnits = 8;
+let maxTextureSize = 4096;
 
 function _WebGLShader(renderer, type, string) {
     const gl = renderer.context;
@@ -30,9 +31,13 @@ export default {
     getMaxTextureUnitsCount() {
         return maxTexturesUnits;
     },
+    getMaxTextureSize() {
+        return maxTextureSize;
+    },
     updateCapabilities(renderer) {
         const gl = renderer.context;
         maxTexturesUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+        maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
 
         const program = gl.createProgram();
         const glVertexShader = _WebGLShader(renderer, gl.VERTEX_SHADER, SampleTestVS);
