@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 
 import View from 'Core/View';
-import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import CameraUtils from 'Utils/CameraUtils';
 
 import PlanarLayer from './Planar/PlanarLayer';
@@ -27,14 +26,6 @@ class PlanarView extends View {
 
         const p = { coord: extent.center(), range: max, tilt: 20, heading: 0 };
         CameraUtils.transformCameraToLookAtTarget(this, camera3D, p);
-
-        this._fullSizeDepthBuffer = null;
-        this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
-            if (this._fullSizeDepthBuffer != null) {
-                // clean depth buffer
-                this._fullSizeDepthBuffer = null;
-            }
-        });
 
         this.tileLayer = tileLayer;
     }

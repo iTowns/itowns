@@ -175,6 +175,15 @@ class View extends THREE.EventDispatcher {
         };
 
         this.addEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
+
+        this._fullSizeDepthBuffer = null;
+
+        this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
+            if (this._fullSizeDepthBuffer != null && this._fullSizeDepthBuffer.needsUpdate) {
+                // clean depth buffer
+                this._fullSizeDepthBuffer = null;
+            }
+        });
     }
 
 
@@ -313,6 +322,9 @@ class View extends THREE.EventDispatcher {
     notifyChange(changeSource = undefined, needsRedraw = true) {
         if (changeSource) {
             this._changeSources.add(changeSource);
+            if ((changeSource.isTileMesh || changeSource.isCamera) && this._fullSizeDepthBuffer) {
+                this._fullSizeDepthBuffer.needsUpdate = true;
+            }
         }
         this.mainLoop.scheduleViewUpdate(this, needsRedraw);
     }

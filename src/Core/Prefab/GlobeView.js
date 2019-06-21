@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 
 import View, { VIEW_EVENTS } from 'Core/View';
-import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import GlobeControls from 'Controls/GlobeControls';
 
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
@@ -124,15 +123,6 @@ class GlobeView extends View {
             this.controls = new GlobeControls(this, positionTargetCamera, positionCamera.altitude, ellipsoidSizes.x);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
         }
-
-        this._fullSizeDepthBuffer = null;
-
-        this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
-            if (this._fullSizeDepthBuffer != null) {
-                // clean depth buffer
-                this._fullSizeDepthBuffer = null;
-            }
-        });
 
         this.tileLayer = tileLayer;
 
