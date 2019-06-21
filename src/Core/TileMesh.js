@@ -68,9 +68,17 @@ class TileMesh extends THREE.Mesh {
     }
 
     getExtentsForSource(source) {
-        // TODO: The only case that needs a dependency on the source, an
-        // alternative may be found to have only the CRS as a parameter
-        if (source.isTMSSource && !this.layer.isGlobeLayer) {
+        // TODO: Two cases need a dependency on the source, but an alternative
+        // may be found to have only the CRS as a parameter:
+        //  - if the source is WMS and the view is a Globe
+        //  - if the source is TMS and the view isn't a Globe
+        if (source.isWMSSource && this.layer.isGlobeLayer) {
+            if (source.projection == 'EPSG:3857') {
+                return this.tilesetExtents.PM;
+            } else {
+                throw new Error('Unsupported projection using WMS for this view.');
+            }
+        } else if (source.isTMSSource && !this.layer.isGlobeLayer) {
             return OGCWebServiceHelper.computeTMSCoordinates(this, source.extent, source.isInverted);
         } else if (Array.isArray(this.tilesetExtents[source.tileMatrixSet])) {
             return this.tilesetExtents[source.tileMatrixSet];
