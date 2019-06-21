@@ -11,10 +11,9 @@ function limitRotation(camera3D, rot, verticalFOV) {
     const limit = THREE.Math.degToRad(verticalFOV - camera3D.fov) * 0.5;
     return THREE.Math.clamp(rot, -limit, limit);
 }
-
+const axisY = new THREE.Vector3(0, 1, 0);
 function applyRotation(view, camera3D, state) {
-    camera3D.quaternion.setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0), camera3D.up);
+    camera3D.quaternion.setFromUnitVectors(axisY, camera3D.up);
 
     camera3D.rotateY(state.rotateY);
     camera3D.rotateX(state.rotateX);
@@ -36,6 +35,9 @@ function moveCameraVerticalPlanar(value) {
 }
 
 const normal = new THREE.Vector3();
+const q = new THREE.Quaternion();
+const e = new THREE.Euler(0, 0, 0, 'YXZ');
+
 function moveCameraVerticalGlobe(value) {
     // compute geodesic normale
     normal.copy(this.camera.position);
@@ -135,13 +137,11 @@ class FirstPersonControls extends THREE.EventDispatcher {
         // cam.quaternion = q * r
         // => r = inverse(q) * cam.quaterion
         // q is the quaternion derived from the up vector
-        const q = new THREE.Quaternion().setFromUnitVectors(
-            new THREE.Vector3(0, 1, 0), this.camera.up);
+        q.setFromUnitVectors(axisY, this.camera.up);
         q.inverse();
-        // compute r
-        const r = this.camera.quaternion.clone().premultiply(q);
+        q.multiply(this.camera.quaternion);
         // tranform it to euler
-        const e = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(r);
+        e.setFromQuaternion(q);
 
         if (!preserveRotationOnX) {
             this._state.rotateX = e.x;

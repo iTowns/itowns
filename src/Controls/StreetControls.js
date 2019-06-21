@@ -17,7 +17,7 @@ function createCircle() {
 function createRectangle() {
     const geomPlane = new THREE.PlaneGeometry(4, 2, 1);
     const rectangle = new THREE.Mesh(geomPlane, material);
-    rectangle.rotateX(-Math.PI / 2);
+    rectangle.rotateX(-Math.PI * 0.5);
     return rectangle;
 }
 
@@ -31,6 +31,8 @@ function updateSurfaces(surfaces, position, norm) {
 
 // vector use in the pick method
 const target = new THREE.Vector3();
+const up = new THREE.Vector3();
+const startQuaternion = new THREE.Quaternion();
 
 function pick(event, view, buildingsLayer, pickGround = () => {}, pickObject = () => {}, pickNothing = () => {}) {
     // get real distance to ground, with a specific method to pick on the elevation layer
@@ -38,31 +40,36 @@ function pick(event, view, buildingsLayer, pickGround = () => {}, pickObject = (
     const distanceToGround = view.camera.camera3D.position.distanceTo(target);
 
     // pick on building layer
-    const buildings = view.pickObjectsAt(event, 0, buildingsLayer);
+    const buildings = buildingsLayer ? view.pickObjectsAt(event, -1, buildingsLayer) : [];
 
     // to detect pick on building, compare first picked building distance to ground distance
     if (buildings.length && buildings[0].distance < distanceToGround) { // pick buildings
         // callback
         pickObject(buildings[0].point, buildings[0].face.normal);
-    } else {
-        // pick on ground layer (tile layer)
-        const ground = view.pickObjectsAt(event, 0, view.tileLayer);
-        if (ground.length) {
+    } else if (view.tileLayer) {
+        const far = view.camera.camera3D.far * 0.95;
+        if (distanceToGround < far) {
             // compute normal
-            const normal = target.clone().multiplyScalar(1.1);
+            if (view.tileLayer.isGlobeLayer) {
+                up.copy(target).multiplyScalar(1.1);
+            } else {
+                up.set(0, 0, 1);
+            }
 
             // callback
-            pickGround(target, normal);
+            pickGround(target, up);
         } else {
             // callback
             pickNothing();
         }
+    } else {
+        pickNothing();
     }
 }
 
 // default function to compute time (in millis), used for the animation to move to a distance (in meter)
 function computeTime(distance) {
-    return 500 + Math.sqrt(distance) * 300;
+    return 100 + Math.sqrt(distance) * 30;
 }
 
 /**
@@ -88,12 +95,14 @@ function computeTime(distance) {
  * <ul> Bindings added
  * <li><b> keys Z : </b> Move camera to the next position </li>
  * <li><b> keys S : </b> Move camera to the previous position </li>
- * <li><b> keys A : </b> Set camera to current position </li>
+ * <li><b> keys A : </b> Set camera to current position and look at next position</li>
+ * <li><b> keys Q : </b> Set camera to current position and look at previous position</li>
  * </ul>
  * Note that it only works in globe view.
  * @property {number} keyGoToNextPosition key code to go to next position, default to 90 for key Z
  * @property {number} keyGoToPreviousPosition key code to go to previous position, default to 83 for key S
- * @property {number} keySetCameraToCurrentPosition key code set camera to current position, default to 65 for key  A
+ * @property {number} keySetCameraToCurrentPositionAndLookAtNext key code set camera to current position, default to 65 for key  A
+ * @property {number} keySetCameraToCurrentPositionAndLookAtPrevious key code set camera to current position, default to 81 for key  Q
  * @extends FirstPersonControls
  */
 class StreetControls extends FirstPersonControls {
@@ -102,7 +111,7 @@ class StreetControls extends FirstPersonControls {
      * @param { View } view - View where this control will be used
      * @param { Object } options - Configuration of this controls
      * @param { number } [options.wallMaxDistance=1000] - Maximum distance to click on a wall, in meter.
-     * @param { number } [options.animationDurationWall=1000] - Time in millis for the animation when clicking on a wall.
+     * @param { number } [options.animationDurationWall=200] - Time in millis for the animation when clicking on a wall.
      * @param { THREE.Mesh } [options.surfaceGround] - Surface helper to see when mouse is on the ground, default is a transparent circle.
      * @param { THREE.Mesh } [options.surfaceWall] - Surface helper to see when mouse is on a wall, default is a transparent rectangle.
      * @param { string } [options.buildingsLayer='Buildings'] - Name of the building layer (used to pick on wall).
@@ -117,14 +126,15 @@ class StreetControls extends FirstPersonControls {
         const domElement = view.mainLoop.gfxEngine.renderer.domElement;
         domElement.addEventListener('mouseout', super.onMouseUp.bind(this));
 
-        // twos positions used by this control : current and next
+        // two positions used by this control : current and next
         this.previousPosition = undefined;
         this.currentPosition = undefined;
         this.nextPosition = undefined;
 
         this.keyGoToNextPosition = 90;
         this.keyGoToPreviousPosition = 83;
-        this.keySetCameraToCurrentPosition = 65;
+        this.keySetCameraToCurrentPositionAndLookAtNext = 65;
+        this.keySetCameraToCurrentPositionAndLookAtPrevious = 81;
 
         // Tween is used to make smooth animations
         this.tweenGroup = new TWEEN.Group();
@@ -139,11 +149,14 @@ class StreetControls extends FirstPersonControls {
         this.surfaces.add(this.surfaceWall);
         this.view.scene.add(this.surfaces);
 
-        this.wallMaxDistance = options.animationDurationWall || 1000;
-        this.animationDurationWall = options.animationDurationWall || 1000;
-        this.buildingsLayer = options.buildingsLayer || 'Buildings';
+        this.wallMaxDistance = options.wallMaxDistance || 1000;
+        this.animationDurationWall = options.animationDurationWall || 200;
+        this.buildingsLayer = options.buildingsLayer;
         this.computeTime = options.computeTime || computeTime;
         this.offset = options.offset || 4;
+        this.transformationPositionPickOnTheGround = options.transformationPositionPickOnTheGround || (position => position);
+
+        this.end = this.camera.clone();
     }
 
     setCurrentPosition(newCurrentPosition) {
@@ -178,26 +191,33 @@ class StreetControls extends FirstPersonControls {
             // state mouse drag (move + mouse click)
             this._stateOnMouseDrag = true;
             this.stopAnimations();
+        } else if (!this.tween) {
+            // mouse pick and manage surfaces
+            pick(event, this.view, this.buildingsLayer,
+                (groundTarget, normal) => {
+                    updateSurfaces(this.surfaces, groundTarget, normal);
+                    this.surfaceGround.visible = true;
+                    this.surfaceWall.visible = false;
+                }, (wallTarget, normal) => {
+                    updateSurfaces(this.surfaces, wallTarget, normal);
+                    this.surfaceWall.visible = true;
+                    this.surfaceGround.visible = false;
+                });
+            this.view.notifyChange(this.surfaces);
         }
-        // mouse pick and manage surfaces
-        pick(event, this.view, this.buildingsLayer,
-            (groundTarget, normal) => {
-                updateSurfaces(this.surfaces, groundTarget, normal);
-                this.surfaceGround.visible = true;
-                this.surfaceWall.visible = false;
-            }, (wallTarget, normal) => {
-                updateSurfaces(this.surfaces, wallTarget, normal);
-                this.surfaceWall.visible = true;
-                this.surfaceGround.visible = false;
-            });
-        this.view.notifyChange(this.surfaces);
     }
 
     /**
      * Sets the camera to the current position (stored in this controls), looking at the next position (also stored in this controls).
+     *
+     * @param      { boolean }  lookAtPrevious   look at the previous position rather than the next one
      */
-    setCameraToCurrentPosition() {
-        this.setCameraOnPosition(this.currentPosition, this.nextPosition);
+    setCameraToCurrentPosition(lookAtPrevious) {
+        if (lookAtPrevious) {
+            this.setCameraOnPosition(this.currentPosition, this.previousPosition);
+        } else {
+            this.setCameraOnPosition(this.currentPosition, this.nextPosition);
+        }
     }
 
     /**
@@ -211,7 +231,13 @@ class StreetControls extends FirstPersonControls {
             return;
         }
         this.camera.position.copy(position);
-        this.camera.up.copy(position).normalize();
+
+        if (this.view.tileLayer && this.view.tileLayer.isGlobeLayer) {
+            this.camera.up.copy(position).normalize();
+        } else {
+            this.camera.up.set(0, 0, 1);
+        }
+
         this.camera.lookAt(lookAt);
         this.camera.updateMatrixWorld();
         this.reset();
@@ -224,8 +250,12 @@ class StreetControls extends FirstPersonControls {
      * @param {THREE.Vector3} position - The position
      */
     onClickOnGround(position) {
-        // compute a new position to go : 4 meter up from the picked position on the ground
-        const up = position.clone().normalize();
+        position = this.transformationPositionPickOnTheGround(position);
+        if (this.view.tileLayer && this.view.tileLayer.isGlobeLayer) {
+            up.copy(position).normalize();
+        } else {
+            up.set(0, 0, 1);
+        }
         position.add(up.multiplyScalar(this.offset));
 
         // compute time to go there
@@ -262,18 +292,17 @@ class StreetControls extends FirstPersonControls {
         // stop existing animation
         this.stopAnimations();
         // prepare start point and end point
-        this.start = this.camera.clone();
-        this.end = this.camera.clone();
+        startQuaternion.copy(this.camera.quaternion);
+        this.end.copy(this.camera);
         this.end.lookAt(position);
         this.tween = new TWEEN.Tween({ t: 0 }, this.tweenGroup).to({ t: 1 }, time)
             .easing(TWEEN.Easing.Quadratic.Out)
             .onComplete(() => {
-                this.view.removeFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, this.animationFrameRequester);
-                this.animationFrameRequester = null;
+                this.stopAnimations();
             })
             .onUpdate((d) => {
                 // 'manually' slerp the Quaternion to avoid rotation issues
-                THREE.Quaternion.slerp(this.start.quaternion, this.end.quaternion, this.camera.quaternion, d.t);
+                THREE.Quaternion.slerp(startQuaternion, this.end.quaternion, this.camera.quaternion, d.t);
             })
             .start();
 
@@ -293,11 +322,17 @@ class StreetControls extends FirstPersonControls {
      *
      * @param { THREE.Vector3 }  position - Destination of the movement.
      * @param { number } time - Time in millisecond
+     * @return { Promise }
      */
-    moveCameraTo(position, time) {
+    moveCameraTo(position, time = 50) {
         if (!position) {
-            return;
+            return Promise.resolve();
         }
+
+        let resolve;
+        const promise = new Promise((r) => {
+            resolve = r;
+        });
 
         this.stopAnimations();
 
@@ -305,19 +340,20 @@ class StreetControls extends FirstPersonControls {
             .to(position.clone(), time)
             .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
             .onComplete(() => {
-                this.view.removeFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, this.animationFrameRequester);
-                this.animationFrameRequester = null;
+                this.stopAnimations();
+                resolve();
             })
             .start();
 
         this.animationFrameRequester = () => {
             this.tweenGroup.update();
-
             this.view.notifyChange(this.camera);
         };
 
         this.view.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, this.animationFrameRequester);
         this.view.notifyChange(this.camera);
+
+        return promise;
     }
 
     stopAnimations() {
@@ -352,8 +388,13 @@ class StreetControls extends FirstPersonControls {
             this.moveCameraTo(this.previousPosition);
         }
         // key to set to camera to current position looking at next position (default to A)
-        if (e.keyCode == this.keySetCameraToCurrentPosition) {
+        if (e.keyCode == this.keySetCameraToCurrentPositionAndLookAtNext) {
             this.setCameraToCurrentPosition();
+            this.view.notifyChange(this.view.camera.camera3D);
+        }
+        // key to set to camera to current position looking at previous position (default to Q)
+        if (e.keyCode == this.keySetCameraToCurrentPositionAndLookAtPrevious) {
+            this.setCameraToCurrentPosition(true);
             this.view.notifyChange(this.view.camera.camera3D);
         }
     }

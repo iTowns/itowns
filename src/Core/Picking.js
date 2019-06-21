@@ -205,6 +205,18 @@ export default {
      * Default picking method. Uses THREE.Raycaster
      */
     pickObjectsAt(view, viewCoords, radius, object, target = []) {
+        if (radius < 0) {
+            const normalized = view.viewToNormalizedCoords(viewCoords);
+            raycaster.setFromCamera(normalized, view.camera.camera3D);
+
+            const intersects = raycaster.intersectObject(object, true);
+            for (const inter of intersects) {
+                inter.layer = findLayerInParent(inter.object);
+                target.push(inter);
+            }
+
+            return target;
+        }
         // Instead of doing N raycast (1 per x,y returned by traversePickingCircle),
         // we force render the zone of interest.
         // Then we'll only do raycasting for the pixels where something was drawn.
