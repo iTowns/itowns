@@ -156,8 +156,17 @@
                     // add the created building layer, and debug UI
                     view.addLayer(wfsBuildingLayer).then(function addDebugUI(buildingLayer) {
                         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, buildingLayer);
+                        view.controls.buildingsLayer = buildingLayer.id;
                         debug.GeometryDebug.addWireFrameCheckbox(gui, view, buildingLayer);
                     });
+
+                    var altitude = new itowns.THREE.Vector3();
+
+                    view.controls.transformationPositionPickOnTheGround = (position) => {
+                        position.copy(orientedImageLayer.mostNearPano(position).position);
+                        altitude.copy(position).normalize().multiplyScalar(3);
+                        return position.sub(altitude);
+                    };
                 });
 
             });
