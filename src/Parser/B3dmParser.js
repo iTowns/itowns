@@ -70,8 +70,6 @@ export function enableDracoLoader(path, config) {
     DRACOLoader.getDecoderModule();
 }
 
-const FT_RTC = new THREE.Vector3();
-
 export default {
     /** Parse b3dm buffer and extract THREE.Scene and batch table
      * @param {ArrayBuffer} buffer - the b3dm buffer.
@@ -122,6 +120,7 @@ export default {
             const headerByteLength = byteOffset + magicNumberByteLength;
             const promises = [];
             let FTJSON = {};
+            const FT_RTC = new THREE.Vector3();
             if (b3dmHeader.FTJSONLength > 0) {
                 const sizeBegin = headerByteLength;
                 const jsonBuffer = buffer.slice(sizeBegin, b3dmHeader.FTJSONLength + sizeBegin);
