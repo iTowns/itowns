@@ -77,17 +77,17 @@
     "eslint-loader": "^2.1.2",
     "eslint-plugin-import": "^2.17.3",
     "jsdoc": "^3.6.2",
-    "marked": "^0.6.2",
+    "marked": "^0.6.3",
     "mocha": "^6.1.4",
     "nyc": "^14.1.1",
     "proj4": "^2.5.0",
-    "puppeteer": "^1.17.0",
+    "puppeteer": "^1.18.1",
     "replace-in-file": "^4.1.0",
     "three": "^0.105.2",
     "url-polyfill": "^1.1.5",
-    "webpack": "^4.32.2",
-    "webpack-cli": "^3.3.2",
-    "webpack-dev-server": "^3.5.1",
+    "webpack": "^4.35.2",
+    "webpack-cli": "^3.3.5",
+    "webpack-dev-server": "^3.7.2",
     "whatwg-fetch": "^3.0.0"
   }
 }
