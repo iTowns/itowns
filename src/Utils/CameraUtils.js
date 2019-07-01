@@ -96,9 +96,9 @@ class CameraRig extends THREE.Object3D {
     // apply rig.camera's transformation to camera
     applyTransformToCamera(view, camera) {
         if (this.proxy) {
-            camera.quaternion.onChange(() => {});
+            camera.quaternion._onChange(() => {});
             this.camera.matrixWorld.decompose(this.proxy.position, camera.quaternion, camera.scale);
-            camera.quaternion.onChange(() => this.removeProxy(view, camera));
+            camera.quaternion._onChange(() => this.removeProxy(view, camera));
         } else {
             this.camera.matrixWorld.decompose(camera.position, camera.quaternion, camera.scale);
         }
@@ -108,7 +108,7 @@ class CameraRig extends THREE.Object3D {
         if (!this.proxy && view && camera) {
             this.proxy = { position: new THREE.Vector3() };
             Object.keys(camera.position).forEach(key => proxyProperty(view, camera, this, key));
-            camera.quaternion.onChange(() => this.removeProxy(view, camera));
+            camera.quaternion._onChange(() => this.removeProxy(view, camera));
         }
     }
 
@@ -116,7 +116,7 @@ class CameraRig extends THREE.Object3D {
         this.stop(view);
         if (this.proxy && view && camera) {
             Object.keys(camera.position).forEach(key => Object.defineProperty(camera.position, key, { value: this.proxy.position[key], writable: true }));
-            camera.quaternion.onChange(() => {});
+            camera.quaternion._onChange(() => {});
             this.proxy = null;
         }
     }
