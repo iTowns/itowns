@@ -54,7 +54,7 @@
   },
   "peerDependencies": {
     "proj4": "^2.5.0",
-    "three": "^0.105.2"
+    "three": "^0.106.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",
@@ -84,7 +84,7 @@
     "proj4": "^2.5.0",
     "puppeteer": "^1.18.1",
     "replace-in-file": "^4.1.0",
-    "three": "^0.105.2",
+    "three": "^0.106.2",
     "url-polyfill": "^1.1.5",
     "webpack": "^4.35.2",
     "webpack-cli": "^3.3.5",
