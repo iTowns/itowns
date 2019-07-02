@@ -1,178 +1,10 @@
 import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
-import OBB from 'Renderer/OBB';
-import Extent from 'Core/Geographic/Extent';
-import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from 'Process/3dTilesProcessing';
+import { init3dTilesLayer, pre3dTilesUpdate, process3dTilesNode } from 'Process/3dTilesProcessing';
+import C3DTileset from 'Core/3DTiles/C3DTileset';
+import C3DTExtensions from 'Core/3DTiles/C3DTExtensions';
 
 const update = process3dTilesNode();
-
-/** @classdesc
- * Class mapping 3D Tiles extensions names to their associated parsing methods.
- */
-class $3DTilesExtensions {
-    constructor() {
-        this.extensionsMap = new Map();
-    }
-
-    /**
-     * Register a 3D Tiles extension: Maps an extension name to its parser
-     * @param {String} extensionName - Name of the extension
-     * @param {Function} parser - The function for parsing the extension
-     */
-    registerExtension(extensionName, parser) {
-        this.extensionsMap.set(extensionName, parser);
-    }
-
-    /**
-     * Get the parser of a given extension
-     * @param {String} extensionName - Name of the extension
-     * @returns {Function} - The function for parsing the extension
-     */
-    getParser(extensionName) {
-        return this.extensionsMap.get(extensionName);
-    }
-
-    /**
-     * Test if an extension is registered
-     * @param {String} extensionName - Name of the extension
-     * @returns {boolean} - true if the extension is registered and false
-     * otherwise
-     */
-    isExtensionRegistered(extensionName) {
-        return this.extensionsMap.has(extensionName);
-    }
-}
-
-/**
- * Global object holding 3D Tiles extensions. Extensions must be registered
- * with their parser by the client.
- * @type {$3DTilesExtensions}
- */
-export const $3dTilesExtensions = new $3DTilesExtensions();
-
-/** @classdesc
- * Abstract class for 3DTiles Extensions. Extensions implemented by the user
- * must inherit from this class. Example of extension extending this class:
- *  [BatchTableHierarchyExtension]{@link BatchTableHierarchyExtension}
- */
-export class $3dTilesAbstractExtension {
-    constructor() {
-        if (this.constructor === $3dTilesAbstractExtension) {
-            throw new TypeError('Abstract class "AbstractExtension" ' +
-                'cannot be instantiated directly');
-        }
-    }
-
-    /**
-     * Method to get the displayable information related to a given feature
-     * from an extension. All extensions must implement it (event if it
-     * returns an empty object).
-     * @param {integer} featureId - id of the feature
-     */
-    // disable warning saying that we don't use 'this' in this method
-    // eslint-disable-next-line
-    getPickingInfo(featureId) {
-        throw new Error('You must implement getPickingInfo function ' +
-            'in your extension');
-    }
-}
-
-const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
-function getBox(volume, inverseTileTransform) {
-    if (volume.region) {
-        const region = volume.region;
-        extent.set(
-            THREE.MathUtils.radToDeg(region[0]),
-            THREE.MathUtils.radToDeg(region[2]),
-            THREE.MathUtils.radToDeg(region[1]),
-            THREE.MathUtils.radToDeg(region[3]));
-        const box = new OBB().setFromExtent(extent);
-        box.updateZ(region[4], region[5]);
-        // at this point box.matrix = box.epsg4978_from_local, so
-        // we transform it in parent_from_local by using parent's epsg4978_from_local
-        // which from our point of view is epsg4978_from_parent.
-        // box.matrix = (epsg4978_from_parent ^ -1) * epsg4978_from_local
-        //            =  parent_from_epsg4978 * epsg4978_from_local
-        //            =  parent_from_local
-        box.matrix.premultiply(inverseTileTransform);
-        // update position, rotation and scale
-        box.matrix.decompose(box.position, box.quaternion, box.scale);
-        return { region: box };
-    } else if (volume.box) {
-        // TODO: only works for axis aligned boxes
-        const box = volume.box;
-        // box[0], box[1], box[2] = center of the box
-        // box[3], box[4], box[5] = x axis direction and half-length
-        // box[6], box[7], box[8] = y axis direction and half-length
-        // box[9], box[10], box[11] = z axis direction and half-length
-        const center = new THREE.Vector3(box[0], box[1], box[2]);
-        const w = center.x - box[3];
-        const e = center.x + box[3];
-        const s = center.y - box[7];
-        const n = center.y + box[7];
-        const b = center.z - box[11];
-        const t = center.z + box[11];
-
-        return { box: new THREE.Box3(new THREE.Vector3(w, s, b), new THREE.Vector3(e, n, t)) };
-    } else if (volume.sphere) {
-        const sphere = new THREE.Sphere(new THREE.Vector3(volume.sphere[0], volume.sphere[1], volume.sphere[2]), volume.sphere[3]);
-        return { sphere };
-    }
-}
-
-export function $3dTilesIndex(tileset, baseURL) {
-    let counter = 1;
-    this.index = {};
-    const inverseTileTransform = new THREE.Matrix4();
-    const recurse = function recurse_f(node, baseURL, parent) {
-        // compute transform (will become Object3D.matrix when the object is downloaded)
-        node.transform = node.transform ? (new THREE.Matrix4()).fromArray(node.transform) : undefined;
-
-        // The only reason to store _worldFromLocalTransform is because of extendTileset where we need the
-        // transform chain for one node.
-        node._worldFromLocalTransform = node.transform;
-        if (parent && parent._worldFromLocalTransform) {
-            if (node.transform) {
-                node._worldFromLocalTransform = new THREE.Matrix4().multiplyMatrices(
-                    parent._worldFromLocalTransform, node.transform);
-            } else {
-                node._worldFromLocalTransform = parent._worldFromLocalTransform;
-            }
-        }
-
-        // getBox only use inverseTileTransform for volume.region so let's not
-        // compute the inverse matrix each time
-        // Assumes that node.boundingVolume is defined if node.viewerRequestVolume is undefined
-        if ((node.viewerRequestVolume && node.viewerRequestVolume.region)
-            || node.boundingVolume.region) {
-            if (node._worldFromLocalTransform) {
-                inverseTileTransform.getInverse(node._worldFromLocalTransform);
-            } else {
-                inverseTileTransform.identity();
-            }
-        }
-
-        node.viewerRequestVolume = node.viewerRequestVolume ? getBox(node.viewerRequestVolume, inverseTileTransform) : undefined;
-        node.boundingVolume = getBox(node.boundingVolume, inverseTileTransform);
-
-        this.index[counter] = node;
-        node.tileId = counter;
-        node.baseURL = baseURL;
-        counter++;
-        if (node.children) {
-            for (const child of node.children) {
-                recurse(child, baseURL, node);
-            }
-        }
-    }.bind(this);
-    recurse(tileset.root, baseURL);
-
-    this.extendTileset = function extendTileset(tileset, nodeId, baseURL) {
-        recurse(tileset.root, baseURL, this.index[nodeId]);
-        this.index[nodeId].children = [tileset.root];
-        this.index[nodeId].isTileset = true;
-    };
-}
 
 class C3DTilesLayer extends GeometryLayer {
     /**
@@ -190,8 +22,9 @@ class C3DTilesLayer extends GeometryLayer {
      * }, view);
      * View.prototype.addLayer.call(view, l3dt);
      *
-     * @param      {string}  id - The id of the layer, that should be unique. It is
-     * not mandatory, but an error will be emitted if this layer is added a
+     * @param      {string}  id - The id of the layer, that should be unique.
+     *     It is not mandatory, but an error will be emitted if this layer is
+     *     added a
      * {@link View} that already has a layer going by that id.
      * @param      {object}  config   configuration, all elements in it
      * will be merged as is in the layer.
@@ -210,14 +43,14 @@ class C3DTilesLayer extends GeometryLayer {
         // custom cesium shaders are not functional;
         this.overrideMaterials = config.overrideMaterials !== undefined ? config.overrideMaterials : true;
         this.name = config.name;
+        this.registeredExtensions = config.registeredExtensions || new C3DTExtensions();
 
         this._cleanableTiles = [];
 
         const resolve = this.addInitializationStep();
 
         this.source.whenReady.then((tileset) => {
-            this.tileset = tileset;
-            this.tileIndex = new $3dTilesIndex(tileset, this.source.baseUrl);
+            this.tileIndex = new C3DTileset(tileset, this.source.baseUrl);
             this.asset = tileset.asset;
             // TODO: Move all init3dTilesLayer code to constructor
             init3dTilesLayer(view, view.mainLoop.scheduler, this, tileset.root).then(resolve);
@@ -252,6 +85,70 @@ class C3DTilesLayer extends GeometryLayer {
                 };
             }
         }
+    }
+
+    /**
+     * Finds the batch table of an object in a 3D Tiles layer. This is
+     * for instance needed when picking because we pick the geometric
+     * object which is not at the same level in the layer structure as
+     * the batch table. More details here on itowns internal
+     * organization of 3DTiles:
+     *  https://github.com/MEPP-team/RICT/blob/master/Doc/iTowns/Doc.md#itowns-internal-organisation-of-3d-tiles-data
+     * @param {THREE.Object3D} object - a 3D geometric object
+     * @returns {C3DTBatchTable} - the batch table of the object
+     */
+    findBatchTable(object) {
+        if (object.batchTable) {
+            return object.batchTable;
+        }
+        if (object.parent) {
+            return this.findBatchTable(object.parent);
+        }
+    }
+
+    /**
+     * Gets semantic information from batch table and batch table extensions
+     * of an intersected feature.
+     * @param {Array} intersects - @return An array containing all
+     * targets picked under specified coordinates. Intersects can be
+     * computed with view.pickObjectsAt(..). See fillHTMLWithPickingInfo()
+     * in 3dTilesHelper.js for an example.
+     * @returns {Object} - an object containing the batch id, the
+     * information from the batch table and from the extension of the batch
+     * table for an intersected feature.
+     */
+    getInfoFromIntersectObject(intersects) {
+        const resultInfo = {};
+
+        let batchID = -1;
+        let batchTable = {};
+        // First, we get the ID and the batch table of the intersected object.
+        // (the semantic information about a feature is located in its batch
+        // table (see 3D Tiles specification).
+        for (let i = 0; i < intersects.length; i++) {
+            // interAttributes are glTF attributes of b3dm tiles (i.e.
+            // position, normal, batch id)
+            const interAttributes = intersects[i].object.geometry.attributes;
+            if (interAttributes && interAttributes._BATCHID) {
+                // face is a Face3 object of THREE which is a
+                // triangular face. face.a is its first vertex
+                const vertex = intersects[i].face.a;
+                // get batch id of the face
+                batchID = interAttributes._BATCHID.array[vertex];
+                batchTable = this.findBatchTable(intersects[i].object);
+                break;
+            }
+        }
+
+        if (batchID === -1) {
+            return;
+        }
+
+        resultInfo.batchID = batchID;
+        // get information from batch table (including from its extension)
+        Object.assign(resultInfo, batchTable.getInfoById(batchID));
+
+        return resultInfo;
     }
 }
 

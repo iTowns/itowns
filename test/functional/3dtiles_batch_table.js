@@ -26,25 +26,8 @@ describe('3dtiles_batch_table', function _() {
         assert.ok(layers.indexOf('3d-tiles-bt-hierarchy') >= 0);
     });
 
-    // Picks the object at (218,90) and verifies that its batch id is correct
-    it('should pick the right object', async () => {
-        const batchID = await page.evaluate(
-            () => {
-                const intersects = view.pickObjectsAt({
-                    x: 218,
-                    y: 90,
-                });
-                const batchInfo = getPickedBatchInfo(intersects);
-                return batchInfo.batchID;
-            },
-        );
-
-        // Verify that the object is correctly picked
-        assert.equal(batchID, 29);
-    });
-
-    // Verifies that the batch table and batch table hierarchy extension
-    // picked information are correct for object at { x: 218, y: 90 }
+    // Verifies that the batch id,  batch table and batch table hierarchy
+    // extension picked information are correct for object at { x: 218, y: 90 }
     it('should return the batch table and batch hierarchy picked information',
         async () => {
             // Picks the object at (218,90) and gets its pickingInfo from
@@ -55,32 +38,33 @@ describe('3dtiles_batch_table', function _() {
                         x: 218,
                         y: 90,
                     });
-                    const batchInfo = getPickedBatchInfo(intersects);
-                    return batchInfo.batchTable.getPickingInfo(
-                        batchInfo.batchID,
-                    );
+                    const layer = view.getLayerById('3d-tiles-bt-hierarchy');
+                    return layer.getInfoFromIntersectObject(intersects);
                 },
             );
 
             // Create the expected object
             const expectedPickingInfo = {
-                BatchTable: {
+                batchID: 29,
+                batchTable: {
                     height: 10,
                     area: 20,
                 },
-                '3DTILES_batch_table_hierarchy': {
-                    wall: {
-                        wall_name: 'wall2',
-                        wall_paint: 'blue',
-                        wall_windows: 4,
-                    },
-                    building: {
-                        building_name: 'building2',
-                        building_area: 39.3,
-                    },
-                    zone: {
-                        zone_name: 'zone0',
-                        zone_buildings: 3,
+                extensions: {
+                    '3DTILES_batch_table_hierarchy': {
+                        wall: {
+                            wall_name: 'wall2',
+                            wall_paint: 'blue',
+                            wall_windows: 4,
+                        },
+                        building: {
+                            building_name: 'building2',
+                            building_area: 39.3,
+                        },
+                        zone: {
+                            zone_name: 'zone0',
+                            zone_buildings: 3,
+                        },
                     },
                 },
             };

@@ -142,7 +142,7 @@ export default {
                 const sizeBegin = headerByteLength + b3dmHeader.FTJSONLength +
                     b3dmHeader.FTBinaryLength;
                 promises.push(BatchTableParser.parse(
-                    buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin), b3dmHeader.BTBinaryLength, FTJSON.BATCH_LENGTH));
+                    buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin), b3dmHeader.BTBinaryLength, FTJSON.BATCH_LENGTH, options.registeredExtensions));
             } else {
                 promises.push(Promise.resolve({}));
             }

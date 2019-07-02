@@ -71,7 +71,6 @@
                 "CameraCalibrationParser",
                 "B3dmParser",
                 "BatchTableParser",
-                "BatchTableHierarchyExtensionParser",
                 "ShapefileParser"
             ],
 
@@ -94,11 +93,11 @@
             ],
 
             "3D Tiles": [
-                "BatchTable",
-                "$3DTilesExtensions",
-                "$3dTilesAbstractExtension",
-                "BatchTableHierarchyExtension",
-                "$3dtilesLayer"
+                "C3DTileset",
+                "C3DTBatchTable",
+                "C3DTBoundingVolume",
+                "C3DTExtensions",
+                "C3DTBatchTableHierarchyExtension"
             ],
 
             "Plugins": [

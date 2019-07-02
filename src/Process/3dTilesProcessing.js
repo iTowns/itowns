@@ -68,7 +68,7 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
             overrideMatrixWorld = tmpMatrix.multiplyMatrices(node.matrixWorld, child.transform);
         }
 
-        const isVisible = cullingTest ? !cullingTest(context.camera, child, overrideMatrixWorld) : true;
+        const isVisible = cullingTest ? !cullingTest(layer, context.camera, child, overrideMatrixWorld) : true;
 
         // child is not visible => skip
         if (!isVisible) {
@@ -82,6 +82,7 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
             tile.traverse((obj) => {
                 obj.extent = extent;
             });
+            layer.onTileContentLoaded(tile);
 
             context.view.notifyChange(child);
             child.loaded = true;
@@ -109,6 +110,7 @@ function _subdivideNodeSubstractive(context, layer, node) {
                         context.view.notifyChange(node);
                     }
                     layer.tileIndex.index[tile.tileId].loaded = true;
+                    layer.onTileContentLoaded(tile);
                 }));
         }
         Promise.all(promises).then(() => {
@@ -118,42 +120,20 @@ function _subdivideNodeSubstractive(context, layer, node) {
     }
 }
 
-export function $3dTilesCulling(camera, node, tileMatrixWorld) {
-    // For viewer Request Volume https://github.com/AnalyticalGraphicsInc/3d-tiles-samples/tree/master/tilesets/TilesetWithRequestVolume
-    if (node.viewerRequestVolume) {
-        const nodeViewer = node.viewerRequestVolume;
-        if (nodeViewer.region) {
-            // TODO
-            return true;
-        }
-        if (nodeViewer.box) {
-            // TODO
-            return true;
-        }
-        if (nodeViewer.sphere) {
-            const worldCoordinateCenter = nodeViewer.sphere.center.clone();
-            worldCoordinateCenter.applyMatrix4(tileMatrixWorld);
-            // To check the distance between the center sphere and the camera
-            if (!(camera.camera3D.position.distanceTo(worldCoordinateCenter) <= nodeViewer.sphere.radius)) {
-                return true;
-            }
-        }
+export function $3dTilesCulling(layer, camera, node, tileMatrixWorld) {
+    // For viewer Request Volume
+    // https://github.com/AnalyticalGraphicsInc/3d-tiles-samples/tree/master/tilesets/TilesetWithRequestVolume
+    if (node.viewerRequestVolume && node.viewerRequestVolume.viewerRequestVolumeCulling(
+        camera, tileMatrixWorld)) {
+        return true;
     }
 
     // For bounding volume
-    if (node.boundingVolume) {
-        const boundingVolume = node.boundingVolume;
-        if (boundingVolume.region) {
-            return !camera.isBox3Visible(boundingVolume.region.box3D,
-                tileMatrixWorld.clone().multiply(boundingVolume.region.matrix));
-        }
-        if (boundingVolume.box) {
-            return !camera.isBox3Visible(boundingVolume.box, tileMatrixWorld);
-        }
-        if (boundingVolume.sphere) {
-            return !camera.isSphereVisible(boundingVolume.sphere, tileMatrixWorld);
-        }
+    if (node.boundingVolume &&
+        node.boundingVolume.boundingVolumeCulling(camera, tileMatrixWorld)) {
+        return true;
     }
+
     return false;
 }
 
@@ -290,16 +270,16 @@ export function computeNodeSSE(camera, node) {
     return camera._preSSE * (node.geometricError / node.distance);
 }
 
-export function init3dTilesLayer(view, scheduler, layer) {
-    return requestNewTile(view, scheduler, layer, layer.tileset.root, undefined, true).then(
+export function init3dTilesLayer(view, scheduler, layer, rootTile) {
+    return requestNewTile(view, scheduler, layer, rootTile, undefined, true).then(
         (tile) => {
-            delete layer.tileset;
             layer.object3d.add(tile);
             tile.updateMatrixWorld();
             layer.tileIndex.index[tile.tileId].loaded = true;
             layer.root = tile;
             layer.extent = boundingVolumeToExtent(layer.projection || view.referenceCrs,
                 tile.boundingVolume, tile.matrixWorld);
+            layer.onTileContentLoaded(tile);
         });
 }
 
@@ -328,9 +308,8 @@ export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTes
         }
 
         // do proper culling
-        const isVisible = cullingTest ? (!cullingTest(context.camera, node, node.matrixWorld)) : true;
+        const isVisible = cullingTest ? (!cullingTest(layer, context.camera, node, node.matrixWorld)) : true;
         node.visible = isVisible;
-
 
         if (isVisible) {
             if (node.cleanableSince) {

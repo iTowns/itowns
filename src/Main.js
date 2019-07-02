@@ -43,7 +43,7 @@ export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
 export { default as GeometryLayer } from 'Layer/GeometryLayer';
 export { default as PotreeLayer } from 'Layer/PotreeLayer';
-export { default as C3DTilesLayer, $3dTilesExtensions } from 'Layer/C3DTilesLayer';
+export { default as C3DTilesLayer } from 'Layer/C3DTilesLayer';
 export { default as TiledGeometryLayer } from 'Layer/TiledGeometryLayer';
 export { default as OrientedImageLayer } from 'Layer/OrientedImageLayer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from 'Layer/LayerUpdateStrategy';
@@ -73,6 +73,15 @@ export { default as GpxParser } from 'Parser/GpxParser';
 export { default as GeoJsonParser } from 'Parser/GeoJsonParser';
 export { default as KMLParser } from 'Parser/KMLParser';
 export { default as CameraCalibrationParser } from 'Parser/CameraCalibrationParser';
-export { default as BatchTableHierarchyExtensionParser } from 'Parser/BatchTableHierarchyExtensionParser';
 export { default as ShapefileParser } from 'Parser/ShapefileParser';
 export { enableDracoLoader, glTFLoader, legacyGLTFLoader } from 'Parser/B3dmParser';
+
+// 3D Tiles classes and extensions
+// Exported to allow one to implement its own 3D Tiles extension which needs to
+// know the classes it extends
+export { default as C3DTileset } from './Core/3DTiles/C3DTileset';
+export { default as C3DTBoundingVolume } from './Core/3DTiles/C3DTBoundingVolume';
+export { default as C3DTBatchTable } from './Core/3DTiles/C3DTBatchTable';
+export { default as C3DTExtensions } from './Core/3DTiles/C3DTExtensions';
+export { default as C3DTilesTypes } from './Core/3DTiles/C3DTilesTypes';
+export { default as C3DTBatchTableHierarchyExtension } from './Core/3DTiles/C3DTBatchTableHierarchyExtension';
