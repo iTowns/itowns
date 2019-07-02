@@ -49,17 +49,20 @@
                         .then(menuGlobe.addLayerGUI.bind(menuGlobe));
                 });
 
-            // Create and define 3D Tiles extensions needed in this example
-            itowns.$3dTilesExtensions.registerExtension(
-                "3DTILES_batch_table_hierarchy",
-                itowns.BatchTableHierarchyExtensionParser.parse);
-            // Create a new 3D tiles layer with batch table hierarchy extension
+	        // Create a new 3D tiles layer with batch table hierarchy extension
+            const extensions = new itowns.C3DTExtensions();
+            extensions.registerExtension("3DTILES_batch_table_hierarchy",
+                { [itowns.C3DTilesTypes.batchtable]:
+                    itowns.C3DTBatchTableHierarchyExtension });
+
+            // Create the 3D Tiles layer
             var $3dTilesLayerBTHierarchy = new itowns.C3DTilesLayer(
                 '3d-tiles-bt-hierarchy', {
                     name: 'BTHierarchy',
                     source: new itowns.C3DTilesSource({
                         url: 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/cesium/master/Apps/SampleData/Cesium3DTiles/Hierarchy/BatchTableHierarchy/tileset.json',
-                    })
+                    }),
+                    registeredExtensions: extensions,
                 },
             view);
 

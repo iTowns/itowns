@@ -12,9 +12,11 @@ function b3dmToMesh(data, layer, url) {
         overrideMaterials: layer.overrideMaterials,
         doNotPatchMaterial: layer.doNotPatchMaterial,
         opacity: layer.opacity,
+        registeredExtensions: layer.registeredExtensions,
     };
     return B3dmParser.parse(data, options).then((result) => {
         const batchTable = result.batchTable;
+        // object3d is actually a THREE.Scene
         const object3d = result.gltf.scene;
         return { batchTable, object3d };
     });
@@ -93,7 +95,7 @@ function executeCommand(command) {
                 if (magic[0] === '{') {
                     result = JSON.parse(utf8Decoder.decode(new Uint8Array(result)));
                     const newPrefix = url.slice(0, url.lastIndexOf('/') + 1);
-                    layer.tileIndex.extendTileset(result, metadata.tileId, newPrefix);
+                    layer.tileIndex.extendTileset(result, metadata.tileId, newPrefix, layer.registeredExtensions);
                 } else if (magic == 'b3dm') {
                     func = supportedFormats.b3dm;
                 } else if (magic == 'pnts') {
@@ -104,7 +106,6 @@ function executeCommand(command) {
                 if (func) {
                     // TODO: request should be delayed if there is a viewerRequestVolume
                     return func(result, layer, url).then((content) => {
-                        layer.onTileContentLoaded(content);
                         tile.content = content.object3d;
                         if (content.batchTable) {
                             tile.batchTable = content.batchTable;

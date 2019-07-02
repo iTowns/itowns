@@ -1,26 +1,29 @@
-import { $3dTilesAbstractExtension } from 'Layer/C3DTilesLayer';
 
-/** @classdesc
- * Class for storing and accessing information relative to the
- *  [3DTILES_batch_table_hierarchy extension]{@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions/3DTILES_batch_table_hierarchy}
- *  of 3D Tiles */
-class BatchTableHierarchyExtension extends $3dTilesAbstractExtension {
+
+/**
+ * @classdesc
+ * Batch Table part of the 3D Tiles
+ * [Batch Table Hierarchy Extension](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions/3DTILES_batch_table_hierarchy)
+ * @property {object} classes - The classes as defined in the specification.
+ * @property {object} inverseHierarchy - InverseHierarchy contains for each
+ * instance (i.e. georgraphic feature e.g. building, roof, etc.) an array of the
+ * indexes of its parents. For example, the parents of the instance 0 can be
+ * found using inverseHierarchy[0].
+ * @property {number[]} instancesIdxs - For each instance of the extension,
+ * contains a javascript object with classId and instanceIdx. classId is the id
+ * of the class (from this.classes) of the instance. instanceIdx is the index of
+ * the instance in this class. Goal: Ease the retrieval of the properties of an
+ * instance.
+ */
+class C3DTBatchTableHierarchyExtension {
     /**
-     * @param {Object} json - json holding the extension
+     * Constructor of the C3DTBatchTableHierarchyExtension class.
+     * @param {Object} json - The parsed json of the batch table part of the 3D
+     * Tiles [Batch Table Hierarchy Extension](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions/3DTILES_batch_table_hierarchy)
      */
     constructor(json) {
-        super($3dTilesAbstractExtension);
         this.classes = json.classes;
-        // inverseHierarchy contains for each instance (i.e. georgraphic
-        // feature e.g. building, roof, etc.) an array of the indexes of its
-        // parents. For example, the parents of the instance 0 can be found
-        // using inverseHierarchy[0].
         this.inverseHierarchy = {};
-        // instancesIdxs contains for each instance of the extension, a
-        // javascript object with classId and instanceIdx. classId is the id of
-        // the class (from this.classes) of the instance. instanceIdx is the
-        // index of the instance in this class. Goal: Ease the retrieval
-        // of the properties of an instance
         this.instancesIdxs = [];
 
         // Counts the number of instances of a class
@@ -63,52 +66,35 @@ class BatchTableHierarchyExtension extends $3dTilesAbstractExtension {
 
     /**
      * Creates and returns a javascript object holding the displayable
-     * information relative to this extension and for a given feature and
-     * its parents
+     * information relative to this extension for a given feature.
      * @param {integer} featureId - id of the feature
-     * @returns {Object} - displayable information relative to this extension
-     * and for the feature with id=featureId and for its parents
+     * @returns {Object} - displayable information relative to this
+     * extension, for the feature with id=featureId and for its parents
      */
-    getPickingInfo(featureId) {
+    getInfoById(featureId) {
         const instanceProperties = {};
         // get feature class name
         const instanceClassId = this.instancesIdxs[featureId].classId;
         const featureClass = this.classes[instanceClassId].name;
         // get feature properties and values
         const instanceIdx = this.instancesIdxs[featureId].instanceIdx;
-        Object.keys(this.classes[instanceClassId].instances)
-            .forEach((property) => {
-                instanceProperties[property] =
-                    this.classes[instanceClassId].instances[property][instanceIdx];
-            });
+
+        const instances = this.classes[instanceClassId].instances;
+        for (const key in instances) {
+            if (Object.prototype.hasOwnProperty.call(instances, key)) {
+                instanceProperties[key] = instances[key][instanceIdx];
+            }
+        }
         // create return object: className: {featureProperties and values}
         const pickingInfo = {};
         pickingInfo[featureClass] = instanceProperties;
         // If this feature has parent(s), recurse on them
         if (this.inverseHierarchy && this.inverseHierarchy[featureId]) {
-            this.inverseHierarchy[featureId].forEach(
-                parentId => Object.assign(pickingInfo,
-                    this.getPickingInfo(parentId)));
+            for (const parentID of this.inverseHierarchy[featureId]) {
+                Object.assign(pickingInfo, this.getInfoById(parentID));
+            }
         }
         return pickingInfo;
     }
 }
-
-/**
- * @module BatchTableHierarchyExtensionParser
- */
-export default {
-    /**
-     * Parses a
-     * [3DTILES_batch_table_hierarchy extension]{@link https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions/3DTILES_batch_table_hierarchy}
-     * and returns a Promise that resolves with a BatchTableHierarchyExtension
-     * object.
-     * @param {Object} json - json holding the extension
-     * @return {Promise} - a promise that resolves with a
-     *     BatchTableHierarchyExtension object.
-     */
-    parse(json) {
-        return Promise.resolve(new BatchTableHierarchyExtension(json));
-    },
-};
-
+export default C3DTBatchTableHierarchyExtension;

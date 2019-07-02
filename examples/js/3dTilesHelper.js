@@ -1,48 +1,3 @@
-/* eslint-disable no-undef */
-// Finds the batch table of an object in a 3D Tiles layer. This is
-// for instance needed when picking because we pick the geometric
-// object which is not at the same level in the layer structure as
-// the  batch table. More details here on itowns internal
-// organization of 3DTiles:
-// https://github.com/MEPP-team/RICT/blob/master/Doc/iTowns/Doc.md#itowns-internal-organisation-of-3d-tiles-data
-function findBatchTable(object) {
-    if (object.batchTable) {
-        return object.batchTable;
-    }
-    if (object.parent) {
-        return findBatchTable(object.parent);
-    }
-    return undefined;
-}
-
-// Finds the intersected object with a batch id and returns an object
-// storing this batch id and the batch table of this object
-function getPickedBatchInfo(intersects) {
-    for (var i = 0; i < intersects.length; i++) {
-        // interAttributes are glTF attributes of b3dm tiles (i.e.
-        // position, normal, batch id)
-        var interAttributes = intersects[i].object.geometry.attributes;
-        // eslint-disable-next-line no-debugger
-        if (interAttributes) {
-            var batchIDs = interAttributes._BATCHID || interAttributes.batchId;
-            if (batchIDs) {
-                // face is a Face3 object of THREE which is a
-                // triangular face. face.a is its first vertex
-                var vertex = intersects[i].face.a;
-                // get batch id of the face
-                var batchID = batchIDs.array[vertex];
-                var batchTable = findBatchTable(
-                    intersects[i].object);
-
-                return {
-                    batchID: batchID,
-                    batchTable: batchTable,
-                };
-            }
-        }
-    }
-}
-
 // Function allowing picking on a given 3D tiles layer and filling an html div
 // with information on the picked feature
 // This function expects arguments passed through the binding of this (see
@@ -54,32 +9,27 @@ function getPickedBatchInfo(intersects) {
 // this.layer : the layer on which the picking must be done
 // eslint-disable-next-line
 function fillHTMLWithPickingInfo(event, view, pickingArg) {
+    if (!pickingArg.layer.isC3DTilesLayer) {
+        console.warn('Function fillHTMLWithPickingInfo only works' +
+            ' for C3DTilesLayer layers.');
+        return;
+    }
+
     // Remove content already in html div
     while (pickingArg.htmlDiv.firstChild) {
         pickingArg.htmlDiv.removeChild(pickingArg.htmlDiv.firstChild);
     }
 
+    // Get intersected objects
     var intersects = view.pickObjectsAt(event, 5, pickingArg.layer);
-    var batchInfo = getPickedBatchInfo(intersects);
-    if (!batchInfo) {
-        return;
+    if (intersects.length === 0) { return; }
+
+    // Get information from intersected objects (from the batch table and
+    // eventually the 3D Tiles extensions
+    var featureDisplayableInfo = pickingArg.layer.getInfoFromIntersectObject(intersects);
+
+    if (featureDisplayableInfo) {
+        // eslint-disable-next-line
+        pickingArg.htmlDiv.appendChild(createHTMLListFromObject(featureDisplayableInfo));
     }
-    var batchID = batchInfo.batchID;
-    var batchTable = batchInfo.batchTable;
-
-    // Print Batch id and batch table attributes in an
-    // ui element
-    var item = document.createElement('li');
-    item.appendChild(
-        document.createTextNode('Batch id: '));
-    item.appendChild(document.createTextNode(batchID));
-    var list = document.createElement('ul');
-    // Change the padding (top: 0, right:0, bottom:0 and
-    // left:1.5)
-    list.style.padding = '0 0 0 1.5rem';
-    list.appendChild(item);
-    pickingArg.htmlDiv.appendChild(list);
-
-    var featureDisplayableInfo = batchTable.getPickingInfo(batchID);
-    pickingArg.htmlDiv.appendChild(createHTMLListFromObject(featureDisplayableInfo));
 }
