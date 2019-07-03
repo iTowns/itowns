@@ -1,0 +1,50 @@
+{
+    "id":         "GEOIDMNT",
+    "noDataValue" : -99999,
+    "updateStrategy": {
+        "type": 0
+    },
+    "source": {
+        "url": "https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geoid/geoid/bil/%TILEMATRIX/geoid_%COL_%ROW.bil",
+        "format": "image/x-bil;bits=32",
+        "projection": "EPSG:4326",
+        "tileMatrixSet": "WGS84G",
+        "tileMatrixSetLimits": {
+            "0": {
+                "minTileRow": 0,
+                "maxTileRow": 0,
+                "minTileCol": 0,
+                "maxTileCol": 1
+            },
+            "1": {
+                "minTileRow": 0,
+                "maxTileRow": 1,
+                "minTileCol": 0,
+                "maxTileCol": 3
+            },
+            "2": {
+                "minTileRow": 0,
+                "maxTileRow": 3,
+                "minTileCol": 0,
+                "maxTileCol": 7
+            },
+            "3": {
+                "minTileRow": 0,
+                "maxTileRow": 7,
+                "minTileCol": 0,
+                "maxTileCol": 15
+            },
+            "4": {
+                "minTileRow": 0,
+                "maxTileRow": 15,
+                "minTileCol": 0,
+                "maxTileCol": 31
+            }
+        },
+        "zoom": {
+            "min": 0,
+            "max": 4
+        }
+    }
+}
+

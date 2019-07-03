@@ -23,7 +23,7 @@ class OBB extends THREE.Object3D {
         super();
         this.box3D = new THREE.Box3(min.clone(), max.clone());
         this.natBox = this.box3D.clone();
-        this.z = { min: 0, max: 0 };
+        this.z = { min: 0, max: 0, scale: 1.0 };
         return this;
     }
 
@@ -48,6 +48,7 @@ class OBB extends THREE.Object3D {
         this.natBox.copy(cOBB.natBox);
         this.z.min = cOBB.z.min;
         this.z.max = cOBB.z.max;
+        this.z.scale = cOBB.z.scale;
         return this;
     }
 
@@ -64,11 +65,18 @@ class OBB extends THREE.Object3D {
      *
      * @param {number}  min The minimum of oriented bounding box
      * @param {number}  max The maximum of oriented bounding box
+     * @param {number} scale
      */
-    updateZ(min, max) {
-        this.z = { min, max };
-        this.box3D.min.z = this.natBox.min.z + min;
-        this.box3D.max.z = this.natBox.max.z + max;
+    updateZ(min, max, scale = this.z.scale) {
+        this.z = { min, max, scale, delta: Math.abs(max - min) * scale };
+        this.box3D.min.z = this.natBox.min.z + min * scale;
+        this.box3D.max.z = this.natBox.max.z + max * scale;
+    }
+
+    updateScaleZ(scale) {
+        if (scale > 0) {
+            this.updateZ(this.z.min, this.z.max, scale);
+        }
     }
 
     /**

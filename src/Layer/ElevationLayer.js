@@ -6,6 +6,9 @@ import textureConverter from 'Converter/textureConverter';
  * @property {boolean} isElevationLayer - Used to checkout whether this layer is
  * an ElevationLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @property {number} scale - Used to apply a scale on the elevation value. It
+ * can be used for exageration of the elevation, like in [this
+ * example](https://www.itowns-project.org/itowns/examples/tiff.html).
  */
 class ElevationLayer extends Layer {
     /**
@@ -41,6 +44,21 @@ class ElevationLayer extends Layer {
     constructor(id, config = {}) {
         super(id, config);
         this.isElevationLayer = true;
+
+        // This is used to add a factor needed to color texture
+        let baseScale = 1.0;
+        if (this.useColorTextureElevation) {
+            baseScale = this.colorTextureElevationMaxZ - this.colorTextureElevationMinZ;
+        }
+
+        this.defineLayerProperty('scale', this.scale || 1.0, (self) => {
+            self.parent.object3d.traverse((obj) => {
+                if (obj.layer == self.parent && obj.material) {
+                    obj.material.setElevationScale(self.scale * baseScale);
+                    obj.obb.updateScaleZ(self.scale);
+                }
+            });
+        });
     }
 
     update(context, layer, node, parent) {
