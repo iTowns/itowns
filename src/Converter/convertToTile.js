@@ -34,6 +34,7 @@ function setTileFromTiledLayer(tile, tileLayer) {
         const alpha = dimensions.length();
         const h = Math.abs(1.0 / Math.cos(alpha * 0.5));
         tile.horizonCullingPoint.setLength(h * tile.horizonCullingPoint.length());
+        tile.horizonCullingPointElevationScaled = tile.horizonCullingPoint.clone();
     }
 }
 
@@ -74,13 +75,13 @@ export default {
             tile.visible = false;
             tile.updateMatrix();
 
-            if (parent) {
-                tile.setBBoxZ(parent.obb.z.min, parent.obb.z.max);
-            }
-
             tile.add(tile.obb);
 
             setTileFromTiledLayer(tile, layer);
+
+            if (parent) {
+                tile.setBBoxZ(parent.obb.z.min, parent.obb.z.max);
+            }
 
             return tile;
         });

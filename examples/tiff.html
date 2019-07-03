@@ -13,6 +13,7 @@
         <script src="js/GUI/GuiTools.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
         <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
         <script src="js/loading_screen.js"></script>
         <script src="js/TIFFParser.js"></script>
         <script type="text/javascript">
@@ -47,6 +48,22 @@
             });
 
             view.addLayer(tiffLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.TMSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(function _(layer) {
+                    layer.scale = 10000;
+                    view.tileLayer.attachedLayers[0].visible = false;
+                    menuGlobe.addLayerGUI(layer);
+                    menuGlobe.elevationGui.open();
+                    menuGlobe.elevationGui.__folders.GEOIDMNT.open();
+                });
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/GeoidMNT.json').then(addElevationLayerFromConfig);
+
+            const d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
         </script>
     </body>
 </html>

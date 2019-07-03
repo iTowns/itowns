@@ -63,22 +63,21 @@ class MaterialLayer {
             zmax: Infinity,
         };
 
+        let scaleFactor = 1.0;
+
         // Define elevation properties
         if (layer.useRgbaTextureElevation) {
             defaultEle.mode = ELEVATION_MODES.RGBA;
             defaultEle.zmax = 5000;
             throw new Error('Restore this feature');
         } else if (layer.useColorTextureElevation) {
+            scaleFactor = layer.colorTextureElevationMaxZ - layer.colorTextureElevationMinZ;
             defaultEle.mode = ELEVATION_MODES.COLOR;
-            // ?? pourquoi defaultEle.zmin et zmax ne sont pas
-            const zmin = layer.colorTextureElevationMinZ;
-            const zmax = layer.colorTextureElevationMaxZ;
-            defaultEle.scale = zmax - zmin;
-            defaultEle.bias = zmin;
+            defaultEle.bias = layer.colorTextureElevationMinZ;
         }
 
         defineLayerProperty(this, 'bias', layer.bias, defaultEle.bias);
-        defineLayerProperty(this, 'scale', layer.scale, defaultEle.scale);
+        defineLayerProperty(this, 'scale', layer.scale * scaleFactor, defaultEle.scale * scaleFactor);
         defineLayerProperty(this, 'mode', layer.mode, defaultEle.mode);
         defineLayerProperty(this, 'zmin', layer.zmin, defaultEle.zmin);
         defineLayerProperty(this, 'zmax', layer.zmax, defaultEle.zmax);

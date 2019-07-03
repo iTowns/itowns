@@ -244,6 +244,12 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
     getElevationLayer() {
         return this.layers.find(l => l.id === this.elevationLayerIds[0]);
     }
+
+    setElevationScale(scale) {
+        if (this.elevationLayerIds.length) {
+            this.getElevationLayer().scale = scale;
+        }
+    }
 }
 
 export default LayeredMaterial;

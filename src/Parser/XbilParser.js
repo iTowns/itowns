@@ -29,7 +29,7 @@ export function computeMinMaxElevation(buffer, width, height, pitch) {
         const pit = y * (width || 0);
         for (let x = xs; x < xs + sizeX; x += inc) {
             const val = buffer[pit + x];
-            if (val > -10.0) {
+            if (val > -10) {
                 max = Math.max(max, val);
                 min = Math.min(min, val);
             }

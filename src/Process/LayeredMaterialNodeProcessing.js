@@ -192,11 +192,11 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         const useMinMaxFromParent = extentsDestination[0].zoom - nodeLayer.zoom > 6;
         if (nodeLayer.textures[0]) {
             if (!useMinMaxFromParent) {
-                const { min, max } =  computeMinMaxElevation(
+                const { min, max } = computeMinMaxElevation(
                     nodeLayer.textures[0].image.data,
                     SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
                     nodeLayer.offsetScales[0]);
-                node.setBBoxZ(min, max);
+                node.setBBoxZ(min, max, layer.scale);
             } else {
                 // TODO: to verify we don't pass here,
                 // To follow issue, see #1011 https://github.com/iTowns/itowns/issues/1011
@@ -266,7 +266,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
                 }
             }
 
-            node.setBBoxZ(elevation.min, elevation.max);
+            node.setBBoxZ(elevation.min, elevation.max, layer.scale);
             nodeLayer.setTexture(0, elevation.texture, elevation.pitch);
             const nodeParent = parent.material && parent.material.getElevationLayer();
             nodeLayer.replaceNoDataValueFromParent(nodeParent, layer.noDataValue);
