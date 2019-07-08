@@ -291,7 +291,13 @@ export default {
                 // remove from group
                 layer.group.children.splice(i, 1);
 
-                obj.material.dispose();
+                if (Array.isArray(obj.material)) {
+                    for (const material of obj.material) {
+                        material.dispose();
+                    }
+                } else {
+                    obj.material.dispose();
+                }
                 obj.geometry.dispose();
                 obj.material = null;
                 obj.geometry = null;
@@ -300,7 +306,13 @@ export default {
                 if (__DEBUG__) {
                     if (obj.boxHelper) {
                         obj.boxHelper.removeMe = true;
-                        obj.boxHelper.material.dispose();
+                        if (Array.isArray(obj.boxHelper.material)) {
+                            for (const material of obj.boxHelper.material) {
+                                material.dispose();
+                            }
+                        } else {
+                            obj.boxHelper.material.dispose();
+                        }
                         obj.boxHelper.geometry.dispose();
                     }
                 }
