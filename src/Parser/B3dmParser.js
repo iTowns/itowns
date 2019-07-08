@@ -182,7 +182,13 @@ export default {
                         mesh.frustumCulled = false;
                         if (mesh.material) {
                             if (options.overrideMaterials) {
-                                mesh.material.dispose();
+                                if (Array.isArray(mesh.material)) {
+                                    for (const material of mesh.material) {
+                                        material.dispose();
+                                    }
+                                } else {
+                                    mesh.material.dispose();
+                                }
                                 if (typeof (options.overrideMaterials) === 'object' &&
                                     options.overrideMaterials.isMaterial) {
                                     mesh.material = options.overrideMaterials.clone();

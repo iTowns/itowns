@@ -18,7 +18,13 @@ export default {
                 // obj.geometry = null;
             }
             if (obj.material) {
-                obj.material.dispose();
+                if (Array.isArray(obj.material)) {
+                    for (const material of obj.material) {
+                        material.dispose();
+                    }
+                } else {
+                    obj.material.dispose();
+                }
                 // obj.material = null;
             }
         }

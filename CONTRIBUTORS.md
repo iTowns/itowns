@@ -25,6 +25,7 @@ The following people have contributed to iTowns 2.
   * [Emmanuel Schmück](https://github.com/EmmanuelSchmuck/)
   * [Marie Lamure](https://github.com/mlamure)
   * [Vincent Jaillot](https://github.com/jailln)
+  * [Valentin Rigolle](https://github.com/Crejak)
 
 * [virtualcitySYSTEMS](https://www.virtualcitysystems.de/)
   * [Ben Kuster](https://github.com/bkuster)

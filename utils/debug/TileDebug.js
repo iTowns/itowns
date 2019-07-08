@@ -163,6 +163,10 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
                                 if (c.layer === sb_layer_id) {
                                     if (c.dispose) {
                                         c.dispose();
+                                    } else if (Array.isArray(c.material)) {
+                                        for (const material of c.material) {
+                                            material.dispose();
+                                        }
                                     } else {
                                         c.material.dispose();
                                     }

@@ -212,7 +212,15 @@ function _cleanupObject3D(n) {
     }
     // free resources
     if (n.material) {
-        n.material.dispose();
+        // material can be either a THREE.Material object, or an array of
+        // THREE.Material objects
+        if (Array.isArray(n.material)) {
+            for (const material of n.material) {
+                material.dispose();
+            }
+        } else {
+            n.material.dispose();
+        }
     }
     if (n.geometry) {
         n.geometry.dispose();
