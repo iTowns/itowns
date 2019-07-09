@@ -69,7 +69,13 @@ class OBBHelper extends THREE.LineSegments {
         this.material.dispose();
         this.geometry.dispose();
         if (this.textMesh) {
-            this.textMesh.material.dispose();
+            if (Array.isArray(this.textMesh.material)) {
+                for (const material of this.textMesh.material) {
+                    material.dispose();
+                }
+            } else {
+                this.textMesh.material.dispose();
+            }
             this.textMesh.geometry.dispose();
             delete this.textMesh;
         }
