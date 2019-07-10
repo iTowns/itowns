@@ -91,12 +91,14 @@ class CameraRig extends THREE.Object3D {
         // sea level's worldPoistion
         this.targetWorldPosition = new THREE.Vector3();
         this.removeAll = () => {};
+
+        this._onChangeCallback = null;
     }
 
     // apply rig.camera's transformation to camera
     applyTransformToCamera(view, camera) {
         if (this.proxy) {
-            camera.quaternion._onChange(() => {});
+            camera.quaternion._onChange(this._onChangeCallback);
             this.camera.matrixWorld.decompose(this.proxy.position, camera.quaternion, camera.scale);
             camera.quaternion._onChange(() => this.removeProxy(view, camera));
         } else {
@@ -108,6 +110,7 @@ class CameraRig extends THREE.Object3D {
         if (!this.proxy && view && camera) {
             this.proxy = { position: new THREE.Vector3() };
             Object.keys(camera.position).forEach(key => proxyProperty(view, camera, this, key));
+            this._onChangeCallback = camera.quaternion._onChangeCallback;
             camera.quaternion._onChange(() => this.removeProxy(view, camera));
         }
     }
@@ -116,7 +119,7 @@ class CameraRig extends THREE.Object3D {
         this.stop(view);
         if (this.proxy && view && camera) {
             Object.keys(camera.position).forEach(key => Object.defineProperty(camera.position, key, { value: this.proxy.position[key], writable: true }));
-            camera.quaternion._onChange(() => {});
+            camera.quaternion._onChange(this._onChangeCallback);
             this.proxy = null;
         }
     }
