@@ -7,13 +7,15 @@ const quaternion = new THREE.Quaternion();
 const center = new THREE.Vector3();
 
 class PlanarTileBuilder {
-    constructor() {
-        this.type = 'p';
+    constructor(options = {}) {
         this.tmp = {
             coords: new Coordinates('EPSG:4326', 0, 0),
             position: new THREE.Vector3(),
             normal: new THREE.Vector3(0, 0, 1),
         };
+
+        this.projection = options.projection;
+        this.uvCount = options.uvCount || 1;
     }
     // prepare params
     // init projected object -> params.projected

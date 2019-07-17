@@ -53,7 +53,8 @@ export default {
         return newTileGeometry(builder, paramsGeometry).then((result) => {
             // build tile mesh
             result.geometry._count++;
-            const material = new LayeredMaterial(layer.materialOptions);
+            const crsCount = layer.tileMatrixSets.length;
+            const material = new LayeredMaterial(layer.materialOptions, crsCount);
             const tile = new TileMesh(result.geometry, material, layer, extent, level);
 
             // Commented because layer.threejsLayer is undefined;

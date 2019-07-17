@@ -1,6 +1,7 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
 import Extent from 'Core/Geographic/Extent';
+import CRS from 'Core/Geographic/Crs';
 
 /**
  * @classdesc
@@ -73,13 +74,9 @@ class TMSSource extends Source {
 
         this.format = this.format || 'image/png';
         this.url = source.url;
-        if (source.tileMatrixSet) {
-            this.tileMatrixSet = source.tileMatrixSet;
-        } else if (this.projection == 'EPSG:3857') {
-            this.tileMatrixSet = 'PM';
-        } else {
-            this.tileMatrixSet = 'WGS84';
-        }
+        this.tileMatrixSet = source.tileMatrixSet;
+
+        this.projection = CRS.formatToTms(this.tileMatrixSet || source.projection);
     }
 
     urlFromExtent(extent) {

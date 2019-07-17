@@ -1,11 +1,12 @@
 import { Vector2, Vector3 } from 'three';
 import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
-import { worldDimension3857 } from 'Core/Geographic/Extent';
+import { globalExtentTMS } from 'Core/Geographic/Extent';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import { featureFilter } from '@mapbox/mapbox-gl-style-spec';
 import Style from 'Core/Style';
 
+const worldDimension3857 = globalExtentTMS.get('EPSG:3857').dimensions();
 const globalExtent = new Vector3(worldDimension3857.x, worldDimension3857.y, 1);
 const lastPoint = new Vector2();
 const firstPoint = new Vector2();

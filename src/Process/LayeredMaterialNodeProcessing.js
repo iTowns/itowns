@@ -1,16 +1,10 @@
 import { chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
 import LayerUpdateState from 'Layer/LayerUpdateState';
-import { SIZE_TEXTURE_TILE } from 'Provider/OGCWebServiceHelper';
 import { computeMinMaxElevation } from 'Parser/XbilParser';
 import handlingError from 'Process/handlerNodeError';
 
-function getSourceExtent(node, extent, targetLevel) {
-    if (extent.isTiledCrs()) {
-        return extent.tiledExtentParent(targetLevel);
-    } else {
-        return node.findAncestorFromLevel(targetLevel).extent;
-    }
-}
+export const SIZE_TEXTURE_TILE = 256;
+export const SIZE_DIAGONAL_TEXTURE = Math.pow(2 * (SIZE_TEXTURE_TILE * SIZE_TEXTURE_TILE), 0.5);
 
 function materialCommandQueuePriorityFunction(material) {
     // We know that 'node' is visible because commands can only be
@@ -58,8 +52,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     if (!parent || !material) {
         return;
     }
-
-    const extentsDestination = node.getExtentsForSource(layer.source);
+    const extentsDestination = node.getExtentsByProjection(layer.projection);
 
     let nodeLayer = material.getLayer(layer.id);
 
@@ -120,7 +113,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         return;
     }
 
-    if (nodeLayer.level >= node.getZoomForLayer(layer)) {
+    if (nodeLayer.level >= extentsDestination[0].zoom) {
         // default decision method
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return;
@@ -134,15 +127,16 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     const failureParams = node.layerUpdateState[layer.id].failureParams;
     const destinationLevel = extentsDestination[0].zoom || node.level;
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, destinationLevel, nodeLayer.level, layer, failureParams);
-    if (targetLevel <= nodeLayer.level) {
+
+    if (targetLevel <= nodeLayer.level || targetLevel > destinationLevel) {
         return;
     }
 
     // Get equivalent of extent destination in source
     const extentsSource = [];
     for (const extentDestination of extentsDestination) {
-        const extentSource = getSourceExtent(node, extentDestination, targetLevel);
-        if (extentSource && !layer.source.extentInsideLimit(extentSource)) {
+        const extentSource = extentDestination.tiledExtentParent(targetLevel);
+        if (!layer.source.extentInsideLimit(extentSource)) {
             // Retry extentInsideLimit because you must check with the targetLevel
             // if the first test extentInsideLimit returns that it is out of limits
             // and the node inherits from its parent, then it'll still make a command to fetch texture.
@@ -179,7 +173,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // Elevation is currently handled differently from color layers.
     // This is caused by a LayeredMaterial limitation: only 1 elevation texture
     // can be used (where a tile can have N textures x M layers)
-    const extentsDestination = node.getExtentsForSource(layer.source);
+    const extentsDestination = node.getExtentsByProjection(layer.projection);
     // Init elevation layer, and inherit from parent if possible
     let nodeLayer = material.getElevationLayer();
     if (!nodeLayer) {
@@ -224,15 +218,15 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
 
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, extentsDestination[0].zoom, nodeLayer.level, layer);
 
-    if (targetLevel <= nodeLayer.level) {
+    if (targetLevel <= nodeLayer.level || targetLevel > extentsDestination[0].zoom) {
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return Promise.resolve();
     }
 
     const extentsSource = [];
     for (const nodeExtent of extentsDestination) {
-        const extentSource = getSourceExtent(node, nodeExtent, targetLevel);
-        if (extentSource && !layer.source.extentInsideLimit(extentSource)) {
+        const extentSource = nodeExtent.tiledExtentParent(targetLevel);
+        if (!layer.source.extentInsideLimit(extentSource)) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
             return;
         }

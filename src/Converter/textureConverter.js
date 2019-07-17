@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Feature2Texture from 'Converter/Feature2Texture';
 import Extent from 'Core/Geographic/Extent';
+import CRS from 'Core/Geographic/Crs';
 
 const extentTexture = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
@@ -25,7 +26,7 @@ export default {
                 new THREE.Color(layer.backgroundLayer.paint['background-color']) :
                 undefined;
 
-            extentDestination.as(layer.projection, extentTexture);
+            extentDestination.as(CRS.formatToEPSG(layer.projection), extentTexture);
             texture = Feature2Texture.createTextureFromFeature(data, extentTexture, 256, layer.style, backgroundColor);
             texture.parsedData = data;
             texture.coords = extentDestination;

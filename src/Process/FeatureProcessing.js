@@ -85,12 +85,15 @@ export default {
             return features;
         }
 
-        const extentsDestination = node.getExtentsForSource(layer.source);
+        const extentsDestination = node.getExtentsByProjection(layer.source.projection) || [node.extent];
+
         extentsDestination.forEach((e) => { e.zoom = node.level; });
 
         const extentsSource = [];
         for (const extentDest of extentsDestination) {
-            if (extentInsideSource(extentDest, layer.source)) {
+            const ext = extentDest.as(layer.source.projection);
+            ext.zoom = extentDest.zoom;
+            if (extentInsideSource(ext, layer.source)) {
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
                 return;
             }
@@ -115,7 +118,9 @@ export default {
                 // to attach it to the correct node
                 if (layer.source && layer.source.isFileSource) {
                     for (const extentSrc of extentsSource) {
-                        if (extentInsideSource(extentSrc, layer.source)) {
+                        const ext = extentSrc.as(layer.source.projection);
+                        ext.zoom = extentSrc.zoom;
+                        if (extentInsideSource(ext, layer.source)) {
                             node.layerUpdateState[layer.id].noMoreUpdatePossible();
                             return;
                         }

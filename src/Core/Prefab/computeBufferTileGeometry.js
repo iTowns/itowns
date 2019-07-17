@@ -21,14 +21,11 @@ export default function computeBuffers(params) {
         //      +-------------------------+
         //        * u = wgs84.u
         //        * v = textureid + v in builder texture
-        uv: {
-            wgs84: null,
-            pm: null,
-        },
+        uvs: [],
     };
+    const computeUvs = [];
 
     const builder = params.builder;
-
     const nSeg = params.segment;
     // segments count :
     // Tile : (nSeg + 1) * (nSeg + 1)
@@ -38,13 +35,21 @@ export default function computeBuffers(params) {
 
     outBuffers.position = new Float32Array(nVertex * 3);
     outBuffers.normal = new Float32Array(nVertex * 3);
-    outBuffers.uv.pm = new Float32Array(nVertex);
 
-    if (params.buildIndexAndWGS84) {
-        outBuffers.index = new Uint32Array(triangles * 3);
-        outBuffers.uv.wgs84 = new Float32Array(nVertex * 2);
+    const uvCount = params.builder.uvCount;
+    if (uvCount > 1) {
+        outBuffers.uvs[1] = new Float32Array(nVertex);
     }
 
+    computeUvs[0] = () => {};
+    if (params.buildIndexAndRootUv) {
+        outBuffers.index = new Uint32Array(triangles * 3);
+        outBuffers.uvs[0] = new Float32Array(nVertex * 2);
+        computeUvs[0] = (id, u, v) => {
+            outBuffers.uvs[0][id * 2 + 0] = u;
+            outBuffers.uvs[0][id * 2 + 1] = v;
+        };
+    }
     const widthSegments = Math.max(2, Math.floor(nSeg) || 2);
     const heightSegments = Math.max(2, Math.floor(nSeg) || 2);
 
@@ -55,29 +60,17 @@ export default function computeBuffers(params) {
 
     builder.prepare(params);
 
-    let UV_WGS84 = function UV_WGS84() { };
-    let UV_PM = function UV_PM() { };
-
-    // Define UV computation functions if needed
-    if (params.buildIndexAndWGS84) {
-        UV_WGS84 = function UV_WGS84(out, id, u, v) {
-            out.uv.wgs84[id * 2 + 0] = u;
-            out.uv.wgs84[id * 2 + 1] = v;
-        };
-    }
-    if (builder.getUV_PM) {
-        UV_PM = function UV_PM(out, id, u) {
-            out.uv.pm[id] = u;
-        };
-    }
-
     for (let y = 0; y <= heightSegments; y++) {
         const verticesRow = [];
         const v = y / heightSegments;
 
         builder.vProjecte(v, params);
-
-        const uv_pm = builder.getUV_PM ? builder.getUV_PM(params) : undefined;
+        if (uvCount > 1) {
+            const u = builder.computeUvs[1](params);
+            computeUvs[1] = (id) => {
+                outBuffers.uvs[1][id] = u;
+            };
+        }
 
         for (let x = 0; x <= widthSegments; x++) {
             const u = x / widthSegments;
@@ -100,8 +93,9 @@ export default function computeBuffers(params) {
             vertex.toArray(outBuffers.position, id_m3);
             normal.toArray(outBuffers.normal, id_m3);
 
-            UV_WGS84(outBuffers, idVertex, u, v);
-            UV_PM(outBuffers, idVertex, uv_pm);
+            for (const computeUv of computeUvs) {
+                computeUv(idVertex, u, v);
+            }
 
             if (!params.disableSkirt) {
                 if (y !== 0 && y !== heightSegments) {
@@ -140,7 +134,7 @@ export default function computeBuffers(params) {
 
     let idVertex2 = 0;
 
-    if (params.buildIndexAndWGS84) {
+    if (params.buildIndexAndRootUv) {
         for (let y = 0; y < heightSegments; y++) {
             for (let x = 0; x < widthSegments; x++) {
                 const v1 = vertices[y][x + 1];
@@ -167,7 +161,7 @@ export default function computeBuffers(params) {
         let buildIndexSkirt = function buildIndexSkirt() { };
         let buildUVSkirt = function buildUVSkirt() { };
 
-        if (params.buildIndexAndWGS84) {
+        if (params.buildIndexAndRootUv) {
             buildIndexSkirt = function buildIndexSkirt(id, v1, v2, v3, v4) {
                 id = bufferize(v1, v2, v3, id);
                 id = bufferize(v1, v3, v4, id);
@@ -175,8 +169,8 @@ export default function computeBuffers(params) {
             };
 
             buildUVSkirt = function buildUVSkirt(id) {
-                outBuffers.uv.wgs84[idVertex * 2 + 0] = outBuffers.uv.wgs84[id * 2 + 0];
-                outBuffers.uv.wgs84[idVertex * 2 + 1] = outBuffers.uv.wgs84[id * 2 + 1];
+                outBuffers.uvs[0][idVertex * 2 + 0] = outBuffers.uvs[0][id * 2 + 0];
+                outBuffers.uvs[0][idVertex * 2 + 1] = outBuffers.uvs[0][id * 2 + 1];
             };
         }
 
@@ -198,7 +192,9 @@ export default function computeBuffers(params) {
 
             buildUVSkirt(id);
 
-            outBuffers.uv.pm[idVertex] = outBuffers.uv.pm[id];
+            if (uvCount > 1) {
+                outBuffers.uvs[1][idVertex] = outBuffers.uvs[1][id];
+            }
 
             const idf = (i + 1) % skirt.length;
 

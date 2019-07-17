@@ -28,6 +28,7 @@ function updatePano(context, camera, layer) {
         const imagesInfo = layer.cameras.map(cam => ({
             cameraId: cam.name,
             panoId: newPano.id,
+            as: () => {},
             toString: (separator = '') => (`${cam.name}${separator}${newPano.id}`),
         })).filter(info => !panoCameras || panoCameras.includes(info.cameraId));
 

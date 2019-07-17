@@ -20,11 +20,6 @@ export function unpack1K(color, factor) {
     return factor ? bitSh.dot(color) * factor : bitSh.dot(color);
 }
 
-export const CRS_DEFINES = [
-    ['WGS84', 'WGS84G', 'TMS', 'EPSG:3946', 'EPSG:4326', 'WMTS:WGS84G'],
-    ['PM', 'WMTS:PM', 'EPSG:3857'],
-];
-
 // Max sampler color count to LayeredMaterial
 // Because there's a statement limitation to unroll, in getColorAtIdUv method
 const maxSamplersColorCount = 15;
@@ -98,9 +93,9 @@ export const ELEVATION_MODES = {
 };
 
 let nbSamplers;
-let fragmentShader;
+const fragmentShader = [];
 class LayeredMaterial extends THREE.RawShaderMaterial {
-    constructor(options = {}) {
+    constructor(options = {}, crsCount) {
         super(options);
 
         nbSamplers = nbSamplers || [samplersElevationCount, getMaxColorSamplerUnitsCount()];
@@ -109,11 +104,7 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         this.defines.NUM_FS_TEXTURES = nbSamplers[1];
         this.defines.USE_FOG = 1;
         this.defines.EPSILON = 1e-6;
-
-        for (let i = 0, il = CRS_DEFINES.length; i < il; ++i) {
-            this.defines[`CRS_${CRS_DEFINES[i][0]}`] = i;
-        }
-        this.defines.NUM_CRS = CRS_DEFINES.length;
+        this.defines.NUM_CRS = crsCount;
 
         setDefineMapping(this, 'ELEVATION', ELEVATION_MODES);
         setDefineMapping(this, 'MODE', RenderMode.MODES);
@@ -121,10 +112,10 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
 
         if (__DEBUG__) {
             this.defines.DEBUG = 1;
-            const outlineColors = [
-                new THREE.Vector3(1.0, 0.0, 0.0),
-                new THREE.Vector3(1.0, 0.5, 0.0),
-            ];
+            const outlineColors = [new THREE.Vector3(1.0, 0.0, 0.0)];
+            if (crsCount > 1) {
+                outlineColors.push(new THREE.Vector3(1.0, 0.5, 0.0));
+            }
             setUniformProperty(this, 'showOutline', true);
             setUniformProperty(this, 'outlineWidth', 0.008);
             setUniformProperty(this, 'outlineColors', outlineColors);
@@ -136,8 +127,8 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         }
 
         this.vertexShader = TileVS;
-        fragmentShader = fragmentShader || ShaderUtils.unrollLoops(TileFS, this.defines);
-        this.fragmentShader = fragmentShader;
+        fragmentShader[crsCount] = fragmentShader[crsCount] || ShaderUtils.unrollLoops(TileFS, this.defines);
+        this.fragmentShader = fragmentShader[crsCount];
 
         // Color uniforms
         setUniformProperty(this, 'diffuse', new THREE.Color(0.04, 0.23, 0.35));

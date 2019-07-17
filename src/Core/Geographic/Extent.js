@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import CRS from 'Core/Geographic/Crs';
-import Projection from 'Core/Geographic/Projection';
 
 /**
  * Extent is a SIG-area (so 2D)
@@ -10,6 +9,10 @@ import Projection from 'Core/Geographic/Projection';
 
 const _dim = new THREE.Vector2();
 const _dim2 = new THREE.Vector2();
+const _countTiles = new THREE.Vector2();
+const tmsCoord = new THREE.Vector2();
+const dimensionTile = new THREE.Vector2();
+const defaultScheme = new THREE.Vector2(2, 2);
 const r = { row: 0, col: 0, invDiff: 0 };
 
 function _rowColfromParent(extent, zoom) {
@@ -23,23 +26,40 @@ function _rowColfromParent(extent, zoom) {
 }
 
 let _extent;
+let _extent2;
 
-const cardinals = [];
-cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
-cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
-cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
-cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
-cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
-cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
-cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
-cardinals.push(new Coordinates('EPSG:4326', 0, 0, 0, 0));
+const cardinals = new Array(8);
+for (var i = cardinals.length - 1; i >= 0; i--) {
+    cardinals[i] = new Coordinates('EPSG:4326', 0, 0, 0, 0);
+}
 
 const _c = new Coordinates('EPSG:4326', 0, 0);
-// EPSG:3857
-// WGS84 bounds [-20026376.39 -20048966.10 20026376.39 20048966.10] (https://epsg.io/3857)
-// Warning, some tiled source don't exactly match the same bound
-// It should be taken into account
-export const worldDimension3857 = { x: 20026376.39 * 2, y: 20048966.10 * 2 };
+
+export const globalExtentTMS = new Map();
+export const schemeTiles = new Map();
+
+function getInfoTms(crs) {
+    const epsg = CRS.formatToEPSG(crs);
+    const globalExtent = globalExtentTMS.get(epsg);
+    const globalDimension = globalExtent.dimensions(_dim2);
+    const tms = CRS.formatToTms(crs);
+    const sTs = schemeTiles.get(tms) || schemeTiles.get('default');
+    // The isInverted parameter is to be set to the correct value, true or false
+    // (default being false) if the computation of the coordinates needs to be
+    // inverted to match the same scheme as OSM, Google Maps or other system.
+    // See link below for more information
+    // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
+    // in crs includes ':NI' => tms isn't inverted (NOT INVERTED)
+    const isInverted = !tms.includes(':NI');
+    return { epsg, globalExtent, globalDimension, sTs, isInverted };
+}
+
+function getCountTiles(crs, zoom) {
+    const sTs = schemeTiles.get(CRS.formatToTms(crs)) || schemeTiles.get('default');
+    const count = 2 ** zoom;
+    _countTiles.set(count, count).multiply(sTs);
+    return _countTiles;
+}
 
 class Extent {
     /**
@@ -57,9 +77,10 @@ class Extent {
      */
     constructor(crs, v0, v1, v2, v3) {
         this.crs = crs;
+        // Scale/zoom
+        this.zoom = 0;
 
         if (this.isTiledCrs()) {
-            this.zoom = 0;
             this.row = 0;
             this.col = 0;
         } else {
@@ -89,7 +110,7 @@ class Extent {
      * @return {boolean}
      */
     isTiledCrs() {
-        return this.crs.indexOf('WMTS:') == 0 || this.crs == 'TMS';
+        return this.crs.indexOf('WMTS:') == 0;
     }
 
     /**
@@ -101,111 +122,102 @@ class Extent {
     as(crs, target) {
         CRS.isValid(crs);
         if (this.isTiledCrs()) {
-            if (this.crs == 'WMTS:PM' || this.crs == 'TMS') {
-                if (!target) {
-                    target = new Extent('EPSG:4326', [0, 0, 0, 0]);
-                }
-                // Convert this to the requested crs by using 4326 as an intermediate state.
-                const nbCol = 2 ** this.zoom;
-                const nbRow = nbCol;
-                const sizeRow = 1.0 / nbRow;
-                // convert row PM to Y PM
-                const Yn = 1 - sizeRow * (nbRow - this.row);
-                const Ys = Yn + sizeRow;
+            target = target || new Extent('EPSG:4326', [0, 0, 0, 0]);
+            target.zoom = this.zoom;
 
-                // convert to EPSG:3857
-                if (crs == 'EPSG:3857') {
-                    const west = (0.5 - sizeRow * (nbCol - this.col)) * worldDimension3857.x;
-                    const east = west + sizeRow * worldDimension3857.x;
-                    const south = (0.5 - Ys) * worldDimension3857.y;
-                    const north = (0.5 - Yn) * worldDimension3857.y;
-                    target.set(west, east, south, north);
-                    target.crs = 'EPSG:3857';
-                    return target.as(crs, target);
-                } else {
-                    const size = 360 / nbCol;
-                    // convert Y PM to latitude EPSG:4326 degree
-                    const north = Projection.y_PMTolatitude(Yn);
-                    const south = Projection.y_PMTolatitude(Ys);
-                    // convert column PM to longitude EPSG:4326 degree
-                    const west = 180 - size * (nbCol - this.col);
-                    const east = west + size;
+            const { epsg, globalExtent, globalDimension } = getInfoTms(this.crs);
+            const countTiles = getCountTiles(this.crs, this.zoom);
 
-                    target.set(west, east, south, north);
-                    target.crs = 'EPSG:4326';
-                    if (crs == 'EPSG:4326') {
-                        return target;
-                    } else {
-                        // convert in new crs
-                        return target.as(crs, target);
-                    }
-                }
-            } else if (this.crs == 'WMTS:WGS84G' && crs == 'EPSG:4326') {
-                if (!target) {
-                    target = new Extent('EPSG:4326', [0, 0, 0, 0]);
-                }
-                const nbRow = 2 ** this.zoom;
-                const size = 180 / nbRow;
-                const north = size * (nbRow - this.row) - 90;
-                const south = size * (nbRow - (this.row + 1)) - 90;
-                const west = 180 - size * (2 * nbRow - this.col);
-                const east = 180 - size * (2 * nbRow - (this.col + 1));
+            dimensionTile.set(1, 1).divide(countTiles).multiply(globalDimension);
 
-                target.set(west, east, south, north);
-                target.crs = crs;
-                return target;
+            target.west = globalExtent.west + (globalDimension.x - dimensionTile.x * (countTiles.x - this.col));
+            target.east = target.west + dimensionTile.x;
+            target.south = globalExtent.south + dimensionTile.y * (countTiles.y - this.row - 1);
+            target.north = target.south + dimensionTile.y;
+            target.crs = epsg;
+            return crs == epsg ? target : target.as(crs, target);
+        } else if (crs.indexOf('WMTS:') == 0) {
+            target = target || new Extent('WMTS:PM', 0, 0, 0);
+            if (this.crs == 'EPSG:4326' && crs == 'WMTS:PM') {
+                const extents_WMTS_PM = [];
+                const extent = _extent.copy(this).as(CRS.formatToEPSG(crs), _extent2);
+                const { globalExtent, globalDimension, sTs } = getInfoTms(CRS.formatToEPSG(crs));
+                extent.clampByExtent(globalExtent);
+                extent.dimensions(dimensionTile);
+
+                const zoom = (this.zoom + 1) || Math.floor(Math.log2(Math.round(globalDimension.x / (dimensionTile.x * sTs.x))));
+                const countTiles = getCountTiles(crs, zoom);
+                const center = extent.center(_c);
+
+                tmsCoord.x = center.x - globalExtent.west;
+                tmsCoord.y = globalExtent.north - extent.north;
+                tmsCoord.divide(globalDimension).multiply(countTiles).floor();
+
+                // ]N; N+1] => N
+                const maxRow = Math.ceil((globalExtent.north - extent.south) / globalDimension.x * countTiles.y) - 1;
+
+                for (let r = maxRow; r >= tmsCoord.y; r--) {
+                    extents_WMTS_PM.push(new Extent(crs, zoom, r, tmsCoord.x));
+                }
+
+                return extents_WMTS_PM;
             } else {
-                throw new Error('Unsupported yet');
+                const { globalExtent, globalDimension, sTs, isInverted } = getInfoTms(this.crs);
+                const center = this.center(_c);
+                this.dimensions(dimensionTile);
+                // Each level has 2^n * 2^n tiles...
+                // ... so we count how many tiles of the same width as tile we can fit in the layer
+                // ... 2^zoom = tilecount => zoom = log2(tilecount)
+                const zoom = Math.floor(Math.log2(Math.round(globalDimension.x / (dimensionTile.x * sTs.x))));
+                const countTiles = getCountTiles(crs, zoom);
+
+                // Now that we have computed zoom, we can deduce x and y (or row / column)
+                tmsCoord.x = center.x - globalExtent.west;
+                tmsCoord.y = isInverted ? globalExtent.north - center.y : center.y - globalExtent.south;
+                tmsCoord.divide(globalDimension).multiply(countTiles).floor();
+                target.crs = crs;
+                target.set(zoom, tmsCoord.y, tmsCoord.x);
+                return [target];
             }
-        }
+        } else {
+            if (!target) {
+                target = new Extent('EPSG:4326', [0, 0, 0, 0]);
+            }
+            if (this.crs != crs && !(CRS.is4326(this.crs) && CRS.is4326(crs))) {
+                // Compute min/max in x/y by projecting 8 cardinal points,
+                // and then taking the min/max of each coordinates.
+                const center = this.center(_c);
+                cardinals[0].setFromValues(this.west, this.north);
+                cardinals[1].setFromValues(center.x, this.north);
+                cardinals[2].setFromValues(this.east, this.north);
+                cardinals[3].setFromValues(this.east, center.y);
+                cardinals[4].setFromValues(this.east, this.south);
+                cardinals[5].setFromValues(center.x, this.south);
+                cardinals[6].setFromValues(this.west, this.south);
+                cardinals[7].setFromValues(this.west, center.y);
 
-        if (!target) {
-            target = new Extent('EPSG:4326', [0, 0, 0, 0]);
-        }
-        if (this.crs != crs && !(CRS.is4326(this.crs) && CRS.is4326(crs))) {
-            // Compute min/max in x/y by projecting 8 cardinal points,
-            // and then taking the min/max of each coordinates.
-            const center = this.center(_c);
-            cardinals[0].crs = this.crs;
-            cardinals[0].setFromValues(this.west, this.north);
-            cardinals[1].crs = this.crs;
-            cardinals[1].setFromValues(center.x, this.north);
-            cardinals[2].crs = this.crs;
-            cardinals[2].setFromValues(this.east, this.north);
-            cardinals[3].crs = this.crs;
-            cardinals[3].setFromValues(this.east, center.y);
-            cardinals[4].crs = this.crs;
-            cardinals[4].setFromValues(this.east, this.south);
-            cardinals[5].crs = this.crs;
-            cardinals[5].setFromValues(center.x, this.south);
-            cardinals[6].crs = this.crs;
-            cardinals[6].setFromValues(this.west, this.south);
-            cardinals[7].crs = this.crs;
-            cardinals[7].setFromValues(this.west, center.y);
+                target.set(Infinity, -Infinity, Infinity, -Infinity);
+                target.crs = crs;
 
-            let north = -Infinity;
-            let south = Infinity;
-            let east = -Infinity;
-            let west = Infinity;
-            // loop over the coordinates
-            for (let i = 0; i < cardinals.length; i++) {
-                // convert the coordinate.
-                cardinals[i].as(crs, _c);
-                north = Math.max(north, _c.y);
-                south = Math.min(south, _c.y);
-                east = Math.max(east, _c.x);
-                west = Math.min(west, _c.x);
+                // loop over the coordinates
+                for (let i = 0; i < cardinals.length; i++) {
+                    // convert the coordinate.
+                    cardinals[i].crs = this.crs;
+                    cardinals[i].as(crs, _c);
+                    target.north = Math.max(target.north, _c.y);
+                    target.south = Math.min(target.south, _c.y);
+                    target.east = Math.max(target.east, _c.x);
+                    target.west = Math.min(target.west, _c.x);
+                }
+
+                return target;
             }
 
             target.crs = crs;
-            target.set(west, east, south, north);
+            target.set(this.west, this.east, this.south, this.north);
+
             return target;
         }
-
-        target.crs = crs;
-        target.set(this.west, this.east, this.south, this.north);
-
-        return target;
     }
 
     /**
@@ -530,22 +542,29 @@ class Extent {
      * order of the sections is [NW, NE, SW, SE].
      */
     subdivision() {
-        this.center(_c);
-
-        const northWest = new Extent(this.crs,
-            this.west, _c.x,
-            _c.y, this.north);
-        const northEast = new Extent(this.crs,
-            _c.x, this.east,
-            _c.y, this.north);
-        const southWest = new Extent(this.crs,
-            this.west, _c.x,
-            this.south, _c.y);
-        const southEast = new Extent(this.crs,
-            _c.x, this.east,
-            this.south, _c.y);
-
-        return [northWest, northEast, southWest, southEast];
+        return this.subdivisionByScheme();
+    }
+    /**
+     * subdivise extent by scheme.x on west-east and scheme.y on south-north.
+     *
+     * @param      {Vector2}  [scheme=defaultScheme]  The scheme to subdivise.
+     * @return     {Array<Extent>}   subdivised extents.
+     */
+    subdivisionByScheme(scheme = defaultScheme) {
+        const subdivisedExtents = [];
+        const dimSub = this.dimensions(_dim).divide(scheme);
+        for (let x = scheme.x - 1; x >= 0; x--) {
+            for (let y = scheme.y - 1; y >= 0; y--) {
+                const west = this.west + x * dimSub.x;
+                const south = this.south + y * dimSub.y;
+                subdivisedExtents.push(new Extent(this.crs,
+                    west,
+                    west + dimSub.x,
+                    south,
+                    south + dimSub.y));
+            }
+        }
+        return subdivisedExtents;
     }
 
     /**
@@ -574,8 +593,57 @@ class Extent {
             }
         }
     }
+    /**
+     * clamp south and north values
+     *
+     * @param      {number}  [south=this.south]  The min south
+     * @param      {number}  [north=this.north]  The max north
+     * @return     {Extent}  this extent
+     */
+    clampSouthNorth(south = this.south, north = this.north) {
+        this.south = this.south > south ? this.south : south;
+        this.north = this.north < north ? this.north : north;
+        return this;
+    }
+
+    /**
+     * clamp west and east values
+     *
+     * @param      {number}  [west=this.west]  The min west
+     * @param      {number}  [east=this.east]  The max east
+     * @return     {Extent}  this extent
+     */
+    clampWestEast(west = this.west, east = this.east) {
+        this.west = this.west > west ? this.west : west;
+        this.east = this.east < east ? this.east : east;
+        return this;
+    }
+    /**
+     * clamp this extent by passed extent
+     *
+     * @param      {Extent}  extent  The maximum extent.
+     * @return     {Extent}  this extent.
+     */
+    clampByExtent(extent) {
+        this.clampSouthNorth(extent.south, extent.north);
+        return this.clampWestEast(extent.west, extent.east);
+    }
 }
 
 _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
+_extent2 = new Extent('EPSG:4326', [0, 0, 0, 0]);
+
+globalExtentTMS.set('EPSG:4326', new Extent('EPSG:4326', -180, 180, -90, 90));
+
+// Compute global extent of WMTS:PM EPSG:3857
+// It's square whose a side is between -180° to 180°.
+// So, west extent, it's 180 convert in EPSG:3857
+const extent3857 = globalExtentTMS.get('EPSG:4326').as('EPSG:3857');
+extent3857.clampSouthNorth(extent3857.west, extent3857.east);
+globalExtentTMS.set('EPSG:3857', extent3857);
+
+schemeTiles.set('default', new THREE.Vector2(1, 1));
+schemeTiles.set('WMTS:PM', schemeTiles.get('default'));
+schemeTiles.set('WMTS:WGS84', new THREE.Vector2(2, 1));
 
 export default Extent;

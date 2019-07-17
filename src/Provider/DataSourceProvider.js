@@ -42,7 +42,7 @@ function parseSourceData(data, extSrc, extDest, layer) {
         crsOut: layer.projection,
         // TODO FIXME: error in filtering vector tile
         // filteringExtent: extentDestination.as(layer.projection),
-        filteringExtent: !source.isFileSource && layer.isGeometryLayer ? extDest : undefined,
+        filteringExtent: !source.isFileSource && layer.isGeometryLayer ? extDest.as(source.projection) : undefined,
         overrideAltitudeInToZero: layer.overrideAltitudeInToZero,
         filter: layer.filter,
         isInverted: source.isInverted,
