@@ -287,4 +287,18 @@ describe('Extent', function () {
         assert.equal(-14, withValues.south);
         assert.equal(-8, withValues.north);
     });
+
+    it('should get the right center for extrem cases', function () {
+        const extent = new Extent('EPSG:4326', 160, 200, -10, 10);
+        let center = extent.center();
+        assert.equal(180, center.x);
+        assert.equal(0, center.y);
+        assert.equal(0, center.z);
+
+        extent.set(-10, 10, 80, 100);
+        center = extent.center();
+        assert.equal(0, center.x);
+        assert.equal(90, center.y);
+        assert.equal(0, center.z);
+    });
 });
