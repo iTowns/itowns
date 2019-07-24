@@ -457,7 +457,10 @@ function PlanarControls(view, options = {}) {
         // camera position at the end of the travel
         const moveTarget = new THREE.Vector3();
 
-        moveTarget.copy(pointUnderCursor).add(dir.multiplyScalar(-targetHeight * 2));
+        moveTarget.copy(pointUnderCursor);
+        if (this.enableRotation) {
+            moveTarget.add(dir.multiplyScalar(-targetHeight * 2));
+        }
         moveTarget.z = pointUnderCursor.z + targetHeight;
 
         // initiate the travel
