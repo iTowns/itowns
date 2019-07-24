@@ -1,6 +1,7 @@
 {
     "id": "DARK",
     "source": {
+        "projection": "EPSG:3857",
 	    "networkOptions": { "crossOrigin" : "anonymous" },
         "format": "image/png",
         "url": "http://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png",

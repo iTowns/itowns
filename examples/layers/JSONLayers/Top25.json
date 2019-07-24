@@ -1,6 +1,7 @@
 {
     "id":         "Top25",
     "source": {
+        "projection": "EPSG:3857",
         "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
         "networkOptions": {
             "crossOrigin": "anonymous"

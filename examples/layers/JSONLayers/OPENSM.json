@@ -1,6 +1,7 @@
 {
     "id": "OPENSM",
     "source": {
+        "projection": "EPSG:3857",
         "isInverted": true,
         "format": "image/png",
         "url": "http://osm.oslandia.io/styles/klokantech-basic/${z}/${x}/${y}.png",
