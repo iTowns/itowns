@@ -37,7 +37,6 @@ and open the template in the editor.
             }
 
             itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
             itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
             itowns.Fetcher.json('examples/layers/JSONLayers/Region.json')
                 .then(function _(config) {

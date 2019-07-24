@@ -2,6 +2,7 @@
     "id":         "Cassini",
     "source": {
         "url": "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+        "projection": "EPSG:3857",
         "networkOptions": {
             "crossOrigin": "anonymous"
         },
