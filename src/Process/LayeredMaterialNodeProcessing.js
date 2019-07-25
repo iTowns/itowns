@@ -238,11 +238,6 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
 
     return context.scheduler.execute(command).then(
         (textures) => {
-            const elevation = {
-                texture: textures[0],
-                pitch: extentsDestination[0].offsetToParent(extentsSource[0], nodeLayer.offsetScales[0]),
-            };
-
             // Do not apply the new texture if its level is < than the current
             // one.  This is only needed for elevation layers, because we may
             // have several concurrent layers but we can only use one texture.
@@ -250,6 +245,10 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
                 return;
             }
+            const elevation = {
+                texture: textures[0],
+                pitch: extentsDestination[0].offsetToParent(textures[0].coords, nodeLayer.offsetScales[0]),
+            };
 
             node.layerUpdateState[layer.id].success();
 
