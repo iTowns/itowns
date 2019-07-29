@@ -57,7 +57,7 @@ function assertVerticesAreInOBB(builder, extent) {
 }
 
 describe('Planar tiles OBB computation', function () {
-    const builder = new PlanarTileBuilder();
+    const builder = new PlanarTileBuilder({ projection: 'EPSG:3946', uvCount: 1 });
 
     it('should compute OBB correctly', function () {
         const extent = new Extent('EPSG:3946', -100, 100, -50, 50);
@@ -65,7 +65,7 @@ describe('Planar tiles OBB computation', function () {
     });
 });
 describe('Ellipsoid tiles OBB computation', function () {
-    const builder = new BuilderEllipsoidTile();
+    const builder = new BuilderEllipsoidTile({ projection: 'EPSG:4978', uvCount: 1 });
 
     it('should compute globe-level 0 OBB correctly', function () {
         const extent = new Extent('EPSG:4326', -180, 0, -90, 90);

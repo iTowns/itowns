@@ -94,6 +94,7 @@ describe('Sources', function () {
         const paramsWMTS = {
             url: 'http://',
             name: 'name',
+            projection: 'EPSG:4326',
         };
 
         it('should throw an error for having no name', function () {
@@ -180,6 +181,7 @@ describe('Sources', function () {
     describe('TMSSource', function () {
         const paramsTMS = {
             url: 'http://',
+            projection: 'EPSG:3857',
         };
 
         it('should instance and use TMSSource', function () {
@@ -189,12 +191,6 @@ describe('Sources', function () {
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent));
             assert.ok(source.extentsInsideLimit([extent, extent]));
-        });
-
-        it('should set the tileMatrixSet to PM', function () {
-            paramsTMS.projection = 'EPSG:3857';
-            const source = new TMSSource(paramsTMS);
-            assert.strictEqual(source.tileMatrixSet, 'PM');
         });
 
         it('should respect the tileMatrixSet', function () {
@@ -209,7 +205,8 @@ describe('Sources', function () {
             const source = new FileSource({
                 url: '..',
                 projection: 'EPSG:4326',
-                extent: [0, 20, 0, 20],
+                extent: new Extent('EPSG:4326', 0, 20, 0, 20),
+                zoom: { min: 0, max: 21 },
             });
 
             const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
