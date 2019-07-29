@@ -1,21 +1,22 @@
 import * as THREE from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
-import Projection from 'Core/Geographic/Projection';
 import OBB from 'Renderer/OBB';
 import Extent from 'Core/Geographic/Extent';
 
+const PI_OV_FOUR = Math.PI / 4;
+const INV_TWO_PI = 1.0 / (Math.PI * 2);
 const axisZ = new THREE.Vector3(0, 0, 1);
 const axisY = new THREE.Vector3(0, 1, 0);
 const quatToAlignLongitude = new THREE.Quaternion();
 const quatToAlignLatitude = new THREE.Quaternion();
+const quatNormalToZ = new THREE.Quaternion();
 
 function WGS84ToOneSubY(latitude) {
-    return 1.0 - Projection.latitudeToY_PM(latitude);
+    return 1.0 - (0.5 - Math.log(Math.tan(PI_OV_FOUR + THREE.Math.degToRad(latitude) * 0.5)) * INV_TWO_PI);
 }
 
 class BuilderEllipsoidTile {
-    constructor() {
-        this.type = 'e';
+    constructor(options = {}) {
         this.tmp = {
             coords: [
                 new Coordinates('EPSG:4326', 0, 0),
@@ -23,6 +24,22 @@ class BuilderEllipsoidTile {
             position: new THREE.Vector3(),
             dimension: new THREE.Vector2(),
         };
+
+        this.projection = options.projection;
+        // Order projection on tiles
+        this.uvCount = options.uvCount;
+
+        this.computeUvs = [
+            // Normalized coordinates (from degree) on the entire tile
+            // EPSG:4326
+            () => {},
+            // Float row coordinate from Pseudo mercator coordinates
+            // EPSG:3857
+            (params) => {
+                const t = WGS84ToOneSubY(params.projected.latitude) * params.nbRow;
+                return (!isFinite(t) ? 0 : t) - params.deltaUV1;
+            },
+        ];
     }
     // prepare params
     // init projected object -> params.projected
@@ -40,7 +57,7 @@ class BuilderEllipsoidTile {
         params.deltaUV1 = (st1 - start) * params.nbRow;
 
         // transformation to align tile's normal to z axis
-        params.quatNormalToZ = new THREE.Quaternion().setFromAxisAngle(
+        params.quatNormalToZ = quatNormalToZ.setFromAxisAngle(
             axisY,
             -(Math.PI * 0.5 - THREE.Math.degToRad(params.extent.center().latitude)));
 
@@ -52,7 +69,7 @@ class BuilderEllipsoidTile {
     // get center tile in cartesian 3D
     center(extent) {
         return extent.center(this.tmp.coords[0])
-            .as('EPSG:4978', this.tmp.coords[1]).toVector3();
+            .as(this.projection, this.tmp.coords[1]).toVector3();
     }
 
     // get position 3D cartesian
@@ -61,7 +78,7 @@ class BuilderEllipsoidTile {
             params.projected.longitude,
             params.projected.latitude);
 
-        this.tmp.coords[0].as('EPSG:4978', this.tmp.coords[1]).toVector3(this.tmp.position);
+        this.tmp.coords[0].as(this.projection, this.tmp.coords[1]).toVector3(this.tmp.position);
         return this.tmp.position;
     }
 
@@ -78,15 +95,6 @@ class BuilderEllipsoidTile {
     // coord v tile to projected
     vProjecte(v, params) {
         params.projected.latitude = params.extent.south + v * this.tmp.dimension.y;
-    }
-
-    // Compute uv 1, if isn't defined the uv1 isn't computed
-    getUV_PM(params) {
-        var t = WGS84ToOneSubY(params.projected.latitude) * params.nbRow;
-
-        if (!isFinite(t)) { t = 0; }
-
-        return t - params.deltaUV1;
     }
 
     computeSharableExtent(extent) {

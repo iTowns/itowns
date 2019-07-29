@@ -7,6 +7,7 @@ import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
 
 import Coordinates from 'Core/Geographic/Coordinates';
+import CRS from 'Core/Geographic/Crs';
 import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 
 /**
@@ -139,14 +140,12 @@ class GlobeView extends View {
         if (layer.isColorLayer) {
             const colorLayerCount = this.getLayers(l => l.isColorLayer).length;
             layer.sequence = colorLayerCount;
-            if ((layer.source.isWMTSSource || layer.source.isTMSSource)
-                && layer.source.tileMatrixSet !== 'WGS84G'
-                && layer.source.tileMatrixSet !== 'PM') {
-                throw new Error('Only WGS84G and PM tileMatrixSet are currently supported for WMTS/TMS color layers');
+            if (!this.tileLayer.tileMatrixSets.includes(CRS.formatToTms(layer.source.projection))) {
+                throw new Error(`Only ${this.tileLayer.tileMatrixSets} tileMatrixSet are currently supported for color layers`);
             }
         } else if (layer.isElevationLayer) {
-            if (layer.source.isWMTSSource && layer.source.tileMatrixSet !== 'WGS84G') {
-                throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
+            if (CRS.formatToTms(layer.source.projection) !== this.tileLayer.tileMatrixSets[0]) {
+                throw new Error(`Only ${this.tileLayer.tileMatrixSets[0]} tileMatrixSet is currently supported for elevation layers`);
             }
         }
 

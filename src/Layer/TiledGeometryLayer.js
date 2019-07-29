@@ -5,7 +5,7 @@ import Picking from 'Core/Picking';
 import convertToTile from 'Converter/convertToTile';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
-import { SIZE_DIAGONAL_TEXTURE } from 'Provider/OGCWebServiceHelper';
+import { SIZE_DIAGONAL_TEXTURE } from 'Process/LayeredMaterialNodeProcessing';
 import { ImageryLayers } from 'Layer/Layer';
 
 const subdivisionVector = new THREE.Vector3();
@@ -273,7 +273,7 @@ class TiledGeometryLayer extends GeometryLayer {
         let nodeLayer = node.material.getElevationLayer();
 
         for (const e of context.elevationLayers) {
-            const extents = node.getExtentsForSource(e.source);
+            const extents = node.getExtentsByProjection(e.projection);
             if (!e.frozen && e.ready && e.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
                 // no stop subdivision in the case of a loading error
                 if (layerUpdateState[e.id] && layerUpdateState[e.id].inError()) {
@@ -291,7 +291,7 @@ class TiledGeometryLayer extends GeometryLayer {
             if (layerUpdateState[c.id] && layerUpdateState[c.id].inError()) {
                 continue;
             }
-            const extents = node.getExtentsForSource(c.source);
+            const extents = node.getExtentsByProjection(c.projection);
             nodeLayer = node.material.getLayer(c.id);
             if (c.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
                 return false;

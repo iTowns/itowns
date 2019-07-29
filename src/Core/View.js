@@ -5,6 +5,7 @@ import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from 'Core/MainLoop';
 import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
 import c3DEngine from 'Renderer/c3DEngine';
 import RenderMode from 'Renderer/RenderMode';
+import CRS from 'Core/Geographic/Crs';
 
 import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 
@@ -44,10 +45,11 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
 };
 
 function _preprocessLayer(view, layer, provider, parentLayer) {
+    const source = layer.source;
     if (parentLayer && !layer.extent) {
         layer.extent = parentLayer.extent;
-        if (layer.source && !layer.source.extent) {
-            layer.source.extent = parentLayer.extent;
+        if (source && !source.extent) {
+            source.extent = parentLayer.extent;
         }
     }
 
@@ -61,8 +63,8 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         _syncGeometryLayerVisibility(layer, view);
         // Find projection layer, this is projection destination
         layer.projection = view.referenceCrs;
-    } else if (layer.source.tileMatrixSet === 'PM' || layer.source.projection == 'EPSG:3857') {
-        layer.projection = 'EPSG:3857';
+    } else if (source.tileMatrixSet || parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.projection))) {
+        layer.projection = source.projection;
     } else {
         layer.projection = parentLayer.extent.crs;
     }
@@ -70,8 +72,8 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
     if (!layer.whenReady) {
         if (provider && provider.preprocessDataLayer) {
             layer.whenReady = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler, parentLayer);
-        } else if (layer.source && layer.source.whenReady) {
-            layer.whenReady = layer.source.whenReady;
+        } else if (source && source.whenReady) {
+            layer.whenReady = source.whenReady;
         } else {
             layer.whenReady = Promise.resolve();
         }

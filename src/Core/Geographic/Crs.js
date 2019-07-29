@@ -2,6 +2,42 @@ import proj4 from 'proj4';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
+const TMS = [
+    'WMTS:WGS84',
+    'WMTS:PM',
+];
+
+const EPSG = [
+    'EPSG:4326',
+    'EPSG:3857',
+];
+
+function formatToTms(crs) {
+    if (crs) {
+        if (crs.includes('WMTS')) {
+            return crs;
+        }
+        const i = EPSG.indexOf(crs);
+        if (i > -1) {
+            return TMS[i];
+        } else if (crs.includes('EPSG')) {
+            return `WMTS:TMS:${crs.replace('EPSG:', '')}`;
+        }
+    }
+}
+
+function formatToEPSG(crs) {
+    if (crs) {
+        if (crs.includes('EPSG')) {
+            return crs;
+        } else if (EPSG[TMS.indexOf(crs)]) {
+            return EPSG[TMS.indexOf(crs)];
+        } else {
+            return `EPSG:${crs.match(/\d+/)[0]}`;
+        }
+    }
+}
+
 const UNIT = {
     DEGREE: 1,
     METER: 2,
@@ -26,7 +62,7 @@ function toUnit(crs) {
         case 'EPSG:4326' : return UNIT.DEGREE;
         case 'EPSG:4978' : return UNIT.METER;
         default: {
-            const p = proj4.defs(crs);
+            const p = proj4.defs(formatToEPSG(crs));
             if (!p) {
                 return undefined;
             }
@@ -118,4 +154,18 @@ export default {
             return 0.001;
         }
     },
+    /**
+     * format crs to European Petroleum Survey Group notation : EPSG:XXXX.
+     *
+     * @param      {string}  crs     The crs to format
+     * @return     {string}  formated crs
+     */
+    formatToEPSG,
+    /**
+     * format crs to tile matrix set notation : WMTS:XXXX.
+     *
+     * @param      {string}  crs     The crs to format
+     * @return     {string}  formated crs
+     */
+    formatToTms,
 };

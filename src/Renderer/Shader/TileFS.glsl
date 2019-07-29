@@ -11,7 +11,7 @@
 
 uniform vec3        diffuse;
 uniform float       opacity;
-varying vec3        vUv; // WGS84.x/PM.x, WGS84.y, PM.y
+varying vec3        vUv; // uv_0.x/uv_1.x, uv_0.y, uv_1.y
 
 void main() {
     #include <logdepthbuf_fragment>
@@ -28,8 +28,12 @@ void main() {
 
     gl_FragColor = vec4(diffuse, opacity);
 
-    uvs[CRS_WGS84] = vec3(vUv.xy, 0.);
-    uvs[CRS_PM]    = vec3(vUv.x, fract(vUv.z), floor(vUv.z));
+    uvs[0] = vec3(vUv.xy, 0.);
+
+#if NUM_CRS > 1
+    uvs[1] = vec3(vUv.x, fract(vUv.z), floor(vUv.z));
+#endif
+
 
     vec4 color;
     #pragma unroll_loop

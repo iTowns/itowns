@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import OGCWebServiceHelper from 'Provider/OGCWebServiceHelper';
-import Projection from 'Core/Geographic/Projection';
+import CRS from 'Core/Geographic/Crs';
 
 /**
  * A TileMesh is a THREE.Mesh with a geometricError and an OBB
@@ -21,25 +20,20 @@ class TileMesh extends THREE.Mesh {
         }
         this.layer = layer;
         this.extent = extent;
+        this.extent.zoom = level;
+
         this.level = level;
-        // Set equivalent tiled extent zoom
-        // Is used to set zoom for each texture fetched with no tiled extent
-        // It's more simple to set zoom here instead of reverse ingeneer
-        // Removable with a table pixel/extent.size
-        if (!this.extent.zoom) {
-            this.extent.zoom = level;
-        }
 
         this.material.objectId = this.id;
 
         this.obb = this.geometry.OBB.clone();
         this.boundingSphere = new THREE.Sphere();
         this.obb.box3D.getBoundingSphere(this.boundingSphere);
-        this.tilesetExtents = {};
+        this._tms = new Map();
 
-        // Compute it one time only
-        this.tilesetExtents.WGS84G = [Projection.extent_Epsg4326_To_WmtsWgs84g(this.extent)];
-        this.tilesetExtents.PM = Projection.computeWmtsPm(this.tilesetExtents.WGS84G[0], this.extent);
+        for (const tms of layer.tileMatrixSets) {
+            this._tms.set(tms, this.extent.tiledCovering(tms));
+        }
 
         this.frustumCulled = false;
         this.matrixAutoUpdate = false;
@@ -67,22 +61,8 @@ class TileMesh extends THREE.Mesh {
         }
     }
 
-    getExtentsForSource(source) {
-        // TODO: The only case that needs a dependency on the source, an
-        // alternative may be found to have only the CRS as a parameter
-        if (source.isTMSSource && !this.layer.isGlobeLayer) {
-            return OGCWebServiceHelper.computeTMSCoordinates(this, source.extent, source.isInverted);
-        } else if (Array.isArray(this.tilesetExtents[source.tileMatrixSet])) {
-            return this.tilesetExtents[source.tileMatrixSet];
-        } else if (source.extent.crs == this.extent.crs) {
-            return [this.extent];
-        } else {
-            return [this.extent.as(source.extent.crs)];
-        }
-    }
-
-    getZoomForLayer(layer) {
-        return this.getExtentsForSource(layer.source)[0].zoom || this.level;
+    getExtentsByProjection(projection) {
+        return this._tms.get(CRS.formatToTms(projection));
     }
 
     /**
@@ -110,17 +90,6 @@ class TileMesh extends THREE.Mesh {
         } else {
             return this.findCommonAncestor(tile.parent);
         }
-    }
-
-    findAncestorFromLevel(targetLevel) {
-        let parentAtLevel = this;
-        while (parentAtLevel && parentAtLevel.level > targetLevel) {
-            parentAtLevel = parentAtLevel.parent;
-        }
-        if (!parentAtLevel) {
-            return Promise.reject(`Invalid targetLevel requested ${targetLevel}`);
-        }
-        return parentAtLevel;
     }
 
     onBeforeRender() {

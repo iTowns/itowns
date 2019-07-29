@@ -1,5 +1,6 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
+import CRS from 'Core/Geographic/Crs';
 
 /**
  * @classdesc
@@ -70,6 +71,10 @@ class WMTSSource extends Source {
             throw new Error('New WMTSSource: name is required');
         }
 
+        if (!source.projection) {
+            throw new Error('New WMTSSource: projection is required');
+        }
+
         super(source);
 
         this.isWMTSSource = true;
@@ -91,17 +96,7 @@ class WMTSSource extends Source {
 
         this.zoom = source.zoom;
         this.tileMatrixSetLimits = source.tileMatrixSetLimits;
-
-        // If the projection is undefined,
-        // It is deduced from the tileMatrixSet,
-        // The projection is coherent with the projection
-        if (!this.projection) {
-            if (this.tileMatrixSet === 'WGS84' || this.tileMatrixSet === 'WGS84G') {
-                this.projection = 'EPSG:4326';
-            } else {
-                this.projection = 'EPSG:3857';
-            }
-        }
+        this.projection = CRS.formatToTms(source.projection);
 
         if (!this.zoom) {
             if (this.tileMatrixSetLimits) {

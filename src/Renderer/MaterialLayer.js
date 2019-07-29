@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { CRS_DEFINES, ELEVATION_MODES } from 'Renderer/LayeredMaterial';
+import { ELEVATION_MODES } from 'Renderer/LayeredMaterial';
 import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent } from 'Parser/XbilParser';
+import CRS from 'Core/Geographic/Crs';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
 
@@ -22,7 +23,7 @@ class MaterialLayer {
     constructor(material, layer) {
         this.id = layer.id;
         this.textureOffset = 0; // will be updated in updateUniforms()
-        this.crs = CRS_DEFINES.findIndex(crs => crs.includes(layer.projection || 'WGS84'));
+        this.crs = layer.parent.tileMatrixSets.indexOf(CRS.formatToTms(layer.projection));
         if (this.crs == -1) {
             console.error('Unknown crs:', layer.projection);
         }

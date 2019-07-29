@@ -3,7 +3,9 @@ import LayerUpdateState from 'Layer/LayerUpdateState';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import handlingError from 'Process/handlerNodeError';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Extent from 'Core/Geographic/Extent';
 
+const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 const vector = new THREE.Vector3();
 const tmp = new THREE.Vector3();
@@ -85,12 +87,15 @@ export default {
             return features;
         }
 
-        const extentsDestination = node.getExtentsForSource(layer.source);
+        const extentsDestination = node.getExtentsByProjection(layer.source.projection) || [node.extent];
+
         extentsDestination.forEach((e) => { e.zoom = node.level; });
 
         const extentsSource = [];
         for (const extentDest of extentsDestination) {
-            if (extentInsideSource(extentDest, layer.source)) {
+            const ext = layer.source.projection == extentDest.crs ? extentDest : extentDest.as(layer.source.projection);
+            ext.zoom = extentDest.zoom;
+            if (extentInsideSource(ext, layer.source)) {
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
                 return;
             }
@@ -115,7 +120,9 @@ export default {
                 // to attach it to the correct node
                 if (layer.source && layer.source.isFileSource) {
                     for (const extentSrc of extentsSource) {
-                        if (extentInsideSource(extentSrc, layer.source)) {
+                        const ext = extentSrc.crs == layer.source.projection ? extentSrc : extentSrc.as(layer.source.projection, _extent);
+                        ext.zoom = extentSrc.zoom;
+                        if (extentInsideSource(ext, layer.source)) {
                             node.layerUpdateState[layer.id].noMoreUpdatePossible();
                             return;
                         }
