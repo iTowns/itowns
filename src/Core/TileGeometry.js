@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import computeBuffers from 'Core/Prefab/computeBufferTileGeometry';
 
 function defaultBuffers(params) {
-    params.buildIndexAndRootUv = true;
+    params.buildIndexAndUv_0 = true;
     params.center = params.builder.center(params.extent).clone();
     const buffers = computeBuffers(params);
     buffers.index = new THREE.BufferAttribute(buffers.index, 1);

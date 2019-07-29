@@ -137,6 +137,7 @@ class FileSource extends Source {
     }
 
     extentInsideLimit(extent) {
+        // Fix me => may be not
         const localExtent = this.extent.crs == extent.crs ? extent : extent.as(this.extent.crs, ext);
         return (extent.zoom == undefined || !(extent.zoom < this.zoom.min || extent.zoom > this.zoom.max)) &&
             this.extent.intersectsExtent(localExtent);

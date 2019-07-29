@@ -31,8 +31,8 @@ class TileMesh extends THREE.Mesh {
         this.obb.box3D.getBoundingSphere(this.boundingSphere);
         this._tms = new Map();
 
-        for (const t of layer.tileMatrixSets) {
-            this._tms.set(t, this.extent.as(t));
+        for (const tms of layer.tileMatrixSets) {
+            this._tms.set(tms, this.extent.tiledCovering(tms));
         }
 
         this.frustumCulled = false;

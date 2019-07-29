@@ -71,6 +71,10 @@ class WMTSSource extends Source {
             throw new Error('New WMTSSource: name is required');
         }
 
+        if (!source.projection) {
+            throw new Error('New WMTSSource: projection is required');
+        }
+
         super(source);
 
         this.isWMTSSource = true;
@@ -92,7 +96,7 @@ class WMTSSource extends Source {
 
         this.zoom = source.zoom;
         this.tileMatrixSetLimits = source.tileMatrixSetLimits;
-        this.projection = CRS.formatToTms(this.tileMatrixSet || source.projection);
+        this.projection = CRS.formatToTms(source.projection);
 
         if (!this.zoom) {
             if (this.tileMatrixSetLimits) {

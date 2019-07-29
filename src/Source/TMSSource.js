@@ -57,6 +57,9 @@ class TMSSource extends Source {
      * @constructor
      */
     constructor(source) {
+        if (!source.projection) {
+            throw new Error('New TMSSource: projection is required');
+        }
         super(source);
 
         this.isTMSSource = true;
@@ -76,7 +79,7 @@ class TMSSource extends Source {
         this.url = source.url;
         this.tileMatrixSet = source.tileMatrixSet;
 
-        this.projection = CRS.formatToTms(this.tileMatrixSet || source.projection);
+        this.projection = CRS.formatToTms(source.projection);
     }
 
     urlFromExtent(extent) {

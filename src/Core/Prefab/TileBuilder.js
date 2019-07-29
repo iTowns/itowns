@@ -21,7 +21,7 @@ export default function newTileGeometry(builder, params) {
         params.center = builder.center(params.extent).clone();
         // Read previously cached values (index and uv.wgs84 only depend on the # of triangles)
         let cachedBuffers = cacheBuffer.get(bufferKey);
-        params.buildIndexAndRootUv = !cachedBuffers;
+        params.buildIndexAndUv_0 = !cachedBuffers;
         params.builder = builder;
         return Promise.resolve(computeBuffers(params)).then((buffers) => {
             if (!cachedBuffers) {

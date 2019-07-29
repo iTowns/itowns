@@ -34,7 +34,7 @@ class BuilderEllipsoidTile {
             // EPSG:4326
             () => {},
             // Float row coordinate from Pseudo mercator coordinates
-            // EPSG:3946
+            // EPSG:3857
             (params) => {
                 const t = WGS84ToOneSubY(params.projected.latitude) * params.nbRow;
                 return (!isFinite(t) ? 0 : t) - params.deltaUV1;

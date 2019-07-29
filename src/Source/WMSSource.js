@@ -1,6 +1,8 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
+import Extent from 'Core/Geographic/Extent';
 
+const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 /**
  * @classdesc
  * An object defining the source of images to get from a
@@ -134,7 +136,7 @@ class WMSSource extends Source {
     }
 
     extentInsideLimit(extent) {
-        const localExtent = this.projection == extent.crs ? extent : extent.as(this.projection);
+        const localExtent = this.projection == extent.crs ? extent : extent.as(this.projection, _extent);
         return (extent.zoom == undefined || !(extent.zoom < this.zoom.min || extent.zoom > this.zoom.max)) &&
             this.extent.intersectsExtent(localExtent);
     }

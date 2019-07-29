@@ -6,7 +6,7 @@ export default function computeBuffers(params) {
         index: null,
         position: null,
         normal: null,
-        // 2 UV set per tile: wgs84 and pm
+        // 2 UV set per tile: wgs84 (uv_0) and pm (uv_1)
         //    - wgs84: 1 texture per tile because tiles are using wgs84 projection
         //    - pm: use multiple textures per tile.
         //      +-------------------------+
@@ -42,7 +42,7 @@ export default function computeBuffers(params) {
     }
 
     computeUvs[0] = () => {};
-    if (params.buildIndexAndRootUv) {
+    if (params.buildIndexAndUv_0) {
         outBuffers.index = new Uint32Array(triangles * 3);
         outBuffers.uvs[0] = new Float32Array(nVertex * 2);
         computeUvs[0] = (id, u, v) => {
@@ -134,7 +134,7 @@ export default function computeBuffers(params) {
 
     let idVertex2 = 0;
 
-    if (params.buildIndexAndRootUv) {
+    if (params.buildIndexAndUv_0) {
         for (let y = 0; y < heightSegments; y++) {
             for (let x = 0; x < widthSegments; x++) {
                 const v1 = vertices[y][x + 1];
@@ -161,7 +161,7 @@ export default function computeBuffers(params) {
         let buildIndexSkirt = function buildIndexSkirt() { };
         let buildUVSkirt = function buildUVSkirt() { };
 
-        if (params.buildIndexAndRootUv) {
+        if (params.buildIndexAndUv_0) {
             buildIndexSkirt = function buildIndexSkirt(id, v1, v2, v3, v4) {
                 id = bufferize(v1, v2, v3, id);
                 id = bufferize(v1, v3, v4, id);

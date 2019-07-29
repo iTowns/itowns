@@ -112,6 +112,56 @@ class Extent {
     isTiledCrs() {
         return this.crs.indexOf('WMTS:') == 0;
     }
+    /**
+     * get tiled extents convering this extent
+     *
+     * @param      {string}  crs WMTS, TMS crs
+     * @return     {Array<Extent>}   array of extents covering
+     */
+    tiledCovering(crs) {
+        if (this.crs == 'EPSG:4326' && crs == 'WMTS:PM') {
+            const extents_WMTS_PM = [];
+            const extent = _extent.copy(this).as(CRS.formatToEPSG(crs), _extent2);
+            const { globalExtent, globalDimension, sTs } = getInfoTms(CRS.formatToEPSG(crs));
+            extent.clampByExtent(globalExtent);
+            extent.dimensions(dimensionTile);
+
+            const zoom = (this.zoom + 1) || Math.floor(Math.log2(Math.round(globalDimension.x / (dimensionTile.x * sTs.x))));
+            const countTiles = getCountTiles(crs, zoom);
+            const center = extent.center(_c);
+
+            tmsCoord.x = center.x - globalExtent.west;
+            tmsCoord.y = globalExtent.north - extent.north;
+            tmsCoord.divide(globalDimension).multiply(countTiles).floor();
+
+            // ]N; N+1] => N
+            const maxRow = Math.ceil((globalExtent.north - extent.south) / globalDimension.x * countTiles.y) - 1;
+
+            for (let r = maxRow; r >= tmsCoord.y; r--) {
+                extents_WMTS_PM.push(new Extent(crs, zoom, r, tmsCoord.x));
+            }
+
+            return extents_WMTS_PM;
+        } else {
+            const target = new Extent('WMTS:PM', 0, 0, 0);
+            const { globalExtent, globalDimension, sTs, isInverted } = getInfoTms(this.crs);
+            const center = this.center(_c);
+            this.dimensions(dimensionTile);
+            // Each level has 2^n * 2^n tiles...
+            // ... so we count how many tiles of the same width as tile we can fit in the layer
+            // ... 2^zoom = tilecount => zoom = log2(tilecount)
+            const zoom = Math.floor(Math.log2(Math.round(globalDimension.x / (dimensionTile.x * sTs.x))));
+            const countTiles = getCountTiles(crs, zoom);
+
+            // Now that we have computed zoom, we can deduce x and y (or row / column)
+            tmsCoord.x = center.x - globalExtent.west;
+            tmsCoord.y = isInverted ? globalExtent.north - center.y : center.y - globalExtent.south;
+            tmsCoord.divide(globalDimension).multiply(countTiles).floor();
+            target.crs = crs;
+            target.set(zoom, tmsCoord.y, tmsCoord.x);
+            return [target];
+        }
+    }
 
     /**
      * Convert Extent to the specified projection.
@@ -121,10 +171,8 @@ class Extent {
      */
     as(crs, target) {
         CRS.isValid(crs);
+        target = target || new Extent('EPSG:4326', [0, 0, 0, 0]);
         if (this.isTiledCrs()) {
-            target = target || new Extent('EPSG:4326', [0, 0, 0, 0]);
-            target.zoom = this.zoom;
-
             const { epsg, globalExtent, globalDimension } = getInfoTms(this.crs);
             const countTiles = getCountTiles(this.crs, this.zoom);
 
@@ -135,55 +183,11 @@ class Extent {
             target.south = globalExtent.south + dimensionTile.y * (countTiles.y - this.row - 1);
             target.north = target.south + dimensionTile.y;
             target.crs = epsg;
+            target.zoom = this.zoom;
+
             return crs == epsg ? target : target.as(crs, target);
-        } else if (crs.indexOf('WMTS:') == 0) {
-            target = target || new Extent('WMTS:PM', 0, 0, 0);
-            if (this.crs == 'EPSG:4326' && crs == 'WMTS:PM') {
-                const extents_WMTS_PM = [];
-                const extent = _extent.copy(this).as(CRS.formatToEPSG(crs), _extent2);
-                const { globalExtent, globalDimension, sTs } = getInfoTms(CRS.formatToEPSG(crs));
-                extent.clampByExtent(globalExtent);
-                extent.dimensions(dimensionTile);
-
-                const zoom = (this.zoom + 1) || Math.floor(Math.log2(Math.round(globalDimension.x / (dimensionTile.x * sTs.x))));
-                const countTiles = getCountTiles(crs, zoom);
-                const center = extent.center(_c);
-
-                tmsCoord.x = center.x - globalExtent.west;
-                tmsCoord.y = globalExtent.north - extent.north;
-                tmsCoord.divide(globalDimension).multiply(countTiles).floor();
-
-                // ]N; N+1] => N
-                const maxRow = Math.ceil((globalExtent.north - extent.south) / globalDimension.x * countTiles.y) - 1;
-
-                for (let r = maxRow; r >= tmsCoord.y; r--) {
-                    extents_WMTS_PM.push(new Extent(crs, zoom, r, tmsCoord.x));
-                }
-
-                return extents_WMTS_PM;
-            } else {
-                const { globalExtent, globalDimension, sTs, isInverted } = getInfoTms(this.crs);
-                const center = this.center(_c);
-                this.dimensions(dimensionTile);
-                // Each level has 2^n * 2^n tiles...
-                // ... so we count how many tiles of the same width as tile we can fit in the layer
-                // ... 2^zoom = tilecount => zoom = log2(tilecount)
-                const zoom = Math.floor(Math.log2(Math.round(globalDimension.x / (dimensionTile.x * sTs.x))));
-                const countTiles = getCountTiles(crs, zoom);
-
-                // Now that we have computed zoom, we can deduce x and y (or row / column)
-                tmsCoord.x = center.x - globalExtent.west;
-                tmsCoord.y = isInverted ? globalExtent.north - center.y : center.y - globalExtent.south;
-                tmsCoord.divide(globalDimension).multiply(countTiles).floor();
-                target.crs = crs;
-                target.set(zoom, tmsCoord.y, tmsCoord.x);
-                return [target];
-            }
-        } else {
-            if (!target) {
-                target = new Extent('EPSG:4326', [0, 0, 0, 0]);
-            }
-            if (this.crs != crs && !(CRS.is4326(this.crs) && CRS.is4326(crs))) {
+        } else if (!crs.includes('WMTS:')) {
+            if (this.crs != crs) {
                 // Compute min/max in x/y by projecting 8 cardinal points,
                 // and then taking the min/max of each coordinates.
                 const center = this.center(_c);
@@ -197,7 +201,6 @@ class Extent {
                 cardinals[7].setFromValues(this.west, center.y);
 
                 target.set(Infinity, -Infinity, Infinity, -Infinity);
-                target.crs = crs;
 
                 // loop over the coordinates
                 for (let i = 0; i < cardinals.length; i++) {
@@ -210,6 +213,8 @@ class Extent {
                     target.west = Math.min(target.west, _c.x);
                 }
 
+                target.zoom = this.zoom;
+                target.crs = crs;
                 return target;
             }
 
@@ -350,6 +355,7 @@ class Extent {
      * @returns {Boolean}
      */
     intersectsExtent(extent) {
+        // TODO don't work when is on limit
         const other = extent.crs == this.crs ? extent : extent.as(this.crs, _extent);
         return !(this.west >= other.east ||
                  this.east <= other.west ||
@@ -547,7 +553,7 @@ class Extent {
     /**
      * subdivise extent by scheme.x on west-east and scheme.y on south-north.
      *
-     * @param      {Vector2}  [scheme=defaultScheme]  The scheme to subdivise.
+     * @param      {Vector2}  [scheme=Vector2(2,2)]  The scheme to subdivise.
      * @return     {Array<Extent>}   subdivised extents.
      */
     subdivisionByScheme(scheme = defaultScheme) {
@@ -601,8 +607,8 @@ class Extent {
      * @return     {Extent}  this extent
      */
     clampSouthNorth(south = this.south, north = this.north) {
-        this.south = this.south > south ? this.south : south;
-        this.north = this.north < north ? this.north : north;
+        this.south = Math.max(this.south, south);
+        this.north = Math.min(this.north, north);
         return this;
     }
 
@@ -614,8 +620,8 @@ class Extent {
      * @return     {Extent}  this extent
      */
     clampWestEast(west = this.west, east = this.east) {
-        this.west = this.west > west ? this.west : west;
-        this.east = this.east < east ? this.east : east;
+        this.west = Math.max(this.west, west);
+        this.east = Math.min(this.east, east);
         return this;
     }
     /**

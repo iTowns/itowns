@@ -2,11 +2,6 @@ import proj4 from 'proj4';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
-const tileMatrixSets = [
-    ['wgs84', 'wgs84g', 'wgs84g_po'],
-    ['pm'],
-];
-
 const TMS = [
     'WMTS:WGS84',
     'WMTS:PM',
@@ -27,9 +22,6 @@ function formatToTms(crs) {
             return TMS[i];
         } else if (crs.includes('EPSG')) {
             return `WMTS:TMS:${crs.replace('EPSG:', '')}`;
-        } else {
-            const i = tileMatrixSets.findIndex(c => c.includes(crs.toLowerCase()));
-            return TMS[i];
         }
     }
 }
@@ -41,7 +33,7 @@ function formatToEPSG(crs) {
         } else if (EPSG[TMS.indexOf(crs)]) {
             return EPSG[TMS.indexOf(crs)];
         } else {
-            return `EPSG:${crs.replace('WMTS:TMS:', '')}`;
+            return `EPSG:${crs.match(/\d+/)[0]}`;
         }
     }
 }
