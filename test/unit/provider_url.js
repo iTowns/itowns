@@ -7,7 +7,7 @@ const layer = {};
 
 describe('URL creations', function () {
     it('should correctly replace ${x}, ${y} and ${z} by 359, 512 and 10', function () {
-        const coords = new Extent('TMS', 10, 512, 359);
+        var coords = new Extent('WMTS:TMS:4857', 10, 512, 359);
         layer.url = 'http://server.geo/tms/${z}/${y}/${x}.jpg';
         const result = URLBuilder.xyz(coords, layer);
         assert.equal(result, 'http://server.geo/tms/10/512/359.jpg');

@@ -72,25 +72,24 @@ describe('Extent', function () {
         const subdivided = toSubdivide.subdivision();
 
         assert.equal(subdivided.length, 4);
-
-        // NW
-        assert.strictEqual(subdivided[0].west, -10);
-        assert.strictEqual(subdivided[0].east, 0);
+        // NE
+        assert.strictEqual(subdivided[0].west, 0);
+        assert.strictEqual(subdivided[0].east, 10);
         assert.strictEqual(subdivided[0].south, 0);
         assert.strictEqual(subdivided[0].north, 10);
-        // NE
+        // SE
         assert.strictEqual(subdivided[1].west, 0);
         assert.strictEqual(subdivided[1].east, 10);
-        assert.strictEqual(subdivided[1].south, 0);
-        assert.strictEqual(subdivided[1].north, 10);
-        // SW
+        assert.strictEqual(subdivided[1].south, -10);
+        assert.strictEqual(subdivided[1].north, 0);
+        // NW
         assert.strictEqual(subdivided[2].west, -10);
         assert.strictEqual(subdivided[2].east, 0);
-        assert.strictEqual(subdivided[2].south, -10);
-        assert.strictEqual(subdivided[2].north, 0);
-        // SE
-        assert.strictEqual(subdivided[3].west, 0);
-        assert.strictEqual(subdivided[3].east, 10);
+        assert.strictEqual(subdivided[2].south, 0);
+        assert.strictEqual(subdivided[2].north, 10);
+        // SW
+        assert.strictEqual(subdivided[3].west, -10);
+        assert.strictEqual(subdivided[3].east, 0);
         assert.strictEqual(subdivided[3].south, -10);
         assert.strictEqual(subdivided[3].north, 0);
     });
@@ -128,7 +127,7 @@ describe('Extent', function () {
     });
 
     it('should convert extent WMTS:WGS84G like expected', function () {
-        const withValues = new Extent('WMTS:WGS84G', 0, 0, 0).as('EPSG:4326');
+        const withValues = new Extent('WMTS:WGS84', 0, 0, 0).as('EPSG:4326');
         assert.equal(-180, withValues.west);
         assert.equal(0, withValues.east);
         assert.equal(-90, withValues.south);
@@ -137,23 +136,23 @@ describe('Extent', function () {
 
     it('should convert extent WMTS:PM to EPSG:3857 like expected', function () {
         const withValues = new Extent('WMTS:PM', 0, 0, 0).as('EPSG:3857');
-        assert.equal(-20026376.39, withValues.west);
-        assert.equal(20026376.39, withValues.east);
-        assert.equal(-20048966.1, withValues.south);
-        assert.equal(20048966.1, withValues.north);
+        assert.equal(-20037508.342789244, withValues.west);
+        assert.equal(20037508.342789244, withValues.east);
+        assert.equal(-20037508.342789244, withValues.south);
+        assert.equal(20037508.342789244, withValues.north);
     });
 
     it('should convert extent WMTS:PM to EPSG:4326 like expected', function () {
-        const withValues = new Extent('WMTS:PM', 0, 0, 0).as('EPSG:4326');
-        assert.equal(-180, withValues.west);
-        assert.equal(180, withValues.east);
-        assert.equal(-85.05112877980659, withValues.south);
-        assert.equal(85.0511287798066, withValues.north);
+        const withValues = new Extent('WMTS:PM', 0, 0, 0);
+        const result = withValues.as('EPSG:4326');
+        assert.equal(-180.00000000000003, result.west);
+        assert.equal(180.00000000000003, result.east);
+        assert.equal(-85.0511287798066, result.south);
+        assert.equal(85.0511287798066, result.north);
     });
 
     it('should convert extent EPSG:4326 like expected', function () {
         const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]).as('EPSG:3857');
-        // console.log('withValues', withValues.as('EPSG:3857'));
         assert.equal(0, withValues.west);
         assert.equal(1113194.9079327357, withValues.east);
         assert.equal(-111325.14286638597, withValues.south);

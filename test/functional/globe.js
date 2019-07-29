@@ -43,9 +43,9 @@ describe('globe', function _() {
         const limit = maxColorSamplerUnitsCount - colorSamplerUnitsCount;
 
         // add layers just below the capacity limit
-        const underLimit = await page.evaluate(maxLayersCount => itowns.Fetcher.json('./layers/JSONLayers/OrthosCRS.json').then((params) => {
+        const underLimit = await page.evaluate(maxLayersCount => itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then((params) => {
             // eslint-disable-next-line no-param-reassign
-            params.source = new itowns.WMTSSource(params.source);
+            params.source = new itowns.TMSSource(params.source);
             const promises = [];
             for (let i = 0; i < maxLayersCount; i++) {
                 const layer = new itowns.ColorLayer(`${params.id}_${i}`, params);
@@ -56,7 +56,7 @@ describe('globe', function _() {
 
         // add one layer just over the capacity limit
         // verify if the error is handled
-        const errorOverLimit = await page.evaluate(() => itowns.Fetcher.json('./layers/JSONLayers/OrthosCRS.json').then((params) => {
+        const errorOverLimit = await page.evaluate(() => itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then((params) => {
             const layerParams = Object.assign({}, params);
             layerParams.id = 'max';
             return view.addLayer(layerParams).then(() => false).catch(() => true);

@@ -13,7 +13,7 @@ describe('material state vs layer state', function () {
             getLayer: () => nodeLayer,
             visible: true,
         },
-        getExtentsForSource: () => 0,
+        getExtentsByProjection: () => 0,
     };
     const layer = {
         id: 'test',
