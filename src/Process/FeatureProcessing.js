@@ -112,7 +112,7 @@ export default {
             requester: node,
         };
 
-        context.scheduler.execute(command).then((result) => {
+        return context.scheduler.execute(command).then((result) => {
             // if request return empty json, WFSProvider.getFeatures return undefined
             result = result[0];
             if (result) {

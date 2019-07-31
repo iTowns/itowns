@@ -6,6 +6,7 @@
 class CancelledCommandException {
     constructor(command) {
         this.command = command;
+        this.isCancelledCommandException = true;
     }
 
     toString() {

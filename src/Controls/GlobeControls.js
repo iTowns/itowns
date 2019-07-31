@@ -543,7 +543,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     const _onMouseUpListener = onMouseUp.bind(this);
     function onMouseDown(event) {
         CameraUtils.stop(view, this.camera);
-        player.stop().then(() => {
+        return player.stop().then(() => {
             if (this.enabled === false) { return; }
             event.preventDefault();
 
@@ -588,7 +588,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
 
     function ondblclick(event) {
         if (this.enabled === false || currentKey) { return; }
-        player.stop().then(() => {
+        return player.stop().then(() => {
             const point = view.getPickingPositionFromDepth(view.eventToViewCoords(event));
             const range = this.getRange();
             if (point && range > this.minDistance) {
@@ -673,7 +673,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     }
 
     function onMouseWheel(event) {
-        player.stop().then(() => {
+        return player.stop().then(() => {
             if (!this.enabled || !states.DOLLY.enable) { return; }
             CameraUtils.stop(view, this.camera);
             event.preventDefault();
@@ -717,7 +717,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     }
 
     function onKeyDown(event) {
-        player.stop().then(() => {
+        return player.stop().then(() => {
             if (this.enabled === false || this.enableKeys === false) { return; }
             currentKey = event.keyCode;
             switch (event.keyCode) {
@@ -748,7 +748,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
 
     function onTouchStart(event) {
         // CameraUtils.stop(view);
-        player.stop().then(() => {
+        return player.stop().then(() => {
             if (this.enabled === false) { return; }
 
             state = states.touchToState(event.touches.length);
