@@ -33,6 +33,7 @@
     float getElevation(vec2 uv, sampler2D texture, vec4 offsetScale, Layer layer) {
         uv = uv * offsetScale.zw + offsetScale.xy;
         float d = getElevationMode(uv, texture, layer.mode);
+        if (d < layer.zmin || d > layer.zmax) d = 0.;
         return d * layer.scale + layer.bias;
     }
 #endif
