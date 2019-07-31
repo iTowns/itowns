@@ -311,6 +311,7 @@ class TiledGeometryLayer extends GeometryLayer {
      * @param {Object} context - The context of the update; see the {@link
      * MainLoop} for more informations.
      * @param {TileMesh} node - The node to subdivide.
+     * @return {Promise}  { description_of_the_return_value }
      */
     subdivideNode(context, node) {
         if (!node.pendingSubdivision && !node.children.some(n => n.layer == this)) {
@@ -329,7 +330,7 @@ class TiledGeometryLayer extends GeometryLayer {
                 redraw: false,
             };
 
-            context.scheduler.execute(command).then((children) => {
+            return context.scheduler.execute(command).then((children) => {
                 for (const child of children) {
                     node.add(child);
                     child.updateMatrixWorld(true);

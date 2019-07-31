@@ -260,8 +260,6 @@ export default {
                 return parseOctree(layer, layer.metadata.hierarchyStepSize, { baseurl: `${layer.url}/${layer.metadata.octreeDir}/r`, name: '', bbox });
             })
             .then((root) => {
-                // eslint-disable-next-line no-console
-                console.log('LAYER metadata:', root);
                 layer.root = root;
                 root.findChildrenByName = findChildrenByName.bind(root, root);
                 layer.extent = Extent.fromBox3(view.referenceCrs, root.bbox);

@@ -4,62 +4,9 @@ import View from 'Core/View';
 import ColorLayer from 'Layer/ColorLayer';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import FileSource from 'Source/FileSource';
+import Renderer from './mock';
 
-// Mock document object for Mocha.
-global.document = {
-    createElement: () => ({
-        addEventListener: () => {},
-        getContext: () => ({
-            fillRect: () => { },
-            moveTo: () => { },
-            lineTo: () => { },
-            beginPath: () => { },
-            stroke: () => { },
-            fill: () => { },
-            arc: () => { },
-            setTransform: () => { },
-            canvas: {
-                width: 256,
-                height: 256,
-            },
-        }),
-    }),
-};
-
-global.window = {
-    addEventListener: () => { },
-};
-
-global.Event = () => {};
-
-global.requestAnimationFrame = () => {};
-
-const renderer = {
-    domElement: {},
-    context: {
-        getParameter: () => 16,
-        createProgram: () => { },
-        createShader: () => { },
-        attachShader: () => { },
-        linkProgram: () => { },
-        getProgramParameter: () => { },
-        getProgramInfoLog: () => { },
-        deleteProgram: () => { },
-        deleteShader: () => { },
-        shaderSource: () => { },
-        compileShader: () => { },
-    },
-    capabilities: {
-        logarithmicDepthBuffer: true,
-    },
-    debug: {},
-    setClearColor: () => {},
-    getRenderTarget: () => { },
-    setRenderTarget: () => {},
-    clear: () => { },
-    render: () => { },
-    readRenderTargetPixels: () => { },
-};
+const renderer = new Renderer();
 
 const globelayer = new GlobeLayer('globe', new THREE.Group());
 const source = new FileSource({
