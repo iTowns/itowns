@@ -4,6 +4,7 @@
     "updateStrategy": {
         "type": 0
     },
+    "zmin": -12000,
     "source": {
         "url": "https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geoid/geoid/bil/%TILEMATRIX/geoid_%COL_%ROW.bil",
         "format": "image/x-bil;bits=32",
