@@ -13,7 +13,7 @@
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="js/FeatureToolTip.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
             // Define initial camera position
@@ -61,7 +61,7 @@
 
                 view.addLayer(velibLayer);
 
-                new ToolTip(view, { filterAll: false });
+                new FeatureToolTip(view, { filterAll: false });
             });
         </script>
     </body>
