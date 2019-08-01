@@ -1,4 +1,3 @@
-/* global process */
 import assert from 'assert';
 import { Group } from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';

@@ -7,7 +7,7 @@ let maxTexturesUnits = 8;
 let maxTextureSize = 4096;
 
 function _WebGLShader(renderer, type, string) {
-    const gl = renderer.context;
+    const gl = renderer.getContext();
     const shader = gl.createShader(type);
 
     gl.shaderSource(shader, string);
@@ -35,7 +35,7 @@ export default {
         return maxTextureSize;
     },
     updateCapabilities(renderer) {
-        const gl = renderer.context;
+        const gl = renderer.getContext();
         maxTexturesUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
         maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
 

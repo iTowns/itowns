@@ -1,4 +1,3 @@
-/* globals window */
 import * as THREE from 'three';
 import AnimationPlayer, { Animation } from 'Core/AnimationPlayer';
 import Coordinates from 'Core/Geographic/Coordinates';
