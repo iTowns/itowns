@@ -44,6 +44,8 @@
             setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
 
+            const atmosphere3D = view.getLayerById('atmosphere').object3d;
+
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ColorLayer('Ortho', config);
@@ -82,6 +84,10 @@
 
                 object3ds[1 - front].position.y = itowns.THREE.Math.lerp(front ? -10000000 : 10000000, 0, 1 - t);
                 object3ds[1 - front].scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, 1 - t));
+
+                atmosphere3D.position.y = object3ds[0].position.y;
+                atmosphere3D.scale.copy(object3ds[0].scale);
+                atmosphere3D.updateMatrixWorld(true);
 
                 object3ds[0].updateMatrixWorld(true);
                 object3ds[1].updateMatrixWorld(true);
