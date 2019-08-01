@@ -13,7 +13,7 @@
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="js/FeatureToolTip.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
         <script type="text/javascript">
             // # Simple Globe viewer
             /* global itowns, setupLoadingScreen, GuiTools, ToolTip */
@@ -132,7 +132,7 @@
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function _() {
-                Promise.all(promises).then(new ToolTip(view));
+                Promise.all(promises).then(new FeatureToolTip(view));
             });
         </script>
     </body>

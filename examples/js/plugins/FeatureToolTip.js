@@ -14,12 +14,14 @@
  * @param {boolean} [options.filterAll=true] - Filter all the properties.
  * Default to true.
  *
+ * @class FeatureToolTip
+ *
  * @example
  * view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function() {
- *      new ToolTip(view);
+ *      new FeatureToolTip(view);
  * });
  */
-function ToolTip(viewer, options) {
+function FeatureToolTip(viewer, options) {
     var opts = options || { filterAll: true };
     opts.filter = opts.filter == undefined ? [] : opts.filter;
 
@@ -145,5 +147,5 @@ function ToolTip(viewer, options) {
 }
 
 if (typeof module != 'undefined' && module.exports) {
-    module.exports = ToolTip;
+    module.exports = FeatureToolTip;
 }

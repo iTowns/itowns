@@ -94,7 +94,9 @@
             ],
 
             "Plugins": [
-                "DragNDrop"
+                "DragNDrop",
+                "FeatureToolTip",
+                "TIFFParser"
             ]
         }
     },
@@ -106,7 +108,7 @@
         }
     },
     "source": {
-        "include": [ "src", "examples/js" ],
+        "include": [ "src", "examples/js/plugins" ],
         "exclude": [ "src/ThreeExtended" ]
     },
     "plugins": ["plugins/markdown"]
