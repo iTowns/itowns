@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import assert from 'assert';
 import OrientedImageCamera from 'Renderer/OrientedImageCamera';
-/* global describe, it */
 
 describe('oriented image camera', function () {
     it('Should have default values', () => {

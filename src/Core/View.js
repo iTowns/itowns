@@ -1,4 +1,3 @@
-/* global window */
 import * as THREE from 'three';
 import Camera from 'Renderer/Camera';
 import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from 'Core/MainLoop';

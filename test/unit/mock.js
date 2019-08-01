@@ -74,6 +74,7 @@ class Renderer {
     clear() {}
     render() {}
     readRenderTargetPixels() { }
+    getContext() { return this.context; }
 }
 
 export default Renderer;

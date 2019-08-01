@@ -1,4 +1,3 @@
-/* global process */
 import assert from 'assert';
 import GeometryLayer from 'Layer/GeometryLayer';
 import View from 'Core/View';
