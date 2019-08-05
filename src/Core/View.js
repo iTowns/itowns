@@ -185,6 +185,9 @@ class View extends THREE.EventDispatcher {
                 this._fullSizeDepthBuffer = null;
             }
         });
+
+        // Focus needed to capture some key events.
+        viewerDiv.focus();
     }
 
 
