@@ -22,7 +22,7 @@ if (process.env.HTTPS_PROXY) {
     threedTilesLayer.networkOptions = { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) };
 }
 
-const viewer = new GlobeView('EPSG:4326', coordinatesOnGlobe, { renderer, noControls: true });
+const viewer = new GlobeView(renderer.domElement, coordinatesOnGlobe, { renderer, noControls: true });
 
 const p = { coord: coordinatesOnGlobe, heading: -145, range: 200, tilt: 10 };
 CameraUtils.transformCameraToLookAtTarget(viewer, viewer.camera.camera3D, p);

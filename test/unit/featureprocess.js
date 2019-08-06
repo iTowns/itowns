@@ -14,8 +14,7 @@ import Renderer from './mock';
 const renderer = new Renderer();
 
 const positionOnGlobe = { longitude: 1.5, latitude: 43, altitude: 300000 };
-const div = {};
-const viewer = new GlobeView(div, positionOnGlobe, { renderer });
+const viewer = new GlobeView(renderer.domElement, positionOnGlobe, { renderer });
 
 function extrude() {
     return 5000;
