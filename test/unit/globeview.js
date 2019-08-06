@@ -7,8 +7,7 @@ import Renderer from './mock';
 const renderer = new Renderer();
 
 const positionOnGlobe = { longitude: 4.631512, latitude: 43.675626, altitude: 250000 };
-const div = {};
-const viewer = new GlobeView(div, positionOnGlobe, { renderer });
+const viewer = new GlobeView(renderer.domElement, positionOnGlobe, { renderer });
 
 const context = {
     camera: viewer.camera,

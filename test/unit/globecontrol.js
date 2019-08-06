@@ -6,7 +6,7 @@ import Renderer from './mock';
 const renderer = new Renderer();
 
 const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 250000 };
-const viewer = new GlobeView('EPSG:4326', positionOnGlobe, { renderer });
+const viewer = new GlobeView(renderer.domElement, positionOnGlobe, { renderer });
 
 const event = {
     stopPropagation: () => {},

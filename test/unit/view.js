@@ -18,14 +18,14 @@ const colorLayer = new ColorLayer('l0', { source });
 
 describe('Viewer', function () {
     it('Should instance viewer', () => {
-        const viewer = new View('EPSG:4326', {}, {
+        const viewer = new View('EPSG:4326', renderer.domElement, {
             renderer,
         });
 
         assert.ok(viewer);
     });
     it('Should add globe layer', () => {
-        const viewer = new View('EPSG:4326', {}, {
+        const viewer = new View('EPSG:4326', renderer.domElement, {
             renderer,
         });
 
@@ -34,7 +34,7 @@ describe('Viewer', function () {
         assert.equal(layers.length, 1);
     });
     it('Should remove globe layer', () => {
-        const viewer = new View('EPSG:4326', {}, {
+        const viewer = new View('EPSG:4326', renderer.domElement, {
             renderer,
         });
 
@@ -45,7 +45,7 @@ describe('Viewer', function () {
         assert.equal(layers.length, 0);
     });
     it('Should add color layer', () => {
-        const viewer = new View('EPSG:4326', {}, {
+        const viewer = new View('EPSG:4326', renderer.domElement, {
             renderer,
         });
         viewer.addLayer(globelayer);
@@ -55,7 +55,7 @@ describe('Viewer', function () {
         assert.equal(globelayer.attachedLayers.length, 1);
     });
     it('Should call pick Object function', () => {
-        const viewer = new View('EPSG:4326', {}, {
+        const viewer = new View('EPSG:4326', renderer.domElement, {
             renderer,
         });
 
@@ -67,7 +67,7 @@ describe('Viewer', function () {
         assert.ok(pickedFrom.isVector3);
     });
     it('Should update sources viewer and notify change', () => {
-        const viewer = new View('EPSG:4326', {}, {
+        const viewer = new View('EPSG:4326', renderer.domElement, {
             renderer,
         });
         viewer.addLayer(globelayer);

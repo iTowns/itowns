@@ -8,8 +8,7 @@ import Renderer from './mock';
 const renderer = new Renderer();
 
 const positionOnGlobe = { longitude: 4.631512, latitude: 43.675626, altitude: 250 };
-const div = {};
-const viewer = new GlobeView(div, positionOnGlobe, { renderer });
+const viewer = new GlobeView(renderer.domElement, positionOnGlobe, { renderer });
 
 // Configure Point Cloud layer
 const pointcloud = new GeometryLayer('eglise_saint_blaise_arles', viewer.scene);

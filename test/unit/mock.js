@@ -19,6 +19,7 @@ class Renderer {
                     return callback(params);
                 }
             },
+            focus: () => {},
         };
         this.context = {
             getParameter: () => 16,
