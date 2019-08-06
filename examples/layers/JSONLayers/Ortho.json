@@ -117,16 +117,16 @@
                 "maxTileCol": 253366
             },
             "19": {
-                "minTileRow": 175302,
-                "maxTileRow": 294060,
-                "minTileCol": 170159,
-                "maxTileCol": 343473
+                "minTileRow": 175296,
+                "maxTileRow": 294063,
+                "minTileCol": 170144,
+                "maxTileCol": 343487
             },
             "20": {
-                "minTileRow": 376733,
-                "maxTileRow": 384679,
-                "minTileCol": 530773,
-                "maxTileCol": 540914
+                "minTileRow": 357008,
+                "maxTileRow": 384687,
+                "minTileCol": 524400,
+                "maxTileCol": 540927
             }
         }
     }
