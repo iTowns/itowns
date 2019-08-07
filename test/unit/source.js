@@ -192,12 +192,6 @@ describe('Sources', function () {
             assert.ok(source.extentInsideLimit(extent));
             assert.ok(source.extentsInsideLimit([extent, extent]));
         });
-
-        it('should respect the tileMatrixSet', function () {
-            paramsTMS.tileMatrixSet = 'FAKE';
-            const source = new TMSSource(paramsTMS);
-            assert.strictEqual(source.tileMatrixSet, 'FAKE');
-        });
     });
 
     describe('FileSource', function () {
