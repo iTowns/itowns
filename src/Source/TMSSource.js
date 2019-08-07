@@ -1,6 +1,6 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
-import Extent from 'Core/Geographic/Extent';
+import { globalExtentTMS } from 'Core/Geographic/Extent';
 import CRS from 'Core/Geographic/Crs';
 
 /**
@@ -27,7 +27,7 @@ import CRS from 'Core/Geographic/Crs';
  * @property {number} zoom.min - The minimum level of the source. Default value
  * is 0.
  * @property {number} zoom.max - The maximum level of the source. Default value
- * is 18.
+ * is 20.
  *
  * @example
  * // Create the source
@@ -65,21 +65,33 @@ class TMSSource extends Source {
         this.isTMSSource = true;
 
         if (!source.extent) {
-            // default to the full 3857 extent
-            this.extent = new Extent('EPSG:3857',
-                -20037508.342789244, 20037508.342789244,
-                -20037508.342789255, 20037508.342789244);
+            // default to the global extent
+            this.extent = globalExtentTMS.get(source.projection);
         }
 
-        this.zoom = source.zoom || { min: 0, max: 18 };
+        this.zoom = source.zoom;
 
         this.isInverted = source.isInverted || false;
-
         this.format = this.format || 'image/png';
         this.url = source.url;
-        this.tileMatrixSet = source.tileMatrixSet;
-
         this.projection = CRS.formatToTms(source.projection);
+        this.tileMatrixSetLimits = source.tileMatrixSetLimits;
+
+        if (!this.zoom) {
+            if (this.tileMatrixSetLimits) {
+                const arrayLimits = Object.keys(this.tileMatrixSetLimits);
+                const size = arrayLimits.length;
+                const maxZoom = Number(arrayLimits[size - 1]);
+                const minZoom = maxZoom - size + 1;
+
+                this.zoom = {
+                    min: minZoom,
+                    max: maxZoom,
+                };
+            } else {
+                this.zoom = { min: 0, max: 20 };
+            }
+        }
     }
 
     urlFromExtent(extent) {
@@ -94,8 +106,12 @@ class TMSSource extends Source {
         // This layer provides data starting at level = layer.source.zoom.min
         // (the zoom.max property is used when building the url to make
         //  sure we don't use invalid levels)
-        // TODO: add extent limit
-        return extent.zoom >= this.zoom.min && extent.zoom <= this.zoom.max;
+        return extent.zoom >= this.zoom.min && extent.zoom <= this.zoom.max &&
+                (this.tileMatrixSetLimits == undefined ||
+                (extent.row >= this.tileMatrixSetLimits[extent.zoom].minTileRow &&
+                    extent.row <= this.tileMatrixSetLimits[extent.zoom].maxTileRow &&
+                    extent.col >= this.tileMatrixSetLimits[extent.zoom].minTileCol &&
+                    extent.col <= this.tileMatrixSetLimits[extent.zoom].maxTileCol));
     }
 }
 

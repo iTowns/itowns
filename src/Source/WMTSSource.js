@@ -1,6 +1,4 @@
-import Source from 'Source/Source';
-import URLBuilder from 'Provider/URLBuilder';
-import CRS from 'Core/Geographic/Crs';
+import TMSSource from 'Source/TMSSource';
 
 /**
  * @classdesc
@@ -59,7 +57,7 @@ import CRS from 'Core/Geographic/Crs';
  * // Add the layer
  * view.addLayer(colorLayer);
  */
-class WMTSSource extends Source {
+class WMTSSource extends TMSSource {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * WMTSSource and {@link Source}. Only `url` and `name` are mandatory.
@@ -78,54 +76,15 @@ class WMTSSource extends Source {
         super(source);
 
         this.isWMTSSource = true;
-
-        this.format = this.format || 'image/png';
-        this.version = source.version || '1.0.0';
-        this.tileMatrixSet = source.tileMatrixSet || 'WGS84';
-        this.style = source.style || 'normal';
-        this.name = source.name;
         this.url = `${this.url}` +
-            `?LAYER=${this.name}` +
+            `?LAYER=${source.name}` +
             `&FORMAT=${this.format}` +
             '&SERVICE=WMTS' +
-            `&VERSION=${this.version}` +
+            `&VERSION=${source.version || '1.0.0'}` +
             '&REQUEST=GetTile' +
-            `&STYLE=${this.style}` +
-            `&TILEMATRIXSET=${this.tileMatrixSet}` +
+            `&STYLE=${source.style || 'normal'}` +
+            `&TILEMATRIXSET=${source.tileMatrixSet}` +
             '&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL';
-
-        this.zoom = source.zoom;
-        this.tileMatrixSetLimits = source.tileMatrixSetLimits;
-        this.projection = CRS.formatToTms(source.projection);
-
-        if (!this.zoom) {
-            if (this.tileMatrixSetLimits) {
-                const arrayLimits = Object.keys(this.tileMatrixSetLimits);
-                const size = arrayLimits.length;
-                const maxZoom = Number(arrayLimits[size - 1]);
-                const minZoom = maxZoom - size + 1;
-
-                this.zoom = {
-                    min: minZoom,
-                    max: maxZoom,
-                };
-            } else {
-                this.zoom = { min: 2, max: 20 };
-            }
-        }
-    }
-
-    urlFromExtent(extent) {
-        return URLBuilder.xyz(extent, this);
-    }
-
-    extentInsideLimit(extent) {
-        return extent.zoom >= this.zoom.min && extent.zoom <= this.zoom.max &&
-                (this.tileMatrixSetLimits == undefined ||
-                (extent.row >= this.tileMatrixSetLimits[extent.zoom].minTileRow &&
-                    extent.row <= this.tileMatrixSetLimits[extent.zoom].maxTileRow &&
-                    extent.col >= this.tileMatrixSetLimits[extent.zoom].minTileCol &&
-                    extent.col <= this.tileMatrixSetLimits[extent.zoom].maxTileCol));
     }
 }
 

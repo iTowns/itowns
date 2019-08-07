@@ -62,7 +62,7 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         _syncGeometryLayerVisibility(layer, view);
         // Find projection layer, this is projection destination
         layer.projection = view.referenceCrs;
-    } else if (source.tileMatrixSet || parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.projection))) {
+    } else if (parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.projection))) {
         layer.projection = source.projection;
     } else {
         layer.projection = parentLayer.extent.crs;
