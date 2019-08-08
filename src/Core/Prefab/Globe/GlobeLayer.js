@@ -67,7 +67,7 @@ class GlobeLayer extends TiledGeometryLayer {
         this.isGlobeLayer = true;
         this.options.defaultPickingRadius = 5;
         this.minSubdivisionLevel = this.minSubdivisionLevel || 2.0;
-        this.maxSubdivisionLevel = this.maxSubdivisionLevel || 18.0;
+        this.maxSubdivisionLevel = this.maxSubdivisionLevel || 19.0;
         this.maxDeltaElevation = this.maxDeltaElevation || 4.0;
 
         this.extent = this.schemeTile[0].clone();
