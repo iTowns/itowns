@@ -178,7 +178,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     this.zoomSpeed = options.zoomSpeed || 2.0;
 
     // Limits to how far you can dolly in and out ( PerspectiveCamera only )
-    this.minDistance = options.minDistance || 300;
+    this.minDistance = options.minDistance || 250;
     this.maxDistance = options.maxDistance || globeRadius * 8.0;
 
     // Limits to how far you can zoom in and out ( OrthographicCamera only )
