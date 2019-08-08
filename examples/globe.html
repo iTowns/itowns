@@ -2,19 +2,6 @@
     <head>
         <title>Itowns - Globe</title>
 
-        <style type="text/css">
-            #miniDiv {
-                display: block;
-                margin-bottom: 20px;
-                margin-right: 20px;
-                position: absolute;
-                width:100px;
-                height:100px;
-                left: 20;
-                bottom: 0;
-                color: white;
-            }
-        </style>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -23,11 +10,10 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
-        <div id="viewerDiv">
-            <span class="divScaleWidget"> Scale </span>
-            <div id="miniDiv">
-            </div>
-        </div>
+        <div id="viewerDiv"></div>
+        <span id="divScaleWidget"> Scale </span>
+        <div id="miniDiv"></div>
+
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
@@ -101,7 +87,7 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             var menuGlobe = new GuiTools('menuDiv', view);
-            var divScaleWidget = document.querySelectorAll('.divScaleWidget')[0];
+            var divScaleWidget = document.getElementById('divScaleWidget');
 
             function updateScaleWidget() {
                 var value = view.controls.pixelsToMeters(200);

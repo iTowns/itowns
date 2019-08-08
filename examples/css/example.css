@@ -1,111 +1,168 @@
-html {
-    height: 100%;
-}
-
-body {
+/* GENERAL */
+html, body {
     margin: 0;
-    overflow: hidden;
-    height: 100%;
-}
-
-#viewerDiv {
-    margin : auto auto;
-    width: 100%;
-    height: 100%;
     padding: 0;
+    height: 100%;
+    width: 100%;
+    color: #202020;
+    font-size: 13px;
 }
 
-#viewerDiv > canvas {
-    display: block;
-}
-
-#menuDiv {
+.scroll-section {
+    height: 100%;
     position: absolute;
-    top:0px;
-    margin-left: 0px;
 }
 
-@media (max-width: 600px) {
-    #menuDiv {
-        display: none;
-    }
-}
-
-.help {
+#description {
     position: absolute;
-    z-index: 0;
-    top: 0;
-    right: 0;
+    top: 10px;
+    right: 10px;
+}
+
+#description, .text {
+    z-index: 1;
     color: #eee;
     font: 16px 'Lucida Grande',sans-serif;
-    max-width: 20rem;
-    line-height: normal;
-    text-shadow: 0 -1px 0 #111;
-    padding: 0 1rem;
+    max-width: 40%;
     background: #1a1a1a;
-    border: 1px solid #2c2c2c;
     opacity: 0.8;
+    padding: 10px;
 }
 
-.help > p {
-    margin: 0.5rem 0;
+#description p, #description ul {
+    margin: 0px;
 }
 
-.help > ul {
-    padding: 0 1rem;
-}
-
-.help a {
+.text a {
     color: lightcoral;
 }
 
+.text a:hover {
+    color: #f0c0c0;
+}
+
+.text > ul {
+    padding: 0 2rem;
+}
+
 @media (max-width: 600px) {
-    .help {
+    .text {
         display: none;
     }
 }
 
-.divScaleWidget {
+/* MAIN SECTION (RIGHT) */
+#main {
+    width: calc(100% - 330px);
+    height: 100%;
+    display: inline;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+#content {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: calc(100% - 330px);
+}
+
+#view-source {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+}
+
+/* NAVIGATION (LEFT) */
+nav {
+    width: calc(330px - 4rem);
+    padding: 0 2rem;
+    overflow: auto;
+    font-family: Consolas, Monaco, 'Andale Mono', monospace;
+}
+
+nav img {
+    margin-top: 20px;
+}
+
+.nav-section {
+    margin-top: 0px;
+}
+
+nav .package {
+    padding-bottom: 20px;
+}
+
+nav ul {
+    padding: 0;
+    margin: 0;
+}
+
+a, a:visited, nav ul a, nav ul a:visited {
+    cursor: pointer;
+    color: #6091b2;
+    text-decoration: underline;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #6091b2aa;
+}
+
+h1, h2, h3, h4, h5 {
+    font-weight: bold;
+    color: #4b4b4b;
+}
+
+h3 {
+    font-size: 16px;
+}
+
+
+/* IFRAME/EXAMPLE CONTENT */
+#viewerDiv {
+    height: 100%;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* PLUGINS/GUI */
+.dg.main {
+    position: absolute;
+}
+
+#miniDiv {
+    display: block;
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    left: 20;
+    bottom: 20;
+    color: white;
+}
+
+#divScaleWidget {
+    display: block;
+    position: absolute;
+    right: 135px;
+    bottom: 20;
     border: 2px solid black;
     border-top: none;
     text-align: center;
     display: block;
     background-image: linear-gradient(rgba(200, 200, 200, 0.3), rgba(200, 200, 200, 0.3));
-    margin-bottom: 20px;
-    margin-right: 20px;
-    position: absolute;
-    width:200px;
-    height:18px;
+    width: 200px;
+    height: 18px;
     color: black;
-    font-family: 'Open Sans',
-    sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: 16px;
-    right: 0;
-    bottom: 0;
 }
 
-.circleBase {
-    display: none;
-    border-radius: 50%;
-    margin-top: 0px;
-    margin-left: 0px;
-    padding: 0px;
-    position: absolute;
-    z-index: 1000;
-    font-family: 'Open Sans',
-    sans-serif;
-    font-size: 20px;
-    line-height: 0px;
-    text-align: center;
-    pointer-events: none;
-    width: 10px;
-    height: 10px;
-    background: rgba(160, 160, 160, .4);
-    border: 2px solid #775555;
-    vertical-align: middle;
-}
-
-/* tooltip */
 .tooltip {
     display: none;
     background-image: linear-gradient(rgba(80, 80, 80,0.95), rgba(60, 60, 60,0.95));
@@ -121,9 +178,10 @@ body {
     line-height: 18px;
     text-align: left;
 }
+
 .tooltip li, .coord {
     font-size: 12px;
-    padding-left:20px;
+    padding-left: 20px;
     color: #93B7C0;
     text-shadow: 0px 1px 0px rgba(200,200,200,.3), 0px -1px 0px rgba(30,30,30,.7);
 }

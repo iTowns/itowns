@@ -1,0 +1,41 @@
+{
+    "Examples": {
+        "orthographic": "Orthographic",
+        "pointcloud": "Pointcloud",
+        "pointcloud_globe": "Pointcloud on globe",
+        "planar": "Planar mode",
+        "globe": "Globe",
+        "oriented_images": "Oriented images",
+        "postprocessing": "Post processing",
+        "3dtiles": "3d tiles",
+        "3dtiles_hierarchy": "3D Tiles batch table hierarchy extension",
+        "multiglobe": "Multiple globes",
+        "layersColorVisible": "Layer visibility",
+        "split": "Splitted rendering",
+        "cubic_planar": "Layers transformations",
+        "wfs": "WFS data with reprojection",
+        "gpx": "Gpx",
+        "positionGlobe": "Position a mesh",
+        "globe_vector": "globe with data vector",
+        "planar_vector": "Plane mode with data vector",
+        "globe_wfs_extruded": "WFS extruded on globe",
+        "stereo": "Stereo effects",
+        "immersive_paris": "Immersive - Paris",
+        "collada": "3D model loader",
+        "globe_vector_tiles": "Globe with vector tiles data",
+        "planar_vector_tiles": "Plane mode with vector tiles data",
+        "globe_travel": "camera's animations with CameraUtils",
+        "syncCameras": "synchronisation cameras with CameraUtils",
+        "globe_wfs_color": "wfs source to color layer",
+        "globe_geojson_to3D": "geojson to geometry layer",
+        "multipolygon": "geojson with multipolygon as a geometry",
+        "orientation_utils": "Orientation utils",
+        "orientation_utils_planar": "Orientation utils planar",
+        "shapefile": "Displaying shapefile as a color layer"
+    },
+
+    "Plugins": {
+        "drag-n-drop": "Drop a geojson or a gpx file and display it as a ColorLayer",
+        "tiff": "Displaying pyramidal TIFFs"
+    }
+}
