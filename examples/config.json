@@ -1,41 +1,60 @@
 {
-    "Examples": {
-        "orthographic": "Orthographic",
-        "pointcloud": "Pointcloud",
-        "pointcloud_globe": "Pointcloud on globe",
-        "planar": "Planar mode",
-        "globe": "Globe",
-        "oriented_images": "Oriented images",
-        "postprocessing": "Post processing",
-        "3dtiles": "3d tiles",
-        "3dtiles_hierarchy": "3D Tiles batch table hierarchy extension",
-        "multiglobe": "Multiple globes",
-        "layersColorVisible": "Layer visibility",
-        "split": "Splitted rendering",
-        "cubic_planar": "Layers transformations",
-        "wfs": "WFS data with reprojection",
-        "gpx": "Gpx",
-        "positionGlobe": "Position a mesh",
-        "globe_vector": "globe with data vector",
-        "planar_vector": "Plane mode with data vector",
-        "globe_wfs_extruded": "WFS extruded on globe",
-        "stereo": "Stereo effects",
-        "immersive_paris": "Immersive - Paris",
-        "collada": "3D model loader",
-        "globe_vector_tiles": "Globe with vector tiles data",
-        "planar_vector_tiles": "Plane mode with vector tiles data",
-        "globe_travel": "camera's animations with CameraUtils",
-        "syncCameras": "synchronisation cameras with CameraUtils",
-        "globe_wfs_color": "wfs source to color layer",
-        "globe_geojson_to3D": "geojson to geometry layer",
-        "multipolygon": "geojson with multipolygon as a geometry",
-        "orientation_utils": "Orientation utils",
-        "orientation_utils_planar": "Orientation utils planar",
-        "shapefile": "Displaying shapefile as a color layer"
+    "View": {
+        "view_3d_map": "3D map",
+        "view_25d_map": "2.5D map",
+        "view_2d_map": "2D map",
+        "view_multiglobe": "Multiple globes",
+        "view_multi_25d": "Multiple 2.5D maps",
+        "view_immersive": "Immersive view"
+    },
+
+    "3d Tiles": {
+        "3dtiles_basic": "Basic",
+        "3dtiles_batch_table": "Batch table"
+    },
+
+    "Pointcloud": {
+        "pointcloud_25d_map": "2.5D map",
+        "pointcloud_3d_map": "3D map"
+    },
+
+    "Vector tiles": {
+        "vector_tile_raster_3d": "Raster on 3D map",
+        "vector_tile_raster_2d": "Raster on 2D map"
+    },
+
+    "Source / Stream": {
+        "source_stream_wfs_25d": "WFS to 2.5D objects",
+        "source_stream_wfs_3d": "WFS to 3D objects",
+        "source_stream_wfs_raster": "WFS to raster"
+    },
+
+    "Source / File": {
+        "source_file_gpx_3d": "GPX to 3D objects",
+        "source_file_geojson_3d": "GeoJSON to 3D objects",
+        "source_file_shapefile": "Shapefile to raster",
+        "source_file_geojson_raster": "GeoJSON to raster",
+        "source_file_gpx_raster": "GPX to raster",
+        "source_file_kml_raster": "KML to raster"
+    },
+
+    "Effects": {
+        "effects_postprocessing": "Post processing",
+        "effects_split": "Splitted rendering",
+        "effects_stereo": "Stereo effects"
+    },
+
+    "Miscellaneous": {
+        "misc_colorlayer_visibility": "Check ColorLayer visibility",
+        "misc_collada": "Collada",
+        "misc_clamp_ground": "Clamp 3d object to ground",
+        "misc_camera_animation": "Camera animation",
+        "misc_compare_25d_3d": "Compare 2.5D and 3D maps",
+        "misc_georeferenced_images": "Georeferenced image"
     },
 
     "Plugins": {
-        "drag-n-drop": "Drop a geojson or a gpx file and display it as a ColorLayer",
-        "tiff": "Displaying pyramidal TIFFs"
+        "plugins_drag_n_drop": "Drag and drop",
+        "plugins_pyramidal_tiff": "Pyramidal TIFFs"
     }
 }

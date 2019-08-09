@@ -1,9 +1,9 @@
 const assert = require('assert');
 
-describe('multiglobe', function _() {
+describe('view_multiglobe', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/multiglobe.html`, this.fullTitle());
+        result = await loadExample(`http://localhost:${itownsPort}/examples/view_multiglobe.html`, this.fullTitle());
     });
 
     it('should run', async () => {

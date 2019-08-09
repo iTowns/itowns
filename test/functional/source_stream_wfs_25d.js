@@ -1,9 +1,9 @@
 const assert = require('assert');
 
-describe('wfs', function _() {
+describe('source_stream_wfs_25d', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/wfs.html`, this.fullTitle());
+        result = await loadExample(`http://localhost:${itownsPort}/examples/source_stream_wfs_25d.html`, this.fullTitle());
     });
 
     it('should run', async () => {

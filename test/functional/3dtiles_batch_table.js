@@ -1,10 +1,10 @@
 const assert = require('assert');
 
-describe('3dtiles_hierarchy', function _() {
+describe('3dtiles_batch_table', function _() {
     let result;
     before(async () => {
         result = await loadExample(
-            `http://localhost:${itownsPort}/examples/3dtiles_hierarchy.html`,
+            `http://localhost:${itownsPort}/examples/3dtiles_batch_table.html`,
             this.fullTitle(),
         );
     });

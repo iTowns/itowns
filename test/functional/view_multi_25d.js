@@ -1,9 +1,9 @@
 const assert = require('assert');
 
-describe('cubic_planar', function _() {
+describe('view_multi_25d', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/cubic_planar.html`, this.fullTitle());
+        result = await loadExample(`http://localhost:${itownsPort}/examples/view_multi_25d.html`, this.fullTitle());
     });
 
     it('should run', async () => {

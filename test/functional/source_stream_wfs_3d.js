@@ -1,9 +1,9 @@
 const assert = require('assert');
 
-describe('globe_wfs_extruded', function _() {
+describe('source_stream_wfs_3d', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/globe_wfs_extruded.html`, this.fullTitle());
+        result = await loadExample(`http://localhost:${itownsPort}/examples/source_stream_wfs_3d.html`, this.fullTitle());
     });
 
     it('should run', async () => {

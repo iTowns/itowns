@@ -1,9 +1,9 @@
 const assert = require('assert');
 
-describe('3dtiles', function _() {
+describe('3dtiles_basic', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/3dtiles.html`, this.fullTitle());
+        result = await loadExample(`http://localhost:${itownsPort}/examples/3dtiles_basic.html`, this.fullTitle());
     });
 
     it('should run', async () => {

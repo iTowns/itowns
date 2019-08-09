@@ -1,9 +1,9 @@
 const assert = require('assert');
 
-describe('planar', function _() {
+describe('view_25d_map', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/planar.html`, this.fullTitle());
+        result = await loadExample(`http://localhost:${itownsPort}/examples/view_25d_map.html`, this.fullTitle());
     });
 
     it('should run', async () => {

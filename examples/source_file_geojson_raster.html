@@ -53,49 +53,6 @@
 
             var promises = [];
 
-            // Fetch, Parse and Convert by iTowns
-            var kmlSource = new itowns.FileSource({
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
-                projection: 'EPSG:4326',
-                fetcher: itowns.Fetcher.xml,
-                parser: itowns.KMLParser.parse,
-            });
-
-            var kmlLayer = new itowns.ColorLayer('Kml', {
-                name: 'kml',
-                transparent: true,
-                source: kmlSource,
-            });
-
-            promises.push(view.addLayer(kmlLayer));
-
-            // Parse and Convert by iTowns
-            promises.push(itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
-                .then(function _(gpx) {
-                    var gpxSource = new itowns.FileSource({
-                        fetchedData: gpx,
-                        projection: 'EPSG:4326',
-                        parser: itowns.GpxParser.parse,
-                    });
-
-                    var gpxLayer = new itowns.ColorLayer('Gpx', {
-                        name: 'Ultra 2009',
-                        transparent: true,
-                        source: gpxSource,
-                        style: {
-                            stroke: {
-                                color: 'red',
-                            },
-                            point: {
-                                color: 'white',
-                                line: 'red',
-                            }
-                        },
-                    });
-
-                    return view.addLayer(gpxLayer);
-                }));
-
             // Convert by iTowns
             promises.push(itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson')
                 .then(function _(geojson) {

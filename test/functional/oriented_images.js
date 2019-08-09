@@ -1,9 +1,9 @@
 const assert = require('assert');
 
-describe('oriented_images', function _() {
+describe('misc_georeferenced_images', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/oriented_images.html`, this.fullTitle());
+        result = await loadExample(`http://localhost:${itownsPort}/examples/misc_georeferenced_images.html`, this.fullTitle());
     });
 
     it('should run', async () => {

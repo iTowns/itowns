@@ -16,7 +16,7 @@
 
 <nav class="scroll-section">
     <a href="/">
-        <img src="../docs/static/images/itowns_logo.png" width="275px"/>
+        <img src="../docs/static/images/itowns_logo.png" width="245px"/>
     </a>
 </nav>
 
@@ -39,6 +39,8 @@
         if (document.location.hash) {
             var url = document.location.href.replace('#', '') + '.html';
             goTo(url);
+        } else {
+            goTo('view_3d_map.html');
         }
     };
 
@@ -55,7 +57,7 @@
     };
 
     function initNavigation(list) {
-        var nav = '';
+        var nav = '<h2>Examples</h2>';
 
         for (var section in list) {
             nav += '<div class="package">';
