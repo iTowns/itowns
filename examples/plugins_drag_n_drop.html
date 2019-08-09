@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <title>Itowns - GeoJSON drag and drop</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv">
+            <div id="description">Drag and drop a Geojson or Gpx file onto the
+                viewer, and see it loaded as a ColorLayer. Only files with the
+                projection <b>EPSG:4326</b> can be projected correctly in this
+                demo. More information about the plugin used <a
+                 href="http://www.itowns-project.org/itowns/docs/#api/Plugins/DragNDrop"
+                 target="_blank">in the documentation.</a></div>
+        </div>
+        <script src="js/plugins/DragNDrop.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script type="text/javascript">
+            // Define initial camera position
+            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712,
+                altitude: 250000 };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            setupLoadingScreen(viewerDiv, view);
+
+            // Add one imagery layer to the scene
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer);
+            });
+
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer);
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+            DragNDrop.setView(view);
+            DragNDrop.register('geojson', DragNDrop.JSON, itowns.GeoJsonParser.parse, DragNDrop.COLOR);
+            DragNDrop.register('gpx', DragNDrop.XML, itowns.GpxParser.parse, DragNDrop.COLOR);
+        </script>
+    </body>
+</html>
+

@@ -1,0 +1,78 @@
+<html>
+    <head>
+        <title>Itowns - Globe + color layers from vector data</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv" class="viewer"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
+        <script type="text/javascript">
+            // # Simple Globe viewer
+            /* global itowns, setupLoadingScreen, GuiTools, ToolTip */
+
+            // Define initial camera position
+            var positionOnGlobe = { longitude: 6.8, latitude: 45.9, altitude: 50000 };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var menuGlobe = new GuiTools('menuDiv', view);
+
+            setupLoadingScreen(viewerDiv, view);
+
+            // Add one imagery layer to the scene
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer).then(function _() {
+                    menuGlobe.addLayerGUI.bind(menuGlobe);
+                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+                });
+            });
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+            var promises = [];
+
+            // Fetch, Parse and Convert by iTowns
+            var kmlSource = new itowns.FileSource({
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
+                projection: 'EPSG:4326',
+                fetcher: itowns.Fetcher.xml,
+                parser: itowns.KMLParser.parse,
+            });
+
+            var kmlLayer = new itowns.ColorLayer('Kml', {
+                name: 'kml',
+                transparent: true,
+                source: kmlSource,
+            });
+
+            promises.push(view.addLayer(kmlLayer));
+
+            // Listen for globe full initialisation event
+            view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function _() {
+                Promise.all(promises).then(new FeatureToolTip(view));
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,197 @@
+<html>
+    <head>
+        <title>Itowns - Immersive Paris</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="description">
+           <p>Key bindings</p>
+           <ul>
+             <li>Z: camera move to next panoramic</li>
+             <li>S: camera move to previous panoramic</li>
+            </ul>
+        </div>
+        <div id="viewerDiv"></div>
+        <script src="../dist/itowns.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            // Define projection that we will use (taken from https://epsg.io/2154, Proj4js section)
+            itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+
+            // Define initial camera position
+            var positionOnGlobe = { longitude: 2.33481381638492, latitude: 48.850602961052147, altitude: 50 };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            var orientedImageLayer;
+
+            // Instanciate iTowns GlobeView
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, {
+                noControls: true,
+                handleCollision: false,
+                // Change the subdisvision threshold to get better performances and avoid requesting many unnecessary tiles
+                sseSubdivisionThreshold: 10,
+            });
+
+            // create Immersive control
+            view.controls = new itowns.StreetControls(view, {
+                animationDuration: 50,
+            });
+
+            // limit camera far, to increase performance
+            view.camera.camera3D.far = 10000;
+            view.camera.camera3D.near = 0.1;
+
+            // open camera fov
+            view.camera.camera3D.fov = 75;
+            view.camera.camera3D.updateProjectionMatrix();
+
+            // disable atmosphere
+            view.getLayerById('atmosphere').visible = false;
+
+            // Add one imagery layer to the scene
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
+
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+            function altitudeBuildings(properties) {
+                // I set altitude building 3 meters down, to be sure building is anchored in the ground
+                return properties.z_min - properties.hauteur - 3;
+            }
+
+            function extrudeBuildings(properties) {
+                // As I've set altitude building 3 meters down, I have to make 3 meters high.
+                return properties.hauteur + 3;
+            }
+
+            // Prepare oriented image source
+            var orientedImageSource = new itowns.OrientedImageSource({
+                    url: 'http://www.itowns-project.org/itowns-sample-data-small/images/140616/Paris-140616_0740-{cameraId}-00001_0000{panoId}.jpg'
+                });
+
+            // Url to a GEOJSON file describing feature points. It describre position and orientation of each panoramic.
+            var orientationsUrl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson';
+            // Url of a a JSON file with calibration for all cameras. see [CameraCalibrationParser]{@link module:CameraCalibrationParser.parse}
+            // in this example, we have the ladybug, it's a set of 6 cameras
+            var calibrationUrl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/cameraCalibration.json';
+
+            // Fetch the two files
+            var promises = [];
+            var networkOptions = {crossOrigin: ''};
+            promises.push(itowns.Fetcher.json(orientationsUrl, networkOptions) );
+            promises.push(itowns.Fetcher.json(calibrationUrl, networkOptions) ) ;
+            Promise.all(promises).then((res) => {
+
+                var orientation = res[0];
+                var calibration = res[1];
+
+                // Create oriented image layer
+                var olayer = new itowns.OrientedImageLayer('demo_orientedImage', {
+                    // Radius in meter of the sphere used as a background.
+                    backgroundDistance: 1200,
+                    source: orientedImageSource,
+                    orientation: orientation,
+                    calibration: calibration,
+                    projection: view.referenceCrs,
+                    useMask: false,
+                    onPanoChanged: (e) => {
+                        view.controls.setPreviousPosition(e.previousPanoPosition);
+                        view.controls.setCurrentPosition(e.currentPanoPosition);
+                        view.controls.setNextPosition(e.nextPanoPosition);
+                    }
+                });
+
+                // when oriented image layer is ready..
+                view.addLayer(olayer, view.tileLayer).then(function addWfsLayer(orientedImageLayer) {
+
+                    // prepare WFS source for the buildings
+                    var wfsBuildingSource = new itowns.WFSSource({
+                        url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                        version: '2.0.0',
+                        typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                        projection: 'EPSG:4326',
+                        ipr: 'IGN',
+                        format: 'application/json',
+                        zoom: { min: 15, max: 15 },
+                        extent: {
+                            west: 2.334,
+                            east: 2.335,
+                            south: 48.849,
+                            north: 48.851,
+                        },
+                    });
+
+                    // create geometry layer for the buildings
+                    var wfsBuildingLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+                        update: itowns.FeatureProcessing.update,
+                        convert: itowns.Feature2Mesh.convert({
+                            altitude: altitudeBuildings,
+                            extrude: extrudeBuildings }),
+
+                        // when a building is created, it get the projective texture mapping, from oriented image layer.
+                        onMeshCreated: (mesh) => mesh.traverse(object => object.material = orientedImageLayer.material),
+                        source: wfsBuildingSource,
+                        overrideAltitudeInToZero: true,
+                    });
+
+                    // add the created building layer, and debug UI
+                    view.addLayer(wfsBuildingLayer).then(function addDebugUI(buildingLayer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, buildingLayer);
+                        view.controls.buildingsLayer = buildingLayer.id;
+                        debug.GeometryDebug.addWireFrameCheckbox(gui, view, buildingLayer);
+                    });
+
+                    var altitude = new itowns.THREE.Vector3();
+
+                    view.controls.transformationPositionPickOnTheGround = (position) => {
+                        position.copy(orientedImageLayer.mostNearPano(position).position);
+                        altitude.copy(position).normalize().multiplyScalar(3);
+                        return position.sub(altitude);
+                    };
+                });
+
+            });
+
+            /* global itowns, document, GuiTools, view, promises */
+            var menuGlobe = new GuiTools('menuDiv');
+            menuGlobe.view = view;
+
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+
+            // Listen for globe full initialisation event
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+
+                // eslint-disable-next-line no-console
+                console.info('Globe initialized');
+
+                // set camera to current panoramic
+                view.controls.setCameraToCurrentPosition();
+                view.notifyChange(view.camera.camera3D);
+
+            });
+
+        </script>
+    </body>
+</html>

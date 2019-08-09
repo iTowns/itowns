@@ -2,7 +2,7 @@ const assert = require('assert');
 
 describe('Camera utils with globe example', function _() {
     before(async () => {
-        await loadExample(`http://localhost:${itownsPort}/examples/globe.html`, this.fullTitle());
+        await loadExample(`http://localhost:${itownsPort}/examples/view_3d_map.html`, this.fullTitle());
 
         await page.evaluate(() => {
             window.THREE = itowns.THREE;

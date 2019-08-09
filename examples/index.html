@@ -1,228 +1,90 @@
-<html>
-    <head>
-        <title>Itowns Examples</title>
-        <link rel="stylesheet" type="text/css" href="/css/style.css">
-        <style type="text/css">
-            iframe {
-                width: 300px;
-                height: 200px;
-                border: none;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Itowns Examples</title>
+
+    <link type="text/css" rel="stylesheet" href="css/example.css">
+</head>
+
+<body data-spy="scroll" data-target="nav" onload="onLoad()">
+
+<div id="main">
+    <iframe id="content" class="scroll-section" frameborder="0" height="100%"></iframe>
+    <div id="view-source" class="text"></div>
+</div>
+
+<nav class="scroll-section">
+    <a href="/">
+        <img src="../docs/static/images/itowns_logo.png" width="245px"/>
+    </a>
+</nav>
+
+<script type="text/javascript">
+    var baseURI = document.baseURI;
+
+    function bindIframe() {
+        var navLinks = document.getElementsByClassName('nav-link');
+        for (var i = 0; i < navLinks.length; i++) {
+            navLinks[i].addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = e.target.localName === 'b' ? e.target.parentNode : e.target;
+                var url = target.href.replace('#', '') + '.html';
+                var slug = target.hash;
+                goTo(url, slug);
+            });
+        }
+
+        // load page if setted
+        if (document.location.hash) {
+            var url = document.location.href.replace('#', '') + '.html';
+            goTo(url);
+        } else {
+            goTo('view_3d_map.html');
+        }
+    };
+
+    function goTo(url, slug) {
+        if (slug) window.location.hash = slug;
+        var iframe = document.getElementById('content');
+        iframe.src = url;
+        iframe.focus();
+
+        var viewSrc = '<a href="https://github.com/iTowns/itowns/blob/master/examples/';
+        viewSrc += window.location.hash.substr(1);
+        viewSrc += '.html" target="_blank">View source</a>';
+        document.getElementById('view-source').innerHTML = viewSrc;
+    };
+
+    function initNavigation(list) {
+        var nav = '<h2>Examples</h2>';
+
+        for (var section in list) {
+            nav += '<div class="package">';
+            nav += `<h3 class="nav-section">${section}</h3>`;
+            nav += '<ul>';
+
+            for (var example in list[section]) {
+                nav += '<li class="nav-item">';
+                nav += `<a class="nav-link" href="#${example}">`;
+                nav += `${list[section][example]}</a></li>`;
             }
-            .exampleContainer {
-                width: 350px;
-                display: inline-block;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Itowns Examples</h1>
-        <p>
-        (click on title to open fullscreen)
-        </p>
-        <div id="error-nowebgl"></div>
-        <div class="exampleContainer">
-            <a href='./orthographic.html' target='_blank'>
-                <h3>Orthographic</h3>
-                <img src='screenshots/orthographic.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./pointcloud.html' target='_blank'>
-                <h3>Pointcloud</h3>
-                <img src='screenshots/pointcloud.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./pointcloud_globe.html' target='_blank'>
-                <h3>Pointcloud on globe</h3>
-                <img src='screenshots/pointcloud_globe.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./planar.html' target='_blank'>
-                <h3>Planar mode</h3>
-                <img src='screenshots/planar.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./globe.html' target='_blank'>
-                <h3>Globe</h3>
-                <img src='screenshots/globe.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./oriented_images.html' target='_blank'>
-                <h3>Oriented images</h3>
-                <img src='screenshots/oriented_picture.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./postprocessing.html' target='_blank'>
-                <h3>Post processing</h3>
-                <img src='screenshots/postprocessing.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./3dtiles.html' target='_blank'>
-                <h3>3d tiles</h3>
-                <img src='screenshots/3dtiles.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./3dtiles_hierarchy.html' target='_blank'>
-                <h3>3D Tiles batch table hierarchy extension</h3>
-                <img src='screenshots/3dtiles_hierarchy.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./multiglobe.html' target='_blank'>
-                <h3>Multiple globes</h3>
-                <img src='screenshots/multiglobe.jpg' target='_blank'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./layersColorVisible.html' target='_blank'>
-                <h3>Layer visibility</h3>
-                <img src='screenshots/globe.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./split.html' target='_blank'>
-                <h3>Splitted rendering</h3>
-                <img src='screenshots/split.jpg' target='_blank'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./cubic_planar.html' target='_blank'>
-                <h3>Layers transformations</h3>
-                <img src='screenshots/cubic_planar.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./wfs.html' target='_blank'>
-                <h3>WFS data with reprojection</h3>
-                <img src='screenshots/wfs.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./gpx.html' target='_blank'>
-                <h3>Gpx</h3>
-                <img src='screenshots/gpx.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./positionGlobe.html' target='_blank'>
-                <h3>Position a mesh</h3>
-                <img src='screenshots/position.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./globe_vector.html' target='_blank'>
-                <h3>globe with data vector</h3>
-                <img src='screenshots/globe_vector.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./planar_vector.html' target='_blank'>
-                <h3>Plane mode with data vector</h3>
-                <img src='screenshots/planar_vector.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./globe_wfs_extruded.html' target='_blank'>
-                <h3>WFS extruded on globe</h3>
-                <img src='screenshots/globe_wfs_extruded.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./stereo.html' target='_blank'>
-                <h3>Stereo effects</h3>
-                <img src='screenshots/stereo.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./immersive_paris.html' target='_blank'>
-                <h3>Immersive - Paris</h3>
-                <img src='screenshots/immersif_paris.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./collada.html' target='_blank'>
-                <h3>3D model loader</h3>
-                <img src='screenshots/collada.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./globe_vector_tiles.html' target='_blank'>
-                <h3>Globe with vector tiles data</h3>
-                <img src='screenshots/globe_vector_tiles.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./planar_vector_tiles.html' target='_blank'>
-                <h3>Plane mode with vector tiles data</h3>
-                <img src='screenshots/planar_vector_tiles.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./globe_travel.html' target='_blank'>
-                <h3>camera's animations with CameraUtils</h3>
-                <img src='screenshots/globe_travel.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./syncCameras.html' target='_blank'>
-                <h3>synchronisation cameras with CameraUtils</h3>
-                <img src='screenshots/syncCameras.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./globe_wfs_color.html' target='_blank'>
-                <h3>wfs source to color layer</h3>
-                <img src='screenshots/globe_wfs_color.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./globe_geojson_to3D.html' target='_blank'>
-                <h3>geojson to geometry layer</h3>
-                <img src='screenshots/globe_geojson_to3D.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./multipolygon.html' target='_blank'>
-                <h3>geojson with multipolygon as a geometry</h3>
-                <img src='screenshots/multipolygon.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./orientation_utils.html' target='_blank'>
-                <h3>Orientation utils</h3>
-                <img src='screenshots/camera_parser.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./orientation_utils_planar.html' target='_blank'>
-                <h3>Orientation utils planar</h3>
-                <img src='screenshots/orientation_utils_planar.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./shapefile.html' target='_blank'>
-                <h3>Displaying shapefile as a color layer</h3>
-                <img src='screenshots/shapefile.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./drag-n-drop.html' target='_blank'>
-                <h3>Drop a geojson or a gpx file and display it as a ColorLayer</h3>
-                <img src='screenshots/drag-n-drop.jpg'>
-            </a>
-        </div>
-        <div class="exampleContainer">
-            <a href='./tiff.html' target='_blank'>
-                <h3>Displaying pyramidal TIFFs</h3>
-                <img src='screenshots/tiff.jpg'>
-            </a>
-        </div>
-    </body>
+
+            nav += '</ul></div>';
+        }
+
+        document.getElementsByTagName('nav')[0].insertAdjacentHTML('beforeend', nav);
+    }
+
+    function onLoad() {
+        // Get the configuration
+        fetch('./config.json').then(function _(response) {
+            return response.json();
+        }).then(function _(config) {
+            initNavigation(config);
+            bindIframe();
+        });
+    }
+</script>
+</body>
 </html>

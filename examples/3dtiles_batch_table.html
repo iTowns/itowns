@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Itowns - 3d-tiles hierarchy example</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="description">
+            <p><b>Feature Information:</b></p>
+            <div id="featureInfo"></div>
+        </div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/3dTilesHelper.js"></script>
+        <script type="text/javascript">
+            // Note: The following positions and camera parameters have been
+            // obtained manually using view.controls.getCameraCoordinate() ;
+            // view.controls.getCameraTargetPosition() ;
+            // view.controls.getCameraOrientation()
+            var positionOnGlobe = {
+                longitude: -75.61349109370566,
+                latitude: 40.04425929988183,
+                altitude: 45.52006505522877
+            };
+
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+
+            view.controls.lookAtCoordinate({range: 200, tilt: 10, heading:
+                    -145}, false);
+
+            setupLoadingScreen(viewerDiv, view);
+
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
+
+            // Add Open Street Map orthographic layer
+            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json')
+                .then(function _(config) {
+                    config.source = new itowns.TMSSource(config.source);
+                    var layer = new itowns.ColorLayer('Ortho', config);
+                    view.addLayer(layer)
+                        .then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                });
+
+            // Create a new 3D tiles layer with batch table hierarchy extension
+            var $3dTilesLayerBTHierarchy = new itowns.GeometryLayer(
+                '3d-tiles-bt-hierarchy', new itowns.THREE.Group());
+            $3dTilesLayerBTHierarchy.name = 'BTHierarchy';
+            $3dTilesLayerBTHierarchy.url =
+                'https://raw.githubusercontent.com/AnalyticalGraphicsInc/cesium/master/Apps/SampleData/Cesium3DTiles/Hierarchy/BatchTableHierarchy/tileset.json';
+            $3dTilesLayerBTHierarchy.protocol = '3d-tiles';
+            $3dTilesLayerBTHierarchy.overrideMaterials = true;
+
+            // Create and define 3D Tiles extensions needed in this example
+            itowns.$3dTilesExtensions.registerExtension(
+                "3DTILES_batch_table_hierarchy",
+                itowns.BatchTableHierarchyExtensionParser.parse);
+
+            // add an event for picking the 3D Tiles layer and displaying
+            // information about the picked feature in an html div
+            var pickingArgs = {};
+            pickingArgs.htmlDiv = document.getElementById('featureInfo');
+            pickingArgs.view = view;
+            pickingArgs.layer = $3dTilesLayerBTHierarchy;
+            itowns.View.prototype.addLayer.call(view,
+                $3dTilesLayerBTHierarchy).then(function _() {
+                window.addEventListener('mousemove', fillHTMLWithPickingInfo.bind(pickingArgs),
+                    false); });
+
+            // Add a debug UI
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view,
+                $3dTilesLayerBTHierarchy,
+                d);
+        </script>
+    </body>
+</html>
