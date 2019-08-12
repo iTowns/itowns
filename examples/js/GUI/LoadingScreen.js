@@ -12,7 +12,7 @@ function setupLoadingScreen(viewerDiv, view) {
     loadingScreenContainer = document.createElement('div');
     // eslint-disable-next-line no-multi-str
     loadingScreenContainer.innerHTML = '\
-        <div class="text">\
+        <div>\
         <span class="c1">i</span><span class="c2">T</span><span class="c3">o</span><span class="c4">w</span><span class="c5">n</span><span class="c6">s</span>\
         </div>';
     loadingScreenContainer.id = 'itowns-loader';

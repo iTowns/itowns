@@ -16,7 +16,7 @@
 
 <nav class="scroll-section">
     <a href="/">
-        <img src="../docs/static/images/itowns_logo.png" width="245px"/>
+        <img src="images/itowns_logo.png" width="245px"/>
     </a>
 </nav>
 
@@ -47,7 +47,7 @@
     function goTo(url, slug) {
         if (slug) window.location.hash = slug;
         var iframe = document.getElementById('content');
-        iframe.src = url;
+        iframe.src = url.replace('index.html', '');
         iframe.focus();
 
         var viewSrc = '<a href="https://github.com/iTowns/itowns/blob/master/examples/';
