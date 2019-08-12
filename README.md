@@ -26,12 +26,12 @@ its contribution [here](docs/README.md).
 Official examples can be [viewed
 here](http://www.itowns-project.org/itowns/examples/). Some examples available:
 
-* [Globe with WFS data](http://www.itowns-project.org/itowns/examples/globe_wfs_extruded.html)
-* [Plane mode with Vector Tiles](http://www.itowns-project.org/itowns/examples/planar_vector_tiles.html)
-* [3D effect using scene postprocessing](http://www.itowns-project.org/itowns/examples/stereo.html)
-* [Globe with split rendering](http://www.itowns-project.org/itowns/examples/split.html)
+* [Globe with WFS data](http://www.itowns-project.org/itowns/examples/#source_stream_wfs_3d)
+* [Plane mode with Vector Tiles](http://www.itowns-project.org/itowns/examples/#vector_tile_raster_2d)
+* [3D effect using scene postprocessing](http://www.itowns-project.org/itowns/examples/#effects-stereo)
+* [Globe with split rendering](http://www.itowns-project.org/itowns/examples/#effects_split)
 
-[![iTowns examples](http://www.itowns-project.org/images/montage.jpg)](http://www.itowns-project.org/itowns/examples/index.html)
+[![iTowns examples](http://www.itowns-project.org/images/montage.jpg)](http://www.itowns-project.org/itowns/examples/)
 
 ## How to use
 

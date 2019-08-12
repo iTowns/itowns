@@ -8,7 +8,7 @@ import textureConverter from 'Converter/textureConverter';
  * internally for optimisation.
  * @property {number} scale - Used to apply a scale on the elevation value. It
  * can be used for exageration of the elevation, like in [this
- * example](https://www.itowns-project.org/itowns/examples/tiff.html).
+ * example](https://www.itowns-project.org/itowns/examples/#plugins_pyramidal_tiff).
  */
 class ElevationLayer extends Layer {
     /**
