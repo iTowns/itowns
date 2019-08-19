@@ -42,7 +42,7 @@
         } else {
             goTo('view_3d_map.html');
         }
-    };
+    }
 
     function goTo(url, slug) {
         if (slug) window.location.hash = slug;
@@ -51,10 +51,10 @@
         iframe.focus();
 
         var viewSrc = '<a href="https://github.com/iTowns/itowns/blob/master/examples/';
-        viewSrc += window.location.hash.substr(1);
+        viewSrc += window.location.hash.substr(1) || 'view_3d_map';
         viewSrc += '.html" target="_blank">View source</a>';
         document.getElementById('view-source').innerHTML = viewSrc;
-    };
+    }
 
     function initNavigation(list) {
         var nav = '<h2>Examples</h2>';
