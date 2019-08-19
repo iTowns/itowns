@@ -1,12 +1,10 @@
-precision highp float;
-precision highp int;
-
+#include <itowns/precision_qualifier>
+#include <itowns/project_pars_vertex>
+#if defined(USE_TEXTURES_PROJECTIVE)
+#include <itowns/projective_texturing_pars_vertex>
+#endif
 #include <logdepthbuf_pars_vertex>
-#define EPSILON 1e-6
 
-attribute vec3 position;
-uniform mat4 projectionMatrix;
-uniform mat4 modelViewMatrix;
 uniform float size;
 
 uniform bool pickingMode;
@@ -81,7 +79,8 @@ void main() {
         vColor = vec4(mix(color, overlayColor.rgb, overlayColor.a), opacity);
     }
 
-    gl_Position = projectionMatrix * (modelViewMatrix * vec4( position, 1.0 ));
+    #include <begin_vertex>
+    #include <project_vertex>
 
     if (size > 0.) {
         gl_PointSize = size;
@@ -89,5 +88,8 @@ void main() {
         gl_PointSize = clamp(-size / gl_Position.w, 3.0, 10.0);
     }
 
+#if defined(USE_TEXTURES_PROJECTIVE)
+    #include <itowns/projective_texturing_vertex>
+#endif
     #include <logdepthbuf_vertex>
 }
