@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 
+const point = new THREE.Vector3();
 // Draw a cube with lines (12 lines).
 function cube(size) {
     var h = size.clone().multiplyScalar(0.5);
@@ -165,6 +166,7 @@ export default {
         }
 
         elt.notVisibleSince = undefined;
+        point.copy(context.camera.camera3D.position).sub(layer.object3d.position);
 
         // only load geometry if this elements has points
         if (elt.numPoints > 0) {
@@ -185,7 +187,7 @@ export default {
                     }
                 }
             } else if (!elt.promise) {
-                const distance = Math.max(0.001, bbox.distanceToPoint(context.camera.camera3D.position));
+                const distance = Math.max(0.001, bbox.distanceToPoint(point));
                 // Increase priority of nearest node
                 const priority = computeScreenSpaceError(context, layer, elt, distance) / distance;
                 elt.promise = context.scheduler.execute({
@@ -220,7 +222,7 @@ export default {
         }
 
         if (elt.children && elt.children.length) {
-            const distance = bbox.distanceToPoint(context.camera.camera3D.position);
+            const distance = bbox.distanceToPoint(point);
             elt.sse = computeScreenSpaceError(context, layer, elt, distance) / layer.sseThreshold;
             if (elt.sse >= 1) {
                 return elt.children;

@@ -2,6 +2,7 @@ import { Vector4, Uniform, NoBlending, NormalBlending, RawShaderMaterial } from 
 import PointsVS from 'Renderer/Shader/PointsVS.glsl';
 import PointsFS from 'Renderer/Shader/PointsFS.glsl';
 import Capabilities from 'Core/System/Capabilities';
+import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 
 export const MODE = {
     COLOR: 0,
@@ -12,9 +13,10 @@ export const MODE = {
 
 class PointsMaterial extends RawShaderMaterial {
     constructor(options = {}) {
+        const oiMaterial = options.orientedImageMaterial;
+        delete options.orientedImageMaterial;
         super(options);
         this.vertexShader = PointsVS;
-        this.fragmentShader = PointsFS;
 
         this.size = options.size || 0;
         this.scale = options.scale || 0.05 * 0.5 / Math.tan(1.0 / 2.0); // autosizing scale
@@ -34,6 +36,23 @@ class PointsMaterial extends RawShaderMaterial {
         this.uniforms.opacity = new Uniform(this.opacity);
         this.uniforms.overlayColor = new Uniform(this.overlayColor);
 
+        if (oiMaterial) {
+            this.uniforms.projectiveTextureAlphaBorder = oiMaterial.uniforms.projectiveTextureAlphaBorder;
+            this.uniforms.projectiveTextureDistortion = oiMaterial.uniforms.projectiveTextureDistortion;
+            this.uniforms.projectiveTextureMatrix = oiMaterial.uniforms.projectiveTextureMatrix;
+            this.uniforms.projectiveTexture = oiMaterial.uniforms.projectiveTexture;
+            this.uniforms.mask = oiMaterial.uniforms.mask;
+            this.uniforms.boostLight = oiMaterial.uniforms.boostLight;
+            this.defines.ORIENTED_IMAGES_COUNT = oiMaterial.defines.ORIENTED_IMAGES_COUNT;
+            this.defines.USE_DISTORTION = oiMaterial.defines.USE_DISTORTION;
+            this.defines.DEBUG_ALPHA_BORDER = oiMaterial.defines.DEBUG_ALPHA_BORDER;
+            this.defines.USE_TEXTURES_PROJECTIVE = true;
+            this.defines.USE_BASE_MATERIAL = true;
+            this.fragmentShader = ShaderUtils.unrollLoops(PointsFS, this.defines);
+        } else {
+            this.fragmentShader = PointsFS;
+        }
+
         if (Capabilities.isLogDepthBufferSupported()) {
             this.defines.USE_LOGDEPTHBUF = 1;
             this.defines.USE_LOGDEPTHBUF_EXT = 1;
@@ -42,7 +61,23 @@ class PointsMaterial extends RawShaderMaterial {
         if (__DEBUG__) {
             this.defines.DEBUG = 1;
         }
+
         this.updateUniforms();
+    }
+
+    copy(source) {
+        super.copy(source);
+        if (source.uniforms.projectiveTextureAlphaBorder) {
+            // Don't copy oriented image because, it's a link to oriented image material.
+            // It needs a reference to oriented image material.
+            this.uniforms.projectiveTextureAlphaBorder = source.uniforms.projectiveTextureAlphaBorder;
+            this.uniforms.projectiveTextureDistortion = source.uniforms.projectiveTextureDistortion;
+            this.uniforms.projectiveTextureMatrix = source.uniforms.projectiveTextureMatrix;
+            this.uniforms.projectiveTexture = source.uniforms.projectiveTexture;
+            this.uniforms.mask = source.uniforms.mask;
+            this.uniforms.boostLight = source.uniforms.boostLight;
+        }
+        return this;
     }
 
     enablePicking(picking) {

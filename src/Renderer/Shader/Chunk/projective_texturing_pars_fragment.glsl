@@ -36,7 +36,7 @@ void distort(inout vec2 p, vec4 polynom, vec2 pps)
 }
 
 void distort(inout vec2 p, vec4 polynom, vec3 l1l2, vec2 pps)
-{ 
+{
     if ((l1l2.x == 0.) && (l1l2.y == 0.)) {
         distort(p, polynom, pps);
     } else {
@@ -51,8 +51,18 @@ void distort(inout vec2 p, vec4 polynom, vec3 l1l2, vec2 pps)
 }
 #endif
 
-vec4 projectiveTextureColor(vec4 coords, Distortion distortion, sampler2D texture, sampler2D mask)
-{
+vec4 mixBaseColor(vec4 aColor, vec4 baseColor) {
+    #ifdef USE_BASE_MATERIAL
+        baseColor.rgb = aColor.a == 1.0 ? aColor.rgb : mix(baseColor, aColor, aColor.a).rgb;
+        baseColor.a = min(1.0, aColor.a + baseColor.a);
+    #else
+        baseColor += aColor * aColor.a;
+        baseColor.a += aColor.a;
+    #endif
+    return baseColor;
+}
+
+vec4 projectiveTextureColor(vec4 coords, Distortion distortion, sampler2D texture, sampler2D mask, vec4 baseColor) {
     vec3 p = coords.xyz / coords.w;
     if(p.z * p.z < 1.) {
 #if USE_DISTORTION
@@ -67,18 +77,18 @@ vec4 projectiveTextureColor(vec4 coords, Distortion distortion, sampler2D textur
 
 #if DEBUG_ALPHA_BORDER
         vec3 r = texture2D(texture, p.xy).rgb;
-        return vec4( r.r * d, r.g, r.b, 1.0);
+        return mixBaseColor(vec4( r.r * d, r.g, r.b, 1.0), baseColor);
 #else
         vec4 color = texture2D(texture, p.xy);
         color.a *= d;
         if (boostLight) {
-            return vec4(sqrt(color.rgb), color.a);
+            return mixBaseColor(vec4(sqrt(color.rgb), color.a), baseColor);
         } else {
-            return color;
+            return mixBaseColor(color, baseColor);
         }
 #endif
 
         }
     }
-    return vec4(0.);
+    return mixBaseColor(vec4(0.), baseColor);
 }
