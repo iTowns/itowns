@@ -189,8 +189,6 @@ var CSVnVRTParser = (function _() {
 
             var collection = readLayer(schema.OGRVRTDataSource, data.csv, options);
 
-            console.log(collection);
-
             return Promise.resolve(collection);
         },
     };
