@@ -55,6 +55,7 @@
 
     "Plugins": {
         "plugins_drag_n_drop": "Drag and drop",
-        "plugins_pyramidal_tiff": "Pyramidal TIFFs"
+        "plugins_pyramidal_tiff": "Pyramidal TIFFs",
+        "plugins_vrt": "VRT Parser"
     }
 }
