@@ -19,24 +19,26 @@ function rgba2rgb(orig) {
 
 /**
  * Style defines {@link Feature} style.
+ * @property {object} fill fill style.
+ * @property {string} fill.color fill color string css.
+ * @property {Image|Canvas} fill.pattern fill with pattern image.
+ * @property {number} fill.opacity fill opacity.
+ * @property {object} stroke stroke style.
+ * @property {string} stroke.color stroke color string css.
+ * @property {number} stroke.opacity stroke opacity.
+ * @property {number} stroke.width stroke line width.
+ * @property {object} point point style.
+ * @property {string} point.color point color string css.
+ * @property {string} point.line point line color string css.
+ * @property {number} point.width point line width.
+ * @property {number} point.opacity point opacity.
+ * @property {number} point.radius point line radius
  */
 class Style {
     /**
+     * Constructs the object.
+     * @param  {Object}  [params={}] An object that can contain all properties of a Style.
      * @constructor
-     * @param {object} [params]
-     * @param {object} [params.fill] fill style.
-     * @param {string} [params.fill.color] fill color string css.
-     * @param {number} [params.fill.opacity] fill opacity.
-     * @param {object} [params.stroke] stroke style.
-     * @param {string} [params.stroke.color] stroke color string css.
-     * @param {number} [params.stroke.opacity] stroke opacity.
-     * @param {number} [params.stroke.width] stroke line width.
-     * @param {object} [params.point] point style.
-     * @param {string} [params.point.color] point color string css.
-     * @param {string} [params.point.line] point line color string css.
-     * @param {number} [params.point.width] point line width.
-     * @param {number} [params.point.opacity] point opacity.
-     * @param {number} [params.point.radius] point line radius
      */
     constructor(params = {}) {
         this.isStyle = true;
@@ -47,6 +49,7 @@ class Style {
         this.fill = {
             color: params.fill.color,
             opacity: params.fill.opacity,
+            pattern: params.fill.pattern,
         };
         this.stroke = {
             color: params.stroke.color,

@@ -52,18 +52,19 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             var promises = [];
-
-            // Convert by iTowns
-            promises.push(itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson')
-                .then(function _(geojson) {
-                    return itowns.GeoJsonParser.parse(geojson, {
+            var optionsGeoJsonParser = {
                         buildExtent: true,
                         crsIn: 'EPSG:4326',
                         crsOut: view.tileLayer.extent.crs,
                         mergeFeatures: true,
                         withNormal: false,
                         withAltitude: false,
-                    });
+            };
+
+            // Convert by iTowns
+            promises.push(itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson')
+                .then(function _(geojson) {
+                    return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
                 }).then(function _(parsedData) {
                     var ariegeSource = new itowns.FileSource({
                         parsedData,
@@ -85,6 +86,34 @@
                     });
 
                     return view.addLayer(ariegeLayer);
+                }));
+
+            promises.push(itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson')
+                .then(function _(geojson) {
+                    return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
+                }).then(function _(parsedData) {
+                    var pyoSource = new itowns.FileSource({
+                        parsedData,
+                    });
+
+                    return itowns.Fetcher.texture('images/cross.png').then(texture => {
+                        var pyoLayer = new itowns.ColorLayer('pyrenees-orientales', {
+                            name: 'pyrenees-orientales',
+                            transparent: true,
+                            style: {
+                                fill: {
+                                  pattern: texture.image,
+                                  opacity: 0.8,
+                                },
+                                stroke: {
+                                    color:'IndianRed',
+                                },
+                            },
+                            source: pyoSource,
+                        });
+
+                        return view.addLayer(pyoLayer);
+                    });
                 }));
 
             // Listen for globe full initialisation event

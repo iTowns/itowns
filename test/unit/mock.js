@@ -60,6 +60,9 @@ class Renderer {
                     },
                 }),
             }),
+            createElementNS: () => ({
+                createSVGMatrix: () => { },
+            }),
         };
 
         global.window = {

@@ -4,6 +4,8 @@ import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
+const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+const matrix = svg.createSVGMatrix();
 
 function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style = {}, size, extent, invCtxScale, canBeFilled) {
     if (vertices.length === 0) {
@@ -40,14 +42,22 @@ function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, 
     }
 
     // fill polygon only
-    if (canBeFilled && style.fill.color) {
-        fillStyle(style, ctx);
+    if (canBeFilled && (style.fill.color || style.fill.pattern)) {
+        fillStyle(style, ctx, invCtxScale);
         ctx.fill();
     }
 }
 
-function fillStyle(style, ctx) {
-    if (ctx.fillStyle !== style.fill.color) {
+function fillStyle(style, ctx, invCtxScale) {
+    if (style.fill.pattern && ctx.fillStyle.src !== style.fill.pattern.src) {
+        ctx.fillStyle = ctx.createPattern(style.fill.pattern, 'repeat');
+        if (ctx.fillStyle.setTransform) {
+            ctx.fillStyle.setTransform(matrix.scale(invCtxScale));
+        } else {
+            console.warn('Raster pattern isn\'t completely supported on Ie and edge');
+        }
+        ctx.fillStyle.src = style.fill.pattern.src;
+    } else if (style.fill.color && ctx.fillStyle !== style.fill.color) {
         ctx.fillStyle = style.fill.color;
     }
     if (style.fill.opacity !== ctx.globalAlpha) {
