@@ -90,7 +90,8 @@
                 "BatchTable",
                 "$3DTilesExtensions",
                 "$3dTilesAbstractExtension",
-                "BatchTableHierarchyExtension"
+                "BatchTableHierarchyExtension",
+                "$3dtilesLayer"
             ],
 
             "Plugins": [

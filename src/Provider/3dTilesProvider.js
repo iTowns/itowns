@@ -7,7 +7,6 @@ import Extent from 'Core/Geographic/Extent';
 import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from 'Process/3dTilesProcessing';
 import utf8Decoder from 'Utils/Utf8Decoder';
 
-
 /** @classdesc
  * Class mapping 3D Tiles extensions names to their associated parsing methods.
  */
@@ -155,11 +154,35 @@ export function getObjectToUpdateForAttachedLayers(meta) {
     }
 }
 
+/** @classdesc
+ * Class for $3dtilesLayer.
+ *
+ * @example
+ * var layer = new itowns.GeometryLayer('3dtiles-example');
+ * layer.protocol = '3d-tiles'
+ * layer.url = 'http://example/tileset.json';
+ *
+ * @property {string} url - tileset.json URL
+ * @property {boolean|THREE.Material} [overrideMaterial=false] - override meshes material
+ * embedded in the binary files and use a default one instead.
+ * @property {THREE.Material} [material=THREE.PointsMaterial] - material cloned
+ * and assigned each time a points mesh is created.
+ * @property {number} [sseThreshold=16] - s(creen) s(pace) e(rror) threshold in pixels.
+ * Define how many pixels the geometricError from a tile must cover to kick the
+ * subdivision mechanism in.
+ * @property {number} [cleanupDelay=1000] - delay in milliseconds after which an
+ * undisplayed tiles will be removed from memory.
+ * @property {Function} onTileContentLoaded - callback called when new content is added.
+ */
+export class $3dtilesLayer {
+}
+
 function preprocessDataLayer(layer, view, scheduler) {
     layer.preUpdate = layer.preUpdate || pre3dTilesUpdate;
     layer.update = layer.update || process3dTilesNode();
     layer.sseThreshold = layer.sseThreshold || 16;
     layer.cleanupDelay = layer.cleanupDelay || 1000;
+    layer.onTileContentLoaded = layer.onTileContentLoaded || (() => {});
     // override the default method, since updated objects are metadata in this case
     layer.getObjectToUpdateForAttachedLayers = getObjectToUpdateForAttachedLayers;
 
@@ -331,6 +354,7 @@ function executeCommand(command) {
                 if (func) {
                     // TODO: request should be delayed if there is a viewerRequestVolume
                     return func(result, layer, url).then((content) => {
+                        layer.onTileContentLoaded(content);
                         tile.content = content.object3d;
                         if (content.batchTable) {
                             tile.batchTable = content.batchTable;
