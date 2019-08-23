@@ -9,14 +9,9 @@ export const SIZE_DIAGONAL_TEXTURE = Math.pow(2 * (SIZE_TEXTURE_TILE * SIZE_TEXT
 function materialCommandQueuePriorityFunction(material) {
     // We know that 'node' is visible because commands can only be
     // issued for visible nodes.
-
     // TODO: need priorization of displayed nodes
-    if (material.visible) {
-        // Then prefer displayed node over non-displayed one
-        return 100;
-    } else {
-        return 10;
-    }
+    // Then prefer displayed node over non-displayed one
+    return material.visible ? 100 : 10;
 }
 
 function refinementCommandCancellationFn(cmd) {
@@ -147,7 +142,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     }
 
     node.layerUpdateState[layer.id].newTry();
-    const parsedData = layer.source.isFileSource ? layer.source.parsedData : nodeLayer.textures.map(t => t.parsedData);
+    const parsedData = nodeLayer.textures.map(t => t.parsedData);
     const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, parsedData);
 
     return context.scheduler.execute(command).then(
