@@ -56,7 +56,7 @@ vec4 mixBaseColor(vec4 aColor, vec4 baseColor) {
         baseColor.rgb = aColor.a == 1.0 ? aColor.rgb : mix(baseColor, aColor, aColor.a).rgb;
         baseColor.a = min(1.0, aColor.a + baseColor.a);
     #else
-        baseColor += aColor * aColor.a;
+        baseColor.rgb += aColor.rgb * aColor.a;
         baseColor.a += aColor.a;
     #endif
     return baseColor;
