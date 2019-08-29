@@ -11,12 +11,12 @@ function quaternionToString(q) {
     return `quaternion : _x: ${q._x}, _y: ${q._y}, _z: ${q._z}, _w: ${q._w}`;
 }
 // Assert two quaternion objects are equals.
-function assertQuatEqual(q1, q2, message = 'Quaternion comparaison') {
+function assertQuatEqual(q1, q2, precision = 15, message = 'Quaternion comparaison') {
     try {
-        assertFloatEqual(q1._x, q2._x, '_x not equal');
-        assertFloatEqual(q1._y, q2._y, '_y not equal');
-        assertFloatEqual(q1._z, q2._z, '_z not equal');
-        assertFloatEqual(q1._w, q2._w, '_w not equal');
+        assertFloatEqual(q1._x, q2._x, '_x not equal', precision);
+        assertFloatEqual(q1._y, q2._y, '_y not equal', precision);
+        assertFloatEqual(q1._z, q2._z, '_z not equal', precision);
+        assertFloatEqual(q1._w, q2._w, '_w not equal', precision);
     } catch (e) {
         if (e instanceof assert.AssertionError) {
             assert.fail(`${message}\n${e}\nExpected : ${quaternionToString(q1)}\nActual : ${quaternionToString(q2)}`);
@@ -26,11 +26,11 @@ function assertQuatEqual(q1, q2, message = 'Quaternion comparaison') {
     }
 }
 
-function testQuaternionFromAttitude(input, expected) {
-    var actual = OrientationUtils.localQuaternionFromAttitude(input);
+function testQuaternionFromAttitude(input, expected, precision = 15) {
+    var actual = OrientationUtils.quaternionFromAttitude(input);
     var message = `Input should be parsed properly : ${input}`;
 
-    assertQuatEqual(expected, actual, message);
+    assertQuatEqual(expected, actual, precision, message);
 }
 
 function RollPitchHeadingToString() {
@@ -41,7 +41,7 @@ function OmegaPhiKappaToString() {
     return `omega: ${this.omega}, phi: ${this.phi}, kappa: ${this.kappa}`;
 }
 
-describe('OrientationUtils localQuaternionFromAttitude', function () {
+describe('OrientationUtils quaternionFromAttitude', function () {
     it('should parse empty input', function () {
         var input = {};
         var expected = new THREE.Quaternion();
@@ -108,7 +108,7 @@ describe('OrientationUtils localQuaternionFromAttitude', function () {
 });
 
 
-describe('OrientationUtils globeQuaternionFromAttitude', function () {
+describe('OrientationUtils quaternionFromAttitudeAndCoordinates', function () {
     it('should set ENU quaternion from greenwich on ecuador', function () {
         var coord = new Coordinates('EPSG:4326', 0, 0);
         var input = {
@@ -118,7 +118,7 @@ describe('OrientationUtils globeQuaternionFromAttitude', function () {
             toString() { return `roll: ${this.roll}, pitch: ${this.pitch}, heading: ${this.heading}`; },
         };
 
-        var actual = OrientationUtils.globeQuaternionFromAttitude(input, coord);
+        var actual = OrientationUtils.quaternionFromAttitudeAndCoordinates('EPSG:4326', 'EPSG:4978')(coord, input);
 
         var expected = new THREE.Quaternion();
         expected.setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2, 'YZX'));
@@ -130,10 +130,8 @@ describe('OrientationUtils globeQuaternionFromAttitude', function () {
 describe('OrientationUtils parser', function () {
     it('should parse most simple empty data', function () {
         var properties = {};
-        var coord; // coord is undefined because it's not used when applyRotationForGlobe is false.
-        var applyRotationForGlobeView = false;
-
-        var actual = OrientationUtils.quaternionFromAttitude(properties, coord, applyRotationForGlobeView);
+        var coord = new Coordinates('EPSG:4978', 0, 0, 0); // local frame is a geocent frame
+        var actual = OrientationUtils.quaternionFromAttitudeAndCoordinates('EPSG:4978', 'EPSG:4978')(coord, properties);
 
         var expected = new THREE.Quaternion();
         assertQuatEqual(expected, actual);
@@ -142,9 +140,7 @@ describe('OrientationUtils parser', function () {
     it('should parse simple data in globe crs', function () {
         var properties = {};
         var coord = new Coordinates('EPSG:4326', 0, 0);
-        var applyRotationForGlobeView = true;
-
-        var actual = OrientationUtils.quaternionFromAttitude(properties, coord, applyRotationForGlobeView);
+        var actual = OrientationUtils.quaternionFromAttitudeAndCoordinates('EPSG:4326', 'EPSG:4978')(coord, properties);
 
         var expected = new THREE.Quaternion();
         expected.setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2, 'YZX'));
@@ -152,3 +148,58 @@ describe('OrientationUtils parser', function () {
     });
 });
 
+
+
+const RAD2DEG = THREE.Math.RAD2DEG;
+const axis = new THREE.Vector3().set(0, 0, 1);
+
+// https://geodesie.ign.fr/contenu/fichiers/documentation/algorithmes/alg0060.pdf
+describe('OrientationUtils quaternionFromCoordinatesLCC', function () {
+    it('should compute the correct meridian convergence 1/2', function () {
+        var coord = new Coordinates('EPSG:4326', 0.0523598776 * RAD2DEG, 0.8796459430 * RAD2DEG);
+        var proj = { lat0: Math.asin(0.7604059656), long0: 0.0407923443 };
+        var actual = OrientationUtils.quaternionToEnuFromLCC(proj, coord);
+        var expected = new THREE.Quaternion();
+        expected.setFromAxisAngle(axis, -0.008796);
+        assertQuatEqual(expected, actual, 7);
+    });
+
+    it('should compute the correct meridian convergence 2/2', function () {
+        var coord = new Coordinates('EPSG:4326', 0.1570796327 * RAD2DEG, 0.7330382858 * RAD2DEG);
+        var proj = { lat0: Math.asin(0.6712679323), long0: 0.0407923443 };
+        var actual = OrientationUtils.quaternionToEnuFromLCC(proj, coord);
+        var expected = new THREE.Quaternion();
+        expected.setFromAxisAngle(axis, -0.07806);
+        assertQuatEqual(expected, actual, 7);
+    });
+});
+
+// https://geodesie.ign.fr/contenu/fichiers/documentation/algorithmes/alg0061.pdf
+describe('OrientationUtils quaternionFromCoordinatesMerc', function () {
+    it('should compute the correct meridian convergence 1/3', function () {
+        var coord = new Coordinates('EPSG:4326', -0.0785398163 * RAD2DEG, 0.8552113335 * RAD2DEG);
+        var proj = { e: 0.0818191910, long0: -0.0523598776 };
+        var actual = OrientationUtils.quaternionToEnuFromMerc(proj, coord);
+        var expected = new THREE.Quaternion();
+        expected.setFromAxisAngle(axis, 0.01976);
+        assertQuatEqual(expected, actual, 6);
+    });
+
+    it('should compute the correct meridian convergence 2/3', function () {
+        var coord = new Coordinates('EPSG:4326', 0.0523598776 * RAD2DEG, 0.837758041 * RAD2DEG);
+        var proj = { e: 0.0818191910, long0: 0.0523598776 };
+        var actual = OrientationUtils.quaternionToEnuFromMerc(proj, coord);
+        var expected = new THREE.Quaternion();
+        expected.setFromAxisAngle(axis, 0);
+        assertQuatEqual(expected, actual, 6);
+    });
+
+    it('should compute the correct meridian convergence 3/3', function () {
+        var coord = new Coordinates('EPSG:4326', 0.2094395102 * RAD2DEG, 0.872664626 * RAD2DEG);
+        var proj = { e: 0.0818191910, long0: 0.1570796327 };
+        var actual = OrientationUtils.quaternionToEnuFromMerc(proj, coord);
+        var expected = new THREE.Quaternion();
+        expected.setFromAxisAngle(axis, -0.040125);
+        assertQuatEqual(expected, actual, 6);
+    });
+});

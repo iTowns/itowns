@@ -127,8 +127,9 @@ class OrientedImageLayer extends GeometryLayer {
             crsOut: config.projection }).then((res) =>  {
             this.panos = res.features;
 
-            // we need to know if we are in globe view, for orientation.
-            const isGlobe = config.projection == 'EPSG:4978';
+            const crsIn = res.optionsFeature.crsIn;
+            const crsOut = config.projection;
+            const quaternionFromAttitudeAndCoordinates = OrientationUtils.quaternionFromAttitudeAndCoordinates(crsIn, crsOut);
 
             // add position and quaternion attributes from point feature
             let i = 0;
@@ -137,8 +138,9 @@ class OrientedImageLayer extends GeometryLayer {
                 coord.crs = pano.crs;
                 coord.setFromArray(pano.vertices);
                 pano.position = coord.toVector3();
+
                 // set quaternion
-                pano.quaternion = OrientationUtils.quaternionFromAttitude(pano.geometry[0].properties, coord, isGlobe);
+                pano.quaternion = quaternionFromAttitudeAndCoordinates(coord, pano.geometry[0].properties);
 
                 // TODO clean DataSourceProvider, so that we don't have this hack to do
                 pano.material = {};
