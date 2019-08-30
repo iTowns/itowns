@@ -129,7 +129,8 @@ class OrientedImageLayer extends GeometryLayer {
 
             const crsIn = res.optionsFeature.crsIn;
             const crsOut = config.projection;
-            const quaternionFromAttitudeAndCoordinates = OrientationUtils.quaternionFromAttitudeAndCoordinates(crsIn, crsOut);
+            const crs2crs = OrientationUtils.quaternionFromCRSToCRS(crsIn, crsOut);
+            const quat = new THREE.Quaternion();
 
             // add position and quaternion attributes from point feature
             let i = 0;
@@ -140,7 +141,8 @@ class OrientedImageLayer extends GeometryLayer {
                 pano.position = coord.toVector3();
 
                 // set quaternion
-                pano.quaternion = quaternionFromAttitudeAndCoordinates(coord, pano.geometry[0].properties);
+                crs2crs(coord, quat);
+                pano.quaternion = OrientationUtils.quaternionFromAttitude(pano.geometry[0].properties).premultiply(quat);
 
                 // TODO clean DataSourceProvider, so that we don't have this hack to do
                 pano.material = {};

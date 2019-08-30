@@ -34,7 +34,7 @@
         <div class="description"><?js= content.classdesc ?></div>
     <?js } ?>
 
-    <?js if (content.kind === 'class') { ?>
+    <?js if (content.kind === 'class' && !content.hideconstructor) { ?>
         <hr class="title-divider"/>
         <h2>Constructor</h2>
         <?js= self.partial('method.tmpl', content) ?>
@@ -114,5 +114,3 @@
 <script src="../../scripts/linenumber.js"> </script>
 </body>
 </html>
-
-
