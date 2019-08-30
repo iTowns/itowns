@@ -107,8 +107,7 @@ describe('OrientationUtils quaternionFromAttitude', function () {
     });
 });
 
-
-describe('OrientationUtils quaternionFromCRSToCRS', function () {
+describe('OrientationUtils.quaternionFromCRSToCRS', function () {
     it('should set ENU quaternion from greenwich on ecuador', function () {
         var coord = new Coordinates('EPSG:4326', 0, 0);
         var input = {
@@ -130,7 +129,7 @@ describe('OrientationUtils quaternionFromCRSToCRS', function () {
 });
 
 describe('OrientationUtils.quaternionFromCRSToCRS', function () {
-    it('should parse most simple empty data', function () {
+    it('should compute the identity quaternion from EPSG:4978 to itself', function () {
         var coord = new Coordinates('EPSG:4978', 0, 0, 0); // local frame is a geocent frame
         var actual = OrientationUtils.quaternionFromCRSToCRS('EPSG:4978', 'EPSG:4978')(coord);
 
@@ -138,7 +137,7 @@ describe('OrientationUtils.quaternionFromCRSToCRS', function () {
         assertQuatEqual(expected, actual);
     });
 
-    it('should parse simple data in globe crs', function () {
+    it('should compute the correct quaternion from EPSG:4326 to EPSG:4978 at lat=lon=0', function () {
         var coord = new Coordinates('EPSG:4326', 0, 0);
         var actual = OrientationUtils.quaternionFromCRSToCRS('EPSG:4326', 'EPSG:4978')(coord);
 
@@ -154,7 +153,7 @@ const RAD2DEG = THREE.Math.RAD2DEG;
 const axis = new THREE.Vector3().set(0, 0, 1);
 
 // https://geodesie.ign.fr/contenu/fichiers/documentation/algorithmes/alg0060.pdf
-describe('OrientationUtils quaternionFromCoordinatesLCC', function () {
+describe('OrientationUtils.quaternionToLCC', function () {
     it('should compute the correct meridian convergence 1/2', function () {
         var coord = new Coordinates('EPSG:4326', 0.0523598776 * RAD2DEG, 0.8796459430 * RAD2DEG);
         var proj = { lat0: Math.asin(0.7604059656), long0: 0.0407923443 };
@@ -175,11 +174,11 @@ describe('OrientationUtils quaternionFromCoordinatesLCC', function () {
 });
 
 // https://geodesie.ign.fr/contenu/fichiers/documentation/algorithmes/alg0061.pdf
-describe('OrientationUtils quaternionFromCoordinatesMerc', function () {
+describe('OrientationUtils.quaternionToTMerc', function () {
     it('should compute the correct meridian convergence 1/3', function () {
         var coord = new Coordinates('EPSG:4326', -0.0785398163 * RAD2DEG, 0.8552113335 * RAD2DEG);
         var proj = { e: 0.0818191910, long0: -0.0523598776 };
-        var actual = OrientationUtils.quaternionToMerc(proj)(coord);
+        var actual = OrientationUtils.quaternionToTMerc(proj)(coord);
         var expected = new THREE.Quaternion();
         expected.setFromAxisAngle(axis, 0.01976);
         assertQuatEqual(expected, actual, 6);
@@ -188,7 +187,7 @@ describe('OrientationUtils quaternionFromCoordinatesMerc', function () {
     it('should compute the correct meridian convergence 2/3', function () {
         var coord = new Coordinates('EPSG:4326', 0.0523598776 * RAD2DEG, 0.837758041 * RAD2DEG);
         var proj = { e: 0.0818191910, long0: 0.0523598776 };
-        var actual = OrientationUtils.quaternionToMerc(proj)(coord);
+        var actual = OrientationUtils.quaternionToTMerc(proj)(coord);
         var expected = new THREE.Quaternion();
         expected.setFromAxisAngle(axis, 0);
         assertQuatEqual(expected, actual, 6);
@@ -197,7 +196,7 @@ describe('OrientationUtils quaternionFromCoordinatesMerc', function () {
     it('should compute the correct meridian convergence 3/3', function () {
         var coord = new Coordinates('EPSG:4326', 0.2094395102 * RAD2DEG, 0.872664626 * RAD2DEG);
         var proj = { e: 0.0818191910, long0: 0.1570796327 };
-        var actual = OrientationUtils.quaternionToMerc(proj)(coord);
+        var actual = OrientationUtils.quaternionToTMerc(proj)(coord);
         var expected = new THREE.Quaternion();
         expected.setFromAxisAngle(axis, -0.040125);
         assertQuatEqual(expected, actual, 6);
