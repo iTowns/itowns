@@ -152,9 +152,10 @@ export default {
     },
 
     /**
-     * Set the quaternion to correct for the meridian convergence of the East
-     * North Up (ENU) frame to the Lambert Conformal Conic (LCC) frame. This is
-     * a generally small rotation around Z.
+     * Set the quaternion to correct for the
+     * <a href="https://geodesie.ign.fr/contenu/fichiers/documentation/algorithmes/alg0060.pdf">meridian convergence</a>
+     * of the East North Up (ENU) frame to the Lambert Conformal Conic (LCC) frame.
+     * This is a generally small rotation around Z.
      *
      * @param {Projection} proj the lcc projection (may be parsed using proj4)
      * @param {number} proj.lat0 - the latitude of origin
@@ -173,11 +174,12 @@ export default {
     },
 
     /**
-     * Set the quaternion to correct for the meridian convergence of the East
-     * North Up (ENU) frame to the Mercator frame. This is a generally small
-     * rotation around Z.
+     * Set the quaternion to correct for the
+     * <a href="https://geodesie.ign.fr/contenu/fichiers/documentation/algorithmes/alg0061.pdf">meridian convergence</a>
+     * of the East North Up (ENU) frame to the Transverse Mercator frame.
+     * This is a generally small rotation around Z.
      *
-     * @param {Projection} proj the merc projection (may be parsed using proj4)
+     * @param {Projection} proj the tmerc projection (may be parsed using proj4)
      * @param {number} proj.e - the excentricity of the ellipsoid (supersedes
      * {proj.a} and {proj.b})
      * @param {number} proj.a - the semimajor radius of the ellipsoid axis
@@ -186,7 +188,7 @@ export default {
      *
      * @return {OrientationFunction} the orientation function
     */
-    quaternionToMerc(proj) {
+    quaternionToTMerc(proj) {
         const a2 = proj.a * proj.a;
         const b2 = proj.b * proj.b;
         const e2 = proj.e * proj.e;
@@ -238,7 +240,7 @@ export default {
         switch (proj.projName) {
             case 'geocent': return this.quaternionToGeocent();
             case 'lcc': return this.quaternionToLCC(proj);
-            case 'merc': return this.quaternionToMerc(proj);
+            case 'tmerc': return this.quaternionToTMerc(proj);
             default: return this.quaternionToUnimplemented(proj);
         }
     },
