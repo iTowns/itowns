@@ -8,6 +8,10 @@ html, body {
     font-size: 13px;
 }
 
+body {
+    overflow: hidden;
+}
+
 .scroll-section {
     height: 100%;
     position: absolute;
