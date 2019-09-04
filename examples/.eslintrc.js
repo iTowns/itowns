@@ -24,6 +24,7 @@ module.exports = {
         'no-mixed-operators': ['error', { allowSamePrecedence: true }],
         'prefer-template': 'off',
         'prefer-rest-params': 'off',
+        'arrow-parens': ['error', 'as-needed', { 'requireForBlockBody': true }],
 
         // deactivated rules for `examples/`
         'no-console': 'off',
