@@ -1,7 +1,4 @@
-/** color
- * https://color.adobe.com/create/color-wheel/?base=1&rule=Triad&selected=1&name=My%20Color%20Theme&mode=rgb&rgbvalues=0.3777157360406091,0.5683627654250581,0.7,0.6395939086294415,0.8527918781726119,1,1,0.6440848843767284,0.6395939086294415,0.8,0.7982219664802797,0.43167512690355325,0.7,0.6986131779623956,0.4127157360406091&swatchOrder=0,1,2,3,4
- */
-
+/* GENERAL */
 html, body {
     margin: 0;
     padding: 0;
@@ -11,24 +8,22 @@ html, body {
     font-size: 13px;
 }
 
+body {
+    overflow: hidden;
+}
+
 .scroll-section {
     height: 100%;
     position: absolute;
 }
 
-#content {
-    width: 100%;
-}
-
-section {
-    max-width: 50rem;
-    margin: auto;
-    padding: 2rem;
-}
-
+/* NAVIGATION (LEFT) */
 nav {
+    width: 300px;
     padding: 0 2rem;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-family: Consolas, Monaco, 'Andale Mono', monospace;
 }
 
 nav img {
@@ -43,12 +38,13 @@ nav .package {
     padding-bottom: 20px;
 }
 
-#homepage {
-    height: 400px;
+nav ul {
+    padding: 0;
+    margin: 0;
 }
 
-section {
-    padding: 20px;
+nav li {
+    list-style: none;
 }
 
 a, a:visited, nav ul a, nav ul a:visited {
@@ -60,6 +56,56 @@ a, a:visited, nav ul a, nav ul a:visited {
 a:hover {
     text-decoration: underline;
     color: #6091b2aa;
+}
+
+nav h2 {
+    margin-top: 26px;
+}
+
+#goToHome {
+    cursor: pointer;
+}
+
+.filterBlock {
+    margin: 10px 0px;
+}
+
+#filterInput {
+    padding: 5px;
+}
+
+#clearFilterButton {
+    position: absolute;
+    right: 2rem;
+    top: 149px;
+}
+
+/* MAIN SECTION (RIGHT) */
+#main {
+    width: calc(100% - 300px);
+    height: 100%;
+    display: inline;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+#content {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: calc(100% - 300px);
+}
+
+/* IFRAME CONTENT */
+section {
+    max-width: 50rem;
+    margin: auto;
+    padding: 2rem;
+}
+
+#homepage {
+    height: 400px;
 }
 
 h1, h2, h3, h4, h5 {
@@ -79,10 +125,6 @@ header h1 {
 h2 {
     font-size: 20px;
     margin-bottom: 26px;
-}
-
-nav h2 {
-    margin-top: 26px;
 }
 
 header h2, article h2 {
@@ -113,24 +155,6 @@ h4 {
 
 ul.params {
     padding-left: 20px;
-}
-
-#goToHome {
-    cursor: pointer;
-}
-
-.filterBlock {
-    margin: 10px 0px;
-}
-
-#filterInput {
-    padding: 5px;
-}
-
-#clearFilterButton {
-    position: absolute;
-    right: 4rem;
-    top: 142px;
 }
 
 .hidden {
