@@ -90,6 +90,7 @@ class GlobeView extends View {
         THREE.Object3D.DefaultUp.set(0, 0, 1);
         // Setup View
         super('EPSG:4978', viewerDiv, options);
+        this.isGlobeView = true;
 
         // Configure camera
         let positionCamera;
