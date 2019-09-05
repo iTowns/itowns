@@ -11,6 +11,7 @@ class PlanarView extends View {
 
         // Setup View
         super(extent.crs, viewerDiv, options);
+        this.isPlanarView = true;
 
         // Configure camera
         const dim = extent.dimensions();
