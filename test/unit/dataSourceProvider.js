@@ -18,6 +18,7 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
+import { EMPTY_TEXTURE_ZOOM } from 'Renderer/MaterialLayer';
 
 const holes = require('../data/geojson/holesPoints.geojson.json');
 
@@ -115,7 +116,7 @@ describe('Provide in Sources', function () {
 
         const tile = new TileMesh(geom, material, planarlayer, extent);
         material.visible = true;
-        nodeLayer.level = 0;
+        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.parent = { };
 
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
@@ -142,7 +143,7 @@ describe('Provide in Sources', function () {
 
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
-        nodeLayerElevation.level = 0;
+        nodeLayerElevation.level = EMPTY_TEXTURE_ZOOM;
         tile.parent = {};
 
         updateLayeredMaterialNodeElevation(context, elevationlayer, tile, tile.parent);
@@ -168,7 +169,7 @@ describe('Provide in Sources', function () {
         });
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
-        nodeLayer.level = 0;
+        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.parent = { };
 
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
@@ -186,7 +187,7 @@ describe('Provide in Sources', function () {
     it('should get 4 TileMesh from TileProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
-        nodeLayer.level = 0;
+        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.parent = { };
 
         planarlayer.subdivideNode(context, tile);
@@ -202,7 +203,7 @@ describe('Provide in Sources', function () {
     it('should get 3 meshs with WFS source and DataSourceProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
-        nodeLayer.level = 0;
+        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.parent = { pendingSubdivision: false };
         featureLayer.mergeFeatures = false;
         tile.layerUpdateState = { test: new LayerUpdateState() };
@@ -243,7 +244,7 @@ describe('Provide in Sources', function () {
             zoom);
         material.visible = true;
         tile.parent = { pendingSubdivision: false };
-        nodeLayer.level = 0;
+        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.material.visible = true;
         featureLayer.source.uid = 22;
         const colorlayerWfs = new ColorLayer('color', { projection: 'EPSG:3857',
