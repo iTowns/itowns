@@ -1,20 +1,4 @@
-import GeoJsonParser from 'Parser/GeoJsonParser';
-import VectorTileParser from 'Parser/VectorTileParser';
-import Fetcher from 'Provider/Fetcher';
 import Cache from 'Core/Scheduler/Cache';
-
-export const supportedFetchers = new Map([
-    ['image/x-bil;bits=32', Fetcher.textureFloat],
-    ['geojson', Fetcher.json],
-    ['application/json', Fetcher.json],
-    ['application/x-protobuf;type=mapbox-vector', Fetcher.arrayBuffer],
-]);
-
-const supportedParsers = new Map([
-    ['geojson', GeoJsonParser.parse],
-    ['application/json', GeoJsonParser.parse],
-    ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
-]);
 
 function isValidData(data, extentDestination, validFn) {
     if (data && (!validFn || validFn(data, extentDestination))) {
@@ -29,7 +13,6 @@ const error = (err, source) => {
 
 function parseSourceData(data, extDest, layer) {
     const source = layer.source;
-    const parser = source.parser || supportedParsers.get(source.format) || (d => Promise.resolve(d));
 
     const options = {
         buildExtent: source.isFileSource || !layer.isGeometryLayer,
@@ -46,18 +29,17 @@ function parseSourceData(data, extDest, layer) {
         withAltitude: layer.isGeometryLayer,
     };
 
-    return parser(data, options).then(parsedFile => source.onParsedFile(parsedFile));
+    return source.parser(data, options).then(parsedFile => source.onParsedFile(parsedFile));
 }
 
 function fetchSourceData(extSrc, layer) {
     const source = layer.source;
-    const fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
     // If source, we must fetch and convert data
     // URL of the resource you want to fetch
     const url = source.urlFromExtent(extSrc);
 
     // Fetch data
-    return fetcher(url, source.networkOptions).then((f) => {
+    return source.fetcher(url, source.networkOptions).then((f) => {
         f.coords = extSrc;
         return f;
     });
