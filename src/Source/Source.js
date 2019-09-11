@@ -1,4 +1,26 @@
 import Extent from 'Core/Geographic/Extent';
+import GeoJsonParser from 'Parser/GeoJsonParser';
+import KMLParser from 'Parser/KMLParser';
+import GpxParser from 'Parser/GpxParser';
+import VectorTileParser from 'Parser/VectorTileParser';
+import Fetcher from 'Provider/Fetcher';
+
+export const supportedFetchers = new Map([
+    ['image/x-bil;bits=32', Fetcher.textureFloat],
+    ['geojson', Fetcher.json],
+    ['application/json', Fetcher.json],
+    ['application/kml', Fetcher.xml],
+    ['application/gpx', Fetcher.xml],
+    ['application/x-protobuf;type=mapbox-vector', Fetcher.arrayBuffer],
+]);
+
+const supportedParsers = new Map([
+    ['geojson', GeoJsonParser.parse],
+    ['application/json', GeoJsonParser.parse],
+    ['application/kml', KMLParser.parse],
+    ['application/gpx', GpxParser.parse],
+    ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
+]);
 
 let uid = 0;
 
@@ -82,8 +104,8 @@ class Source {
 
         this.url = source.url;
         this.format = source.format;
-        this.fetcher = source.fetcher;
-        this.parser = source.parser;
+        this.fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
+        this.parser = source.parser || supportedParsers.get(source.format) || (d => Promise.resolve(d));
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.projection = source.projection;
         this.attribution = source.attribution;
