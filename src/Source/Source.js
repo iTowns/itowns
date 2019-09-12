@@ -138,6 +138,10 @@ class Source {
         }
         return true;
     }
+
+    onParsedFile(parsedFile) {
+        return parsedFile;
+    }
 }
 
 export default Source;

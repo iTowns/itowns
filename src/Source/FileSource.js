@@ -136,6 +136,14 @@ class FileSource extends Source {
         return this.url;
     }
 
+    onParsedFile(parsedFile) {
+        this.parsedData = parsedFile;
+        if (parsedFile.extent && parsedFile.extent.crs != 'EPSG:4978') {
+            this.extent = parsedFile.extent;
+        }
+        return parsedFile;
+    }
+
     extentInsideLimit(extent) {
         // Fix me => may be not
         const localExtent = this.extent.crs == extent.crs ? extent : extent.as(this.extent.crs, ext);
