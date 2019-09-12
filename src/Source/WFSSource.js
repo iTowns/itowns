@@ -128,7 +128,7 @@ class WFSSource extends Source {
         }
     }
 
-    handlingError(err, url) {
+    handlingError(err) {
         if (err.response && err.response.status == 400) {
             return err.response.text().then((text) => {
                 const getCapUrl = `${this.url}SERVICE=WFS&REQUEST=GetCapabilities&VERSION=${this.version}`;
@@ -140,7 +140,7 @@ class WFSSource extends Source {
                 throw err;
             });
         } else {
-            console.error(`Source ${this.typeName}: error while trying to fetch/parse/convert WFS data. Url was ${url}.`, err);
+            console.error(`Source ${this.typeName}: error while trying to fetch/parse/convert WFS data.`, err);
             throw err;
         }
     }

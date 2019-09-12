@@ -85,7 +85,7 @@ describe('Sources', function () {
             // Mute console error
             console.error = () => {};
             const source = new WFSSource(paramsWFS);
-            assert.throws(() => source.handlingError(new Error('error'), 'http://test'));
+            assert.throws(() => source.handlingError(new Error('error')));
             console.error = bce;
         });
     });
