@@ -12,6 +12,7 @@
         <div id="viewerDiv" class="viewer"></div>
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
         <script src="js/plugins/FeatureToolTip.js"></script>
         <script type="text/javascript">
@@ -85,7 +86,7 @@
                         source: ariegeSource,
                     });
 
-                    return view.addLayer(ariegeLayer);
+                    return view.addLayer(ariegeLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
                 }));
 
             promises.push(itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson')
@@ -112,7 +113,7 @@
                             source: pyoSource,
                         });
 
-                        return view.addLayer(pyoLayer);
+                        return view.addLayer(pyoLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
                     });
                 }));
 
@@ -120,6 +121,8 @@
             view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function _() {
                 Promise.all(promises).then(new FeatureToolTip(view));
             });
+
+            debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
     </body>
 </html>

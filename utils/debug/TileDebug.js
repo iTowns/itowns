@@ -7,6 +7,7 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import TileObjectChart from './charts/TileObjectChart';
 import TileVisibilityChart from './charts/TileVisibilityChart';
 import GeometryDebug from './GeometryDebug';
+import Debug from './Debug';
 import OBBHelper from './OBBHelper';
 
 function applyToNodeFirstMaterial(view, root, layer, cb) {
@@ -50,7 +51,12 @@ function selectTileAt(view, mouseOrEvt, showInfo = true) {
     return selectedNode;
 }
 
-export default function createTileDebugUI(datDebugTool, view, layer, debugInstance) {
+export default function createTileDebugUI(datDebugTool, view, layer, debugInstance, force = false) {
+    if (!view.isDebugMode && !force) {
+        return;
+    }
+    debugInstance = debugInstance || new Debug(view, datDebugTool);
+    layer = layer || view.tileLayer;
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, layer);
 
     const objectChardId = `${layer.id}-nb-objects`;

@@ -106,10 +106,7 @@
                 }).catch(console.error);
             });
 
-            if (view.isDebugMode) {
-                const d = new debug.Debug(view, menuGlobe.gui);
-                debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
-            }
+            debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
     </body>
 </html>
