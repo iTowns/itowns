@@ -199,8 +199,8 @@
                 console.info('Globe initialized');
                 view.controls.setTilt(45);
             });
-            var d = new debug.Debug(view, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+
+            debug.createTileDebugUI(menuGlobe.gui, view);
 
             function picking(event) {
                 if(view.controls.isPaused()) {

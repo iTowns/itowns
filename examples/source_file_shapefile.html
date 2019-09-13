@@ -59,9 +59,10 @@
                         }
                     }});
 
-                view.addLayer(velibLayer);
+                view.addLayer(velibLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
 
                 new FeatureToolTip(view, { filterAll: false });
+                debug.createTileDebugUI(menuGlobe.gui, view);
             });
         </script>
     </body>

@@ -7,10 +7,14 @@
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
+        <div id="debug" width="400" height="300"></div>
+        <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
         <script>
             // # Planar view with one single layer of vector tile
@@ -26,6 +30,7 @@
 
             // Instanciate PlanarView
             var view = new itowns.PlanarView(viewerDiv, extent, { maxSubdivisionLevel: 20 });
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
 
             // eslint-disable-next-line no-new
             new itowns.PlanarControls(view, {
@@ -68,7 +73,7 @@
                     var z = extentDestination.zoom - 2;
                     return extentDestination.zoom, z - z % 4 == data.extent.zoom - 2;
                 }
-                
+
                 var mvtSource = new itowns.TMSSource({
                     // eslint-disable-next-line no-template-curly-in-string
                     url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
@@ -94,11 +99,12 @@
                     projection: 'EPSG:3857',
                 });
 
-                view.addLayer(mvtLayer);
+                view.addLayer(mvtLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
 
             // Request redraw
             view.notifyChange(true);
+            debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
     </body>
 </html>

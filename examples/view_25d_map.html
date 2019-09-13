@@ -108,8 +108,7 @@
                 menuGlobe = new GuiTools('menuDiv', view);
                 menuGlobe.addImageryLayersGUI(view.getLayers(function gui(l) { return l.isColorLayer; }));
                 menuGlobe.addElevationLayerGUI(wmsElevationLayer);
-                d = new debug.Debug(view, menuGlobe.gui);
-                debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+                debug.createTileDebugUI(menuGlobe.gui, view);
             }
         </script>
     </body>
