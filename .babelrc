@@ -1,5 +1,9 @@
 {
-    "presets": ["@babel/preset-env"],
+    "presets": [["@babel/preset-env",
+        {
+            "targets": "> 5%"
+        }
+    ]],
     "plugins": [
         ["module-resolver",  { "root": ["./src"] } ],
         ["babel-plugin-inline-import", {
