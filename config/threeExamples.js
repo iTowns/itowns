@@ -5,5 +5,6 @@ module.exports = {
         './loaders/deprecated/LegacyGLTFLoader.js',
         './loaders/DRACOLoader.js',
         './loaders/DDSLoader.js',
+        './WebGL.js',
     ],
 };
