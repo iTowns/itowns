@@ -1047,16 +1047,6 @@ GlobeControls.prototype.getCameraCoordinate = function _getCameraCoordinate() {
 };
 
 /**
- * @deprecated
- * Returns the {@linkcode Coordinates} of the central point on screen in lat,lon. See {@linkcode Coordinates} for conversion.
- * @return {Position} position
- */
-GlobeControls.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosition() {
-    console.warn('getCameraTargetGeoPosition has been deprecated, use getLookAtCoordinate');
-    return this.getLookAtCoordinate();
-};
-
-/**
  * Returns the {@linkcode Coordinates} of the central point on screen in lat,lon. See {@linkcode Coordinates} for conversion.
  * @return {Coordinates} coordinate
  */
@@ -1167,23 +1157,6 @@ GlobeControls.prototype.setScale = function setScale(scale, pitch, isAnimated) {
 };
 
 /**
- * @deprecated
- * Changes the center of the scene on screen to the specified in lat, lon. See {@linkcode Coordinates} for conversion.
- * @function
- * @memberOf GlobeControls
- * @param {Object} coordinates - The globe coordinates in EPSG_4326 projection to aim to
- * @param {number} coordinates.latitude
- * @param {number} coordinates.longitude
- * @param {number} coordinates.range
- * @param {boolean}  isAnimated - if the movement should be animated
- * @return {Promise} A promise that resolves when the next 'globe initilazed' event fires.
- */
-GlobeControls.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosition(coordinates, isAnimated) {
-    console.warn('setCameraTargetGeoPosition has been deprecated, use lookAtCoordinate');
-    return this.lookAtCoordinate(new Coordinates('EPSG:4326', coordinates.longitude, coordinates.latitude, 0), isAnimated);
-};
-
-/**
  * Changes the center of the scene on screen to the specified in lat, lon. See {@linkcode Coordinates} for conversion.
  * This function allows to change the central position, the zoom, the range, the scale and the camera orientation at the same time.
  * The zoom has to be between the [getMinZoom(), getMaxZoom()].
@@ -1236,43 +1209,6 @@ GlobeControls.prototype.lookAtCoordinate = function _lookAtCoordinate(params = {
             return result;
         });
     }
-};
-
-/**
- * @deprecated
- * Changes the center of the scene on screen to the specified in lat, lon. See {@linkcode Coordinates} for conversion.
- * This function allows to change the central position, the zoom, the range, the scale and the camera orientation at the same time.
- * The zoom has to be between the [getMinZoom(), getMaxZoom()].
- * Zoom parameter is ignored if range is set
- * @param {Position} position
- * @param {number}  position.longitude  Coordinate longitude WGS84 in degree
- * @param {number}  position.latitude  Coordinate latitude WGS84 in degree
- * @param {number}  [position.tilt]  Camera tilt in degree
- * @param {number}  [position.heading]  Camera heading in degree
- * @param {number}  [position.range]  The camera distance to the target center
- * @param {number}  [position.zoom]  zoom,  ignored if range is set
- * @param {number}  [position.scale]  scale,  ignored if the zoom or range is set. For a scale of 1/500 it is necessary to write 0,002.
- * @param {boolean}  isAnimated  Indicates if animated
- * @return {Promise}
- */
-
-GlobeControls.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(position, isAnimated) {
-    console.warn('setCameraTargetGeoPositionAdvanced has been deprecated, use lookAtCoordinate');
-    position.coord = new Coordinates('EPSG:4326', position.longitude, position.latitude, 0);
-    return this.lookAtCoordinate(position, isAnimated);
-};
-
-/**
- * @deprecated
- * Sets orientation angles of the current camera, in degrees.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @param {{tilt:number,heading:number,range:number}} position
- * @param {boolean}  isAnimated
- * @return {Promise} A promise that resolves when transformation is oppered
- */
-GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(position, isAnimated) {
-    console.warn('setOrbitalPosition has been deprecated, use lookAtCoordinate');
-    return this.lookAtCoordinate(position, isAnimated);
 };
 
 /**
