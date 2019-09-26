@@ -46,7 +46,7 @@ class PlanarLayer extends TiledGeometryLayer {
             globalExtentTMS.set(extent.crs, extent);
         }
         config.tileMatrixSets = tileMatrixSets;
-        super(id, object3d || new THREE.Group(), [extent], new PlanarTileBuilder(), config);
+        super(id, object3d || new THREE.Group(), [extent], new PlanarTileBuilder({ projection: extent.crs }), config);
         this.isPlanarLayer = true;
         this.extent = extent;
         this.minSubdivisionLevel = this.minSubdivisionLevel || 0;

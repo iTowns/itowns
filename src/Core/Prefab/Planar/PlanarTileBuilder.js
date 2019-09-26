@@ -8,13 +8,16 @@ const center = new THREE.Vector3();
 
 class PlanarTileBuilder {
     constructor(options = {}) {
+        if (options.projection) {
+            this.projection = options.projection;
+        } else {
+            throw new Error('options.projection is mandatory for PlanarTileBuilder');
+        }
         this.tmp = {
             coords: new Coordinates('EPSG:4326', 0, 0),
             position: new THREE.Vector3(),
             normal: new THREE.Vector3(0, 0, 1),
         };
-
-        this.projection = options.projection;
         this.uvCount = options.uvCount || 1;
     }
     // prepare params
