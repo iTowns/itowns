@@ -191,7 +191,7 @@ export default {
                                 }
                                 if (typeof (options.overrideMaterials) === 'object' &&
                                     options.overrideMaterials.isMaterial) {
-                                    mesh.material = options.overrideMaterials.clone();
+                                    mesh.material = options.overrideMaterials;
                                 } else {
                                     mesh.material = new THREE.MeshLambertMaterial({ color: 0xffffff });
                                 }
