@@ -16,6 +16,7 @@
         <script src="../dist/itowns.js"></script>
         <script src="../dist/debug.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
         <script>
             // # Planar view with one single layer of vector tile
 
@@ -48,6 +49,7 @@
             // Turn in the right angle
             itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, { tilt: 90 });
             setupLoadingScreen(viewerDiv, view);
+            FeatureToolTip.init(viewerDiv, view);
 
             var count = 0;
 
@@ -99,7 +101,24 @@
                     projection: 'EPSG:3857',
                 });
 
-                view.addLayer(mvtLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(mvtLayer).then(function _(layer) {
+                    FeatureToolTip.addLayer(layer, {
+                        filterGeometries: function _(geometries) {
+                            var uniqueClasses = [];
+                            return geometries.filter(function _(g) {
+                                if (g.geometry.properties.class && !uniqueClasses.includes(g.geometry.properties.class)) {
+                                    uniqueClasses.push(g.geometry.properties.class);
+                                    return true;
+                                }
+                            });
+                        },
+                        filterAllProperties: false,
+                        format: function _(n, p) {
+                            if (p !== undefined && n == 'class') return p;
+                        }
+                    });
+                    return layer;
+                }).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
 
             // Request redraw

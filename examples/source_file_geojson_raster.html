@@ -30,6 +30,7 @@
             var menuGlobe = new GuiTools('menuDiv', view);
 
             setupLoadingScreen(viewerDiv, view);
+            FeatureToolTip.init(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -52,7 +53,6 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
-            var promises = [];
             var optionsGeoJsonParser = {
                         buildExtent: true,
                         crsIn: 'EPSG:4326',
@@ -63,7 +63,7 @@
             };
 
             // Convert by iTowns
-            promises.push(itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson')
+            itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson')
                 .then(function _(geojson) {
                     return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
                 }).then(function _(parsedData) {
@@ -86,10 +86,10 @@
                         source: ariegeSource,
                     });
 
-                    return view.addLayer(ariegeLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-                }));
+                    return view.addLayer(ariegeLayer);
+                }).then(FeatureToolTip.addLayer);
 
-            promises.push(itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson')
+            itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson')
                 .then(function _(geojson) {
                     return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
                 }).then(function _(parsedData) {
@@ -113,14 +113,9 @@
                             source: pyoSource,
                         });
 
-                        return view.addLayer(pyoLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-                    });
-                }));
-
-            // Listen for globe full initialisation event
-            view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function _() {
-                Promise.all(promises).then(new FeatureToolTip(view));
-            });
+                        return view.addLayer(pyoLayer);
+                    }).then(FeatureToolTip.addLayer);
+                });
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
