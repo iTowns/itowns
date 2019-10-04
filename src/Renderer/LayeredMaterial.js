@@ -241,6 +241,10 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         return this.layers.find(l => l.id === id);
     }
 
+    getLayers(ids) {
+        return this.layers.filter(l => ids.includes(l.id));
+    }
+
     getElevationLayer() {
         return this.layers.find(l => l.id === this.elevationLayerIds[0]);
     }

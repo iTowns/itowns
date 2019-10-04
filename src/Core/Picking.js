@@ -114,9 +114,9 @@ const raycaster = new THREE.Raycaster();
  *   - layer: the geometry layer used for picking
  */
 export default {
-    pickTilesAt: (_view, viewCoords, radius, layer) => {
+    pickTilesAt(view, viewCoords, radius, layer) {
         const results = [];
-        const _ids = screenCoordsToNodeId(_view, layer, viewCoords, radius);
+        const _ids = screenCoordsToNodeId(view, layer, viewCoords, radius);
 
         const extractResult = (node) => {
             if (_ids.includes(node.id) && node.isTileMesh) {
@@ -132,7 +132,7 @@ export default {
         return results;
     },
 
-    pickPointsAt: (view, viewCoords, radius, layer) => {
+    pickPointsAt(view, viewCoords, radius, layer) {
         if (!layer.root) {
             return;
         }

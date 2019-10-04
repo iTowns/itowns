@@ -1,4 +1,5 @@
 import { FEATURE_TYPES } from 'Core/Feature';
+import Extent from 'Core/Geographic/Extent';
 
 function pointIsOverLine(point, linePoints, epsilon, offset, count, size) {
     const x0 = point.x;
@@ -69,7 +70,7 @@ function getClosestPoint(point, points, epsilon, offset, count, size) {
 
 function pointIsInsidePolygon(point, polygonPoints, offset, count, size) {
     // ray-casting algorithm based on
-    // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+    // http://wrf.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 
     const x = point.x;
     const y = point.y;
@@ -126,6 +127,7 @@ function isFeatureUnderCoordinate(coordinate, feature, epsilon, result) {
     }
 }
 
+const ex = new Extent('EPSG:4326', 0, 0, 0, 0);
 export default {
     /**
      * Filter from a list of features, features that are under a coordinate.
@@ -144,8 +146,25 @@ export default {
 
         // We can take this shortcut because either Feature and
         // FeatureCollection have an extent property
-        if (features.extent && !features.extent.isPointInside(coordinate, epsilon)) {
-            return result;
+        if (features.extent) {
+            // Special case, because of the way tiles in VectorTileParser are
+            // handled (see Feature2Texture for a similar solution)
+            if ((features.scale.x != 1 && features.scale.y != 1)
+                || (features.translation.x != 0 && features.translation.y != 0)) {
+                ex.crs = coordinate.crs;
+                features.extent.as(coordinate.crs, ex);
+                if (!ex.isPointInside(coordinate, epsilon)) {
+                    return result;
+                }
+
+                coordinate.x = (coordinate.x + features.translation.x) * features.scale.x;
+                coordinate.y = (coordinate.y + features.translation.y) * features.scale.y;
+                if (features.scale.x != 1 && features.scale.y != 1) {
+                    epsilon *= Math.sqrt(features.scale.x ** 2 + features.scale.y ** 2);
+                }
+            } else if (!features.extent.isPointInside(coordinate, epsilon)) {
+                return result;
+            }
         }
         if (Array.isArray(features.features)) {
             for (const feature of features.features) {

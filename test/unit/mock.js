@@ -9,8 +9,8 @@ class Renderer {
         this.domElement = {
             addEventListener,
             getBoundingClientRect: () => ({
-                x: 10,
-                y: 10,
+                x: 400,
+                y: 300,
             }),
             removeEventListener: () => {},
             emitEvent: (event, params) => {
@@ -20,6 +20,8 @@ class Renderer {
                 }
             },
             focus: () => {},
+            clientWidth: 400,
+            clientHeight: 300,
         };
         this.context = {
             getParameter: () => 16,
@@ -55,8 +57,8 @@ class Renderer {
                     arc: () => { },
                     setTransform: () => { },
                     canvas: {
-                        width: 256,
-                        height: 256,
+                        width: 400,
+                        height: 300,
                     },
                 }),
             }),
