@@ -34,7 +34,6 @@ void main() {
     uvs[1] = vec3(vUv.x, fract(vUv.z), floor(vUv.z));
 #endif
 
-
     vec4 color;
     #pragma unroll_loop
     for ( int i = 0; i < NUM_FS_TEXTURES; i ++ ) {

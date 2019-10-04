@@ -16,9 +16,7 @@ const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) =
 });
 
 const getTextureFloat = function getTextureFloat(buffer) {
-    const texture = new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, AlphaFormat, FloatType);
-    texture.needsUpdate = true;
-    return texture;
+    return new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, AlphaFormat, FloatType);
 };
 
 /**

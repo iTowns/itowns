@@ -1,5 +1,5 @@
+#include <common>
 #include <logdepthbuf_pars_vertex>
-#define EPSILON 1e-6
 
 uniform int atmoIN;
 varying float intensity;
