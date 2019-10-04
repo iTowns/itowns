@@ -30,6 +30,7 @@
             var menuGlobe = new GuiTools('menuDiv', view);
 
             setupLoadingScreen(viewerDiv, view);
+            FeatureToolTip.init(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -52,8 +53,6 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
-            var promises = [];
-
             // Fetch, Parse and Convert by iTowns
             var kmlSource = new itowns.FileSource({
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
@@ -68,14 +67,9 @@
                 source: kmlSource,
             });
 
-            promises.push(view.addLayer(kmlLayer));
-
-            // Listen for globe full initialisation event
-            view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function _() {
-                Promise.all(promises).then(new FeatureToolTip(view));
-            });
-
             debug.createTileDebugUI(menuGlobe.gui, view);
+
+            view.addLayer(kmlLayer).then(FeatureToolTip.addLayer);
         </script>
     </body>
 </html>

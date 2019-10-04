@@ -90,11 +90,11 @@
             var divScaleWidget = document.getElementById('divScaleWidget');
 
             function updateScaleWidget() {
-                var value = view.controls.pixelsToMeters(200);
+                var value = view.getPixelsToMeters(200);
                 value = Math.floor(value);
                 var digit = Math.pow(10, value.toString().length - 1);
                 value = Math.round(value / digit) * digit;
-                var pix = view.controls.metersToPixels(value);
+                var pix = view.getMetersToPixels(value);
                 var unit = 'm';
                 if (value >= 1000) {
                     value /= 1000;
@@ -113,6 +113,8 @@
             view.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
                 updateScaleWidget();
             });
+
+            window.addEventListener('resize', updateScaleWidget);
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>

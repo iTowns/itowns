@@ -14,12 +14,8 @@
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
         <script src="../dist/debug.js"></script>
-        <div id="description">
-            <p><b>Building Information</b></p>
-            <ul id="info">
-            </ul>
-        </div>
         <script type="text/javascript">
             /* global itowns,document,GuiTools, window, debug, setupLoadingScreen */
             // Define initial camera position
@@ -33,6 +29,7 @@
             var menuGlobe = new GuiTools('menuDiv', view);
             var d = new debug.Debug(view, menuGlobe.gui);
             setupLoadingScreen(viewerDiv, view);
+            FeatureToolTip.init(viewerDiv, view, { filterAll: false });
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -89,6 +86,17 @@
                 source: wfsBuildingSource,
             });
             view.addLayer(wfsBuildingLayer);
+            FeatureToolTip.addLayer(wfsBuildingLayer, {
+                filterGeometries: function _(features, layer) {
+                    var idList = [];
+                    return features.filter(function _(f) {
+                        if (!idList.includes(f.geometry.properties.id)) {
+                            idList.push(f.geometry.properties.id);
+                            return f;
+                        }
+                    });
+                }
+            });
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {

@@ -30,6 +30,7 @@
             var menuGlobe = new GuiTools('menuDiv', view);
 
             setupLoadingScreen(viewerDiv, view);
+            FeatureToolTip.init(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -52,10 +53,8 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
-            var promises = [];
-
             // Parse and Convert by iTowns
-            promises.push(itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
+            itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
                 .then(function _(gpx) {
                     var gpxSource = new itowns.FileSource({
                         fetchedData: gpx,
@@ -78,13 +77,8 @@
                         },
                     });
 
-                    return view.addLayer(gpxLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-                }));
-
-            // Listen for globe full initialisation event
-            view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function _() {
-                Promise.all(promises).then(new FeatureToolTip(view));
-            });
+                    return view.addLayer(gpxLayer);
+                }).then(FeatureToolTip.addLayer);
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
