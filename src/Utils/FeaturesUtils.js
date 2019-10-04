@@ -1,5 +1,6 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
+import Crs from 'Core/Geographic/Crs';
 
 function pointIsOverLine(point, linePoints, epsilon, offset, count, size) {
     const x0 = point.x;
@@ -157,6 +158,7 @@ export default {
                     return result;
                 }
 
+                coordinate.crs = Crs.formatToEPSG(features.extent.crs);
                 coordinate.x = (coordinate.x + features.translation.x) * features.scale.x;
                 coordinate.y = (coordinate.y + features.translation.y) * features.scale.y;
                 if (features.scale.x != 1 && features.scale.y != 1) {
