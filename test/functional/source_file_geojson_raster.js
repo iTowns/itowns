@@ -12,7 +12,7 @@ describe('source_file_geojson_raster', function _() {
 
     it('should pick feature from Layer with SourceFile', async () => {
         const pickFeatureCount = await page.evaluate(() => {
-            const precision = view.controls.pixelsToDegrees(5);
+            const precision = view.getPixelsToDegrees(5);
             const layers = view.getLayers(l => l.source && l.source.isFileSource);
             const geoCoord = new itowns.Coordinates('EPSG:4326', 1.41955, 42.88613, 0);
             for (let i = 0; i < layers.length; i++) {

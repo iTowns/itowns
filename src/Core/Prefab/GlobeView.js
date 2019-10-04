@@ -152,6 +152,18 @@ class GlobeView extends View {
 
         return super.addLayer(layer, this.tileLayer);
     }
+
+    getPixelsToDegrees(pixels = 1, screenCoord) {
+        return this.getMetersToDegrees(this.getPixelsToMeters(pixels, screenCoord));
+    }
+
+    getPixelsToDegreesFromDistance(pixels = 1, distance = 1) {
+        return this.getMetersToDegrees(this.getPixelsToMetersFromDistance(pixels, distance));
+    }
+
+    getMetersToDegrees(meters = 1) {
+        return THREE.Math.radToDeg(2 * Math.asin(meters / (2 * ellipsoidSizes.x)));
+    }
 }
 
 export default GlobeView;

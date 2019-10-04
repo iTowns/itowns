@@ -184,9 +184,6 @@ class Feature {
             throw new Error(`Unsupported Feature type: ${type}`);
         }
         this.geometry = [];
-        /**
-         * @property {number[]} vertices the vertices
-         */
         this.vertices = [];
         this.normals = options.withNormal ? [] : undefined;
         this.crs = crs;

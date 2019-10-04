@@ -5,6 +5,8 @@ import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
 import c3DEngine from 'Renderer/c3DEngine';
 import RenderMode from 'Renderer/RenderMode';
 import CRS from 'Core/Geographic/Crs';
+import Coordinates from 'Core/Geographic/Coordinates';
+import FeaturesUtils from 'Utils/FeaturesUtils';
 
 import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 
@@ -90,6 +92,8 @@ const matrix = new THREE.Matrix4();
 const screen = new THREE.Vector2();
 const ray = new THREE.Ray();
 const direction = new THREE.Vector3();
+const positionVector = new THREE.Vector3();
+const coordinates = new Coordinates('EPSG:4326');
 
 class View extends THREE.EventDispatcher {
     /**
@@ -114,6 +118,7 @@ class View extends THREE.EventDispatcher {
         super();
 
         this.referenceCrs = crs;
+        coordinates.crs = crs;
 
         let engine;
         // options.renderer can be 2 separate things:
@@ -512,15 +517,16 @@ class View extends THREE.EventDispatcher {
     /**
      * Extract view coordinates from a mouse-event / touch-event
      * @param {event} event - event can be a MouseEvent or a TouchEvent
-     * @param {number} touchIdx - finger index when using a TouchEvent (default: 0)
+     * @param {THREE.Vector2} target - the target to set the view coords in
+     * @param {number} [touchIdx=0] - finger index when using a TouchEvent
      * @return {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
      */
-    eventToViewCoords(event, touchIdx = 0) {
+    eventToViewCoords(event, target = _eventCoords, touchIdx = 0) {
         if (event.touches === undefined || !event.touches.length) {
-            return _eventCoords.set(event.offsetX, event.offsetY);
+            return target.set(event.offsetX, event.offsetY);
         } else {
             const br = this.mainLoop.gfxEngine.renderer.domElement.getBoundingClientRect();
-            return _eventCoords.set(
+            return target.set(
                 event.touches[touchIdx].clientX - br.x,
                 event.touches[touchIdx].clientY - br.y);
         }
@@ -533,7 +539,7 @@ class View extends THREE.EventDispatcher {
      * @return {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
      */
     eventToNormalizedCoords(event, touchIdx = 0) {
-        return this.viewToNormalizedCoords(this.eventToViewCoords(event, touchIdx));
+        return this.viewToNormalizedCoords(this.eventToViewCoords(event, _eventCoords, touchIdx));
     }
 
     /**
@@ -578,13 +584,12 @@ class View extends THREE.EventDispatcher {
      * view.pickObjectsAt({ x, y }, 1, 'wfsBuilding')
      * view.pickObjectsAt({ x, y }, 3, 'wfsBuilding', myLayer)
      */
-    pickObjectsAt(mouseOrEvt, radius, ...where) {
+    pickObjectsAt(mouseOrEvt, radius = 0, ...where) {
         const results = [];
         const sources = where.length == 0 ?
             this.getLayers(l => l.isGeometryLayer) :
             [...where];
         const mouse = (mouseOrEvt instanceof Event) ? this.eventToViewCoords(mouseOrEvt) : mouseOrEvt;
-        radius = radius || 0;
 
         for (const source of sources) {
             if (source.isLayer ||
@@ -634,6 +639,149 @@ class View extends THREE.EventDispatcher {
         }
 
         return results;
+    }
+
+    /**
+     * Return the current zoom scale at the central point of the view. This
+     * function compute the scale of a map.
+     *
+     * @param {number} pitch - Screen pitch, in millimeters ; 0.28 by default
+     *
+     * @return {number} The zoom scale.
+     */
+    getScale(pitch = 0.28) {
+        return this.getScaleFromDistance(pitch, this.getDistanceFromCamera());
+    }
+
+    getScaleFromDistance(pitch = 0.28, distance = 1) {
+        pitch /= 1000;
+        const fov = THREE.Math.degToRad(this.camera.camera3D.fov);
+        const unit = this.camera.height / (2 * distance * Math.tan(fov * 0.5));
+        return pitch * unit;
+    }
+
+    /**
+     * Given a screen coordinates, get the distance between the projected
+     * coordinates and the camera associated to this view.
+     *
+     * @param {THREE.Vector2} [screenCoord] - The screen coordinate to get the
+     * distance at. By default this is the middle of the screen.
+     *
+     * @return {number} The distance in meters.
+     */
+    getDistanceFromCamera(screenCoord) {
+        this.getPickingPositionFromDepth(screenCoord, positionVector);
+        return this.camera.camera3D.position.distanceTo(positionVector);
+    }
+
+    /**
+     * Get, for a specific screen coordinate, the projected distance on the
+     * surface of the main layer of the view.
+     *
+     * @param {number} [pixels=1] - The size, in pixels, to get in meters.
+     * @param {THREE.Vector2} [screenCoord] - The screen coordinate to get the
+     * projected distance at. By default, this is the middle of the screen.
+     *
+     * @return {number} The projected distance in meters.
+     */
+    getPixelsToMeters(pixels = 1, screenCoord) {
+        return this.getPixelsToMetersFromDistance(pixels, this.getDistanceFromCamera(screenCoord));
+    }
+
+    getPixelsToMetersFromDistance(pixels = 1, distance = 1) {
+        return pixels * distance / this.camera._preSSE;
+    }
+
+    /**
+     * Get, for a specific screen coordinate, this size in pixels of a projected
+     * distance on the surface of the main layer of the view.
+     *
+     * @param {number} [meters=1] - The size, in meters, to get in pixels.
+     * @param {THREE.Vector2} [screenCoord] - The screen coordinate to get the
+     * projected distance at. By default, this is the middle of the screen.
+     *
+     * @return {number} The projected distance in meters.
+     */
+    getMetersToPixels(meters = 1, screenCoord) {
+        return this.getMetersToPixelsFromDistance(meters, this.getDistanceFromCamera(screenCoord));
+    }
+
+    getMetersToPixelsFromDistance(meters = 1, distance = 1) {
+        return this.camera._preSSE * meters / distance;
+    }
+
+    /**
+     * Returns features under the mouse, for a set of specified layers.
+     *
+     * @param {MouseEvent|Object} mouseOrEvt - A MouseEvent, or a screen
+     * coordinates.
+     * @param {number} [radius=3] - The precision of the picking, in pixels.
+     * @param {Layer[]} [where] - The layers to look into. If not specified, all
+     * `GeometryLayer` and `ColorLayer` layers of this view will be looked in.
+     *
+     * @return {Object} - An object, with a property per layer. For example,
+     * looking for features on layers `wfsBuilding` and `wfsRoads` will give an
+     * object like `{ wfsBuilding: [...], wfsRoads: [] }`. Each property is made
+     * of an array, that can be empty or filled with found features.
+     *
+     * @example
+     * view.pickFeaturesAt({ x, y });
+     * view.pickFeaturesAt({ x, y }, 1, ['wfsBuilding']);
+     * view.pickFeaturesAt({ x, y }, 3, ['wfsBuilding', myLayer]);
+     */
+    pickFeaturesAt(mouseOrEvt, radius = 3, where = []) {
+        const result = {};
+        let layers = where.length == 0 ? this.getLayers(l => (l.isGeometryLayer || l.isColorLayer)) : where;
+        layers = layers.map((l) => {
+            const id = l.isLayer ? l.id : l;
+            result[id] = [];
+            return id;
+        });
+
+        // Get the mouse coordinates to the correct system
+        const mouse = (mouseOrEvt instanceof Event) ? this.eventToViewCoords(mouseOrEvt, _eventCoords) : mouseOrEvt;
+
+        this.getPickingPositionFromDepth(mouse, positionVector);
+        const distance = this.camera.camera3D.position.distanceTo(positionVector);
+        coordinates.setFromVector3(positionVector);
+
+        // Get the correct precision; the position variable will be set in this
+        // function.
+        let precision;
+        const precisions = {
+            M: this.getPixelsToMetersFromDistance(radius, distance),
+            D: 0.001 * radius,
+        };
+
+        if (this.isPlanarView) {
+            precisions.D = precisions.M;
+        } else if (this.getPixelsToDegrees) {
+            precisions.D = this.getMetersToDegrees(precisions.M);
+        }
+
+        // Get the tile corresponding to where the cursor is
+        const tiles = Picking.pickTilesAt(this, mouse, radius, this.tileLayer);
+
+        for (const tile of tiles) {
+            if (!tile.object.material) {
+                continue;
+            }
+
+            for (const materialLayer of tile.object.material.getLayers(layers)) {
+                for (const texture of materialLayer.textures) {
+                    if (!texture.parsedData) {
+                        continue;
+                    }
+
+                    precision = CRS.isMetricUnit(texture.parsedData.crs) ? precisions.M : precisions.D;
+
+                    result[materialLayer.id] = result[materialLayer.id].concat(
+                        FeaturesUtils.filterFeaturesUnderCoordinate(coordinates, texture.parsedData, precision));
+                }
+            }
+        }
+
+        return result;
     }
 
     readDepthBuffer(x, y, width, height) {

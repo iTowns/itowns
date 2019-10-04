@@ -1095,16 +1095,12 @@ GlobeControls.prototype.setZoom = function setZoom(zoom, isAnimated) {
  * This function compute the scale of a map
  * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
  * @return     {number}  The zoom scale.
+ *
+ * @deprecated Use View#getScale instead.
  */
 GlobeControls.prototype.getScale = function getScale(pitch) {
-    // TODO: Why error div size height in Chrome?
-    // Screen pitch, in millimeters
-    pitch = (pitch || 0.28) / 1000;
-    const fov = THREE.Math.degToRad(this.camera.fov);
-    // projection one unit on screen
-    const gfx = this._view.mainLoop.gfxEngine;
-    const unitProjection = gfx.height / (2 * this.getRange() * Math.tan(fov * 0.5));
-    return pitch * unitProjection;
+    console.warn('Deprecated, use View#getScale instead.');
+    return this._view.getScale(pitch);
 };
 
 /**
@@ -1112,8 +1108,11 @@ GlobeControls.prototype.getScale = function getScale(pitch) {
  * @param      {number} pixels count pixels to project
  * @param      {number} pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
  * @return     {number} projection in meters on globe
+ *
+ * @deprecated Use `View#getPixelsToMeters` instead.
  */
 GlobeControls.prototype.pixelsToMeters = function pixelsToMeters(pixels, pixelPitch = 0.28) {
+    console.warn('Deprecated use View#getPixelsToMeters instead.');
     const scaled = this.getScale(pixelPitch);
     const size = pixels * pixelPitch;
     return size / scaled / 1000;
@@ -1124,9 +1123,13 @@ GlobeControls.prototype.pixelsToMeters = function pixelsToMeters(pixels, pixelPi
  * @param      {number} pixels count pixels to project
  * @param      {number} pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
  * @return     {number} projection in degree on globe
+ *
+ * @deprecated Use `View#getPixelsToMeters` and `GlobeControls#metersToDegrees`
+ * instead.
  */
 
 GlobeControls.prototype.pixelsToDegrees = function pixelsToDegrees(pixels, pixelPitch = 0.28) {
+    console.warn('Deprecated, use View#getPixelsToMeters and GlobeControls#getMetersToDegrees instead.');
     const chord = this.pixelsToMeters(pixels, pixelPitch);
     return THREE.Math.radToDeg(2 * Math.asin(chord / (2 * ellipsoidSizes.x)));
 };
@@ -1136,8 +1139,11 @@ GlobeControls.prototype.pixelsToDegrees = function pixelsToDegrees(pixels, pixel
  * @param      {number}  value Length in meter on globe
  * @param      {number}  pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
  * @return     {number}  projection in pixels on screen
+ *
+ * @deprecated Use `View#getMetersToPixels` instead.
  */
 GlobeControls.prototype.metersToPixels = function metersToPixels(value, pixelPitch = 0.28) {
+    console.warn('Deprecated, use View#getMetersToPixels instead.');
     const scaled = this.getScale(pixelPitch);
     pixelPitch /= 1000;
     return value * scaled / pixelPitch;
