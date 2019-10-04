@@ -103,7 +103,6 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         this.defines.NUM_VS_TEXTURES = nbSamplers[0];
         this.defines.NUM_FS_TEXTURES = nbSamplers[1];
         this.defines.USE_FOG = 1;
-        this.defines.EPSILON = 1e-6;
         this.defines.NUM_CRS = crsCount;
 
         setDefineMapping(this, 'ELEVATION', ELEVATION_MODES);
