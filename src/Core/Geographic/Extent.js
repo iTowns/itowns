@@ -76,6 +76,7 @@ class Extent {
      * @param {number} [v3] north value
      */
     constructor(crs, v0, v1, v2, v3) {
+        this.isExtent = true;
         this.crs = crs;
         // Scale/zoom
         this.zoom = 0;
@@ -386,9 +387,10 @@ class Extent {
      * Set west, east, south and north values.
      * Or if tiled extent, set zoom, row and column values
      *
-     * @param {number|Array.<number>|Coordinates|Object} v0 west value, zoom
-     * value, Array of values [west, east, south and north], Coordinates of
-     * west-south corner or object {west, east, south and north}
+     * @param {number|Array.<number>|Coordinates|Object|Extent} v0 west value,
+     * zoom value, Array of values [west, east, south and north], Extent of same
+     * type (tiled or not), Coordinates of west-south corner or object {west,
+     * east, south and north}
      * @param {number|Coordinates} [v1] east value, row value or Coordinates of
      * east-north corner
      * @param {number} [v2] south value or column value
@@ -397,6 +399,19 @@ class Extent {
      * @return {Extent}
      */
     set(v0, v1, v2, v3) {
+        if (v0.isExtent) {
+            if (v0.isTiledCrs()) {
+                v1 = v0.row;
+                v2 = v0.col;
+                v0 = v0.zoom;
+            } else {
+                v1 = v0.east;
+                v2 = v0.south;
+                v3 = v0.north;
+                v0 = v0.west;
+            }
+        }
+
         if (this.isTiledCrs()) {
             if (v0 !== undefined) {
                 if (this.zoom < 0) {
