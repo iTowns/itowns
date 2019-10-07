@@ -109,7 +109,7 @@ class Source {
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.projection = source.projection;
         this.attribution = source.attribution;
-        if (source.extent && !(source.extent instanceof Extent)) {
+        if (source.extent && !(source.extent.isExtent)) {
             this.extent = new Extent(this.projection, source.extent);
         } else {
             this.extent = source.extent;
