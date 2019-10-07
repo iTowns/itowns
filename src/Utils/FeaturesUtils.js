@@ -1,4 +1,5 @@
 import { FEATURE_TYPES } from 'Core/Feature';
+import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import Crs from 'Core/Geographic/Crs';
 
@@ -129,6 +130,7 @@ function isFeatureUnderCoordinate(coordinate, feature, epsilon, result) {
 }
 
 const ex = new Extent('EPSG:4326', 0, 0, 0, 0);
+const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 export default {
     /**
      * Filter from a list of features, features that are under a coordinate.
@@ -145,39 +147,37 @@ export default {
     filterFeaturesUnderCoordinate(coordinate, features, epsilon = 0.1) {
         const result = [];
 
+        coord.crs = coordinate.crs;
+        coord.copy(coordinate);
+
         // We can take this shortcut because either Feature and
         // FeatureCollection have an extent property
         if (features.extent) {
+            coord.as(Crs.formatToEPSG(features.extent.crs), coord);
+            features.extent.as(coord.crs, ex);
+
+            if (!ex.isPointInside(coord, epsilon)) {
+                return result;
             // Special case, because of the way tiles in VectorTileParser are
             // handled (see Feature2Texture for a similar solution)
-            if ((features.scale.x != 1 && features.scale.y != 1)
-                || (features.translation.x != 0 && features.translation.y != 0)) {
-                ex.crs = coordinate.crs;
-                features.extent.as(coordinate.crs, ex);
-                if (!ex.isPointInside(coordinate, epsilon)) {
-                    return result;
-                }
-
-                coordinate.crs = Crs.formatToEPSG(features.extent.crs);
-                coordinate.x = (coordinate.x + features.translation.x) * features.scale.x;
-                coordinate.y = (coordinate.y + features.translation.y) * features.scale.y;
+            } else if ((features.scale.x != 1 && features.scale.y != 1) || (features.translation.x != 0 && features.translation.y != 0)) {
+                coord.x = (coord.x + features.translation.x) * features.scale.x;
+                coord.y = (coord.y + features.translation.y) * features.scale.y;
                 if (features.scale.x != 1 && features.scale.y != 1) {
                     epsilon *= Math.sqrt(features.scale.x ** 2 + features.scale.y ** 2);
                 }
-            } else if (!features.extent.isPointInside(coordinate, epsilon)) {
-                return result;
             }
         }
         if (Array.isArray(features.features)) {
             for (const feature of features.features) {
-                if (feature.extent && !feature.extent.isPointInside(coordinate, epsilon)) {
+                if (feature.extent && !feature.extent.isPointInside(coord, epsilon)) {
                     continue;
                 }
 
-                isFeatureUnderCoordinate(coordinate, feature, epsilon, result);
+                isFeatureUnderCoordinate(coord, feature, epsilon, result);
             }
         } else if (features.geometry) {
-            isFeatureUnderCoordinate(coordinate, features, epsilon, result);
+            isFeatureUnderCoordinate(coord, features, epsilon, result);
         }
 
         return result;
