@@ -157,6 +157,7 @@ class Coordinates {
      * @return {Coordinates} This Coordinates.
      */
     copy(src) {
+        this.crs = src.crs;
         return this.setFromVector3(src);
     }
 

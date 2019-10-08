@@ -147,7 +147,6 @@ export default {
     filterFeaturesUnderCoordinate(coordinate, features, epsilon = 0.1) {
         const result = [];
 
-        coord.crs = coordinate.crs;
         coord.copy(coordinate);
 
         // We can take this shortcut because either Feature and
