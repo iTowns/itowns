@@ -70,12 +70,13 @@ describe('Provide in Sources', function () {
     const planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
     const colorlayer = new ColorLayer('color', { projection: 'WMTS:PM' });
     const elevationlayer = new ElevationLayer('elevation', { projection: 'WMTS:PM' });
+    const tile = new TileMesh(geom, material, planarlayer, extent);
 
     planarlayer.attach(colorlayer);
     planarlayer.attach(elevationlayer);
 
-    material.addLayer(colorlayer);
-    material.addLayer(elevationlayer);
+    material.addLayer(colorlayer, tile.getExtentsByProjection(colorlayer.projection));
+    material.addLayer(elevationlayer, tile.getExtentsByProjection(elevationlayer.projection));
 
     const nodeLayer = material.getLayer(colorlayer.id);
     const nodeLayerElevation = material.getLayer(elevationlayer.id);
@@ -126,7 +127,6 @@ describe('Provide in Sources', function () {
             },
         });
 
-        const tile = new TileMesh(geom, material, planarlayer, extent);
         material.visible = true;
         nodeLayer.level = 0;
         tile.parent = { };

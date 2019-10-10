@@ -72,7 +72,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
         if (!nodeLayer) {
             // Create new MaterialLayer
-            nodeLayer = material.addLayer(layer);
+            nodeLayer = material.addLayer(layer, extentsDestination);
             // Init the new MaterialLayer by parent
             const parentLayer = parent.material && parent.material.getLayer(layer.id);
             nodeLayer.initFromParent(parentLayer, extentsDestination);
@@ -129,8 +129,10 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
     // Get equivalent of extent destination in source
     const extentsSource = [];
-    for (const extentDestination of extentsDestination) {
+    const parsedData  = [];
+    for (const [extentDestination, texture] of nodeLayer.textures.entries()) {
         const extentSource = extentDestination.tiledExtentParent(targetLevel);
+        parsedData.push(texture ? texture.parsedData : null);
         if (!layer.source.extentInsideLimit(extentSource)) {
             // Retry extentInsideLimit because you must check with the targetLevel
             // if the first test extentInsideLimit returns that it is out of limits
@@ -142,14 +144,12 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     }
 
     node.layerUpdateState[layer.id].newTry();
-    const parsedData = nodeLayer.textures.map(t => t.parsedData);
     const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, parsedData);
 
     return context.scheduler.execute(command).then(
-        (result) => {
-            // TODO: Handle error : result is undefined in provider. throw error
-            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(extentsSource[i], nodeLayer.offsetScales[i]));
-            nodeLayer.setTextures(result, pitchs);
+        (textures) => {
+            // TODO: Handle error : textures is undefined in provider. throw error
+            nodeLayer.setTextures(textures, extentsDestination);
             node.layerUpdateState[layer.id].success();
         },
         err => handlingError(err, node, layer, targetLevel, context.view));
@@ -172,7 +172,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // Init elevation layer, and inherit from parent if possible
     let nodeLayer = material.getElevationLayer();
     if (!nodeLayer) {
-        nodeLayer = material.addLayer(layer);
+        nodeLayer = material.addLayer(layer, extentsDestination);
     }
 
     if (node.layerUpdateState[layer.id] === undefined) {
@@ -185,12 +185,13 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         // extract min-max from the texture (too few information), we instead chose
         // to use parent's min-max.
         const useMinMaxFromParent = extentsDestination[0].zoom - nodeLayer.zoom > 6;
-        if (nodeLayer.textures[0]) {
+        const texture = nodeLayer.firstTexture();
+        if (texture) {
             if (!useMinMaxFromParent) {
                 const { min, max } = computeMinMaxElevation(
-                    nodeLayer.textures[0].image.data,
+                    texture.image.data,
                     SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-                    nodeLayer.offsetScales[0]);
+                    nodeLayer.firstOffsetScale());
                 node.setBBoxZ(min, max, layer.scale);
             } else {
                 // TODO: to verify we don't pass here,
@@ -219,8 +220,8 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     }
 
     const extentsSource = [];
-    for (const nodeExtent of extentsDestination) {
-        const extentSource = nodeExtent.tiledExtentParent(targetLevel);
+    for (const extentDestination of extentsDestination) {
+        const extentSource = extentDestination.tiledExtentParent(targetLevel);
         if (!layer.source.extentInsideLimit(extentSource)) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
             return;
@@ -239,30 +240,28 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             if (targetLevel <= nodeLayer.level) {
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
                 return;
+            } else {
+                node.layerUpdateState[layer.id].success();
             }
-            const elevation = {
-                texture: textures[0],
-                pitch: extentsDestination[0].offsetToParent(textures[0].coords, nodeLayer.offsetScales[0]),
-            };
-
-            node.layerUpdateState[layer.id].success();
-
-            if (elevation.texture) {
+            const elevation = {};
+            if (textures[0]) {
                 if (layer.useColorTextureElevation) {
                     elevation.min = layer.colorTextureElevationMinZ;
                     elevation.max = layer.colorTextureElevationMaxZ;
                 } else {
-                    const { min, max } = computeMinMaxElevation(elevation.texture.image.data,
+                    // TODO double pitch computed
+                    const pitch = extentsDestination[0].offsetToParent(textures[0].coords);
+                    const { min, max } = computeMinMaxElevation(textures[0].image.data,
                         SIZE_TEXTURE_TILE,
                         SIZE_TEXTURE_TILE,
-                        elevation.pitch);
+                        pitch);
                     elevation.min = !min ? 0 : min;
                     elevation.max = !max ? 0 : max;
                 }
             }
 
             node.setBBoxZ(elevation.min, elevation.max, layer.scale);
-            nodeLayer.setTexture(0, elevation.texture, elevation.pitch);
+            nodeLayer.setTextures(textures, extentsDestination);
             const nodeParent = parent.material && parent.material.getElevationLayer();
             nodeLayer.replaceNoDataValueFromParent(nodeParent, layer.noDataValue);
         },

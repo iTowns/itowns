@@ -371,9 +371,9 @@ class TiledGeometryLayer extends GeometryLayer {
         // The induced geometric error is much too large and distorts the SSE
         const nodeLayer = node.material.getElevationLayer();
         if (nodeLayer) {
-            const currentTexture = nodeLayer.textures[0];
+            const currentTexture = nodeLayer.firstTexture();
             if (currentTexture && currentTexture.extent) {
-                const offsetScale = nodeLayer.offsetScales[0];
+                const offsetScale = nodeLayer.firstOffsetScale();
                 const ratio = offsetScale.z;
                 // ratio is node size / texture size
                 if (ratio < 1 / Math.pow(2, this.maxDeltaElevationLevel)) {

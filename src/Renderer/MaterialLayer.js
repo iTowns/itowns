@@ -20,7 +20,7 @@ function defineLayerProperty(layer, property, initValue, defaultValue) {
 }
 
 class MaterialLayer {
-    constructor(material, layer) {
+    constructor(material, layer, extents) {
         this.id = layer.id;
         this.textureOffset = 0; // will be updated in updateUniforms()
         this.crs = layer.parent.tileMatrixSets.indexOf(CRS.formatToTms(layer.projection));
@@ -82,8 +82,9 @@ class MaterialLayer {
         defineLayerProperty(this, 'zmin', layer.zmin, defaultEle.zmin);
         defineLayerProperty(this, 'zmax', layer.zmax, defaultEle.zmax);
 
-        this.textures = [];
-        this.offsetScales = [];
+        this.textures = new Map();
+        extents.forEach(ex => this.textures.set(ex, null));
+        this.offsetScales = new Map();
         this.level = EMPTY_TEXTURE_ZOOM;
         this.material = material;
     }
@@ -92,9 +93,10 @@ class MaterialLayer {
         if (parent && parent.level > this.level) {
             let index = 0;
             for (const c of extents) {
-                for (const texture of parent.textures) {
+                for (const texture of parent.textures.values()) {
                     if (c.isInside(texture.coords)) {
-                        this.setTexture(index++, texture, c.offsetToParent(texture.coords));
+                        index++;
+                        this.setTexture(texture, c);
                         break;
                     }
                 }
@@ -109,12 +111,14 @@ class MaterialLayer {
     }
 
     replaceNoDataValueFromParent(parent, nodatavalue) {
-        const dataElevation = this.textures[0].image.data;
-        const parentTexture = parent && parent.textures[0];
-        if (dataElevation && parentTexture && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
-            const coords = this.textures[0].coords;
-            coords.offsetToParent(parentTexture.coords, pitch);
-            insertSignificantValuesFromParent(dataElevation, parentTexture.image.data, nodatavalue, pitch);
+        for (const texture of this.textures.values()) {
+            const dataElevation = texture.image.data;
+            const parentTexture = parent && parent.textures.values().next().value;
+            if (dataElevation && parentTexture && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
+                const coords = texture.coords;
+                coords.offsetToParent(parentTexture.coords, pitch);
+                insertSignificantValuesFromParent(dataElevation, parentTexture.image.data, nodatavalue, pitch);
+            }
         }
     }
 
@@ -126,22 +130,30 @@ class MaterialLayer {
             }
         }
         this.level = EMPTY_TEXTURE_ZOOM;
-        this.textures = [];
-        this.offsetScales = [];
+        this.textures.forEach((v, k) => this.textures.set(k, null));
+        this.offsetScales.forEach((v, k) => this.offsetScales.set(k, null));
         this.material.layersNeedUpdate = true;
     }
 
-    setTexture(index, texture, offsetScale) {
-        this.level = (texture && (index == 0)) ? texture.coords.zoom : this.level;
-        this.textures[index] = texture || null;
-        this.offsetScales[index] = offsetScale;
+    setTexture(texture, extent) {
+        this.level = texture ? texture.coords.zoom : this.level;
+        this.textures.set(extent, texture || null);
+        this.offsetScales.set(extent, extent.offsetToParent(texture.coords));
         this.material.layersNeedUpdate = true;
     }
 
-    setTextures(textures, pitchs) {
+    firstTexture() {
+        return this.textures.values().next().value;
+    }
+
+    firstOffsetScale() {
+        return this.offsetScales.values().next().value;
+    }
+
+    setTextures(textures, extents) {
         this.dispose(false);
         for (let i = 0, il = textures.length; i < il; ++i) {
-            this.setTexture(i, textures[i], pitchs[i]);
+            this.setTexture(textures[i], extents[i]);
         }
     }
 }

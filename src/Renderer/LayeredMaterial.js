@@ -40,12 +40,15 @@ function updateLayersUniforms(uniforms, olayers, max) {
     // flatten the 2d array [i,j] -> layers[_layerIds[i]].textures[j]
     let count = 0;
     for (const layer of olayers) {
-        layer.textureOffset = count;
-        for (let i = 0, il = layer.textures.length; i < il; ++i, ++count) {
-            if (count < max) {
-                offsetScales[count] = layer.offsetScales[i];
-                textures[count] = layer.textures[i];
-                layers[count] = layer;
+        if (layer.level > -1) {
+            layer.textureOffset = count;
+            for (const [extent, texture] of layer.textures.entries()) {
+                if (count < max) {
+                    offsetScales[count] = layer.offsetScales.get(extent);
+                    textures[count] = texture;
+                    layers[count] = layer;
+                }
+                ++count;
             }
         }
     }
@@ -222,11 +225,11 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         }
     }
 
-    addLayer(layer) {
+    addLayer(layer, extents) {
         if (layer.id in this.layers) {
             console.warn('The "{layer.id}" layer was already present in the material, overwritting.');
         }
-        const lml = new MaterialLayer(this, layer);
+        const lml = new MaterialLayer(this, layer, extents);
         this.layers.push(lml);
         if (layer.isColorLayer) {
             this.setSequence(layer.parent.colorLayersOrder);
