@@ -3,6 +3,7 @@
 #if defined(USE_TEXTURES_PROJECTIVE)
 #include <itowns/projective_texturing_pars_vertex>
 #endif
+#include <common>
 #include <logdepthbuf_pars_vertex>
 
 uniform float size;
