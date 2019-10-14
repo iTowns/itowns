@@ -44,7 +44,8 @@ function updateLayersUniforms(uniforms, olayers, max) {
             layer.textureOffset = count;
             for (const [extent, texture] of layer.textures.entries()) {
                 if (count < max) {
-                    offsetScales[count] = layer.offsetScales.get(extent);
+                    // Fix me: it's not possible to pass target offsetScales in offsetToParent
+                    offsetScales[count] = extent.offsetToParent(texture.coords);
                     textures[count] = texture;
                     layers[count] = layer;
                 }

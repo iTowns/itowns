@@ -10,6 +10,7 @@ import { ImageryLayers } from 'Layer/Layer';
 
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
+const offsetScale = new THREE.Vector4();
 
 /**
  * @property {InfoTiledGeometryLayer} info - Status information of layer
@@ -371,14 +372,16 @@ class TiledGeometryLayer extends GeometryLayer {
         // The induced geometric error is much too large and distorts the SSE
         const nodeLayer = node.material.getElevationLayer();
         if (nodeLayer) {
-            const currentTexture = nodeLayer.firstTexture();
-            if (currentTexture && currentTexture.extent) {
-                const offsetScale = nodeLayer.firstOffsetScale();
-                const ratio = offsetScale.z;
-                // ratio is node size / texture size
-                if (ratio < 1 / Math.pow(2, this.maxDeltaElevationLevel)) {
-                    return false;
+            for (const [extent, texture] of nodeLayer.textures.entries()) {
+                if (texture) {
+                    extent.offsetToParent(texture.coords, offsetScale);
+                    const ratio = offsetScale.z;
+                    // ratio is node size / texture size
+                    if (ratio < 1 / Math.pow(2, this.maxDeltaElevationLevel)) {
+                        return false;
+                    }
                 }
+                break;
             }
         }
 

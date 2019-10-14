@@ -1,3 +1,4 @@
+import { Vector4 } from 'three';
 import { chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import { computeMinMaxElevation } from 'Parser/XbilParser';
@@ -5,6 +6,7 @@ import handlingError from 'Process/handlerNodeError';
 
 export const SIZE_TEXTURE_TILE = 256;
 export const SIZE_DIAGONAL_TEXTURE = Math.pow(2 * (SIZE_TEXTURE_TILE * SIZE_TEXTURE_TILE), 0.5);
+const offsetScale = new Vector4();
 
 function materialCommandQueuePriorityFunction(material) {
     // We know that 'node' is visible because commands can only be
@@ -188,10 +190,11 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         const texture = nodeLayer.firstTexture();
         if (texture) {
             if (!useMinMaxFromParent) {
+                extentsDestination[0].offsetToParent(texture.coords, offsetScale);
                 const { min, max } = computeMinMaxElevation(
                     texture.image.data,
                     SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-                    nodeLayer.firstOffsetScale());
+                    offsetScale);
                 node.setBBoxZ(min, max, layer.scale);
             } else {
                 // TODO: to verify we don't pass here,

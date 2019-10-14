@@ -84,7 +84,6 @@ class MaterialLayer {
 
         this.textures = new Map();
         extents.forEach(ex => this.textures.set(ex, null));
-        this.offsetScales = new Map();
         this.level = EMPTY_TEXTURE_ZOOM;
         this.material = material;
     }
@@ -131,23 +130,17 @@ class MaterialLayer {
         }
         this.level = EMPTY_TEXTURE_ZOOM;
         this.textures.forEach((v, k) => this.textures.set(k, null));
-        this.offsetScales.forEach((v, k) => this.offsetScales.set(k, null));
         this.material.layersNeedUpdate = true;
     }
 
     setTexture(texture, extent) {
         this.level = texture ? texture.coords.zoom : this.level;
         this.textures.set(extent, texture || null);
-        this.offsetScales.set(extent, extent.offsetToParent(texture.coords));
         this.material.layersNeedUpdate = true;
     }
 
     firstTexture() {
         return this.textures.values().next().value;
-    }
-
-    firstOffsetScale() {
-        return this.offsetScales.values().next().value;
     }
 
     setTextures(textures, extents) {
