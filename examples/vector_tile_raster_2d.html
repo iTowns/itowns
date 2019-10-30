@@ -61,11 +61,7 @@
                 style.layers.forEach(function(layer) {
                     if (layer.type === 'background') {
                         backgroundLayer = layer;
-                    } else if (['fill', 'line'].indexOf(layer.type) >= 0 &&
-                        ['landcover', 'water', 'boundary', 'transportation', 'park'].indexOf(layer['source-layer']) >= 0 &&
-                        layer.id.indexOf('bridge') < 0 &&
-                        layer.id.indexOf('tunnel') < 0 &&
-                        layer.id.indexOf('admin_sub') < 0) {
+                    } else if (['fill', 'line'].includes(layer.type)) {
                         supportedLayers.push(layer);
                     }
                 });
@@ -86,7 +82,7 @@
                     },
                     zoom: {
                         min: 2,
-                        max: 14,
+                        max: 16,
                     },
                     tileMatrixSet: 'PM',
                     projection: 'EPSG:3857',
