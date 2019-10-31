@@ -771,7 +771,7 @@ class View extends THREE.EventDispatcher {
             }
 
             for (const materialLayer of tile.object.material.getLayers(layers)) {
-                for (const texture of materialLayer.textures) {
+                for (const texture of materialLayer.textures.values()) {
                     if (!texture.parsedData) {
                         continue;
                     }

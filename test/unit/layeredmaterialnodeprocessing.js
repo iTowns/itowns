@@ -51,7 +51,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         },
     });
 
-    const nodeLayer = new MaterialLayer(material, layer);
+    const nodeLayer = new MaterialLayer(material, layer, [extent]);
     material.getLayer = () => nodeLayer;
 
     beforeEach('reset state', function () {
@@ -111,6 +111,9 @@ describe('updateLayeredMaterialNodeImagery', function () {
         const tile = new TileMesh(geom, material, layer, newExtent, 15);
         // Emulate a situation where tile inherited a level 1 texture
         material.visible = true;
+        const nodeLayer = new MaterialLayer(material, layer, tile.getExtentsByProjection(layer.projection));
+        material.getLayer = () => nodeLayer;
+
         nodeLayer.level = 1;
         tile.parent = { };
         source.isWMTSSource = true;
