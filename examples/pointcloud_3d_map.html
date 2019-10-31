@@ -57,8 +57,8 @@
                 view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { handleCollision: false });
                 setupLoadingScreen(viewerDiv, view);
 
-                view.controls.minDistance = 0;
-                
+                view.controls.minDistance = 50;
+
                 // Configure Point Cloud layer
                 pointcloud = new itowns.GeometryLayer('eglise_saint_blaise_arles', view.scene);
                 pointcloud.file = fileName || 'infos/sources';
