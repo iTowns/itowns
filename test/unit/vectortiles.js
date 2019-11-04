@@ -54,24 +54,24 @@ describe('Vector tiles', function () {
         }));
     it('should parse hsl to style fill color and opacity', () =>
         parse(multipolygon, paints[0], 'fill').then((collection) => {
-            const style = collection.features[0].geometry[0].properties.style;
+            const style = collection.features[0].style;
             assert.equal(style.fill.color, paints[0]['fill-color'].replace(/ /g, ''));
             assert.equal(style.fill.opacity, 0.5);
         }));
     it('should parse rgba to style fill opacity', () =>
         parse(multipolygon, paints[1], 'fill').then((collection) => {
-            const style = collection.features[0].geometry[0].properties.style;
+            const style = collection.features[0].style;
             assert.equal(style.fill.opacity, 0.5);
         }));
     it('should parse hsla to style fill color and opacity', () =>
         parse(multipolygon, paints[2], 'fill').then((collection) => {
-            const style = collection.features[0].geometry[0].properties.style;
+            const style = collection.features[0].style;
             assert.equal(style.fill.opacity, 0.3);
             assert.equal(style.fill.color, 'hsl(0,10%,0%)');
         }));
     it('should parse line to style line', () =>
         parse(multipolygon, paints[3], 'line').then((collection) => {
-            const style = collection.features[0].geometry[0].properties.style;
+            const style = collection.features[0].style;
             assert.equal(style.stroke.opacity, 0.4);
             assert.equal(style.stroke.width, 3);
             assert.equal(style.stroke.color, 'hsl(0,0%,50%)');
