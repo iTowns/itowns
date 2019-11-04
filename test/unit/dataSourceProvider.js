@@ -18,29 +18,15 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
+import Renderer from './mock';
+
+const renderer = new Renderer();
+renderer.setClearColor();
 
 const holes = require('../data/geojson/holesPoints.geojson.json');
 
 supportedFetchers.set('image/png', () => Promise.resolve(new THREE.Texture()));
 supportedFetchers.set('application/json', () => Promise.resolve(holes));
-
-// Mock document object for Mocha.
-// Warning is overloaded by view test unit
-global.document = {
-    createElement: () => ({
-        getContext: () => ({
-            fillRect: () => { },
-            moveTo: () => { },
-            lineTo: () => { },
-            beginPath: () => { },
-            stroke: () => { },
-            fill: () => { },
-            arc: () => { },
-            setTransform: () => { },
-            canvas: { width: 256, height: 256 },
-        }),
-    }),
-};
 
 describe('Provide in Sources', function () {
     // Misc var to initialize a TileMesh instance

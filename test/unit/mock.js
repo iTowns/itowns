@@ -56,6 +56,7 @@ class Renderer {
                     fill: () => { },
                     arc: () => { },
                     setTransform: () => { },
+                    setLineDash: () => { },
                     canvas: {
                         width: 400,
                         height: 300,
