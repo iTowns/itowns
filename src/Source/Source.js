@@ -106,6 +106,7 @@ class Source {
         this.format = source.format;
         this.fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
         this.parser = source.parser || supportedParsers.get(source.format) || (d => Promise.resolve(d));
+        this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.projection = source.projection;
         this.attribution = source.attribution;

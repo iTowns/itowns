@@ -58,7 +58,8 @@ export default {
             const extSource = extentsSource[i];
 
             // Tag to Cache data
-            const tag = `${source.uid}-${extSource.toString('-')}`;
+            const exTag = source.isVectorSource ? extentsDestination[i] : extSource;
+            const tag = `${source.uid}-${exTag.toString('-')}`;
 
             // Get converted source data, in cache
             let convertedSourceData = Cache.get(tag);
