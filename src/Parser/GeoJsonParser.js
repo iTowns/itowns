@@ -122,7 +122,7 @@ function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, fea
 
     const jsonType = json.geometry.type.toLowerCase();
     const featureType = toFeatureType(jsonType);
-    const feature = options.mergeFeatures ? featureCollection.getFeatureByType(featureType) : new Feature(featureType, crsOut, options);
+    const feature = options.mergeFeatures ? featureCollection.requestFeatureByType(featureType) : new Feature(featureType, crsOut, options);
     const geometryCount = feature.geometryCount;
     const coordinates = jsonType != 'point' ? json.geometry.coordinates : [json.geometry.coordinates];
     const setAltitude = !options.overrideAltitudeInToZero && options.withAltitude;

@@ -1,6 +1,7 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 
 const inv255 = 1 / 255;
+const canvas = document.createElement('canvas');
 
 function rgba2rgb(orig) {
     const result = orig.match(/(?:((hsl|rgb)a? *\(([\d.%]+(?:deg|g?rad|turn)?)[ ,]*([\d.%]+)[ ,]*([\d.%]+)[ ,/]*([\d.%]*)\))|(#((?:[\d\w]{3}){1,2})([\d\w]{1,2})?))/i);
@@ -14,6 +15,18 @@ function rgba2rgb(orig) {
         return { color: `#${result[8]}`, opacity };
     } else if (result[0]) {
         return { color: `${result[2]}(${result[3]},${result[4]},${result[5]})`, opacity: (Number(result[6]) || 1.0) };
+    }
+}
+
+
+function readVectorProperty(property, zoom) {
+    if (property == undefined) {
+        //
+    } else if (property.stops) {
+        const p = property.stops.slice().reverse().find(stop => zoom >= stop[0]);
+        return p ? p[1] : property.stops[0][1];
+    } else {
+        return property.base || property;
     }
 }
 
@@ -55,6 +68,7 @@ class Style {
             color: params.stroke.color,
             opacity: params.stroke.opacity,
             width: params.stroke.width,
+            dasharray: params.stroke.dasharray || [],
         };
         this.point = {
             color: params.point.color,
@@ -88,35 +102,55 @@ class Style {
         }
         return this;
     }
+
     /**
      * set Style from vector tile layer properties.
      * @param {object} layer vector tile layer.
+     * @param {Number} zoom vector tile layer.
+     * @param {Object} sprites vector tile layer.
      * @returns {Style}
      */
-    setFromVectorTileLayer(layer) {
+    setFromVectorTileLayer(layer, zoom, sprites) {
         if (layer.type === 'fill' && !this.fill.color) {
-            const { color, opacity } = rgba2rgb(layer.paint['fill-color']);
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern']));
             this.fill.color = color;
-            this.fill.opacity = layer.paint['fill-opacity'] || opacity || 1.0;
+            this.fill.opacity = readVectorProperty(layer.paint['fill-opacity'], zoom) || opacity || 1.0;
+            if (layer.paint['fill-pattern'] && sprites) {
+                const sprite = sprites[layer.paint['fill-pattern']];
+                canvas.width = sprite.width;
+                canvas.height = sprite.height;
+                canvas.getContext('2d').drawImage(sprites.img, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, sprite.width, sprite.height);
+                this.fill.pattern = document.createElement('img');
+                this.fill.pattern.src = canvas.toDataURL('image/png');
+            }
+
+            if (layer.paint['fill-outline-color']) {
+                const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-outline-color']));
+                this.stroke.color = color;
+                this.stroke.opacity = opacity;
+                this.stroke.width = 1.0;
+                this.stroke.dasharray = [];
+            }
         }
         if (layer.type === 'line' && !this.stroke.color) {
-            const { color, opacity } = rgba2rgb(layer.paint['line-color']);
+            const prepare = readVectorProperty(layer.paint['line-color'], zoom);
+            const { color, opacity } = rgba2rgb(prepare);
+            this.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray'], zoom) || [];
             this.stroke.color = color;
-            if ('line-width' in layer.paint) {
-                this.stroke.width = layer.paint['line-width'].base || 3.0;
-            }
-            this.stroke.opacity = layer.paint['line-opacity'] || opacity || 1.0;
+            this.stroke.lineCap = layer.layout && layer.layout['line-cap'];
+            this.stroke.width = readVectorProperty(layer.paint['line-width'], zoom) || 3.0;
+            this.stroke.opacity = readVectorProperty(layer.paint['line-opacity'], zoom) || opacity || 1.0;
         }
         if (layer.type === 'symbol') {
-            const { color, opacity } = rgba2rgb(layer.paint['text-color']);
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['text-color'] || '#000000', zoom));
             this.point.color = color;
             this.point.opacity = opacity;
             this.point.radius = 1.5;
         } else if (layer.type === 'circle') {
-            const { color, opacity } = rgba2rgb(layer.paint['circle-color']);
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['circle-color']), zoom);
             this.point.color = color;
             this.point.opacity = opacity;
-            this.point.radius = layer.paint['circle-radius'];
+            this.point.radius = readVectorProperty(layer.paint['circle-radius'], zoom);
         }
         return this;
     }
