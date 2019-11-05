@@ -274,15 +274,8 @@ export class FeatureCollection {
         this.updateExtent(feature.extent);
     }
 
-    /**
-     * Returns the Feature by type if `mergeFeatures` is `true` or returns the
-     * new instance of typed Feature.
-     *
-     * @param {string} type the type requested
-     * @returns {Feature}
-     */
-    getFeatureByType(type) {
-        const feature = this.features.find(feature => feature.type === type);
+    requestFeature(type, callback) {
+        const feature = this.features.find(callback);
         if (feature && this.optionsFeature.mergeFeatures) {
             return feature;
         } else {
@@ -290,5 +283,46 @@ export class FeatureCollection {
             this.features.push(newFeature);
             return newFeature;
         }
+    }
+
+    /**
+     * Returns the Feature by type if `mergeFeatures` is `true` or returns the
+     * new instance of typed Feature.
+     *
+     * @param {string} type the type requested
+     * @returns {Feature}
+     */
+    requestFeatureByType(type) {
+        return this.requestFeature(type, feature => feature.type === type);
+    }
+
+    /**
+     * Returns the Feature by type if `mergeFeatures` is `true` or returns the
+     * new instance of typed Feature.
+     *
+     * @param {string} id the id requested
+     * @param {string} type the type requested
+     * @returns {Feature}
+     */
+    requestFeatureById(id, type) {
+        return this.requestFeature(type, feature => feature.id === id);
+    }
+    /**
+     * Add a new feature with references to all properties.
+     * It allows to have features with different styles
+     * without having to duplicate the geometry.
+     * @param      {Feature}   feature  The feature to reference.
+     * @return     {Feature}  The new referenced feature
+     */
+    newFeatureByReference(feature) {
+        const ref = new Feature(feature.type, this.crs, this.optionsFeature);
+        ref.extent = feature.extent;
+        ref.geometry = feature.geometry;
+        ref.normals = feature.normals;
+        ref.size = feature.size;
+        ref.vertices = feature.vertices;
+        ref._pos = feature._pos;
+        this.features.push(ref);
+        return ref;
     }
 }

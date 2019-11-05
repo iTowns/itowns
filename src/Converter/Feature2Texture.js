@@ -56,7 +56,6 @@ function fillStyle(style, ctx, invCtxScale) {
         } else {
             console.warn('Raster pattern isn\'t completely supported on Ie and edge');
         }
-        ctx.fillStyle.src = style.fill.pattern.src;
     } else if (style.fill.color && ctx.fillStyle !== style.fill.color) {
         ctx.fillStyle = style.fill.color;
     }
@@ -69,7 +68,7 @@ function strokeStyle(style, ctx, invCtxScale) {
     if (ctx.strokeStyle !== style.stroke.color) {
         ctx.strokeStyle = style.stroke.color;
     }
-    const width = Math.round((style.stroke.width || 2.0)) * invCtxScale;
+    const width = (style.stroke.width || 2.0) * invCtxScale;
     if (ctx.lineWidth !== width) {
         ctx.lineWidth = width;
     }
@@ -77,6 +76,10 @@ function strokeStyle(style, ctx, invCtxScale) {
     if (alpha !== ctx.globalAlpha && typeof alpha == 'number') {
         ctx.globalAlpha = alpha;
     }
+    if (ctx.lineCap !== style.stroke.lineCap) {
+        ctx.lineCap = style.stroke.lineCap;
+    }
+    ctx.setLineDash(style.stroke.dasharray.map(a => a * invCtxScale * 2));
 }
 
 function drawPoint(ctx, x, y, style = {}, invCtxScale) {
@@ -106,24 +109,23 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
 
     for (const geometry of feature.geometry) {
         if (geometry.extent.intersectsExtent(extent)) {
-            const properties = geometry.properties;
-            const geometryStyle = style.isStyle ? style : properties.style;
+            const geoStyle = style.isStyle ? style : geometry.properties.style;
             if (feature.type === FEATURE_TYPES.POINT) {
                 // cross multiplication to know in the extent system the real size of
                 // the point
-                const px = (Math.round(geometryStyle.point.radius * invCtxScale) || 3 * invCtxScale) * scaleRadius;
+                const px = (Math.round(geoStyle.point.radius * invCtxScale) || 3 * invCtxScale) * scaleRadius;
                 for (const indice of geometry.indices) {
                     const offset = indice.offset * feature.size;
                     const count = offset + indice.count * feature.size;
                     for (let j = offset; j < count; j += feature.size) {
                         coord.setFromArray(feature.vertices, j);
                         if (extent.isPointInside(coord, px)) {
-                            drawPoint(ctx, feature.vertices[j], feature.vertices[j + 1], geometryStyle, invCtxScale);
+                            drawPoint(ctx, feature.vertices[j], feature.vertices[j + 1], geoStyle, invCtxScale);
                         }
                     }
                 }
             } else {
-                drawPolygon(ctx, feature.vertices, geometry.indices, geometryStyle, feature.size, extent, invCtxScale, (feature.type == FEATURE_TYPES.POLYGON));
+                drawPolygon(ctx, feature.vertices, geometry.indices, geoStyle, feature.size, extent, invCtxScale, (feature.type == FEATURE_TYPES.POLYGON));
             }
         }
     }
@@ -157,6 +159,7 @@ export default {
             }
             ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
             ctx.imageSmoothingEnabled = false;
+            ctx.lineJoin = 'round';
 
             const ex = collection.crs == extent.crs ? extent : extent.as(collection.crs, _extent);
             const t = collection.translation;
@@ -172,7 +175,7 @@ export default {
 
             // Draw the canvas
             for (const feature of collection.features) {
-                drawFeature(ctx, feature, extentTransformed, style, invCtxScale);
+                drawFeature(ctx, feature, extentTransformed, feature.style || style, invCtxScale);
             }
 
             texture = new THREE.CanvasTexture(c);

@@ -122,6 +122,7 @@ function readPBF(file, options) {
     features.filter = options.filter || defaultFilter;
 
     const vFeature = vectorTile.layers[sourceLayers[0]];
+    // TODO: verify if size is correct because is computed with only one feature (vFeature).
     const size = vFeature.extent * 2 ** z;
     const center = -0.5 * size;
     features.scale.set(size, -size, 1).divide(globalExtent);
@@ -137,26 +138,41 @@ function readPBF(file, options) {
 
     sourceLayers.forEach((layer_id) => {
         const sourceLayer = vectorTile.layers[layer_id];
-        const layersStyle = allLayers.filter(l => sourceLayer.name == l['source-layer']);
-        for (let i = 0; i < sourceLayer.length; i++) {
+        const layersSource = allLayers.filter(l => sourceLayer.name == l['source-layer']);
+        for (let i = sourceLayer.length - 1; i >= 0; i--) {
             const vtFeature = sourceLayer.feature(i);
-            const layerStyle = layersStyle.filter(l => l.filterExpression({ zoom: extentSource.zoom }, vtFeature))[0];
-            if (layerStyle) {
-                const properties = vtFeature.properties;
-                properties.style = styleCache.get(layerStyle.id);
-                if (!properties.style) {
-                    properties.style = new Style();
-                    properties.style.setFromVectorTileLayer(layerStyle);
-                    styleCache.set(layerStyle.id, properties.style);
+            const layers = layersSource.filter(l => l.filterExpression({ zoom: z }, vtFeature) && (!l.minzoom || l.minzoom <= z) && (!l.maxzoom || l.maxzoom >= z));
+            let feature;
+            for (const layer of layers) {
+                const tag = `${layer.id}_zoom_${z}`;
+                // Fix doens't pass instance of properties
+                let style = styleCache.get(tag);
+                if (!style) {
+                    style = new Style();
+                    style.setFromVectorTileLayer(layer, extentSource.zoom, options.sprites);
+                    styleCache.set(tag, style);
                 }
-                const feature = features.getFeatureByType(vtFeature.type - 1);
-                vtFeatureToFeatureGeometry(vtFeature, feature);
+                const order = allLayers.findIndex(l => l.id == layer.id);
+                if (!feature) {
+                    feature = features.requestFeatureById(layer.id, vtFeature.type - 1);
+                    feature.id = layer.id;
+                    feature.order = order;
+                    feature.style = style;
+                    vtFeatureToFeatureGeometry(vtFeature, feature);
+                } else if (!features.features.find(f => f.id === layer.id)) {
+                    feature = features.newFeatureByReference(feature);
+                    feature.id = layer.id;
+                    feature.order = order;
+                    feature.style = style;
+                }
             }
         }
     });
 
     features.removeEmptyFeature();
+    // TODO verify if is needed to updateExtent for previous features.
     features.updateExtent();
+    features.features.sort((a, b) => (a.order - b.order));
     features.extent = extentSource;
     return Promise.resolve(features);
 }

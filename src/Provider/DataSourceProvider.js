@@ -18,6 +18,7 @@ function parseSourceData(data, extDest, layer) {
         buildExtent: source.isFileSource || !layer.isGeometryLayer,
         crsIn: source.projection,
         crsOut: layer.projection,
+        sprites: layer.sprites,
         // TODO FIXME: error in filtering vector tile
         // filteringExtent: extentDestination.as(layer.projection),
         filteringExtent: !source.isFileSource && layer.isGeometryLayer ? extDest.as(source.projection) : undefined,
