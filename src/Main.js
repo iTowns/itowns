@@ -55,6 +55,7 @@ export { default as TMSSource } from 'Source/TMSSource';
 export { default as WFSSource } from 'Source/WFSSource';
 export { default as WMSSource } from 'Source/WMSSource';
 export { default as WMTSSource } from 'Source/WMTSSource';
+export { default as VectorTilesSource } from 'Source/VectorTilesSource';
 export { default as OrientedImageSource } from 'Source/OrientedImageSource';
 
 // Parsers provided by default in iTowns

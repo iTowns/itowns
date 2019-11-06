@@ -22,8 +22,9 @@ export default {
     convert(data, extentDestination, layer) {
         let texture;
         if (data.isFeatureCollection) {
-            const backgroundColor = (layer.backgroundLayer && layer.backgroundLayer.paint) ?
-                new THREE.Color(layer.backgroundLayer.paint['background-color']) :
+            const backgroundLayer = layer.source.backgroundLayer;
+            const backgroundColor = (backgroundLayer && backgroundLayer.paint) ?
+                new THREE.Color(backgroundLayer.paint['background-color']) :
                 undefined;
 
             extentDestination.as(CRS.formatToEPSG(layer.projection), extentTexture);

@@ -54,68 +54,52 @@
             var count = 0;
 
             // Add a vector tile layer
-            itowns.Fetcher.json('https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json').then(function (style) {
-                var supportedLayers = [];
-                var backgroundLayer;
 
-                style.layers.forEach(function(layer) {
-                    if (layer.type === 'background') {
-                        backgroundLayer = layer;
-                    } else if (['fill', 'line'].includes(layer.type)) {
-                        supportedLayers.push(layer);
+
+            function isValidData(data, extentDestination) {
+                // re-use the same vector tiles by interval 4
+                // var z = extentDestination.zoom - 2;
+                return false;
+            }
+
+            var mvtSource = new itowns.VectorTilesSource({
+                style: 'https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json',
+                // eslint-disable-next-line no-template-curly-in-string
+                url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
+                attribution: {
+                    name: 'OpenStreetMap',
+                    url: 'http://www.openstreetmap.org/',
+                },
+                filter: function (layer) { return ['fill', 'line'].includes(layer.type) },
+                zoom: {
+                    min: 2,
+                    max: 16,
+                },
+            });
+
+            var mvtLayer = new itowns.ColorLayer('MVT', {
+                isValidData: isValidData,
+                source: mvtSource,
+            });
+
+            view.addLayer(mvtLayer).then(function _(layer) {
+                FeatureToolTip.addLayer(layer, {
+                    filterGeometries: function _(geometries) {
+                        var uniqueClasses = [];
+                        return geometries.filter(function _(g) {
+                            if (g.geometry.properties.class && !uniqueClasses.includes(g.geometry.properties.class)) {
+                                uniqueClasses.push(g.geometry.properties.class);
+                                return true;
+                            }
+                        });
+                    },
+                    filterAllProperties: false,
+                    format: function _(n, p) {
+                        if (p !== undefined && n == 'class') return p;
                     }
                 });
-
-                function isValidData(data, extentDestination) {
-                    // re-use the same vector tiles by interval 4
-                    var z = extentDestination.zoom - 2;
-                    return extentDestination.zoom, z - z % 4 == data.extent.zoom - 2;
-                }
-
-                var mvtSource = new itowns.TMSSource({
-                    // eslint-disable-next-line no-template-curly-in-string
-                    url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
-                    format: 'application/x-protobuf;type=mapbox-vector',
-                    attribution: {
-                        name: 'OpenStreetMap',
-                        url: 'http://www.openstreetmap.org/',
-                    },
-                    zoom: {
-                        min: 2,
-                        max: 16,
-                    },
-                    tileMatrixSet: 'PM',
-                    projection: 'EPSG:3857',
-                    isInverted: true,
-                });
-
-                var mvtLayer = new itowns.ColorLayer('MVT', {
-                    isValidData: isValidData,
-                    source: mvtSource,
-                    filter: supportedLayers,
-                    backgroundLayer,
-                    projection: 'EPSG:3857',
-                });
-
-                view.addLayer(mvtLayer).then(function _(layer) {
-                    FeatureToolTip.addLayer(layer, {
-                        filterGeometries: function _(geometries) {
-                            var uniqueClasses = [];
-                            return geometries.filter(function _(g) {
-                                if (g.geometry.properties.class && !uniqueClasses.includes(g.geometry.properties.class)) {
-                                    uniqueClasses.push(g.geometry.properties.class);
-                                    return true;
-                                }
-                            });
-                        },
-                        filterAllProperties: false,
-                        format: function _(n, p) {
-                            if (p !== undefined && n == 'class') return p;
-                        }
-                    });
-                    return layer;
-                }).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            });
+                return layer;
+            }).then(menuGlobe.addLayerGUI.bind(menuGlobe));
 
             // Request redraw
             view.notifyChange(true);
