@@ -93,8 +93,8 @@ class MaterialLayer {
             let index = 0;
             for (const c of extents) {
                 for (const texture of parent.textures) {
-                    if (c.isInside(texture.coords)) {
-                        this.setTexture(index++, texture, c.offsetToParent(texture.coords));
+                    if (c.isInside(texture.extent)) {
+                        this.setTexture(index++, texture, c.offsetToParent(texture.extent));
                         break;
                     }
                 }
@@ -112,8 +112,8 @@ class MaterialLayer {
         const dataElevation = this.textures[0].image.data;
         const parentTexture = parent && parent.textures[0];
         if (dataElevation && parentTexture && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
-            const coords = this.textures[0].coords;
-            coords.offsetToParent(parentTexture.coords, pitch);
+            const extent = this.textures[0].extent;
+            extent.offsetToParent(parentTexture.extent, pitch);
             insertSignificantValuesFromParent(dataElevation, parentTexture.image.data, nodatavalue, pitch);
         }
     }
@@ -132,7 +132,7 @@ class MaterialLayer {
     }
 
     setTexture(index, texture, offsetScale) {
-        this.level = (texture && (index == 0)) ? texture.coords.zoom : this.level;
+        this.level = (texture && (index == 0)) ? texture.extent.zoom : this.level;
         this.textures[index] = texture || null;
         this.offsetScales[index] = offsetScale;
         this.material.layersNeedUpdate = true;

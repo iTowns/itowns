@@ -73,8 +73,8 @@ var TIFFParser = (function _() {
             texture.flipY = true;
             texture.needsUpdate = true;
 
-            if (data.coords) {
-                texture.coords = data.coords;
+            if (data.extent) {
+                texture.extent = data.extent;
             }
 
             return Promise.resolve(texture);

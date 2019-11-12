@@ -97,7 +97,7 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
 const defaultFilter = () => true;
 function readPBF(file, options) {
     const vectorTile = new VectorTile(new Protobuf(file));
-    const extentSource = options.extentSource || file.coords;
+    const extentSource = options.extentSource || file.extent;
     const sourceLayers = Object.keys(vectorTile.layers);
 
     if (sourceLayers.length < 1) {
@@ -190,7 +190,6 @@ export default {
      * @param {ArrayBuffer} file - The vector tile file to parse.
      * @param {Object} options - Options controlling the parsing.
      * @param {Extent} options.extent - The Extent to convert the input coordinates to.
-     * @param {Extent} options.coords - Coordinates of the layer.
      * @param {Extent=} options.filteringExtent - Optional filter to reject features
      * outside of this extent.
      * @param {boolean} [options.mergeFeatures=true] - If true all geometries are merged by type and multi-type
