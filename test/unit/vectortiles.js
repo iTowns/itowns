@@ -22,7 +22,7 @@ const paints = [{
 const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
 let id = 0;
 function parse(pbf, paint, type) {
-    pbf.coords = new Extent('TMS', 1, 1, 1);
+    pbf.extent = new Extent('TMS', 1, 1, 1);
     return VectorTileParser.parse(pbf, {
         crsIn: 'EPSG:4326',
         crsOut: 'EPSG:3857',

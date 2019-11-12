@@ -120,9 +120,9 @@ describe('Provide in Sources', function () {
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
-            assert.equal(textures[0].coords.zoom, zoom);
-            assert.equal(textures[0].coords.row, 511);
-            assert.equal(textures[0].coords.col, 512);
+            assert.equal(textures[0].extent.zoom, zoom);
+            assert.equal(textures[0].extent.row, 511);
+            assert.equal(textures[0].extent.col, 512);
         });
     });
 
@@ -147,9 +147,9 @@ describe('Provide in Sources', function () {
         updateLayeredMaterialNodeElevation(context, elevationlayer, tile, tile.parent);
         updateLayeredMaterialNodeElevation(context, elevationlayer, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
-            assert.equal(textures[0].coords.zoom, zoom);
-            assert.equal(textures[0].coords.row, 511);
-            assert.equal(textures[0].coords.col, 512);
+            assert.equal(textures[0].extent.zoom, zoom);
+            assert.equal(textures[0].extent.row, 511);
+            assert.equal(textures[0].extent.col, 512);
             done();
         });
     });
@@ -173,7 +173,7 @@ describe('Provide in Sources', function () {
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
-            const e = textures[0].coords.as(tile.extent.crs);
+            const e = textures[0].extent.as(tile.extent.crs);
             assert.equal(e.zoom, zoom);
             assert.equal(e.west, tile.extent.west);
             assert.equal(e.east, tile.extent.east);

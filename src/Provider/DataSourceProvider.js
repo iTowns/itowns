@@ -41,7 +41,7 @@ function fetchSourceData(extSrc, layer) {
 
     // Fetch data
     return source.fetcher(url, source.networkOptions).then((f) => {
-        f.coords = extSrc;
+        f.extent = extSrc;
         return f;
     });
 }

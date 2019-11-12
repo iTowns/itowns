@@ -148,7 +148,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     return context.scheduler.execute(command).then(
         (result) => {
             // TODO: Handle error : result is undefined in provider. throw error
-            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(result[i].coords, nodeLayer.offsetScales[i]));
+            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(result[i].extent, nodeLayer.offsetScales[i]));
             nodeLayer.setTextures(result, pitchs);
             node.layerUpdateState[layer.id].success();
         },
@@ -242,7 +242,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             }
             const elevation = {
                 texture: textures[0],
-                pitch: extentsDestination[0].offsetToParent(textures[0].coords, nodeLayer.offsetScales[0]),
+                pitch: extentsDestination[0].offsetToParent(textures[0].extent, nodeLayer.offsetScales[0]),
             };
 
             node.layerUpdateState[layer.id].success();

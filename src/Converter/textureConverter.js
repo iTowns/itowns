@@ -30,7 +30,7 @@ export default {
             extentDestination.as(CRS.formatToEPSG(layer.projection), extentTexture);
             texture = Feature2Texture.createTextureFromFeature(data, extentTexture, 256, layer.style, backgroundColor);
             texture.parsedData = data;
-            texture.coords = extentDestination;
+            texture.extent = extentDestination;
         } else if (data.isTexture) {
             texture = data;
         } else {
