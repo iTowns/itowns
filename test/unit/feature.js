@@ -44,10 +44,10 @@ describe('Feature', function () {
         const geometry = featureLine.bindNewGeometry();
 
         coord.setFromValues(-10, -10, 0);
-        geometry.pushCoordinates(coord);
+        geometry.pushCoordinates(coord, featureLine);
         coord.setFromValues(10, 10, 0);
-        geometry.pushCoordinates(coord);
-        geometry.closeSubGeometry(2);
+        geometry.pushCoordinates(coord, featureLine);
+        geometry.closeSubGeometry(2, featureLine);
 
         featureLine.updateExtent(geometry);
 

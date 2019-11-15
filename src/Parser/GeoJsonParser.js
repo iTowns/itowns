@@ -30,15 +30,15 @@ const firstPtIsOut = (extent, aCoords, crs) => {
     return !extent.isPointInside(coord);
 };
 const toFeature = {
-    populateGeometry(crsIn, coordinates, geometry, setAltitude = true) {
-        geometry.startSubGeometry(coordinates.length);
+    populateGeometry(crsIn, coordinates, geometry, setAltitude = true, feature) {
+        geometry.startSubGeometry(coordinates.length, feature);
         const useAlti = setAltitude && typeof coordinates[0][2] == 'number';
 
         // coordinates is a list of pair [[x1, y1], [x2, y2], ..., [xn, yn]]
         for (const pair of coordinates) {
             coord.crs = crsIn;
             coord.setFromValues(pair[0], pair[1], useAlti ? pair[2] : 0);
-            geometry.pushCoordinates(coord);
+            geometry.pushCoordinates(coord, feature);
         }
         geometry.updateExtent();
     },
@@ -50,7 +50,7 @@ const toFeature = {
         const geometry = feature.bindNewGeometry();
         geometry.properties = properties;
         geometry.properties.style = new Style().setFromGeojsonProperties(properties, feature.type);
-        this.populateGeometry(crsIn, coordsIn, geometry, setAltitude);
+        this.populateGeometry(crsIn, coordsIn, geometry, setAltitude, feature);
         feature.updateExtent(geometry);
     },
     polygon(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
@@ -64,7 +64,7 @@ const toFeature = {
 
         // Then read contour and holes
         for (let i = 0; i < coordsIn.length; i++) {
-            this.populateGeometry(crsIn, coordsIn[i], geometry, setAltitude);
+            this.populateGeometry(crsIn, coordsIn[i], geometry, setAltitude, feature);
         }
         feature.updateExtent(geometry);
     },

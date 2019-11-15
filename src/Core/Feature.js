@@ -31,25 +31,26 @@ export class FeatureGeometry {
     constructor(feature) {
         this.extent = feature.extent ? defaultExtent(feature.crs) : undefined;
         this.indices = [];
-        this._feature = feature;
         this.properties = {};
         this._currentExtent = feature.extent ? defaultExtent(feature.crs) : undefined;
+        this.size = feature.size;
     }
     /**
      * Add a new marker to indicate the starting of sub geometry and extends the vertices buffer.
      * Then you have to push new the coordinates of sub geometry.
      * The sub geometry stored in indices, see constructor for more information.
-     * @param {number} count count of vertices
+     * @param {number} count - count of vertices
+     * @param {Feature} feature - the feature containing the geometry
      */
-    startSubGeometry(count) {
+    startSubGeometry(count, feature) {
         const last = this.indices.length - 1;
-        const extent = this.extent ? defaultExtent(this._feature.crs) : undefined;
+        const extent = this.extent ? defaultExtent(feature.crs) : undefined;
         const offset = last > -1 ?
             this.indices[last].offset + this.indices[last].count :
-            this._feature.vertices.length / this.size;
+            feature.vertices.length / this.size;
         this.indices.push({ offset, count, extent });
         this._currentExtent = extent;
-        _extendBuffer(this._feature, count);
+        _extendBuffer(feature, count);
     }
 
     /**
@@ -57,16 +58,17 @@ export class FeatureGeometry {
      * `startSubGeometry`, this function close sub geometry. The sub geometry
      * stored in indices, see constructor for more information.
      * @param {number} count count of vertices
+     * @param {Feature} feature - the feature containing the geometry
      */
-    closeSubGeometry(count) {
+    closeSubGeometry(count, feature) {
         const last = this.indices.length - 1;
         const offset = last > -1 ?
             this.indices[last].offset + this.indices[last].count :
-            this._feature.vertices.length / this.size - count;
+            feature.vertices.length / this.size - count;
         this.indices.push({ offset, count, extent: this._currentExtent });
         if (this.extent) {
             this.extent.union(this._currentExtent);
-            this._currentExtent = defaultExtent(this._feature.crs);
+            this._currentExtent = defaultExtent(feature.crs);
         }
     }
 
@@ -77,16 +79,17 @@ export class FeatureGeometry {
     /**
      * Push new coordinates in vertices buffer.
      * @param {Coordinates} coord The coordinates to push.
+     * @param {Feature} feature - the feature containing the geometry
      */
-    pushCoordinates(coord) {
-        if (coord.crs !== this._feature.crs) {
-            coord.as(this._feature.crs, coord);
+    pushCoordinates(coord, feature) {
+        if (coord.crs !== feature.crs) {
+            coord.as(feature.crs, coord);
         }
-        if (this._feature.normals) {
-            coord.geodesicNormal.toArray(this._feature.normals, this._feature._pos);
+        if (feature.normals) {
+            coord.geodesicNormal.toArray(feature.normals, feature._pos);
         }
 
-        this._feature._pushValues(this._feature, coord.x, coord.y, coord.z);
+        feature._pushValues(coord.x, coord.y, coord.z);
         // expand extent if present
         if (this._currentExtent) {
             this._currentExtent.expandByCoordinates(coord);
@@ -94,31 +97,25 @@ export class FeatureGeometry {
     }
 
     /**
-    * Push new values coordinates in vertices buffer.
-    * No geographical conversion is made or the normal doesn't stored.
-    *
-    * @param {number} long The longitude coordinate.
-    * @param {number} lat The latitude coordinate.
-    * @param {number} [alt=0] The altitude coordinate.
-    * @param {THREE.Vector3} [normal=THREE.Vector3(0,0,1)] the normal on coordinates.
-    */
-    pushCoordinatesValues(long, lat, alt = 0, normal = defaultNormal) {
-        if (this._feature.normals) {
-            normal.toArray(this._feature.normals, this._feature._pos);
+     * Push new values coordinates in vertices buffer.
+     * No geographical conversion is made or the normal doesn't stored.
+     *
+     * @param {Feature} feature - the feature containing the geometry
+     * @param {number} long The longitude coordinate.
+     * @param {number} lat The latitude coordinate.
+     * @param {number} [alt=0] The altitude coordinate.
+     * @param {THREE.Vector3} [normal=THREE.Vector3(0,0,1)] the normal on coordinates.
+     */
+    pushCoordinatesValues(feature, long, lat, alt = 0, normal = defaultNormal) {
+        if (feature.normals) {
+            normal.toArray(feature.normals, feature._pos);
         }
 
-        this._feature._pushValues(this._feature, long, lat, alt);
+        feature._pushValues(long, lat, alt);
         // expand extent if present
         if (this._currentExtent) {
             this._currentExtent.expandByValuesCoordinates(long, lat, alt);
         }
-    }
-    /**
-     * @returns {number} the number of values of the array that should be associated with a coordinates.
-     * The size is 3 with altitude and 2 without altitude.
-     */
-    get size() {
-        return this._feature.size;
     }
 
     /**
@@ -134,15 +131,15 @@ export class FeatureGeometry {
     }
 }
 
-function push2DValues(feature, value0, value1) {
-    feature.vertices[feature._pos++] = value0;
-    feature.vertices[feature._pos++] = value1;
+function push2DValues(value0, value1) {
+    this.vertices[this._pos++] = value0;
+    this.vertices[this._pos++] = value1;
 }
 
-function push3DValues(feature, value0, value1, value2 = 0) {
-    feature.vertices[feature._pos++] = value0;
-    feature.vertices[feature._pos++] = value1;
-    feature.vertices[feature._pos++] = value2;
+function push3DValues(value0, value1, value2 = 0) {
+    this.vertices[this._pos++] = value0;
+    this.vertices[this._pos++] = value1;
+    this.vertices[this._pos++] = value2;
 }
 
 export const FEATURE_TYPES = {
@@ -190,7 +187,7 @@ class Feature {
         this.size = options.withAltitude ? 3 : 2;
         this.extent = options.buildExtent ? defaultExtent(crs) : undefined;
         this._pos = 0;
-        this._pushValues = this.size === 3 ? push3DValues : push2DValues;
+        this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
     }
     /**
      * Instance a new {@link FeatureGeometry}  and push in {@link Feature}.
