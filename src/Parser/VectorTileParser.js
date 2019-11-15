@@ -54,14 +54,14 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
                         geometry = feature.bindNewGeometry();
                         geometry.properties = vtFeature.properties;
                     }
-                    geometry.closeSubGeometry(count);
+                    geometry.closeSubGeometry(count, feature);
                     geometry.getLastSubGeometry().ccw = sum < 0;
                 }
                 count = 0;
                 sum = 0;
             }
             count++;
-            geometry.pushCoordinatesValues(x, y);
+            geometry.pushCoordinatesValues(feature, x, y);
             if (count == 1) {
                 firstPoint.set(x, y);
                 lastPoint.set(x, y);
@@ -72,7 +72,7 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
         } else if (cmd === 7) {
             if (count) {
                 count++;
-                geometry.pushCoordinatesValues(firstPoint.x, firstPoint.y);
+                geometry.pushCoordinatesValues(feature, firstPoint.x, firstPoint.y);
                 if (classify) {
                     sum += (lastPoint.x - firstPoint.x) * (lastPoint.y + firstPoint.y);
                 }
@@ -88,7 +88,7 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
             geometry = feature.bindNewGeometry();
             geometry.properties = vtFeature.properties;
         }
-        geometry.closeSubGeometry(count);
+        geometry.closeSubGeometry(count, feature);
         geometry.getLastSubGeometry().ccw = sum < 0;
     }
     feature.updateExtent(geometry);
