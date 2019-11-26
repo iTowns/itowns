@@ -13,9 +13,6 @@ import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 
-// TEMPORY fix, on waiting THREE v110.
-THREE.ShaderChunk.logdepthbuf_fragment = THREE.ShaderChunk.logdepthbuf_fragment.replace('== 1.0', '> 0.5');
-
 export const VIEW_EVENTS = {
     /**
      * Fires when all the layers of the view are considered initialized.

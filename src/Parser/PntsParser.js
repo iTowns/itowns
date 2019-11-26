@@ -80,12 +80,12 @@ function parseFeatureBinary(array, byteOffset, FTJSONLength) {
     if (parseJSON.POSITION) {
         const byteOffsetPos = (parseJSON.POSITION.byteOffset + subArrayJson.length + byteOffset);
         const positionArray = new Float32Array(array, byteOffsetPos, lengthFeature * 3);
-        geometry.addAttribute('position', new THREE.BufferAttribute(positionArray, 3));
+        geometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3));
     }
     if (parseJSON.RGB) {
         const byteOffsetCol = parseJSON.RGB.byteOffset + subArrayJson.length + byteOffset;
         const colorArray = new Uint8Array(array, byteOffsetCol, lengthFeature * 3);
-        geometry.addAttribute('color', new THREE.BufferAttribute(colorArray, 3, true));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3, true));
     }
     if (parseJSON.POSITION_QUANTIZED) {
         throw new Error('For pnts loader, POSITION_QUANTIZED: not yet managed');

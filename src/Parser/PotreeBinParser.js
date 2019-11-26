@@ -98,7 +98,7 @@ export default {
             }
             elemOffset += attr.byteSize;
             attrOffset = elemOffset;
-            geometry.addAttribute(attr.attributeName, new THREE.BufferAttribute(array, attr.numElements, attr.normalized));
+            geometry.setAttribute(attr.attributeName, new THREE.BufferAttribute(array, attr.numElements, attr.normalized));
         }
 
         geometry.computeBoundingBox();

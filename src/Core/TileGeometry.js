@@ -22,11 +22,11 @@ class TileGeometry extends THREE.BufferGeometry {
         this.extent = params.extent;
 
         this.setIndex(buffers.index);
-        this.addAttribute('position', buffers.position);
-        this.addAttribute('normal', buffers.normal);
+        this.setAttribute('position', buffers.position);
+        this.setAttribute('normal', buffers.normal);
 
         for (let i = 0; i < buffers.uvs.length; i++) {
-            this.addAttribute(`uv_${i}`, buffers.uvs[i]);
+            this.setAttribute(`uv_${i}`, buffers.uvs[i]);
         }
 
         this.computeBoundingBox();

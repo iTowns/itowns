@@ -25,8 +25,8 @@ export default {
         const colors = new Uint8Array(buffer, 24 + 3 * 4 * numPoints, 4 * numPoints);
 
         const geometry = new THREE.BufferGeometry();
-        geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4, true));
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 4, true));
         geometry.boundingBox = box;
 
         return Promise.resolve(geometry);

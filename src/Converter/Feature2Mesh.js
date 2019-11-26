@@ -157,9 +157,9 @@ function featureToPoint(feature, options) {
     }
 
     const geom = new THREE.BufferGeometry();
-    geom.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-    if (batchIds) { geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
+    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+    if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
 
     return new THREE.Points(geom, pointMaterial);
 }
@@ -182,7 +182,7 @@ function featureToLine(feature, options) {
         vertices = new Float32Array(ptsIn);
     }
     const geom = new THREE.BufferGeometry();
-    geom.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 
     if (feature.geometry.length > 1) {
         const countIndices = (count - feature.geometry.length) * 2;
@@ -214,18 +214,18 @@ function featureToLine(feature, options) {
                 featureId++;
             }
         }
-        geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-        if (batchIds) { geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
+        geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+        if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
         geom.setIndex(new THREE.BufferAttribute(indices, 1));
         return new THREE.LineSegments(geom, lineMaterial);
     } else {
         const color = getProperty('color', options, randomColor, feature.geometry[0].properties);
         fillColorArray(colors, count, color);
-        geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+        geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         if (batchIds) {
             const id = options.batchId(feature.geometry.properties, featureId);
             fillBatchIdArray(id, batchIds, 0, count);
-            geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
+            geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
         }
         return new THREE.Line(geom, lineMaterial);
     }
@@ -280,9 +280,9 @@ function featureToPolygon(feature, options) {
     }
 
     const geom = new THREE.BufferGeometry();
-    geom.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-    if (batchIds) { geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
+    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+    if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
 
     geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
 
@@ -370,9 +370,9 @@ function featureToExtrudedPolygon(feature, options) {
     }
 
     const geom = new THREE.BufferGeometry();
-    geom.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geom.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-    if (batchIds) { geom.addAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
+    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+    if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
 
     geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
 
