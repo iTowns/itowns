@@ -139,7 +139,7 @@ function addPickingAttribute(points) {
     }
 
     points.baseId = baseId;
-    points.geometry.addAttribute('unique_id', new THREE.BufferAttribute(ids, 4, true));
+    points.geometry.setAttribute('unique_id', new THREE.BufferAttribute(ids, 4, true));
     return points;
 }
 

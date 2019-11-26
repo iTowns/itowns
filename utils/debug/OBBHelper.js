@@ -24,7 +24,7 @@ class OBBHelper extends THREE.LineSegments {
 
         const geometry = new THREE.BufferGeometry();
         geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-        geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
         const color = new THREE.Color(Math.random(), Math.random(), Math.random());
 
