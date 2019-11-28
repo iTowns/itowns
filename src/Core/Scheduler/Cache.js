@@ -1,5 +1,5 @@
-const data = new Map();
-const stats = new Map();
+let data = {};
+let entry;
 
 /**
  * This is a copy of the Map object, except that it also store a value for last
@@ -13,14 +13,16 @@ const stats = new Map();
  * @example
  * import Cache from './Cache';
  *
- * Cache.set('foo', { bar: 1 }, Cache.POLICIES.TEXTURE);
- * Cache.set('acme', { bar: 32 });
+ * Cache.set({ bar: 1 }, Cache.POLICIES.TEXTURE, 'foo');
+ * Cache.set({ bar: 32 }, Cache.POLICIES.INFINITE, 'foo', 'toto');
  *
  * Cache.get('foo');
  *
  * Cache.delete('foo');
  *
  * Cache.clear();
+ *
+ * Cache.flush();
  */
 const Cache = {
     /**
@@ -49,44 +51,68 @@ const Cache = {
      * @name module:Cache.get
      * @function
      *
-     * @param {string} key
+     * @param {string} key1
+     * @param {string} [key2]
+     * @param {string} [key3]
      *
      * @return {Object}
      */
-    get: (key) => {
-        const entry = data.get(key);
-        const stat = stats.get(key) || stats.set(key, { hit: 0, miss: 0 });
-
-        if (entry) {
-            stat.hit++;
-            entry.lastTimeUsed = Date.now();
-            return entry.value;
+    get: (key1, key2, key3) => {
+        if (data[key1] == undefined) {
+            // eslint-disable-next-line
+            return;
+        } else if (data[key1][key2] == undefined) {
+            return data[key1].value;
+        } else if (data[key1][key2][key3] == undefined) {
+            return data[key1][key2].value;
+        } else {
+            return data[key1][key2][key3].value;
         }
-
-        stat.miss++;
     },
 
     /**
-     * Adds or updates an entry with a specified key. A lifetime can be added,
-     * by specifying a numerical value or using the {@link Cache.POLICIES}
-     * values. By default an entry has an infinite lifetime.
+     * Adds or updates an entry with specified keys (up to 3). A lifetime can be
+     * added, by specifying a numerical value or using the {@link
+     * Cache.POLICIES} values. By default an entry has an infinite lifetime.
+     * Caution: it overrides any existing entry already set at this/those key/s.
      *
      * @name module:Cache.set
      * @function
      *
-     * @param {string} key
      * @param {Object} value
-     * @param {number} [lifetime]
+     * @param {number} [lifetime=Infinity]
+     * @param {string} key1
+     * @param {string} [key2]
+     * @param {string} [key3]
      *
      * @return {Object} the added value
      */
-    set: (key, value, lifetime = Infinity) => {
-        const entry = {
+    set: (value, lifetime = Infinity, key1, key2, key3) => {
+        entry = {
             value,
             lastTimeUsed: Date.now(),
             lifetime,
         };
-        data.set(key, entry);
+
+        if (key2 == undefined) {
+            data[key1] = entry;
+            return value;
+        }
+
+        if (!data[key1]) {
+            data[key1] = {};
+        }
+
+        if (key3 == undefined) {
+            data[key1][key2] = entry;
+            return value;
+        }
+
+        if (!data[key1][key2]) {
+            data[key1][key2] = {};
+        }
+
+        data[key1][key2][key3] = entry;
 
         return value;
     },
@@ -97,11 +123,21 @@ const Cache = {
      * @name module:Cache.delete
      * @function
      *
-     * @param {string} key
-     *
-     * @return {boolean} - Confirmation that the entry has been deleted.
+     * @param {string} key1
+     * @param {string} [key2]
+     * @param {string} [key3]
      */
-    delete: key => data.delete(key),
+    delete: (key1, key2, key3) => {
+        if (data[key1] == undefined) {
+            throw Error('Please specify at least a key of something to delete');
+        } else if (data[key1][key2] == undefined) {
+            delete data[key1];
+        } else if (data[key1][key2][key3] == undefined) {
+            delete data[key1][key2];
+        } else {
+            delete data[key1][key2][key3];
+        }
+    },
 
     /**
      * Removes all entries of the cache.
@@ -109,7 +145,9 @@ const Cache = {
      * @name module:Cache.clear
      * @function
      */
-    clear: data.clear(),
+    clear: () => {
+        data = {};
+    },
 
     /**
      * Flush the cache: entries that have been present for too long since the
@@ -121,32 +159,26 @@ const Cache = {
      * @name module:Cache.flush
      * @function
      *
-     * @param {number} [time]
-     *
-     * @return {Object} Statistics about the flush: `before` gives the number of
-     * entries before flushing, `after` the number after flushing, `hit` the
-     * number of total successful hit on resources in the cache, and `miss` the
-     * number of failed hit. The hit and miss are based since the last flush,
-     * and are reset on every flush.
+     * @param {number} [time=Date.now()]
      */
     flush: (time = Date.now()) => {
-        const before = data.size;
-
-        data.forEach((entry, key) => {
-            if (entry.lifetime < time - entry.lastTimeUsed) {
-                data.delete(key);
+        for (const i in data) {
+            if (data[i].lifetime < time - data[i].lastTimeUsed) {
+                delete data[i];
+            } else {
+                for (const j in data[i]) {
+                    if (data[i][j].lifetime < time - data[i][j].lastTimeUsed) {
+                        delete data[i][j];
+                    } else {
+                        for (const k in data[i][j]) {
+                            if (data[i][j][k].lifetime < time - data[i][j][k].lastTimeUsed) {
+                                delete data[i][j][k];
+                            }
+                        }
+                    }
+                }
             }
-        });
-
-        let hit = 0;
-        let miss = 0;
-        stats.forEach((stat) => {
-            hit += stat.hit;
-            miss += stat.miss;
-        });
-        stats.clear();
-
-        return { before, after: data.size, hit, miss };
+        }
     },
 };
 

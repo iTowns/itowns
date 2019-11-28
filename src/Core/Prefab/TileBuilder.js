@@ -8,14 +8,13 @@ export default function newTileGeometry(builder, params) {
     const { sharableExtent, quaternion, position } = builder.computeSharableExtent(params.extent);
     const south = sharableExtent.south.toFixed(6);
     const bufferKey = `${builder.projection}_${params.disableSkirt ? 0 : 1}_${params.segment}`;
-    const geometryKey = `${bufferKey}_${params.level}_${south}`;
-    let promiseGeometry = Cache.get(geometryKey);
+    let promiseGeometry = Cache.get(bufferKey, params.level, south);
 
     // build geometry if doesn't exist
     if (!promiseGeometry) {
         let resolve;
         promiseGeometry = new Promise((r) => { resolve = r; });
-        Cache.set(geometryKey, promiseGeometry);
+        Cache.set(promiseGeometry, Cache.POLICIES.INFINITE, bufferKey, params.level, south);
 
         params.extent = sharableExtent;
         params.center = builder.center(params.extent).clone();
@@ -49,7 +48,7 @@ export default function newTileGeometry(builder, params) {
                 geometry._count--;
                 if (geometry._count == 0) {
                     THREE.BufferGeometry.prototype.dispose.call(geometry);
-                    Cache.delete(bufferKey);
+                    Cache.delete(bufferKey, params.level, south);
                 }
             };
             resolve(geometry);
