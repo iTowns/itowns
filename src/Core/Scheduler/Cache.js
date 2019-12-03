@@ -62,11 +62,16 @@ const Cache = {
             // eslint-disable-next-line
             return;
         } else if (data[key1][key2] == undefined) {
-            return data[key1].value;
+            entry = data[key1];
         } else if (data[key1][key2][key3] == undefined) {
-            return data[key1][key2].value;
+            entry = data[key1][key2];
         } else {
-            return data[key1][key2][key3].value;
+            entry = data[key1][key2][key3];
+        }
+
+        if (entry.value) {
+            entry.lastTimeUsed = Date.now();
+            return entry.value;
         }
     },
 
@@ -80,14 +85,14 @@ const Cache = {
      * @function
      *
      * @param {Object} value
-     * @param {number} [lifetime=Infinity]
+     * @param {number} lifetime
      * @param {string} key1
      * @param {string} [key2]
      * @param {string} [key3]
      *
      * @return {Object} the added value
      */
-    set: (value, lifetime = Infinity, key1, key2, key3) => {
+    set: (value, lifetime, key1, key2, key3) => {
         entry = {
             value,
             lastTimeUsed: Date.now(),
