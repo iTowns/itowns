@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import AnimationPlayer, { Animation } from 'Core/AnimationPlayer';
+import AnimationPlayer from 'Core/AnimationPlayer';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 import CameraUtils from 'Utils/CameraUtils';
@@ -48,11 +48,10 @@ let lastTimeMouseMove = 0;
 
 // Animations and damping
 let enableAnimation = true;
-let player = null;
 const dampingFactor = 0.25;
 const dampingMove = new THREE.Quaternion(0, 0, 0, 1);
-const animationDampingMove = new Animation({ duration: 120, name: 'damping-move' });
-const animationDampingOrbital = new Animation({ duration: 60, name: 'damping-orbit' });
+const durationDampingMove = 120;
+const durationDampingOrbital = 60;
 
 // Pan Move
 const panVector = new THREE.Vector3();
@@ -157,7 +156,7 @@ let previous;
  * If it's enabled, the camera movement is decelerate.
  */
 function GlobeControls(view, targetCoordinate, range, globeRadius, options = {}) {
-    player = new AnimationPlayer();
+    const player = new AnimationPlayer();
     this._view = view;
     this.camera = view.camera.camera3D;
     this.domElement = view.mainLoop.gfxEngine.renderer.domElement;
@@ -446,7 +445,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         }
         // Launch animationdamping if mouse stops these movements
         if (this.enableDamping && state === states.ORBIT && player.isStopped() && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
-            player.playLater(animationDampingOrbital, 2);
+            player.playLater(durationDampingOrbital, 2);
         }
     };
 
@@ -540,65 +539,6 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
 
     const _onMouseMoveListener = onMouseMove.bind(this);
     const _onMouseUpListener = onMouseUp.bind(this);
-    function onMouseDown(event) {
-        CameraUtils.stop(view, this.camera);
-        return player.stop().then(() => {
-            if (this.enabled === false) { return; }
-            event.preventDefault();
-
-            updateTarget();
-            previous = CameraUtils.getTransformCameraLookingAtTarget(view, this.camera);
-            state = states.inputToState(event.button, currentKey);
-
-            const coords = view.eventToViewCoords(event);
-
-            switch (state) {
-                case states.ORBIT:
-                case states.PANORAMIC:
-                    rotateStart.copy(coords);
-                    break;
-                case states.MOVE_GLOBE: {
-                    // update picking on sphere
-                    if (view.getPickingPositionFromDepth(coords, pickingPoint)) {
-                        pickSphere.radius = pickingPoint.length();
-                        lastNormalizedIntersection.copy(pickingPoint).normalize();
-                        updateHelper.bind(this)(pickingPoint, helpers.picking);
-                    } else {
-                        state = states.NONE;
-                    }
-                    break;
-                }
-                case states.DOLLY:
-                    dollyStart.copy(coords);
-                    break;
-                case states.PAN:
-                    panStart.copy(coords);
-                    break;
-                default:
-            }
-            if (state != states.NONE) {
-                this.domElement.addEventListener('mousemove', _onMouseMoveListener, false);
-                this.domElement.addEventListener('mouseup', _onMouseUpListener, false);
-                this.domElement.addEventListener('mouseleave', _onMouseUpListener, false);
-                this.dispatchEvent(this.startEvent);
-            }
-        });
-    }
-
-    function ondblclick(event) {
-        if (this.enabled === false || currentKey) { return; }
-        return player.stop().then(() => {
-            const point = view.getPickingPositionFromDepth(view.eventToViewCoords(event));
-            const range = this.getRange();
-            if (point && range > this.minDistance) {
-                this.lookAtCoordinate({
-                    coord: new Coordinates('EPSG:4978', point),
-                    range: range * 0.6,
-                    time: 1500,
-                });
-            }
-        });
-    }
 
     this._handlingEvent = (current) => {
         current = current || CameraUtils.getTransformCameraLookingAtTarget(view, this.camera);
@@ -639,10 +579,75 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         }
     };
 
-    this._onEndingMove = (current) => {
+    const onEndingMove = (current) => {
+        if (this._onEndingMove) {
+            player.removeEventListener('animation-stopped', this._onEndingMove);
+            this._onEndingMove = null;
+        }
         state = states.NONE;
         this._handlingEvent(current);
     };
+
+    this._onEndingMove = null;
+
+    function onMouseDown(event) {
+        CameraUtils.stop(view, this.camera);
+        player.stop();
+        onEndingMove();
+        if (this.enabled === false) { return; }
+        event.preventDefault();
+
+        updateTarget();
+        previous = CameraUtils.getTransformCameraLookingAtTarget(view, this.camera);
+        state = states.inputToState(event.button, currentKey);
+
+        const coords = view.eventToViewCoords(event);
+
+        switch (state) {
+            case states.ORBIT:
+            case states.PANORAMIC:
+                rotateStart.copy(coords);
+                break;
+            case states.MOVE_GLOBE: {
+                // update picking on sphere
+                if (view.getPickingPositionFromDepth(coords, pickingPoint)) {
+                    pickSphere.radius = pickingPoint.length();
+                    lastNormalizedIntersection.copy(pickingPoint).normalize();
+                    updateHelper.bind(this)(pickingPoint, helpers.picking);
+                } else {
+                    state = states.NONE;
+                }
+                break;
+            }
+            case states.DOLLY:
+                dollyStart.copy(coords);
+                break;
+            case states.PAN:
+                panStart.copy(coords);
+                break;
+            default:
+        }
+        if (state != states.NONE) {
+            this.domElement.addEventListener('mousemove', _onMouseMoveListener, false);
+            this.domElement.addEventListener('mouseup', _onMouseUpListener, false);
+            this.domElement.addEventListener('mouseleave', _onMouseUpListener, false);
+            this.dispatchEvent(this.startEvent);
+        }
+    }
+
+    function ondblclick(event) {
+        if (this.enabled === false || currentKey) { return; }
+        player.stop();
+        const point = view.getPickingPositionFromDepth(view.eventToViewCoords(event));
+        const range = this.getRange();
+        if (point && range > this.minDistance) {
+            this.lookAtCoordinate({
+                coord: new Coordinates('EPSG:4978', point),
+                range: range * 0.6,
+                time: 1500,
+            });
+        }
+    }
 
     function onMouseUp() {
         if (this.enabled === false) { return; }
@@ -659,55 +664,58 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         //      * states.MOVE_GLOBE
         if (this.enableDamping) {
             if (state === states.ORBIT && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
-                player.play(animationDampingOrbital).then(this._onEndingMove);
+                player.play(durationDampingOrbital);
+                this._onEndingMove = () => onEndingMove();
+                player.addEventListener('animation-stopped', this._onEndingMove);
             } else if (state === states.MOVE_GLOBE && (Date.now() - lastTimeMouseMove < 50)) {
                 // animation since mouse up event occurs less than 50ms after the last mouse move
-                player.play(animationDampingMove).then(this._onEndingMove);
+                player.play(durationDampingMove);
+                this._onEndingMove = () => onEndingMove();
+                player.addEventListener('animation-stopped', this._onEndingMove);
             } else {
-                this._onEndingMove();
+                onEndingMove();
             }
         } else {
-            this._onEndingMove();
+            onEndingMove();
         }
     }
 
     function onMouseWheel(event) {
-        return player.stop().then(() => {
-            if (!this.enabled || !states.DOLLY.enable) { return; }
-            CameraUtils.stop(view, this.camera);
-            event.preventDefault();
-            event.stopPropagation();
+        player.stop();
+        if (!this.enabled || !states.DOLLY.enable) { return; }
+        CameraUtils.stop(view, this.camera);
+        event.preventDefault();
+        event.stopPropagation();
 
-            updateTarget();
-            let delta = 0;
+        updateTarget();
+        let delta = 0;
 
-            // WebKit / Opera / Explorer 9
-            if (event.wheelDelta !== undefined) {
-                delta = event.wheelDelta;
-            // Firefox
-            } else if (event.detail !== undefined) {
-                delta = -event.detail;
-            }
+        // WebKit / Opera / Explorer 9
+        if (event.wheelDelta !== undefined) {
+            delta = event.wheelDelta;
+        // Firefox
+        } else if (event.detail !== undefined) {
+            delta = -event.detail;
+        }
 
-            if (delta > 0) {
-                this.dollyOut();
-            } else if (delta < 0) {
-                this.dollyIn();
-            }
+        if (delta > 0) {
+            this.dollyOut();
+        } else if (delta < 0) {
+            this.dollyIn();
+        }
 
-            const previousRange = this.getRange();
-            update();
-            const newRange = this.getRange();
-            if (Math.abs(newRange - previousRange) / previousRange > 0.001) {
-                this.dispatchEvent({
-                    type: CONTROL_EVENTS.RANGE_CHANGED,
-                    previous: previousRange,
-                    new: newRange,
-                });
-            }
-            this.dispatchEvent(this.startEvent);
-            this.dispatchEvent(this.endEvent);
-        });
+        const previousRange = this.getRange();
+        update();
+        const newRange = this.getRange();
+        if (Math.abs(newRange - previousRange) / previousRange > 0.001) {
+            this.dispatchEvent({
+                type: CONTROL_EVENTS.RANGE_CHANGED,
+                previous: previousRange,
+                new: newRange,
+            });
+        }
+        this.dispatchEvent(this.startEvent);
+        this.dispatchEvent(this.endEvent);
     }
 
     function onKeyUp() {
@@ -716,75 +724,73 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
     }
 
     function onKeyDown(event) {
-        return player.stop().then(() => {
-            if (this.enabled === false || this.enableKeys === false) { return; }
-            currentKey = event.keyCode;
-            switch (event.keyCode) {
-                case states.PAN.up:
-                    this._mouseToPan(0, this.keyPanSpeed);
-                    state = states.PAN;
-                    update();
-                    break;
-                case states.PAN.bottom:
-                    this._mouseToPan(0, -this.keyPanSpeed);
-                    state = states.PAN;
-                    update();
-                    break;
-                case states.PAN.left:
-                    this._mouseToPan(this.keyPanSpeed, 0);
-                    state = states.PAN;
-                    update();
-                    break;
-                case states.PAN.right:
-                    this._mouseToPan(-this.keyPanSpeed, 0);
-                    state = states.PAN;
-                    update();
-                    break;
-                default:
-            }
-        });
+        player.stop();
+        if (this.enabled === false || this.enableKeys === false) { return; }
+        currentKey = event.keyCode;
+        switch (event.keyCode) {
+            case states.PAN.up:
+                this._mouseToPan(0, this.keyPanSpeed);
+                state = states.PAN;
+                update();
+                break;
+            case states.PAN.bottom:
+                this._mouseToPan(0, -this.keyPanSpeed);
+                state = states.PAN;
+                update();
+                break;
+            case states.PAN.left:
+                this._mouseToPan(this.keyPanSpeed, 0);
+                state = states.PAN;
+                update();
+                break;
+            case states.PAN.right:
+                this._mouseToPan(-this.keyPanSpeed, 0);
+                state = states.PAN;
+                update();
+                break;
+            default:
+        }
     }
 
     function onTouchStart(event) {
         // CameraUtils.stop(view);
-        return player.stop().then(() => {
-            if (this.enabled === false) { return; }
+        player.stop();
+        if (this.enabled === false) { return; }
 
-            state = states.touchToState(event.touches.length);
+        state = states.touchToState(event.touches.length);
 
-            updateTarget();
+        updateTarget();
 
-            if (state !== states.NONE) {
-                switch (state) {
-                    case states.MOVE_GLOBE: {
-                        const coords = view.eventToViewCoords(event);
-                        if (view.getPickingPositionFromDepth(coords, pickingPoint)) {
-                            pickSphere.radius = pickingPoint.length();
-                            lastNormalizedIntersection.copy(pickingPoint).normalize();
-                            updateHelper.bind(this)(pickingPoint, helpers.picking);
-                        } else {
-                            state = states.NONE;
-                        }
-                        break; }
-                    case states.ORBIT:
-                    case states.DOLLY: {
-                        const x = event.touches[0].pageX;
-                        const y = event.touches[0].pageY;
-                        const dx = x - event.touches[1].pageX;
-                        const dy = y - event.touches[1].pageY;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        dollyStart.set(0, distance);
-                        rotateStart.set(x, y);
-                        break; }
-                    case states.PAN:
-                        panStart.set(event.touches[0].pageX, event.touches[0].pageY);
-                        break;
-                    default:
-                }
-
-                this.dispatchEvent(this.startEvent);
+        if (state !== states.NONE) {
+            switch (state) {
+                case states.MOVE_GLOBE: {
+                    const coords = view.eventToViewCoords(event);
+                    if (view.getPickingPositionFromDepth(coords, pickingPoint)) {
+                        pickSphere.radius = pickingPoint.length();
+                        lastNormalizedIntersection.copy(pickingPoint).normalize();
+                        updateHelper.bind(this)(pickingPoint, helpers.picking);
+                    } else {
+                        state = states.NONE;
+                    }
+                    break; }
+                case states.ORBIT:
+                case states.DOLLY: {
+                    const x = event.touches[0].pageX;
+                    const y = event.touches[0].pageY;
+                    const dx = x - event.touches[1].pageX;
+                    const dy = y - event.touches[1].pageY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    dollyStart.set(0, distance);
+                    rotateStart.set(x, y);
+                    break; }
+                case states.PAN:
+                    panStart.set(event.touches[0].pageX, event.touches[0].pageY);
+                    break;
+                default:
             }
-        });
+
+            this.dispatchEvent(this.startEvent);
+        }
     }
 
     function onTouchMove(event) {
