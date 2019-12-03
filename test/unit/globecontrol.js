@@ -28,44 +28,33 @@ describe('GlobeControls', function () {
         viewer.controls._mouseToPan(10, 10);
         viewer.controls.update();
     });
-    it('mouse down', function (done) {
-        renderer.domElement.emitEvent('mousedown', event).then(() => {
-            renderer.domElement.emitEvent('mousemove', event);
-            renderer.domElement.emitEvent('mouseup', event);
-            done();
-        });
+    it('mouse down', function () {
+        renderer.domElement.emitEvent('mousedown', event);
+        renderer.domElement.emitEvent('mousemove', event);
+        renderer.domElement.emitEvent('mouseup', event);
     });
     it('dolly', function () {
         viewer.controls.dollyIn();
         viewer.controls.dollyOut();
     });
-    it('mouse down + crtl', function (done) {
+    it('mouse down + crtl', function () {
         event.keyCode = 17;
-        renderer.domElement.emitEvent('keydown', event).then(() => {
-            renderer.domElement.emitEvent('mousedown', event).then(() => {
-                renderer.domElement.emitEvent('mousemove', event);
-                renderer.domElement.emitEvent('mouseup', event);
-                renderer.domElement.emitEvent('keyup', event);
-                done();
-            });
-        });
+        renderer.domElement.emitEvent('keydown', event);
+        renderer.domElement.emitEvent('mousedown', event);
+        renderer.domElement.emitEvent('mousemove', event);
+        renderer.domElement.emitEvent('mouseup', event);
+        renderer.domElement.emitEvent('keyup', event);
     });
-    it('mouse wheel', function (done) {
-        renderer.domElement.emitEvent('mousewheel', event).then(() => {
-            done();
-        });
+    it('mouse wheel', function () {
+        renderer.domElement.emitEvent('mousewheel', event);
     });
-    it('mouse dblclick', function (done) {
-        renderer.domElement.emitEvent('dblclick', event).then(() => {
-            done();
-        });
+    it('mouse dblclick', function () {
+        renderer.domElement.emitEvent('dblclick', event);
     });
 
     event.touches = [1, 1];
-    it('touch start', function (done) {
-        renderer.domElement.emitEvent('touchstart', event).then(() => {
-            done();
-        });
+    it('touch start', function () {
+        renderer.domElement.emitEvent('touchstart', event);
     });
 
     it('touch move', function () {
