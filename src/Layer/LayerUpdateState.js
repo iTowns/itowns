@@ -4,6 +4,7 @@ const UPDATE_STATE = {
     ERROR: 2,
     DEFINITIVE_ERROR: 3,
     FINISHED: 4,
+    FORCE: 5,
 };
 const PAUSE_BETWEEN_ERRORS = [1.0, 3.0, 7.0, 60.0];
 
@@ -21,7 +22,8 @@ function LayerUpdateState() {
 
 LayerUpdateState.prototype.canTryUpdate = function canTryUpdate(timestamp = Date.now()) {
     switch (this.state) {
-        case UPDATE_STATE.IDLE: {
+        case UPDATE_STATE.IDLE:
+        case UPDATE_STATE.FORCE: {
             return true;
         }
         case UPDATE_STATE.DEFINITIVE_ERROR:
@@ -71,6 +73,14 @@ LayerUpdateState.prototype.failure = function failure(timestamp, definitive, fai
 
 LayerUpdateState.prototype.inError = function inError() {
     return this.state == UPDATE_STATE.DEFINITIVE_ERROR || this.state == UPDATE_STATE.ERROR;
+};
+
+LayerUpdateState.prototype.forceUpdate = function forceUpdate() {
+    this.state = UPDATE_STATE.FORCE;
+};
+
+LayerUpdateState.prototype.isForcingUpdate = function isForcingUpdate() {
+    return this.state === UPDATE_STATE.FORCE;
 };
 
 export default LayerUpdateState;

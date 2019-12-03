@@ -33,14 +33,21 @@ function parseSourceData(data, extDest, layer) {
     return source.parser(data, options).then(parsedFile => source.onParsedFile(parsedFile));
 }
 
-function fetchSourceData(extSrc, layer) {
+const networkOptions = {};
+function fetchSourceData(extSrc, layer, reload) {
     const source = layer.source;
     // If source, we must fetch and convert data
     // URL of the resource you want to fetch
     const url = source.urlFromExtent(extSrc);
 
+    Object.assign(networkOptions, source.networkOptions);
+    // Force reload if the requester has been refreshed
+    if (reload) {
+        networkOptions.cache = 'reload';
+    }
+
     // Fetch data
-    return source.fetcher(url, source.networkOptions).then((f) => {
+    return source.fetcher(url, networkOptions).then((f) => {
         f.extent = extSrc;
         return f;
     });
@@ -69,7 +76,7 @@ export default {
                 const extDest = extentsDestination[i];
 
                 // Already fetched and parsed data that can be used
-                const validedParsedData = isValidData(parsedData[i], extDest, layer.isValidData) || source.parsedData;
+                const validedParsedData = !command.forceUpdate && (isValidData(parsedData[i], extDest, layer.isValidData) || source.parsedData);
                 if (validedParsedData) {
                     // Convert
                     convertedSourceData = layer.convert(validedParsedData, extDest, layer);
@@ -79,7 +86,7 @@ export default {
                         .then(parsedData => layer.convert(parsedData, extDest, layer), err => error(err, source));
                 } else {
                     // Fetch, parse and convert
-                    convertedSourceData = fetchSourceData(extSource, layer)
+                    convertedSourceData = fetchSourceData(extSource, layer, command.forceUpdate)
                         .then(fetchedData => parseSourceData(fetchedData, extDest, layer), err => error(err, source))
                         .then(parsedData => layer.convert(parsedData, extDest, layer), err => error(err, source));
                 }

@@ -198,8 +198,8 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
     }
 
     // TODO: rename to setColorLayerIds and add setElevationLayerIds ?
-    setSequence(sequenceLayer) {
-        this.colorLayerIds = sequenceLayer;
+    setSequence(sequenceLayer = []) {
+        this.colorLayerIds = sequenceLayer.slice(0);
         this.layersNeedUpdate = true;
     }
 

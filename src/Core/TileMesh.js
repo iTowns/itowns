@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import CRS from 'Core/Geographic/Crs';
+import Cache from 'Core/Scheduler/Cache';
 
 /**
  * A TileMesh is a THREE.Mesh with a geometricError and an OBB
@@ -99,6 +100,39 @@ class TileMesh extends THREE.Mesh {
     onBeforeRender() {
         if (this.material.layersNeedUpdate) {
             this.material.updateLayersUniforms();
+        }
+    }
+
+    /**
+     * Refresh a material of this tile, associated with a specific layer. Only
+     * works with ColorLayer and ElevationLayer for now. It also can't work with
+     * a layer containing images like `png` or `jpeg`, as there is no way to
+     * specify the necessary flag to retrieve images again from a server. Once
+     * this method called, you need to call `view.notifyChange(node)` if you
+     * want the update to take place.
+     *
+     * @param {ColorLayer|ElevationLayer} layer - The layer associated to the
+     * material.
+     * @param {boolean} [traverse=false] - Refresh the children of the tile - if
+     * any.
+     */
+    refreshMaterial(layer, traverse = false) {
+        if (layer.isColorLayer || layer.isElevationLayer) {
+            const materialLayer = this.material.getLayer(layer.id);
+            if (materialLayer) {
+                materialLayer.textures.forEach(t => Cache.delete(layer.source.uid, layer.id, t.extent.toString('-')));
+            }
+
+            this.material.removeLayer(layer.id);
+            this.layerUpdateState[layer.id].forceUpdate();
+
+            if (traverse) {
+                this.traverse((c) => {
+                    if (c.isTileMesh) {
+                        c.refreshMaterial(layer);
+                    }
+                });
+            }
         }
     }
 }

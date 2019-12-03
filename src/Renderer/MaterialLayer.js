@@ -139,7 +139,7 @@ class MaterialLayer {
     }
 
     setTextures(textures, pitchs) {
-        this.dispose(false);
+        this.dispose();
         for (let i = 0, il = textures.length; i < il; ++i) {
             this.setTexture(i, textures[i], pitchs[i]);
         }

@@ -29,7 +29,7 @@ function refinementCommandCancellationFn(cmd) {
     return !cmd.requester.material.visible;
 }
 
-function buildCommand(view, layer, extentsSource, extentsDestination, requester, parsedData) {
+function buildCommand(view, layer, extentsSource, extentsDestination, requester, forceUpdate, parsedData) {
     return {
         view,
         layer,
@@ -39,7 +39,17 @@ function buildCommand(view, layer, extentsSource, extentsDestination, requester,
         parsedData,
         priority: materialCommandQueuePriorityFunction(requester.material),
         earlyDropFunction: refinementCommandCancellationFn,
+        forceUpdate,
     };
+}
+
+function createMaterialLayer(material, layer, parent, extentsDestination) {
+    // Create new MaterialLayer
+    const nodeLayer = material.addLayer(layer);
+    // Init the new MaterialLayer by parent
+    const parentLayer = parent.material && parent.material.getLayer(layer.id);
+    nodeLayer.initFromParent(parentLayer, extentsDestination);
+    return nodeLayer;
 }
 
 export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
@@ -71,11 +81,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         }
 
         if (!nodeLayer) {
-            // Create new MaterialLayer
-            nodeLayer = material.addLayer(layer);
-            // Init the new MaterialLayer by parent
-            const parentLayer = parent.material && parent.material.getLayer(layer.id);
-            nodeLayer.initFromParent(parentLayer, extentsDestination);
+            nodeLayer = createMaterialLayer(material, layer, parent, extentsDestination);
         }
 
         // Proposed new process, two separate processes:
@@ -88,6 +94,12 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             context.view.notifyChange(node, false);
             return;
         }
+    }
+
+    let forceUpdate = false;
+    if (node.layerUpdateState[layer.id].isForcingUpdate()) {
+        nodeLayer = createMaterialLayer(material, layer, parent, extentsDestination);
+        forceUpdate = true;
     }
 
     // Node is hidden, no need to update it
@@ -143,7 +155,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
     node.layerUpdateState[layer.id].newTry();
     const parsedData = nodeLayer.textures.map(t => t.parsedData);
-    const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, parsedData);
+    const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, forceUpdate, parsedData);
 
     return context.scheduler.execute(command).then(
         (result) => {
@@ -171,15 +183,13 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     const extentsDestination = node.getExtentsByProjection(layer.projection);
     // Init elevation layer, and inherit from parent if possible
     let nodeLayer = material.getElevationLayer();
-    if (!nodeLayer) {
-        nodeLayer = material.addLayer(layer);
-    }
 
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-        const parentLayer = parent.material && parent.material.getLayer(layer.id);
-        nodeLayer.initFromParent(parentLayer, extentsDestination);
+        if (!nodeLayer) {
+            nodeLayer = createMaterialLayer(material, layer, parent, extentsDestination);
+        }
 
         // If the texture resolution has a poor precision for this node, we don't
         // extract min-max from the texture (too few information), we instead chose
@@ -202,6 +212,12 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             context.view.notifyChange(node, false);
             return;
         }
+    }
+
+    let forceUpdate = false;
+    if (node.layerUpdateState[layer.id].isForcingUpdate()) {
+        nodeLayer = createMaterialLayer(material, layer, parent, extentsDestination);
+        forceUpdate = true;
     }
 
     // Possible conditions to *not* update the elevation texture
@@ -229,7 +245,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     }
 
     node.layerUpdateState[layer.id].newTry();
-    const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node);
+    const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, forceUpdate);
 
     return context.scheduler.execute(command).then(
         (textures) => {
