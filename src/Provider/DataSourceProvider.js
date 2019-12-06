@@ -60,10 +60,9 @@ export default {
 
             // Tag to Cache data
             const exTag = source.isVectorSource ? extentsDestination[i] : extSource;
-            const tag = `${source.uid}-${exTag.toString('-')}`;
 
             // Get converted source data, in cache
-            let convertedSourceData = Cache.get(tag);
+            let convertedSourceData = Cache.get(source.uid, layer.id, exTag.toString('-'));
 
             // If data isn't in cache
             if (!convertedSourceData) {
@@ -85,7 +84,7 @@ export default {
                         .then(parsedData => layer.convert(parsedData, extDest, layer), err => error(err, source));
                 }
                 // Put converted data in cache
-                Cache.set(tag, convertedSourceData, Cache.POLICIES.TEXTURE);
+                Cache.set(convertedSourceData, Cache.POLICIES.TEXTURE, source.uid, layer.id, exTag.toString('-'));
             }
 
             // Verify some command is resolved
