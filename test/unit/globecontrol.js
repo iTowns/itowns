@@ -25,7 +25,7 @@ describe('GlobeControls', function () {
         });
     });
     it('update', function () {
-        viewer.controls._mouseToPan(10, 10);
+        viewer.controls.mouseToPan(10, 10);
         viewer.controls.update();
     });
     it('mouse down', function () {
