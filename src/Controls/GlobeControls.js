@@ -130,7 +130,27 @@ export const CONTROL_EVENTS = {
     CAMERA_TARGET_CHANGED: 'camera-target-changed',
 };
 
+const quaterPano = new THREE.Quaternion();
+const quaterAxis = new THREE.Quaternion();
+const axisX = new THREE.Vector3(1, 0, 0);
+let minDistanceZ = Infinity;
+const lastNormalizedIntersection = new THREE.Vector3();
+const normalizedIntersection = new THREE.Vector3();
+const raycaster = new THREE.Raycaster();
+const targetPosition = new THREE.Vector3();
+const pickedPosition = new THREE.Vector3();
+
 let previous;
+
+function getRangeFromScale(scale, pitch, fov, height) {
+    // Screen pitch, in millimeters
+    pitch = (pitch || 0.28) / 1000;
+    fov = THREE.Math.degToRad(fov);
+    // Invert one unit projection (see getDollyScale)
+    const range = pitch * height / (scale * 2 * Math.tan(fov * 0.5));
+
+    return range;
+}
 
 /**
  * GlobeControls is a camera controller
@@ -155,104 +175,172 @@ let previous;
  * @property   {bool} enableDamping enable camera damping, if it's disabled the camera immediately when the mouse button is released.
  * If it's enabled, the camera movement is decelerate.
  */
-function GlobeControls(view, targetCoordinate, range, globeRadius, options = {}) {
-    const player = new AnimationPlayer();
-    this._view = view;
-    this.camera = view.camera.camera3D;
-    this.domElement = view.mainLoop.gfxEngine.renderer.domElement;
+class GlobeControls extends THREE.EventDispatcher {
+    constructor(view, targetCoordinate, range, globeRadius, options = {}) {
+        super();
+        this.player = new AnimationPlayer();
+        this._view = view;
+        this.camera = view.camera.camera3D;
+        this.domElement = view.mainLoop.gfxEngine.renderer.domElement;
 
-    // State control
-    let state;
-    const states = new StateControl();
-    state = states.NONE;
+        // State control
+        this.states = new StateControl();
+        this.state = this.states.NONE;
 
-    this.getStates = () => states;
-    this.isPaused = () => state == states.NONE;
+        this.getStates = () => this.states;
+        this.isPaused = () => this.state == this.states.NONE;
 
-    // Set to false to disable this control
-    this.enabled = true;
+        // Set to false to disable this control
+        this.enabled = true;
 
-    // This option actually enables dollying in and out; left as "zoom" for
-    // backwards compatibility
-    this.zoomSpeed = options.zoomSpeed || 2.0;
+        // This option actually enables dollying in and out; left as "zoom" for
+        // backwards compatibility
+        this.zoomSpeed = options.zoomSpeed || 2.0;
 
-    // Limits to how far you can dolly in and out ( PerspectiveCamera only )
-    this.minDistance = options.minDistance || 250;
-    this.maxDistance = options.maxDistance || globeRadius * 8.0;
+        // Limits to how far you can dolly in and out ( PerspectiveCamera only )
+        this.minDistance = options.minDistance || 250;
+        this.maxDistance = options.maxDistance || globeRadius * 8.0;
 
-    // Limits to how far you can zoom in and out ( OrthographicCamera only )
-    this.minZoom = 0;
-    this.maxZoom = Infinity;
+        // Limits to how far you can zoom in and out ( OrthographicCamera only )
+        this.minZoom = 0;
+        this.maxZoom = Infinity;
 
-    // Set to true to disable this control
-    this.rotateSpeed = options.rotateSpeed || 0.25;
+        // Set to true to disable this control
+        this.rotateSpeed = options.rotateSpeed || 0.25;
 
-    // Set to true to disable this control
-    this.keyPanSpeed = 7.0; // pixels moved per arrow key push
+        // Set to true to disable this control
+        this.keyPanSpeed = 7.0; // pixels moved per arrow key push
 
-    // How far you can orbit vertically, upper and lower limits.
-    // Range is 0 to Math.PI radians.
-    // TODO Warning minPolarAngle = 0.01 -> it isn't possible to be perpendicular on Globe
-    this.minPolarAngle = THREE.Math.degToRad(0.5); // radians
-    this.maxPolarAngle = THREE.Math.degToRad(86); // radians
+        // How far you can orbit vertically, upper and lower limits.
+        // Range is 0 to Math.PI radians.
+        // TODO Warning minPolarAngle = 0.01 -> it isn't possible to be perpendicular on Globe
+        this.minPolarAngle = THREE.Math.degToRad(0.5); // radians
+        this.maxPolarAngle = THREE.Math.degToRad(86); // radians
 
-    // How far you can orbit horizontally, upper and lower limits.
-    // If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
-    this.minAzimuthAngle = -Infinity; // radians
-    this.maxAzimuthAngle = Infinity; // radians
+        // How far you can orbit horizontally, upper and lower limits.
+        // If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
+        this.minAzimuthAngle = -Infinity; // radians
+        this.maxAzimuthAngle = Infinity; // radians
 
-    // Set collision options
-    this.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
-    this.minDistanceCollision = 60;
+        // Set collision options
+        this.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
+        this.minDistanceCollision = 60;
 
-    // Set to true to disable use of the keys
-    this.enableKeys = true;
+        // Set to true to disable use of the keys
+        this.enableKeys = true;
 
-    // Enable Damping
-    this.enableDamping = true;
+        // Enable Damping
+        this.enableDamping = true;
+        this.startEvent = {
+            type: 'start',
+        };
+        this.endEvent = {
+            type: 'end',
+        };
+        // Update helper
+        this.updateHelper = enableTargetHelper ? (position, helper) => {
+            positionObject(position, helper);
+            view.notifyChange(this.camera);
+        } : function empty() {};
 
-    this.startEvent = {
-        type: 'start',
-    };
-    this.endEvent = {
-        type: 'end',
-    };
+        this._onEndingMove = null;
+        this._onMouseMove = this.onMouseMove.bind(this);
+        this._onMouseUp = this.onMouseUp.bind(this);
+        this._onMouseDown = this.onMouseDown.bind(this);
+        this._onMouseWheel = this.onMouseWheel.bind(this);
+        this._onContextMenuListener = this.onContextMenuListener.bind(this);
+        this._ondblclick = this.ondblclick.bind(this);
+        this._onTouchStart = this.onTouchStart.bind(this);
+        this._update = this.update.bind(this);
+        this._onTouchMove = this.onTouchMove.bind(this);
+        this._onKeyDown = this.onKeyDown.bind(this);
+        this._onKeyUp = this.onKeyUp.bind(this);
+        this._onBlurListener = this.onBlurListener.bind(this);
 
-    this.getDollyScale = function getDollyScale() {
+        // Instance all
+        this.domElement.addEventListener('contextmenu', this._onContextMenuListener, false);
+        this.domElement.addEventListener('mousedown', this._onMouseDown, false);
+        this.domElement.addEventListener('mousewheel', this._onMouseWheel, false);
+        this.domElement.addEventListener('dblclick', this._ondblclick, false);
+        this.domElement.addEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
+
+        this.domElement.addEventListener('touchstart', this._onTouchStart, false);
+        this.domElement.addEventListener('touchend', this._onMouseUp, false);
+        this.domElement.addEventListener('touchmove', this._onTouchMove, false);
+
+        // refresh control for each animation's frame
+        this.player.addEventListener('animation-frame', this._update);
+
+        // TODO: Why windows
+        window.addEventListener('keydown', this._onKeyDown, false);
+        window.addEventListener('keyup', this._onKeyUp, false);
+
+        // Reset key/mouse when window loose focus
+        window.addEventListener('blur', this._onBlurListener.bind(this));
+
+        view.scene.add(cameraTarget);
+        if (enableTargetHelper) {
+            cameraTarget.add(helpers.target);
+            view.scene.add(helpers.picking);
+            const layerTHREEjs = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
+            helpers.target.layers.set(layerTHREEjs);
+            helpers.picking.layers.set(layerTHREEjs);
+            this.camera.layers.enable(layerTHREEjs);
+        }
+
+        positionObject(targetCoordinate.as('EPSG:4978', xyz), cameraTarget);
+
+        this.lookAtCoordinate({
+            coord: targetCoordinate,
+            tilt: 89.5,
+            heading: 0,
+            range }, false);
+    }
+
+    get dollyScale() {
         return 0.95 ** this.zoomSpeed;
-    };
+    }
 
-    this.rotateLeft = function rotateLeft(angle = 0) {
+    onEndingMove(current) {
+        if (this._onEndingMove) {
+            this.player.removeEventListener('animation-stopped', this._onEndingMove);
+            this._onEndingMove = null;
+        }
+        this.state = this.states.NONE;
+        this.handlingEvent(current);
+    }
+
+    rotateLeft(angle = 0) {
         sphericalDelta.theta -= angle;
-    };
+    }
 
-    this.rotateUp = function rotateUp(angle = 0) {
+    rotateUp(angle = 0) {
         sphericalDelta.phi -= angle;
-    };
+    }
 
     // pass in distance in world space to move left
-    this.panLeft = function panLeft(distance) {
+    panLeft(distance) {
         const te = this.camera.matrix.elements;
         // get X column of matrix
         panOffset.fromArray(te);
         panOffset.multiplyScalar(-distance);
         panVector.add(panOffset);
-    };
+    }
 
     // pass in distance in world space to move up
-    this.panUp = function panUp(distance) {
+    panUp(distance) {
         const te = this.camera.matrix.elements;
         // get Y column of matrix
         panOffset.fromArray(te, 4);
         panOffset.multiplyScalar(distance);
         panVector.add(panOffset);
-    };
+    }
 
     // pass in x,y of change desired in pixel space,
     // right and down are positive
-    this._mouseToPan = function _mouseToPan(deltaX, deltaY) {
-        const gfx = view.mainLoop.gfxEngine;
-        state = states.PAN;
+    mouseToPan(deltaX, deltaY) {
+        const gfx = this._view.mainLoop.gfxEngine;
+        this.state = this.states.PAN;
         if (this.camera.isPerspectiveCamera) {
             let targetDistance = this.camera.position.distanceTo(this.getCameraTargetPosition());
             // half of the fov is center to top of screen
@@ -266,11 +354,11 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
             this.panLeft(deltaX * (this.camera.right - this.camera.left) / gfx.width);
             this.panUp(deltaY * (this.camera.top - this.camera.bottom) / gfx.height);
         }
-    };
+    }
 
-    this.dollyIn = function dollyIn(dollyScale) {
+    dollyIn(dollyScale) {
         if (dollyScale === undefined) {
-            dollyScale = this.getDollyScale();
+            dollyScale = this.dollyScale;
         }
 
         if (this.camera.isPerspectiveCamera) {
@@ -278,13 +366,13 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         } else if (this.camera.isOrthographicCamera) {
             this.camera.zoom = THREE.Math.clamp(this.camera.zoom * dollyScale, this.minZoom, this.maxZoom);
             this.camera.updateProjectionMatrix();
-            view.notifyChange(this.camera);
+            this._view.notifyChange(this.camera);
         }
-    };
+    }
 
-    this.dollyOut = function dollyOut(dollyScale) {
+    dollyOut(dollyScale) {
         if (dollyScale === undefined) {
-            dollyScale = this.getDollyScale();
+            dollyScale = this.dollyScale;
         }
 
         if (this.camera.isPerspectiveCamera) {
@@ -292,15 +380,11 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         } else if (this.camera.isOrthographicCamera) {
             this.camera.zoom = THREE.Math.clamp(this.camera.zoom / dollyScale, this.minZoom, this.maxZoom);
             this.camera.updateProjectionMatrix();
-            view.notifyChange(this.camera);
+            this._view.notifyChange(this.camera);
         }
-    };
+    }
 
-    const quaterPano = new THREE.Quaternion();
-    const quaterAxis = new THREE.Quaternion();
-    const axisX = new THREE.Vector3(1, 0, 0);
-    let minDistanceZ = Infinity;
-    const getMinDistanceCameraBoundingSphereObbsUp = (tile) => {
+    getMinDistanceCameraBoundingSphereObbsUp(tile) {
         if (tile.level > 10 && tile.children.length == 1 && tile.geometry) {
             const obb = tile.obb;
             const sphereCamera = { position: this.camera.position.clone(), radius: this.minDistanceCollision };
@@ -308,28 +392,25 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                 minDistanceZ = Math.min(sphereCamera.position.z - obb.box3D.max.z, minDistanceZ);
             }
         }
-    };
+    }
 
-    const lastNormalizedIntersection = new THREE.Vector3();
-    const normalizedIntersection = new THREE.Vector3();
-
-    const update = () => {
+    update() {
         // We compute distance between camera's bounding sphere and geometry's obb up face
         if (this.handleCollision) { // We check distance to the ground/surface geometry
             // add minDistanceZ between camera's bounding and tiles's oriented bounding box (up face only)
             // Depending on the distance of the camera with obbs, we add a slowdown or constrain to the movement.
             // this constraint or deceleration is suitable for two types of movement MOVE_GLOBE and ORBIT.
             // This constraint or deceleration inversely proportional to the camera/obb distance
-            if (view.tileLayer) {
+            if (this._view.tileLayer) {
                 minDistanceZ = Infinity;
-                for (const tile of view.tileLayer.level0Nodes) {
-                    tile.traverse(getMinDistanceCameraBoundingSphereObbsUp);
+                for (const tile of this._view.tileLayer.level0Nodes) {
+                    tile.traverse(this.getMinDistanceCameraBoundingSphereObbsUp.bind(this));
                 }
             }
         }
-        switch (state) {
+        switch (this.state) {
             // MOVE_GLOBE Rotate globe with mouse
-            case states.MOVE_GLOBE:
+            case this.states.MOVE_GLOBE:
                 if (minDistanceZ < 0) {
                     cameraTarget.translateY(-minDistanceZ);
                     this.camera.position.setLength(this.camera.position.length() - minDistanceZ);
@@ -343,12 +424,12 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                 this.camera.position.applyQuaternion(moveAroundGlobe);
                 break;
             // PAN Move camera in projection plan
-            case states.PAN:
+            case this.states.PAN:
                 this.camera.position.add(panVector);
                 cameraTarget.position.add(panVector);
                 break;
             // PANORAMIC Move target camera
-            case states.PANORAMIC: {
+            case this.states.PANORAMIC: {
                 this.camera.worldToLocal(cameraTarget.position);
                 const normal = this.camera.position.clone().normalize().applyQuaternion(this.camera.quaternion.clone().inverse());
                 quaterPano.setFromAxisAngle(normal, sphericalDelta.theta).multiply(quaterAxis.setFromAxisAngle(axisX, sphericalDelta.phi));
@@ -438,49 +519,40 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         // min(camera displacement, camera rotation in radians)^2 > EPS
         // using small-angle approximation cos(x/2) = 1 - x^2 / 8
         if (lastPosition.distanceToSquared(this.camera.position) > EPS || 8 * (1 - lastQuaternion.dot(this.camera.quaternion)) > EPS) {
-            view.notifyChange(this.camera);
+            this._view.notifyChange(this.camera);
 
             lastPosition.copy(this.camera.position);
             lastQuaternion.copy(this.camera.quaternion);
         }
         // Launch animationdamping if mouse stops these movements
-        if (this.enableDamping && state === states.ORBIT && player.isStopped() && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
-            player.playLater(durationDampingOrbital, 2);
+        if (this.enableDamping && this.state === this.states.ORBIT && this.player.isStopped() && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
+            this.player.playLater(durationDampingOrbital, 2);
         }
-    };
+    }
 
-    this.update = update;
-
-    // Update helper
-    const updateHelper = enableTargetHelper ? function updateHelper(position, helper) {
-        positionObject(position, helper);
-        view.notifyChange(this.camera);
-    } : function empty() {};
-
-    const raycaster = new THREE.Raycaster();
-    function onMouseMove(event) {
-        if (player.isPlaying()) {
-            player.stop();
+    onMouseMove(event) {
+        if (this.player.isPlaying()) {
+            this.player.stop();
         }
         if (this.enabled === false) { return; }
 
         event.preventDefault();
-        const coords = view.eventToViewCoords(event);
+        const coords = this._view.eventToViewCoords(event);
 
-        switch (state) {
-            case states.ORBIT:
-            case states.PANORAMIC: {
+        switch (this.state) {
+            case this.states.ORBIT:
+            case this.states.PANORAMIC: {
                 rotateEnd.copy(coords);
                 rotateDelta.subVectors(rotateEnd, rotateStart);
 
-                const gfx = view.mainLoop.gfxEngine;
+                const gfx = this._view.mainLoop.gfxEngine;
                 this.rotateLeft(2 * Math.PI * rotateDelta.x / gfx.width * this.rotateSpeed);
                 // rotating up and down along whole screen attempts to go 360, but limited to 180
                 this.rotateUp(2 * Math.PI * rotateDelta.y / gfx.height * this.rotateSpeed);
 
                 rotateStart.copy(rotateEnd);
                 break; }
-            case states.DOLLY:
+            case this.states.DOLLY:
                 dollyEnd.copy(coords);
                 dollyDelta.subVectors(dollyEnd, dollyStart);
 
@@ -491,16 +563,16 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                 }
                 dollyStart.copy(dollyEnd);
                 break;
-            case states.PAN:
+            case this.states.PAN:
                 panEnd.copy(coords);
                 panDelta.subVectors(panEnd, panStart);
 
-                this._mouseToPan(panDelta.x, panDelta.y);
+                this.mouseToPan(panDelta.x, panDelta.y);
 
                 panStart.copy(panEnd);
                 break;
-            case states.MOVE_GLOBE: {
-                const normalized = view.viewToNormalizedCoords(coords);
+            case this.states.MOVE_GLOBE: {
+                const normalized = this._view.viewToNormalizedCoords(coords);
                 raycaster.setFromCamera(normalized, this.camera);
                 raycaster.ray.intersectSphere(pickSphere, intersection);
                 // If there's intersection then move globe else we stop the move
@@ -509,22 +581,20 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                     moveAroundGlobe.setFromUnitVectors(normalizedIntersection, lastNormalizedIntersection);
                     lastTimeMouseMove = Date.now();
                 } else {
-                    onMouseUp.bind(this)();
+                    this.onMouseUp();
                 }
                 break; }
             default:
         }
 
-        if (state !== states.NONE) {
-            update();
+        if (this.state !== this.states.NONE) {
+            this.update();
         }
     }
 
-    const targetPosition = new THREE.Vector3();
-    const pickedPosition = new THREE.Vector3();
-    const updateTarget = () => {
+    updateTarget() {
         // Update camera's target position
-        view.getPickingPositionFromDepth(null, pickedPosition);
+        this._view.getPickingPositionFromDepth(null, pickedPosition);
         const distance = !isNaN(pickedPosition.x) ? this.camera.position.distanceTo(pickedPosition) : 100;
         targetPosition.set(0, 0, -distance);
         this.camera.localToWorld(targetPosition);
@@ -535,13 +605,10 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         targetPosition.copy(this.camera.position);
         targetPosition.applyMatrix4(cameraTarget.matrixWorldInverse);
         spherical.setFromVector3(targetPosition);
-    };
+    }
 
-    const _onMouseMoveListener = onMouseMove.bind(this);
-    const _onMouseUpListener = onMouseUp.bind(this);
-
-    this._handlingEvent = (current) => {
-        current = current || CameraUtils.getTransformCameraLookingAtTarget(view, this.camera);
+    handlingEvent(current) {
+        current = current || CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera);
         const diff = CameraUtils.getDiffParams(previous, current);
         if (diff) {
             if (diff.range) {
@@ -577,68 +644,57 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                 this.dispatchEvent(event);
             }
         }
-    };
+    }
 
-    const onEndingMove = (current) => {
-        if (this._onEndingMove) {
-            player.removeEventListener('animation-stopped', this._onEndingMove);
-            this._onEndingMove = null;
-        }
-        state = states.NONE;
-        this._handlingEvent(current);
-    };
-
-    this._onEndingMove = null;
-
-    function onMouseDown(event) {
-        CameraUtils.stop(view, this.camera);
-        player.stop();
-        onEndingMove();
+    onMouseDown(event) {
+        CameraUtils.stop(this._view, this.camera);
+        this.player.stop();
+        this.onEndingMove();
         if (this.enabled === false) { return; }
         event.preventDefault();
 
-        updateTarget();
-        previous = CameraUtils.getTransformCameraLookingAtTarget(view, this.camera);
-        state = states.inputToState(event.button, currentKey);
+        this.updateTarget();
+        previous = CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera);
+        this.state = this.states.inputToState(event.button, currentKey);
 
-        const coords = view.eventToViewCoords(event);
+        const coords = this._view.eventToViewCoords(event);
 
-        switch (state) {
-            case states.ORBIT:
-            case states.PANORAMIC:
+        switch (this.state) {
+            case this.states.ORBIT:
+            case this.states.PANORAMIC:
                 rotateStart.copy(coords);
                 break;
-            case states.MOVE_GLOBE: {
+            case this.states.MOVE_GLOBE: {
                 // update picking on sphere
-                if (view.getPickingPositionFromDepth(coords, pickingPoint)) {
+                if (this._view.getPickingPositionFromDepth(coords, pickingPoint)) {
                     pickSphere.radius = pickingPoint.length();
                     lastNormalizedIntersection.copy(pickingPoint).normalize();
-                    updateHelper.bind(this)(pickingPoint, helpers.picking);
+                    this.updateHelper(pickingPoint, helpers.picking);
                 } else {
-                    state = states.NONE;
+                    this.state = this.states.NONE;
                 }
                 break;
             }
-            case states.DOLLY:
+            case this.states.DOLLY:
                 dollyStart.copy(coords);
                 break;
-            case states.PAN:
+            case this.states.PAN:
                 panStart.copy(coords);
                 break;
             default:
         }
-        if (state != states.NONE) {
-            this.domElement.addEventListener('mousemove', _onMouseMoveListener, false);
-            this.domElement.addEventListener('mouseup', _onMouseUpListener, false);
-            this.domElement.addEventListener('mouseleave', _onMouseUpListener, false);
+        if (this.state != this.states.NONE) {
+            this.domElement.addEventListener('mousemove', this._onMouseMove, false);
+            this.domElement.addEventListener('mouseup', this._onMouseUp, false);
+            this.domElement.addEventListener('mouseleave', this._onMouseUp, false);
             this.dispatchEvent(this.startEvent);
         }
     }
 
-    function ondblclick(event) {
+    ondblclick(event) {
         if (this.enabled === false || currentKey) { return; }
-        player.stop();
-        const point = view.getPickingPositionFromDepth(view.eventToViewCoords(event));
+        this.player.stop();
+        const point = this._view.getPickingPositionFromDepth(this._view.eventToViewCoords(event));
         const range = this.getRange();
         if (point && range > this.minDistance) {
             this.lookAtCoordinate({
@@ -649,45 +705,45 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         }
     }
 
-    function onMouseUp() {
+    onMouseUp() {
         if (this.enabled === false) { return; }
 
-        this.domElement.removeEventListener('mousemove', _onMouseMoveListener, false);
-        this.domElement.removeEventListener('mouseup', _onMouseUpListener, false);
-        this.domElement.removeEventListener('mouseleave', _onMouseUpListener, false);
+        this.domElement.removeEventListener('mousemove', this._onMouseMove, false);
+        this.domElement.removeEventListener('mouseup', this._onMouseUp, false);
+        this.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
         this.dispatchEvent(this.endEvent);
 
-        player.stop();
+        this.player.stop();
 
         // Launch damping movement for :
-        //      * states.ORBIT
-        //      * states.MOVE_GLOBE
+        //      * this.states.ORBIT
+        //      * this.states.MOVE_GLOBE
         if (this.enableDamping) {
-            if (state === states.ORBIT && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
-                player.play(durationDampingOrbital);
-                this._onEndingMove = () => onEndingMove();
-                player.addEventListener('animation-stopped', this._onEndingMove);
-            } else if (state === states.MOVE_GLOBE && (Date.now() - lastTimeMouseMove < 50)) {
+            if (this.state === this.states.ORBIT && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
+                this.player.play(durationDampingOrbital);
+                this._onEndingMove = () => this.onEndingMove();
+                this.player.addEventListener('animation-stopped', this._onEndingMove);
+            } else if (this.state === this.states.MOVE_GLOBE && (Date.now() - lastTimeMouseMove < 50)) {
                 // animation since mouse up event occurs less than 50ms after the last mouse move
-                player.play(durationDampingMove);
-                this._onEndingMove = () => onEndingMove();
-                player.addEventListener('animation-stopped', this._onEndingMove);
+                this.player.play(durationDampingMove);
+                this._onEndingMove = () => this.onEndingMove();
+                this.player.addEventListener('animation-stopped', this._onEndingMove);
             } else {
-                onEndingMove();
+                this.onEndingMove();
             }
         } else {
-            onEndingMove();
+            this.onEndingMove();
         }
     }
 
-    function onMouseWheel(event) {
-        player.stop();
-        if (!this.enabled || !states.DOLLY.enable) { return; }
-        CameraUtils.stop(view, this.camera);
+    onMouseWheel(event) {
+        this.player.stop();
+        if (!this.enabled || !this.states.DOLLY.enable) { return; }
+        CameraUtils.stop(this._view, this.camera);
         event.preventDefault();
         event.stopPropagation();
 
-        updateTarget();
+        this.updateTarget();
         let delta = 0;
 
         // WebKit / Opera / Explorer 9
@@ -705,7 +761,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         }
 
         const previousRange = this.getRange();
-        update();
+        this.update();
         const newRange = this.getRange();
         if (Math.abs(newRange - previousRange) / previousRange > 0.001) {
             this.dispatchEvent({
@@ -718,63 +774,63 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         this.dispatchEvent(this.endEvent);
     }
 
-    function onKeyUp() {
+    onKeyUp() {
         if (this.enabled === false || this.enableKeys === false) { return; }
         currentKey = undefined;
     }
 
-    function onKeyDown(event) {
-        player.stop();
+    onKeyDown(event) {
+        this.player.stop();
         if (this.enabled === false || this.enableKeys === false) { return; }
         currentKey = event.keyCode;
         switch (event.keyCode) {
-            case states.PAN.up:
-                this._mouseToPan(0, this.keyPanSpeed);
-                state = states.PAN;
-                update();
+            case this.states.PAN.up:
+                this.mouseToPan(0, this.keyPanSpeed);
+                this.state = this.states.PAN;
+                this.update();
                 break;
-            case states.PAN.bottom:
-                this._mouseToPan(0, -this.keyPanSpeed);
-                state = states.PAN;
-                update();
+            case this.states.PAN.bottom:
+                this.mouseToPan(0, -this.keyPanSpeed);
+                this.state = this.states.PAN;
+                this.update();
                 break;
-            case states.PAN.left:
-                this._mouseToPan(this.keyPanSpeed, 0);
-                state = states.PAN;
-                update();
+            case this.states.PAN.left:
+                this.mouseToPan(this.keyPanSpeed, 0);
+                this.state = this.states.PAN;
+                this.update();
                 break;
-            case states.PAN.right:
-                this._mouseToPan(-this.keyPanSpeed, 0);
-                state = states.PAN;
-                update();
+            case this.states.PAN.right:
+                this.mouseToPan(-this.keyPanSpeed, 0);
+                this.state = this.states.PAN;
+                this.update();
                 break;
             default:
         }
     }
 
-    function onTouchStart(event) {
+    onTouchStart(event) {
         // CameraUtils.stop(view);
-        player.stop();
+        this.player.stop();
         if (this.enabled === false) { return; }
 
-        state = states.touchToState(event.touches.length);
+        this.state = this.states.touchToState(event.touches.length);
 
-        updateTarget();
+        this.updateTarget();
 
-        if (state !== states.NONE) {
-            switch (state) {
-                case states.MOVE_GLOBE: {
-                    const coords = view.eventToViewCoords(event);
-                    if (view.getPickingPositionFromDepth(coords, pickingPoint)) {
+        if (this.state !== this.states.NONE) {
+            switch (this.state) {
+                case this.states.MOVE_GLOBE: {
+                    const coords = this._view.eventToViewCoords(event);
+                    if (this._view.getPickingPositionFromDepth(coords, pickingPoint)) {
                         pickSphere.radius = pickingPoint.length();
                         lastNormalizedIntersection.copy(pickingPoint).normalize();
-                        updateHelper.bind(this)(pickingPoint, helpers.picking);
+                        this.updateHelper(pickingPoint, helpers.picking);
                     } else {
-                        state = states.NONE;
+                        this.state = this.states.NONE;
                     }
                     break; }
-                case states.ORBIT:
-                case states.DOLLY: {
+                case this.states.ORBIT:
+                case this.states.DOLLY: {
                     const x = event.touches[0].pageX;
                     const y = event.touches[0].pageY;
                     const dx = x - event.touches[1].pageX;
@@ -783,7 +839,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                     dollyStart.set(0, distance);
                     rotateStart.set(x, y);
                     break; }
-                case states.PAN:
+                case this.states.PAN:
                     panStart.set(event.touches[0].pageX, event.touches[0].pageY);
                     break;
                 default:
@@ -793,9 +849,9 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         }
     }
 
-    function onTouchMove(event) {
-        if (player.isPlaying()) {
-            player.stop();
+    onTouchMove(event) {
+        if (this.player.isPlaying()) {
+            this.player.stop();
         }
         if (this.enabled === false) { return; }
 
@@ -803,9 +859,9 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         event.stopPropagation();
 
         switch (event.touches.length) {
-            case states.MOVE_GLOBE.finger: {
-                const coords = view.eventToViewCoords(event);
-                const normalized = view.viewToNormalizedCoords(coords);
+            case this.states.MOVE_GLOBE.finger: {
+                const coords = this._view.eventToViewCoords(event);
+                const normalized = this._view.viewToNormalizedCoords(coords);
                 raycaster.setFromCamera(normalized, this.camera);
                 raycaster.ray.intersectSphere(pickSphere, intersection);
                 // If there's intersection then move globe else we stop the move
@@ -814,12 +870,12 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                     moveAroundGlobe.setFromUnitVectors(normalizedIntersection, lastNormalizedIntersection);
                     lastTimeMouseMove = Date.now();
                 } else {
-                    onMouseUp.bind(this)();
+                    this.onMouseUp.bind(this)();
                 }
                 break; }
-            case states.ORBIT.finger:
-            case states.DOLLY.finger: {
-                const gfx = view.mainLoop.gfxEngine;
+            case this.states.ORBIT.finger:
+            case this.states.DOLLY.finger: {
+                const gfx = this._view.mainLoop.gfxEngine;
                 rotateEnd.set(event.touches[0].pageX, event.touches[0].pageY);
                 rotateDelta.subVectors(rotateEnd, rotateStart);
 
@@ -845,398 +901,331 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
                 dollyStart.copy(dollyEnd);
 
                 break; }
-            case states.PAN.finger:
+            case this.states.PAN.finger:
                 panEnd.set(event.touches[0].pageX, event.touches[0].pageY);
                 panDelta.subVectors(panEnd, panStart);
 
-                this._mouseToPan(panDelta.x, panDelta.y);
+                this.mouseToPan(panDelta.x, panDelta.y);
 
                 panStart.copy(panEnd);
                 break;
             default:
-                state = states.NONE;
+                this.state = this.states.NONE;
         }
 
-        if (state !== states.NONE) {
-            update();
+        if (this.state !== this.states.NONE) {
+            this.update();
         }
     }
 
-    function onTouchEnd(/* event */) {
-        onMouseUp.bind(this)();
-    }
-
-    const _onMouseDownListener = onMouseDown.bind(this);
-    const _onMouseWheelListener = onMouseWheel.bind(this);
-    const _ondblclickListener = ondblclick.bind(this);
-    const _onTouchStartListener = onTouchStart.bind(this);
-    const _onTouchEndListener = onTouchEnd.bind(this);
-    const _onTouchMoveListener = onTouchMove.bind(this);
-    const _onKeyDownListener = onKeyDown.bind(this);
-    const _onKeyUpListener = onKeyUp.bind(this);
-    const _onContextMenuListener = (event) => {
+    onContextMenuListener(event) {
         event.preventDefault();
-    };
-    const _updateListener = this.update;
-    const _onBlurListener = () => {
-        onKeyUp.bind(this)();
-        onMouseUp.bind(this)();
-    };
+    }
 
-    this.dispose = function dispose() {
-        this.domElement.removeEventListener('contextmenu', _onContextMenuListener, false);
+    onBlurListener() {
+        this.onKeyUp();
+        this.onMouseUp();
+    }
 
-        this.domElement.removeEventListener('mousedown', _onMouseDownListener, false);
-        this.domElement.removeEventListener('mousemove', _onMouseMoveListener, false);
-        this.domElement.removeEventListener('mousewheel', _onMouseWheelListener, false);
-        this.domElement.removeEventListener('DOMMouseScroll', _onMouseWheelListener, false); // firefox
-        this.domElement.removeEventListener('mouseup', _onMouseUpListener, false);
-        this.domElement.removeEventListener('mouseleave', _onMouseUpListener, false);
-        this.domElement.removeEventListener('dblclick', _ondblclickListener, false);
+    dispose() {
+        this.domElement.removeEventListener('contextmenu', this._onContextMenuListener, false);
 
-        this.domElement.removeEventListener('touchstart', _onTouchStartListener, false);
-        this.domElement.removeEventListener('touchend', _onTouchEndListener, false);
-        this.domElement.removeEventListener('touchmove', _onTouchMoveListener, false);
+        this.domElement.removeEventListener('mousedown', this._onMouseDown, false);
+        this.domElement.removeEventListener('mousemove', this._onMouseMove, false);
+        this.domElement.removeEventListener('mousewheel', this._onMouseWheel, false);
+        this.domElement.removeEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
+        this.domElement.removeEventListener('mouseup', this._onMouseUp, false);
+        this.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
+        this.domElement.removeEventListener('dblclick', this._ondblclick, false);
 
-        player.removeEventListener('animation-frame', _updateListener);
+        this.domElement.removeEventListener('touchstart', this._onTouchStart, false);
+        this.domElement.removeEventListener('touchend', this._onMouseUp, false);
+        this.domElement.removeEventListener('touchmove', this._onTouchMove, false);
 
-        window.removeEventListener('keydown', _onKeyDownListener, false);
-        window.removeEventListener('keyup', _onKeyUpListener, false);
+        this.player.removeEventListener('animation-frame', this._onKeyUp);
 
-        window.removeEventListener('blur', _onBlurListener);
+        window.removeEventListener('keydown', this._onKeyDown, false);
+        window.removeEventListener('keyup', this._onKeyUp, false);
+
+        window.removeEventListener('blur', this._onBlurListener);
 
         this.dispatchEvent({ type: 'dispose' });
-    };
-
-    // Instance all
-    this.domElement.addEventListener('contextmenu', _onContextMenuListener, false);
-    this.domElement.addEventListener('mousedown', _onMouseDownListener, false);
-    this.domElement.addEventListener('mousewheel', _onMouseWheelListener, false);
-    this.domElement.addEventListener('dblclick', _ondblclickListener, false);
-    this.domElement.addEventListener('DOMMouseScroll', _onMouseWheelListener, false); // firefox
-
-    this.domElement.addEventListener('touchstart', _onTouchStartListener, false);
-    this.domElement.addEventListener('touchend', _onTouchEndListener, false);
-    this.domElement.addEventListener('touchmove', _onTouchMoveListener, false);
-
-    // refresh control for each animation's frame
-    player.addEventListener('animation-frame', _updateListener);
-
-    // TODO: Why windows
-    window.addEventListener('keydown', _onKeyDownListener, false);
-    window.addEventListener('keyup', _onKeyUpListener, false);
-
-    // Reset key/mouse when window loose focus
-    window.addEventListener('blur', _onBlurListener);
-
-    view.scene.add(cameraTarget);
-    if (enableTargetHelper) {
-        cameraTarget.add(helpers.target);
-        view.scene.add(helpers.picking);
-        const layerTHREEjs = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
-        helpers.target.layers.set(layerTHREEjs);
-        helpers.picking.layers.set(layerTHREEjs);
-        this.camera.layers.enable(layerTHREEjs);
+    }
+    /**
+     * Changes the tilt of the current camera, in degrees.
+     * @param {number}  tilt
+     * @param {boolean} isAnimated
+     * @return {Promise<void>}
+     */
+    setTilt(tilt, isAnimated) {
+        return this.lookAtCoordinate({ tilt }, isAnimated);
     }
 
-    positionObject(targetCoordinate.as('EPSG:4978', xyz), cameraTarget);
+    /**
+     * Changes the heading of the current camera, in degrees.
+     * @param {number} heading
+     * @param {boolean} isAnimated
+     * @return {Promise<void>}
+     */
+    setHeading(heading, isAnimated) {
+        return this.lookAtCoordinate({ heading }, isAnimated);
+    }
 
-    this.lookAtCoordinate({
-        coord: targetCoordinate,
-        tilt: 89.5,
-        heading: 0,
-        range }, false);
-}
+    /**
+     * Sets the "range": the distance in meters between the camera and the current central point on the screen.
+     * @param {number} range
+     * @param {boolean} isAnimated
+     * @return {Promise<void>}
+     */
+    setRange(range, isAnimated) {
+        return this.lookAtCoordinate({ range }, isAnimated);
+    }
 
-GlobeControls.prototype = Object.create(THREE.EventDispatcher.prototype);
-GlobeControls.prototype.constructor = GlobeControls;
+    /**
+     * Returns the {@linkcode Coordinates} of the globe point targeted by the camera in EPSG:4978 projection. See {@linkcode Coordinates} for conversion
+     * @return {THREE.Vector3} position
+     */
+    getCameraTargetPosition() {
+        return cameraTarget.position;
+    }
 
-function getRangeFromScale(scale, pitch, fov, height) {
-    // Screen pitch, in millimeters
-    pitch = (pitch || 0.28) / 1000;
-    fov = THREE.Math.degToRad(fov);
-    // Invert one unit projection (see getDollyScale)
-    const range = pitch * height / (scale * 2 * Math.tan(fov * 0.5));
+    /**
+     * Returns the "range": the distance in meters between the camera and the current central point on the screen.
+     * @return {number} number
+     */
+    getRange() {
+        return CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera).range;
+    }
 
-    return range;
-}
+    /**
+     * Returns the tilt of the current camera in degrees.
+     * @return {Angle} number - The angle of the rotation in degrees.
+     */
+    getTilt() {
+        return CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera).tilt;
+    }
 
-/**
- * Changes the tilt of the current camera, in degrees.
- * @param {number}  tilt
- * @param {boolean} isAnimated
- * @return {Promise<void>}
- */
-GlobeControls.prototype.setTilt = function setTilt(tilt, isAnimated) {
-    return this.lookAtCoordinate({ tilt }, isAnimated);
-};
+    /**
+     * Returns the heading of the current camera in degrees.
+     * @return {Angle} number - The angle of the rotation in degrees.
+     */
+    getHeading() {
+        return CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera).heading;
+    }
 
-/**
- * Changes the heading of the current camera, in degrees.
- * @param {number} heading
- * @param {boolean} isAnimated
- * @return {Promise<void>}
- */
-GlobeControls.prototype.setHeading = function setHeading(heading, isAnimated) {
-    return this.lookAtCoordinate({ heading }, isAnimated);
-};
+    /**
+     * Displaces the central point to a specific amount of pixels from its current position.
+     * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
+     * @param      {vector}  pVector  The vector
+     * @return {Promise}
+     */
+    pan(pVector) {
+        this.mouseToPan(pVector.x, pVector.y);
+        this.update();
+        return Promise.resolve();
+    }
 
-/**
- * Sets the "range": the distance in meters between the camera and the current central point on the screen.
- * @param {number} range
- * @param {boolean} isAnimated
- * @return {Promise<void>}
- */
-GlobeControls.prototype.setRange = function setRange(range, isAnimated) {
-    return this.lookAtCoordinate({ range }, isAnimated);
-};
+    /**
+     * Returns the orientation angles of the current camera, in degrees.
+     * @return {Array<number>}
+     */
+    getCameraOrientation() {
+        return [this.getTilt(), this.getHeading()];
+    }
 
-/**
- * Returns the {@linkcode Coordinates} of the globe point targeted by the camera in EPSG:4978 projection. See {@linkcode Coordinates} for conversion
- * @return {THREE.Vector3} position
- */
-GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPosition() {
-    return cameraTarget.position;
-};
+    /**
+     * Returns the camera location projected on the ground in lat,lon. See {@linkcode Coordinates} for conversion.
+     * @return {Coordinates} position
+     */
 
-/**
- * Returns the "range": the distance in meters between the camera and the current central point on the screen.
- * @return {number} number
- */
-GlobeControls.prototype.getRange = function getRange() {
-    return CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera).range;
-};
+    getCameraCoordinate() {
+        return new Coordinates('EPSG:4978', this.camera.position).as('EPSG:4326');
+    }
 
-/**
- * Returns the tilt of the current camera in degrees.
- * @return {Angle} number - The angle of the rotation in degrees.
- */
-GlobeControls.prototype.getTilt = function getTilt() {
-    return CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera).tilt;
-};
+    /**
+     * Returns the {@linkcode Coordinates} of the central point on screen in lat,lon. See {@linkcode Coordinates} for conversion.
+     * @return {Coordinates} coordinate
+     */
+    getLookAtCoordinate() {
+        return CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera).coord;
+    }
 
-/**
- * Returns the heading of the current camera in degrees.
- * @return {Angle} number - The angle of the rotation in degrees.
- */
-GlobeControls.prototype.getHeading = function getHeading() {
-    return CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera).heading;
-};
+    /**
+     * Sets the animation enabled.
+     * @param      {boolean}  enable  enable
+     */
+    setAnimationEnabled(enable) {
+        enableAnimation = enable;
+    }
 
-/**
- * Displaces the central point to a specific amount of pixels from its current position.
- * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
- * @param      {vector}  pVector  The vector
- * @return {Promise}
- */
-GlobeControls.prototype.pan = function pan(pVector) {
-    this._mouseToPan(pVector.x, pVector.y);
-    this.update();
-    return Promise.resolve();
-};
+    /**
+     * Determines if animation enabled.
+     * @return     {boolean}  True if animation enabled, False otherwise.
+     */
+    isAnimationEnabled() {
+        return enableAnimation;
+    }
 
-/**
- * Returns the orientation angles of the current camera, in degrees.
- * @return {Array<number>}
- */
-GlobeControls.prototype.getCameraOrientation = function getCameraOrientation() {
-    return [this.getTilt(), this.getHeading()];
-};
+    /**
+     * Returns the actual zoom. The zoom will always be between the [getMinZoom(), getMaxZoom()].
+     * @return     {number}  The zoom .
+     */
+    getZoom() {
+        return this._view.tileLayer.computeTileZoomFromDistanceCamera(this.getRange(), this._view.camera);
+    }
 
-/**
- * Returns the camera location projected on the ground in lat,lon. See {@linkcode Coordinates} for conversion.
- * @return {Coordinates} position
- */
+    /**
+     * Sets the current zoom, which is an index in the logical scales predefined for the application.
+     * The higher the zoom, the closer to the ground.
+     * The zoom is always in the [getMinZoom(), getMaxZoom()] range.
+     * @param      {number}  zoom    The zoom
+     * @param      {boolean}  isAnimated  Indicates if animated
+     * @return     {Promise}
+     */
+    setZoom(zoom, isAnimated) {
+        return this.lookAtCoordinate({ zoom }, isAnimated);
+    }
 
-GlobeControls.prototype.getCameraCoordinate = function _getCameraCoordinate() {
-    return new Coordinates('EPSG:4978', this.camera.position).as('EPSG:4326');
-};
+    /**
+     * Return the current zoom scale at the central point of the view.
+     * This function compute the scale of a map
+     * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
+     * @return     {number}  The zoom scale.
+     *
+     * @deprecated Use View#getScale instead.
+     */
+    getScale(pitch) {
+        console.warn('Deprecated, use View#getScale instead.');
+        return this._view.getScale(pitch);
+    }
 
-/**
- * Returns the {@linkcode Coordinates} of the central point on screen in lat,lon. See {@linkcode Coordinates} for conversion.
- * @return {Coordinates} coordinate
- */
-GlobeControls.prototype.getLookAtCoordinate = function _getLookAtCoordinate() {
-    return CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera).coord;
-};
+    /**
+     * To convert the projection in meters on the globe of a number of pixels of screen
+     * @param      {number} pixels count pixels to project
+     * @param      {number} pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
+     * @return     {number} projection in meters on globe
+     *
+     * @deprecated Use `View#getPixelsToMeters` instead.
+     */
+    pixelsToMeters(pixels, pixelPitch = 0.28) {
+        console.warn('Deprecated use View#getPixelsToMeters instead.');
+        const scaled = this.getScale(pixelPitch);
+        const size = pixels * pixelPitch;
+        return size / scaled / 1000;
+    }
 
-/**
- * Sets the animation enabled.
- * @param      {boolean}  enable  enable
- */
-GlobeControls.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
-    enableAnimation = enable;
-};
+    /**
+     * To convert the projection a number of horizontal pixels of screen to longitude degree WGS84 on the globe
+     * @param      {number} pixels count pixels to project
+     * @param      {number} pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
+     * @return     {number} projection in degree on globe
+     *
+     * @deprecated Use `View#getPixelsToMeters` and `GlobeControls#metersToDegrees`
+     * instead.
+     */
+    pixelsToDegrees(pixels, pixelPitch = 0.28) {
+        console.warn('Deprecated, use View#getPixelsToMeters and GlobeControls#getMetersToDegrees instead.');
+        const chord = this.pixelsToMeters(pixels, pixelPitch);
+        return THREE.Math.radToDeg(2 * Math.asin(chord / (2 * ellipsoidSizes.x)));
+    }
 
-/**
- * Determines if animation enabled.
- * @return     {boolean}  True if animation enabled, False otherwise.
- */
-GlobeControls.prototype.isAnimationEnabled = function isAnimationEnabled() {
-    return enableAnimation;
-};
+    /**
+     * Projection on screen in pixels of length in meter on globe
+     * @param      {number}  value Length in meter on globe
+     * @param      {number}  pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
+     * @return     {number}  projection in pixels on screen
+     *
+     * @deprecated Use `View#getMetersToPixels` instead.
+     */
+    metersToPixels(value, pixelPitch = 0.28) {
+        console.warn('Deprecated, use View#getMetersToPixels instead.');
+        const scaled = this.getScale(pixelPitch);
+        pixelPitch /= 1000;
+        return value * scaled / pixelPitch;
+    }
 
-/**
- * Returns the actual zoom. The zoom will always be between the [getMinZoom(), getMaxZoom()].
- * @return     {number}  The zoom .
- */
-GlobeControls.prototype.getZoom = function getZoom() {
-    return this._view.tileLayer.computeTileZoomFromDistanceCamera(this.getRange(), this._view.camera);
-};
+    /**
+     * Changes the zoom of the central point of screen so that screen acts as a map with a specified scale.
+     *  The view flies to the desired zoom scale;
+     * @param      {number}  scale  The scale
+     * @param      {number}  pitch  The pitch
+     * @param      {boolean}  isAnimated  Indicates if animated
+     * @return     {Promise}
+     */
+    setScale(scale, pitch, isAnimated) {
+        return this.lookAtCoordinate({ scale, pitch }, isAnimated);
+    }
 
-/**
- * Sets the current zoom, which is an index in the logical scales predefined for the application.
- * The higher the zoom, the closer to the ground.
- * The zoom is always in the [getMinZoom(), getMaxZoom()] range.
- * @param      {number}  zoom    The zoom
- * @param      {boolean}  isAnimated  Indicates if animated
- * @return     {Promise}
- */
-GlobeControls.prototype.setZoom = function setZoom(zoom, isAnimated) {
-    return this.lookAtCoordinate({ zoom }, isAnimated);
-};
-
-/**
- * Return the current zoom scale at the central point of the view.
- * This function compute the scale of a map
- * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
- * @return     {number}  The zoom scale.
- *
- * @deprecated Use View#getScale instead.
- */
-GlobeControls.prototype.getScale = function getScale(pitch) {
-    console.warn('Deprecated, use View#getScale instead.');
-    return this._view.getScale(pitch);
-};
-
-/**
- * To convert the projection in meters on the globe of a number of pixels of screen
- * @param      {number} pixels count pixels to project
- * @param      {number} pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
- * @return     {number} projection in meters on globe
- *
- * @deprecated Use `View#getPixelsToMeters` instead.
- */
-GlobeControls.prototype.pixelsToMeters = function pixelsToMeters(pixels, pixelPitch = 0.28) {
-    console.warn('Deprecated use View#getPixelsToMeters instead.');
-    const scaled = this.getScale(pixelPitch);
-    const size = pixels * pixelPitch;
-    return size / scaled / 1000;
-};
-
-/**
- * To convert the projection a number of horizontal pixels of screen to longitude degree WGS84 on the globe
- * @param      {number} pixels count pixels to project
- * @param      {number} pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
- * @return     {number} projection in degree on globe
- *
- * @deprecated Use `View#getPixelsToMeters` and `GlobeControls#metersToDegrees`
- * instead.
- */
-
-GlobeControls.prototype.pixelsToDegrees = function pixelsToDegrees(pixels, pixelPitch = 0.28) {
-    console.warn('Deprecated, use View#getPixelsToMeters and GlobeControls#getMetersToDegrees instead.');
-    const chord = this.pixelsToMeters(pixels, pixelPitch);
-    return THREE.Math.radToDeg(2 * Math.asin(chord / (2 * ellipsoidSizes.x)));
-};
-
-/**
- * Projection on screen in pixels of length in meter on globe
- * @param      {number}  value Length in meter on globe
- * @param      {number}  pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
- * @return     {number}  projection in pixels on screen
- *
- * @deprecated Use `View#getMetersToPixels` instead.
- */
-GlobeControls.prototype.metersToPixels = function metersToPixels(value, pixelPitch = 0.28) {
-    console.warn('Deprecated, use View#getMetersToPixels instead.');
-    const scaled = this.getScale(pixelPitch);
-    pixelPitch /= 1000;
-    return value * scaled / pixelPitch;
-};
-
-/**
- * Changes the zoom of the central point of screen so that screen acts as a map with a specified scale.
- *  The view flies to the desired zoom scale;
- * @param      {number}  scale  The scale
- * @param      {number}  pitch  The pitch
- * @param      {boolean}  isAnimated  Indicates if animated
- * @return     {Promise}
- */
-
-GlobeControls.prototype.setScale = function setScale(scale, pitch, isAnimated) {
-    return this.lookAtCoordinate({ scale, pitch }, isAnimated);
-};
-
-/**
- * Changes the center of the scene on screen to the specified in lat, lon. See {@linkcode Coordinates} for conversion.
- * This function allows to change the central position, the zoom, the range, the scale and the camera orientation at the same time.
- * The zoom has to be between the [getMinZoom(), getMaxZoom()].
- * Zoom parameter is ignored if range is set
- * The tilt's interval is between 4 and 89.5 degree
- *
- * @param      {CameraUtils~CameraTransformOptions}   params camera transformation to apply
- * @param      {number}   [params.zoom]   zoom
- * @param      {number}   [params.scale]   scale
- * @param      {boolean}  isAnimated  Indicates if animated
- * @return     {Promise}  A promise that resolves when transformation is oppered
- */
-GlobeControls.prototype.lookAtCoordinate = function _lookAtCoordinate(params = {}, isAnimated = this.isAnimationEnabled()) {
-    if (params.zoom) {
-        params.range = this._view.tileLayer.computeDistanceCameraFromTileZoom(params.zoom, this._view.camera);
-    } else if (params.scale) {
-        const gfx = this._view.mainLoop.gfxEngine;
-        params.range = getRangeFromScale(params.scale, params.pitch, this.camera.fov, gfx.height);
-        if (params.range < this.minDistance || params.range > this.maxDistance) {
-            // eslint-disable-next-line no-console
-            console.warn(`This scale ${params.scale} can not be reached`);
-            params.range = THREE.Math.clamp(params.range, this.minDistance, this.maxDistance);
+    /**
+     * Changes the center of the scene on screen to the specified in lat, lon. See {@linkcode Coordinates} for conversion.
+     * This function allows to change the central position, the zoom, the range, the scale and the camera orientation at the same time.
+     * The zoom has to be between the [getMinZoom(), getMaxZoom()].
+     * Zoom parameter is ignored if range is set
+     * The tilt's interval is between 4 and 89.5 degree
+     *
+     * @param      {CameraUtils~CameraTransformOptions}   params camera transformation to apply
+     * @param      {number}   [params.zoom]   zoom
+     * @param      {number}   [params.scale]   scale
+     * @param      {boolean}  isAnimated  Indicates if animated
+     * @return     {Promise}  A promise that resolves when transformation is oppered
+     */
+    lookAtCoordinate(params = {}, isAnimated = this.isAnimationEnabled()) {
+        if (params.zoom) {
+            params.range = this._view.tileLayer.computeDistanceCameraFromTileZoom(params.zoom, this._view.camera);
+        } else if (params.scale) {
+            const gfx = this._view.mainLoop.gfxEngine;
+            params.range = getRangeFromScale(params.scale, params.pitch, this.camera.fov, gfx.height);
+            if (params.range < this.minDistance || params.range > this.maxDistance) {
+                // eslint-disable-next-line no-console
+                console.warn(`This scale ${params.scale} can not be reached`);
+                params.range = THREE.Math.clamp(params.range, this.minDistance, this.maxDistance);
+            }
         }
-    }
 
-    if (params.tilt !== undefined) {
-        const minTilt = 90 - THREE.Math.radToDeg(this.maxPolarAngle);
-        const maxTilt = 90 - THREE.Math.radToDeg(this.minPolarAngle);
-        if (params.tilt < minTilt || params.tilt > maxTilt) {
-            params.tilt = THREE.Math.clamp(params.tilt, minTilt, maxTilt);
-            // eslint-disable-next-line no-console
-            console.warn('Tilt was clamped to ', params.tilt, ` the interval is between ${minTilt} and ${maxTilt} degree`);
+        if (params.tilt !== undefined) {
+            const minTilt = 90 - THREE.Math.radToDeg(this.maxPolarAngle);
+            const maxTilt = 90 - THREE.Math.radToDeg(this.minPolarAngle);
+            if (params.tilt < minTilt || params.tilt > maxTilt) {
+                params.tilt = THREE.Math.clamp(params.tilt, minTilt, maxTilt);
+                // eslint-disable-next-line no-console
+                console.warn('Tilt was clamped to ', params.tilt, ` the interval is between ${minTilt} and ${maxTilt} degree`);
+            }
         }
-    }
 
-    previous = CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera);
-    if (isAnimated) {
-        params.callback = r => cameraTarget.position.copy(r.targetWorldPosition);
-        this.dispatchEvent({ type: 'animation-started' });
-        return CameraUtils.animateCameraToLookAtTarget(this._view, this.camera, params)
-            .then((result) => {
-                this.dispatchEvent({ type: 'animation-ended' });
-                this._handlingEvent(result);
+        previous = CameraUtils.getTransformCameraLookingAtTarget(this._view, this.camera);
+        if (isAnimated) {
+            params.callback = r => cameraTarget.position.copy(r.targetWorldPosition);
+            this.dispatchEvent({ type: 'animation-started' });
+            return CameraUtils.animateCameraToLookAtTarget(this._view, this.camera, params)
+                .then((result) => {
+                    this.dispatchEvent({ type: 'animation-ended' });
+                    this.handlingEvent(result);
+                    return result;
+                });
+        } else {
+            return CameraUtils.transformCameraToLookAtTarget(this._view, this.camera, params).then((result) => {
+                cameraTarget.position.copy(result.targetWorldPosition);
+                this.handlingEvent(result);
                 return result;
             });
-    } else {
-        return CameraUtils.transformCameraToLookAtTarget(this._view, this.camera, params).then((result) => {
-            cameraTarget.position.copy(result.targetWorldPosition);
-            this._handlingEvent(result);
-            return result;
-        });
-    }
-};
-
-/**
- * Pick a position on the globe at the given position in lat,lon. See {@linkcode Coordinates} for conversion.
- * @param {Vector2} windowCoords - window coordinates
- * @param {number=} y - The y-position inside the Globe element.
- * @return {Coordinates} position
- */
-GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(windowCoords) {
-    const pickedPosition = this._view.getPickingPositionFromDepth(windowCoords);
-
-    if (!pickedPosition) {
-        return;
+        }
     }
 
-    return new Coordinates('EPSG:4978', pickedPosition).as('EPSG:4326');
-};
+    /**
+     * Pick a position on the globe at the given position in lat,lon. See {@linkcode Coordinates} for conversion.
+     * @param {Vector2} windowCoords - window coordinates
+     * @param {number=} y - The y-position inside the Globe element.
+     * @return {Coordinates} position
+     */
+    pickGeoPosition(windowCoords) {
+        const pickedPosition = this._view.getPickingPositionFromDepth(windowCoords);
+
+        if (!pickedPosition) {
+            return;
+        }
+
+        return new Coordinates('EPSG:4978', pickedPosition).as('EPSG:4326');
+    }
+}
 
 export default GlobeControls;
