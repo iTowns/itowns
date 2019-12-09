@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import Capabilities from 'Core/System/Capabilities';
 import GLTFLoader from 'ThreeExtended/loaders/GLTFLoader';
 import DRACOLoader from 'ThreeExtended/loaders/DRACOLoader';
-import LegacyGLTFLoader from 'ThreeExtended/loaders/deprecated/LegacyGLTFLoader';
+import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import utf8Decoder from 'Utils/Utf8Decoder';
 import BatchTableParser from './BatchTableParser';
