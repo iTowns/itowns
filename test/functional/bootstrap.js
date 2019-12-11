@@ -182,6 +182,10 @@ before(async () => {
     // using --no-sandbox.
     const args = [];
 
+    if (process.env.HTTPS_PROXY) {
+        args.push(`--proxy-server=${process.env.HTTPS_PROXY}`);
+    }
+
     if (process.env.REMOTE_DEBUGGING) {
         args.push(`--remote-debugging-port=${process.env.REMOTE_DEBUGGING}`);
     }

@@ -30,7 +30,7 @@ See the [node website](https://nodejs.org) to install node and npm.
 * To debug iTowns package on your side project. You can link iTowns package with `npm link ../path/iTowns/` in project folder and auto-transpile to `lib/` when iTowns sources are modified with command `npm run watch` in iTowns folder.
 
 ## Testing
-For unit test, defines `HTTPS_PROXY` if you launch test behind a proxy.
+For unit and functional test, defines `HTTPS_PROXY` if you launch test behind a proxy.
 
 In order to run the tests, [puppeteer](https://github.com/GoogleChrome/puppeteer)
 needs to be installed. If installing puppeteer behind a proxy, use `HTTP_PROXY`,
