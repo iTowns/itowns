@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 import Renderer from './mock';
 
@@ -9,14 +10,14 @@ const renderer = new Renderer();
 
 // 3919 is the approximate altitude giving a 1/25000 scale, on a screen with a
 // pitch of 0.28. The approximation is corrected below with an epsilon.
-const positionOnGlobe = { longitude: 4.631512, latitude: 43.675626, altitude: 3919 };
-const viewer = new GlobeView(renderer.domElement, positionOnGlobe, { renderer });
+const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), range: 3919 };
+const viewer = new GlobeView(renderer.domElement, placement, { renderer });
 const pickedPosition = new THREE.Vector3();
 pickedPosition.copy(viewer.camera.position());
 
 const cameraDirection = new THREE.Vector3();
 viewer.camera.camera3D.getWorldDirection(cameraDirection);
-cameraDirection.multiplyScalar(positionOnGlobe.altitude);
+cameraDirection.multiplyScalar(placement.range);
 pickedPosition.add(cameraDirection);
 
 viewer.getPickingPositionFromDepth = function getPickingPositionFromDepth(screenCoord, targetPoint = new THREE.Vector3()) {
@@ -63,8 +64,8 @@ describe('GlobeView', function () {
 
         it('should get the distance from the camera', () => {
             const realDistance = viewer.getDistanceFromCamera();
-            assert.ok(realDistance < positionOnGlobe.altitude + 10);
-            assert.ok(realDistance > positionOnGlobe.altitude - 10);
+            assert.ok(realDistance < placement.range + 10);
+            assert.ok(realDistance > placement.range - 10);
         });
 
         it('should convert a pixel distance to meters', () => {

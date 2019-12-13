@@ -7,14 +7,15 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import FileSource from 'Source/FileSource';
 import HttpsProxyAgent from 'https-proxy-agent';
 import Extent from 'Core/Geographic/Extent';
+import Coordinates from 'Core/Geographic/Coordinates';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
 import Renderer from './mock';
 
 const renderer = new Renderer();
 
-const positionOnGlobe = { longitude: 1.5, latitude: 43, altitude: 300000 };
-const viewer = new GlobeView(renderer.domElement, positionOnGlobe, { renderer });
+const placement = { coord: new Coordinates('EPSG:4326', 1.5, 43), range: 300000 };
+const viewer = new GlobeView(renderer.domElement, placement, { renderer });
 
 function extrude() {
     return 5000;

@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
+import Coordinates from 'Core/Geographic/Coordinates';
 import Renderer from './mock';
 
 const renderer = new Renderer();
 
-const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 250000 };
-const viewer = new GlobeView(renderer.domElement, positionOnGlobe, { renderer });
+const placement = { coord: new Coordinates('EPSG:4326', 2.351323, 48.856712), range: 250000 };
+const viewer = new GlobeView(renderer.domElement, placement, { renderer });
 
 const event = {
     stopPropagation: () => {},

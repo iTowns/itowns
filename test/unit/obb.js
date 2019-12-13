@@ -24,7 +24,7 @@ describe('OBB', function () {
         assert.equal(obb.natBox.max.x, max.x);
     });
     it('isSphereAboveXYBox should work properly', () => {
-        const sphere = { radius: 5, position: new THREE.Vector3(23, 0, 0) };
+        const sphere = new THREE.Sphere(new THREE.Vector3(23, 0, 0), 5);
         assert.equal(obb.isSphereAboveXYBox(sphere), true);
     });
 });
