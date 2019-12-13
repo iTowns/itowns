@@ -3,12 +3,13 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import HttpsProxyAgent from 'https-proxy-agent';
+import Coordinates from 'Core/Geographic/Coordinates';
 import Renderer from './mock';
 
 const renderer = new Renderer();
 
-const positionOnGlobe = { longitude: 4.631512, latitude: 43.675626, altitude: 250 };
-const viewer = new GlobeView(renderer.domElement, positionOnGlobe, { renderer });
+const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), range: 250 };
+const viewer = new GlobeView(renderer.domElement, placement, { renderer });
 
 // Configure Point Cloud layer
 const pointcloud = new GeometryLayer('eglise_saint_blaise_arles', viewer.scene);
