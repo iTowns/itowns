@@ -25,18 +25,17 @@
             // obtained manually using view.controls.getCameraCoordinate() ;
             // view.controls.getCameraTargetPosition() ;
             // view.controls.getCameraOrientation()
-            var positionOnGlobe = {
-                longitude: -75.61349109370566,
-                latitude: 40.04425929988183,
-                altitude: 45.52006505522877
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', -75.61349, 40.044259),
+                range: 200,
+                tilt: 10,
+                heading: -145
             };
+
 
             var viewerDiv = document.getElementById('viewerDiv');
 
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-
-            view.controls.lookAtCoordinate({range: 200, tilt: 10, heading:
-                    -145}, false);
+            var view = new itowns.GlobeView(viewerDiv, placement);
 
             setupLoadingScreen(viewerDiv, view);
 

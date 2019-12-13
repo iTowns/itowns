@@ -33,13 +33,17 @@
         <script type="text/javascript">
             // Define initial camera position.
             // Note that camera initial position will be overwritten by picture position later
-            var dummyPositionOnGlobe = { longitude: 0, latitude: 0, altitude: 10000000 };
+            // var dummyPositionOnGlobe = { longitude: 0, latitude: 0, altitude: 10000000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 0, 0),
+                range: 10000000,
+            }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, dummyPositionOnGlobe, {
+            var view = new itowns.GlobeView(viewerDiv, placement, {
                 sseSubdivisionThreshold: 6,
                 noControls: true,
             });

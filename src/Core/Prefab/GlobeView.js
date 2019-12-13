@@ -2,11 +2,12 @@ import * as THREE from 'three';
 
 import View, { VIEW_EVENTS } from 'Core/View';
 import GlobeControls from 'Controls/GlobeControls';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
+import CameraUtils from 'Utils/CameraUtils';
 
-import Coordinates from 'Core/Geographic/Coordinates';
 import CRS from 'Core/Geographic/Crs';
 import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 
@@ -81,27 +82,14 @@ class GlobeView extends View {
      *
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
-     * @param {object|Coordinates} coordCarto - An object containing three
-     * properties: longitude, latitude and altitude. It will help placing the camera
-     * on the globe at the creation.
+     * @param {CameraTransformOptions} placement - An object to place view
      * @param {object=} options - See options of {@link View}.
      */
-    constructor(viewerDiv, coordCarto, options = {}) {
+    constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DefaultUp.set(0, 0, 1);
         // Setup View
         super('EPSG:4978', viewerDiv, options);
         this.isGlobeView = true;
-
-        // Configure camera
-        let positionCamera;
-        if (coordCarto.isCoordinates) {
-            positionCamera = coordCarto.as('EPSG:4326');
-        } else {
-            positionCamera = new Coordinates('EPSG:4326',
-                coordCarto.longitude,
-                coordCarto.latitude,
-                coordCarto.altitude);
-        }
 
         this.camera.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
         this.camera.camera3D.far = ellipsoidSizes.x * 10;
@@ -114,19 +102,19 @@ class GlobeView extends View {
         tileLayer.object3d.add(sun);
 
         this.addLayer(tileLayer);
-        // Configure controls
-        const positionTargetCamera = positionCamera.clone();
-        positionTargetCamera.altitude = 0;
+        this.tileLayer = tileLayer;
+
+        placement.coord = placement.coord || new Coordinates('EPSG:4326', 0, 0);
+        placement.tilt = placement.tilt || 89.5;
+        placement.heading = placement.heading || 0;
+        placement.range = placement.range || ellipsoidSizes.x * 2.0;
 
         if (options.noControls) {
-            this.camera.setPosition(positionCamera);
-            this.camera.camera3D.lookAt(positionTargetCamera.as('EPSG:4978').toVector3());
+            CameraUtils.transformCameraToLookAtTarget(this, this.camera.camera3D, placement);
         } else {
-            this.controls = new GlobeControls(this, positionTargetCamera, positionCamera.altitude);
+            this.controls = new GlobeControls(this, placement);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
         }
-
-        this.tileLayer = tileLayer;
 
         this.addLayer(new Atmosphere());
 

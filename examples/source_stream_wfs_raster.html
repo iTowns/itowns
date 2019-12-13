@@ -19,13 +19,16 @@
         <script type="text/javascript">
             /* global itowns,document,GuiTools, window, debug, setupLoadingScreen */
             // Define initial camera position
-            var positionOnGlobe = { longitude: 4.818, latitude: 45.7354, altitude: 3000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 4.818, 45.7354),
+                range: 3000,
+            }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
             var menuGlobe = new GuiTools('menuDiv', view);
             var d = new debug.Debug(view, menuGlobe.gui);
             setupLoadingScreen(viewerDiv, view);

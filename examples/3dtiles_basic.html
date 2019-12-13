@@ -22,11 +22,16 @@
         <script src="js/3dTilesHelper.js"></script>
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
-            var positionOnGlobe = { longitude: -75.61, latitude: 40.04, altitude: 50000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', -75.6114, 40.03428, 0),
+                range: 4000,
+                tilt: 22,
+                heading: 180
+            }
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
 
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
             view.camera.camera3D.near = 5;
             setupLoadingScreen(viewerDiv, view);
 

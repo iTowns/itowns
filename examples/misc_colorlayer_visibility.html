@@ -16,12 +16,13 @@
         <script src="js/GUI/LoadingScreen.js"></script>
         <script type="text/javascript">
             /* global itowns,document,GuiTools, setupLoadingScreen */
-
-            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
-
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 25000000,
+            }
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
             var menuGlobe = new GuiTools('menuDiv', view);
             setupLoadingScreen(viewerDiv, view);
 
@@ -53,7 +54,7 @@
             // Use frame requester to update menu before rendering
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, function _() {
                 var displayedLayers = view.tileLayer.info.displayed.layers;
-                
+
                 var allLayers = view.getLayers(function a(l) { return l.isColorLayer || l.isElevationLayer; });
 
                 allLayers.forEach(function b(layer) {

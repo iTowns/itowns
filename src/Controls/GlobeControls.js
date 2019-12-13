@@ -147,7 +147,7 @@ let previous;
  *
  * @class      GlobeControls
  * @param      {GlobeView}  view the view where the control will be used
- * @param      {Coordinates}  targetCoordinate the target looked by camera, at initialization
+ * @param      {CameraTransformOptions}  targetCoordinate the target looked by camera, at initialization
  * @param      {number}  range distance between the target looked and camera, at initialization
  * @param      {object}  options
  * @param      {number}  options.zoomSpeed Speed zoom with mouse
@@ -165,7 +165,7 @@ let previous;
  * If it's enabled, the camera movement is decelerate.
  */
 class GlobeControls extends THREE.EventDispatcher {
-    constructor(view, targetCoordinate, range, options = {}) {
+    constructor(view, placement, options = {}) {
         super();
         this.player = new AnimationPlayer();
         this.view = view;
@@ -272,13 +272,11 @@ class GlobeControls extends THREE.EventDispatcher {
             this.camera.layers.enable(layerTHREEjs);
         }
 
-        positionObject(targetCoordinate.as('EPSG:4978', xyz), cameraTarget);
+        positionObject(placement.coord.as('EPSG:4978', xyz), cameraTarget);
 
-        this.lookAtCoordinate({
-            coord: targetCoordinate,
-            tilt: 89.5,
-            heading: 0,
-            range }, false);
+        placement.tilt = placement.tilt || 89.5;
+        placement.heading = placement.heading || 0;
+        this.lookAtCoordinate(placement, false);
     }
 
     get dollyScale() {

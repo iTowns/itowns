@@ -15,13 +15,16 @@
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
             // Define initial camera position
-            var positionOnGlobe = { longitude: 3.05, latitude: 48.95, altitude: 70000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 3.05, 48.95),
+                range: 70000,
+            }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
             var menuGlobe = new GuiTools('menuDiv', view);
 
             // Add one imagery layer to the scene

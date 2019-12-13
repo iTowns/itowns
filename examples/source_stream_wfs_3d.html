@@ -27,6 +27,11 @@
 
             // Define initial camera position
             var positionOnGlobe = { longitude: 4.818, latitude: 45.7354, altitude: 3000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 4.818, 45.7354),
+                range: 3000,
+                tilt: 45,
+            }
             var meshes = [];
             var linesBus = [];
             var scaler;
@@ -35,7 +40,7 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
             setupLoadingScreen(viewerDiv, view);
 
             // Add one imagery layer to the scene
@@ -197,7 +202,6 @@
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                view.controls.setTilt(45);
             });
 
             debug.createTileDebugUI(menuGlobe.gui, view);

@@ -33,13 +33,16 @@
             // # Simple Globe viewer
 
             // Define initial camera position
-            var positionOnGlobe = { longitude: 3.36, latitude: 51.22, altitude: 480000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 3.36, 51.22),
+                range: 480000,
+            }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
 
             var promises = [];
 

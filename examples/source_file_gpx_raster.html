@@ -20,13 +20,16 @@
             /* global itowns, setupLoadingScreen, GuiTools, ToolTip */
 
             // Define initial camera position
-            var positionOnGlobe = { longitude: 0.089, latitude: 42.8989, altitude: 80000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 0.089, 42.8989),
+                range: 80000,
+            }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
             var menuGlobe = new GuiTools('menuDiv', view);
 
             setupLoadingScreen(viewerDiv, view);

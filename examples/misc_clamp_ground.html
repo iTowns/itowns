@@ -19,17 +19,18 @@
             // Coordinate can be found on https://www.geoportail.gouv.fr/carte
             // setting is "coordonnée geographiques en degres decimaux"
 
-            // Position near Annecy lake.
-            // var positionOnGlobe = { longitude: 6.2230, latitude: 45.8532, altitude: 5000 };
-
             // Position near Gerbier mountain.
-            var positionOnGlobe = { longitude: 4.22, latitude: 44.844, altitude: 4000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 4.22, 44.844),
+                range: 3000,
+                tilt: 60
+            }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
 
             var menuGlobe = new GuiTools('menuDiv', view);
             setupLoadingScreen(viewerDiv, view);
@@ -79,6 +80,7 @@
 
                 // make the object usable from outside of the function
                 view.mesh = mesh;
+                view.notifyChange();
             }
 
             // Listen for globe full initialisation event
@@ -86,7 +88,6 @@
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 addMeshToScene();
-                view.controls.setTilt(60, true);
             });
         </script>
     </body>

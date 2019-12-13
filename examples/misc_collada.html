@@ -24,13 +24,18 @@
             // setting is "coordonnée geographiques en degres decimaux"
 
             // Position near Gerbier mountain.
-            var positionOnGlobe = { longitude: 4.21655, latitude: 44.84415, altitude: 2000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 4.21655, 44.84415),
+                range: 500,
+                heading: 180,
+                tilt: 60,
+            }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
 
             var menuGlobe = new GuiTools('menuDiv', view);
 
@@ -83,11 +88,6 @@
 
                 view.scene.add(model);
                 view.notifyChange();
-            });
-
-            // Listen for globe full initialisation event
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
-                view.controls.lookAtCoordinate({ heading: 180, tilt: 60 });
             });
         </script>
     </body>

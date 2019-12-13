@@ -20,14 +20,17 @@
             // # Simple Globe viewer + a vector tile layer
 
             // Define initial camera position
-            var positionOnGlobe = { longitude: 2.475, latitude: 48.807, altitude: 12000000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.475, 48.807),
+                range: 12000000,
+            }
             var promises = [];
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
 
             // define pole texture
             view.tileLayer.noTextureColor = new itowns.THREE.Color(0x95c1e1);
