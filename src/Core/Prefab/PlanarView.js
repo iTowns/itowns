@@ -25,8 +25,13 @@ class PlanarView extends View {
 
         this.addLayer(tileLayer);
 
-        const p = { coord: extent.center(), range: max, tilt: 20, heading: 0 };
-        CameraUtils.transformCameraToLookAtTarget(this, camera3D, p);
+        const placement = options.placement || {};
+        placement.coord = placement.coord || extent.center();
+        placement.tilt = placement.tilt || 90;
+        placement.heading = placement.heading || 0;
+        placement.range = placement.range || max;
+
+        CameraUtils.transformCameraToLookAtTarget(this, camera3D, placement);
 
         this.tileLayer = tileLayer;
     }

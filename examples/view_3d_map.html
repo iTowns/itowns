@@ -20,9 +20,11 @@
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
             // # Simple Globe viewer
-
             // Define initial camera position
-            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 25000000,
+            }
             var miniView;
             var minDistance = 10000000;
             var maxDistance = 30000000;
@@ -32,11 +34,11 @@
             var miniDiv = document.getElementById('miniDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
             setupLoadingScreen(viewerDiv, view);
 
             // Dont' instance mini viewer if it's Test env
-            miniView = new itowns.GlobeView(miniDiv, positionOnGlobe, {
+            miniView = new itowns.GlobeView(miniDiv, placement, {
                 // `limit globe' subdivision level:
                 // we're don't need a precise globe model
                 // since the mini globe will always be seen from a far point of view (see minDistance above)

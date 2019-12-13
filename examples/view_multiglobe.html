@@ -27,7 +27,10 @@
         <script src="js/GUI/LoadingScreen.js"></script>
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
-            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 35000000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 35000000,
+            }
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
@@ -40,7 +43,7 @@
 
             // Create the first globe
             object3d = new itowns.THREE.Object3D();
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d });
+            var view = new itowns.GlobeView(viewerDiv, placement, { noControls: true, object3d });
             setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
 

@@ -45,16 +45,20 @@
                 var viewerDiv;
                 var debugGui;
                 var view;
-                var positionOnGlobe;
 
                 viewerDiv = document.getElementById('viewerDiv');
                 viewerDiv.style.display = 'block';
 
                 debugGui = new dat.GUI();
 
-                positionOnGlobe = { longitude: 4.631512, latitude: 43.675626, altitude: 250 };
+                var placement = {
+                    coord: new itowns.Coordinates('EPSG:4326',  4.631512, 43.675626),
+                    range: 100,
+                    tilt: 45,
+                    heading: -60
+                }
 
-                view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { handleCollision: false });
+                view = new itowns.GlobeView(viewerDiv, placement, { handleCollision: false });
                 setupLoadingScreen(viewerDiv, view);
 
                 view.controls.minDistance = 50;

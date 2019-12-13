@@ -50,11 +50,15 @@
         </script>
 
         <script type="text/javascript">
-            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 25000000,
+            }
+
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, placement);
 
             // Simple postprocessing setup
             //

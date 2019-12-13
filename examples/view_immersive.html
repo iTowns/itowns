@@ -26,7 +26,10 @@
             itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
             // Define initial camera position
-            var positionOnGlobe = { longitude: 2.33481381638492, latitude: 48.850602961052147, altitude: 50 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.33481381, 48.85060296),
+                range: 25,
+            }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
@@ -34,7 +37,7 @@
             var orientedImageLayer;
 
             // Instanciate iTowns GlobeView
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, {
+            var view = new itowns.GlobeView(viewerDiv, placement, {
                 noControls: true,
                 handleCollision: false,
                 // Change the subdisvision threshold to get better performances and avoid requesting many unnecessary tiles

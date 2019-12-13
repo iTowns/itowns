@@ -50,7 +50,10 @@
             viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate PlanarView*
-            view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true });
+            view = new itowns.PlanarView(viewerDiv, extent, {
+                disableSkirt: true,
+                placement: { heading: -49.6, range: 6200, tilt: 17 }
+            });
             setupLoadingScreen(viewerDiv, view);
 
             // Add a WMS imagery source
@@ -93,10 +96,6 @@
             });
 
             view.addLayer(wmsElevationLayer);
-
-            p = { coord: extent.center(), heading: -49.6, range: 6200, tilt: 17 };
-            itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, p);
-
             // instanciate controls
             // eslint-disable-next-line no-new
             new itowns.PlanarControls(view, {});

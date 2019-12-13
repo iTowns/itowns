@@ -27,7 +27,7 @@
             // Instanciate PlanarView
             // By default itowns' tiles geometry have a "skirt" (ie they have a height),
             // but in case of orthographic we don't need this feature, so disable it
-            var view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true, maxSubdivisionLevel: 10 });
+            var view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true, maxSubdivisionLevel: 10, placement: { tilt: 90 } });
 
             // eslint-disable-next-line no-new
             new itowns.PlanarControls(view, {
@@ -42,8 +42,6 @@
                 smartZoomHeightMax: 100000,
             });
 
-            // Turn in the right angle
-            itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, { tilt: 90 });
             setupLoadingScreen(viewerDiv, view);
 
             // Add a TMS imagery source
