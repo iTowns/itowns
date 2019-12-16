@@ -154,7 +154,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     }
 
     node.layerUpdateState[layer.id].newTry();
-    const parsedData = nodeLayer.textures.map(t => t.parsedData);
+    const parsedData = node.layerUpdateState[layer.id].isForcingUpdate() ? nodeLayer.textures.map(t => t.parsedData) : [];
     const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, forceUpdate, parsedData);
 
     return context.scheduler.execute(command).then(

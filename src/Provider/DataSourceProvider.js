@@ -76,7 +76,7 @@ export default {
                 const extDest = extentsDestination[i];
 
                 // Already fetched and parsed data that can be used
-                const validedParsedData = !command.forceUpdate && (isValidData(parsedData[i], extDest, layer.isValidData) || source.parsedData);
+                const validedParsedData = isValidData(parsedData[i], extDest, layer.isValidData) || source.parsedData;
                 if (validedParsedData) {
                     // Convert
                     convertedSourceData = layer.convert(validedParsedData, extDest, layer);
