@@ -122,7 +122,7 @@ class GlobeView extends View {
             this.camera.setPosition(positionCamera);
             this.camera.camera3D.lookAt(positionTargetCamera.as('EPSG:4978').toVector3());
         } else {
-            this.controls = new GlobeControls(this, positionTargetCamera, positionCamera.altitude, ellipsoidSizes.x);
+            this.controls = new GlobeControls(this, positionTargetCamera, positionCamera.altitude);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
         }
 

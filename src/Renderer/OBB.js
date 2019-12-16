@@ -106,7 +106,7 @@ class OBB extends THREE.Object3D {
      * @return     {boolean}  True if sphere is above the XY space of the box, False otherwise.
      */
     isSphereAboveXYBox(sphere) {
-        const localSpherePosition = this.worldToLocal(sphere.position);
+        const localSpherePosition = this.worldToLocal(sphere.center);
         // get obb closest point to sphere center by clamping
         const x = Math.max(this.box3D.min.x, Math.min(localSpherePosition.x, this.box3D.max.x));
         const y = Math.max(this.box3D.min.y, Math.min(localSpherePosition.y, this.box3D.max.y));
