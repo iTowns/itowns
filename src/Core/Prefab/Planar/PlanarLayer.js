@@ -49,8 +49,8 @@ class PlanarLayer extends TiledGeometryLayer {
         super(id, object3d || new THREE.Group(), [extent], new PlanarTileBuilder({ projection: extent.crs }), config);
         this.isPlanarLayer = true;
         this.extent = extent;
-        this.minSubdivisionLevel = this.minSubdivisionLevel || 0;
-        this.maxSubdivisionLevel = this.maxSubdivisionLevel || 5.0;
+        this.minSubdivisionLevel = this.minSubdivisionLevel == undefined ? 0 : this.minSubdivisionLevel;
+        this.maxSubdivisionLevel = this.maxSubdivisionLevel == undefined ? 5 : this.maxSubdivisionLevel;
         this.maxDeltaElevation = this.maxDeltaElevation || 4.0;
     }
 }
