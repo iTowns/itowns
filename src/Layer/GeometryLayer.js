@@ -193,12 +193,12 @@ class GeometryLayer extends Layer {
                     disposeMesh(obj);
                 }
             });
-        } else {
-            if (this.object3d.parent) {
-                this.object3d.parent.remove(this.object3d);
-            }
-            this.object3d.traverse(disposeMesh);
         }
+
+        if (this.object3d.parent) {
+            this.object3d.parent.remove(this.object3d);
+        }
+        this.object3d.traverse(disposeMesh);
     }
 
     /**
