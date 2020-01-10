@@ -91,7 +91,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
         };
         this.reset();
 
-        const domElement = view.mainLoop.gfxEngine.renderer.domElement;
+        const domElement = view.mainLoop.gfxEngine.renderer.domElement.parentElement;
         if (!options.disableEventListeners) {
             domElement.addEventListener('mousedown', this.onMouseDown.bind(this), false);
             domElement.addEventListener('touchstart', this.onMouseDown.bind(this), false);

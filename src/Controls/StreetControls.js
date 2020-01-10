@@ -123,7 +123,7 @@ class StreetControls extends FirstPersonControls {
 
         this.isStreetControls = true;
 
-        const domElement = view.mainLoop.gfxEngine.renderer.domElement;
+        const domElement = view.mainLoop.gfxEngine.renderer.domElement.parentElement;
         domElement.addEventListener('mouseout', super.onMouseUp.bind(this));
 
         // two positions used by this control : current and next

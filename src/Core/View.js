@@ -523,7 +523,7 @@ class View extends THREE.EventDispatcher {
      */
     eventToViewCoords(event, target = _eventCoords, touchIdx = 0) {
         if (event.touches === undefined || !event.touches.length) {
-            return target.set(event.offsetX, event.offsetY);
+            return target.set(event.clientX, event.clientY);
         } else {
             const br = this.mainLoop.gfxEngine.renderer.domElement.getBoundingClientRect();
             return target.set(

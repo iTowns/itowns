@@ -23,6 +23,7 @@ class Renderer {
             clientWidth: 400,
             clientHeight: 300,
         };
+        this.domElement.parentElement = Object.create(this.domElement);
         this.context = {
             getParameter: () => 16,
             createProgram: () => { },
