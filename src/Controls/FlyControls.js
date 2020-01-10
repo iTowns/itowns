@@ -103,7 +103,7 @@ class FlyControls extends THREE.EventDispatcher {
      */
     constructor(view, options = {}) {
         super();
-        const domElement = view.mainLoop.gfxEngine.renderer.domElement;
+        const domElement = view.mainLoop.gfxEngine.renderer.domElement.parentElement;
         this.view = view;
         this.options = options;
         this._camera3D = view.camera.camera3D;

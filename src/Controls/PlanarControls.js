@@ -105,7 +105,7 @@ const vectorZero = new THREE.Vector3();
 function PlanarControls(view, options = {}) {
     this.view = view;
     this.camera = view.camera.camera3D;
-    this.domElement = view.mainLoop.gfxEngine.renderer.domElement;
+    this.domElement = view.mainLoop.gfxEngine.renderer.domElement.parentElement;
 
     this.enableRotation = typeof (options.enableRotation) !== 'undefined' ? options.enableRotation : true;
     this.rotateSpeed = options.rotateSpeed || 2.0;
