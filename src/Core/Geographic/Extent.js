@@ -266,12 +266,17 @@ class Extent {
      * @return {boolean}
      */
     isPointInside(coord, epsilon = 0) {
-        const c = (this.crs == coord.crs) ? coord : coord.as(this.crs, _c);
+        if (this.crs == coord.crs) {
+            _c.copy(coord);
+        } else {
+            coord.as(this.crs, _c);
+        }
+
         // TODO this ignores altitude
-        return c.x <= this.east + epsilon &&
-               c.x >= this.west - epsilon &&
-               c.y <= this.north + epsilon &&
-               c.y >= this.south - epsilon;
+        return _c.x <= this.east + epsilon &&
+               _c.x >= this.west - epsilon &&
+               _c.y <= this.north + epsilon &&
+               _c.y >= this.south - epsilon;
     }
 
     /**
