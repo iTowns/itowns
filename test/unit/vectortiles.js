@@ -14,6 +14,8 @@ const paints = [{
     'line-color': 'hsla(0, 0%, 50%, 0.3)',
     'line-width': 3,
     'line-opacity': 0.4,
+}, {
+    'icon-image': 'icon.png',
 },
 ];
 
@@ -75,5 +77,27 @@ describe('Vector tiles', function () {
             assert.equal(style.stroke.opacity, 0.4);
             assert.equal(style.stroke.width, 3);
             assert.equal(style.stroke.color, 'hsl(0,0%,50%)');
+        }));
+    it('should parse symbol to style symbol', () =>
+        parse(multipolygon, paints[4], 'symbol').then((collection) => {
+            const style = collection.features[0].style;
+            assert.equal(style.text.zOrder, 'Y');
+            assert.equal(style.text.anchor, 'center');
+            assert.deepEqual(style.text.offset, [0, 0]);
+            assert.equal(style.text.padding, 2);
+            assert.equal(style.text.size, 16);
+            assert.equal(style.text.placement, 'point');
+            assert.equal(style.text.rotation, 'auto');
+            assert.equal(style.text.field, '');
+            assert.equal(style.text.wrap, 10);
+            assert.equal(style.text.spacing, 0);
+            assert.equal(style.text.transform, 'none');
+            assert.equal(style.text.justify, 'center');
+            assert.equal(style.text.color, '#000000');
+            assert.equal(style.text.opacity, 1.0);
+            assert.deepEqual(style.text.font, ['Open Sans Regular', 'Arial Unicode MS Regular']);
+            assert.equal(style.text.halo.color, '#000000');
+            assert.equal(style.text.halo.width, 0);
+            assert.equal(style.text.halo.blur, 0);
         }));
 });
