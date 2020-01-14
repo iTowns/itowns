@@ -30,7 +30,9 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate PlanarView
-            var view = new itowns.PlanarView(viewerDiv, extent, { maxSubdivisionLevel: 20 });
+            var view = new itowns.PlanarView(viewerDiv, extent, {
+                maxSubdivisionLevel: 20
+            });
             var menuGlobe = new GuiTools('menuDiv', view, 300);
 
             // eslint-disable-next-line no-new
@@ -46,8 +48,6 @@
                 smartZoomHeightMax: 100000,
             });
 
-            // Turn in the right angle
-            itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, { tilt: 90 });
             setupLoadingScreen(viewerDiv, view);
             FeatureToolTip.init(viewerDiv, view);
 
