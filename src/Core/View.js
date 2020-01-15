@@ -45,7 +45,7 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
     }
 };
 
-function _preprocessLayer(view, layer, provider, parentLayer) {
+function _preprocessLayer(view, layer, parentLayer) {
     const source = layer.source;
     if (parentLayer && !layer.extent) {
         layer.extent = parentLayer.extent;
@@ -68,16 +68,6 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         layer.projection = source.projection;
     } else {
         layer.projection = parentLayer.extent.crs;
-    }
-
-    if (!layer.whenReady) {
-        if (provider && provider.preprocessDataLayer) {
-            layer.whenReady = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler, parentLayer);
-        } else if (source && source.whenReady) {
-            layer.whenReady = source.whenReady;
-        } else {
-            layer.whenReady = Promise.resolve();
-        }
     }
 
     layer.whenReady = layer.whenReady.then(() => {
@@ -200,9 +190,8 @@ class View extends THREE.EventDispatcher {
      * Add layer in viewer.
      * The layer id must be unique.
      *
-     * This function calls `preprocessDataLayer` of the relevant provider with this
-     * layer and set `layer.whenReady` to a promise that resolves when
-     * the preprocessing operation is done. This promise is also returned by
+     * The `layer.whenReady` is a promise that resolves when
+     * the layer is done. This promise is also returned by
      * `addLayer` allowing to chain call.
      *
      * @param {LayerOptions|Layer|GeometryLayer} layer
@@ -221,13 +210,8 @@ class View extends THREE.EventDispatcher {
                 return;
             }
 
-            const protocol = layer.source ? layer.source.protocol : layer.protocol;
-            const provider = this.mainLoop.scheduler.getProtocolProvider(protocol);
-            if (layer.protocol && !provider) {
-                reject(new Error(`${layer.protocol} is not a recognized protocol name.`));
-                return;
-            }
-            layer = _preprocessLayer(this, layer, provider, parentLayer);
+            layer = _preprocessLayer(this, layer, parentLayer);
+
             if (parentLayer) {
                 if (layer.isColorLayer) {
                     const layerColors = this.getLayers(l => l.isColorLayer);

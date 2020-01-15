@@ -69,6 +69,10 @@ class Layer extends THREE.EventDispatcher {
         this.defineLayerProperty('frozen', false);
 
         this.info = new InfoLayer(this);
+
+        this.whenReady = config.source && config.source.whenReady ? config.source.whenReady : Promise.resolve();
+
+        this.ready = false;
     }
 
     /**
