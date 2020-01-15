@@ -1,4 +1,4 @@
-import { $3dTilesAbstractExtension } from '../Provider/3dTilesProvider';
+import { $3dTilesAbstractExtension } from 'Layer/C3DTilesLayer';
 
 /** @classdesc
  * Class for storing and accessing information relative to the

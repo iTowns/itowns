@@ -4,7 +4,8 @@ import { Matrix4, Object3D } from 'three';
 import Camera from 'Renderer/Camera';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { computeNodeSSE } from 'Process/3dTilesProcessing';
-import { $3dTilesIndex, configureTile } from 'Provider/3dTilesProvider';
+import { configureTile } from 'Provider/3dTilesProvider';
+import { $3dTilesIndex } from 'Layer/C3DTilesLayer';
 
 function tilesetWithRegion(transformMatrix) {
     const tileset = {

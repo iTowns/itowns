@@ -1,5 +1,5 @@
 import utf8Decoder from 'Utils/Utf8Decoder';
-import { $3dTilesExtensions } from '../Provider/3dTilesProvider';
+import { $3dTilesExtensions } from 'Layer/C3DTilesLayer';
 
 /** @classdesc
  * Class representing a 3D Tiles batch table
@@ -60,8 +60,8 @@ class BatchTable {
             });
         } else {
             throw new Error(
-                `Batch Id (${featureId}) must be inferior to batch length 
-                (${this.batchLength}) to access feature properties in batch 
+                `Batch Id (${featureId}) must be inferior to batch length
+                (${this.batchLength}) to access feature properties in batch
                 table.`);
         }
         const BTDisplayableInfo = { BatchTable: featureDisplayableInfo };

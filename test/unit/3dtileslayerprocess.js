@@ -1,6 +1,5 @@
 import assert from 'assert';
-import { Group } from 'three';
-import GeometryLayer from 'Layer/GeometryLayer';
+import C3DTilesLayer from 'Layer/C3DTilesLayer';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import HttpsProxyAgent from 'https-proxy-agent';
@@ -8,19 +7,12 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import Renderer from './mock';
 
 const renderer = new Renderer();
-const threedTilesLayer = new GeometryLayer('3d-tiles-discrete-lod', new Group());
-
-threedTilesLayer.name = 'DiscreteLOD';
-threedTilesLayer.url = 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/3d-tiles-samples/master/tilesets/TilesetWithDiscreteLOD/tileset.json';
-threedTilesLayer.protocol = '3d-tiles';
-threedTilesLayer.overrideMaterials = true;  // custom cesium shaders are not functional
-
-if (process.env.HTTPS_PROXY) {
-    threedTilesLayer.networkOptions = { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) };
-}
-
 const p = { coord: new Coordinates('EPSG:4326', -75.6114, 40.03428, 0), heading: 180, range: 4000, tilt: 22 };
 const viewer = new GlobeView(renderer.domElement, p, { renderer, noControls: true });
+const threedTilesLayer = new C3DTilesLayer('3d-tiles-discrete-lod', {
+    url: 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/3d-tiles-samples/master/tilesets/TilesetWithDiscreteLOD/tileset.json',
+    networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
+}, viewer);
 
 const context = {
     camera: viewer.camera,

@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable no-undef */
 // Finds the batch table of an object in a 3D Tiles layer. This is
 // for instance needed when picking because we pick the geometric
 // object which is not at the same level in the layer structure as
@@ -22,19 +22,23 @@ function getPickedBatchInfo(intersects) {
         // interAttributes are glTF attributes of b3dm tiles (i.e.
         // position, normal, batch id)
         var interAttributes = intersects[i].object.geometry.attributes;
-        if (interAttributes && interAttributes._BATCHID) {
-            // face is a Face3 object of THREE which is a
-            // triangular face. face.a is its first vertex
-            var vertex = intersects[i].face.a;
-            // get batch id of the face
-            var batchID = interAttributes._BATCHID.array[vertex];
-            var batchTable = findBatchTable(
-                intersects[i].object);
+        // eslint-disable-next-line no-debugger
+        if (interAttributes) {
+            var batchIDs = interAttributes._BATCHID || interAttributes.batchId;
+            if (batchIDs) {
+                // face is a Face3 object of THREE which is a
+                // triangular face. face.a is its first vertex
+                var vertex = intersects[i].face.a;
+                // get batch id of the face
+                var batchID = batchIDs.array[vertex];
+                var batchTable = findBatchTable(
+                    intersects[i].object);
 
-            return {
-                batchID: batchID,
-                batchTable: batchTable
-            };
+                return {
+                    batchID: batchID,
+                    batchTable: batchTable,
+                };
+            }
         }
     }
 }
@@ -48,7 +52,8 @@ function getPickedBatchInfo(intersects) {
 // this.htmlDiv (div element which contains the picked information)
 // this.view : iTowns view where the picking must be done
 // this.layer : the layer on which the picking must be done
-function fillHTMLWithPickingInfo(event) {
+// eslint-disable-next-line
+function fillHTMLWithPickingInfo(event, view, pickingArg) {
     // Remove content already in html div
     while (this.htmlDiv.firstChild) {
         this.htmlDiv.removeChild(this.htmlDiv.firstChild);
@@ -56,7 +61,9 @@ function fillHTMLWithPickingInfo(event) {
 
     var intersects = view.pickObjectsAt(event, 5, this.layer);
     var batchInfo = getPickedBatchInfo(intersects);
-    if (!batchInfo) return;
+    if (!batchInfo) {
+        return;
+    }
     var batchID = batchInfo.batchID;
     var batchTable = batchInfo.batchTable;
 
@@ -71,8 +78,8 @@ function fillHTMLWithPickingInfo(event) {
     // left:1.5)
     list.style.padding = '0 0 0 1.5rem';
     list.appendChild(item);
-    this.htmlDiv.appendChild(list);
+    pickingArg.htmlDiv.appendChild(list);
 
     var featureDisplayableInfo = batchTable.getPickingInfo(batchID);
-    this.htmlDiv.appendChild(createHTMLListFromObject(featureDisplayableInfo));
+    pickingArg.htmlDiv.appendChild(createHTMLListFromObject(featureDisplayableInfo));
 }

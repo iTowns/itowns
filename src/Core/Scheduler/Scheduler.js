@@ -204,9 +204,6 @@ Scheduler.prototype.execute = function execute(command) {
  * WFS providers (included in iTowns), default options to the layer are added if
  * some are missing.
  *
- * @function
- * @name Provider#preprocessDataLayer
- *
  * @param {Layer} layer
  * @param {View} [view]
  * @param {Scheduler} [scheduler]

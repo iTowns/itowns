@@ -37,6 +37,8 @@
                 "InfoTiledGeometryLayer",
                 "ColorLayersOrdering",
                 "OrientedImageLayer",
+                "PointCloudLayer",
+                "C3DTilesLayer",
 
                 "GlobeLayer",
                 "PlanarLayer"
