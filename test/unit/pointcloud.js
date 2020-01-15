@@ -1,5 +1,5 @@
 import assert from 'assert';
-import GeometryLayer from 'Layer/GeometryLayer';
+import PointCloudLayer from 'Layer/PointCloudLayer';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import HttpsProxyAgent from 'https-proxy-agent';
@@ -12,15 +12,12 @@ const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), ra
 const viewer = new GlobeView(renderer.domElement, placement, { renderer });
 
 // Configure Point Cloud layer
-const pointcloud = new GeometryLayer('eglise_saint_blaise_arles', viewer.scene);
-pointcloud.file = 'eglise_saint_blaise_arles.js';
-pointcloud.protocol = 'potreeconverter';
-pointcloud.url = 'https://raw.githubusercontent.com/gmaillet/dataset/master/';
-pointcloud.onPointsCreated = () => {};
-
-if (process.env.HTTPS_PROXY) {
-    pointcloud.fetchOptions = { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) };
-}
+const pointcloud = new PointCloudLayer('eglise_saint_blaise_arles', {
+    file: 'eglise_saint_blaise_arles.js',
+    url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
+    onPointsCreated: () => {},
+    fetchOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
+}, viewer);
 
 const context = {
     camera: viewer.camera,
