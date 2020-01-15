@@ -47,7 +47,7 @@ export default {
         const paramsGeometry = {
             extent,
             level,
-            segment: layer.options.segments || 16,
+            segment: layer.segments || 16,
             disableSkirt: layer.disableSkirt,
         };
 
