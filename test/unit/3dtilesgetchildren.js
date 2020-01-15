@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { Group, Mesh } from 'three';
-import { getObjectToUpdateForAttachedLayers } from 'Provider/3dTilesProvider';
+import C3DTilesLayer from 'Layer/C3DTilesLayer';
 
 describe('getObjectToUpdateForAttachedLayers', function () {
     it('should correctly return all children', function () {
@@ -16,7 +16,7 @@ describe('getObjectToUpdateForAttachedLayers', function () {
             tile.content.add(mesh);
         }
 
-        const result = getObjectToUpdateForAttachedLayers(tile);
+        const result = C3DTilesLayer.getObjectToUpdateForAttachedLayers(tile);
         assert.ok(Array.isArray(result.elements));
         assert.ok(result.elements.length, 3);
     });
