@@ -144,8 +144,6 @@ class OrientedImageLayer extends GeometryLayer {
                 crs2crs(coord, quat);
                 pano.quaternion = OrientationUtils.quaternionFromAttitude(pano.geometry[0].properties).premultiply(quat);
 
-                // TODO clean DataSourceProvider, so that we don't have this hack to do
-                pano.material = {};
                 pano.id = pano.geometry[0].properties.id;
                 pano.index = i++;
             }
