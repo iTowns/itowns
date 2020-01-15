@@ -164,8 +164,6 @@
                     viewerDiv = document.getElementById('viewerDiv');
                     viewerDiv.style.display = 'block';
 
-                    itowns.THREE.Object3D.DefaultUp.set(0, 0, 1);
-
                     debugGui = new dat.GUI({ width: 400 });
 
                     // TODO: do we really need to disable logarithmicDepthBuffer ?
@@ -174,19 +172,17 @@
                     view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
                     // Configure Point Cloud layer
-                    pointcloud = new itowns.GeometryLayer('eglise_saint_blaise_arles', new itowns.THREE.Group());
-                    pointcloud.file = fileName || 'infos/sources';
-                    pointcloud.protocol = 'potreeconverter';
-                    pointcloud.url = serverUrl;
-                    pointcloud.table = lopocsTable;
-                    if (searchParams.get('material') === 'three') {
-                        pointcloud.material = new itowns.THREE.PointsMaterial({
+                    pointcloud = new itowns.PointCloudLayer('eglise_saint_blaise_arles', {
+                        file: fileName || 'infos/sources',
+                        url: serverUrl,
+                        table: lopocsTable,
+                        material: searchParams.get('material') === 'three' ? new itowns.THREE.PointsMaterial({
                             color: 0xff8888,
                             sizeAttenuation: false,
                             size: 1,
                             vertexColors: itowns.THREE.VertexColors
-                        });
-                    }
+                        }) : undefined,
+                    }, view);
 
                     // point selection on double-click
                     function dblClickHandler(event) {

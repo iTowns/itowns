@@ -1,5 +1,6 @@
 import assert from 'assert';
-import PointCloudProcessing from 'Process/PointCloudProcessing';
+// import PointCloudProcessing from 'Process/PointCloudProcessing';
+import PointCloudLayer from 'Layer/PointCloudLayer';
 
 const context = { camera: { height: 1, camera3D: { fov: 1 } } };
 
@@ -9,7 +10,7 @@ describe('preUpdate', function () {
         const sources = new Set();
         assert.equal(
             layer.root,
-            PointCloudProcessing.preUpdate.call(layer, context, sources)[0]);
+            PointCloudLayer.prototype.preUpdate.call(layer, context, sources)[0]);
     });
 
     it('should return root if no common ancestors', () => {
@@ -21,7 +22,7 @@ describe('preUpdate', function () {
         sources.add(elt2);
         assert.equal(
             layer.root,
-            PointCloudProcessing.preUpdate.call(layer, context, sources)[0]);
+            PointCloudLayer.prototype.preUpdate.call(layer, context, sources)[0]);
     });
 
     it('should return common ancestor', () => {
@@ -36,7 +37,7 @@ describe('preUpdate', function () {
         layer.root.findChildrenByName = (name) => {
             assert.equal('12', name);
         };
-        PointCloudProcessing.preUpdate(context, layer, sources);
+        PointCloudLayer.prototype.preUpdate(context, layer, sources);
     });
 
     it('should not search ancestors if layer are different root if no common ancestors', () => {
@@ -49,6 +50,6 @@ describe('preUpdate', function () {
         layer.root.findChildrenByName = (name) => {
             assert.equal('12', name);
         };
-        PointCloudProcessing.preUpdate(context, layer, sources);
+        PointCloudLayer.prototype.preUpdate(context, layer, sources);
     });
 });

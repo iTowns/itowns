@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { getObjectToUpdateForAttachedLayers, _testing } from 'Provider/PointCloudProvider';
+import PointCloudLayer, { parseMetadata } from 'Layer/PointCloudLayer';
 
 describe('PointCloudProvider', function () {
     it('should correctly parse normal information in metadata', function () {
@@ -19,14 +19,14 @@ describe('PointCloudProvider', function () {
             pointAttributes: ['POSITION', 'RGB'],
         };
 
-        _testing.parseMetadata(metadata, layer);
+        parseMetadata(metadata, layer);
         const normalDefined = layer.material.defines.NORMAL || layer.material.defines.NORMAL_SPHEREMAPPED || layer.material.defines.NORMAL_OCT16;
         assert.ok(!normalDefined);
 
         // normals as vector
         layer.material = { defines: {} };
         metadata.pointAttributes = ['POSITION', 'NORMAL', 'CLASSIFICATION'];
-        _testing.parseMetadata(metadata, layer);
+        parseMetadata(metadata, layer);
         assert.ok(layer.material.defines.NORMAL);
         assert.ok(!layer.material.defines.NORMAL_SPHEREMAPPED);
         assert.ok(!layer.material.defines.NORMAL_OCT16);
@@ -34,7 +34,7 @@ describe('PointCloudProvider', function () {
         // spheremapped normals
         layer.material = { defines: {} };
         metadata.pointAttributes = ['POSITION', 'COLOR_PACKED', 'NORMAL_SPHEREMAPPED'];
-        _testing.parseMetadata(metadata, layer);
+        parseMetadata(metadata, layer);
         assert.ok(!layer.material.defines.NORMAL);
         assert.ok(layer.material.defines.NORMAL_SPHEREMAPPED);
         assert.ok(!layer.material.defines.NORMAL_OCT16);
@@ -42,7 +42,7 @@ describe('PointCloudProvider', function () {
         // oct16 normals
         layer.material = { defines: {} };
         metadata.pointAttributes = ['POSITION', 'COLOR_PACKED', 'CLASSIFICATION', 'NORMAL_OCT16'];
-        _testing.parseMetadata(metadata, layer);
+        parseMetadata(metadata, layer);
         assert.ok(!layer.material.defines.NORMAL);
         assert.ok(!layer.material.defines.NORMAL_SPHEREMAPPED);
         assert.ok(layer.material.defines.NORMAL_OCT16);
@@ -55,7 +55,7 @@ describe('getObjectToUpdateForAttachedLayers', function () {
         const meta = {
             obj: 'a',
         };
-        assert.equal(getObjectToUpdateForAttachedLayers(meta).element, 'a');
+        assert.equal(PointCloudLayer.getObjectToUpdateForAttachedLayers(meta).element, 'a');
     });
     it('should correctly return the element and its parent', function () {
         const meta = {
@@ -64,7 +64,7 @@ describe('getObjectToUpdateForAttachedLayers', function () {
                 obj: 'b',
             },
         };
-        const result = getObjectToUpdateForAttachedLayers(meta);
+        const result = PointCloudLayer.getObjectToUpdateForAttachedLayers(meta);
         assert.equal(result.element, 'a');
         assert.equal(result.parent, 'b');
     });

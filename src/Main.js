@@ -39,6 +39,7 @@ export { default as Layer, ImageryLayers } from 'Layer/Layer';
 export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
 export { default as GeometryLayer } from 'Layer/GeometryLayer';
+export { default as PointCloudLayer } from 'Layer/PointCloudLayer';
 export { default as TiledGeometryLayer } from 'Layer/TiledGeometryLayer';
 export { default as OrientedImageLayer } from 'Layer/OrientedImageLayer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from 'Layer/LayerUpdateStrategy';
