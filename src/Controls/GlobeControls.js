@@ -559,6 +559,7 @@ class GlobeControls extends THREE.EventDispatcher {
                 break;
             case this.states.MOVE_GLOBE: {
                 const normalized = this.view.viewToNormalizedCoords(coords);
+                this.camera.updateMatrixWorld();
                 raycaster.setFromCamera(normalized, this.camera);
                 // If there's intersection then move globe else we stop the move
                 if (raycaster.ray.intersectSphere(pickSphere, intersection)) {
