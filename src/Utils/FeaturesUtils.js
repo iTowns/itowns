@@ -123,6 +123,7 @@ function isFeatureUnderCoordinate(coordinate, feature, epsilon, result) {
                     type: feature.type,
                     geometry,
                     coordinates: under.coordinates /* || coordinates */,
+                    style: feature.style,
                 });
             }
         }
