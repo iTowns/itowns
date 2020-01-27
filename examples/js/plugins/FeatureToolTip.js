@@ -75,7 +75,7 @@ var FeatureToolTip = (function _() {
             feature = features[p];
 
             geometry = feature.geometry;
-            style = (layer.style && layer.style.isStyle) ? layer.style : (geometry._feature.style || geometry.properties.style);
+            style = (layer.style && layer.style.isStyle) ? layer.style : feature.style;
             fill = style.fill.color;
             stroke = '1.25px ' + style.stroke.color;
 
