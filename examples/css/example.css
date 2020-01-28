@@ -144,6 +144,7 @@ canvas {
 /* PLUGINS/GUI */
 .dg.main {
     position: absolute;
+    top: 0;
 }
 
 @media (max-width: 600px) {
