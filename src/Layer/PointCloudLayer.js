@@ -9,58 +9,26 @@ import Extent from 'Core/Geographic/Extent';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 
 const point = new THREE.Vector3();
-// Draw a cube with lines (12 lines).
-function cube(size) {
-    var h = size.clone().multiplyScalar(0.5);
-    var geometry = new THREE.Geometry();
-    var line = new THREE.Line(geometry);
-
-    geometry.vertices.push(
-        new THREE.Vector3(-h.x, -h.y, -h.z),
-        new THREE.Vector3(-h.x, h.y, -h.z),
-        new THREE.Vector3(-h.x, h.y, -h.z),
-        new THREE.Vector3(h.x, h.y, -h.z),
-        new THREE.Vector3(h.x, h.y, -h.z),
-        new THREE.Vector3(h.x, -h.y, -h.z),
-        new THREE.Vector3(h.x, -h.y, -h.z),
-        new THREE.Vector3(-h.x, -h.y, -h.z),
-        new THREE.Vector3(-h.x, -h.y, h.z),
-        new THREE.Vector3(-h.x, h.y, h.z),
-        new THREE.Vector3(-h.x, h.y, h.z),
-        new THREE.Vector3(h.x, h.y, h.z),
-        new THREE.Vector3(h.x, h.y, h.z),
-        new THREE.Vector3(h.x, -h.y, h.z),
-        new THREE.Vector3(h.x, -h.y, h.z),
-        new THREE.Vector3(-h.x, -h.y, h.z),
-        new THREE.Vector3(-h.x, -h.y, -h.z),
-        new THREE.Vector3(-h.x, -h.y, h.z),
-        new THREE.Vector3(-h.x, h.y, -h.z),
-        new THREE.Vector3(-h.x, h.y, h.z),
-        new THREE.Vector3(h.x, h.y, -h.z),
-        new THREE.Vector3(h.x, h.y, h.z),
-        new THREE.Vector3(h.x, -h.y, -h.z),
-        new THREE.Vector3(h.x, -h.y, h.z));
-
-    line.computeLineDistances();
-    return line.geometry;
-}
+const bboxMesh = new THREE.Mesh();
+const box3 = new THREE.Box3();
+bboxMesh.geometry.boundingBox = box3;
 
 function initBoundingBox(elt, layer) {
-    const size = new THREE.Vector3();
-    elt.tightbbox.getSize(size);
-    elt.obj.boxHelper = new THREE.LineSegments(
-        cube(size),
-        elt.childrenBitField ?
-            new THREE.LineDashedMaterial({ color: 0, dashSize: 0.25, gapSize: 0.25 }) : new THREE.LineBasicMaterial({ color: 0 }));
-
-    elt.obj.boxHelper.frustumCulled = false;
-    elt.obj.boxHelper.position.copy(elt.tightbbox.min);
-    elt.obj.boxHelper.position.add(size.multiplyScalar(0.5));
-    elt.obj.boxHelper.updateMatrixWorld(true);
-    elt.obj.boxHelper.autoUpdateMatrix = false;
+    elt.tightbbox.getSize(box3.max);
+    box3.max.multiplyScalar(0.5);
+    box3.min.copy(box3.max).negate();
+    elt.obj.boxHelper = new THREE.BoxHelper(bboxMesh);
+    elt.obj.boxHelper.geometry = new THREE.Geometry().fromBufferGeometry(elt.obj.boxHelper.geometry.toNonIndexed());
+    elt.obj.boxHelper.computeLineDistances();
+    elt.obj.boxHelper.material = elt.childrenBitField ? new THREE.LineDashedMaterial({ dashSize: 0.25, gapSize: 0.25 }) : new THREE.LineBasicMaterial();
+    elt.obj.boxHelper.material.color.setHex(0);
     elt.obj.boxHelper.material.linewidth = 2;
+    elt.obj.boxHelper.frustumCulled = false;
+    elt.obj.boxHelper.position.copy(elt.tightbbox.min).add(box3.max);
+    elt.obj.boxHelper.autoUpdateMatrix = false;
     elt.obj.boxHelper.layers.mask = layer.bboxes.layers.mask;
     layer.bboxes.add(elt.obj.boxHelper);
+    elt.obj.boxHelper.updateMatrix();
     elt.obj.boxHelper.updateMatrixWorld();
 }
 
