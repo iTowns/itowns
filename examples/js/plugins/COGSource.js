@@ -73,15 +73,10 @@ class COGSource extends itowns.Source {
 
         // Header
         // default is 16ko block read
-        this.whenReady = fetch(this.url, {
+        this.whenReady = itowns.Fetcher.arrayBuffer(this.url, {
             headers: {
-                'content-type': 'multipart/byteranges',
                 'range': 'bytes=0-16000',
             },
-        }).then((response) => {
-            if (response.ok) {
-                return response.arrayBuffer();
-            }
         }).then((response) => {
             this.ifds = UTIF.decode(response);
             console.log(this.ifds);
@@ -91,26 +86,19 @@ class COGSource extends itowns.Source {
             this.geoKeyDirectoryTag = this.ifds[0].t34735;
             this.geoDoubleParamsTag = this.ifds[0].t34736;
             this.geoAsciiParamsTag = this.ifds[0].t34737;
-
-            if ((this.geoKeyDirectoryTag) && !(source.projection)) {
-                // Spec in http://geotiff.maptools.org/spec/geotiff2.4.html
-                var nbKeys = this.geoKeyDirectoryTag[3];
-                for (let i = 0; i < nbKeys; ++i) {
-                    if (this.geoKeyDirectoryTag[(i + 1) * 4] == 3072) {
-                        const epsg_code = this.geoKeyDirectoryTag[(i + 1) * 4 + 3];
-                        this.projection = CRS.formatToTms(`EPSG:${epsg_code}`);
-                        console.log(this.projection);
-                    }
-                }
-            }
-
-            this.tileSize = this.ifds[0].t322[0];
             this.width = this.ifds[0].t256[0];
             this.height = this.ifds[0].t257[0];
+
+            // Compute extent from GeoTiff Tag
+            this.extent = new itowns.Extent(
+                source.projection,
+                this.modelTiepointTag[3], this.modelTiepointTag[3] + this.width * this.modelPixelScaleTag[0],
+                this.modelTiepointTag[4] - this.height * this.modelPixelScaleTag[1], this.modelTiepointTag[4]);
+
+            this.tileSize = this.ifds[0].t322[0];
             this.zoomMax = Math.ceil(Math.log2(Math.max(this.width, this.height) / this.tileSize));
             console.log('zoomMax : ', this.zoomMax);
             if (!this.zoom) {
-
                 this.zoom = {
                     min: this.zoomMax - this.ifds.length + 1,
                     max: this.zoomMax,
@@ -147,21 +135,6 @@ class COGSource extends itowns.Source {
                 this.tileMaxtrixSetLimits = tileMaxtrixSetLimits;
             }
         });
-        // if (!this.zoom) {
-        //     if (this.tileMatrixSetLimits) {
-        //         const arrayLimits = Object.keys(this.tileMatrixSetLimits);
-        //         const size = arrayLimits.length;
-        //         const maxZoom = Number(arrayLimits[size - 1]);
-        //         const minZoom = maxZoom - size + 1;
-
-        //         this.zoom = {
-        //             min: minZoom,
-        //             max: maxZoom,
-        //         };
-        //     } else {
-        //         this.zoom = { min: 0, max: 20 };
-        //     }
-        // }
     }
 
     urlFromExtent(extent) {
@@ -174,7 +147,6 @@ class COGSource extends itowns.Source {
         const byteCounts = extent.ifd.t325[numTile];
         // custom the networkOptions as a range request for this specific tile 
         this.networkOptions.headers = {
-            'content-type': 'multipart/byteranges',
             'range': `bytes=${offset}-${offset + byteCounts}`,
         };
         // update the ifd copy for the TIFFParser

@@ -21,44 +21,27 @@
 
 itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
-            // // # Simple Planar viewer
-
-            // // Define geographic extent: CRS, min/max X, min/max Y
-            // // Upper Left  (  884000.000, 6461000.000) (  5d20'41.10"E, 45d13'25.46"N)
-            // // Lower Left  (  884000.000, 6459000.000) (  5d20'38.38"E, 45d12'20.66"N)
-            // // Upper Right (  886000.000, 6461000.000) (  5d22'12.80"E, 45d13'23.53"N)
-            // // Lower Right (  886000.000, 6459000.000) (  5d22'10.05"E, 45d12'18.73"N)
-            // // Center      (  885000.000, 6460000.000) (  5d21'25.58"E, 45d12'52.10"N)
-
-            var extent = new itowns.Extent(
-                'EPSG:2154',
-                884000, 886000,
-                6459000, 6461000);
-
-            // // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
-
-            // // Instanciate iTowns PlanarView*
-            var view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true, maxSubdivisionLevel: 10, placement: { tilt: 90 } });
-
-            setupLoadingScreen(viewerDiv, view);
-            new itowns.PlanarControls(view, {});
-
-            // // Add one imagery layer to the scene, read from TIFFs.
+            
+            // create a source from a Cloud Optimized GeoTiff
             var cogSource = new COGSource({
-                url: '/cogeo.tif',
+                url: 'https://itowns.ign.fr/demos/public/cogeo.tif',
                 tileMatrixSet: 'PM',
                 projection: 'EPSG:2154',
                 parser: TIFFParser.parse,
                 fetcher: itowns.Fetcher.arrayBuffer,
             });
-
-            var cogLayer = new itowns.ColorLayer('cog', {
-                source: cogSource,
-            });
-
-            view.addLayer(cogLayer);
-
+            cogSource.whenReady.then(() => {
+                console.log(cogSource.extent);
+                var view = new itowns.PlanarView(viewerDiv, cogSource.extent, { disableSkirt: true, maxSubdivisionLevel: 10, placement: { tilt: 90 } });
+                setupLoadingScreen(viewerDiv, view);
+                new itowns.PlanarControls(view, {});
+                var cogLayer = new itowns.ColorLayer('cog', {
+                    source: cogSource,
+                });
+                view.addLayer(cogLayer);
+                }
+            );
         </script>
     </body>
 </html>
