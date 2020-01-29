@@ -147,7 +147,7 @@ class COGSource extends itowns.Source {
         const byteCounts = extent.ifd.t325[numTile];
         // custom the networkOptions as a range request for this specific tile 
         this.networkOptions.headers = {
-            'range': `bytes=${offset}-${offset + byteCounts}`,
+            'range': `bytes=${offset}-${offset + byteCounts - 1}`,
         };
         // update the ifd copy for the TIFFParser
         // width/heigth from the tile size
