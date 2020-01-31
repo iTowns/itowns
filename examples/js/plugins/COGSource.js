@@ -75,7 +75,7 @@ class COGSource extends itowns.Source {
         // default is 16ko block read
         this.whenReady = itowns.Fetcher.arrayBuffer(this.url, {
             headers: {
-                'range': 'bytes=0-16000',
+                'range': 'bytes=0-300000',
             },
         }).then((response) => {
             this.ifds = UTIF.decode(response);
@@ -138,6 +138,7 @@ class COGSource extends itowns.Source {
     }
 
     urlFromExtent(extent) {
+        console.log(extent);
         // Copy Ifd and add if to extent (for the parser)
         const ifdNum = this.zoomMax - extent.zoom;
         extent.ifd = JSON.parse(JSON.stringify(this.ifds[ifdNum]));

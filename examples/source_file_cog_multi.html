@@ -25,24 +25,40 @@ itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0
             var viewerDiv = document.getElementById('viewerDiv');
             
             // create a source from a Cloud Optimized GeoTiff
-            var cogSource = new COGSource({
-                url: 'https://itowns.ign.fr/demos/public/cogeo.tif',
+            var cogSource1 = new COGSource({
+                url: 'https://itowns.ign.fr/demos/public/cog_19FD5606Ax00001_13040.tif',
                 tileMatrixSet: 'PM',
                 projection: 'EPSG:2154',
                 parser: TIFFParser.parse,
                 fetcher: itowns.Fetcher.arrayBuffer,
             });
-            cogSource.whenReady.then(() => {
-                console.log(cogSource.extent);
-                var view = new itowns.PlanarView(viewerDiv, cogSource.extent, { disableSkirt: true, maxSubdivisionLevel: 10, placement: { tilt: 90 } });
-                setupLoadingScreen(viewerDiv, view);
-                new itowns.PlanarControls(view, {});
-                var cogLayer = new itowns.ColorLayer('cog', {
-                    source: cogSource,
-                });
-                view.addLayer(cogLayer);
-                }
-            );
+            // var cogSource2 = new COGSource({
+            //     url: '/cog_19FD5606Ax00001_13041.tif',
+            //     tileMatrixSet: 'PM',
+            //     projection: 'EPSG:2154',
+            //     parser: TIFFParser.parse,
+            //     fetcher: itowns.Fetcher.arrayBuffer,
+            // });
+            // var cogSource3 = new COGSource({
+            //     url: '/cog_19FD5606Ax00001_13042.tif',
+            //     tileMatrixSet: 'PM',
+            //     projection: 'EPSG:2154',
+            //     parser: TIFFParser.parse,
+            //     fetcher: itowns.Fetcher.arrayBuffer,
+            // });
+            var extent = new itowns.Extent(
+                'EPSG:2154',
+                0, 6000000, 1677721.6, 7677721.6);
+            
+            var view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true, maxSubdivisionLevel: 10, placement: { tilt: 90 } });
+            setupLoadingScreen(viewerDiv, view);
+            new itowns.PlanarControls(view, {});
+            var cogLayer1 = new itowns.ColorLayer('cog1', {source: cogSource1});
+            view.addLayer(cogLayer1);
+            // var cogLayer2 = new itowns.ColorLayer('cog2', {source: cogSource2});
+            // view.addLayer(cogLayer2);
+            // var cogLayer3 = new itowns.ColorLayer('cog3', {source: cogSource3});
+            // view.addLayer(cogLayer3);
         </script>
     </body>
 </html>
