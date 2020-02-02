@@ -121,7 +121,7 @@ UTIF.decode = function(buff, prm)
 UTIF.decodeImage = function(buff, img, ifds)
 {
 	var data = new Uint8Array(buff);
-	var id = UTIF._binBE.readASCII(data, 0, 2);
+	var id = UTIF._binBE.readASCII(data, 0n, 2n);
 
 	if(img["t256"]==null) return;	// No width => probably not an image
 	img.isLE = id=="II";
@@ -967,23 +967,33 @@ UTIF._readIFD = function(bin, data, offset, ifds, depth, prm)
 		var arr = [];
 		//ifd["t"+tag+"-"+UTIF.tags[tag]] = arr;
 		if(type== 1 || type==7) {  arr = new Uint8Array(data.buffer, (num<5 ? offset-4 : voff), num);  }
-		if(type== 2) {  var o0 = (num<5 ? offset-4 : voff), c=data[o0], len=Math.max(0, Math.min(num-1,data.length-o0));
-						if(c<128 || len==0) arr.push( bin.readASCII(data, o0, len) );
-						else      arr = new Uint8Array(data.buffer, o0, len);  }
+		if(type== 2) {  
+			var o0 = (num<5n ? offset-4n : voff);
+			var c=data[o0];
+			var len=Math.max(0, Math.min(num-1,data.length-o0));
+			if(c<128 || len==0) 
+				arr.push( bin.readASCII(data, o0, len) );
+			else
+				arr = new Uint8Array(data.buffer, o0, len);  
+		}
 		if(type== 3) {  
 			for(var j=0n; j<num; j++) {
 				arr.push(bin.readUshort(data, (num<3n ? offset-4n : voff)+2n*j));
 			}  
 		}
 		if(type== 4 
-		|| type==13) {  for(var j=0; j<num; j++) arr.push(bin.readUint  (data, (num<2 ? offset-4 : voff)+4*j));  }
+		|| type==13) {  
+			for(var j=0n; j<num; j++) arr.push(bin.readUint  (data, (num<2n ? offset-4n : voff)+4n*j));  
+		}
 		if(type== 5 || type==10) {  
 			var ri = type==5 ? bin.readUint : bin.readInt;
 			for(var j=0; j<num; j++) arr.push([ri(data, voff+j*8), ri(data,voff+j*8+4)]);  }
 		if(type== 8) {  for(var j=0; j<num; j++) arr.push(bin.readShort (data, (num<3 ? offset-4 : voff)+2*j));  }
 		if(type== 9) {  for(var j=0; j<num; j++) arr.push(bin.readInt   (data, (num<2 ? offset-4 : voff)+4*j));  }
 		if(type==11) {  for(var j=0; j<num; j++) arr.push(bin.readFloat (data, voff+j*4));  }
-		if(type==12) {  for(var j=0; j<num; j++) arr.push(bin.readDouble(data, voff+j*8));  }
+		if(type==12) {  
+			for(var j=0n; j<num; j++) arr.push(bin.readDouble(data, voff+j*8n));  
+		}
 		
 		ifd["t"+tag] = arr;
 		

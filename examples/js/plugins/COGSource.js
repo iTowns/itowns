@@ -139,24 +139,40 @@ class COGSource extends itowns.Source {
 
     urlFromExtent(extent) {
         console.log(extent);
-        // Copy Ifd and add if to extent (for the parser)
+        // find the COG tile for this extent
         const ifdNum = this.zoomMax - extent.zoom;
-        extent.ifd = JSON.parse(JSON.stringify(this.ifds[ifdNum]));
         // get the offset/byteCount for the tile
-        const numTile = extent.col + extent.row * extent.ifd.nbTileX;
-        const offset = extent.ifd.t324[numTile];
-        const byteCounts = extent.ifd.t325[numTile];
+        const ifd = this.ifds[ifdNum];
+        const numTile = extent.col + extent.row * ifd.nbTileX;
+        const offset = ifd.t324[numTile];
+        const byteCounts = ifd.t325[numTile];
+        const tileWidth = ifd.t322[0];
+        const tileHeight = ifd.t323[0];
+        // create a custom ifd copy for the TIFFParser
+        extent.ifd = {};
+        for (const property in ifd) {
+            // width
+            if (property == 't256') {
+                extent.ifd[property] = tileWidth;
+            }
+            // height
+            else if (property == 't257') {
+                extent.ifd[property] = tileHeight;
+            }
+            // tile offsets
+            else if (property == 't324') {
+                extent.ifd[property] = [0n];
+            }
+            // tile byteCounts
+            else if (property == 't325') {
+                extent.ifd[property] = [byteCounts];
+            }
+        }
+        console.log(extent.ifd);
         // custom the networkOptions as a range request for this specific tile 
         this.networkOptions.headers = {
-            'range': `bytes=${offset}-${offset + byteCounts - 1}`,
+            'range': `bytes=${offset}-${offset + BigInt(byteCounts) - 1n}`,
         };
-        // update the ifd copy for the TIFFParser
-        // width/heigth from the tile size
-        extent.ifd.t256[0] = extent.ifd.t322[0];
-        extent.ifd.t257[0] = extent.ifd.t323[0];
-        // offset and byteCounts
-        extent.ifd.t324 = [0];
-        extent.ifd.t325 = [byteCounts];
         return this.url;
     }
 
