@@ -112,7 +112,8 @@ UTIF.decode = function(buff, prm)
 	var ifds = [];
 	while(true) {
 		var noff = UTIF._readIFD(bin, data, ifdo, ifds, 0, prm);
-		ifdo = bin.readUint(data, noff);
+		ifdo = BigInt(bin.readUint(data, noff));
+		console.log(ifdo);
 		if(ifdo==0 || noff==0) break;
 	}
 	return ifds;
@@ -839,8 +840,29 @@ UTIF.decode._writeBits = function(bits, tgt, boff)
 }
 
 UTIF.decode._decodeLZW = function(){var x={},y=function(L,F,i,W,_){for(var a=0;a<_;a+=4){i[W+a]=L[F+a];
-i[W+a+1]=L[F+a+1];i[W+a+2]=L[F+a+2];i[W+a+3]=L[F+a+3]}},c=function(L,F,i,W){if(!x.c){var _=new Uint32Array(65535),a=new Uint16Array(65535),Z=new Uint8Array(2e6);
-for(var f=0;f<256;f++){Z[f<<2]=f;_[f]=f<<2;a[f]=1}x.c=[_,a,Z]}var o=x.c[0],z=x.c[1],Z=x.c[2],h=258,n=258<<2,k=9,C=F<<3,m=256,B=257,p=0,O=0,K=0;
+i[W+a+1]=L[F+a+1];i[W+a+2]=L[F+a+2];i[W+a+3]=L[F+a+3]}},c=function(L,F,i,W){if(!x.c){
+	var _=new Uint32Array(65535),a=new Uint16Array(65535),Z=new Uint8Array(2e6);
+for(var f=0;f<256;f++){
+	Z[f<<2]=f;
+	_[f]=f<<2;
+	a[f]=1
+}
+x.c=[_,a,Z]
+}
+var o=x.c[0];
+var z=x.c[1];
+var Z=x.c[2];
+var h=258;
+var n=258<<2;
+var k=9;
+// ??????
+console.log(F);
+var C=Number(F)<<3;
+var m=256;
+var B=257;
+var p=0;
+var O=0;
+var K=0;
 while(!0){p=L[C>>>3]<<16|L[C+8>>>3]<<8|L[C+16>>>3];O=p>>24-(C&7)-k&(1<<k)-1;C+=k;if(O==B)break;if(O==m){k=9;
 h=258;n=258<<2;p=L[C>>>3]<<16|L[C+8>>>3]<<8|L[C+16>>>3];O=p>>24-(C&7)-k&(1<<k)-1;C+=k;if(O==B)break;
 i[W]=O;W++}else if(O<h){var J=o[O],q=z[O];y(Z,J,i,W,q);W+=q;if(K>=h){o[h]=n;Z[o[h]]=J[0];z[h]=1;n=n+1+3&~3;
@@ -953,6 +975,7 @@ UTIF._readIFD_BigTIFF = function(bin, data, offset, ifds, depth, prm)
 
 UTIF._readIFD = function(bin, data, offset, ifds, depth, prm)
 {
+	console.log('readIFD : ', bin, data, offset);
 	var cnt = bin.readUshort(data, offset);  offset+=2n;
 	var ifd = {};
 
@@ -963,18 +986,29 @@ UTIF._readIFD = function(bin, data, offset, ifds, depth, prm)
 		var type = bin.readUshort(data, offset);    offset+=2n;
 		var num  = BigInt(bin.readUint  (data, offset));    offset+=4n;
 		var voff = BigInt(bin.readUint  (data, offset));    offset+=4n;
-		console.log(tag, type, num, voff);
+		// console.log(tag, type, num, voff);
 		var arr = [];
 		//ifd["t"+tag+"-"+UTIF.tags[tag]] = arr;
 		if(type== 1 || type==7) {  arr = new Uint8Array(data.buffer, (num<5 ? offset-4 : voff), num);  }
 		if(type== 2) {  
-			var o0 = (num<5n ? offset-4n : voff);
-			var c=data[o0];
-			var len=Math.max(0, Math.min(num-1,data.length-o0));
-			if(c<128 || len==0) 
-				arr.push( bin.readASCII(data, o0, len) );
-			else
-				arr = new Uint8Array(data.buffer, o0, len);  
+			var o0 = (num<9n ? offset-8n : voff);
+            console.log('o0 : ', o0);
+            var len = num-1n;
+            // var c=data[o0];
+            // console.log('c : ', c);
+            // var len=Math.max(0n, Math.min(num-1n,BigInt(data.length)-o0));
+            // console.log(o0, c, len);
+            // if(c<128n || len==0n) 
+                arr.push( bin.readASCII(data, o0, len) );
+            // else
+            //     arr = new Uint8Array(data.buffer, o0, len);
+			// var o0 = (num<5n ? offset-4n : voff);
+			// var c=data[o0];
+			// var len=Math.max(0, Math.min(num-1,data.length-o0));
+			// if(c<128 || len==0) 
+			// 	arr.push( bin.readASCII(data, o0, len) );
+			// else
+			// 	arr = new Uint8Array(data.buffer, o0, len);  
 		}
 		if(type== 3) {  
 			for(var j=0n; j<num; j++) {

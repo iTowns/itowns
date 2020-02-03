@@ -67,6 +67,7 @@ class COGSource extends itowns.Source {
 
         if (source.projection) {
             this.projection = itowns.CRS.formatToTms(source.projection);
+            this.crs = source.projection;
         }
 
         this.tileMatrixSetLimits = source.tileMatrixSetLimits;
@@ -90,10 +91,13 @@ class COGSource extends itowns.Source {
             this.height = this.ifds[0].t257[0];
 
             // Compute extent from GeoTiff Tag
+            console.log(this.modelTiepointTag, this.modelPixelScaleTag);
             this.extent = new itowns.Extent(
                 source.projection,
-                this.modelTiepointTag[3], this.modelTiepointTag[3] + this.width * this.modelPixelScaleTag[0],
-                this.modelTiepointTag[4] - this.height * this.modelPixelScaleTag[1], this.modelTiepointTag[4]);
+                Math.floor(this.modelTiepointTag[3]*1000)*0.001, 
+                Math.round((this.modelTiepointTag[3] + this.width * this.modelPixelScaleTag[0])*1000)*0.001,
+                Math.round((this.modelTiepointTag[4] - this.height * this.modelPixelScaleTag[1])*1000)*0.001, 
+                Math.round(this.modelTiepointTag[4]*1000)*0.001);
 
             this.tileSize = this.ifds[0].t322[0];
             this.zoomMax = Math.ceil(Math.log2(Math.max(this.width, this.height) / this.tileSize));
@@ -139,25 +143,40 @@ class COGSource extends itowns.Source {
 
     urlFromExtent(extent) {
         console.log(extent);
+        var extentOrig = extent.as(this.crs);
+        var xmin = extentOrig.west;
+        var xmax = extentOrig.east;
+        var ymin = extentOrig.south;
+        var ymax = extentOrig.north;
+        // recherche de cette emprise dans le cog
+        console.log('extent COG : ', this.extent);
+        var sizeX = xmax-xmin;
+        var sizeY = ymax-ymin;
+        var x0 = xmin - extent.col * sizeX;
+        var y0 = ymax + extent.row * sizeY;
+
+        console.log(x0, y0);
+
         // find the COG tile for this extent
         const ifdNum = this.zoomMax - extent.zoom;
         // get the offset/byteCount for the tile
         const ifd = this.ifds[ifdNum];
         const numTile = extent.col + extent.row * ifd.nbTileX;
-        const offset = ifd.t324[numTile];
+        const offset = BigInt(ifd.t324[numTile]);
         const byteCounts = ifd.t325[numTile];
         const tileWidth = ifd.t322[0];
         const tileHeight = ifd.t323[0];
         // create a custom ifd copy for the TIFFParser
         extent.ifd = {};
+        console.log(ifd);
         for (const property in ifd) {
             // width
             if (property == 't256') {
-                extent.ifd[property] = tileWidth;
+                extent.ifd[property] = [tileWidth];
             }
             // height
             else if (property == 't257') {
-                extent.ifd[property] = tileHeight;
+                extent.ifd[property] = [tileHeight];
             }
             // tile offsets
             else if (property == 't324') {
@@ -166,6 +185,9 @@ class COGSource extends itowns.Source {
             // tile byteCounts
             else if (property == 't325') {
                 extent.ifd[property] = [byteCounts];
+            }
+            else {
+                extent.ifd[property] = ifd[property];
             }
         }
         console.log(extent.ifd);
