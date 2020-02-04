@@ -149,7 +149,7 @@ function readPBF(file, options) {
                 let style = styleCache.get(tag);
                 if (!style) {
                     style = new Style();
-                    style.setFromVectorTileLayer(layer, extentSource.zoom, options.sprites);
+                    style.setFromVectorTileLayer(layer, extentSource.zoom, options.sprites, options.symbolToCircle);
                     styleCache.set(tag, style);
                 }
                 const order = allLayers.findIndex(l => l.id == layer.id);
@@ -202,6 +202,8 @@ export default {
      * or other system. See [this link]{@link
      * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates}
      * for more informations.
+     * @param {boolean} [options.symbolToCircle=false] - If true, all symbols
+     * from a tile will be considered as circle, and render as circles.
      *
      * @return {Promise} A Promise resolving with a Feature or an array a
      * Features.
