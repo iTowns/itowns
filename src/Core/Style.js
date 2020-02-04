@@ -126,9 +126,10 @@ class Style {
      * @param {object} layer vector tile layer.
      * @param {Number} zoom vector tile layer.
      * @param {Object} sprites vector tile layer.
+     * @param {boolean} [symbolToCircle=false]
      * @returns {Style}
      */
-    setFromVectorTileLayer(layer, zoom, sprites) {
+    setFromVectorTileLayer(layer, zoom, sprites, symbolToCircle = false) {
         if (layer.type === 'fill' && !this.fill.color) {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern']));
             this.fill.color = color;
@@ -152,6 +153,11 @@ class Style {
             this.stroke.lineCap = layer.layout && layer.layout['line-cap'];
             this.stroke.width = readVectorProperty(layer.paint['line-width'], zoom) || 3.0;
             this.stroke.opacity = readVectorProperty(layer.paint['line-opacity'], zoom) || opacity || 1.0;
+        } else if (layer.type === 'circle' || symbolToCircle) {
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint && layer.paint['circle-color'], zoom) || '#000000ff');
+            this.point.color = color;
+            this.point.opacity = opacity;
+            this.point.radius = readVectorProperty(layer.paint['circle-radius'], zoom) || 1.5;
         } else if (layer.type === 'symbol') {
             // overlapping order
             this.text.zOrder = readVectorProperty(layer.layout && layer.layout['symbol-z-order'] || 'auto', zoom);
@@ -207,11 +213,6 @@ class Style {
                     Cache.set(`${iconSrc}-${size}`, this.icon);
                 }
             }
-        } else if (layer.type === 'circle') {
-            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint && layer.paint['circle-color']), zoom);
-            this.point.color = color;
-            this.point.opacity = opacity;
-            this.point.radius = readVectorProperty(layer.paint['circle-radius'], zoom);
         }
         return this;
     }
