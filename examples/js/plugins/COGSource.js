@@ -16,14 +16,6 @@
  * or other system. See [this link]{@link
  * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/}
  * for more information.
- * @property {string} tileMatrixSet - Tile matrix set of the layer, used in the
- * generation of the coordinates to build the url. Default value is 'WGS84'.
- * @property {Object} zoom - Object containing the minimum and maximum values of
- * the level, to zoom in the source.
- * @property {number} zoom.min - The minimum level of the source. Default value
- * is computed from the COG file.
- * @property {number} zoom.max - The maximum level of the source. Default value
- * is computed from the COG file.
  *
  * @example
  * // Create the source
@@ -89,29 +81,22 @@ class COGSource extends itowns.Source {
             this.geoAsciiParamsTag = this.ifds[0].t34737;
             this.width = this.ifds[0].t256[0];
             this.height = this.ifds[0].t257[0];
+            this.resolution = Math.round(this.modelPixelScaleTag[0] * 1000) * 0.001;
+            this.tileSize = this.ifds[0].t322[0];
 
             // Compute extent from GeoTiff Tag
-            console.log(this.modelTiepointTag, this.modelPixelScaleTag);
             this.extent = new itowns.Extent(
                 source.projection,
-                Math.floor(this.modelTiepointTag[3]*1000)*0.001, 
-                Math.round((this.modelTiepointTag[3] + this.width * this.modelPixelScaleTag[0])*1000)*0.001,
-                Math.round((this.modelTiepointTag[4] - this.height * this.modelPixelScaleTag[1])*1000)*0.001, 
-                Math.round(this.modelTiepointTag[4]*1000)*0.001);
+                Math.floor(this.modelTiepointTag[3] * 1000) * 0.001, 
+                Math.round((this.modelTiepointTag[3] + Math.ceil(this.width / this.tileSize) * this.tileSize * this.modelPixelScaleTag[0]) * 1000) * 0.001,
+                Math.round((this.modelTiepointTag[4] - Math.ceil(this.height /this.tileSize) * this.tileSize * this.modelPixelScaleTag[1]) * 1000) * 0.001, 
+                Math.round(this.modelTiepointTag[4] * 1000) * 0.001);
 
-            this.tileSize = this.ifds[0].t322[0];
-            this.zoomMax = Math.ceil(Math.log2(Math.max(this.width, this.height) / this.tileSize));
-            console.log('zoomMax : ', this.zoomMax);
-            if (!this.zoom) {
-                this.zoom = {
-                    min: this.zoomMax - this.ifds.length + 1,
-                    max: this.zoomMax,
-                };
-                console.log(this.zoom);
-            }
-            var tileMaxtrixSetLimits = {};
-            var level = this.zoom.max;
+            this.resolutions = [];
+            var res = this.resolution;
             this.ifds.forEach((ifd) => {
+                this.resolutions.push(res);
+                res *= 2;
                 // Format Image
                 // var bitsPerSample = ifd.t258;
                 // var sampleFormat = ifd.t339;
@@ -124,51 +109,36 @@ class COGSource extends itowns.Source {
                 const tileHeight = ifd.t323[0];
                 ifd.nbTileX = Math.ceil(width / tileWidth);
                 ifd.nbTileY = Math.ceil(height / tileHeight);
-                tileMaxtrixSetLimits[level] = {
-                    "minTileRow": 0,
-                    "maxTileRow": ifd.nbTileY,
-                    "minTileCol": 0,
-                    "maxTileCol": ifd.nbTileX,
-                }
                 if ((this.tileSize != tileHeight) || (this.tileSize != tileWidth)) {
                     console.warn('all tiles must have same dimensions');
                 }
-                level -= 1;
             });
-            if (!this.tileMaxtrixSetLimits) {
-                this.tileMaxtrixSetLimits = tileMaxtrixSetLimits;
-            }
+            console.log(this.resolutions);
+            console.log(this.ifds);
+            console.log('READY');
         });
     }
 
+    getTile(extent){
+        const extentOrig = extent.as(this.crs);
+        const requestedResolution = Math.round((extentOrig.east - extentOrig.west) / this.tileSize * 1000) * 0.001;
+        return {
+            ifdNum: this.resolutions.indexOf(requestedResolution),
+            col: Math.round((extentOrig.west - this.extent.west) / (requestedResolution * this.tileSize) * 1000) * 0.001,
+            row: Math.round((this.extent.north - extentOrig.north) / (requestedResolution * this.tileSize) * 1000) * 0.001,
+        };
+    }
+
     urlFromExtent(extent) {
-        console.log(extent);
-        var extentOrig = extent.as(this.crs);
-        var xmin = extentOrig.west;
-        var xmax = extentOrig.east;
-        var ymin = extentOrig.south;
-        var ymax = extentOrig.north;
-        // recherche de cette emprise dans le cog
-        console.log('extent COG : ', this.extent);
-        var sizeX = xmax-xmin;
-        var sizeY = ymax-ymin;
-        var x0 = xmin - extent.col * sizeX;
-        var y0 = ymax + extent.row * sizeY;
-
-        console.log(x0, y0);
-
-        // find the COG tile for this extent
-        const ifdNum = this.zoomMax - extent.zoom;
-        // get the offset/byteCount for the tile
-        const ifd = this.ifds[ifdNum];
-        const numTile = extent.col + extent.row * ifd.nbTileX;
+        var T = this.getTile(extent);
+        const ifd = this.ifds[T.ifdNum];
+        const numTile = T.col + T.row * ifd.nbTileX;
         const offset = BigInt(ifd.t324[numTile]);
         const byteCounts = ifd.t325[numTile];
         const tileWidth = ifd.t322[0];
         const tileHeight = ifd.t323[0];
         // create a custom ifd copy for the TIFFParser
         extent.ifd = {};
-        console.log(ifd);
         for (const property in ifd) {
             // width
             if (property == 't256') {
@@ -190,7 +160,6 @@ class COGSource extends itowns.Source {
                 extent.ifd[property] = ifd[property];
             }
         }
-        console.log(extent.ifd);
         // custom the networkOptions as a range request for this specific tile 
         this.networkOptions.headers = {
             'range': `bytes=${offset}-${offset + BigInt(byteCounts) - 1n}`,
@@ -203,15 +172,12 @@ class COGSource extends itowns.Source {
     }
 
     extentInsideLimit(extent) {
-        // This layer provides data starting at level = layer.source.zoom.min
-        // (the zoom.max property is used when building the url to make
-        //  sure we don't use invalid levels)
-        return extent.zoom >= this.zoom.min && extent.zoom <= this.zoom.max &&
-                (this.tileMatrixSetLimits == undefined ||
-                (extent.row >= this.tileMatrixSetLimits[extent.zoom].minTileRow &&
-                    extent.row <= this.tileMatrixSetLimits[extent.zoom].maxTileRow &&
-                    extent.col >= this.tileMatrixSetLimits[extent.zoom].minTileCol &&
-                    extent.col <= this.tileMatrixSetLimits[extent.zoom].maxTileCol));
+        var T = this.getTile(extent);
+        return (T.ifdNum>=0)&&
+                (T.ifdNum<this.ifds.length)&&
+                (T.col>=0)&&(T.row>=0)&&
+                (T.col<this.ifds[T.ifdNum].nbTileX)&&
+                (T.row<this.ifds[T.ifdNum].nbTileY);
     }
 }
 
