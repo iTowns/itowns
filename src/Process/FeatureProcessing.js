@@ -7,29 +7,13 @@ import Extent from 'Core/Geographic/Extent';
 
 const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-const vector = new THREE.Vector3();
-const tmp = new THREE.Vector3();
+const mat4 = new THREE.Matrix4();
 
-function applyOffset(obj, offset, quaternion, offsetAltitude = 0) {
+function applyMatrix4(obj, mat4) {
     if (obj.geometry) {
-        if (obj.geometry.isBufferGeometry) {
-            const count = obj.geometry.attributes.position.count * 3;
-            for (let i = 0; i < count; i += 3) {
-                vector.fromArray(obj.geometry.attributes.position.array, i);
-                vector.add(offset).applyQuaternion(quaternion);
-                vector.z -= offsetAltitude;
-                vector.toArray(obj.geometry.attributes.position.array, i);
-            }
-            obj.geometry.attributes.position.needsUpdate = true;
-        } else {
-            for (const v of obj.geometry.vertices) {
-                v.add(offset).applyQuaternion(quaternion);
-                v.z -= offsetAltitude;
-            }
-            obj.geometry.verticesNeedUpdate = true;
-        }
+        obj.geometry.applyMatrix4(mat4);
     }
-    obj.children.forEach(c => applyOffset(c, offset, quaternion, offsetAltitude));
+    obj.children.forEach(c => applyMatrix4(c, mat4));
 }
 
 function assignLayer(object, layer) {
@@ -61,7 +45,6 @@ function extentInsideSource(extent, source) {
         !source.parsedData.extent.isPointInside(extent.center(coord)));
 }
 
-const quaternion = new THREE.Quaternion();
 export default {
     update(context, layer, node) {
         if (!node.parent && node.children.length) {
@@ -147,10 +130,8 @@ export default {
                 if (isApplied) {
                     // NOTE: now data source provider use cache on Mesh
                     // TODO move transform in feature2Mesh
-                    node.extent.center(coord).as(context.view.referenceCrs, coord).toVector3(tmp).negate();
-                    quaternion.setFromRotationMatrix(node.matrixWorld).inverse();
-                    // const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), node.extent.center().geodesicNormal).inverse();
-                    applyOffset(result, tmp, quaternion, result.minAltitude);
+                    mat4.copy(node.matrixWorld).getInverse(mat4).elements[14] -= result.minAltitude;
+                    applyMatrix4(result, mat4);
                 }
 
                 if (result.minAltitude) {
