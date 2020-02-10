@@ -12,7 +12,7 @@ const quatToAlignLatitude = new THREE.Quaternion();
 const quatNormalToZ = new THREE.Quaternion();
 
 function WGS84ToOneSubY(latitude) {
-    return 1.0 - (0.5 - Math.log(Math.tan(PI_OV_FOUR + THREE.Math.degToRad(latitude) * 0.5)) * INV_TWO_PI);
+    return 1.0 - (0.5 - Math.log(Math.tan(PI_OV_FOUR + THREE.MathUtils.degToRad(latitude) * 0.5)) * INV_TWO_PI);
 }
 
 class BuilderEllipsoidTile {
@@ -59,7 +59,7 @@ class BuilderEllipsoidTile {
         // transformation to align tile's normal to z axis
         params.quatNormalToZ = quatNormalToZ.setFromAxisAngle(
             axisY,
-            -(Math.PI * 0.5 - THREE.Math.degToRad(params.extent.center().latitude)));
+            -(Math.PI * 0.5 - THREE.MathUtils.degToRad(params.extent.center().latitude)));
 
         // let's avoid building too much temp objects
         params.projected = { longitude: 0, latitude: 0 };
@@ -110,8 +110,8 @@ class BuilderEllipsoidTile {
 
         // compute rotation to transform tile to position it on ellipsoid
         // this transformation take into account the transformation of the parents
-        const rotLon = THREE.Math.degToRad(extent.west - sharableExtent.west);
-        const rotLat = THREE.Math.degToRad(90 - extent.center(this.tmp.coords[0]).latitude);
+        const rotLon = THREE.MathUtils.degToRad(extent.west - sharableExtent.west);
+        const rotLat = THREE.MathUtils.degToRad(90 - extent.center(this.tmp.coords[0]).latitude);
         quatToAlignLongitude.setFromAxisAngle(axisZ, rotLon);
         quatToAlignLatitude.setFromAxisAngle(axisY, rotLat);
         quatToAlignLongitude.multiply(quatToAlignLatitude);

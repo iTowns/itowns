@@ -252,7 +252,7 @@ class Coordinates {
                 setFromProj4(target, proj4cache('EPSG:4326', crs).forward([coordPivot.x, coordPivot.y]), coordPivot.z);
             }
         } else if (CRS.is4326(this.crs) && crs == 'EPSG:3857') {
-            this.y = THREE.Math.clamp(this.y, -89.999999, 89.999999);
+            this.y = THREE.MathUtils.clamp(this.y, -89.999999, 89.999999);
             setFromProj4(target, proj4cache(this.crs, crs).forward([this.x, this.y]), this.z);
         } else {
             setFromProj4(target, proj4cache(this.crs, crs).forward([this.x, this.y]), this.z);

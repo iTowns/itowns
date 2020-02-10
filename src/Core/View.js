@@ -639,7 +639,7 @@ class View extends THREE.EventDispatcher {
 
     getScaleFromDistance(pitch = 0.28, distance = 1) {
         pitch /= 1000;
-        const fov = THREE.Math.degToRad(this.camera.camera3D.fov);
+        const fov = THREE.MathUtils.degToRad(this.camera.camera3D.fov);
         const unit = this.camera.height / (2 * distance * Math.tan(fov * 0.5));
         return pitch * unit;
     }

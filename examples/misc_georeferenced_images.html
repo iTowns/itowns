@@ -115,9 +115,9 @@
 
             function parseAircraftConventionOrientationToMatrix(panoramic) {
                 var euler = new itowns.THREE.Euler(
-                    itowns.THREE.Math.degToRad(panoramic.tilt),
-                    itowns.THREE.Math.degToRad(panoramic.azimuth),
-                    itowns.THREE.Math.degToRad(panoramic.roll),
+                    itowns.THREE.MathUtils.degToRad(panoramic.tilt),
+                    itowns.THREE.MathUtils.degToRad(panoramic.azimuth),
+                    itowns.THREE.MathUtils.degToRad(panoramic.roll),
                     'ZYX');
 
                 return new itowns.THREE.Matrix4().makeRotationFromEuler(euler);

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import proj4 from 'proj4';
 import Coordinates from '../Core/Geographic/Coordinates';
 
-const DEG2RAD = THREE.Math.DEG2RAD;
+const DEG2RAD = THREE.MathUtils.DEG2RAD;
 const matrix = new THREE.Matrix4();
 const north = new THREE.Vector3();
 const east = new THREE.Vector3();

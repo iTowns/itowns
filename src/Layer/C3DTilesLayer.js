@@ -83,10 +83,10 @@ function getBox(volume, inverseTileTransform) {
     if (volume.region) {
         const region = volume.region;
         extent.set(
-            THREE.Math.radToDeg(region[0]),
-            THREE.Math.radToDeg(region[2]),
-            THREE.Math.radToDeg(region[1]),
-            THREE.Math.radToDeg(region[3]));
+            THREE.MathUtils.radToDeg(region[0]),
+            THREE.MathUtils.radToDeg(region[2]),
+            THREE.MathUtils.radToDeg(region[1]),
+            THREE.MathUtils.radToDeg(region[3]));
         const box = new OBB().setFromExtent(extent);
         // at this point box.matrix = box.epsg4978_from_local, so
         // we transform it in parent_from_local by using parent's epsg4978_from_local

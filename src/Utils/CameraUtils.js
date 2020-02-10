@@ -153,7 +153,7 @@ class CameraRig extends THREE.Object3D {
         this.target.worldToLocal(this.camera.position);
         const range = this.camera.position.length();
         this.target.rotation.x = Math.asin(this.camera.position.z / range);
-        const cosPlanXY = THREE.Math.clamp(this.camera.position.y / (Math.cos(this.target.rotation.x) * range), -1, 1);
+        const cosPlanXY = THREE.MathUtils.clamp(this.camera.position.y / (Math.cos(this.target.rotation.x) * range), -1, 1);
         this.target.rotation.z = Math.sign(-this.camera.position.x) * Math.acos(cosPlanXY);
         this.camera.position.set(0, range, 0);
     }
@@ -164,10 +164,10 @@ class CameraRig extends THREE.Object3D {
             this.setTargetFromCoordinate(view, params.coord);
         }
         if (params.tilt != undefined) {
-            this.target.rotation.x = THREE.Math.degToRad(params.tilt);
+            this.target.rotation.x = THREE.MathUtils.degToRad(params.tilt);
         }
         if (params.heading != undefined) {
-            this.target.rotation.z = THREE.Math.degToRad(wrapTo180(params.heading + 180));
+            this.target.rotation.z = THREE.MathUtils.degToRad(wrapTo180(params.heading + 180));
         }
         if (params.range) {
             this.camera.position.set(0, params.range, 0);
@@ -225,8 +225,8 @@ class CameraRig extends THREE.Object3D {
                 THREE.Quaternion.slerp(this.start.camera.quaternion, this.end.camera.quaternion, this.camera.quaternion, d.t);
                 // camera's target rotation
                 this.target.rotation.set(0, 0, 0);
-                this.target.rotateZ(THREE.Math.lerp(this.start.target.rotation.z, this.end.target.rotation.z, d.t));
-                this.target.rotateX(THREE.Math.lerp(this.start.target.rotation.x, this.end.target.rotation.x, d.t));
+                this.target.rotateZ(THREE.MathUtils.lerp(this.start.target.rotation.z, this.end.target.rotation.z, d.t));
+                this.target.rotateX(THREE.MathUtils.lerp(this.start.target.rotation.x, this.end.target.rotation.x, d.t));
             }));
 
         // translate to coordinate destination in planar projection
@@ -310,9 +310,9 @@ class CameraRig extends THREE.Object3D {
         }
     }
 
-    get tilt() { return THREE.Math.radToDeg(this.target.rotation.x); }
+    get tilt() { return THREE.MathUtils.radToDeg(this.target.rotation.x); }
 
-    get heading() { return wrapTo180((THREE.Math.radToDeg(this.target.rotation.z) + 180)); }
+    get heading() { return wrapTo180((THREE.MathUtils.radToDeg(this.target.rotation.z) + 180)); }
 
     get range() { return this.camera.position.y; }
 }

@@ -149,7 +149,7 @@ describe('OrientationUtils.quaternionFromCRSToCRS', function () {
 
 
 
-const RAD2DEG = THREE.Math.RAD2DEG;
+const RAD2DEG = THREE.MathUtils.RAD2DEG;
 const axis = new THREE.Vector3().set(0, 0, 1);
 
 // https://geodesie.ign.fr/contenu/fichiers/documentation/algorithmes/alg0060.pdf

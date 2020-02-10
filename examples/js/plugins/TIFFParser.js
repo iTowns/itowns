@@ -48,8 +48,8 @@ var TIFFParser = (function _() {
             }
 
             // Round to next power of two
-            var width = THREE.Math.ceilPowerOfTwo(IFD.width);
-            var height = THREE.Math.ceilPowerOfTwo(IFD.height);
+            var width = THREE.MathUtils.ceilPowerOfTwo(IFD.width);
+            var height = THREE.MathUtils.ceilPowerOfTwo(IFD.height);
 
             var resizedData;
             if (width == IFD.width && height == IFD.height) {

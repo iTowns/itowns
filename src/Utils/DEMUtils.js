@@ -179,8 +179,8 @@ function tileAt(pt, tile) {
 let _canvas;
 function _readTextureValueAt(layer, texture, ...uv) {
     for (let i = 0; i < uv.length; i += 2) {
-        uv[i] = THREE.Math.clamp(uv[i], 0, texture.image.width - 1);
-        uv[i + 1] = THREE.Math.clamp(uv[i + 1], 0, texture.image.height - 1);
+        uv[i] = THREE.MathUtils.clamp(uv[i], 0, texture.image.width - 1);
+        uv[i + 1] = THREE.MathUtils.clamp(uv[i + 1], 0, texture.image.height - 1);
     }
 
     if (texture.image.data) {
@@ -227,7 +227,7 @@ function _readTextureValueAt(layer, texture, ...uv) {
             const oy = uv[i + 1] - miny;
 
             // d is 4 bytes per pixel
-            result.push(THREE.Math.lerp(
+            result.push(THREE.MathUtils.lerp(
                 elevationLayer.colorTextureElevationMinZ,
                 elevationLayer.colorTextureElevationMaxZ,
                 d.data[4 * oy * dw + 4 * ox] / 255));
@@ -277,10 +277,10 @@ function _readTextureValueWithBilinearFiltering(layer, texture, vertexU, vertexV
         coords.u2, coords.v2);
 
     // horizontal filtering
-    const zu1 = THREE.Math.lerp(z11, z21, coords.wu);
-    const zu2 = THREE.Math.lerp(z12, z22, coords.wu);
+    const zu1 = THREE.MathUtils.lerp(z11, z21, coords.wu);
+    const zu2 = THREE.MathUtils.lerp(z12, z22, coords.wu);
     // then vertical filtering
-    return THREE.Math.lerp(zu1, zu2, coords.wv);
+    return THREE.MathUtils.lerp(zu1, zu2, coords.wv);
 }
 
 

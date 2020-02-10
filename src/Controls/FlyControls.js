@@ -37,7 +37,7 @@ function onPointerMove(event) {
         // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
         // (where deltaH is the vertical amount we moved, and H the renderer height)
         // we loosely approximate tan(x) by x
-        const pxToAngleRatio = THREE.Math.degToRad(this._camera3D.fov) / this.view.mainLoop.gfxEngine.height;
+        const pxToAngleRatio = THREE.MathUtils.degToRad(this._camera3D.fov) / this.view.mainLoop.gfxEngine.height;
         this._camera3D.rotateY((coords.x - this._onMouseDownMouseX) * pxToAngleRatio);
         this._camera3D.rotateX((coords.y - this._onMouseDownMouseY) * pxToAngleRatio);
         this._onMouseDownMouseX = coords.x;

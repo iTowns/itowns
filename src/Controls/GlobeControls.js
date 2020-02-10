@@ -200,8 +200,8 @@ class GlobeControls extends THREE.EventDispatcher {
         // How far you can orbit vertically, upper and lower limits.
         // Range is 0 to Math.PI radians.
         // TODO Warning minPolarAngle = 0.01 -> it isn't possible to be perpendicular on Globe
-        this.minPolarAngle = THREE.Math.degToRad(0.5); // radians
-        this.maxPolarAngle = THREE.Math.degToRad(86); // radians
+        this.minPolarAngle = THREE.MathUtils.degToRad(0.5); // radians
+        this.maxPolarAngle = THREE.MathUtils.degToRad(86); // radians
 
         // How far you can orbit horizontally, upper and lower limits.
         // If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
@@ -330,7 +330,7 @@ class GlobeControls extends THREE.EventDispatcher {
         if (this.camera.isPerspectiveCamera) {
             let targetDistance = this.camera.position.distanceTo(this.getCameraTargetPosition());
             // half of the fov is center to top of screen
-            targetDistance *= 2 * Math.tan(THREE.Math.degToRad(this.camera.fov * 0.5));
+            targetDistance *= 2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov * 0.5));
 
             // we actually don't use screenWidth, since perspective camera is fixed to screen height
             this.panLeft(deltaX * targetDistance / gfx.width * this.camera.aspect);
@@ -350,7 +350,7 @@ class GlobeControls extends THREE.EventDispatcher {
         if (this.camera.isPerspectiveCamera) {
             orbitScale /= dollyScale;
         } else if (this.camera.isOrthographicCamera) {
-            this.camera.zoom = THREE.Math.clamp(this.camera.zoom * dollyScale, this.minZoom, this.maxZoom);
+            this.camera.zoom = THREE.MathUtils.clamp(this.camera.zoom * dollyScale, this.minZoom, this.maxZoom);
             this.camera.updateProjectionMatrix();
             this.view.notifyChange(this.camera);
         }
@@ -364,7 +364,7 @@ class GlobeControls extends THREE.EventDispatcher {
         if (this.camera.isPerspectiveCamera) {
             orbitScale *= dollyScale;
         } else if (this.camera.isOrthographicCamera) {
-            this.camera.zoom = THREE.Math.clamp(this.camera.zoom / dollyScale, this.minZoom, this.maxZoom);
+            this.camera.zoom = THREE.MathUtils.clamp(this.camera.zoom / dollyScale, this.minZoom, this.maxZoom);
             this.camera.updateProjectionMatrix();
             this.view.notifyChange(this.camera);
         }
@@ -451,10 +451,10 @@ class GlobeControls extends THREE.EventDispatcher {
                     // calculation of the angle of rotation which allows to leave this zone
                     let contraryPhi = -Math.asin((contraryLimit - minDistanceZ) * 0.25 / spherical.radius);
                     // clamp contraryPhi to make a less brutal exit
-                    contraryPhi = THREE.Math.clamp(contraryPhi, minContraintPhi, 0);
+                    contraryPhi = THREE.MathUtils.clamp(contraryPhi, minContraintPhi, 0);
                     // the deeper the camera is in this zone, the bigger the factor is
                     const contraryFactor = 1 - (contraryLimit - minDistanceZ) / contraryZone;
-                    sphericalDelta.phi = THREE.Math.lerp(sphericalDelta.phi, contraryPhi, contraryFactor);
+                    sphericalDelta.phi = THREE.MathUtils.lerp(sphericalDelta.phi, contraryPhi, contraryFactor);
                     minDistanceZ -= Math.sin(sphericalDelta.phi) * spherical.radius;
                 }
                 spherical.theta += sphericalDelta.theta;
@@ -1112,7 +1112,7 @@ class GlobeControls extends THREE.EventDispatcher {
     pixelsToDegrees(pixels, pixelPitch = 0.28) {
         console.warn('Deprecated, use View#getPixelsToMeters and GlobeControls#getMetersToDegrees instead.');
         const chord = this.pixelsToMeters(pixels, pixelPitch);
-        return THREE.Math.radToDeg(2 * Math.asin(chord / (2 * ellipsoidSizes.x)));
+        return THREE.MathUtils.radToDeg(2 * Math.asin(chord / (2 * ellipsoidSizes.x)));
     }
 
     /**
@@ -1163,15 +1163,15 @@ class GlobeControls extends THREE.EventDispatcher {
             if (params.range < this.minDistance || params.range > this.maxDistance) {
                 // eslint-disable-next-line no-console
                 console.warn(`This scale ${params.scale} can not be reached`);
-                params.range = THREE.Math.clamp(params.range, this.minDistance, this.maxDistance);
+                params.range = THREE.MathUtils.clamp(params.range, this.minDistance, this.maxDistance);
             }
         }
 
         if (params.tilt !== undefined) {
-            const minTilt = 90 - THREE.Math.radToDeg(this.maxPolarAngle);
-            const maxTilt = 90 - THREE.Math.radToDeg(this.minPolarAngle);
+            const minTilt = 90 - THREE.MathUtils.radToDeg(this.maxPolarAngle);
+            const maxTilt = 90 - THREE.MathUtils.radToDeg(this.minPolarAngle);
             if (params.tilt < minTilt || params.tilt > maxTilt) {
-                params.tilt = THREE.Math.clamp(params.tilt, minTilt, maxTilt);
+                params.tilt = THREE.MathUtils.clamp(params.tilt, minTilt, maxTilt);
                 // eslint-disable-next-line no-console
                 console.warn('Tilt was clamped to ', params.tilt, ` the interval is between ${minTilt} and ${maxTilt} degree`);
             }

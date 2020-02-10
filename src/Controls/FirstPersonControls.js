@@ -8,8 +8,8 @@ import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 function limitRotation(camera3D, rot, verticalFOV) {
     // Limit vertical rotation (look up/down) to make sure the user cannot see
     // outside of the cone defined by verticalFOV
-    const limit = THREE.Math.degToRad(verticalFOV - camera3D.fov) * 0.5;
-    return THREE.Math.clamp(rot, -limit, limit);
+    const limit = THREE.MathUtils.degToRad(verticalFOV - camera3D.fov) * 0.5;
+    return THREE.MathUtils.clamp(rot, -limit, limit);
 }
 const axisY = new THREE.Vector3(0, 1, 0);
 function applyRotation(view, camera3D, state) {
@@ -69,7 +69,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
         if (options.panoramaRatio) {
             const radius = (options.panoramaRatio * 200) / (2 * Math.PI);
             options.verticalFOV =
-                options.panoramaRatio == 2 ? 180 : THREE.Math.radToDeg(2 * Math.atan(200 / (2 * radius)));
+                options.panoramaRatio == 2 ? 180 : THREE.MathUtils.radToDeg(2 * Math.atan(200 / (2 * radius)));
         }
         options.verticalFOV = options.verticalFOV || 180;
         options.moveSpeed = options.moveSpeed === undefined ? 10 : options.moveSpeed; // backward or forward move speed in m/s
@@ -212,7 +212,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
             // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
             // (where deltaH is the vertical amount we moved, and H the renderer height)
             // we loosely approximate tan(x) by x
-            const pxToAngleRatio = THREE.Math.degToRad(this.camera.fov) / this.view.mainLoop.gfxEngine.height;
+            const pxToAngleRatio = THREE.MathUtils.degToRad(this.camera.fov) / this.view.mainLoop.gfxEngine.height;
 
             const coords = this.view.eventToViewCoords(event);
 
@@ -240,7 +240,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
         }
 
         this.camera.fov =
-            THREE.Math.clamp(this.camera.fov + Math.sign(delta),
+            THREE.MathUtils.clamp(this.camera.fov + Math.sign(delta),
                 10,
                 Math.min(100, this.options.verticalFOV));
 
