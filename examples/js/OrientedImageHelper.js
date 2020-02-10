@@ -26,7 +26,7 @@ function createTexturedPlane(textureUrl, opacity) {
 }
 
 function transformTexturedPlane(camera, distance, plane) {
-    var Yreel = 2 * Math.tan(itowns.THREE.Math.degToRad(camera.fov / 2)) * distance;
+    var Yreel = 2 * Math.tan(itowns.THREE.MathUtils.degToRad(camera.fov / 2)) * distance;
     var Xreel = camera.aspect * Yreel;
 
     // set position and scale
@@ -39,7 +39,7 @@ function transformTexturedPlane(camera, distance, plane) {
 // eslint-disable-next-line no-unused-vars
 function initCamera(view, image, coord, EnhToOrientationUp, EnhToOrientationLookAt, rotMatrix,
     orientationToCameraUp, orientationToCameraLookAt, distance, size, focale) {
-    var fov = itowns.THREE.Math.radToDeg((2 * Math.atan((size[1] / 2) / focale)));
+    var fov = itowns.THREE.MathUtils.radToDeg((2 * Math.atan((size[1] / 2) / focale)));
     var coordView;
     var localSpace;
     var orientedImage;

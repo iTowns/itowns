@@ -150,7 +150,7 @@ class GlobeView extends View {
     }
 
     getMetersToDegrees(meters = 1) {
-        return THREE.Math.radToDeg(2 * Math.asin(meters / (2 * ellipsoidSizes.x)));
+        return THREE.MathUtils.radToDeg(2 * Math.asin(meters / (2 * ellipsoidSizes.x)));
     }
 }
 

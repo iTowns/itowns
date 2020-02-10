@@ -353,7 +353,7 @@ class PointCloudLayer extends GeometryLayer {
         // slide 17
         context.camera.preSSE =
             context.camera.height /
-                (2 * Math.tan(THREE.Math.degToRad(context.camera.camera3D.fov) * 0.5));
+                (2 * Math.tan(THREE.MathUtils.degToRad(context.camera.camera3D.fov) * 0.5));
 
         if (this.material) {
             this.material.visible = this.visible;

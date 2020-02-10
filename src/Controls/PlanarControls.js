@@ -303,10 +303,10 @@ function PlanarControls(view, options = {}) {
 
         return () => {
             // normalized (betwwen 0 and 1) distance between groundLevel and maxAltitude
-            const distToGround = THREE.Math.clamp((this.camera.position.z - this.groundLevel) / this.maxAltitude, 0, 1);
+            const distToGround = THREE.MathUtils.clamp((this.camera.position.z - this.groundLevel) / this.maxAltitude, 0, 1);
 
             // pan movement speed, adujsted according to altitude
-            const panSpeed = THREE.Math.lerp(this.minPanSpeed, this.maxPanSpeed, distToGround);
+            const panSpeed = THREE.MathUtils.lerp(this.minPanSpeed, this.maxPanSpeed, distToGround);
 
             // lateral movement (local x axis)
             vec.set(panSpeed * -1 * deltaMousePosition.x, 0, 0);
@@ -452,7 +452,7 @@ function PlanarControls(view, options = {}) {
         const distanceToPoint = this.camera.position.distanceTo(pointUnderCursor);
 
         // camera height (altitude above ground) at the end of the travel, 5000 is an empirical smoothing distance
-        const targetHeight = THREE.Math.lerp(this.smartZoomHeightMin, this.smartZoomHeightMax, Math.min(distanceToPoint / 5000, 1));
+        const targetHeight = THREE.MathUtils.lerp(this.smartZoomHeightMin, this.smartZoomHeightMax, Math.min(distanceToPoint / 5000, 1));
 
         // camera position at the end of the travel
         const moveTarget = new THREE.Vector3();
@@ -545,7 +545,7 @@ function PlanarControls(view, options = {}) {
             // a value between 0 and 1 according to the travel distance. Adjusted by autoTravelTimeDist parameter
             const normalizedDistance = Math.min(1, targetPos.distanceTo(this.camera.position) / this.autoTravelTimeDist);
 
-            travelDuration = THREE.Math.lerp(this.autoTravelTimeMin, this.autoTravelTimeMax, normalizedDistance);
+            travelDuration = THREE.MathUtils.lerp(this.autoTravelTimeMin, this.autoTravelTimeMax, normalizedDistance);
 
             // if travel changes camera orientation, travel duration is adjusted according to angularDifference
             // this allows for a smoother travel (more time for the camera to rotate)

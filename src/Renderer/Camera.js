@@ -29,7 +29,7 @@ function updatePreSse(camera, height, fov) {
     //
     // We pre-compute the preSSE (= constant part of the screen space error formula) once here
 
-    const verticalFOV = THREE.Math.degToRad(fov);
+    const verticalFOV = THREE.MathUtils.degToRad(fov);
     const verticalPreSSE = height / (2.0 * Math.tan(verticalFOV * 0.5));
 
     // Note: the preSSE for the horizontal FOV is the same value

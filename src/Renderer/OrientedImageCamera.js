@@ -55,10 +55,10 @@ class OrientedImageCamera extends THREE.PerspectiveCamera {
         this.skew = skew || 0;
         this.textureMatrixWorldInverse = new THREE.Matrix4();
         Object.defineProperty(this, 'fov', {
-            get: () => 2 * THREE.Math.radToDeg(Math.atan2(this.size.y, 2 * this.focal.y)),
+            get: () => 2 * THREE.MathUtils.radToDeg(Math.atan2(this.size.y, 2 * this.focal.y)),
             // setting the fov overwrites focal.x and focal.y
             set: (fov) => {
-                const focal = 0.5 * this.size.y / Math.tan(THREE.Math.degToRad(fov * 0.5));
+                const focal = 0.5 * this.size.y / Math.tan(THREE.MathUtils.degToRad(fov * 0.5));
                 this.focal.x = focal;
                 this.focal.y = focal;
             },
