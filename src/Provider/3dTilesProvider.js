@@ -43,7 +43,7 @@ export function configureTile(tile, layer, metadata, parent) {
 
     // parse metadata
     if (metadata.transform) {
-        tile.applyMatrix(metadata.transform);
+        tile.applyMatrix4(metadata.transform);
     }
     tile.geometricError = metadata.geometricError;
     tile.tileId = metadata.tileId;
