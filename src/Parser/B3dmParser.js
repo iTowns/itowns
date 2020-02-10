@@ -161,9 +161,9 @@ export default {
                     }
                     // Rotation managed
                     if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
-                        gltf.scene.applyMatrix(matrixChangeUpVectorZtoY);
+                        gltf.scene.applyMatrix4(matrixChangeUpVectorZtoY);
                     } else if (gltfUpAxis === 'X') {
-                        gltf.scene.applyMatrix(matrixChangeUpVectorZtoX);
+                        gltf.scene.applyMatrix4(matrixChangeUpVectorZtoX);
                     }
 
                     // Apply relative center from Feature table.

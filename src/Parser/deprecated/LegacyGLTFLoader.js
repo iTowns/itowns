@@ -1918,7 +1918,7 @@ threeExamples.LegacyGLTFLoader = ( function () {
 			if ( node.matrix !== undefined ) {
 
 				matrix.fromArray( node.matrix );
-				_node.applyMatrix( matrix );
+				_node.applyMatrix4( matrix );
 
 			} else {
 
