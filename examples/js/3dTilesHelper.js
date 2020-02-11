@@ -55,11 +55,11 @@ function getPickedBatchInfo(intersects) {
 // eslint-disable-next-line
 function fillHTMLWithPickingInfo(event, view, pickingArg) {
     // Remove content already in html div
-    while (this.htmlDiv.firstChild) {
-        this.htmlDiv.removeChild(this.htmlDiv.firstChild);
+    while (pickingArg.htmlDiv.firstChild) {
+        pickingArg.htmlDiv.removeChild(pickingArg.htmlDiv.firstChild);
     }
 
-    var intersects = view.pickObjectsAt(event, 5, this.layer);
+    var intersects = view.pickObjectsAt(event, 5, pickingArg.layer);
     var batchInfo = getPickedBatchInfo(intersects);
     if (!batchInfo) {
         return;
