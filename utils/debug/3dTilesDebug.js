@@ -4,10 +4,9 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import GeometryDebug from './GeometryDebug';
 import OBBHelper from './OBBHelper';
 
-const invMatrixChangeUpVectorZtoY = new THREE.Matrix4().getInverse(new THREE.Matrix4().makeRotationX(Math.PI / 2));
-const invMatrixChangeUpVectorZtoX = new THREE.Matrix4().getInverse(new THREE.Matrix4().makeRotationZ(-Math.PI / 2));
+const bboxMesh = new THREE.Mesh();
+const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI * 0.5);
 
-const size = new THREE.Vector3();
 export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) {
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, _3dTileslayer);
 
@@ -38,17 +37,13 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
                     helper.position.copy(metadata.boundingVolume.region.position);
                     helper.rotation.copy(metadata.boundingVolume.region.rotation);
                     regionBoundingBoxParent.add(helper);
-                }
                 // 3dtiles with box
-                if (metadata.boundingVolume.box) {
-                    metadata.boundingVolume.box.getSize(size);
-                    const g = new THREE.BoxGeometry(size.x, size.y, size.z);
-                    const material = new THREE.MeshBasicMaterial({ wireframe: true });
-                    helper = new THREE.Mesh(g, material);
-                    metadata.boundingVolume.box.getCenter(helper.position);
-                }
+                } else if (metadata.boundingVolume.box) {
+                    bboxMesh.geometry.boundingBox = metadata.boundingVolume.box;
+                    helper = new THREE.BoxHelper(bboxMesh);
+                    helper.material.linewidth = 2;
                 // 3dtiles with Sphere
-                if (metadata.boundingVolume.sphere) {
+                } else if (metadata.boundingVolume.sphere) {
                     const geometry = new THREE.SphereGeometry(metadata.boundingVolume.sphere.radius, 32, 32);
                     const material = new THREE.MeshBasicMaterial({ wireframe: true });
                     helper = new THREE.Mesh(geometry, material);
@@ -70,16 +65,16 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
                 if (helper && !metadata.boundingVolume.region) {
                     // compensate B3dm orientation correction
                     const gltfUpAxis = _3dTileslayer.asset.gltfUpAxis;
-                    helper.updateMatrix();
                     if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
-                        helper.matrix.premultiply(invMatrixChangeUpVectorZtoY);
+                        helper.rotation.x = -Math.PI * 0.5;
                     } else if (gltfUpAxis === 'X') {
-                        helper.matrix.premultiply(invMatrixChangeUpVectorZtoX);
+                        helper.rotation.z = -Math.PI * 0.5;
                     }
-                    helper.applyMatrix(new THREE.Matrix4());
 
-                    node.add(helper);
-                    helper.updateMatrixWorld();
+                    // Add helper to parent to apply the correct transformation
+                    node.parent.add(helper);
+                    helper.updateMatrix();
+                    helper.updateMatrixWorld(true);
                 }
             }
 
