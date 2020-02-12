@@ -20,7 +20,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
     // Bounding box control
     const obb_layer_id = `${_3dTileslayer.id}_obb_debug`;
 
-    const debugIdUpdate = function debugIdUpdate(context, layer, node) {
+    function debugIdUpdate(context, layer, node) {
         const enabled = context.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
 
         if (!enabled) {
@@ -95,7 +95,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
                 helper.setMaterialVisibility(false);
             }
         }
-    };
+    }
 
     const obbLayer = new GeometryLayer(obb_layer_id, new THREE.Object3D(), {
         update: debugIdUpdate,
