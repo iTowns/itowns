@@ -121,22 +121,22 @@ class GeometryLayer extends Layer {
 
         this.attachedLayers = [];
         this.visible = config.visible == undefined ? true : config.visible;
+    }
 
-        // Attached layers expect to receive the visual representation of a
-        // layer (= THREE object with a material).  So if a layer's update
-        // function don't process this kind of object, the layer must provide a
-        // getObjectToUpdateForAttachedLayers function that returns the correct
-        // object to update for attached layer.
-        // See 3dtilesProvider or PointCloudProvider for examples.
-        // eslint-disable-next-line arrow-body-style
-        this.getObjectToUpdateForAttachedLayers = (obj) => {
-            if (obj.parent && obj.material) {
-                return {
-                    element: obj,
-                    parent: obj.parent,
-                };
-            }
-        };
+    // Attached layers expect to receive the visual representation of a
+    // layer (= THREE object with a material).  So if a layer's update
+    // function don't process this kind of object, the layer must provide a
+    // getObjectToUpdateForAttachedLayers function that returns the correct
+    // object to update for attached layer.
+    // See 3dtilesProvider or PointCloudProvider for examples.
+    // eslint-disable-next-line arrow-body-style
+    getObjectToUpdateForAttachedLayers(obj) {
+        if (obj.parent && obj.material) {
+            return {
+                element: obj,
+                parent: obj.parent,
+            };
+        }
     }
 
     // Placeholder
