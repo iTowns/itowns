@@ -248,7 +248,7 @@ class C3DTilesLayer extends GeometryLayer {
         return update(context, layer, node);
     }
 
-    static getObjectToUpdateForAttachedLayers(meta) {
+    getObjectToUpdateForAttachedLayers(meta) {
         if (meta.content) {
             const result = [];
             meta.content.traverse((obj) => {

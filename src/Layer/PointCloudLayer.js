@@ -581,7 +581,7 @@ class PointCloudLayer extends GeometryLayer {
         return Picking.pickPointsAt(view, mouse, radius, this);
     }
 
-    static getObjectToUpdateForAttachedLayers(meta) {
+    getObjectToUpdateForAttachedLayers(meta) {
         if (meta.obj) {
             const p = meta.parent;
             if (p && p.obj) {

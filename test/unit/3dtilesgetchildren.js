@@ -16,7 +16,7 @@ describe('getObjectToUpdateForAttachedLayers', function () {
             tile.content.add(mesh);
         }
 
-        const result = C3DTilesLayer.getObjectToUpdateForAttachedLayers(tile);
+        const result = C3DTilesLayer.prototype.getObjectToUpdateForAttachedLayers(tile);
         assert.ok(Array.isArray(result.elements));
         assert.ok(result.elements.length, 3);
     });
