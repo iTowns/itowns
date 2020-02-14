@@ -3,41 +3,41 @@ import assert from 'assert';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Extent from 'Core/Geographic/Extent';
 
-const paints = [{
-    'fill-color': 'rgb(50%, 0%, 0%)',
-    'fill-opacity': 0.5,
-}, {
-    'fill-color': 'rgba(0, 0, 0, 0.5)',
-}, {
-    'fill-color': 'hsla(0, 10%, 0%, 0.3)',
-}, {
-    'line-color': 'hsla(0, 0%, 50%, 0.3)',
-    'line-width': 3,
-    'line-opacity': 0.4,
-}, {
-    'icon-image': 'icon.png',
-},
-];
-
-// this PBF file comes from https://github.com/mapbox/vector-tile-js
-// it contains two square polygons
-const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
-let id = 0;
-function parse(pbf, paint, type) {
-    pbf.extent = new Extent('TMS', 1, 1, 1);
-    return VectorTileParser.parse(pbf, {
-        crsIn: 'EPSG:4326',
-        crsOut: 'EPSG:3857',
-        filter: [{
-            'source-layer': 'geojson',
-            paint,
-            id: id++,
-            type,
-        }],
-    });
-}
-
 describe('Vector tiles', function () {
+    const paints = [{
+        'fill-color': 'rgb(50%, 0%, 0%)',
+        'fill-opacity': 0.5,
+    }, {
+        'fill-color': 'rgba(0, 0, 0, 0.5)',
+    }, {
+        'fill-color': 'hsla(0, 10%, 0%, 0.3)',
+    }, {
+        'line-color': 'hsla(0, 0%, 50%, 0.3)',
+        'line-width': 3,
+        'line-opacity': 0.4,
+    }, {
+        'icon-image': 'icon.png',
+    },
+    ];
+
+    // this PBF file comes from https://github.com/mapbox/vector-tile-js
+    // it contains two square polygons
+    const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
+    let id = 0;
+    function parse(pbf, paint, type) {
+        pbf.extent = new Extent('TMS', 1, 1, 1);
+        return VectorTileParser.parse(pbf, {
+            crsIn: 'EPSG:4326',
+            crsOut: 'EPSG:3857',
+            filter: [{
+                'source-layer': 'geojson',
+                paint,
+                id: id++,
+                type,
+            }],
+        });
+    }
+
     it('should return two squares', () =>
         parse(multipolygon).then((collection) => {
             const feature = collection.features[0];

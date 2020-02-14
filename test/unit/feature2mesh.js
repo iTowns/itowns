@@ -9,10 +9,6 @@ const geojson = require('../data/geojson/holes.geojson.json');
 proj4.defs('EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
-function parse() {
-    return GeoJsonParser.parse(geojson, { crsIn: 'EPSG:3946', crsOut: 'EPSG:3946', buildExtent: true, mergeFeatures: false });
-}
-
 function computeAreaOfMesh(mesh) {
     // Sum each triangle area
     let area = 0;
@@ -30,6 +26,10 @@ function computeAreaOfMesh(mesh) {
 }
 
 describe('Feature2Mesh', function () {
+    function parse() {
+        return GeoJsonParser.parse(geojson, { crsIn: 'EPSG:3946', crsOut: 'EPSG:3946', buildExtent: true, mergeFeatures: false });
+    }
+
     it('rect mesh area should match geometry extent', () =>
         parse().then((features) => {
             const mesh = Feature2Mesh.convert()(features);

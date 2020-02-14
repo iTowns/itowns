@@ -25,9 +25,12 @@ See the [node website](https://nodejs.org) to install node and npm.
 * Test and lint changes: see test, lint and test-examples npm script
 
 ## Debugging
-* `babel-inline-import-loader` prevents the source map debug in browser.
-   if you want launch server and debug with the original source map, run : `npm run debug`.
-* To debug iTowns package on your side project. You can link iTowns package with `npm link ../path/iTowns/` in project folder and auto-transpile to `lib/` when iTowns sources are modified with command `npm run watch` in iTowns folder.
+* `babel-inline-import-loader` prevents the source map debug in browser. If you
+  want launch server and debug with the original source map, run : `npm run
+  debug`.
+* To debug iTowns package on your side project. You can link iTowns package with
+  `npm link ../path/iTowns/` in project folder and auto-transpile to `lib/` when
+  iTowns sources are modified with command `npm run watch` in iTowns folder.
 
 ## Testing
 For unit and functional test, defines `HTTPS_PROXY` if you launch test behind a proxy.
@@ -62,13 +65,22 @@ When running tests on examples, some environment variables can be set:
   downloaded during puppeteer install.
 * `DEBUG`: run Chrome in a window with the debug tools open.
 * `REMOTE_DEBUGGING`: run Chrome in headless mode and set up remote debugging.
-  Example: `REMOTE_DEBUGGING=9222` will setup remote debugging on port 9222. Then
-  start another Chrome instance, browse to `chrome://inspect/#devices` and add
-  `localhost:9222` in Discover network targets.
+  Example: `REMOTE_DEBUGGING=9222` will setup remote debugging on port 9222.
+  Then start another Chrome instance, browse to `chrome://inspect/#devices` and
+  add `localhost:9222` in Discover network targets.
 
 Note: Chrome in headless mode doesn't support the WebGL `EXT_frag_depth`
 extension. So rendering may differ and some bugs can only be present in headless
 mode.
+
+### Syntax in tests
+
+[mochajs](https://mochajs.org/) is used for both type of tests. To avoid
+problems with same name variables, keep them in the smallest scope. For example,
+a variable should almost always be in the `it()` section of a test. However, it
+can be useful to keep a single shared variable for a bunch of tests (in the same
+file). For this, declare it in the `describe()` section, and set it (if
+possible) in a `before()` section.
 
 ### Useful commands for continuous testing
 

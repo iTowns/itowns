@@ -9,34 +9,34 @@ import TMSSource from 'Source/TMSSource';
 import FileSource from 'Source/FileSource';
 import Extent from 'Core/Geographic/Extent';
 
-function defer() {
-    var deferredPromise = {};
-    deferredPromise.promise = new Promise(function (resolve) {
-        deferredPromise.resolve = resolve;
-    });
-    return deferredPromise;
-}
-
-const geojson = defer();
-
-// To load geojson without parse the file content
-const urlGeojson = Path.resolve(__dirname, '../data/geojson/holes.geojson.json');
-fs.readFile(urlGeojson, 'utf8', function (err, content) {
-    geojson.resolve(content);
-});
-
-global.window = {};
-global.URL = function URL() {
-    this.ref = undefined;
-};
-
-const vendorSpecific = {
-    buffer: 4096,
-    format_options: 'dpi:300;quantizer:octree',
-    tiled: true,
-};
-
 describe('Sources', function () {
+    function defer() {
+        var deferredPromise = {};
+        deferredPromise.promise = new Promise(function (resolve) {
+            deferredPromise.resolve = resolve;
+        });
+        return deferredPromise;
+    }
+
+    const geojson = defer();
+
+    // To load geojson without parse the file content
+    const urlGeojson = Path.resolve(__dirname, '../data/geojson/holes.geojson.json');
+    fs.readFile(urlGeojson, 'utf8', function (err, content) {
+        geojson.resolve(content);
+    });
+
+    global.window = {};
+    global.URL = function URL() {
+        this.ref = undefined;
+    };
+
+    const vendorSpecific = {
+        buffer: 4096,
+        format_options: 'dpi:300;quantizer:octree',
+        tiled: true,
+    };
+
     describe('Source', function () {
         const paramsSource = {
             url: 'http://',

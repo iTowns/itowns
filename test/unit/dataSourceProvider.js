@@ -11,6 +11,7 @@ import TileProvider from 'Provider/TileProvider';
 import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
 import WFSSource from 'Source/WFSSource';
+import Fetcher from 'Provider/Fetcher';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import ColorLayer from 'Layer/ColorLayer';
 import ElevationLayer from 'Layer/ElevationLayer';
@@ -20,15 +21,15 @@ import Feature2Mesh from 'Converter/Feature2Mesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
 import Renderer from './mock';
 
-const renderer = new Renderer();
-renderer.setClearColor();
-
 const holes = require('../data/geojson/holesPoints.geojson.json');
 
-supportedFetchers.set('image/png', () => Promise.resolve(new THREE.Texture()));
-supportedFetchers.set('application/json', () => Promise.resolve(holes));
-
 describe('Provide in Sources', function () {
+    const renderer = new Renderer();
+    renderer.setClearColor();
+
+    supportedFetchers.set('image/png', () => Promise.resolve(new THREE.Texture()));
+    supportedFetchers.set('application/json', () => Promise.resolve(holes));
+
     // Misc var to initialize a TileMesh instance
     const geom = new THREE.Geometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
@@ -92,6 +93,11 @@ describe('Provide in Sources', function () {
 
     context.elevationLayers = [elevationlayer];
     context.colorLayers = [colorlayer];
+
+    after(function () {
+        supportedFetchers.set('image/png', Fetcher.texture);
+        supportedFetchers.set('application/json', Fetcher.json);
+    });
 
     beforeEach('reset state', function () {
         // clear commands array

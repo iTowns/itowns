@@ -6,33 +6,41 @@ import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import FileSource from 'Source/FileSource';
 import Renderer from './mock';
 
-const renderer = new Renderer();
-
-const globelayer = new GlobeLayer('globe', new THREE.Group());
-const source = new FileSource({
-    url: '..',
-    projection: 'EPSG:4326',
-});
-
-const colorLayer = new ColorLayer('l0', { source });
-
-let viewer;
-
-beforeEach('reset viewer', function () {
-    viewer = new View('EPSG:4326', renderer.domElement, {
-        renderer,
-    });
-});
-
 describe('Viewer', function () {
+    let renderer;
+    let viewer;
+    let globelayer;
+    let source;
+    let colorLayer;
+
+    before(function () {
+        renderer = new Renderer();
+
+        globelayer = new GlobeLayer('globe', new THREE.Group());
+        source = new FileSource({
+            url: '..',
+            projection: 'EPSG:4326',
+        });
+
+        colorLayer = new ColorLayer('l0', { source });
+    });
+
+    beforeEach('reset viewer', function () {
+        viewer = new View('EPSG:4326', renderer.domElement, {
+            renderer,
+        });
+    });
+
     it('should instance viewer', () => {
         assert.ok(viewer);
     });
+
     it('should add globe layer', () => {
         viewer.addLayer(globelayer);
         const layers = viewer.getLayers();
         assert.equal(layers.length, 1);
     });
+
     it('should remove globe layer', () => {
         viewer.addLayer(globelayer);
         assert.ok(viewer.getLayerById(globelayer.id));
@@ -40,6 +48,7 @@ describe('Viewer', function () {
         const layers = viewer.getLayers();
         assert.equal(layers.length, 0);
     });
+
     it('should add color layer', () => {
         viewer.addLayer(globelayer);
         viewer.addLayer(colorLayer, globelayer);
@@ -47,6 +56,7 @@ describe('Viewer', function () {
         assert.equal(globelayer.id, layer.id);
         assert.equal(globelayer.attachedLayers.length, 1);
     });
+
     it('should call pick Object function', () => {
         viewer.addLayer(globelayer);
         viewer.tileLayer = globelayer;
@@ -55,6 +65,7 @@ describe('Viewer', function () {
         const pickedFrom = viewer.getPickingPositionFromDepth({ x: 10, y: 10 });
         assert.ok(pickedFrom.isVector3);
     });
+
     it('should update sources viewer and notify change', () => {
         viewer.addLayer(globelayer);
         viewer.notifyChange(globelayer, true);

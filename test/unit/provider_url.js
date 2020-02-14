@@ -3,9 +3,9 @@ import assert from 'assert';
 import URLBuilder from 'Provider/URLBuilder';
 import Extent from 'Core/Geographic/Extent';
 
-const layer = {};
-
 describe('URL creations', function () {
+    const layer = {};
+
     it('should correctly replace ${x}, ${y} and ${z} by 359, 512 and 10', function () {
         var coords = new Extent('WMTS:TMS:4857', 10, 512, 359);
         layer.url = 'http://server.geo/tms/${z}/${y}/${x}.jpg';

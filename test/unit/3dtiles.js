@@ -56,6 +56,10 @@ function tilesetWithSphere(transformMatrix) {
     return tileset;
 }
 
+function compareWithEpsilon(a, b, epsilon) {
+    return a - epsilon < b && a + epsilon > b;
+}
+
 describe('Distance computation using boundingVolume.region', function () {
     const camera = new Camera('EPSG:4978', 100, 100);
     camera.camera3D.position.copy(new Coordinates('EPSG:4326', 0, 0, 10000).as('EPSG:4978').toVector3());
@@ -69,7 +73,7 @@ describe('Distance computation using boundingVolume.region', function () {
 
         computeNodeSSE(camera, tile);
 
-        assert.equal(tile.distance, camera.position().as('EPSG:4326').altitude);
+        assert.ok(compareWithEpsilon(tile.distance, camera.position().as('EPSG:4326').altitude, 10e-5));
     });
 
     it('should not be affected by transform', function () {
@@ -82,7 +86,7 @@ describe('Distance computation using boundingVolume.region', function () {
 
         computeNodeSSE(camera, tile);
 
-        assert.equal(tile.distance, camera.position().as('EPSG:4326').altitude);
+        assert.ok(compareWithEpsilon(tile.distance, camera.position().as('EPSG:4326').altitude, 10e-5));
     });
 });
 

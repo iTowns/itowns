@@ -1,9 +1,9 @@
 import assert from 'assert';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 
-const context = { camera: { height: 1, camera3D: { fov: 1 } } };
-
 describe('preUpdate', function () {
+    const context = { camera: { height: 1, camera3D: { fov: 1 } } };
+
     it('should return root if no change source', () => {
         const layer = { root: {} };
         const sources = new Set();

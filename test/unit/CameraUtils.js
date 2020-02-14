@@ -5,43 +5,43 @@ import Ellipsoid from 'Core//Math/Ellipsoid';
 import CameraUtils from 'Utils/CameraUtils';
 import DEMUtils from 'Utils/DEMUtils';
 
-THREE.Object3D.DefaultUp = new THREE.Vector3(0, 0, 1);
-
-DEMUtils.getElevationValueAt = () => ({ z: 0 });
-
-const raycaster = new THREE.Raycaster();
-const center = new THREE.Vector2();
-const ellipsoid = new Ellipsoid();
-
-function pickEllipsoid(camera) {
-    raycaster.setFromCamera(center, camera);
-    return ellipsoid.intersection(raycaster.ray);
-}
-
-const view = {};
-const camera = new THREE.PerspectiveCamera();
-
-view.getPickingPositionFromDepth = function getPickingPositionFromDepth() {
-    return pickEllipsoid(camera);
-};
-view.referenceCrs = 'EPSG:4978';
-view.getLayers = () => [{
-    extent: {
-        crs: 'EPSG:4326',
-    },
-}];
-view.addFrameRequester = () => {};
-view.removeFrameRequester = () => {};
-view.notifyChange = () => { camera.updateMatrixWorld(true); };
-
-const range = 25000000;
-const coord = new Coordinates('EPSG:4326', 2.35, 48.85, 0);
-
 function equalToFixed(value1, value2, toFixed) {
     return value1.toFixed(toFixed) === value2.toFixed(toFixed);
 }
 
 describe('Camera utils unit test', function () {
+    THREE.Object3D.DefaultUp = new THREE.Vector3(0, 0, 1);
+
+    DEMUtils.getElevationValueAt = () => ({ z: 0 });
+
+    const raycaster = new THREE.Raycaster();
+    const center = new THREE.Vector2();
+    const ellipsoid = new Ellipsoid();
+
+    function pickEllipsoid(camera) {
+        raycaster.setFromCamera(center, camera);
+        return ellipsoid.intersection(raycaster.ray);
+    }
+
+    const view = {};
+    const camera = new THREE.PerspectiveCamera();
+
+    view.getPickingPositionFromDepth = function getPickingPositionFromDepth() {
+        return pickEllipsoid(camera);
+    };
+    view.referenceCrs = 'EPSG:4978';
+    view.getLayers = () => [{
+        extent: {
+            crs: 'EPSG:4326',
+        },
+    }];
+    view.addFrameRequester = () => {};
+    view.removeFrameRequester = () => {};
+    view.notifyChange = () => { camera.updateMatrixWorld(true); };
+
+    const range = 25000000;
+    const coord = new Coordinates('EPSG:4326', 2.35, 48.85, 0);
+
     it('init like expected', function () {
         const params = { range, coord };
         CameraUtils.transformCameraToLookAtTarget(view, camera, params).then((result) => {

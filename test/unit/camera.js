@@ -2,7 +2,6 @@ import assert from 'assert';
 import Camera from 'Renderer/Camera';
 import Coordinates from 'Core/Geographic/Coordinates';
 
-
 function compareWithEpsilon(a, b, epsilon) {
     return a - epsilon < b && a + epsilon > b;
 }

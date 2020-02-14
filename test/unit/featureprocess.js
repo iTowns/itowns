@@ -12,56 +12,56 @@ import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
 import Renderer from './mock';
 
-const renderer = new Renderer();
-
-const placement = { coord: new Coordinates('EPSG:4326', 1.5, 43), range: 300000 };
-const viewer = new GlobeView(renderer.domElement, placement, { renderer });
-
-function extrude() {
-    return 5000;
-}
-
-function color() {
-    return new THREE.Color(0xffcc00);
-}
-
-
-const ariege = new GeometryLayer('ariege', new THREE.Group());
-ariege.update = FeatureProcessing.update;
-ariege.convert = Feature2Mesh.convert({
-    color,
-    extrude,
-});
-
-ariege.source = new FileSource({
-    url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
-    projection: 'EPSG:4326',
-    format: 'application/json',
-    zoom: { min: 0, max: 0 },
-    // extent: new Extent('EPSG:4326', -90, -10, -900, 900),
-});
-
-ariege.source.zoom = 0;
-
-if (process.env.HTTPS_PROXY) {
-    ariege.source.networkOptions = { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) };
-}
-
-const context = {
-    camera: viewer.camera,
-    engine: viewer.mainLoop.gfxEngine,
-    scheduler: viewer.mainLoop.scheduler,
-    geometryLayer: ariege,
-    view: viewer,
-};
-
-const extent = new Extent('EPSG:4326', 1.40625, 2.8125, 42.1875, 42.1875);
-const geom = new THREE.Geometry();
-geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
-const tile = new TileMesh(geom, new THREE.Material(), viewer.tileLayer, extent, 7);
-tile.parent = {};
-
 describe('Layer with Feature process', function () {
+    const renderer = new Renderer();
+
+    const placement = { coord: new Coordinates('EPSG:4326', 1.5, 43), range: 300000 };
+    const viewer = new GlobeView(renderer.domElement, placement, { renderer });
+
+    function extrude() {
+        return 5000;
+    }
+
+    function color() {
+        return new THREE.Color(0xffcc00);
+    }
+
+
+    const ariege = new GeometryLayer('ariege', new THREE.Group());
+    ariege.update = FeatureProcessing.update;
+    ariege.convert = Feature2Mesh.convert({
+        color,
+        extrude,
+    });
+
+    ariege.source = new FileSource({
+        url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
+        projection: 'EPSG:4326',
+        format: 'application/json',
+        zoom: { min: 0, max: 0 },
+        // extent: new Extent('EPSG:4326', -90, -10, -900, 900),
+    });
+
+    ariege.source.zoom = 0;
+
+    if (process.env.HTTPS_PROXY) {
+        ariege.source.networkOptions = { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) };
+    }
+
+    const context = {
+        camera: viewer.camera,
+        engine: viewer.mainLoop.gfxEngine,
+        scheduler: viewer.mainLoop.scheduler,
+        geometryLayer: ariege,
+        view: viewer,
+    };
+
+    const extent = new Extent('EPSG:4326', 1.40625, 2.8125, 42.1875, 42.1875);
+    const geom = new THREE.Geometry();
+    geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
+    const tile = new TileMesh(geom, new THREE.Material(), viewer.tileLayer, extent, 7);
+    tile.parent = {};
+
     it('add layer', function (done) {
         viewer.addLayer(ariege).then((layer) => {
             assert.ok(layer);

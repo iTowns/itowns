@@ -1,42 +1,42 @@
 import assert from 'assert';
 import Scheduler from 'Core/Scheduler/Scheduler';
 
-const scheduler = new Scheduler();
-global.window = {
-    addEventListener() {},
-    setTimeout,
-};
-
-scheduler.addProtocolProvider('test', {
-    preprocessDataLayer: () => {
-    },
-    executeCommand: (cmd) => {
-        setTimeout(() => {
-            cmd.done = true;
-            cmd._r(cmd);
-        }, 0);
-        return new Promise((resolve) => {
-            cmd._r = resolve;
-        });
-    },
-});
-
-const view = {
-    notifyChange: () => {},
-};
-
-function cmd(layerId = 'foo', prio = 0) {
-    return {
-        layer: {
-            id: layerId,
-            protocol: 'test',
-            priority: prio,
-        },
-        view,
-    };
-}
-
 describe('Command execution', function () {
+    const scheduler = new Scheduler();
+    global.window = {
+        addEventListener() {},
+        setTimeout,
+    };
+
+    scheduler.addProtocolProvider('test', {
+        preprocessDataLayer: () => {
+        },
+        executeCommand: (cmd) => {
+            setTimeout(() => {
+                cmd.done = true;
+                cmd._r(cmd);
+            }, 0);
+            return new Promise((resolve) => {
+                cmd._r = resolve;
+            });
+        },
+    });
+
+    const view = {
+        notifyChange: () => {},
+    };
+
+    function cmd(layerId = 'foo', prio = 0) {
+        return {
+            layer: {
+                id: layerId,
+                protocol: 'test',
+                priority: prio,
+            },
+            view,
+        };
+    }
+
     it('should execute one command', function (done) {
         scheduler.execute(cmd()).then((c) => {
             assert.ok(c.done);
