@@ -59,11 +59,11 @@ export default {
                 for (const pts of layer.group.children) {
                     pts.material.visible = false;
                     for (const name of stickies) {
-                        if (pts.userData.metadata.name == name) {
+                        if (pts.userData.octree.name == name) {
                             pts.material.visible = true;
-                        } else if (!isInHierarchy(pts.userData.metadata, name)) {
+                        } else if (!isInHierarchy(pts.userData.octree, name)) {
                             continue;
-                        } else if (pts.userData.metadata.name.length < name.length) {
+                        } else if (pts.userData.octree.name.length < name.length) {
                             pts.material.visible = layer.dbgDisplayParents;
                             break;
                         } else {

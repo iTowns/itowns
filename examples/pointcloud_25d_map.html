@@ -173,8 +173,10 @@
 
                     // Configure Point Cloud layer
                     pointcloud = new itowns.PointCloudLayer('eglise_saint_blaise_arles', {
-                        file: fileName || 'infos/sources',
-                        url: serverUrl,
+                        source: new itowns.PointCloudSource({
+                            file: fileName || 'infos/sources',
+                            url: serverUrl,
+                        }),
                         table: lopocsTable,
                         material: searchParams.get('material') === 'three' ? new itowns.THREE.PointsMaterial({
                             color: 0xff8888,
