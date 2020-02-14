@@ -1,5 +1,4 @@
 import assert from 'assert';
-// import PointCloudProcessing from 'Process/PointCloudProcessing';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 
 const context = { camera: { height: 1, camera3D: { fov: 1 } } };
@@ -34,10 +33,10 @@ describe('preUpdate', function () {
         sources.add(elt1);
         sources.add(elt2);
         sources.add(elt3);
-        layer.root.findChildrenByName = (name) => {
+        layer.root.getChildByName = (name) => {
             assert.equal('12', name);
         };
-        PointCloudLayer.prototype.preUpdate(context, layer, sources);
+        PointCloudLayer.prototype.preUpdate.call(layer, context, sources);
     });
 
     it('should not search ancestors if layer are different root if no common ancestors', () => {
@@ -47,9 +46,9 @@ describe('preUpdate', function () {
         const sources = new Set();
         sources.add(elt1);
         sources.add(elt2);
-        layer.root.findChildrenByName = (name) => {
+        layer.root.getChildByName = (name) => {
             assert.equal('12', name);
         };
-        PointCloudLayer.prototype.preUpdate(context, layer, sources);
+        PointCloudLayer.prototype.preUpdate.call(layer, context, sources);
     });
 });
