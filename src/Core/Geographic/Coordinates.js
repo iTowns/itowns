@@ -6,9 +6,6 @@ import Ellipsoid from 'Core/Math/Ellipsoid';
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
 const ellipsoid = new Ellipsoid();
-const vectorPivot = new THREE.Vector3();
-let coordPivot;
-
 const projectionCache = {};
 
 function proj4cache(crsIn, crsOut) {
@@ -21,11 +18,6 @@ function proj4cache(crsIn, crsOut) {
     }
 
     return projectionCache[crsIn][crsOut];
-}
-
-// Internal method, takes a coord and put some proj4 values in it
-function setFromProj4(coord, proj4value, z) {
-    return coord.setFromValues(proj4value[0], proj4value[1], z);
 }
 
 /**
@@ -233,29 +225,12 @@ class Coordinates {
     as(crs, target = new Coordinates(crs)) {
         if (this.crs == crs) {
             target.copy(this);
-            // there is a bug for converting anything from and to 4978 with proj4
-            // https://github.com/proj4js/proj4js/issues/195
-            // the workaround is to use an intermediate projection, like EPSG:4326
-        } else if (crs == 'EPSG:4978') {
-            if (CRS.is4326(this.crs)) {
-                ellipsoid.cartographicToCartesian(this, vectorPivot);
-                target.setFromVector3(vectorPivot);
-            } else {
-                setFromProj4(coordPivot, proj4cache(this.crs, 'EPSG:4326').forward([this.x, this.y]), this.z);
-                coordPivot.as('EPSG:4978', target);
-            }
-        } else if (this.crs == 'EPSG:4978') {
-            if (CRS.is4326(crs)) {
-                ellipsoid.cartesianToCartographic(this, target);
-            } else {
-                this.as('EPSG:4326', coordPivot);
-                setFromProj4(target, proj4cache('EPSG:4326', crs).forward([coordPivot.x, coordPivot.y]), coordPivot.z);
-            }
-        } else if (CRS.is4326(this.crs) && crs == 'EPSG:3857') {
-            this.y = THREE.MathUtils.clamp(this.y, -89.999999, 89.999999);
-            setFromProj4(target, proj4cache(this.crs, crs).forward([this.x, this.y]), this.z);
         } else {
-            setFromProj4(target, proj4cache(this.crs, crs).forward([this.x, this.y]), this.z);
+            if (CRS.is4326(this.crs) && crs == 'EPSG:3857') {
+                this.y = THREE.MathUtils.clamp(this.y, -89.999999, 89.999999);
+            }
+
+            target.setFromArray(proj4cache(this.crs, crs).forward([this.x, this.y, this.z]));
         }
 
         target.crs = crs;
@@ -263,7 +238,5 @@ class Coordinates {
         return target;
     }
 }
-
-coordPivot = new Coordinates('EPSG:4326');
 
 export default Coordinates;
