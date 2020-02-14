@@ -4,18 +4,24 @@ import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Renderer from './mock';
 
-const renderer = new Renderer();
-
-const placement = { coord: new Coordinates('EPSG:4326', 2.351323, 48.856712), range: 250000 };
-const viewer = new GlobeView(renderer.domElement, placement, { renderer });
-
-const event = {
-    stopPropagation: () => {},
-    preventDefault: () => {},
-    button: THREE.MOUSE.LEFT,
-};
-
 describe('GlobeControls', function () {
+    const renderer = new Renderer();
+
+    const placement = { coord: new Coordinates('EPSG:4326', 2.351323, 48.856712), range: 250000 };
+    const viewer = new GlobeView(renderer.domElement, placement, { renderer });
+
+    const event = {
+        stopPropagation: () => {},
+        preventDefault: () => {},
+        button: THREE.MOUSE.LEFT,
+        touches: [{
+            clientX: 150,
+            clientY: 200,
+            pageX: 150,
+            pageY: 200,
+        }],
+    };
+
     it('instance GlobeControls', function () {
         assert.ok(viewer.controls);
     });
@@ -53,7 +59,6 @@ describe('GlobeControls', function () {
         renderer.domElement.emitEvent('dblclick', event);
     });
 
-    event.touches = [1, 1];
     it('touch start', function () {
         renderer.domElement.emitEvent('touchstart', event);
     });

@@ -3,6 +3,10 @@ import Camera from 'Renderer/Camera';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 
+function compareWithEpsilon(a, b, epsilon) {
+    return a - epsilon < b && a + epsilon > b;
+}
+
 describe('camera', function () {
     it('should set good aspect in camera3D', function () {
         const camera = new Camera('', 100, 50);
@@ -23,8 +27,8 @@ describe('camera', function () {
         const coordinates = new Coordinates('EPSG:4326', 40, 52, 2002);
         camera.setPosition(coordinates);
         const resultCoordinates = camera.position('EPSG:4326');
-        assert.ok(resultCoordinates.longitude == coordinates.longitude);
-        assert.ok(resultCoordinates.latitude.toFixed(8) == coordinates.latitude);
-        assert.ok(resultCoordinates.altitude.toFixed(8) == coordinates.altitude);
+        assert.ok(compareWithEpsilon(resultCoordinates.longitude, coordinates.longitude, 10e-8));
+        assert.ok(compareWithEpsilon(resultCoordinates.latitude, coordinates.latitude, 10e-8));
+        assert.ok(compareWithEpsilon(resultCoordinates.altitude, coordinates.altitude, 10e-8));
     });
 });
