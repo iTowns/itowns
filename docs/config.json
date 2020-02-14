@@ -52,6 +52,7 @@
                 "TMSSource",
                 "FileSource",
                 "OrientedImageSource",
+                "PointCloudSource",
                 "VectorTilesSource"
             ],
 

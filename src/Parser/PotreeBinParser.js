@@ -66,7 +66,7 @@ export default {
     /** Parse .bin PotreeConverter format and convert to a THREE.BufferGeometry
      * @function parse
      * @param {ArrayBuffer} buffer - the bin buffer.
-     * @param {Object} pointAttributes - the point attributes information contained in layer.metadata coming from cloud.js
+     * @param {Object} pointAttributes - the point attributes information contained in cloud.js
      * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
      *
      */

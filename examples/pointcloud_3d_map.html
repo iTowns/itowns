@@ -64,8 +64,10 @@
 
             // Configure Point Cloud layer
             pointcloud = new itowns.PointCloudLayer('eglise_saint_blaise_arles', {
-                file: 'eglise_saint_blaise_arles.js',
-                url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
+                source: new itowns.PointCloudSource({
+                    file: 'eglise_saint_blaise_arles.js',
+                    url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
+                }),
             },view);
 
             // add pointcloud to scene
