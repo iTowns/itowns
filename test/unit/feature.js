@@ -2,15 +2,15 @@ import assert from 'assert';
 import Feature, { FEATURE_TYPES } from 'Core/Feature';
 import Coordinates from 'Core/Geographic/Coordinates';
 
-const options_A = {
-    withNormal: true,
-    withAltitude: true,
-    buildExtent: true,
-};
-
-const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-
 describe('Feature', function () {
+    const options_A = {
+        withNormal: true,
+        withAltitude: true,
+        buildExtent: true,
+    };
+
+    const coord = new Coordinates('EPSG:4326', 0, 0, 0);
+
     it('Should instance Features', function () {
         const featurePoint = new Feature(FEATURE_TYPES.POINT, 'EPSG:4326');
         const featureLine = new Feature(FEATURE_TYPES.LINE, 'EPSG:4326');

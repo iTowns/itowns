@@ -7,18 +7,18 @@ import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
 import newTileGeometry from 'Core/Prefab/TileBuilder';
 import OBB from 'Renderer/OBB';
 
-const max = new THREE.Vector3(10, 10, 10);
-const min = new THREE.Vector3(-10, -10, -10);
-const lookAt = new THREE.Vector3(1, 0, 0);
-const translate = new THREE.Vector3(0, 0, 20);
-const obb = new OBB(min, max);
-obb.lookAt(lookAt);
-obb.translateX(translate.x);
-obb.translateY(translate.y);
-obb.translateZ(translate.z);
-obb.update();
-
 describe('OBB', function () {
+    const max = new THREE.Vector3(10, 10, 10);
+    const min = new THREE.Vector3(-10, -10, -10);
+    const lookAt = new THREE.Vector3(1, 0, 0);
+    const translate = new THREE.Vector3(0, 0, 20);
+    const obb = new OBB(min, max);
+    obb.lookAt(lookAt);
+    obb.translateX(translate.x);
+    obb.translateY(translate.y);
+    obb.translateZ(translate.z);
+    obb.update();
+
     it('should correctly instance obb', () => {
         assert.equal(obb.natBox.min.x, min.x);
         assert.equal(obb.natBox.max.x, max.x);
