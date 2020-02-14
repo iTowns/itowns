@@ -50,10 +50,7 @@
             viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate PlanarView*
-            view = new itowns.PlanarView(viewerDiv, extent, {
-                disableSkirt: true,
-                placement: { heading: -49.6, range: 6200, tilt: 17 }
-            });
+            view = new itowns.PlanarView(viewerDiv, extent, { placement: { heading: -49.6, range: 6200, tilt: 17 } });
             setupLoadingScreen(viewerDiv, view);
 
             // Add a WMS imagery source
@@ -90,8 +87,8 @@
             // Add a WMS elevation layer
             var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
                 useColorTextureElevation: true,
-                colorTextureElevationMinZ: 37,
-                colorTextureElevationMaxZ: 240,
+                colorTextureElevationMinZ: 144,
+                colorTextureElevationMaxZ: 622,
                 source: wmsElevationSource,
             });
 
