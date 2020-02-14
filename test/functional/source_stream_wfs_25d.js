@@ -12,8 +12,8 @@ describe('source_stream_wfs_25d', function _() {
 
     it('should pick the correct building', async () => {
         // test picking
-        const buildingId = await page.evaluate(() => picking({ x: 342, y: 243 }));
-        assert.equal(buildingId.id, 'bati_indifferencie.5265944');
+        const buildingId = await page.evaluate(() => picking({ x: 97, y: 213 }));
+        assert.equal(buildingId.id, 'bati_indifferencie.5266051');
     });
     it('should remove GeometryLayer', async () => {
         const countGeometryLayerStart = await page.evaluate(() => view.getLayers(l => l.isGeometryLayer).length);

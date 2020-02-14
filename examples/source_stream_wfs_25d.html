@@ -53,7 +53,7 @@
             viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate PlanarView*
-            view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true,
+            view = new itowns.PlanarView(viewerDiv, extent, {
                 placement: {
                     coord: new itowns.Coordinates('EPSG:3946', 1840839, 5172718, 0),
                     heading: -45,
@@ -80,6 +80,27 @@
             });
 
             view.addLayer(wmsImageryLayer);
+
+            // Add a WMS elevation source
+            var wmsElevationSource = new itowns.WMSSource({
+                extent: extent,
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                name: 'MNT2012_Altitude_10m_CC46',
+                projection: 'EPSG:3946',
+                width: 256,
+                format: 'image/jpeg',
+            });
+
+            // Add a WMS elevation layer
+            var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
+                useColorTextureElevation: true,
+                colorTextureElevationMinZ: 144,
+                colorTextureElevationMaxZ: 622,
+                source: wmsElevationSource,
+            });
+
+            view.addLayer(wmsElevationLayer);
+
             // eslint-disable-next-line no-new
             new itowns.PlanarControls(view, {});
 
@@ -97,6 +118,23 @@
                     return color.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
                 }
                 return color.setRGB(1, 1, 1);
+            }
+
+            var tile;
+            function altitudeLine(properties, contour) {
+                var result;
+                var z = 0;
+                if (contour) {
+                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0, tile);
+                    if (!result) {
+                        result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0);
+                    }
+                    if (result) {
+                        tile = [result.tile];
+                        z = result.z;
+                    }
+                    return z + 5;
+                }
             }
 
             lyonTclBusSource = new itowns.WFSSource({
@@ -119,7 +157,8 @@
             var lyonTclBusLayer = new itowns.GeometryLayer('lyon_tcl_bus', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
-                    color: colorLine }),
+                    color: colorLine,
+                    altitude: altitudeLine }),
                 onMeshCreated: setMaterialLineWidth,
                 source: lyonTclBusSource,
             });
@@ -138,6 +177,10 @@
 
             function extrudeBuildings(properties) {
                 return properties.hauteur;
+            }
+
+            function altitudeBuildings(properties) {
+                return properties.z_min - properties.hauteur;
             }
 
             meshes = [];
@@ -183,6 +226,7 @@
                 convert: itowns.Feature2Mesh.convert({
                     color: colorBuildings,
                     batchId: function (property, featureId) { return featureId; },
+                    altitude: altitudeBuildings,
                     extrude: extrudeBuildings }),
                 onMeshCreated: function scaleZ(mesh) {
                     mesh.scale.z = 0.01;
