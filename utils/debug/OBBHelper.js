@@ -4,58 +4,33 @@ import * as THREE from 'three';
 import fontJS from './fonts/optimer_regular.json';
 
 const font = new THREE.Font(JSON.parse(fontJS));
-const size = new THREE.Vector3();
+const matText = new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0, 0) });
 
-const points = [
-    new THREE.Vector3(),
-    new THREE.Vector3(),
-    new THREE.Vector3(),
-    new THREE.Vector3(),
-    new THREE.Vector3(),
-    new THREE.Vector3(),
-    new THREE.Vector3(),
-    new THREE.Vector3(),
-];
-
-class OBBHelper extends THREE.LineSegments {
+class OBBHelper extends THREE.Box3Helper {
     constructor(OBB, text) {
-        const indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
-        const positions = new Float32Array(8 * 3);
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
         const color = new THREE.Color(Math.random(), Math.random(), Math.random());
 
-        super(geometry, new THREE.LineBasicMaterial({
-            color: color.getHex(),
-            linewidth: 3,
-        }));
+        super(OBB.box3D, color.getHex());
+
+        this.obb = OBB;
+        this.material.linewidth = 2;
 
         this.frustumCulled = false;
+        this.matrixAutoUpdate = false;
+        this.rotationAutoUpdate = false;
+
         if (text) {
-            OBB.box3D.getSize(size);
+            const geometryText = new THREE.TextGeometry(text, { font, curveSegments: 1 });
 
-            var geometryText = new THREE.TextGeometry(text, {
-                font,
-                size: size.x * 0.0666,
-                height: size.z * 0.001,
-                curveSegments: 1,
-            });
-
-            this.textMesh = new THREE.Mesh(geometryText, new THREE.MeshBasicMaterial({
-                color: new THREE.Color(1, 0, 0),
-                side: THREE.DoubleSide,
-            }));
-
-            this.add(this.textMesh);
+            this.textMesh = new THREE.Mesh(geometryText, matText);
+            this.textMesh.rotateZ(Math.PI * 0.5);
+            this.textMesh.scale.set(0.001, 0.001, 0.001);
+            this.textMesh.position.set(0.9, 0.5, 1);
             this.textMesh.frustumCulled = false;
+            this.add(this.textMesh);
         }
 
-        if (OBB !== undefined) {
-            this.update(OBB);
-        }
+        this.updateMatrixWorld(true);
     }
 
     setMaterialVisibility(show) {
@@ -81,28 +56,23 @@ class OBBHelper extends THREE.LineSegments {
         }
     }
 
-    update(OBB) {
-        const position = this.geometry.attributes.position;
-        const array = position.array;
+    updateMatrixWorld(force = false) {
 
-        OBB.toPoints(points);
-        let offset = 0;
-        for (const pt of points) {
-            pt.toArray(array, offset);
-            offset += 3;
+        if (this.obb.box3D.isEmpty()) {
+            return;
         }
 
-        position.needsUpdate = true;
+        this.quaternion.copy(this.obb.quaternion);
+
+        this.obb.box3D.getCenter(this.position).applyQuaternion(this.quaternion).add(this.obb.position);
+
+        this.obb.box3D.getSize(this.scale);
+
+        this.scale.multiplyScalar(0.5);
+
         this.updateMatrix();
-        this.updateMatrixWorld(true);
 
-        if (this.textMesh) {
-            OBB.box3D.getSize(size);
-            this.textMesh.position.set(0, 0, 0);
-            this.textMesh.translateX(-size.x * 0.45);
-            this.textMesh.translateY(-size.y * 0.45);
-            this.textMesh.translateZ(size.z * 0.1);
-        }
+        THREE.Object3D.prototype.updateMatrixWorld.call(this, force);
     }
 }
 

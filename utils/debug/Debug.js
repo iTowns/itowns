@@ -140,7 +140,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
     const displayedTilesObbHelper = new OBBHelper(displayedTilesObb);
     displayedTilesObbHelper.visible = false;
     view.scene.add(displayedTilesObb);
-    displayedTilesObb.add(displayedTilesObbHelper);
+    view.scene.add(displayedTilesObbHelper);
 
     function updateFogDistance(obj) {
         if (obj.material && fogDistance) {
@@ -160,7 +160,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
             const extent = view.tileLayer.info.displayed.extent;
             displayedTilesObb.setFromExtent(extent);
             displayedTilesObbHelper.visible = true;
-            displayedTilesObbHelper.update(displayedTilesObb);
+            displayedTilesObbHelper.updateMatrixWorld(true);
 
             // Note Method to compute near and far...
             // const bbox = displayedTilesObb.box3D.clone().applyMatrix4(displayedTilesObb.matrixWorld);
