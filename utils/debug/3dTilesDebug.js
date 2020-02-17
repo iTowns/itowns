@@ -5,7 +5,6 @@ import GeometryDebug from './GeometryDebug';
 import OBBHelper from './OBBHelper';
 
 const bboxMesh = new THREE.Mesh();
-const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI * 0.5);
 
 export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) {
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, _3dTileslayer);
@@ -34,9 +33,8 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
                 // 3dtiles with region
                 if (metadata.boundingVolume.region) {
                     helper = new OBBHelper(metadata.boundingVolume.region, `id:${node.id}`);
-                    helper.position.copy(metadata.boundingVolume.region.position);
-                    helper.rotation.copy(metadata.boundingVolume.region.rotation);
                     regionBoundingBoxParent.add(helper);
+                    helper.updateMatrixWorld(true);
                 // 3dtiles with box
                 } else if (metadata.boundingVolume.box) {
                     bboxMesh.geometry.boundingBox = metadata.boundingVolume.box;

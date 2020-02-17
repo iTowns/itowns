@@ -187,7 +187,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             }
             if (layer.id == obb_layer_id) {
                 helper.setMaterialVisibility(true);
-                helper.update(node.obb);
+                helper.updateMatrixWorld();
             } else if (layer.id == sb_layer_id) {
                 helper.position.copy(node.boundingSphere.center);
                 helper.scale.multiplyScalar(node.boundingSphere.radius);
