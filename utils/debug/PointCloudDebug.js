@@ -12,7 +12,7 @@ function isInHierarchy(elt, hierarchyNode) {
 
 export default {
     initTools(view, layer, datUi) {
-        const update = () => view.notifyChange(layer);
+        const update = () => view.notifyChange(layer, true);
         layer.debugUI = datUi.addFolder(`${layer.id}`);
 
         layer.debugUI.add(layer, 'visible').name('Visible').onChange(update);
@@ -48,8 +48,7 @@ export default {
         sticky.add(layer, 'dbgDisplayChildren').name('Display children of sticky node').onChange(update);
         sticky.add(layer, 'dbgDisplayParents').name('Display parents of sticky node').onChange(update);
 
-
-        view.addFrameRequester('after_layer_update', () => {
+        view.addFrameRequester('before_layer_update', () => {
             if (layer.bboxes) {
                 layer.bboxes.visible = layer.dbgDisplaybbox;
             }
@@ -59,11 +58,11 @@ export default {
                 for (const pts of layer.group.children) {
                     pts.material.visible = false;
                     for (const name of stickies) {
-                        if (pts.userData.octree.name == name) {
+                        if (pts.userData.pointCloudNode.name == name) {
                             pts.material.visible = true;
-                        } else if (!isInHierarchy(pts.userData.octree, name)) {
+                        } else if (!isInHierarchy(pts.userData.pointCloudNode, name)) {
                             continue;
-                        } else if (pts.userData.octree.name.length < name.length) {
+                        } else if (pts.userData.pointCloudNode.name.length < name.length) {
                             pts.material.visible = layer.dbgDisplayParents;
                             break;
                         } else {
