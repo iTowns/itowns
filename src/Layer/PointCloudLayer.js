@@ -123,31 +123,17 @@ class PointCloudLayer extends GeometryLayer {
             this.spacing = cloud.spacing;
             this.hierarchyStepSize = cloud.hierarchyStepSize;
 
-            if (this.source.isFromPotreeConverter === true) {
-                const normal = Array.isArray(cloud.pointAttributes) &&
-                            cloud.pointAttributes.find(elem => elem.startsWith('NORMAL'));
-                if (normal) {
-                    this.material.defines[normal] = 1;
-                }
+            const normal = Array.isArray(cloud.pointAttributes) &&
+                        cloud.pointAttributes.find(elem => elem.startsWith('NORMAL'));
+            if (normal) {
+                this.material.defines[normal] = 1;
             }
-            this.supportsProgressiveDisplay = this.source.customBinFormat;
-            this.root = new PointCloudNode(0, 0, this);
 
-            if (this.source.isFromPotreeConverter) {
-                this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
-                this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
-            } else {
-                // lopocs
-                let idx = 0;
-                for (const entry of cloud) {
-                    if (entry.table == this.table) {
-                        break;
-                    }
-                    idx++;
-                }
-                this.root.bbox.min.set(cloud[idx].bbox.xmin, cloud[idx].bbox.ymin, cloud[idx].bbox.zmin);
-                this.root.bbox.max.set(cloud[idx].bbox.xmax, cloud[idx].bbox.ymax, cloud[idx].bbox.zmax);
-            }
+            this.supportsProgressiveDisplay = this.source.extention === 'cin';
+
+            this.root = new PointCloudNode(0, 0, this);
+            this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
+            this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
 
             this.extent = Extent.fromBox3(view.referenceCrs, this.root.bbox);
 

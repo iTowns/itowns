@@ -80,28 +80,18 @@ class PointCloudNode {
         throw new Error(`Cannot find node with name '${name}'`);
     }
 
-    octreeUrl() {
-        return `${this.baseurl}/r${this.name}.${this.layer.source.extensionOctree}`;
-    }
-
-    nodeUrl() {
-        return `${this.baseurl}/r${this.name}.${this.layer.source.extension}?isleaf=${this.isLeaf ? 1 : 0}`;
-    }
-
     get octreeIsLoaded() {
         return !(this.childrenBitField && this.children.length === 0);
     }
 
-    get isLeaf() {
-        return this.childrenBitField == 0;
-    }
-
     loadNode() {
-        return this.layer.source.fetcher(this.nodeUrl(), this.layer.source.networkOptions).then(this.layer.source.parse);
+        const nodeUrl = `${this.baseurl}/r${this.name}.${this.layer.source.extension}`;
+        return this.layer.source.fetcher(nodeUrl, this.layer.source.networkOptions).then(this.layer.source.parse);
     }
 
     loadOctree() {
-        return this.layer.source.fetcher(this.octreeUrl(), this.layer.source.networkOptions).then((blob) => {
+        const octreeUrl = `${this.baseurl}/r${this.name}.${this.layer.source.extensionOctree}`;
+        return this.layer.source.fetcher(octreeUrl, this.layer.source.networkOptions).then((blob) => {
             const view = new DataView(blob);
             const stack = [];
             let offset = 0;

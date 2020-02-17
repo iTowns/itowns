@@ -98,53 +98,12 @@
 
             <!-- POINTCLOUD TABLE SELECTION -->
             <script type="text/javascript">
-                function createResultRow(serverUrl, table) {
-                    var tr = document.createElement('tr');
-                    var td = document.createElement('td');
-                    td.textContent = table;
-                    var td2 = document.createElement('td');
-                    var i = document.createElement('input');
-                    i.value = 'Display';
-                    i.type = 'submit';
-
-                    function onDisplayClicked() {
-                        showPointcloud(serverUrl, undefined, table, false);
-                    }
-
-                    i.addEventListener('click', onDisplayClicked);
-
-                    td2.appendChild(i);
-                    tr.appendChild(td);
-                    tr.appendChild(td2);
-                    return tr;
-                }
-
-                function buildLopocsResultTable(serverUrl, metadata) {
-                    document.getElementById('result').style.display = 'block';
-                    var dd = document.getElementById('dropdown');
-                    // clean table
-                    while (dd.firstChild) {
-                        dd.removeChild(dd.firstChild);
-                    }
-                    var i;
-                    for (i = 0; i < metadata.length; i++) {
-                        dd.appendChild(createResultRow(serverUrl, metadata[i].table));
-                    }
-                }
-
                 function onConnectClicked() {
                     var url = document.getElementById('url').value;
+                    var lastSlashIndex = url.lastIndexOf('/');
+                    var filename = url.substr(lastSlashIndex + 1);
 
-                    // assume that "url ends with .js" == potreeconverter
-                    // no .endsWith() in ES5...
-                    if (url.indexOf('.js') === (url.length - 3)) {
-                        var lastSlashIndex = url.lastIndexOf('/');
-                        var filename = url.substr(lastSlashIndex + 1);
-
-                        showPointcloud(url.substr(0, lastSlashIndex), filename, undefined, true);
-                    } else {
-                        itowns.Fetcher.json(url + '/infos/sources').then(function(meta) { buildLopocsResultTable(url, meta); });
-                    }
+                    showPointcloud(url.substr(0, lastSlashIndex), filename, undefined, true);
                 }
             </script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
@@ -152,7 +111,6 @@
             <script src="js/GUI/LoadingScreen.js"></script>
             <script src="../dist/debug.js"></script>
             <script type="text/javascript">
-                var searchParams = new URL(window.location.href).searchParams;
                 function showPointcloud(serverUrl, fileName, lopocsTable) {
                     var pointcloud;
                     var oldPostUpdate;
@@ -176,14 +134,7 @@
                         source: new itowns.PointCloudSource({
                             file: fileName || 'infos/sources',
                             url: serverUrl,
-                        }),
-                        table: lopocsTable,
-                        material: searchParams.get('material') === 'three' ? new itowns.THREE.PointsMaterial({
-                            color: 0xff8888,
-                            sizeAttenuation: false,
-                            size: 1,
-                            vertexColors: itowns.THREE.VertexColors
-                        }) : undefined,
+                        })
                     }, view);
 
                     // point selection on double-click
@@ -200,9 +151,8 @@
                     }
                     view.mainLoop.gfxEngine.renderer.domElement.addEventListener('dblclick', dblClickHandler);
 
-
                     function placeCamera(position, lookAt) {
-                        view.camera.camera3D.position.set(position.x, position.y, position.z);
+                        view.camera.camera3D.position.copy(position);
                         view.camera.camera3D.lookAt(lookAt);
                         // create controls
                         controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
@@ -246,12 +196,7 @@
                     view.addLayer(pointcloud).then(onLayerReady);
                 }
 
-                if (searchParams.get('selector')) {
-                    document.getElementsByClassName('centered')[0].style.display = 'block';
-                    document.getElementById('submit').addEventListener('click', onConnectClicked);
-                } else {
-                    onConnectClicked();
-                }
+                onConnectClicked();
             </script>
     </body>
 </html>

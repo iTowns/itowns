@@ -31,15 +31,11 @@ export default {
         const layer = command.layer;
         const pointCloudNode = command.requester;
 
-        // Query HRC if we don't have children pointCloudNode yet.
+        // Query octree/HRC if we don't have children pointCloudNode yet.
         if (!pointCloudNode.octreeIsLoaded) {
             pointCloudNode.loadOctree().then(() => command.view.notifyChange(layer, false));
         }
 
-        // `isLeaf` is for lopocs and allows the pointcloud server to consider that the current
-        // node is the last one, even if we could subdivide even further.
-        // It's necessary because lopocs doens't know about the hierarchy (it generates it on the fly
-        // when we request .hrc files)
         return pointCloudNode.loadNode().then((geometry) => {
             const points = new THREE.Points(geometry, layer.material.clone());
             addPickingAttribute(points);
