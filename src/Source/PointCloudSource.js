@@ -82,26 +82,10 @@ class PointCloudSource extends Source {
         // https://github.com/PropellerAero/potree-propeller-private/blob/master/docs/file_format.md#cloudjs
         this.whenReady = (source.cloud ? Promise.resolve(source.cloud) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
             .then((cloud) => {
-                // Lopocs pointcloud server can expose the same file structure as PotreeConverter output.
-                // The only difference is the cloud root file (cloud.js vs infos/sources), and we can
-                // check for the existence of a `scale` field.
-                // (if `scale` is defined => we're fetching files from PotreeConverter)
-                if (cloud.scale != undefined) {
-                    this.isFromPotreeConverter = true;
-                    // PotreeConverter format
-                    this.customBinFormat = cloud.pointAttributes === 'CIN';
-                } else {
-                    // Lopocs
-                    cloud.scale = 1;
-                    cloud.cloudDir = `itowns/${this.table}.points`;
-                    cloud.hierarchyStepSize = 1000000; // ignore this with lopocs
-                    this.customBinFormat = true;
-                }
-
                 this.baseurl = `${this.url}/${cloud.octreeDir}/r`;
-                this.extension = this.customBinFormat ? 'cin' : 'bin';
-                this.parse = this.customBinFormat ?
-                    buffer => PotreeCinParser.parse(buffer, cloud.pointAttributes) :
+                this.extension = cloud.pointAttributes === 'CIN' ? 'cin' : 'bin';
+                this.parse = this.extension === 'cin' ?
+                    buffer => PotreeCinParser.parse(buffer) :
                     buffer => PotreeBinParser.parse(buffer, cloud.pointAttributes);
 
                 return cloud;
