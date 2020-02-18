@@ -165,7 +165,7 @@ export default {
             const idx = (y * 2 * radius + x) * 4;
             const data = buffer.slice(idx, idx + 4);
 
-            // see PointCloudProvider and the construction of unique_id
+            // see PotreeProvider and the construction of unique_id
             const objId = (data[0] << 8) | data[1];
             const index = (data[2] << 8) | data[3];
 

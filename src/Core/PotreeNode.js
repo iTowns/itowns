@@ -5,7 +5,7 @@ import * as THREE from 'three';
 // subdivision algo recursively)
 const dHalfLength = new THREE.Vector3();
 
-class PointCloudNode {
+class PotreeNode {
     constructor(numPoints = 0, childrenBitField = 0, layer) {
         this.numPoints = numPoints;
         this.childrenBitField = childrenBitField;
@@ -109,7 +109,7 @@ class PointCloudNode {
                     if (snode.childrenBitField & (1 << indexChild) && (offset + 5) <= blob.byteLength) {
                         const childrenBitField = view.getUint8(offset); offset += 1;
                         const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
-                        const item = new PointCloudNode(numPoints, childrenBitField, this.layer);
+                        const item = new PotreeNode(numPoints, childrenBitField, this.layer);
                         snode.add(item, indexChild, this);
                         stack.push(item);
                     }
@@ -119,4 +119,4 @@ class PointCloudNode {
     }
 }
 
-export default PointCloudNode;
+export default PotreeNode;

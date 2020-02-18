@@ -1,12 +1,12 @@
 import assert from 'assert';
-import PointCloudLayer from 'Layer/PointCloudLayer';
-import PointCloudSource from 'Source/PointCloudSource';
+import PotreeLayer from 'Layer/PotreeLayer';
+import PotreeSource from 'Source/PotreeSource';
 import Coordinates from 'Core/Geographic/Coordinates';
 import GlobeView from 'Core/Prefab/GlobeView';
 import HttpsProxyAgent from 'https-proxy-agent';
 import Renderer from './mock';
 
-describe('PointCloudProvider', function () {
+describe('Potree Provider', function () {
     const renderer = new Renderer();
     const placement = { coord: new Coordinates('EPSG:4326', 1.5, 43), range: 300000 };
     const view = new GlobeView(renderer.domElement, placement, { renderer });
@@ -21,19 +21,19 @@ describe('PointCloudProvider', function () {
         };
 
         const ps = [];
-        let source = new PointCloudSource({
+        let source = new PotreeSource({
             file: 'eglise_saint_blaise_arles.js',
             url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             cloud,
         });
-        ps.push(new PointCloudLayer('pointsCloud', { source }, view).whenReady.then((l) => {
+        ps.push(new PotreeLayer('pointsCloud', { source }, view).whenReady.then((l) => {
             const normalDefined = l.material.defines.NORMAL || l.material.defines.NORMAL_SPHEREMAPPED || l.material.defines.NORMAL_OCT16;
             assert.ok(!normalDefined);
         }));
 
         // // // normals as vector
-        source = new PointCloudSource({
+        source = new PotreeSource({
             file: 'eglise_saint_blaise_arles.js',
             url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
@@ -44,14 +44,14 @@ describe('PointCloudProvider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        ps.push(new PointCloudLayer('pointsCloud', { source }, view).whenReady.then((l) => {
+        ps.push(new PotreeLayer('pointsCloud', { source }, view).whenReady.then((l) => {
             assert.ok(l.material.defines.NORMAL);
             assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(!l.material.defines.NORMAL_OCT16);
         }));
 
         // // spheremapped normals
-        source = new PointCloudSource({
+        source = new PotreeSource({
             file: 'eglise_saint_blaise_arles.js',
             url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
@@ -62,14 +62,14 @@ describe('PointCloudProvider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        ps.push(new PointCloudLayer('pointsCloud', { source }, view).whenReady.then((l) => {
+        ps.push(new PotreeLayer('pointsCloud', { source }, view).whenReady.then((l) => {
             assert.ok(!l.material.defines.NORMAL);
             assert.ok(l.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(!l.material.defines.NORMAL_OCT16);
         }));
 
         // // oct16 normals
-        source = new PointCloudSource({
+        source = new PotreeSource({
             file: 'eglise_saint_blaise_arles.js',
             url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
@@ -80,7 +80,7 @@ describe('PointCloudProvider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        ps.push(new PointCloudLayer('pointsCloud', { source }, view).whenReady.then((l) => {
+        ps.push(new PotreeLayer('pointsCloud', { source }, view).whenReady.then((l) => {
             assert.ok(!l.material.defines.NORMAL);
             assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(l.material.defines.NORMAL_OCT16);
@@ -96,7 +96,7 @@ describe('getObjectToUpdateForAttachedLayers', function () {
         const meta = {
             obj: 'a',
         };
-        assert.equal(PointCloudLayer.prototype.getObjectToUpdateForAttachedLayers(meta).element, 'a');
+        assert.equal(PotreeLayer.prototype.getObjectToUpdateForAttachedLayers(meta).element, 'a');
     });
     it('should correctly return the element and its parent', function () {
         const meta = {
@@ -105,7 +105,7 @@ describe('getObjectToUpdateForAttachedLayers', function () {
                 obj: 'b',
             },
         };
-        const result = PointCloudLayer.prototype.getObjectToUpdateForAttachedLayers(meta);
+        const result = PotreeLayer.prototype.getObjectToUpdateForAttachedLayers(meta);
         assert.equal(result.element, 'a');
         assert.equal(result.parent, 'b');
     });

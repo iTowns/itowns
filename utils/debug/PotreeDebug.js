@@ -58,11 +58,11 @@ export default {
                 for (const pts of layer.group.children) {
                     pts.material.visible = false;
                     for (const name of stickies) {
-                        if (pts.userData.pointCloudNode.name == name) {
+                        if (pts.userData.potreeNode.name == name) {
                             pts.material.visible = true;
-                        } else if (!isInHierarchy(pts.userData.pointCloudNode, name)) {
+                        } else if (!isInHierarchy(pts.userData.potreeNode, name)) {
                             continue;
-                        } else if (pts.userData.pointCloudNode.name.length < name.length) {
+                        } else if (pts.userData.potreeNode.name.length < name.length) {
                             pts.material.visible = layer.dbgDisplayParents;
                             break;
                         } else {

@@ -13,9 +13,9 @@
         "3dtiles_batch_table": "Batch table"
     },
 
-    "Pointcloud": {
-        "pointcloud_25d_map": "2.5D map",
-        "pointcloud_3d_map": "3D map"
+    "Potree": {
+        "potree_25d_map": "2.5D map",
+        "potree_3d_map": "3D map"
     },
 
     "Vector tiles": {
