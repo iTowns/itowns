@@ -88,7 +88,7 @@ describe('Potree', function () {
         it('load child node', function (done) {
             const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
             root.loadOctree().then(() => {
-                root.children[0].loadNode().then(() => {
+                root.children[0].load().then(() => {
                     assert.equal(2, root.children[0].children.length);
                     done();
                 });

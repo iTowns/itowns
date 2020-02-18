@@ -31,12 +31,7 @@ export default {
         const layer = command.layer;
         const potreeNode = command.requester;
 
-        // Query octree/HRC if we don't have children potreeNode yet.
-        if (!potreeNode.octreeIsLoaded) {
-            potreeNode.loadOctree().then(() => command.view.notifyChange(layer, false));
-        }
-
-        return potreeNode.loadNode().then((geometry) => {
+        return potreeNode.load().then((geometry) => {
             const points = new THREE.Points(geometry, layer.material.clone());
             addPickingAttribute(points);
             points.frustumCulled = false;
