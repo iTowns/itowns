@@ -84,9 +84,17 @@ class PotreeNode {
         return !(this.childrenBitField && this.children.length === 0);
     }
 
-    loadNode() {
-        const nodeUrl = `${this.baseurl}/r${this.name}.${this.layer.source.extension}`;
-        return this.layer.source.fetcher(nodeUrl, this.layer.source.networkOptions).then(this.layer.source.parse);
+    get url() {
+        return `${this.baseurl}/r${this.name}.${this.layer.source.extension}`;
+    }
+
+    load() {
+        // Query octree/HRC if we don't have children potreeNode yet.
+        if (!this.octreeIsLoaded) {
+            this.loadOctree();
+        }
+
+        return this.layer.source.fetcher(this.url, this.layer.source.networkOptions).then(this.layer.source.parse);
     }
 
     loadOctree() {
