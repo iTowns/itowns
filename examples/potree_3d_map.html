@@ -5,16 +5,14 @@
 
         <style type="text/css">
             #info {
-                color: black;
+                color: #7ad7ff;
+                font-family: 'Open Sans', sans-serif;
                 position: absolute;
                 top: 0;
-                left: 0;
-                margin-left: 15px;
+                right: 0;
                 padding: 0.3rem;
-                z-index: 100;
-                background-color: white;
-                border: 2px solid black;
-                border-radius: 5px;
+                background-color: #404040;
+                z-index: 1;
             }
 
             @media (max-width: 600px) {
@@ -39,7 +37,7 @@
         <script src="js/GUI/LoadingScreen.js"></script>
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
-            var pointcloud;
+            var potreeLayer;
             var oldPostUpdate;
             var viewerDiv;
             var debugGui;
@@ -63,29 +61,26 @@
             view.controls.minDistance = 50;
 
             // Configure Point Cloud layer
-            pointcloud = new itowns.PointCloudLayer('eglise_saint_blaise_arles', {
-                source: new itowns.PointCloudSource({
+            potreeLayer = new itowns.PotreeLayer('eglise_saint_blaise_arles', {
+                source: new itowns.PotreeSource({
                     file: 'eglise_saint_blaise_arles.js',
                     url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
                 }),
             },view);
 
-            // add pointcloud to scene
+            // add potreeLayer to scene
             function onLayerReady() {
-                debug.PointCloudDebug.initTools(view, pointcloud, debugGui);
+                debug.PotreeDebug.initTools(view, potreeLayer, debugGui);
 
                 // update stats window
-                oldPostUpdate = pointcloud.postUpdate;
-                pointcloud.postUpdate = function postUpdate() {
-                    var info = document.getElementById('info');
-                    oldPostUpdate.apply(pointcloud, arguments);
-                    info.textContent = 'Nb points: ' +
-                        pointcloud.displayedCount.toLocaleString();
-                };
+                var info = document.getElementById('info');
+                view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, () => {
+                    info.textContent = potreeLayer.displayedCount.toLocaleString() + ' points';
+                });
             }
             window.view = view;
 
-            itowns.View.prototype.addLayer.call(view, pointcloud).then(onLayerReady);
+            itowns.View.prototype.addLayer.call(view, potreeLayer).then(onLayerReady);
 
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);

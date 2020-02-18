@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
 import PointsMaterial, { MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
-import PointCloudNode from 'Core/PointCloudNode';
+import PotreeNode from 'Core/PotreeNode';
 import Extent from 'Core/Geographic/Extent';
 import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 
@@ -64,7 +64,7 @@ function markForDeletion(elt) {
     }
 }
 
-class PointCloudLayer extends GeometryLayer {
+class PotreeLayer extends GeometryLayer {
     /**
      * Constructs a new instance of point cloud layer.
      * @constructor
@@ -72,9 +72,9 @@ class PointCloudLayer extends GeometryLayer {
      *
      * @example
      * // Create a new point cloud layer
-     * const points = new PointCloudLayer('points',
+     * const points = new PotreeLayer('points',
      *  {
-     *      source: new PointCloudLayer({
+     *      source: new PotreeLayer({
      *          url: 'https://pointsClouds/',
      *          file: 'points.js',
      *      }
@@ -88,7 +88,7 @@ class PointCloudLayer extends GeometryLayer {
      * @param      {object}  config   configuration, all elements in it
      * will be merged as is in the layer.
      * @param {number} [config.pointBudget=2000000] max displayed points count.
-     * @param {PointCloudSource} config.source - Description and options of the source.
+     * @param {PotreeSource} config.source - Description and options of the source.
      * @param {number} [config.sseThreshold=2] screen space error Threshold.
      * @param {number} [config.pointSize=4] point size.
      * @param {THREE.Material} [config.material] override material.
@@ -98,7 +98,7 @@ class PointCloudLayer extends GeometryLayer {
      */
     constructor(id, config, view) {
         super(id, new THREE.Group(), config);
-        this.isPointCloudLayer = true;
+        this.isPotreeLayer = true;
         this.protocol = 'potreeconverter';
 
         this.group = config.group || new THREE.Group();
@@ -129,9 +129,9 @@ class PointCloudLayer extends GeometryLayer {
                 this.material.defines[normal] = 1;
             }
 
-            this.supportsProgressiveDisplay = this.source.extention === 'cin';
+            this.supportsProgressiveDisplay = (this.source.extention === 'cin');
 
-            this.root = new PointCloudNode(0, 0, this);
+            this.root = new PotreeNode(0, 0, this);
             this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
             this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
 
@@ -289,7 +289,7 @@ class PointCloudLayer extends GeometryLayer {
         }
 
         if (this.displayedCount > this.pointBudget) {
-            // 2 different point count limit implementation, depending on the pointcloud source
+            // 2 different point count limit implementation, depending on the potree source
             if (this.supportsProgressiveDisplay) {
                 // In this format, points are evenly distributed within a node,
                 // so we can draw a percentage of each node and still get a correct
@@ -310,7 +310,7 @@ class PointCloudLayer extends GeometryLayer {
                 // This format doesn't require points to be evenly distributed, so
                 // we're going to sort the nodes by "importance" (= on screen size)
                 // and display only the first N nodes
-                this.group.children.sort((p1, p2) => p2.userData.pointCloudNode.sse - p1.userData.pointCloudNode.sse);
+                this.group.children.sort((p1, p2) => p2.userData.potreeNode.sse - p1.userData.potreeNode.sse);
 
                 let limitHit = false;
                 this.displayedCount = 0;
@@ -329,7 +329,7 @@ class PointCloudLayer extends GeometryLayer {
         const now = Date.now();
         for (let i = this.group.children.length - 1; i >= 0; i--) {
             const obj = this.group.children[i];
-            if (!obj.material.visible && (now - obj.userData.pointCloudNode.notVisibleSince) > 10000) {
+            if (!obj.material.visible && (now - obj.userData.potreeNode.notVisibleSince) > 10000) {
                 // remove from group
                 this.group.children.splice(i, 1);
 
@@ -343,7 +343,7 @@ class PointCloudLayer extends GeometryLayer {
                 obj.geometry.dispose();
                 obj.material = null;
                 obj.geometry = null;
-                obj.userData.pointCloudNode.obj = null;
+                obj.userData.potreeNode.obj = null;
 
                 if (__DEBUG__) {
                     if (obj.boxHelper) {
@@ -387,4 +387,4 @@ class PointCloudLayer extends GeometryLayer {
     }
 }
 
-export default PointCloudLayer;
+export default PotreeLayer;

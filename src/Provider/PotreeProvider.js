@@ -29,26 +29,26 @@ function addPickingAttribute(points) {
 export default {
     executeCommand(command) {
         const layer = command.layer;
-        const pointCloudNode = command.requester;
+        const potreeNode = command.requester;
 
-        // Query octree/HRC if we don't have children pointCloudNode yet.
-        if (!pointCloudNode.octreeIsLoaded) {
-            pointCloudNode.loadOctree().then(() => command.view.notifyChange(layer, false));
+        // Query octree/HRC if we don't have children potreeNode yet.
+        if (!potreeNode.octreeIsLoaded) {
+            potreeNode.loadOctree().then(() => command.view.notifyChange(layer, false));
         }
 
-        return pointCloudNode.loadNode().then((geometry) => {
+        return potreeNode.loadNode().then((geometry) => {
             const points = new THREE.Points(geometry, layer.material.clone());
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            points.position.copy(pointCloudNode.bbox.min);
+            points.position.copy(potreeNode.bbox.min);
             points.scale.copy(layer.scale);
             points.updateMatrix();
             points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
             points.layers.set(layer.threejsLayer);
             points.layer = layer;
-            points.extent = Extent.fromBox3(command.view.referenceCrs, pointCloudNode.bbox);
-            points.userData.pointCloudNode = pointCloudNode;
+            points.extent = Extent.fromBox3(command.view.referenceCrs, potreeNode.bbox);
+            points.userData.potreeNode = potreeNode;
             return points;
         });
     },

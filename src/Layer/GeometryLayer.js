@@ -128,7 +128,7 @@ class GeometryLayer extends Layer {
     // function don't process this kind of object, the layer must provide a
     // getObjectToUpdateForAttachedLayers function that returns the correct
     // object to update for attached layer.
-    // See 3dtilesProvider or PointCloudProvider for examples.
+    // See 3dtilesLayer or PotreeLayer for examples.
     // eslint-disable-next-line arrow-body-style
     getObjectToUpdateForAttachedLayers(obj) {
         if (obj.parent && obj.material) {

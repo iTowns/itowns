@@ -1,18 +1,18 @@
 import assert from 'assert';
-import PointCloudLayer from 'Layer/PointCloudLayer';
-import PointCloudSource from 'Source/PointCloudSource';
+import PotreeLayer from 'Layer/PotreeLayer';
+import PotreeSource from 'Source/PotreeSource';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import HttpsProxyAgent from 'https-proxy-agent';
 import Coordinates from 'Core/Geographic/Coordinates';
-import PointCloudNode from 'Core/PointCloudNode';
+import PotreeNode from 'Core/PotreeNode';
 import Renderer from './mock';
 
-describe('Point Cloud', function () {
+describe('Potree', function () {
     const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), range: 250 };
     let renderer;
     let viewer;
-    let pointcloud;
+    let potreeLayer;
     let context;
     let elt;
 
@@ -21,8 +21,8 @@ describe('Point Cloud', function () {
         viewer = new GlobeView(renderer.domElement, placement, { renderer });
 
         // Configure Point Cloud layer
-        pointcloud = new PointCloudLayer('eglise_saint_blaise_arles', {
-            source: new PointCloudSource({
+        potreeLayer = new PotreeLayer('eglise_saint_blaise_arles', {
+            source: new PotreeSource({
                 file: 'eglise_saint_blaise_arles.js',
                 url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
                 networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
@@ -34,13 +34,13 @@ describe('Point Cloud', function () {
             camera: viewer.camera,
             engine: viewer.mainLoop.gfxEngine,
             scheduler: viewer.mainLoop.scheduler,
-            geometryLayer: pointcloud,
+            geometryLayer: potreeLayer,
             view: viewer,
         };
     });
 
-    it('Add point cloud layer', function (done) {
-        View.prototype.addLayer.call(viewer, pointcloud).then((layer) => {
+    it('Add point potree layer', function (done) {
+        View.prototype.addLayer.call(viewer, potreeLayer).then((layer) => {
             context.camera.camera3D.updateMatrixWorld();
             assert.equal(layer.root.children.length, 7);
             layer.bboxes.visible = true;
@@ -48,37 +48,37 @@ describe('Point Cloud', function () {
         });
     });
 
-    it('preupdate point cloud layer', function () {
-        elt = pointcloud.preUpdate(context, new Set([pointcloud]));
+    it('preupdate potree layer', function () {
+        elt = potreeLayer.preUpdate(context, new Set([potreeLayer]));
         assert.equal(elt.length, 1);
     });
 
-    it('update point cloud layer', function (done) {
-        assert.equal(pointcloud.group.children.length, 0);
-        pointcloud.update(context, pointcloud, elt[0]);
+    it('update potree layer', function (done) {
+        assert.equal(potreeLayer.group.children.length, 0);
+        potreeLayer.update(context, potreeLayer, elt[0]);
         elt[0].promise.then(() => {
-            assert.equal(pointcloud.group.children.length, 1);
+            assert.equal(potreeLayer.group.children.length, 1);
             done();
         });
     });
 
-    it('postUpdate point cloud layer', function () {
-        pointcloud.postUpdate(context, pointcloud);
+    it('postUpdate potree layer', function () {
+        potreeLayer.postUpdate(context, potreeLayer);
     });
 
-    describe('Point Cloud Node', function () {
+    describe('potree Node', function () {
         const numPoints = 1000;
         const childrenBitField = 5;
 
         it('instance', function (done) {
-            const root = new PointCloudNode(numPoints, childrenBitField, pointcloud);
+            const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
             assert.equal(root.numPoints, numPoints);
             assert.equal(root.childrenBitField, childrenBitField);
             done();
         });
 
         it('load octree', function (done) {
-            const root = new PointCloudNode(numPoints, childrenBitField, pointcloud);
+            const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
             root.loadOctree().then(() => {
                 assert.equal(7, root.children.length);
                 done();
@@ -86,7 +86,7 @@ describe('Point Cloud', function () {
         });
 
         it('load child node', function (done) {
-            const root = new PointCloudNode(numPoints, childrenBitField, pointcloud);
+            const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
             root.loadOctree().then(() => {
                 root.children[0].loadNode().then(() => {
                     assert.equal(2, root.children[0].children.length);

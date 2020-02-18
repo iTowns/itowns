@@ -37,7 +37,7 @@ export { default as Layer, ImageryLayers } from 'Layer/Layer';
 export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
 export { default as GeometryLayer } from 'Layer/GeometryLayer';
-export { default as PointCloudLayer } from 'Layer/PointCloudLayer';
+export { default as PotreeLayer } from 'Layer/PotreeLayer';
 export { default as C3DTilesLayer, $3dTilesExtensions, $3dTilesAbstractExtension } from 'Layer/C3DTilesLayer';
 export { default as TiledGeometryLayer } from 'Layer/TiledGeometryLayer';
 export { default as OrientedImageLayer } from 'Layer/OrientedImageLayer';
@@ -57,7 +57,7 @@ export { default as WMSSource } from 'Source/WMSSource';
 export { default as WMTSSource } from 'Source/WMTSSource';
 export { default as VectorTilesSource } from 'Source/VectorTilesSource';
 export { default as OrientedImageSource } from 'Source/OrientedImageSource';
-export { default as PointCloudSource } from 'Source/PointCloudSource';
+export { default as PotreeSource } from 'Source/PotreeSource';
 
 // Parsers provided by default in iTowns
 // Custom parser can be implemented as wanted, as long as the main function
