@@ -145,6 +145,7 @@ canvas {
 .dg.main {
     position: absolute;
     top: 0;
+    z-index: 10;
 }
 
 @media (max-width: 600px) {
@@ -211,7 +212,7 @@ canvas {
     margin-left: 0px;
     padding: 0px;
     position: absolute;
-    z-index: 1000;
+    z-index: 9;
     font-family: 'Open Sans',
     sans-serif;
     font-size: 20px;
