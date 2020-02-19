@@ -95,6 +95,7 @@ class GlobeView extends View {
         this.camera.camera3D.far = ellipsoidSizes.x * 10;
 
         const tileLayer = new GlobeLayer('globe', options.object3d, options);
+        this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
 
         const sun = new THREE.DirectionalLight();
         sun.position.set(-0.5, 0, 1);
