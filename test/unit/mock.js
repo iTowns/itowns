@@ -1,29 +1,40 @@
 import fetch from 'node-fetch';
 
+class DOMElement {
+    constructor() {
+        this.children = [];
+        this.clientWidth = 400;
+        this.clientHeight = 300;
+        this.width = 400;
+        this.height = 300;
+        this.style = {
+            display: 'block',
+        };
+        this.events = new Map();
+
+        this.removeEventListener = () => {};
+        this.focus = () => {};
+    }
+
+    appendChild(c) { this.children.push(c); }
+    cloneNode() { return Object.create(this); }
+    getBoundingClientRect() { return { x: this.width, y: this.height }; }
+
+    addEventListener(event, cb) { this.events.set(event, cb); }
+    emitEvent(event, params) {
+        const callback = this.events.get(event);
+        if (callback) {
+            return callback(params);
+        }
+    }
+}
+
 class Renderer {
     constructor() {
-        const events = new Map();
-        const addEventListener = (event, callback) => {
-            events.set(event, callback);
-        };
-        this.domElement = {
-            addEventListener,
-            getBoundingClientRect: () => ({
-                x: 400,
-                y: 300,
-            }),
-            removeEventListener: () => {},
-            emitEvent: (event, params) => {
-                const callback = events.get(event);
-                if (callback) {
-                    return callback(params);
-                }
-            },
-            focus: () => {},
-            clientWidth: 400,
-            clientHeight: 300,
-        };
-        this.domElement.parentElement = Object.create(this.domElement);
+        this.domElement = new DOMElement();
+        this.domElement.parentElement = new DOMElement();
+        this.domElement.parentElement.appendChild(this.domElement);
+
         this.context = {
             getParameter: () => 16,
             createProgram: () => { },
@@ -46,31 +57,53 @@ class Renderer {
 
         // Mock document object for Mocha.
         global.document = {
-            createElement: () => ({
-                addEventListener: () => {},
-                getContext: () => ({
-                    fillRect: () => { },
-                    moveTo: () => { },
-                    lineTo: () => { },
-                    beginPath: () => { },
-                    stroke: () => { },
-                    fill: () => { },
-                    arc: () => { },
-                    setTransform: () => { },
-                    setLineDash: () => { },
-                    canvas: {
-                        width: 400,
-                        height: 300,
-                    },
-                }),
-            }),
+            createElement: (type) => {
+                if (type == 'canvas') {
+                    const canvas = new DOMElement();
+
+                    canvas.getContext = () => ({
+                        fillRect: () => { },
+                        moveTo: () => { },
+                        lineTo: () => { },
+                        beginPath: () => { },
+                        stroke: () => { },
+                        fill: () => { },
+                        arc: () => { },
+                        setTransform: () => { },
+                        setLineDash: () => { },
+                        drawImage: (img, sx, sy, sw, sh, dx, dy, dw, dh) => {
+                            this.width = dw;
+                            this.height = dh;
+
+                            const image = new DOMElement();
+                            image.width = dw;
+                            image.height = dh;
+                            return image;
+                        },
+                        canvas,
+                    });
+
+                    canvas.toDataURL = () => ({ width: this.width, height: this.height });
+
+                    return canvas;
+                } else if (type == 'img') {
+                    const img = new DOMElement();
+                    img.width = 10;
+                    img.height = 10;
+                    return img;
+                }
+
+                return new DOMElement();
+            },
             createElementNS: () => ({
                 createSVGMatrix: () => { },
             }),
+            documentElement: this.domElement,
         };
 
+        const events = new Map();
         global.window = {
-            addEventListener,
+            addEventListener: (event, cb) => { events.set(event, cb); },
         };
 
         global.Event = () => {};
