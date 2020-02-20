@@ -29,6 +29,7 @@ function parseSourceData(data, extDest, layer) {
         withNormal: layer.isGeometryLayer,
         withAltitude: layer.isGeometryLayer,
         symbolToCircle: layer.symbolToCircle || false,
+        style: source.style || layer.style,
     };
 
     return source.parser(data, options).then(parsedFile => source.onParsedFile(parsedFile));

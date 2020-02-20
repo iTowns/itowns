@@ -1,6 +1,6 @@
 import Coordinates from 'Core/Geographic/Coordinates';
 import Feature, { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
-import Style from '../Core/Style';
+import Style from 'Core/Style';
 
 function readCRS(json) {
     if (json.crs) {
@@ -42,25 +42,25 @@ const toFeature = {
         }
         geometry.updateExtent();
     },
-    default(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
+    default(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties, style) {
         if (filteringExtent && firstPtIsOut(filteringExtent, coordsIn, crsIn)) {
             return;
         }
 
         const geometry = feature.bindNewGeometry();
         geometry.properties = properties;
-        geometry.properties.style = new Style().setFromGeojsonProperties(properties, feature.type);
+        geometry.style = style.clone().setFromGeojsonProperties(properties, feature.type);
         this.populateGeometry(crsIn, coordsIn, geometry, setAltitude, feature);
         feature.updateExtent(geometry);
     },
-    polygon(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
+    polygon(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties, style) {
         // filtering
         if (filteringExtent && firstPtIsOut(filteringExtent, coordsIn[0], crsIn)) {
             return;
         }
         const geometry = feature.bindNewGeometry();
         geometry.properties = properties;
-        geometry.properties.style = new Style().setFromGeojsonProperties(properties, feature.type);
+        geometry.style = style.clone().setFromGeojsonProperties(properties, feature.type);
 
         // Then read contour and holes
         for (let i = 0; i < coordsIn.length; i++) {
@@ -68,28 +68,28 @@ const toFeature = {
         }
         feature.updateExtent(geometry);
     },
-    multi(type, feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
+    multi(type, feature, crsIn, coordsIn, filteringExtent, setAltitude, properties, style) {
         for (const coords of coordsIn) {
-            this[type](feature, crsIn, coords, filteringExtent, setAltitude, properties);
+            this[type](feature, crsIn, coords, filteringExtent, setAltitude, properties, style);
         }
     },
 };
 
-function coordinatesToFeature(type, feature, crsIn, coordinates, filteringExtent, setAltitude, properties) {
+function coordinatesToFeature(type, feature, crsIn, coordinates, filteringExtent, setAltitude, properties, style) {
     if (coordinates.length == 0) {
         return;
     }
     switch (type) {
         case 'point':
         case 'linestring':
-            return toFeature.default(feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+            return toFeature.default(feature, crsIn, coordinates, filteringExtent, setAltitude, properties, style);
         case 'multipoint':
         case 'multilinestring':
-            return toFeature.multi('default', feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+            return toFeature.multi('default', feature, crsIn, coordinates, filteringExtent, setAltitude, properties, style);
         case 'polygon':
-            return toFeature.polygon(feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+            return toFeature.polygon(feature, crsIn, coordinates, filteringExtent, setAltitude, properties, style);
         case 'multipolygon':
-            return toFeature.multi('polygon', feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+            return toFeature.multi('polygon', feature, crsIn, coordinates, filteringExtent, setAltitude, properties, style);
         case 'geometrycollection':
         default:
             throw new Error(`Unhandled geojson type ${feature.type}`);
@@ -135,7 +135,7 @@ function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, fea
         }
     }
 
-    coordinatesToFeature(jsonType, feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+    coordinatesToFeature(jsonType, feature, crsIn, coordinates, filteringExtent, setAltitude, properties, options.style);
 
     if (feature.geometryCount == geometryCount) {
         return;
@@ -207,6 +207,7 @@ export default {
         options.mergeFeatures = options.mergeFeatures == undefined ? true : options.mergeFeatures;
         options.withNormal = options.withNormal == undefined ? true : options.withNormal;
         options.withAltitude = options.withAltitude == undefined ? true : options.withAltitude;
+        options.style = options.style || new Style();
 
         switch (json.type.toLowerCase()) {
             case 'featurecollection':
