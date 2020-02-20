@@ -102,7 +102,7 @@ describe('Vector tiles', function () {
             assert.equal(style.text.justify, 'center');
             assert.equal(style.text.color, '#000000');
             assert.equal(style.text.opacity, 1.0);
-            assert.deepEqual(style.text.font, ['Open Sans Regular', 'Arial Unicode MS Regular']);
+            assert.deepEqual(style.text.font, ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif']);
             assert.equal(style.text.halo.color, '#000000');
             assert.equal(style.text.halo.width, 0);
             assert.equal(style.text.halo.blur, 0);

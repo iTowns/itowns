@@ -83,7 +83,6 @@ function getImageFromSprite(sprites, key) {
  * @property {string} point.line - The color of the border of the point. Can be
  * any [valid color
  * string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
- * Default is `red`.
  * @property {number} point.width - The width of the border, in pixel. Default
  * is `0.0` (no border).
  * @property {number} point.opacity - The opacity of the point. Can be between
@@ -96,7 +95,7 @@ function getImageFromSprite(sprites, key) {
  * indicating that no text will be shown.
  * @property {string} text.color - The color of the text. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
- * Default is `black`.
+ * Default is `#000000`.
  * @property {string} text.anchor - The anchor of the text compared to its
  * position (see {@link Label} for the position). Can be a few value: `top`,
  * `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
@@ -128,7 +127,7 @@ function getImageFromSprite(sprites, key) {
  * halo around the text.
  * @property {string} text.halo.color - The color of the halo. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
- * Default is `black`.
+ * Default is `#000000`.
  * @property {number} text.halo.width - The width of the halo, in pixels.
  * Default is `0`.
  * @property {number} text.halo.blur - The blur value of the halo, in pixels.
@@ -179,7 +178,7 @@ class Style {
 
         this.point = {
             color: params.point.color,
-            line: params.point.line || 'red',
+            line: params.point.line,
             opacity: params.point.opacity == undefined ? 1.0 : params.point.opacity,
             radius: params.point.radius == undefined ? 2.0 : params.point.radius,
             width: params.point.width || 0.0,
@@ -187,7 +186,8 @@ class Style {
 
         this.text = {
             field: params.text.field,
-            color: params.text.color || 'black',
+            zOrder: params.text.zOrder || 'auto',
+            color: params.text.color || '#000000',
             anchor: params.text.anchor || 'center',
             offset: params.text.offset || [0, 0],
             padding: params.text.padding || 2,
@@ -201,20 +201,36 @@ class Style {
             opacity: params.text.opacity || 1.0,
             font: params.text.font || ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif'],
             halo: {
-                color: (params.text.halo && params.text.halo.color) || 'black',
+                color: (params.text.halo && params.text.halo.color) || '#000000',
                 width: (params.text.halo && params.text.halo.width) || 0,
                 blur: (params.text.halo && params.text.halo.blur) || 0,
             },
         };
     }
 
+    /**
+     * Copies the content of the target style into this style.
+     *
+     * @param {Style} style - The style to copy.
+     *
+     * @return {Style} This style.
+     */
+    copy(style) {
+        Object.assign(this.fill, style.fill);
+        Object.assign(this.stroke, style.stroke);
+        Object.assign(this.point, style.point);
+        Object.assign(this.text, style.text);
+        Object.assign(this.text.halo, style.text.halo);
+        return this;
+    }
+
+    /**
+     * Clones this style.
+     *
+     * @return {Style} The new style, cloned from this one.
     clone() {
         const clone = new Style();
-        Object.assign(clone.fill, this.fill);
-        Object.assign(clone.stroke, this.stroke);
-        Object.assign(clone.point, this.point);
-        Object.assign(clone.text, this.text);
-        return clone;
+        return clone.copy(this);
     }
 
     /**
@@ -226,9 +242,9 @@ class Style {
     setFromGeojsonProperties(properties, type) {
         if (type === FEATURE_TYPES.POINT) {
             this.point.color = properties.fill || 'white';
-            this.point.opacity = properties['fill-opacity'] || 1.0;
+            this.point.opacity = properties['fill-opacity'] || this.point.opacity;
             this.point.line = properties.stroke || 'gray';
-            this.point.radius = properties.radius || 2.0;
+            this.point.radius = properties.radius || this.point.radius;
         } else {
             this.stroke.color = properties.stroke;
             this.stroke.width = properties['stroke-width'];
@@ -236,7 +252,7 @@ class Style {
 
             if (type !== FEATURE_TYPES.LINE) {
                 this.fill.color = properties.fill;
-                this.fill.opacity = properties['fill-opacity'] || 1.0;
+                this.fill.opacity = properties['fill-opacity'] || this.fill.opacity;
             }
         }
         return this;
@@ -251,10 +267,13 @@ class Style {
      * @returns {Style}
      */
     setFromVectorTileLayer(layer, zoom, sprites, symbolToCircle = false) {
+        layer.layout = layer.layout || {};
+        layer.paint = layer.paint || {};
+
         if (layer.type === 'fill' && !this.fill.color) {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern']));
             this.fill.color = color;
-            this.fill.opacity = readVectorProperty(layer.paint['fill-opacity'], zoom) || opacity || 1.0;
+            this.fill.opacity = readVectorProperty(layer.paint['fill-opacity'], zoom) || opacity || this.fill.opacity;
             if (layer.paint['fill-pattern'] && sprites) {
                 this.fill.pattern = getImageFromSprite(sprites, layer.paint['fill-pattern']);
             }
@@ -271,19 +290,19 @@ class Style {
             const { color, opacity } = rgba2rgb(prepare);
             this.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray'], zoom) || [];
             this.stroke.color = color;
-            this.stroke.lineCap = layer.layout && layer.layout['line-cap'];
-            this.stroke.width = readVectorProperty(layer.paint['line-width'], zoom) || 3.0;
-            this.stroke.opacity = readVectorProperty(layer.paint['line-opacity'], zoom) || opacity || 1.0;
+            this.stroke.lineCap = layer.layout['line-cap'];
+            this.stroke.width = readVectorProperty(layer.paint['line-width'], zoom) || this.stroke.width;
+            this.stroke.opacity = readVectorProperty(layer.paint['line-opacity'], zoom) || opacity || this.stroke.opacity;
         } else if (layer.type === 'circle' || symbolToCircle) {
-            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint && layer.paint['circle-color'], zoom) || '#000000ff');
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['circle-color'], zoom) || '#000000ff');
             this.point.color = color;
             this.point.opacity = opacity;
-            this.point.radius = readVectorProperty(layer.paint['circle-radius'], zoom) || 1.5;
+            this.point.radius = readVectorProperty(layer.paint['circle-radius'], zoom) || this.point.radius;
         } else if (layer.type === 'symbol') {
             // overlapping order
-            this.text.zOrder = readVectorProperty(layer.layout && layer.layout['symbol-z-order'], zoom) || 'auto';
+            this.text.zOrder = readVectorProperty(layer.layout['symbol-z-order'], zoom) || this.text.zOrder;
             if (this.text.zOrder == 'auto') {
-                this.text.zOrder = readVectorProperty(layer.layout && layer.layout['symbol-sort-key'], zoom) || 'Y';
+                this.text.zOrder = readVectorProperty(layer.layout['symbol-sort-key'], zoom) || 'Y';
             } else if (this.text.zOrder == 'viewport-y') {
                 this.text.zOrder = 'Y';
             } else if (this.text.zOrder == 'source') {
@@ -291,34 +310,33 @@ class Style {
             }
 
             // position
-            this.text.anchor = readVectorProperty(layer.layout && layer.layout['text-anchor'], zoom) || 'center';
-            this.text.offset = readVectorProperty(layer.layout && layer.layout['text-offset'], zoom) || [0, 0];
-            this.text.padding = readVectorProperty(layer.layout && layer.layout['text-padding'], zoom) || 2;
-            this.text.size = readVectorProperty(layer.layout && layer.layout['text-size'], zoom) || 16;
-            this.text.placement = readVectorProperty(layer.layout && layer.layout['symbol-placement'], zoom) || 'point';
-            this.text.rotation = readVectorProperty(layer.layout && layer.layout['text-rotation-alignment'], zoom) || 'auto';
+            this.text.anchor = readVectorProperty(layer.layout['text-anchor'], zoom) || this.text.anchor;
+            this.text.offset = readVectorProperty(layer.layout['text-offset'], zoom) || this.text.offset;
+            this.text.padding = readVectorProperty(layer.layout['text-padding'], zoom) || this.text.padding;
+            this.text.size = readVectorProperty(layer.layout['text-size'], zoom) || this.text.size;
+            this.text.placement = readVectorProperty(layer.layout['symbol-placement'], zoom) || this.text.placement;
+            this.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment'], zoom) || this.text.rotation;
 
             // content
-            this.text.field = readVectorProperty(layer.layout && layer.layout['text-field'], zoom) || '';
-            this.text.wrap = readVectorProperty(layer.layout && layer.layout['text-max-width'], zoom) || 10;
-            this.text.spacing = readVectorProperty(layer.layout && layer.layout['text-letter-spacing'], zoom) || 0;
-            this.text.transform = readVectorProperty(layer.layout && layer.layout['text-transform'], zoom) || 'none';
-            this.text.justify = readVectorProperty(layer.layout && layer.layout['text-justify'], zoom) || 'center';
+            this.text.field = readVectorProperty(layer.layout['text-field'], zoom) || this.text.field
+            this.text.wrap = readVectorProperty(layer.layout['text-max-width'], zoom) || this.text.wrap;
+            this.text.spacing = readVectorProperty(layer.layout['text-letter-spacing'], zoom) || this.text.spacing;
+            this.text.transform = readVectorProperty(layer.layout['text-transform'], zoom) || this.text.transform;
+            this.text.justify = readVectorProperty(layer.layout['text-justify'], zoom) || this.text.justify;
 
             // appearance
-            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint && layer.paint['text-color'], zoom) || '#000000');
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['text-color'], zoom) || this.text.color);
             this.text.color = color;
-            this.text.opacity = readVectorProperty(layer.paint && layer.paint['text-opacity'], zoom) || (opacity !== undefined && opacity) || 1.0;
-            this.text.font = readVectorProperty(layer.layout && layer.layout['text-font'], zoom) || ['Open Sans Regular', 'Arial Unicode MS Regular'];
-            this.text.halo = {};
-            this.text.halo.color = readVectorProperty(layer.paint && layer.paint['text-halo-color'], zoom) || '#000000';
-            this.text.halo.width = readVectorProperty(layer.paint && layer.paint['text-halo-width'], zoom) || 0;
-            this.text.halo.blur = readVectorProperty(layer.paint && layer.paint['text-halo-blur'], zoom) || 0;
+            this.text.opacity = readVectorProperty(layer.paint['text-opacity'], zoom) || (opacity !== undefined && opacity) || this.text.opacity;
+            this.text.font = readVectorProperty(layer.layout['text-font'], zoom) || this.text.font;
+            this.text.halo.color = readVectorProperty(layer.paint['text-halo-color'], zoom) || this.text.halo.color;
+            this.text.halo.width = readVectorProperty(layer.paint['text-halo-width'], zoom) || this.text.halo.width;
+            this.text.halo.blur = readVectorProperty(layer.paint['text-halo-blur'], zoom) || this.text.halo.blur;
 
             // additional icon
-            const iconSrc = readVectorProperty(layer.layout && layer.layout['icon-image'], zoom);
+            const iconSrc = readVectorProperty(layer.layout['icon-image'], zoom);
             if (iconSrc) {
-                let size = readVectorProperty(layer.layout && layer.layout['icon-size'], zoom);
+                let size = readVectorProperty(layer.layout['icon-size'], zoom);
                 if (size == undefined) { size = 1; }
 
                 this.icon = Cache.get(`${iconSrc}-${size}`);
@@ -329,7 +347,7 @@ class Style {
                     this.icon.dom.width *= size;
                     this.icon.dom.height *= size;
 
-                    this.icon.anchor = readVectorProperty(layer.layout && layer.layout['icon-anchor'], zoom) || 'center';
+                    this.icon.anchor = readVectorProperty(layer.layout['icon-anchor'], zoom) || 'center';
                     this.icon.halfWidth = this.icon.dom.width / 2;
                     this.icon.halfHeight = this.icon.dom.height / 2;
 
