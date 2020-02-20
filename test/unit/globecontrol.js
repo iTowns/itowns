@@ -36,9 +36,9 @@ describe('GlobeControls', function () {
         viewer.controls.update();
     });
     it('mouse down', function () {
-        renderer.domElement.emitEvent('mousedown', event);
-        renderer.domElement.emitEvent('mousemove', event);
-        renderer.domElement.emitEvent('mouseup', event);
+        renderer.domElement.parentElement.emitEvent('mousedown', event);
+        renderer.domElement.parentElement.emitEvent('mousemove', event);
+        renderer.domElement.parentElement.emitEvent('mouseup', event);
     });
     it('dolly', function () {
         viewer.controls.dollyIn();
@@ -46,28 +46,28 @@ describe('GlobeControls', function () {
     });
     it('mouse down + crtl', function () {
         event.keyCode = 17;
-        renderer.domElement.emitEvent('keydown', event);
-        renderer.domElement.emitEvent('mousedown', event);
-        renderer.domElement.emitEvent('mousemove', event);
-        renderer.domElement.emitEvent('mouseup', event);
-        renderer.domElement.emitEvent('keyup', event);
+        renderer.domElement.parentElement.emitEvent('keydown', event);
+        renderer.domElement.parentElement.emitEvent('mousedown', event);
+        renderer.domElement.parentElement.emitEvent('mousemove', event);
+        renderer.domElement.parentElement.emitEvent('mouseup', event);
+        renderer.domElement.parentElement.emitEvent('keyup', event);
     });
     it('mouse wheel', function () {
-        renderer.domElement.emitEvent('mousewheel', event);
+        renderer.domElement.parentElement.emitEvent('mousewheel', event);
     });
     it('mouse dblclick', function () {
-        renderer.domElement.emitEvent('dblclick', event);
+        renderer.domElement.parentElement.emitEvent('dblclick', event);
     });
 
     it('touch start', function () {
-        renderer.domElement.emitEvent('touchstart', event);
+        renderer.domElement.parentElement.emitEvent('touchstart', event);
     });
 
     it('touch move', function () {
-        renderer.domElement.emitEvent('touchmove', event);
+        renderer.domElement.parentElement.emitEvent('touchmove', event);
     });
 
     it('touch end', function () {
-        renderer.domElement.emitEvent('touchend', event);
+        renderer.domElement.parentElement.emitEvent('touchend', event);
     });
 });
