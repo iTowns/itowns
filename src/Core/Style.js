@@ -319,7 +319,7 @@ class Style {
             this.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment'], zoom) || this.text.rotation;
 
             // content
-            this.text.field = readVectorProperty(layer.layout['text-field'], zoom) || this.text.field
+            this.text.field = readVectorProperty(layer.layout['text-field'], zoom) || this.text.field;
             this.text.wrap = readVectorProperty(layer.layout['text-max-width'], zoom) || this.text.wrap;
             this.text.spacing = readVectorProperty(layer.layout['text-letter-spacing'], zoom) || this.text.spacing;
             this.text.transform = readVectorProperty(layer.layout['text-transform'], zoom) || this.text.transform;
