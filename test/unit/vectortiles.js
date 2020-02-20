@@ -20,6 +20,10 @@ describe('Vector tiles', function () {
     },
     ];
 
+    const layout = {
+        'text-field': 'foo',
+    };
+
     // this PBF file comes from https://github.com/mapbox/vector-tile-js
     // it contains two square polygons
     const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
@@ -32,6 +36,7 @@ describe('Vector tiles', function () {
             filter: [{
                 'source-layer': 'geojson',
                 paint,
+                layout,
                 id: id++,
                 type,
             }],
@@ -79,7 +84,9 @@ describe('Vector tiles', function () {
             assert.equal(style.stroke.color, 'hsl(0,0%,50%)');
         }));
     it('should parse symbol to style symbol', () =>
-        parse(multipolygon, paints[4], 'symbol').then((collection) => {
+        parse(multipolygon, paints[4], 'symbol', {
+            'text-field': 'foo',
+        }).then((collection) => {
             const style = collection.features[0].style;
             assert.equal(style.text.zOrder, 'Y');
             assert.equal(style.text.anchor, 'center');
@@ -88,14 +95,14 @@ describe('Vector tiles', function () {
             assert.equal(style.text.size, 16);
             assert.equal(style.text.placement, 'point');
             assert.equal(style.text.rotation, 'auto');
-            assert.equal(style.text.field, '');
+            assert.equal(style.text.field, 'foo');
             assert.equal(style.text.wrap, 10);
             assert.equal(style.text.spacing, 0);
             assert.equal(style.text.transform, 'none');
             assert.equal(style.text.justify, 'center');
             assert.equal(style.text.color, '#000000');
             assert.equal(style.text.opacity, 1.0);
-            assert.deepEqual(style.text.font, ['Open Sans Regular', 'Arial Unicode MS Regular']);
+            assert.deepEqual(style.text.font, ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif']);
             assert.equal(style.text.halo.color, '#000000');
             assert.equal(style.text.halo.width, 0);
             assert.equal(style.text.halo.blur, 0);

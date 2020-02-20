@@ -10,7 +10,6 @@ export { default as Fetcher } from 'Provider/Fetcher';
 export { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 export { default as View } from 'Core/View';
 export { VIEW_EVENTS } from 'Core/View';
-export { default as Feature, FeatureCollection, FeatureGeometry, FEATURE_TYPES } from 'Core/Feature';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from 'Process/3dTilesProcessing';
 export { default as FeatureProcessing } from 'Process/FeatureProcessing';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
@@ -30,9 +29,13 @@ export { default as ShaderChunk } from 'Renderer/Shader/ShaderChunk';
 export { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 export { default as Capabilities } from 'Core/System/Capabilities';
 
+// Internal itowns format
+export { default as Feature, FeatureCollection, FeatureGeometry, FEATURE_TYPES } from 'Core/Feature';
+export { default as Style } from 'Core/Style';
+
 // Layers provided by default in iTowns
 // A custom layer should at least implements Layer
-// See http://www.itowns-project.org/itowns/API_Doc/Layer.html
+// See http://www.itowns-project.org/itowns/docs/#api/Layer/Layer
 export { default as Layer, ImageryLayers } from 'Layer/Layer';
 export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
@@ -48,7 +51,7 @@ export { default as PlanarLayer } from 'Core/Prefab/Planar/PlanarLayer';
 
 // Sources provided by default in iTowns
 // A custom source should at least implements Source
-// See http://www.itowns-project.org/itowns/API_Doc/Source.html
+// See http://www.itowns-project.org/itowns/docs/#api/Source/Source
 export { default as Source } from 'Source/Source';
 export { default as FileSource } from 'Source/FileSource';
 export { default as TMSSource } from 'Source/TMSSource';
