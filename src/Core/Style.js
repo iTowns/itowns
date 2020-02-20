@@ -228,6 +228,7 @@ class Style {
      * Clones this style.
      *
      * @return {Style} The new style, cloned from this one.
+     */
     clone() {
         const clone = new Style();
         return clone.copy(this);
