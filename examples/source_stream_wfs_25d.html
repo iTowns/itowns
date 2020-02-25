@@ -113,14 +113,12 @@
             }
 
             function colorLine(properties) {
-                if (properties) {
-                    rgb = properties.couleur.split(' ');
-                    return color.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
-                }
-                return color.setRGB(1, 1, 1);
+                return color.set(Math.round(Math.random() * 0xffffff));
             }
 
             var tile;
+            var linesBus = [];
+
             function altitudeLine(properties, contour) {
                 var result;
                 var z = 0;
@@ -135,6 +133,17 @@
                     }
                     return z + 5;
                 }
+            }
+
+            function acceptFeatureBus(properties) {
+                if (properties.sens == 'Aller') {
+                    var line = properties.ligne;
+                    if (linesBus.indexOf(line) === -1) {
+                        linesBus.push(line);
+                        return true;
+                    }
+                }
+                return false;
             }
 
             lyonTclBusSource = new itowns.WFSSource({
@@ -160,6 +169,7 @@
                     color: colorLine,
                     altitude: altitudeLine }),
                 onMeshCreated: setMaterialLineWidth,
+                filter: acceptFeatureBus,
                 source: lyonTclBusSource,
             });
 
