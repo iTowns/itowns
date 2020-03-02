@@ -144,7 +144,7 @@ function readPBF(file, options) {
             const layers = layersSource.filter(l => l.filterExpression({ zoom: z }, vtFeature) && (!l.minzoom || l.minzoom <= z) && (!l.maxzoom || l.maxzoom >= z));
             let feature;
             for (const layer of layers) {
-                const tag = `${layer.id}_zoom_${z}`;
+                const tag = `${layer.sourceUid}_${layer.id}_zoom_${z}`;
                 // Fix doens't pass instance of properties
                 let style = styleCache.get(tag);
                 if (!style) {
