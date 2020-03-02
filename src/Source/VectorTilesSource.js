@@ -37,6 +37,7 @@ class VectorTilesSource extends TMSSource {
                 const os = style.sources[s];
 
                 style.layers.forEach((layer) => {
+                    layer.sourceUid = this.uid;
                     if (layer.type === 'background') {
                         this.backgroundLayer = layer;
                     } else if (ffilter(layer)) {
