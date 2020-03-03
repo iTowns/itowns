@@ -136,13 +136,7 @@ class View extends THREE.EventDispatcher {
         this._frameRequesters = { };
         this._layers = [];
 
-        window.addEventListener('resize', () => {
-            // If the user gave us a container (<div>) then itowns' size is
-            // the container's size. Otherwise we use window' size.
-            this.mainLoop.gfxEngine.onWindowResize(viewerDiv.clientWidth, viewerDiv.clientHeight);
-            this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
-            this.notifyChange(this.camera.camera3D);
-        }, false);
+        window.addEventListener('resize', () => this.resize(), false);
 
         this._changeSources = new Set();
 
@@ -868,6 +862,28 @@ class View extends THREE.EventDispatcher {
         if (target.length() > 10000000) { return undefined; }
 
         return target;
+    }
+
+    /**
+     * Resize the viewer.
+     *
+     * @param {number} [width=viewerDiv.clientWidth] - The width to resize the
+     * viewer with. By default it is the `clientWidth` of the `viewerDiv`.
+     * @param {number} [height=viewerDiv.clientHeight] - The height to resize
+     * the viewer with. By default it is the `clientHeight` of the `viewerDiv`.
+     */
+    resize(width, height) {
+        if (width == undefined) {
+            width = this.mainLoop.gfxEngine.renderer.domElement.parentElement.clientWidth;
+        }
+
+        if (height == undefined) {
+            height = this.mainLoop.gfxEngine.renderer.domElement.parentElement.clientHeight;
+        }
+
+        this.mainLoop.gfxEngine.onWindowResize(width, height);
+        this.camera.resize(width, height);
+        this.notifyChange(this.camera.camera3D);
     }
 }
 
