@@ -15,8 +15,8 @@ describe('GlobeControls', function () {
         preventDefault: () => {},
         button: THREE.MOUSE.LEFT,
         touches: [{
-            clientX: 150,
-            clientY: 200,
+            offsetX: 100,
+            offsetY: 200,
             pageX: 150,
             pageY: 200,
         }],
@@ -25,25 +25,37 @@ describe('GlobeControls', function () {
     it('instance GlobeControls', function () {
         assert.ok(viewer.controls);
     });
+
     it('Set Tilt', function (done) {
         viewer.controls.setTilt(10, false).then((e) => {
             assert.equal(e.tilt, 10);
             done();
         });
     });
+
     it('update', function () {
         viewer.controls.mouseToPan(10, 10);
         viewer.controls.update();
     });
+
     it('mouse down', function () {
         renderer.domElement.parentElement.emitEvent('mousedown', event);
+
+        event.touches = [{
+            offsetX: 50,
+            offsetY: 100,
+            pageX: 100,
+            pageY: 100,
+        }];
         renderer.domElement.parentElement.emitEvent('mousemove', event);
         renderer.domElement.parentElement.emitEvent('mouseup', event);
     });
+
     it('dolly', function () {
         viewer.controls.dollyIn();
         viewer.controls.dollyOut();
     });
+
     it('mouse down + crtl', function () {
         event.keyCode = 17;
         renderer.domElement.parentElement.emitEvent('keydown', event);
@@ -52,9 +64,11 @@ describe('GlobeControls', function () {
         renderer.domElement.parentElement.emitEvent('mouseup', event);
         renderer.domElement.parentElement.emitEvent('keyup', event);
     });
+
     it('mouse wheel', function () {
         renderer.domElement.parentElement.emitEvent('mousewheel', event);
     });
+
     it('mouse dblclick', function () {
         renderer.domElement.parentElement.emitEvent('dblclick', event);
     });

@@ -507,12 +507,12 @@ class View extends THREE.EventDispatcher {
      */
     eventToViewCoords(event, target = _eventCoords, touchIdx = 0) {
         if (event.touches === undefined || !event.touches.length) {
-            return target.set(event.clientX, event.clientY);
+            return target.set(event.offsetX, event.offsetY);
         } else {
-            const br = this.mainLoop.gfxEngine.renderer.domElement.getBoundingClientRect();
+            const br = this.mainLoop.gfxEngine.renderer.domElement.parentElement.getBoundingClientRect();
             return target.set(
-                event.touches[touchIdx].clientX - br.x,
-                event.touches[touchIdx].clientY - br.y);
+                event.touches[touchIdx].offsetX - br.x,
+                event.touches[touchIdx].offsetY - br.y);
         }
     }
 
