@@ -90,14 +90,14 @@
             splitPosition = 0.5 * window.innerWidth;
             xD = 0;
             function splitSliderMove(evt) {
-                var s = (evt.clientX - xD) / splitSlider.parentElement.offsetWidth;
+                var s = (evt.offsetX - xD) / splitSlider.parentElement.offsetWidth;
                 splitSlider.style.left = (100.0 * s) + '%';
                 splitPosition = s * window.innerWidth;
                 view.notifyChange();
             }
 
             function mouseDown(evt) {
-                xD = evt.clientX - splitSlider.offsetLeft;
+                xD = evt.offsetX - splitSlider.offsetLeft;
                 window.addEventListener('mousemove', splitSliderMove, true);
             }
 
