@@ -170,7 +170,6 @@ class GlobeControls extends THREE.EventDispatcher {
         this.player = new AnimationPlayer();
         this.view = view;
         this.camera = view.camera.camera3D;
-        this.domElement = view.mainLoop.gfxEngine.renderer.domElement.parentElement;
 
         // State control
         this.states = new StateControl();
@@ -243,14 +242,14 @@ class GlobeControls extends THREE.EventDispatcher {
         this._onKeyUp = this.onKeyUp.bind(this);
         this._onBlurListener = this.onBlurListener.bind(this);
 
-        this.domElement.addEventListener('contextmenu', this._onContextMenuListener, false);
-        this.domElement.addEventListener('mousedown', this._onMouseDown, false);
-        this.domElement.addEventListener('mousewheel', this._onMouseWheel, false);
-        this.domElement.addEventListener('dblclick', this._ondblclick, false);
-        this.domElement.addEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
-        this.domElement.addEventListener('touchstart', this._onTouchStart, false);
-        this.domElement.addEventListener('touchend', this._onMouseUp, false);
-        this.domElement.addEventListener('touchmove', this._onTouchMove, false);
+        this.view.domElement.addEventListener('contextmenu', this._onContextMenuListener, false);
+        this.view.domElement.addEventListener('mousedown', this._onMouseDown, false);
+        this.view.domElement.addEventListener('mousewheel', this._onMouseWheel, false);
+        this.view.domElement.addEventListener('dblclick', this._ondblclick, false);
+        this.view.domElement.addEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
+        this.view.domElement.addEventListener('touchstart', this._onTouchStart, false);
+        this.view.domElement.addEventListener('touchend', this._onMouseUp, false);
+        this.view.domElement.addEventListener('touchmove', this._onTouchMove, false);
 
         // refresh control for each animation's frame
         this.player.addEventListener('animation-frame', this._update);
@@ -671,9 +670,9 @@ class GlobeControls extends THREE.EventDispatcher {
             default:
         }
         if (this.state != this.states.NONE) {
-            this.domElement.addEventListener('mousemove', this._onMouseMove, false);
-            this.domElement.addEventListener('mouseup', this._onMouseUp, false);
-            this.domElement.addEventListener('mouseleave', this._onMouseUp, false);
+            this.view.domElement.addEventListener('mousemove', this._onMouseMove, false);
+            this.view.domElement.addEventListener('mouseup', this._onMouseUp, false);
+            this.view.domElement.addEventListener('mouseleave', this._onMouseUp, false);
             this.dispatchEvent(this.startEvent);
         }
     }
@@ -695,9 +694,9 @@ class GlobeControls extends THREE.EventDispatcher {
     onMouseUp() {
         if (this.enabled === false) { return; }
 
-        this.domElement.removeEventListener('mousemove', this._onMouseMove, false);
-        this.domElement.removeEventListener('mouseup', this._onMouseUp, false);
-        this.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
+        this.view.domElement.removeEventListener('mousemove', this._onMouseMove, false);
+        this.view.domElement.removeEventListener('mouseup', this._onMouseUp, false);
+        this.view.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
         this.dispatchEvent(this.endEvent);
 
         this.player.stop();
@@ -914,19 +913,19 @@ class GlobeControls extends THREE.EventDispatcher {
     }
 
     dispose() {
-        this.domElement.removeEventListener('contextmenu', this._onContextMenuListener, false);
+        this.view.domElement.removeEventListener('contextmenu', this._onContextMenuListener, false);
 
-        this.domElement.removeEventListener('mousedown', this._onMouseDown, false);
-        this.domElement.removeEventListener('mousemove', this._onMouseMove, false);
-        this.domElement.removeEventListener('mousewheel', this._onMouseWheel, false);
-        this.domElement.removeEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
-        this.domElement.removeEventListener('mouseup', this._onMouseUp, false);
-        this.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
-        this.domElement.removeEventListener('dblclick', this._ondblclick, false);
+        this.view.domElement.removeEventListener('mousedown', this._onMouseDown, false);
+        this.view.domElement.removeEventListener('mousemove', this._onMouseMove, false);
+        this.view.domElement.removeEventListener('mousewheel', this._onMouseWheel, false);
+        this.view.domElement.removeEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
+        this.view.domElement.removeEventListener('mouseup', this._onMouseUp, false);
+        this.view.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
+        this.view.domElement.removeEventListener('dblclick', this._ondblclick, false);
 
-        this.domElement.removeEventListener('touchstart', this._onTouchStart, false);
-        this.domElement.removeEventListener('touchend', this._onMouseUp, false);
-        this.domElement.removeEventListener('touchmove', this._onTouchMove, false);
+        this.view.domElement.removeEventListener('touchstart', this._onTouchStart, false);
+        this.view.domElement.removeEventListener('touchend', this._onMouseUp, false);
+        this.view.domElement.removeEventListener('touchmove', this._onTouchMove, false);
 
         this.player.removeEventListener('animation-frame', this._onKeyUp);
 

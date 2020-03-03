@@ -105,7 +105,6 @@ const vectorZero = new THREE.Vector3();
 function PlanarControls(view, options = {}) {
     this.view = view;
     this.camera = view.camera.camera3D;
-    this.domElement = view.mainLoop.gfxEngine.renderer.domElement.parentElement;
 
     this.enableRotation = typeof (options.enableRotation) !== 'undefined' ? options.enableRotation : true;
     this.rotateSpeed = options.rotateSpeed || 2.0;
@@ -198,15 +197,15 @@ function PlanarControls(view, options = {}) {
 
     // focus policy
     if (this.focusOnMouseOver) {
-        this.domElement.addEventListener('mouseover', () => this.domElement.focus());
+        this.view.domElement.addEventListener('mouseover', () => this.view.domElement.focus());
     }
     if (this.focusOnMouseClick) {
-        this.domElement.addEventListener('click', () => this.domElement.focus());
+        this.view.domElement.addEventListener('click', () => this.view.domElement.focus());
     }
 
     // prevent the default contextmenu from appearing when right-clicking
     // this allows to use right-click for input without the menu appearing
-    this.domElement.addEventListener('contextmenu', onContextMenu.bind(this), false);
+    this.view.domElement.addEventListener('contextmenu', onContextMenu.bind(this), false);
 
     // Updates the view and camera if needed, and handles the animated travel
     this.update = function update(dt, updateLoopRestarted) {
@@ -698,13 +697,13 @@ function PlanarControls(view, options = {}) {
      * @ignore
      */
     this.addInputListeners = function addInputListeners() {
-        this.domElement.addEventListener('keydown', _handlerOnKeyDown, true);
-        this.domElement.addEventListener('mousedown', _handlerOnMouseDown, false);
-        this.domElement.addEventListener('mouseup', _handlerOnMouseUp, false);
-        this.domElement.addEventListener('mousemove', _handlerOnMouseMove, false);
-        this.domElement.addEventListener('mousewheel', _handlerOnMouseWheel, false);
+        this.view.domElement.addEventListener('keydown', _handlerOnKeyDown, true);
+        this.view.domElement.addEventListener('mousedown', _handlerOnMouseDown, false);
+        this.view.domElement.addEventListener('mouseup', _handlerOnMouseUp, false);
+        this.view.domElement.addEventListener('mousemove', _handlerOnMouseMove, false);
+        this.view.domElement.addEventListener('mousewheel', _handlerOnMouseWheel, false);
         // For firefox
-        this.domElement.addEventListener('MozMousePixelScroll', _handlerOnMouseWheel, false);
+        this.view.domElement.addEventListener('MozMousePixelScroll', _handlerOnMouseWheel, false);
     };
 
     /**
@@ -713,13 +712,13 @@ function PlanarControls(view, options = {}) {
      * @ignore
      */
     this.removeInputListeners = function removeInputListeners() {
-        this.domElement.removeEventListener('keydown', _handlerOnKeyDown, true);
-        this.domElement.removeEventListener('mousedown', _handlerOnMouseDown, false);
-        this.domElement.removeEventListener('mouseup', _handlerOnMouseUp, false);
-        this.domElement.removeEventListener('mousemove', _handlerOnMouseMove, false);
-        this.domElement.removeEventListener('mousewheel', _handlerOnMouseWheel, false);
+        this.view.domElement.removeEventListener('keydown', _handlerOnKeyDown, true);
+        this.view.domElement.removeEventListener('mousedown', _handlerOnMouseDown, false);
+        this.view.domElement.removeEventListener('mouseup', _handlerOnMouseUp, false);
+        this.view.domElement.removeEventListener('mousemove', _handlerOnMouseMove, false);
+        this.view.domElement.removeEventListener('mousewheel', _handlerOnMouseWheel, false);
         // For firefox
-        this.domElement.removeEventListener('MozMousePixelScroll', _handlerOnMouseWheel, false);
+        this.view.domElement.removeEventListener('MozMousePixelScroll', _handlerOnMouseWheel, false);
     };
 
     /**
@@ -730,19 +729,19 @@ function PlanarControls(view, options = {}) {
     this.updateMouseCursorType = function updateMouseCursorType() {
         switch (this.state) {
             case STATE.NONE:
-                this.domElement.style.cursor = 'auto';
+                this.view.domElement.style.cursor = 'auto';
                 break;
             case STATE.DRAG:
-                this.domElement.style.cursor = 'move';
+                this.view.domElement.style.cursor = 'move';
                 break;
             case STATE.PAN:
-                this.domElement.style.cursor = 'cell';
+                this.view.domElement.style.cursor = 'cell';
                 break;
             case STATE.TRAVEL:
-                this.domElement.style.cursor = 'wait';
+                this.view.domElement.style.cursor = 'wait';
                 break;
             case STATE.ROTATE:
-                this.domElement.style.cursor = 'move';
+                this.view.domElement.style.cursor = 'move';
                 break;
             default:
                 break;
