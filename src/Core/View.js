@@ -107,6 +107,8 @@ class View extends THREE.EventDispatcher {
 
         super();
 
+        this.domElement = viewerDiv;
+
         this.referenceCrs = crs;
         coordinates.crs = crs;
 
@@ -157,7 +159,7 @@ class View extends THREE.EventDispatcher {
             }
         };
 
-        this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+        this.camera.resize(this.domElement.clientWidth, this.domElement.clientHeight);
 
         const fn = () => {
             this.removeEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
@@ -176,7 +178,7 @@ class View extends THREE.EventDispatcher {
         });
 
         // Focus needed to capture some key events.
-        viewerDiv.focus();
+        this.domElement.focus();
     }
 
 
@@ -503,7 +505,7 @@ class View extends THREE.EventDispatcher {
         if (event.touches === undefined || !event.touches.length) {
             return target.set(event.offsetX, event.offsetY);
         } else {
-            const br = this.mainLoop.gfxEngine.renderer.domElement.parentElement.getBoundingClientRect();
+            const br = this.domElement.getBoundingClientRect();
             return target.set(
                 event.touches[touchIdx].offsetX - br.x,
                 event.touches[touchIdx].offsetY - br.y);
@@ -874,11 +876,11 @@ class View extends THREE.EventDispatcher {
      */
     resize(width, height) {
         if (width == undefined) {
-            width = this.mainLoop.gfxEngine.renderer.domElement.parentElement.clientWidth;
+            width = this.domElement.clientWidth;
         }
 
         if (height == undefined) {
-            height = this.mainLoop.gfxEngine.renderer.domElement.parentElement.clientHeight;
+            height = this.domElement.clientHeight;
         }
 
         this.mainLoop.gfxEngine.onWindowResize(width, height);

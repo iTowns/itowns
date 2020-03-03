@@ -39,7 +39,7 @@ describe('GlobeControls', function () {
     });
 
     it('mouse down', function () {
-        renderer.domElement.parentElement.emitEvent('mousedown', event);
+        viewer.domElement.emitEvent('mousedown', event);
 
         event.touches = [{
             offsetX: 50,
@@ -47,8 +47,8 @@ describe('GlobeControls', function () {
             pageX: 100,
             pageY: 100,
         }];
-        renderer.domElement.parentElement.emitEvent('mousemove', event);
-        renderer.domElement.parentElement.emitEvent('mouseup', event);
+        viewer.domElement.emitEvent('mousemove', event);
+        viewer.domElement.emitEvent('mouseup', event);
     });
 
     it('dolly', function () {
@@ -58,30 +58,30 @@ describe('GlobeControls', function () {
 
     it('mouse down + crtl', function () {
         event.keyCode = 17;
-        renderer.domElement.parentElement.emitEvent('keydown', event);
-        renderer.domElement.parentElement.emitEvent('mousedown', event);
-        renderer.domElement.parentElement.emitEvent('mousemove', event);
-        renderer.domElement.parentElement.emitEvent('mouseup', event);
-        renderer.domElement.parentElement.emitEvent('keyup', event);
+        viewer.domElement.emitEvent('keydown', event);
+        viewer.domElement.emitEvent('mousedown', event);
+        viewer.domElement.emitEvent('mousemove', event);
+        viewer.domElement.emitEvent('mouseup', event);
+        viewer.domElement.emitEvent('keyup', event);
     });
 
     it('mouse wheel', function () {
-        renderer.domElement.parentElement.emitEvent('mousewheel', event);
+        viewer.domElement.emitEvent('mousewheel', event);
     });
 
     it('mouse dblclick', function () {
-        renderer.domElement.parentElement.emitEvent('dblclick', event);
+        viewer.domElement.emitEvent('dblclick', event);
     });
 
     it('touch start', function () {
-        renderer.domElement.parentElement.emitEvent('touchstart', event);
+        viewer.domElement.emitEvent('touchstart', event);
     });
 
     it('touch move', function () {
-        renderer.domElement.parentElement.emitEvent('touchmove', event);
+        viewer.domElement.emitEvent('touchmove', event);
     });
 
     it('touch end', function () {
-        renderer.domElement.parentElement.emitEvent('touchend', event);
+        viewer.domElement.emitEvent('touchend', event);
     });
 });

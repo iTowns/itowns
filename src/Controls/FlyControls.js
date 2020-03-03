@@ -103,7 +103,6 @@ class FlyControls extends THREE.EventDispatcher {
      */
     constructor(view, options = {}) {
         super();
-        const domElement = view.mainLoop.gfxEngine.renderer.domElement.parentElement;
         this.view = view;
         this.options = options;
         this._camera3D = view.camera.camera3D;
@@ -115,26 +114,26 @@ class FlyControls extends THREE.EventDispatcher {
 
         this._isMouseDown = false;
 
-        domElement.addEventListener('mousedown', onDocumentMouseDown.bind(this), false);
-        domElement.addEventListener('touchstart', onTouchStart.bind(this), false);
+        view.domElement.addEventListener('mousedown', onDocumentMouseDown.bind(this), false);
+        view.domElement.addEventListener('touchstart', onTouchStart.bind(this), false);
         const bindedPM = onPointerMove.bind(this);
-        domElement.addEventListener('mousemove', bindedPM, false);
-        domElement.addEventListener('touchmove', bindedPM, false);
-        domElement.addEventListener('mouseup', onDocumentMouseUp.bind(this), false);
-        domElement.addEventListener('touchend', onDocumentMouseUp.bind(this), false);
-        domElement.addEventListener('mousewheel', onDocumentMouseWheel.bind(this), false);
-        domElement.addEventListener('DOMMouseScroll', onDocumentMouseWheel.bind(this), false); // firefox
-        domElement.addEventListener('keyup', onKeyUp.bind(this), true);
-        domElement.addEventListener('keydown', onKeyDown.bind(this), true);
+        view.domElement.addEventListener('mousemove', bindedPM, false);
+        view.domElement.addEventListener('touchmove', bindedPM, false);
+        view.domElement.addEventListener('mouseup', onDocumentMouseUp.bind(this), false);
+        view.domElement.addEventListener('touchend', onDocumentMouseUp.bind(this), false);
+        view.domElement.addEventListener('mousewheel', onDocumentMouseWheel.bind(this), false);
+        view.domElement.addEventListener('DOMMouseScroll', onDocumentMouseWheel.bind(this), false); // firefox
+        view.domElement.addEventListener('keyup', onKeyUp.bind(this), true);
+        view.domElement.addEventListener('keydown', onKeyDown.bind(this), true);
 
         this.view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, this.update.bind(this));
 
         // focus policy
         if (options.focusOnMouseOver) {
-            domElement.addEventListener('mouseover', () => domElement.focus());
+            view.domElement.addEventListener('mouseover', () => view.domElement.focus());
         }
         if (options.focusOnClick) {
-            domElement.addEventListener('click', () => domElement.focus());
+            view.domElement.addEventListener('click', () => view.domElement.focus());
         }
     }
 

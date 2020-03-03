@@ -91,28 +91,27 @@ class FirstPersonControls extends THREE.EventDispatcher {
         };
         this.reset();
 
-        const domElement = view.mainLoop.gfxEngine.renderer.domElement.parentElement;
         if (!options.disableEventListeners) {
-            domElement.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-            domElement.addEventListener('touchstart', this.onMouseDown.bind(this), false);
-            domElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-            domElement.addEventListener('touchmove', this.onMouseMove.bind(this), false);
-            domElement.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-            domElement.addEventListener('touchend', this.onMouseUp.bind(this), false);
-            domElement.addEventListener('keyup', this.onKeyUp.bind(this), true);
-            domElement.addEventListener('keydown', this.onKeyDown.bind(this), true);
-            domElement.addEventListener('mousewheel', this.onMouseWheel.bind(this), false);
-            domElement.addEventListener('DOMMouseScroll', this.onMouseWheel.bind(this), false); // firefox
+            view.domElement.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+            view.domElement.addEventListener('touchstart', this.onMouseDown.bind(this), false);
+            view.domElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+            view.domElement.addEventListener('touchmove', this.onMouseMove.bind(this), false);
+            view.domElement.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+            view.domElement.addEventListener('touchend', this.onMouseUp.bind(this), false);
+            view.domElement.addEventListener('keyup', this.onKeyUp.bind(this), true);
+            view.domElement.addEventListener('keydown', this.onKeyDown.bind(this), true);
+            view.domElement.addEventListener('mousewheel', this.onMouseWheel.bind(this), false);
+            view.domElement.addEventListener('DOMMouseScroll', this.onMouseWheel.bind(this), false); // firefox
         }
 
         this.view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, this.update.bind(this));
 
         // focus policy
         if (options.focusOnMouseOver) {
-            domElement.addEventListener('mouseover', () => domElement.focus());
+            view.domElement.addEventListener('mouseover', () => view.domElement.focus());
         }
         if (options.focusOnClick) {
-            domElement.addEventListener('click', () => domElement.focus());
+            view.domElement.addEventListener('click', () => view.domElement.focus());
         }
 
         if (view.referenceCrs == 'EPSG:4978') {

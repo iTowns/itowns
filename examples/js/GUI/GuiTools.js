@@ -4,7 +4,7 @@
  * Description: Classe pour créer un menu.
  */
 
-/* global dat,viewerDiv, itowns */
+/* global dat, itowns */
 
 dat.GUI.prototype.removeFolder = function removeFolder(name) {
     var folder = this.__folders[name];
@@ -38,7 +38,7 @@ function GuiTools(domId, view, w) {
     var width = w || 245;
     this.gui = new dat.GUI({ autoPlace: false, width: width });
     this.gui.domElement.id = domId;
-    viewerDiv.parentElement.appendChild(this.gui.domElement);
+    view.domElement.appendChild(this.gui.domElement);
     this.colorGui = this.gui.addFolder('Color Layers');
     this.elevationGui = this.gui.addFolder('Elevation Layers');
     this.elevationGui.hide();

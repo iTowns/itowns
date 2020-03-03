@@ -76,7 +76,7 @@
                          ') in Points ' + p.object.layer.id);
                     }
                 }
-                view.mainLoop.gfxEngine.renderer.domElement.addEventListener('dblclick', dblClickHandler);
+                view.domElement.addEventListener('dblclick', dblClickHandler);
 
                 function placeCamera(position, lookAt) {
                     view.camera.camera3D.position.copy(position);

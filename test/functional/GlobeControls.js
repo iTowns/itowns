@@ -181,8 +181,7 @@ describe('GlobeControls with globe example', function _() {
             const wheelEvent = new WheelEvent('mousewheel', {
                 deltaY: -50000,
             });
-            view.mainLoop.gfxEngine.renderer.domElement.parentElement
-                .dispatchEvent(wheelEvent, document);
+            view.domElement.dispatchEvent(wheelEvent, document);
             window.dispatchEvent(wheelEvent, document);
         }));
         // On the travis server, the range is negative.
