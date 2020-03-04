@@ -164,7 +164,7 @@ function featureToPoint(feature, options) {
     return new THREE.Points(geom, pointMaterial);
 }
 
-var lineMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors });
+var lineMaterial = new THREE.LineBasicMaterial();
 function featureToLine(feature, options) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
@@ -415,7 +415,7 @@ function featureToMesh(feature, options) {
     }
 
     // set mesh material
-    mesh.material.vertexColors = THREE.VertexColors;
+    mesh.material.vertexColors = true;
     mesh.material.color = new THREE.Color(0xffffff);
 
     mesh.feature = feature;
