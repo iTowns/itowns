@@ -57,7 +57,6 @@ class OBBHelper extends THREE.Box3Helper {
     }
 
     updateMatrixWorld(force = false) {
-
         if (this.obb.box3D.isEmpty()) {
             return;
         }
