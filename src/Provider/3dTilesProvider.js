@@ -24,7 +24,7 @@ function pntsParse(data, layer) {
     return PntsParser.parse(data).then((result) => {
         const material = layer.material ?
             layer.material.clone() :
-            new THREE.PointsMaterial({ size: 0.05, vertexColors: THREE.VertexColors });
+            new THREE.PointsMaterial({ size: 0.05, vertexColors: true });
 
         // creation points with geometry and material
         const points = new THREE.Points(result.point.geometry, material);
