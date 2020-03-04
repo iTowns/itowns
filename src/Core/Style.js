@@ -358,6 +358,109 @@ class Style {
         }
         return this;
     }
+
+    /**
+     * Applies this style to a DOM element. Limited to the `text` property of
+     * this style.
+     *
+     * @param {Element} domElement - The element to set the style to.
+     */
+    applyToHTML(domElement) {
+        domElement.style.padding = `${this.text.padding}px`;
+        domElement.style.maxWidth = `${this.text.wrap}em`;
+
+        domElement.style.color = this.text.color;
+        domElement.style.fontSize = `${this.text.size}px`;
+        domElement.style.fontFamily = this.text.font.join(',');
+
+        domElement.style.overflowWrap = 'break-word';
+        domElement.style.textTransform = this.text.transform;
+        domElement.style.letterSpacing = `${this.text.spacing}em`;
+        domElement.style.textAlign = this.text.justify;
+
+        // FIXME: find a better way to support text halo
+        let textShadow = `0px 0px ${this.text.halo.blur}px ${this.text.halo.color},`;
+        for (let i = 1; i <= this.text.halo.width; i++) {
+            for (let j = 1; j <= this.text.halo.width; j++) {
+                textShadow += `
+                    ${i}px ${j}px ${this.text.halo.blur}px ${this.text.halo.color},
+                    -${i}px ${j}px ${this.text.halo.blur}px ${this.text.halo.color},
+                    -${i}px -${j}px ${this.text.halo.blur}px ${this.text.halo.color},
+                    ${i}px -${j}px ${this.text.halo.blur}px ${this.text.halo.color},`;
+            }
+        }
+        domElement.style.textShadow = textShadow.slice(0, -1);
+    }
+
+    /**
+     * Add the icon present in the style (if one) to a DOM element.
+     *
+     * @param {Element} domElement - The element to add the icon to.
+     */
+    addIconToElement(domElement) {
+        if (!this.icon) {
+            return;
+        }
+
+        this.icon.dom.style.position = 'absolute';
+        switch (this.text.anchor) { // center by default
+            case 'left':
+                this.icon.dom.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
+                this.icon.dom.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
+                break;
+            case 'right':
+                this.icon.dom.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
+                break;
+            case 'top':
+                this.icon.dom.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
+                break;
+            case 'bottom':
+                this.icon.dom.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
+                this.icon.dom.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
+                break;
+            case 'bottom-left':
+                this.icon.dom.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
+                this.icon.dom.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
+                break;
+            case 'bottom-right':
+                this.icon.dom.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
+                break;
+            case 'top-left':
+                this.icon.dom.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
+                break;
+            case 'top-right':
+                break;
+            case 'center':
+            default:
+                this.icon.dom.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
+                this.icon.dom.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
+                break;
+        }
+
+        domElement.appendChild(this.icon.dom.cloneNode());
+    }
+
+    /**
+     * Get the CSS value corresponding to the anchor of the text. It is usually
+     * a `translate()` value to use with a `transform` property.
+     *
+     * @return {string} The CSS value.
+     */
+    getTextAnchorPositionInCSS() {
+        switch (this.text.anchor) {
+            case 'left': return 'translate(0, -50%)';
+            case 'right': return 'translate(-100%, -50%)';
+            case 'top': return 'translate(-50%, 0)';
+            case 'bottom': return 'translate(-50%, -100%)';
+            case 'top-right': return 'translate(-100%, 0)';
+            case 'bottom-left': return 'translate(0, -100%)';
+            case 'bottom-right': return 'translate(-100%, -100%)';
+            case 'center': return 'translate(-50%, -50%)';
+            case 'top-left': // 0% in both case
+            default:
+                return '';
+        }
+    }
 }
 
 export default Style;
