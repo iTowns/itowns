@@ -177,8 +177,7 @@
             });
 
             /* global itowns, document, GuiTools, view, promises */
-            var menuGlobe = new GuiTools('menuDiv');
-            menuGlobe.view = view;
+            var menuGlobe = new GuiTools('menuDiv', view);
 
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
