@@ -366,8 +366,8 @@ class PotreeLayer extends GeometryLayer {
         }
     }
 
-    pickObjectsAt(view, mouse, radius) {
-        return Picking.pickPointsAt(view, mouse, radius, this);
+    pickObjectsAt(view, mouse, radius, target = []) {
+        return Picking.pickPointsAt(view, mouse, radius, this, target);
     }
 
     getObjectToUpdateForAttachedLayers(meta) {

@@ -209,12 +209,14 @@ class GeometryLayer extends Layer {
      * @param {Object} coordinates - The coordinates to pick in the view. It
      * should have at least `x` and `y` properties.
      * @param {number} radius - Radius of the picking circle.
+     * @param {Array} target - target to push result.
      *
      * @return {Array} An array containing all targets picked under the
      * specified coordinates.
      */
-    pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius) {
-        return Picking.pickObjectsAt(view, coordinates, radius, this.object3d);
+    pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {
+        const object3d = this.parent ? this.parent.object3d : this.object3d;
+        return Picking.pickObjectsAt(view, coordinates, radius, object3d, target, this.threejsLayer);
     }
 
     /**

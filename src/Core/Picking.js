@@ -114,8 +114,7 @@ const raycaster = new THREE.Raycaster();
  *   - layer: the geometry layer used for picking
  */
 export default {
-    pickTilesAt(view, viewCoords, radius, layer) {
-        const results = [];
+    pickTilesAt(view, viewCoords, radius, layer, results = []) {
         const _ids = screenCoordsToNodeId(view, layer, viewCoords, radius);
 
         const extractResult = (node) => {
@@ -132,7 +131,7 @@ export default {
         return results;
     },
 
-    pickPointsAt(view, viewCoords, radius, layer) {
+    pickPointsAt(view, viewCoords, radius, layer, result = []) {
         if (!layer.root) {
             return;
         }
@@ -179,7 +178,6 @@ export default {
             candidates.push(r);
         });
 
-        const result = [];
         layer.object3d.traverse((o) => {
             if (o.isPoints && o.baseId) {
                 // disable picking mode
@@ -204,7 +202,12 @@ export default {
     /*
      * Default picking method. Uses THREE.Raycaster
      */
-    pickObjectsAt(view, viewCoords, radius, object, target = []) {
+    pickObjectsAt(view, viewCoords, radius, object, target = [], threejsLayer) {
+        if (threejsLayer !== undefined) {
+            raycaster.layers.set(threejsLayer);
+        } else {
+            raycaster.layers.enableAll();
+        }
         if (radius < 0) {
             const normalized = view.viewToNormalizedCoords(viewCoords);
             raycaster.setFromCamera(normalized, view.camera.camera3D);
