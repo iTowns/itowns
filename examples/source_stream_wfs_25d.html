@@ -123,9 +123,9 @@
                 var result;
                 var z = 0;
                 if (contour) {
-                    result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0, tile);
+                    result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0, tile);
                     if (!result) {
-                        result = itowns.DEMUtils.getElevationValueAt(view.tileLayer, contour, 0);
+                        result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0);
                     }
                     if (result) {
                         tile = [result.tile];

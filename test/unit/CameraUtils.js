@@ -12,7 +12,7 @@ function equalToFixed(value1, value2, toFixed) {
 describe('Camera utils unit test', function () {
     THREE.Object3D.DefaultUp = new THREE.Vector3(0, 0, 1);
 
-    DEMUtils.getElevationValueAt = () => ({ z: 0 });
+    DEMUtils.getElevationValueAt = () => 0;
 
     const raycaster = new THREE.Raycaster();
     const center = new THREE.Vector2();

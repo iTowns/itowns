@@ -292,8 +292,7 @@ class CameraRig extends THREE.Object3D {
         if (view && camera) {
             const startAltitude = this.target.position.z;
             this.placeTargetOnGround = () => {
-                const result = DEMUtils.getElevationValueAt(tileLayer(view), coord || this.coord, DEMUtils.PRECISE_READ_Z);
-                const altitude = Math.max(0, result ? result.z : 0);
+                const altitude = Math.max(0, DEMUtils.getElevationValueAt(tileLayer(view), coord || this.coord, DEMUtils.PRECISE_READ_Z) || 0);
                 this.target.position.z = startAltitude * (1.0 - options.t) + altitude * options.t;
                 this.target.updateMatrixWorld(true);
                 this.applyTransformToCamera(view, camera);

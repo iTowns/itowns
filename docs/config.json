@@ -25,7 +25,8 @@
                 "CRS",
                 "Extent",
                 "OrientationUtils",
-                "OBB"
+                "OBB",
+                "DEMUtils"
             ],
 
             "Layer": [
