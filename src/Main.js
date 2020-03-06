@@ -1,3 +1,5 @@
+export const REVISION = '2.19.0';
+
 // Geographic tools
 export { default as Extent } from 'Core/Geographic/Extent';
 export { default as Coordinates } from 'Core/Geographic/Coordinates';
