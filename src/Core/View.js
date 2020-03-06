@@ -582,30 +582,7 @@ class View extends THREE.EventDispatcher {
                     continue;
                 }
 
-                const parentLayer = this.getParentLayer(layer);
-                if (!parentLayer) {
-                    const sp = layer.pickObjectsAt(this, mouse, radius);
-                    // warning: sp might be very large, so we can't use '...sp' (we'll hit
-                    // 'javascript maximum call stack size exceeded' error) nor
-                    // Array.prototype.push.apply(result, sp)
-                    for (let i = 0; i < sp.length; i++) {
-                        results.push(sp[i]);
-                    }
-                } else {
-                    // raycast using parent layer object3d
-                    const obj = Picking.pickObjectsAt(
-                        this,
-                        mouse,
-                        radius,
-                        parentLayer.object3d);
-
-                    // then filter the results
-                    for (const o of obj) {
-                        if (o.layer === layer) {
-                            results.push(o);
-                        }
-                    }
-                }
+                layer.pickObjectsAt(this, mouse, radius, results);
             } else if (source.isObject3D) {
                 Picking.pickObjectsAt(
                     this,

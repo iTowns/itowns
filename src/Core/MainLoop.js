@@ -126,12 +126,8 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
     // replace layer with their parent where needed
     updateSources.forEach((src) => {
         const layer = src.layer || src;
-        if (layer.isLayer) {
-            const parentLayer = view.getParentLayer(layer);
-            if (parentLayer) {
-                // add the parent layer to update sources
-                updateSources.add(parentLayer);
-            }
+        if (layer.isLayer && layer.parent) {
+            updateSources.add(layer.parent);
         }
     });
 
