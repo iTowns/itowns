@@ -43,7 +43,7 @@ describe('view_25d_map', function _() {
                 .getPickingPositionFromDepth().distanceTo(view.camera.camera3D.position);
 
             const altitude = itowns.DEMUtils
-                .getElevationValueAt(view.tileLayer, extent.center().clone()).z;
+                .getElevationValueAt(view.tileLayer, extent.center().clone());
 
             return { depthMethod, altitude };
         });

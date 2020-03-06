@@ -5,24 +5,60 @@ const FAST_READ_Z = 0;
 const PRECISE_READ_Z = 1;
 
 /**
- * Utility module to retrieve elevation at a given coordinates.
- * The returned value is read in the elevation textures used by the graphics card
- * to render the tiles (globe or plane).
- * This implies that the return value may change depending on the current tile resolution.
+ * Utility module to retrieve elevation at a given coordinates. The returned
+ * value is read in the elevation textures used by the graphics card to render
+ * the tiles (globe or plane). This implies that the return value may change
+ * depending on the current tile resolution.
+ *
+ * @module DEMUtils
  */
 export default {
     /**
-     * Return current displayed elevation at coord in meters.
-     * @param {GeometryLayer} layer The tile layer owning the elevation textures we're going to query.
-     * This is typically the globeLayer or a planeLayer.
-     * @param {Coordinates} coord The coordinates that we're interested in
-     * @param {Number} method 2 available method: FAST_READ_Z (default) or PRECISE_READ_Z. Chosing between
-     * the 2 is a compromise between performance and visual quality
-     * @param {Array} tileHint Optional array of tiles to speed up the process. You can give candidates tiles
-     * likely to contain 'coord'. Otherwise the lookup process starts from the root.
-     * @return {object}  undefined if no result or z: displayed elevation in meters, texture: where the z value comes from, tile: owner of the texture
+     * Gives the elevation value of a {@link TiledGeometryLayer}, at a specific
+     * {@link Coordinates}.
+     *
+     * @param {TiledGeometryLayer} layer - The tile layer owning the elevation
+     * textures we're going to query. This is typically a `GlobeLayer` or
+     * `PlanarLayer` (accessible through `view.tileLayer`).
+     * @param {Coordinates} coord - The coordinates that we're interested in.
+     * @param {number} [method=FAST_READ_Z] - There are two available methods:
+     * `FAST_READ_Z` (default) or `PRECISE_READ_Z`. The first one is faster,
+     * while the second one is slower but gives better precision.
+     * @param {TileMesh[]} [tileHint] - Optional array of tiles to speed up the
+     * process. You can give candidates tiles likely to contain `coord`.
+     * Otherwise the lookup process starts from the root of `layer`.
+     *
+     * @return {number} If found, a value in meters is returned; otherwise
+     * `undefined`.
      */
     getElevationValueAt(layer, coord, method = FAST_READ_Z, tileHint) {
+        const result = _readZ(layer, method, coord, tileHint || layer.level0Nodes);
+        if (result) {
+            return result.coord.z;
+        }
+    },
+
+    /**
+     * Gives a terrain object, at a specific {@link Coordinates}. The returned
+     * object is as follow:
+     * - `z`, the value in meters of the elevation at the coordinates
+     * - `texture`, the texture where the `z` value has been read from
+     * - `tile`, the tile containing the texture
+     *
+     * @param {TiledGeometryLayer} layer - The tile layer owning the elevation
+     * textures we're going to query. This is typically a `GlobeLayer` or
+     * `PlanarLayer` (accessible through `view.tileLayer`).
+     * @param {Coordinates} coord - The coordinates that we're interested in.
+     * @param {number} [method=FAST_READ_Z] - There are two available methods:
+     * `FAST_READ_Z` (default) or `PRECISE_READ_Z`. The first one is faster,
+     * while the second one is slower but gives better precision.
+     * @param {TileMesh[]} [tileHint] - Optional array of tiles to speed up the
+     * process. You can give candidates tiles likely to contain `coord`.
+     * Otherwise the lookup process starts from the root of `layer`.
+     *
+     * @return {object} The terrain object.
+     */
+    getTerrainObjectAt(layer, coord, method = FAST_READ_Z, tileHint) {
         const result = _readZ(layer, method, coord, tileHint || layer.level0Nodes);
         if (result) {
             return { z: result.coord.z, texture: result.texture, tile: result.tile };
@@ -31,18 +67,27 @@ export default {
 
     /**
      * Helper method that will position an object directly on the ground.
-     * @param {GeometryLayer} layer The tile layer owning the elevation textures we're going to query.
-     * This is typically the globeLayer or a planeLayer.
-     * @param {string} objectCRS the CRS used by the object coordinates. You probably want to use view.referenceCRS here.
-     * @param {Object3D} obj the object we want to modify.
-     * @param {object} options
-     * @param {number} options.method see getElevationValueAt documentation
-     * @param {boolean} options.modifyGeometry if unset/false, this function will modify object.position. If true, it will
-     * modify obj.geometry.vertices or obj.geometry.attributes.position
-     * @param {Array} tileHint see getElevationValueAt documentation
+     *
+     * @param {TiledGeometryLayer} layer - The tile layer owning the elevation
+     * textures we're going to query. This is typically a `GlobeLayer` or
+     * `PlanarLayer` (accessible through `view.tileLayer`).
+     * @param {string} crs - The CRS used by the object coordinates. You
+     * probably want to use `view.referenceCRS` here.
+     * @param {Object3D} obj - the object we want to modify.
+     * @param {Object} options
+     * @param {number} [options.method=FAST_READ_Z] - There are two available methods:
+     * `FAST_READ_Z` (default) or `PRECISE_READ_Z`. The first one is faster,
+     * while the second one is slower but gives better precision.
+     * @param {boolean} options.modifyGeometry - if unset/false, this function
+     * will modify object.position. If true, it will modify
+     * `obj.geometry.vertices` or `obj.geometry.attributes.position`.
+     * @param {TileMesh[]} [tileHint] - Optional array of tiles to speed up the
+     * process. You can give candidates tiles likely to contain `coord`.
+     * Otherwise the lookup process starts from the root of `layer`.
+     *
      * @return {boolean} true if successful, false if we couldn't lookup the elevation at the given coords
      */
-    placeObjectOnGround(layer, objectCRS, obj, options = {}, tileHint) {
+    placeObjectOnGround(layer, crs, obj, options = {}, tileHint) {
         let tiles;
         if (tileHint) {
             tiles = tileHint.concat(layer.level0Nodes);
@@ -62,7 +107,7 @@ export default {
                 layer,
                 options.method || FAST_READ_Z,
                 tiles,
-                objectCRS,
+                crs,
                 obj.position,
                 options.offset || 0,
                 matrices,
@@ -90,7 +135,7 @@ export default {
                 }
 
                 let success = true;
-                const coord = new Coordinates(objectCRS);
+                const coord = new Coordinates(crs);
                 for (let i = 0; i < geometry.vertices.length; i++) {
                     const cached = options.cache ? options.cache[i] : undefined;
 
@@ -98,7 +143,7 @@ export default {
                         layer,
                         options.method || FAST_READ_Z,
                         tiles,
-                        objectCRS,
+                        crs,
                         geometry.vertices[i],
                         options.offset || 0,
                         matrices,
@@ -121,7 +166,7 @@ export default {
                 let success = true;
 
                 const tmp = new THREE.Vector3();
-                const coord = new Coordinates(objectCRS);
+                const coord = new Coordinates(crs);
                 for (let i = 0; i < geometry.attributes.position.count; i++) {
                     const cached = options.cache ? options.cache[i] : undefined;
 
@@ -131,7 +176,7 @@ export default {
                         layer,
                         options.method || FAST_READ_Z,
                         tiles,
-                        objectCRS,
+                        crs,
                         tmp,
                         options.offset || 0,
                         matrices,

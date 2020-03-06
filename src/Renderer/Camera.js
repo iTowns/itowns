@@ -224,10 +224,10 @@ Camera.prototype.adjustAltitudeToAvoidCollisionWithLayer = function adjustAltitu
     if (elevationLayer !== undefined) {
         const elevationUnderCamera = DEMUtils.getElevationValueAt(elevationLayer, camLocation);
         if (elevationUnderCamera != undefined) {
-            const difElevation = camLocation.altitude - (elevationUnderCamera.z + minDistanceCollision);
+            const difElevation = camLocation.altitude - (elevationUnderCamera + minDistanceCollision);
             // We move the camera to avoid collisions if too close to terrain
             if (difElevation < 0) {
-                camLocation.altitude = elevationUnderCamera.z + minDistanceCollision;
+                camLocation.altitude = elevationUnderCamera + minDistanceCollision;
                 view.camera.camera3D.position.copy(camLocation.as(view.referenceCrs));
                 view.notifyChange(this.camera3D);
             }
