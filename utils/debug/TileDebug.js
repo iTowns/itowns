@@ -120,7 +120,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         const enabled = context.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
 
         if (!node.parent || !enabled) {
-            ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer.id, node);
+            ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, node);
             return;
         }
 
