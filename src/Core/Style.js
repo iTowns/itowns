@@ -360,8 +360,8 @@ class Style {
     }
 
     /**
-     * Applies this style to a DOM element. Limited to the `text` property of
-     * this style.
+     * Applies this style to a DOM element. Limited to the `text` and `icon`
+     * properties of this style.
      *
      * @param {Element} domElement - The element to set the style to.
      */
@@ -390,14 +390,7 @@ class Style {
             }
         }
         domElement.style.textShadow = textShadow.slice(0, -1);
-    }
 
-    /**
-     * Add the icon present in the style (if one) to a DOM element.
-     *
-     * @param {Element} domElement - The element to add the icon to.
-     */
-    addIconToElement(domElement) {
         if (!this.icon) {
             return;
         }
