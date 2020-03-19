@@ -103,7 +103,7 @@ describe('Sources', function () {
 
         it('should instance and use WMTSSource', function () {
             const source = new WMTSSource(paramsWMTS);
-            const extent = new Extent('WMTS:PM', 5, 0, 0);
+            const extent = new Extent('TMS:3857', 5, 0, 0);
             assert.ok(source.isWMTSSource);
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent));
@@ -121,7 +121,7 @@ describe('Sources', function () {
                 5: { minTileRow: 0, maxTileRow: 32, minTileCol: 0, maxTileCol: 32 },
             };
             const source = new WMTSSource(paramsWMTS);
-            const extent = new Extent('WMTS:PM', 5, 0, 0);
+            const extent = new Extent('TMS:3857', 5, 0, 0);
             assert.ok(source.isWMTSSource);
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent));
@@ -186,7 +186,7 @@ describe('Sources', function () {
 
         it('should instance and use TMSSource', function () {
             const source = new TMSSource(paramsTMS);
-            const extent = new Extent('WMTS:PM', 5, 0, 0);
+            const extent = new Extent('TMS:3857', 5, 0, 0);
             assert.ok(source.isTMSSource);
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent));

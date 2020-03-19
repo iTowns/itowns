@@ -55,8 +55,8 @@ describe('Provide in Sources', function () {
     };
 
     const planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
-    const colorlayer = new ColorLayer('color', { projection: 'WMTS:PM' });
-    const elevationlayer = new ElevationLayer('elevation', { projection: 'WMTS:PM' });
+    const colorlayer = new ColorLayer('color', { projection: 'EPSG:3857' });
+    const elevationlayer = new ElevationLayer('elevation', { projection: 'EPSG:3857' });
 
     planarlayer.attach(colorlayer);
     planarlayer.attach(elevationlayer);

@@ -2,40 +2,20 @@ import proj4 from 'proj4';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
-const TMS = [
-    'WMTS:WGS84',
-    'WMTS:PM',
-];
+function isTms(crs) {
+    return crs.startsWith('TMS');
+}
 
-const EPSG = [
-    'EPSG:4326',
-    'EPSG:3857',
-];
+function isEpsg(crs) {
+    return crs.startsWith('EPSG');
+}
 
 function formatToTms(crs) {
-    if (crs) {
-        if (crs.includes('WMTS')) {
-            return crs;
-        }
-        const i = EPSG.indexOf(crs);
-        if (i > -1) {
-            return TMS[i];
-        } else if (crs.includes('EPSG')) {
-            return `WMTS:TMS:${crs.replace('EPSG:', '')}`;
-        }
-    }
+    return isTms(crs) ? crs : `TMS:${crs.match(/\d+/)[0]}`;
 }
 
 function formatToEPSG(crs) {
-    if (crs) {
-        if (crs.includes('EPSG')) {
-            return crs;
-        } else if (EPSG[TMS.indexOf(crs)]) {
-            return EPSG[TMS.indexOf(crs)];
-        } else {
-            return `EPSG:${crs.match(/\d+/)[0]}`;
-        }
-    }
+    return isEpsg(crs) ? crs : `EPSG:${crs.match(/\d+/)[0]}`;
 }
 
 const UNIT = {
@@ -44,7 +24,7 @@ const UNIT = {
 };
 
 function is4326(crs) {
-    return crs.indexOf('EPSG:4326') == 0;
+    return crs === 'EPSG:4326';
 }
 
 function _unitFromProj4Unit(projunit) {
@@ -162,10 +142,14 @@ export default {
      */
     formatToEPSG,
     /**
-     * format crs to tile matrix set notation : WMTS:XXXX.
+     * format crs to tile matrix set notation : TMS:XXXX.
      *
      * @param      {string}  crs     The crs to format
      * @return     {string}  formated crs
      */
     formatToTms,
+    isTms,
+    isEpsg,
+    tms_3857: 'TMS:3857',
+    tms_4326: 'TMS:4326',
 };

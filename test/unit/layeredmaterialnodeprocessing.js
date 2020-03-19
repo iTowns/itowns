@@ -41,12 +41,12 @@ describe('updateLayeredMaterialNodeImagery', function () {
         projection: 'EPSG:4326',
         info: { update: () => {} },
         tileMatrixSets: [
-            'WMTS:WGS84',
-            'WMTS:PM',
+            'TMS:4326',
+            'TMS:3857',
         ],
         parent: { tileMatrixSets: [
-            'WMTS:WGS84',
-            'WMTS:PM',
+            'TMS:4326',
+            'TMS:3857',
         ],
         },
     });

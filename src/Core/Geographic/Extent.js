@@ -81,7 +81,7 @@ class Extent {
         // Scale/zoom
         this.zoom = 0;
 
-        if (this.isTiledCrs()) {
+        if (CRS.isTms(this.crs)) {
             this.row = 0;
             this.col = 0;
         } else {
@@ -99,7 +99,7 @@ class Extent {
      * @return {Extent} cloned extent
      */
     clone() {
-        if (this.isTiledCrs()) {
+        if (CRS.isTms(this.crs)) {
             return new Extent(this.crs, this.zoom, this.row, this.col);
         } else {
             return new Extent(this.crs, this.west, this.east, this.south, this.north);
@@ -107,20 +107,13 @@ class Extent {
     }
 
     /**
-     * Return true is tiled Extent (WGS84, PM)
-     * @return {boolean}
-     */
-    isTiledCrs() {
-        return this.crs.indexOf('WMTS:') == 0;
-    }
-    /**
      * get tiled extents convering this extent
      *
      * @param      {string}  crs WMTS, TMS crs
      * @return     {Array<Extent>}   array of extents covering
      */
     tiledCovering(crs) {
-        if (this.crs == 'EPSG:4326' && crs == 'WMTS:PM') {
+        if (this.crs == 'EPSG:4326' && crs == CRS.tms_3857) {
             const extents_WMTS_PM = [];
             const extent = _extent.copy(this).as(CRS.formatToEPSG(crs), _extent2);
             const { globalExtent, globalDimension, sTs } = getInfoTms(CRS.formatToEPSG(crs));
@@ -144,7 +137,7 @@ class Extent {
 
             return extents_WMTS_PM;
         } else {
-            const target = new Extent('WMTS:PM', 0, 0, 0);
+            const target = new Extent(crs, 0, 0, 0);
             const { globalExtent, globalDimension, sTs, isInverted } = getInfoTms(this.crs);
             const center = this.center(_c);
             this.dimensions(dimensionTile);
@@ -158,7 +151,6 @@ class Extent {
             tmsCoord.x = center.x - globalExtent.west;
             tmsCoord.y = isInverted ? globalExtent.north - center.y : center.y - globalExtent.south;
             tmsCoord.divide(globalDimension).multiply(countTiles).floor();
-            target.crs = crs;
             target.set(zoom, tmsCoord.y, tmsCoord.x);
             return [target];
         }
@@ -173,7 +165,7 @@ class Extent {
     as(crs, target) {
         CRS.isValid(crs);
         target = target || new Extent('EPSG:4326', [0, 0, 0, 0]);
-        if (this.isTiledCrs()) {
+        if (CRS.isTms(this.crs)) {
             const { epsg, globalExtent, globalDimension } = getInfoTms(this.crs);
             const countTiles = getCountTiles(this.crs, this.zoom);
 
@@ -187,7 +179,7 @@ class Extent {
             target.zoom = this.zoom;
 
             return crs == epsg ? target : target.as(crs, target);
-        } else if (!crs.includes('WMTS:')) {
+        } else if (CRS.isEpsg(crs)) {
             if (this.crs != crs) {
                 // Compute min/max in x/y by projecting 8 cardinal points,
                 // and then taking the min/max of each coordinates.
@@ -232,7 +224,7 @@ class Extent {
      * @return {Coordinates}
      */
     center(target = new Coordinates(this.crs)) {
-        if (this.isTiledCrs()) {
+        if (CRS.isTms(this.crs)) {
             throw new Error('Invalid operation for WMTS bbox');
         }
         this.dimensions(_dim);
@@ -289,7 +281,7 @@ class Extent {
      * @return {boolean}
      */
     isInside(extent, epsilon) {
-        if (this.isTiledCrs()) {
+        if (CRS.isTms(this.crs)) {
             if (this.zoom == extent.zoom) {
                 return this.row == extent.row &&
                     this.col == extent.col;
@@ -320,7 +312,7 @@ class Extent {
         if (this.crs != extent.crs) {
             throw new Error('unsupported mix');
         }
-        if (this.isTiledCrs()) {
+        if (CRS.isTms(this.crs)) {
             _rowColfromParent(this, extent.zoom);
             return target.set(
                 this.col * r.invDiff - r.col,
@@ -405,7 +397,7 @@ class Extent {
      */
     set(v0, v1, v2, v3) {
         if (v0.isExtent) {
-            if (v0.isTiledCrs()) {
+            if (CRS.isTms(v0.crs)) {
                 v1 = v0.row;
                 v2 = v0.col;
                 v0 = v0.zoom;
@@ -417,7 +409,7 @@ class Extent {
             }
         }
 
-        if (this.isTiledCrs()) {
+        if (CRS.isTms(this.crs)) {
             if (v0 !== undefined) {
                 if (this.zoom < 0) {
                     throw new Error('Invalid zoom value for tiled extent');
@@ -553,7 +545,7 @@ class Extent {
      * @return {string}
      */
     toString(separator = '') {
-        if (this.isTiledCrs()) {
+        if (CRS.isTms(this.crs)) {
             return `${this.zoom}${separator}${this.row}${separator}${this.col}`;
         } else {
             return `${this.east}${separator}${this.north}${separator}${this.west}${separator}${this.south}`;
@@ -601,7 +593,7 @@ class Extent {
      * @param {Extent} extent Extent to copy after transformation.
      */
     transformedCopy(t, s, extent) {
-        if (!extent.isTiledCrs()) {
+        if (!CRS.isTms(extent.crs)) {
             this.crs = extent.crs;
             this.west = (extent.west + t.x) * s.x;
             this.east = (extent.east + t.x) * s.x;
@@ -661,7 +653,7 @@ _extent2 = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
 globalExtentTMS.set('EPSG:4326', new Extent('EPSG:4326', -180, 180, -90, 90));
 
-// Compute global extent of WMTS:PM EPSG:3857
+// Compute global extent of TMS in EPSG:3857
 // It's square whose a side is between -180° to 180°.
 // So, west extent, it's 180 convert in EPSG:3857
 const extent3857 = globalExtentTMS.get('EPSG:4326').as('EPSG:3857');
@@ -669,7 +661,7 @@ extent3857.clampSouthNorth(extent3857.west, extent3857.east);
 globalExtentTMS.set('EPSG:3857', extent3857);
 
 schemeTiles.set('default', new THREE.Vector2(1, 1));
-schemeTiles.set('WMTS:PM', schemeTiles.get('default'));
-schemeTiles.set('WMTS:WGS84', new THREE.Vector2(2, 1));
+schemeTiles.set(CRS.tms_3857, schemeTiles.get('default'));
+schemeTiles.set(CRS.tms_4326, new THREE.Vector2(2, 1));
 
 export default Extent;

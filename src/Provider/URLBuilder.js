@@ -40,7 +40,7 @@ export default {
      * </ul>
      *
      * @example
-     * coords = new Coordinates('WMTS:WGS84', 12, 1410, 2072);
+     * coords = new Extent(CRS.formatToTms('EPSG:4326'), 12, 1410, 2072);
      * source.url = 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL';
      * url = URLBuilder.xyz(coords, source);
      *
