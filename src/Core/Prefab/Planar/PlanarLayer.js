@@ -38,10 +38,9 @@ class PlanarLayer extends TiledGeometryLayer {
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
     constructor(id, extent, object3d, config = {}) {
-        const tileMatrixSets = [];
         const tms = CRS.formatToTms(extent.crs);
-        tileMatrixSets.push(tms);
-        if (tms.includes(':TMS')) {
+        const tileMatrixSets = [tms];
+        if (!globalExtentTMS.get(extent.crs)) {
             // Add new global extent for this new projection.
             globalExtentTMS.set(extent.crs, extent);
         }

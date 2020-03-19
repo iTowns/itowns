@@ -2,6 +2,7 @@ import assert from 'assert';
 import { Box3, Vector3 } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
+import CRS from 'Core/Geographic/Crs';
 
 describe('Extent', function () {
     const minX = 0;
@@ -114,36 +115,36 @@ describe('Extent', function () {
     });
 
     it('should clone tiled extent like expected', function () {
-        const withValues = new Extent('WMTS:WGS84', zoom, row, col);
+        const withValues = new Extent('TMS:4326', zoom, row, col);
         const clonedExtent = withValues.clone();
         assert.equal(clonedExtent.zoom, withValues.zoom);
         assert.equal(clonedExtent.row, withValues.row);
         assert.equal(clonedExtent.col, withValues.col);
     });
 
-    it('should isTiledCrs return true if extent is tiled extent', function () {
-        const withValues = new Extent('WMTS:WGS84G', zoom, row, col);
-        assert.ok(withValues.isTiledCrs());
+    it('should isTms return true if extent is tiled extent', function () {
+        const withValues = new Extent('TMS:4326', zoom, row, col);
+        assert.ok(CRS.isTms(withValues.crs));
     });
 
-    it('should convert extent WMTS:WGS84G like expected', function () {
-        const withValues = new Extent('WMTS:WGS84', 0, 0, 0).as('EPSG:4326');
+    it('should convert extent TMS:4326 like expected', function () {
+        const withValues = new Extent('TMS:4326', 0, 0, 0).as('EPSG:4326');
         assert.equal(-180, withValues.west);
         assert.equal(0, withValues.east);
         assert.equal(-90, withValues.south);
         assert.equal(90, withValues.north);
     });
 
-    it('should convert extent WMTS:PM to EPSG:3857 like expected', function () {
-        const withValues = new Extent('WMTS:PM', 0, 0, 0).as('EPSG:3857');
+    it('should convert extent TMS:3857 to EPSG:3857 like expected', function () {
+        const withValues = new Extent('TMS:3857', 0, 0, 0).as('EPSG:3857');
         assert.equal(-20037508.342789244, withValues.west);
         assert.equal(20037508.342789244, withValues.east);
         assert.equal(-20037508.342789244, withValues.south);
         assert.equal(20037508.342789244, withValues.north);
     });
 
-    it('should convert extent WMTS:PM to EPSG:4326 like expected', function () {
-        const withValues = new Extent('WMTS:PM', 0, 0, 0);
+    it('should convert extent TMS:3857 to EPSG:4326 like expected', function () {
+        const withValues = new Extent('TMS:3857', 0, 0, 0);
         const result = withValues.as('EPSG:4326');
         assert.equal(-180.00000000000003, result.west);
         assert.equal(180.00000000000003, result.east);
@@ -195,8 +196,8 @@ describe('Extent', function () {
     });
 
     it('should return expected offset using tiled extent', function () {
-        const withValues = new Extent('WMTS:WGS84G', zoom, row, col);
-        const parent = new Extent('WMTS:WGS84G', zoom - 2, row, col);
+        const withValues = new Extent('TMS:4326', zoom, row, col);
+        const parent = new Extent('TMS:4326', zoom - 2, row, col);
         const offset = withValues.offsetToParent(parent);
         assert.equal(offset.x, 0.5);
         assert.equal(offset.y, 0.5);
@@ -205,7 +206,7 @@ describe('Extent', function () {
     });
 
     it('should return expected tiled extent parent', function () {
-        const withValues = new Extent('WMTS:WGS84G', zoom, row, col);
+        const withValues = new Extent('TMS:4326', zoom, row, col);
         const parent = withValues.tiledExtentParent(zoom - 2);
         assert.equal(parent.zoom, 3);
         assert.equal(parent.row, 5);

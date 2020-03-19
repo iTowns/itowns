@@ -72,7 +72,7 @@ class GlobeView extends View {
      *
      * @example
      * var viewerDiv = document.getElementById('viewerDiv');
-     * var position = new itowns.Coordinates('WGS84', 2.35, 48.8, 25e6);
+     * var position = new itowns.Coordinates('EPSG:4326', 2.35, 48.8, 25e6);
      * var view = new itowns.GlobeView(viewerDiv, position);
      *
      * @example
