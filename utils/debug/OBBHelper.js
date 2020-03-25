@@ -33,13 +33,6 @@ class OBBHelper extends THREE.Box3Helper {
         this.updateMatrixWorld(true);
     }
 
-    setMaterialVisibility(show) {
-        this.material.visible = show;
-        if (this.textMesh) {
-            this.textMesh.material.visible = show;
-        }
-    }
-
     removeChildren() {
         this.material.dispose();
         this.geometry.dispose();
