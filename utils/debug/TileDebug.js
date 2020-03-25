@@ -124,11 +124,10 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             return;
         }
 
-        const helpers = node.children.filter(n => n.layer == layer);
+        let helper = node.children.filter(n => n.layer && (n.layer.id == layer.id))[0];
 
         if (node.material && node.material.visible) {
-            let helper;
-            if (helpers.length == 0) {
+            if (!helper) {
                 // add the ability to hide all the debug obj for one layer at once
                 const l = context.view.getLayerById(layer.id);
                 const l3js = l.threejsLayer;
@@ -182,24 +181,16 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
                         }
                     },
                 });
-            } else {
-                helper = helpers[0];
             }
-            if (layer.id == obb_layer_id) {
-                helper.setMaterialVisibility(true);
-                helper.updateMatrixWorld();
-            } else if (layer.id == sb_layer_id) {
+
+            if (layer.id == sb_layer_id) {
                 helper.position.copy(node.boundingSphere.center);
-                helper.scale.multiplyScalar(node.boundingSphere.radius);
+                helper.scale.set(1, 1, 1).multiplyScalar(node.boundingSphere.radius);
             }
-        } else {
-            // hide obb children
-            for (const child of node.children.filter(n => n.layer == layer.id)) {
-                if (typeof child.setMaterialVisibility === 'function') {
-                    child.setMaterialVisibility(false);
-                }
-                child.visible = false;
-            }
+            helper.updateMatrixWorld(true);
+            helper.visible = true;
+        } else if (helper) {
+            helper.visible = false;
         }
     }
 
