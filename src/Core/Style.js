@@ -182,8 +182,8 @@ class Style {
         this.isStyle = true;
 
         this.zoom = {
-            min: 0,
-            max: 24,
+            min: params.zoom && params.zoom.min != undefined ? params.zoom.min : undefined,
+            max: params.zoom && params.zoom.max != undefined ? params.zoom.max : undefined,
         };
 
         params.fill = params.fill || {};
@@ -298,7 +298,7 @@ class Style {
         layer.layout = layer.layout || {};
         layer.paint = layer.paint || {};
 
-        const zoom = this.zoom.min;
+        const zoom = this.zoom.min || 0;
 
         if (layer.type === 'fill' && !this.fill.color) {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern']));
@@ -369,7 +369,7 @@ class Style {
                 let size = readVectorProperty(layer.layout['icon-size'], zoom);
                 if (size == undefined) { size = 1; }
 
-                this.icon = cacheStyle.get(iconSrc, size);
+                this.icon = cacheStyle.get(iconSrc, size, size);
 
                 if (!this.icon) {
                     this.icon = {};
@@ -381,7 +381,7 @@ class Style {
                     this.icon.halfWidth = this.icon.dom.width / 2;
                     this.icon.halfHeight = this.icon.dom.height / 2;
 
-                    cacheStyle.set(this.icon, iconSrc, size);
+                    cacheStyle.set(this.icon, iconSrc, size, size);
                 }
             }
         }
@@ -406,6 +406,7 @@ class Style {
         domElement.style.textTransform = this.text.transform;
         domElement.style.letterSpacing = `${this.text.spacing}em`;
         domElement.style.textAlign = this.text.justify;
+        domElement.style['white-space'] = 'pre-line';
 
         // NOTE: find a better way to support text halo
         if (this.text.halo.width > 0) {

@@ -19,6 +19,9 @@ import Cache from 'Core/Scheduler/Cache';
  * @property {Promise} whenReady - this promise is resolved when the layer is added and all initializations are done.
  * This promise is resolved with this layer.
  * This promise is returned by [View#addLayer]{@link View}.
+ * @property {boolean} [labelEnabled=false] - Used to tell if this layer has
+ * labels to display from its data. For example, it needs to be set to `true`
+ * for a layer with vector tiles.
  */
 class Layer extends THREE.EventDispatcher {
     /**

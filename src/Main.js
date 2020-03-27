@@ -33,6 +33,7 @@ export { default as Capabilities } from 'Core/System/Capabilities';
 // Internal itowns format
 export { default as Feature, FeatureCollection, FeatureGeometry, FEATURE_TYPES } from 'Core/Feature';
 export { default as Style } from 'Core/Style';
+export { default as Label } from 'Core/Label';
 
 // Layers provided by default in iTowns
 // A custom layer should at least implements Layer
@@ -49,6 +50,7 @@ export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STR
 export { default as ColorLayersOrdering } from 'Renderer/ColorLayersOrdering';
 export { default as GlobeLayer } from 'Core/Prefab/Globe/GlobeLayer';
 export { default as PlanarLayer } from 'Core/Prefab/Planar/PlanarLayer';
+export { default as LabelLayer } from 'Layer/LabelLayer';
 
 // Sources provided by default in iTowns
 // A custom source should at least implements Source

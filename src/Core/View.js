@@ -7,11 +7,10 @@ import RenderMode from 'Renderer/RenderMode';
 import CRS from 'Core/Geographic/Crs';
 import Coordinates from 'Core/Geographic/Coordinates';
 import FeaturesUtils from 'Utils/FeaturesUtils';
-
 import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
-
 import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
+import LabelLayer from 'Layer/LabelLayer';
 
 export const VIEW_EVENTS = {
     /**
@@ -64,10 +63,21 @@ function _preprocessLayer(view, layer, parentLayer) {
         _syncGeometryLayerVisibility(layer, view);
         // Find projection layer, this is projection destination
         layer.projection = view.referenceCrs;
-    } else if (parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.projection))) {
+    } else if (parentLayer && parentLayer.tileMatrixSets && parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.projection))) {
         layer.projection = source.projection;
     } else {
-        layer.projection = parentLayer.extent.crs;
+        layer.projection = parentLayer && parentLayer.extent.crs;
+    }
+
+    if (layer.labelEnabled) {
+        const labelLayer = new LabelLayer(`${layer.id}-label`, view.referenceCrs);
+        labelLayer.source = source;
+        labelLayer.style = layer.style;
+
+        layer.whenReady = layer.whenReady.then(() => {
+            view.addLayer(labelLayer);
+            return layer;
+        });
     }
 
     return layer;
@@ -333,9 +343,11 @@ class View extends THREE.EventDispatcher {
             if (!filter || filter(layer)) {
                 result.push(layer);
             }
-            for (const attached of layer.attachedLayers) {
-                if (!filter || filter(attached, layer)) {
-                    result.push(attached);
+            if (layer.attachedLayers) {
+                for (const attached of layer.attachedLayers) {
+                    if (!filter || filter(attached, layer)) {
+                        result.push(attached);
+                    }
                 }
             }
         }

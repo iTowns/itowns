@@ -61,10 +61,10 @@ global.document = {
                 setTransform: () => { },
                 setLineDash: () => { },
                 drawImage: (img, sx, sy, sw, sh, dx, dy, dw, dh) => {
-                    this.width = dw;
-                    this.height = dh;
+                    canvas.width = dw;
+                    canvas.height = dh;
 
-                    const image = new DOMElement();
+                    const image = global.document.createElement('img');
                     image.width = dw;
                     image.height = dh;
                     return image;
@@ -72,7 +72,7 @@ global.document = {
                 canvas,
             });
 
-            canvas.toDataURL = () => ({ width: this.width, height: this.height });
+            canvas.toDataURL = () => ({ width: canvas.width, height: canvas.height });
 
             return canvas;
         } else if (type == 'img') {

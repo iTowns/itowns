@@ -332,4 +332,19 @@ export class FeatureCollection {
         this.features.push(ref);
         return ref;
     }
+
+    /**
+     * Transforms a given {@link Coordinates}, using the translation and the
+     * scale of this collection.
+     *
+     * @param {Coordinates} coordinates - The coordinates to transform
+     *
+     * @return {Coordinates} The same coordinates, with transformation applied.
+     */
+    transformCoordinates(coordinates) {
+        coordinates.x = (coordinates.x / this.scale.x) - this.translation.x;
+        coordinates.y = (coordinates.y / this.scale.y) - this.translation.y;
+        coordinates.z = (coordinates.z / this.scale.z) - this.translation.z;
+        return coordinates;
+    }
 }

@@ -83,6 +83,11 @@ class Label2DRenderer {
         this.domElement.style.top = 0;
         this.domElement.style.zIndex = 1;
 
+        // Used to destroy labels that are not added to the DOM
+        this.garbage = document.createElement('div');
+        this.garbage.style.display = 'none';
+        this.domElement.appendChild(this.garbage);
+
         this.halfWidth = 0;
         this.halfHeight = 0;
 
@@ -117,7 +122,7 @@ class Label2DRenderer {
         this.grid.visible.forEach((l, i) => {
             if (this.grid.insert(l, i)) {
                 l.visible = true;
-                l.move();
+                l.updateCSSPosition();
             }
         });
 
@@ -149,7 +154,7 @@ class Label2DRenderer {
             vector.setFromMatrixPosition(object.matrixWorld);
             vector.applyMatrix4(viewProjectionMatrix);
 
-            object.preMove(Math.round(vector.x * this.halfWidth + this.halfWidth), Math.round(-vector.y * this.halfHeight + this.halfHeight));
+            object.updateProjectedPosition(Math.round(vector.x * this.halfWidth + this.halfWidth), Math.round(-vector.y * this.halfHeight + this.halfHeight));
 
             // Are considered duplicates, labels that have the same screen
             // coordinates and the same base content.
