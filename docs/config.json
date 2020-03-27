@@ -12,7 +12,8 @@
                 "Feature",
                 "FeatureGeometry",
                 "FeatureCollection",
-                "Style"
+                "Style",
+                "Label"
             ],
 
             "View": [
@@ -40,6 +41,7 @@
                 "OrientedImageLayer",
                 "PointCloudLayer",
                 "C3DTilesLayer",
+                "LabelLayer",
 
                 "GlobeLayer",
                 "PlanarLayer"

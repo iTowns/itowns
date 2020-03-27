@@ -25,7 +25,7 @@ describe('Viewer', function () {
             projection: 'EPSG:4326',
         });
 
-        colorLayer = new ColorLayer('l0', { source });
+        colorLayer = new ColorLayer('l0', { source, labelEnabled: true });
         colorLayer2 = new ColorLayer('l1', { source });
     });
 
@@ -81,17 +81,18 @@ describe('Viewer', function () {
     });
 
     it('ColorLayersOrdering', (done) => {
-        viewer.addLayer(globelayer);
-        viewer.tileLayer = globelayer;
-        viewer.addLayer(colorLayer, globelayer).then(() => {
-            viewer.addLayer(colorLayer2, globelayer).then(() => {
-                ColorLayersOrdering.moveLayerUp(viewer, colorLayer.id);
-                assert.equal(colorLayer.sequence, 1);
-                ColorLayersOrdering.moveLayerDown(viewer, colorLayer.id);
-                assert.equal(colorLayer.sequence, 0);
-                ColorLayersOrdering.moveLayerToIndex(viewer, colorLayer.id, 1);
-                assert.equal(colorLayer.sequence, 1);
-                done();
+        viewer.addLayer(globelayer).then(() => {
+            viewer.tileLayer = globelayer;
+            viewer.addLayer(colorLayer, globelayer).then(() => {
+                viewer.addLayer(colorLayer2, globelayer).then(() => {
+                    ColorLayersOrdering.moveLayerUp(viewer, colorLayer.id);
+                    assert.equal(colorLayer.sequence, 1);
+                    ColorLayersOrdering.moveLayerDown(viewer, colorLayer.id);
+                    assert.equal(colorLayer.sequence, 0);
+                    ColorLayersOrdering.moveLayerToIndex(viewer, colorLayer.id, 1);
+                    assert.equal(colorLayer.sequence, 1);
+                    done();
+                });
             });
         });
     });
