@@ -153,33 +153,24 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
                 // if we don't do that, our OBBHelper will never get removed,
                 // because once a node is invisible, children are not removed
                 // any more
-                // FIXME a proper way of notifying tile deletion to children layers should be implemented
-                const descriptor = Object.getOwnPropertyDescriptor(node.material, 'visible');
-                const getVisible = descriptor.get || (() => descriptor.value);
-                const setVisible = descriptor.set || ((value) => { descriptor.value = value; });
-                Object.defineProperty(node.material, 'visible', {
-                    get: getVisible,
-                    set: (value) => {
-                        setVisible(value);
-                        if (!value) {
-                            let i = node.children.length;
-                            while (i--) {
-                                const c = node.children[i];
-                                if (c.layer === sb_layer_id) {
-                                    if (c.dispose) {
-                                        c.dispose();
-                                    } else if (Array.isArray(c.material)) {
-                                        for (const material of c.material) {
-                                            material.dispose();
-                                        }
-                                    } else {
-                                        c.material.dispose();
-                                    }
-                                    node.children.splice(i, 1);
+                const hiddenHandler = node.material.addEventListener('hidden', () => {
+                    node.material.removeEventListener(hiddenHandler);
+                    let i = node.children.length;
+                    while (i--) {
+                        const c = node.children[i];
+                        if (c.layer === sb_layer_id) {
+                            if (c.dispose) {
+                                c.dispose();
+                            } else if (Array.isArray(c.material)) {
+                                for (const material of c.material) {
+                                    material.dispose();
                                 }
+                            } else {
+                                c.material.dispose();
                             }
+                            node.children.splice(i, 1);
                         }
-                    },
+                    }
                 });
             }
 
