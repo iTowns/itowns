@@ -502,13 +502,15 @@ class View extends THREE.EventDispatcher {
      * @return {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
      */
     eventToViewCoords(event, target = _eventCoords, touchIdx = 0) {
+        const br = this.domElement.getBoundingClientRect();
+
         if (event.touches === undefined || !event.touches.length) {
-            return target.set(event.offsetX, event.offsetY);
+            const targetBoundingRect = event.target.getBoundingClientRect();
+            return target.set(targetBoundingRect.x + event.offsetX - br.x,
+                targetBoundingRect.y + event.offsetY - br.y);
         } else {
-            const br = this.domElement.getBoundingClientRect();
-            return target.set(
-                event.touches[touchIdx].offsetX - br.x,
-                event.touches[touchIdx].offsetY - br.y);
+            return target.set(event.touches[touchIdx].clientX - br.x,
+                event.touches[touchIdx].clientY - br.y);
         }
     }
 
