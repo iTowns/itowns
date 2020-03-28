@@ -15,8 +15,8 @@ describe('GlobeControls', function () {
         preventDefault: () => {},
         button: THREE.MOUSE.LEFT,
         touches: [{
-            offsetX: 100,
-            offsetY: 200,
+            clientX: 100,
+            clientY: 200,
             pageX: 150,
             pageY: 200,
         }],
@@ -42,8 +42,8 @@ describe('GlobeControls', function () {
         viewer.domElement.emitEvent('mousedown', event);
 
         event.touches = [{
-            offsetX: 50,
-            offsetY: 100,
+            clientX: 50,
+            clientY: 100,
             pageX: 100,
             pageY: 100,
         }];
