@@ -89,10 +89,19 @@ function getImageFromSprite(sprites, key) {
  * `0.0` and `1.0`. Default is `1.0`.
  *
  * @property {Object} text - All things {@link Label} related.
- * @property {string} text.field - The name of the field in the properties of
- * the `Feature` to read the text from. For example, if each feature contains a
- * `name` property, `text.field` can be set as `name`.  Default is no value,
- * indicating that no text will be shown.
+ * @property {string} text.field - A string to help read the text field from
+ * properties of a `FeatureGeometry`, with the key of the property enclosed by
+ * brackets. For example, if each geometry contains a `name` property,
+ * `text.field` can be set as `{name}`. Default is no value, indicating that no
+ * text will be shown.
+ *
+ * The brackets allows the use of complex fields. For
+ * example, if a static string `foo` is attached to the changing property `bar`,
+ * you can specify `foo {bar}`, and `foo` will stay everytime, while `{bar}`
+ * will change into the value of the property of the geometry. You can also have
+ * multiple properties in one field, like if you want the latin name and the
+ * local name of a location. Specifying `{name_latin} - {name_local}` can result
+ * in `Marrakesh - مراكش` for example.
  * @property {string} text.color - The color of the text. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is `#000000`.
@@ -453,6 +462,18 @@ class Style {
             default:
                 return '';
         }
+    }
+
+    /**
+     * Returns a string, associating `style.text.field` and properties to use to
+     * replace the keys in `style.text.field`.
+     *
+     * @param {Object} properties - An object containing the properties to use.
+     *
+     * @return {string} The formatted string.
+     */
+    getTextFromProperties(properties) {
+        return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (properties[b] || ''));
     }
 }
 
