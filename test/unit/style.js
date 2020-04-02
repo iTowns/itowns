@@ -6,6 +6,7 @@ describe('Style', function () {
     style1.point.color = 'red';
     style1.fill.color = 'blue';
     style1.stroke.color = 'black';
+    style1.text.halo.width = 1;
 
     it('Copy style', () => {
         const style2 = new Style().copy(style1);
@@ -31,6 +32,6 @@ describe('Style', function () {
         assert.equal(dom.style.textTransform, 'none');
         assert.equal(dom.style.letterSpacing, '0em');
         assert.equal(dom.style.textAlign, 'center');
-        assert.equal(dom.style.textShadow, '0px 0px 0px #000000');
+        assert.equal(dom.style.textShadow, '1px 1px 0px #000000, -1px 1px 0px #000000, -1px -1px 0px #000000, 1px -1px 0px #000000');
     });
 });

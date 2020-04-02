@@ -387,18 +387,10 @@ class Style {
         domElement.style.letterSpacing = `${this.text.spacing}em`;
         domElement.style.textAlign = this.text.justify;
 
-        // FIXME: find a better way to support text halo
-        let textShadow = `0px 0px ${this.text.halo.blur}px ${this.text.halo.color},`;
-        for (let i = 1; i <= this.text.halo.width; i++) {
-            for (let j = 1; j <= this.text.halo.width; j++) {
-                textShadow += `
-                    ${i}px ${j}px ${this.text.halo.blur}px ${this.text.halo.color},
-                    -${i}px ${j}px ${this.text.halo.blur}px ${this.text.halo.color},
-                    -${i}px -${j}px ${this.text.halo.blur}px ${this.text.halo.color},
-                    ${i}px -${j}px ${this.text.halo.blur}px ${this.text.halo.color},`;
-            }
+        // NOTE: find a better way to support text halo
+        if (this.text.halo.width > 0) {
+            domElement.style.textShadow = `1px 1px 0px ${this.text.halo.color}, -1px 1px 0px ${this.text.halo.color}, -1px -1px 0px ${this.text.halo.color}, 1px -1px 0px ${this.text.halo.color}`;
         }
-        domElement.style.textShadow = textShadow.slice(0, -1);
 
         if (!this.icon) {
             return;
