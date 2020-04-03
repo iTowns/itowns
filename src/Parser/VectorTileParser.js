@@ -141,7 +141,7 @@ function readPBF(file, options) {
         const layersSource = allLayers.filter(l => sourceLayer.name == l['source-layer']);
         for (let i = sourceLayer.length - 1; i >= 0; i--) {
             const vtFeature = sourceLayer.feature(i);
-            const layers = layersSource.filter(l => l.filterExpression({ zoom: z }, vtFeature) && (!l.minzoom || l.minzoom <= z) && (!l.maxzoom || l.maxzoom >= z));
+            const layers = layersSource.filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && (!l.minzoom || l.minzoom <= z) && (!l.maxzoom || l.maxzoom >= z));
             let feature;
             for (const layer of layers) {
                 const tag = `${layer.sourceUid}_${layer.id}_zoom_${z}`;
