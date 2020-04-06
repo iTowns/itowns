@@ -113,7 +113,6 @@ export default {
                 }
 
                 const isApplied = !result.layer;
-                result.minAltitude = isNaN(result.minAltitude) ? 0 : result.minAltitude;
                 assignLayer(result, layer);
                 // call onMeshCreated callback if needed
                 if (layer.onMeshCreated) {
