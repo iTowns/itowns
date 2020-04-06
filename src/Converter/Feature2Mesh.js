@@ -161,7 +161,9 @@ function featureToPoint(feature, options) {
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
 
-    return new THREE.Points(geom, pointMaterial);
+    const points = new THREE.Points(geom, pointMaterial);
+    points.minAltitude = 0;
+    return points;
 }
 
 var lineMaterial = new THREE.LineBasicMaterial();
@@ -183,6 +185,8 @@ function featureToLine(feature, options) {
     }
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+    let lines;
 
     if (feature.geometry.length > 1) {
         const countIndices = (count - feature.geometry.length) * 2;
@@ -217,7 +221,7 @@ function featureToLine(feature, options) {
         geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
         geom.setIndex(new THREE.BufferAttribute(indices, 1));
-        return new THREE.LineSegments(geom, lineMaterial);
+        lines = new THREE.LineSegments(geom, lineMaterial);
     } else {
         const color = getProperty('color', options, randomColor, feature.geometry[0].properties);
         fillColorArray(colors, count, color);
@@ -227,8 +231,10 @@ function featureToLine(feature, options) {
             fillBatchIdArray(id, batchIds, 0, count);
             geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
         }
-        return new THREE.Line(geom, lineMaterial);
+        lines = new THREE.Line(geom, lineMaterial);
     }
+    lines.minAltitude = 0;
+    return lines;
 }
 
 const color = new THREE.Color();
@@ -287,7 +293,7 @@ function featureToPolygon(feature, options) {
     geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
 
     const mesh = new THREE.Mesh(geom, material);
-    mesh.minAltitude = vertices.minAltitude;
+    mesh.minAltitude = isNaN(vertices.minAltitude) ? 0 : vertices.minAltitude;
     return mesh;
 }
 
@@ -377,7 +383,7 @@ function featureToExtrudedPolygon(feature, options) {
     geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
 
     const mesh = new THREE.Mesh(geom, material);
-    mesh.minAltitude = vertices.minAltitude;
+    mesh.minAltitude = isNaN(vertices.minAltitude) ? 0 : vertices.minAltitude;
     return mesh;
 }
 
