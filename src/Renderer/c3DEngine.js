@@ -79,10 +79,9 @@ class c3DEngine {
             // We don't support logarithmicDepthBuffer when EXT_frag_depth is missing.
             // So recreated a renderer if needed.
             if (!this.renderer.extensions.get('EXT_frag_depth')) {
-                const _canvas = this.renderer.domElement;
                 this.renderer.dispose();
                 this.renderer = new THREE.WebGLRenderer({
-                    canvas: _canvas,
+                    canvas: document.createElement('canvas'),
                     antialias: options.antialias,
                     alpha: options.alpha,
                     logarithmicDepthBuffer: false,
