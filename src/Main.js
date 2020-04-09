@@ -12,7 +12,6 @@ export { default as Fetcher } from 'Provider/Fetcher';
 export { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 export { default as View } from 'Core/View';
 export { VIEW_EVENTS } from 'Core/View';
-export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from 'Process/3dTilesProcessing';
 export { default as FeatureProcessing } from 'Process/FeatureProcessing';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 export { default as OrientedImageCamera } from 'Renderer/OrientedImageCamera';
@@ -43,7 +42,7 @@ export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
 export { default as GeometryLayer } from 'Layer/GeometryLayer';
 export { default as PotreeLayer } from 'Layer/PotreeLayer';
-export { default as C3DTilesLayer, $3dTilesExtensions, $3dTilesAbstractExtension } from 'Layer/C3DTilesLayer';
+export { default as C3DTilesLayer, $3dTilesExtensions } from 'Layer/C3DTilesLayer';
 export { default as TiledGeometryLayer } from 'Layer/TiledGeometryLayer';
 export { default as OrientedImageLayer } from 'Layer/OrientedImageLayer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from 'Layer/LayerUpdateStrategy';
@@ -63,6 +62,7 @@ export { default as WMTSSource } from 'Source/WMTSSource';
 export { default as VectorTilesSource } from 'Source/VectorTilesSource';
 export { default as OrientedImageSource } from 'Source/OrientedImageSource';
 export { default as PotreeSource } from 'Source/PotreeSource';
+export { default as C3DTilesSource } from 'Source/C3DTilesSource';
 
 // Parsers provided by default in iTowns
 // Custom parser can be implemented as wanted, as long as the main function

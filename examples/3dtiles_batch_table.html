@@ -57,8 +57,11 @@
             var $3dTilesLayerBTHierarchy = new itowns.C3DTilesLayer(
                 '3d-tiles-bt-hierarchy', {
                     name: 'BTHierarchy',
-                    url: 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/cesium/master/Apps/SampleData/Cesium3DTiles/Hierarchy/BatchTableHierarchy/tileset.json',
-            }, view);
+                    source: new itowns.C3DTilesSource({
+                        url: 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/cesium/master/Apps/SampleData/Cesium3DTiles/Hierarchy/BatchTableHierarchy/tileset.json',
+                    })
+                },
+            view);
 
             // add an event for picking the 3D Tiles layer and displaying
             // information about the picked feature in an html div

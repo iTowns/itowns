@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
-import Fetcher from 'Provider/Fetcher';
 import OBB from 'Renderer/OBB';
 import Extent from 'Core/Geographic/Extent';
 import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from 'Process/3dTilesProcessing';
@@ -185,7 +184,10 @@ class C3DTilesLayer extends GeometryLayer {
      * // Create a new Layer 3d-tiles For DiscreteLOD
      * const l3dt = new C3DTilesLayer('3dtiles', {
      *      name: '3dtl',
-     *      url: 'https://tileset.json'}, view);
+     *      source: new C3DTilesSource({
+     *           url: 'https://tileset.json'
+     *      })
+     * }, view);
      * View.prototype.addLayer.call(view, l3dt);
      *
      * @param      {string}  id - The id of the layer, that should be unique. It is
@@ -193,16 +195,13 @@ class C3DTilesLayer extends GeometryLayer {
      * {@link View} that already has a layer going by that id.
      * @param      {object}  config   configuration, all elements in it
      * will be merged as is in the layer.
-     * @param {string} config.url The url to a tileset JSON file.
+     * @param {C3TilesSource} config.source The source of 3d Tiles.
      *
      * name.
      * @param  {View}  view  The view
      */
     constructor(id, config, view) {
-        if (!config.url) {
-            throw new Error('New C3DTilesLayer: url is required');
-        }
-        super(id, new THREE.Group());
+        super(id, new THREE.Group(), { source: config.source });
         this.isC3DTilesLayer = true;
         this.sseThreshold = config.sseThreshold || 16;
         this.cleanupDelay = config.cleanupDelay || 1000;
@@ -211,32 +210,13 @@ class C3DTilesLayer extends GeometryLayer {
         // custom cesium shaders are not functional;
         this.overrideMaterials = config.overrideMaterials !== undefined ? config.overrideMaterials : true;
         this.name = config.name;
-        this.url = config.url;
-        this.networkOptions = config.networkOptions || {};
 
         this._cleanableTiles = [];
-        this.whenReady = Fetcher.json(config.url, this.networkOptions).then((tileset) => {
+        this.whenReady = this.source.whenReady.then((tileset) => {
             this.tileset = tileset;
-            // Verify that extensions of the tileset have been registered to
-            // $3dTilesExtensions
-            if (tileset.extensionsUsed) {
-                for (const extensionUsed of tileset.extensionsUsed) {
-                    // if current extension is not registered
-                    if (!$3dTilesExtensions.isExtensionRegistered(extensionUsed)) {
-                        if (tileset.extensionsRequired &&
-                            tileset.extensionsRequired.includes(extensionUsed)) {
-                            console.error(
-                                `3D Tiles tileset required extension "${extensionUsed}" must be registered to $3dTilesExtensions global object of iTowns to be parsed and used.`);
-                        } else {
-                            console.warn(
-                                `3D Tiles tileset used extension "${extensionUsed}" must be registered to $3dTilesExtensions global object of iTowns to be parsed and used.`);
-                        }
-                    }
-                }
-            }
-            const urlPrefix = this.url.slice(0, this.url.lastIndexOf('/') + 1);
-            this.tileIndex = new $3dTilesIndex(tileset, urlPrefix);
+            this.tileIndex = new $3dTilesIndex(tileset, this.source.baseUrl);
             this.asset = tileset.asset;
+            // TODO: Move all init3dTilesLayer code to constructor
             return init3dTilesLayer(view, view.mainLoop.scheduler, this, tileset.root);
         });
     }

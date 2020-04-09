@@ -127,8 +127,7 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
 };
 
 Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {
-    const protocol = command.layer.protocol || command.layer.source.protocol;
-    const provider = this.getProtocolProvider(protocol);
+    const provider = this.getProtocolProvider(command.layer.protocol);
 
     if (!provider) {
         throw new Error(`No known provider for layer ${command.layer.id}`);
