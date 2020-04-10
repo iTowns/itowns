@@ -122,12 +122,12 @@ class OrientedImageLayer extends GeometryLayer {
 
         // panos is an array of feature point, representing many panoramics.
         // for each point, there is a position and a quaternion attribute.
-        const p1 = GeoJsonParser.parse(config.orientation, {
+        this.whenReady = this.source.whenReady.then(metadata => GeoJsonParser.parse(config.orientation || metadata.orientation, {
             mergeFeatures: false,
-            crsOut: config.projection }).then((res) =>  {
-            this.panos = res.features;
+            crsOut: config.projection }).then((orientation) =>  {
+            this.panos = orientation.features;
 
-            const crsIn = res.optionsFeature.crsIn;
+            const crsIn = orientation.optionsFeature.crsIn;
             const crsOut = config.projection;
             const crs2crs = OrientationUtils.quaternionFromCRSToCRS(crsIn, crsOut);
             const quat = new THREE.Quaternion();
@@ -147,21 +147,14 @@ class OrientedImageLayer extends GeometryLayer {
                 pano.id = pano.geometry[0].properties.id;
                 pano.index = i++;
             }
-        });
-
-        // array of cameras, represent the projective texture configuration for each panoramic.
-        const p2 = CameraCalibrationParser.parse(config.calibration, config).then((c) => {
-            this.cameras = c;
-            // create the material
-            this.material = new OrientedImageMaterial(this.cameras, config);
-        });
-
-
-        // wait for the twos promises to tell layer is ready.
-        this.whenReady = Promise.all([p1, p2]).then(() => {
-            this.ready = true;
-            return this;
-        });
+        }).then(() => {
+            // array of cameras, represent the projective texture configuration for each panoramic.
+            CameraCalibrationParser.parse(config.calibration  || metadata.calibration, config).then((cameras) => {
+                this.cameras = cameras;
+                // create the material
+                this.material = new OrientedImageMaterial(this.cameras, config);
+            });
+        }));
     }
 
     // eslint-disable-next-line

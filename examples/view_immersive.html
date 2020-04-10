@@ -90,90 +90,76 @@
 
             // Prepare oriented image source
             var orientedImageSource = new itowns.OrientedImageSource({
-                    url: 'http://www.itowns-project.org/itowns-sample-data-small/images/140616/Paris-140616_0740-{cameraId}-00001_0000{panoId}.jpg'
+                    url: 'http://www.itowns-project.org/itowns-sample-data-small/images/140616/Paris-140616_0740-{cameraId}-00001_0000{panoId}.jpg',
+                    // Url to a GEOJSON file describing feature points. It describre position and orientation of each panoramic.
+                    orientationsUrl: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson',
+                    // Url of a a JSON file with calibration for all cameras. see [CameraCalibrationParser]{@link module:CameraCalibrationParser.parse}
+                    // in this example, we have the ladybug, it's a set of 6 cameras
+                    calibrationUrl: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/cameraCalibration.json',
                 });
 
-            // Url to a GEOJSON file describing feature points. It describre position and orientation of each panoramic.
-            var orientationsUrl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson';
-            // Url of a a JSON file with calibration for all cameras. see [CameraCalibrationParser]{@link module:CameraCalibrationParser.parse}
-            // in this example, we have the ladybug, it's a set of 6 cameras
-            var calibrationUrl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/cameraCalibration.json';
 
-            // Fetch the two files
-            var promises = [];
-            var networkOptions = {crossOrigin: ''};
-            promises.push(itowns.Fetcher.json(orientationsUrl, networkOptions) );
-            promises.push(itowns.Fetcher.json(calibrationUrl, networkOptions) ) ;
-            Promise.all(promises).then((res) => {
+            // Create oriented image layer
+            var olayer = new itowns.OrientedImageLayer('demo_orientedImage', {
+                // Radius in meter of the sphere used as a background.
+                backgroundDistance: 1200,
+                source: orientedImageSource,
+                projection: view.referenceCrs,
+                useMask: false,
+                onPanoChanged: (e) => {
+                    view.controls.setPreviousPosition(e.previousPanoPosition);
+                    view.controls.setCurrentPosition(e.currentPanoPosition);
+                    view.controls.setNextPosition(e.nextPanoPosition);
+                }
+            });
 
-                var orientation = res[0];
-                var calibration = res[1];
+            // when oriented image layer is ready..
+            view.addLayer(olayer, view.tileLayer).then(function addWfsLayer(orientedImageLayer) {
 
-                // Create oriented image layer
-                var olayer = new itowns.OrientedImageLayer('demo_orientedImage', {
-                    // Radius in meter of the sphere used as a background.
-                    backgroundDistance: 1200,
-                    source: orientedImageSource,
-                    orientation: orientation,
-                    calibration: calibration,
-                    projection: view.referenceCrs,
-                    useMask: false,
-                    onPanoChanged: (e) => {
-                        view.controls.setPreviousPosition(e.previousPanoPosition);
-                        view.controls.setCurrentPosition(e.currentPanoPosition);
-                        view.controls.setNextPosition(e.nextPanoPosition);
-                    }
+                // prepare WFS source for the buildings
+                var wfsBuildingSource = new itowns.WFSSource({
+                    url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                    version: '2.0.0',
+                    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                    projection: 'EPSG:4326',
+                    ipr: 'IGN',
+                    format: 'application/json',
+                    zoom: { min: 15, max: 15 },
+                    extent: {
+                        west: 2.334,
+                        east: 2.335,
+                        south: 48.849,
+                        north: 48.851,
+                    },
                 });
 
-                // when oriented image layer is ready..
-                view.addLayer(olayer, view.tileLayer).then(function addWfsLayer(orientedImageLayer) {
+                // create geometry layer for the buildings
+                var wfsBuildingLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+                    update: itowns.FeatureProcessing.update,
+                    convert: itowns.Feature2Mesh.convert({
+                        altitude: altitudeBuildings,
+                        extrude: extrudeBuildings }),
 
-                    // prepare WFS source for the buildings
-                    var wfsBuildingSource = new itowns.WFSSource({
-                        url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-                        version: '2.0.0',
-                        typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
-                        projection: 'EPSG:4326',
-                        ipr: 'IGN',
-                        format: 'application/json',
-                        zoom: { min: 15, max: 15 },
-                        extent: {
-                            west: 2.334,
-                            east: 2.335,
-                            south: 48.849,
-                            north: 48.851,
-                        },
-                    });
-
-                    // create geometry layer for the buildings
-                    var wfsBuildingLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
-                        update: itowns.FeatureProcessing.update,
-                        convert: itowns.Feature2Mesh.convert({
-                            altitude: altitudeBuildings,
-                            extrude: extrudeBuildings }),
-
-                        // when a building is created, it get the projective texture mapping, from oriented image layer.
-                        onMeshCreated: (mesh) => mesh.traverse(object => object.material = orientedImageLayer.material),
-                        source: wfsBuildingSource,
-                        overrideAltitudeInToZero: true,
-                    });
-
-                    // add the created building layer, and debug UI
-                    view.addLayer(wfsBuildingLayer).then(function addDebugUI(buildingLayer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, buildingLayer);
-                        view.controls.buildingsLayer = buildingLayer.id;
-                        debug.GeometryDebug.addWireFrameCheckbox(gui, view, buildingLayer);
-                    });
-
-                    var altitude = new itowns.THREE.Vector3();
-
-                    view.controls.transformationPositionPickOnTheGround = (position) => {
-                        position.copy(orientedImageLayer.mostNearPano(position).position);
-                        altitude.copy(position).normalize().multiplyScalar(3);
-                        return position.sub(altitude);
-                    };
+                    // when a building is created, it get the projective texture mapping, from oriented image layer.
+                    onMeshCreated: (mesh) => mesh.traverse(object => object.material = orientedImageLayer.material),
+                    source: wfsBuildingSource,
+                    overrideAltitudeInToZero: true,
                 });
 
+                // add the created building layer, and debug UI
+                view.addLayer(wfsBuildingLayer).then(function addDebugUI(buildingLayer) {
+                    var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, buildingLayer);
+                    view.controls.buildingsLayer = buildingLayer.id;
+                    debug.GeometryDebug.addWireFrameCheckbox(gui, view, buildingLayer);
+                });
+
+                var altitude = new itowns.THREE.Vector3();
+
+                view.controls.transformationPositionPickOnTheGround = (position) => {
+                    position.copy(orientedImageLayer.mostNearPano(position).position);
+                    altitude.copy(position).normalize().multiplyScalar(3);
+                    return position.sub(altitude);
+                };
             });
 
             /* global itowns, document, GuiTools, view, promises */
