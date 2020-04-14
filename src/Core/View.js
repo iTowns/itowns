@@ -203,6 +203,7 @@ class View extends THREE.EventDispatcher {
         if (parentLayer) {
             if (layer.isColorLayer) {
                 const layerColors = this.getLayers(l => l.isColorLayer);
+                layer.sequence = layerColors.length;
 
                 const sumColorLayers = parentLayer.countColorLayersTextures(...layerColors, layer);
 

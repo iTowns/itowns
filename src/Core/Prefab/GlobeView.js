@@ -127,8 +127,6 @@ class GlobeView extends View {
             return Promise.reject(new Error('Add Layer type object'));
         }
         if (layer.isColorLayer) {
-            const colorLayerCount = this.getLayers(l => l.isColorLayer).length;
-            layer.sequence = colorLayerCount;
             if (!this.tileLayer.tileMatrixSets.includes(CRS.formatToTms(layer.source.projection))) {
                 return layer._reject(`Only ${this.tileLayer.tileMatrixSets} tileMatrixSet are currently supported for color layers`);
             }
