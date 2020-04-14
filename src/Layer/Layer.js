@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
+import Source from 'Source/Source';
 
 /**
  * @property {boolean} isLayer - Used to checkout whether this layer is a Layer.
@@ -70,9 +71,28 @@ class Layer extends THREE.EventDispatcher {
 
         this.info = new InfoLayer(this);
 
-        this.whenReady = config.source && config.source.whenReady ? config.source.whenReady : Promise.resolve();
+        this.source = this.source || new Source({ url: 'none' });
 
         this.ready = false;
+
+        this._promises = [];
+
+        this.whenReady = new Promise((re, rj) => {
+            this._resolve = re;
+            this._reject = rj;
+        }).then(() => {
+            this.ready = true;
+            return this;
+        });
+
+        this._promises.push(this.source.whenReady);
+    }
+
+    addInitializationStep() {
+        // Possibility to add rejection handler, if it's necessary.
+        let resolve;
+        this._promises.push(new Promise((re) => { resolve = re; }));
+        return resolve;
     }
 
     /**

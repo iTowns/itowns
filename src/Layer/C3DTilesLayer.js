@@ -212,12 +212,15 @@ class C3DTilesLayer extends GeometryLayer {
         this.name = config.name;
 
         this._cleanableTiles = [];
-        this.whenReady = this.source.whenReady.then((tileset) => {
+
+        const resolve = this.addInitializationStep();
+
+        this.source.whenReady.then((tileset) => {
             this.tileset = tileset;
             this.tileIndex = new $3dTilesIndex(tileset, this.source.baseUrl);
             this.asset = tileset.asset;
             // TODO: Move all init3dTilesLayer code to constructor
-            return init3dTilesLayer(view, view.mainLoop.scheduler, this, tileset.root);
+            init3dTilesLayer(view, view.mainLoop.scheduler, this, tileset.root).then(resolve);
         });
     }
 

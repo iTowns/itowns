@@ -118,7 +118,9 @@ class PotreeLayer extends GeometryLayer {
         this.material.defines = this.material.defines || {};
         this.mode = MODE.COLOR || config.mode;
 
-        this.whenReady = this.source.whenReady.then((cloud) => {
+        const resolve = this.addInitializationStep();
+
+        this.source.whenReady.then((cloud) => {
             this.scale = new THREE.Vector3().addScalar(cloud.scale);
             this.spacing = cloud.spacing;
             this.hierarchyStepSize = cloud.hierarchyStepSize;
@@ -136,8 +138,7 @@ class PotreeLayer extends GeometryLayer {
             this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
 
             this.extent = Extent.fromBox3(view.referenceCrs, this.root.bbox);
-
-            return this.root.loadOctree().then(() => this);
+            return this.root.loadOctree().then(resolve);
         });
     }
 

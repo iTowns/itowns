@@ -68,13 +68,12 @@ class TiledGeometryLayer extends GeometryLayer {
         for (const root of this.schemeTile) {
             promises.push(this.convert(undefined, root));
         }
-        Promise.all(promises).then((level0s) => {
+
+        this._promises.push(Promise.all(promises).then((level0s) => {
             this.level0Nodes = level0s;
-            for (const level0 of level0s) {
-                this.object3d.add(level0);
-                level0.updateMatrixWorld();
-            }
-        });
+            this.object3d.add(...level0s);
+            this.object3d.updateMatrixWorld();
+        }));
     }
 
     /**
