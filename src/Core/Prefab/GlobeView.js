@@ -123,18 +123,18 @@ class GlobeView extends View {
     }
 
     addLayer(layer) {
-        if (!layer) {
-            return new Promise((resolve, reject) => reject(new Error('layer is undefined')));
+        if (!layer || !layer.isLayer) {
+            return Promise.reject(new Error('Add Layer type object'));
         }
         if (layer.isColorLayer) {
             const colorLayerCount = this.getLayers(l => l.isColorLayer).length;
             layer.sequence = colorLayerCount;
             if (!this.tileLayer.tileMatrixSets.includes(CRS.formatToTms(layer.source.projection))) {
-                throw new Error(`Only ${this.tileLayer.tileMatrixSets} tileMatrixSet are currently supported for color layers`);
+                return layer._reject(`Only ${this.tileLayer.tileMatrixSets} tileMatrixSet are currently supported for color layers`);
             }
         } else if (layer.isElevationLayer) {
             if (CRS.formatToTms(layer.source.projection) !== this.tileLayer.tileMatrixSets[0]) {
-                throw new Error(`Only ${this.tileLayer.tileMatrixSets[0]} tileMatrixSet is currently supported for elevation layers`);
+                return layer._reject(`Only ${this.tileLayer.tileMatrixSets[0]} tileMatrixSet is currently supported for elevation layers`);
             }
         }
 

@@ -27,10 +27,13 @@ describe('Potree Provider', function () {
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             cloud,
         });
-        ps.push(new PotreeLayer('pointsCloud', { source }, view).whenReady.then((l) => {
+
+        const p1 = new PotreeLayer('pointsCloud1', { source }, view);
+        ps.push(p1);
+        p1.whenReady.then((l) => {
             const normalDefined = l.material.defines.NORMAL || l.material.defines.NORMAL_SPHEREMAPPED || l.material.defines.NORMAL_OCT16;
             assert.ok(!normalDefined);
-        }));
+        });
 
         // // // normals as vector
         source = new PotreeSource({
@@ -44,11 +47,14 @@ describe('Potree Provider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        ps.push(new PotreeLayer('pointsCloud', { source }, view).whenReady.then((l) => {
+
+        const p2 = new PotreeLayer('pointsCloud2', { source }, view);
+        ps.push(p2);
+        p2.whenReady.then((l) => {
             assert.ok(l.material.defines.NORMAL);
             assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(!l.material.defines.NORMAL_OCT16);
-        }));
+        });
 
         // // spheremapped normals
         source = new PotreeSource({
@@ -62,11 +68,14 @@ describe('Potree Provider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        ps.push(new PotreeLayer('pointsCloud', { source }, view).whenReady.then((l) => {
+        const p3 = new PotreeLayer('pointsCloud3', { source }, view);
+
+        ps.push(p3);
+        p3.whenReady.then((l) => {
             assert.ok(!l.material.defines.NORMAL);
             assert.ok(l.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(!l.material.defines.NORMAL_OCT16);
-        }));
+        });
 
         // // oct16 normals
         source = new PotreeSource({
@@ -80,13 +89,18 @@ describe('Potree Provider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        ps.push(new PotreeLayer('pointsCloud', { source }, view).whenReady.then((l) => {
+        const p4 = new PotreeLayer('pointsCloud4', { source }, view);
+
+        ps.push(p4);
+        p4.whenReady.then((l) => {
             assert.ok(!l.material.defines.NORMAL);
             assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(l.material.defines.NORMAL_OCT16);
-        }));
+        });
 
-        Promise.all(ps).then(() => done());
+        ps.forEach(p => view.addLayer(p));
+
+        Promise.all(ps.map(p => p.whenReady)).then(() => done());
     });
 });
 

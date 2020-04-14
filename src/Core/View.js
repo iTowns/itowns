@@ -70,11 +70,6 @@ function _preprocessLayer(view, layer, parentLayer) {
         layer.projection = parentLayer.extent.crs;
     }
 
-    layer.whenReady = layer.whenReady.then(() => {
-        layer.ready = true;
-        return layer;
-    });
-
     return layer;
 }
 const _eventCoords = new THREE.Vector2();
@@ -195,65 +190,59 @@ class View extends THREE.EventDispatcher {
      * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
      */
     addLayer(layer, parentLayer) {
-        return new Promise((resolve, reject) => {
-            if (!layer) {
-                reject(new Error('layer is undefined'));
-                return;
-            }
-            const duplicate = this.getLayerById(layer.id);
-            if (duplicate) {
-                reject(new Error(`Invalid id '${layer.id}': id already used`));
-                return;
-            }
+        if (!layer || !layer.isLayer) {
+            return Promise.reject(new Error('Add Layer type object'));
+        }
+        const duplicate = this.getLayerById(layer.id);
+        if (duplicate) {
+            return layer._reject(new Error(`Invalid id '${layer.id}': id already used`));
+        }
 
-            layer = _preprocessLayer(this, layer, parentLayer);
+        layer = _preprocessLayer(this, layer, parentLayer);
 
-            if (parentLayer) {
-                if (layer.isColorLayer) {
-                    const layerColors = this.getLayers(l => l.isColorLayer);
+        if (parentLayer) {
+            if (layer.isColorLayer) {
+                const layerColors = this.getLayers(l => l.isColorLayer);
 
-                    const sumColorLayers = parentLayer.countColorLayersTextures(...layerColors, layer);
+                const sumColorLayers = parentLayer.countColorLayersTextures(...layerColors, layer);
 
-                    if (sumColorLayers <= getMaxColorSamplerUnitsCount()) {
-                        parentLayer.attach(layer);
-                    } else {
-                        reject(new Error(`Cant add color layer ${layer.id}: the maximum layer is reached`));
-                        return;
-                    }
-                } else {
+                if (sumColorLayers <= getMaxColorSamplerUnitsCount()) {
                     parentLayer.attach(layer);
+                } else {
+                    return layer._reject(new Error(`Cant add color layer ${layer.id}: the maximum layer is reached`));
                 }
             } else {
-                if (typeof (layer.update) !== 'function') {
-                    reject(new Error('Cant add GeometryLayer: missing a update function'));
-                    return;
-                }
-                if (typeof (layer.preUpdate) !== 'function') {
-                    reject(new Error('Cant add GeometryLayer: missing a preUpdate function'));
-                    return;
-                }
-
-                this._layers.push(layer);
+                parentLayer.attach(layer);
+            }
+        } else {
+            if (typeof (layer.update) !== 'function') {
+                return layer._reject(new Error('Cant add GeometryLayer: missing a update function'));
+            }
+            if (typeof (layer.preUpdate) !== 'function') {
+                return layer._reject(new Error('Cant add GeometryLayer: missing a preUpdate function'));
             }
 
-            if (layer.object3d && !layer.object3d.parent && layer.object3d !== this.scene) {
-                this.scene.add(layer.object3d);
+            this._layers.push(layer);
+        }
+
+        if (layer.object3d && !layer.object3d.parent && layer.object3d !== this.scene) {
+            this.scene.add(layer.object3d);
+        }
+
+        Promise.all(layer._promises).then(() => {
+            layer._resolve();
+            this.notifyChange(parentLayer || layer, false);
+            if (!this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END] ||
+                !this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].includes(this._allLayersAreReadyCallback)) {
+                this.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
             }
-
-            layer.whenReady.then((layer) => {
-                this.notifyChange(parentLayer || layer, false);
-                if (!this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END] ||
-                    !this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].includes(this._allLayersAreReadyCallback)) {
-                    this.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
-                }
-                resolve(layer);
-            });
-
             this.dispatchEvent({
                 type: VIEW_EVENTS.LAYER_ADDED,
                 layerId: layer.id,
             });
-        });
+        }, layer._reject);
+
+        return layer.whenReady;
     }
 
     /**

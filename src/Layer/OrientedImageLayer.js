@@ -120,9 +120,11 @@ class OrientedImageLayer extends GeometryLayer {
         // function to get cameras name from panoramic feature
         this.getCamerasNameFromFeature = config.getCamerasNameFromFeature || (() => {});
 
+        const resolve = this.addInitializationStep();
+
         // panos is an array of feature point, representing many panoramics.
         // for each point, there is a position and a quaternion attribute.
-        this.whenReady = this.source.whenReady.then(metadata => GeoJsonParser.parse(config.orientation || metadata.orientation, {
+        this.source.whenReady.then(metadata => GeoJsonParser.parse(config.orientation || metadata.orientation, {
             mergeFeatures: false,
             crsOut: config.projection }).then((orientation) =>  {
             this.panos = orientation.features;
@@ -153,6 +155,7 @@ class OrientedImageLayer extends GeometryLayer {
                 this.cameras = cameras;
                 // create the material
                 this.material = new OrientedImageMaterial(this.cameras, config);
+                resolve();
             });
         }));
     }
