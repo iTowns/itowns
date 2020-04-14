@@ -7,12 +7,22 @@ import Source from 'Source/Source';
  * @property {boolean} isLayer - Used to checkout whether this layer is a Layer.
  * Default is true. You should not change this, as it is used internally for
  * optimisation.
+ * @property {boolean} ready - This property is false when the layer isn't added.
+ * It's true when the layer is added and all initializations are done.
+ * @property {Source} source - This source determines the datas to be displayed with the layer.
+ * The layer determines how this data are displayed.
+ * By example:
+ * * For ColorLayer/ElevationLayer, the source datas are rasterised (if it's necessary).
+ * * For GeometryLayer, the source datas are converted to meshes (not possible for the raster data sources).
+ * @property {Promise} whenReady - this promise is resolved when the layer is added and all initializations are done.
+ * This promise is resolved with this layer.
+ * This promise is returned by [View#addLayer]{@link View}.
  */
 class Layer extends THREE.EventDispatcher {
     /**
      * Don't use directly constructor to instance a new Layer. Instead, use
      * another available type of Layer, implement a new one inheriting from this
-     * one or use {@link View#addLayer}.
+     * one or use [View#addLayer]{@link View}.
      *
      * @constructor
      * @protected
