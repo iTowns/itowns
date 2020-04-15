@@ -537,19 +537,23 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
-     * Return objects from some layers/objects3d under the mouse in this view.
+     * Searches for objects in {@link GeometryLayer} and specified
+     * `THREE.Object3D`, under the mouse or at a specified coordinates, in this
+     * view.
      *
-     * @param {Object} mouseOrEvt - mouse position in window coordinates (0, 0 = top-left)
-     * or MouseEvent or TouchEvent
-     * @param {number} radius - picking will happen in a circle centered on mouseOrEvt. Radius
-     * is the radius of this circle, in pixels
-     * @param {...*} where - where to look for objects. Can be either: empty (= look
-     * in all layers with type == 'geometry'), layer ids or layers or a mix of all
-     * the above.
-     * @return {Array} - an array of objects. Each element contains at least an object
-     * property which is the Object3D under the cursor. Then depending on the queried
-     * layer/source, there may be additionnal properties (coming from THREE.Raycaster
-     * for instance).
+     * @param {Object} mouseOrEvt - Mouse position in window coordinates (from
+     * the top left corner of the window) or `MouseEvent` or `TouchEvent`.
+     * @param {number} [radius=0] - The picking will happen in a circle centered
+     * on mouseOrEvt. This is the radius of this circle, in pixels.
+     * @param {...GeometryLayer|string|Object3D} [where] - Where to look for
+     * objects. It can be anything of {@link GeometryLayer}, IDs of layers, or
+     * `THREE.Object3D`. If no location is specified, it will query on all
+     * {@link GeometryLayer} present in this `View`.
+     *
+     * @return {Object[]} - An array of objects. Each element contains at least
+     * an object property which is the `THREE.Object3D` under the cursor. Then
+     * depending on the queried layer/source, there may be additionnal
+     * properties (coming from `THREE.Raycaster` for instance).
      *
      * @example
      * view.pickObjectsAt({ x, y })
@@ -557,33 +561,36 @@ class View extends THREE.EventDispatcher {
      * view.pickObjectsAt({ x, y }, 3, 'wfsBuilding', myLayer)
      */
     pickObjectsAt(mouseOrEvt, radius = 0, ...where) {
+        const sources = [];
+
+        where = where.length == 0 ? this.getLayers(l => l.isGeometryLayer) : where;
+        where.forEach((l) => {
+            if (typeof l === 'string') {
+                l = this.getLayerById(l);
+            }
+
+            if (l && (l.isGeometryLayer || l.isObject3D)) {
+                sources.push(l);
+            }
+        });
+
+        if (sources.length == 0) {
+            return [];
+        }
+
         const results = [];
-        const sources = where.length == 0 ?
-            this.getLayers(l => l.isGeometryLayer) :
-            [...where];
         const mouse = (mouseOrEvt instanceof Event) ? this.eventToViewCoords(mouseOrEvt) : mouseOrEvt;
 
         for (const source of sources) {
-            if (source.isLayer ||
-                typeof (source) === 'string') {
-                const layer = (typeof (source) === 'string') ?
-                    this.getLayerById(source) :
-                    source;
-                if (!layer || !layer.ready) {
+            if (source.isGeometryLayer) {
+                if (!source.ready) {
                     console.warn('view.pickObjectAt : layer is not ready : ', source);
                     continue;
                 }
 
-                layer.pickObjectsAt(this, mouse, radius, results);
-            } else if (source.isObject3D) {
-                Picking.pickObjectsAt(
-                    this,
-                    mouse,
-                    radius,
-                    source,
-                    results);
+                source.pickObjectsAt(this, mouse, radius, results);
             } else {
-                throw new Error(`Invalid where arg (value = ${where}). Expected layers, layer ids or Object3Ds`);
+                Picking.pickObjectsAt(this, mouse, radius, source, results);
             }
         }
 
@@ -660,13 +667,16 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
-     * Returns features under the mouse, for a set of specified layers.
+     * Searches for {@link Feature} in {@link ColorLayer}, under the mouse of at
+     * a specified coordinates, in this view.
      *
-     * @param {MouseEvent|Object} mouseOrEvt - A MouseEvent, or a screen
-     * coordinates.
-     * @param {number} [radius=3] - The precision of the picking, in pixels.
-     * @param {Layer[]} [where] - The layers to look into. If not specified, all
-     * `GeometryLayer` and `ColorLayer` layers of this view will be looked in.
+     * @param {Object} mouseOrEvt - Mouse position in window coordinates (from
+     * the top left corner of the window) or `MouseEvent` or `TouchEvent`.
+     * @param {number} [radius=3] - The picking will happen in a circle centered
+     * on mouseOrEvt. This is the radius of this circle, in pixels.
+     * @param {...ColorLayer|GeometryLayer|string} [where] - The layers to look
+     * into. If not specified, all {@link ColorLayer} and {@link GeometryLayer}
+     * layers of this view will be looked in.
      *
      * @return {Object} - An object, with a property per layer. For example,
      * looking for features on layers `wfsBuilding` and `wfsRoads` will give an
@@ -675,20 +685,41 @@ class View extends THREE.EventDispatcher {
      *
      * @example
      * view.pickFeaturesAt({ x, y });
-     * view.pickFeaturesAt({ x, y }, 1, ['wfsBuilding']);
-     * view.pickFeaturesAt({ x, y }, 3, ['wfsBuilding', myLayer]);
+     * view.pickFeaturesAt({ x, y }, 1, 'wfsBuilding');
+     * view.pickFeaturesAt({ x, y }, 3, 'wfsBuilding', myLayer);
      */
-    pickFeaturesAt(mouseOrEvt, radius = 3, where = []) {
+    pickFeaturesAt(mouseOrEvt, radius = 3, ...where) {
+        if (Array.isArray(where[0])) {
+            console.warn('Deprecated: the ...where argument of View#pickFeaturesAt should not be an array anymore, but a list: use the spread operator if needed.');
+            where = where[0];
+        }
+
+        const layers = [];
         const result = {};
-        let layers = where.length == 0 ? this.getLayers(l => (l.isGeometryLayer || l.isColorLayer)) : where;
-        layers = layers.map((l) => {
-            const id = l.isLayer ? l.id : l;
-            result[id] = [];
-            return id;
+
+        where = where.length == 0 ? this.getLayers(l => l.isColorLayer || l.isGeometryLayer) : where;
+        where.forEach((l) => {
+            if (typeof l === 'string') {
+                l = this.getLayerById(l);
+            }
+
+            if (l && l.isLayer) {
+                result[l.id] = [];
+                if (l.isColorLayer) { layers.push(l.id); }
+            }
         });
 
         // Get the mouse coordinates to the correct system
         const mouse = (mouseOrEvt instanceof Event) ? this.eventToViewCoords(mouseOrEvt, _eventCoords) : mouseOrEvt;
+        const objects = this.pickObjectsAt(mouse, radius, ...where);
+
+        if (objects.length > 0) {
+            objects.forEach(o => result[o.layer.id].push(o));
+        }
+
+        if (layers.length == 0) {
+            return result;
+        }
 
         this.getPickingPositionFromDepth(mouse, positionVector);
         const distance = this.camera.camera3D.position.distanceTo(positionVector);

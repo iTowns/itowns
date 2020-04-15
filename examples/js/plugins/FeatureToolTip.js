@@ -39,7 +39,7 @@ var FeatureToolTip = (function _() {
         tooltip.innerHTML = '';
         tooltip.style.display = 'none';
 
-        var features = view.pickFeaturesAt(event, 3, layersId);
+        var features = view.pickFeaturesAt.apply(view, [event, 3].concat(layersId));
 
         var layer;
         for (var layerId in features) {
