@@ -26,8 +26,8 @@ function parseSourceData(data, extDest, layer) {
         filter: layer.filter || source.filter,
         isInverted: source.isInverted,
         mergeFeatures: layer.mergeFeatures === undefined ? true : layer.mergeFeatures,
-        withNormal: layer.isGeometryLayer,
-        withAltitude: layer.isGeometryLayer,
+        withNormal: layer.isGeometryLayer !== undefined,
+        withAltitude: layer.isGeometryLayer !== undefined,
         symbolToCircle: layer.symbolToCircle || false,
     };
 
