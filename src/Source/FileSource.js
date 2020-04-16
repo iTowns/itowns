@@ -138,9 +138,7 @@ class FileSource extends Source {
 
     onParsedFile(parsedFile) {
         this.parsedData = parsedFile;
-        if (parsedFile.extent && parsedFile.extent.crs != 'EPSG:4978') {
-            this.extent = parsedFile.extent;
-        }
+        this.extent = parsedFile.extent;
         return parsedFile;
     }
 
