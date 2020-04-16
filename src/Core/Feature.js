@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 function defaultExtent(crs) {
     return new Extent(crs, Infinity, -Infinity, Infinity, -Infinity);
@@ -12,6 +13,7 @@ function _extendBuffer(feature, size) {
     }
 }
 
+const coordOut = new Coordinates('EPSG:4326', 0, 0, 0);
 const defaultNormal = new THREE.Vector3(0, 0, 1);
 
 /**
@@ -29,11 +31,13 @@ export class FeatureGeometry {
      * @param {Feature} feature geometry
      */
     constructor(feature) {
-        this.extent = feature.extent ? defaultExtent(feature.crs) : undefined;
         this.indices = [];
         this.properties = {};
-        this._currentExtent = feature.extent ? defaultExtent(feature.crs) : undefined;
         this.size = feature.size;
+        if (feature.extent) {
+            this.extent = defaultExtent(feature.extent.crs);
+            this._currentExtent = defaultExtent(feature.extent.crs);
+        }
     }
     /**
      * Add a new marker to indicate the starting of sub geometry and extends the vertices buffer.
@@ -44,7 +48,7 @@ export class FeatureGeometry {
      */
     startSubGeometry(count, feature) {
         const last = this.indices.length - 1;
-        const extent = this.extent ? defaultExtent(feature.crs) : undefined;
+        const extent = this.extent ? defaultExtent(this.extent.crs) : undefined;
         const offset = last > -1 ?
             this.indices[last].offset + this.indices[last].count :
             feature.vertices.length / this.size;
@@ -68,7 +72,7 @@ export class FeatureGeometry {
         this.indices.push({ offset, count, extent: this._currentExtent });
         if (this.extent) {
             this.extent.union(this._currentExtent);
-            this._currentExtent = defaultExtent(feature.crs);
+            this._currentExtent = defaultExtent(this.extent.crs);
         }
     }
 
@@ -78,21 +82,20 @@ export class FeatureGeometry {
     }
     /**
      * Push new coordinates in vertices buffer.
-     * @param {Coordinates} coord The coordinates to push.
+     * @param {Coordinates} coordIn The coordinates to push.
      * @param {Feature} feature - the feature containing the geometry
      */
-    pushCoordinates(coord, feature) {
-        if (coord.crs !== feature.crs) {
-            coord.as(feature.crs, coord);
-        }
+    pushCoordinates(coordIn, feature) {
+        coordIn.as(feature.crs, coordOut);
+
         if (feature.normals) {
-            coord.geodesicNormal.toArray(feature.normals, feature._pos);
+            coordOut.geodesicNormal.toArray(feature.normals, feature._pos);
         }
 
-        feature._pushValues(coord.x, coord.y, coord.z);
+        feature._pushValues(coordOut.x, coordOut.y, coordOut.z);
         // expand extent if present
         if (this._currentExtent) {
-            this._currentExtent.expandByCoordinates(coord);
+            this._currentExtent.expandByCoordinates(feature.useCrsOut ? coordOut : coordIn);
         }
     }
 
@@ -185,7 +188,12 @@ class Feature {
         this.normals = options.withNormal ? [] : undefined;
         this.crs = crs;
         this.size = options.withAltitude ? 3 : 2;
-        this.extent = options.buildExtent ? defaultExtent(crs) : undefined;
+        if (options.buildExtent) {
+            // this.crs is final projection, is out projection.
+            // If the extent crs is the same then we use output coordinate (coordOut) to expand it.
+            this.extent = defaultExtent(crs != 'EPSG:4978' ?  crs : options.crsIn);
+            this.useCrsOut = this.crs == this.extent.crs;
+        }
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
     }
@@ -236,7 +244,9 @@ export class FeatureCollection {
         this.crs = crs;
         this.features = [];
         this.optionsFeature = options || {};
-        this.extent = this.optionsFeature.buildExtent ? defaultExtent(crs) : undefined;
+        if (this.optionsFeature.buildExtent) {
+            this.extent = defaultExtent(crs != 'EPSG:4978' ?  crs : options.crsIn);
+        }
         this.translation = new THREE.Vector3();
         this.scale = new THREE.Vector3(1, 1, 1);
     }
