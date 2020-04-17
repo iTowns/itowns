@@ -6,6 +6,7 @@ import textureConverter from 'Converter/textureConverter';
  * @property {boolean} isElevationLayer - Used to checkout whether this layer is
  * an ElevationLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @property {number} noDataValue - Used to specify a **null** or **no data value** in the elevation terrain.
  * @property {number} scale - Used to apply a scale on the elevation value. It
  * can be used for exageration of the elevation, like in [this
  * example](https://www.itowns-project.org/itowns/examples/#plugins_pyramidal_tiff).
