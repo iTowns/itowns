@@ -109,6 +109,9 @@ class MaterialLayer {
     }
 
     replaceNoDataValueFromParent(parent, nodatavalue) {
+        if (nodatavalue == undefined) {
+            return;
+        }
         const dataElevation = this.textures[0].image.data;
         const parentTexture = parent && parent.textures[0];
         if (dataElevation && parentTexture && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
