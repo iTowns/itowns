@@ -560,9 +560,8 @@ class GlobeControls extends THREE.EventDispatcher {
             case this.states.MOVE_GLOBE: {
                 const normalized = this.view.viewToNormalizedCoords(coords);
                 raycaster.setFromCamera(normalized, this.camera);
-                raycaster.ray.intersectSphere(pickSphere, intersection);
                 // If there's intersection then move globe else we stop the move
-                if (intersection) {
+                if (raycaster.ray.intersectSphere(pickSphere, intersection)) {
                     normalizedIntersection.copy(intersection).normalize();
                     moveAroundGlobe.setFromUnitVectors(normalizedIntersection, lastNormalizedIntersection);
                     lastTimeMouseMove = Date.now();
@@ -848,9 +847,8 @@ class GlobeControls extends THREE.EventDispatcher {
                 const coords = this.view.eventToViewCoords(event);
                 const normalized = this.view.viewToNormalizedCoords(coords);
                 raycaster.setFromCamera(normalized, this.camera);
-                raycaster.ray.intersectSphere(pickSphere, intersection);
                 // If there's intersection then move globe else we stop the move
-                if (intersection) {
+                if (raycaster.ray.intersectSphere(pickSphere, intersection)) {
                     normalizedIntersection.copy(intersection).normalize();
                     moveAroundGlobe.setFromUnitVectors(normalizedIntersection, lastNormalizedIntersection);
                     lastTimeMouseMove = Date.now();

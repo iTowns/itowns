@@ -24,7 +24,7 @@ function _minimizeNetworkTraffic(node, nodeLevel, currentLevel) {
 //     * nodeLevel = 4 -> 3
 //     * nodeLevel = 7 -> 7
 //     * nodeLevel = 15 -> 12
-function _group(nodeLevel, currentLevel, options) {
+function _group(nodeLevel, options) {
     var f = options.groups.filter(val => (val <= nodeLevel));
     return f.length ? f[f.length - 1] : options.groups[0];
 }
@@ -54,7 +54,7 @@ export function chooseNextLevelToFetch(strategy, node, nodeLevel = node.level, c
     } else {
         switch (strategy) {
             case STRATEGY_GROUP:
-                nextLevelToFetch = _group(nodeLevel, currentLevel, layer.updateStrategy.options);
+                nextLevelToFetch = _group(nodeLevel, layer.updateStrategy.options);
                 break;
             case STRATEGY_PROGRESSIVE: {
                 nextLevelToFetch = _progressive(nodeLevel, currentLevel, layer.updateStrategy.options);

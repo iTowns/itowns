@@ -396,6 +396,9 @@ class Extent {
      * @return {Extent}
      */
     set(v0, v1, v2, v3) {
+        if (v0 == undefined) {
+            throw new Error('No values to set in the extent');
+        }
         if (v0.isExtent) {
             if (CRS.isTms(v0.crs)) {
                 v1 = v0.row;
@@ -410,40 +413,30 @@ class Extent {
         }
 
         if (CRS.isTms(this.crs)) {
-            if (v0 !== undefined) {
-                if (this.zoom < 0) {
-                    throw new Error('Invalid zoom value for tiled extent');
-                }
-
-                this.zoom = v0;
-                this.row = v1;
-                this.col = v2;
-            } else {
-                throw new Error('Invalid values to set');
-            }
+            this.zoom = v0;
+            this.row = v1;
+            this.col = v2;
         } else if (v0.isCoordinates) {
             // seem never used
             this.west = v0.x;
             this.east = v1.x;
             this.south = v0.y;
             this.north = v1.y;
-        } else if (v0 && v0.west !== undefined) {
+        } else if (v0.west !== undefined) {
             this.west = v0.west;
             this.east = v0.east;
             this.south = v0.south;
             this.north = v0.north;
-        } else if (v0 && v0.length == 4) {
+        } else if (v0.length == 4) {
             this.west = v0[0];
             this.east = v0[1];
             this.south = v0[2];
             this.north = v0[3];
-        } else if (v0 !== undefined) {
+        } else if (v3 !== undefined) {
             this.west = v0;
             this.east = v1;
             this.south = v2;
             this.north = v3;
-        } else {
-            throw new Error('No values to set in the extent');
         }
 
         return this;

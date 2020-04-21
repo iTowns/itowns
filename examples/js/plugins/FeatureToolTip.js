@@ -93,7 +93,10 @@ var FeatureToolTip = (function _() {
             content += '<span style="color: ' + fill + '; -webkit-text-stroke: ' + stroke + '">';
             content += symb + ' ';
             content += '</span>';
-            content += (geometry.properties.name || geometry.properties.nom || geometry.properties.description || layer.name || '');
+
+            if (geometry.properties) {
+                content += (geometry.properties.name || geometry.properties.nom || geometry.properties.description || layer.name || '');
+            }
 
             if (feature.type === itowns.FEATURE_TYPES.POINT) {
                 content += '<br/><span class="coord">long ' + feature.coordinates[0].toFixed(4) + '</span>';
