@@ -6,12 +6,11 @@ import TileMesh from 'Core/TileMesh';
 import Extent, { globalExtentTMS } from 'Core/Geographic/Extent';
 import OBB from 'Renderer/OBB';
 import DataSourceProvider from 'Provider/DataSourceProvider';
-import { supportedFetchers } from 'Source/Source';
+import { supportedFetchers, supportedParsers } from 'Source/Source';
 import TileProvider from 'Provider/TileProvider';
 import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
 import WFSSource from 'Source/WFSSource';
-import Fetcher from 'Provider/Fetcher';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import ColorLayer from 'Layer/ColorLayer';
 import ElevationLayer from 'Layer/ElevationLayer';
@@ -26,9 +25,13 @@ const holes = require('../data/geojson/holesPoints.geojson.json');
 describe('Provide in Sources', function () {
     const renderer = new Renderer();
     renderer.setClearColor();
-
-    supportedFetchers.set('image/png', () => Promise.resolve(new THREE.Texture()));
-    supportedFetchers.set('application/json', () => Promise.resolve(holes));
+    // /!\ Avoid to overload fetcher because could troubleshoot the other unit tests?
+    // formatTag to avoid it
+    const formatTag = 'dspUnitTest';
+    supportedFetchers.set(`${formatTag}image/png`, () => Promise.resolve(new THREE.Texture()));
+    supportedFetchers.set(`${formatTag}application/json`, () => Promise.resolve(holes));
+    supportedParsers.set(`${formatTag}image/png`, supportedParsers.get('image/png'));
+    supportedParsers.set(`${formatTag}application/json`, supportedParsers.get('application/json'));
 
     // Misc var to initialize a TileMesh instance
     const geom = new THREE.Geometry();
@@ -82,7 +85,7 @@ describe('Provide in Sources', function () {
     featureLayer.source = new WFSSource({
         url: 'http://',
         typeName: 'name',
-        format: 'application/json',
+        format: `${formatTag}application/json`,
         extent: globalExtent,
         projection: 'EPSG:3857',
         zoom: { min: zoom, max: zoom },
@@ -94,11 +97,6 @@ describe('Provide in Sources', function () {
     context.elevationLayers = [elevationlayer];
     context.colorLayers = [colorlayer];
 
-    after(function () {
-        supportedFetchers.set('image/png', Fetcher.texture);
-        supportedFetchers.set('application/json', Fetcher.json);
-    });
-
     beforeEach('reset state', function () {
         // clear commands array
         context.scheduler.commands = [];
@@ -108,7 +106,7 @@ describe('Provide in Sources', function () {
         colorlayer.source = new WMTSSource({
             url: 'http://',
             name: 'name',
-            format: 'image/png',
+            format: `${formatTag}image/png`,
             tileMatrixSet: 'PM',
             projection: 'EPSG:3857',
             extent: globalExtent,
@@ -136,7 +134,7 @@ describe('Provide in Sources', function () {
         elevationlayer.source = new WMTSSource({
             url: 'http://',
             name: 'name',
-            format: 'image/png',
+            format: `${formatTag}image/png`,
             tileMatrixSet: 'PM',
             projection: 'EPSG:3857',
             zoom: {
@@ -163,7 +161,7 @@ describe('Provide in Sources', function () {
         colorlayer.source = new WMSSource({
             url: 'http://',
             name: 'name',
-            format: 'image/png',
+            format: `${formatTag}image/png`,
             extent: globalExtent,
             projection: 'EPSG:3857',
             zoom: {

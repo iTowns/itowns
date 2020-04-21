@@ -26,20 +26,19 @@ describe('Layer with Feature process', function () {
         return new THREE.Color(0xffcc00);
     }
 
-
-    const ariege = new GeometryLayer('ariege', new THREE.Group());
-    ariege.update = FeatureProcessing.update;
-    ariege.convert = Feature2Mesh.convert({
-        color,
-        extrude,
-    });
-
-    ariege.source = new FileSource({
+    const source = new FileSource({
         url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
         projection: 'EPSG:4326',
         format: 'application/json',
         zoom: { min: 0, max: 0 },
-        // extent: new Extent('EPSG:4326', -90, -10, -900, 900),
+    });
+
+    const ariege = new GeometryLayer('ariege', new THREE.Group(), { source });
+
+    ariege.update = FeatureProcessing.update;
+    ariege.convert = Feature2Mesh.convert({
+        color,
+        extrude,
     });
 
     ariege.source.zoom = 0;
@@ -56,7 +55,7 @@ describe('Layer with Feature process', function () {
         view: viewer,
     };
 
-    const extent = new Extent('EPSG:4326', 1.40625, 2.8125, 42.1875, 42.1875);
+    const extent = new Extent('EPSG:4326', 1.40625, 2.8125, 42.1875, 43.59375);
     const geom = new THREE.Geometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const tile = new TileMesh(geom, new THREE.Material(), viewer.tileLayer, extent, 7);
@@ -69,19 +68,13 @@ describe('Layer with Feature process', function () {
         });
     });
     it('update', function (done) {
-        viewer.tileLayer.whenReady.then(() => {
+        ariege.whenReady.then(() => {
             tile.visible = true;
-            ariege.update(context, ariege, tile).then(() => {
-                // Hack to force add Mesh to tile
-                // Feature Processing needs refactoring to simplify it.
-                tile.layerUpdateState[ariege.id] = undefined;
-                ariege.source.parsedData.extent.crs = 'EPSG:4326';
-                ariege.source.parsedData.extent.set(0, 10, 40, 50);
-                ariege.update(context, ariege, tile).then(() => {
+            ariege.update(context, ariege, tile)
+                .then(() => {
                     assert.equal(tile.children.length, 1);
                     done();
                 });
-            });
         });
     });
 });
