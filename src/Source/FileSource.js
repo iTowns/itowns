@@ -129,6 +129,15 @@ class FileSource extends Source {
 
         this.fetchedData = source.fetchedData;
         this.parsedData = source.parsedData;
+
+        if (!this.fetchedData && !this.parsedData) {
+            this.whenReady = this.fetcher(this.urlFromExtent(), this.networkOptions).then((f) => {
+                this.fetchedData = f;
+            });
+        }
+
+        this.whenReady.then(() => this.fetchedData);
+
         this.zoom = source.zoom || { min: 5, max: 21 };
     }
 

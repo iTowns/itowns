@@ -11,7 +11,7 @@ const error = (err, source) => {
     throw err;
 };
 
-function parseSourceData(data, extDest, layer) {
+export function parseSourceData(data, extDest, layer) {
     const source = layer.source;
 
     const options = {

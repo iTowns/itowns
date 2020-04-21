@@ -3,9 +3,7 @@ import LayerUpdateState from 'Layer/LayerUpdateState';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import handlingError from 'Process/handlerNodeError';
 import Coordinates from 'Core/Geographic/Coordinates';
-import Extent from 'Core/Geographic/Extent';
 
-const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 const mat4 = new THREE.Matrix4();
 
@@ -41,8 +39,7 @@ function assignLayer(object, layer) {
 
 function extentInsideSource(extent, source) {
     return !source.extentInsideLimit(extent) ||
-        (source.parsedData &&
-        !source.parsedData.extent.isPointInside(extent.center(coord)));
+        (source.isFileSource && !extent.isPointInside(source.extent.center(coord)));
 }
 
 export default {
@@ -72,8 +69,6 @@ export default {
 
         const extentsDestination = node.getExtentsByProjection(layer.source.projection) || [node.extent];
 
-        extentsDestination.forEach((e) => { e.zoom = node.level; });
-
         const extentsSource = [];
         for (const extentDest of extentsDestination) {
             const ext = layer.source.projection == extentDest.crs ? extentDest : extentDest.as(layer.source.projection);
@@ -99,19 +94,6 @@ export default {
             // if request return empty json, WFSProvider.getFeatures return undefined
             result = result[0];
             if (result) {
-                // special case for FileSource, as it is not tiled and we need
-                // to attach it to the correct node
-                if (layer.source && layer.source.isFileSource) {
-                    for (const extentSrc of extentsSource) {
-                        const ext = extentSrc.crs == layer.source.projection ? extentSrc : extentSrc.as(layer.source.projection, _extent);
-                        ext.zoom = extentSrc.zoom;
-                        if (extentInsideSource(ext, layer.source)) {
-                            node.layerUpdateState[layer.id].noMoreUpdatePossible();
-                            return;
-                        }
-                    }
-                }
-
                 const isApplied = !result.layer;
                 assignLayer(result, layer);
                 // call onMeshCreated callback if needed
