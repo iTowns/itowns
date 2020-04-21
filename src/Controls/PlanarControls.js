@@ -673,9 +673,8 @@ function PlanarControls(view, options = {}) {
      * @ignore
      */
     this.getWorldPointAtScreenXY = function getWorldPointAtScreenXY(posXY) {
-        this.view.getPickingPositionFromDepth(posXY, pointUnderCursor);
         // check if there is valid geometry under cursor
-        if (pointUnderCursor) {
+        if (this.view.getPickingPositionFromDepth(posXY, pointUnderCursor)) {
             return pointUnderCursor;
         } else {
             // if not, we use the mathematical plane at altitude = groundLevel

@@ -84,9 +84,7 @@ describe('Vector tiles', function () {
             assert.equal(style.stroke.color, 'hsl(0,0%,50%)');
         }));
     it('should parse symbol to style symbol', () =>
-        parse(multipolygon, paints[4], 'symbol', {
-            'text-field': 'foo',
-        }).then((collection) => {
+        parse(multipolygon, paints[4], 'symbol').then((collection) => {
             const style = collection.features[0].style;
             assert.equal(style.text.zOrder, 'Y');
             assert.equal(style.text.anchor, 'center');
