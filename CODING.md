@@ -91,7 +91,8 @@ test-unit -- --watch`.
 If you want to work on a single test and debug it, without having all the extra
 output, you can use this command `npm run base-test-unit test/unit/3dtiles.js`
 and of course replace 3dtiles.js with the correct filename. You can also append
-the `-- --watch` flag as well.
+the `-- --watch` flag as well. If you want disable reporting and keep error message
+in console add `--reporter min`.
 
 ## Contribute back
 

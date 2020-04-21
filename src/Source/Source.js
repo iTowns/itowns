@@ -14,7 +14,7 @@ export const supportedFetchers = new Map([
     ['application/x-protobuf;type=mapbox-vector', Fetcher.arrayBuffer],
 ]);
 
-const supportedParsers = new Map([
+export const supportedParsers = new Map([
     ['geojson', GeoJsonParser.parse],
     ['application/json', GeoJsonParser.parse],
     ['application/kml', KMLParser.parse],

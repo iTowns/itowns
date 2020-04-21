@@ -1,35 +1,17 @@
 import assert from 'assert';
-import fs from 'fs';
-import Path from 'path';
 import Source from 'Source/Source';
+import Layer from 'Layer/Layer';
 import WFSSource from 'Source/WFSSource';
 import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
 import TMSSource from 'Source/TMSSource';
 import FileSource from 'Source/FileSource';
 import Extent from 'Core/Geographic/Extent';
+import HttpsProxyAgent from 'https-proxy-agent';
 
 describe('Sources', function () {
-    function defer() {
-        var deferredPromise = {};
-        deferredPromise.promise = new Promise(function (resolve) {
-            deferredPromise.resolve = resolve;
-        });
-        return deferredPromise;
-    }
-
-    const geojson = defer();
-
-    // To load geojson without parse the file content
-    const urlGeojson = Path.resolve(__dirname, '../data/geojson/holes.geojson.json');
-    fs.readFile(urlGeojson, 'utf8', function (err, content) {
-        geojson.resolve(content);
-    });
-
-    global.window = {};
-    global.URL = function URL() {
-        this.ref = undefined;
-    };
+    // geojson url to parse
+    const urlGeojson = 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson';
 
     const vendorSpecific = {
         buffer: 4096,
@@ -194,35 +176,52 @@ describe('Sources', function () {
         });
     });
 
+    let fetchedData;
+
     describe('FileSource', function () {
-        it('should instance and use FileSource with url', function () {
+        it('should instance FileSource and fetch file', function (done) {
             const source = new FileSource({
-                url: '..',
+                url: urlGeojson,
                 projection: 'EPSG:4326',
+                format: 'application/json',
                 extent: new Extent('EPSG:4326', 0, 20, 0, 20),
                 zoom: { min: 0, max: 21 },
+                networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             });
 
-            const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
-            assert.ok(source.urlFromExtent(extent));
-            assert.ok(source.extentInsideLimit(extent));
-            assert.ok(source.extentsInsideLimit([extent, extent]));
-            assert.ok(!source.fetchedData);
-            assert.ok(!source.parsedData);
-            assert.ok(source.isFileSource);
+            source.whenReady.then(() => {
+                const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
+                assert.ok(source.urlFromExtent());
+                assert.ok(source.extentInsideLimit(extent));
+                assert.ok(source.extentsInsideLimit([extent, extent]));
+                assert.ok(source.fetchedData);
+                assert.ok(source.fetchedData);
+                assert.ok(!source.parsedData);
+                assert.ok(source.isFileSource);
+                fetchedData = source.fetchedData;
+                assert.equal(fetchedData.properties.nom, 'Ariège');
+                done();
+            });
         });
 
-        it('should instance and use FileSource with fetchedData', function () {
+        it('should instance FileSource with fetchedData and parse data with a layer', function (done) {
             const source = new FileSource({
-                fetchedData: { foo: 'bar' },
+                fetchedData,
+                format: 'application/json',
                 projection: 'EPSG:4326',
             });
 
-            const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
-            assert.ok(source.urlFromExtent(extent).startsWith('fake-file-url'));
-            assert.ok(source.fetchedData);
             assert.ok(!source.parsedData);
+            assert.equal(source.urlFromExtent(), 'fake-file-url');
+            assert.ok(source.fetchedData);
             assert.ok(source.isFileSource);
+
+            const layer = new Layer('09-ariege', { projection: 'EPSG:4326', source });
+            layer.whenReady.then(() => {
+                assert.equal(source.parsedData.features[0].vertices.length, 3536);
+                done();
+            });
+            layer._resolve();
         });
 
         it('should instance and use FileSource with parsedData', function () {

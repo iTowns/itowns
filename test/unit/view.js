@@ -18,7 +18,7 @@ describe('Viewer', function () {
 
         globelayer = new GlobeLayer('globe', new THREE.Group());
         source = new FileSource({
-            url: '..',
+            parsedData: {},
             projection: 'EPSG:4326',
         });
 
