@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
 import Source from 'Source/Source';
+import { parseSourceData } from 'Provider/DataSourceProvider';
 
 /**
  * @property {boolean} isLayer - Used to checkout whether this layer is a Layer.
@@ -90,6 +91,10 @@ class Layer extends THREE.EventDispatcher {
         this.whenReady = new Promise((re, rj) => {
             this._resolve = re;
             this._reject = rj;
+        }).then(() => {
+            if (this.source.fetchedData && !this.source.parsedData) {
+                return parseSourceData(this.source.fetchedData, this.source.extent, this);
+            }
         }).then(() => {
             this.ready = true;
             return this;
