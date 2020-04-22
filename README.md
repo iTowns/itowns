@@ -3,6 +3,7 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/iTowns/itowns/badge.svg?branch=master)](https://coveralls.io/github/iTowns/itowns?branch=master)
 [![Build Status](https://travis-ci.com/iTowns/itowns.svg?branch=master)](https://travis-ci.com/iTowns/itowns)
+[![DeepScan grade](https://deepscan.io/api/teams/2856/projects/10991/branches/159107/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=2856&pid=10991&bid=159107)
 
 ## What is it?
 
