@@ -23,6 +23,7 @@
   "nyc": {
     "exclude": [
       "**/*ThreeExtended",
+      "**/*src/Utils/placeObjectOnGround.js",
       "**/*src/Parser/deprecated/LegacyGLTFLoader.js"
     ]
   },
