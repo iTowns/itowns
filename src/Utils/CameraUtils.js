@@ -26,7 +26,7 @@ function tileLayer(view) {
     return view.getLayers(l => l.isTiledGeometryLayer)[0];
 }
 
-function getLookAtFromMath(view, camera) {
+export function getLookAtFromMath(view, camera) {
     const direction = new THREE.Vector3(0, 0, 0.5);
     direction.unproject(camera);
     direction.sub(camera.position).normalize();
@@ -316,7 +316,7 @@ class CameraRig extends THREE.Object3D {
     get range() { return this.camera.position.y; }
 }
 
-function getRig(camera) {
+export function getRig(camera) {
     rigs[camera.uuid] = rigs[camera.uuid] || new CameraRig(camera);
     return rigs[camera.uuid];
 }

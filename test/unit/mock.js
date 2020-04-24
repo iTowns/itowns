@@ -1,34 +1,5 @@
 import fetch from 'node-fetch';
 
-class DOMElement {
-    constructor() {
-        this.children = [];
-        this.clientWidth = 400;
-        this.clientHeight = 300;
-        this.width = 400;
-        this.height = 300;
-        this.style = {
-            display: 'block',
-        };
-        this.events = new Map();
-
-        this.removeEventListener = () => {};
-        this.focus = () => {};
-    }
-
-    appendChild(c) { this.children.push(c); }
-    cloneNode() { return Object.create(this); }
-    getBoundingClientRect() { return { x: this.width, y: this.height }; }
-
-    addEventListener(event, cb) { this.events.set(event, cb); }
-    emitEvent(event, params) {
-        const callback = this.events.get(event);
-        if (callback) {
-            return callback(params);
-        }
-    }
-}
-
 global.window = {
     addEventListener: () => {},
     removeEventListener: () => {},
@@ -43,6 +14,26 @@ global.Event = () => {};
 global.requestAnimationFrame = () => {};
 global.fetch = fetch;
 global.fetch.Promise = Promise;
+
+class DOMElement {
+    constructor() {
+        this.children = [];
+        this.clientWidth = 400;
+        this.clientHeight = 300;
+        this.width = 400;
+        this.height = 300;
+        this.style = {
+            display: 'block',
+        };
+    }
+
+    removeEventListener() {}
+    focus() {}
+    appendChild(c) { this.children.push(c); }
+    cloneNode() { return Object.create(this); }
+    getBoundingClientRect() { return { x: 0, y: 0, width: this.width, height: this.height }; }
+    addEventListener() {}
+}
 
 class Renderer {
     constructor() {
@@ -113,9 +104,6 @@ class Renderer {
             }),
             documentElement: this.domElement,
         };
-
-        const events = new Map();
-        global.window.addEventListener = (event, cb) => events.set(event, cb);
     }
 
     setClearColor() {}

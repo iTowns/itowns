@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import assert from 'assert';
 import Coordinates from 'Core/Geographic/Coordinates';
-import Ellipsoid from 'Core//Math/Ellipsoid';
+import Ellipsoid from 'Core/Math/Ellipsoid';
 import CameraUtils from 'Utils/CameraUtils';
 import DEMUtils from 'Utils/DEMUtils';
 
