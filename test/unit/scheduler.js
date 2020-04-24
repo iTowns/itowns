@@ -3,10 +3,6 @@ import Scheduler from 'Core/Scheduler/Scheduler';
 
 describe('Command execution', function () {
     const scheduler = new Scheduler();
-    global.window = {
-        addEventListener() {},
-        setTimeout,
-    };
 
     scheduler.addProtocolProvider('test', {
         preprocessDataLayer: () => {
