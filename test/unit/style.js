@@ -20,7 +20,7 @@ describe('Style', function () {
         assert.equal(style1.stroke.color, style2.stroke.color);
     });
     it('applyToHTML', () => {
-        const dom = { style: {} };
+        const dom = document.createElement('canvas');
         style1.applyToHTML(dom);
         assert.equal(dom.style.padding, '2px');
         assert.equal(dom.style.maxWidth, '10em');

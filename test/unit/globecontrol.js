@@ -3,7 +3,7 @@ import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { getLookAtFromMath, getRig } from 'Utils/CameraUtils';
-import Renderer from './mock';
+import Renderer from './bootstrap';
 
 describe('GlobeControls', function () {
     const renderer = new Renderer();

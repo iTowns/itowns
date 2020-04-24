@@ -5,7 +5,7 @@ import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import HttpsProxyAgent from 'https-proxy-agent';
 import Coordinates from 'Core/Geographic/Coordinates';
-import Renderer from './mock';
+import Renderer from './bootstrap';
 
 describe('3Dtiles layer', function () {
     const renderer = new Renderer();

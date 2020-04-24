@@ -6,7 +6,7 @@ import ColorLayer from 'Layer/ColorLayer';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import FileSource from 'Source/FileSource';
 import ColorLayersOrdering from 'Renderer/ColorLayersOrdering';
-import Renderer from './mock';
+import Renderer from './bootstrap';
 
 describe('Viewer', function () {
     let renderer;

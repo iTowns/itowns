@@ -10,7 +10,7 @@ import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
-import Renderer from './mock';
+import Renderer from './bootstrap';
 
 describe('Layer with Feature process', function () {
     const renderer = new Renderer();
