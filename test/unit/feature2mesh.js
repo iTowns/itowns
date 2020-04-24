@@ -5,6 +5,7 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 
 const geojson = require('../data/geojson/holes.geojson.json');
+const geojson2 = require('../data/geojson/simple.geojson.json');
 
 proj4.defs('EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
@@ -26,12 +27,11 @@ function computeAreaOfMesh(mesh) {
 }
 
 describe('Feature2Mesh', function () {
-    function parse() {
-        return GeoJsonParser.parse(geojson, { crsIn: 'EPSG:3946', crsOut: 'EPSG:3946', buildExtent: true, mergeFeatures: false });
-    }
+    const parsed = GeoJsonParser.parse(geojson, { crsIn: 'EPSG:3946', crsOut: 'EPSG:3946', buildExtent: true, mergeFeatures: false });
+    const parsed2 = GeoJsonParser.parse(geojson2, { crsIn: 'EPSG:3946', crsOut: 'EPSG:3946', buildExtent: true, mergeFeatures: false });
 
     it('rect mesh area should match geometry extent', () =>
-        parse().then((features) => {
+        parsed.then((features) => {
             const mesh = Feature2Mesh.convert()(features);
             const extentSize = features.extent.dimensions();
 
@@ -41,7 +41,7 @@ describe('Feature2Mesh', function () {
         }));
 
     it('square mesh area should match geometry extent minus holes', () =>
-        parse().then((feature) => {
+        parsed.then((feature) => {
             const mesh = Feature2Mesh.convert()(feature);
 
             const noHoleArea = computeAreaOfMesh(mesh.children[0]);
@@ -51,5 +51,13 @@ describe('Feature2Mesh', function () {
             assert.equal(
                 noHoleArea - holeArea,
                 meshWithHoleArea);
+        }));
+
+    it('convert points, lines and mesh', () =>
+        parsed2.then((features) => {
+            const mesh = Feature2Mesh.convert()(features);
+            assert.equal(mesh.children[0].type, 'Points');
+            assert.equal(mesh.children[1].type, 'Line');
+            assert.equal(mesh.children[2].type, 'Mesh');
         }));
 });
