@@ -682,7 +682,7 @@ class GlobeControls extends THREE.EventDispatcher {
         const point = this.view.getPickingPositionFromDepth(this.view.eventToViewCoords(event));
         const range = this.getRange();
         if (point && range > this.minDistance) {
-            this.lookAtCoordinate({
+            return this.lookAtCoordinate({
                 coord: new Coordinates('EPSG:4978', point),
                 range: range * 0.6,
                 time: 1500,
