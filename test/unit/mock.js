@@ -29,6 +29,21 @@ class DOMElement {
     }
 }
 
+global.window = {
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    setTimeout,
+};
+
+global.URL = function URL() {
+    this.ref = undefined;
+};
+
+global.Event = () => {};
+global.requestAnimationFrame = () => {};
+global.fetch = fetch;
+global.fetch.Promise = Promise;
+
 class Renderer {
     constructor() {
         this.domElement = new DOMElement();
@@ -52,8 +67,6 @@ class Renderer {
             logarithmicDepthBuffer: true,
         };
         this.debug = {};
-        global.fetch = fetch;
-        global.fetch.Promise = Promise;
 
         // Mock document object for Mocha.
         global.document = {
@@ -102,13 +115,9 @@ class Renderer {
         };
 
         const events = new Map();
-        global.window = {
-            addEventListener: (event, cb) => { events.set(event, cb); },
-        };
-
-        global.Event = () => {};
-        global.requestAnimationFrame = () => {};
+        global.window.addEventListener = (event, cb) => events.set(event, cb);
     }
+
     setClearColor() {}
     getRenderTarget() {}
     setRenderTarget() {}

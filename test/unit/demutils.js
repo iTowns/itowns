@@ -15,10 +15,6 @@ import MaterialLayer from 'Renderer/MaterialLayer';
 import Renderer from './mock';
 
 describe('DemUtils', function () {
-    global.window = {
-        addEventListener() {},
-        setTimeout,
-    };
     const renderer = new Renderer();
     const placement = { coord: new Coordinates('EPSG:4326', 1.5, 43), zoom: 10 };
     const viewer = new GlobeView(renderer.domElement, placement, { renderer });
