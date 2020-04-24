@@ -3,7 +3,7 @@ import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import Coordinates from 'Core/Geographic/Coordinates';
-import Renderer from './mock';
+import Renderer from './bootstrap';
 
 function compareWithEpsilon(a, b, epsilon) {
     return a - epsilon < b && a + epsilon > b;

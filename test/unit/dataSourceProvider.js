@@ -18,13 +18,10 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
-import Renderer from './mock';
 
 const holes = require('../data/geojson/holesPoints.geojson.json');
 
 describe('Provide in Sources', function () {
-    const renderer = new Renderer();
-    renderer.setClearColor();
     // /!\ Avoid to overload fetcher because could troubleshoot the other unit tests?
     // formatTag to avoid it
     const formatTag = 'dspUnitTest';

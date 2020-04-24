@@ -12,7 +12,7 @@ import OBB from 'Renderer/OBB';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import DEMUtils from 'Utils/DEMUtils';
 import MaterialLayer from 'Renderer/MaterialLayer';
-import Renderer from './mock';
+import Renderer from './bootstrap';
 
 describe('DemUtils', function () {
     const renderer = new Renderer();

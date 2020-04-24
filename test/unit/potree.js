@@ -6,7 +6,7 @@ import GlobeView from 'Core/Prefab/GlobeView';
 import HttpsProxyAgent from 'https-proxy-agent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import PotreeNode from 'Core/PotreeNode';
-import Renderer from './mock';
+import Renderer from './bootstrap';
 
 describe('Potree', function () {
     const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), range: 250 };
