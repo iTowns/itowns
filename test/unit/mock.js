@@ -106,6 +106,7 @@ class Renderer {
         };
     }
 
+    setSize() {}
     setClearColor() {}
     getRenderTarget() {}
     setRenderTarget() {}
