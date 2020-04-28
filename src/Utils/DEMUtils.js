@@ -157,10 +157,11 @@ function _readTextureValueAt(layer, texture, ...uv) {
             const oy = uv[i + 1] - miny;
 
             // d is 4 bytes per pixel
-            result.push(THREE.MathUtils.lerp(
+            const v = THREE.MathUtils.lerp(
                 elevationLayer.colorTextureElevationMinZ,
                 elevationLayer.colorTextureElevationMaxZ,
-                d.data[4 * oy * dw + 4 * ox] / 255));
+                d.data[4 * oy * dw + 4 * ox] / 255);
+            result.push(v != elevationLayer.noDataValue ? v : undefined);
         }
         if (uv.length === 2) {
             return result[0];
@@ -197,6 +198,16 @@ function _readTextureValueNearestFiltering(layer, texture, vertexU, vertexV) {
     return _readTextureValueAt(layer, texture, u, v);
 }
 
+function _lerpWithUndefinedCheck(x, y, t) {
+    if (x == undefined) {
+        return y;
+    } else if (y == undefined) {
+        return x;
+    } else {
+        return THREE.MathUtils.lerp(x, y, t);
+    }
+}
+
 function _readTextureValueWithBilinearFiltering(layer, texture, vertexU, vertexV) {
     const coords = _convertUVtoTextureCoords(texture, vertexU, vertexV);
 
@@ -206,11 +217,12 @@ function _readTextureValueWithBilinearFiltering(layer, texture, vertexU, vertexV
         coords.u1, coords.v2,
         coords.u2, coords.v2);
 
+
     // horizontal filtering
-    const zu1 = THREE.MathUtils.lerp(z11, z21, coords.wu);
-    const zu2 = THREE.MathUtils.lerp(z12, z22, coords.wu);
+    const zu1 = _lerpWithUndefinedCheck(z11, z21, coords.wu);
+    const zu2 = _lerpWithUndefinedCheck(z12, z22, coords.wu);
     // then vertical filtering
-    return THREE.MathUtils.lerp(zu1, zu2, coords.wv);
+    return _lerpWithUndefinedCheck(zu1, zu2, coords.wv);
 }
 
 
@@ -353,5 +365,8 @@ function _readZ(layer, method, coord, nodes, cache) {
     } else {
         pt.z = _readZFast(layer, src, temp.offset);
     }
-    return { coord: pt, texture: src, tile };
+
+    if (pt.z != undefined) {
+        return { coord: pt, texture: src, tile };
+    }
 }
