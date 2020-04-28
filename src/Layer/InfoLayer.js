@@ -60,6 +60,16 @@ export class InfoTiledGeometryLayer extends InfoLayer {
             });
     }
 
+    get currentMaxTileZoom() {
+        let zoom = -1;
+        this.displayed.tiles.forEach((t) => {
+            if (t.extent.zoom > zoom) {
+                zoom = t.extent.zoom;
+            }
+        });
+        return zoom;
+    }
+
     clear() {
         this.displayed.tiles.clear();
     }
