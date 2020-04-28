@@ -97,7 +97,6 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
 const defaultFilter = () => true;
 function readPBF(file, options) {
     const vectorTile = new VectorTile(new Protobuf(file));
-    const extentSource = options.extentSource || file.extent;
     const sourceLayers = Object.keys(vectorTile.layers);
 
     if (sourceLayers.length < 1) {
@@ -105,12 +104,12 @@ function readPBF(file, options) {
     }
 
     // x,y,z tile coordinates
-    const x = extentSource.col;
-    const z = extentSource.zoom;
+    const x = file.extent.col;
+    const z = file.extent.zoom;
     // We need to move from TMS to Google/Bing/OSM coordinates
     // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
     // Only if the layer.origin is top
-    const y = options.isInverted ? extentSource.row : (1 << z) - extentSource.row - 1;
+    const y = options.isInverted ? file.extent.row : (1 << z) - file.extent.row - 1;
 
     options.buildExtent = true;
     options.mergeFeatures = true;
@@ -151,7 +150,7 @@ function readPBF(file, options) {
                 let style = styleCache.get(tag);
                 if (!style) {
                     style = new Style();
-                    style.setFromVectorTileLayer(layer, extentSource.zoom, options.sprites, options.symbolToCircle);
+                    style.setFromVectorTileLayer(layer, file.extent.zoom, options.sprites, options.symbolToCircle);
                     styleCache.set(tag, style);
                 }
                 const order = allLayers.findIndex(l => l.id == layer.id);
@@ -175,7 +174,7 @@ function readPBF(file, options) {
     // TODO verify if is needed to updateExtent for previous features.
     features.updateExtent();
     features.features.sort((a, b) => (a.order - b.order));
-    features.extent = extentSource;
+    features.extent = file.extent;
     return Promise.resolve(features);
 }
 
