@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import TileGeometry from 'Core/TileGeometry';
 import Cache from 'Core/Scheduler/Cache';
 import computeBuffers from 'Core/Prefab/computeBufferTileGeometry';
+import OBB from 'Renderer/OBB';
 
 const cacheBuffer = new Map();
 export default function newTileGeometry(builder, params) {
@@ -41,7 +42,7 @@ export default function newTileGeometry(builder, params) {
             }
 
             const geometry = new TileGeometry(params, buffers);
-            geometry.OBB = builder.OBB(geometry.boundingBox);
+            geometry.OBB = new OBB(geometry.boundingBox.min, geometry.boundingBox.max);
 
             geometry._count = 0;
             geometry.dispose = () => {

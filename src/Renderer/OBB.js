@@ -10,6 +10,7 @@ const size = new THREE.Vector3();
 const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
+let obb;
 
 class OBB extends THREE.Object3D {
     /**
@@ -80,26 +81,6 @@ class OBB extends THREE.Object3D {
     }
 
     /**
-     * Set bouding box value to points
-     *
-     * @param      {Array<THREE.Vector3>}  points  The points to set
-     * @return     {Array<THREE.Vector3>}  The points seted
-     */
-    toPoints(points) {
-        // top points of bounding box
-        points[0].set(this.box3D.max.x, this.box3D.max.y, this.box3D.max.z);
-        points[1].set(this.box3D.min.x, this.box3D.max.y, this.box3D.max.z);
-        points[2].set(this.box3D.min.x, this.box3D.min.y, this.box3D.max.z);
-        points[3].set(this.box3D.max.x, this.box3D.min.y, this.box3D.max.z);
-        points[4].set(this.box3D.max.x, this.box3D.max.y, this.box3D.min.z);
-        points[5].set(this.box3D.min.x, this.box3D.max.y, this.box3D.min.z);
-        points[6].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
-        points[7].set(this.box3D.max.x, this.box3D.min.y, this.box3D.min.z);
-
-        return points;
-    }
-
-    /**
      * Determines if the sphere is above the XY space of the box
      *
      * @param      {Sphere}   sphere  The sphere
@@ -141,7 +122,9 @@ class OBB extends THREE.Object3D {
             };
 
             const geometry = new TileGeometry(paramsGeometry);
-            this.copy(builder.OBB(geometry.boundingBox));
+            obb.box3D.copy(geometry.boundingBox);
+            obb.natBox.copy(geometry.boundingBox);
+            this.copy(obb);
 
             this.updateZ(minHeight, maxHeight);
             this.position.copy(position);
@@ -159,5 +142,7 @@ class OBB extends THREE.Object3D {
         return this;
     }
 }
+
+obb = new OBB();
 
 export default OBB;

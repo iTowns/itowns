@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import OBB from 'Renderer/OBB';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 
@@ -53,11 +52,6 @@ class PlanarTileBuilder {
     // coord v tile to projected
     vProjecte(v, params) {
         params.projected.y = params.extent.south + v * (params.extent.north - params.extent.south);
-    }
-
-    // get oriented bounding box of tile
-    OBB(boundingBox) {
-        return new OBB(boundingBox.min, boundingBox.max);
     }
 
     computeSharableExtent(extent) {

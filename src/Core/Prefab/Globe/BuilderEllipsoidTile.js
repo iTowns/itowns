@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
-import OBB from 'Renderer/OBB';
 import Extent from 'Core/Geographic/Extent';
 
 const PI_OV_FOUR = Math.PI / 4;
@@ -121,11 +120,6 @@ class BuilderEllipsoidTile {
             quaternion: quatToAlignLongitude.clone(),
             position: this.center(extent),
         };
-    }
-
-    // use for region for adaptation boundingVolume
-    OBB(boundingBox) {
-        return new OBB(boundingBox.min, boundingBox.max);
     }
 }
 
