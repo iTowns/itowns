@@ -23,9 +23,23 @@ describe('OBB', function () {
         assert.equal(obb.natBox.min.x, min.x);
         assert.equal(obb.natBox.max.x, max.x);
     });
+
     it('isSphereAboveXYBox should work properly', () => {
         const sphere = new THREE.Sphere(new THREE.Vector3(23, 0, 0), 5);
         assert.equal(obb.isSphereAboveXYBox(sphere), true);
+    });
+
+    it('updates the scale', () => {
+        const o1 = new OBB(min, max);
+        o1.z.min = -3;
+        o1.z.max = 5;
+        o1.updateScaleZ(2);
+        assert.equal(o1.z.min, -3);
+        assert.equal(o1.z.max, 5);
+        assert.equal(o1.z.scale, 2);
+        assert.equal(o1.z.delta, 16);
+        assert.equal(o1.box3D.min.z, -16);
+        assert.equal(o1.box3D.max.z, 20);
     });
 });
 
