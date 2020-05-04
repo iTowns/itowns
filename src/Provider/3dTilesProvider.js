@@ -95,7 +95,7 @@ function executeCommand(command) {
                 if (magic[0] === '{') {
                     result = JSON.parse(utf8Decoder.decode(new Uint8Array(result)));
                     const newPrefix = url.slice(0, url.lastIndexOf('/') + 1);
-                    layer.tileIndex.extendTileset(result, metadata.tileId, newPrefix, layer.registeredExtensions);
+                    layer.tileset.extendTileset(result, metadata.tileId, newPrefix, layer.registeredExtensions);
                 } else if (magic == 'b3dm') {
                     func = supportedFormats.b3dm;
                 } else if (magic == 'pnts') {

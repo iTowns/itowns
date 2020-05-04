@@ -55,7 +55,7 @@ function boundingVolumeToExtent(crs, volume, transform) {
 
 const tmpMatrix = new THREE.Matrix4();
 function _subdivideNodeAdditive(context, layer, node, cullingTest) {
-    for (const child of layer.tileIndex.index[node.tileId].children) {
+    for (const child of layer.tileset.tiles[node.tileId].children) {
         // child being downloaded => skip
         if (child.promise || child.loaded) {
             continue;
@@ -93,7 +93,7 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
 
 function _subdivideNodeSubstractive(context, layer, node) {
     if (!node.pendingSubdivision && getChildTiles(node).length == 0) {
-        const childrenTiles = layer.tileIndex.index[node.tileId].children;
+        const childrenTiles = layer.tileset.tiles[node.tileId].children;
         if (childrenTiles === undefined || childrenTiles.length === 0) {
             return;
         }
@@ -109,7 +109,7 @@ function _subdivideNodeSubstractive(context, layer, node) {
                     if (node.additiveRefinement) {
                         context.view.notifyChange(node);
                     }
-                    layer.tileIndex.index[tile.tileId].loaded = true;
+                    layer.tileset.tiles[tile.tileId].loaded = true;
                     layer.onTileContentLoaded(tile);
                 }));
         }
@@ -170,7 +170,7 @@ function cleanup3dTileset(layer, n, depth = 0) {
             n.dispose();
         }
         delete n.content;
-        layer.tileIndex.index[n.tileId].loaded = false;
+        layer.tileset.tiles[n.tileId].loaded = false;
         n.remove(...n.children);
 
         // and finally remove from parent
@@ -275,7 +275,7 @@ export function init3dTilesLayer(view, scheduler, layer, rootTile) {
         (tile) => {
             layer.object3d.add(tile);
             tile.updateMatrixWorld();
-            layer.tileIndex.index[tile.tileId].loaded = true;
+            layer.tileset.tiles[tile.tileId].loaded = true;
             layer.root = tile;
             layer.extent = boundingVolumeToExtent(layer.projection || view.referenceCrs,
                 tile.boundingVolume, tile.matrixWorld);
@@ -339,10 +339,10 @@ export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTes
 }
 
 export function $3dTilesSubdivisionControl(context, layer, node) {
-    if (layer.tileIndex.index[node.tileId].children === undefined) {
+    if (layer.tileset.tiles[node.tileId].children === undefined) {
         return false;
     }
-    if (layer.tileIndex.index[node.tileId].isTileset) {
+    if (layer.tileset.tiles[node.tileId].isTileset) {
         return true;
     }
     const sse = computeNodeSSE(context.camera, node);

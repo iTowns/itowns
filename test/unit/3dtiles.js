@@ -66,10 +66,10 @@ describe('Distance computation using boundingVolume.region', function () {
     camera.camera3D.updateMatrixWorld(true);
 
     it('should compute distance correctly', function () {
-        const tileset = tilesetWithRegion();
-        const tileIndex = new C3DTileset(tileset, '');
+        const tilesetJSON = tilesetWithRegion();
+        const tileset = new C3DTileset(tilesetJSON, '');
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index[0]);
+        configureTile(tile, { }, tileset.tiles[0]);
 
         computeNodeSSE(camera, tile);
 
@@ -79,10 +79,10 @@ describe('Distance computation using boundingVolume.region', function () {
     it('should not be affected by transform', function () {
         const m = new Matrix4().makeTranslation(0, 0, 10).multiply(
             new Matrix4().makeScale(0.01, 0.01, 0.01));
-        const tileset = tilesetWithRegion(m);
-        const tileIndex = new C3DTileset(tileset, '');
+        const tilesetJSON = tilesetWithRegion(m);
+        const tileset = new C3DTileset(tilesetJSON, '');
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index[0]);
+        configureTile(tile, { }, tileset.tiles[0]);
 
         computeNodeSSE(camera, tile);
 
@@ -99,11 +99,11 @@ describe('Distance computation using boundingVolume.box', function () {
     camera.camera3D.updateMatrixWorld(true);
 
     it('should compute distance correctly', function () {
-        const tileset = tilesetWithBox();
-        const tileIndex = new C3DTileset(tileset, '');
+        const tilesetJSON = tilesetWithBox();
+        const tileset = new C3DTileset(tilesetJSON, '');
 
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index[0]);
+        configureTile(tile, { }, tileset.tiles[0]);
 
         computeNodeSSE(camera, tile);
 
@@ -113,12 +113,12 @@ describe('Distance computation using boundingVolume.box', function () {
     it('should affected by transform', function () {
         const m = new Matrix4().makeTranslation(0, 0, 10).multiply(
             new Matrix4().makeScale(0.01, 0.01, 0.01));
-        const tileset = tilesetWithBox(m);
+        const tilesetJSON = tilesetWithBox(m);
 
-        const tileIndex = new C3DTileset(tileset, '');
+        const tileset = new C3DTileset(tilesetJSON, '');
 
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index[0]);
+        configureTile(tile, { }, tileset.tiles[0]);
 
         tile.updateMatrixWorld(true);
 
@@ -137,11 +137,11 @@ describe('Distance computation using boundingVolume.sphere', function () {
     camera.camera3D.updateMatrixWorld(true);
 
     it('should compute distance correctly', function () {
-        const tileset = tilesetWithSphere();
-        const tileIndex = new C3DTileset(tileset, '');
+        const tilesetJSON = tilesetWithSphere();
+        const tileset = new C3DTileset(tilesetJSON, '');
 
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index[0]);
+        configureTile(tile, { }, tileset.tiles[0]);
 
         computeNodeSSE(camera, tile);
 
@@ -151,12 +151,12 @@ describe('Distance computation using boundingVolume.sphere', function () {
     it('should affected by transform', function () {
         const m = new Matrix4().makeTranslation(0, 0, 10).multiply(
             new Matrix4().makeScale(0.01, 0.01, 0.01));
-        const tileset = tilesetWithSphere(m);
+        const tilesetJSON = tilesetWithSphere(m);
 
-        const tileIndex = new C3DTileset(tileset, '');
+        const tileset = new C3DTileset(tilesetJSON, '');
 
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index[0]);
+        configureTile(tile, { }, tileset.tiles[0]);
 
         tile.updateMatrixWorld(true);
 
