@@ -22,18 +22,26 @@ class DOMElement {
         this.clientHeight = 300;
         this.width = 400;
         this.height = 300;
+        this.events = new Map();
         this.style = {
             display: 'block',
         };
         document.documentElement = this;
     }
 
-    removeEventListener() {}
     focus() {}
     appendChild(c) { this.children.push(c); }
     cloneNode() { return Object.create(this); }
     getBoundingClientRect() { return { x: 0, y: 0, width: this.width, height: this.height }; }
-    addEventListener() {}
+    addEventListener(event, cb) { this.events.set(event, cb); }
+    removeEventListener() {}
+    emitEvent(event, params) {
+        const callback = this.events.get(event);
+        if (callback) {
+            return callback(params);
+        }
+    }
+    createSVGMatrix() {}
 }
 
 // Mock document object for Mocha.
@@ -71,15 +79,15 @@ global.document = {
             const img = new DOMElement();
             img.width = 10;
             img.height = 10;
+            Object.defineProperty(img, 'src', {
+                set: () => img.emitEvent('load'),
+            });
             return img;
         }
 
         return new DOMElement();
     },
-    createElementNS: () => ({
-        createSVGMatrix: () => { },
-    }),
-    // documentElement: this.domElement,
+    createElementNS: (_, type) => (global.document.createElement(type)),
 };
 
 class Renderer {
