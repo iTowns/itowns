@@ -1,50 +1,33 @@
 import fs from 'fs';
 import assert from 'assert';
+import HttpsProxyAgent from 'https-proxy-agent';
 import VectorTileParser from 'Parser/VectorTileParser';
+import VectorTilesSource from 'Source/VectorTilesSource';
 import Extent from 'Core/Geographic/Extent';
 
 describe('Vector tiles', function () {
-    const paints = [{
-        'fill-color': 'rgb(50%, 0%, 0%)',
-        'fill-opacity': 0.5,
-    }, {
-        'fill-color': 'rgba(0, 0, 0, 0.5)',
-    }, {
-        'fill-color': 'hsla(0, 10%, 0%, 0.3)',
-    }, {
-        'line-color': 'hsla(0, 0%, 50%, 0.3)',
-        'line-width': 3,
-        'line-opacity': 0.4,
-    }, {
-        'icon-image': 'icon.png',
-    },
-    ];
-
-    const layout = {
-        'text-field': 'foo',
-    };
-
     // this PBF file comes from https://github.com/mapbox/vector-tile-js
     // it contains two square polygons
     const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
-    let id = 0;
-    function parse(pbf, paint, type) {
-        pbf.extent = new Extent('TMS', 1, 1, 1);
+    multipolygon.extent = new Extent('TMS', 1, 1, 1);
+
+    function parse(pbf, layers) {
         return VectorTileParser.parse(pbf, {
             crsIn: 'EPSG:4326',
             crsOut: 'EPSG:3857',
-            filter: [{
-                'source-layer': 'geojson',
-                paint,
-                layout,
-                id: id++,
-                type,
-            }],
+            layers,
         });
     }
 
-    it('should return two squares', () =>
-        parse(multipolygon).then((collection) => {
+    it('returns two squares', () => {
+        parse(multipolygon, {
+            geojson: [{
+                id: 0,
+                filterExpression: { filter: () => true },
+                minzoom: 1,
+                maxzoom: 24,
+            }],
+        }).then((collection) => {
             const feature = collection.features[0];
             const size = feature.size;
             // two squares (4 + 1 closing vertices)
@@ -58,51 +41,113 @@ describe('Vector tiles', function () {
             assert.equal(square1[1], square1[4 * size + 1]);
             assert.equal(square2[0], square2[4 * size]);
             assert.equal(square2[1], square2[4 * size + 1]);
-        }));
-    it('should parse hsl to style fill color and opacity', () =>
-        parse(multipolygon, paints[0], 'fill').then((collection) => {
-            const style = collection.features[0].style;
-            assert.equal(style.fill.color, paints[0]['fill-color'].replace(/ /g, ''));
-            assert.equal(style.fill.opacity, 0.5);
-        }));
-    it('should parse rgba to style fill opacity', () =>
-        parse(multipolygon, paints[1], 'fill').then((collection) => {
-            const style = collection.features[0].style;
-            assert.equal(style.fill.opacity, 0.5);
-        }));
-    it('should parse hsla to style fill color and opacity', () =>
-        parse(multipolygon, paints[2], 'fill').then((collection) => {
-            const style = collection.features[0].style;
-            assert.equal(style.fill.opacity, 0.3);
-            assert.equal(style.fill.color, 'hsl(0,10%,0%)');
-        }));
-    it('should parse line to style line', () =>
-        parse(multipolygon, paints[3], 'line').then((collection) => {
-            const style = collection.features[0].style;
-            assert.equal(style.stroke.opacity, 0.4);
-            assert.equal(style.stroke.width, 3);
-            assert.equal(style.stroke.color, 'hsl(0,0%,50%)');
-        }));
-    it('should parse symbol to style symbol', () =>
-        parse(multipolygon, paints[4], 'symbol').then((collection) => {
-            const style = collection.features[0].style;
-            assert.equal(style.text.zOrder, 'Y');
-            assert.equal(style.text.anchor, 'center');
-            assert.deepEqual(style.text.offset, [0, 0]);
-            assert.equal(style.text.padding, 2);
-            assert.equal(style.text.size, 16);
-            assert.equal(style.text.placement, 'point');
-            assert.equal(style.text.rotation, 'auto');
-            assert.equal(style.text.field, 'foo');
-            assert.equal(style.text.wrap, 10);
-            assert.equal(style.text.spacing, 0);
-            assert.equal(style.text.transform, 'none');
-            assert.equal(style.text.justify, 'center');
-            assert.equal(style.text.color, '#000000');
-            assert.equal(style.text.opacity, 1.0);
-            assert.deepEqual(style.text.font, ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif']);
-            assert.equal(style.text.halo.color, '#000000');
-            assert.equal(style.text.halo.width, 0);
-            assert.equal(style.text.halo.blur, 0);
-        }));
+        });
+    });
+
+    it('returns nothing', () => {
+        parse(null).then((collection) => {
+            assert.equal(collection, undefined);
+        });
+    });
+
+    it('filters all features out', () => {
+        parse(multipolygon, {}).then((collection) => {
+            assert.equal(collection.features.length, 0);
+        });
+    });
+
+    describe('VectorTilesSource', function () {
+        it('throws an error because no style was provided', () => {
+            assert.throws(() => new VectorTilesSource({}), {
+                name: 'Error',
+                message: 'New VectorTilesSource: style is required',
+            });
+        });
+
+        it('reads tiles URL from the style', (done) => {
+            const source = new VectorTilesSource({
+                style: {
+                    sources: { geojson: { tiles: ['http://server.geo/{z}/{x}/{y}.pbf'] } },
+                    layers: [],
+                },
+            });
+            source.whenReady.then(() => {
+                // eslint-disable-next-line no-template-curly-in-string
+                assert.equal(source.url, 'http://server.geo/${z}/${x}/${y}.pbf');
+                done();
+            });
+        });
+
+        it('reads the background layer', (done) => {
+            const source = new VectorTilesSource({
+                url: 'fakeurl',
+                style: {
+                    sources: { geojson: {} },
+                    layers: [{ type: 'background' }],
+                },
+            });
+            source.whenReady.then(() => {
+                assert.ok(source.backgroundLayer);
+                done();
+            });
+        });
+
+        it('creates styles and assigns filters', (done) => {
+            const source = new VectorTilesSource({
+                url: 'fakeurl',
+                style: {
+                    sources: { geojson: {} },
+                    layers: [{
+                        id: 'land',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                        },
+                    }],
+                },
+            });
+            source.whenReady.then(() => {
+                assert.ok(source.styles.land);
+                assert.equal(source.styles.land[0].fill.color, 'rgb(255,0,0)');
+                done();
+            });
+        });
+
+        it('creates styles following stops in it', (done) => {
+            const source = new VectorTilesSource({
+                url: 'fakeurl',
+                style: {
+                    sources: { geojson: {} },
+                    layers: [{
+                        id: 'land',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                            'fill-opacity': { stops: [[2, 1], [5, 0.5]] },
+                        },
+                    }],
+                },
+            });
+            source.whenReady.then(() => {
+                assert.equal(source.styles.land.length, 2);
+                assert.deepEqual(source.getStyleFromIdZoom('land', 3), source.styles.land[0]);
+                assert.deepEqual(source.getStyleFromIdZoom('land', 5), source.styles.land[1]);
+                assert.deepEqual(source.getStyleFromIdZoom('land', 8), source.styles.land[1]);
+                done();
+            });
+        });
+
+        it('loads the style from a file', (done) => {
+            const source = new VectorTilesSource({
+                style: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/vectortiles/style.json',
+                networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
+            });
+            source.whenReady.then(() => {
+                assert.equal(source.styles.land.length, 1);
+                assert.equal(source.styles.land[0].minzoom, 5);
+                assert.equal(source.styles.land[0].maxzoom, 13);
+                done();
+            });
+        });
+    });
 });
