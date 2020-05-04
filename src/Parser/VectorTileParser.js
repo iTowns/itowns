@@ -3,15 +3,11 @@ import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import { globalExtentTMS } from 'Core/Geographic/Extent';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
-import { featureFilter } from '@mapbox/mapbox-gl-style-spec';
-import Style from 'Core/Style';
 
 const worldDimension3857 = globalExtentTMS.get('EPSG:3857').dimensions();
 const globalExtent = new Vector3(worldDimension3857.x, worldDimension3857.y, 1);
 const lastPoint = new Vector2();
 const firstPoint = new Vector2();
-const styleCache = new Map();
-
 
 // Classify option, it allows to classify a full polygon and its holes.
 // Each polygon with its holes are in one FeatureGeometry.
@@ -94,7 +90,6 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
     feature.updateExtent(geometry);
 }
 
-const defaultFilter = () => true;
 function readPBF(file, options) {
     const vectorTile = new VectorTile(new Protobuf(file));
     const sourceLayers = Object.keys(vectorTile.layers);
@@ -116,66 +111,45 @@ function readPBF(file, options) {
     options.withAltitude = false;
     options.withNormal = false;
 
-    const features = new FeatureCollection('EPSG:3857', options);
-    // TODO remove defaultFilter;
-    features.filter = options.filter || defaultFilter;
+    const collection = new FeatureCollection('EPSG:3857', options);
 
     const vFeature = vectorTile.layers[sourceLayers[0]];
     // TODO: verify if size is correct because is computed with only one feature (vFeature).
     const size = vFeature.extent * 2 ** z;
     const center = -0.5 * size;
-    features.scale.set(size, -size, 1).divide(globalExtent);
-    features.translation.set(-(vFeature.extent * x + center), -(vFeature.extent * y + center), 0).divide(features.scale);
-
-    const allLayers = features.filter;
-    if (!features.filter.loaded) {
-        allLayers.forEach((l) => {
-            l.filterExpression = featureFilter(l.filter);
-        });
-        features.filter.loaded = true;
-    }
+    collection.scale.set(size, -size, 1).divide(globalExtent);
+    collection.translation.set(-(vFeature.extent * x + center), -(vFeature.extent * y + center), 0).divide(collection.scale);
 
     sourceLayers.forEach((layer_id) => {
+        if (!options.layers[layer_id]) { return; }
+
         const sourceLayer = vectorTile.layers[layer_id];
-        const layersSource = allLayers.filter(l => sourceLayer.name == l['source-layer']);
+
         for (let i = sourceLayer.length - 1; i >= 0; i--) {
             const vtFeature = sourceLayer.feature(i);
-            const layers = layersSource.filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) &&
-                (l.minzoom == undefined || z >= l.minzoom) &&
-                (l.maxzoom == undefined || z < l.maxzoom));
+            const layers = options.layers[layer_id].filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.minzoom && z < l.maxzoom);
             let feature;
+
             for (const layer of layers) {
-                const tag = `${layer.sourceUid}_${layer.id}_zoom_${z}`;
-                // Fix doens't pass instance of properties
-                let style = styleCache.get(tag);
-                if (!style) {
-                    style = new Style();
-                    style.setFromVectorTileLayer(layer, file.extent.zoom, options.sprites, options.symbolToCircle);
-                    styleCache.set(tag, style);
-                }
-                const order = allLayers.findIndex(l => l.id == layer.id);
                 if (!feature) {
-                    feature = features.requestFeatureById(layer.id, vtFeature.type - 1);
+                    feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
                     feature.id = layer.id;
-                    feature.order = order;
-                    feature.style = style;
+                    feature.order = layer.order;
                     vtFeatureToFeatureGeometry(vtFeature, feature);
-                } else if (!features.features.find(f => f.id === layer.id)) {
-                    feature = features.newFeatureByReference(feature);
+                } else if (!collection.features.find(f => f.id === layer.id)) {
+                    feature = collection.newFeatureByReference(feature);
                     feature.id = layer.id;
-                    feature.order = order;
-                    feature.style = style;
+                    feature.order = layer.order;
                 }
             }
         }
     });
 
-    features.removeEmptyFeature();
+    collection.removeEmptyFeature();
     // TODO verify if is needed to updateExtent for previous features.
-    features.updateExtent();
-    features.features.sort((a, b) => (a.order - b.order));
-    features.extent = file.extent;
-    return Promise.resolve(features);
+    collection.updateExtent();
+    collection.extent = file.extent;
+    return Promise.resolve(collection);
 }
 
 /**
@@ -197,14 +171,17 @@ export default {
      * @param {boolean} [options.withNormal=true] - If true each coordinate normal is computed
      * @param {boolean} [options.withAltitude=true] - If true each coordinate altitude is kept
      * @param {function=} options.filter - Filter function to remove features.
+     * @param {Object} options.layers - Object containing subobject with
+     * informations on a specific layer. Informations available is `id`,
+     * `filterExpression`, `minzoom` and `maxzoom`. See {@link
+     * VectorTilesSource} for more precision. The key of each information is the
+     * `source-layer` property of the layer.
      * @param {string=} options.isInverted - This option is to be set to the
      * correct value, true or false (default being false), if the computation of
      * the coordinates needs to be inverted to same scheme as OSM, Google Maps
      * or other system. See [this link]{@link
      * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates}
      * for more informations.
-     * @param {boolean} [options.symbolToCircle=false] - If true, all symbols
-     * from a tile will be considered as circle, and render as circles.
      *
      * @return {Promise} A Promise resolving with a Feature or an array a
      * Features.
