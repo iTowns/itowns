@@ -167,6 +167,9 @@ class Style {
     constructor(params = {}) {
         this.isStyle = true;
 
+        this.minzoom = 0;
+        this.maxzoom = 24;
+
         params.fill = params.fill || {};
         params.stroke = params.stroke || {};
         params.point = params.point || {};
@@ -271,14 +274,15 @@ class Style {
     /**
      * set Style from vector tile layer properties.
      * @param {object} layer vector tile layer.
-     * @param {Number} zoom vector tile layer.
      * @param {Object} sprites vector tile layer.
      * @param {boolean} [symbolToCircle=false]
      * @returns {Style}
      */
-    setFromVectorTileLayer(layer, zoom, sprites, symbolToCircle = false) {
+    setFromVectorTileLayer(layer, sprites, symbolToCircle = false) {
         layer.layout = layer.layout || {};
         layer.paint = layer.paint || {};
+
+        const zoom = this.minzoom;
 
         if (layer.type === 'fill' && !this.fill.color) {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern']));
