@@ -7,7 +7,7 @@ import utf8Decoder from 'Utils/Utf8Decoder';
 function b3dmToMesh(data, layer, url) {
     const urlBase = THREE.LoaderUtils.extractUrlBase(url);
     const options = {
-        gltfUpAxis: layer.asset.gltfUpAxis,
+        gltfUpAxis: layer.tileset.asset.gltfUpAxis,
         urlBase,
         overrideMaterials: layer.overrideMaterials,
         doNotPatchMaterial: layer.doNotPatchMaterial,

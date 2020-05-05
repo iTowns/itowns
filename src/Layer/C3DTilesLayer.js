@@ -51,7 +51,6 @@ class C3DTilesLayer extends GeometryLayer {
 
         this.source.whenReady.then((tileset) => {
             this.tileset = new C3DTileset(tileset, this.source.baseUrl);
-            this.asset = tileset.asset;
             // TODO: Move all init3dTilesLayer code to constructor
             init3dTilesLayer(view, view.mainLoop.scheduler, this, tileset.root).then(resolve);
         });
