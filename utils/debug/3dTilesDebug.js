@@ -62,7 +62,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
 
                 if (helper && !metadata.boundingVolume.region) {
                     // compensate B3dm orientation correction
-                    const gltfUpAxis = _3dTileslayer.asset.gltfUpAxis;
+                    const gltfUpAxis = _3dTileslayer.tileset.asset.gltfUpAxis;
                     if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
                         helper.rotation.x = -Math.PI * 0.5;
                     } else if (gltfUpAxis === 'X') {
