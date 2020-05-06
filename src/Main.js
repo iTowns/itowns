@@ -1,4 +1,4 @@
-export const REVISION = '2.20.0';
+export const REVISION = '2.21.0';
 
 // Geographic tools
 export { default as Extent } from 'Core/Geographic/Extent';
