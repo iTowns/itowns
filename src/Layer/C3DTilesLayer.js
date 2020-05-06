@@ -50,7 +50,24 @@ class C3DTilesLayer extends GeometryLayer {
         const resolve = this.addInitializationStep();
 
         this.source.whenReady.then((tileset) => {
-            this.tileset = new C3DTileset(tileset, this.source.baseUrl);
+            this.tileset = new C3DTileset(tileset, this.source.baseUrl, this.registeredExtensions);
+            // Verify that extensions of the tileset have been registered in the layer
+            if (this.tileset.extensionsUsed) {
+                for (const extensionUsed of this.tileset.extensionsUsed) {
+                    // if current extension is not registered
+                    if (!this.registeredExtensions.isExtensionRegistered(extensionUsed)) {
+                        // if it is required to load the tileset
+                        if (this.tileset.extensionsRequired &&
+                            this.tileset.extensionsRequired.includes(extensionUsed)) {
+                            console.error(
+                                `3D Tiles tileset required extension "${extensionUsed}" must be registered to the 3D Tiles layer of iTowns to be parsed and used.`);
+                        } else {
+                            console.warn(
+                                `3D Tiles tileset used extension "${extensionUsed}" must be registered to the 3D Tiles layer of iTowns to be parsed and used.`);
+                        }
+                    }
+                }
+            }
             // TODO: Move all init3dTilesLayer code to constructor
             init3dTilesLayer(view, view.mainLoop.scheduler, this, tileset.root).then(resolve);
         });
