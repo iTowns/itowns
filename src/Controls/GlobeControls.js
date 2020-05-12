@@ -639,7 +639,7 @@ class GlobeControls extends THREE.EventDispatcher {
         event.preventDefault();
 
         this.updateTarget();
-        previous = CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera);
+        previous = CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, pickedPosition);
         this.state = this.states.inputToState(event.button, currentKey);
 
         const coords = this.view.eventToViewCoords(event);
@@ -680,7 +680,7 @@ class GlobeControls extends THREE.EventDispatcher {
         if (this.enabled === false || currentKey) { return; }
         this.player.stop();
         const point = this.view.getPickingPositionFromDepth(this.view.eventToViewCoords(event));
-        const range = this.getRange();
+        const range = this.getRange(point);
         if (point && range > this.minDistance) {
             return this.lookAtCoordinate({
                 coord: new Coordinates('EPSG:4978', point),
@@ -744,9 +744,9 @@ class GlobeControls extends THREE.EventDispatcher {
             this.dollyIn();
         }
 
-        const previousRange = this.getRange();
+        const previousRange = this.getRange(pickedPosition);
         this.update();
-        const newRange = this.getRange();
+        const newRange = this.getRange(pickedPosition);
         if (Math.abs(newRange - previousRange) / previousRange > 0.001) {
             this.dispatchEvent({
                 type: CONTROL_EVENTS.RANGE_CHANGED,
@@ -974,26 +974,32 @@ class GlobeControls extends THREE.EventDispatcher {
 
     /**
      * Returns the "range": the distance in meters between the camera and the current central point on the screen.
+     * @param {THREE.Vector3} [position] - The position to consider as picked on
+     * the ground.
      * @return {number} number
      */
-    getRange() {
-        return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).range;
+    getRange(position) {
+        return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, position).range;
     }
 
     /**
      * Returns the tilt of the current camera in degrees.
-     * @return {Angle} number - The angle of the rotation in degrees.
+     * @param {THREE.Vector3} [position] - The position to consider as picked on
+     * the ground.
+     * @return {number} The angle of the rotation in degrees.
      */
-    getTilt() {
-        return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).tilt;
+    getTilt(position) {
+        return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, position).tilt;
     }
 
     /**
      * Returns the heading of the current camera in degrees.
-     * @return {Angle} number - The angle of the rotation in degrees.
+     * @param {THREE.Vector3} [position] - The position to consider as picked on
+     * the ground.
+     * @return {number} The angle of the rotation in degrees.
      */
-    getHeading() {
-        return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).heading;
+    getHeading(position) {
+        return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, position).heading;
     }
 
     /**
@@ -1013,7 +1019,8 @@ class GlobeControls extends THREE.EventDispatcher {
      * @return {Array<number>}
      */
     getCameraOrientation() {
-        return [this.getTilt(), this.getHeading()];
+        this.view.getPickingPositionFromDepth(null, pickedPosition);
+        return [this.getTilt(pickedPosition), this.getHeading(pickedPosition)];
     }
 
     /**
