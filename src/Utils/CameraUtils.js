@@ -40,13 +40,6 @@ export function getLookAtFromMath(view, camera) {
     }
 }
 
-function getGroundTargetFromCamera(view, camera, target) {
-    camera.updateMatrixWorld(true);
-    const pickedPosition = view.getPickingPositionFromDepth() || getLookAtFromMath(view, camera);
-    const range = pickedPosition && !isNaN(pickedPosition.x) ? camera.position.distanceTo(pickedPosition) : 100;
-    camera.localToWorld(target.set(0, 0, -range));
-}
-
 function proxyProperty(view, camera, rig, key) {
     rig.proxy.position[key] = camera.position[key];
     Object.defineProperty(camera.position, key, {
@@ -187,8 +180,14 @@ class CameraRig extends THREE.Object3D {
         };
     }
 
-    setfromCamera(view, camera) {
-        getGroundTargetFromCamera(view, camera, targetPosition);
+    setfromCamera(view, camera, pickedPosition) {
+        camera.updateMatrixWorld(true);
+        if (pickedPosition == undefined) {
+            pickedPosition = view.getPickingPositionFromDepth() || getLookAtFromMath(view, camera);
+        }
+        const range = pickedPosition && !isNaN(pickedPosition.x) ? camera.position.distanceTo(pickedPosition) : 100;
+        camera.localToWorld(targetPosition.set(0, 0, -range));
+
         this.setFromPositions(view, camera.position);
     }
 
@@ -358,11 +357,12 @@ export default {
      *
      * @param      {View}  view    The camera view
      * @param      {Camera}  camera  The camera to get transform
+     * @param      {THREE.Vector3} [target] - The optional target
      * @return     {CameraUtils~CameraTransformOptions}  The transform camera looking at target
      */
-    getTransformCameraLookingAtTarget(view, camera) {
+    getTransformCameraLookingAtTarget(view, camera, target) {
         const rig = getRig(camera);
-        rig.setfromCamera(view, camera);
+        rig.setfromCamera(view, camera, target);
         return rig.getParams();
     },
     /**
