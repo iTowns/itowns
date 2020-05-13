@@ -79,7 +79,7 @@ class VectorTilesSource extends TMSSource {
             const s = Object.keys(style.sources)[0];
             const os = style.sources[s];
 
-            style.layers.forEach((layer) => {
+            style.layers.forEach((layer, order) => {
                 layer.sourceUid = this.uid;
                 if (layer.type === 'background') {
                     this.backgroundLayer = layer;
@@ -109,6 +109,7 @@ class VectorTilesSource extends TMSSource {
 
                     this.layers[layer['source-layer']].push({
                         id: layer.id,
+                        order,
                         filterExpression: featureFilter(layer.filter),
                         minzoom: stops[0],
                         maxzoom: stops[stops.length - 1],
