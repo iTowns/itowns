@@ -146,6 +146,7 @@ function readPBF(file, options) {
     });
 
     collection.removeEmptyFeature();
+    collection.features.sort((a, b) => a.order - b.order);
     // TODO verify if is needed to updateExtent for previous features.
     collection.updateExtent();
     collection.extent = file.extent;
