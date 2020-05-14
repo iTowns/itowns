@@ -683,7 +683,7 @@ function PlanarControls(view, options = {}) {
     };
 
     this.updateMousePositionAndDelta = function updateMousePositionAndDelta(event) {
-        mousePosition.set(event.offsetX, event.offsetY);
+        this.view.eventToViewCoords(event, mousePosition);
 
         deltaMousePosition.copy(mousePosition).sub(lastMousePosition);
 
