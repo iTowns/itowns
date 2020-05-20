@@ -47,11 +47,11 @@ const textAnchorPosition = {
     right: [-1, -0.5],
     top: [-0.5, 0],
     bottom: [-0.5, -1],
-    topRight: [-1, 0],
-    bottomLeft: [0, -1],
-    bottomRight: [-1, -1],
+    'top-right': [-1, 0],
+    'bottom-left': [0, -1],
+    'bottom-right': [-1, -1],
     center: [-0.5, -0.5],
-    topLeft: [0, 0],
+    'top-left': [0, 0],
 };
 
 /**
@@ -457,19 +457,7 @@ class Style {
      * @return {number[]} Two percentage values, for x and y respectively.
      */
     getTextAnchorPosition() {
-        switch (this.text.anchor) {
-            case 'left': return textAnchorPosition.left;
-            case 'right': return textAnchorPosition.right;
-            case 'top': return textAnchorPosition.top;
-            case 'bottom': return textAnchorPosition.bottom;
-            case 'top-right': return textAnchorPosition.topRight;
-            case 'bottom-left': return textAnchorPosition.bottomLeft;
-            case 'bottom-right': return textAnchorPosition.bottomRight;
-            case 'center': return textAnchorPosition.center;
-            case 'top-left':
-            default:
-                return textAnchorPosition.topLeft;
-        }
+        return textAnchorPosition[this.text.anchor];
     }
 
     /**
