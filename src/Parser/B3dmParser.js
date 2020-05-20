@@ -5,7 +5,7 @@ import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
 import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import utf8Decoder from 'Utils/Utf8Decoder';
-import BatchTableParser from './BatchTableParser';
+import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 // For gltf rotation
@@ -141,8 +141,9 @@ export default {
                 // sizeBegin is an index to the beginning of the batch table
                 const sizeBegin = headerByteLength + b3dmHeader.FTJSONLength +
                     b3dmHeader.FTBinaryLength;
-                promises.push(BatchTableParser.parse(
-                    buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin), b3dmHeader.BTBinaryLength, FTJSON.BATCH_LENGTH, options.registeredExtensions));
+                const BTBuffer = buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin);
+                promises.push(new C3DTBatchTable(BTBuffer,
+                    b3dmHeader.BTBinaryLength, FTJSON.BATCH_LENGTH, options.registeredExtensions));
             } else {
                 promises.push(Promise.resolve({}));
             }
