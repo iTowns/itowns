@@ -86,12 +86,22 @@ class VectorTilesSource extends TMSSource {
                 } else if (ffilter(layer)) {
                     // TODO: add support for expressions
                     // https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions
-                    const stops = [];
-                    stops.push(layer.minzoom == undefined ? 2 : layer.minzoom);
+                    let stops = [];
                     checkStopsValues(layer.layout, stops);
                     checkStopsValues(layer.paint, stops);
+
+                    let minStop = Math.min(...stops);
+                    // if none is found, default to 2
+                    minStop = (minStop == undefined || minStop == Infinity) ? 2 : minStop;
+                    // compare to layer.minzoom and take the highest
+                    minStop = (layer.minzoom == undefined) ? minStop : Math.max(layer.minzoom, minStop);
+
+                    stops.push(minStop);
                     stops.push(layer.maxzoom == undefined ? 24 : layer.maxzoom);
                     stops.sort((a, b) => (a - b));
+
+                    // remove all value < minStop
+                    stops = stops.filter(s => s >= minStop);
 
                     this.styles[layer.id] = [];
                     for (let i = 0; i < stops.length - 1; i++) {

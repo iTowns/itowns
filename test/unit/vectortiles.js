@@ -149,5 +149,74 @@ describe('Vector tiles', function () {
                 done();
             });
         });
+
+        it('sets the correct Style#minzoom', (done) => {
+            const source = new VectorTilesSource({
+                url: 'fakeurl',
+                style: {
+                    sources: { geojson: {} },
+                    layers: [{
+                        // minzoom is 2 (default value)
+                        id: 'first',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                        },
+                    }, {
+                        // minzoom is 5 (specified)
+                        id: 'second',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                        },
+                        minzoom: 5,
+                    }, {
+                        // minzoom is 4 (first stop)
+                        id: 'third',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                            'fill-opacity': { stops: [[4, 1], [7, 0.5]] },
+                        },
+                    }, {
+                        // minzoom is 3 (specified is higher than first stop)
+                        id: 'fourth',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                            'fill-opacity': { stops: [[1, 1], [7, 0.5]] },
+                        },
+                        minzoom: 3,
+                    }, {
+                        // minzoom is 1 (first stop and no specified minzoom)
+                        id: 'fifth',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                            'fill-opacity': { stops: [[1, 1], [7, 0.5]] },
+                        },
+                    }, {
+                        // minzoom is 4 (first stop is higher than specified)
+                        id: 'sixth',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                            'fill-opacity': { stops: [[4, 1], [7, 0.5]] },
+                        },
+                        minzoom: 3,
+                    }],
+                },
+            });
+
+            source.whenReady.then(() => {
+                assert.equal(source.styles.first[0].minzoom, 2);
+                assert.equal(source.styles.second[0].minzoom, 5);
+                assert.equal(source.styles.third[0].minzoom, 4);
+                assert.equal(source.styles.fourth[0].minzoom, 3);
+                assert.equal(source.styles.fifth[0].minzoom, 1);
+                assert.equal(source.styles.sixth[0].minzoom, 4);
+                done();
+            });
+        });
     });
 });
