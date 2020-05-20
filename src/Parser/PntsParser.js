@@ -1,17 +1,19 @@
 import * as THREE from 'three';
 import utf8Decoder from 'Utils/Utf8Decoder';
 
-import BatchTableParser from './BatchTableParser';
+import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 
 export default {
     /** @module PntsParser */
     /** Parse pnts buffer and extract THREE.Points and batch table
      * @function parse
      * @param {ArrayBuffer} buffer - the pnts buffer.
+     * @param {Object} registeredExtensions - 3D Tiles extensions registered
+     * in the layer
      * @return {Promise} - a promise that resolves with an object containig a THREE.Points (point) and a batch table (batchTable).
      *
      */
-    parse: function parse(buffer) {
+    parse: function parse(buffer, registeredExtensions) {
         if (!buffer) {
             throw new Error('No array buffer provided.');
         }
@@ -46,6 +48,15 @@ export default {
             pntsHeader.BTBinaryLength = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
+            // feature table
+            let FTJSON = {};
+            if (pntsHeader.FTJSONLength > 0) {
+                const sizeBegin = byteOffset;
+                const jsonBuffer = buffer.slice(sizeBegin, pntsHeader.FTJSONLength + sizeBegin);
+                const content = utf8Decoder.decode(new Uint8Array(jsonBuffer));
+                FTJSON = JSON.parse(content);
+            }
+
             // binary table
             if (pntsHeader.FTBinaryLength > 0) {
                 point = parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength);
@@ -53,9 +64,10 @@ export default {
 
             // batch table
             if (pntsHeader.BTJSONLength > 0) {
-                const sizeBegin = 28 + pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
-                batchTable = BatchTableParser.parse(
-                    buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin));
+                // parse batch table
+                const sizeBegin = byteOffset + pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
+                const BTBuffer = buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin);
+                batchTable = new C3DTBatchTable(BTBuffer, pntsHeader.BTBinaryLength, FTJSON.BATCH_LENGTH, registeredExtensions);
             }
 
             const pnts = { point, batchTable };

@@ -70,7 +70,6 @@
                 "VectorTileParser",
                 "CameraCalibrationParser",
                 "B3dmParser",
-                "BatchTableParser",
                 "ShapefileParser"
             ],
 

@@ -23,7 +23,7 @@ function b3dmToMesh(data, layer, url) {
 }
 
 function pntsParse(data, layer) {
-    return PntsParser.parse(data).then((result) => {
+    return PntsParser.parse(data, layer.registeredExtensions).then((result) => {
         const material = layer.material ?
             layer.material.clone() :
             new THREE.PointsMaterial({ size: 0.05, vertexColors: true });
