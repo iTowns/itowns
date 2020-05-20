@@ -91,8 +91,8 @@ class VectorTilesSource extends TMSSource {
                     checkStopsValues(layer.paint, stops);
 
                     let minStop = Math.min(...stops);
-                    // if none is found, default to 2
-                    minStop = (minStop == Infinity) ? 2 : minStop;
+                    // if none is found, default to 0
+                    minStop = (minStop == Infinity) ? 0 : minStop;
                     // compare to layer.minzoom and take the highest
                     minStop = (layer.minzoom == undefined) ? minStop : Math.max(layer.minzoom, minStop);
 
