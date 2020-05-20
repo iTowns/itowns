@@ -42,6 +42,18 @@ function getImageFromSprite(sprites, key) {
     return image;
 }
 
+const textAnchorPosition = {
+    left: [0, -0.5],
+    right: [-1, -0.5],
+    top: [-0.5, 0],
+    bottom: [-0.5, -1],
+    topRight: [-1, 0],
+    bottomLeft: [0, -1],
+    bottomRight: [-1, -1],
+    center: [-0.5, -0.5],
+    topLeft: [0, 0],
+};
+
 /**
  * A Style is an object that defines the visual appearance of {@link
  * FeatureCollection} and {@link Feature}. It is taken into account when drawing
@@ -439,24 +451,24 @@ class Style {
     }
 
     /**
-     * Get the CSS value corresponding to the anchor of the text. It is usually
-     * a `translate()` value to use with a `transform` property.
+     * Gets the values corresponding to the anchor of the text. It is
+     * proportions, to use with a `translate()` and a `transform` property.
      *
-     * @return {string} The CSS value.
+     * @return {number[]} Two percentage values, for x and y respectively.
      */
-    getTextAnchorPositionInCSS() {
+    getTextAnchorPosition() {
         switch (this.text.anchor) {
-            case 'left': return 'translate(0, -50%)';
-            case 'right': return 'translate(-100%, -50%)';
-            case 'top': return 'translate(-50%, 0)';
-            case 'bottom': return 'translate(-50%, -100%)';
-            case 'top-right': return 'translate(-100%, 0)';
-            case 'bottom-left': return 'translate(0, -100%)';
-            case 'bottom-right': return 'translate(-100%, -100%)';
-            case 'center': return 'translate(-50%, -50%)';
-            case 'top-left': // 0% in both case
+            case 'left': return textAnchorPosition.left;
+            case 'right': return textAnchorPosition.right;
+            case 'top': return textAnchorPosition.top;
+            case 'bottom': return textAnchorPosition.bottom;
+            case 'top-right': return textAnchorPosition.topRight;
+            case 'bottom-left': return textAnchorPosition.bottomLeft;
+            case 'bottom-right': return textAnchorPosition.bottomRight;
+            case 'center': return textAnchorPosition.center;
+            case 'top-left':
             default:
-                return '';
+                return textAnchorPosition.topLeft;
         }
     }
 
