@@ -93,6 +93,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
     const obbLayer = new GeometryLayer(obb_layer_id, new THREE.Object3D(), {
         update: debugIdUpdate,
         visible: false,
+        cacheLifeTime: Infinity,
     });
 
     View.prototype.addLayer.call(view, obbLayer, _3dTileslayer).then((l) => {

@@ -43,6 +43,10 @@ class OrientedImageSource extends Source {
         return this.imageUrl(imageInfo.cameraId, imageInfo.panoId);
     }
 
+    requestToKey(image) {
+        return [0, image.cameraId, image.panoId];
+    }
+
     /**
      * Build the url of the image, for a given panoramic id, and a given camera id.
      *

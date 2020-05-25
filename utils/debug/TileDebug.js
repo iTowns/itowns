@@ -188,6 +188,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     const obbLayer = new GeometryLayer(obb_layer_id, new THREE.Object3D(), {
         update: debugIdUpdate,
         visible: false,
+        cacheLifeTime: Infinity,
     });
 
     View.prototype.addLayer.call(view, obbLayer, layer).then((l) => {
@@ -199,6 +200,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     const sbLayer = new GeometryLayer(sb_layer_id, new THREE.Object3D(), {
         update: debugIdUpdate,
         visible: false,
+        cacheLifeTime: Infinity,
     });
 
     View.prototype.addLayer.call(view, sbLayer, layer).then((l) => {

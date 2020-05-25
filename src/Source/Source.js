@@ -135,6 +135,10 @@ class Source {
         throw new Error('In extended Source, you have to implement the method urlFromExtent!');
     }
 
+    requestToKey(extent) {
+        return [extent.zoom, extent.row, extent.col];
+    }
+
     /**
      * Tests if an extent is inside the source limits.
      *

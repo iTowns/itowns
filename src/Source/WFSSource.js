@@ -1,5 +1,6 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
+import CRS from 'Core/Geographic/Crs';
 
 /**
  * @classdesc
@@ -142,6 +143,14 @@ class WFSSource extends Source {
         } else {
             console.error(`Source ${this.typeName}: error while trying to fetch/parse/convert WFS data.`, err);
             throw err;
+        }
+    }
+
+    requestToKey(extent) {
+        if (CRS.isTms(extent.crs)) {
+            return super.requestToKey(extent);
+        } else {
+            return [extent.zoom, extent.south, extent.west];
         }
     }
 

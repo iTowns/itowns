@@ -1,5 +1,3 @@
-import Cache from 'Core/Scheduler/Cache';
-
 function isValidData(data, extentDestination, validFn) {
     if (data && (!validFn || validFn(data, extentDestination))) {
         return data;
@@ -59,10 +57,9 @@ export default {
             const extSource = extentsSource[i];
 
             // Tag to Cache data
-            const exTag = source.isVectorSource ? extentsDestination[i] : extSource;
+            const tag = source.requestToKey(extSource);
 
-            // Get converted source data, in cache
-            let convertedSourceData = Cache.get(source.uid, layer.id, exTag.toString('-'));
+            let convertedSourceData = layer.cache.get(tag[0], tag[1], tag[2]);
 
             // If data isn't in cache
             if (!convertedSourceData) {
@@ -84,7 +81,7 @@ export default {
                         .then(parsedData => layer.convert(parsedData, extDest, layer), err => error(err, source));
                 }
                 // Put converted data in cache
-                Cache.set(convertedSourceData, Cache.POLICIES.TEXTURE, source.uid, layer.id, exTag.toString('-'));
+                layer.cache.set(convertedSourceData, tag[0], tag[1], tag[2]);
             }
 
             // Verify some command is resolved

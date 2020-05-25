@@ -224,6 +224,7 @@ describe('Provide in Sources', function () {
         tile.parent = { pendingSubdivision: false };
         featureLayer.source.uid = 8;
         featureLayer.mergeFeatures = true;
+        featureLayer.cache.data.clear();
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
             assert.ok(features[0].children[0].isMesh);

@@ -1,55 +1,56 @@
-let data = {};
 let entry;
+
+/**
+ * Cache policies for flushing. Those policies can be used when something is
+ * [set]{@link Cache.set} into the Cache, as the lifetime property.
+ *
+ * @typedef {Object} CACHE_POLICIES
+ *
+ * @property {number} INFINITE - The entry is never flushed, except when the
+ * `all` flag is set to `true` when calling {@link Cache.flush}.
+ * @property {number} TEXTURE - Shortcut for texture resources. Time is 15 minutes.
+ * @property {number} GEOMETRY - Shortcut for geometry resources. Time is 15 minutes.
+ * minutes.
+ */
+export const CACHE_POLICIES = {
+    INFINITE: Infinity,
+    TEXTURE: 900000,
+    GEOMETRY: 900000,
+};
 
 /**
  * This is a copy of the Map object, except that it also store a value for last
  * time used. This value is used for cache expiration mechanism.
- * <br><br>
- * This module can be imported anywhere, its data will be shared, as it is a
- * single instance.
- *
- * @module Cache
  *
  * @example
- * import Cache from './Cache';
+ * import Cache, { CACHE_POLICIES } from 'Core/Scheduler/Cache';
  *
- * Cache.set({ bar: 1 }, Cache.POLICIES.TEXTURE, 'foo');
- * Cache.set({ bar: 32 }, Cache.POLICIES.INFINITE, 'foo', 'toto');
+ * const cache = new Cache(CACHE_POLICIES.TEXTURE)
+ * cache.set({ bar: 1 }, 'foo');
+ * cache.set({ bar: 32 }, 'foo', 'toto');
  *
- * Cache.get('foo');
+ * cache.get('foo');
  *
- * Cache.delete('foo');
+ * cache.delete('foo');
  *
- * Cache.clear();
+ * cache.clear();
  *
- * Cache.flush();
+ * cache.flush();
  */
-const Cache = {
+class Cache {
     /**
-     * Cache policies for flushing. Those policies can be used when something is
-     * [set]{@link Cache.set} into the Cache, as the lifetime property.
-     *
-     * @typedef {Object} POLICIES
-     *
-     * @property {number} INFINITE - The entry is never flushed, except when the
-     * `all` flag is set to `true` when calling {@link Cache.flush}.
-     * @property {number} TEXTURE - Shortcut for texture resources. Time is 15 minutes.
-     * @property {number} ELEVATION - Shortcut for elevation resources. Time is 15
-     * minutes.
+     * @param      {number}  [lifetime=CACHE_POLICIES.INFINITE]  The cache expiration time for all values.
      */
-    POLICIES: {
-        INFINITE: Infinity,
-        TEXTURE: 900000,
-        ELEVATION: 900000,
-    },
+    constructor(lifetime = CACHE_POLICIES.INFINITE) {
+        this.lifeTime = lifetime;
+        this.lastTimeFlush = Date.now();
+        this.data = new Map();
+    }
 
     /**
      * Returns the entry related to the specified key from the cache. The last
      * time used property of the entry is updated to extend the longevity of the
      * entry.
-     *
-     * @name module:Cache.get
-     * @function
      *
      * @param {string} key1
      * @param {string} [key2]
@@ -57,102 +58,104 @@ const Cache = {
      *
      * @return {Object}
      */
-    get: (key1, key2, key3) => {
-        if (data[key1] == undefined) {
+    get(key1, key2, key3) {
+        const entry_1 = this.data.get(key1);
+        if (entry_1 == undefined) {
             // eslint-disable-next-line
             return;
-        } else if (data[key1][key2] == undefined) {
-            entry = data[key1];
-        } else if (data[key1][key2][key3] == undefined) {
-            entry = data[key1][key2];
         } else {
-            entry = data[key1][key2][key3];
+            const entry_2 = entry_1.get(key2);
+            if (entry_2 == undefined) {
+                entry = entry_1;
+            } else {
+                const entry_3 = entry_2.get(key3);
+                if (entry_3 == undefined) {
+                    entry = entry_2;
+                } else {
+                    entry = entry_3;
+                }
+            }
         }
 
         if (entry.value) {
             entry.lastTimeUsed = Date.now();
             return entry.value;
         }
-    },
+    }
 
     /**
-     * Adds or updates an entry with specified keys (up to 3). A lifetime can be
-     * added, by specifying a numerical value or using the {@link
-     * Cache.POLICIES} values. By default an entry has an infinite lifetime.
+     * Adds or updates an entry with specified keys (up to 3).
      * Caution: it overrides any existing entry already set at this/those key/s.
      *
-     * @name module:Cache.set
-     * @function
      *
-     * @param {Object} value
-     * @param {number} lifetime
+     * @param {Object} value to add in cache
      * @param {string} key1
      * @param {string} [key2]
      * @param {string} [key3]
      *
      * @return {Object} the added value
      */
-    set: (value, lifetime, key1, key2, key3) => {
+    set(value, key1, key2, key3) {
         entry = {
             value,
             lastTimeUsed: Date.now(),
-            lifetime,
         };
 
         if (key2 == undefined) {
-            data[key1] = entry;
+            this.data.set(key1, entry);
             return value;
         }
 
-        if (!data[key1]) {
-            data[key1] = {};
+        if (!this.data.get(key1)) {
+            this.data.set(key1, new Map());
         }
+
+        const entry_map = this.data.get(key1);
 
         if (key3 == undefined) {
-            data[key1][key2] = entry;
+            entry_map.set(key2, entry);
             return value;
         }
 
-        if (!data[key1][key2]) {
-            data[key1][key2] = {};
+        if (!entry_map.get(key2)) {
+            entry_map.set(key2, new Map());
         }
 
-        data[key1][key2][key3] = entry;
+        entry_map.get(key2).set(key3, entry);
 
         return value;
-    },
+    }
 
     /**
      * Deletes the specified entry from the cache.
-     *
-     * @name module:Cache.delete
-     * @function
      *
      * @param {string} key1
      * @param {string} [key2]
      * @param {string} [key3]
      */
-    delete: (key1, key2, key3) => {
-        if (data[key1] == undefined) {
+    delete(key1, key2, key3) {
+        const entry = this.data.get(key1);
+        if (entry == undefined) {
             throw Error('Please specify at least a key of something to delete');
-        } else if (data[key1][key2] == undefined) {
-            delete data[key1];
-        } else if (data[key1][key2][key3] == undefined) {
-            delete data[key1][key2];
+        } else if (entry.get(key2) == undefined) {
+            delete this.data.get(key1);
+            this.data.delete(key1);
+        } else if (entry.get(key2).get(key3) == undefined) {
+            delete entry.get(key2);
+            entry.delete(key2);
         } else {
-            delete data[key1][key2][key3];
+            delete entry.get(key2).get(key3);
+            entry.get(key2).delete(key3);
         }
-    },
+    }
 
     /**
      * Removes all entries of the cache.
      *
-     * @name module:Cache.clear
-     * @function
      */
-    clear: () => {
-        data = {};
-    },
+    clear() {
+        this.data.clear();
+    }
 
     /**
      * Flush the cache: entries that have been present for too long since the
@@ -161,31 +164,52 @@ const Cache = {
      * something like `Cache.flush(Date.now() - reductionTime)`. If you want to
      * clear the whole cache, use {@link Cache.clear} instead.
      *
-     * @name module:Cache.flush
-     * @function
-     *
      * @param {number} [time=Date.now()]
      */
-    flush: (time = Date.now()) => {
-        for (const i in data) {
-            if (data[i].lifetime < time - data[i].lastTimeUsed) {
-                delete data[i];
+    flush(time = Date.now()) {
+        if (this.lifeTime == CACHE_POLICIES.INFINITE ||
+            this.lifeTime > time - this.lastTimeFlush ||
+            !this.data.size) {
+            return;
+        }
+
+        this.lastTimeFlush = Infinity;
+        this.data.forEach((v1, i) => {
+            if (this.lifeTime < time - v1.lastTimeUsed) {
+                delete this.data.get(i);
+                this.data.delete(i);
             } else {
-                for (const j in data[i]) {
-                    if (data[i][j].lifetime < time - data[i][j].lastTimeUsed) {
-                        delete data[i][j];
+                v1.forEach((v2, j) => {
+                    if (this.lifeTime < time - v2.lastTimeUsed) {
+                        delete v1.get(j);
+                        v1.delete(j);
                     } else {
-                        for (const k in data[i][j]) {
-                            if (data[i][j][k].lifetime < time - data[i][j][k].lastTimeUsed) {
-                                delete data[i][j][k];
+                        v2.forEach((v3, k) => {
+                            if (this.lifeTime < time - v3.lastTimeUsed) {
+                                delete v2.get(k);
+                                v2.delete(k);
+                            } else {
+                                // Work for the moment because all flushed caches have 3 key!
+                                this.lastTimeFlush = Math.min(this.lastTimeFlush, v3.lastTimeUsed);
                             }
+                        });
+                        if (!v2.size) {
+                            delete v1.get(j);
+                            v1.delete(j);
                         }
                     }
+                });
+                if (!v1.size) {
+                    delete this.data.get(i);
+                    this.data.delete(i);
                 }
             }
-        }
-    },
-};
+        });
 
-Object.freeze(Cache);
+        if (this.data.size == 0) {
+            this.lastTimeFlush = Date.now();
+        }
+    }
+}
+
 export default Cache;
