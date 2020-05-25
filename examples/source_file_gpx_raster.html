@@ -22,7 +22,9 @@
             // Define initial camera position
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 0.089, 42.8989),
-                range: 80000,
+                range: 30000,
+                tilt: 20,
+                heading: 70,
             }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
@@ -33,7 +35,6 @@
             var menuGlobe = new GuiTools('menuDiv', view);
 
             setupLoadingScreen(viewerDiv, view);
-            FeatureToolTip.init(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -59,6 +60,28 @@
             // Parse and Convert by iTowns
             itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
                 .then(function _(gpx) {
+                    var gpxStyle = new itowns.Style({
+                        zoom: {
+                            min: 9,
+                        },
+                        stroke: {
+                            color: 'red',
+                        },
+                        point: {
+                            color: 'white',
+                            line: 'red',
+                        },
+                        text: {
+                            field: '{name}',
+                            transform: 'uppercase',
+                            font: ['Arial', 'sans-serif'],
+                            halo: {
+                                color: 'white',
+                                width: 1,
+                            },
+                        },
+                    });
+
                     var gpxSource = new itowns.FileSource({
                         fetchedData: gpx,
                         projection: 'EPSG:4326',
@@ -69,19 +92,12 @@
                         name: 'Ultra 2009',
                         transparent: true,
                         source: gpxSource,
-                        style: {
-                            stroke: {
-                                color: 'red',
-                            },
-                            point: {
-                                color: 'white',
-                                line: 'red',
-                            }
-                        },
+                        style: gpxStyle,
+                        labelEnabled: true,
                     });
 
                     return view.addLayer(gpxLayer);
-                }).then(FeatureToolTip.addLayer);
+                });
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
