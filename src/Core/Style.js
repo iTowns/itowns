@@ -167,8 +167,10 @@ class Style {
     constructor(params = {}) {
         this.isStyle = true;
 
-        this.minzoom = 0;
-        this.maxzoom = 24;
+        this.zoom = {
+            min: 0,
+            max: 24,
+        };
 
         params.fill = params.fill || {};
         params.stroke = params.stroke || {};
@@ -282,7 +284,7 @@ class Style {
         layer.layout = layer.layout || {};
         layer.paint = layer.paint || {};
 
-        const zoom = this.minzoom;
+        const zoom = this.zoom.min;
 
         if (layer.type === 'fill' && !this.fill.color) {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern']));
