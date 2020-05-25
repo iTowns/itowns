@@ -86,19 +86,29 @@ class VectorTilesSource extends TMSSource {
                 } else if (ffilter(layer)) {
                     // TODO: add support for expressions
                     // https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions
-                    const stops = [];
-                    stops.push(layer.minzoom == undefined ? 2 : layer.minzoom);
+                    let stops = [];
                     checkStopsValues(layer.layout, stops);
                     checkStopsValues(layer.paint, stops);
+
+                    let minStop = Math.min(...stops);
+                    // if none is found, default to 0
+                    minStop = (minStop == Infinity) ? 0 : minStop;
+                    // compare to layer.minzoom and take the highest
+                    minStop = (layer.minzoom == undefined) ? minStop : Math.max(layer.minzoom, minStop);
+
+                    stops.push(minStop);
                     stops.push(layer.maxzoom == undefined ? 24 : layer.maxzoom);
                     stops.sort((a, b) => (a - b));
+
+                    // remove all value < minStop
+                    stops = stops.filter(s => s >= minStop);
 
                     this.styles[layer.id] = [];
                     for (let i = 0; i < stops.length - 1; i++) {
                         if (stops[i] == stops[i + 1]) { continue; }
                         const style = new Style();
-                        style.minzoom = stops[i];
-                        style.maxzoom = stops[i + 1];
+                        style.zoom.min = stops[i];
+                        style.zoom.max = stops[i + 1];
                         style.setFromVectorTileLayer(layer, this.sprites, this.symbolToCircle);
                         this.styles[layer.id].push(style);
                     }
@@ -111,8 +121,10 @@ class VectorTilesSource extends TMSSource {
                         id: layer.id,
                         order,
                         filterExpression: featureFilter(layer.filter),
-                        minzoom: stops[0],
-                        maxzoom: stops[stops.length - 1],
+                        zoom: {
+                            min: stops[0],
+                            max: stops[stops.length - 1],
+                        },
                     });
                 }
             });
@@ -139,7 +151,7 @@ class VectorTilesSource extends TMSSource {
     }
 
     getStyleFromIdZoom(id, zoom) {
-        return this.styles[id].find(s => s.minzoom <= zoom && s.maxzoom > zoom);
+        return this.styles[id].find(s => s.zoom.min <= zoom && s.zoom.max > zoom);
     }
 }
 

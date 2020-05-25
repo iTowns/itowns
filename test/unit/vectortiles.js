@@ -19,13 +19,15 @@ describe('Vector tiles', function () {
         });
     }
 
-    it('returns two squares', () => {
+    it('returns two squares', (done) => {
         parse(multipolygon, {
             geojson: [{
                 id: 0,
                 filterExpression: { filter: () => true },
-                minzoom: 1,
-                maxzoom: 24,
+                zoom: {
+                    min: 1,
+                    max: 24,
+                },
             }],
         }).then((collection) => {
             const feature = collection.features[0];
@@ -41,18 +43,22 @@ describe('Vector tiles', function () {
             assert.equal(square1[1], square1[4 * size + 1]);
             assert.equal(square2[0], square2[4 * size]);
             assert.equal(square2[1], square2[4 * size + 1]);
+
+            done();
         });
     });
 
-    it('returns nothing', () => {
+    it('returns nothing', (done) => {
         parse(null).then((collection) => {
             assert.equal(collection, undefined);
+            done();
         });
     });
 
-    it('filters all features out', () => {
+    it('filters all features out', (done) => {
         parse(multipolygon, {}).then((collection) => {
             assert.equal(collection.features.length, 0);
+            done();
         });
     });
 
@@ -144,8 +150,67 @@ describe('Vector tiles', function () {
             });
             source.whenReady.then(() => {
                 assert.equal(source.styles.land.length, 1);
-                assert.equal(source.styles.land[0].minzoom, 5);
-                assert.equal(source.styles.land[0].maxzoom, 13);
+                assert.equal(source.styles.land[0].zoom.min, 5);
+                assert.equal(source.styles.land[0].zoom.max, 13);
+                done();
+            });
+        });
+
+        it('sets the correct Style#zoom.min', (done) => {
+            const source = new VectorTilesSource({
+                url: 'fakeurl',
+                style: {
+                    sources: { geojson: {} },
+                    layers: [{
+                        // minzoom is 0 (default value)
+                        id: 'first',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                        },
+                    }, {
+                        // minzoom is 5 (specified)
+                        id: 'second',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                        },
+                        minzoom: 5,
+                    }, {
+                        // minzoom is 4 (first stop)
+                        id: 'third',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                            'fill-opacity': { stops: [[4, 1], [7, 0.5]] },
+                        },
+                    }, {
+                        // minzoom is 1 (first stop and no specified minzoom)
+                        id: 'fourth',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                            'fill-opacity': { stops: [[1, 1], [7, 0.5]] },
+                        },
+                    }, {
+                        // minzoom is 4 (first stop is higher than specified)
+                        id: 'fifth',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'rgb(255, 0, 0)',
+                            'fill-opacity': { stops: [[4, 1], [7, 0.5]] },
+                        },
+                        minzoom: 3,
+                    }],
+                },
+            });
+
+            source.whenReady.then(() => {
+                assert.equal(source.styles.first[0].zoom.min, 0);
+                assert.equal(source.styles.second[0].zoom.min, 5);
+                assert.equal(source.styles.third[0].zoom.min, 4);
+                assert.equal(source.styles.fourth[0].zoom.min, 1);
+                assert.equal(source.styles.fifth[0].zoom.min, 4);
                 done();
             });
         });

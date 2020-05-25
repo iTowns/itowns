@@ -127,7 +127,7 @@ function readPBF(file, options) {
 
         for (let i = sourceLayer.length - 1; i >= 0; i--) {
             const vtFeature = sourceLayer.feature(i);
-            const layers = options.layers[layer_id].filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.minzoom && z < l.maxzoom);
+            const layers = options.layers[layer_id].filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.zoom.min && z < l.zoom.max);
             let feature;
 
             for (const layer of layers) {
@@ -174,7 +174,7 @@ export default {
      * @param {function=} options.filter - Filter function to remove features.
      * @param {Object} options.layers - Object containing subobject with
      * informations on a specific layer. Informations available is `id`,
-     * `filterExpression`, `minzoom` and `maxzoom`. See {@link
+     * `filterExpression`, `zoom.min` and `zoom.max`. See {@link
      * VectorTilesSource} for more precision. The key of each information is the
      * `source-layer` property of the layer.
      * @param {string=} options.isInverted - This option is to be set to the
