@@ -7,6 +7,7 @@ import CancelledCommandException from 'Core/Scheduler/CancelledCommandException'
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { SIZE_DIAGONAL_TEXTURE } from 'Process/LayeredMaterialNodeProcessing';
 import { ImageryLayers } from 'Layer/Layer';
+import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
@@ -42,6 +43,8 @@ class TiledGeometryLayer extends GeometryLayer {
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
     constructor(id, object3d, schemeTile, builder, config) {
+        // cacheLifeTime = CACHE_POLICIES.INFINITE because the cache is handled by the builder
+        config.cacheLifeTime = CACHE_POLICIES.INFINITE;
         super(id, object3d, config);
 
         this.isTiledGeometryLayer = true;

@@ -1,5 +1,6 @@
 import Layer from 'Layer/Layer';
 import Picking from 'Core/Picking';
+import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 function disposeMesh(obj) {
     if (obj.dispose) {
@@ -74,6 +75,7 @@ class GeometryLayer extends Layer {
      * view.addLayer(geometry);
      */
     constructor(id, object3d, config = {}) {
+        config.cacheLifeTime = config.cacheLifeTime == undefined ? CACHE_POLICIES.GEOMETRY : config.cacheLifeTime;
         super(id, config);
 
         this.isGeometryLayer = true;

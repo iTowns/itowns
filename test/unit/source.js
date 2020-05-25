@@ -6,6 +6,7 @@ import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
 import TMSSource from 'Source/TMSSource';
 import FileSource from 'Source/FileSource';
+import OrientedImageSource from 'Source/OrientedImageSource';
 import Extent from 'Core/Geographic/Extent';
 import HttpsProxyAgent from 'https-proxy-agent';
 
@@ -69,6 +70,20 @@ describe('Sources', function () {
             const source = new WFSSource(paramsWFS);
             assert.throws(() => source.handlingError(new Error('error')));
             console.error = bce;
+        });
+
+        it('should return keys from request', function () {
+            const source = new WFSSource(paramsWFS);
+            const extent = new Extent('TMS:4326', 5, 10, 15);
+            const keys = source.requestToKey(extent);
+            assert.equal(extent.zoom, keys[0]);
+            assert.equal(extent.row, keys[1]);
+            assert.equal(extent.col, keys[2]);
+            const extentepsg = new Extent('EPSG:4326', 5.5, 10, 22.3, 89.34);
+            const keysepsg = source.requestToKey(extentepsg);
+            assert.equal(extentepsg.zoom, 0);
+            assert.equal(extentepsg.south, keysepsg[1]);
+            assert.equal(extentepsg.west, keysepsg[2]);
         });
     });
 
@@ -157,6 +172,24 @@ describe('Sources', function () {
                 new Extent('EPSG:4326', -100, -90, 0, 10),
             ];
             assert.ok(!source.extentsInsideLimit(extents));
+        });
+    });
+
+    describe('OrientedImageSource', function () {
+        it('instance OrientedImageSource', function (done) {
+            const source = new OrientedImageSource({ url: 'none' });
+            source.whenReady.then((a) => {
+                assert.equal(Object.keys(a).length, 2);
+                done();
+            });
+        });
+
+        it('should return keys OrientedImageSource from request', function () {
+            const source = new OrientedImageSource({ url: 'none' });
+            const image = { cameraId: 5, panoId: 10 };
+            const keys = source.requestToKey(image);
+            assert.equal(image.cameraId, keys[1]);
+            assert.equal(image.panoId, keys[2]);
         });
     });
 

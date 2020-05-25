@@ -3,6 +3,7 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
 import Source from 'Source/Source';
 import { parseSourceData } from 'Provider/DataSourceProvider';
+import Cache from 'Core/Scheduler/Cache';
 
 /**
  * @property {boolean} isLayer - Used to checkout whether this layer is a Layer.
@@ -36,6 +37,8 @@ class Layer extends THREE.EventDispatcher {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
+     * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
+     * This value is used for [Cache]{@link Cache} expiration mechanism.
      *
      * @example
      * // Add and create a new Layer
@@ -101,6 +104,8 @@ class Layer extends THREE.EventDispatcher {
         });
 
         this._promises.push(this.source.whenReady);
+
+        this.cache = new Cache(config.cacheLifeTime);
     }
 
     addInitializationStep() {

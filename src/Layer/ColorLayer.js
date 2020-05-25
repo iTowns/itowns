@@ -2,6 +2,7 @@ import Layer from 'Layer/Layer';
 import { updateLayeredMaterialNodeImagery, removeLayeredMaterialNodeLayer } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
 import Style from 'Core/Style';
+import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 /**
  * Fires when the visiblity of the layer has changed.
@@ -56,6 +57,7 @@ class ColorLayer extends Layer {
      * view.addLayer(color);
      */
     constructor(id, config = {}) {
+        config.cacheLifeTime = config.cacheLifeTime == undefined ? CACHE_POLICIES.TEXTURE : config.cacheLifeTime;
         super(id, config);
         this.isColorLayer = true;
         this.style = config.style ? new Style(config.style) : {};

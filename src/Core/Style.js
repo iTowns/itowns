@@ -1,6 +1,8 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 import Cache from 'Core/Scheduler/Cache';
 
+const cacheStyle = new Cache();
+
 const inv255 = 1 / 255;
 const canvas = document.createElement('canvas');
 
@@ -353,7 +355,7 @@ class Style {
                 let size = readVectorProperty(layer.layout['icon-size'], zoom);
                 if (size == undefined) { size = 1; }
 
-                this.icon = Cache.get(`${iconSrc}-${size}`);
+                this.icon = cacheStyle.get(iconSrc, size);
 
                 if (!this.icon) {
                     this.icon = {};
@@ -365,7 +367,7 @@ class Style {
                     this.icon.halfWidth = this.icon.dom.width / 2;
                     this.icon.halfHeight = this.icon.dom.height / 2;
 
-                    Cache.set(`${iconSrc}-${size}`, this.icon);
+                    cacheStyle.set(this.icon, iconSrc, size);
                 }
             }
         }

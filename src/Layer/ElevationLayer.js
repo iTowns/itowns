@@ -1,6 +1,7 @@
 import Layer from 'Layer/Layer';
 import { updateLayeredMaterialNodeElevation, removeLayeredMaterialNodeLayer } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
+import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 /**
  * @property {boolean} isElevationLayer - Used to checkout whether this layer is
@@ -43,6 +44,7 @@ class ElevationLayer extends Layer {
      * view.addLayer(elevation);
      */
     constructor(id, config = {}) {
+        config.cacheLifeTime = config.cacheLifeTime == undefined ? CACHE_POLICIES.TEXTURE : config.cacheLifeTime;
         super(id, config);
         this.isElevationLayer = true;
 

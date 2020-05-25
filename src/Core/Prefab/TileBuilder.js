@@ -5,17 +5,19 @@ import computeBuffers from 'Core/Prefab/computeBufferTileGeometry';
 import OBB from 'Renderer/OBB';
 
 const cacheBuffer = new Map();
+const cacheTile = new Cache();
+
 export default function newTileGeometry(builder, params) {
     const { sharableExtent, quaternion, position } = builder.computeSharableExtent(params.extent);
     const south = sharableExtent.south.toFixed(6);
     const bufferKey = `${builder.projection}_${params.disableSkirt ? 0 : 1}_${params.segment}`;
-    let promiseGeometry = Cache.get(bufferKey, params.level, south);
+    let promiseGeometry = cacheTile.get(south, params.level, bufferKey);
 
     // build geometry if doesn't exist
     if (!promiseGeometry) {
         let resolve;
         promiseGeometry = new Promise((r) => { resolve = r; });
-        Cache.set(promiseGeometry, Cache.POLICIES.INFINITE, bufferKey, params.level, south);
+        cacheTile.set(promiseGeometry, south, params.level, bufferKey);
 
         params.extent = sharableExtent;
         params.center = builder.center(params.extent).clone();
@@ -49,7 +51,7 @@ export default function newTileGeometry(builder, params) {
                 geometry._count--;
                 if (geometry._count == 0) {
                     THREE.BufferGeometry.prototype.dispose.call(geometry);
-                    Cache.delete(bufferKey, params.level, south);
+                    cacheTile.delete(south, params.level, bufferKey);
                 }
             };
             resolve(geometry);

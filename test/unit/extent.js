@@ -268,7 +268,7 @@ describe('Extent', function () {
         assert.equal(5, withValues.north);
     });
 
-    it('should convert values to string', function () {
+    it('should convert EPSG extent values to string', function () {
         const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
         const tostring = withValues.toString(',');
         const toValues = tostring.split(',').map(s => Number(s));
@@ -276,6 +276,15 @@ describe('Extent', function () {
         assert.equal(toValues[1], withValues.north);
         assert.equal(toValues[2], withValues.west);
         assert.equal(toValues[3], withValues.south);
+    });
+
+    it('should convert TMS extent values to string', function () {
+        const withValues = new Extent('TMS:4326', 0, 1, 2);
+        const tostring = withValues.toString(',');
+        const toValues = tostring.split(',').map(s => Number(s));
+        assert.equal(toValues[0], withValues.zoom);
+        assert.equal(toValues[1], withValues.row);
+        assert.equal(toValues[2], withValues.col);
     });
 
     it('should copy and transform extent', function () {

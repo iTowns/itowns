@@ -1,5 +1,4 @@
 import { EventDispatcher } from 'three';
-import Cache from 'Core/Scheduler/Cache';
 
 export const RENDERING_PAUSED = 0;
 export const RENDERING_SCHEDULED = 1;
@@ -79,6 +78,7 @@ function updateElements(context, geometryLayer, elements) {
                 for (const attachedLayer of geometryLayer.attachedLayers) {
                     if (attachedLayer.ready) {
                         attachedLayer.update(context, attachedLayer, sub.element, sub.parent);
+                        attachedLayer.cache.flush();
                     }
                 }
             } else if (sub.elements) {
@@ -92,6 +92,7 @@ function updateElements(context, geometryLayer, elements) {
                     for (const attachedLayer of geometryLayer.attachedLayers) {
                         if (attachedLayer.ready) {
                             attachedLayer.update(context, attachedLayer, sub.elements[i], sub.parent);
+                            attachedLayer.cache.flush();
                         }
                     }
                 }
@@ -152,6 +153,9 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
                 // `postUpdate` is called when this geom layer update process is finished
                 geometryLayer.postUpdate(context, geometryLayer, updateSources);
             }
+
+            // Clear the cache of expired resources
+            geometryLayer.cache.flush();
 
             view.execFrameRequesters(MAIN_LOOP_EVENTS.AFTER_LAYER_UPDATE, dt, this._updateLoopRestarted, geometryLayer);
         }
@@ -215,9 +219,6 @@ MainLoop.prototype._step = function _step(view, timestamp) {
     }
 
     view.camera.camera3D.matrixAutoUpdate = oldAutoUpdate;
-
-    // Clear the cache of expired resources
-    Cache.flush();
 
     view.execFrameRequesters(MAIN_LOOP_EVENTS.UPDATE_END, dt, this._updateLoopRestarted);
 };
