@@ -107,7 +107,7 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
     const extentDim = extent.dimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
 
-    for (const geometry of feature.geometry) {
+    for (const geometry of feature.geometries) {
         if (geometry.extent.intersectsExtent(extent)) {
             const geoStyle = style.isStyle ? style : geometry.properties.style;
             if (feature.type === FEATURE_TYPES.POINT) {

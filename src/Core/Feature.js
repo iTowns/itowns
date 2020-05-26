@@ -163,7 +163,8 @@ export const FEATURE_TYPES = {
  * @property {number} size - the number of values of the array that should be associated with a coordinates.
  * The size is 3 with altitude and 2 without altitude.
  * @property {string} crs - Geographic or Geocentric coordinates system.
- * @property {Array.<FeatureGeometry>} geometry - The feature's geometry.
+ * @property {FeatureGeometry[]} geometries - An array containing all {@link
+ * FeatureGeometry}.
  * @property {Extent?} extent - The extent containing all the geometries
  * composing the feature.
  */
@@ -183,7 +184,7 @@ class Feature {
         } else {
             throw new Error(`Unsupported Feature type: ${type}`);
         }
-        this.geometry = [];
+        this.geometries = [];
         this.vertices = [];
         this.normals = options.withNormal ? [] : undefined;
         this.crs = crs;
@@ -203,7 +204,7 @@ class Feature {
      */
     bindNewGeometry() {
         const geometry = new FeatureGeometry(this);
-        this.geometry.push(geometry);
+        this.geometries.push(geometry);
         return geometry;
     }
     /**
@@ -220,7 +221,7 @@ class Feature {
      * @returns {number} the count of geometry.
      */
     get geometryCount() {
-        return this.geometry.length;
+        return this.geometries.length;
     }
 }
 
@@ -269,7 +270,7 @@ export class FeatureCollection {
      * Remove features that don't have [FeatureGeometry]{@link FeatureGeometry}.
      */
     removeEmptyFeature() {
-        this.features = this.features.filter(feature => feature.geometry.length);
+        this.features = this.features.filter(feature => feature.geometries.length);
     }
 
     /**
@@ -324,7 +325,7 @@ export class FeatureCollection {
     newFeatureByReference(feature) {
         const ref = new Feature(feature.type, this.crs, this.optionsFeature);
         ref.extent = feature.extent;
-        ref.geometry = feature.geometry;
+        ref.geometries = feature.geometries;
         ref.normals = feature.normals;
         ref.size = feature.size;
         ref.vertices = feature.vertices;

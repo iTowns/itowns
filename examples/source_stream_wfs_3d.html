@@ -217,7 +217,7 @@
 
                     if (intersects.length) {
                         batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
-                        properties = intersects[0].object.feature.geometry[batchId].properties;
+                        properties = intersects[0].object.feature.geometries[batchId].properties;
 
                         Object.keys(properties).map(function (objectKey) {
                             var value = properties[objectKey];

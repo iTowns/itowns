@@ -43,6 +43,6 @@ describe('FeaturesUtils', function () {
         }));
     it('should remember individual feature properties', () =>
         promise.then((collection) => {
-            assert.equal(collection.features[2].geometry[0].properties.my_prop, 14);
+            assert.equal(collection.features[2].geometries[0].properties.my_prop, 14);
         }));
 });
