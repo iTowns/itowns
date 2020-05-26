@@ -115,14 +115,14 @@ function toFeatureType(jsonType) {
 
 const keyProperties = ['type', 'geometry', 'properties'];
 
-function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, featureCollection) {
+function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, collection) {
     if (options.filter && !options.filter(json.properties, json.geometry)) {
         return;
     }
 
     const jsonType = json.geometry.type.toLowerCase();
     const featureType = toFeatureType(jsonType);
-    const feature = options.mergeFeatures ? featureCollection.requestFeatureByType(featureType) : new Feature(featureType, crsOut, options);
+    const feature = options.mergeFeatures ? collection.requestFeatureByType(featureType) : new Feature(featureType, crsOut, options);
     const geometryCount = feature.geometryCount;
     const coordinates = jsonType != 'point' ? json.geometry.coordinates : [json.geometry.coordinates];
     const setAltitude = !options.overrideAltitudeInToZero && options.withAltitude;
@@ -145,21 +145,21 @@ function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, fea
 }
 
 function jsonFeaturesToFeatures(crsIn, crsOut, jsonFeatures, filteringExtent, options) {
-    const features = new FeatureCollection(crsOut, options);
+    const collection = new FeatureCollection(crsOut, options);
 
     for (const jsonFeature of jsonFeatures) {
-        const feature = jsonFeatureToFeature(crsIn, crsOut, jsonFeature, filteringExtent, options, features);
+        const feature = jsonFeatureToFeature(crsIn, crsOut, jsonFeature, filteringExtent, options, collection);
         if (feature && !options.mergeFeatures) {
-            features.pushFeature(feature);
+            collection.pushFeature(feature);
         }
     }
 
     if (options.mergeFeatures) {
-        features.removeEmptyFeature();
-        features.updateExtent();
+        collection.removeEmptyFeature();
+        collection.updateExtent();
     }
 
-    return features;
+    return collection;
 }
 
 /**
