@@ -72,9 +72,9 @@
                         crsOut: view.referenceCrs,
                         mergeFeatures: true,
                     }))
-                    .then(features => itowns.Feature2Mesh.convert({
+                    .then(collection => itowns.Feature2Mesh.convert({
                         color: new itowns.THREE.Color(0xff0000),
-                    })(features))
+                    })(collection))
                     .then(function (mesh) {
                         if (mesh) {
                             mesh.traverse((m) => {

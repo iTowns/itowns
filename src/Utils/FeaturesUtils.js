@@ -138,38 +138,38 @@ export default {
      *
      * @param {Coordinates} coordinate - The coordinate for the filter
      * condition.
-     * @param {Feature|FeatureCollection} features - A single feature or a
+     * @param {Feature|FeatureCollection} collection - A single feature or a
      * collection of them, to filter given the previous coordinate.
      * @param {number} [epsilon=0.1] Tolerance around the coordinate (in
      * coordinate's unit).
      *
      * @return {Feature[]} Array of filtered features.
      */
-    filterFeaturesUnderCoordinate(coordinate, features, epsilon = 0.1) {
+    filterFeaturesUnderCoordinate(coordinate, collection, epsilon = 0.1) {
         const result = [];
 
         coord.copy(coordinate);
 
         // We can take this shortcut because either Feature and
         // FeatureCollection have an extent property
-        if (features.extent) {
-            coord.as(Crs.formatToEPSG(features.extent.crs), coord);
-            features.extent.as(coord.crs, ex);
+        if (collection.extent) {
+            coord.as(Crs.formatToEPSG(collection.extent.crs), coord);
+            collection.extent.as(coord.crs, ex);
 
             if (!ex.isPointInside(coord, epsilon)) {
                 return result;
             // Special case, because of the way tiles in VectorTileParser are
             // handled (see Feature2Texture for a similar solution)
-            } else if ((features.scale.x != 1 && features.scale.y != 1) || (features.translation.x != 0 && features.translation.y != 0)) {
-                coord.x = (coord.x + features.translation.x) * features.scale.x;
-                coord.y = (coord.y + features.translation.y) * features.scale.y;
-                if (features.scale.x != 1 && features.scale.y != 1) {
-                    epsilon *= Math.sqrt(features.scale.x ** 2 + features.scale.y ** 2);
+            } else if (collection.isFeatureCollection && (collection.scale.x != 1 && collection.scale.y != 1) || (collection.translation.x != 0 && collection.translation.y != 0)) {
+                coord.x = (coord.x + collection.translation.x) * collection.scale.x;
+                coord.y = (coord.y + collection.translation.y) * collection.scale.y;
+                if (collection.scale.x != 1 && collection.scale.y != 1) {
+                    epsilon *= Math.sqrt(collection.scale.x ** 2 + collection.scale.y ** 2);
                 }
             }
         }
-        if (Array.isArray(features.features)) {
-            for (const feature of features.features) {
+        if (collection.isFeatureCollection) {
+            for (const feature of collection.features) {
                 if (feature.extent && !feature.extent.isPointInside(coord, epsilon)) {
                     continue;
                 }

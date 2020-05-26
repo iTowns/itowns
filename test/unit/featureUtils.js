@@ -42,7 +42,7 @@ describe('FeaturesUtils', function () {
             assert.equal(filter[0].type == FEATURE_TYPES.LINE, 1.0);
         }));
     it('should remember individual feature properties', () =>
-        promise.then((feature) => {
-            assert.equal(feature.features[2].geometry[0].properties.my_prop, 14);
+        promise.then((collection) => {
+            assert.equal(collection.features[2].geometry[0].properties.my_prop, 14);
         }));
 });
