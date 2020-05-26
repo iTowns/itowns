@@ -54,7 +54,7 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             function isValidData(data) {
-                return data.features[0].geometry.length < 1000;
+                return data.features[0].geometries.length < 1000;
             }
 
             var wfsBuildingSource = new itowns.WFSSource({

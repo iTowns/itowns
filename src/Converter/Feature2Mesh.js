@@ -143,7 +143,7 @@ function featureToPoint(feature, options) {
         vertices = new Float32Array(ptsIn);
     }
 
-    for (const geometry of feature.geometry) {
+    for (const geometry of feature.geometries) {
         const color = getProperty('color', options, randomColor, geometry.properties);
         const start = geometry.indices[0].offset;
         const count = geometry.indices[0].count;
@@ -188,12 +188,12 @@ function featureToLine(feature, options) {
 
     let lines;
 
-    if (feature.geometry.length > 1) {
-        const countIndices = (count - feature.geometry.length) * 2;
+    if (feature.geometries.length > 1) {
+        const countIndices = (count - feature.geometries.length) * 2;
         const indices = new Uint16Array(countIndices);
         let i = 0;
         // Multi line case
-        for (const geometry of feature.geometry) {
+        for (const geometry of feature.geometries) {
             const color = getProperty('color', options, randomColor, geometry.properties);
             const start = geometry.indices[0].offset;
             // To avoid integer overflow with indice value (16 bits)
@@ -223,11 +223,11 @@ function featureToLine(feature, options) {
         geom.setIndex(new THREE.BufferAttribute(indices, 1));
         lines = new THREE.LineSegments(geom, lineMaterial);
     } else {
-        const color = getProperty('color', options, randomColor, feature.geometry[0].properties);
+        const color = getProperty('color', options, randomColor, feature.geometries[0].properties);
         fillColorArray(colors, count, color);
         geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         if (batchIds) {
-            const id = options.batchId(feature.geometry.properties, featureId);
+            const id = options.batchId(feature.geometries[0].properties, featureId);
             fillBatchIdArray(id, batchIds, 0, count);
             geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
         }
@@ -250,7 +250,7 @@ function featureToPolygon(feature, options) {
     const batchIds = options.batchId ?  new Uint32Array(vertices.length / 3) : undefined;
     let featureId = 0;
 
-    for (const geometry of feature.geometry) {
+    for (const geometry of feature.geometries) {
         const start = geometry.indices[0].offset;
         // To avoid integer overflow with indice value (16 bits)
         if (start > 0xffff) {
@@ -311,8 +311,8 @@ function area(contour, offset, count) {
 
 function featureToExtrudedPolygon(feature, options) {
     const ptsIn = feature.vertices;
-    const offset = feature.geometry[0].indices[0].offset;
-    const count = feature.geometry[0].indices[0].count;
+    const offset = feature.geometries[0].indices[0].offset;
+    const count = feature.geometries[0].indices[0].count;
     const isClockWise = area(ptsIn, offset, count) < 0;
 
     const normals = feature.normals;
@@ -326,7 +326,7 @@ function featureToExtrudedPolygon(feature, options) {
     const batchIds = options.batchId ?  new Uint32Array(vertices.length / 3) : undefined;
     let featureId = 0;
 
-    for (const geometry of feature.geometry) {
+    for (const geometry of feature.geometries) {
         const altitude = getProperty('altitude', options, 0, geometry.properties);
         const extrude = getProperty('extrude', options, 0, geometry.properties);
 
@@ -388,9 +388,9 @@ function featureToExtrudedPolygon(feature, options) {
 }
 
 /**
- * Convert a [Feature]{@link Feature#geometry}'s geometry to a Mesh
+ * Convert a [Feature]{@link Feature} to a Mesh
  *
- * @param {Object} feature - a Feature's geometry
+ * @param {Feature} feature - the feature to convert
  * @param {Object} options - options controlling the conversion
  * @param {number|function} options.altitude - define the base altitude of the mesh
  * @param {number|function} options.extrude - if defined, polygons will be extruded by the specified amount

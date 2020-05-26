@@ -63,7 +63,7 @@ class LabelLayer extends Layer {
 
             const featureField = f.style && f.style.text.field;
 
-            f.geometry.forEach((g) => {
+            f.geometries.forEach((g) => {
                 const minzoom = (g.properties.style && g.properties.style.zoom.min)
                     || (f.style && f.style.zoom.min)
                     || (this.style && this.style.zoom && this.style.zoom.min);

@@ -113,7 +113,7 @@ function isFeatureSingleGeometryUnderCoordinate(coordinate, type, coordinates, e
 
 function isFeatureUnderCoordinate(coordinate, feature, epsilon, result) {
     const featCoord = coordinate.as(feature.crs);
-    for (const geometry of feature.geometry) {
+    for (const geometry of feature.geometries) {
         if (geometry.extent == undefined || geometry.extent.isPointInside(featCoord, epsilon)) {
             const offset = geometry.indices[0].offset * feature.size;
             const count = geometry.indices[0].count * feature.size;
@@ -176,8 +176,8 @@ export default {
 
                 isFeatureUnderCoordinate(coord, feature, epsilon, result);
             }
-        } else if (features.geometry) {
-            isFeatureUnderCoordinate(coord, features, epsilon, result);
+        } else if (collection.geometries) {
+            isFeatureUnderCoordinate(coord, collection, epsilon, result);
         }
 
         return result;
