@@ -11,19 +11,42 @@ describe('Cache', function () {
         cache.set('a', 0, 0, 0);
         cache.set('b', 1, 0, 0);
         cache.set('c', 2, 0, 0);
+        cache.set('d', 3, 0);
+        cache.set('e', 4);
         assert.equal('c', cache.get(2, 0, 0));
+        assert.equal('d', cache.get(3, 0));
+        assert.equal('e', cache.get(4));
     });
 
     it('delete value in Cache', function () {
         cache.delete(0, 0, 0);
         cache.delete(1, 0, 0);
         cache.delete(2, 0, 0);
+        cache.delete(3, 0);
+        cache.delete(4);
+
         assert.equal(undefined, cache.get(0, 0, 0));
         assert.equal(undefined, cache.get(1, 0, 0));
         assert.equal(undefined, cache.get(2, 0, 0));
+        assert.equal(undefined, cache.get(3, 0));
+        assert.equal(undefined, cache.get(4));
+    });
+
+    it('delete empty Map', function () {
+        cache.set('a', 0, 0, 0);
+        cache.set('b', 0, 0, 1);
+        cache.set('c', 0, 0, 2);
+        cache.delete(0, 0, 0);
+        cache.delete(0, 0, 1);
+        cache.delete(0, 0, 2);
+        assert.equal(undefined, cache.get(0, 0));
+        assert.equal(cache.data.size, 0);
     });
 
     it('Clear Cache', function () {
+        cache.set('a', 0, 0, 0);
+        cache.set('b', 0, 0, 1);
+        cache.set('c', 0, 0, 2);
         cache.clear();
         assert.equal(0, cache.data.size);
     });

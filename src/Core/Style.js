@@ -369,7 +369,7 @@ class Style {
                 let size = readVectorProperty(layer.layout['icon-size'], zoom);
                 if (size == undefined) { size = 1; }
 
-                this.icon = cacheStyle.get(iconSrc, size, size);
+                this.icon = cacheStyle.get(iconSrc, size);
 
                 if (!this.icon) {
                     this.icon = {};
@@ -381,7 +381,7 @@ class Style {
                     this.icon.halfWidth = this.icon.dom.width / 2;
                     this.icon.halfHeight = this.icon.dom.height / 2;
 
-                    cacheStyle.set(this.icon, iconSrc, size, size);
+                    cacheStyle.set(this.icon, iconSrc, size);
                 }
             }
         }
