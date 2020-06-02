@@ -60,20 +60,20 @@ class Cache {
      */
     get(key1, key2, key3) {
         const entry_1 = this.data.get(key1);
-        if (entry_1 == undefined) {
-            // eslint-disable-next-line
-            return;
+        if (entry_1 == undefined) { return; }
+
+        if (entry_1.lastTimeUsed != undefined) {
+            entry = entry_1;
         } else {
             const entry_2 = entry_1.get(key2);
-            if (entry_2 == undefined) {
-                entry = entry_1;
+            if (entry_2 == undefined) { return; }
+
+            if (entry_2.lastTimeUsed != undefined) {
+                entry = entry_2;
             } else {
                 const entry_3 = entry_2.get(key3);
-                if (entry_3 == undefined) {
-                    entry = entry_2;
-                } else {
-                    entry = entry_3;
-                }
+                if (entry_3 == undefined) { return; }
+                entry = entry_3;
             }
         }
 
@@ -134,18 +134,33 @@ class Cache {
      * @param {string} [key3]
      */
     delete(key1, key2, key3) {
-        const entry = this.data.get(key1);
-        if (entry == undefined) {
-            throw Error('Please specify at least a key of something to delete');
-        } else if (entry.get(key2) == undefined) {
+        const entry_1 = this.data.get(key1);
+        if (entry_1 === undefined) { return; }
+
+        if (entry_1.lastTimeUsed != undefined) {
             delete this.data.get(key1);
             this.data.delete(key1);
-        } else if (entry.get(key2).get(key3) == undefined) {
-            delete entry.get(key2);
-            entry.delete(key2);
         } else {
-            delete entry.get(key2).get(key3);
-            entry.get(key2).delete(key3);
+            const entry_2 = entry_1.get(key2);
+            if (entry_2 === undefined) { return; }
+            if (entry_2.lastTimeUsed != undefined) {
+                delete entry_1.get(key2);
+                entry_1.delete(key2);
+                if (entry_1.size == 0) {
+                    this.data.delete(key1);
+                }
+            } else {
+                const entry_3 = entry_2.get(key3);
+                if (entry_3 === undefined) { return; }
+                delete entry_2.get(key3);
+                entry_2.delete(key3);
+                if (entry_2.size == 0) {
+                    entry_1.delete(key2);
+                    if (entry_1.size == 0) {
+                        this.data.delete(key1);
+                    }
+                }
+            }
         }
     }
 
