@@ -4,6 +4,7 @@
 
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/noto.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,7 +65,6 @@
                     name: 'OpenStreetMap',
                     url: 'http://www.openstreetmap.org/',
                 },
-                filter: function (layer) { return ['fill', 'line'].includes(layer.type) },
                 zoom: {
                     min: 2,
                     max: 16,
@@ -75,6 +75,7 @@
                 isValidData: isValidData,
                 source: mvtSource,
                 fx: 2.5,
+                labelEnabled: true,
             });
 
             view.addLayer(mvtLayer);
