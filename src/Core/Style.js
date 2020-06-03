@@ -374,12 +374,16 @@ class Style {
                 if (!this.icon) {
                     this.icon = {};
                     this.icon.dom = getImageFromSprite(sprites, iconSrc);
-                    this.icon.dom.width *= size;
-                    this.icon.dom.height *= size;
+
+                    this.icon.dom.onload = () => {
+                        this.icon.dom.width *= size;
+                        this.icon.dom.height *= size;
+
+                        this.icon.halfWidth = this.icon.dom.width / 2;
+                        this.icon.halfHeight = this.icon.dom.height / 2;
+                    };
 
                     this.icon.anchor = readVectorProperty(layer.layout['icon-anchor'], zoom) || 'center';
-                    this.icon.halfWidth = this.icon.dom.width / 2;
-                    this.icon.halfHeight = this.icon.dom.height / 2;
 
                     cacheStyle.set(this.icon, iconSrc, size, size);
                 }
