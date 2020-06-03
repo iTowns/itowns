@@ -27,6 +27,10 @@ class DOMElement {
             display: 'block',
         };
         document.documentElement = this;
+
+        Object.defineProperty(this, 'onload', {
+            set: f => f(),
+        });
     }
 
     focus() {}
