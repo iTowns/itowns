@@ -27,6 +27,7 @@ class LabelLayer extends Layer {
 
         this.isLabelLayer = true;
         this.crs = crs;
+        this.defineLayerProperty('visible', true);
     }
 
     /**
@@ -117,7 +118,7 @@ class LabelLayer extends Layer {
             return;
         }
 
-        if (this.frozen || !node.visible) {
+        if (this.frozen || !node.visible || !this.visible) {
             return;
         }
 
@@ -210,6 +211,10 @@ class LabelLayer extends Layer {
                     renderer.hideNodeDOM(node);
                     result.forEach(labels => labels.forEach(label => node.remove(label)));
                     node.domElement.parentElement.removeChild(node.domElement);
+                });
+
+                this.addEventListener('visible-property-changed', (event) => {
+                    result.forEach(labels => labels.forEach((label) => { label.forceHidden = !event.target.visible; }));
                 });
             }
 

@@ -67,6 +67,7 @@ class Label extends THREE.Object3D {
         });
 
         this.isLabel = true;
+        this.forceHidden = false;
         this.coordinates = coordinates;
 
         this.projectedPosition = { x: 0, y: 0 };

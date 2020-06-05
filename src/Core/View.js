@@ -74,6 +74,10 @@ function _preprocessLayer(view, layer, parentLayer) {
         labelLayer.source = source;
         labelLayer.style = layer.style;
 
+        layer.addEventListener('visible-property-changed', () => {
+            labelLayer.visible = layer.visible;
+        });
+
         layer.whenReady = layer.whenReady.then(() => {
             view.addLayer(labelLayer);
             return layer;
