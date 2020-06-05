@@ -1,0 +1,82 @@
+<html>
+    <head>
+        <title>Itowns - Globe + vector-tiles</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="description">
+            Drag and drop a valid style file for a vector tiles stream. The
+            style <u><b>must</b></u> contain the sources for the stream (<a target="_blank"
+                href="https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/">see
+                here</a>). You can add other styles without having to reload the
+            page, as the previous layers will be hidden.  However, note that
+            having multiple styles may severly impact performances.</div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script>
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.475, 48.807),
+                range: 120000,
+            }
+
+            var viewerDiv = document.getElementById('viewerDiv');
+            var view = new itowns.GlobeView(viewerDiv, placement);
+            var menu = new GuiTools('menuDiv', view, 300);
+
+            setupLoadingScreen(viewerDiv, view);
+
+            var currentLayer = {};
+
+            // Drag and drop handler
+            var fileReader = new FileReader();
+
+            var id = 0;
+            fileReader.onload = function onload(e) {
+                id++;
+                currentLayer.visible = false;
+                var style = JSON.parse(e.target.result);
+                console.log(style);
+
+                var source = new itowns.VectorTilesSource({ style });
+
+                var layer = new itowns.ColorLayer(style.name + ' ' + id, {
+                    isValidData: function v() { return false },
+                    source,
+                    noTextureParentOutsideLimit: true,
+                    labelEnabled: true,
+                });
+
+                view.addLayer(layer).then(() => {
+                    menu.addLayerGUI(layer);
+                    menu.colorGui.open();
+                    menu.colorGui.__folders[style.name + ' ' + id].open();
+                });
+                currentLayer = layer;
+            }
+
+            // Load the file
+            function loadStyle(event, files) {
+                event.preventDefault();
+
+                // Take one at a time
+                var file = files[0];
+                fileReader.readAsText(file);
+            }
+
+            // Listen to drag and drop actions
+            document.addEventListener('dragenter', function _(e) { e.preventDefault(); }, false);
+            document.addEventListener('dragover', function _(e) { e.preventDefault(); }, false);
+            document.addEventListener('dragleave', function _(e) { e.preventDefault(); }, false);
+            document.addEventListener('drop', function _(e) { loadStyle(e, e.dataTransfer.files); }, false);
+            document.addEventListener('paste', function _(e) { loadStyle(e, e.clipboardData.files); }, false);
+        </script>
+    </body>
+</html>
