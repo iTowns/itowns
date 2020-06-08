@@ -68,6 +68,15 @@
             // Convert by iTowns
             itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson')
                 .then(function _(geojson) {
+                    optionsGeoJsonParser.style = new itowns.Style({
+                        fill: {
+                            color: 'orange',
+                            opacity: 0.5,
+                        },
+                        stroke: {
+                            color:'white',
+                        },
+                    });
                     return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
                 }).then(function _(parsedData) {
                     var ariegeSource = new itowns.FileSource({
@@ -77,48 +86,44 @@
                     var ariegeLayer = new itowns.ColorLayer('ariege', {
                         name: 'ariege',
                         transparent: true,
-                        style: {
-                            fill: {
-                              color: 'orange',
-                              opacity: 0.5,
-                            },
-                            stroke: {
-                                color:'white',
-                            },
-                        },
                         source: ariegeSource,
                     });
 
                     return view.addLayer(ariegeLayer);
                 }).then(FeatureToolTip.addLayer);
 
-            itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson')
-                .then(function _(geojson) {
-                    return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
-                }).then(function _(parsedData) {
-                    var pyoSource = new itowns.FileSource({
-                        parsedData,
+            var pyoStyle;
+            itowns.Fetcher.texture('images/cross.png')
+                .then(texture => {
+                    pyoStyle = new itowns.Style({
+                        fill: {
+                            pattern: texture.image,
+                            opacity: 0.8,
+                        },
+                        stroke: {
+                            color:'IndianRed',
+                        },
                     });
+                })
+                .then(itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson')
+                    .then(function _(geojson) {
+                        optionsGeoJsonParser.style = pyoStyle;
+                        return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
+                    })
+                    .then(function _(parsedData) {
+                        var pyoSource = new itowns.FileSource({
+                            parsedData,
+                        });
 
-                    return itowns.Fetcher.texture('images/cross.png').then(texture => {
                         var pyoLayer = new itowns.ColorLayer('pyrenees-orientales', {
                             name: 'pyrenees-orientales',
                             transparent: true,
-                            style: {
-                                fill: {
-                                  pattern: texture.image,
-                                  opacity: 0.8,
-                                },
-                                stroke: {
-                                    color:'IndianRed',
-                                },
-                            },
                             source: pyoSource,
                         });
 
-                        return view.addLayer(pyoLayer);
-                    }).then(FeatureToolTip.addLayer);
-                });
+                        return view.addLayer(pyoLayer).then(FeatureToolTip.addLayer);
+                    })
+                );
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
