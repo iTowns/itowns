@@ -91,7 +91,6 @@ class LabelLayer extends Layer {
                     content = this.style.getTextFromProperties(g.properties);
                 }
 
-                // FIXME: Style management needs improvement, see #1318.
                 const label = new Label(content,
                     coord.clone(),
                     g.properties.style || f.style || this.style);

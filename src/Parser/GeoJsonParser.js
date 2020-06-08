@@ -42,25 +42,25 @@ const toFeature = {
         }
         geometry.updateExtent();
     },
-    default(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
+    default(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties, parentStyle) {
         if (filteringExtent && firstPtIsOut(filteringExtent, coordsIn, crsIn)) {
             return;
         }
 
         const geometry = feature.bindNewGeometry();
         geometry.properties = properties;
-        geometry.properties.style = new Style().setFromGeojsonProperties(properties, feature.type);
+        geometry.properties.style = new Style({}, parentStyle).setFromGeojsonProperties(properties, feature.type);
         this.populateGeometry(crsIn, coordsIn, geometry, setAltitude, feature);
         feature.updateExtent(geometry);
     },
-    polygon(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
+    polygon(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties, parentStyle) {
         // filtering
         if (filteringExtent && firstPtIsOut(filteringExtent, coordsIn[0], crsIn)) {
             return;
         }
         const geometry = feature.bindNewGeometry();
         geometry.properties = properties;
-        geometry.properties.style = new Style().setFromGeojsonProperties(properties, feature.type);
+        geometry.properties.style = new Style({}, parentStyle).setFromGeojsonProperties(properties, feature.type);
 
         // Then read contour and holes
         for (let i = 0; i < coordsIn.length; i++) {
@@ -68,28 +68,28 @@ const toFeature = {
         }
         feature.updateExtent(geometry);
     },
-    multi(type, feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
+    multi(type, feature, crsIn, coordsIn, filteringExtent, setAltitude, properties, parentStyle) {
         for (const coords of coordsIn) {
-            this[type](feature, crsIn, coords, filteringExtent, setAltitude, properties);
+            this[type](feature, crsIn, coords, filteringExtent, setAltitude, properties, parentStyle);
         }
     },
 };
 
-function coordinatesToFeature(type, feature, crsIn, coordinates, filteringExtent, setAltitude, properties) {
+function coordinatesToFeature(type, feature, crsIn, coordinates, filteringExtent, setAltitude, properties, parentStyle) {
     if (coordinates.length == 0) {
         return;
     }
     switch (type) {
         case 'point':
         case 'linestring':
-            return toFeature.default(feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+            return toFeature.default(feature, crsIn, coordinates, filteringExtent, setAltitude, properties, parentStyle);
         case 'multipoint':
         case 'multilinestring':
-            return toFeature.multi('default', feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+            return toFeature.multi('default', feature, crsIn, coordinates, filteringExtent, setAltitude, properties, parentStyle);
         case 'polygon':
-            return toFeature.polygon(feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+            return toFeature.polygon(feature, crsIn, coordinates, filteringExtent, setAltitude, properties, parentStyle);
         case 'multipolygon':
-            return toFeature.multi('polygon', feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+            return toFeature.multi('polygon', feature, crsIn, coordinates, filteringExtent, setAltitude, properties, parentStyle);
         case 'geometrycollection':
         default:
             throw new Error(`Unhandled geojson type ${feature.type}`);
@@ -127,6 +127,7 @@ function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, col
     const coordinates = jsonType != 'point' ? json.geometry.coordinates : [json.geometry.coordinates];
     const setAltitude = !options.overrideAltitudeInToZero && options.withAltitude;
     const properties = json.properties || {};
+    const parentStyle = options.style;
 
     // copy other properties
     for (const key of Object.keys(json)) {
@@ -135,7 +136,7 @@ function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, col
         }
     }
 
-    coordinatesToFeature(jsonType, feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
+    coordinatesToFeature(jsonType, feature, crsIn, coordinates, filteringExtent, setAltitude, properties, parentStyle);
 
     if (feature.geometryCount == geometryCount) {
         return;

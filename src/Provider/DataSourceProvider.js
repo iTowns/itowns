@@ -26,6 +26,7 @@ export function parseSourceData(data, extDest, layer) {
         withNormal: layer.isGeometryLayer !== undefined,
         withAltitude: layer.isGeometryLayer !== undefined,
         layers: source.layers,
+        style: layer.style,
     };
 
     return source.parser(data, options).then(parsedFile => source.onParsedFile(parsedFile));
