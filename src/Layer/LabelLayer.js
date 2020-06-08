@@ -27,7 +27,10 @@ class LabelLayer extends Layer {
 
         this.isLabelLayer = true;
         this.crs = crs;
-        this.defineLayerProperty('visible', true);
+        this.domElement = document.createElement('div');
+        this.defineLayerProperty('visible', true, () => {
+            this.domElement.style.display = this.visible ? 'block' : 'none';
+        });
     }
 
     /**
@@ -191,7 +194,7 @@ class LabelLayer extends Layer {
                 // Add all labels for this tile at once to batch it
                 node.domElement = document.createElement('div');
                 node.domElement.append(...labelsDiv);
-                renderer.domElement.appendChild(node.domElement);
+                (node.findClosestDomElement() || this.domElement).appendChild(node.domElement);
                 node.domElementVisible = true;
 
                 // Batch update the dimensions of labels all at once to avoid
@@ -211,10 +214,6 @@ class LabelLayer extends Layer {
                     renderer.hideNodeDOM(node);
                     result.forEach(labels => labels.forEach(label => node.remove(label)));
                     node.domElement.parentElement.removeChild(node.domElement);
-                });
-
-                this.addEventListener('visible-property-changed', (event) => {
-                    result.forEach(labels => labels.forEach((label) => { label.forceHidden = !event.target.visible; }));
                 });
             }
 

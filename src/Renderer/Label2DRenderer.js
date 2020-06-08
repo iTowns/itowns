@@ -111,6 +111,10 @@ class Label2DRenderer {
         this.grid.resize();
     }
 
+    registerLayer(layer) {
+        this.domElement.appendChild(layer.domElement);
+    }
+
     render(scene, camera) {
         if (!this.infoTileLayer) { return; }
         this.grid.reset();
@@ -148,7 +152,7 @@ class Label2DRenderer {
             object.children.forEach(c => this.culling(c, currentMaxZoom, extent));
         // By verifying the maxzoom and the presence of the label inside the
         // visible extent, we can filter more labels.
-        } else if (object.forceHidden || object.zoom.max <= currentMaxZoom || !extent.isPointInside(object.coordinates)) {
+        } else if (object.zoom.max <= currentMaxZoom || !extent.isPointInside(object.coordinates)) {
             this.grid.hidden.push(object);
         } else {
             vector.setFromMatrixPosition(object.matrixWorld);
