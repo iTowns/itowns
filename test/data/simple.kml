@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.0">
+	<Document>
+		<name>GPS Visualizer data</name>
+		<Style id="waypoint">
+			<IconStyle>
+				<color>ffffffff</color>
+				<scale>1</scale>
+				<Icon><href>http://maps.google.com/mapfiles/kml/pal4/icon56.png</href></Icon>
+				<hotSpot x="0.5" xunits="fraction" y="0.5" yunits="fraction" />
+			</IconStyle>
+			<BalloonStyle>
+				<text><![CDATA[<h3>$[name]</h3> <div style="margin-top:8px;">$[description]</div>]]></text>
+			</BalloonStyle>
+		</Style>
+		<Style id="track">
+			<LineStyle>
+				<color>ff0000ff</color>
+				<width>3</width>
+			</LineStyle>
+		</Style>
+		<Style id="polygon">
+			<LineStyle>
+				<color>ff9900ff</color>
+				<width>3</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>409900ff</color>
+				<colorMode>normal</colorMode>
+				<fill>1</fill>
+				<outline>1</outline>
+			</PolyStyle>
+		</Style>
+		<Folder>
+			<name>Waypoints</name>
+			<Placemark>
+				<name>britain</name>
+				<description></description>
+				<styleUrl>#waypoint</styleUrl>
+				<Point>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>-4.3615723,48.4219101</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark>
+				<name>paris</name>
+				<description></description>
+				<styleUrl>#waypoint</styleUrl>
+				<Point>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>2.3400879,48.8719415</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark>
+				<name>toulouse</name>
+				<description></description>
+				<styleUrl>#waypoint</styleUrl>
+				<Point>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>1.4062500,43.6042619</coordinates>
+				</Point>
+			</Placemark>
+		</Folder>
+		<Folder>
+			<name>Tracks</name>
+			<Placemark>
+				<name></name>
+				<description>Length: 1090 km (677 mi)</description>
+				<visibility>1</visibility>
+				<styleUrl>#track</styleUrl>
+				<LineString>
+					<extrude>0</extrude>
+					<tessellate>1</tessellate>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>
+						0.3515625,46.5815185 3.0981445,45.7751862 4.2077637,46.9127510 4.0539551,48.3051207 0.1867676,48.0046250 2.3181152,49.9158617
+					</coordinates>
+				</LineString>
+			</Placemark>
+		</Folder>
+		<Folder>
+			<name>Zones</name>
+			<Placemark>
+				<name></name>
+				<visibility>1</visibility>
+				<styleUrl>#polygon</styleUrl>
+				<Polygon>
+					<extrude>0</extrude>
+					<outerBoundaryIs>
+						<LinearRing>
+							<coordinates>
+								0.3515625,46.5815185 3.0981445,45.7751862 4.2077637,46.9127510 4.0539551,48.3051207 0.1867676,48.0046250
+							</coordinates>
+						</LinearRing>
+					</outerBoundaryIs>
+				</Polygon>
+			</Placemark>
+		</Folder>
+	</Document>
+</kml>
