@@ -101,6 +101,12 @@ class TileMesh extends THREE.Mesh {
             this.material.updateLayersUniforms();
         }
     }
+
+    findClosestDomElement() {
+        if (this.parent.isTileMesh) {
+            return this.parent.domElement || this.parent.findClosestDomElement();
+        }
+    }
 }
 
 export default TileMesh;

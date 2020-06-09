@@ -27,6 +27,10 @@ class LabelLayer extends Layer {
 
         this.isLabelLayer = true;
         this.crs = crs;
+        this.domElement = document.createElement('div');
+        this.defineLayerProperty('visible', true, () => {
+            this.domElement.style.display = this.visible ? 'block' : 'none';
+        });
     }
 
     /**
@@ -117,7 +121,7 @@ class LabelLayer extends Layer {
             return;
         }
 
-        if (this.frozen || !node.visible) {
+        if (this.frozen || !node.visible || !this.visible) {
             return;
         }
 
@@ -190,7 +194,7 @@ class LabelLayer extends Layer {
                 // Add all labels for this tile at once to batch it
                 node.domElement = document.createElement('div');
                 node.domElement.append(...labelsDiv);
-                renderer.domElement.appendChild(node.domElement);
+                (node.findClosestDomElement() || this.domElement).appendChild(node.domElement);
                 node.domElementVisible = true;
 
                 // Batch update the dimensions of labels all at once to avoid

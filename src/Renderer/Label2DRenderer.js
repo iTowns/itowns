@@ -111,6 +111,10 @@ class Label2DRenderer {
         this.grid.resize();
     }
 
+    registerLayer(layer) {
+        this.domElement.appendChild(layer.domElement);
+    }
+
     render(scene, camera) {
         if (!this.infoTileLayer) { return; }
         this.grid.reset();
