@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { Image } from 'canvas';
 import Label from 'Core/Label';
 import Style from 'Core/Style';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
@@ -43,18 +44,27 @@ describe('Label', function () {
     let style;
     const c = new Coordinates('EPSG:4978');
 
-    before('init style', function () {
-        style = new Style();
-        style.setFromVectorTileLayer({
-            type: 'symbol',
-            paint: {},
-            layout: {
-                'icon-image': 'icon',
-            },
-        }, {
-            img: '',
-            icon: { x: 0, y: 0, width: 10, height: 10 },
-        });
+    before('init style', function (done) {
+        const img = new Image();
+        img.onload = () => {
+            style = new Style();
+            style.setFromVectorTileLayer({
+                type: 'symbol',
+                paint: {},
+                layout: {
+                    'icon-image': 'icon',
+                },
+            }, {
+                img,
+                icon: { x: 0, y: 0, width: 10, height: 10 },
+            });
+            // NOTE: manual trigger of onload, keep an eye on the evolution of
+            // jsdom/canvas to remove this
+            style.icon.dom.onload();
+            done();
+        };
+        // empty 10x10 png
+        img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAADklEQVQYlWNgGAWDEwAAAZoAARbK02kAAAAASUVORK5CYII=';
     });
 
     it('should throw errors for bad Label construction', function () {
@@ -107,7 +117,6 @@ describe('Label', function () {
     it('should hide the DOM', function () {
         label = new Label('', c, style);
 
-        assert.equal(label.content.style.display, 'block');
         label.visible = false;
         assert.equal(label.content.style.display, 'none');
         label.visible = true;

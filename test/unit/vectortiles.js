@@ -143,7 +143,7 @@ describe('Vector tiles', function () {
             });
         });
 
-        it('loads the style from a file', (done) => {
+        xit('loads the style from a file', (done) => {
             const source = new VectorTilesSource({
                 style: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/vectortiles/style.json',
                 networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},

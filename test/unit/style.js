@@ -14,18 +14,20 @@ describe('Style', function () {
         assert.equal(style1.fill.color, style2.fill.color);
         assert.equal(style1.stroke.color, style2.stroke.color);
     });
+
     it('Clone style', () => {
         const style2 = style1.clone(style1);
         assert.equal(style1.point.color, style2.point.color);
         assert.equal(style1.fill.color, style2.fill.color);
         assert.equal(style1.stroke.color, style2.stroke.color);
     });
+
     it('applyToHTML', () => {
-        const dom = document.createElement('canvas');
+        const dom = document.createElement('div');
         style1.applyToHTML(dom);
         assert.equal(dom.style.padding, '2px');
         assert.equal(dom.style.maxWidth, '10em');
-        assert.equal(dom.style.color, '#000000');
+        assert.equal(dom.style.color, 'rgb(0, 0, 0)');
         assert.equal(dom.style.fontSize, '16px');
         assert.equal(dom.style.fontFamily, 'Open Sans Regular,Arial Unicode MS Regular,sans-serif');
         assert.equal(dom.style.overflowWrap, 'break-word');
