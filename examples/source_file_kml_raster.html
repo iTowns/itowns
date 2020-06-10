@@ -64,10 +64,22 @@
                 parser: itowns.KMLParser.parse,
             });
 
+            var kmlStyle = new itowns.Style({
+                zoom: { min: 10, max: 20 },
+                text: {
+                    field: '{name}{description}',
+                    haloColor: 'white',
+                    haloWidth: 1,
+                    transform: 'uppercase',
+                },
+            });
+
             var kmlLayer = new itowns.ColorLayer('Kml', {
                 name: 'kml',
                 transparent: true,
                 source: kmlSource,
+                style: kmlStyle,
+                labelEnabled: true,
             });
 
             debug.createTileDebugUI(menuGlobe.gui, view);
