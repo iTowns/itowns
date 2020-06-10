@@ -50,19 +50,30 @@
                 return itowns.ShapefileParser.parse(res, {
                     buildExtent: true,
                     crsOut: view.tileLayer.extent.crs,
+                    style: new itowns.Style({
+                        zoom: { min: 10, max: 20 },
+                        point: {
+                            color: 'white',
+                            line: 'green',
+                        },
+                        text: {
+                            field: '{name}\n(id: {station_id})',
+                            size: 14,
+                            haloColor: 'white',
+                            haloWidth: 1,
+                            font: ['monospace'],
+                        },
+                    }),
                 });
             }).then(function _(feature) {
                 var velibSource = new itowns.FileSource({
                     parsedData: feature,
                 });
 
-                var velibLayer = new itowns.ColorLayer('velib', { source: velibSource,
-                    style: {
-                        point: {
-                            color: 'white',
-                            line: 'green',
-                        }
-                    }});
+                var velibLayer = new itowns.ColorLayer('velib', {
+                    source: velibSource,
+                    labelEnabled: true,
+                });
 
                 debug.createTileDebugUI(menuGlobe.gui, view);
 
