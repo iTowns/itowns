@@ -216,15 +216,15 @@ class Style {
             text: {},
         };
 
-        this.zoom = {
-            min: params.zoom && params.zoom.min != undefined ? params.zoom.min : undefined,
-            max: params.zoom && params.zoom.max != undefined ? params.zoom.max : undefined,
-        };
-
+        params.zoom = params.zoom || {};
         params.fill = params.fill || {};
         params.stroke = params.stroke || {};
         params.point = params.point || {};
         params.text = params.text || {};
+
+        this.zoom = {};
+        defineStyleProperty(this, 'zoom', 'min', params.zoom.min);
+        defineStyleProperty(this, 'zoom', 'max', params.zoom.max);
 
         this.fill = {};
         defineStyleProperty(this, 'fill', 'color', params.fill.color);
