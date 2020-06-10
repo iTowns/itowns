@@ -1,4 +1,4 @@
-import togeojson from '@mapbox/togeojson';
+import { gpx } from '@tmcw/togeojson';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 
 /**
@@ -13,13 +13,13 @@ export default {
      * Parse a GPX file content and return a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
      *
-     * @param {XMLDocument} gpx - The GPX file content to parse.
+     * @param {XMLDocument} gpxFile - The GPX file content to parse.
      * @param {GeoJsonParser~GeoJsonParserOptions} options - Options controlling the parsing.
      *
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
      */
-    parse(gpx, options) {
-        return GeoJsonParser.parse(togeojson.gpx(gpx), options);
+    parse(gpxFile, options) {
+        return GeoJsonParser.parse(gpx(gpxFile), options);
     },
 };

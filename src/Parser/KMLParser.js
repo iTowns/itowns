@@ -1,4 +1,4 @@
-import togeojson from '@mapbox/togeojson';
+import { kml } from '@tmcw/togeojson';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 
 /**
@@ -13,13 +13,13 @@ export default {
      * Parse a KML file content and return a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
      *
-     * @param {XMLDocument} kml - The KML file content to parse.
+     * @param {XMLDocument} kmlFile - The KML file content to parse.
      * @param {GeoJsonParser~GeoJsonParserOptions} options - Options controlling the parsing.
      *
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
      */
-    parse(kml, options) {
-        return GeoJsonParser.parse(togeojson.kml(kml), options);
+    parse(kmlFile, options) {
+        return GeoJsonParser.parse(kml(kmlFile), options);
     },
 };

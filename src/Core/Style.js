@@ -38,15 +38,28 @@ function readVectorProperty(property, zoom) {
     }
 }
 
-function getImageFromSprite(sprites, key) {
-    const sprite = sprites[key];
-    canvas.width = sprite.width;
-    canvas.height = sprite.height;
-    canvas.getContext('2d').drawImage(sprites.img, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, sprite.width, sprite.height);
-    const image = document.createElement('img');
-    image.src = canvas.toDataURL('image/png');
+function getImage(icon, size, source, key) {
+    icon.dom = document.createElement('img');
 
-    return image;
+    icon.dom.onload = () => {
+        icon.dom.width *= size;
+        icon.dom.height *= size;
+
+        icon.halfWidth = icon.dom.width / 2;
+        icon.halfHeight = icon.dom.height / 2;
+    };
+
+    if (typeof source == 'string') {
+        icon.dom.src = source;
+    } else if (Array.isArray(source)) {
+        const sprite = source[key];
+        canvas.width = sprite.width;
+        canvas.height = sprite.height;
+        canvas.getContext('2d').drawImage(source.img, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, sprite.width, sprite.height);
+        icon.dom.src = canvas.toDataURL('image/png');
+    }
+
+    return icon;
 }
 
 const textAnchorPosition = {
@@ -309,6 +322,15 @@ class Style {
             this.point.opacity = properties['fill-opacity'];
             this.point.line = properties.stroke;
             this.point.radius = properties.radius;
+
+            this.text.color = properties['label-color'];
+            this.text.opacity = properties['label-opacity'];
+            this.text.size = properties['label-size'];
+
+            if (properties.icon) {
+                this.icon = {};
+                getImage(this.icon, properties['icon-size'] || 1, properties.icon);
+            }
         } else {
             this.stroke.color = properties.stroke;
             this.stroke.width = properties['stroke-width'];
@@ -340,7 +362,7 @@ class Style {
             this.fill.color = color;
             this.fill.opacity = readVectorProperty(layer.paint['fill-opacity'], zoom) || opacity;
             if (layer.paint['fill-pattern'] && sprites) {
-                this.fill.pattern = getImageFromSprite(sprites, layer.paint['fill-pattern']);
+                this.fill.pattern = getImage(sprites, layer.paint['fill-pattern']);
             }
 
             if (layer.paint['fill-outline-color']) {
@@ -408,18 +430,8 @@ class Style {
 
                 if (!this.icon) {
                     this.icon = {};
-                    this.icon.dom = getImageFromSprite(sprites, iconSrc);
-
-                    this.icon.dom.onload = () => {
-                        this.icon.dom.width *= size;
-                        this.icon.dom.height *= size;
-
-                        this.icon.halfWidth = this.icon.dom.width / 2;
-                        this.icon.halfHeight = this.icon.dom.height / 2;
-                    };
-
+                    getImage(this.icon, size, sprites, iconSrc);
                     this.icon.anchor = readVectorProperty(layer.layout['icon-anchor'], zoom) || 'center';
-
                     cacheStyle.set(this.icon, iconSrc, size);
                 }
             }
