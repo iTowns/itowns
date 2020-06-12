@@ -58,7 +58,7 @@ class c3DEngine {
         // Create renderer
         try {
             this.label2dRenderer = new Label2DRenderer();
-            this.label2dRenderer.setSize(window.innerWidth, window.innerHeight);
+            this.label2dRenderer.setSize(this.width, this.height);
             viewerDiv.appendChild(this.label2dRenderer.domElement);
 
             this.renderer = renderer || new THREE.WebGLRenderer({
@@ -67,7 +67,7 @@ class c3DEngine {
                 alpha: options.alpha,
                 logarithmicDepthBuffer: options.logarithmicDepthBuffer,
             });
-            this.renderer.domElement.style.position = 'absolute';
+            this.renderer.domElement.style.position = 'relative';
             this.renderer.domElement.style.zIndex = 0;
             this.renderer.domElement.style.top = 0;
         } catch (ex) {

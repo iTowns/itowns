@@ -80,7 +80,6 @@ class Label2DRenderer {
         this.domElement = document.createElement('div');
         this.domElement.style.overflow = 'hidden';
         this.domElement.style.position = 'absolute';
-        this.domElement.style.top = 0;
         this.domElement.style.zIndex = 1;
 
         // Used to destroy labels that are not added to the DOM
