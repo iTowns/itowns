@@ -250,6 +250,39 @@
 
             view.addLayer(wfsBuildingLayer);
 
+            var wfsCartoSource = new itowns.WFSSource({
+                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                version: '2.0.0',
+                typeName: 'BDCARTO_BDD_WLD_WGS84G:zone_habitat',
+                projection: 'EPSG:4326',
+                ipr: 'IGN',
+                format: 'application/json',
+                extent: {
+                    west: 4.568,
+                    east: 5.18,
+                    south: 45.437,
+                    north: 46.03,
+                },
+            });
+
+            var wfsCartoStyle = new itowns.Style({
+                zoom: { min: 0, max: 20 },
+                text: {
+                    field: '{toponyme}',
+                    transform: 'uppercase',
+                    size: 20,
+                    haloColor: 'white',
+                    haloWidth: 1,
+                },
+            });
+
+            var wfsCartoLayer = new itowns.LabelLayer('wfsCarto', 'EPSG:3946');
+            wfsCartoLayer.projection = 'EPSG:3946';
+            wfsCartoLayer.source = wfsCartoSource;
+            wfsCartoLayer.style = wfsCartoStyle;
+
+            view.addLayer(wfsCartoLayer);
+
             function picking(event) {
                 var htmlInfo = document.getElementById('info');
                 var intersects = view.pickObjectsAt(event, 2, 'wfsBuilding');
