@@ -142,7 +142,7 @@ class LabelLayer extends Layer {
             return;
         }
 
-        const extentsDestination = node.getExtentsByProjection(this.source.projection);
+        const extentsDestination = node.getExtentsByProjection(this.source.projection) || [node.extent];
 
         const extentsSource = [];
         for (const extentDest of extentsDestination) {
