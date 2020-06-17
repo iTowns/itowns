@@ -5,6 +5,7 @@ import Extent from 'Core/Geographic/Extent';
 
 const holes = require('../data/geojson/holes.geojson.json');
 const gpx = require('../data/geojson/gpx.geojson.json');
+const points = require('../data/geojson/points.geojson.json');
 
 proj4.defs('EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
@@ -68,5 +69,17 @@ describe('GeoJsonParser', function () {
 
         }).then((collection) => {
             assert.ok(collection.features[0].normals == undefined);
+        }));
+
+    it('parses Point and MultiPoint', () =>
+        GeoJsonParser.parse(points, {
+            crsIn: 'EPSG:4326',
+            crsOut: 'EPSG:4326',
+            mergeFeatures: false,
+        }).then((collection) => {
+            assert.equal(collection.features.length, 3);
+            assert.equal(collection.features[0].geometries.length, 1);
+            assert.equal(collection.features[1].geometries.length, 1);
+            assert.equal(collection.features[2].geometries.length, 5);
         }));
 });
