@@ -42,6 +42,9 @@ const toFeature = {
         }
         geometry.updateExtent();
     },
+    point(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
+        this.default(feature, crsIn, [coordsIn], filteringExtent, setAltitude, properties);
+    },
     default(feature, crsIn, coordsIn, filteringExtent, setAltitude, properties) {
         if (filteringExtent && firstPtIsOut(filteringExtent, coordsIn, crsIn)) {
             return;
@@ -84,6 +87,7 @@ function coordinatesToFeature(type, feature, crsIn, coordinates, filteringExtent
         case 'linestring':
             return toFeature.default(feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
         case 'multipoint':
+            return toFeature.multi('point', feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
         case 'multilinestring':
             return toFeature.multi('default', feature, crsIn, coordinates, filteringExtent, setAltitude, properties);
         case 'polygon':
