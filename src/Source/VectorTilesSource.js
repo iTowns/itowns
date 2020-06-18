@@ -54,7 +54,7 @@ class VectorTilesSource extends TMSSource {
 
         if (source.style) {
             if (typeof source.style == 'string') {
-                promise = Fetcher.json(source.style);
+                promise = Fetcher.json(source.style, this.networkOptions);
             } else {
                 promise = Promise.resolve(source.style);
             }
@@ -65,7 +65,7 @@ class VectorTilesSource extends TMSSource {
         this.whenReady = promise.then((style) => {
             const baseurl = source.sprite || style.sprite;
             if (baseurl) {
-                return Fetcher.json(`${baseurl}.json`).then((sprites) => {
+                return Fetcher.json(`${baseurl}.json`, this.networkOptions).then((sprites) => {
                     this.sprites = sprites;
                     return Fetcher.texture(`${baseurl}.png`, this.networkOptions).then((texture) => {
                         this.sprites.img = texture.image;
@@ -131,7 +131,7 @@ class VectorTilesSource extends TMSSource {
 
             if (this.url == '.') {
                 if (os.url) {
-                    return Fetcher.json(os.url).then((tileJSON) => {
+                    return Fetcher.json(os.url, this.networkOptions).then((tileJSON) => {
                         if (tileJSON.tiles[0]) {
                             this.url = toTMSUrl(tileJSON.tiles[0]);
                         }

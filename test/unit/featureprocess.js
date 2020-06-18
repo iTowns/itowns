@@ -31,6 +31,7 @@ describe('Layer with Feature process', function () {
         projection: 'EPSG:4326',
         format: 'application/json',
         zoom: { min: 0, max: 0 },
+        networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
     });
 
     const ariege = new GeometryLayer('ariege', new THREE.Group(), { source });
@@ -42,10 +43,6 @@ describe('Layer with Feature process', function () {
     });
 
     ariege.source.zoom = 0;
-
-    if (process.env.HTTPS_PROXY) {
-        ariege.source.networkOptions = { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) };
-    }
 
     const context = {
         camera: viewer.camera,
