@@ -3,6 +3,7 @@ import PotreeLayer from 'Layer/PotreeLayer';
 import PotreeSource from 'Source/PotreeSource';
 import Coordinates from 'Core/Geographic/Coordinates';
 import GlobeView from 'Core/Prefab/GlobeView';
+import View from 'Core/View';
 import HttpsProxyAgent from 'https-proxy-agent';
 import Renderer from './bootstrap';
 
@@ -98,7 +99,7 @@ describe('Potree Provider', function () {
             assert.ok(l.material.defines.NORMAL_OCT16);
         });
 
-        ps.forEach(p => view.addLayer(p));
+        ps.forEach(p => View.prototype.addLayer.call(view, p));
 
         Promise.all(ps.map(p => p.whenReady)).then(() => done());
     });
