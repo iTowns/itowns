@@ -86,7 +86,7 @@ function executeCommand(command) {
             b3dm: b3dmToMesh,
             pnts: pntsParse,
         };
-        return Fetcher.arrayBuffer(url, layer.networkOptions).then((result) => {
+        return Fetcher.arrayBuffer(url, layer.source.networkOptions).then((result) => {
             if (result !== undefined) {
                 let func;
                 const magic = utf8Decoder.decode(new Uint8Array(result, 0, 4));
