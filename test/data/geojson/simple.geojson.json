@@ -11,8 +11,10 @@
         ]
       },
       "properties": {
-        "name": "testPoint"
-      }
+        "name": "testPoint",
+        "filteringName": "no"
+      },
+      "title": "foo"
     },
     {
       "type": "Feature",
@@ -29,7 +31,9 @@
           ]
         ]
       },
-      "properties": {}
+      "properties": {
+        "filteringName": "yes"
+      }
     },
     {
       "type": "Feature",
@@ -61,7 +65,8 @@
         ]
       },
       "properties": {
-        "my_prop": 14
+        "my_prop": 14,
+        "filteringName": "yes"
       }
     }
   ]

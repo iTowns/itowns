@@ -1,104 +1,36 @@
 import fetch from 'node-fetch';
+import jsdom from 'jsdom';
 
-global.window = {
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    setTimeout,
-};
-
-global.URL = function URL() {
-    this.ref = undefined;
-};
-
-global.Event = () => {};
-global.requestAnimationFrame = () => {};
+global.window = new jsdom.JSDOM('', {
+    url: 'http://localhost',
+    pretendToBeVisual: true,
+}).window;
+global.document = window.document;
+global.requestAnimationFrame = window.requestAnimationFrame;
 global.fetch = fetch;
 global.fetch.Promise = Promise;
+global.Event = window.Event;
 
-class DOMElement {
-    constructor() {
-        this.children = [];
-        this.clientWidth = 400;
-        this.clientHeight = 300;
-        this.width = 400;
-        this.height = 300;
-        this.events = new Map();
-        this.style = {
-            display: 'block',
-        };
-        document.documentElement = this;
+// hack while waiting https://github.com/jsdom/jsdom/pull/2926 to be merged
+window.SVGElement.prototype.createSVGMatrix = () => {};
 
-        Object.defineProperty(this, 'onload', {
-            set: f => f(),
-        });
-    }
+// another hack, as clientWidth and clientHeight return 0 and are
+// readonly in jsdom
+Object.defineProperty(window.Element.prototype, 'clientWidth', { get: () => 400 });
+Object.defineProperty(window.Element.prototype, 'clientHeight', { get: () => 300 });
+window.Element.prototype.getBoundingClientRect = () => ({ x: 0, y: 0, width: 400, height: 300 });
 
-    focus() {}
-    appendChild(c) { this.children.push(c); }
-    cloneNode() { return Object.create(this); }
-    getBoundingClientRect() { return { x: 0, y: 0, width: this.width, height: this.height }; }
-    addEventListener(event, cb) { this.events.set(event, cb); }
-    removeEventListener() {}
-    emitEvent(event, params) {
-        const callback = this.events.get(event);
-        if (callback) {
-            return callback(params);
-        }
-    }
-    createSVGMatrix() {}
-}
-
-// Mock document object for Mocha.
-global.document = {
-    createElement: (type) => {
-        if (type == 'canvas') {
-            const canvas = new DOMElement();
-
-            canvas.getContext = () => ({
-                fillRect: () => { },
-                moveTo: () => { },
-                lineTo: () => { },
-                beginPath: () => { },
-                stroke: () => { },
-                fill: () => { },
-                arc: () => { },
-                setTransform: () => { },
-                setLineDash: () => { },
-                drawImage: (img, sx, sy, sw, sh, dx, dy, dw, dh) => {
-                    canvas.width = dw;
-                    canvas.height = dh;
-
-                    const image = global.document.createElement('img');
-                    image.width = dw;
-                    image.height = dh;
-                    return image;
-                },
-                canvas,
-            });
-
-            canvas.toDataURL = () => ({ width: canvas.width, height: canvas.height });
-
-            return canvas;
-        } else if (type == 'img') {
-            const img = new DOMElement();
-            img.width = 10;
-            img.height = 10;
-            Object.defineProperty(img, 'src', {
-                set: () => img.emitEvent('load'),
-            });
-            return img;
-        }
-
-        return new DOMElement();
-    },
-    createElementNS: (_, type) => (global.document.createElement(type)),
-};
+// hack to set the width and height of the image, to be used for the icon of labels
+Object.defineProperty(window.HTMLImageElement.prototype, 'width', { get: () => 10 });
+Object.defineProperty(window.HTMLImageElement.prototype, 'height', { get: () => 10 });
 
 class Renderer {
     constructor() {
-        this.domElement = new DOMElement();
-        this.domElement.parentElement = new DOMElement();
-        this.domElement.parentElement.appendChild(this.domElement);
+        this.domElement = document.createElement('div');
+
+
+        const parentElement = document.createElement('div');
+        parentElement.appendChild(this.domElement);
 
         this.context = {
             getParameter: () => 16,
@@ -127,6 +59,7 @@ class Renderer {
     render() {}
     readRenderTargetPixels() { }
     getContext() { return this.context; }
+    getClearAlpha() { return 1; }
 }
 
 export default Renderer;
