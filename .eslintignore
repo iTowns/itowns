@@ -1,3 +1,14 @@
-examples/js/GUI/dat.gui
-src/ThreeExtended/*
-examples/libs/*
+examples/libs/
+examples/layers/
+src/ThreeExtended/
+test/hooks.js
+dist/
+node_modules/
+docs/out/
+docs/static/
+docs/tutorials/
+docs/tmpl/
+test/data/
+
+
+

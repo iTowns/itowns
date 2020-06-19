@@ -4,7 +4,7 @@ describe('3dtiles_batch_table', function _() {
     let result;
     before(async () => {
         result = await loadExample(
-            `http://localhost:${itownsPort}/examples/3dtiles_batch_table.html`,
+            'examples/3dtiles_batch_table.html',
             this.fullTitle(),
         );
     });

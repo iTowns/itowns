@@ -3,7 +3,7 @@ const assert = require('assert');
 describe('view_2d_map', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/view_2d_map.html`, this.fullTitle());
+        result = await loadExample('examples/view_2d_map.html', this.fullTitle());
     });
 
     it('should run', async () => {

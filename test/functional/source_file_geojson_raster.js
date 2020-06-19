@@ -3,7 +3,7 @@ const assert = require('assert');
 describe('source_file_geojson_raster', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/source_file_geojson_raster.html`, this.fullTitle());
+        result = await loadExample('examples/source_file_geojson_raster.html', this.fullTitle());
     });
 
     it('should run', async () => {

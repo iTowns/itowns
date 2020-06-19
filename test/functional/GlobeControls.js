@@ -6,7 +6,7 @@ let middleHeight;
 
 describe('GlobeControls with globe example', function _() {
     before(async () => {
-        await loadExample(`http://localhost:${itownsPort}/examples/view_3d_map.html`, this.fullTitle());
+        await loadExample('examples/view_3d_map.html', this.fullTitle());
         await page.evaluate(() => {
             window.THREE = itowns.THREE;
             const raycaster = new THREE.Raycaster();

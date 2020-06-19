@@ -9,7 +9,7 @@
     "doclint": "npm run doc -- -t templates/silent",
     "test": "npm run lint -- --max-warnings=0 && npm run build && npm run test-with-coverage && npm run test-functional",
     "test-unit": "npm run base-test-unit test/unit",
-    "test-functional": "mocha -t 60000 --recursive test/functional",
+    "test-functional": "mocha -t 60000 --require test/hooks_functional.js --recursive test/functional",
     "test-with-coverage": "nyc -n src -r html cross-env npm run test-unit",
     "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --require @babel/register --file test/unit/bootstrap.js",
     "build": "webpack -p",
