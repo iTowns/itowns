@@ -157,8 +157,8 @@ function createHTMLListFromObject(jsObject) {
         if (typeof jsObject[property] === 'object') {
             // if property value is an object, then recurse to
             // create a list from it
-            item.appendChild(
-                createHTMLListFromObject(jsObject[property]));
+            // eslint-disable-next-line no-unused-vars
+            item.appendChild(createHTMLListFromObject(jsObject[property]));
         } else {
             // else append the value of the property to the item
             item.appendChild(document.createTextNode(': '));
