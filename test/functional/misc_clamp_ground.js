@@ -3,7 +3,7 @@ const assert = require('assert');
 describe('misc_clamp_ground', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/misc_clamp_ground.html`, this.fullTitle());
+        result = await loadExample('examples/misc_clamp_ground.html', this.fullTitle());
     });
 
     it('should run', async () => {

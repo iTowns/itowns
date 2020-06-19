@@ -3,7 +3,7 @@ const assert = require('assert');
 describe('view_multiglobe', function _() {
     let result;
     before(async () => {
-        result = await loadExample(`http://localhost:${itownsPort}/examples/view_multiglobe.html`, this.fullTitle());
+        result = await loadExample('examples/view_multiglobe.html', this.fullTitle());
     });
 
     it('should run', async () => {
@@ -24,6 +24,7 @@ describe('view_multiglobe', function _() {
         // verify that we properly updated the globe
         const { layer, level } = await page.evaluate(() => {
             const pick = view.pickObjectsAt({ x: 200, y: 150 })[0];
+            console.log('pick', pick);
             return {
                 layer: pick.layer.id,
                 level: pick.object.level,
