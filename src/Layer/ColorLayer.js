@@ -60,7 +60,7 @@ class ColorLayer extends Layer {
         config.cacheLifeTime = config.cacheLifeTime == undefined ? CACHE_POLICIES.TEXTURE : config.cacheLifeTime;
         super(id, config);
         this.isColorLayer = true;
-        this.style = config.style ? new Style(config.style) : {};
+        this.style = new Style(config.style);
         this.defineLayerProperty('visible', true);
         this.defineLayerProperty('opacity', 1.0);
         this.defineLayerProperty('sequence', 0);

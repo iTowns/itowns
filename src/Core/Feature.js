@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Style from 'Core/Style';
 
 function defaultExtent(crs) {
     return new Extent(crs, Infinity, -Infinity, Infinity, -Infinity);
@@ -167,6 +168,7 @@ export const FEATURE_TYPES = {
  * FeatureGeometry}.
  * @property {Extent?} extent - The extent containing all the geometries
  * composing the feature.
+ * @property {Style} style - The style of the Feature.
  */
 class Feature {
     /**
@@ -177,6 +179,8 @@ class Feature {
      * @param {boolean} [options.buildExtent] Build extent and update when adding new vertice.
      * @param {boolean} [options.withAltitude] Set vertice altitude when adding new vertice.
      * @param {boolean} [options.withNormal] Set vertice normal when adding new vertice.
+     * @param {Style} [options.style] The style to inherit when creating a new
+     * style for this feature.
      */
     constructor(type, crs, options = {}) {
         if (Object.keys(FEATURE_TYPES).find(t => FEATURE_TYPES[t] === type)) {
@@ -197,6 +201,7 @@ class Feature {
         }
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
+        this.style = new Style({}, options.style);
     }
     /**
      * Instance a new {@link FeatureGeometry}  and push in {@link Feature}.
@@ -347,5 +352,13 @@ export class FeatureCollection {
         coordinates.y = (coordinates.y / this.scale.y) - this.translation.y;
         coordinates.z = (coordinates.z / this.scale.z) - this.translation.z;
         return coordinates;
+    }
+
+    setParentStyle(style) {
+        if (style) {
+            this.features.forEach((f) => {
+                f.style.parent = style;
+            });
+        }
     }
 }
