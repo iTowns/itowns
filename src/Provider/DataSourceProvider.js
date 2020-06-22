@@ -71,10 +71,6 @@ export default {
                 if (validedParsedData) {
                     // Convert
                     convertedSourceData = layer.convert(validedParsedData, extDest, layer);
-                } else if (source.fetchedData) {
-                    // Parse and convert
-                    convertedSourceData = parseSourceData(source.fetchedData, extDest, layer)
-                        .then(parsedData => layer.convert(parsedData, extDest, layer), err => error(err, source));
                 } else {
                     // Fetch, parse and convert
                     convertedSourceData = fetchSourceData(extSource, layer)
