@@ -7,6 +7,10 @@ const inv255 = 1 / 255;
 const canvas = document.createElement('canvas');
 
 function rgba2rgb(orig) {
+    if (!orig) {
+        return {};
+    }
+
     const result = orig.match(/(?:((hsl|rgb)a? *\(([\d.%]+(?:deg|g?rad|turn)?)[ ,]*([\d.%]+)[ ,]*([\d.%]+)[ ,/]*([\d.%]*)\))|(#((?:[\d\w]{3}){1,2})([\d\w]{1,2})?))/i);
     if (!result) {
         return { color: orig, opacity: 1.0 };
@@ -55,6 +59,29 @@ const textAnchorPosition = {
     center: [-0.5, -0.5],
     'top-left': [0, 0],
 };
+
+function defineStyleProperty(style, category, name, value, defaultValue) {
+    let property;
+
+    Object.defineProperty(
+        style[category],
+        name,
+        {
+            enumerable: true,
+            get: () => {
+                if (property === undefined) {
+                    return style.parent[category][name] || defaultValue;
+                } else {
+                    return property;
+                }
+            },
+            set: (v) => {
+                property = v;
+            },
+        });
+
+    style[category][name] = value;
+}
 
 /**
  * A Style is an object that defines the visual appearance of {@link
@@ -146,14 +173,12 @@ const textAnchorPosition = {
  * @property {Array} text.font - A list (as an array of string) of font family
  * names, prioritized in the order it is set. Default is `Open Sans Regular,
  * Arial Unicode MS Regular, sans-serif`.
- * @property {Object} text.halo - An object containing properties defining a
- * halo around the text.
- * @property {string} text.halo.color - The color of the halo. Can be any [valid
+ * @property {string} text.haloColor - The color of the halo. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is `#000000`.
- * @property {number} text.halo.width - The width of the halo, in pixels.
+ * @property {number} text.haloWidth - The width of the halo, in pixels.
  * Default is `0`.
- * @property {number} text.halo.blur - The blur value of the halo, in pixels.
+ * @property {number} text.haloBlur - The blur value of the halo, in pixels.
  * Default is `0`.
  *
  * @example
@@ -175,65 +200,69 @@ class Style {
     /**
      * @param {Object} [params={}] An object that can contain all properties of
      * a Style.
+     * @param {Style} [parent] The parent style, that is looked onto if a value
+     * is missing.
      *
      * @constructor
      */
-    constructor(params = {}) {
+    constructor(params = {}, parent) {
         this.isStyle = true;
 
-        this.zoom = {
-            min: params.zoom && params.zoom.min != undefined ? params.zoom.min : undefined,
-            max: params.zoom && params.zoom.max != undefined ? params.zoom.max : undefined,
+        this.parent = parent || {
+            zoom: {},
+            fill: {},
+            stroke: {},
+            point: {},
+            text: {},
         };
 
+        params.zoom = params.zoom || {};
         params.fill = params.fill || {};
         params.stroke = params.stroke || {};
         params.point = params.point || {};
         params.text = params.text || {};
 
-        this.fill = {
-            color: params.fill.color,
-            opacity: params.fill.opacity == undefined ? 1.0 : params.fill.opacity,
-            pattern: params.fill.pattern,
-        };
+        this.zoom = {};
+        defineStyleProperty(this, 'zoom', 'min', params.zoom.min);
+        defineStyleProperty(this, 'zoom', 'max', params.zoom.max);
 
-        this.stroke = {
-            color: params.stroke.color,
-            opacity: params.stroke.opacity == undefined ? 1.0 : params.stroke.opacity,
-            width: params.stroke.width == undefined ? 1.0 : params.stroke.width,
-            dasharray: params.stroke.dasharray || [],
-        };
+        this.fill = {};
+        defineStyleProperty(this, 'fill', 'color', params.fill.color);
+        defineStyleProperty(this, 'fill', 'opacity', params.fill.opacity, 1.0);
+        defineStyleProperty(this, 'fill', 'pattern', params.fill.pattern);
 
-        this.point = {
-            color: params.point.color,
-            line: params.point.line,
-            opacity: params.point.opacity == undefined ? 1.0 : params.point.opacity,
-            radius: params.point.radius == undefined ? 2.0 : params.point.radius,
-            width: params.point.width || 0.0,
-        };
+        this.stroke = {};
+        defineStyleProperty(this, 'stroke', 'color', params.stroke.color);
+        defineStyleProperty(this, 'stroke', 'opacity', params.stroke.opacity, 1.0);
+        defineStyleProperty(this, 'stroke', 'width', params.stroke.width, 1.0);
+        defineStyleProperty(this, 'stroke', 'dasharray', params.stroke.dasharray, []);
 
-        this.text = {
-            field: params.text.field,
-            zOrder: params.text.zOrder || 'auto',
-            color: params.text.color || '#000000',
-            anchor: params.text.anchor || 'center',
-            offset: params.text.offset || [0, 0],
-            padding: params.text.padding || 2,
-            size: params.text.size || 16,
-            placement: params.text.placement || 'point',
-            rotation: params.text.rotation || 'auto',
-            wrap: params.text.wrap || 10,
-            spacing: params.text.spacing || 0,
-            transform: params.text.transform || 'none',
-            justify: params.text.justify || 'center',
-            opacity: params.text.opacity || 1.0,
-            font: params.text.font || ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif'],
-            halo: {
-                color: (params.text.halo && params.text.halo.color) || '#000000',
-                width: (params.text.halo && params.text.halo.width) || 0,
-                blur: (params.text.halo && params.text.halo.blur) || 0,
-            },
-        };
+        this.point = {};
+        defineStyleProperty(this, 'point', 'color', params.point.color);
+        defineStyleProperty(this, 'point', 'line', params.point.line);
+        defineStyleProperty(this, 'point', 'opacity', params.point.opacity, 1.0);
+        defineStyleProperty(this, 'point', 'radius', params.point.radius, 2.0);
+        defineStyleProperty(this, 'point', 'width', params.point.width, 0.0);
+
+        this.text = {};
+        defineStyleProperty(this, 'text', 'field', params.text.field);
+        defineStyleProperty(this, 'text', 'zOrder', params.text.zOrder, 'auto');
+        defineStyleProperty(this, 'text', 'color', params.text.color, '#000000');
+        defineStyleProperty(this, 'text', 'anchor', params.text.anchor, 'center');
+        defineStyleProperty(this, 'text', 'offset', params.text.offset, [0, 0]);
+        defineStyleProperty(this, 'text', 'padding', params.text.padding, 2);
+        defineStyleProperty(this, 'text', 'size', params.text.size, 16);
+        defineStyleProperty(this, 'text', 'placement', params.text.placement, 'point');
+        defineStyleProperty(this, 'text', 'rotation', params.text.rotation, 'auto');
+        defineStyleProperty(this, 'text', 'wrap', params.text.wrap, 10);
+        defineStyleProperty(this, 'text', 'spacing', params.text.spacing, 0);
+        defineStyleProperty(this, 'text', 'transform', params.text.transform, 'none');
+        defineStyleProperty(this, 'text', 'justify', params.text.justify, 'center');
+        defineStyleProperty(this, 'text', 'opacity', params.text.opacity, 1.0);
+        defineStyleProperty(this, 'text', 'font', params.text.font, ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif']);
+        defineStyleProperty(this, 'text', 'haloColor', params.text.haloColor, '#000000');
+        defineStyleProperty(this, 'text', 'haloWidth', params.text.haloWidth, 0);
+        defineStyleProperty(this, 'text', 'haloBlur', params.text.haloBlur, 0);
     }
 
     /**
@@ -248,7 +277,6 @@ class Style {
         Object.assign(this.stroke, style.stroke);
         Object.assign(this.point, style.point);
         Object.assign(this.text, style.text);
-        Object.assign(this.text.halo, style.text.halo);
         return this;
     }
 
@@ -270,10 +298,10 @@ class Style {
      */
     setFromGeojsonProperties(properties, type) {
         if (type === FEATURE_TYPES.POINT) {
-            this.point.color = properties.fill || 'white';
-            this.point.opacity = properties['fill-opacity'] || this.point.opacity;
-            this.point.line = properties.stroke || 'gray';
-            this.point.radius = properties.radius || this.point.radius;
+            this.point.color = properties.fill;
+            this.point.opacity = properties['fill-opacity'];
+            this.point.line = properties.stroke;
+            this.point.radius = properties.radius;
         } else {
             this.stroke.color = properties.stroke;
             this.stroke.width = properties['stroke-width'];
@@ -281,7 +309,7 @@ class Style {
 
             if (type !== FEATURE_TYPES.LINE) {
                 this.fill.color = properties.fill;
-                this.fill.opacity = properties['fill-opacity'] || this.fill.opacity;
+                this.fill.opacity = properties['fill-opacity'];
             }
         }
         return this;
@@ -303,7 +331,7 @@ class Style {
         if (layer.type === 'fill' && !this.fill.color) {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern']));
             this.fill.color = color;
-            this.fill.opacity = readVectorProperty(layer.paint['fill-opacity'], zoom) || opacity || this.fill.opacity;
+            this.fill.opacity = readVectorProperty(layer.paint['fill-opacity'], zoom) || opacity;
             if (layer.paint['fill-pattern'] && sprites) {
                 this.fill.pattern = getImageFromSprite(sprites, layer.paint['fill-pattern']);
             }
@@ -318,19 +346,19 @@ class Style {
         } else if (layer.type === 'line' && !this.stroke.color) {
             const prepare = readVectorProperty(layer.paint['line-color'], zoom);
             const { color, opacity } = rgba2rgb(prepare);
-            this.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray'], zoom) || [];
+            this.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray'], zoom);
             this.stroke.color = color;
             this.stroke.lineCap = layer.layout['line-cap'];
-            this.stroke.width = readVectorProperty(layer.paint['line-width'], zoom) || this.stroke.width;
-            this.stroke.opacity = readVectorProperty(layer.paint['line-opacity'], zoom) || opacity || this.stroke.opacity;
+            this.stroke.width = readVectorProperty(layer.paint['line-width'], zoom);
+            this.stroke.opacity = readVectorProperty(layer.paint['line-opacity'], zoom) || opacity;
         } else if (layer.type === 'circle' || symbolToCircle) {
-            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['circle-color'], zoom) || '#000000ff');
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['circle-color'], zoom));
             this.point.color = color;
             this.point.opacity = opacity;
-            this.point.radius = readVectorProperty(layer.paint['circle-radius'], zoom) || this.point.radius;
+            this.point.radius = readVectorProperty(layer.paint['circle-radius'], zoom);
         } else if (layer.type === 'symbol') {
             // overlapping order
-            this.text.zOrder = readVectorProperty(layer.layout['symbol-z-order'], zoom) || this.text.zOrder;
+            this.text.zOrder = readVectorProperty(layer.layout['symbol-z-order'], zoom);
             if (this.text.zOrder == 'auto') {
                 this.text.zOrder = readVectorProperty(layer.layout['symbol-sort-key'], zoom) || 'Y';
             } else if (this.text.zOrder == 'viewport-y') {
@@ -340,28 +368,28 @@ class Style {
             }
 
             // position
-            this.text.anchor = readVectorProperty(layer.layout['text-anchor'], zoom) || this.text.anchor;
-            this.text.offset = readVectorProperty(layer.layout['text-offset'], zoom) || this.text.offset;
-            this.text.padding = readVectorProperty(layer.layout['text-padding'], zoom) || this.text.padding;
-            this.text.size = readVectorProperty(layer.layout['text-size'], zoom) || this.text.size;
-            this.text.placement = readVectorProperty(layer.layout['symbol-placement'], zoom) || this.text.placement;
-            this.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment'], zoom) || this.text.rotation;
+            this.text.anchor = readVectorProperty(layer.layout['text-anchor'], zoom);
+            this.text.offset = readVectorProperty(layer.layout['text-offset'], zoom);
+            this.text.padding = readVectorProperty(layer.layout['text-padding'], zoom);
+            this.text.size = readVectorProperty(layer.layout['text-size'], zoom);
+            this.text.placement = readVectorProperty(layer.layout['symbol-placement'], zoom);
+            this.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment'], zoom);
 
             // content
-            this.text.field = readVectorProperty(layer.layout['text-field'], zoom) || this.text.field;
-            this.text.wrap = readVectorProperty(layer.layout['text-max-width'], zoom) || this.text.wrap;
-            this.text.spacing = readVectorProperty(layer.layout['text-letter-spacing'], zoom) || this.text.spacing;
-            this.text.transform = readVectorProperty(layer.layout['text-transform'], zoom) || this.text.transform;
-            this.text.justify = readVectorProperty(layer.layout['text-justify'], zoom) || this.text.justify;
+            this.text.field = readVectorProperty(layer.layout['text-field'], zoom);
+            this.text.wrap = readVectorProperty(layer.layout['text-max-width'], zoom);
+            this.text.spacing = readVectorProperty(layer.layout['text-letter-spacing'], zoom);
+            this.text.transform = readVectorProperty(layer.layout['text-transform'], zoom);
+            this.text.justify = readVectorProperty(layer.layout['text-justify'], zoom);
 
             // appearance
-            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['text-color'], zoom) || this.text.color);
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['text-color'], zoom));
             this.text.color = color;
-            this.text.opacity = readVectorProperty(layer.paint['text-opacity'], zoom) || (opacity !== undefined && opacity) || this.text.opacity;
-            this.text.font = readVectorProperty(layer.layout['text-font'], zoom) || this.text.font;
-            this.text.halo.color = readVectorProperty(layer.paint['text-halo-color'], zoom) || this.text.halo.color;
-            this.text.halo.width = readVectorProperty(layer.paint['text-halo-width'], zoom) || this.text.halo.width;
-            this.text.halo.blur = readVectorProperty(layer.paint['text-halo-blur'], zoom) || this.text.halo.blur;
+            this.text.opacity = readVectorProperty(layer.paint['text-opacity'], zoom) || (opacity !== undefined && opacity);
+            this.text.font = readVectorProperty(layer.layout['text-font'], zoom);
+            this.text.haloColor = readVectorProperty(layer.paint['text-halo-color'], zoom);
+            this.text.haloWidth = readVectorProperty(layer.paint['text-halo-width'], zoom);
+            this.text.haloBlur = readVectorProperty(layer.paint['text-halo-blur'], zoom);
 
             // additional icon
             const iconSrc = readVectorProperty(layer.layout['icon-image'], zoom);
@@ -413,8 +441,8 @@ class Style {
         domElement.style['white-space'] = 'pre-line';
 
         // NOTE: find a better way to support text halo
-        if (this.text.halo.width > 0) {
-            domElement.style.textShadow = `1px 1px 0px ${this.text.halo.color}, -1px 1px 0px ${this.text.halo.color}, -1px -1px 0px ${this.text.halo.color}, 1px -1px 0px ${this.text.halo.color}`;
+        if (this.text.haloWidth > 0) {
+            domElement.style.textShadow = `1px 1px 0px ${this.text.haloColor}, -1px 1px 0px ${this.text.haloColor}, -1px -1px 0px ${this.text.haloColor}, 1px -1px 0px ${this.text.haloColor}`;
         }
 
         if (!this.icon) {

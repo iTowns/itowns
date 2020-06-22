@@ -102,6 +102,10 @@ class Layer extends THREE.EventDispatcher {
                 return parseSourceData(this.source.fetchedData, this.source.extent, this);
             }
         }).then(() => {
+            if (this.source.parsedData && this.source.parsedData.isFeatureCollection) {
+                this.source.parsedData.setParentStyle(this.style);
+            }
+
             this.ready = true;
             return this;
         });

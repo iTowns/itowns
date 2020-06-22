@@ -109,7 +109,7 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
 
     for (const geometry of feature.geometries) {
         if (geometry.extent.intersectsExtent(extent)) {
-            const geoStyle = style.isStyle ? style : geometry.properties.style;
+            const geoStyle = geometry.properties.style || style;
             if (feature.type === FEATURE_TYPES.POINT) {
                 // cross multiplication to know in the extent system the real size of
                 // the point
