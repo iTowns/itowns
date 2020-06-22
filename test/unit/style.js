@@ -6,7 +6,7 @@ describe('Style', function () {
     style1.point.color = 'red';
     style1.fill.color = 'blue';
     style1.stroke.color = 'black';
-    style1.text.halo.width = 1;
+    style1.text.haloWidth = 1;
 
     it('Copy style', () => {
         const style2 = new Style().copy(style1);
@@ -14,12 +14,14 @@ describe('Style', function () {
         assert.equal(style1.fill.color, style2.fill.color);
         assert.equal(style1.stroke.color, style2.stroke.color);
     });
+
     it('Clone style', () => {
         const style2 = style1.clone(style1);
         assert.equal(style1.point.color, style2.point.color);
         assert.equal(style1.fill.color, style2.fill.color);
         assert.equal(style1.stroke.color, style2.stroke.color);
     });
+
     it('applyToHTML', () => {
         const dom = document.createElement('canvas');
         style1.applyToHTML(dom);
