@@ -1,5 +1,6 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 import Cache from 'Core/Scheduler/Cache';
+import Fetcher from 'Provider/Fetcher';
 
 const cacheStyle = new Cache();
 
@@ -100,8 +101,9 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * any [valid color
  * string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is no value, indicating that no filling needs to be done.
- * @property {Image|Canvas} fill.pattern - Defines a pattern to fill the surface
- * with. See [this
+ * @property {Image|Canvas|string} fill.pattern - Defines a pattern to fill the
+ * surface with. It can be an `Image` to use directly, or an url to fetch the
+ * pattern from. See [this
  * example](http://www.itowns-project.org/itowns/examples/#source_file_geojson_raster)
  * for how to use.
  * @property {number} fill.opacity - The opacity of the color or the
@@ -230,6 +232,11 @@ class Style {
         defineStyleProperty(this, 'fill', 'color', params.fill.color);
         defineStyleProperty(this, 'fill', 'opacity', params.fill.opacity, 1.0);
         defineStyleProperty(this, 'fill', 'pattern', params.fill.pattern);
+        if (typeof this.fill.pattern == 'string') {
+            Fetcher.texture(this.fill.pattern).then((pattern) => {
+                this.fill.pattern = pattern.image;
+            });
+        }
 
         this.stroke = {};
         defineStyleProperty(this, 'stroke', 'color', params.stroke.color);

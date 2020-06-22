@@ -57,12 +57,12 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             var optionsGeoJsonParser = {
-                        buildExtent: true,
-                        crsIn: 'EPSG:4326',
-                        crsOut: view.tileLayer.extent.crs,
-                        mergeFeatures: true,
-                        withNormal: false,
-                        withAltitude: false,
+                buildExtent: true,
+                crsIn: 'EPSG:4326',
+                crsOut: view.tileLayer.extent.crs,
+                mergeFeatures: true,
+                withNormal: false,
+                withAltitude: false,
             };
 
             // Convert by iTowns
@@ -74,19 +74,21 @@
                         parsedData,
                     });
 
+                    var ariegeStyle = new itowns.Style({
+                        fill: {
+                            color: 'orange',
+                            opacity: 0.5,
+                        },
+                        stroke: {
+                            color:'white',
+                        },
+                    });
+
                     var ariegeLayer = new itowns.ColorLayer('ariege', {
                         name: 'ariege',
                         transparent: true,
-                        style: {
-                            fill: {
-                              color: 'orange',
-                              opacity: 0.5,
-                            },
-                            stroke: {
-                                color:'white',
-                            },
-                        },
                         source: ariegeSource,
+                        style: ariegeStyle,
                     });
 
                     return view.addLayer(ariegeLayer);
@@ -100,25 +102,25 @@
                         parsedData,
                     });
 
-                    return itowns.Fetcher.texture('images/cross.png').then(texture => {
-                        var pyoLayer = new itowns.ColorLayer('pyrenees-orientales', {
-                            name: 'pyrenees-orientales',
-                            transparent: true,
-                            style: {
-                                fill: {
-                                  pattern: texture.image,
-                                  opacity: 0.8,
-                                },
-                                stroke: {
-                                    color:'IndianRed',
-                                },
-                            },
-                            source: pyoSource,
-                        });
+                    var pyoStyle = new itowns.Style({
+                        fill: {
+                            pattern: 'images/cross.png',
+                            opacity: 0.8,
+                        },
+                        stroke: {
+                            color:'IndianRed',
+                        },
+                    });
 
-                        return view.addLayer(pyoLayer);
-                    }).then(FeatureToolTip.addLayer);
-                });
+                    var pyoLayer = new itowns.ColorLayer('pyrenees-orientales', {
+                        name: 'pyrenees-orientales',
+                        transparent: true,
+                        source: pyoSource,
+                        style: pyoStyle,
+                    });
+
+                    return view.addLayer(pyoLayer);
+                }).then(FeatureToolTip.addLayer);
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
