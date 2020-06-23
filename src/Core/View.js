@@ -69,7 +69,9 @@ function _preprocessLayer(view, layer, parentLayer) {
         layer.projection = parentLayer && parentLayer.extent.crs;
     }
 
-    if (layer.labelEnabled) {
+    if (layer.isLabelLayer) {
+        view.mainLoop.gfxEngine.label2dRenderer.registerLayer(layer);
+    } else if (layer.labelEnabled) {
         const labelLayer = new LabelLayer(`${layer.id}-label`, view.referenceCrs);
         labelLayer.source = source;
         labelLayer.style = layer.style;
