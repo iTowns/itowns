@@ -44,7 +44,7 @@ class OrientedImageSource extends Source {
     }
 
     requestToKey(image) {
-        return [0, image.cameraId, image.panoId];
+        return [image.cameraId, image.panoId];
     }
 
     /**
