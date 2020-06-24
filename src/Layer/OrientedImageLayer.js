@@ -23,7 +23,7 @@ function updatePano(context, camera, layer) {
             nextPanoPosition: layer.getNextPano().position,
         });
         // prepare informations about the needed textures
-        const panoCameras = newPano.geometry[0].properties.idSensors;
+        const panoCameras = newPano.geometries[0].properties.idSensors;
 
         const imagesInfo = layer.cameras.map(cam => ({
             cameraId: cam.name,
@@ -143,9 +143,9 @@ class OrientedImageLayer extends GeometryLayer {
 
                 // set quaternion
                 crs2crs(coord, quat);
-                pano.quaternion = OrientationUtils.quaternionFromAttitude(pano.geometry[0].properties).premultiply(quat);
+                pano.quaternion = OrientationUtils.quaternionFromAttitude(pano.geometries[0].properties).premultiply(quat);
 
-                pano.id = pano.geometry[0].properties.id;
+                pano.id = pano.geometries[0].properties.id;
                 pano.index = i++;
             }
         }).then(() => {
