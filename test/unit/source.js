@@ -188,8 +188,8 @@ describe('Sources', function () {
             const source = new OrientedImageSource({ url: 'none' });
             const image = { cameraId: 5, panoId: 10 };
             const keys = source.requestToKey(image);
-            assert.equal(image.cameraId, keys[1]);
-            assert.equal(image.panoId, keys[2]);
+            assert.equal(image.cameraId, keys[0]);
+            assert.equal(image.panoId, keys[1]);
         });
     });
 
