@@ -141,17 +141,20 @@ canvas {
     left: 0;
 }
 
-/* PLUGINS/GUI */
-.dg.main {
+#menuDiv {
     position: absolute;
-    top: 0;
-    z-index: 10;
+    left: 10px;
+    top: 0px;
+    z-index: 0;
 }
 
-@media (max-width: 600px) {
-    #menuDiv {
-        display: none;
-    }
+#menuDiv, .ac {
+/* Disable select DAT.gui */
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    z-index: 2 !important;
 }
 
 #miniDiv {
@@ -179,6 +182,10 @@ canvas {
     color: black;
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .tooltip {

@@ -37,9 +37,11 @@ dat.GUI.prototype.hasFolder = function hasFolder(name) {
 function GuiTools(domId, view, w) {
     if (view) {
         var width = w || 245;
+        var element = document.createElement('div');
+        element.id = 'menuDiv';
         this.gui = new dat.GUI({ autoPlace: false, width: width });
-        this.gui.domElement.id = domId;
-        view.domElement.appendChild(this.gui.domElement);
+        element.appendChild(this.gui.domElement);
+        document.body.appendChild(element);
         this.colorGui = this.gui.addFolder('Color Layers');
         this.elevationGui = this.gui.addFolder('Elevation Layers');
         this.elevationGui.hide();
