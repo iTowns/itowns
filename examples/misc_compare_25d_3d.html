@@ -28,14 +28,17 @@
 
             #menuDiv {
                 position: absolute;
-                top:0px;
-                margin-left: 0px;
+                left: 10px;
+                top: 0px;
+                z-index: 0;
             }
 
-            @media (max-width: 600px) {
-                #menuDiv {
-                    display: none;
-                }
+            #menuDiv, .ac {
+                -moz-user-select: none;
+                -webkit-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                z-index: 2 !important; /* TODO Solve this in HTML, Problem from copy from main.css examples THREE */
             }
         </style>
         <meta charset="UTF-8">

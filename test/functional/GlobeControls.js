@@ -138,7 +138,7 @@ describe('GlobeControls with globe example', function _() {
         await mouse.up();
         await page.keyboard.up('Control');
         const endTilt = await page.evaluate(() => view.controls.getTilt());
-        assert.ok(initialPosition.tilt - endTilt > 43);
+        assert.ok(initialPosition.tilt - endTilt > 20);
     });
 
     it('should change heading like expected', async () => {
