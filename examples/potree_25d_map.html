@@ -9,7 +9,7 @@
                 font-family: 'Open Sans', sans-serif;
                 position: absolute;
                 top: 0;
-                right: 0;
+                left: 0;
                 padding: 0.3rem;
                 background-color: #404040;
                 z-index: 1;
@@ -49,7 +49,7 @@
                 viewerDiv = document.getElementById('viewerDiv');
                 viewerDiv.style.display = 'block';
 
-                debugGui = new dat.GUI({ width: 400 });
+                debugGui = new dat.GUI();
 
                 // TODO: do we really need to disable logarithmicDepthBuffer ?
                 view = new itowns.View('EPSG:3946', viewerDiv);

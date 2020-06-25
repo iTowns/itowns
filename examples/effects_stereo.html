@@ -10,22 +10,8 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
-        <div id="description">
-            <p>Actions</p>
-            <button onClick="enableAnaglyph()">enable Anaglyph effect</button>
-            <br/>
-            <button onClick="enableParallax()">enable Parallax effect</button>
-            <br/>
-            <button onClick="enableStereo()">enable Stereo effect</button>
-            <br/>
-            <button onClick="disableEffect()">disable effect</button>
-
-            <p>Eye separator: <span id="eyeSepValue">0.064</span></p>
-            <input type="range" id="eyeSep" min="0" max="0.2" step="0.001"
-            value="0.064" onInput="updateEyeSep(this.value);" />
-        </div>
         <div id="viewerDiv">
-            <span class="divScaleWidget"> Scale </span>
+          <span id="divScaleWidget"> Scale </span>
         </div>
         </div>
         <script src="js/GUI/GuiTools.js"></script>
@@ -91,7 +77,6 @@
 
             /* eslint-disable no-unused-vars */
             function updateEyeSep(value) {
-                document.getElementById('eyeSepValue').innerHTML = value;
                 eyeSep = value;
 
                 if (!effect) return;
@@ -171,10 +156,28 @@
             }
 
             var menuGlobe = new GuiTools('menuDiv', view);
-            var divScaleWidget = document.querySelectorAll('.divScaleWidget')[0];
+            var divScaleWidget = document.getElementById('divScaleWidget');
 
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+
+            const stereoeffect = {
+                none: disableEffect,
+                anaglyph: enableAnaglyph,
+                parallax: enableParallax,
+                stereo: enableStereo,
+                eyeSep: 0.064,
+            };
+
+            const folder = menuGlobe.gui.addFolder('Stereo Effect');
+            folder.open();
+            folder.add(stereoeffect, 'none').name('disable effect');
+            folder.add(stereoeffect, 'anaglyph').name('enable Anaglyph effect');
+            folder.add(stereoeffect, 'parallax').name('enable Parallax effect');
+            folder.add(stereoeffect, 'stereo').name('enable Stereo effect');
+            const guiEyeSep = folder.add(stereoeffect, 'eyeSep', 0, 0.2).name('Eye separator');
+
+            guiEyeSep.onChange(updateEyeSep);
 
             function updateScaleWidget() {
                 var value = view.getPixelsToMeters(200);
