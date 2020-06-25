@@ -10,7 +10,8 @@
 
     "3d Tiles": {
         "3dtiles_basic": "Basic",
-        "3dtiles_batch_table": "Batch table"
+        "3dtiles_batch_table": "Batch table",
+        "3dtiles_25d": "On 2.5D map"
     },
 
     "Potree": {
