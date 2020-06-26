@@ -75,7 +75,7 @@
             itowns.View.prototype.addLayer.call(view,
                 $3dTilesLayerRequestVolume).then(function _() {
                     window.addEventListener('mousemove',
-                        (event) => fillHTMLWithPickingInfo(event, view, pickingArgs),false);
+                        (event) => fillHTMLWithPickingInfo(event, pickingArgs),false);
                 });
 
             // Add the UI Debug
