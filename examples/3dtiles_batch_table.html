@@ -74,7 +74,7 @@
             pickingArgs.layer = $3dTilesLayerBTHierarchy;
             itowns.View.prototype.addLayer.call(view, $3dTilesLayerBTHierarchy).then(function _() {
                 window.addEventListener('mousemove',
-                    (event) => fillHTMLWithPickingInfo(event, view, pickingArgs),false);
+                    (event) => fillHTMLWithPickingInfo(event, pickingArgs),false);
             });
 
             // Add a debug UI
