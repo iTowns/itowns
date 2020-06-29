@@ -48,13 +48,41 @@ class Cache {
     }
 
     /**
+     * Returns the entry related to the specified key, content in array, from the cache.
+     * The array contents one to three key.
+     * The last time used property of the entry is updated to extend the longevity of the
+     * entry.
+     *
+     * @param {string[]|number[]} keyArray key array ([key0, key1, key3])
+     *
+     * @return {Object}
+     */
+
+    getByArray(keyArray) {
+        return this.get(keyArray[0], keyArray[1], keyArray[2]);
+    }
+
+    /**
+    * Adds or updates an entry with specified keys array ([key0, key1, key3]).
+    * Caution: it overrides any existing entry already set at this/those key/s.
+    *
+    * @param {Object} value to add in cache
+    * @param {string[]|number[]} keyArray key array ([key0, key1, key3])
+    *
+    * @return {Object} the added value
+    */
+    setByArray(value, keyArray) {
+        return this.set(value, keyArray[0], keyArray[1], keyArray[2]);
+    }
+
+    /**
      * Returns the entry related to the specified key from the cache. The last
      * time used property of the entry is updated to extend the longevity of the
      * entry.
      *
-     * @param {string} key1
-     * @param {string} [key2]
-     * @param {string} [key3]
+     * @param {string|number} key1
+     * @param {string|number} [key2]
+     * @param {string|number} [key3]
      *
      * @return {Object}
      */
@@ -89,9 +117,9 @@ class Cache {
      *
      *
      * @param {Object} value to add in cache
-     * @param {string} key1
-     * @param {string} [key2]
-     * @param {string} [key3]
+     * @param {string|number} key1
+     * @param {string|number} [key2]
+     * @param {string|number} [key3]
      *
      * @return {Object} the added value
      */
@@ -129,9 +157,9 @@ class Cache {
     /**
      * Deletes the specified entry from the cache.
      *
-     * @param {string} key1
-     * @param {string} [key2]
-     * @param {string} [key3]
+     * @param {string|number} key1
+     * @param {string|number} [key2]
+     * @param {string|number} [key3]
      */
     delete(key1, key2, key3) {
         const entry_1 = this.data.get(key1);
