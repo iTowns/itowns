@@ -60,7 +60,7 @@ export default {
             // Tag to Cache data
             const tag = source.requestToKey(extSource);
 
-            let convertedSourceData = layer.cache.get(tag[0], tag[1], tag[2]);
+            let convertedSourceData = layer.cache.getByArray(tag);
 
             // If data isn't in cache
             if (!convertedSourceData) {
@@ -78,7 +78,7 @@ export default {
                         .then(parsedData => layer.convert(parsedData, extDest, layer), err => error(err, source));
                 }
                 // Put converted data in cache
-                layer.cache.set(convertedSourceData, tag[0], tag[1], tag[2]);
+                layer.cache.setByArray(convertedSourceData, tag);
             }
 
             // Verify some command is resolved
