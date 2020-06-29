@@ -8,12 +8,13 @@ describe('Cache', function () {
     });
 
     it('Set/Get value in Cache', function () {
+        const tag = [2, 0, 0];
         cache.set('a', 0, 0, 0);
         cache.set('b', 1, 0, 0);
-        cache.set('c', 2, 0, 0);
+        cache.setByArray('c', tag);
         cache.set('d', 3, 0);
         cache.set('e', 4);
-        assert.equal('c', cache.get(2, 0, 0));
+        assert.equal('c', cache.getByArray(tag));
         assert.equal('d', cache.get(3, 0));
         assert.equal('e', cache.get(4));
     });
