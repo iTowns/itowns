@@ -7,16 +7,86 @@
   "source": {
     "projection": "EPSG:3857",
     "url": "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
-    "tileMatrixSet": "PM",
     "format": "image/png",
     "name": "LIMITES_ADMINISTRATIVES_EXPRESS.LATEST",
     "style": "normal",
     "zoom": {
-      "min": 5,
-      "max": 20
+      "min": 6,
+      "max": 16
     },
     "networkOptions": {
       "crossOrigin": "omit"
+    },
+    "tileMatrixSet": "PM",
+    "tileMatrixSetLimits": {
+      "6": {
+        "minTileRow": 21,
+        "maxTileRow": 35,
+        "minTileCol": 20,
+        "maxTileCol": 41
+      },
+      "7": {
+        "minTileRow": 42,
+        "maxTileRow": 71,
+        "minTileCol": 41,
+        "maxTileCol": 83
+      },
+      "8": {
+        "minTileRow": 85,
+        "maxTileRow": 143,
+        "minTileCol": 82,
+        "maxTileCol": 167
+      },
+      "9": {
+        "minTileRow": 170,
+        "maxTileRow": 287,
+        "minTileCol": 165,
+        "maxTileCol": 335
+      },
+      "10": {
+        "minTileRow": 341,
+        "maxTileRow": 574,
+        "minTileCol": 331,
+        "maxTileCol": 671
+      },
+      "11": {
+        "minTileRow": 682,
+        "maxTileRow": 1149,
+        "minTileCol": 663,
+        "maxTileCol": 1342
+      },
+      "12": {
+        "minTileRow": 1365,
+        "maxTileRow": 2298,
+        "minTileCol": 1326,
+        "maxTileCol": 2684
+      },
+      "13": {
+        "minTileRow": 2731,
+        "maxTileRow": 4596,
+        "minTileCol": 2653,
+        "maxTileCol": 5368
+      },
+      "14": {
+        "minTileRow": 5462,
+        "maxTileRow": 9193,
+        "minTileCol": 5307,
+        "maxTileCol": 10737
+      },
+      "15": {
+        "minTileRow": 10924,
+        "maxTileRow": 18386,
+        "minTileCol": 10615,
+        "maxTileCol": 21474
+      },
+      "16": {
+        "minTileRow": 21849,
+        "maxTileRow": 36772,
+        "minTileCol": 21231,
+        "maxTileCol": 42948
+      }
     }
   }
 }
+
+
