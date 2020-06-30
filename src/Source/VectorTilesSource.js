@@ -142,17 +142,6 @@ class VectorTilesSource extends TMSSource {
             }
         });
     }
-
-    onParsedFile(collection) {
-        collection.features.forEach((feature) => {
-            feature.style = this.getStyleFromIdZoom(feature.id, collection.extent.zoom);
-        });
-        return collection;
-    }
-
-    getStyleFromIdZoom(id, zoom) {
-        return this.styles[id].find(s => s.zoom.min <= zoom && s.zoom.max > zoom);
-    }
 }
 
 export default VectorTilesSource;

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import assert from 'assert';
 import HttpsProxyAgent from 'https-proxy-agent';
-import VectorTileParser from 'Parser/VectorTileParser';
+import VectorTileParser, { getStyle } from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
 import Extent from 'Core/Geographic/Extent';
 
@@ -13,9 +13,8 @@ describe('Vector tiles', function () {
 
     function parse(pbf, layers) {
         return VectorTileParser.parse(pbf, {
-            crsIn: 'EPSG:4326',
-            crsOut: 'EPSG:3857',
             layers,
+            styles: [[]],
         });
     }
 
@@ -136,9 +135,9 @@ describe('Vector tiles', function () {
             });
             source.whenReady.then(() => {
                 assert.equal(source.styles.land.length, 2);
-                assert.deepEqual(source.getStyleFromIdZoom('land', 3), source.styles.land[0]);
-                assert.deepEqual(source.getStyleFromIdZoom('land', 5), source.styles.land[1]);
-                assert.deepEqual(source.getStyleFromIdZoom('land', 8), source.styles.land[1]);
+                assert.deepEqual(getStyle(source.styles, 'land', 3), source.styles.land[0]);
+                assert.deepEqual(getStyle(source.styles, 'land', 5), source.styles.land[1]);
+                assert.deepEqual(getStyle(source.styles, 'land', 8), source.styles.land[1]);
                 done();
             });
         });
