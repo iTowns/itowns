@@ -90,6 +90,10 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
     feature.updateExtent(geometry);
 }
 
+export function getStyle(styles, id, zoom) {
+    return styles[id].find(s => s.zoom.min <= zoom && s.zoom.max > zoom);
+}
+
 function readPBF(file, options) {
     const vectorTile = new VectorTile(new Protobuf(file));
     const sourceLayers = Object.keys(vectorTile.layers);
@@ -135,17 +139,20 @@ function readPBF(file, options) {
                     feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
                     feature.id = layer.id;
                     feature.order = layer.order;
+                    feature.style = getStyle(options.styles, feature.id, z);
                     vtFeatureToFeatureGeometry(vtFeature, feature);
                 } else if (!collection.features.find(f => f.id === layer.id)) {
                     feature = collection.newFeatureByReference(feature);
                     feature.id = layer.id;
                     feature.order = layer.order;
+                    feature.style = getStyle(options.styles, feature.id, z);
                 }
             }
         }
     });
 
     collection.removeEmptyFeature();
+    // TODO Some vector tiles are already sorted
     collection.features.sort((a, b) => a.order - b.order);
     // TODO verify if is needed to updateExtent for previous features.
     collection.updateExtent();
@@ -172,6 +179,8 @@ export default {
      * @param {boolean} [options.withNormal=true] - If true each coordinate normal is computed
      * @param {boolean} [options.withAltitude=true] - If true each coordinate altitude is kept
      * @param {function=} options.filter - Filter function to remove features.
+     * @param {Object} options.Styles - Object containing subobject with
+     * informations on a specific style layer. Styles available is by `layer.id` and by zoom.
      * @param {Object} options.layers - Object containing subobject with
      * informations on a specific layer. Informations available is `id`,
      * `filterExpression`, `zoom.min` and `zoom.max`. See {@link

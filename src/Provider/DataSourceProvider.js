@@ -26,6 +26,7 @@ export function parseSourceData(data, extDest, layer) {
         withNormal: layer.isGeometryLayer !== undefined,
         withAltitude: layer.isGeometryLayer !== undefined,
         layers: source.layers,
+        styles: source.styles,
         style: layer.style,
     };
 
