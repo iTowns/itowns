@@ -73,9 +73,8 @@ let uid = 0;
  *  GeometryLayer}.</li>
  *  <li>`crsIn : string` - The projection of the source.</li>
  *  <li>`crsOut : string` - The projection of the layer.</li>
- *  <li>`filteringExtent : Extent` - If the layer inherits from {@link
- *  GeometryLayer}, it is set to the extent of destination, otherwise it is
- *  undefined.</li>
+ *  <li>`filteringExtent : Extent|boolean` - If the layer inherits from {@link
+ *  GeometryLayer}, it is set filtering with the extent, or extent file if it is true.</li>
  *  <li>`filter : function` - Property of the layer.</li>
  *  <li>`mergeFeatures : boolean (default true)` - Property of the layer,
  *  default to true.</li>

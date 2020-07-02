@@ -99,7 +99,7 @@ class Layer extends THREE.EventDispatcher {
             this._reject = rj;
         }).then(() => {
             if (this.source.fetchedData && !this.source.parsedData) {
-                return parseSourceData(this.source.fetchedData, this.source.extent, this);
+                return parseSourceData(this.source.fetchedData, this);
             }
         }).then(() => {
             if (this.source.parsedData && this.source.parsedData.isFeatureCollection) {

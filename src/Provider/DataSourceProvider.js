@@ -9,16 +9,14 @@ const error = (err, source) => {
     throw err;
 };
 
-export function parseSourceData(data, extDest, layer) {
+export function parseSourceData(data, layer) {
     const source = layer.source;
 
     const options = {
         buildExtent: source.isFileSource || !layer.isGeometryLayer,
         crsIn: source.projection,
         crsOut: layer.projection,
-        // TODO FIXME: error in filtering vector tile
-        // filteringExtent: extentDestination.as(layer.projection),
-        filteringExtent: !source.isFileSource && layer.isGeometryLayer ? extDest.as(source.projection) : undefined,
+        filteringExtent: !source.isFileSource && layer.isGeometryLayer,
         overrideAltitudeInToZero: layer.overrideAltitudeInToZero,
         filter: layer.filter || source.filter,
         isInverted: source.isInverted,
@@ -75,7 +73,7 @@ export default {
                 } else {
                     // Fetch, parse and convert
                     convertedSourceData = fetchSourceData(extSource, layer)
-                        .then(fetchedData => parseSourceData(fetchedData, extDest, layer), err => error(err, source))
+                        .then(fetchedData => parseSourceData(fetchedData, layer), err => error(err, source))
                         .then(parsedData => layer.convert(parsedData, extDest, layer), err => error(err, source));
                 }
                 // Put converted data in cache
