@@ -179,8 +179,8 @@ export default {
      * @property {string} crsOut - The CRS to convert the input coordinates
      * to.
      * @property {string} crsIn - Override the data CRS.
-     * @property {Extent} [filteringExtent] - Optional filter to reject
-     * features outside of this extent.
+     * @property {Extent|boolean} [filteringExtent=undefined] - Optional filter to reject
+     * features outside of extent. Extent filetring is file extent if filteringExtent is true.
      * @property {boolean} [buildExtent=false] - If true the geometry will
      * have an extent property containing the area covered by the geom
      * @property {function} [filter] - Filter function to remove features
@@ -202,7 +202,6 @@ export default {
      */
     parse(json, options = {}) {
         const crsOut = options.crsOut;
-        const filteringExtent = options.filteringExtent;
         if (typeof (json) === 'string') {
             json = JSON.parse(json);
         }
@@ -211,6 +210,15 @@ export default {
         options.mergeFeatures = options.mergeFeatures == undefined ? true : options.mergeFeatures;
         options.withNormal = options.withNormal == undefined ? true : options.withNormal;
         options.withAltitude = options.withAltitude == undefined ? true : options.withAltitude;
+
+        let filteringExtent;
+        if (options.filteringExtent) {
+            if (typeof options.filteringExtent == 'boolean') {
+                filteringExtent = json.extent.as(options.crsIn);
+            } else if (options.filteringExtent.isExtent) {
+                filteringExtent = options.filteringExtent;
+            }
+        }
 
         switch (json.type.toLowerCase()) {
             case 'featurecollection':
