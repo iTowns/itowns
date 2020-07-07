@@ -131,7 +131,7 @@ class PotreeLayer extends GeometryLayer {
                 this.material.defines[normal] = 1;
             }
 
-            this.supportsProgressiveDisplay = (this.source.extention === 'cin');
+            this.supportsProgressiveDisplay = (this.source.extension === 'cin');
 
             this.root = new PotreeNode(0, 0, this);
             this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
