@@ -416,7 +416,7 @@ class Style {
             this.text.color = color;
             this.text.opacity = readVectorProperty(layer.paint['text-opacity'], zoom) || (opacity !== undefined && opacity);
             this.text.font = readVectorProperty(layer.layout['text-font'], zoom);
-            this.text.haloColor = readVectorProperty(layer.paint['text-halo-color'], zoom);
+            this.text.haloColor = rgba2rgb(readVectorProperty(layer.paint['text-halo-color'], zoom)).color;
             this.text.haloWidth = readVectorProperty(layer.paint['text-halo-width'], zoom);
             this.text.haloBlur = readVectorProperty(layer.paint['text-halo-blur'], zoom);
 
@@ -459,9 +459,11 @@ class Style {
         domElement.style.textAlign = this.text.justify;
         domElement.style['white-space'] = 'pre-line';
 
-        // NOTE: find a better way to support text halo
         if (this.text.haloWidth > 0) {
-            domElement.style.textShadow = `1px 1px 0px ${this.text.haloColor}, -1px 1px 0px ${this.text.haloColor}, -1px -1px 0px ${this.text.haloColor}, 1px -1px 0px ${this.text.haloColor}`;
+            domElement.style.setProperty('--text_stroke_display', 'block');
+            domElement.style.setProperty('--text_stroke_width', `${this.text.haloWidth}px`);
+            domElement.style.setProperty('--text_stroke_color', this.text.haloColor);
+            domElement.setAttribute('data-before', domElement.textContent);
         }
 
         if (!this.icon) {

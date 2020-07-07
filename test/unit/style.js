@@ -34,6 +34,6 @@ describe('Style', function () {
         assert.equal(dom.style.textTransform, 'none');
         assert.equal(dom.style.letterSpacing, '0em');
         assert.equal(dom.style.textAlign, 'center');
-        assert.equal(dom.style.textShadow, '1px 1px 0px #000000, -1px 1px 0px #000000, -1px -1px 0px #000000, 1px -1px 0px #000000');
+        assert.equal(dom.style['--text_stroke_width'], '1px');
     });
 });

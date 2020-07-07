@@ -25,6 +25,9 @@ class DOMElement {
         this.events = new Map();
         this.style = {
             display: 'block',
+            setProperty: (p, v) => {
+                this.style[p] = v;
+            },
         };
         document.documentElement = this;
 
@@ -33,6 +36,10 @@ class DOMElement {
         });
     }
 
+
+    setAttribute(att, val) {
+        this[att] = val;
+    }
     focus() {}
     appendChild(c) { this.children.push(c); }
     cloneNode() { return Object.create(this); }

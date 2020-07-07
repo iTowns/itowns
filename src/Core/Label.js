@@ -84,6 +84,9 @@ class Label extends THREE.Object3D {
 
         if (style.isStyle) {
             this.anchor = style.getTextAnchorPosition();
+            if (style.text.haloWidth > 0) {
+                this.content.setAttribute('class', 'stroke-single');
+            }
             style.applyToHTML(this.content);
         }
 
