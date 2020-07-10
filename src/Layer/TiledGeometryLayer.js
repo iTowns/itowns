@@ -3,7 +3,6 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import { InfoTiledGeometryLayer } from 'Layer/InfoLayer';
 import Picking from 'Core/Picking';
 import convertToTile from 'Converter/convertToTile';
-import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { SIZE_DIAGONAL_TEXTURE } from 'Process/LayeredMaterialNodeProcessing';
 import { ImageryLayers } from 'Layer/Layer';
@@ -343,7 +342,7 @@ class TiledGeometryLayer extends GeometryLayer {
                 context.view.notifyChange(node, false);
             }, (err) => {
                 node.pendingSubdivision = false;
-                if (!(err instanceof CancelledCommandException)) {
+                if (!err.isCancelledCommandException) {
                     throw new Error(err);
                 }
             });

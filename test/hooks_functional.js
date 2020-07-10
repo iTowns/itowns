@@ -216,9 +216,9 @@ exports.mochaHooks = {
     },
     beforeEach: async () => {
         global.initialPosition = await page.evaluate(() => {
-            if (view instanceof itowns.GlobeView && view.controls) {
+            if (view.isGlobeView && view.controls) {
                 return Promise.resolve(itowns.CameraUtils.getTransformCameraLookingAtTarget(view, view.controls.camera));
-            } else if (view instanceof itowns.PlanarView) {
+            } else if (view.isPlanarView) {
                 // TODO: make the controls accessible from PlanarView before doing
                 // anything more here
                 return Promise.resolve();
@@ -228,7 +228,7 @@ exports.mochaHooks = {
     // reset browser state instead of closing it
     afterEach: async () => {
         await page.evaluate((init) => {
-            if (view instanceof itowns.GlobeView && view.controls) {
+            if (view.isGlobeView && view.controls) {
                 // eslint-disable-next-line no-param-reassign
                 init.coord = new itowns.Coordinates(
                     init.coord.crs,
@@ -238,7 +238,7 @@ exports.mochaHooks = {
                 );
                 view.controls.lookAtCoordinate(init, false);
                 view.notifyChange();
-            } else if (view instanceof itowns.PlanarView) {
+            } else if (view.isPlanarView) {
                 // TODO: make the controls accessible from PlanarView before doing
                 // anything more here
             }
