@@ -1,9 +1,8 @@
-import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 // max retry loading before changing the status to definitiveError
 const MAX_RETRY = 4;
 
 export default function handlingError(err, node, layer, targetLevel, view) {
-    if (err instanceof CancelledCommandException) {
+    if (err.isCancelledCommandException) {
         node.layerUpdateState[layer.id].success();
     } else if (err instanceof SyntaxError) {
         node.layerUpdateState[layer.id].failure(0, true);

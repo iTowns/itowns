@@ -4,7 +4,6 @@ import PointsMaterial, { MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
 import PotreeNode from 'Core/PotreeNode';
 import Extent from 'Core/Geographic/Extent';
-import CancelledCommandException from 'Core/Scheduler/CancelledCommandException';
 
 const point = new THREE.Vector3();
 const bboxMesh = new THREE.Mesh();
@@ -259,7 +258,7 @@ class PotreeLayer extends GeometryLayer {
 
                     elt.promise = null;
                 }, (err) => {
-                    if (err instanceof CancelledCommandException) {
+                    if (err.isCancelledCommandException) {
                         elt.promise = null;
                     }
                 });
