@@ -61,13 +61,12 @@ export function enableDracoLoader(path, config) {
     if (!path) {
         throw new Error('Path to draco folder is mandatory');
     }
-    DRACOLoader.setDecoderPath(path);
-    if (config) {
-        DRACOLoader.setDecoderConfig(config);
-    }
     const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(path);
+    if (config) {
+        dracoLoader.setDecoderConfig(config);
+    }
     glTFLoader.setDRACOLoader(dracoLoader);
-    DRACOLoader.getDecoderModule();
 }
 
 export default {
