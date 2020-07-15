@@ -55,16 +55,15 @@ export default {
 
         for (let i = 0, max = extentsSource.length; i < max; i++) {
             const extSource = extentsSource[i];
+            const extDest = extentsDestination[i];
 
             // Tag to Cache data
-            const tag = source.requestToKey(extSource);
+            const tag = source.requestToKey(source.isVectorSource ? extDest : extSource);
 
             let convertedSourceData = layer.cache.getByArray(tag);
 
             // If data isn't in cache
             if (!convertedSourceData) {
-                const extDest = extentsDestination[i];
-
                 // Already fetched and parsed data that can be used
                 const validedParsedData = isValidData(parsedData[i], extDest, layer.isValidData) || source.parsedData;
                 if (validedParsedData) {
