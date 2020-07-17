@@ -18,6 +18,16 @@ class LayerUpdateState {
         this.state = UPDATE_STATE.IDLE;
         this.lastErrorTimestamp = 0;
         this.errorCount = 0;
+        // lowestLevelError is lowest level with error.
+        //
+        // if lowestLevelError is Infinity, so there has been no error.
+        //
+        // if lowestLevelError isn't Infinity, so the strategy is to find the
+        // highest level between the current level and lowestLevelError.
+        // the dichotomy method is used to find it.
+        this.failureParams = {
+            lowestLevelError: Infinity,
+        };
     }
 
     canTryUpdate(timestamp = Date.now()) {
@@ -53,18 +63,23 @@ class LayerUpdateState {
     }
 
     success() {
-        this.failureParams = undefined;
         this.lastErrorTimestamp = 0;
         this.state = UPDATE_STATE.IDLE;
     }
 
     noMoreUpdatePossible() {
-        this.failureParams = undefined;
         this.state = UPDATE_STATE.FINISHED;
     }
 
+    noData(failureParams) {
+        this.state = UPDATE_STATE.IDLE;
+        this.failureParams.lowestLevelError = Math.min(failureParams.targetLevel, this.failureParams.lowestLevelError);
+    }
+
     failure(timestamp, definitive, failureParams) {
-        this.failureParams = failureParams;
+        if (failureParams && failureParams.targetLevel != undefined) {
+            this.failureParams.lowestLevelError = Math.min(failureParams.targetLevel, this.failureParams.lowestLevelError);
+        }
         this.lastErrorTimestamp = timestamp;
         this.state = definitive ? UPDATE_STATE.DEFINITIVE_ERROR : UPDATE_STATE.ERROR;
         this.errorCount++;

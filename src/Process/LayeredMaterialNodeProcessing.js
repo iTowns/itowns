@@ -124,6 +124,10 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, destinationLevel, nodeLayer.level, layer, failureParams);
 
     if (targetLevel <= nodeLayer.level || targetLevel > destinationLevel) {
+        if (failureParams.lowestLevelError != Infinity) {
+            // this is the highest level found in case of error.
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+        }
         return;
     }
 
@@ -135,7 +139,8 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             // Retry extentInsideLimit because you must check with the targetLevel
             // if the first test extentInsideLimit returns that it is out of limits
             // and the node inherits from its parent, then it'll still make a command to fetch texture.
-            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            node.layerUpdateState[layer.id].noData({ targetLevel });
+            context.view.notifyChange(node, false);
             return;
         }
         extentsSource.push(extentSource);
@@ -199,18 +204,20 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         return;
     }
 
-    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, extentsDestination[0].zoom, nodeLayer.level, layer);
+    const failureParams = node.layerUpdateState[layer.id].failureParams;
+    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, extentsDestination[0].zoom, nodeLayer.level, layer, failureParams);
 
     if (targetLevel <= nodeLayer.level || targetLevel > extentsDestination[0].zoom) {
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
-        return Promise.resolve();
+        return;
     }
 
     const extentsSource = [];
     for (const nodeExtent of extentsDestination) {
         const extentSource = nodeExtent.tiledExtentParent(targetLevel);
         if (!layer.source.extentInsideLimit(extentSource)) {
-            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            node.layerUpdateState[layer.id].noData({ targetLevel });
+            context.view.notifyChange(node, false);
             return;
         }
         extentsSource.push(extentSource);
