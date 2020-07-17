@@ -22,7 +22,7 @@ describe('material state vs layer state', function () {
     };
 
     it('should correctly initialize opacity & visibility', () => {
-        node.layerUpdateState.test.failure(new Date());
+        node.layerUpdateState.test.failure(new Date(), false, { targetLevel: 10 });
         updateLayeredMaterialNodeImagery(null, layer, node, node.parent);
         assert.equal(nodeLayer.opacity, layer.opacity);
         assert.equal(nodeLayer.visible, layer.visible);
