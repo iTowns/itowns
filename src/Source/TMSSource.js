@@ -98,10 +98,6 @@ class TMSSource extends Source {
         return URLBuilder.xyz(extent, this);
     }
 
-    handlingError(err) {
-        console.warn(`err ${this.url}`, err);
-    }
-
     extentInsideLimit(extent) {
         // This layer provides data starting at level = layer.source.zoom.min
         // (the zoom.max property is used when building the url to make

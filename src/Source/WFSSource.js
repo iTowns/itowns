@@ -138,12 +138,9 @@ class WFSSource extends Source {
                 const errorCode = errorElem.getAttribute('exceptionCode');
                 const errorMessage = errorElem.querySelector('ExceptionText').textContent;
                 console.error(`Source ${this.typeName}: bad request when fetching data. Server says: "${errorCode}: ${errorMessage}". \nReviewing ${getCapUrl} may help.`, err);
-                throw err;
             });
-        } else {
-            console.error(`Source ${this.typeName}: error while trying to fetch/parse/convert WFS data.`, err);
-            throw err;
         }
+        return super.handlingError(err);
     }
 
     requestToKey(extent) {
