@@ -118,7 +118,7 @@ class Source {
     }
 
     handlingError(err) {
-        console.warn(`err ${this}`, err);
+        throw new Error(err);
     }
 
     /**
