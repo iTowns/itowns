@@ -30,19 +30,16 @@ describe('Layer with Feature process', function () {
         url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
         projection: 'EPSG:4326',
         format: 'application/json',
-        zoom: { min: 0, max: 0 },
         networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
     });
 
-    const ariege = new GeometryLayer('ariege', new THREE.Group(), { source });
+    const ariege = new GeometryLayer('ariege', new THREE.Group(), { source, zoom: { min: 7 } });
 
     ariege.update = FeatureProcessing.update;
     ariege.convert = Feature2Mesh.convert({
         color,
         extrude,
     });
-
-    ariege.source.zoom = 0;
 
     const context = {
         camera: viewer.camera,

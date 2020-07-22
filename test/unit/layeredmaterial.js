@@ -13,12 +13,13 @@ describe('material state vs layer state', function () {
             getLayer: () => nodeLayer,
             visible: true,
         },
-        getExtentsByProjection: () => 0,
+        getExtentsByProjection: () => ([{ zoom: 0 }]),
     };
     const layer = {
         id: 'test',
         visible: true,
         opacity: 1.0,
+        zoom: { max: Infinity, min: 0 },
     };
 
     it('should correctly initialize opacity & visibility', () => {
