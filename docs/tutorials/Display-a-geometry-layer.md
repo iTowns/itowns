@@ -98,13 +98,13 @@ var geometrySource = new itowns.WFSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
     projection: 'EPSG:4326',
-    zoom: { min: 14, max: 14 },
 });
 
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
     source: geometrySource,
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert(),
+    zoom: { min: 14 },
 });
 
 view.addLayer(geometryLayer);
@@ -143,7 +143,6 @@ var geometrySource = new itowns.WFSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
     projection: 'EPSG:4326',
-    zoom: { min: 14, max: 14 },
 });
 
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
@@ -152,6 +151,7 @@ var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group
     convert: itowns.Feature2Mesh.convert({
         altitude: setAltitude
     }),
+    zoom: { min: 14 },
 });
 
 view.addLayer(geometryLayer);
@@ -214,7 +214,6 @@ var geometrySource = new itowns.WFSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
     projection: 'EPSG:4326',
-    zoom: { min: 14, max: 14 },
 });
 
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
@@ -224,6 +223,7 @@ var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group
         altitude: setAltitude,
         extrude: setExtrusion,
     }),
+    zoom: { min: 14 },
 });
 
 view.addLayer(geometryLayer);
@@ -251,7 +251,6 @@ var geometrySource = new itowns.WFSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
     projection: 'EPSG:4326',
-    zoom: { min: 14, max: 14 },
 });
 
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
@@ -262,6 +261,7 @@ var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group
         extrude: setExtrusion,
         color: setColor
     }),
+    zoom: { min: 14 },
 });
 
 view.addLayer(geometryLayer);
@@ -366,7 +366,6 @@ layer on a globe, and change some things on this layer. Here is the final code:
                 url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
                 typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
                 projection: 'EPSG:4326',
-                zoom: { min: 14, max: 14 },
             });
 
             var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
@@ -377,6 +376,7 @@ layer on a globe, and change some things on this layer. Here is the final code:
                     extrude: setExtrusion,
                     color: setColor
                 }),
+                zoom: { min: 14 },
             });
 
             view.addLayer(geometryLayer);

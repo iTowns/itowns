@@ -159,7 +159,6 @@
                     south: 5138876.75,
                     north: 5205890.19,
                 },
-                zoom: { min: 2, max: 2 },
                 format: 'geojson',
             });
 
@@ -171,6 +170,7 @@
                 onMeshCreated: setMaterialLineWidth,
                 filter: acceptFeatureBus,
                 source: lyonTclBusSource,
+                zoom: { min: 2 },
             });
 
             view.addLayer(lyonTclBusLayer);
@@ -222,7 +222,6 @@
                 projection: 'EPSG:4326',
                 ipr: 'IGN',
                 format: 'application/json',
-                zoom: { min: 4, max: 4 },
                 extent: {
                     west: 4.568,
                     east: 5.18,
@@ -246,6 +245,7 @@
                 overrideAltitudeInToZero: true,
                 projection: 'EPSG:3946',
                 source: wfsBuildingSource,
+                zoom: { min: 4 },
             });
 
             view.addLayer(wfsBuildingLayer);
