@@ -170,6 +170,7 @@ describe('GlobeControls with globe example', function _() {
     });
 
     it('should zoom like expected with mouse wheel', async () => {
+        // FIX Me: use puppetter mouse#wheel instead of new WheelEvent
         await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.mouse.move(middleWidth, middleHeight, { steps: 20 });
         const finalRange = await page.evaluate(() => new Promise((resolve) => {
