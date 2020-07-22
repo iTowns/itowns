@@ -72,6 +72,7 @@ describe('Provide in Sources', function () {
     featureLayer.update = FeatureProcessing.update;
     featureLayer.projection = 'EPSG:4978';
     featureLayer.mergeFeatures = false;
+    featureLayer.zoom.min = 10;
     function extrude() {
         return 5000;
     }
@@ -86,7 +87,6 @@ describe('Provide in Sources', function () {
         format: `${formatTag}application/json`,
         extent: globalExtent,
         projection: 'EPSG:3857',
-        zoom: { min: zoom, max: zoom },
     });
 
     featureLayer.convert = Feature2Mesh.convert({ color, extrude });
@@ -201,7 +201,7 @@ describe('Provide in Sources', function () {
         });
     });
     it('should get 3 meshs with WFS source and DataSourceProvider', (done) => {
-        const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
+        const tile = new TileMesh(geom, material, planarlayer, extent, featureLayer.zoom.min);
         material.visible = true;
         nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.parent = { pendingSubdivision: false };
@@ -220,7 +220,7 @@ describe('Provide in Sources', function () {
             material,
             planarlayer,
             extent,
-            zoom);
+            featureLayer.zoom.min);
         tile.material.visible = true;
         tile.parent = { pendingSubdivision: false };
         featureLayer.source.uid = 8;
