@@ -53,8 +53,8 @@
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson',
                     projection: 'EPSG:4326',
                     format: 'application/json',
-                    zoom: { min: 10, max: 10 },
-                })
+                }),
+                zoom: { min: 10 },
             });
             marne.update = itowns.FeatureProcessing.update;
             marne.convert = itowns.Feature2Mesh.convert({
