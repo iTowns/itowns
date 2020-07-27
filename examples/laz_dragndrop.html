@@ -1,0 +1,81 @@
+<html>
+    <head>
+        <title>Itowns - LAZ drag and drop</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv">
+            <div id="description">Drag and drop a LAS/LAZ file</div>
+        </div>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script type="text/javascript">
+            var viewerDiv = document.getElementById('viewerDiv');
+            var view = new itowns.View('EPSG:3946', viewerDiv);
+            view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
+            var controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
+
+            var fileReader = new FileReader();
+            var stack = [];
+
+            function addFiles(event, files) {
+                event.preventDefault();
+                for (var i = 0; i < files.length; i++) {
+                    stack.push(files[i]);
+                }
+
+                fileReader.onload = function onload(e) {
+                    var data = e.target.result;
+
+                    itowns.LASParser.parse(data, {}).then(function _(geometry) {
+                        if (stack.length > 0) {
+                            fileReader.readAsArrayBuffer(stack.shift());
+                        }
+
+                        var material = new itowns.PointsMaterial();
+                        var points = new itowns.THREE.Points(geometry, material);
+                        points.frustumCulled = false;
+                        points.matrixAutoUpdate = false;
+                        points.updateMatrix();
+                        view.scene.add(points);
+                        points.updateMatrixWorld(true);
+
+                        var camera = view.camera.camera3D;
+
+                        var lookAt = new itowns.THREE.Vector3();
+                        var size = new itowns.THREE.Vector3();
+                        geometry.boundingBox.getSize(size);
+                        geometry.boundingBox.getCenter(lookAt);
+
+                        camera.far = Math.max(2.0 * size.length(), camera.far);
+
+                        var position = geometry.boundingBox.min.clone().add(size.multiply({ x: 0, y: 0, z: size.x / size.z }));
+
+                        camera.position.copy(position);
+                        camera.lookAt(lookAt);
+
+                        controls.options.moveSpeed = size.length();
+
+                        view.notifyChange(camera);
+                        controls.reset();
+                    });
+                };
+
+                fileReader.readAsArrayBuffer(stack.shift());
+            }
+
+            document.addEventListener('dragenter', function _(e) { e.preventDefault(); }, false);
+            document.addEventListener('dragover', function _(e) { e.preventDefault(); }, false);
+            document.addEventListener('dragleave', function _(e) { e.preventDefault(); }, false);
+            document.addEventListener('drop', function _(e) { addFiles(e, e.dataTransfer.files); }, false);
+            document.addEventListener('paste', function _(e) { addFiles(e, e.clipboardData.files); }, false);
+        </script>
+    </body>
+</html>
+
+

@@ -14,9 +14,10 @@
         "3dtiles_25d": "On 2.5D map"
     },
 
-    "Potree": {
-        "potree_25d_map": "2.5D map",
-        "potree_3d_map": "3D map"
+    "Pointcloud": {
+        "potree_25d_map": "Potree 2.5D map",
+        "potree_3d_map": "Potree 3D map",
+        "laz_dragndrop": "LAS/LAZ viewer"
     },
 
     "Vector tiles": {
