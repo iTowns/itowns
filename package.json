@@ -46,6 +46,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.10.4",
     "@babel/runtime": "^7.10.5",
+    "@loaders.gl/las": "^2.3.0-alpha.13",
     "@mapbox/mapbox-gl-style-spec": "^13.16.0",
     "@mapbox/vector-tile": "^1.3.1",
     "@tmcw/togeojson": "^4.1.0",

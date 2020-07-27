@@ -71,7 +71,8 @@
                 "VectorTileParser",
                 "CameraCalibrationParser",
                 "B3dmParser",
-                "ShapefileParser"
+                "ShapefileParser",
+                "LASParser"
             ],
 
             "Converter": [

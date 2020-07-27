@@ -75,6 +75,7 @@ export { default as GeoJsonParser } from 'Parser/GeoJsonParser';
 export { default as KMLParser } from 'Parser/KMLParser';
 export { default as CameraCalibrationParser } from 'Parser/CameraCalibrationParser';
 export { default as ShapefileParser } from 'Parser/ShapefileParser';
+export { default as LASParser } from 'Parser/LASParser';
 export { enableDracoLoader, glTFLoader, legacyGLTFLoader } from 'Parser/B3dmParser';
 
 // 3D Tiles classes and extensions
