@@ -62,7 +62,7 @@ class c3DEngine {
             viewerDiv.appendChild(this.label2dRenderer.domElement);
 
             // WIP: support WebGL 2.0 see https://github.com/iTowns/itowns/pull/1443
-            this.renderer = renderer || new THREE.WebGL1Renderer({
+            this.renderer = renderer || new THREE.WebGLRenderer({
                 canvas: document.createElement('canvas'),
                 antialias: options.antialias,
                 alpha: options.alpha,
@@ -72,7 +72,7 @@ class c3DEngine {
             this.renderer.domElement.style.zIndex = 0;
             this.renderer.domElement.style.top = 0;
         } catch (ex) {
-            console.error('Failed to create WebGL1Renderer', ex);
+            console.error('Failed to create WebGLRenderer', ex);
             this.renderer = null;
         }
 
@@ -91,7 +91,7 @@ class c3DEngine {
             // So recreated a renderer if needed.
             if (!this.renderer.extensions.get('EXT_frag_depth')) {
                 this.renderer.dispose();
-                this.renderer = new THREE.WebGL1Renderer({
+                this.renderer = new THREE.WebGLRenderer({
                     canvas: document.createElement('canvas'),
                     antialias: options.antialias,
                     alpha: options.alpha,
@@ -129,7 +129,7 @@ class c3DEngine {
 
     /**
      * return renderer THREE.js
-     * @returns {undefined|THREE.WebGL1Renderer}
+     * @returns {undefined|THREE.WebGLRenderer}
      */
     getRenderer() {
         return this.renderer;
