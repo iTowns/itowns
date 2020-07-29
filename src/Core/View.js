@@ -75,6 +75,7 @@ function _preprocessLayer(view, layer, parentLayer) {
         const labelLayer = new LabelLayer(`${layer.id}-label`, view.referenceCrs);
         labelLayer.source = source;
         labelLayer.style = layer.style;
+        labelLayer.zoom = layer.zoom;
 
         layer.addEventListener('visible-property-changed', () => {
             labelLayer.visible = layer.visible;
@@ -202,8 +203,8 @@ class View extends THREE.EventDispatcher {
      * the layer is done. This promise is also returned by
      * `addLayer` allowing to chain call.
      *
-     * @param {LayerOptions|Layer|GeometryLayer} layer
-     * @param {Layer=} parentLayer
+     * @param {LayerOptions|Layer|GeometryLayer} layer The layer to add in view.
+     * @param {Layer=} parentLayer it's the layer to which the layer will be attached.
      * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
      */
     addLayer(layer, parentLayer) {

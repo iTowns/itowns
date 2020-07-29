@@ -123,6 +123,20 @@ class GlobeView extends View {
         this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
     }
 
+    /**
+     * Add layer in viewer.
+     * The layer id must be unique.
+     *
+     * The `layer.whenReady` is a promise that resolves when
+     * the layer is done. This promise is also returned by
+     * `addLayer` allowing to chain call.
+     *
+     * The layer added is attached, by default to `GlobeLayer` (`GlobeView.tileLayer`).
+     * If you want add a unattached layer use `View#addLayer` parent method.
+     *
+     * @param {LayerOptions|Layer|GeometryLayer} layer The layer to add in view.
+     * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
+     */
     addLayer(layer) {
         if (!layer || !layer.isLayer) {
             return Promise.reject(new Error('Add Layer type object'));

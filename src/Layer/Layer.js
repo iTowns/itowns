@@ -22,6 +22,18 @@ import Cache from 'Core/Scheduler/Cache';
  * @property {boolean} [labelEnabled=false] - Used to tell if this layer has
  * labels to display from its data. For example, it needs to be set to `true`
  * for a layer with vector tiles.
+ * @property {object} [zoom] - This property is used only the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
+ * By example,
+ * The layer checks the tile zoom level to determine if the layer is visible in this tile.
+ *
+ * ![tiled geometry](/docs/static/images/wfszoommaxmin.jpeg)
+ * _In `GlobeView`, **red lines** represents the **WGS84 grid** and **orange lines** the Pseudo-mercator grid_
+ * _In this example [WFS to 3D objects](http://www.itowns-project.org/itowns/examples/index.html#source_stream_wfs_3d), the building layer zoom min is 14._
+ * _In the lower part of the picture, the zoom tiles 14 have buildings, while in the upper part of the picture, the level 13 tiles have no buildings._
+ *
+ * @property {number} [zoom.max=Infinity] - this is the maximum zoom beyond which it'll be hidden.
+ * @property {number} [zoom.min=0] - this is the minimum zoom from which it'll be visible.
+ *
  */
 class Layer extends THREE.EventDispatcher {
     /**
@@ -85,6 +97,15 @@ class Layer extends THREE.EventDispatcher {
         }
 
         this.defineLayerProperty('frozen', false);
+
+        if (config.zoom) {
+            this.zoom = { max: config.zoom.max, min: config.zoom.min || 0 };
+            if (this.zoom.max == undefined) {
+                this.zoom.max = Infinity;
+            }
+        } else {
+            this.zoom = { max: Infinity, min: 0 };
+        }
 
         this.info = new InfoLayer(this);
 

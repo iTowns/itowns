@@ -124,6 +124,13 @@ class LabelLayer extends Layer {
             return;
         }
 
+        const extentsDestination = node.getExtentsByProjection(this.source.projection) || [node.extent];
+        const zoomDest = extentsDestination[0].zoom;
+
+        if (zoomDest < layer.zoom.min || zoomDest > layer.zoom.max) {
+            return;
+        }
+
         if (node.layerUpdateState[this.id] === undefined) {
             node.layerUpdateState[this.id] = new LayerUpdateState();
         }
@@ -141,7 +148,6 @@ class LabelLayer extends Layer {
             return;
         }
 
-        const extentsDestination = node.getExtentsByProjection(this.source.projection) || [node.extent];
 
         const extentsSource = [];
         for (const extentDest of extentsDestination) {
