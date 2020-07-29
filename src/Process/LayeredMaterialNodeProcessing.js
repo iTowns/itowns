@@ -49,6 +49,11 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     }
     const extentsDestination = node.getExtentsByProjection(layer.projection);
 
+    const zoom = extentsDestination[0].zoom;
+    if (zoom > layer.zoom.max || zoom < layer.zoom.min) {
+        return;
+    }
+
     let nodeLayer = material.getLayer(layer.id);
 
     // Initialisation
@@ -174,6 +179,10 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // This is caused by a LayeredMaterial limitation: only 1 elevation texture
     // can be used (where a tile can have N textures x M layers)
     const extentsDestination = node.getExtentsByProjection(layer.projection);
+    const zoom = extentsDestination[0].zoom;
+    if (zoom > layer.zoom.max || zoom < layer.zoom.min) {
+        return;
+    }
     // Init elevation layer, and inherit from parent if possible
     let nodeLayer = material.getElevationLayer();
     if (!nodeLayer) {

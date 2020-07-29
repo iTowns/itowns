@@ -138,7 +138,7 @@ class FileSource extends Source {
 
         this.whenReady.then(() => this.fetchedData);
 
-        this.zoom = source.zoom || { min: 5, max: 21 };
+        this.zoom = source.zoom || { min: 0, max: Infinity };
     }
 
     urlFromExtent() {

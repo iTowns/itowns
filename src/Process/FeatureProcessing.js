@@ -69,6 +69,13 @@ export default {
 
         const extentsDestination = node.getExtentsByProjection(layer.source.projection) || [node.extent];
 
+        const zoomDest = extentsDestination[0].zoom;
+
+        if (zoomDest != layer.zoom.min) {
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            return;
+        }
+
         const extentsSource = [];
         for (const extentDest of extentsDestination) {
             const ext = layer.source.projection == extentDest.crs ? extentDest : extentDest.as(layer.source.projection);

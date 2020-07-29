@@ -37,6 +37,11 @@ function traverse(obj, callback) {
  * @property {boolean} isGeometryLayer - Used to checkout whether this layer is
  * a GeometryLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @property {number} [zoom.max=Infinity] - this is the maximum zoom beyond which it'll be hidden.
+ * The `max` is constant and the value is `Infinity` because there's no maximum display level after which it is hidden.
+ * This property is used only if the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
+ * @property {number} [zoom.min=0] - this is the minimum zoom from which it'll be visible.
+ * This property is used only if the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
  */
 class GeometryLayer extends Layer {
     /**
@@ -123,6 +128,10 @@ class GeometryLayer extends Layer {
 
         this.attachedLayers = [];
         this.visible = config.visible == undefined ? true : config.visible;
+        Object.defineProperty(this.zoom, 'max', {
+            value: Infinity,
+            writable: false,
+        });
     }
 
     // Attached layers expect to receive the visual representation of a

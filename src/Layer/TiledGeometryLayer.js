@@ -16,10 +16,28 @@ const boundingSphereCenter = new THREE.Vector3();
  * @property {boolean} isTiledGeometryLayer - Used to checkout whether this
  * layer is a TiledGeometryLayer. Default is true. You should not change this,
  * as it is used internally for optimisation.
+ *
  */
 class TiledGeometryLayer extends GeometryLayer {
     /**
      * A layer extending the {@link GeometryLayer}, but with a tiling notion.
+     *
+     * `TiledGeometryLayer` is the ground where `ColorLayer` and `ElevationLayer` are attached.
+     * `TiledGeometryLayer` is a quadtree data structure. At zoom 0,
+     * there is a single tile for the whole earth. At zoom level 1,
+     * the single tile splits into 4 tiles (2x2 tile square).
+     * Each zoom level quadtree divides the geometry tiles of the one before it.
+     * The camera distance determines how the tiles are subdivided for optimal data display.
+     *
+     * Some `GeometryLayer` can also be attached to the `TiledGeometryLayer` if they want to take advantage of the quadtree.
+     *
+     * ![tiled geometry](/docs/static/images/tiledGeometry.jpeg)
+     * _In `GlobeView`, **red lines** represents the **WGS84 grid** and **orange lines** the **Pseudo-mercator grid**._
+     * _In this picture, there are tiles with 3 different zoom/levels._
+     *
+     * The zoom/level is based on [tiled web map](https://en.wikipedia.org/wiki/Tiled_web_map).
+     * It corresponds at meters by pixel. If the projection tile exceeds a certain pixel size (on screen)
+     * then it is subdivided into 4 tiles with a zoom greater than 1.
      *
      * @constructor
      * @extends GeometryLayer
@@ -276,6 +294,10 @@ class TiledGeometryLayer extends GeometryLayer {
 
         for (const e of context.elevationLayers) {
             const extents = node.getExtentsByProjection(e.projection);
+            const zoom = extents[0].zoom;
+            if (zoom > e.zoom.max || zoom < e.zoom.min) {
+                continue;
+            }
             if (!e.frozen && e.ready && e.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
                 // no stop subdivision in the case of a loading error
                 if (layerUpdateState[e.id] && layerUpdateState[e.id].inError()) {
@@ -289,11 +311,15 @@ class TiledGeometryLayer extends GeometryLayer {
             if (c.frozen || !c.visible || !c.ready) {
                 continue;
             }
+            const extents = node.getExtentsByProjection(c.projection);
+            const zoom = extents[0].zoom;
+            if (zoom > c.zoom.max || zoom < c.zoom.min) {
+                continue;
+            }
             // no stop subdivision in the case of a loading error
             if (layerUpdateState[c.id] && layerUpdateState[c.id].inError()) {
                 continue;
             }
-            const extents = node.getExtentsByProjection(c.projection);
             nodeLayer = node.material.getLayer(c.id);
             if (c.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
                 return false;

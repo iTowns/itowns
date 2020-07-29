@@ -119,7 +119,7 @@ class WFSSource extends Source {
         }&outputFormat=${this.format
         }&BBOX=%bbox,${this.projection}`;
 
-        this.zoom = source.zoom || { min: 0, max: 21 };
+        this.zoom = source.zoom || { min: 0, max: Infinity };
 
         this.vendorSpecific = source.vendorSpecific;
         for (const name in this.vendorSpecific) {
