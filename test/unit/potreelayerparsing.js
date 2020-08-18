@@ -29,7 +29,7 @@ describe('Potree Provider', function () {
             cloud,
         });
 
-        const p1 = new PotreeLayer('pointsCloud1', { source }, view);
+        const p1 = new PotreeLayer('pointsCloud1', { source, crs: view.referenceCrs });
         ps.push(p1);
         p1.whenReady.then((l) => {
             const normalDefined = l.material.defines.NORMAL || l.material.defines.NORMAL_SPHEREMAPPED || l.material.defines.NORMAL_OCT16;
@@ -49,7 +49,7 @@ describe('Potree Provider', function () {
             },
         });
 
-        const p2 = new PotreeLayer('pointsCloud2', { source }, view);
+        const p2 = new PotreeLayer('pointsCloud2', { source, crs: view.referenceCrs });
         ps.push(p2);
         p2.whenReady.then((l) => {
             assert.ok(l.material.defines.NORMAL);
@@ -69,7 +69,7 @@ describe('Potree Provider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        const p3 = new PotreeLayer('pointsCloud3', { source }, view);
+        const p3 = new PotreeLayer('pointsCloud3', { source, crs: view.referenceCrs });
 
         ps.push(p3);
         p3.whenReady.then((l) => {
@@ -90,7 +90,7 @@ describe('Potree Provider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        const p4 = new PotreeLayer('pointsCloud4', { source }, view);
+        const p4 = new PotreeLayer('pointsCloud4', { source, crs: view.referenceCrs });
 
         ps.push(p4);
         p4.whenReady.then((l) => {

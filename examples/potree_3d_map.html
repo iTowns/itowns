@@ -66,7 +66,8 @@
                     file: 'eglise_saint_blaise_arles.js',
                     url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
                 }),
-            },view);
+                crs: view.referenceCrs,
+            });
 
             // add potreeLayer to scene
             function onLayerReady() {

@@ -40,6 +40,7 @@
                 "ColorLayersOrdering",
                 "OrientedImageLayer",
                 "PointCloudLayer",
+                "PotreeLayer",
                 "C3DTilesLayer",
                 "LabelLayer",
 
@@ -55,7 +56,7 @@
                 "TMSSource",
                 "FileSource",
                 "OrientedImageSource",
-                "PointCloudSource",
+                "PotreeSource",
                 "VectorTilesSource"
             ],
 

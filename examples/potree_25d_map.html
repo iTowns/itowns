@@ -61,8 +61,9 @@
                     source: new itowns.PotreeSource({
                         file: 'eglise_saint_blaise_arles.js',
                         url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/eglise_saint_blaise_arles',
-                    })
-                }, view);
+                    }),
+                    crs: view.referenceCrs,
+                });
 
                 // point selection on double-click
                 function dblClickHandler(event) {

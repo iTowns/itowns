@@ -65,16 +65,12 @@ class PotreeSource extends Source {
      * @constructor
      */
     constructor(source) {
-        if (!source.url) {
-            throw new Error('New PotreeSource: url is required');
-        }
         if (!source.file) {
             throw new Error('New PotreeSource: file is required');
         }
 
         super(source);
         this.file = source.file;
-        this.url = source.url;
         this.fetcher = Fetcher.arrayBuffer;
         this.extensionOctree = 'hrc';
 
