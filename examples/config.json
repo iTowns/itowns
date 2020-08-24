@@ -17,7 +17,9 @@
     "Pointcloud": {
         "potree_25d_map": "Potree 2.5D map",
         "potree_3d_map": "Potree 3D map",
-        "laz_dragndrop": "LAS/LAZ viewer"
+        "laz_dragndrop": "LAS/LAZ viewer",
+        "entwine_simple_loader": "Entwine loader",
+        "entwine_3d_loader": "Entwine 3D loader"
     },
 
     "Vector tiles": {

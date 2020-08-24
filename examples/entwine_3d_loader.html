@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <title>Itowns - Entwine 3D loader</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <style type="text/css">
+            #description {
+                z-index: 2;
+                left: 10px;
+            }
+        </style>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="description">Specify the URL of a Entwine Point Tree to load:
+            <input type="text" id="ept_url" />
+            <button onclick="readEPTURL()">Load</button>
+            <p>If your dataset is not displaying at the right location,
+            check that it has been converted in <code>EPSG:4978</code>.</p>
+            <div id="share"></div>
+        </div>
+        <div id="viewerDiv">
+        </div>
+
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            var debugGui = new dat.GUI();
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            var view = new itowns.GlobeView(viewerDiv);
+
+            // Add one imagery layer to the scene and the miniView
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer);
+            });
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer);
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+            var eptLayer, eptSource;
+
+            function onLayerReady() {
+                var lookAt = new itowns.THREE.Vector3();
+                eptLayer.root.bbox.getCenter(lookAt);
+                var coordLookAt = new itowns.Coordinates(view.referenceCrs, lookAt);
+
+                var size = new itowns.THREE.Vector3();
+                eptLayer.root.bbox.getSize(size);
+
+                view.controls.lookAtCoordinate({
+                    coord: coordLookAt,
+                    range: 2 * size.length(),
+                }, false);
+            }
+
+            function readEPTURL() {
+                var url = document.getElementById('ept_url').value || new URL(location.href).searchParams.get('ept');
+
+                if (url) {
+                    loadEPT(url);
+
+                    document.getElementById('share').innerHTML = '<a href="' +
+                        location.href.replace(location.search, '?ept=' + url) +
+                        '" target="_blank">Link to share this view</a>';
+                    document.getElementById('ept_url').value = url;
+                }
+            }
+
+            function loadEPT(url) {
+                eptSource = new itowns.EntwinePointTileSource({ url });
+
+                if (eptLayer) {
+                    view.removeLayer('ept');
+                    view.notifyChange();
+                }
+
+                eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', {
+                    source: eptSource,
+                    crs: view.referenceCrs,
+                });
+
+                itowns.View.prototype.addLayer.call(view, eptLayer).then(onLayerReady);
+
+                debug.PotreeDebug.initTools(view, eptLayer, debugGui);
+            }
+
+            readEPTURL();
+        </script>
+    </body>
+</html>
