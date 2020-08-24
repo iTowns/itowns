@@ -36,8 +36,10 @@ export default {
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            points.position.copy(node.bbox.min);
-            points.scale.copy(layer.scale);
+            if (!layer.isEntwinePointTileLayer) {
+                points.position.copy(node.bbox.min);
+                points.scale.copy(layer.scale);
+            }
             points.updateMatrix();
             points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
             points.layers.set(layer.threejsLayer);

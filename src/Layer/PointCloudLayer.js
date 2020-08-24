@@ -217,7 +217,7 @@ class PointCloudLayer extends GeometryLayer {
         point.copy(context.camera.camera3D.position).sub(this.object3d.position);
 
         // only load geometry if this elements has points
-        if (elt.numPoints > 0) {
+        if (elt.numPoints !== 0) {
             if (elt.obj) {
                 if (elt.obj.material.update) {
                     elt.obj.material.update(this.material);
