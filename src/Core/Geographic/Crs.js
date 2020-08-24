@@ -152,4 +152,18 @@ export default {
     isEpsg,
     tms_3857: 'TMS:3857',
     tms_4326: 'TMS:4326',
+
+    /**
+     * Register a CRS in proj4, using a **W**ell **K**nown **T**ext (WKT). It
+     * registers it only if it is not already present in this instance of proj4.
+     *
+     * @param {string} name - The name of the CRS to register in proj4.
+     * @param {string} wkt - The Well Known Text to use.
+     */
+    registerWKT(name, wkt) {
+        // It does nothing more than a defs, but avoid a redefinition of a CRS.
+        if (!proj4.defs(name)) {
+            proj4.defs(name, wkt);
+        }
+    },
 };
