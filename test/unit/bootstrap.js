@@ -23,6 +23,7 @@ class DOMElement {
         this.width = 400;
         this.height = 300;
         this.events = new Map();
+        this.classList = new Set();
         this.style = {
             display: 'block',
             setProperty: (p, v) => {
@@ -99,6 +100,7 @@ global.document = {
         return new DOMElement();
     },
     createElementNS: (_, type) => (global.document.createElement(type)),
+    getElementsByTagName: () => [new DOMElement()],
 };
 
 class Renderer {
