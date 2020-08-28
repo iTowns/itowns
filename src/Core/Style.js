@@ -7,6 +7,33 @@ const cacheStyle = new Cache();
 const inv255 = 1 / 255;
 const canvas = document.createElement('canvas');
 
+// add label halo management once
+const labelStyleSheet = document.createElement('style');
+labelStyleSheet.type = 'text/css';
+labelStyleSheet.innerHTML = `.itowns-stroke-single:before {
+    display: var(--text_stroke_display);
+    content: attr(data-before);
+    opacity: 1;
+    position: absolute;
+    -webkit-text-stroke-width: var(--text_stroke_width);
+    -webkit-text-stroke-color: var(--text_stroke_color);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    z-index: -1;
+    white-space: inherit;
+    overflow-wrap: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    padding: inherit;
+    font-family: inherit;
+    text-transform: inherit;
+    max-width: inherit;
+    font-size: inherit;
+}`;
+document.getElementsByTagName('head')[0].appendChild(labelStyleSheet);
+
 function rgba2rgb(orig) {
     if (!orig) {
         return {};

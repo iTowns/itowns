@@ -73,6 +73,7 @@ class Label extends THREE.Object3D {
         this.boundaries = { left: 0, right: 0, top: 0, bottom: 0 };
 
         this.content = document.createElement('div');
+        this.content.classList.add('itowns-label');
         this.content.style.userSelect = 'none';
         this.content.style.position = 'absolute';
         if (typeof content == 'string') {
@@ -85,7 +86,7 @@ class Label extends THREE.Object3D {
         if (style.isStyle) {
             this.anchor = style.getTextAnchorPosition();
             if (style.text.haloWidth > 0) {
-                this.content.setAttribute('class', 'stroke-single');
+                this.content.classList.add('itowns-stroke-single');
             }
             style.applyToHTML(this.content);
         }
