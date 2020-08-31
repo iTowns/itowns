@@ -6,7 +6,8 @@
             "extensions": [
                 ".json",
                 ".glsl",
-                ".gltf"
+                ".gltf",
+                ".css"
             ]
         }],
         ["@babel/plugin-transform-runtime"],
