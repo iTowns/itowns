@@ -225,6 +225,10 @@ class LabelLayer extends Layer {
             node.layerUpdateState[this.id].noMoreUpdatePossible();
         });
     }
+
+    delete() {
+        this.domElement.parentElement.removeChild(this.domElement);
+    }
 }
 
 export default LabelLayer;

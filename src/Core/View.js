@@ -81,6 +81,12 @@ function _preprocessLayer(view, layer, parentLayer) {
             labelLayer.visible = layer.visible;
         });
 
+        view.addEventListener(VIEW_EVENTS.LAYER_REMOVED, (e) => {
+            if (e.layerId === layer.id) {
+                view.removeLayer(labelLayer.id);
+            }
+        });
+
         layer.whenReady = layer.whenReady.then(() => {
             view.addLayer(labelLayer);
             view.mainLoop.gfxEngine.label2dRenderer.registerLayer(labelLayer);
