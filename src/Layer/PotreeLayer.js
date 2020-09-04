@@ -66,7 +66,7 @@ class PotreeLayer extends PointCloudLayer {
             this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
             this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
 
-            this.extent = Extent.fromBox3(config.crs || 'EPSG:4326', this.root.bbox);
+            this.extent = Extent.fromBox3(this.source.projection || 'EPSG:4326', this.root.bbox);
             return this.root.loadOctree().then(resolve);
         });
     }
