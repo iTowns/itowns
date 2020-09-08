@@ -5,6 +5,7 @@ import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
 import MaterialLayer from 'Renderer/MaterialLayer';
+import CommonMaterial from 'Renderer/CommonMaterial';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
 
@@ -55,37 +56,6 @@ function updateLayersUniforms(uniforms, olayers, max) {
     textureCount.value = count;
 }
 
-function setDefineMapping(object, PROPERTY, mapping) {
-    Object.keys(mapping).forEach((key) => {
-        object.defines[`${PROPERTY}_${key}`] = mapping[key];
-    });
-}
-
-function setDefineProperty(object, property, PROPERTY, initValue) {
-    object.defines[PROPERTY] = initValue;
-    Object.defineProperty(object, property, {
-        get: () => object.defines[PROPERTY],
-        set: (value) => {
-            if (object.defines[PROPERTY] != value) {
-                object.defines[PROPERTY] = value;
-                object.needsUpdate = true;
-            }
-        },
-    });
-}
-
-function setUniformProperty(object, property, initValue) {
-    object.uniforms[property] = new THREE.Uniform(initValue);
-    Object.defineProperty(object, property, {
-        get: () => object.uniforms[property].value,
-        set: (value) => {
-            if (object.uniforms[property].value != value) {
-                object.uniforms[property].value = value;
-            }
-        },
-    });
-}
-
 export const ELEVATION_MODES = {
     RGBA: 0,
     COLOR: 1,
@@ -105,9 +75,9 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         this.defines.USE_FOG = 1;
         this.defines.NUM_CRS = crsCount;
 
-        setDefineMapping(this, 'ELEVATION', ELEVATION_MODES);
-        setDefineMapping(this, 'MODE', RenderMode.MODES);
-        setDefineProperty(this, 'mode', 'MODE', RenderMode.MODES.FINAL);
+        CommonMaterial.setDefineMapping(this, 'ELEVATION', ELEVATION_MODES);
+        CommonMaterial.setDefineMapping(this, 'MODE', RenderMode.MODES);
+        CommonMaterial.setDefineProperty(this, 'mode', 'MODE', RenderMode.MODES.FINAL);
 
         if (__DEBUG__) {
             this.defines.DEBUG = 1;
@@ -115,9 +85,9 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
             if (crsCount > 1) {
                 outlineColors.push(new THREE.Vector3(1.0, 0.5, 0.0));
             }
-            setUniformProperty(this, 'showOutline', true);
-            setUniformProperty(this, 'outlineWidth', 0.008);
-            setUniformProperty(this, 'outlineColors', outlineColors);
+            CommonMaterial.setUniformProperty(this, 'showOutline', true);
+            CommonMaterial.setUniformProperty(this, 'outlineWidth', 0.008);
+            CommonMaterial.setUniformProperty(this, 'outlineColors', outlineColors);
         }
 
         if (Capabilities.isLogDepthBufferSupported()) {
@@ -130,25 +100,25 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         this.fragmentShader = fragmentShader[crsCount];
 
         // Color uniforms
-        setUniformProperty(this, 'diffuse', new THREE.Color(0.04, 0.23, 0.35));
-        setUniformProperty(this, 'opacity', this.opacity);
+        CommonMaterial.setUniformProperty(this, 'diffuse', new THREE.Color(0.04, 0.23, 0.35));
+        CommonMaterial.setUniformProperty(this, 'opacity', this.opacity);
 
         // Lighting uniforms
-        setUniformProperty(this, 'lightingEnabled', false);
-        setUniformProperty(this, 'lightPosition', new THREE.Vector3(-0.5, 0.0, 1.0));
+        CommonMaterial.setUniformProperty(this, 'lightingEnabled', false);
+        CommonMaterial.setUniformProperty(this, 'lightPosition', new THREE.Vector3(-0.5, 0.0, 1.0));
 
         // Misc properties
-        setUniformProperty(this, 'fogDistance', 1000000000.0);
-        setUniformProperty(this, 'fogColor', new THREE.Color(0.76, 0.85, 1.0));
-        setUniformProperty(this, 'overlayAlpha', 0);
-        setUniformProperty(this, 'overlayColor', new THREE.Color(1.0, 0.3, 0.0));
-        setUniformProperty(this, 'objectId', 0);
+        CommonMaterial.setUniformProperty(this, 'fogDistance', 1000000000.0);
+        CommonMaterial.setUniformProperty(this, 'fogColor', new THREE.Color(0.76, 0.85, 1.0));
+        CommonMaterial.setUniformProperty(this, 'overlayAlpha', 0);
+        CommonMaterial.setUniformProperty(this, 'overlayColor', new THREE.Color(1.0, 0.3, 0.0));
+        CommonMaterial.setUniformProperty(this, 'objectId', 0);
 
         // > 0 produces gaps,
         // < 0 causes oversampling of textures
         // = 0 causes sampling artefacts due to bad estimation of texture-uv gradients
         // best is a small negative number
-        setUniformProperty(this, 'minBorderDistance', -0.01);
+        CommonMaterial.setUniformProperty(this, 'minBorderDistance', -0.01);
 
         // LayeredMaterialLayers
         this.layers = [];

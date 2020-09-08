@@ -8,7 +8,7 @@
 
 uniform float size;
 
-uniform bool pickingMode;
+uniform bool picking;
 uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
@@ -69,7 +69,7 @@ void main() {
     vec3 normal = color;
 #endif
 
-    if (pickingMode) {
+    if (picking) {
         vColor = unique_id;
     } else if (mode == MODE_INTENSITY) {
         vColor = vec4(intensity, intensity, intensity, opacity);
