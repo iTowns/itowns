@@ -65,8 +65,9 @@
                 source: new itowns.PotreeSource({
                     file: 'eglise_saint_blaise_arles.js',
                     url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
+                    projection: view.referenceCrs,
                 }),
-            },view);
+            });
 
             // add potreeLayer to scene
             function onLayerReady() {

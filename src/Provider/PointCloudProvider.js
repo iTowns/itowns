@@ -29,21 +29,21 @@ function addPickingAttribute(points) {
 export default {
     executeCommand(command) {
         const layer = command.layer;
-        const potreeNode = command.requester;
+        const node = command.requester;
 
-        return potreeNode.load().then((geometry) => {
+        return node.load().then((geometry) => {
             const points = new THREE.Points(geometry, layer.material.clone());
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            points.position.copy(potreeNode.bbox.min);
+            points.position.copy(node.bbox.min);
             points.scale.copy(layer.scale);
             points.updateMatrix();
             points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
             points.layers.set(layer.threejsLayer);
             points.layer = layer;
-            points.extent = Extent.fromBox3(command.view.referenceCrs, potreeNode.bbox);
-            points.userData.potreeNode = potreeNode;
+            points.extent = Extent.fromBox3(command.view.referenceCrs, node.bbox);
+            points.userData.node = node;
             return points;
         });
     },

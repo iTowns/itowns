@@ -8,7 +8,7 @@ import PriorityQueue from 'js-priority-queue';
 import DataSourceProvider from 'Provider/DataSourceProvider';
 import TileProvider from 'Provider/TileProvider';
 import $3dTilesProvider from 'Provider/3dTilesProvider';
-import PotreeProvider from 'Provider/PotreeProvider';
+import PointCloudProvider from 'Provider/PointCloudProvider';
 import CancelledCommandException from './CancelledCommandException';
 
 function queueOrdering(a, b) {
@@ -123,7 +123,7 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     // Register all providers
     this.addProtocolProvider('tile', TileProvider);
     this.addProtocolProvider('3d-tiles', $3dTilesProvider);
-    this.addProtocolProvider('potreeconverter', PotreeProvider);
+    this.addProtocolProvider('pointcloud', PointCloudProvider);
 };
 
 Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {

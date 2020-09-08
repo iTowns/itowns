@@ -28,7 +28,8 @@ describe('Potree', function () {
                 networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             }),
             onPointsCreated: () => {},
-        }, viewer);
+            crs: viewer.referenceCrs,
+        });
 
         context = {
             camera: viewer.camera,
