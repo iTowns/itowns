@@ -1,8 +1,9 @@
-import { Vector4, Uniform, NoBlending, NormalBlending, RawShaderMaterial } from 'three';
+import * as THREE from 'three';
 import PointsVS from 'Renderer/Shader/PointsVS.glsl';
 import PointsFS from 'Renderer/Shader/PointsFS.glsl';
 import Capabilities from 'Core/System/Capabilities';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
+import CommonMaterial from 'Renderer/CommonMaterial';
 
 export const MODE = {
     COLOR: 0,
@@ -11,30 +12,23 @@ export const MODE = {
     NORMAL: 3,
 };
 
-class PointsMaterial extends RawShaderMaterial {
+class PointsMaterial extends THREE.RawShaderMaterial {
     constructor(options = {}) {
         const oiMaterial = options.orientedImageMaterial;
         delete options.orientedImageMaterial;
         super(options);
         this.vertexShader = PointsVS;
 
-        this.size = options.size || 0;
         this.scale = options.scale || 0.05 * 0.5 / Math.tan(1.0 / 2.0); // autosizing scale
-        this.overlayColor = options.overlayColor || new Vector4(0, 0, 0, 0);
-        this.mode = options.mode || MODE.COLOR;
-        this.picking = false;
 
-        for (const key in MODE) {
-            if (Object.prototype.hasOwnProperty.call(MODE, key)) {
-                this.defines[`MODE_${key}`] = MODE[key];
-            }
-        }
+        CommonMaterial.setDefineMapping(this, 'MODE', MODE);
 
-        this.uniforms.size = new Uniform(this.size);
-        this.uniforms.mode = new Uniform(this.mode);
-        this.uniforms.pickingMode = new Uniform(this.picking);
-        this.uniforms.opacity = new Uniform(this.opacity);
-        this.uniforms.overlayColor = new Uniform(this.overlayColor);
+        CommonMaterial.setUniformProperty(this, 'size', options.size || 0);
+        CommonMaterial.setUniformProperty(this, 'mode', options.mode || MODE.COLOR);
+        CommonMaterial.setUniformProperty(this, 'picking', false);
+        CommonMaterial.setUniformProperty(this, 'opacity', this.opacity);
+        CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new THREE.Vector4(0, 0, 0, 0));
+
 
         if (oiMaterial) {
             this.uniforms.projectiveTextureAlphaBorder = oiMaterial.uniforms.projectiveTextureAlphaBorder;
@@ -61,8 +55,6 @@ class PointsMaterial extends RawShaderMaterial {
         if (__DEBUG__) {
             this.defines.DEBUG = 1;
         }
-
-        this.updateUniforms();
     }
 
     copy(source) {
@@ -82,17 +74,7 @@ class PointsMaterial extends RawShaderMaterial {
 
     enablePicking(picking) {
         this.picking = picking;
-        this.blending = picking ? NoBlending : NormalBlending;
-        this.updateUniforms();
-    }
-
-    updateUniforms() {
-        // if size is null, switch to autosizing using the canvas height
-        this.uniforms.size.value = (this.size > 0) ? this.size : -this.scale * window.innerHeight;
-        this.uniforms.mode.value = this.mode;
-        this.uniforms.pickingMode.value = this.picking;
-        this.uniforms.opacity.value = this.opacity;
-        this.uniforms.overlayColor.value = this.overlayColor;
+        this.blending = picking ? THREE.NoBlending : THREE.NormalBlending;
     }
 
     update(source) {
@@ -104,7 +86,6 @@ class PointsMaterial extends RawShaderMaterial {
         this.picking = source.picking;
         this.scale = source.scale;
         this.overlayColor.copy(source.overlayColor);
-        this.updateUniforms();
         Object.assign(this.defines, source.defines);
         return this;
     }
