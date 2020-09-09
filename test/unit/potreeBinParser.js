@@ -52,7 +52,7 @@ describe('PotreeBinParser', function () {
             assert.deepStrictEqual(posAttr.array, Float32Array.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14));
             // check intensity
             assert.equal(intensityAttr.itemSize, 1);
-            assert.deepStrictEqual(intensityAttr.array, Float32Array.of(100, 101, 102, 103, 104));
+            assert.deepStrictEqual(intensityAttr.array, Uint16Array.of(100, 101, 102, 103, 104));
             // check colors
             assert.equal(colorAttr.itemSize, 4);
             assert.deepStrictEqual(colorAttr.array, Uint8Array.of(

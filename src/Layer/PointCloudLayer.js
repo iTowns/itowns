@@ -61,6 +61,12 @@ function markForDeletion(elt) {
     }
 }
 
+function changeIntensityRange(layer) {
+    if (layer.material.intensityRange) {
+        layer.material.intensityRange.set(layer.minIntensityRange, layer.maxIntensityRange);
+    }
+}
+
 /**
  * The basis for all point clouds related layers.
  *
@@ -86,6 +92,12 @@ function markForDeletion(elt) {
  * `PointsMaterial`.
  * @property {number} [mode=MODE.COLOR] - The displaying mode of the points.
  * Values are specified in `PointsMaterial`.
+ * @property {number} [minIntensityRange=0] - The minimal intensity of the
+ * layer. Changing this value will affect the material, if it has the
+ * corresponding uniform. The value is normalized between 0 and 1.
+ * @property {number} [maxIntensityRange=1] - The maximal intensity of the
+ * layer. Changing this value will affect the material, if it has the
+ * corresponding uniform. The value is normalized between 0 and 1.
  */
 class PointCloudLayer extends GeometryLayer {
     /**
@@ -122,9 +134,18 @@ class PointCloudLayer extends GeometryLayer {
         this.pointBudget = config.pointBudget || 2000000;
         this.pointSize = config.pointSize === 0 || !isNaN(config.pointSize) ? config.pointSize : 4;
         this.sseThreshold = config.sseThreshold || 2;
+
+        this.defineLayerProperty('minIntensityRange', config.minIntensityRange || 0, changeIntensityRange);
+        this.defineLayerProperty('maxIntensityRange', config.maxIntensityRange || 1, changeIntensityRange);
+
         this.material = config.material || {};
-        this.material = this.material.isMaterial ? config.material : new PointsMaterial(config.material);
+        if (!this.material.isMaterial) {
+            config.material = config.material || {};
+            config.material.intensityRange = new THREE.Vector2(this.minIntensityRange, this.maxIntensityRange);
+            this.material = new PointsMaterial(config.material);
+        }
         this.material.defines = this.material.defines || {};
+
         this.mode = config.mode || MODE.COLOR;
     }
 

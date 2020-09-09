@@ -13,6 +13,7 @@ uniform bool picking;
 uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
+uniform vec2 intensityRange;
 attribute vec3 color;
 attribute vec4 unique_id;
 attribute float intensity;
@@ -73,7 +74,9 @@ void main() {
     if (picking) {
         vColor = unique_id;
     } else if (mode == MODE_INTENSITY) {
-        vColor = vec4(intensity, intensity, intensity, opacity);
+        // adapt the grayscale knowing the range
+        float i = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
+        vColor = vec4(i, i, i, opacity);
     } else if (mode == MODE_NORMAL) {
         vColor = vec4(abs(normal), opacity);
     } else {
