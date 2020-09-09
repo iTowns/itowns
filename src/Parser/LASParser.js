@@ -40,7 +40,7 @@ export default {
             const positionBuffer = new THREE.BufferAttribute(parsedData.attributes.POSITION.value, 3, false);
             geometry.setAttribute('position', positionBuffer);
 
-            const intensityBuffer = new THREE.BufferAttribute(parsedData.attributes.intensity.value, 1, false);
+            const intensityBuffer = new THREE.BufferAttribute(parsedData.attributes.intensity.value, 1, true);
             geometry.setAttribute('intensity', intensityBuffer);
 
             const classificationBuffer = new THREE.BufferAttribute(parsedData.attributes.classification.value, 1, false);

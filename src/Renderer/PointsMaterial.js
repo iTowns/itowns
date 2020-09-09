@@ -28,7 +28,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'picking', false);
         CommonMaterial.setUniformProperty(this, 'opacity', this.opacity);
         CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new THREE.Vector4(0, 0, 0, 0));
-
+        CommonMaterial.setUniformProperty(this, 'intensityRange', options.intensityRange || new THREE.Vector2(0, 1));
 
         if (oiMaterial) {
             this.uniforms.projectiveTextureAlphaBorder = oiMaterial.uniforms.projectiveTextureAlphaBorder;
@@ -93,6 +93,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         this.picking = source.picking;
         this.scale = source.scale;
         this.overlayColor.copy(source.overlayColor);
+        this.intensityRange.copy(source.intensityRange);
         Object.assign(this.defines, source.defines);
         return this;
     }

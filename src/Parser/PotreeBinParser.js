@@ -18,7 +18,7 @@ const POINT_ATTTRIBUTES = {
         numElements: 1,
         numByte: 2,
         // using Float32Array because Float16Array doesn't exist
-        arrayType: Float32Array,
+        arrayType: Uint16Array,
         attributeName: 'intensity',
         normalized: true,
     },
