@@ -192,14 +192,8 @@ class View extends THREE.EventDispatcher {
 
         this.addEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
 
-        this._fullSizeDepthBuffer = null;
-
-        this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
-            if (this._fullSizeDepthBuffer != null && this._fullSizeDepthBuffer.needsUpdate) {
-                // clean depth buffer
-                this._fullSizeDepthBuffer = null;
-            }
-        });
+        this._fullSizeDepthBuffer = new Uint8Array(4 * this.camera.width * this.camera.height);
+        this._pixelDepthBuffer = new Uint8Array(4);
 
         // Focus needed to capture some key events.
         this.domElement.focus();
@@ -802,7 +796,7 @@ class View extends THREE.EventDispatcher {
         return result;
     }
 
-    readDepthBuffer(x, y, width, height) {
+    readDepthBuffer(x, y, width, height, buffer) {
         const g = this.mainLoop.gfxEngine;
         const currentWireframe = this.tileLayer.wireframe;
         const currentOpacity = this.tileLayer.opacity;
@@ -818,9 +812,9 @@ class View extends THREE.EventDispatcher {
         }
 
         const restore = this.tileLayer.level0Nodes.map(n => RenderMode.push(n, RenderMode.MODES.DEPTH));
-        const buffer = g.renderViewToBuffer(
+        buffer = g.renderViewToBuffer(
             { camera: this.camera, scene: this.tileLayer.object3d },
-            { x, y, width, height });
+            { x, y, width, height, buffer });
         restore.forEach(r => r());
 
         if (this.tileLayer.wireframe !== currentWireframe) {
@@ -867,11 +861,14 @@ class View extends THREE.EventDispatcher {
         // Render/Read to buffer
         let buffer;
         if (viewPaused) {
-            this._fullSizeDepthBuffer = this._fullSizeDepthBuffer || this.readDepthBuffer(0, 0, dim.x, dim.y);
+            if (this._fullSizeDepthBuffer.needsUpdate) {
+                this.readDepthBuffer(0, 0, dim.x, dim.y, this._fullSizeDepthBuffer);
+                this._fullSizeDepthBuffer.needsUpdate = false;
+            }
             const id = ((dim.y - mouse.y - 1) * dim.x + mouse.x) * 4;
             buffer = this._fullSizeDepthBuffer.slice(id, id + 4);
         } else {
-            buffer = this.readDepthBuffer(mouse.x, mouse.y, 1, 1);
+            buffer = this.readDepthBuffer(mouse.x, mouse.y, 1, 1, this._pixelDepthBuffer);
         }
 
         screen.x = (mouse.x / dim.x) * 2 - 1;
@@ -921,6 +918,7 @@ class View extends THREE.EventDispatcher {
             height = this.domElement.clientHeight;
         }
 
+        this._fullSizeDepthBuffer = new Uint8Array(4 * width * height);
         this.mainLoop.gfxEngine.onWindowResize(width, height);
         this.camera.resize(width, height);
         this.notifyChange(this.camera.camera3D);
