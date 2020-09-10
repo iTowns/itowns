@@ -43,7 +43,15 @@ export default function computeBuffers(params) {
 
     computeUvs[0] = () => {};
     if (params.buildIndexAndUv_0) {
-        outBuffers.index = new Uint32Array(triangles * 3);
+        if (nVertex < 2 ** 8) {
+            outBuffers.index = new Uint8Array(triangles * 3);
+        } else if (nVertex < 2 ** 16) {
+            outBuffers.index = new Uint16Array(triangles * 3);
+        } else if (nVertex < 2 ** 32) {
+            outBuffers.index = new Uint32Array(triangles * 3);
+        } else {
+            throw new Error('Tile segments count is too big');
+        }
         outBuffers.uvs[0] = new Float32Array(nVertex * 2);
         computeUvs[0] = (id, u, v) => {
             outBuffers.uvs[0][id * 2 + 0] = u;
