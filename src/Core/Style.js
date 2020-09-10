@@ -53,7 +53,7 @@ function getImage(icon, size, source, key) {
 
     if (typeof source == 'string') {
         icon.dom.src = source;
-    } else if (Array.isArray(source)) {
+    } else if (source && source[key]) {
         const sprite = source[key];
         canvas.width = sprite.width;
         canvas.height = sprite.height;
