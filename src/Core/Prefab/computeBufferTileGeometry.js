@@ -26,7 +26,7 @@ export default function computeBuffers(params) {
     const computeUvs = [];
 
     const builder = params.builder;
-    const nSeg = params.segment;
+    const nSeg = params.segment || 8;
     // segments count :
     // Tile : (nSeg + 1) * (nSeg + 1)
     // Skirt : 8 * (nSeg - 1)
