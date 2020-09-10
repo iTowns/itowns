@@ -161,14 +161,15 @@ class c3DEngine {
             };
         }
 
+        zone.buffer = zone.buffer || new Uint8Array(4 * zone.width * zone.height);
+
         this.renderViewToRenderTarget(view, this.fullSizeRenderTarget, zone);
 
-        const pixelBuffer = new Uint8Array(4 * zone.width * zone.height);
         this.renderer.readRenderTargetPixels(
             this.fullSizeRenderTarget,
-            zone.x, this.height - (zone.y + zone.height), zone.width, zone.height, pixelBuffer);
+            zone.x, this.height - (zone.y + zone.height), zone.width, zone.height, zone.buffer);
 
-        return pixelBuffer;
+        return zone.buffer;
     }
 
     /**
