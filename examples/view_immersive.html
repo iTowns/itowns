@@ -124,7 +124,6 @@
                     projection: 'EPSG:4326',
                     ipr: 'IGN',
                     format: 'application/json',
-                    zoom: { min: 15, max: 15 },
                     extent: {
                         west: 2.334,
                         east: 2.335,
@@ -144,6 +143,7 @@
                     onMeshCreated: (mesh) => mesh.traverse(object => object.material = orientedImageLayer.material),
                     source: wfsBuildingSource,
                     overrideAltitudeInToZero: true,
+                    zoom: { min: 15 },
                 });
 
                 // add the created building layer, and debug UI
