@@ -40,28 +40,30 @@ function readVectorProperty(property, zoom) {
     }
 }
 
-function getImage(icon, size, source, key) {
-    icon.dom = document.createElement('img');
+function getImage(target, source, key, size) {
+    if (!target) {
+        target = document.createElement('img');
+    }
 
-    icon.dom.onload = () => {
-        icon.dom.width *= size;
-        icon.dom.height *= size;
+    target.onload = () => {
+        target.width *= (size || 1);
+        target.height *= (size || 1);
 
-        icon.halfWidth = icon.dom.width / 2;
-        icon.halfHeight = icon.dom.height / 2;
+        target.halfWidth = target.width / 2;
+        target.halfHeight = target.height / 2;
     };
 
     if (typeof source == 'string') {
-        icon.dom.src = source;
+        target.src = source;
     } else if (source && source[key]) {
         const sprite = source[key];
         canvas.width = sprite.width;
         canvas.height = sprite.height;
         canvas.getContext('2d').drawImage(source.img, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, sprite.width, sprite.height);
-        icon.dom.src = canvas.toDataURL('image/png');
+        target.src = canvas.toDataURL('image/png');
     }
 
-    return icon;
+    return target;
 }
 
 const textAnchorPosition = {
@@ -330,8 +332,7 @@ class Style {
             this.text.size = properties['label-size'];
 
             if (properties.icon) {
-                this.icon = {};
-                getImage(this.icon, properties['icon-size'] || 1, properties.icon);
+                this.icon = getImage(this.icon, properties.icon);
             }
         } else {
             this.stroke.color = properties.stroke;
@@ -364,7 +365,7 @@ class Style {
             this.fill.color = color;
             this.fill.opacity = readVectorProperty(layer.paint['fill-opacity'], zoom) || opacity;
             if (layer.paint['fill-pattern'] && sprites) {
-                this.fill.pattern = getImage(sprites, layer.paint['fill-pattern']);
+                this.fill.pattern = getImage(this.fill.pattern, sprites, layer.paint['fill-pattern']);
             }
 
             if (layer.paint['fill-outline-color']) {
@@ -431,8 +432,7 @@ class Style {
                 this.icon = cacheStyle.get(iconSrc, size);
 
                 if (!this.icon) {
-                    this.icon = {};
-                    getImage(this.icon, size, sprites, iconSrc);
+                    this.icon = getImage(this.icon, sprites, iconSrc, size);
                     this.icon.anchor = readVectorProperty(layer.layout['icon-anchor'], zoom) || 'center';
                     cacheStyle.set(this.icon, iconSrc, size);
                 }
@@ -472,42 +472,42 @@ class Style {
             return;
         }
 
-        this.icon.dom.style.position = 'absolute';
+        this.icon.style.position = 'absolute';
         switch (this.text.anchor) { // center by default
             case 'left':
-                this.icon.dom.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
-                this.icon.dom.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
+                this.icon.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
+                this.icon.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
                 break;
             case 'right':
-                this.icon.dom.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
+                this.icon.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
                 break;
             case 'top':
-                this.icon.dom.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
+                this.icon.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
                 break;
             case 'bottom':
-                this.icon.dom.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
-                this.icon.dom.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
+                this.icon.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
+                this.icon.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
                 break;
             case 'bottom-left':
-                this.icon.dom.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
-                this.icon.dom.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
+                this.icon.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
+                this.icon.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
                 break;
             case 'bottom-right':
-                this.icon.dom.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
+                this.icon.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
                 break;
             case 'top-left':
-                this.icon.dom.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
+                this.icon.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
                 break;
             case 'top-right':
                 break;
             case 'center':
             default:
-                this.icon.dom.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
-                this.icon.dom.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
+                this.icon.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
+                this.icon.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
                 break;
         }
 
-        domElement.appendChild(this.icon.dom.cloneNode());
+        domElement.appendChild(this.icon.cloneNode());
     }
 
     /**
