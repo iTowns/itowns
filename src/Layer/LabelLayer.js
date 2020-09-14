@@ -8,7 +8,6 @@ import { FEATURE_TYPES } from 'Core/Feature';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
-let content;
 const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 
 /**
@@ -84,9 +83,11 @@ class LabelLayer extends Layer {
                     || (this.style && this.style.zoom && this.style.zoom.min);
 
                 // Don't create a label if it is in-between two steps of zoom
-                if (!this.source.isFileSource) {
-                    if (data.extent.zoom != minzoom) { return; }
-                } else if (extent.zoom != minzoom) { return; }
+                if (minzoom !== undefined) {
+                    if (!this.source.isFileSource) {
+                        if (data.extent.zoom != minzoom) { return; }
+                    } else if (extent.zoom != minzoom) { return; }
+                }
 
                 // NOTE: this only works because only POINT is supported, it
                 // needs more work for LINE and POLYGON
@@ -96,8 +97,14 @@ class LabelLayer extends Layer {
                 if (!_extent.isPointInside(coord)) { return; }
 
                 const geometryField = g.properties.style && g.properties.style.text.field;
+                let content;
                 if (!geometryField && !featureField && !layerField) {
-                    return;
+                    // Check if there is an icon, with no text
+                    if (!(g.properties.style && g.properties.style.icon)
+                        && !(f.style && f.style.icon)
+                        && !(this.style && this.style.icon)) {
+                        return;
+                    }
                 } else if (geometryField) {
                     content = g.properties.style.getTextFromProperties(g.properties);
                 } else if (featureField) {

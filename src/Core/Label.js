@@ -47,9 +47,9 @@ class Label extends THREE.Object3D {
      * it can be accessed through `label.content.style`, but it is highly
      * discouraged to do so.
      */
-    constructor(content, coordinates, style = {}) {
-        if (content == undefined || coordinates == undefined) {
-            throw new Error('content and coordinates are mandatory to add a Label');
+    constructor(content = '', coordinates, style = {}) {
+        if (coordinates == undefined) {
+            throw new Error('coordinates are mandatory to add a Label');
         }
 
         super();
@@ -80,7 +80,7 @@ class Label extends THREE.Object3D {
         this.content.style.userSelect = 'none';
         this.content.style.position = 'absolute';
         if (typeof content == 'string') {
-            this.content.textContent = content || '';
+            this.content.textContent = content;
         } else {
             this.content.appendChild(content);
         }
