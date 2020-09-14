@@ -19,14 +19,25 @@ const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
  * @property {boolean} isLabelLayer - Used to checkout whether this layer is a
  * LabelLayer.  Default is true. You should not change this, as it is used
  * internally for optimisation.
- * @property {string} crs - The crs of this layer.
  */
 class LabelLayer extends Layer {
-    constructor(id, crs) {
-        super(id);
+    /**
+     * @constructor
+     * @extends Layer
+     *
+     * @param {string} id - The id of the layer, that should be unique. It is
+     * not mandatory, but an error will be emitted if this layer is added a
+     * {@link View} that already has a layer going by that id.
+     * @param {Object} [config] - Optional configuration, all elements in it
+     * will be merged as is in the layer. For example, if the configuration
+     * contains three elements `name, protocol, extent`, these elements will be
+     * available using `layer.name` or something else depending on the property
+     * name.
+     */
+    constructor(id, config = {}) {
+        super(id, config);
 
         this.isLabelLayer = true;
-        this.crs = crs;
         this.domElement = document.createElement('div');
         this.defineLayerProperty('visible', true, () => {
             this.domElement.style.display = this.visible ? 'block' : 'none';
@@ -139,7 +150,7 @@ class LabelLayer extends Layer {
         if (elevationLayer && node.layerUpdateState[elevationLayer.id].canTryUpdate()) {
             node.children.forEach((c) => {
                 if (c.isLabel && c.needsAltitude && c.updateElevationFromLayer(this.parent)) {
-                    c.update3dPosition(this.crs);
+                    c.update3dPosition(context.view.referenceCrs);
                 }
             });
         }
@@ -189,7 +200,7 @@ class LabelLayer extends Layer {
                     }
 
                     node.add(label);
-                    label.update3dPosition(this.crs);
+                    label.update3dPosition(context.view.referenceCrs);
 
                     labelsDiv.push(label.content);
                 });
