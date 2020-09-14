@@ -28,7 +28,10 @@ if (document.documentElement.style.transform !== undefined) {
  * Label. Default is true. You should not change this, as it is used internally
  * for optimisation.
  * @property {Element} content - The DOM object that contains the content of the
- * label. The style and the position are applied on this object.
+ * label. The style and the position are applied on this object. All labels
+ * contain the `itowns-label` class, as well as a specific class related to the
+ * layer linked to it: `itowns-label-[layer-id]` (replace `[layer-id]` by the
+ * correct string).
  * @property {THREE.Vector3} position - The position in the 3D world of the
  * label.
  * @property {Coordinates} coordinates - The coordinates of the label.

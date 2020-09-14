@@ -109,6 +109,7 @@ class LabelLayer extends Layer {
                 const label = new Label(content,
                     coord.clone(),
                     g.properties.style || f.style || this.style);
+                label.content.classList.add(`itowns-label-${this.id}`);
 
                 if (f.size == 2) {
                     label.needsAltitude = true;
