@@ -72,10 +72,11 @@ function _preprocessLayer(view, layer, parentLayer) {
     if (layer.isLabelLayer) {
         view.mainLoop.gfxEngine.label2dRenderer.registerLayer(layer);
     } else if (layer.labelEnabled) {
-        const labelLayer = new LabelLayer(`${layer.id}-label`, view.referenceCrs);
-        labelLayer.source = source;
-        labelLayer.style = layer.style;
-        labelLayer.zoom = layer.zoom;
+        const labelLayer = new LabelLayer(`${layer.id}-label`, {
+            source,
+            style: layer.style,
+            zoom: layer.zoom,
+        });
 
         layer.addEventListener('visible-property-changed', () => {
             labelLayer.visible = layer.visible;
