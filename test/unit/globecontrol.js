@@ -223,15 +223,16 @@ describe('GlobeControls', function () {
 
     it('lookAtCoordinate with animation', function (done) {
         const rig = getRig(viewer.camera.camera3D);
+        let i;
         controls.lookAtCoordinate({ coord: placement.coord, time: 10 }, true).then((e) => {
             assert.equal((e.coord.longitude / placement.coord.longitude).toFixed(8), 1);
             assert.equal((e.coord.latitude / placement.coord.latitude).toFixed(8), 1);
+            clearInterval(i);
             done();
         });
+
         if (rig.animationFrameRequester) {
-            for (let i = 0; i < 100; i++) {
-                rig.animationFrameRequester();
-            }
+            i = setInterval(rig.animationFrameRequester, 10);
         }
     });
 
