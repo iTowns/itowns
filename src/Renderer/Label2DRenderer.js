@@ -159,7 +159,7 @@ class Label2DRenderer {
             vector.setFromMatrixPosition(object.matrixWorld);
             vector.applyMatrix4(viewProjectionMatrix);
 
-            object.updateProjectedPosition(Math.round(vector.x * this.halfWidth + this.halfWidth), Math.round(-vector.y * this.halfHeight + this.halfHeight));
+            object.updateProjectedPosition(vector.x * this.halfWidth + this.halfWidth, -vector.y * this.halfHeight + this.halfHeight);
 
             // Are considered duplicates, labels that have the same screen
             // coordinates and the same base content.

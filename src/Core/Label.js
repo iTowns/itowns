@@ -108,9 +108,11 @@ class Label extends THREE.Object3D {
      * @param {number} y - Y coordinates in pixels, from top.
      */
     updateProjectedPosition(x, y) {
-        if (x != this.projectedPosition.x || y != this.projectedPosition.y) {
-            this.projectedPosition.x = x;
-            this.projectedPosition.y = y;
+        const X = Math.round(x);
+        const Y = Math.round(y);
+        if (X != this.projectedPosition.x || Y != this.projectedPosition.y) {
+            this.projectedPosition.x = X;
+            this.projectedPosition.y = Y;
 
             this.boundaries.left = x + this.offset.left;
             this.boundaries.right = x + this.offset.right;
