@@ -31,6 +31,10 @@ export default function computeBuffers(params) {
     // Tile : (nSeg + 1) * (nSeg + 1)
     // Skirt : 8 * (nSeg - 1)
     const nVertex = (nSeg + 1) * (nSeg + 1) + (params.disableSkirt ? 0 : 4 * nSeg);
+    if (nVertex > 2 ** 32) {
+        throw new Error('Tile segments count is too big');
+    }
+
     const triangles = (nSeg) * (nSeg) * 2 + (params.disableSkirt ? 0 : 4 * nSeg * 2);
 
     outBuffers.position = new Float32Array(nVertex * 3);
@@ -49,8 +53,6 @@ export default function computeBuffers(params) {
             outBuffers.index = new Uint16Array(triangles * 3);
         } else if (nVertex < 2 ** 32) {
             outBuffers.index = new Uint32Array(triangles * 3);
-        } else {
-            throw new Error('Tile segments count is too big');
         }
         outBuffers.uvs[0] = new Float32Array(nVertex * 2);
         computeUvs[0] = (id, u, v) => {

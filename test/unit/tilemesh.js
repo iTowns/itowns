@@ -5,6 +5,7 @@ import TileMesh from 'Core/TileMesh';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';
 import { globalExtentTMS } from 'Core/Geographic/Extent';
 import TileProvider from 'Provider/TileProvider';
+import newTileGeometry from 'Core/Prefab/TileBuilder';
 
 // It is relatively long to create TileMesh on the go (in term of code), so we
 // emulate a fake one with the necessary informations in it.
@@ -67,6 +68,30 @@ describe('TileMesh', function () {
         });
     });
 
+    it('Choose the right typed Array', function (done) {
+        const paramsGeometry = {
+            extent: planarlayer.object3d.children[0].extent,
+            level: 0,
+            segment: 260,
+            disableSkirt: true,
+        };
+
+        const a = newTileGeometry(planarlayer.builder, paramsGeometry).then((r) => {
+            const position = r.geometry.attributes.position;
+            assert.ok(position.array.constructor.name == 'Float32Array');
+        });
+
+        const paramsGeometry2 = {
+            extent: planarlayer.object3d.children[0].extent,
+            level: 0,
+            segment: (2 ** 16),
+            disableSkirt: true,
+        };
+
+        const b = assert.rejects(newTileGeometry(planarlayer.builder, paramsGeometry2), Error);
+        Promise.all([a, b]).then(() => done());
+    });
+
     it('catch error when subdivide tile without material', function (done) {
         const tile = planarlayer.object3d.children[0];
         tile.pendingSubdivision = false;
@@ -92,5 +117,37 @@ describe('TileMesh', function () {
     it('should find the correct common ancestor between two tiles to be the root', function () {
         const res = tree[3][60].findCommonAncestor(tree[2][0]);
         assert.equal(res, tree[0][0]);
+    });
+
+    it('Cache tile geometry', function (done) {
+        const paramsGeometry = {
+            extent: planarlayer.object3d.children[0].extent,
+            level: 0,
+            segment: 4,
+            disableSkirt: true,
+        };
+
+        newTileGeometry(planarlayer.builder, paramsGeometry).then((r) => {
+            r.geometry._count++;
+            return newTileGeometry(planarlayer.builder, paramsGeometry).then((r) => {
+                assert.equal(r.geometry._count, 1);
+                done();
+            });
+        });
+    });
+
+    it('Dispose tile geometry', function (done) {
+        const paramsGeometry = {
+            extent: planarlayer.object3d.children[0].extent,
+            level: 0,
+            segment: 2,
+            disableSkirt: true,
+        };
+
+        newTileGeometry(planarlayer.builder, paramsGeometry).then((r) => {
+            r.geometry.dispose();
+            assert.equal(r.geometry.index, null);
+            done();
+        });
     });
 });
