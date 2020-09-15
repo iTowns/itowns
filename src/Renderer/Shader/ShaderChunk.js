@@ -18,6 +18,8 @@ import project_pars_vertex from './Chunk/project_pars_vertex.glsl';
 import projective_texturing_vertex from './Chunk/projective_texturing_vertex.glsl';
 import projective_texturing_pars_vertex from './Chunk/projective_texturing_pars_vertex.glsl';
 import projective_texturing_pars_fragment from './Chunk/projective_texturing_pars_fragment.glsl';
+import WebGL2_pars_vertex from './Chunk/WebGL2_pars_vertex.glsl';
+import WebGL2_pars_fragment from './Chunk/WebGL2_pars_fragment.glsl';
 
 const ShaderChunk = {
     color_layers_pars_fragment,
@@ -38,6 +40,8 @@ const ShaderChunk = {
     projective_texturing_pars_vertex,
     projective_texturing_pars_fragment,
     project_pars_vertex,
+    WebGL2_pars_vertex,
+    WebGL2_pars_fragment,
 };
 
 /**

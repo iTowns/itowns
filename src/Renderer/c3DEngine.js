@@ -25,6 +25,10 @@ class c3DEngine {
             options.logarithmicDepthBuffer = this.gLDebug || NOIE;
         }
 
+        if (options.isWebGL2 === undefined) {
+            options.isWebGL2 = true;
+        }
+
         const renderer = rendererOrDiv.domElement ? rendererOrDiv : undefined;
         const viewerDiv = renderer ? renderer.domElement : rendererOrDiv;
 
@@ -61,8 +65,7 @@ class c3DEngine {
             this.label2dRenderer.setSize(this.width, this.height);
             viewerDiv.appendChild(this.label2dRenderer.domElement);
 
-            // WIP: support WebGL 2.0 see https://github.com/iTowns/itowns/pull/1443
-            this.renderer = renderer || new THREE.WebGLRenderer({
+            this.renderer = renderer || new (options.isWebGL2 ? THREE.WebGLRenderer : THREE.WebGL1Renderer)({
                 canvas: document.createElement('canvas'),
                 antialias: options.antialias,
                 alpha: options.alpha,
@@ -72,7 +75,8 @@ class c3DEngine {
             this.renderer.domElement.style.zIndex = 0;
             this.renderer.domElement.style.top = 0;
         } catch (ex) {
-            console.error('Failed to create WebGLRenderer', ex);
+            const versionWebGL = options.isWebGL2 ? '2' : '1';
+            console.error(`Failed to create WebGLRenderer webGL ${versionWebGL}.`);
             this.renderer = null;
         }
 
@@ -89,9 +93,9 @@ class c3DEngine {
         if (!renderer && options.logarithmicDepthBuffer) {
             // We don't support logarithmicDepthBuffer when EXT_frag_depth is missing.
             // So recreated a renderer if needed.
-            if (!this.renderer.extensions.get('EXT_frag_depth')) {
+            if (!this.renderer.capabilities.isWebGL2 && !this.renderer.extensions.get('EXT_frag_depth')) {
                 this.renderer.dispose();
-                this.renderer = new THREE.WebGLRenderer({
+                this.renderer = new (options.isWebGL2 ? THREE.WebGLRenderer : THREE.WebGL1Renderer)({
                     canvas: document.createElement('canvas'),
                     antialias: options.antialias,
                     alpha: options.alpha,

@@ -1,3 +1,4 @@
+#include <itowns/WebGL2_pars_vertex>
 #include <itowns/precision_qualifier>
 #include <common>
 #include <itowns/project_pars_vertex>

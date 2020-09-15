@@ -62,7 +62,7 @@ vec4 mixBaseColor(vec4 aColor, vec4 baseColor) {
     return baseColor;
 }
 
-vec4 projectiveTextureColor(vec4 coords, Distortion distortion, sampler2D texture, sampler2D mask, vec4 baseColor) {
+vec4 projectiveTextureColor(vec4 coords, Distortion distortion, sampler2D tex, sampler2D mask, vec4 baseColor) {
     vec3 p = coords.xyz / coords.w;
     if(p.z * p.z < 1.) {
 #if USE_DISTORTION
@@ -76,10 +76,10 @@ vec4 projectiveTextureColor(vec4 coords, Distortion distortion, sampler2D textur
         if(d > 0.) {
 
 #if DEBUG_ALPHA_BORDER
-        vec3 r = texture2D(texture, p.xy).rgb;
+        vec3 r = texture2D(tex, p.xy).rgb;
         return mixBaseColor(vec4( r.r * d, r.g, r.b, 1.0), baseColor);
 #else
-        vec4 color = texture2D(texture, p.xy);
+        vec4 color = texture2D(tex, p.xy);
         color.a *= d;
         if (boostLight) {
             return mixBaseColor(vec4(sqrt(color.rgb), color.a), baseColor);

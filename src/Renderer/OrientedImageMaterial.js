@@ -126,6 +126,13 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
         this.fragmentShader = ShaderUtils.unrollLoops(textureFS, this.defines);
     }
 
+    onBeforeCompile(shader, renderer) {
+        if (renderer.capabilities.isWebGL2) {
+            this.defines.WEBGL2 = true;
+            shader.glslVersion = '300 es';
+        }
+    }
+
     /**
      * Set new textures and new position/orientation of the camera set.
      * @param {THREE.Texture} textures - Array of [THREE.Texture]{@link https://threejs.org/docs/#api/en/textures/Texture}.
