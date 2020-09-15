@@ -241,6 +241,9 @@ class View extends THREE.EventDispatcher {
                 } else {
                     return layer._reject(new Error(`Cant add color layer ${layer.id}: the maximum layer is reached`));
                 }
+            } else if (layer.isElevationLayer && layer.source.format == 'image/x-bil;bits=32') {
+                layer.source.networkOptions.isWebGL2 = this.mainLoop.gfxEngine.renderer.capabilities.isWebGL2;
+                parentLayer.attach(layer);
             } else {
                 parentLayer.attach(layer);
             }
@@ -334,7 +337,7 @@ class View extends THREE.EventDispatcher {
     notifyChange(changeSource = undefined, needsRedraw = true) {
         if (changeSource) {
             this._changeSources.add(changeSource);
-            if ((changeSource.isTileMesh || changeSource.isCamera) && this._fullSizeDepthBuffer) {
+            if ((changeSource.isTileMesh || changeSource.isCamera)) {
                 this._fullSizeDepthBuffer.needsUpdate = true;
             }
         }

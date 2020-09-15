@@ -1,3 +1,4 @@
+#include <itowns/WebGL2_pars_fragment>
 #include <itowns/precision_qualifier>
 #include <logdepthbuf_pars_fragment>
 #include <itowns/projective_texturing_pars_fragment>

@@ -1,4 +1,4 @@
-import { TextureLoader, DataTexture, AlphaFormat, FloatType } from 'three';
+import { TextureLoader, DataTexture, RedFormat, FloatType, AlphaFormat } from 'three';
 
 const textureLoader = new TextureLoader();
 const SIZE_TEXTURE_TILE = 256;
@@ -15,9 +15,15 @@ const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) =
     return response.arrayBuffer();
 });
 
-const getTextureFloat = function getTextureFloat(buffer) {
-    return new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, AlphaFormat, FloatType);
-};
+function getTextureFloat(buffer, isWebGL2 = true) {
+    if (isWebGL2) {
+        const texture = new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, RedFormat, FloatType);
+        texture.internalFormat = 'R32F';
+        return texture;
+    } else {
+        return new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, AlphaFormat, FloatType);
+    }
+}
 
 /**
  * Utilitary to fetch resources from a server using the [fetch API]{@link
@@ -130,7 +136,7 @@ export default {
     textureFloat(url, options = {}) {
         return arrayBuffer(url, options).then((buffer) => {
             const floatArray = new Float32Array(buffer);
-            const texture = getTextureFloat(floatArray);
+            const texture = getTextureFloat(floatArray, options.isWebGL2);
             return texture;
         });
     },

@@ -8,6 +8,7 @@ import MaterialLayer from 'Renderer/MaterialLayer';
 import CommonMaterial from 'Renderer/CommonMaterial';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
+const defaultTex = THREE.Texture();
 
 // from three.js packDepthToRGBA
 const UnpackDownscale = 255 / 256; // 0..1 -> fraction (excluding 1)
@@ -30,6 +31,18 @@ export function getMaxColorSamplerUnitsCount() {
     const maxSamplerUnitsCount = Capabilities.getMaxTextureUnitsCount();
     return Math.min(maxSamplerUnitsCount - samplersElevationCount, maxSamplersColorCount);
 }
+
+const defaultStructLayer = {
+    bias: 0,
+    zmin: 0,
+    zmax: 0,
+    scale: 0,
+    mode: 0,
+    textureOffset: 0,
+    opacity: 0,
+    crs: 0,
+    effect: 0,
+};
 
 function updateLayersUniforms(uniforms, olayers, max) {
     // prepare convenient access to elevation or color uniforms
@@ -54,6 +67,14 @@ function updateLayersUniforms(uniforms, olayers, max) {
         console.warn(`LayeredMaterial: Not enough texture units (${max} < ${count}), excess textures have been discarded.`);
     }
     textureCount.value = count;
+
+    // WebGL 2.0 doesn't support the undefined uniforms.
+    // So the undefined uniforms are defined by default value.
+    for (let i = count; i < textures.length; i++) {
+        textures[i] = defaultTex;
+        offsetScales[i] = identityOffsetScale;
+        layers[i] = defaultStructLayer;
+    }
 }
 
 export const ELEVATION_MODES = {
@@ -126,14 +147,14 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         this.colorLayerIds = [];
 
         // elevation layer uniforms, to be updated using updateUniforms()
-        this.uniforms.elevationLayers = new THREE.Uniform(new Array(nbSamplers[0]).fill({}));
-        this.uniforms.elevationTextures = new THREE.Uniform(new Array(nbSamplers[0]).fill(null));
+        this.uniforms.elevationLayers = new THREE.Uniform(new Array(nbSamplers[0]).fill(defaultStructLayer));
+        this.uniforms.elevationTextures = new THREE.Uniform(new Array(nbSamplers[0]).fill(defaultTex));
         this.uniforms.elevationOffsetScales = new THREE.Uniform(new Array(nbSamplers[0]).fill(identityOffsetScale));
         this.uniforms.elevationTextureCount = new THREE.Uniform(0);
 
         // color layer uniforms, to be updated using updateUniforms()
-        this.uniforms.colorLayers = new THREE.Uniform(new Array(nbSamplers[1]).fill({}));
-        this.uniforms.colorTextures = new THREE.Uniform(new Array(nbSamplers[1]).fill(null));
+        this.uniforms.colorLayers = new THREE.Uniform(new Array(nbSamplers[1]).fill(defaultStructLayer));
+        this.uniforms.colorTextures = new THREE.Uniform(new Array(nbSamplers[1]).fill(defaultTex));
         this.uniforms.colorOffsetScales = new THREE.Uniform(new Array(nbSamplers[1]).fill(identityOffsetScale));
         this.uniforms.colorTextureCount = new THREE.Uniform(0);
 
@@ -148,6 +169,13 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
                 }
             },
         });
+    }
+
+    onBeforeCompile(shader, renderer) {
+        if (renderer.capabilities.isWebGL2) {
+            this.defines.WEBGL2 = true;
+            shader.glslVersion = '300 es';
+        }
     }
 
     getUniformByType(type) {
