@@ -299,4 +299,35 @@ describe('Provide in Sources', function () {
             done();
         });
     });
+
+    it('should get updated MaterialLayer', (done) => {
+        colorlayer.source = new WMTSSource({
+            url: 'http://',
+            name: 'name',
+            format: `${formatTag}image/png`,
+            tileMatrixSet: 'PM',
+            projection: 'EPSG:3857',
+            extent: globalExtent,
+            zoom: {
+                min: 0,
+                max: 12,
+            },
+        });
+
+        const tile = new TileMesh(geom, new LayeredMaterial(), planarlayer, extent);
+        tile.material.visible = true;
+        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
+        tile.parent = { };
+
+        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
+        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
+        DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((result) => {
+            tile.material.setSequence([colorlayer.id]);
+            tile.material.getLayer(colorlayer.id).setTextures(result, [new THREE.Vector4()]);
+            assert.equal(tile.material.uniforms.colorTextures.value[0], undefined);
+            tile.material.updateLayersUniforms();
+            assert.equal(tile.material.uniforms.colorTextures.value[0].extent.zoom, 10);
+            done();
+        });
+    });
 });

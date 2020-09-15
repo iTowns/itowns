@@ -107,6 +107,13 @@ describe('Viewer', function () {
         assert.equal(height, viewer.camera.height);
     });
 
+    it('read pixel with readDepthBuffer returns a pixel buffer', () => {
+        viewer.tileLayer = { level0Nodes: [] };
+        const bufferPixel = viewer.readDepthBuffer(0, 0, 1, 1);
+
+        assert.equal(bufferPixel.length, 4);
+    });
+
     it('Capabilities', () => {
         renderer.context.getProgramParameter = () => false;
         renderer.context.getParameter = () => 32;

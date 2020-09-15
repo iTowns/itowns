@@ -15,6 +15,9 @@ global.requestAnimationFrame = () => {};
 global.fetch = fetch;
 global.fetch.Promise = Promise;
 
+// this could be replaced by jsdom.Navigator in https://github.com/iTowns/itowns/pull/1412
+global.navigator = undefined;
+
 class DOMElement {
     constructor() {
         this.children = [];
@@ -124,6 +127,7 @@ class Renderer {
         };
         this.capabilities = {
             logarithmicDepthBuffer: true,
+            isWebGL2: true,
         };
         this.debug = {};
     }

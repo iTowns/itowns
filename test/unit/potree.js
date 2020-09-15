@@ -6,6 +6,8 @@ import GlobeView from 'Core/Prefab/GlobeView';
 import HttpsProxyAgent from 'https-proxy-agent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import PotreeNode from 'Core/PotreeNode';
+import PointsMaterial from 'Renderer/PointsMaterial';
+import OrientedImageMaterial from 'Renderer/OrientedImageMaterial';
 import Renderer from './bootstrap';
 
 describe('Potree', function () {
@@ -94,6 +96,29 @@ describe('Potree', function () {
                     done();
                 });
             });
+        });
+    });
+
+    describe('Point Material and oriented images', () => {
+        const orientedImageMaterial = new OrientedImageMaterial([]);
+        const pMaterial = new PointsMaterial({ orientedImageMaterial });
+        const pMaterial2 = new PointsMaterial();
+        it('instance', () => {
+            assert.ok(pMaterial);
+        });
+        it('Define isWebGL2 on before compile', () => {
+            const shader = {};
+            pMaterial.onBeforeCompile(shader, renderer);
+            assert.equal(shader.glslVersion, '300 es');
+        });
+        it('copy', () => {
+            pMaterial2.copy(pMaterial);
+            assert.equal(pMaterial2.uniforms.projectiveTextureAlphaBorder.value, 20);
+        });
+        it('update', () => {
+            pMaterial.visible = false;
+            pMaterial2.update(pMaterial);
+            assert.equal(pMaterial2.visible, false);
         });
     });
 });
