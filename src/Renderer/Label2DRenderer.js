@@ -117,7 +117,7 @@ class Label2DRenderer {
     }
 
     render(scene, camera) {
-        if (!this.infoTileLayer) { return; }
+        if (!this.infoTileLayer || !this.infoTileLayer.layer.attachedLayers.find(l => l.isLabelLayer && l.visible)) { return; }
         this.grid.reset();
 
         viewProjectionMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
