@@ -183,16 +183,24 @@ class Label2DRenderer {
     }
 
     hideNodeDOM(node) {
-        if (node.domElementVisible == true) {
-            node.domElement.style.display = 'none';
-            node.domElementVisible = false;
+        if (node.domElements) {
+            Object.values(node.domElements).forEach((domElement) => {
+                if (domElement.visible == true) {
+                    domElement.dom.style.display = 'none';
+                    domElement.visible = false;
+                }
+            });
         }
     }
 
     showNodeDOM(node) {
-        if (node.domElementVisible == false) {
-            node.domElement.style.display = 'block';
-            node.domElementVisible = true;
+        if (node.domElements) {
+            Object.values(node.domElements).forEach((domElement) => {
+                if (domElement.visible == false) {
+                    domElement.dom.style.display = 'block';
+                    domElement.visible = true;
+                }
+            });
         }
     }
 }

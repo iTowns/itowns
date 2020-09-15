@@ -41,6 +41,8 @@ class TileMesh extends THREE.Mesh {
 
         this.layerUpdateState = {};
         this.isTileMesh = true;
+
+        this.domElements = {};
     }
 
     /**
@@ -102,9 +104,9 @@ class TileMesh extends THREE.Mesh {
         }
     }
 
-    findClosestDomElement() {
+    findClosestDomElement(id) {
         if (this.parent.isTileMesh) {
-            return this.parent.domElement || this.parent.findClosestDomElement();
+            return this.parent.domElements[id] || this.parent.findClosestDomElement(id);
         }
     }
 }
