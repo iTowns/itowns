@@ -38,6 +38,7 @@ class LabelLayer extends Layer {
 
         this.isLabelLayer = true;
         this.domElement = document.createElement('div');
+        this.domElement.id = `itowns-label-${this.id}`;
         this.defineLayerProperty('visible', true, () => {
             this.domElement.style.display = this.visible ? 'block' : 'none';
         });
@@ -116,7 +117,6 @@ class LabelLayer extends Layer {
                 const label = new Label(content,
                     coord.clone(),
                     g.properties.style || f.style || this.style);
-                label.content.classList.add(`itowns-label-${this.id}`);
 
                 if (f.size == 2) {
                     label.needsAltitude = true;
@@ -216,10 +216,16 @@ class LabelLayer extends Layer {
 
             if (labelsDiv.length > 0) {
                 // Add all labels for this tile at once to batch it
-                node.domElement = document.createElement('div');
-                node.domElement.append(...labelsDiv);
-                (node.findClosestDomElement() || this.domElement).appendChild(node.domElement);
-                node.domElementVisible = true;
+                let nodeDomElement = node.domElements[this.id];
+                if (!nodeDomElement) {
+                    nodeDomElement = { dom: document.createElement('div'), visible: true };
+                    node.domElements[this.id] = nodeDomElement;
+                }
+
+                nodeDomElement.dom.append(...labelsDiv);
+                const closestDomElement = node.findClosestDomElement(this.id);
+                ((closestDomElement && closestDomElement.dom) || this.domElement).appendChild(nodeDomElement.dom);
+                nodeDomElement.visible = true;
 
                 // Batch update the dimensions of labels all at once to avoid
                 // redraw for at least this tile.
@@ -235,9 +241,9 @@ class LabelLayer extends Layer {
                 // Necessary event listener, to remove any Label attached to
                 // this tile
                 node.addEventListener('removed', () => {
-                    renderer.hideNodeDOM(node);
                     result.forEach(labels => labels.forEach(label => node.remove(label)));
-                    node.domElement.parentElement.removeChild(node.domElement);
+                    const child = node.domElements[this.id].dom;
+                    child.parentElement.removeChild(child);
                 });
             }
 
