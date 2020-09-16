@@ -60,12 +60,12 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, layer);
 
     const objectChardId = `${layer.id}-nb-objects`;
-    debugInstance.createChartContainer(objectChardId);
+    const canvasObjectChardId = debugInstance.createChartContainer(objectChardId);
     const visibleChardId = `${layer.id}-nb-visible`;
-    debugInstance.createChartContainer(visibleChardId);
+    const canvasVisibleChardId = debugInstance.createChartContainer(visibleChardId);
 
-    debugInstance.charts.push(new TileObjectChart(objectChardId, layer));
-    debugInstance.charts.push(new TileVisibilityChart(visibleChardId, layer));
+    debugInstance.charts.push(new TileObjectChart(canvasObjectChardId.getContext('2d'), layer));
+    debugInstance.charts.push(new TileVisibilityChart(canvasVisibleChardId.getContext('2d'), layer));
 
     layer.showOutline = false;
     layer.wireframe = false;

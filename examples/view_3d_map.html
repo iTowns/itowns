@@ -116,6 +116,14 @@
                 updateScaleWidget();
             });
 
+            const atmosphere = view.getLayerById('atmosphere');
+            atmosphere.setRealisticOn(!view.isDebugMode);
+
+            const cRL = menuGlobe.addGUI('RealisticLighting', !view.isDebugMode, function (v) {
+                atmosphere.setRealisticOn(v);
+                view.notifyChange(atmosphere);
+            });
+
             window.addEventListener('resize', updateScaleWidget);
 
             debug.createTileDebugUI(menuGlobe.gui, view);

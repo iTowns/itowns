@@ -1,10 +1,11 @@
 import Chart from 'chart.js';
+import { scales, color_rose, color_blue } from './ChartConfig';
 
-export default function TileVisibilityChart(chartId, tileLayer) {
+export default function TileVisibilityChart(ctx, tileLayer) {
     const nbVisibleLabels = [];
     const nbVisibleData = [];
     const nbDisplayedData = [];
-    const nbVisibleChart = new Chart(chartId, {
+    const nbVisibleChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: nbVisibleLabels,
@@ -12,24 +13,17 @@ export default function TileVisibilityChart(chartId, tileLayer) {
                 {
                     label: 'Visible node per level',
                     data: nbVisibleData,
-                    backgroundColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: color_rose,
                 },
                 {
                     label: 'Diplayed node per level',
                     data: nbDisplayedData,
-                    backgroundColor: 'rgba(153, 102, 255, 1)',
+                    backgroundColor: color_blue,
                 },
             ],
         },
         options: {
-            scales: {
-                yAxes: [{
-                    display: true,
-                    ticks: {
-                        suggestedMin: 0, // minimum will be 0, unless there is a lower value.
-                    },
-                }],
-            },
+            scales,
         },
     });
 

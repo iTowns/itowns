@@ -131,7 +131,7 @@ GuiTools.prototype.removeLayersGUI = function removeLayersGUI(nameLayer) {
 
 GuiTools.prototype.addGUI = function addGUI(name, value, callback) {
     this[name] = value;
-    this.gui.add(this, name).onChange(callback);
+    return this.gui.add(this, name).onChange(callback);
 };
 
 GuiTools.prototype.colorLayerFolder = function colorLayerFolder(nameLayer, value) {
