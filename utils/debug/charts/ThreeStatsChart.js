@@ -1,12 +1,13 @@
 import Chart from 'chart.js';
+import { scales, color_rose, color_blue } from './ChartConfig';
 
-export default function ThreeStatsChart(chartId, renderer) {
+export default function ThreeStatsChart(ctx, renderer) {
     let lastValidCompareIndex = -1;
     const timestamp = Date.now();
-    const textureDataset = { label: 'texture count', data: [{ x: 0, y: 0 }] };
-    const geometryDataset = { label: 'geometry count', data: [{ x: 0, y: 0 }], borderColor: 'rgba(75,192,192,1)' };
+    const textureDataset = { label: 'texture count', data: [{ x: 0, y: 0 }], borderColor: color_rose, borderWidth: 1.5, pointRadius: 1 };
+    const geometryDataset = { label: 'geometry count', data: [{ x: 0, y: 0 }], borderColor: color_blue, borderWidth: 1.5, pointRadius: 1 };
     const label = ['0s'];
-    const chart = new Chart(chartId, {
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: label,
@@ -14,14 +15,7 @@ export default function ThreeStatsChart(chartId, renderer) {
         },
         options: {
             animation: { duration: 10 },
-            scales: {
-                yAxes: [{
-                    display: true,
-                    ticks: {
-                        suggestedMin: 0, // minimum will be 0, unless there is a lower value.
-                    },
-                }],
-            },
+            scales,
         },
     });
 

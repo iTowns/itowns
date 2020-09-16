@@ -7,8 +7,8 @@ const font = new THREE.Font(JSON.parse(fontJS));
 const matText = new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0, 0) });
 
 class OBBHelper extends THREE.Box3Helper {
-    constructor(OBB, text) {
-        const color = new THREE.Color(Math.random(), Math.random(), Math.random());
+    constructor(OBB, text, color) {
+        color = color || new THREE.Color(Math.random(), Math.random(), Math.random());
 
         super(OBB.box3D, color.getHex());
 

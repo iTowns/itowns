@@ -3,6 +3,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import OBB from 'Renderer/OBB';
 import ThreeStatsChart from './charts/ThreeStatsChart';
+import { backgroundChartDiv, color_blue } from './charts/ChartConfig';
 import OBBHelper from './OBBHelper';
 
 /**
@@ -20,19 +21,23 @@ function Debug(view, datDebugTool, chartDivContainer) {
     if (!chartDivContainer) {
         chartDivContainer = document.createElement('div');
         chartDivContainer.id = 'chart-div';
-        chartDivContainer.style.cssText = 'position: absolute; bottom: 0; left: 0; width: 100vw; height: 20rem; background-color: white; display: none';
+        chartDivContainer.style.cssText = `z-index: 10; position: absolute; bottom: 0; left: 0; width: 100vw; height: 30%; background-color: ${backgroundChartDiv}; display: none`;
         document.body.appendChild(chartDivContainer);
     }
 
     this.chartDivContainer = chartDivContainer;
-    this.createChartContainer('three-info');
+    const canvas = this.createChartContainer('three-info');
+
+    var ctx = canvas.getContext('2d');
 
     this.charts = [];
 
-    this.charts.push(new ThreeStatsChart('three-info', view.mainLoop.gfxEngine.renderer));
+    this.charts.push(new ThreeStatsChart(ctx, view.mainLoop.gfxEngine.renderer));
 
     const charts = this.charts;
     const tileLayer = view.tileLayer;
+    const initialPosition = new Coordinates(view.referenceCrs, 0.0, 0.0, 0.0);
+    const geoPosition = new Coordinates('EPSG:4326', 0.0, 0.0, 0.0);
 
     function debugChartUpdate(updateDuration) {
         const displayed = chartDivContainer.style.display != 'none';
@@ -70,6 +75,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
             view.removeFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, endChart);
             chartDivContainer.style.display = 'none';
         }
+        this.updateChartDivSize();
         view.notifyChange();
     });
 
@@ -87,37 +93,43 @@ function Debug(view, datDebugTool, chartDivContainer) {
         view.notifyChange();
     });
 
-    gui.add(state, 'eventsDebug').name('Debug event').onChange((() => {
-        let eventFolder;
-        return (newValue) => {
-            const controls = view.controls;
-            const listeners = [];
-            if (newValue) {
-                eventFolder = gui.addFolder('Events');
+    // camera-target-updated event
+    let LatController;
+    let LongController;
+    let eventFolder;
+    const controls = view.controls;
+    initialPosition.crs = view.referenceCrs;
 
-                // camera-target-updated event
-                const initialPosition = new Coordinates(view.referenceCrs, controls.getCameraTargetPosition()).as('EPSG:4326');
-                const roundedLat = Math.round(initialPosition.latitude() * 10000) / 10000;
-                const roundedLon = Math.round(initialPosition.longitude() * 10000) / 10000;
-                state.cameraTargetUpdated = `lat: ${roundedLat} lon: ${roundedLon}`;
-                const cameraTargetUpdatedController = eventFolder.add(state, 'cameraTargetUpdated').name('camera-target-changed');
-                const cameraTargetListener = (ev) => {
-                    const positionGeo = ev.new.cameraTarget.as('EPSG:4326');
-                    const roundedLat = Math.round(positionGeo.latitude() * 10000) / 10000;
-                    const roundedLon = Math.round(positionGeo.longitude() * 10000) / 10000;
-                    state.cameraTargetUpdated = `lat: ${roundedLat} lon: ${roundedLon}`;
-                    cameraTargetUpdatedController.updateDisplay();
-                };
-                controls.addEventListener('camera-target-changed', cameraTargetListener);
-                listeners.push({ type: 'camera-target-changed', stateName: 'cameraTargetUpdated', fn: cameraTargetListener });
-            } else {
-                for (const listener of listeners) {
-                    controls.removeEventListener(listener.type, listener.fn);
-                    delete state[listener.stateName];
-                }
-                gui.removeFolder('Events');
+    const getCenter = (controls && controls.getCameraTargetPosition) ? controls.getCameraTargetPosition : () => view.camera.camera3D.position;
+    const cameraTargetListener = () => {
+        initialPosition.setFromVector3(getCenter()).as('EPSG:4326', geoPosition);
+        state.latitude = `${geoPosition.y.toFixed(6)}`;
+        state.longitude = `${geoPosition.x.toFixed(6)}`;
+        LatController.updateDisplay();
+        LongController.updateDisplay();
+    };
+
+    gui.add(state, 'eventsDebug').name('Debug event').onChange((() => (newValue) => {
+        const listeners = [];
+        if (newValue) {
+            eventFolder = gui.addFolder('Events');
+            eventFolder.open();
+
+            initialPosition.setFromVector3(getCenter()).as('EPSG:4326', geoPosition);
+            state.latitude = `${geoPosition.y.toFixed(6)}`;
+            state.longitude = `${geoPosition.x.toFixed(6)}`;
+            LatController = eventFolder.add(state, 'latitude');
+            LongController = eventFolder.add(state, 'longitude');
+
+            view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, cameraTargetListener);
+            listeners.push({ type: MAIN_LOOP_EVENTS.UPDATE_END, stateName: 'cameraTargetUpdated', fn: cameraTargetListener });
+        } else {
+            for (const listener of listeners) {
+                controls.removeFrameRequester(listener.type, listener.fn);
+                delete state[listener.stateName];
             }
-        };
+            gui.removeFolder('Events');
+        }
     })());
 
     // Camera debug
@@ -137,7 +149,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
     // Displayed tiles boundind box
     const displayedTilesObb = new OBB();
-    const displayedTilesObbHelper = new OBBHelper(displayedTilesObb);
+    const displayedTilesObbHelper = new OBBHelper(displayedTilesObb, '', new Color(color_blue));
     displayedTilesObbHelper.visible = false;
     view.scene.add(displayedTilesObb);
     view.scene.add(displayedTilesObbHelper);
@@ -190,13 +202,15 @@ function Debug(view, datDebugTool, chartDivContainer) {
                     obj.traverseVisible(updateFogDistance);
                 }
             }
+
+            const deltaY = state.displayCharts ? Math.round(parseFloat(chartDivContainer.style.height.replace('%', '')) * g.height / 100) + 3 : 0;
             helper.visible = true;
             helper.updateMatrixWorld(true);
             bClearColor.copy(r.getClearColor());
-            r.setViewport(g.width - size.x, 0, size.x, size.y);
-            r.setScissor(g.width - size.x, 0, size.x, size.y);
+            r.setViewport(g.width - size.x, deltaY, size.x, size.y);
+            r.setScissor(g.width - size.x, deltaY, size.x, size.y);
             r.setScissorTest(true);
-            r.setClearColor(0xeeeeee);
+            r.setClearColor(backgroundChartDiv);
             r.clear();
             r.render(view.scene, debugCamera);
             r.setScissorTest(false);
@@ -221,13 +235,14 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
 Debug.prototype.createChartContainer = function createChartContainer(chartId) {
     const div = document.createElement('div');
-    div.style.cssText = 'width: 100%; height: 100%; background-color: white;';
+    div.style.cssText = `background-color: ${backgroundChartDiv}; flex: auto;`;
     this.chartDivContainer.appendChild(div);
 
     const chartCanvas = document.createElement('canvas');
     chartCanvas.height = '20rem';
     chartCanvas.id = chartId;
     div.appendChild(chartCanvas);
+    return chartCanvas;
 };
 
 Debug.prototype.updateChartDivSize = function updateChartDivSize() {

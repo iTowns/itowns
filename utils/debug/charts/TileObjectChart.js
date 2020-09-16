@@ -1,12 +1,13 @@
 import Chart from 'chart.js';
+import { scales, color_rose, color_blue } from './ChartConfig';
 
-export default function TileObjectsChart(chartId, tileLayer) {
+export default function TileObjectsChart(ctx, tileLayer) {
     let lastValidCompareIndex = 0;
     const timestamp = Date.now();
-    const viewLevelStartDataset = { label: 'Update 1st level', data: [{ x: 0, y: 0 }] };
-    const viewUpdateDurationDataset = { label: 'Update duration (ms)', data: [{ x: 0, y: 0 }], borderColor: 'rgba(75,192,192,1)' };
+    const viewLevelStartDataset = { label: 'Update 1st level', data: [{ x: 0, y: 0 }], borderColor: color_rose, borderWidth: 1.5, pointRadius: 1  };
+    const viewUpdateDurationDataset = { label: 'Update duration (ms)', data: [{ x: 0, y: 0 }], borderColor: color_blue, borderWidth: 1.5, pointRadius: 1 };
     const label = ['0s'];
-    const nbObjectsChart = new Chart(chartId, {
+    const nbObjectsChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: label,
@@ -14,14 +15,7 @@ export default function TileObjectsChart(chartId, tileLayer) {
         },
         options: {
             animation: { duration: 10 },
-            scales: {
-                yAxes: [{
-                    display: true,
-                    ticks: {
-                        suggestedMin: 0, // minimum will be 0, unless there is a lower value.
-                    },
-                }],
-            },
+            scales,
         },
     });
 
