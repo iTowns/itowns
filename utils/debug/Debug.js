@@ -1,4 +1,4 @@
-import { CameraHelper, Color, Vector3 } from 'three';
+import { PerspectiveCamera, CameraHelper, Color, Vector3, Box3, Box3Helper, Matrix4, Object3D, AxesHelper } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import OBB from 'Renderer/OBB';
@@ -50,7 +50,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
     const state = {
         displayCharts: false,
         eventsDebug: false,
-        debugCameraWindow: false,
+        debugCameraWindow: true,
         freeze: false,
     };
 
@@ -87,6 +87,9 @@ function Debug(view, datDebugTool, chartDivContainer) {
         }
         view.notifyChange();
     });
+
+    view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, renderCameraDebug);
+    view.notifyChange();
 
     gui.add(state, 'freeze').name('freeze update').onChange((newValue) => {
         tileLayer.frozen = newValue;
@@ -133,9 +136,16 @@ function Debug(view, datDebugTool, chartDivContainer) {
     })());
 
     // Camera debug
-    const helper = new CameraHelper(view.camera.camera3D);
+    const perspectiveCamera = new PerspectiveCamera();
+    // const helper = new CameraHelper(view.camera.camera3D);
+    const helper = new CameraHelper(perspectiveCamera);
+    const boxNearFar = new Box3();
+    const boxNearFarHelper = new Box3Helper(boxNearFar);
+    const matrix = new Matrix4();
+    const cameraFake = new Object3D();
     const debugCamera = view.camera.camera3D.clone();
     debugCamera.fov *= 1.5;
+    debugCamera.far *= 3;
     debugCamera.updateProjectionMatrix();
     const g = view.mainLoop.gfxEngine;
     const r = g.renderer;
@@ -146,28 +156,43 @@ function Debug(view, datDebugTool, chartDivContainer) {
     }
     helper.visible = false;
     view.scene.add(helper);
+    view.scene.add(perspectiveCamera);
 
     // Displayed tiles boundind box
     const displayedTilesObb = new OBB();
     const displayedTilesObbHelper = new OBBHelper(displayedTilesObb, '', new Color(color_blue));
     displayedTilesObbHelper.visible = false;
+
     view.scene.add(displayedTilesObb);
     view.scene.add(displayedTilesObbHelper);
+    view.scene.add(cameraFake);
+    cameraFake.add(boxNearFarHelper);
+    const axes = new AxesHelper(5000000);
+    const axesBox = new AxesHelper(5000000);
+
+    cameraFake.add(axes);
+    cameraFake.add(axesBox);
+    // cameraFake.matrixAutoUpdate = false;
 
     function updateFogDistance(obj) {
         if (obj.material && fogDistance) {
             obj.material.fogDistance = fogDistance;
         }
     }
-
+    const position = new Vector3();
     const bClearColor = new Color();
     const lookAtCameraDebug = new Vector3();
     function renderCameraDebug() {
         if (state.debugCameraWindow && debugCamera) {
-            const ratio = 0.25;
+            const ratio = 0.45;
             const size = { x: g.width * ratio, y: g.height * ratio };
             debugCamera.aspect = size.x / size.y;
             const camera = view.camera.camera3D;
+            perspectiveCamera.copy(view.camera.camera3D);
+            const { near, far } = view.tileLayer.info.getNearFar(perspectiveCamera);
+            perspectiveCamera.far = far;
+            perspectiveCamera.near = view.camera.camera3D.near > near ? view.camera.camera3D.near : near;
+            perspectiveCamera.updateProjectionMatrix();
             const coord = new Coordinates(view.referenceCrs, camera.position).as(tileLayer.extent.crs);
             const extent = view.tileLayer.info.displayed.extent;
             displayedTilesObb.setFromExtent(extent);
@@ -175,9 +200,17 @@ function Debug(view, datDebugTool, chartDivContainer) {
             displayedTilesObbHelper.updateMatrixWorld(true);
 
             // Note Method to compute near and far...
-            // const bbox = displayedTilesObb.box3D.clone().applyMatrix4(displayedTilesObb.matrixWorld);
-            // const distance = bbox.distanceToPoint(view.camera.camera3D.position);
-            // console.log('distance', distance, distance + bbox.getBoundingSphere(sphere).radius * 2);
+            boxNearFar.copy(displayedTilesObb.box3D);
+            matrix.multiplyMatrices(camera.matrixWorldInverse, displayedTilesObb.matrixWorld);
+            boxNearFar.applyMatrix4(matrix);
+            displayedTilesObb.box3D.getCenter(position).applyMatrix4(matrix);
+            axesBox.position.copy(position);
+            axesBox.updateMatrixWorld(true);
+            boxNearFarHelper.updateMatrixWorld(true);
+            cameraFake.position.copy(camera.position);
+            cameraFake.quaternion.copy(camera.quaternion);
+            cameraFake.updateMatrixWorld(true);
+            boxNearFarHelper.updateMatrixWorld(true);
 
             // Compute position camera debug
             const altitudeCameraDebug = 1.5 * coord.z;
@@ -186,9 +219,10 @@ function Debug(view, datDebugTool, chartDivContainer) {
             // Compute recoil camera
             camera.worldToLocal(debugCamera.position);
             debugCamera.position.z += altitudeCameraDebug;
+            debugCamera.position.x += 2 * altitudeCameraDebug;
             camera.localToWorld(debugCamera.position);
             // Compute target camera debug
-            lookAtCameraDebug.copy(view.camera.camera3D.position);
+            lookAtCameraDebug.copy(camera.position);
             camera.worldToLocal(lookAtCameraDebug);
             lookAtCameraDebug.z -= altitudeCameraDebug * 1.5;
             camera.localToWorld(lookAtCameraDebug);
@@ -205,6 +239,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
             const deltaY = state.displayCharts ? Math.round(parseFloat(chartDivContainer.style.height.replace('%', '')) * g.height / 100) + 3 : 0;
             helper.visible = true;
+            helper.update();
             helper.updateMatrixWorld(true);
             bClearColor.copy(r.getClearColor());
             r.setViewport(g.width - size.x, deltaY, size.x, size.y);

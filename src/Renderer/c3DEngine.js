@@ -13,7 +13,7 @@ import Label2DRenderer from 'Renderer/Label2DRenderer';
 const depthRGBA = new THREE.Vector4();
 class c3DEngine {
     constructor(rendererOrDiv, options = {}) {
-        const NOIE = !Capabilities.isInternetExplorer();
+        // const NOIE = !Capabilities.isInternetExplorer();
         // pick sensible default options
         if (options.antialias === undefined) {
             options.antialias = true;
@@ -21,9 +21,9 @@ class c3DEngine {
         if (options.alpha === undefined) {
             options.alpha = true;
         }
-        if (options.logarithmicDepthBuffer === undefined) {
-            options.logarithmicDepthBuffer = this.gLDebug || NOIE;
-        }
+        // if (options.logarithmicDepthBuffer === undefined) {
+        //     options.logarithmicDepthBuffer = this.gLDebug || NOIE;
+        // }
 
         const renderer = rendererOrDiv.domElement ? rendererOrDiv : undefined;
         const viewerDiv = renderer ? renderer.domElement : rendererOrDiv;
@@ -40,10 +40,16 @@ class c3DEngine {
         this.fullSizeRenderTarget.depthBuffer = true;
         this.fullSizeRenderTarget.depthTexture = new THREE.DepthTexture();
         this.fullSizeRenderTarget.depthTexture.type = THREE.UnsignedShortType;
+        const _camera = new THREE.PerspectiveCamera();
 
         this.renderView = function _(view) {
             this.renderer.clear();
-            this.renderer.render(view.scene, view.camera.camera3D);
+            _camera.copy(view.camera.camera3D);
+            const { near, far } = view.tileLayer.info.getNearFar(_camera);
+            _camera.far = far;
+            _camera.near = view.camera.camera3D.near > near ? view.camera.camera3D.near : near;
+            _camera.updateProjectionMatrix();
+            this.renderer.render(view.scene, _camera);
             this.label2dRenderer.render(view.scene, view.camera.camera3D);
         }.bind(this);
 
@@ -66,7 +72,7 @@ class c3DEngine {
                 canvas: document.createElement('canvas'),
                 antialias: options.antialias,
                 alpha: options.alpha,
-                logarithmicDepthBuffer: options.logarithmicDepthBuffer,
+                // logarithmicDepthBuffer: options.logarithmicDepthBuffer,
             });
             this.renderer.domElement.style.position = 'relative';
             this.renderer.domElement.style.zIndex = 0;
@@ -95,7 +101,7 @@ class c3DEngine {
                     canvas: document.createElement('canvas'),
                     antialias: options.antialias,
                     alpha: options.alpha,
-                    logarithmicDepthBuffer: false,
+                    // logarithmicDepthBuffer: false,
                 });
             }
         }
