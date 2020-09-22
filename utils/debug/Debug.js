@@ -167,12 +167,6 @@ function Debug(view, datDebugTool, chartDivContainer) {
     view.scene.add(displayedTilesObbHelper);
     view.scene.add(cameraFake);
     cameraFake.add(boxNearFarHelper);
-    const axes = new AxesHelper(5000000);
-    const axesBox = new AxesHelper(5000000);
-
-    cameraFake.add(axes);
-    cameraFake.add(axesBox);
-    // cameraFake.matrixAutoUpdate = false;
 
     function updateFogDistance(obj) {
         if (obj.material && fogDistance) {
@@ -188,29 +182,29 @@ function Debug(view, datDebugTool, chartDivContainer) {
             const size = { x: g.width * ratio, y: g.height * ratio };
             debugCamera.aspect = size.x / size.y;
             const camera = view.camera.camera3D;
-            perspectiveCamera.copy(view.camera.camera3D);
+            perspectiveCamera.copy(camera);
             const { near, far } = view.tileLayer.info.getNearFar(perspectiveCamera);
-            perspectiveCamera.far = far;
-            perspectiveCamera.near = view.camera.camera3D.near > near ? view.camera.camera3D.near : near;
+            perspectiveCamera.far = Math.min(far, camera.far);
+            perspectiveCamera.near = Math.max(near, camera.near);
             perspectiveCamera.updateProjectionMatrix();
             const coord = new Coordinates(view.referenceCrs, camera.position).as(tileLayer.extent.crs);
             const extent = view.tileLayer.info.displayed.extent;
-            displayedTilesObb.setFromExtent(extent);
-            displayedTilesObbHelper.visible = true;
-            displayedTilesObbHelper.updateMatrixWorld(true);
-
-            // Note Method to compute near and far...
-            boxNearFar.copy(displayedTilesObb.box3D);
-            matrix.multiplyMatrices(camera.matrixWorldInverse, displayedTilesObb.matrixWorld);
-            boxNearFar.applyMatrix4(matrix);
-            displayedTilesObb.box3D.getCenter(position).applyMatrix4(matrix);
-            axesBox.position.copy(position);
-            axesBox.updateMatrixWorld(true);
-            boxNearFarHelper.updateMatrixWorld(true);
-            cameraFake.position.copy(camera.position);
-            cameraFake.quaternion.copy(camera.quaternion);
-            cameraFake.updateMatrixWorld(true);
-            boxNearFarHelper.updateMatrixWorld(true);
+            if (extent.west != Infinity) {
+                displayedTilesObb.setFromExtent(extent);
+                displayedTilesObbHelper.visible = true;
+                displayedTilesObbHelper.updateMatrixWorld(true);
+                // Note Method to compute near and far...
+                boxNearFar.copy(displayedTilesObb.box3D);
+                matrix.multiplyMatrices(camera.matrixWorldInverse, displayedTilesObb.matrixWorld);
+                boxNearFar.applyMatrix4(matrix);
+                displayedTilesObb.box3D.getCenter(position).applyMatrix4(matrix);
+                boxNearFarHelper.visible = true;
+                boxNearFarHelper.updateMatrixWorld(true);
+                cameraFake.position.copy(camera.position);
+                cameraFake.quaternion.copy(camera.quaternion);
+                cameraFake.updateMatrixWorld(true);
+                boxNearFarHelper.updateMatrixWorld(true);
+            }
 
             // Compute position camera debug
             const altitudeCameraDebug = 1.5 * coord.z;
@@ -254,6 +248,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
             helper.visible = false;
             displayedTilesObbHelper.visible = false;
+            boxNearFarHelper.visible = false;
             if (layerAtmosphere) {
                 layerAtmosphere.object3d.visible = true;
             }

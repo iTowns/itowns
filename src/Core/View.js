@@ -44,6 +44,8 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
     }
 };
 
+const _camera = new THREE.PerspectiveCamera();
+
 function _preprocessLayer(view, layer, parentLayer) {
     const source = layer.source;
     if (parentLayer && !layer.extent) {
@@ -807,6 +809,12 @@ class View extends THREE.EventDispatcher {
         }
 
         const restore = this.tileLayer.level0Nodes.map(n => RenderMode.push(n, RenderMode.MODES.DEPTH));
+
+        _camera.copy(this.camera.camera3D);
+        const { near, far } = this.tileLayer.info.getNearFar(_camera);
+        _camera.far = far;
+        _camera.near = this.camera.camera3D.near > near ? this.camera.camera3D.near : near;
+        _camera.updateProjectionMatrix();
         const buffer = g.renderViewToBuffer(
             { camera: this.camera, scene: this.tileLayer.object3d },
             { x, y, width, height });

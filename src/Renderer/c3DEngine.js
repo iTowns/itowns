@@ -44,10 +44,11 @@ class c3DEngine {
 
         this.renderView = function _(view) {
             this.renderer.clear();
-            _camera.copy(view.camera.camera3D);
+            const camera = view.camera.camera3D;
+            _camera.copy(camera);
             const { near, far } = view.tileLayer.info.getNearFar(_camera);
-            _camera.far = far;
-            _camera.near = view.camera.camera3D.near > near ? view.camera.camera3D.near : near;
+            _camera.far = Math.min(camera.far, far);
+            _camera.near = Math.max(camera.near, near);
             _camera.updateProjectionMatrix();
             this.renderer.render(view.scene, _camera);
             this.label2dRenderer.render(view.scene, view.camera.camera3D);
