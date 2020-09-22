@@ -139,11 +139,9 @@ class Label2DRenderer {
             if (!object.visible) {
                 this.hideNodeDOM(object);
                 return;
-            }
-
             // Don't go further if the node can't be in the screen space (it
             // does not need to be rendered to continue the culling)
-            if (object.extent && !object.extent.intersectsExtent(extent)) {
+            } else if (object.extent && !object.extent.intersectsExtent(extent)) {
                 this.hideNodeDOM(object);
                 return;
             }
@@ -184,12 +182,17 @@ class Label2DRenderer {
 
     hideNodeDOM(node) {
         if (node.domElements) {
-            Object.values(node.domElements).forEach((domElement) => {
-                if (domElement.visible == true) {
-                    domElement.dom.style.display = 'none';
-                    domElement.visible = false;
-                }
-            });
+            const domElements = Object.values(node.domElements);
+            if (domElements.length > 0) {
+                domElements.forEach((domElement) => {
+                    if (domElement.visible == true) {
+                        domElement.dom.style.display = 'none';
+                        domElement.visible = false;
+                    }
+                });
+            } else {
+                node.children.filter(n => n.isTileMesh).forEach(n => this.hideNodeDOM(n));
+            }
         }
     }
 
