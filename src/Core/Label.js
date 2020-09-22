@@ -155,7 +155,14 @@ class Label extends THREE.Object3D {
         const elevation = DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z);
         if (elevation && elevation != this.coordinates.z) {
             this.coordinates.z = elevation;
+            this.updateHorizonCullingPoint();
             return true;
+        }
+    }
+
+    updateHorizonCullingPoint() {
+        if (this.horizonCullingPoint) {
+            this.getWorldPosition(this.horizonCullingPoint);
         }
     }
 }

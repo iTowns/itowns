@@ -153,6 +153,10 @@ class Label2DRenderer {
         // visible extent, we can filter more labels.
         } else if (object.zoom.max <= currentMaxZoom || !extent.isPointInside(object.coordinates)) {
             this.grid.hidden.push(object);
+        // Do some horizon culling (if possible) if the tiles level is small
+        // enough. The chosen value of 4 seems to provide a good result.
+        } else if (object.parent.level < 4 && object.parent.layer.horizonCulling && object.parent.layer.horizonCulling(object.horizonCullingPoint)) {
+            this.grid.hidden.push(object);
         } else {
             vector.setFromMatrixPosition(object.matrixWorld);
             vector.applyMatrix4(viewProjectionMatrix);

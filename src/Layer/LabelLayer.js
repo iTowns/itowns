@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import Layer from 'Layer/Layer';
@@ -209,6 +210,11 @@ class LabelLayer extends Layer {
 
                     node.add(label);
                     label.update3dPosition(context.view.referenceCrs);
+
+                    if (node.level < 4) {
+                        label.horizonCullingPoint = new THREE.Vector3();
+                        label.updateHorizonCullingPoint();
+                    }
 
                     labelsDiv.push(label.content);
                 });
