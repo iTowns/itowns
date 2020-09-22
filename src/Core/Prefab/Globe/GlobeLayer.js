@@ -117,8 +117,12 @@ class GlobeLayer extends TiledGeometryLayer {
             return false;
         }
 
+        return this.horizonCulling(node.horizonCullingPointElevationScaled);
+    }
+
+    horizonCulling(point) {
         // see https://cesiumjs.org/2013/04/25/Horizon-culling/
-        scaledHorizonCullingPoint.copy(node.horizonCullingPointElevationScaled).applyMatrix4(worldToScaledEllipsoid);
+        scaledHorizonCullingPoint.copy(point).applyMatrix4(worldToScaledEllipsoid);
         scaledHorizonCullingPoint.sub(cameraPosition);
 
         const vtMagnitudeSquared = scaledHorizonCullingPoint.lengthSq();
