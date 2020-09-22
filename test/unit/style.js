@@ -30,7 +30,6 @@ describe('Style', function () {
         assert.equal(dom.style.color, '#000000');
         assert.equal(dom.style.fontSize, '16px');
         assert.equal(dom.style.fontFamily, 'Open Sans Regular,Arial Unicode MS Regular,sans-serif');
-        assert.equal(dom.style.overflowWrap, 'break-word');
         assert.equal(dom.style.textTransform, 'none');
         assert.equal(dom.style.letterSpacing, '0em');
         assert.equal(dom.style.textAlign, 'center');
