@@ -455,7 +455,6 @@ class Style {
         domElement.style.fontSize = `${this.text.size}px`;
         domElement.style.fontFamily = this.text.font.join(',');
 
-        domElement.style.overflowWrap = 'break-word';
         domElement.style.textTransform = this.text.transform;
         domElement.style.letterSpacing = `${this.text.spacing}em`;
         domElement.style.textAlign = this.text.justify;
@@ -529,7 +528,7 @@ class Style {
      * @return {string} The formatted string.
      */
     getTextFromProperties(properties) {
-        return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (properties[b] || ''));
+        return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (properties[b] || '')).trim();
     }
 }
 
