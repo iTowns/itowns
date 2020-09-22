@@ -1,10 +1,12 @@
 import assert from 'assert';
+import * as THREE from 'three';
 import Label from 'Core/Label';
 import Style from 'Core/Style';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import LabelLayer from 'Layer/LabelLayer';
+import Label2DRenderer from 'Renderer/Label2DRenderer';
 
 describe('LabelLayer', function () {
     let layer;
@@ -112,5 +114,109 @@ describe('Label', function () {
         assert.equal(label.content.style.display, 'none');
         label.visible = true;
         assert.equal(label.content.style.display, 'block');
+    });
+
+    it('initializes the dimensions', function () {
+        label = new Label('', c, style);
+        assert.equal(label.offset, undefined);
+
+        label.initDimensions();
+        assert.deepEqual(label.offset, { left: 0, right: 400, top: 0, bottom: 300 });
+    });
+
+    it('updates the projected position', function () {
+        label = new Label('', c, style);
+        label.offset = { left: 5, right: 35, top: 5, bottom: 15 };
+
+        label.updateProjectedPosition(10.4, 10.6);
+        assert.deepEqual(label.projectedPosition, { x: 10, y: 11 });
+        assert.deepEqual(label.boundaries, { left: 13.4, right: 47.4, top: 13.6, bottom: 27.6 });
+    });
+
+    it('updates the CSS position', function () {
+        label = new Label('', c, style);
+        label.offset = { left: 5, right: 35, top: 5, bottom: 15 };
+        assert.equal(label.content.style.transform, undefined);
+
+        label.updateProjectedPosition(10.4, 10.6);
+        label.updateCSSPosition();
+        assert.equal(label.content.style.transform, 'translate(13.4px, 13.6px)');
+    });
+
+    it('updates the horizon culling point', function () {
+        const parent = new THREE.Object3D();
+        label = new Label('', new Coordinates('EPSG:4326', 45, 10, 0), style);
+        parent.add(label);
+        label.update3dPosition('EPSG:4978');
+        assert.equal(label.horizonCullingPoint, undefined);
+
+        label.horizonCullingPoint = new THREE.Vector3();
+        label.updateHorizonCullingPoint();
+
+        assert.equal(label.horizonCullingPoint.x.toPrecision(9), 4441954.88);
+        assert.equal(label.horizonCullingPoint.y.toPrecision(9), 4441954.88);
+        assert.equal(label.horizonCullingPoint.z.toPrecision(9), 1100248.55);
+    });
+});
+
+describe('Label2DRenderer', function () {
+    let node;
+
+    function checkVisible(node) {
+        assert.ok(node.domElements.foo.visible);
+        assert.equal(node.domElements.foo.dom.style.display, 'block');
+    }
+
+    function checkHidden(node) {
+        assert.ok(!node.domElements.foo.visible);
+        assert.equal(node.domElements.foo.dom.style.display, 'none');
+    }
+
+    before('initialize the node and its children', function () {
+        node = {
+            domElements: { foo: { visible: true, dom: { style: { display: 'block' } } } },
+            children: [{
+                domElements: { foo: { visible: true, dom: { style: { display: 'block' } } } },
+                isTileMesh: true,
+            }, {
+                domElements: { foo: { visible: true, dom: { style: { display: 'block' } } } },
+                isTileMesh: true,
+                children: [{
+                    domElements: { foo: { visible: true, dom: { style: { display: 'block' } } } },
+                    isTileMesh: true,
+                }],
+            }],
+        };
+    });
+
+    it('hides the DOM of a node', function () {
+        checkVisible(node);
+        Label2DRenderer.prototype.hideNodeDOM(node);
+        checkHidden(node);
+    });
+
+    it('shows the DOM of a node', function () {
+        checkHidden(node);
+        Label2DRenderer.prototype.showNodeDOM(node);
+        checkVisible(node);
+    });
+
+    it('hides the DOM of a node\'s children', function () {
+        delete node.domElements.foo;
+        checkVisible(node.children[0]);
+        checkVisible(node.children[1]);
+        Label2DRenderer.prototype.hideNodeDOM(node);
+        checkHidden(node.children[0]);
+        checkHidden(node.children[1]);
+
+        Label2DRenderer.prototype.showNodeDOM(node.children[0]);
+        Label2DRenderer.prototype.showNodeDOM(node.children[1]);
+
+        delete node.children[1].domElements.foo;
+        checkVisible(node.children[0]);
+        checkVisible(node.children[1].children[0]);
+        Label2DRenderer.prototype.hideNodeDOM(node);
+        checkHidden(node.children[0]);
+        checkHidden(node.children[1].children[0]);
     });
 });

@@ -92,6 +92,8 @@ class Label extends THREE.Object3D {
                 this.content.classList.add('itowns-stroke-single');
             }
             style.applyToHTML(this.content);
+        } else {
+            this.anchor = [0, 0];
         }
 
         this.zoom = {
