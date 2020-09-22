@@ -102,6 +102,13 @@ class Atmosphere extends GeometryLayer {
         node.material.fogDistance = this.fog.distance;
         node.material.lightingEnabled = this.realisticAtmosphere.visible;
         node.material.lightPosition = this.realisticLightingPosition;
+
+        if (this.realisticAtmosphere.visible) {
+            const { far } = context.view.tileLayer.info.getNearFar(context.view.camera.camera3D);
+            if (far != Infinity) {
+                this.skyDome.material.uniforms.sizeDome.value = far * 0.8;
+            }
+        }
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -205,6 +212,7 @@ class Atmosphere extends GeometryLayer {
         this.realisticAtmosphere.add(ground);
         this.realisticAtmosphere.add(sky);
         this.realisticAtmosphere.add(skyDome);
+        this.skyDome = skyDome;
         const effectController = {
             turbidity: 10,
             reileigh: 2,
@@ -224,7 +232,7 @@ class Atmosphere extends GeometryLayer {
     }
 
     setRealisticOn(bool) {
-        if (bool && !this.sky) {
+        if (bool && !this.skyDome) {
             this._initRealisticLighning();
         }
 
