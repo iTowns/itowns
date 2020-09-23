@@ -96,6 +96,15 @@
             parent.updateMatrixWorld(true);
 
             view.scene.add(parent);
+            var elevationSource = new itowns.WMSSource({
+                extent,
+                version: '1.3.0',
+                name: 'MNT2012_Altitude_10m_CC46',
+                projection: 'EPSG:3946',
+                width: 256,
+                format: 'image/jpeg',
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+            });
 
             for (index = 0; index < wmsLayers.length; index++) {
                 wms = wmsLayers[index];
@@ -124,22 +133,13 @@
                     source: colorSource,
                 });
                 view.addLayer(colorLayer, tileLayer);
-
-                var elevationSource = new itowns.WMSSource({
-                    extent,
-                    version: '1.3.0',
-                    name: 'MNT2012_Altitude_10m_CC46',
-                    projection: 'EPSG:3946',
-                    width: 256,
-                    format: 'image/jpeg',
-                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                });
                 var elevationLayer = new itowns.ElevationLayer('wms_elevation' + wms + index, {
                     source: elevationSource,
                     useColorTextureElevation: true,
                     colorTextureElevationMinZ: 144,
                     colorTextureElevationMaxZ: 622,
                 });
+
                 view.addLayer(elevationLayer, tileLayer);
             }
 
