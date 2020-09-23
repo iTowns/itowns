@@ -1,4 +1,4 @@
-import { PerspectiveCamera, CameraHelper, Color, Vector3, Box3, Box3Helper, Matrix4, Object3D, AxesHelper } from 'three';
+import { PerspectiveCamera, CameraHelper, Color, Vector3, Box3, Box3Helper, Matrix4, Object3D, Plane, Line3, AxesHelper, ArrowHelper, PlaneHelper } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import OBB from 'Renderer/OBB';
@@ -168,6 +168,21 @@ function Debug(view, datDebugTool, chartDivContainer) {
     view.scene.add(cameraFake);
     cameraFake.add(boxNearFarHelper);
 
+    const axes = new AxesHelper(1000000);
+    view.scene.add(axes);
+
+    const line3 = new Line3();
+    // const intersectionPlane = new Vector3();
+
+    const plane = new Plane(new Vector3(0, 0, 1));
+
+    // const planeHelper = new PlaneHelper(plane, 10000000, 0xffff00);
+    // const arrow = new ArrowHelper();
+    // arrow.setLength(10000000);
+
+    // displayedTilesObb.add(planeHelper);
+    // displayedTilesObb.add(arrow);
+
     function updateFogDistance(obj) {
         if (obj.material && fogDistance) {
             obj.material.fogDistance = fogDistance;
@@ -182,6 +197,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
             const size = { x: g.width * ratio, y: g.height * ratio };
             debugCamera.aspect = size.x / size.y;
             const camera = view.camera.camera3D;
+
             perspectiveCamera.copy(camera);
             const { near, far } = view.tileLayer.info.getNearFar(perspectiveCamera);
             perspectiveCamera.far = Math.min(far, camera.far);
@@ -193,17 +209,39 @@ function Debug(view, datDebugTool, chartDivContainer) {
                 displayedTilesObb.setFromExtent(extent);
                 displayedTilesObbHelper.visible = true;
                 displayedTilesObbHelper.updateMatrixWorld(true);
-                // Note Method to compute near and far...
+
+                // Note Method to compute near and far
+                // * With bounding box transformation
                 boxNearFar.copy(displayedTilesObb.box3D);
                 matrix.multiplyMatrices(camera.matrixWorldInverse, displayedTilesObb.matrixWorld);
                 boxNearFar.applyMatrix4(matrix);
-                displayedTilesObb.box3D.getCenter(position).applyMatrix4(matrix);
-                boxNearFarHelper.visible = true;
+                // boxNearFarHelper.visible = true;
                 boxNearFarHelper.updateMatrixWorld(true);
                 cameraFake.position.copy(camera.position);
                 cameraFake.quaternion.copy(camera.quaternion);
                 cameraFake.updateMatrixWorld(true);
                 boxNearFarHelper.updateMatrixWorld(true);
+
+                // * With bounding box and intersection Line
+                matrix.getInverse(displayedTilesObb.matrixWorld);
+                line3.start.copy(camera.position);
+                line3.end.set(1, -1, 1).unproject(camera);
+                line3.applyMatrix4(matrix);
+                plane.intersectLine(line3, axes.position);
+
+                // position.subVectors(line3.end, line3.start);
+                // arrow.position.copy(line3.start);
+                // arrow.setDirection(position.normalize());
+                // arrow.updateMatrixWorld(true);
+                const focale = (g.height * 0.5) / Math.tan(camera.fov * Math.PI / 180 * 0.5);
+                const horizontalFOV = 2 * Math.atan(g.width * 0.5 / focale);
+
+                displayedTilesObb.localToWorld(axes.position);
+                const length = axes.position.distanceTo(camera.position) * Math.cos(camera.fov * Math.PI / 180) * Math.cos(horizontalFOV);
+                perspectiveCamera.near = length;
+                perspectiveCamera.updateProjectionMatrix();
+                axes.updateMatrix();
+                axes.updateMatrixWorld(true);
             }
 
             // Compute position camera debug

@@ -9,6 +9,7 @@ import Capabilities from 'Core/System/Capabilities';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 import { WEBGL } from 'ThreeExtended/WebGL';
 import Label2DRenderer from 'Renderer/Label2DRenderer';
+import OBB from 'Renderer/OBB';
 
 const depthRGBA = new THREE.Vector4();
 class c3DEngine {
@@ -41,6 +42,12 @@ class c3DEngine {
         this.fullSizeRenderTarget.depthTexture = new THREE.DepthTexture();
         this.fullSizeRenderTarget.depthTexture.type = THREE.UnsignedShortType;
         const _camera = new THREE.PerspectiveCamera();
+        const displayedTilesObb = new OBB();
+        const matrix = new THREE.Matrix4();
+        const line3 = new THREE.Line3();
+        const position = new THREE.Vector3();
+        const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1));
+
 
         this.renderView = function _(view) {
             this.renderer.clear();
@@ -49,6 +56,24 @@ class c3DEngine {
             const { near, far } = view.tileLayer.info.getNearFar(_camera);
             _camera.far = Math.min(camera.far, far);
             _camera.near = Math.max(camera.near, near);
+
+            // ***********
+            const extent = view.tileLayer.info.displayed.extent;
+            displayedTilesObb.setFromExtent(extent);
+
+            matrix.getInverse(displayedTilesObb.matrixWorld);
+            line3.start.copy(camera.position);
+            line3.end.set(1, -1, 1).unproject(camera);
+            line3.applyMatrix4(matrix);
+            plane.intersectLine(line3, position);
+            const focale = (this.height * 0.5) / Math.tan(camera.fov * Math.PI / 180 * 0.5);
+            const horizontalFOV = 2 * Math.atan(this.width * 0.5 / focale);
+
+            displayedTilesObb.localToWorld(position);
+            const length = position.distanceTo(camera.position) * Math.cos(camera.fov * Math.PI / 180) * Math.cos(horizontalFOV);
+            _camera.near = length;
+
+
             _camera.updateProjectionMatrix();
             this.renderer.render(view.scene, _camera);
             this.label2dRenderer.render(view.scene, view.camera.camera3D);
