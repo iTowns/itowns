@@ -1,5 +1,10 @@
 import * as THREE from 'three';
 
+function isIntersectedOrOverlaped(a, b) {
+    return !(a.left > b.right || a.right < b.left
+        || a.top > b.bottom || a.bottom < b.top);
+}
+
 // A grid to manage labels on the screen.
 class ScreenGrid {
     constructor(x = 12, y = 10, width, height) {
@@ -21,7 +26,8 @@ class ScreenGrid {
     reset() {
         for (let i = 0; i < this.x; i++) {
             for (let j = 0; j < this.y; j++) {
-                this.grid[i][j] = false;
+                // Splice is prefered to creating a new array, in term of memory
+                this.grid[i][j].splice(0, this.grid[i][j].length);
             }
         }
 
@@ -35,6 +41,12 @@ class ScreenGrid {
         for (let i = 0; i < this.x; i++) {
             if (!this.grid[i]) {
                 this.grid[i] = [];
+            }
+
+            for (let j = 0; j < this.y; j++) {
+                if (!this.grid[i][j]) {
+                    this.grid[i][j] = [];
+                }
             }
         }
     }
@@ -50,16 +62,18 @@ class ScreenGrid {
 
         for (let i = minx; i <= maxx; i++) {
             for (let j = miny; j <= maxy; j++) {
-                if (this.grid[i][j]) {
-                    this.hidden.push(obj);
-                    return false;
+                if (this.grid[i][j].length > 0) {
+                    if (this.grid[i][j].some(l => isIntersectedOrOverlaped(l.boundaries, obj.boundaries))) {
+                        this.hidden.push(obj);
+                        return false;
+                    }
                 }
             }
         }
 
         for (let i = minx; i <= maxx; i++) {
             for (let j = miny; j <= maxy; j++) {
-                this.grid[i][j] = true;
+                this.grid[i][j].push(obj);
             }
         }
 
@@ -106,8 +120,8 @@ class Label2DRenderer {
 
         this.grid.width = width;
         this.grid.height = height;
-        this.grid.x = Math.ceil(width / 30);
-        this.grid.y = Math.ceil(height / 30);
+        this.grid.x = Math.ceil(width / 20);
+        this.grid.y = Math.ceil(height / 20);
 
         this.grid.resize();
     }
@@ -124,8 +138,20 @@ class Label2DRenderer {
 
         this.culling(scene, this.infoTileLayer.currentMaxTileZoom, this.infoTileLayer.displayed.extent);
 
-        this.grid.visible.forEach((l, i) => {
-            if (this.grid.insert(l, i)) {
+        // sort by order, then by visibility inside those subsets
+        // https://docs.mapbox.com/help/troubleshooting/optimize-map-label-placement/#label-hierarchy
+        this.grid.visible.sort((a, b) => {
+            const r = b.order - a.order;
+            if (r == 0) {
+                if (!a.visible && b.visible) {
+                    return 1;
+                } else { return -1; }
+            } else {
+                return r;
+            }
+        });
+        this.grid.visible.forEach((l) => {
+            if (this.grid.insert(l)) {
                 l.visible = true;
                 l.updateCSSPosition();
             }
@@ -170,9 +196,6 @@ class Label2DRenderer {
                 && l.baseContent == object.baseContent)) {
                 object.parent.remove(object);
                 this.grid.hidden.push(object);
-            } else if (object.visible) {
-                // Give priority to already visible label, to reduce jittering
-                this.grid.visible.unshift(object);
             } else {
                 this.grid.visible.push(object);
             }
