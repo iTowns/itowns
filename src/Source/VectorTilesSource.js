@@ -109,7 +109,7 @@ class VectorTilesSource extends TMSSource {
                         const style = new Style();
                         style.zoom.min = stops[i];
                         style.zoom.max = stops[i + 1];
-                        style.setFromVectorTileLayer(layer, this.sprites, this.symbolToCircle);
+                        style.setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle);
                         this.styles[layer.id].push(style);
                     }
 

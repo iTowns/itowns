@@ -113,6 +113,8 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * - `point` is for all points
  * - `text` contains all {@link Label} related things
  *
+ * @property {number} order - Order of the features that will be associated to
+ * the style. It can helps sorting and prioritizing features if needed.
  * @property {Object} fill - Polygons and fillings style.
  * @property {string} fill.color - Defines the main color of the filling. Can be
  * any [valid color
@@ -226,6 +228,8 @@ class Style {
      */
     constructor(params = {}, parent) {
         this.isStyle = true;
+
+        this.order = 0;
 
         this.parent = parent || {
             zoom: {},
@@ -351,12 +355,15 @@ class Style {
      * set Style from vector tile layer properties.
      * @param {object} layer vector tile layer.
      * @param {Object} sprites vector tile layer.
+     * @param {number} [order=0]
      * @param {boolean} [symbolToCircle=false]
      * @returns {Style}
      */
-    setFromVectorTileLayer(layer, sprites, symbolToCircle = false) {
+    setFromVectorTileLayer(layer, sprites, order = 0, symbolToCircle = false) {
         layer.layout = layer.layout || {};
         layer.paint = layer.paint || {};
+
+        this.order = order;
 
         const zoom = this.zoom.min || 0;
 

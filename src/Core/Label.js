@@ -35,6 +35,8 @@ if (document.documentElement.style.transform !== undefined) {
  * @property {THREE.Vector3} position - The position in the 3D world of the
  * label.
  * @property {Coordinates} coordinates - The coordinates of the label.
+ * @property {number} order - Order of the label that will be read from the
+ * style. It helps sorting and prioritizing a Label during render.
  */
 class Label extends THREE.Object3D {
     /**
@@ -100,6 +102,8 @@ class Label extends THREE.Object3D {
             min: style.zoom && style.zoom.min != undefined ? style.zoom.min : 2,
             max: style.zoom && style.zoom.max != undefined ? style.zoom.max : 24,
         };
+
+        this.order = style.order || 0;
     }
 
     /**
@@ -116,10 +120,12 @@ class Label extends THREE.Object3D {
             this.projectedPosition.x = X;
             this.projectedPosition.y = Y;
 
-            this.boundaries.left = x + this.offset.left;
-            this.boundaries.right = x + this.offset.right;
-            this.boundaries.top = y + this.offset.top;
-            this.boundaries.bottom = y + this.offset.bottom;
+            // 2 is a padding value, to avoid labels being too close to each
+            // other. This value has been choosen arbitrarily.
+            this.boundaries.left = x + this.offset.left - 2;
+            this.boundaries.right = x + this.offset.right + 2;
+            this.boundaries.top = y + this.offset.top - 2;
+            this.boundaries.bottom = y + this.offset.bottom + 2;
         }
     }
 
