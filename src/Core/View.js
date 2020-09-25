@@ -82,11 +82,14 @@ function _preprocessLayer(view, layer, parentLayer) {
             labelLayer.visible = layer.visible;
         });
 
-        view.addEventListener(VIEW_EVENTS.LAYER_REMOVED, (e) => {
+        const removeLabelLayer = (e) => {
             if (e.layerId === layer.id) {
                 view.removeLayer(labelLayer.id);
             }
-        });
+            view.removeEventListener(VIEW_EVENTS.LAYER_REMOVED, removeLabelLayer);
+        };
+
+        view.addEventListener(VIEW_EVENTS.LAYER_REMOVED, removeLabelLayer);
 
         layer.whenReady = layer.whenReady.then(() => {
             view.addLayer(labelLayer);
