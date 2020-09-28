@@ -1,4 +1,4 @@
-import { CameraHelper, Color, Vector3 } from 'three';
+import { PerspectiveCamera, CameraHelper, Color, Vector3, Box3, Box3Helper, Matrix4, Object3D, Plane, Line3, AxesHelper, ArrowHelper, PlaneHelper } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import OBB from 'Renderer/OBB';
@@ -50,7 +50,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
     const state = {
         displayCharts: false,
         eventsDebug: false,
-        debugCameraWindow: false,
+        debugCameraWindow: true,
         freeze: false,
     };
 
@@ -87,6 +87,9 @@ function Debug(view, datDebugTool, chartDivContainer) {
         }
         view.notifyChange();
     });
+
+    view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, renderCameraDebug);
+    view.notifyChange();
 
     gui.add(state, 'freeze').name('freeze update').onChange((newValue) => {
         tileLayer.frozen = newValue;
@@ -133,9 +136,16 @@ function Debug(view, datDebugTool, chartDivContainer) {
     })());
 
     // Camera debug
-    const helper = new CameraHelper(view.camera.camera3D);
+    const perspectiveCamera = new PerspectiveCamera();
+    // const helper = new CameraHelper(view.camera.camera3D);
+    const helper = new CameraHelper(perspectiveCamera);
+    const boxNearFar = new Box3();
+    const boxNearFarHelper = new Box3Helper(boxNearFar);
+    const matrix = new Matrix4();
+    const cameraFake = new Object3D();
     const debugCamera = view.camera.camera3D.clone();
     debugCamera.fov *= 1.5;
+    debugCamera.far *= 3;
     debugCamera.updateProjectionMatrix();
     const g = view.mainLoop.gfxEngine;
     const r = g.renderer;
@@ -146,38 +156,93 @@ function Debug(view, datDebugTool, chartDivContainer) {
     }
     helper.visible = false;
     view.scene.add(helper);
+    view.scene.add(perspectiveCamera);
 
     // Displayed tiles boundind box
     const displayedTilesObb = new OBB();
     const displayedTilesObbHelper = new OBBHelper(displayedTilesObb, '', new Color(color_blue));
     displayedTilesObbHelper.visible = false;
+
     view.scene.add(displayedTilesObb);
     view.scene.add(displayedTilesObbHelper);
+    view.scene.add(cameraFake);
+    cameraFake.add(boxNearFarHelper);
+
+    const axes = new AxesHelper(1000000);
+    view.scene.add(axes);
+
+    const line3 = new Line3();
+    // const intersectionPlane = new Vector3();
+
+    const plane = new Plane(new Vector3(0, 0, 1));
+
+    // const planeHelper = new PlaneHelper(plane, 10000000, 0xffff00);
+    // const arrow = new ArrowHelper();
+    // arrow.setLength(10000000);
+
+    // displayedTilesObb.add(planeHelper);
+    // displayedTilesObb.add(arrow);
 
     function updateFogDistance(obj) {
         if (obj.material && fogDistance) {
             obj.material.fogDistance = fogDistance;
         }
     }
-
+    const position = new Vector3();
     const bClearColor = new Color();
     const lookAtCameraDebug = new Vector3();
     function renderCameraDebug() {
         if (state.debugCameraWindow && debugCamera) {
-            const ratio = 0.25;
+            const ratio = 0.45;
             const size = { x: g.width * ratio, y: g.height * ratio };
             debugCamera.aspect = size.x / size.y;
             const camera = view.camera.camera3D;
+
+            perspectiveCamera.copy(camera);
+            const { near, far } = view.tileLayer.info.getNearFar(perspectiveCamera);
+            perspectiveCamera.far = Math.min(far, camera.far);
+            perspectiveCamera.near = Math.max(near, camera.near);
+            perspectiveCamera.updateProjectionMatrix();
             const coord = new Coordinates(view.referenceCrs, camera.position).as(tileLayer.extent.crs);
             const extent = view.tileLayer.info.displayed.extent;
-            displayedTilesObb.setFromExtent(extent);
-            displayedTilesObbHelper.visible = true;
-            displayedTilesObbHelper.updateMatrixWorld(true);
+            if (extent.west != Infinity) {
+                displayedTilesObb.setFromExtent(extent);
+                displayedTilesObbHelper.visible = true;
+                displayedTilesObbHelper.updateMatrixWorld(true);
 
-            // Note Method to compute near and far...
-            // const bbox = displayedTilesObb.box3D.clone().applyMatrix4(displayedTilesObb.matrixWorld);
-            // const distance = bbox.distanceToPoint(view.camera.camera3D.position);
-            // console.log('distance', distance, distance + bbox.getBoundingSphere(sphere).radius * 2);
+                // Note Method to compute near and far
+                // * With bounding box transformation
+                boxNearFar.copy(displayedTilesObb.box3D);
+                matrix.multiplyMatrices(camera.matrixWorldInverse, displayedTilesObb.matrixWorld);
+                boxNearFar.applyMatrix4(matrix);
+                // boxNearFarHelper.visible = true;
+                boxNearFarHelper.updateMatrixWorld(true);
+                cameraFake.position.copy(camera.position);
+                cameraFake.quaternion.copy(camera.quaternion);
+                cameraFake.updateMatrixWorld(true);
+                boxNearFarHelper.updateMatrixWorld(true);
+
+                // * With bounding box and intersection Line
+                matrix.getInverse(displayedTilesObb.matrixWorld);
+                line3.start.copy(camera.position);
+                line3.end.set(1, -1, 1).unproject(camera);
+                line3.applyMatrix4(matrix);
+                plane.intersectLine(line3, axes.position);
+
+                // position.subVectors(line3.end, line3.start);
+                // arrow.position.copy(line3.start);
+                // arrow.setDirection(position.normalize());
+                // arrow.updateMatrixWorld(true);
+                const focale = (g.height * 0.5) / Math.tan(camera.fov * Math.PI / 180 * 0.5);
+                const horizontalFOV = 2 * Math.atan(g.width * 0.5 / focale);
+
+                displayedTilesObb.localToWorld(axes.position);
+                const length = axes.position.distanceTo(camera.position) * Math.cos(camera.fov * Math.PI / 180) * Math.cos(horizontalFOV);
+                perspectiveCamera.near = length;
+                perspectiveCamera.updateProjectionMatrix();
+                axes.updateMatrix();
+                axes.updateMatrixWorld(true);
+            }
 
             // Compute position camera debug
             const altitudeCameraDebug = 1.5 * coord.z;
@@ -186,9 +251,10 @@ function Debug(view, datDebugTool, chartDivContainer) {
             // Compute recoil camera
             camera.worldToLocal(debugCamera.position);
             debugCamera.position.z += altitudeCameraDebug;
+            debugCamera.position.x += 2 * altitudeCameraDebug;
             camera.localToWorld(debugCamera.position);
             // Compute target camera debug
-            lookAtCameraDebug.copy(view.camera.camera3D.position);
+            lookAtCameraDebug.copy(camera.position);
             camera.worldToLocal(lookAtCameraDebug);
             lookAtCameraDebug.z -= altitudeCameraDebug * 1.5;
             camera.localToWorld(lookAtCameraDebug);
@@ -205,6 +271,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
             const deltaY = state.displayCharts ? Math.round(parseFloat(chartDivContainer.style.height.replace('%', '')) * g.height / 100) + 3 : 0;
             helper.visible = true;
+            helper.update();
             helper.updateMatrixWorld(true);
             bClearColor.copy(r.getClearColor());
             r.setViewport(g.width - size.x, deltaY, size.x, size.y);
@@ -219,6 +286,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
             helper.visible = false;
             displayedTilesObbHelper.visible = false;
+            boxNearFarHelper.visible = false;
             if (layerAtmosphere) {
                 layerAtmosphere.object3d.visible = true;
             }

@@ -1,4 +1,12 @@
 import Extent from 'Core/Geographic/Extent';
+import OBB from 'Renderer/OBB';
+import { Box3, Matrix4 } from 'three';
+
+
+const boxNearFar = new Box3();
+const matrix = new Matrix4();
+
+const displayedTilesObb = new OBB();
 
 export default class InfoLayer {
     constructor(layer) {
@@ -58,6 +66,25 @@ export class InfoTiledGeometryLayer extends InfoLayer {
                     return extent;
                 },
             });
+    }
+
+    getNearFar(camera) {
+        if (this.displayed.extent.west == Infinity) {
+            return { near: 0, far: Infinity };
+        }
+        displayedTilesObb.setFromExtent(this.displayed.extent);
+
+        // Note Method to compute near and far...
+        boxNearFar.copy(displayedTilesObb.box3D);
+        matrix.multiplyMatrices(camera.matrixWorldInverse, displayedTilesObb.matrixWorld);
+        boxNearFar.applyMatrix4(matrix);
+        const error = Math.abs(boxNearFar.max.z - boxNearFar.min.z) * 0.1;
+        const result = {
+            far: -boxNearFar.min.z + error,
+            near: -boxNearFar.max.z - error,
+        };
+
+        return result;
     }
 
     get currentMaxTileZoom() {
