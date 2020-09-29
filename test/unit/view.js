@@ -22,10 +22,10 @@ describe('Viewer', function () {
         globelayer = new GlobeLayer('globe', new THREE.Group());
         source = new FileSource({
             parsedData: { crs: 'EPSG:4326' },
-            projection: 'EPSG:4326',
+            crs: 'EPSG:4326',
         });
 
-        colorLayer = new ColorLayer('l0', { source, labelEnabled: true, projection: 'EPSG:4326' });
+        colorLayer = new ColorLayer('l0', { source, labelEnabled: true, crs: 'EPSG:4326' });
         colorLayer2 = new ColorLayer('l1', { source });
     });
 

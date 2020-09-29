@@ -28,7 +28,7 @@ describe('Layer with Feature process', function () {
 
     const source = new FileSource({
         url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
-        projection: 'EPSG:4326',
+        crs: 'EPSG:4326',
         format: 'application/json',
         networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
     });

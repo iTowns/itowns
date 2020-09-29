@@ -44,7 +44,7 @@ describe('OBB', function () {
 });
 
 
-// Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
+// Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 function assertVerticesAreInOBB(builder, extent) {
     const params = {
@@ -73,7 +73,7 @@ function assertVerticesAreInOBB(builder, extent) {
 }
 
 describe('Planar tiles OBB computation', function () {
-    const builder = new PlanarTileBuilder({ projection: 'EPSG:3946', uvCount: 1 });
+    const builder = new PlanarTileBuilder({ crs: 'EPSG:3946', uvCount: 1 });
 
     it('should compute OBB correctly', function () {
         const extent = new Extent('EPSG:3946', -100, 100, -50, 50);
@@ -81,7 +81,7 @@ describe('Planar tiles OBB computation', function () {
     });
 });
 describe('Ellipsoid tiles OBB computation', function () {
-    const builder = new BuilderEllipsoidTile({ projection: 'EPSG:4978', uvCount: 1 });
+    const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount: 1 });
 
     it('should compute globe-level 0 OBB correctly', function () {
         const extent = new Extent('EPSG:4326', -180, 0, -90, 90);

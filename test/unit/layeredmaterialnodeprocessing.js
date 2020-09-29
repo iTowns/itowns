@@ -32,13 +32,13 @@ describe('updateLayeredMaterialNodeImagery', function () {
 
     const source = new Source({
         url: 'http://',
-        projection: 'EPSG:4326',
+        crs: 'EPSG:4326',
         extent,
     });
 
     const layer = new Layer('foo', {
         source,
-        projection: 'EPSG:4326',
+        crs: 'EPSG:4326',
         info: { update: () => {} },
         tileMatrixSets: [
             'TMS:4326',

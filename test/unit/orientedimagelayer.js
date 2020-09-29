@@ -38,7 +38,7 @@ describe('Oriented Image Layer', function () {
         // Radius in meter of the sphere used as a background.
         backgroundDistance: 1200,
         source: orientedImageSource,
-        projection: viewer.referenceCrs,
+        crs: viewer.referenceCrs,
         useMask: false,
     });
 
