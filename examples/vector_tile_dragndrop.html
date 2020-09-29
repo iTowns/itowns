@@ -48,7 +48,6 @@
                 var source = new itowns.VectorTilesSource({ style });
 
                 var layer = new itowns.ColorLayer(style.name + ' ' + id, {
-                    isValidData: function v() { return false },
                     source,
                     noTextureParentOutsideLimit: true,
                     labelEnabled: true,

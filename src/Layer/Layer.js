@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
 import Source from 'Source/Source';
-import { parseSourceData } from 'Provider/DataSourceProvider';
 import Cache from 'Core/Scheduler/Cache';
 
 /**
@@ -119,21 +118,29 @@ class Layer extends THREE.EventDispatcher {
             this._resolve = re;
             this._reject = rj;
         }).then(() => {
-            if (this.source.fetchedData && !this.source.parsedData) {
-                return parseSourceData(this.source.fetchedData, this);
-            }
-        }).then(() => {
-            if (this.source.parsedData && this.source.parsedData.isFeatureCollection) {
-                this.source.parsedData.setParentStyle(this.style);
-            }
-
+            // [Draft]: tempory parsing options
+            this.parsingOptions.style = this.style;
+            this.parsingOptions.styles = this.source.styles;
+            this.parsingOptions.isInverted = this.source.isInverted;
+            this.parsingOptions.layers = this.source.layers;
+            this.parsingOptions.crsOut = this.projection || this.crs;
             this.ready = true;
+            this.source.onLayerAdded(this.parsingOptions);
             return this;
         });
 
         this._promises.push(this.source.whenReady);
 
         this.cache = new Cache(config.cacheLifeTime);
+
+        // [Draft]: tempory parsing options
+        this.parsingOptions = {
+            crsIn: this.source.projection,
+            overrideAltitudeInToZero: this.overrideAltitudeInToZero,
+            filter: this.filter || this.source.filter,
+            mergeFeatures: config.mergeFeatures === undefined ? true : config.mergeFeatures,
+            isInverted: this.source.isInverted,
+        };
     }
 
     addInitializationStep() {
@@ -202,6 +209,33 @@ class Layer extends THREE.EventDispatcher {
     convert(data) {
         return data;
     }
+
+    getData(from, to, feature) {
+        const key = this.source.isVectorSource ? to : from;
+        let data = this.cache.getByArray(this.source.requestToKey(key));
+        if (!data) {
+            if (feature) {
+                data = Promise.resolve(this.convert(feature, to));
+            } else {
+                data = this.source.loadData(from, this.parsingOptions)
+                    .then(parsedData => this.convert(parsedData, to), (err) => {
+                        throw err;
+                    });
+            }
+
+            this.cache.setByArray(data, this.source.requestToKey(key));
+        }
+        return data;
+    }
+
+    /**
+     * Determines whether the specified feature is valid data.
+     *
+     * @param      {Feature}  feature  The feature
+     * @returns the feature is returned if it's valided
+     */
+    // eslint-disable-next-line
+    isValidData(feature) {}
 
     /**
      * Remove and dispose all objects from layer.
