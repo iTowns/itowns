@@ -10,23 +10,32 @@ describe('source_file_geojson_raster', function _() {
         assert.ok(result);
     });
 
-    it('should pick feature from Layer with SourceFile', async () => {
-        const pickFeatureCount = await page.evaluate(() => {
-            const precision = view.getPixelsToDegrees(5);
+    it('load features data', async () => {
+        const features = await page.evaluate(() => {
+            const promises = [];
             const layers = view.getLayers(l => l.source && l.source.isFileSource);
-            const geoCoord = new itowns.Coordinates('EPSG:4326', 1.41955, 42.88613, 0);
             for (let i = 0; i < layers.length; i++) {
-                const p = itowns.FeaturesUtils.filterFeaturesUnderCoordinate(
-                    geoCoord, layers[i].source.parsedData, precision,
-                );
-                if (p.length) {
-                    return Promise.resolve(p.length);
-                }
+                promises.push(layers[i].source.loadData({}, { crsOut: 'EPSG:4326' }));
             }
 
-            return 0;
+            return Promise.all(promises);
         });
+        assert.equal(2, features.length);
+    });
 
-        assert.equal(1, pickFeatureCount);
+    it('should pick feature from Layer with SourceFile', async () => {
+        const pickedFeatures = await page.evaluate(() => {
+            const precision = view.getPixelsToDegrees(5);
+            const geoCoord = new itowns.Coordinates('EPSG:4326', 1.41955, 42.88613, 0);
+            const promises = [];
+            const layers = view.getLayers(l => l.source && l.source.isFileSource);
+            for (let i = 0; i < layers.length; i++) {
+                promises.push(layers[i].source.loadData({}, { crsOut: 'EPSG:4326' }));
+            }
+
+            return Promise.all(promises).then(fa => fa.filter(f => itowns
+                .FeaturesUtils.filterFeaturesUnderCoordinate(geoCoord, f, precision).length));
+        });
+        assert.equal(1, pickedFeatures.length);
     });
 });

@@ -59,6 +59,9 @@ describe('Provide in Sources', function () {
     const colorlayer = new ColorLayer('color', { projection: 'EPSG:3857' });
     const elevationlayer = new ElevationLayer('elevation', { projection: 'EPSG:3857' });
 
+    colorlayer.parsingOptions.crsOut = colorlayer.projection;
+    elevationlayer.parsingOptions.crsOut = elevationlayer.projection;
+
     planarlayer.attach(colorlayer);
     planarlayer.attach(elevationlayer);
 
@@ -72,6 +75,10 @@ describe('Provide in Sources', function () {
     featureLayer.update = FeatureProcessing.update;
     featureLayer.projection = 'EPSG:4978';
     featureLayer.mergeFeatures = false;
+    featureLayer.parsingOptions.crsIn = 'EPSG:3857';
+    featureLayer.parsingOptions.crsOut = featureLayer.projection;
+    featureLayer.parsingOptions.filteringExtent = true;
+
     featureLayer.zoom.min = 10;
     function extrude() {
         return 5000;
@@ -88,6 +95,11 @@ describe('Provide in Sources', function () {
         extent: globalExtent,
         projection: 'EPSG:3857',
     });
+
+    let featureCountByCb = 0;
+    featureLayer.source.onParsedFile = (fc) => {
+        featureCountByCb = fc.features.length;
+    };
 
     featureLayer.convert = Feature2Mesh.convert({ color, extrude });
     planarlayer.attach(featureLayer);
@@ -113,6 +125,8 @@ describe('Provide in Sources', function () {
                 max: 12,
             },
         });
+
+        colorlayer.source.onLayerAdded({ crsOut: colorlayer.projection });
 
         const tile = new TileMesh(geom, material, planarlayer, extent);
         material.visible = true;
@@ -141,6 +155,7 @@ describe('Provide in Sources', function () {
             },
         });
 
+        elevationlayer.source.onLayerAdded({ crsOut: elevationlayer.projection });
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
         nodeLayerElevation.level = EMPTY_TEXTURE_ZOOM;
@@ -167,6 +182,9 @@ describe('Provide in Sources', function () {
                 max: 12,
             },
         });
+        // May be move in layer Constructor
+        colorlayer.source.onLayerAdded({ crsOut: colorlayer.projection });
+
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
         nodeLayer.level = EMPTY_TEXTURE_ZOOM;
@@ -205,8 +223,10 @@ describe('Provide in Sources', function () {
         material.visible = true;
         nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.parent = { pendingSubdivision: false };
-        featureLayer.mergeFeatures = false;
+        featureLayer.parsingOptions.mergeFeatures = false;
         tile.layerUpdateState = { test: new LayerUpdateState() };
+
+        featureLayer.source.onLayerAdded({ crsOut: featureLayer.projection });
 
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
@@ -214,6 +234,7 @@ describe('Provide in Sources', function () {
             done();
         });
     });
+
     it('should get 1 mesh with WFS source and DataSourceProvider and mergeFeatures == true', (done) => {
         const tile = new TileMesh(
             geom,
@@ -224,14 +245,17 @@ describe('Provide in Sources', function () {
         tile.material.visible = true;
         tile.parent = { pendingSubdivision: false };
         featureLayer.source.uid = 8;
-        featureLayer.mergeFeatures = true;
+        featureLayer.parsingOptions.mergeFeatures = true;
         featureLayer.cache.data.clear();
+        featureLayer.source._parsedDatasCaches = {};
+        featureLayer.source.onLayerAdded({ crsOut: featureLayer.projection });
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
             assert.ok(features[0].children[0].isMesh);
             assert.ok(features[0].children[1].isPoints);
             assert.equal(features[0].children[0].children.length, 0);
             assert.equal(features[0].children[1].children.length, 0);
+            assert.equal(featureCountByCb, 2);
             done();
         });
     });
@@ -264,6 +288,9 @@ describe('Provide in Sources', function () {
                 },
             },
         });
+        colorlayerWfs.parsingOptions.crsOut = colorlayerWfs.projection;
+        colorlayerWfs.parsingOptions.style = colorlayerWfs.style;
+        colorlayerWfs.source.onLayerAdded({ crsOut: colorlayerWfs.projection });
         updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
         updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
