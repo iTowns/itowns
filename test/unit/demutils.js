@@ -21,7 +21,7 @@ describe('DemUtils', function () {
 
     const source = new WMTSSource({
         format: 'image/x-bil;bits=32',
-        projection: 'EPSG:4326',
+        crs: 'EPSG:4326',
         url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
         name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
         tileMatrixSet: 'WGS84G',

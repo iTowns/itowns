@@ -41,7 +41,7 @@ describe('Sources', function () {
         const paramsWFS = {
             url: 'http://',
             typeName: 'test',
-            projection: 'EPSG:4326',
+            crs: 'EPSG:4326',
         };
 
         it('should instance and use WFSSource', function () {
@@ -91,7 +91,7 @@ describe('Sources', function () {
         const paramsWMTS = {
             url: 'http://',
             name: 'name',
-            projection: 'EPSG:4326',
+            crs: 'EPSG:4326',
         };
 
         it('should throw an error for having no name', function () {
@@ -131,7 +131,7 @@ describe('Sources', function () {
             url: 'http://',
             name: 'name',
             extent: [-90, 90, -45, 45],
-            projection: 'EPSG:4326',
+            crs: 'EPSG:4326',
         };
 
         it('should throw an error for having no required parameters', function () {
@@ -150,10 +150,10 @@ describe('Sources', function () {
         });
 
         it('should set the correct axisOrder', function () {
-            paramsWMS.projection = 'EPSG:3857';
+            paramsWMS.crs = 'EPSG:3857';
             const source = new WMSSource(paramsWMS);
             assert.strictEqual(source.axisOrder, 'wsen');
-            paramsWMS.projection = 'EPSG:4326';
+            paramsWMS.crs = 'EPSG:4326';
         });
 
         it('should use vendor specific parameters for the creation of the WMS url', function () {
@@ -196,7 +196,7 @@ describe('Sources', function () {
     describe('TMSSource', function () {
         const paramsTMS = {
             url: 'http://',
-            projection: 'EPSG:3857',
+            crs: 'EPSG:3857',
         };
 
         it('should instance and use TMSSource', function () {
@@ -215,7 +215,7 @@ describe('Sources', function () {
         it('should instance FileSource and fetch file', function (done) {
             const source = new FileSource({
                 url: urlGeojson,
-                projection: 'EPSG:4326',
+                crs: 'EPSG:4326',
                 format: 'application/json',
                 extent: new Extent('EPSG:4326', 0, 20, 0, 20),
                 zoom: { min: 0, max: 21 },
@@ -241,7 +241,7 @@ describe('Sources', function () {
             const source = new FileSource({
                 fetchedData,
                 format: 'application/json',
-                projection: 'EPSG:4326',
+                crs: 'EPSG:4326',
             });
 
             assert.ok(!source.parsedData);
@@ -249,8 +249,8 @@ describe('Sources', function () {
             assert.ok(source.fetchedData);
             assert.ok(source.isFileSource);
 
-            const layer = new Layer('09-ariege', { projection: 'EPSG:4326', source });
-            layer.parsingOptions.crsOut = layer.projection;
+            const layer = new Layer('09-ariege', { crs: 'EPSG:4326', source });
+            layer.parsingOptions.crsOut = layer.crs;
             layer.parsingOptions.withAltitude = false;
             layer.source.onLayerAdded(layer.parsingOptions);
 
@@ -267,9 +267,9 @@ describe('Sources', function () {
         it('should instance and use FileSource with parsedData', function () {
             const source = new FileSource({
                 parsedData: { foo: 'bar', crs: 'EPSG:4326' },
-                projection: 'EPSG:4326',
+                crs: 'EPSG:4326',
             });
-            source.onLayerAdded({ crsOut: source.projection });
+            source.onLayerAdded({ crsOut: source.crs });
             const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
             assert.ok(source.urlFromExtent(extent).startsWith('fake-file-url'));
             assert.ok(!source.fetchedData);
@@ -279,22 +279,22 @@ describe('Sources', function () {
 
         it('should throw an error for having no required parameters', function () {
             assert.throws(() => new FileSource({}), Error);
-            assert.throws(() => new FileSource({ projection: 'EPSG:4326' }), Error);
+            assert.throws(() => new FileSource({ crs: 'EPSG:4326' }), Error);
         });
 
-        describe('should set the projection from parsedData', function () {
+        describe('should set the crs projection from parsedData', function () {
             it('with the crs', function () {
                 const source = new FileSource({
                     parsedData: { crs: 'EPSG:4326' },
                 });
-                assert.strictEqual(source.projection, 'EPSG:4326');
+                assert.strictEqual(source.crs, 'EPSG:4326');
             });
 
-            it('with the projection', function () {
+            it('with the crs projection', function () {
                 const source = new FileSource({
-                    parsedData: { projection: 'EPSG:4326' },
+                    parsedData: { crs: 'EPSG:4326' },
                 });
-                assert.strictEqual(source.projection, 'EPSG:4326');
+                assert.strictEqual(source.crs, 'EPSG:4326');
             });
         });
     });
