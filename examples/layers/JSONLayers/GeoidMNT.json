@@ -8,7 +8,7 @@
     "source": {
         "url": "https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geoid/geoid/bil/%TILEMATRIX/geoid_%COL_%ROW.bil",
         "format": "image/x-bil;bits=32",
-        "projection": "EPSG:4326",
+        "crs": "EPSG:4326",
         "tileMatrixSet": "WGS84G",
         "tileMatrixSetLimits": {
             "0": {

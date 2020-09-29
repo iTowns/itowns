@@ -82,7 +82,7 @@
 
                     var gpxSource = new itowns.FileSource({
                         fetchedData: gpx,
-                        projection: 'EPSG:4326',
+                        crs: 'EPSG:4326',
                         parser: itowns.GpxParser.parse,
                     });
 
