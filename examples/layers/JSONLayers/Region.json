@@ -9,7 +9,7 @@
         "version"   : "1.3.0",
         "name"      : "REGIONS.2017",
         "style"      : "",
-        "projection" : "EPSG:3857",
+        "crs" : "EPSG:3857",
         "extent": {
             "west": "-6880639.13669047",
             "east": "6215707.87640867",

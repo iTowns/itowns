@@ -9,7 +9,7 @@
     },
     "source": {
         "url":        "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
-        "projection": "EPSG:4326",
+        "crs": "EPSG:4326",
         "format": "image/x-bil;bits=32",
         "attribution" : {
             "name":"IGN",

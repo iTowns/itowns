@@ -37,7 +37,7 @@
             var tiffSource = new itowns.TMSSource({
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geoid/localcolors/tiff/${z}/localcolors_${x}_${y}.tif',
                 tileMatrixSet: 'WGS84G',
-                projection: 'EPSG:4326',
+                crs: 'EPSG:4326',
                 parser: TIFFParser.parse,
                 fetcher: itowns.Fetcher.arrayBuffer,
                 zoom: { min: 0, max: 4 },

@@ -59,7 +59,7 @@
             // Fetch, Parse and Convert by iTowns
             var kmlSource = new itowns.FileSource({
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
-                projection: 'EPSG:4326',
+                crs: 'EPSG:4326',
                 fetcher: itowns.Fetcher.xml,
                 parser: itowns.KMLParser.parse,
             });

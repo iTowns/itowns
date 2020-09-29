@@ -51,7 +51,7 @@
                 // Use a FileSource to load a single file once
                 source: new itowns.FileSource({
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson',
-                    projection: 'EPSG:4326',
+                    crs: 'EPSG:4326',
                     format: 'application/json',
                 }),
                 zoom: { min: 10 },

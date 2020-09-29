@@ -6,7 +6,7 @@
  * displayed are stored in the plugin. Use the method `register` to declare the
  * way a file is read, parsed and displayed.
  *
- * Note: only files with the projection `EPSG:4326` can be projected correctly
+ * Note: only files with the crs projection `EPSG:4326` can be projected correctly
  * using this plugin.
  *
  * @module DragNDrop
@@ -78,7 +78,7 @@ var DragNDrop = (function _() {
 
                     var source = new itowns.FileSource({
                         parsedData: result,
-                        projection: 'EPSG:4326',
+                        crs: 'EPSG:4326',
                     });
 
                     var randomColor = Math.round(Math.random() * 0xffffff);
