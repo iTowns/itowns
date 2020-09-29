@@ -250,23 +250,29 @@ describe('Sources', function () {
             assert.ok(source.isFileSource);
 
             const layer = new Layer('09-ariege', { projection: 'EPSG:4326', source });
+            layer.parsingOptions.crsOut = layer.projection;
+            layer.source.onLayerAdded({ crsOut: layer.projection });
+
             layer.whenReady.then(() => {
-                assert.equal(source.parsedData.features[0].vertices.length, 3536);
-                done();
+                const promise = source.loadData([], { crsOut: layer.projection });
+                promise.then((featureCollection) => {
+                    assert.equal(featureCollection.features[0].vertices.length, 5304);
+                    done();
+                });
             });
             layer._resolve();
         });
 
         it('should instance and use FileSource with parsedData', function () {
             const source = new FileSource({
-                parsedData: { foo: 'bar' },
+                parsedData: { foo: 'bar', crs: 'EPSG:4326' },
                 projection: 'EPSG:4326',
             });
-
+            source.onLayerAdded({ crsOut: source.projection });
             const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
             assert.ok(source.urlFromExtent(extent).startsWith('fake-file-url'));
             assert.ok(!source.fetchedData);
-            assert.ok(source.parsedData);
+
             assert.ok(source.isFileSource);
         });
 
