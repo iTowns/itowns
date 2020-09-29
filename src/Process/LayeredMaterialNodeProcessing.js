@@ -128,7 +128,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     const destinationLevel = extentsDestination[0].zoom || node.level;
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, destinationLevel, nodeLayer.level, layer, failureParams);
 
-    if (targetLevel <= nodeLayer.level || targetLevel > destinationLevel) {
+    if ((!layer.source.isVectorSource && targetLevel <= nodeLayer.level) || targetLevel > destinationLevel) {
         if (failureParams.lowestLevelError != Infinity) {
             // this is the highest level found in case of error.
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
@@ -152,7 +152,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     }
 
     node.layerUpdateState[layer.id].newTry();
-    const parsedData = nodeLayer.textures.map(t => t.parsedData);
+    const parsedData = nodeLayer.textures.map(t => layer.isValidData(t.parsedData));
     const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, parsedData);
 
     return context.scheduler.execute(command).then(

@@ -51,14 +51,6 @@
 
             setupLoadingScreen(viewerDiv, view);
 
-
-            // Add a vector tile layer
-            function isValidData(data, extentDestination) {
-                // re-use the same vector tiles by interval 4
-                // var z = extentDestination.zoom - 2;
-                return false;
-            }
-
             var mvtSource = new itowns.VectorTilesSource({
                 style: 'https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json',
                 // eslint-disable-next-line no-template-curly-in-string
@@ -74,7 +66,6 @@
             });
 
             var mvtLayer = new itowns.ColorLayer('MVT', {
-                isValidData: isValidData,
                 source: mvtSource,
                 labelEnabled: true,
             });

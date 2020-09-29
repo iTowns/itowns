@@ -4,6 +4,7 @@ import KMLParser from 'Parser/KMLParser';
 import GpxParser from 'Parser/GpxParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
+import Cache from 'Core/Scheduler/Cache';
 
 export const supportedFetchers = new Map([
     ['image/x-bil;bits=32', Fetcher.textureFloat],
@@ -21,6 +22,16 @@ export const supportedParsers = new Map([
     ['application/gpx', GpxParser.parse],
     ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
 ]);
+
+
+function fetchSourceData(source, extent) {
+    const url = source.urlFromExtent(extent);
+
+    return source.fetcher(url, source.networkOptions).then((f) => {
+        f.extent = extent;
+        return f;
+    }, err => source.handlingError(err));
+}
 
 let uid = 0;
 
@@ -104,12 +115,13 @@ class Source {
         this.url = source.url;
         this.format = source.format;
         this.fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
-        this.parser = source.parser || supportedParsers.get(source.format) || (d => Promise.resolve(d));
+        this.parser = source.parser || supportedParsers.get(source.format) || (d => d);
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.projection = source.projection;
         this.attribution = source.attribution;
         this.whenReady = Promise.resolve();
+        this._parsedDatasCaches = {};
         if (source.extent && !(source.extent.isExtent)) {
             this.extent = new Extent(this.projection, source.extent);
         } else {
@@ -139,6 +151,59 @@ class Source {
     }
 
     /**
+     * Load  data from cache or Fetch/Parse data.
+     * The loaded data is a Feature or Texture.
+     *
+     * @param      {Extent}  extent   extent requested parsed data.
+     * @param      {Object}  options  The parsing options
+     * @return     {FeatureCollection|Texture}  The parsed data.
+     */
+    loadData(extent, options) {
+        const cache = this._parsedDatasCaches[options.crsOut];
+        // try to get parsed data from cache
+        let parsedData = cache.getByArray(this.requestToKey(extent));
+        if (!parsedData) {
+            // otherwise fetch/parse the data
+            parsedData = cache.setByArray(fetchSourceData(this, extent).then(fetchedData => this.parser(fetchedData, options),
+                err => this.handlingError(err)), this.requestToKey(extent));
+            if (this.onParsedFile) {
+                parsedData.then((feature) => {
+                    this.onParsedFile(feature);
+                    console.warn('Source.onParsedFile was deprecated');
+                    return feature;
+                });
+            }
+        }
+        return parsedData;
+    }
+
+    /**
+     * Called when layer added.
+     *
+     * @param {object} options
+     */
+    onLayerAdded(options) {
+        // Added new cache by crs
+        if (!this._parsedDatasCaches[options.crsOut]) {
+            this._parsedDatasCaches[options.crsOut] = new Cache();
+        }
+    }
+
+    /**
+     * Called when layer removed.
+     *
+     * @param {options}  [options={}] options
+     */
+    onLayerRemoved(options = {}) {
+        // delete unused cache
+        const unusedCache = this._parsedDatasCaches[options.unusedCrs];
+        if (unusedCache) {
+            unusedCache.clear();
+            delete this._parsedDatasCaches[options.unusedCrs];
+        }
+    }
+
+    /**
      * Tests if an extent is inside the source limits.
      *
      * @param {Extent} extent - Extent to test.
@@ -164,10 +229,6 @@ class Source {
             }
         }
         return true;
-    }
-
-    onParsedFile(parsedFile) {
-        return parsedFile;
     }
 }
 

@@ -76,6 +76,7 @@ function _preprocessLayer(view, layer, parentLayer) {
             source,
             style: layer.style,
             zoom: layer.zoom,
+            crs: view.referenceCrs,
         });
 
         layer.addEventListener('visible-property-changed', () => {
@@ -305,6 +306,10 @@ class View extends THREE.EventDispatcher {
                     }
                 }
             }
+
+            // remove unused cache
+            const sameSource = this.getLayers(l => l.source.uid == layer.source.uid && l.projection == layer.projection);
+            layer.source.onLayerRemoved({ unusedCrs: sameSource.length == 0 ? layer.projection : undefined });
 
             this.notifyChange(this.camera);
 

@@ -1,5 +1,5 @@
 import Source from 'Source/Source';
-
+import Cache from 'Core/Scheduler/Cache';
 import Extent from 'Core/Geographic/Extent';
 
 const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
@@ -128,12 +128,13 @@ class FileSource extends Source {
         this.isFileSource = true;
 
         this.fetchedData = source.fetchedData;
-        this.parsedData = source.parsedData;
-
-        if (!this.fetchedData && !this.parsedData) {
+        if (!this.fetchedData && !source.parsedData) {
             this.whenReady = this.fetcher(this.urlFromExtent(), this.networkOptions).then((f) => {
                 this.fetchedData = f;
             });
+        } else if (source.parsedData) {
+            this._parsedDatasCaches[source.parsedData.crs] = new Cache();
+            this._parsedDatasCaches[source.parsedData.crs].setByArray(Promise.resolve(source.parsedData), [0]);
         }
 
         this.whenReady.then(() => this.fetchedData);
@@ -145,10 +146,32 @@ class FileSource extends Source {
         return this.url;
     }
 
-    onParsedFile(parsedFile) {
-        this.parsedData = parsedFile;
-        this.extent = parsedFile.extent;
-        return parsedFile;
+    onLayerAdded(options) {
+        super.onLayerAdded(options);
+        let parsedData = this._parsedDatasCaches[options.crsOut].getByArray([0]);
+        if (!parsedData) {
+            options.buildExtent = true;
+            parsedData = this.parser(this.fetchedData, options);
+            this._parsedDatasCaches[options.crsOut].setByArray(parsedData, [0]);
+        }
+        parsedData.then((data) => {
+            this.extent = data.extent;
+            if (data.isFeatureCollection) {
+                data.setParentStyle(options.style);
+            }
+        });
+    }
+
+    /**
+     * load  data from cache or Fetch/Parse data.
+     * The loaded data is a Feature or Texture.
+     *
+     * @param      {Extent}  extent   extent requested parsed data.
+     * @param      {Object}  options  The parsing options
+     * @return     {FeatureCollection|Texture}  The parsed data.
+     */
+    loadData(extent, options) {
+        return this._parsedDatasCaches[options.crsOut].getByArray([0]);
     }
 
     extentInsideLimit(extent) {

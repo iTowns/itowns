@@ -52,11 +52,6 @@
                 return z - (z % 5);
             }
 
-            function isValidData(data, extentDestination) {
-                const isValid = inter(extentDestination.zoom) == inter(data.extent.zoom);
-                return isValid;
-            }
-
             var mvtSource = new itowns.VectorTilesSource({
                 style: 'https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json',
                 // eslint-disable-next-line no-template-curly-in-string
@@ -72,7 +67,6 @@
             });
 
             var mvtLayer = new itowns.ColorLayer('MVT', {
-                isValidData: isValidData,
                 source: mvtSource,
                 fx: 2.5,
                 labelEnabled: true,
