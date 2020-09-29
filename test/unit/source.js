@@ -251,12 +251,13 @@ describe('Sources', function () {
 
             const layer = new Layer('09-ariege', { projection: 'EPSG:4326', source });
             layer.parsingOptions.crsOut = layer.projection;
-            layer.source.onLayerAdded({ crsOut: layer.projection });
+            layer.parsingOptions.withAltitude = false;
+            layer.source.onLayerAdded(layer.parsingOptions);
 
             layer.whenReady.then(() => {
-                const promise = source.loadData([], { crsOut: layer.projection });
+                const promise = source.loadData([], layer.parsingOptions);
                 promise.then((featureCollection) => {
-                    assert.equal(featureCollection.features[0].vertices.length, 5304);
+                    assert.equal(featureCollection.features[0].vertices.length, 3536);
                     done();
                 });
             });
