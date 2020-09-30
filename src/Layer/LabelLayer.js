@@ -120,6 +120,7 @@ class LabelLayer extends Layer {
                 const label = new Label(content,
                     coord.clone(),
                     g.properties.style || f.style || this.style);
+                label.layerId = this.id;
 
                 if (f.size == 2) {
                     label.needsAltitude = true;
@@ -249,9 +250,8 @@ class LabelLayer extends Layer {
                 // Necessary event listener, to remove any Label attached to
                 // this tile
                 node.addEventListener('removed', () => {
-                    result.forEach(labels => labels.forEach(label => node.remove(label)));
-                    const child = node.domElements[this.id].dom;
-                    child.parentElement.removeChild(child);
+                    result.forEach(labels => labels.forEach(l => node.remove(l)));
+                    this.removeNodeDomElement(node);
                 });
             }
 
@@ -259,8 +259,30 @@ class LabelLayer extends Layer {
         });
     }
 
+    removeLabelsFromNodeRecursive(node) {
+        node.children.forEach((c) => {
+            if (c.isLabel && c.layerId === this.id) {
+                node.remove(c);
+            } else if (c.isTileMesh) {
+                this.removeLabelsFromNodeRecursive(c);
+            }
+        });
+
+        this.removeNodeDomElement(node);
+    }
+
+    removeNodeDomElement(node) {
+        if (node.domElements[this.id]) {
+            const child = node.domElements[this.id].dom;
+            child.parentElement.removeChild(child);
+            delete node.domElements[this.id];
+        }
+    }
+
     delete() {
         this.domElement.parentElement.removeChild(this.domElement);
+
+        this.parent.level0Nodes.forEach(obj => this.removeLabelsFromNodeRecursive(obj));
     }
 }
 
