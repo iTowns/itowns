@@ -73,11 +73,11 @@ var DragNDrop = (function _() {
                     mergeFeatures: true,
                     withNormal: (extension.mode == _GEOMETRY),
                     withAltitude: (extension.mode == _GEOMETRY),
-                }).then(function _(result) {
-                    var dimensions = result.extent.dimensions();
+                }).then(function _(features) {
+                    var dimensions = features.extent.dimensions();
 
                     var source = new itowns.FileSource({
-                        parsedData: result,
+                        features: features,
                         crs: 'EPSG:4326',
                     });
 
@@ -119,7 +119,7 @@ var DragNDrop = (function _() {
 
                     // Move the camera to the first vertex
                     itowns.CameraUtils.animateCameraToLookAtTarget(_view, _view.camera.camera3D, {
-                        coord: new itowns.Coordinates(result.crs, result.features[0].vertices),
+                        coord: new itowns.Coordinates(features.crs, features.features[0].vertices),
                         range: dimensions.x * dimensions.y * 1e6,
                     });
                 });

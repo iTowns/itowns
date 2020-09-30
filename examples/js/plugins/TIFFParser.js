@@ -12,7 +12,7 @@
  * Fetcher.arrayBuffer('image.tiff')
  *     .then(TIFFParser.parse)
  *     .then(function _(texture) {
- *         var source = new itowns.FileSource({ parsedData: texture });
+ *         var source = new itowns.FileSource({ features: texture });
  *         var layer = new itowns.ColorLayer('tiff', { source });
  *         view.addLayer(layer);
  *     });

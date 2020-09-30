@@ -21,8 +21,8 @@
  *         buildExtent: true,
  *         crsOut: 'EPSG:4326'
  *     });
- * }).then(function _(feature) {
- *     var source = new itowns.FileSource({ parsedData: feature });
+ * }).then(function _(features) {
+ *     var source = new itowns.FileSource({ features });
  *     var layer = new itowns.ColorLayer('CSVnVRT', { source });
  *     view.addLayer(layer);
  * });

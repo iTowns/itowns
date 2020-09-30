@@ -51,10 +51,8 @@
                     buildExtent: true,
                     crsOut: view.tileLayer.extent.crs,
                 });
-            }).then(function _(feature) {
-                var velibSource = new itowns.FileSource({
-                    parsedData: feature,
-                });
+            }).then(function _(features) {
+                var velibSource = new itowns.FileSource({ features });
 
                 var velibStyle = new itowns.Style({
                     zoom: { min: 10, max: 20 },
