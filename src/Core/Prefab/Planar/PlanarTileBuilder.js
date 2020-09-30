@@ -7,10 +7,15 @@ const center = new THREE.Vector3();
 
 class PlanarTileBuilder {
     constructor(options = {}) {
+        /* istanbul ignore next */
         if (options.projection) {
-            this.projection = options.projection;
+            console.warn('PlanarTileBuilder projection parameter is deprecated, use crs instead.');
+            options.crs = options.crs || options.projection;
+        }
+        if (options.crs) {
+            this.crs = options.crs;
         } else {
-            throw new Error('options.projection is mandatory for PlanarTileBuilder');
+            throw new Error('options.crs is mandatory for PlanarTileBuilder');
         }
         this.tmp = {
             coords: new Coordinates('EPSG:4326', 0, 0),

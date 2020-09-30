@@ -67,8 +67,8 @@ class TileMesh extends THREE.Mesh {
         }
     }
 
-    getExtentsByProjection(projection) {
-        return this._tms.get(CRS.formatToTms(projection));
+    getExtentsByProjection(crs) {
+        return this._tms.get(CRS.formatToTms(crs));
     }
 
     /**

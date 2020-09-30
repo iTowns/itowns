@@ -37,7 +37,7 @@ import CRS from 'Core/Geographic/Crs';
  *     url: 'http://wxs.fr/wfs',
  *     version: '2.0.0',
  *     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable',
- *     projection: 'EPSG:4326',
+ *     crs: 'EPSG:4326',
  *     extent: {
  *         west: 4.568,
  *         east: 5.18,
@@ -68,7 +68,7 @@ import CRS from 'Core/Geographic/Crs';
  *     url: 'http://wxs.fr/wfs',
  *     version: '2.0.0',
  *     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable',
- *     projection: 'EPSG:4326',
+ *     crs: 'EPSG:4326',
  *     extent: {
  *         west: 4.568,
  *         east: 5.18,
@@ -92,18 +92,22 @@ import CRS from 'Core/Geographic/Crs';
 class WFSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * WFSSource and {@link Source}. `url`, `typeName` and `projection` are
+     * WFSSource and {@link Source}. `url`, `typeName` and `crs` are
      * mandatory.
      *
      * @constructor
      */
     constructor(source) {
+        if (source.projection) {
+            console.warn('WFSSource projection parameter is deprecated, use crs instead.');
+            source.crs = source.crs || source.projection;
+        }
         if (!source.typeName) {
             throw new Error('source.typeName is required in wfs source.');
         }
 
-        if (!source.projection) {
-            throw new Error('source.projection is required in wfs source');
+        if (!source.crs) {
+            throw new Error('source.crs is required in wfs source');
         }
         super(source);
 
@@ -115,9 +119,9 @@ class WFSSource extends Source {
         this.url = `${source.url
         }SERVICE=WFS&REQUEST=GetFeature&typeName=${this.typeName
         }&VERSION=${this.version
-        }&SRSNAME=${this.projection
+        }&SRSNAME=${this.crs
         }&outputFormat=${this.format
-        }&BBOX=%bbox,${this.projection}`;
+        }&BBOX=%bbox,${this.crs}`;
 
         this.zoom = source.zoom || { min: 0, max: Infinity };
 

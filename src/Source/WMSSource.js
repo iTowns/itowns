@@ -49,7 +49,7 @@ const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
  *     version: '1.3.0',
  *     name: 'REGION.2016',
  *     style: '',
- *     projection: 'EPSG:3857',
+ *     crs: 'EPSG:3857',
  *     extent: {
  *         west: '-6880639.13557728',
  *         east: '6215707.87974825',
@@ -70,7 +70,7 @@ const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 class WMSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of
-     * WMSSource and {@link Source}. `url`, `name`, `extent` and `projection`
+     * WMSSource and {@link Source}. `url`, `name`, `extent` and `crs`
      * are mandatory.
      *
      * @constructor
@@ -84,8 +84,8 @@ class WMSSource extends Source {
             throw new Error('source.extent is required');
         }
 
-        if (!source.projection) {
-            throw new Error('source.projection is required');
+        if (!source.crs && !source.projection) {
+            throw new Error('source.crs is required');
         }
         super(source);
 
@@ -102,7 +102,7 @@ class WMSSource extends Source {
 
         if (!source.axisOrder) {
         // 4326 (lat/long) axis order depends on the WMS version used
-            if (source.projection == 'EPSG:4326') {
+            if (this.crs == 'EPSG:4326') {
             // EPSG 4326 x = lat, long = y
             // version 1.1.0 long/lat while version 1.3.0 mandates xy (so lat,long)
                 this.axisOrder = (this.version === '1.1.0' ? 'wsen' : 'swne');
@@ -121,7 +121,8 @@ class WMSSource extends Source {
             this.format}&TRANSPARENT=${
             this.transparent}&BBOX=%bbox&${
             crsPropName}=${
-            this.projection}&WIDTH=${this.width}&HEIGHT=${this.height}`;
+            this.crs}&WIDTH=${this.width}&HEIGHT=${this.height}`;
+
 
         this.vendorSpecific = source.vendorSpecific;
         for (const name in this.vendorSpecific) {
@@ -136,7 +137,7 @@ class WMSSource extends Source {
     }
 
     extentInsideLimit(extent) {
-        const localExtent = this.projection == extent.crs ? extent : extent.as(this.projection, _extent);
+        const localExtent = this.crs == extent.crs ? extent : extent.as(this.crs, _extent);
         return (extent.zoom == undefined || !(extent.zoom < this.zoom.min || extent.zoom > this.zoom.max)) &&
             this.extent.intersectsExtent(localExtent);
     }

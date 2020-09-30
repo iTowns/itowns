@@ -194,7 +194,7 @@ class Feature {
         this.crs = crs;
         this.size = options.withAltitude ? 3 : 2;
         if (options.buildExtent) {
-            // this.crs is final projection, is out projection.
+            // this.crs is final crs projection, is out projection.
             // If the extent crs is the same then we use output coordinate (coordOut) to expand it.
             this.extent = defaultExtent(crs != 'EPSG:4978' ?  crs : options.crsIn);
             this.useCrsOut = this.crs == this.extent.crs;

@@ -43,7 +43,7 @@ class VectorTilesSource extends TMSSource {
      */
     constructor(source) {
         source.format = 'application/x-protobuf;type=mapbox-vector';
-        source.projection = 'EPSG:3857';
+        source.crs = 'EPSG:3857';
         source.isInverted = true;
         source.url = source.url || '.';
         super(source);

@@ -41,11 +41,11 @@ class PlanarLayer extends TiledGeometryLayer {
         const tms = CRS.formatToTms(extent.crs);
         const tileMatrixSets = [tms];
         if (!globalExtentTMS.get(extent.crs)) {
-            // Add new global extent for this new projection.
+            // Add new global extent for this new crs projection.
             globalExtentTMS.set(extent.crs, extent);
         }
         config.tileMatrixSets = tileMatrixSets;
-        super(id, object3d || new THREE.Group(), [extent], new PlanarTileBuilder({ projection: extent.crs }), config);
+        super(id, object3d || new THREE.Group(), [extent], new PlanarTileBuilder({ crs: extent.crs }), config);
         this.isPlanarLayer = true;
         this.extent = extent;
         this.minSubdivisionLevel = this.minSubdivisionLevel == undefined ? 0 : this.minSubdivisionLevel;

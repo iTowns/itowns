@@ -75,6 +75,11 @@ class Layer extends THREE.EventDispatcher {
      * layerToListen.addEventListener('opacity-property-changed', (event) => console.log(event));
      */
     constructor(id, config = {}) {
+        /* istanbul ignore next */
+        if (config.projection) {
+            console.warn('Layer projection parameter is deprecated, use crs instead.');
+            config.crs = config.crs || config.projection;
+        }
         super();
         this.isLayer = true;
 
@@ -123,7 +128,7 @@ class Layer extends THREE.EventDispatcher {
             this.parsingOptions.styles = this.source.styles;
             this.parsingOptions.isInverted = this.source.isInverted;
             this.parsingOptions.layers = this.source.layers;
-            this.parsingOptions.crsOut = this.projection || this.crs;
+            this.parsingOptions.crsOut = this.crs;
             this.ready = true;
             this.source.onLayerAdded(this.parsingOptions);
             return this;
@@ -135,7 +140,7 @@ class Layer extends THREE.EventDispatcher {
 
         // [Draft]: tempory parsing options
         this.parsingOptions = {
-            crsIn: this.source.projection,
+            crsIn: this.source.crs,
             overrideAltitudeInToZero: this.overrideAltitudeInToZero,
             filter: this.filter || this.source.filter,
             mergeFeatures: config.mergeFeatures === undefined ? true : config.mergeFeatures,

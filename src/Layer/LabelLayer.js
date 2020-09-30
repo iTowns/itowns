@@ -146,7 +146,7 @@ class LabelLayer extends Layer {
             return;
         }
 
-        const extentsDestination = node.getExtentsByProjection(this.source.projection) || [node.extent];
+        const extentsDestination = node.getExtentsByProjection(this.source.crs) || [node.extent];
         const zoomDest = extentsDestination[0].zoom;
 
         if (zoomDest < layer.zoom.min || zoomDest > layer.zoom.max) {
@@ -173,7 +173,7 @@ class LabelLayer extends Layer {
 
         const extentsSource = [];
         for (const extentDest of extentsDestination) {
-            const ext = this.source.projection == extentDest.crs ? extentDest : extentDest.as(this.source.projection);
+            const ext = this.source.crs == extentDest.crs ? extentDest : extentDest.as(this.source.crs);
             if (!this.source.extentInsideLimit(ext)) {
                 node.layerUpdateState[this.id].noMoreUpdatePossible();
                 return;

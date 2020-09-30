@@ -59,7 +59,7 @@ let uid = 0;
  * `fetch()`), see [the syntax for more information]{@link
  * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
  * By default, set to `{ crossOrigin: 'anonymous' }`.
- * @property {string} projection - The projection of the resources.
+ * @property {string} crs - The crs projection of the resources.
  * @property {string} attribution - The intellectual property rights for the
  * resources.
  * @property {Extent} extent - The extent of the resources.
@@ -82,8 +82,8 @@ let uid = 0;
  * <ul>
  *  <li>`buildExtent : boolean` - True if the layer does not inherit from {@link
  *  GeometryLayer}.</li>
- *  <li>`crsIn : string` - The projection of the source.</li>
- *  <li>`crsOut : string` - The projection of the layer.</li>
+ *  <li>`crsIn : string` - The crs projection of the source.</li>
+ *  <li>`crsOut : string` - The crs projection of the layer.</li>
  *  <li>`filteringExtent : Extent|boolean` - If the layer inherits from {@link
  *  GeometryLayer}, it is set filtering with the extent, or extent file if it is true.</li>
  *  <li>`filter : function` - Property of the layer.</li>
@@ -106,6 +106,12 @@ class Source {
     constructor(source) {
         this.isSource = true;
 
+        /* istanbul ignore next */
+        if (source.projection) {
+            console.warn('Source projection parameter is deprecated, use crs instead.');
+            source.crs = source.crs || source.projection;
+        }
+
         if (!source.url) {
             throw new Error('New Source: url is required');
         }
@@ -118,12 +124,12 @@ class Source {
         this.parser = source.parser || supportedParsers.get(source.format) || (d => d);
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
-        this.projection = source.projection;
+        this.crs = source.crs;
         this.attribution = source.attribution;
         this.whenReady = Promise.resolve();
         this._parsedDatasCaches = {};
         if (source.extent && !(source.extent.isExtent)) {
-            this.extent = new Extent(this.projection, source.extent);
+            this.extent = new Extent(this.crs, source.extent);
         } else {
             this.extent = source.extent;
         }
@@ -166,6 +172,7 @@ class Source {
             // otherwise fetch/parse the data
             parsedData = cache.setByArray(fetchSourceData(this, extent).then(fetchedData => this.parser(fetchedData, options),
                 err => this.handlingError(err)), this.requestToKey(extent));
+            /* istanbul ignore next */
             if (this.onParsedFile) {
                 parsedData.then((feature) => {
                     this.onParsedFile(feature);

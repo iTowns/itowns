@@ -61,7 +61,7 @@ class GlobeLayer extends TiledGeometryLayer {
             CRS.tms_3857,
         ];
         const uvCount = config.tileMatrixSets.length;
-        const builder = new BuilderEllipsoidTile({ projection: 'EPSG:4978', uvCount });
+        const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount });
 
         super(id, object3d || new THREE.Group(), schemeTile, builder, config);
 
@@ -100,10 +100,10 @@ class GlobeLayer extends TiledGeometryLayer {
     countColorLayersTextures(...layers) {
         let occupancy = 0;
         for (const layer of layers) {
-            const projection = layer.projection || layer.source.projection;
+            const crs = layer.crs || layer.source.crs;
             // 'EPSG:3857' occupies the maximum 3 textures on tiles
             // 'EPSG:4326' occupies 1 textures on tile
-            occupancy += projection == 'EPSG:3857' ? 3 : 1;
+            occupancy += crs == 'EPSG:3857' ? 3 : 1;
         }
         return occupancy;
     }

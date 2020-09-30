@@ -5,7 +5,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import CRS from 'Core/Geographic/Crs';
 
 // get oriented bounding box of tile
-const builder = new BuilderEllipsoidTile({ projection: 'EPSG:4978', uvCount: 1 });
+const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount: 1 });
 const size = new THREE.Vector3();
 const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();

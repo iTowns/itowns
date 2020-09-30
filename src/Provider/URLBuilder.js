@@ -79,7 +79,7 @@ export default {
      *
      * @example
      * extent = new Extent('EPSG:4326', 12, 14, 35, 46);
-     * source.projection = 'EPSG:4326';
+     * source.crs = 'EPSG:4326';
      * source.url = 'http://server.geo/wms/BBOX=%bbox&FORMAT=jpg&SERVICE=WMS';
      * url = URLBuilder.bbox(extent, source);
      *
@@ -92,8 +92,8 @@ export default {
      * @return {string} the formed url
      */
     bbox: function bbox(bbox, source) {
-        const precision = source.projection == 'EPSG:4326' ? 9 : 2;
-        bbox.as(source.projection, extent);
+        const precision = source.crs == 'EPSG:4326' ? 9 : 2;
+        bbox.as(source.crs, extent);
         const w = extent.west.toFixed(precision);
         const s = extent.south.toFixed(precision);
         const e = extent.east.toFixed(precision);

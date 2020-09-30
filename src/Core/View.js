@@ -61,12 +61,14 @@ function _preprocessLayer(view, layer, parentLayer) {
         }
         layer.defineLayerProperty('visible', true, () => _syncGeometryLayerVisibility(layer, view));
         _syncGeometryLayerVisibility(layer, view);
-        // Find projection layer, this is projection destination
-        layer.projection = view.referenceCrs;
-    } else if (parentLayer && parentLayer.tileMatrixSets && parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.projection))) {
-        layer.projection = source.projection;
-    } else {
-        layer.projection = parentLayer && parentLayer.extent.crs;
+        // Find crs projection layer, this is projection destination
+        layer.crs = view.referenceCrs;
+    } else if (!layer.crs) {
+        if (parentLayer && parentLayer.tileMatrixSets && parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.crs))) {
+            layer.crs = source.crs;
+        } else {
+            layer.crs = parentLayer && parentLayer.extent.crs;
+        }
     }
 
     if (layer.isLabelLayer) {
@@ -76,7 +78,7 @@ function _preprocessLayer(view, layer, parentLayer) {
             source,
             style: layer.style,
             zoom: layer.zoom,
-            crs: view.referenceCrs,
+            crs: source.crs,
         });
 
         layer.addEventListener('visible-property-changed', () => {
@@ -305,8 +307,8 @@ class View extends THREE.EventDispatcher {
             }
 
             // remove unused cache
-            const sameSource = this.getLayers(l => l.source.uid == layer.source.uid && l.projection == layer.projection);
-            layer.source.onLayerRemoved({ unusedCrs: sameSource.length == 0 ? layer.projection : undefined });
+            const sameSource = this.getLayers(l => l.source.uid == layer.source.uid && l.crs == layer.crs);
+            layer.source.onLayerRemoved({ unusedCrs: sameSource.length == 0 ? layer.crs : undefined });
 
             this.notifyChange(this.camera);
 

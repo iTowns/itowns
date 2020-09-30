@@ -93,7 +93,7 @@ class OrientedImageLayer extends GeometryLayer {
      * @param { Object } config - configuration of the layer
      * @param { number } config.backgroundDistance - Radius in meter of the sphere used as a background
      * @param { function } config.onPanoChanged - callback fired when current panoramic changes
-     * @param { string } config.projection - projection of the view
+     * @param { string } config.crs - crs projection of the view
      * @param { string } config.orientation - Json object, using GeoJSon format to represent points,
      * it's a set of panoramic position and orientation.
      * @param { string } config.calibrations - Json object, representing a set of camera. see [CameraCalibrationParser]{@link module:CameraCalibrationParser}
@@ -101,6 +101,11 @@ class OrientedImageLayer extends GeometryLayer {
      * a tecture is need for each camera, for each panoramic.
      */
     constructor(id, config = {}) {
+        /* istanbul ignore next */
+        if (config.projection) {
+            console.warn('OrientedImageLayer projection parameter is deprecated, use crs instead.');
+            config.crs = config.crs || config.projection;
+        }
         super(id, new THREE.Group(), config);
 
         this.background = config.background || createBackground(config.backgroundDistance);
@@ -125,11 +130,11 @@ class OrientedImageLayer extends GeometryLayer {
         // for each point, there is a position and a quaternion attribute.
         this.source.whenReady.then(metadata => GeoJsonParser.parse(config.orientation || metadata.orientation, {
             mergeFeatures: false,
-            crsOut: config.projection }).then((orientation) =>  {
+            crsOut: config.crs }).then((orientation) =>  {
             this.panos = orientation.features;
 
             const crsIn = orientation.optionsFeature.crsIn;
-            const crsOut = config.projection;
+            const crsOut = config.crs;
             const crs2crs = OrientationUtils.quaternionFromCRSToCRS(crsIn, crsOut);
             const quat = new THREE.Quaternion();
 

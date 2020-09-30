@@ -277,7 +277,7 @@ export function init3dTilesLayer(view, scheduler, layer, rootTile) {
             tile.updateMatrixWorld();
             layer.tileset.tiles[tile.tileId].loaded = true;
             layer.root = tile;
-            layer.extent = boundingVolumeToExtent(layer.projection || view.referenceCrs,
+            layer.extent = boundingVolumeToExtent(layer.crs || view.referenceCrs,
                 tile.boundingVolume, tile.matrixWorld);
             layer.onTileContentLoaded(tile);
         });
