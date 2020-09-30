@@ -96,7 +96,6 @@ function _preprocessLayer(view, layer, parentLayer) {
 
         layer.whenReady = layer.whenReady.then(() => {
             view.addLayer(labelLayer);
-            view.mainLoop.gfxEngine.label2dRenderer.registerLayer(labelLayer);
             return layer;
         });
     }
