@@ -79,7 +79,7 @@ function waitServerReady(port) {
 }
 
 const layersAreInitialized = async () => {
-    await page.waitFor(() => view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0
+    await page.waitForFunction(() => view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0
         && view.mainLoop.renderingState === 0
         && view.getLayers().every(layer => layer.ready), { timeout: 60000 });
 };
@@ -116,7 +116,7 @@ const loadExample = async (url, screenshotName) => {
 
     pageErrors.forEach((e) => { throw e; });
 
-    await page.waitFor(() => typeof (view) === 'object');
+    await page.waitForFunction(() => typeof (view) === 'object');
 
     await page.evaluate(() => {
         itowns.CameraUtils.defaultStopPlaceOnGroundAtEnd = true;
