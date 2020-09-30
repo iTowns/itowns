@@ -97,7 +97,7 @@ instantiate the source.
 var geometrySource = new itowns.WFSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-    projection: 'EPSG:4326',
+    crs: 'EPSG:4326',
 });
 
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
@@ -142,7 +142,7 @@ function setAltitude(properties) {
 var geometrySource = new itowns.WFSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-    projection: 'EPSG:4326',
+    crs: 'EPSG:4326',
 });
 
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
@@ -213,7 +213,7 @@ function setExtrusion(properties) {
 var geometrySource = new itowns.WFSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-    projection: 'EPSG:4326',
+    crs: 'EPSG:4326',
 });
 
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
@@ -250,7 +250,7 @@ function setColor(properties) {
 var geometrySource = new itowns.WFSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-    projection: 'EPSG:4326',
+    crs: 'EPSG:4326',
 });
 
 var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
@@ -365,7 +365,7 @@ layer on a globe, and change some things on this layer. Here is the final code:
             var geometrySource = new itowns.WFSSource({
                 url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
                 typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
-                projection: 'EPSG:4326',
+                crs: 'EPSG:4326',
             });
 
             var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
