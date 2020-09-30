@@ -49,10 +49,10 @@
                 text: ['csv'],
             }).then(function _(res) {
                 res.csv = Papa.parse(res.csv.trim()).data;
-                return CSVnVRTParser.parse(res, {
+                return CSVnVRTParser.parse(res, { out: {
                     buildExtent: true,
-                    crsOut: view.tileLayer.extent.crs,
-                });
+                    crs: view.tileLayer.extent.crs,
+                }});
             }).then(function _(features) {
                 var velibSource = new itowns.FileSource({ features });
 

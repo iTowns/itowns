@@ -48,8 +48,10 @@
                 text: ['prj'],
             }).then(function _(res) {
                 return itowns.ShapefileParser.parse(res, {
-                    buildExtent: true,
-                    crsOut: view.tileLayer.extent.crs,
+                    out: {
+                        crs: view.tileLayer.extent.crs,
+                        buildExtent: true,
+                    }
                 });
             }).then(function _(features) {
                 var velibSource = new itowns.FileSource({ features });

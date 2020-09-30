@@ -17,9 +17,10 @@
  *     text: ['csv']
  * }).then(function _(res) {
  *     res.csv = Papa.parse(res.csv.trim()).data;
- *     return CSVnVRTParser.parse(res, {
- *         buildExtent: true,
- *         crsOut: 'EPSG:4326'
+ *     return CSVnVRTParser.parse(res, { out: {
+ *              buildExtent: true,
+ *              crs: 'EPSG:4326'
+ *          }
  *     });
  * }).then(function _(features) {
  *     var source = new itowns.FileSource({ features });
@@ -89,7 +90,7 @@ var CSVnVRTParser = (function _() {
             type = getGeometryType(layer.GeometryType.value);
         }
 
-        var feature = new itowns.Feature(type, options.crsOut, options);
+        var feature = new itowns.Feature(type, options.out.crs, options.out);
 
         if (layer.Field) {
             if (!layer.Field.length) {
@@ -152,7 +153,7 @@ var CSVnVRTParser = (function _() {
 
     function readLayer(layer, data, options, crs) {
         if (layer.OGRVRTLayer) {
-            var collection = new itowns.FeatureCollection(options.crsOut, options);
+            var collection = new itowns.FeatureCollection(options.out.crs, options.out);
             var feature = OGRVRTLayer2Feature(layer.OGRVRTLayer, data, layer.TargetSRS.value, options);
             collection.pushFeature(feature);
             return collection;

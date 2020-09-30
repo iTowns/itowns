@@ -67,10 +67,14 @@
                 console.info('Globe initialized');
                 itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
                     .then(gpx => itowns.GpxParser.parse(gpx, {
-                        buildExtent: true,
-                        crsIn: 'EPSG:4326',
-                        crsOut: view.referenceCrs,
-                        mergeFeatures: true,
+                        in: {
+                            crs: 'EPSG:4326',
+                        },
+                        out: {
+                            crs: view.referenceCrs,
+                            buildExtent: true,
+                            mergeFeatures: true,
+                        }
                     }))
                     .then(collection => itowns.Feature2Mesh.convert({
                         color: new itowns.THREE.Color(0xff0000),

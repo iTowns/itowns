@@ -57,12 +57,16 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             var optionsGeoJsonParser = {
-                buildExtent: true,
-                crsIn: 'EPSG:4326',
-                crsOut: view.tileLayer.extent.crs,
-                mergeFeatures: true,
-                withNormal: false,
-                withAltitude: false,
+                in: {
+                    crs: 'EPSG:4326',
+                },
+                out: {
+                    crs: view.tileLayer.extent.crs,
+                    buildExtent: true,
+                    mergeFeatures: true,
+                    withNormal: false,
+                    withAltitude: false,
+                }
             };
 
             // Convert by iTowns
