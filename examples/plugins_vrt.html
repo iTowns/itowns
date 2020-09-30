@@ -53,10 +53,8 @@
                     buildExtent: true,
                     crsOut: view.tileLayer.extent.crs,
                 });
-            }).then(function _(feature) {
-                var velibSource = new itowns.FileSource({
-                    parsedData: feature,
-                });
+            }).then(function _(features) {
+                var velibSource = new itowns.FileSource({ features });
 
                 var velibLayer = new itowns.ColorLayer('velib', {
                     source: velibSource,
