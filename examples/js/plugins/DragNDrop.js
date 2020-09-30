@@ -67,12 +67,16 @@ var DragNDrop = (function _() {
                 }
 
                 extension.parser(data, {
-                    buildExtent: true,
-                    crsIn: 'EPSG:4326',
-                    crsOut: (extension.mode == _GEOMETRY ? _view.referenceCrs : _view.tileLayer.extent.crs),
-                    mergeFeatures: true,
-                    withNormal: (extension.mode == _GEOMETRY),
-                    withAltitude: (extension.mode == _GEOMETRY),
+                    in: {
+                        crs: 'EPSG:4326',
+                    },
+                    out: {
+                        crs: (extension.mode == _GEOMETRY ? _view.referenceCrs : _view.tileLayer.extent.crs),
+                        buildExtent: true,
+                        mergeFeatures: true,
+                        withNormal: (extension.mode == _GEOMETRY),
+                        withAltitude: (extension.mode == _GEOMETRY),
+                    },
                 }).then(function _(features) {
                     var dimensions = features.extent.dimensions();
 
