@@ -32,7 +32,7 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
  * care of everything.</caption>
  * const kmlSource = new itowns.FileSource({
  *     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
- *     projection: 'EPSG:4326',
+ *     crs: 'EPSG:4326',
  *     fetcher: itowns.Fetcher.xml,
  *     parser: itowns.KMLParser.parse,
  * });
@@ -40,7 +40,7 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
  * const kmlLayer = new itowns.ColorLayer('Kml', {
  *     name: 'kml',
  *     transparent: true,
- *     projection: view.tileLayer.extent.crs,
+ *     crs: view.tileLayer.extent.crs,
  *     source: kmlSource,
  * });
  *
@@ -53,7 +53,7 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
  *     .then(function _(gpx) {
  *         const gpxSource = new itowns.FileSource({
  *             data: gpx,
- *             projection: 'EPSG:4326',
+ *             crs: 'EPSG:4326',
  *             parser: itowns.GpxParser.parse,
  *         });
  *
@@ -90,7 +90,7 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
  *         });
  *     }).then(function _(parsedData) {
  *         ariege.source = new itowns.FileSource({
- *             projection: 'EPSG:4326',
+ *             crs: 'EPSG:4326',
  *             parsedData,
  *         });
  *
@@ -100,19 +100,22 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
 class FileSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * FileSource and {@link Source}. Only `projection` is mandatory, but if it
-     * presents in `parsedData` under the property `projection` or `crs`, it is
-     * fine.
-     * @param {string} crsOut - The projection of the output data after parsing.
+     * FileSource and {@link Source}. Only `crs` is mandatory, but if it
+     * presents in `parsedData` under the property `crs`, it is fine.
      *
      * @constructor
      */
     constructor(source) {
-        if (!source.projection) {
-            if (source.parsedData && (source.parsedData.crs || source.parsedData.projection)) {
-                source.projection = source.parsedData.crs || source.parsedData.projection;
+        /* istanbul ignore next */
+        if (source.projection) {
+            console.warn('FileSource projection parameter is deprecated, use crs instead.');
+            source.crs = source.crs || source.projection;
+        }
+        if (!source.crs) {
+            if (source.parsedData && source.parsedData.crs) {
+                source.crs = source.parsedData.crs;
             } else {
-                throw new Error('source.projection is required in FileSource');
+                throw new Error('source.crs is required in FileSource');
             }
         }
 

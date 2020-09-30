@@ -47,7 +47,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     if (!parent || !material) {
         return;
     }
-    const extentsDestination = node.getExtentsByProjection(layer.projection);
+    const extentsDestination = node.getExtentsByProjection(layer.crs);
 
     const zoom = extentsDestination[0].zoom;
     if (zoom > layer.zoom.max || zoom < layer.zoom.min) {
@@ -178,7 +178,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // Elevation is currently handled differently from color layers.
     // This is caused by a LayeredMaterial limitation: only 1 elevation texture
     // can be used (where a tile can have N textures x M layers)
-    const extentsDestination = node.getExtentsByProjection(layer.projection);
+    const extentsDestination = node.getExtentsByProjection(layer.crs);
     const zoom = extentsDestination[0].zoom;
     if (zoom > layer.zoom.max || zoom < layer.zoom.min) {
         return;

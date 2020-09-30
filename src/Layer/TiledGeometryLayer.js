@@ -293,7 +293,7 @@ class TiledGeometryLayer extends GeometryLayer {
         let nodeLayer = node.material.getElevationLayer();
 
         for (const e of context.elevationLayers) {
-            const extents = node.getExtentsByProjection(e.projection);
+            const extents = node.getExtentsByProjection(e.crs);
             const zoom = extents[0].zoom;
             if (zoom > e.zoom.max || zoom < e.zoom.min) {
                 continue;
@@ -311,7 +311,7 @@ class TiledGeometryLayer extends GeometryLayer {
             if (c.frozen || !c.visible || !c.ready) {
                 continue;
             }
-            const extents = node.getExtentsByProjection(c.projection);
+            const extents = node.getExtentsByProjection(c.crs);
             const zoom = extents[0].zoom;
             if (zoom > c.zoom.max || zoom < c.zoom.min) {
                 continue;

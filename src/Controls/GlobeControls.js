@@ -1084,7 +1084,7 @@ class GlobeControls extends THREE.EventDispatcher {
      *
      * @deprecated Use View#getScale instead.
      */
-    getScale(pitch) {
+    getScale(pitch) /* istanbul ignore next */ {
         console.warn('Deprecated, use View#getScale instead.');
         return this.view.getScale(pitch);
     }
@@ -1097,7 +1097,7 @@ class GlobeControls extends THREE.EventDispatcher {
      *
      * @deprecated Use `View#getPixelsToMeters` instead.
      */
-    pixelsToMeters(pixels, pixelPitch = 0.28) {
+    pixelsToMeters(pixels, pixelPitch = 0.28) /* istanbul ignore next */ {
         console.warn('Deprecated use View#getPixelsToMeters instead.');
         const scaled = this.getScale(pixelPitch);
         const size = pixels * pixelPitch;
@@ -1113,7 +1113,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * @deprecated Use `View#getPixelsToMeters` and `GlobeControls#metersToDegrees`
      * instead.
      */
-    pixelsToDegrees(pixels, pixelPitch = 0.28) {
+    pixelsToDegrees(pixels, pixelPitch = 0.28) /* istanbul ignore next */ {
         console.warn('Deprecated, use View#getPixelsToMeters and GlobeControls#getMetersToDegrees instead.');
         const chord = this.pixelsToMeters(pixels, pixelPitch);
         return THREE.MathUtils.radToDeg(2 * Math.asin(chord / (2 * ellipsoidSizes.x)));
@@ -1127,7 +1127,7 @@ class GlobeControls extends THREE.EventDispatcher {
      *
      * @deprecated Use `View#getMetersToPixels` instead.
      */
-    metersToPixels(value, pixelPitch = 0.28) {
+    metersToPixels(value, pixelPitch = 0.28) /* istanbul ignore next */ {
         console.warn('Deprecated, use View#getMetersToPixels instead.');
         const scaled = this.getScale(pixelPitch);
         pixelPitch /= 1000;

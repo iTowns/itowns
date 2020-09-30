@@ -51,7 +51,7 @@ export default {
      * geometry.
      * @param {ArrayBuffer} data.dbf - Columnar attributes for each shape, in
      * [dBase]{@link https://en.wikipedia.org/wiki/DBase} IV format.
-     * @param {string} [data.prj] - The coordinate system and projection
+     * @param {string} [data.prj] - The coordinate system and crs projection
      * information.
      * @param {geojsonParserOptions} [options]
      *

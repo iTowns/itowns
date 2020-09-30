@@ -23,9 +23,9 @@ class MaterialLayer {
     constructor(material, layer) {
         this.id = layer.id;
         this.textureOffset = 0; // will be updated in updateUniforms()
-        this.crs = layer.parent.tileMatrixSets.indexOf(CRS.formatToTms(layer.projection));
+        this.crs = layer.parent.tileMatrixSets.indexOf(CRS.formatToTms(layer.crs));
         if (this.crs == -1) {
-            console.error('Unknown crs:', layer.projection);
+            console.error('Unknown crs:', layer.crs);
         }
 
         // Define color properties

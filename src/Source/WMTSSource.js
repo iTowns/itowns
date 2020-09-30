@@ -17,7 +17,7 @@ import TMSSource from 'Source/TMSSource';
  * Default value is '1.0.0'.
  * @property {string} style - The style to query on the WMTS server. Default
  * value is 'normal'.
- * @property {string} projection - The projection in which to fetch the data. If
+ * @property {string} crs - The crs projection in which to fetch the data. If
  * not specified, it is deduced from `tileMatrixSet`. Default value is
  * 'EPSG:3857'.
  * @property {string} tileMatrixSet - Tile matrix set of the layer, used in the
@@ -67,10 +67,6 @@ class WMTSSource extends TMSSource {
     constructor(source) {
         if (!source.name) {
             throw new Error('New WMTSSource: name is required');
-        }
-
-        if (!source.projection) {
-            throw new Error('New WMTSSource: projection is required');
         }
 
         super(source);

@@ -10,7 +10,7 @@ const cacheTile = new Cache();
 export default function newTileGeometry(builder, params) {
     const { sharableExtent, quaternion, position } = builder.computeSharableExtent(params.extent);
     const south = sharableExtent.south.toFixed(6);
-    const bufferKey = `${builder.projection}_${params.disableSkirt ? 0 : 1}_${params.segment}`;
+    const bufferKey = `${builder.crs}_${params.disableSkirt ? 0 : 1}_${params.segment}`;
     let promiseGeometry = cacheTile.get(south, params.level, bufferKey);
 
     // build geometry if doesn't exist

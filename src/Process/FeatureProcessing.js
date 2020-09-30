@@ -67,7 +67,7 @@ export default {
             return features;
         }
 
-        const extentsDestination = node.getExtentsByProjection(layer.source.projection) || [node.extent];
+        const extentsDestination = node.getExtentsByProjection(layer.source.crs) || [node.extent];
 
         const zoomDest = extentsDestination[0].zoom;
 
@@ -78,7 +78,7 @@ export default {
 
         const extentsSource = [];
         for (const extentDest of extentsDestination) {
-            const ext = layer.source.projection == extentDest.crs ? extentDest : extentDest.as(layer.source.projection);
+            const ext = layer.source.crs == extentDest.crs ? extentDest : extentDest.as(layer.source.crs);
             ext.zoom = extentDest.zoom;
             if (extentInsideSource(ext, layer.source)) {
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();

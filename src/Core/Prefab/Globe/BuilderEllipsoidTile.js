@@ -24,8 +24,8 @@ class BuilderEllipsoidTile {
             dimension: new THREE.Vector2(),
         };
 
-        this.projection = options.projection;
-        // Order projection on tiles
+        this.crs = options.crs;
+        // Order crs projection on tiles
         this.uvCount = options.uvCount;
 
         this.computeUvs = [
@@ -68,7 +68,7 @@ class BuilderEllipsoidTile {
     // get center tile in cartesian 3D
     center(extent) {
         return extent.center(this.tmp.coords[0])
-            .as(this.projection, this.tmp.coords[1]).toVector3();
+            .as(this.crs, this.tmp.coords[1]).toVector3();
     }
 
     // get position 3D cartesian
@@ -77,7 +77,7 @@ class BuilderEllipsoidTile {
             params.projected.longitude,
             params.projected.latitude);
 
-        this.tmp.coords[0].as(this.projection, this.tmp.coords[1]).toVector3(this.tmp.position);
+        this.tmp.coords[0].as(this.crs, this.tmp.coords[1]).toVector3(this.tmp.position);
         return this.tmp.position;
     }
 
