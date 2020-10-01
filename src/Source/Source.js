@@ -127,7 +127,7 @@ class Source {
         this.crs = source.crs;
         this.attribution = source.attribution;
         this.whenReady = Promise.resolve();
-        this._parsedDatasCaches = {};
+        this._featuresCaches = {};
         if (source.extent && !(source.extent.isExtent)) {
             this.extent = new Extent(this.crs, source.extent);
         } else {
@@ -165,23 +165,23 @@ class Source {
      * @return     {FeatureCollection|Texture}  The parsed data.
      */
     loadData(extent, options) {
-        const cache = this._parsedDatasCaches[options.crsOut];
+        const cache = this._featuresCaches[options.crsOut];
         // try to get parsed data from cache
-        let parsedData = cache.getByArray(this.requestToKey(extent));
-        if (!parsedData) {
+        let features = cache.getByArray(this.requestToKey(extent));
+        if (!features) {
             // otherwise fetch/parse the data
-            parsedData = cache.setByArray(fetchSourceData(this, extent).then(fetchedData => this.parser(fetchedData, options),
+            features = cache.setByArray(fetchSourceData(this, extent).then(fetchedData => this.parser(fetchedData, options),
                 err => this.handlingError(err)), this.requestToKey(extent));
             /* istanbul ignore next */
             if (this.onParsedFile) {
-                parsedData.then((feature) => {
-                    this.onParsedFile(feature);
+                features.then((feat) => {
+                    this.onParsedFile(feat);
                     console.warn('Source.onParsedFile was deprecated');
-                    return feature;
+                    return feat;
                 });
             }
         }
-        return parsedData;
+        return features;
     }
 
     /**
@@ -191,8 +191,8 @@ class Source {
      */
     onLayerAdded(options) {
         // Added new cache by crs
-        if (!this._parsedDatasCaches[options.crsOut]) {
-            this._parsedDatasCaches[options.crsOut] = new Cache();
+        if (!this._featuresCaches[options.crsOut]) {
+            this._featuresCaches[options.crsOut] = new Cache();
         }
     }
 
@@ -203,10 +203,10 @@ class Source {
      */
     onLayerRemoved(options = {}) {
         // delete unused cache
-        const unusedCache = this._parsedDatasCaches[options.unusedCrs];
+        const unusedCache = this._featuresCaches[options.unusedCrs];
         if (unusedCache) {
             unusedCache.clear();
-            delete this._parsedDatasCaches[options.unusedCrs];
+            delete this._featuresCaches[options.unusedCrs];
         }
     }
 

@@ -223,7 +223,7 @@ class Layer extends THREE.EventDispatcher {
                 data = Promise.resolve(this.convert(feature, to));
             } else {
                 data = this.source.loadData(from, this.parsingOptions)
-                    .then(parsedData => this.convert(parsedData, to), (err) => {
+                    .then(feat => this.convert(feat, to), (err) => {
                         throw err;
                     });
             }

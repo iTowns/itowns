@@ -783,14 +783,14 @@ class View extends THREE.EventDispatcher {
 
             for (const materialLayer of tile.object.material.getLayers(layers)) {
                 for (const texture of materialLayer.textures) {
-                    if (!texture.parsedData) {
+                    if (!texture.features) {
                         continue;
                     }
 
-                    precision = CRS.isMetricUnit(texture.parsedData.crs) ? precisions.M : precisions.D;
+                    precision = CRS.isMetricUnit(texture.features.crs) ? precisions.M : precisions.D;
 
                     result[materialLayer.id] = result[materialLayer.id].concat(
-                        FeaturesUtils.filterFeaturesUnderCoordinate(coordinates, texture.parsedData, precision));
+                        FeaturesUtils.filterFeaturesUnderCoordinate(coordinates, texture.features, precision));
                 }
             }
         }

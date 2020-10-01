@@ -1,7 +1,7 @@
 export default {
     executeCommand(command) {
         const layer = command.layer;
-        const features = command.parsedData || [];
+        const features = command.features || [];
         const src = command.extentsSource;
         const dst = command.extentsDestination || src;
 
