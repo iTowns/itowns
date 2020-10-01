@@ -229,7 +229,7 @@ describe('Sources', function () {
                 assert.ok(source.extentsInsideLimit([extent, extent]));
                 assert.ok(source.fetchedData);
                 assert.ok(source.fetchedData);
-                assert.ok(!source.parsedData);
+                assert.ok(!source.features);
                 assert.ok(source.isFileSource);
                 fetchedData = source.fetchedData;
                 assert.equal(fetchedData.properties.nom, 'Ariège');
@@ -244,7 +244,7 @@ describe('Sources', function () {
                 crs: 'EPSG:4326',
             });
 
-            assert.ok(!source.parsedData);
+            assert.ok(!source.features);
             assert.equal(source.urlFromExtent(), 'fake-file-url');
             assert.ok(source.fetchedData);
             assert.ok(source.isFileSource);
@@ -264,9 +264,9 @@ describe('Sources', function () {
             layer._resolve();
         });
 
-        it('should instance and use FileSource with parsedData', function () {
+        it('should instance and use FileSource with features', function () {
             const source = new FileSource({
-                parsedData: { foo: 'bar', crs: 'EPSG:4326' },
+                features: { foo: 'bar', crs: 'EPSG:4326' },
                 crs: 'EPSG:4326',
             });
             source.onLayerAdded({ crsOut: source.crs });
@@ -282,17 +282,17 @@ describe('Sources', function () {
             assert.throws(() => new FileSource({ crs: 'EPSG:4326' }), Error);
         });
 
-        describe('should set the crs projection from parsedData', function () {
+        describe('should set the crs projection from features', function () {
             it('with the crs', function () {
                 const source = new FileSource({
-                    parsedData: { crs: 'EPSG:4326' },
+                    features: { crs: 'EPSG:4326' },
                 });
                 assert.strictEqual(source.crs, 'EPSG:4326');
             });
 
             it('with the crs projection', function () {
                 const source = new FileSource({
-                    parsedData: { crs: 'EPSG:4326' },
+                    features: { crs: 'EPSG:4326' },
                 });
                 assert.strictEqual(source.crs, 'EPSG:4326');
             });
