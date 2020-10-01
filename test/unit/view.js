@@ -21,7 +21,7 @@ describe('Viewer', function () {
 
         globelayer = new GlobeLayer('globe', new THREE.Group());
         source = new FileSource({
-            parsedData: { crs: 'EPSG:4326' },
+            features: { crs: 'EPSG:4326' },
             crs: 'EPSG:4326',
         });
 

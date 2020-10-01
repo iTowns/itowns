@@ -247,7 +247,7 @@ describe('Provide in Sources', function () {
         featureLayer.source.uid = 8;
         featureLayer.parsingOptions.mergeFeatures = true;
         featureLayer.cache.data.clear();
-        featureLayer.source._parsedDatasCaches = {};
+        featureLayer.source._featuresCaches = {};
         featureLayer.source.onLayerAdded({ crsOut: featureLayer.crs });
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
