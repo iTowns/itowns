@@ -31,7 +31,7 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
  *         crsOut: view.tileLayer.extent.crs,
  *     });
  * }).then(function _(geojson) {
- *     var source = new FileSource({ parsedData: geojson });
+ *     var source = new FileSource({ features: geojson });
  *     var layer = new ColorLayer('velib', { source  });
  *     view.addLayer(layer);
  * });

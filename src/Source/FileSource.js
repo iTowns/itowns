@@ -14,7 +14,7 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
  *  <li>fetch the file, and give the data to the source using the `fetchedData`
  *  property.</li>
  *  <li>fetch the file, parse it and git the parsed data to the source using the
- *  `parsedData` property.</li>
+ *  `features` property.</li>
  * </ul>
  * See the examples below for real use cases.
  *
@@ -25,7 +25,7 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
  * internally for optimisation.
  * @property {*} fetchedData - Once the file has been loaded, the resulting data
  * is stored in this property.
- * @property {*} parsedData - Once the file has been loaded and parsed, the
+ * @property {*} features - Once the file has been loaded and parsed, the
  * resulting data is stored in this property.
  *
  * @example <caption>Simple: create a source, a layer, and let iTowns taking
@@ -88,10 +88,10 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
  *             withNormal: false,
  *             withAltitude: false,
  *         });
- *     }).then(function _(parsedData) {
+ *     }).then(function _(features) {
  *         ariege.source = new itowns.FileSource({
  *             crs: 'EPSG:4326',
- *             parsedData,
+ *             features,
  *         });
  *
  *         return view.addLayer(ariegeLayer);
@@ -101,43 +101,48 @@ class FileSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * FileSource and {@link Source}. Only `crs` is mandatory, but if it
-     * presents in `parsedData` under the property `crs`, it is fine.
+     * presents in `features` under the property `crs`, it is fine.
      *
      * @constructor
      */
     constructor(source) {
+        /* istanbul ignore next */
+        if (source.parsedData) {
+            console.warn('FileSource parsedData parameter is deprecated, use features instead of.');
+            source.features = source.features || source.parsedData;
+        }
         /* istanbul ignore next */
         if (source.projection) {
             console.warn('FileSource projection parameter is deprecated, use crs instead.');
             source.crs = source.crs || source.projection;
         }
         if (!source.crs) {
-            if (source.parsedData && source.parsedData.crs) {
-                source.crs = source.parsedData.crs;
+            if (source.features && source.features.crs) {
+                source.crs = source.features.crs;
             } else {
                 throw new Error('source.crs is required in FileSource');
             }
         }
 
-        if (!source.url && !source.fetchedData && !source.parsedData) {
-            throw new Error(`url, fetchedData and parsedData are not set in
+        if (!source.url && !source.fetchedData && !source.features) {
+            throw new Error(`url, fetchedData and features are not set in
                 FileSource; at least one needs to be present`);
         }
 
-        // the fake url is for when we use the fetchedData or parsedData mode
+        // the fake url is for when we use the fetchedData or features mode
         source.url = source.url || 'fake-file-url';
         super(source);
 
         this.isFileSource = true;
 
         this.fetchedData = source.fetchedData;
-        if (!this.fetchedData && !source.parsedData) {
+        if (!this.fetchedData && !source.features) {
             this.whenReady = this.fetcher(this.urlFromExtent(), this.networkOptions).then((f) => {
                 this.fetchedData = f;
             });
-        } else if (source.parsedData) {
-            this._parsedDatasCaches[source.parsedData.crs] = new Cache();
-            this._parsedDatasCaches[source.parsedData.crs].setByArray(Promise.resolve(source.parsedData), [0]);
+        } else if (source.features) {
+            this._featuresCaches[source.features.crs] = new Cache();
+            this._featuresCaches[source.features.crs].setByArray(Promise.resolve(source.features), [0]);
         }
 
         this.whenReady.then(() => this.fetchedData);
@@ -151,13 +156,13 @@ class FileSource extends Source {
 
     onLayerAdded(options) {
         super.onLayerAdded(options);
-        let parsedData = this._parsedDatasCaches[options.crsOut].getByArray([0]);
-        if (!parsedData) {
+        let features = this._featuresCaches[options.crsOut].getByArray([0]);
+        if (!features) {
             options.buildExtent = true;
-            parsedData = this.parser(this.fetchedData, options);
-            this._parsedDatasCaches[options.crsOut].setByArray(parsedData, [0]);
+            features = this.parser(this.fetchedData, options);
+            this._featuresCaches[options.crsOut].setByArray(features, [0]);
         }
-        parsedData.then((data) => {
+        features.then((data) => {
             this.extent = data.extent;
             if (data.isFeatureCollection) {
                 data.setParentStyle(options.style);
@@ -174,7 +179,7 @@ class FileSource extends Source {
      * @return     {FeatureCollection|Texture}  The parsed data.
      */
     loadData(extent, options) {
-        return this._parsedDatasCaches[options.crsOut].getByArray([0]);
+        return this._featuresCaches[options.crsOut].getByArray([0]);
     }
 
     extentInsideLimit(extent) {
