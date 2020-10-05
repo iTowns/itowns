@@ -1,6 +1,7 @@
 #include <itowns/WebGL2_pars_vertex>
 #include <itowns/precision_qualifier>
 #include <common>
+#include <packing>
 #include <itowns/project_pars_vertex>
 #include <itowns/elevation_pars_vertex>
 #include <logdepthbuf_pars_vertex>

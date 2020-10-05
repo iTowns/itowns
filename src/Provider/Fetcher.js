@@ -1,4 +1,4 @@
-import { TextureLoader, DataTexture, RedFormat, FloatType, AlphaFormat } from 'three';
+import { TextureLoader, DataTexture, FloatType, AlphaFormat } from 'three';
 
 const textureLoader = new TextureLoader();
 const SIZE_TEXTURE_TILE = 256;
@@ -17,9 +17,7 @@ const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) =
 
 function getTextureFloat(buffer, isWebGL2 = true) {
     if (isWebGL2) {
-        const texture = new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, RedFormat, FloatType);
-        texture.internalFormat = 'R32F';
-        return texture;
+        return new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE);
     } else {
         return new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, AlphaFormat, FloatType);
     }
@@ -135,7 +133,7 @@ export default {
      */
     textureFloat(url, options = {}) {
         return arrayBuffer(url, options).then((buffer) => {
-            const floatArray = new Float32Array(buffer);
+            const floatArray = new Uint8Array(buffer);
             const texture = getTextureFloat(floatArray, options.isWebGL2);
             return texture;
         });
