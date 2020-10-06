@@ -111,6 +111,7 @@ class Source extends InformationsData {
      * Source. Only the `url` property is mandatory.
      *
      * @constructor
+     * @extends InformationsData
      */
     constructor(source) {
         super(source);
