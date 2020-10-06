@@ -133,6 +133,8 @@ class Layer extends THREE.EventDispatcher {
         this.cache = new Cache(config.cacheLifeTime);
 
         this.mergeFeatures = this.mergeFeatures === undefined ? true : config.mergeFeatures;
+
+        // TODO: verify but this.source.filter seems be always undefined.
         this.filter = this.filter || this.source.filter;
     }
 
@@ -225,7 +227,7 @@ class Layer extends THREE.EventDispatcher {
      * Determines whether the specified feature is valid data.
      *
      * @param      {Feature}  feature  The feature
-     * @returns the feature is returned if it's valided
+     * @returns {Feature} the feature is returned if it's valided
      */
     // eslint-disable-next-line
     isValidData(feature) {}

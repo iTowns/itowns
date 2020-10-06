@@ -12,6 +12,7 @@
                 "Feature",
                 "FeatureGeometry",
                 "FeatureCollection",
+                "FeatureBuildingOptions",
                 "Style",
                 "Label"
             ],
@@ -49,6 +50,8 @@
             ],
 
             "Source": [
+                "InformationsData",
+                "ParsingOptions",
                 "Source",
                 "WMTSSource",
                 "WMSSource",

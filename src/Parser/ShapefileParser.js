@@ -58,10 +58,9 @@ export default {
      * [dBase]{@link https://en.wikipedia.org/wiki/DBase} IV format.
      * @param {string} [data.prj] - The coordinate system and crs projection
      * information.
-     * @param {geojsonParserOptions} [options]
+     * @param {ParsingOptions} [options]
      *
-     * @return {Promise} A promise resolving with a [FeatureCollection]{@link
-     * module:GeoJsonParser~FeatureCollection}.
+     * @return {Promise} A promise resolving with a {@link FeatureCollection}.
      */
     parse(data, options = {}) {
         options = deprecatedParsingOptionsToNewOne(options);

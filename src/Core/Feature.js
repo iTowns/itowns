@@ -18,6 +18,28 @@ const coordOut = new Coordinates('EPSG:4326', 0, 0, 0);
 const defaultNormal = new THREE.Vector3(0, 0, 1);
 
 /**
+ * @property {string} crs - The CRS to convert the input coordinates to.
+ * @property {Extent|boolean} [filteringExtent=undefined] - Optional filter to reject
+ * features outside of extent. Extent filetring is file extent if filteringExtent is true.
+ * @property {boolean} [buildExtent=false] - If true the geometry will
+ * have an extent property containing the area covered by the geometry.
+ * True if the layer does not inherit from {@link GeometryLayer}.
+ * @property {string} forcedExtentCrs - force feature extent crs if buildExtent is true.
+ * @property {function} [filter] - Filter function to remove features
+ * @property {boolean} [mergeFeatures=true] - If true all geometries are merged by type and multi-type
+ * @property {boolean} [withNormal=true] - If true each coordinate normal is computed.
+ * True if the layer inherits from {@link GeometryLayer}
+ * @property {boolean} [withAltitude=true] - If true each coordinate altitude is kept
+ * True if the layer inherits from {@link GeometryLayer}
+ * @property {boolean} [overrideAltitudeInToZero=false] - If true, the altitude of the source data isn't taken into account for 3D geometry convertions.
+ * the altitude will be override to 0. This can be useful if you don't have a DEM or provide a new one when converting (with Layer.convert).
+ * @property {Style} style - The style to inherit when creating
+ * style for all new features.
+ *
+*/
+export class FeatureBuildingOptions {}
+
+/**
  * @property {Extent} extent - The 2D extent containing all the points
  * composing the geometry.
  * @property {Object[]} indices - Contains the indices that define the geometry.
@@ -168,14 +190,13 @@ export const FEATURE_TYPES = {
  * FeatureGeometry}.
  * @property {Extent?} extent - The extent containing all the geometries
  * composing the feature.
- * @property {Style} style - The style of the Feature.
  */
 class Feature {
     /**
      *
      * @param {string} type type of Feature. It can be 'point', 'line' or 'polygon'.
      * @param {string} crs Geographic or Geocentric coordinates system.
-     * @param {Object} [options={}] options to build feature.
+     * @param {FeatureBuildingOptions} [options={}] options to build feature.
      * @param {boolean} [options.buildExtent] Build extent and update when adding new vertice.
      * @param {boolean} [options.withAltitude] Set vertice altitude when adding new vertice.
      * @param {boolean} [options.withNormal] Set vertice normal when adding new vertice.
@@ -245,6 +266,12 @@ export default Feature;
  * An object regrouping a list of [features]{@link Feature} and the extent of this collection.
  */
 export class FeatureCollection {
+    /**
+     * Constructs a new instance.
+     *
+     * @param      {string}  crs      The crs projection.
+     * @param      {FeatureBuildingOptions|Layer}  options  The building options .
+     */
     constructor(crs, options) {
         this.isFeatureCollection = true;
         // TODO: Replace crs parameter by CRS.formatToEPSG(options.crs)

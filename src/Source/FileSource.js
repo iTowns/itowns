@@ -82,12 +82,14 @@ const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
  * itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson')
  *     .then(function _(geojson) {
  *         return itowns.GeoJsonParser.parse(geojson, {
- *             buildExtent: true,
- *             crsIn: 'EPSG:4326',
- *             crsOut: view.tileLayer.extent.crs,
- *             mergeFeatures: true,
- *             withNormal: false,
- *             withAltitude: false,
+ *             in: { in: 'EPSG:4326' },
+ *             out: {
+     *             crs: view.tileLayer.extent.crs,
+     *             buildExtent: true,
+     *             mergeFeatures: true,
+     *             withNormal: false,
+     *             withAltitude: false,
+ *             },
  *         });
  *     }).then(function _(features) {
  *         ariege.source = new itowns.FileSource({
@@ -180,7 +182,7 @@ class FileSource extends Source {
      * The loaded data is a Feature or Texture.
      *
      * @param      {Extent}  extent   extent requested parsed data.
-     * @param      {Object}  out     The feature returned options
+     * @param      {FeatureBuildingOptions|Layer}  out  The feature returned options
      * @return     {FeatureCollection|Texture}  The parsed data.
      */
     loadData(extent, out) {
