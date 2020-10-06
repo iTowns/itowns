@@ -126,14 +126,18 @@ class OrientedImageLayer extends GeometryLayer {
 
         const resolve = this.addInitializationStep();
 
+        this.mergeFeatures = false;
+        this.filteringExtent = false;
+        const options = { out: this };
+
         // panos is an array of feature point, representing many panoramics.
         // for each point, there is a position and a quaternion attribute.
-        this.source.whenReady.then(metadata => GeoJsonParser.parse(config.orientation || metadata.orientation, {
-            mergeFeatures: false,
-            crsOut: config.crs }).then((orientation) =>  {
+        this.source.whenReady.then(metadata => GeoJsonParser.parse(config.orientation || metadata.orientation, options).then((orientation) =>  {
             this.panos = orientation.features;
 
-            const crsIn = orientation.optionsFeature.crsIn;
+            // the crs input is parsed in geojson parser
+            // and returned in options.in
+            const crsIn = options.in.crs;
             const crsOut = config.crs;
             const crs2crs = OrientationUtils.quaternionFromCRSToCRS(crsIn, crsOut);
             const quat = new THREE.Quaternion();

@@ -1,6 +1,7 @@
 import Source from 'Source/Source';
 import Cache from 'Core/Scheduler/Cache';
 import Extent from 'Core/Geographic/Extent';
+import CRS from 'Core/Geographic/Crs';
 
 const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
@@ -155,17 +156,21 @@ class FileSource extends Source {
     }
 
     onLayerAdded(options) {
+        options.in = this;
         super.onLayerAdded(options);
-        let features = this._featuresCaches[options.crsOut].getByArray([0]);
+        let features = this._featuresCaches[options.out.crs].getByArray([0]);
         if (!features) {
-            options.buildExtent = true;
+            options.out.buildExtent = this.crs != 'EPSG:4978';
+            if (options.out.buildExtent) {
+                options.out.forcedExtentCrs = options.out.crs != 'EPSG:4978' ? options.out.crs : CRS.formatToEPSG(this.crs);
+            }
             features = this.parser(this.fetchedData, options);
-            this._featuresCaches[options.crsOut].setByArray(features, [0]);
+            this._featuresCaches[options.out.crs].setByArray(features, [0]);
         }
         features.then((data) => {
             this.extent = data.extent;
             if (data.isFeatureCollection) {
-                data.setParentStyle(options.style);
+                data.setParentStyle(options.out.style);
             }
         });
     }
@@ -175,11 +180,11 @@ class FileSource extends Source {
      * The loaded data is a Feature or Texture.
      *
      * @param      {Extent}  extent   extent requested parsed data.
-     * @param      {Object}  options  The parsing options
+     * @param      {Object}  out     The feature returned options
      * @return     {FeatureCollection|Texture}  The parsed data.
      */
-    loadData(extent, options) {
-        return this._featuresCaches[options.crsOut].getByArray([0]);
+    loadData(extent, out) {
+        return this._featuresCaches[out.crs].getByArray([0]);
     }
 
     extentInsideLimit(extent) {

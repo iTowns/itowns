@@ -1,5 +1,6 @@
 import { gpx } from '@tmcw/togeojson';
 import GeoJsonParser from 'Parser/GeoJsonParser';
+import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 /**
  * The GpxParser module provides a [parse]{@link module:GpxParser.parse}
@@ -20,6 +21,7 @@ export default {
      * module:GeoJsonParser~FeatureCollection}.
      */
     parse(gpxFile, options) {
+        options = deprecatedParsingOptionsToNewOne(options);
         return GeoJsonParser.parse(gpx(gpxFile), options);
     },
 };

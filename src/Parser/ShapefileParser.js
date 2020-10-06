@@ -1,6 +1,7 @@
 import proj4 from 'proj4';
 import shp from 'shpjs';
 import GeoJsonParser from 'Parser/GeoJsonParser';
+import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 /**
  * The ShapefileParser module provides a [parse]{@link
@@ -26,9 +27,13 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
  *         shx: res[2],
  *         prj: res[3],
  *     }, {
- *         buildExtent: true,
- *         crsIn: 'EPSG:4326',
- *         crsOut: view.tileLayer.extent.crs,
+ *            in: {
+ *              crs: 'EPSG:4326',
+ *         },
+ *         out: {
+ *             crs: view.tileLayer.extent.crs,
+ *             buildExtent: true,
+ *         }
  *     });
  * }).then(function _(geojson) {
  *     var source = new FileSource({ features: geojson });
@@ -59,6 +64,7 @@ export default {
      * module:GeoJsonParser~FeatureCollection}.
      */
     parse(data, options = {}) {
+        options = deprecatedParsingOptionsToNewOne(options);
         let result;
 
         // If a zip is present, don't read anything else
@@ -71,7 +77,8 @@ export default {
             ]).then(shp.combine);
         }
 
-        options.crsIn = data.prj ? proj4(data.prj).oProj.datumName : undefined;
+        options.in = options.in || {};
+        options.in.crs = data.prj ? proj4(data.prj).oProj.datumName : undefined;
 
         return Promise.resolve(result).then(res => GeoJsonParser.parse(res, options));
     },

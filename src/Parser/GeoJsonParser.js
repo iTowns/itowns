@@ -1,6 +1,7 @@
 import Coordinates from 'Core/Geographic/Coordinates';
 import Feature, { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
-import Style from '../Core/Style';
+import Style from 'Core/Style';
+import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 function readCRS(json) {
     if (json.crs) {
@@ -201,30 +202,35 @@ export default {
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link FeatureCollection}.
      */
     parse(json, options = {}) {
-        const crsOut = options.crsOut;
+        options = deprecatedParsingOptionsToNewOne(options);
+        options.in = options.in || {};
+
+        const out = options.out;
+        const _in = options.in;
+
         if (typeof (json) === 'string') {
             json = JSON.parse(json);
         }
 
-        options.crsIn = options.crsIn || readCRS(json);
-        options.mergeFeatures = options.mergeFeatures == undefined ? true : options.mergeFeatures;
-        options.withNormal = options.withNormal == undefined ? true : options.withNormal;
-        options.withAltitude = options.withAltitude == undefined ? true : options.withAltitude;
+        _in.crs = _in.crs || readCRS(json);
+        out.mergeFeatures = out.mergeFeatures == undefined ? true : out.mergeFeatures;
+        out.withNormal = out.withNormal == undefined ? true : out.withNormal;
+        out.withAltitude = out.withAltitude == undefined ? true : out.withAltitude;
 
         let filteringExtent;
-        if (options.filteringExtent) {
-            if (typeof options.filteringExtent == 'boolean') {
-                filteringExtent = json.extent.as(options.crsIn);
-            } else if (options.filteringExtent.isExtent) {
-                filteringExtent = options.filteringExtent;
+        if (out.filteringExtent) {
+            if (typeof out.filteringExtent == 'boolean') {
+                filteringExtent = json.extent.as(_in.crs);
+            } else if (out.filteringExtent.isExtent) {
+                filteringExtent = out.filteringExtent;
             }
         }
 
         switch (json.type.toLowerCase()) {
             case 'featurecollection':
-                return Promise.resolve(jsonFeaturesToFeatures(options.crsIn, crsOut, json.features, filteringExtent, options));
+                return Promise.resolve(jsonFeaturesToFeatures(_in.crs, out.crs, json.features, filteringExtent, out));
             case 'feature':
-                return Promise.resolve(jsonFeaturesToFeatures(options.crsIn, crsOut, [json], filteringExtent, options));
+                return Promise.resolve(jsonFeaturesToFeatures(_in.crs, out.crs, [json], filteringExtent, out));
             default:
                 throw new Error(`Unsupported GeoJSON type: '${json.type}`);
         }

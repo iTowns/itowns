@@ -132,9 +132,11 @@ class GeometryLayer extends Layer {
             value: Infinity,
             writable: false,
         });
-        this.parsingOptions.filteringExtent = !this.source.isFileSource;
-        this.parsingOptions.withNormal = true;
-        this.parsingOptions.withAltitude = true;
+
+        // Feature options
+        this.filteringExtent = !this.source.isFileSource;
+        this.withNormal = true;
+        this.withAltitude = true;
     }
 
     // Attached layers expect to receive the visual representation of a
