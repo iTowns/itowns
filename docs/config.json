@@ -19,7 +19,8 @@
 
             "View": [
                 "View",
-                "GlobeView"
+                "GlobeView",
+                "PlanarView"
             ],
 
             "Geographic": [
