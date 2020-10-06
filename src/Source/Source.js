@@ -23,6 +23,33 @@ export const supportedParsers = new Map([
     ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
 ]);
 
+/**
+ * @property {string} crs - data crs projection.
+ * @property {boolean} isInverted - This option is to be set to the
+ * correct value, true or false (default being false), if the computation of
+ * the coordinates needs to be inverted to same scheme as OSM, Google Maps
+ * or other system. See [this link]{@link
+ * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates}
+ * for more informations.
+ *
+ */
+class InformationsData {
+    constructor(options) {
+        /* istanbul ignore next */
+        if (options.projection) {
+            console.warn('Source projection parameter is deprecated, use crs instead.');
+            options.crs = options.crs || options.projection;
+        }
+        this.crs = options.crs;
+    }
+}
+/**
+ * This class describes parsing options.
+ * @property {InformationsData|Source} in - data informations contained in the file.
+ * @property {FeatureBuildingOptions|Layer} out - options indicates how the features should be built.
+ */
+// eslint-disable-next-line
+class /* istanbul ignore next */ ParsingOptions {}
 
 function fetchSourceData(source, extent) {
     const url = source.urlFromExtent(extent);
@@ -73,30 +100,12 @@ let uid = 0;
  * When calling this method, two parameters are passed:
  * <ul>
  *  <li>the fetched data, i.e. the data to parse</li>
- *  <li>an object containing severals properties, set when this method is
+ *  <li>an {@link ParsingOptions}  containing severals properties, set when this method is
  *  called: it is specific to each call, so the value of each property can vary
  *  depending on the current fetched tile for example</li>
  * </ul>
- *
- * The properties of the second parameter are:
- * <ul>
- *  <li>`buildExtent : boolean` - True if the layer does not inherit from {@link
- *  GeometryLayer}.</li>
- *  <li>`crsIn : string` - The crs projection of the source.</li>
- *  <li>`crsOut : string` - The crs projection of the layer.</li>
- *  <li>`filteringExtent : Extent|boolean` - If the layer inherits from {@link
- *  GeometryLayer}, it is set filtering with the extent, or extent file if it is true.</li>
- *  <li>`filter : function` - Property of the layer.</li>
- *  <li>`mergeFeatures : boolean (default true)` - Property of the layer,
- *  default to true.</li>
- *  <li>`withNormal : boolean` - True if the layer inherits from {@link
- *  GeometryLayer}.</li>
- *  <li>`withAltitude : boolean` - True if the layer inherits from {@link
- *  GeometryLayer}.</li>
- *  <li>`isInverted : string` - Property of the source.</li>
- * </ul>
  */
-class Source {
+class Source extends InformationsData {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * Source. Only the `url` property is mandatory.
@@ -104,13 +113,8 @@ class Source {
      * @constructor
      */
     constructor(source) {
+        super(source);
         this.isSource = true;
-
-        /* istanbul ignore next */
-        if (source.projection) {
-            console.warn('Source projection parameter is deprecated, use crs instead.');
-            source.crs = source.crs || source.projection;
-        }
 
         if (!source.url) {
             throw new Error('New Source: url is required');
@@ -124,7 +128,6 @@ class Source {
         this.parser = source.parser || supportedParsers.get(source.format) || (d => d);
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
-        this.crs = source.crs;
         this.attribution = source.attribution;
         this.whenReady = Promise.resolve();
         this._featuresCaches = {};
@@ -161,7 +164,7 @@ class Source {
      * The loaded data is a Feature or Texture.
      *
      * @param      {Extent}  extent   extent requested parsed data.
-     * @param      {Object}  out     The feature returned options
+     * @param      {FeatureBuildingOptions|Layer}  out     The feature returned options
      * @return     {FeatureCollection|Texture}  The parsed data.
      */
     loadData(extent, out) {

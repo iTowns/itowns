@@ -103,7 +103,7 @@ module.exports = {
         'no-console': ['warn', { allow: ['warn', 'error'] }],
         'class-methods-use-this': 'off',
         'arrow-parens': ['error', 'as-needed', { requireForBlockBody: true }],
-        'max-classes-per-file': ['error', 3],
+        'max-classes-per-file': ['error', 4],
     },
     globals: {
         __DEBUG__: false,

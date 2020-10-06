@@ -173,27 +173,19 @@ export default {
      * [Mapbox Vector Tile]{@link https://www.mapbox.com/vector-tiles/specification/}.
      *
      * @param {ArrayBuffer} file - The vector tile file to parse.
-     * @param {Object} options - Options controlling the parsing.
-     * @param {Extent} options.extent - The Extent to convert the input coordinates to.
-     * @param {Extent=} options.filteringExtent - Optional filter to reject features
-     * outside of this extent.
-     * @param {boolean} [options.mergeFeatures=true] - If true all geometries are merged by type and multi-type
-     * @param {boolean} [options.withNormal=true] - If true each coordinate normal is computed
-     * @param {boolean} [options.withAltitude=true] - If true each coordinate altitude is kept
-     * @param {function=} options.filter - Filter function to remove features.
-     * @param {Object} options.Styles - Object containing subobject with
+     *
+     * @param {ParsingOptions} options - Options controlling the parsing {@link ParsingOptions}.
+     *
+     * @param {InformationsData} options.in - Object containing all styles,
+     * layers and informations data, see {@link InformationsData}.
+     *
+     * @param {Object} options.in.Styles - Object containing subobject with
      * informations on a specific style layer. Styles available is by `layer.id` and by zoom.
-     * @param {Object} options.layers - Object containing subobject with
-     * informations on a specific layer. Informations available is `id`,
-     * `filterExpression`, `zoom.min` and `zoom.max`. See {@link
-     * VectorTilesSource} for more precision. The key of each information is the
-     * `source-layer` property of the layer.
-     * @param {string=} options.isInverted - This option is to be set to the
-     * correct value, true or false (default being false), if the computation of
-     * the coordinates needs to be inverted to same scheme as OSM, Google Maps
-     * or other system. See [this link]{@link
-     * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates}
-     * for more informations.
+     *
+     * @param {Object} options.in.layers - Object containing subobject with
+     *
+     * @param {FeatureBuildingOptions} options.out - options indicates how the features should be built,
+     * see {@link FeatureBuildingOptions}.
      *
      * @return {Promise} A Promise resolving with a Feature or an array a
      * Features.
