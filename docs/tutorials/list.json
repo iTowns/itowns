@@ -4,5 +4,8 @@
     },
     "Display-a-geometry-layer": {
         "title": "Display a Geometry Layer"
+    },
+    "webgl": {
+        "title": "WebGL 1.0/2.0"
     }
 }

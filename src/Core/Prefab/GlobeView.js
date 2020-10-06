@@ -69,16 +69,23 @@ class GlobeView extends View {
      * Creates a view of a globe.
      *
      * @constructor
+     * @extends View
      *
-     * @example
+     * @example <caption><b>Instance GlobeView.</b></caption>
      * var viewerDiv = document.getElementById('viewerDiv');
-     * var position = new itowns.Coordinates('EPSG:4326', 2.35, 48.8, 25e6);
-     * var view = new itowns.GlobeView(viewerDiv, position);
+     * const placement = {
+     *     coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+     *     range: 25000000,
+     * }
+     * var view = new itowns.GlobeView(viewerDiv, placement);
      *
-     * @example
+     * @example <caption><b>Enable WebGl 1.0 instead of WebGl 2.0.</b></caption>
      * var viewerDiv = document.getElementById('viewerDiv');
-     * var position = { longitude: 2.35, latitude: 48.8, altitude: 25e6 };
-     * var view = new itowns.GlobeView(viewerDiv, position);
+     * const placement = {
+     *     coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+     *     range: 25000000,
+     * }
+     * var view = new itowns.GlobeView(viewerDiv, placement, {  renderer: { isWebGL2: false } });
      *
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.

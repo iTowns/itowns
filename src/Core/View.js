@@ -124,6 +124,7 @@ class View extends THREE.EventDispatcher {
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
      * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
      * added to viewerDiv (mutually exclusive with mainLoop)
+     * @param {boolean} [options.renderer.isWebGL2=true] - enable webgl 2.0 for THREE.js.
      * @param {?Scene} options.scene3D - {@link Scene} instance to use, otherwise a default one will be constructed
      * @constructor
      */
