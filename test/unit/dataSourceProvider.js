@@ -59,9 +59,6 @@ describe('Provide in Sources', function () {
     const colorlayer = new ColorLayer('color', { crs: 'EPSG:3857' });
     const elevationlayer = new ElevationLayer('elevation', { crs: 'EPSG:3857' });
 
-    colorlayer.parsingOptions.crsOut = colorlayer.crs;
-    elevationlayer.parsingOptions.crsOut = elevationlayer.crs;
-
     planarlayer.attach(colorlayer);
     planarlayer.attach(elevationlayer);
 
@@ -75,11 +72,8 @@ describe('Provide in Sources', function () {
     featureLayer.update = FeatureProcessing.update;
     featureLayer.crs = 'EPSG:4978';
     featureLayer.mergeFeatures = false;
-    featureLayer.parsingOptions.crsIn = 'EPSG:3857';
-    featureLayer.parsingOptions.crsOut = featureLayer.crs;
-    featureLayer.parsingOptions.filteringExtent = true;
-
     featureLayer.zoom.min = 10;
+
     function extrude() {
         return 5000;
     }
@@ -126,7 +120,7 @@ describe('Provide in Sources', function () {
             },
         });
 
-        colorlayer.source.onLayerAdded({ crsOut: colorlayer.crs });
+        colorlayer.source.onLayerAdded({ out: colorlayer });
 
         const tile = new TileMesh(geom, material, planarlayer, extent);
         material.visible = true;
@@ -155,7 +149,7 @@ describe('Provide in Sources', function () {
             },
         });
 
-        elevationlayer.source.onLayerAdded({ crsOut: elevationlayer.crs });
+        elevationlayer.source.onLayerAdded({ out: elevationlayer });
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
         nodeLayerElevation.level = EMPTY_TEXTURE_ZOOM;
@@ -183,7 +177,7 @@ describe('Provide in Sources', function () {
             },
         });
         // May be move in layer Constructor
-        colorlayer.source.onLayerAdded({ crsOut: colorlayer.crs });
+        colorlayer.source.onLayerAdded({ out: colorlayer });
 
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
@@ -223,10 +217,10 @@ describe('Provide in Sources', function () {
         material.visible = true;
         nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.parent = { pendingSubdivision: false };
-        featureLayer.parsingOptions.mergeFeatures = false;
+        featureLayer.mergeFeatures = false;
         tile.layerUpdateState = { test: new LayerUpdateState() };
 
-        featureLayer.source.onLayerAdded({ crsOut: featureLayer.crs });
+        featureLayer.source.onLayerAdded({ out: featureLayer });
 
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
@@ -245,10 +239,10 @@ describe('Provide in Sources', function () {
         tile.material.visible = true;
         tile.parent = { pendingSubdivision: false };
         featureLayer.source.uid = 8;
-        featureLayer.parsingOptions.mergeFeatures = true;
+        featureLayer.mergeFeatures = true;
         featureLayer.cache.data.clear();
         featureLayer.source._featuresCaches = {};
-        featureLayer.source.onLayerAdded({ crsOut: featureLayer.crs });
+        featureLayer.source.onLayerAdded({ out: featureLayer });
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
             assert.ok(features[0].children[0].isMesh);
@@ -288,9 +282,7 @@ describe('Provide in Sources', function () {
                 },
             },
         });
-        colorlayerWfs.parsingOptions.crsOut = colorlayerWfs.crs;
-        colorlayerWfs.parsingOptions.style = colorlayerWfs.style;
-        colorlayerWfs.source.onLayerAdded({ crsOut: colorlayerWfs.crs });
+        colorlayerWfs.source.onLayerAdded({ out: colorlayerWfs });
         updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
         updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {

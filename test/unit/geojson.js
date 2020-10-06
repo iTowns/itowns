@@ -11,7 +11,7 @@ proj4.defs('EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
 function parse(geojson) {
-    return GeoJsonParser.parse(geojson, { crsIn: 'EPSG:3946', crsOut: 'EPSG:3946', buildExtent: true });
+    return GeoJsonParser.parse(geojson, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true } });
 }
 
 describe('GeoJsonParser', function () {
@@ -27,55 +27,75 @@ describe('GeoJsonParser', function () {
 
     it('should return an empty collection', () =>
         GeoJsonParser.parse(holes, {
-            crsIn: 'EPSG:3946',
-            crsOut: 'EPSG:3946',
-            buildExtent: true,
-            filteringExtent: new Extent('EPSG:3946', 10, 20, 10, 20),
+            in: {
+                crs: 'EPSG:3946',
+            },
+            out: {
+                crs: 'EPSG:3946',
+                buildExtent: true,
+                filteringExtent: new Extent('EPSG:3946', 10, 20, 10, 20),
+            },
         }).then((collection) => {
             assert.ok(collection.features.length == 0);
         }));
     it('should return an merged collection', () =>
         GeoJsonParser.parse(holes, {
-            crsIn: 'EPSG:3946',
-            crsOut: 'EPSG:3946',
-            mergeFeatures: true,
-
+            in: {
+                crs: 'EPSG:3946',
+            },
+            out: {
+                crs: 'EPSG:3946',
+                mergeFeatures: true,
+            },
         }).then((collection) => {
             assert.ok(collection.features.length == 1);
         }));
     it('should return an no merged collection', () =>
         GeoJsonParser.parse(holes, {
-            crsIn: 'EPSG:3946',
-            crsOut: 'EPSG:3946',
-            mergeFeatures: false,
-
+            in: {
+                crs: 'EPSG:3946',
+            },
+            out: {
+                crs: 'EPSG:3946',
+                mergeFeatures: false,
+            },
         }).then((collection) => {
             assert.ok(collection.features.length == 3);
         }));
     it('should return an collection without altitude', () =>
         GeoJsonParser.parse(holes, {
-            crsIn: 'EPSG:3946',
-            crsOut: 'EPSG:3946',
-            withAltitude: false,
-
+            in: {
+                crs: 'EPSG:3946',
+            },
+            out: {
+                crs: 'EPSG:3946',
+                withAltitude: false,
+            },
         }).then((collection) => {
             assert.ok(collection.features[0].vertices.length == 32);
         }));
     it('should return an collection without normal', () =>
         GeoJsonParser.parse(holes, {
-            crsIn: 'EPSG:3946',
-            crsOut: 'EPSG:3946',
-            withNormal: false,
-
+            in: {
+                crs: 'EPSG:3946',
+            },
+            out: {
+                crs: 'EPSG:3946',
+                withNormal: false,
+            },
         }).then((collection) => {
             assert.ok(collection.features[0].normals == undefined);
         }));
 
     it('parses Point and MultiPoint', () =>
         GeoJsonParser.parse(points, {
-            crsIn: 'EPSG:4326',
-            crsOut: 'EPSG:4326',
-            mergeFeatures: false,
+            in: {
+                crs: 'EPSG:4326',
+            },
+            out: {
+                crs: 'EPSG:4326',
+                mergeFeatures: false,
+            },
         }).then((collection) => {
             assert.equal(collection.features.length, 3);
             assert.equal(collection.features[0].geometries.length, 1);

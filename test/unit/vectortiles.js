@@ -13,8 +13,10 @@ describe('Vector tiles', function () {
 
     function parse(pbf, layers) {
         return VectorTileParser.parse(pbf, {
-            layers,
-            styles: [[]],
+            in: {
+                layers,
+                styles: [[]],
+            },
         });
     }
 

@@ -249,13 +249,11 @@ describe('Sources', function () {
             assert.ok(source.fetchedData);
             assert.ok(source.isFileSource);
 
-            const layer = new Layer('09-ariege', { crs: 'EPSG:4326', source });
-            layer.parsingOptions.crsOut = layer.crs;
-            layer.parsingOptions.withAltitude = false;
-            layer.source.onLayerAdded(layer.parsingOptions);
+            const layer = new Layer('09-ariege', { crs: 'EPSG:4326', source, withAltitude: false });
+            layer.source.onLayerAdded({ out: layer });
 
             layer.whenReady.then(() => {
-                const promise = source.loadData([], layer.parsingOptions);
+                const promise = source.loadData([], layer);
                 promise.then((featureCollection) => {
                     assert.equal(featureCollection.features[0].vertices.length, 3536);
                     done();
@@ -269,7 +267,7 @@ describe('Sources', function () {
                 features: { foo: 'bar', crs: 'EPSG:4326' },
                 crs: 'EPSG:4326',
             });
-            source.onLayerAdded({ crsOut: source.crs });
+            source.onLayerAdded({ out: { crs: source.crs } });
             const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
             assert.ok(source.urlFromExtent(extent).startsWith('fake-file-url'));
             assert.ok(!source.fetchedData);
