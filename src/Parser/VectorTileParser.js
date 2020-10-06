@@ -3,6 +3,7 @@ import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import { globalExtentTMS } from 'Core/Geographic/Extent';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
+import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 const worldDimension3857 = globalExtentTMS.get('EPSG:3857').dimensions();
 const globalExtent = new Vector3(worldDimension3857.x, worldDimension3857.y, 1);
@@ -95,6 +96,7 @@ export function getStyle(styles, id, zoom) {
 }
 
 function readPBF(file, options) {
+    options.out = options.out || {};
     const vectorTile = new VectorTile(new Protobuf(file));
     const sourceLayers = Object.keys(vectorTile.layers);
 
@@ -108,14 +110,14 @@ function readPBF(file, options) {
     // We need to move from TMS to Google/Bing/OSM coordinates
     // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
     // Only if the layer.origin is top
-    const y = options.isInverted ? file.extent.row : (1 << z) - file.extent.row - 1;
+    const y = options.in.isInverted ? file.extent.row : (1 << z) - file.extent.row - 1;
 
-    options.buildExtent = true;
-    options.mergeFeatures = true;
-    options.withAltitude = false;
-    options.withNormal = false;
+    options.out.buildExtent = true;
+    options.out.mergeFeatures = true;
+    options.out.withAltitude = false;
+    options.out.withNormal = false;
 
-    const collection = new FeatureCollection('EPSG:3857', options);
+    const collection = new FeatureCollection('EPSG:3857', options.out);
 
     const vFeature = vectorTile.layers[sourceLayers[0]];
     // TODO: verify if size is correct because is computed with only one feature (vFeature).
@@ -125,13 +127,13 @@ function readPBF(file, options) {
     collection.translation.set(-(vFeature.extent * x + center), -(vFeature.extent * y + center), 0).divide(collection.scale);
 
     sourceLayers.forEach((layer_id) => {
-        if (!options.layers[layer_id]) { return; }
+        if (!options.in.layers[layer_id]) { return; }
 
         const sourceLayer = vectorTile.layers[layer_id];
 
         for (let i = sourceLayer.length - 1; i >= 0; i--) {
             const vtFeature = sourceLayer.feature(i);
-            const layers = options.layers[layer_id].filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.zoom.min && z < l.zoom.max);
+            const layers = options.in.layers[layer_id].filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.zoom.min && z < l.zoom.max);
             let feature;
 
             for (const layer of layers) {
@@ -139,13 +141,13 @@ function readPBF(file, options) {
                     feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
                     feature.id = layer.id;
                     feature.order = layer.order;
-                    feature.style = getStyle(options.styles, feature.id, z);
+                    feature.style = getStyle(options.in.styles, feature.id, z);
                     vtFeatureToFeatureGeometry(vtFeature, feature);
                 } else if (!collection.features.find(f => f.id === layer.id)) {
                     feature = collection.newFeatureByReference(feature);
                     feature.id = layer.id;
                     feature.order = layer.order;
-                    feature.style = getStyle(options.styles, feature.id, z);
+                    feature.style = getStyle(options.in.styles, feature.id, z);
                 }
             }
         }
@@ -197,6 +199,7 @@ export default {
      * Features.
      */
     parse(file, options) {
+        options = deprecatedParsingOptionsToNewOne(options);
         return Promise.resolve(readPBF(file, options));
     },
 };

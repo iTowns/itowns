@@ -161,16 +161,16 @@ class Source {
      * The loaded data is a Feature or Texture.
      *
      * @param      {Extent}  extent   extent requested parsed data.
-     * @param      {Object}  options  The parsing options
+     * @param      {Object}  out     The feature returned options
      * @return     {FeatureCollection|Texture}  The parsed data.
      */
-    loadData(extent, options) {
-        const cache = this._featuresCaches[options.crsOut];
+    loadData(extent, out) {
+        const cache = this._featuresCaches[out.crs];
         // try to get parsed data from cache
         let features = cache.getByArray(this.requestToKey(extent));
         if (!features) {
             // otherwise fetch/parse the data
-            features = cache.setByArray(fetchSourceData(this, extent).then(fetchedData => this.parser(fetchedData, options),
+            features = cache.setByArray(fetchSourceData(this, extent).then(file => this.parser(file, { out, in: this }),
                 err => this.handlingError(err)), this.requestToKey(extent));
             /* istanbul ignore next */
             if (this.onParsedFile) {
@@ -191,8 +191,8 @@ class Source {
      */
     onLayerAdded(options) {
         // Added new cache by crs
-        if (!this._featuresCaches[options.crsOut]) {
-            this._featuresCaches[options.crsOut] = new Cache();
+        if (!this._featuresCaches[options.out.crs]) {
+            this._featuresCaches[options.out.crs] = new Cache();
         }
     }
 

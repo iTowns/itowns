@@ -74,6 +74,8 @@ function _preprocessLayer(view, layer, parentLayer) {
     if (layer.isLabelLayer) {
         view.mainLoop.gfxEngine.label2dRenderer.registerLayer(layer);
     } else if (layer.labelEnabled) {
+        // Because the features are shared between layer and labelLayer.
+        layer.buildExtent = true;
         const labelLayer = new LabelLayer(`${layer.id}-label`, {
             source,
             style: layer.style,

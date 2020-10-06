@@ -1,5 +1,6 @@
 import { kml } from '@tmcw/togeojson';
 import GeoJsonParser from 'Parser/GeoJsonParser';
+import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 /**
  * The KMLParser module provides a [parse]{@link module:KMLParser.parse}
@@ -20,6 +21,7 @@ export default {
      * module:GeoJsonParser~FeatureCollection}.
      */
     parse(kmlFile, options) {
+        options = deprecatedParsingOptionsToNewOne(options);
         return GeoJsonParser.parse(kml(kmlFile), options);
     },
 };

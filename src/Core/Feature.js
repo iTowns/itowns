@@ -196,8 +196,8 @@ class Feature {
         if (options.buildExtent) {
             // this.crs is final crs projection, is out projection.
             // If the extent crs is the same then we use output coordinate (coordOut) to expand it.
-            this.extent = defaultExtent(crs != 'EPSG:4978' ?  crs : options.crsIn);
-            this.useCrsOut = this.crs == this.extent.crs;
+            this.extent = defaultExtent(options.forcedExtentCrs || this.crs);
+            this.useCrsOut = !options.forceExtentCrs;
         }
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
@@ -247,11 +247,12 @@ export default Feature;
 export class FeatureCollection {
     constructor(crs, options) {
         this.isFeatureCollection = true;
+        // TODO: Replace crs parameter by CRS.formatToEPSG(options.crs)
         this.crs = crs;
         this.features = [];
         this.optionsFeature = options || {};
         if (this.optionsFeature.buildExtent) {
-            this.extent = defaultExtent(crs != 'EPSG:4978' ?  crs : options.crsIn);
+            this.extent = defaultExtent(options.forcedExtentCrs || this.crs);
         }
         this.translation = new THREE.Vector3();
         this.scale = new THREE.Vector3(1, 1, 1);

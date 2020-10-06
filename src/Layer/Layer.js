@@ -123,14 +123,8 @@ class Layer extends THREE.EventDispatcher {
             this._resolve = re;
             this._reject = rj;
         }).then(() => {
-            // [Draft]: tempory parsing options
-            this.parsingOptions.style = this.style;
-            this.parsingOptions.styles = this.source.styles;
-            this.parsingOptions.isInverted = this.source.isInverted;
-            this.parsingOptions.layers = this.source.layers;
-            this.parsingOptions.crsOut = this.crs;
             this.ready = true;
-            this.source.onLayerAdded(this.parsingOptions);
+            this.source.onLayerAdded({ out: this });
             return this;
         });
 
@@ -138,14 +132,8 @@ class Layer extends THREE.EventDispatcher {
 
         this.cache = new Cache(config.cacheLifeTime);
 
-        // [Draft]: tempory parsing options
-        this.parsingOptions = {
-            crsIn: this.source.crs,
-            overrideAltitudeInToZero: this.overrideAltitudeInToZero,
-            filter: this.filter || this.source.filter,
-            mergeFeatures: config.mergeFeatures === undefined ? true : config.mergeFeatures,
-            isInverted: this.source.isInverted,
-        };
+        this.mergeFeatures = this.mergeFeatures === undefined ? true : config.mergeFeatures;
+        this.filter = this.filter || this.source.filter;
     }
 
     addInitializationStep() {
@@ -222,7 +210,7 @@ class Layer extends THREE.EventDispatcher {
             if (feature) {
                 data = Promise.resolve(this.convert(feature, to));
             } else {
-                data = this.source.loadData(from, this.parsingOptions)
+                data = this.source.loadData(from, this)
                     .then(feat => this.convert(feat, to), (err) => {
                         throw err;
                     });
