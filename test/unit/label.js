@@ -14,7 +14,7 @@ describe('LabelLayer', function () {
     let extent;
 
     before('init LabelLayer and a FeatureCollection like', function () {
-        layer = new LabelLayer('layer', 'EPSG:4978');
+        layer = new LabelLayer('labels');
         layer.source = {};
         layer.style = new Style();
         layer.style.zoom = {
@@ -23,7 +23,7 @@ describe('LabelLayer', function () {
         };
         layer.style.text.field = 'content';
 
-        collection = new FeatureCollection('EPSG:4326', { buildExtent: true });
+        collection = new FeatureCollection('EPSG:4326', { crs: 'EPSG:4326', buildExtent: true });
         const feature = collection.requestFeatureByType(FEATURE_TYPES.POINT);
         const geometry = feature.bindNewGeometry();
         geometry.startSubGeometry(0, feature);

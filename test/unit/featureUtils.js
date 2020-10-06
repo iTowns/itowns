@@ -7,8 +7,8 @@ import { FEATURE_TYPES } from 'Core/Feature';
 const geojson = require('../data/geojson/simple.geojson.json');
 
 describe('FeaturesUtils', function () {
-    const promise = GeoJsonParser.parse(geojson, { crsOut: 'EPSG:4326', buildExtent: true, mergeFeatures: false, withAltitude: false, withNormal: false });
-
+    const options = { out: { crs: 'EPSG:4326', buildExtent: true, mergeFeatures: false, withAltitude: false, withNormal: false } };
+    const promise = GeoJsonParser.parse(geojson, options);
     it('should correctly parse geojson', () =>
         promise.then((collection) => {
             assert.equal(collection.features.length, 3);

@@ -27,8 +27,8 @@ function computeAreaOfMesh(mesh) {
 }
 
 describe('Feature2Mesh', function () {
-    const parsed = GeoJsonParser.parse(geojson, { crsIn: 'EPSG:3946', crsOut: 'EPSG:3946', buildExtent: true, mergeFeatures: false });
-    const parsed2 = GeoJsonParser.parse(geojson2, { crsIn: 'EPSG:3946', crsOut: 'EPSG:3946', buildExtent: true, mergeFeatures: false });
+    const parsed = GeoJsonParser.parse(geojson, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false } });
+    const parsed2 = GeoJsonParser.parse(geojson2, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false } });
 
     it('rect mesh area should match geometry extent', () =>
         parsed.then((collection) => {
