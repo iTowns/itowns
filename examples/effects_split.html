@@ -7,9 +7,15 @@
                position: absolute;
                left: 50%;
                top: 0px;
-               width: 4px;
+               opacity: 0.7;
+               width: 6px;
                height: 100%;
-               background-color: #666666;
+               background-color: #667799;
+               z-index: 1000;
+               -moz-user-select: none;
+               -webkit-user-select: none;
+               -ms-user-select: none;
+               user-select: none;
            }
 
            #splitSlider:hover {
@@ -26,8 +32,9 @@
     <body>
         <div id="viewerDiv"></div>
         <div id="splitSlider"></div>
-
+        <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
         <script type="text/javascript">
             // # Simple Globe viewer
@@ -43,38 +50,32 @@
 
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, placement);
-
-            var promises = [];
+            var menuGlobe = new GuiTools('menuDiv', view);
 
             var orthoLayer;
             var osmLayer;
-            var splitSlider;
-            var splitPosition;
-            var xD;
+            var splitSlider = document.getElementById('splitSlider');;
+            var splitPosition = 0.5 * window.innerWidth;
+            var xD = 0;
+            var s = 0.5;
 
             setupLoadingScreen(viewerDiv, view);
 
             // Add two imagery layers to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            function addColorLayerFromConfig(config) {
-                var layer = new itowns.ColorLayer(config.id, config);
-                return view.addLayer(layer);
-            }
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json')
-                .then(function _(c) {
-                    c.source = new itowns.WMTSSource(c.source);
-                    return c;
-                })
-                .then(addColorLayerFromConfig)
-                .then(function _(l) { orthoLayer = l; }));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json')
-                .then(function _(c) {
-                    c.source = new itowns.TMSSource(c.source);
-                    return c;
-                })
-                .then(addColorLayerFromConfig)
-                .then(function _(l) { osmLayer = l; }));
+
+            const pOrtho = itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                orthoLayer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(orthoLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
+
+            const pOsm = itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
+                config.source = new itowns.TMSSource(config.source);
+                osmLayer = new itowns.ColorLayer('OSM', config);
+                view.addLayer(osmLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
@@ -87,17 +88,17 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             // Slide handling
-            splitPosition = 0.5 * window.innerWidth;
-            xD = 0;
             function splitSliderMove(evt) {
-                var s = (evt.offsetX - xD) / splitSlider.parentElement.offsetWidth;
+                let posX = evt.clientX > 60000 ? 3 : evt.clientX;
+                posX = Math.max(3, posX);
+                posX = Math.min(posX, splitSlider.parentElement.offsetWidth - 3);
+                s = (posX - xD) / splitSlider.parentElement.offsetWidth;
                 splitSlider.style.left = (100.0 * s) + '%';
-                splitPosition = s * window.innerWidth;
                 view.notifyChange();
             }
 
             function mouseDown(evt) {
-                xD = evt.offsetX - splitSlider.offsetLeft;
+                xD = evt.clientX - splitSlider.offsetLeft;
                 window.addEventListener('mousemove', splitSliderMove, true);
             }
 
@@ -105,42 +106,39 @@
                 window.removeEventListener('mousemove', splitSliderMove, true);
             }
 
-            function changeLayerVisibility(orthoVisible, osmVisible) {
-                view.scene.traverse(function _(obj) {
-                    if (obj.material && obj.material.visible && obj.material.getLayer) {
-                        var ortho = obj.material.getLayer(orthoLayer.id);
-                        var osm = obj.material.getLayer(osmLayer.id);
-                        if (ortho) ortho.visible = orthoVisible;
-                        if (osm) osm.visible = osmVisible;
-                    }
-                });
-            }
-            splitSlider = document.getElementById('splitSlider');
-            document.getElementById('splitSlider').addEventListener('mousedown', mouseDown, false);
+            splitSlider.addEventListener('mousedown', mouseDown, false);
             window.addEventListener('mouseup', mouseUp, false);
 
             // Rendering code
             function splitRendering() {
+                const oldVisOrtho = orthoLayer.visible;
+                const oldVisOsm = osmLayer.visible;
                 var g = view.mainLoop.gfxEngine;
                 var r = g.renderer;
+                splitPosition = s * window.innerWidth;
 
                 r.setScissorTest(true);
 
                 // render ortho layer on the left
-                changeLayerVisibility(true, false);
+                osmLayer.visible = false;
+                orthoLayer.visible = oldVisOrtho;
 
                 r.setScissor(0, 0, splitPosition + 2, window.innerHeight);
                 g.renderView(view);
 
                 // render osm layer on the right
-                changeLayerVisibility(false, true);
+                orthoLayer.visible = false;
+                osmLayer.visible = oldVisOsm;
 
                 r.setScissor(splitPosition + 2, 0, window.innerWidth - splitPosition - 2, window.innerHeight);
                 g.renderView(view);
+
+                osmLayer.visible = oldVisOsm;
+                orthoLayer.visible = oldVisOrtho;
             }
 
             // Override default rendering method when color layers are ready
-            Promise.all(promises).then(
+            Promise.all([pOrtho, pOsm]).then(
                 function _() { view.render = splitRendering; }).catch(console.error);
         </script>
     </body>
