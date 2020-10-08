@@ -350,9 +350,16 @@ class View extends THREE.EventDispatcher {
                 }
             }
 
-            // remove unused cache
-            const sameSource = this.getLayers(l => l.source.uid == layer.source.uid && l.crs == layer.crs);
-            layer.source.onLayerRemoved({ unusedCrs: sameSource.length == 0 ? layer.crs : undefined });
+            // Remove unused cache in all viewers
+
+            // count of times the source is used in all viewer
+            let sharedSourceCount = 0;
+            for (const view of viewers) {
+                // add count of times the source is used in other layers
+                sharedSourceCount += view.getLayers(l => l.source.uid == layer.source.uid && l.crs == layer.crs).length;
+            }
+            // if sharedSourceCount equals to 0 so remove unused cache for this CRS
+            layer.source.onLayerRemoved({ unusedCrs: sharedSourceCount == 0 ? layer.crs : undefined });
 
             this.notifyChange(this.camera);
 
