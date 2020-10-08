@@ -100,14 +100,6 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         return;
     }
 
-    // TODO: move this to defineLayerProperty() declaration
-    // to avoid mixing layer's network updates and layer's params
-    // Update material parameters
-    if (nodeLayer) {
-        nodeLayer.visible = layer.visible;
-        nodeLayer.opacity = layer.opacity;
-    }
-
     // An update is pending / or impossible -> abort
     if (!layer.visible || !node.layerUpdateState[layer.id].canTryUpdate()) {
         return;

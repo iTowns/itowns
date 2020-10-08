@@ -202,7 +202,7 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
 
     dispose() {
         this.dispatchEvent({ type: 'dispose' });
-        this.layers.forEach(l => l.dispose(false));
+        this.layers.forEach(l => l.dispose(true));
         this.layers.length = 0;
         this.layersNeedUpdate = true;
     }

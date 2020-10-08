@@ -21,37 +21,12 @@ function defineLayerProperty(layer, property, initValue, defaultValue) {
 
 class MaterialLayer {
     constructor(material, layer) {
-        this.id = layer.id;
+        this.layer = layer;
         this.textureOffset = 0; // will be updated in updateUniforms()
         this.crs = layer.parent.tileMatrixSets.indexOf(CRS.formatToTms(layer.crs));
         if (this.crs == -1) {
             console.error('Unknown crs:', layer.crs);
         }
-
-        // Define color properties
-        let _valueOpacity = layer.opacity !== undefined ? layer.opacity : true;
-        Object.defineProperty(this, 'opacity', {
-            get: () => _valueOpacity,
-            set: (value) => {
-                if (_valueOpacity !== value) {
-                    if (value === 0 || _valueOpacity === 0) {
-                        this.material.layersNeedUpdate = true;
-                    }
-                    _valueOpacity = value;
-                }
-            },
-        });
-
-        let _valueVisibility = layer.visible !== undefined ? layer.visible : true;
-        Object.defineProperty(this, 'visible', {
-            get: () => _valueVisibility,
-            set: (value) => {
-                if (_valueVisibility !== value) {
-                    this.material.layersNeedUpdate = true;
-                    _valueVisibility = value;
-                }
-            },
-        });
 
         defineLayerProperty(this, 'effect', layer.fx, 0);
 
@@ -86,6 +61,21 @@ class MaterialLayer {
         this.offsetScales = [];
         this.level = EMPTY_TEXTURE_ZOOM;
         this.material = material;
+
+        this._handlerCBEvent = () => { this.material.layersNeedUpdate = true; };
+        layer.addEventListener('visible-property-changed', this._handlerCBEvent);
+    }
+
+    get id() {
+        return this.layer.id;
+    }
+
+    get opacity() {
+        return this.layer.opacity;
+    }
+
+    get visible() {
+        return this.layer.visible;
     }
 
     initFromParent(parent, extents) {
@@ -121,7 +111,10 @@ class MaterialLayer {
         }
     }
 
-    dispose() {
+    dispose(removeEvent) {
+        if (removeEvent) {
+            this.layer.removeEventListener('visible-property-changed', this._handlerCBEvent);
+        }
         // TODO: WARNING  verify if textures to dispose aren't attached with ancestor
         for (const texture of this.textures) {
             if (texture.isTexture) {
