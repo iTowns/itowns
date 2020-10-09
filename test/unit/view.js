@@ -119,4 +119,13 @@ describe('Viewer', function () {
         renderer.context.getParameter = () => 32;
         assert.equal(getMaxColorSamplerUnitsCount(), 15);
     });
+
+    it('Dispose view', () => {
+        viewer.addLayer(globelayer);
+        assert.equal(viewer.getLayers().length, 1);
+        viewer.dispose();
+        assert.equal(Object.values(viewer._frameRequesters).length, 0);
+        assert.equal(viewer.getLayers().length, 0);
+        assert.equal(viewer._listeners, undefined);
+    });
 });

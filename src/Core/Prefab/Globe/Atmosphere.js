@@ -32,6 +32,7 @@ const mfogDistance = ellipsoidSizes.x * 160.0;
 class Atmosphere extends GeometryLayer {
     constructor(id = 'atmosphere', options = {}) {
         super(id, new THREE.Object3D(), options);
+        this.isAtmosphere = true;
 
         const material = new THREE.ShaderMaterial({
             uniforms: {
