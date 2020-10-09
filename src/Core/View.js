@@ -111,6 +111,7 @@ const ray = new THREE.Ray();
 const direction = new THREE.Vector3();
 const positionVector = new THREE.Vector3();
 const coordinates = new Coordinates('EPSG:4326');
+const viewers = [];
 
 class View extends THREE.EventDispatcher {
     /**
@@ -201,8 +202,49 @@ class View extends THREE.EventDispatcher {
 
         // Focus needed to capture some key events.
         this.domElement.focus();
+
+        // push all viewer to keep source.cache
+        viewers.push(this);
     }
 
+    /**
+     * Dispose viewer before delete it.
+     *
+     * Method dispose all viewer objects
+     * - remove control
+     * - remove all layers
+     * - remove all frame requester
+     * - remove all events
+     */
+    dispose() {
+        const id = viewers.indexOf(this);
+        if (id == -1) {
+            console.warn('View already disposed');
+            return;
+        }
+        // controls dispose
+        if (this.controls && this.controls.dispose) {
+            this.controls.dispose();
+        }
+        // remove alls frameRequester
+        this.removeAllFrameRequesters();
+        // remove alls events
+        this.removeAllEvents();
+        // remove alls layers
+        const layers = this.getLayers(l => !l.isTiledGeometryLayer && !l.isAtmosphere);
+        for (const layer of layers) {
+            this.removeLayer(layer.id);
+        }
+        const atmospheres = this.getLayers(l => l.isAtmosphere);
+        for (const atmosphere of atmospheres) {
+            this.removeLayer(atmosphere.id);
+        }
+        const tileLayers = this.getLayers(l => l.isTiledGeometryLayer);
+        for (const tileLayer of tileLayers) {
+            this.removeLayer(tileLayer.id);
+        }
+        viewers.splice(id, 1);
+    }
 
     /**
      * Add layer in viewer.
@@ -479,6 +521,38 @@ class View extends THREE.EventDispatcher {
         } else {
             console.error('Invalid call to removeFrameRequester: frameRequester isn\'t registered');
         }
+    }
+
+    /**
+     * Removes all frame requesters.
+     */
+    removeAllFrameRequesters() {
+        for (const when in this._frameRequesters) {
+            if (Object.prototype.hasOwnProperty.call(this._frameRequesters, when)) {
+                const frameRequesters = this._frameRequesters[when];
+                for (const frameRequester of frameRequesters) {
+                    this.removeFrameRequester(when, frameRequester);
+                }
+            }
+        }
+        this._executeFrameRequestersRemovals();
+    }
+
+    /**
+     * Removes all viewer events.
+     */
+    removeAllEvents() {
+        if (this._listeners === undefined) {
+            return;
+        }
+
+        for (const type in this._listeners) {
+            if (Object.prototype.hasOwnProperty.call(this._listeners, type)) {
+                delete this._listeners[type];
+            }
+        }
+
+        this._listeners = undefined;
     }
 
     _executeFrameRequestersRemovals() {
