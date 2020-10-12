@@ -91,28 +91,39 @@ class FirstPersonControls extends THREE.EventDispatcher {
         };
         this.reset();
 
+        this.eventListeners = options.disableEventListeners;
         if (!options.disableEventListeners) {
-            view.domElement.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-            view.domElement.addEventListener('touchstart', this.onMouseDown.bind(this), false);
-            view.domElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-            view.domElement.addEventListener('touchmove', this.onMouseMove.bind(this), false);
-            view.domElement.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-            view.domElement.addEventListener('touchend', this.onMouseUp.bind(this), false);
-            view.domElement.addEventListener('mousewheel', this.onMouseWheel.bind(this), false);
-            view.domElement.addEventListener('DOMMouseScroll', this.onMouseWheel.bind(this), false); // firefox
+            this._onMouseDown = this.onMouseDown.bind(this);
+            this._onMouseMove = this.onMouseMove.bind(this);
+            this._onMouseUp = this.onMouseUp.bind(this);
+            this._onMouseWheel = this.onMouseWheel.bind(this);
+            this._onKeyUp = this.onKeyUp.bind(this);
+            this._onKeyDown = this.onKeyDown.bind(this);
+            view.domElement.addEventListener('mousedown', this._onMouseDown, false);
+            view.domElement.addEventListener('touchstart', this._onMouseDown, false);
+            view.domElement.addEventListener('mousemove', this._onMouseMove, false);
+            view.domElement.addEventListener('touchmove', this._onMouseMove, false);
+            view.domElement.addEventListener('mouseup', this._onMouseUp, false);
+            view.domElement.addEventListener('touchend', this._onMouseUp, false);
+            view.domElement.addEventListener('mousewheel', this._onMouseWheel, false);
+            view.domElement.addEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
 
-            document.addEventListener('keyup', this.onKeyUp.bind(this), true);
-            document.addEventListener('keydown', this.onKeyDown.bind(this), true);
+            // TODO: Why windows
+            document.addEventListener('keydown', this._onKeyDown, false);
+            document.addEventListener('keyup', this._onKeyUp, false);
         }
 
         this.view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, this.update.bind(this));
 
         // focus policy
+        this._onFocus = () => view.domElement.focus();
+        this.focusOnMouseOver = options.focusOnMouseOver;
         if (options.focusOnMouseOver) {
-            view.domElement.addEventListener('mouseover', () => view.domElement.focus());
+            view.domElement.addEventListener('mouseover', this._onFocus);
         }
+        this.focusOnClick = options.focusOnClick;
         if (options.focusOnClick) {
-            view.domElement.addEventListener('click', () => view.domElement.focus());
+            view.domElement.addEventListener('click', this._onFocus);
         }
 
         if (view.referenceCrs == 'EPSG:4978') {
@@ -275,6 +286,32 @@ class FirstPersonControls extends THREE.EventDispatcher {
             this.view.notifyChange(undefined, false);
             e.preventDefault();
         }
+    }
+
+    dispose() {
+        if (!this.eventListeners) {
+            this.view.domElement.removeEventListener('mousedown', this._onMouseDown, false);
+            this.view.domElement.removeEventListener('touchstart', this._onMouseDown, false);
+            this.view.domElement.removeEventListener('mousemove', this._onMouseMove, false);
+            this.view.domElement.removeEventListener('touchmove', this._onMouseMove, false);
+            this.view.domElement.removeEventListener('mouseup', this._onMouseUp, false);
+            this.view.domElement.removeEventListener('touchend', this._onMouseUp, false);
+            this.view.domElement.removeEventListener('mousewheel', this._onMouseWheel, false);
+            this.view.domElement.removeEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
+
+            document.removeEventListener('keydown', this._onKeyDown, false);
+            document.removeEventListener('keyup', this._onKeyUp, false);
+        }
+
+        if (this.focusOnMouseOver) {
+            this.view.domElement.removeEventListener('mouseover', this._onFocus);
+        }
+
+        if (this.focusOnClick) {
+            this.view.domElement.removeEventListener('click', this._onFocus);
+        }
+
+        this.dispatchEvent({ type: 'dispose' });
     }
 }
 
