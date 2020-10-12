@@ -123,7 +123,9 @@ class StreetControls extends FirstPersonControls {
 
         this.isStreetControls = true;
 
-        view.domElement.addEventListener('mouseout', super.onMouseUp.bind(this));
+        this._onMouseOut = super.onMouseUp.bind(this);
+
+        view.domElement.addEventListener('mouseout', this._onMouseOut);
 
         // two positions used by this control : current and next
         this.previousPosition = undefined;
@@ -396,6 +398,12 @@ class StreetControls extends FirstPersonControls {
             this.setCameraToCurrentPosition(true);
             this.view.notifyChange(this.view.camera.camera3D);
         }
+    }
+
+    dispose() {
+        this.view.domElement.removeEventListener('mouseout', this._onMouseOut, false);
+
+        super.dispose();
     }
 }
 
