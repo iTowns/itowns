@@ -16,6 +16,7 @@ export { default as FeatureProcessing } from 'Process/FeatureProcessing';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 export { default as OrientedImageCamera } from 'Renderer/OrientedImageCamera';
 export { default as PointsMaterial } from 'Renderer/PointsMaterial';
+export { default as GlobeControls } from 'Controls/GlobeControls';
 export { default as FlyControls } from 'Controls/FlyControls';
 export { default as FirstPersonControls } from 'Controls/FirstPersonControls';
 export { default as StreetControls } from 'Controls/StreetControls';
