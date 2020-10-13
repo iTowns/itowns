@@ -26,6 +26,7 @@ const POINT_ATTTRIBUTES = {
         numElements: 1,
         arrayType: Uint8Array,
         attributeName: 'classification',
+        normalized: true,
     },
     // Note: at the time of writing, PotreeConverter will only generate normals in Oct16 format
     // see PotreeConverter.cpp:121

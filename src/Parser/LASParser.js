@@ -49,7 +49,7 @@ export default {
             const intensityBuffer = new THREE.BufferAttribute(parsedData.attributes.intensity.value, 1, true);
             geometry.setAttribute('intensity', intensityBuffer);
 
-            const classificationBuffer = new THREE.BufferAttribute(parsedData.attributes.classification.value, 1, false);
+            const classificationBuffer = new THREE.BufferAttribute(parsedData.attributes.classification.value, 1, true);
             geometry.setAttribute('classification', classificationBuffer);
 
             if (parsedData.attributes.COLOR_0) {
