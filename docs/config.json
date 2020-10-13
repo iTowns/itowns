@@ -50,6 +50,11 @@
                 "PlanarLayer"
             ],
 
+            "Points": [
+                "PointsMaterial",
+                "Classification"
+            ],
+
             "Source": [
                 "InformationsData",
                 "ParsingOptions",

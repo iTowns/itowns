@@ -17,6 +17,8 @@ uniform vec2 intensityRange;
 attribute vec3 color;
 attribute vec4 unique_id;
 attribute float intensity;
+attribute float classification;
+uniform sampler2D classificationLUT;
 
 #if defined(NORMAL_OCT16)
 attribute vec2 oct16Normal;
@@ -79,6 +81,9 @@ void main() {
         vColor = vec4(i, i, i, opacity);
     } else if (mode == MODE_NORMAL) {
         vColor = vec4(abs(normal), opacity);
+    } else if (mode == MODE_CLASSIFICATION) {
+        vec2 uv = vec2(classification, 0.5);
+        vColor = texture2D(classificationLUT, uv);
     } else {
         // default to color mode
         vColor = vec4(mix(color, overlayColor.rgb, overlayColor.a), opacity);
