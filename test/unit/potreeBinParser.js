@@ -8,7 +8,14 @@ describe('PotreeBinParser', function () {
         for (let i = 0; i < 12; i++) {
             dv.setInt32(i * 4, i * 2, true);
         }
-        return PotreeBinParser.parse(buffer, ['POSITION_CARTESIAN']).then((geom) => {
+
+        const options = {
+            in: {
+                pointAttributes: ['POSITION_CARTESIAN'],
+            },
+        };
+
+        return PotreeBinParser.parse(buffer, options).then((geom) => {
             const posAttr = geom.getAttribute('position');
             assert.equal(posAttr.itemSize, 3);
             assert.ok(posAttr.array instanceof Float32Array);
@@ -41,7 +48,13 @@ describe('PotreeBinParser', function () {
             dv.setUint8(i * numbyte + 18, i * 3);
         }
 
-        return PotreeBinParser.parse(buffer, ['POSITION_CARTESIAN', 'INTENSITY', 'COLOR_PACKED', 'CLASSIFICATION']).then(function (geom) {
+        const options = {
+            in: {
+                pointAttributes: ['POSITION_CARTESIAN', 'INTENSITY', 'COLOR_PACKED', 'CLASSIFICATION'],
+            },
+        };
+
+        return PotreeBinParser.parse(buffer, options).then(function (geom) {
             const posAttr = geom.getAttribute('position');
             const intensityAttr = geom.getAttribute('intensity');
             const colorAttr = geom.getAttribute('color');
