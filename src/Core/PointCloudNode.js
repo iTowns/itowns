@@ -24,7 +24,8 @@ class PointCloudNode extends THREE.EventDispatcher {
             this.loadOctree();
         }
 
-        return this.layer.source.fetcher(this.url, this.layer.source.networkOptions).then(this.layer.source.parse);
+        return this.layer.source.fetcher(this.url, this.layer.source.networkOptions)
+            .then(file => this.layer.source.parse(file, { out: this.layer, in: this.layer.source }));
     }
 
     findCommonAncestor(node) {
