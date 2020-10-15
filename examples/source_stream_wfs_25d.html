@@ -281,7 +281,9 @@
             wfsCartoLayer.source = wfsCartoSource;
             wfsCartoLayer.style = wfsCartoStyle;
 
-            view.addLayer(wfsCartoLayer);
+            // TODO: enable this again when the stream became available
+            // Search for "zone_habitat" in this page https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?SERVICE=WFS&REQUEST=GetCapabilities
+            // view.addLayer(wfsCartoLayer);
 
             function picking(event) {
                 var htmlInfo = document.getElementById('info');
