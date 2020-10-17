@@ -1,7 +1,12 @@
 language: node_js
-node_js:
-  - "lts/*"
-  - "node"
+
+matrix:
+  include:
+    - os: linux
+      node_js: "node"
+    - os: windows
+      node_js: "node"
+
 after_success:
   - npm install coveralls && nyc report --reporter=text-lcov | coveralls
   - openssl aes-256-cbc -K $encrypted_db2ce12ff441_key -iv $encrypted_db2ce12ff441_iv -in deploy_key.enc -out deploy_key -d
