@@ -87,12 +87,14 @@ class WMSSource extends Source {
         if (!source.crs && !source.projection) {
             throw new Error('source.crs is required');
         }
+
+        source.format = source.format || 'image/png';
+
         super(source);
 
         this.isWMSSource = true;
         this.name = source.name;
         this.zoom = source.zoom || { min: 0, max: 21 };
-        this.format = this.format || 'image/png';
         this.style = source.style || '';
 
         this.width = source.width || source.height || 256;

@@ -109,11 +109,13 @@ class WFSSource extends Source {
         if (!source.crs) {
             throw new Error('source.crs is required in wfs source');
         }
+
+        source.format = source.format || 'application/json';
+
         super(source);
 
         this.isWFSSource = true;
         this.typeName = source.typeName;
-        this.format = this.format || 'application/json';
         this.version = source.version || '2.0.2';
 
         this.url = `${source.url
