@@ -61,6 +61,8 @@ class TMSSource extends Source {
             throw new Error('New TMSSource/WMTSSource: crs projection is required');
         }
 
+        source.format = source.format || 'image/png';
+
         super(source);
 
         this.isTMSSource = true;
@@ -73,7 +75,6 @@ class TMSSource extends Source {
         this.zoom = source.zoom;
 
         this.isInverted = source.isInverted || false;
-        this.format = this.format || 'image/png';
         this.url = source.url;
         this.crs = CRS.formatToTms(source.crs);
         this.tileMatrixSetLimits = source.tileMatrixSetLimits;
