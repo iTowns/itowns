@@ -17,9 +17,7 @@ import TMSSource from 'Source/TMSSource';
  * Default value is '1.0.0'.
  * @property {string} style - The style to query on the WMTS server. Default
  * value is 'normal'.
- * @property {string} crs - The crs projection in which to fetch the data. If
- * not specified, it is deduced from `tileMatrixSet`. Default value is
- * 'EPSG:3857'.
+ * @property {string} crs - The crs projection in which to fetch the data.
  * @property {string} tileMatrixSet - Tile matrix set of the layer, used in the
  * generation of the url. Default value is 'WGS84'.
  * @property {Object} tileMatrixSetLimits - Limits of the tile matrix set. Each
@@ -60,7 +58,7 @@ import TMSSource from 'Source/TMSSource';
 class WMTSSource extends TMSSource {
     /**
      * @param {Object} source - An object that can contain all properties of a
-     * WMTSSource and {@link Source}. Only `url` and `name` are mandatory.
+     * WMTSSource and {@link Source}. Only `url`, `name` and `crs` are mandatory.
      *
      * @constructor
      */
