@@ -27,24 +27,29 @@ layer to a more precise one.
         <script src="js/itowns.js"></script>
         <script type="text/javascript">
             var viewerDiv = document.getElementById('viewerDiv');
-            var position = new itowns.Coordinates('WGS84', 2.35, 48.8, 1e3);
-            var view = new itowns.GlobeView(viewerDiv, position);
-
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.35, 48.8),
+                range: 1E3
+            };
+            var view = new itowns.GlobeView(viewerDiv, placement);
+            
             var colorSource = new itowns.WMTSSource({
                 url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                crs: 'EPSG:3857',
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
                 format: 'image/jpeg'
             });
-
+            
             var colorLayer = new itowns.ColorLayer('Ortho', {
                 source: colorSource,
             });
-
+            
             view.addLayer(colorLayer);
-
+            
             var elevationSource = new itowns.WMTSSource({
                 url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
                 tileMatrixSet: 'WGS84G',
                 format: 'image/x-bil;bits=32',
@@ -75,11 +80,11 @@ layer to a more precise one.
                     }
                 }
             });
-
+            
             var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
                 source: elevationSource,
             });
-
+            
             view.addLayer(elevationLayer);
         </script>
      </body>
@@ -114,11 +119,11 @@ There is a few differences though:
 - the second parameter, `new itowns.THREE.Group()` in our case, is the
   `THREE.Object3d` the geometry will be attached to. Here we won't do something
   with it, so we can declare a simple anonymous object.
-- the first parameter of the options is `update`: it is the method that will be
+- the second parameter of the options is `update`: it is the method that will be
   called to update the layer each time the rendering loop is called. For now
   let's simply put `itowns.FeatureProcessing.update` and don't touch this
   method.
-- the second parameter is `convert`, that is more interesting to us. It is the
+- the third parameter is `convert`, that is more interesting to us. It is the
   method that will tell how to use the data to convert it to meshes, and do
   other operations on it.
 
@@ -295,24 +300,29 @@ layer on a globe, and change some things on this layer. Here is the final code:
         <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
             var viewerDiv = document.getElementById('viewerDiv');
-            var position = new itowns.Coordinates('WGS84', 2.35, 48.8, 1e3);
-            var view = new itowns.GlobeView(viewerDiv, position);
-
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.35, 48.8),
+                range: 1E3
+            };
+            var view = new itowns.GlobeView(viewerDiv, placement);
+            
             var colorSource = new itowns.WMTSSource({
                 url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                crs: 'EPSG:3857',
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
                 format: 'image/jpeg'
             });
-
+            
             var colorLayer = new itowns.ColorLayer('Ortho', {
                 source: colorSource,
             });
-
+            
             view.addLayer(colorLayer);
-
+            
             var elevationSource = new itowns.WMTSSource({
                 url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
                 tileMatrixSet: 'WGS84G',
                 format: 'image/x-bil;bits=32',
