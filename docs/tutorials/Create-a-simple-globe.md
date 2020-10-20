@@ -34,7 +34,10 @@ element of the page in order to be displayed.
 
 ```js
 var viewerDiv = document.getElementById('viewerDiv');
-var position = new itowns.Coordinates('WGS84', 2.35, 48.8, 25e6);
+var placement = {
+    coord: new itowns.Coordinates('EPSG:4326', 2.35, 48.8),
+    range: 25e6
+};
 var view = new itowns.GlobeView(viewerDiv, position);
 ```
 
@@ -44,12 +47,10 @@ display a globe view. [The documentation]{@link GlobeView} specifies that a
 second parameter needs to be present: an object that will help place the camera
 on the globe.
 
-This object needs to contain three properties: `longitude`, `latitude` and
-`altitude`, as in any World Geodetic System 84 (WGS84) coordinates. So we can
-either pass an object created by hand, like `{ longitude: 2.35, latitude: 48.8,
-altitude: 25e6 }` or create a {@link Coordinates} in the WGS84 system. A {@link
-Coordinates} in this reference system has the three asked properties set, so it
-also answers our needs here.
+This object needs to contain two properties : a position which the camera is 
+facing (`coord`), and a camera distance to target coordinates (`range`) in meters.
+For the position argument, we can create a {@link Coordinates} in the WGS84 system -
+whose EPSG code is 4326.
 
 Then, having those two objects, the {@link GlobeView} can be created. It should
 result in a simple blue globe like below.
@@ -65,6 +66,7 @@ source.
 ```js
 var orthoSource = new itowns.WMTSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+    crs: 'EPSG:3857',
     name: 'ORTHOIMAGERY.ORTHOPHOTOS',
     tileMatrixSet: 'PM',
     format: 'image/jpeg',
@@ -87,6 +89,7 @@ Images that we choose to display are coming from a WMTS server. So the source
 used will be a {@link WMTSSource}. To declare this source, three elements are
 needed:
 - an `url`, describing the path to the WMTS service
+- a `crs` projection in which to fetch the data
 - a `name`, used to build the URL for each image
 - a `tileMatrixSet`, for the same purpose
 
@@ -108,9 +111,11 @@ previous one.
 ```js
 var elevationSource = new itowns.WMTSSource({
     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-    name: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
+    crs: 'EPSG:4326',
+    name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
     tileMatrixSet: 'WGS84G',
-    format: 'image/x-bil;bits=32'
+    format: 'image/x-bil;bits=32',
+    zoom: {min: 3, max: 10}
 });
 
 var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
@@ -122,7 +127,10 @@ view.addLayer(elevationLayer);
 
 Two things have changed:
 - the layer created, which is an {@link ElevationLayer} instead
-- the configuration, adapted to fit the source
+- the configuration, adapted to fit the source.
+
+We also added a property `zoom` in the source configuration.
+It contains the minimum and maximum values of the level, to zoom in the source.
 
 Now we can zoom in and see some mountains !
 
@@ -151,15 +159,19 @@ with an elevation layer and an color layer. Here is the final code:
         <script src="js/itowns.js"></script>
         <script type="text/javascript">
             var viewerDiv = document.getElementById('viewerDiv');
-            var position = new itowns.Coordinates('WGS84', 2.35, 48.8, 25e6);
-            var view = new itowns.GlobeView(viewerDiv, position);
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 25000000
+            };
+            var view = new itowns.GlobeView(viewerDiv, placement);
 
             var orthoSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                crs: "EPSG:3857",
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
                 format: 'image/jpeg',
-            });
+            })
 
             var orthoLayer = new itowns.ColorLayer('Ortho', {
                 source: orthoSource,
@@ -168,10 +180,12 @@ with an elevation layer and an color layer. Here is the final code:
             view.addLayer(orthoLayer);
 
             var elevationSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
-                name: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
+                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                crs: 'EPSG:4326',
+                name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
                 tileMatrixSet: 'WGS84G',
-                format: 'image/x-bil;bits=32'
+                format: 'image/x-bil;bits=32',
+                zoom: {min: 3, max: 10},
             });
 
             var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
