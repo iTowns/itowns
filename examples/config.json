@@ -60,7 +60,8 @@
         "misc_georeferenced_images": "Georeferenced image",
         "misc_orthographic_camera": "Orthographic camera",
         "misc_custom_controls": "Define custom controls",
-        "misc_custom_label": "Custom label popup"
+        "misc_custom_label": "Custom label popup",
+        "misc_camera_traveling": "Camera traveling"
     },
 
     "Plugins": {
