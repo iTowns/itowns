@@ -1,0 +1,187 @@
+<html lang="en">
+    <head>
+        <title>Itowns - Pick positions</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+    	<div id="description">
+	        Controls
+	        <ul>
+	        	<li>Left-Click: camera translation (drag)</li>
+		        <li>Right-Click: camera translation (pan)</li>
+    		    <li>Ctrl + Left-Click: camera rotation (orbit)</li>
+    		    <li>Mouse Wheel: zoom in/out</li>
+            </ul>
+            Recording
+            <ul>
+    		    <li>P: save current camera position</li>
+    		    <li>T: travel through each saved camera positions</li>
+    		    <li>T while traveling: interrupt travel</li>
+    		    <li>C: clear all saved camera positions</li>
+	        </ul>
+	    </div>
+        <div id="viewerDiv"></div>
+
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            /* global itowns */
+
+            // `viewerDiv` will contain iTowns rendering area (`<canvas>`) :
+            let viewerDiv = document.getElementById('viewerDiv');
+
+            // Define initial camera position :
+            let initialPlacement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 50000
+            };
+
+            // Instantiate iTowns GlobeView :
+            let view = new itowns.GlobeView(viewerDiv, initialPlacement);
+
+            // Sets a loading screen :
+            setupLoadingScreen(viewerDiv, view);
+
+            // Add one imagery layer to the scene and the miniView.
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                const orthoLayer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(orthoLayer);
+            });
+
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                let layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer);
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+
+            // THREE.Group which stores picked points markers.
+            let pickedPointsGroup = new itowns.THREE.Group();
+            pickedPointsGroup.visible = false;
+            view.scene.add(pickedPointsGroup);
+
+            // Add a pointer at a given position.
+            function addCameraHelper(position) {
+                // Copy the view camera3D to modify its far plane distance.
+                // The will render a CameraHelper with shorter axes.
+                const copyCamera = view.camera.camera3D.clone();
+                copyCamera.far = 50;
+                // Creation of the new mesh :
+                const mesh = new itowns.THREE.CameraHelper(copyCamera);
+                mesh.lookAt(position);
+                mesh.updateMatrixWorld();
+                // Add mesh to scene :
+                pickedPointsGroup.add(mesh);
+                view.notifyChange();
+            }
+
+            // Remove all meshes from scene.
+            function clearCameraHelper() {
+                pickedPointsGroup.remove(...pickedPointsGroup.children);
+                view.notifyChange();
+            }
+
+            // Array which stores picked camera positions, headings, tilts...
+            let cameraTravel = [];
+            // Camera speed in meters per second
+            let cameraSpeed = 500 / 3.6;
+            // Boolean which states if the camera is performing a travel animation or not
+            let travelOn = false;
+
+            function saveCurrentCameraTransformOptions() {
+                // Retrieve camera current transform options
+                const cameraTransformOptions = itowns.CameraUtils.getTransformCameraLookingAtTarget(
+                    view,
+                    view.camera.camera3D,
+                );
+                // Save camera current transform options
+                cameraTransformOptions.position = view.camera.camera3D.position.clone();
+                cameraTransformOptions.coord.as(view.referenceCrs, cameraTransformOptions.coord);
+                if (cameraTravel.length > 0) {
+                    // Save the distance between the previous and the current picked points
+                    cameraTransformOptions.distance = cameraTransformOptions.position.distanceTo(
+                        cameraTravel[cameraTravel.length - 1].position,
+                    );
+                    cameraTransformOptions.easing = itowns.CameraUtils.Easing.Linear.None;
+                }
+                // Add the camera transform options to the travel steps list
+                cameraTravel.push(cameraTransformOptions);
+                addCameraHelper(new itowns.Coordinates(view.referenceCrs).setFromVector3(cameraTransformOptions.position))
+            }
+
+            function animateCamera() {
+                const camera = view.camera.camera3D;
+
+                // If travel is off, begin travel
+                if (!travelOn) {
+                    travelOn = true;
+                    // The travel time of each step is computed from the distance ran in the step and from the value of
+                    // cameraSpeed at the time of the travel.
+                    cameraTravel.forEach(function (item, index) {
+                        cameraTravel[index].time = (cameraTravel[index].distance || 0) / cameraSpeed * 1000;
+                    });
+                    // Return a promise for camera animation
+                    return itowns.CameraUtils.sequenceAnimationsToLookAtTarget(
+                        view,
+                        view.camera.camera3D,
+                        cameraTravel,
+                    ).then(() => {
+                        travelOn = false;
+                    });
+                }
+
+                // If travel is on, interrupt it and moves the camera to its initial placement :
+                itowns.CameraUtils.stop(view, view.camera.camera3D);
+                return itowns.CameraUtils.animateCameraToLookAtTarget(
+                    view,
+                    view.camera.camera3D,
+                    initialPlacement,
+                );
+            }
+
+            // Listens for user input :
+            window.addEventListener('keypress', async function (event) {
+                // If user presses `p` (for 'pick:'), saves the current camera position, heading, tilt...
+                if (event.key === 'p') { saveCurrentCameraTransformOptions() }
+                // If user presses `t` (for 'travel'), switches travelling mode on or off.
+                else if (event.key === 't') { animateCamera() }
+                // If user presses `c` (for 'clear'), removes all the picked position from lists.
+                else if (event.key ==='c') {
+                    if (!travelOn) {
+                        cameraTravel = [];
+                        clearCameraHelper();
+                    }
+                }
+            })
+
+            // Add a menu :
+            let menuGlobe = new GuiTools('menuDiv', view);
+            // Add an option in the menu to display picked position as 3D axes.
+            menuGlobe.addGUI('Picked positions', false, function (v) {
+                pickedPointsGroup.visible = !!v;
+                view.notifyChange();
+            })
+            // Add an option in the menu to modify the speed of the camera.
+            menuGlobe.addGUI('Cam speed (km/h)', cameraSpeed * 3.6, function (v) {
+                // The input speed is converted from km/h to m/s
+                cameraSpeed = v / 3.6;
+            });
+
+        </script>
+    </body>
+</html>
