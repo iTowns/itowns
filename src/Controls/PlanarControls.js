@@ -88,6 +88,10 @@ const defaultOptions = {
     minDistanceCollision: 30,
 };
 
+export const PLANAR_CONTROL_EVENT = {
+    MOVED: 'moved',
+};
+
 /**
  * Planar controls is a camera controller adapted for a planar view, with animated movements.
  * Usage is as follow :
@@ -255,6 +259,11 @@ class PlanarControls extends THREE.EventDispatcher {
         // dt will not be relevant when we just started rendering. We consider a 1-frame move in this case
         if (updateLoopRestarted) {
             dt = 16;
+        }
+        if (this.state !== STATE.NONE) {
+            this.view.dispatchEvent({
+                type: PLANAR_CONTROL_EVENT.MOVED,
+            });
         }
         if (this.state === STATE.TRAVEL) {
             this.handleTravel(dt);
