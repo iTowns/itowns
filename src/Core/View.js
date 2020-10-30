@@ -778,14 +778,14 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
-     * Get, for a specific screen coordinate, this size in pixels of a projected
+     * Get, for a specific screen coordinate, the size in pixels of a projected
      * distance on the surface of the main layer of the view.
      *
      * @param {number} [meters=1] - The size, in meters, to get in pixels.
      * @param {THREE.Vector2} [screenCoord] - The screen coordinate to get the
      * projected distance at. By default, this is the middle of the screen.
      *
-     * @return {number} The projected distance in meters.
+     * @return {number} The projected distance in pixels.
      */
     getMetersToPixels(meters = 1, screenCoord) {
         if (this.camera.camera3D.isOrthographicCamera) {
