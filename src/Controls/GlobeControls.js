@@ -147,8 +147,9 @@ let previous;
  *
  * @class      GlobeControls
  * @param      {GlobeView}  view the view where the control will be used
- * @param      {CameraTransformOptions}  targetCoordinate the target looked by camera, at initialization
- * @param      {number}  range distance between the target looked and camera, at initialization
+ * @param      {object} placement
+ * @param      {Coordinates}  placement.targetCoordinate the target looked by camera, at initialization
+ * @param      {number}  placement.range distance between the target looked and camera, at initialization
  * @param      {object}  options
  * @param      {number}  options.zoomSpeed Speed zoom with mouse
  * @param      {number}  options.rotateSpeed Speed camera rotation in orbit and panoramic mode
