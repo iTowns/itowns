@@ -246,7 +246,7 @@ Camera.prototype.box3SizeOnScreen = function box3SizeOnScreen(box3, matrixWorld)
  * TODO Improve Coordinates class to handle altitude for any coordinate system (even projected one)
  * @param {view} view where we test the collision between geometry layers and the camera
  * @param {elevationLayer} elevationLayer (DTM/DSM) used to test the collision with the camera. Could be another geometry layer
- * @param {minDistanceCollision} minDistanceCollision the minimum distance allowed between the camera and the surface
+ * @param {number} minDistanceCollision the minimum distance allowed between the camera and the surface
  */
 Camera.prototype.adjustAltitudeToAvoidCollisionWithLayer = function adjustAltitudeToAvoidCollisionWithLayer(view, elevationLayer, minDistanceCollision) {
     // We put the camera location in geographic by default to easily handle altitude. (Should be improved in Coordinates class for all ref)
