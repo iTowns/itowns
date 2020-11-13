@@ -51,7 +51,7 @@ let phi = 0.0;
 
 // displacement and rotation vectors
 const vect = new THREE.Vector3();
-const quat = new THREE.Vector3();
+const quat = new THREE.Quaternion();
 
 // animated travel
 const travelEndPos = new THREE.Vector3();
@@ -142,7 +142,7 @@ class PlanarControls extends THREE.EventDispatcher {
         this.camera = view.camera.camera3D;
 
         this.enableRotation = options.enableRotation === undefined ?
-            defaultOptions.EnableRotation : options.enableRotation;
+            defaultOptions.enableRotation : options.enableRotation;
         this.rotateSpeed = options.rotateSpeed || defaultOptions.rotateSpeed;
 
         // minPanSpeed when close to the ground, maxPanSpeed when close to maxAltitude
