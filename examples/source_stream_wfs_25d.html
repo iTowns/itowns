@@ -101,9 +101,6 @@
 
             view.addLayer(wmsElevationLayer);
 
-            // eslint-disable-next-line no-new
-            new itowns.PlanarControls(view, {});
-
             function setMaterialLineWidth(result) {
                 result.traverse(function _setLineWidth(mesh) {
                     if (mesh.material) {
