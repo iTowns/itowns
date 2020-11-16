@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import View from 'Core/View';
 import CameraUtils from 'Utils/CameraUtils';
 
+import PlanarControls from 'Controls/PlanarControls';
 import PlanarLayer from './Planar/PlanarLayer';
 
 class PlanarView extends View {
@@ -24,6 +25,9 @@ class PlanarView extends View {
      * in the DOM.
      * @param {Extent} extent - The ground extent.
      * @param {object=} options - See options of {@link View}.
+     * @param {boolean} [options.noControls] - If true, no controls are associated to the view.
+     * @param {object=} [options.controls] - options for the PlanarControls associated to the view, if
+     * `options.noControls` is false.
      */
     constructor(viewerDiv, extent, options = {}) {
         THREE.Object3D.DefaultUp.set(0, 0, 1);
@@ -50,6 +54,10 @@ class PlanarView extends View {
         placement.tilt = placement.tilt || 90;
         placement.heading = placement.heading || 0;
         placement.range = placement.range || max;
+
+        if (!this.noControls) {
+            this.controls = new PlanarControls(this, options.controls);
+        }
 
         CameraUtils.transformCameraToLookAtTarget(this, camera3D, placement);
 
