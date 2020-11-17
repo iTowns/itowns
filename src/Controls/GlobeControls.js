@@ -1162,7 +1162,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * @param      {number}   [params.zoom]   zoom
      * @param      {number}   [params.scale]   scale
      * @param      {boolean}  isAnimated  Indicates if animated
-     * @return     {Promise}  A promise that resolves when transformation is oppered
+     * @return     {Promise}  A promise that resolves when transformation is opened
      */
     lookAtCoordinate(params = {}, isAnimated = this.isAnimationEnabled()) {
         if (params.zoom) {
