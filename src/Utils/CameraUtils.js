@@ -215,6 +215,12 @@ class CameraRig extends THREE.Object3D {
 
         this.addPlaceTargetOnGround(view, camera, params.coord, factor);
         this.end.applyParams(view, params);
+        // compute the angle along z-axis between the starting position and the end position
+        const difference = this.end.target.rotation.z - this.start.target.rotation.z;
+        // if that angle is superior to 180°, recompute the rotation as the complementary angle.
+        if (Math.abs(difference) > Math.PI) {
+            this.end.target.rotation.z = this.start.target.rotation.z + difference - Math.sign(difference) * 2 * Math.PI;
+        }
 
         animations.push(new TWEEN.Tween(factor, tweenGroup).to({ t: 1 }, time)
             .easing(params.easing)
