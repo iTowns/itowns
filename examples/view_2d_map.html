@@ -30,17 +30,12 @@
             // Instanciate PlanarView
             // By default itowns' tiles geometry have a "skirt" (ie they have a height),
             // but in case of orthographic we don't need this feature, so disable it
-            var view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true, maxSubdivisionLevel: 10, placement: { tilt: 90 },
+            var view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true, maxSubdivisionLevel: 10,
+                cameraType: itowns.CAMERA_TYPE.ORTHOGRAPHIC,
                 controls: {
-                    // We do not want the user to zoom out too much
-                    maxAltitude: 40000000,
-                    // We want to keep the rotation disabled, to only have a view from the top
-                    enableRotation: false,
                     // Faster zoom in/out speed
-                    zoomInFactor: 0.5,
+                    zoomInFactor: 1,
                     zoomOutFactor: 0.5,
-                    // Don't zoom too much on smart zoom
-                    smartZoomHeightMax: 100000,
                 },
             });
 
