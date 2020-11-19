@@ -55,7 +55,7 @@ class PlanarView extends View {
         placement.heading = placement.heading || 0;
         placement.range = placement.range || max;
 
-        if (!this.noControls) {
+        if (!options.noControls) {
             this.controls = new PlanarControls(this, options.controls);
         }
 
