@@ -3,7 +3,7 @@ set -xe # Verbose output and exit with nonzero exit code if anything fails
 
 # There are two npm versions used in travis (.travis.yml)
 # and only one deploy is needed
-if [ "$TRAVIS_NODE_VERSION" != "14" ]; then
+if [ "$TRAVIS_NODE_VERSION" != "node" ]; then
 	echo "Skipping deploy for npm version != node"
 	exit 0
 fi
