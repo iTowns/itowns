@@ -12,6 +12,7 @@ attribute vec3      normal;
 
 uniform mat4 modelMatrix;
 uniform bool lightingEnabled;
+varying vec2 vHighPrecisionZW;
 
 #if MODE == MODE_FINAL
 #include <fog_pars_vertex>
@@ -25,6 +26,7 @@ void main() {
         #include <itowns/elevation_vertex>
         #include <project_vertex>
         #include <logdepthbuf_vertex>
+        vHighPrecisionZW = gl_Position.zw;
 #if MODE == MODE_FINAL
         #include <fog_vertex>
         #if NUM_CRS > 1

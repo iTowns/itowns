@@ -13,6 +13,7 @@
 uniform vec3        diffuse;
 uniform float       opacity;
 varying vec3        vUv; // uv_0.x/uv_1.x, uv_0.y, uv_1.y
+varying vec2        vHighPrecisionZW;
 
 void main() {
     #include <logdepthbuf_fragment>

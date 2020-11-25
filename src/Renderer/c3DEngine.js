@@ -247,7 +247,7 @@ class c3DEngine {
     depthBufferRGBAValueToOrthoZ(depthBufferRGBA, camera) {
         depthRGBA.fromArray(depthBufferRGBA).divideScalar(255.0);
 
-        if (Capabilities.isLogDepthBufferSupported()) {
+        if (Capabilities.isLogDepthBufferSupported() && camera.type == 'PerspectiveCamera') {
             const gl_FragDepthEXT = unpack1K(depthRGBA);
             const logDepthBufFC = 2.0 / (Math.log(camera.far + 1.0) / Math.LN2);
             // invert function : gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
@@ -255,7 +255,7 @@ class c3DEngine {
         } else {
             let gl_FragCoord_Z = unpack1K(depthRGBA);
             gl_FragCoord_Z = gl_FragCoord_Z * 2.0 - 1.0;
-            return 2.0 * camera.near * camera.far / (camera.far + camera.near - gl_FragCoord_Z * (camera.far - camera.near));
+            return gl_FragCoord_Z;
         }
     }
 }

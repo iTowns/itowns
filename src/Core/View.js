@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Camera from 'Renderer/Camera';
 import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from 'Core/MainLoop';
+import Capabilities from 'Core/System/Capabilities';
 import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
 import c3DEngine from 'Renderer/c3DEngine';
 import RenderMode from 'Renderer/RenderMode';
@@ -974,25 +975,32 @@ class View extends THREE.EventDispatcher {
         screen.x = (mouse.x / dim.x) * 2 - 1;
         screen.y = -(mouse.y / dim.y) * 2 + 1;
 
-        // Origin
-        ray.origin.copy(camera.position);
+        if (Capabilities.isLogDepthBufferSupported() && camera.type == 'PerspectiveCamera') {
+            // TODO: solve this part with gl_FragCoord_Z and unproject
+            // Origin
+            ray.origin.copy(camera.position);
 
-        // Direction
-        ray.direction.set(screen.x, screen.y, 0.5);
-        // Unproject
-        matrix.multiplyMatrices(camera.matrixWorld, matrix.copy(camera.projectionMatrix).invert());
-        ray.direction.applyMatrix4(matrix);
-        ray.direction.sub(ray.origin);
+            // Direction
+            ray.direction.set(screen.x, screen.y, 0.5);
+            // Unproject
+            matrix.multiplyMatrices(camera.matrixWorld, matrix.copy(camera.projectionMatrix).invert());
+            ray.direction.applyMatrix4(matrix);
+            ray.direction.sub(ray.origin);
 
-        direction.set(0, 0, 1.0);
-        direction.applyMatrix4(matrix);
-        direction.sub(ray.origin);
+            direction.set(0, 0, 1.0);
+            direction.applyMatrix4(matrix);
+            direction.sub(ray.origin);
 
-        const angle = direction.angleTo(ray.direction);
-        const orthoZ = g.depthBufferRGBAValueToOrthoZ(buffer, camera);
-        const length = orthoZ / Math.cos(angle);
+            const angle = direction.angleTo(ray.direction);
+            const orthoZ = g.depthBufferRGBAValueToOrthoZ(buffer, camera);
+            const length = orthoZ / Math.cos(angle);
+            target.addVectors(camera.position, ray.direction.setLength(length));
+        } else {
+            const gl_FragCoord_Z = g.depthBufferRGBAValueToOrthoZ(buffer, camera);
 
-        target.addVectors(camera.position, ray.direction.setLength(length));
+            target.set(screen.x, screen.y, gl_FragCoord_Z);
+            target.unproject(camera);
+        }
 
         camera.layers.mask = prev;
 
