@@ -31,6 +31,7 @@ export { default as OrientationUtils } from 'Utils/OrientationUtils';
 export { default as ShaderChunk } from 'Renderer/Shader/ShaderChunk';
 export { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 export { default as Capabilities } from 'Core/System/Capabilities';
+export { CAMERA_TYPE } from 'Renderer/Camera';
 
 // Internal itowns format
 export { default as Feature, FeatureCollection, FeatureGeometry, FEATURE_TYPES } from 'Core/Feature';

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 
 // event keycode
-const keys = {
+export const keys = {
     CTRL: 17,
     SPACE: 32,
     T: 84,
@@ -18,12 +18,14 @@ const mouseButtons = {
 // starting camera position and orientation target
 const startPosition = new THREE.Vector3();
 const startQuaternion = new THREE.Quaternion();
+// camera initial zoom value if orthographic
+let cameraInitialZoom = 0;
 
 // point under the cursor
 const pointUnderCursor = new THREE.Vector3();
 
 // control state
-const STATE = {
+export const STATE = {
     NONE: -1,
     DRAG: 0,
     PAN: 1,
@@ -52,6 +54,7 @@ let phi = 0.0;
 // displacement and rotation vectors
 const vect = new THREE.Vector3();
 const quat = new THREE.Quaternion();
+const vect2 = new THREE.Vector2();
 
 // animated travel
 const travelEndPos = new THREE.Vector3();
@@ -63,6 +66,16 @@ let travelDuration = 0;
 let travelUseRotation = false;
 let travelUseSmooth = false;
 
+// zoom changes (for orthographic camera)
+let startZoom = 0;
+let endZoom = 0;
+
+// ray caster for drag movement
+const rayCaster = new THREE.Raycaster();
+const plane = new THREE.Plane(
+    new THREE.Vector3(0, 0, -1),
+);
+
 // default parameters :
 const defaultOptions = {
     enableRotation: true,
@@ -70,15 +83,15 @@ const defaultOptions = {
     minPanSpeed: 0.05,
     maxPanSpeed: 15,
     zoomTravelTime: 0.2,
-    zoomInFactor: 0.25,
-    zoomOutFactor: 0.4,
+    zoomInFactor: 0.5,
+    zoomOutFactor: 0.45,
     maxAltitude: 12000,
     groundLevel: 200,
     autoTravelTimeMin: 1.5,
     autoTravelTimeMax: 4,
-    autoTravelTimeDist: 20000,
-    smartZoomHeightMin: 75,
-    smartZoomHeightMax: 500,
+    autoTravelTimeDist: 50000,
+    smartTravelHeightMin: 75,
+    smartTravelHeightMax: 500,
     instantTravel: false,
     minZenithAngle: 0,
     maxZenithAngle: 82.5,
@@ -87,6 +100,7 @@ const defaultOptions = {
     handleCollision: true,
     minDistanceCollision: 30,
     enableSmartTravel: true,
+    enablePan: true,
 };
 
 export const PLANAR_CONTROL_EVENT = {
@@ -111,6 +125,8 @@ export const PLANAR_CONTROL_EVENT = {
  * @param   {object}        options
  * @param   {boolean}       [options.enableRotation=true]       Enable the rotation with the `CTRL + Left mouse button`
  * and in animations, like the smart zoom.
+ * @param   {boolean}       [options.enableSmartTravel=true]    Enable smart travel with the `wheel-click / space-bar`.
+ * @param   {boolean}       [options.enablePan=true]            Enable pan movements with the `right-click`.
  * @param   {number}        [options.rotateSpeed=2.0]           Rotate speed.
  * @param   {number}        [options.maxPanSpeed=15]            Pan speed when close to maxAltitude.
  * @param   {number}        [options.minPanSpeed=0.05]          Pan speed when close to the ground.
@@ -119,7 +135,7 @@ export const PLANAR_CONTROL_EVENT = {
  * target, multiplied by this factor when zooming in.
  * @param   {number}        [options.zoomOutFactor=0.4]         Zoom movement is equal to the distance to the zoom
  * target, multiplied by this factor when zooming out.
- * @param   {number}        [options.maxAltitude=12000]         Maximum altitude reachable when panning.
+ * @param   {number}        [options.maxAltitude=12000]         Maximum altitude reachable when panning or zooming out.
  * @param   {number}        [options.groundLevel=200]           Minimum altitude reachable when panning.
  * @param   {number}        [options.autoTravelTimeMin=1.5]     Minimum duration for animated travels with the `auto`
  * parameter.
@@ -127,10 +143,10 @@ export const PLANAR_CONTROL_EVENT = {
  * parameter.
  * @param   {number}        [options.autoTravelTimeDist=20000]  Maximum travel distance for animated travel with the
  * `auto` parameter.
- * @param   {number}        [options.smartZoomHeightMin=75]     Minimum height above ground reachable after a smart
- * zoom.
- * @param   {number}        [options.smartZoomHeightMax=500]    Maximum height above ground reachable after a smart
- * zoom.
+ * @param   {number}        [options.smartTravelHeightMin=75]     Minimum height above ground reachable after a smart
+ * travel.
+ * @param   {number}        [options.smartTravelHeightMax=500]    Maximum height above ground reachable after a smart
+ * travel.
  * @param   {boolean}       [options.instantTravel=false]       If set to true, animated travels will have no duration.
  * @param   {number}        [options.minZenithAngle=0]          The minimum reachable zenith angle for a camera
  * rotation, in degrees.
@@ -139,7 +155,6 @@ export const PLANAR_CONTROL_EVENT = {
  * @param   {boolean}       [options.focusOnMouseOver=true]     Set the focus on the canvas if hovered.
  * @param   {boolean}       [options.focusOnMouseClick=true]    Set the focus on the canvas if clicked.
  * @param   {boolean}       [options.handleCollision=true]
- * @param   {boolean}       [options.enableSmartTravel=true]    enable smart travel
  */
 class PlanarControls extends THREE.EventDispatcher {
     constructor(view, options = {}) {
@@ -147,13 +162,36 @@ class PlanarControls extends THREE.EventDispatcher {
         this.view = view;
         this.camera = view.camera.camera3D;
 
-        this.enableRotation = options.enableRotation === undefined ?
-            defaultOptions.enableRotation : options.enableRotation;
-        this.rotateSpeed = options.rotateSpeed || defaultOptions.rotateSpeed;
+        if (this.camera.isOrthographicCamera) {
+            cameraInitialZoom = this.camera.zoom;
 
-        // minPanSpeed when close to the ground, maxPanSpeed when close to maxAltitude
-        this.minPanSpeed = options.minPanSpeed || defaultOptions.minPanSpeed;
-        this.maxPanSpeed = options.maxPanSpeed || defaultOptions.maxPanSpeed;
+            // enable rotation movements
+            this.enableRotation = false;
+
+            // enable pan movements
+            this.enablePan = false;
+
+            // Camera altitude is clamped under maxAltitude.
+            // This is not relevant for an orthographic camera (since the orthographic camera altitude won't change).
+            // Therefore, neutralizing by default the maxAltitude limit allows zooming out with an orthographic camera,
+            // no matter its initial position.
+            this.maxAltitude = Infinity;
+        } else {
+            // enable rotation movements
+            this.enableRotation = options.enableRotation === undefined ?
+                defaultOptions.enableRotation : options.enableRotation;
+            this.rotateSpeed = options.rotateSpeed || defaultOptions.rotateSpeed;
+
+            // enable pan movements
+            this.enablePan = options.enablePan === undefined ? defaultOptions.enablePan : options.enablePan;
+
+            // minPanSpeed when close to the ground, maxPanSpeed when close to maxAltitude
+            this.minPanSpeed = options.minPanSpeed || defaultOptions.minPanSpeed;
+            this.maxPanSpeed = options.maxPanSpeed || defaultOptions.maxPanSpeed;
+
+            // camera altitude is clamped under maxAltitude
+            this.maxAltitude = options.maxAltitude || defaultOptions.maxAltitude;
+        }
 
         // animation duration for the zoom
         this.zoomTravelTime = options.zoomTravelTime || defaultOptions.zoomTravelTime;
@@ -162,10 +200,7 @@ class PlanarControls extends THREE.EventDispatcher {
         this.zoomInFactor = options.zoomInFactor || defaultOptions.zoomInFactor;
         this.zoomOutFactor = options.zoomOutFactor || defaultOptions.zoomOutFactor;
 
-        // pan movement is clamped between maxAltitude and groundLevel
-        this.maxAltitude = options.maxAltitude || defaultOptions.maxAltitude;
-
-        // approximate ground altitude value
+        // approximate ground altitude value. Camera altitude is clamped above groundLevel
         this.groundLevel = options.groundLevel || defaultOptions.groundLevel;
 
         // min and max duration in seconds, for animated travels with `auto` parameter
@@ -176,8 +211,16 @@ class PlanarControls extends THREE.EventDispatcher {
         this.autoTravelTimeDist = options.autoTravelTimeDist || defaultOptions.autoTravelTimeDist;
 
         // after a smartZoom, camera height above ground will be between these two values
-        this.smartZoomHeightMin = options.smartZoomHeightMin || defaultOptions.smartZoomHeightMin;
-        this.smartZoomHeightMax = options.smartZoomHeightMax || defaultOptions.smartZoomHeightMax;
+        if (options.smartZoomHeightMin) {
+            console.warn('Controls smartZoomHeightMin parameter is deprecated. Use smartTravelHeightMin instead.');
+            options.smartTravelHeightMin = options.smartTravelHeightMin || options.smartZoomHeightMin;
+        }
+        if (options.smartZoomHeightMax) {
+            console.warn('Controls smartZoomHeightMax parameter is deprecated. Use smartTravelHeightMax instead.');
+            options.smartTravelHeightMax = options.smartTravelHeightMax || options.smartZoomHeightMax;
+        }
+        this.smartTravelHeightMin = options.smartTravelHeightMin || defaultOptions.smartTravelHeightMin;
+        this.smartTravelHeightMax = options.smartTravelHeightMax || defaultOptions.smartTravelHeightMax;
 
         // if set to true, animated travels have 0 duration
         this.instantTravel = options.instantTravel || defaultOptions.instantTravel;
@@ -262,26 +305,30 @@ class PlanarControls extends THREE.EventDispatcher {
         if (updateLoopRestarted) {
             dt = 16;
         }
-        if (this.state !== STATE.NONE) {
-            this.view.dispatchEvent({
-                type: PLANAR_CONTROL_EVENT.MOVED,
-            });
+        const onMovement = this.state !== STATE.NONE;
+        switch (this.state) {
+            case STATE.TRAVEL:
+                this.handleTravel(dt);
+                this.view.notifyChange(this.camera);
+                break;
+            case STATE.DRAG:
+                this.handleDragMovement();
+                this.view.notifyChange(this.camera);
+                break;
+            case STATE.ROTATE:
+                this.handleRotation();
+                this.view.notifyChange(this.camera);
+                break;
+            case STATE.PAN:
+                this.handlePanMovement();
+                this.view.notifyChange(this.camera);
+                break;
+            case STATE.NONE:
+            default:
+                break;
         }
-        if (this.state === STATE.TRAVEL) {
-            this.handleTravel(dt);
-            this.view.notifyChange(this.camera);
-        }
-        if (this.state === STATE.DRAG) {
-            this.handleDragMovement();
-            this.view.notifyChange(this.camera);
-        }
-        if (this.state === STATE.ROTATE && this.enableRotation) {
-            this.handleRotation();
-            this.view.notifyChange(this.camera);
-        }
-        if (this.state === STATE.PAN) {
-            this.handlePanMovement();
-            this.view.notifyChange(this.camera);
+        if (onMovement) {
+            this.view.dispatchEvent({ type: PLANAR_CONTROL_EVENT.MOVED });
         }
         deltaMousePosition.set(0, 0);
     }
@@ -312,12 +359,12 @@ class PlanarControls extends THREE.EventDispatcher {
      */
     handleDragMovement() {
         // the world point under the current mouse cursor position, at same altitude than dragStart
-        dragEnd.copy(this.getWorldPointFromMathPlaneAtScreenXY(mousePosition, dragStart.z));
+        this.getWorldPointFromMathPlaneAtScreenXY(mousePosition, dragStart.z, dragEnd);
 
         // the difference between start and end cursor position
         dragDelta.subVectors(dragStart, dragEnd);
 
-        // update the camera controls
+        // update the camera position
         this.camera.position.add(dragDelta);
 
         dragDelta.set(0, 0, 0);
@@ -431,7 +478,6 @@ class PlanarControls extends THREE.EventDispatcher {
         this.camera.position.copy(offset);
         this.camera.lookAt(vectorZero);
         this.camera.position.add(centerPoint);
-        this.camera.updateMatrixWorld();
     }
 
     /**
@@ -458,6 +504,12 @@ class PlanarControls extends THREE.EventDispatcher {
 
         // Zoom IN
         if (delta > 0) {
+            // decrease the camera field of view if the camera is orthographic
+            if (this.camera.isOrthographicCamera) {
+                startZoom = this.camera.zoom;
+                endZoom = startZoom * (1 + this.zoomInFactor);
+                pointUnderCursor.z = this.camera.position.z;
+            }
             // target position
             newPos.lerpVectors(
                 this.camera.position,
@@ -473,6 +525,12 @@ class PlanarControls extends THREE.EventDispatcher {
             );
         // Zoom OUT
         } else if (delta < 0 && this.maxAltitude > this.camera.position.z) {
+            // increase the camera field of view if the camera is orthographic
+            if (this.camera.isOrthographicCamera) {
+                startZoom = this.camera.zoom;
+                endZoom = startZoom * (1 - this.zoomOutFactor);
+                pointUnderCursor.z = this.camera.position.z;
+            }
             // target position
             newPos.lerpVectors(
                 this.camera.position,
@@ -495,7 +553,7 @@ class PlanarControls extends THREE.EventDispatcher {
      *
      * @ignore
      */
-    initiateSmartZoom() {
+    initiateSmartTravel() {
         const pointUnderCursor = this.getWorldPointAtScreenXY(mousePosition);
 
         // direction of the movement, projected on xy plane and normalized
@@ -508,8 +566,8 @@ class PlanarControls extends THREE.EventDispatcher {
 
         // camera height (altitude above ground) at the end of the travel, 5000 is an empirical smoothing distance
         const targetHeight = THREE.MathUtils.lerp(
-            this.smartZoomHeightMin,
-            this.smartZoomHeightMax,
+            this.smartTravelHeightMin,
+            this.smartTravelHeightMax,
             Math.min(distanceToPoint / 5000, 1),
         );
 
@@ -520,6 +578,13 @@ class PlanarControls extends THREE.EventDispatcher {
             moveTarget.add(dir.multiplyScalar(-targetHeight * 2));
         }
         moveTarget.z = pointUnderCursor.z + targetHeight;
+
+        if (this.camera.isOrthographicCamera) {
+            startZoom = this.camera.zoom;
+            // camera zoom at the end of the travel, 5000 is an empirical smoothing distance
+            endZoom = startZoom * (1 + Math.min(distanceToPoint / 5000, 1));
+            moveTarget.z = this.camera.position.z;
+        }
 
         // initiate the travel
         this.initiateTravel(
@@ -630,30 +695,13 @@ class PlanarControls extends THREE.EventDispatcher {
     }
 
     /**
-     * Resume normal behavior after a travel is completed
-     *
-     * @ignore
-     */
-    endTravel() {
-        this.camera.position.copy(travelEndPos);
-
-        if (travelUseRotation) {
-            this.camera.quaternion.copy(travelEndRot);
-        }
-
-        this.state = STATE.NONE;
-
-        this.updateMouseCursorType();
-    }
-
-    /**
      * Handle the animated movement and rotation of the camera in `travel` state.
      *
      * @param   {number}    dt  the delta time between two updates in milliseconds
      * @ignore
      */
     handleTravel(dt) {
-        travelAlpha += (dt / 1000) / travelDuration;
+        travelAlpha = Math.min(travelAlpha + (dt / 1000) / travelDuration, 1);
 
         // the animation alpha, between 0 (start) and 1 (finish)
         const alpha = (travelUseSmooth) ? this.smooth(travelAlpha) : travelAlpha;
@@ -664,6 +712,13 @@ class PlanarControls extends THREE.EventDispatcher {
             travelEndPos,
             alpha,
         );
+
+        const zoom = startZoom + alpha * (endZoom - startZoom);
+        // new zoom
+        if (this.camera.isOrthographicCamera && this.camera.zoom !== zoom) {
+            this.camera.zoom = zoom;
+            this.view.camera.matrixProjectionNeedsUpdate = true;
+        }
 
         // new rotation
         if (travelUseRotation === true) {
@@ -676,8 +731,10 @@ class PlanarControls extends THREE.EventDispatcher {
         }
 
         // completion test
-        if (travelAlpha > 1) {
-            this.endTravel();
+        if (travelAlpha === 1) {
+            // Resume normal behaviour after travel is completed
+            this.state = STATE.NONE;
+            this.updateMouseCursorType();
         }
     }
 
@@ -715,6 +772,11 @@ class PlanarControls extends THREE.EventDispatcher {
      * @ignore
      */
     goToStartView() {
+        // if startZoom and endZoom have not been set yet, give them neutral values
+        if (this.camera.isOrthographicCamera) {
+            startZoom = this.camera.zoom;
+            endZoom = cameraInitialZoom;
+        }
         this.initiateTravel(
             startPosition,
             'auto',
@@ -729,22 +791,17 @@ class PlanarControls extends THREE.EventDispatcher {
      *
      * @param   {THREE.Vector2} posXY       the mouse position in screen space (unit : pixel)
      * @param   {number}        altitude    the altitude (z) of the mathematical plane
+     * @param   {THREE.Vector3} target      the target vector3
      * @return  {THREE.Vector3}
      * @ignore
      */
-    getWorldPointFromMathPlaneAtScreenXY(posXY, altitude) {
-        vect.set(
-            (posXY.x / this.view.mainLoop.gfxEngine.width) * 2 - 1,
-            -(posXY.y / this.view.mainLoop.gfxEngine.height) * 2 + 1,
-            0.5,
-        );
-        vect.unproject(this.camera);
-        // dir : direction toward the point on the plane
-        const dir = vect.sub(this.camera.position).normalize();
-        // distance from camera to point on the plane
-        const distance = (altitude - this.camera.position.z) / dir.z;
+    getWorldPointFromMathPlaneAtScreenXY(posXY, altitude, target = new THREE.Vector3()) {
+        vect2.copy(this.view.viewToNormalizedCoords(posXY));
+        rayCaster.setFromCamera(vect2, this.camera);
+        plane.constant = altitude;
+        rayCaster.ray.intersectPlane(plane, target);
 
-        return this.camera.position.clone().add(dir.multiplyScalar(distance));
+        return target;
     }
 
     /**
@@ -864,18 +921,26 @@ class PlanarControls extends THREE.EventDispatcher {
 
         if (mouseButtons.LEFTCLICK === event.button) {
             if (event.ctrlKey) {
-                this.initiateRotation();
+                if (this.enableRotation) {
+                    this.initiateRotation();
+                } else {
+                    return;
+                }
             } else {
                 this.initiateDrag();
             }
         } else if (mouseButtons.MIDDLECLICK === event.button) {
             if (this.enableSmartTravel) {
-                this.initiateSmartZoom();
+                this.initiateSmartTravel();
             } else {
                 return;
             }
         } else if (mouseButtons.RIGHTCLICK === event.button) {
-            this.initiatePan();
+            if (this.enablePan) {
+                this.initiatePan();
+            } else {
+                return;
+            }
         }
 
         this.updateMouseCursorType();
@@ -924,14 +989,23 @@ class PlanarControls extends THREE.EventDispatcher {
         if (STATE.TRAVEL === this.state) {
             return;
         }
-        if (keys.T === event.keyCode) {
-            this.goToTopView();
-        }
-        if (keys.Y === event.keyCode) {
-            this.goToStartView();
-        }
-        if (keys.SPACE === event.keyCode) {
-            this.initiateSmartZoom(event);
+        switch (event.keyCode) {
+            case keys.T:
+                // going to top view is not relevant for an orthographic camera, since it is always top view
+                if (!this.camera.isOrthographicCamera) {
+                    this.goToTopView();
+                }
+                break;
+            case keys.Y:
+                this.goToStartView();
+                break;
+            case keys.SPACE:
+                if (this.enableSmartTravel) {
+                    this.initiateSmartTravel(event);
+                }
+                break;
+            default:
+                break;
         }
     }
 

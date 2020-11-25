@@ -6,6 +6,7 @@ import ColorLayer from 'Layer/ColorLayer';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import FileSource from 'Source/FileSource';
 import ColorLayersOrdering from 'Renderer/ColorLayersOrdering';
+import { CAMERA_TYPE } from 'Renderer/Camera';
 import Renderer from './bootstrap';
 
 describe('Viewer', function () {
@@ -127,5 +128,20 @@ describe('Viewer', function () {
         assert.equal(Object.values(viewer._frameRequesters).length, 0);
         assert.equal(viewer.getLayers().length, 0);
         assert.equal(viewer._listeners, undefined);
+    });
+    it('Should create the correct camera from type', () => {
+        const view = new View('EPSG:4326', renderer.domElement, {
+            renderer,
+            cameraType: CAMERA_TYPE.ORTHOGRAPHIC,
+        });
+        assert.ok(view.camera.camera3D.isOrthographicCamera);
+    });
+    it('should create the correct camera from specific camera', () => {
+        const camera = new THREE.PerspectiveCamera(50, 0.5);
+        const view = new View('', renderer.domElement, {
+            renderer,
+            camera,
+        });
+        assert.equal(view.camera.camera3D, camera);
     });
 });
