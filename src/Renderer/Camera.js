@@ -6,6 +6,11 @@ import * as THREE from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import DEMUtils from 'Utils/DEMUtils';
 
+export const CAMERA_TYPE = {
+    PERSPECTIVE: 0,
+    ORTHOGRAPHIC: 1,
+};
+
 function updatePreSse(camera, height, fov) {
     // sse = projected geometric error on screen plane from distance
     // We're using an approximation, assuming that the geometric error of all
@@ -47,13 +52,34 @@ function updatePreSse(camera, height, fov) {
     // horizontalPreSSE = this.width / (2.0 * Math.tan(verticalFOV * 0.5) * this.width / this.height)
     //                  = this.height / 2.0 * Math.tan(verticalFOV * 0.5)
     //                  = verticalPreSSE
-    camera._preSSE = verticalPreSSE;
+    if (camera.camera3D.isOrthographicCamera) {
+        camera._preSSE = height;
+    } else {
+        camera._preSSE = verticalPreSSE;
+    }
 }
 
 function Camera(crs, width, height, options = {}) {
     Object.defineProperty(this, 'crs', { get: () => crs });
 
-    this.camera3D = options.camera ? options.camera : new THREE.PerspectiveCamera(30, width / height);
+    if (options.camera) {
+        this.camera3D = options.camera;
+    } else {
+        const aspect = width / height;
+        const orthoExtent = options.orthoExtent || 50;
+
+        switch (options.cameraType) {
+            case CAMERA_TYPE.ORTHOGRAPHIC:
+                this.camera3D = new THREE.OrthographicCamera(
+                    orthoExtent * aspect / -2, orthoExtent * aspect / 2,
+                    orthoExtent / 2, orthoExtent / -2);
+                break;
+            case CAMERA_TYPE.PERSPECTIVE:
+            default:
+                this.camera3D = new THREE.PerspectiveCamera(30, aspect);
+                break;
+        }
+    }
 
     this._viewMatrix = new THREE.Matrix4();
     this.width = width;
@@ -101,6 +127,10 @@ Camera.prototype.resize = function resize(width, height) {
 Camera.prototype.update = function update() {
     // update matrix
     this.camera3D.updateMatrixWorld();
+    if (this.matrixProjectionNeedsUpdate) {
+        this.camera3D.updateProjectionMatrix();
+        this.matrixProjectionNeedsUpdate = false;
+    }
     this._viewMatrixNeedsUpdate = true;
 };
 

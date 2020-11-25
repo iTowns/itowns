@@ -112,6 +112,8 @@ const direction = new THREE.Vector3();
 const positionVector = new THREE.Vector3();
 const coordinates = new Coordinates('EPSG:4326');
 const viewers = [];
+// Size of the camera frustrum, in meters
+let screenMeters;
 
 class View extends THREE.EventDispatcher {
     /**
@@ -120,6 +122,8 @@ class View extends THREE.EventDispatcher {
      * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
      * @param {Object=} options - Optional properties.
+     * @param {Camera}  [options.camera] - A camera to use with the view.
+     * @param {CAMERA_TYPE} [options.cameraType=CAMERA_TYPE.PERSPECTIVE] - The type of the camera (`CAMERA_TYPE.PERSPECTIVE` or `CAMERA_TYPE.ORTHOGRAPHIC`).
      * @param {?MainLoop} options.mainLoop - {@link MainLoop} instance to use, otherwise a default one will be constructed
      * @param {?(WebGLRenderer|object)} options.renderer - {@link WebGLRenderer} instance to use, otherwise
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
@@ -761,6 +765,10 @@ class View extends THREE.EventDispatcher {
      * @return {number} The projected distance in meters.
      */
     getPixelsToMeters(pixels = 1, screenCoord) {
+        if (this.camera.camera3D.isOrthographicCamera) {
+            screenMeters = (this.camera.camera3D.right - this.camera.camera3D.left) / this.camera.camera3D.zoom;
+            return pixels * screenMeters / this.camera.width;
+        }
         return this.getPixelsToMetersFromDistance(pixels, this.getDistanceFromCamera(screenCoord));
     }
 
@@ -779,6 +787,10 @@ class View extends THREE.EventDispatcher {
      * @return {number} The projected distance in meters.
      */
     getMetersToPixels(meters = 1, screenCoord) {
+        if (this.camera.camera3D.isOrthographicCamera) {
+            screenMeters = (this.camera.camera3D.right - this.camera.camera3D.left) / this.camera.camera3D.zoom;
+            return meters * this.camera.width / screenMeters;
+        }
         return this.getMetersToPixelsFromDistance(meters, this.getDistanceFromCamera(screenCoord));
     }
 

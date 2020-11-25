@@ -417,7 +417,13 @@ class TiledGeometryLayer extends GeometryLayer {
             context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
 
         // Size projection on pixel of bounding
-        node.screenSize = context.camera._preSSE * (2 * node.boundingSphere.radius * subdivisionVector.x) / distance;
+        if (context.camera.camera3D.isOrthographicCamera) {
+            const camera3D = context.camera.camera3D;
+            const preSSE = context.camera._preSSE * 2 * camera3D.zoom / (camera3D.top - camera3D.bottom);
+            node.screenSize = preSSE * node.boundingSphere.radius * subdivisionVector.x;
+        } else {
+            node.screenSize = context.camera._preSSE * (2 * node.boundingSphere.radius * subdivisionVector.x) / distance;
+        }
 
         // The screen space error is calculated to have a correct texture display.
         // For the projection of a texture's texel to be less than or equal to one pixel

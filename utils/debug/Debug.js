@@ -194,6 +194,8 @@ function Debug(view, datDebugTool, chartDivContainer) {
             camera.localToWorld(lookAtCameraDebug);
             debugCamera.lookAt(lookAtCameraDebug);
 
+            helper.update();
+
             debugCamera.updateProjectionMatrix();
             if (layerAtmosphere) {
                 layerAtmosphere.object3d.visible = false;
