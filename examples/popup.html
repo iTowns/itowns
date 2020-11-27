@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Custom popup</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="description">
+            Clicking a position while holding `p` key down will pop a custom popup.
+        </div>
+        <div id="viewerDiv" class="viewer"></div>
+
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
+        <script type="text/javascript">
+            /* global itowns */
+
+            // Setup view and layers
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 3.5, 44),
+                range: 1000000,
+            };
+            const viewerDiv = document.getElementById('viewerDiv');
+            const view = new itowns.GlobeView(viewerDiv, placement);
+            var menuGlobe = new GuiTools('menuDiv', view);
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(new itowns.ColorLayer('Ortho', config));
+            });
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(new itowns.ElevationLayer(config.id, config));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            debug.createTileDebugUI(menuGlobe.gui, view);
+
+            // Add a Label on `p` + click
+            let pickMode = false;
+            viewerDiv.addEventListener('keydown', function () {
+                if (event.key === 'p') { pickMode = true; }
+            }, false);
+            viewerDiv.addEventListener('keyup', function () {
+                if (event.key === 'p') { pickMode = false; }
+            }, false);
+            viewerDiv.addEventListener('mousedown', addFeatureFromMouseEvent, false);
+
+            // this const shall receive the mouse coordinates when user clicks while holding `p` pressed
+            const featureCoord = new itowns.Coordinates(view.referenceCrs);
+
+            function addFeatureFromMouseEvent(event) {
+                if (!pickMode) {
+                    return;
+                }
+
+                featureCoord.setFromVector3(view.getPickingPositionFromDepth(view.eventToViewCoords(event)));
+
+                const features = createFeatureAt([featureCoord]);
+
+                // the source of the feature layer
+                const source = new itowns.FileSource({ features });
+
+                // create labelLayer
+                const layer = new itowns.LabelLayer('idLabelLayer', {
+                    source: source,
+                    labelEnabled: true,
+                });
+
+                view.addLayer(layer);
+
+                // remove mouse event listener to prevent adding other layer sharing `idLabelLayer` id
+                viewerDiv.removeEventListener('mousedown', addFeatureFromMouseEvent, false);
+            }
+
+            function createFeatureAt(coordinate) {
+                // create new featureCollection
+                const collection = new itowns.FeatureCollection(view.tileLayer.extent.crs, {
+                    buildExtent: true,
+                    style: new itowns.Style({
+                        zoom: { min: 3 },
+                        text: { field: 'coucou' },
+                    }),
+                });
+
+                // create new feature
+                const feature = collection.requestFeatureByType(itowns.FEATURE_TYPES.POINT);
+
+                const img = document.createElement('img');
+                img.width = 34;
+                img.height = 44;
+                img.halfWidth = 17;
+                img.halfHeight = 44;
+                img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAsCAYAAAAATWqyAAAAGXRFWHRTb2Z0d2FyZQBB' +
+                    'ZG9iZSBJbWFnZVJlYWR5ccllPAAABTtJREFUeNq8WGtsFUUU/rb3gtdCAykFG9AUDTQUKimhxUewEusrJYoBo4FfEgoqotHE' +
+                    'RH6oP9TGmJhIrIlWAf9hjAaEiME2pgFfVVpFii8sWqIQLLSx3EJLW7p+Z2Z2b2l7d/b23vZLTmZ2duacb2fmnDk7DlKA67rX' +
+                    's1hJKacsohRQppjXFygnKT9TDlH2O47zFzIFGnco91EOuqnjoBnr2Ow4FhIlLN6m3DykFTh3BGj/Doj/CfSe082xPCDnBmDW' +
+                    'TUBeyXDVjZTHOUNHUiZCEs+weI0ySTV0/w0c2wa07gIungn+vOx8YN46oPhpYOp1Xms/5TmSeSMUERKImFnYqBoGuPRNL5LE' +
+                    'W8BgX2rrmjWZZLYApS8BUW8r4T0zO5eTEjFr+S6lSjV0HgPqVwNdf6S30abNB+7aDeQWey3bKZtIxvU5DxvyrE/izJfAvuXp' +
+                    'kxCIDtElOjWqjK2RM8LZWMbiG0oEnUc5kB7a14WMYvI04H56du5ieZKluZWz8r0/IyQh5TuKRH8cqFuTeRIC0Sm6xYbYok1j' +
+                    '21+ahyhLVO3wC8D5VowbRLfY0FhibOulIavDLEoRZyD8sJDeMWBXKG5ZsIobsdDsg+OMq3u1m1u9KQo8zP45EqjRxOUpk6i5' +
+                    '0IRl4FuGjpZtwUoiMYa314GFj/EzIsN8n8v+C1e4kfvwcm+wnhsZY27xQ8oiWZpKrWRQB6tAElfxpKnjsCdGklDzG9HvpI/0' +
+                    'DYLYEpsalVnmAAM6fgR62oMHl70C5N9mn3rpI32DILbEpkZ5ljlFgbPNFtebzij5VPhNKX1lTBASNtXSzPZ3cxCuvVOH7FTC' +
+                    'u4yxeZDGbCES0z5+PniQ3uGpwTYmYTOWCPGTpgYP6u9OnYhtzBCbQkSH0NiM4EEdP6VOxDYmYbNLiJxQ1elFwYPaG3XQCn3Q' +
+                    'HddjgpCweUKI6K2bvzw4YROf//rJob6fZl/H2FRoFiINfqo3qyzYwD8MVIeYLw32J+8j76SP9A2C2BKbGg1CZL+EF/W4YKP9' +
+                    'a3/fCeyhkrY9DOOXEu1SlzZ5J31sSNjqURm/OfQkY9qgvkYOvXhbuH0g505Oga7HT9rPF9+t5+pDL0ulwzt46FV5ROax+JUS' +
+                    'RRtP0LoHMK64+xNg7iqVEVOKSKRVxRGpsKhRnaRD4SPjR0J0axKCGmP7ilQxm4X8d8xXmfvHJZlPkCR3WfODl9FLMlxCIhev' +
+                    'SJ5Nwzo1XdKxYpe3hpmB6BKdmoS43VqPxIgsni+aWOg8biZ3f+nLmSMiuvKWek/P01az7QdLyNVT7lC/l59WAKcb0iMxhzpW' +
+                    '1nvmvpDtSiKD1l9OkpnDgv8UyMWFU9wvTP8vdY6NhJwnD1JVtso2OiiLSeL0iJUbNfg6zikVVwRTyOn2HWOfjfLtHgnBhtFI' +
+                    'JCViyNDZUatdmnGlaFPqJIoe1WM1aqlz71ivJbLNobgAA9zgu7nZ/vstHAk5WVdzaPRqmGC5lER6kjpV4OWJdq+1kkshSk4V' +
+                    'H9izcy/bV66qSPQZV+0J9G7rTY6+XNmqHmYwyJVV24kse1X31dhKHdasygkzy+a64oC4nWr47F4e858nSbLv4V/KAe9JKpVD' +
+                    'rx/SImLIXMOiRUKdujESl+49O8xVZxpXzVc/C/I/RxL/hgq8YYkYhev9q6kVO4d9B+sr3vdICNaHJTHWW8Ya/87wqy2uWwst' +
+                    'Uk/gTYw3aCRGOarMDfS67kfFWqSuIe9imAjQEC272nJHixYNaSvGRIIGN49ywbsZEw1zI11N6TZSHeaGORn+F2AAJtRIMx4t' +
+                    '+hUAAAAASUVORK5CYII='
+
+                feature.style.icon = img;
+
+                // add geometries to feature
+                feature.addPointGeometries(coordinate);
+
+                collection.updateExtent(feature.extent);
+
+                return collection;
+            }
+        </script>
+    </body>
+</html>
