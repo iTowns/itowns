@@ -102,6 +102,9 @@ class Label extends THREE.Object3D {
             this.styleOffset = [0, 0];
         }
 
+        this.icon = this.content.getElementsByClassName('itowns-icon')[0];
+        this.iconOffset = { left: 0, right: 0, top: 0, bottom: 0 };
+
         this.zoom = {
             min: style.zoom && style.zoom.min != undefined ? style.zoom.min : 2,
             max: style.zoom && style.zoom.max != undefined ? style.zoom.max : 24,
@@ -130,15 +133,36 @@ class Label extends THREE.Object3D {
             this.boundaries.right = x + this.offset.right + this.padding;
             this.boundaries.top = y + this.offset.top - this.padding;
             this.boundaries.bottom = y + this.offset.bottom + this.padding;
+
+            // The boundaries of the label are the union of the boundaries of the text
+            // and the boundaries of the icon, if it exists.
+            // Checking if this.icon is not only zeros is mandatory, to prevent case
+            // when a boundary is set to x or y coordinate
+            if (
+                this.iconOffset.left !== 0 && this.iconOffset.right !== 0
+                && this.iconOffset.top !== 0 && this.iconOffset.bottom !== 0
+            ) {
+                this.boundaries.left = Math.min(this.boundaries.left, x + this.iconOffset.left);
+                this.boundaries.right = Math.max(this.boundaries.right, x + this.iconOffset.right);
+                this.boundaries.top = Math.min(this.boundaries.top, y + this.iconOffset.top);
+                this.boundaries.bottom = Math.max(this.boundaries.bottom, y + this.iconOffset.bottom);
+            }
         }
     }
 
     updateCSSPosition() {
+        // translate all content according to its given anchor
         this.content.style[STYLE_TRANSFORM] = `translate(${
             this.projectedPosition.x + this.offset.left
         }px, ${
             this.projectedPosition.y + this.offset.top
         }px)`;
+
+        // translate possible icon inside content to cancel anchoring on it, so that it can later be positioned
+        // according to its own anchor
+        if (this.icon) {
+            this.icon.style[STYLE_TRANSFORM] = `translate(${-this.offset.left}px, ${-this.offset.top}px)`;
+        }
     }
 
     /**
@@ -157,6 +181,16 @@ class Label extends THREE.Object3D {
             };
             this.offset.right = this.offset.left + width;
             this.offset.bottom = this.offset.top + height;
+
+            if (this.icon) {
+                rect = this.icon.getBoundingClientRect();
+                this.iconOffset = {
+                    left: Math.floor(rect.x),
+                    top: Math.floor(rect.y),
+                    right: Math.ceil(rect.x + rect.width),
+                    bottom: Math.ceil(rect.y + rect.height),
+                };
+            }
         }
     }
 
