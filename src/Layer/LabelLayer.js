@@ -97,9 +97,9 @@ class LabelLayer extends Layer {
                 const context = { globals, properties: () => g.properties };
                 if (!geometryField && !featureField && !layerField) {
                     // Check if there is an icon, with no text
-                    if (!(g.properties.style && g.properties.style.icon)
-                        && !(f.style && f.style.icon)
-                        && !(this.style && this.style.icon)) {
+                    if (!(g.properties.style && (g.properties.style.icon.source || g.properties.style.icon.key))
+                        && !(f.style && (f.style.icon.source || f.style.icon.key))
+                        && !(this.style && (this.style.icon.source || this.style.icon.key))) {
                         return;
                     }
                 } else if (geometryField) {
