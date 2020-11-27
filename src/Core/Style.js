@@ -248,6 +248,33 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * @property {number|function} text.haloBlur - The blur value of the halo, in pixels.
  * Default is `0`.
  *
+ * @property {Object} icon - Defines the appearance of icons attached to label.
+ * @property {String} icon.source - The url of the icons' image file.
+ * @property {String} icon.key - The key of the icons' image in a vector tile data set.
+ * @property {number} icon.size - If the icon's image is passed with `icon.source` or
+ * `icon.key`, it size when displayed on screen is multiplied by `icon.size`. Default is `1`.
+ * @property {Element} icon.domElement - A DomElement that is displayed as an icon.
+ * For example :
+ * ```js
+ * // Create a custom DomElement that will be displayed as an icon
+ * const customIcon = document.createElement('img');
+ * customIcon.style.width = '10px';
+ * customIcon.style.height = '10px';
+ * customIcon.style.backgroundColor = 'blue';
+ *
+ * const style = new itowns.Style({
+ *     icon: {
+ *         domElement: customIcon,
+ *     },
+ * }
+ * const source = new itowns.FileSource(...);
+ * const layer = new itowns.ColorLayer('bar', {
+ *     source: source,
+ *     style: style,
+ *     addLabelLayer: true,
+ * };
+ * ```
+ *
  * @example
  * const style = new itowns.Style({
  *      stroke: { color: 'red' },
@@ -283,6 +310,7 @@ class Style {
             stroke: {},
             point: {},
             text: {},
+            icon: {},
         };
 
         params.zoom = params.zoom || {};
@@ -290,6 +318,7 @@ class Style {
         params.stroke = params.stroke || {};
         params.point = params.point || {};
         params.text = params.text || {};
+        params.icon = params.icon || {};
 
         this.zoom = {};
         defineStyleProperty(this, 'zoom', 'min', params.zoom.min);
@@ -342,6 +371,13 @@ class Style {
         defineStyleProperty(this, 'text', 'haloColor', params.text.haloColor, '#000000');
         defineStyleProperty(this, 'text', 'haloWidth', params.text.haloWidth, 0);
         defineStyleProperty(this, 'text', 'haloBlur', params.text.haloBlur, 0);
+
+        this.icon = {};
+        defineStyleProperty(this, 'icon', 'domElement', params.icon.domElement);
+        defineStyleProperty(this, 'icon', 'source', params.icon.source);
+        defineStyleProperty(this, 'icon', 'key', params.icon.key);
+        defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor, 'center');
+        defineStyleProperty(this, 'icon', 'size', params.icon.size, 1);
     }
 
     /**
@@ -395,6 +431,7 @@ class Style {
         Object.assign(this.stroke, style.stroke);
         Object.assign(this.point, style.point);
         Object.assign(this.text, style.text);
+        Object.assign(this.icon, style.icon);
         return this;
     }
 
@@ -426,7 +463,7 @@ class Style {
             this.text.size = properties['label-size'];
 
             if (properties.icon) {
-                this.icon = { image: properties.icon, size: 1 };
+                this.icon.source = properties.icon;
             }
         } else {
             this.stroke.color = properties.stroke;
@@ -525,7 +562,7 @@ class Style {
             // additional icon
             const key = readVectorProperty(layer.layout['icon-image']);
             if (key) {
-                this.icon = { key };
+                this.icon.key = key;
                 this.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
             }
         }
@@ -561,63 +598,49 @@ class Style {
             domElement.setAttribute('data-before', domElement.textContent);
         }
 
-        if (!this.icon) {
-            return;
-        }
-
-        const image = this.icon.image;
-
-        const size = this.icon.size;
-
-        const key = this.icon.key;
-
-        let icon = cacheStyle.get(image || key, size);
-
-        if (!icon) {
-            if (key && sprites) {
-                icon = getImage(sprites, key);
-            } else {
-                icon = getImage(image);
-            }
-            icon.style.position = 'absolute';
-            cacheStyle.set(icon, image || key, size);
-        }
+        let icon;
 
         const addIcon = () => {
             const cIcon = icon.cloneNode();
-            cIcon.width *= size;
-            cIcon.height *= size;
-            switch (this.text.anchor) {
+            cIcon.setAttribute('class', 'icon');
+
+            cIcon.width = icon.width * this.icon.size;
+            cIcon.height = icon.height * this.icon.size;
+            cIcon.style.position = 'absolute';
+            cIcon.style.top = '0';
+            cIcon.style.left = '0';
+
+            switch (this.icon.anchor) { // center by default
                 case 'left':
-                    cIcon.style.right = `calc(100% - ${cIcon.width * 0.5}px)`;
-                    cIcon.style.top = `calc(50% - ${cIcon.height * 0.5}px)`;
+                    cIcon.style.top = `${-0.5 * cIcon.height}px`;
                     break;
                 case 'right':
-                    cIcon.style.top = `calc(50% - ${cIcon.height * 0.5}px)`;
+                    cIcon.style.top = `${-0.5 * cIcon.height}px`;
+                    cIcon.style.left = `${-cIcon.width}px`;
                     break;
                 case 'top':
-                    cIcon.style.right = `calc(50% - ${cIcon.width * 0.5}px)`;
+                    cIcon.style.left = `${-0.5 * cIcon.width}px`;
                     break;
                 case 'bottom':
-                    cIcon.style.top = `calc(100% - ${cIcon.height * 0.5}px)`;
-                    cIcon.style.right = `calc(50% - ${cIcon.width * 0.5}px)`;
+                    cIcon.style.top = `${-cIcon.height}px`;
+                    cIcon.style.left = `${-0.5 * cIcon.width}px`;
                     break;
                 case 'bottom-left':
-                    cIcon.style.top = `calc(100% - ${cIcon.height * 0.5}px)`;
-                    cIcon.style.right = `calc(100% - ${cIcon.width * 0.5}px)`;
+                    cIcon.style.top = `${-cIcon.height}px`;
                     break;
                 case 'bottom-right':
-                    cIcon.style.top = `calc(100% - ${cIcon.height * 0.5}px)`;
+                    cIcon.style.top = `${-cIcon.height}px`;
+                    cIcon.style.left = `${-cIcon.width}px`;
                     break;
                 case 'top-left':
-                    cIcon.style.right = `calc(100% - ${cIcon.width * 0.5}px)`;
                     break;
                 case 'top-right':
+                    cIcon.style.left = `${-cIcon.width}px`;
                     break;
                 case 'center':
                 default:
-                    cIcon.style.top = `calc(50% - ${cIcon.height * 0.5}px)`;
-                    cIcon.style.right = `calc(50% - ${cIcon.width * 0.5}px)`;
+                    cIcon.style.top = `${-0.5 * cIcon.height}px`;
+                    cIcon.style.left = `${-0.5 * cIcon.width}px`;
                     break;
             }
 
@@ -626,10 +649,31 @@ class Style {
             icon.removeEventListener('load', addIcon);
         };
 
-        if (icon.complete) {
+        if (this.icon.domElement) {
+            icon = this.icon.domElement;
+
             addIcon();
-        } else {
-            icon.addEventListener('load', addIcon);
+        } else if (this.icon.source || this.icon.key) {
+            const image = this.icon.source;
+            const size = this.icon.size;
+            const key = this.icon.key;
+
+            icon = cacheStyle.get(image || key, size);
+
+            if (!icon) {
+                if (key && sprites) {
+                    icon = getImage(sprites, key);
+                } else {
+                    icon = getImage(image);
+                }
+                cacheStyle.set(icon, image || key, size);
+            }
+
+            if (icon.complete) {
+                addIcon();
+            } else {
+                icon.addEventListener('load', addIcon);
+            }
         }
     }
 
@@ -679,6 +723,6 @@ style_properties.fill = Object.keys(style.fill);
 style_properties.stroke = Object.keys(style.stroke);
 style_properties.point = Object.keys(style.point);
 style_properties.text = Object.keys(style.text);
-style_properties.icon = ['image', 'size', 'key'];
+style_properties.icon = Object.keys(style.icon);
 
 export default Style;

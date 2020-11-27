@@ -132,7 +132,16 @@ class Label extends THREE.Object3D {
     }
 
     updateCSSPosition() {
+        // translate all content according to its given anchor
         this.content.style[STYLE_TRANSFORM] = `translate(${this.boundaries.left + this.padding}px, ${this.boundaries.top + this.padding}px)`;
+
+        // translate possible icons inside content to cancel anchoring on them, so that they can later be positioned
+        // according to their own anchor
+        for (const child of this.content.children) {
+            if (child.className === 'icon') {
+                child.style[STYLE_TRANSFORM] = `translate(${-this.offset.left}px, ${-this.offset.top}px)`;
+            }
+        }
     }
 
     /**
