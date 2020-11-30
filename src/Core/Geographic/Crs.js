@@ -152,4 +152,12 @@ export default {
     isEpsg,
     tms_3857: 'TMS:3857',
     tms_4326: 'TMS:4326',
+    /**
+     * Define a proj4 projection as a string and reference.
+     *
+     * @param {string}  code    code is the projection's SRS code (only used internally by the Proj4js library)
+     * @param {string}  proj4def is the Proj4 definition string for the projection to use
+     * @return {undefined}
+     */
+    defs: (code, proj4def) => proj4.defs(code, proj4def),
 };
