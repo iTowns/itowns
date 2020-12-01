@@ -1,6 +1,6 @@
 {
   "name": "itowns",
-  "version": "2.27.0",
+  "version": "2.28.0",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "main": "lib/Main.js",
   "scripts": {
@@ -46,7 +46,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.12.1",
     "@babel/runtime": "^7.12.5",
-    "@loaders.gl/las": "^2.3.5",
+    "@loaders.gl/las": "^2.3.6",
     "@mapbox/mapbox-gl-style-spec": "^13.17.1",
     "@mapbox/vector-tile": "^1.3.1",
     "@tmcw/togeojson": "^4.2.0",
@@ -54,7 +54,7 @@
     "earcut": "^2.2.2",
     "js-priority-queue": "^0.1.5",
     "pbf": "^3.2.1",
-    "shpjs": "^3.6.2",
+    "shpjs": "^3.6.3",
     "text-encoding-utf-8": "^1.0.2"
   },
   "peerDependencies": {
@@ -63,19 +63,19 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.12.1",
-    "@babel/core": "^7.12.3",
+    "@babel/core": "^7.12.9",
     "@babel/plugin-transform-runtime": "^7.12.1",
     "@babel/preset-env": "^7.12.1",
     "@babel/register": "^7.12.1",
     "babel-inline-import-loader": "^1.0.1",
-    "babel-loader": "^8.2.1",
+    "babel-loader": "^8.2.2",
     "babel-plugin-inline-import": "^3.0.0",
     "babel-plugin-minify-dead-code-elimination": "^0.5.1",
     "babel-plugin-minify-replace": "^0.5.0",
     "babel-plugin-module-resolver": "^4.0.0",
     "chalk": "^4.1.0",
     "chart.js": "^2.9.4",
-    "copyfiles": "^2.4.0",
+    "copyfiles": "^2.4.1",
     "cross-env": "^7.0.2",
     "eslint": "^7.13.0",
     "eslint-config-airbnb-base": "^14.2.1",
