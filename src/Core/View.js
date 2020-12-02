@@ -965,7 +965,7 @@ class View extends THREE.EventDispatcher {
         // Direction
         ray.direction.set(screen.x, screen.y, 0.5);
         // Unproject
-        matrix.multiplyMatrices(camera.matrixWorld, matrix.getInverse(camera.projectionMatrix));
+        matrix.multiplyMatrices(camera.matrixWorld, matrix.copy(camera.projectionMatrix).invert());
         ray.direction.applyMatrix4(matrix);
         ray.direction.sub(ray.origin);
 

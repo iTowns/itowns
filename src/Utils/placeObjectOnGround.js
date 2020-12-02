@@ -67,7 +67,7 @@ function placeObjectOnGround(layer, crs, obj, options = {}, tileHint) {
         }
         const matrices = {
             worldFromLocal: obj.parent ? obj.parent.matrixWorld : undefined,
-            localFromWorld: obj.parent ? new THREE.Matrix4().getInverse(obj.parent.matrixWorld) : undefined,
+            localFromWorld: obj.parent ? new THREE.Matrix4().copy(obj.parent.matrixWorld).invert() : undefined,
         };
         const result = _updateVector3(
             layer,
@@ -91,7 +91,7 @@ function placeObjectOnGround(layer, crs, obj, options = {}, tileHint) {
     } else {
         const matrices = {
             worldFromLocal: obj.matrixWorld,
-            localFromWorld: new THREE.Matrix4().getInverse(obj.matrixWorld),
+            localFromWorld: new THREE.Matrix4().copy(obj.matrixWorld).invert(),
         };
 
         const geometry = obj.geometry;

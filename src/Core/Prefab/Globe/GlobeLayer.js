@@ -81,7 +81,7 @@ class GlobeLayer extends TiledGeometryLayer {
         //    https://cesiumjs.org/2013/04/25/Horizon-culling/
         // This method assumes that the globe is a unit sphere at 0,0,0 so
         // we setup a world-to-scaled-ellipsoid matrix4
-        worldToScaledEllipsoid.getInverse(this.object3d.matrixWorld);
+        worldToScaledEllipsoid.copy(this.object3d.matrixWorld).invert();
         worldToScaledEllipsoid.premultiply(
             new THREE.Matrix4().makeScale(
                 1 / ellipsoidSizes.x,

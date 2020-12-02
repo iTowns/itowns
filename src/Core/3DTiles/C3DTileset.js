@@ -78,7 +78,7 @@ class C3DTileset {
         if ((tile.viewerRequestVolume && tile.viewerRequestVolume.region)
             || (tile.boundingVolume && tile.boundingVolume.region)) {
             if (tile._worldFromLocalTransform) {
-                inverseTileTransform.getInverse(tile._worldFromLocalTransform);
+                inverseTileTransform.copy(tile._worldFromLocalTransform).invert();
             } else {
                 inverseTileTransform.identity();
             }

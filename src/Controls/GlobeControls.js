@@ -586,7 +586,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
         // set new camera target on globe
         positionObject(targetPosition, cameraTarget);
-        cameraTarget.matrixWorldInverse.getInverse(cameraTarget.matrixWorld);
+        cameraTarget.matrixWorldInverse.copy(cameraTarget.matrixWorld).invert();
         targetPosition.copy(this.camera.position);
         targetPosition.applyMatrix4(cameraTarget.matrixWorldInverse);
         spherical.setFromVector3(targetPosition);
