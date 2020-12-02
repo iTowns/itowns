@@ -86,6 +86,7 @@ const defaultOptions = {
     focusOnMouseClick: true,
     handleCollision: true,
     minDistanceCollision: 30,
+    enableSmartTravel: true,
 };
 
 export const PLANAR_CONTROL_EVENT = {
@@ -138,6 +139,7 @@ export const PLANAR_CONTROL_EVENT = {
  * @param   {boolean}       [options.focusOnMouseOver=true]     Set the focus on the canvas if hovered.
  * @param   {boolean}       [options.focusOnMouseClick=true]    Set the focus on the canvas if clicked.
  * @param   {boolean}       [options.handleCollision=true]
+ * @param   {boolean}       [options.enableSmartTravel=true]    enable smart travel
  */
 class PlanarControls extends THREE.EventDispatcher {
     constructor(view, options = {}) {
@@ -193,6 +195,9 @@ class PlanarControls extends THREE.EventDispatcher {
         this.handleCollision = options.handleCollision === undefined ?
             defaultOptions.handleCollision : options.handleCollision;
         this.minDistanceCollision = defaultOptions.minDistanceCollision;
+
+        // enable smart travel
+        this.enableSmartTravel = options.enableSmartTravel === undefined ? defaultOptions.enableSmartTravel : options.enableSmartTravel;
 
         startPosition.copy(this.camera.position);
         startQuaternion.copy(this.camera.quaternion);
@@ -854,7 +859,11 @@ class PlanarControls extends THREE.EventDispatcher {
                 this.initiateDrag();
             }
         } else if (mouseButtons.MIDDLECLICK === event.button) {
-            this.initiateSmartZoom();
+            if (this.enableSmartTravel) {
+                this.initiateSmartZoom();
+            } else {
+                return;
+            }
         } else if (mouseButtons.RIGHTCLICK === event.button) {
             this.initiatePan();
         }
