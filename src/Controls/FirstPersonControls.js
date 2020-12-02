@@ -146,10 +146,10 @@ class FirstPersonControls extends THREE.EventDispatcher {
     reset(preserveRotationOnX = false) {
         // Compute the correct init state, given the calculus in applyRotation:
         // cam.quaternion = q * r
-        // => r = inverse(q) * cam.quaterion
+        // => r = invert(q) * cam.quaterion
         // q is the quaternion derived from the up vector
         q.setFromUnitVectors(axisY, this.camera.up);
-        q.inverse();
+        q.invert();
         q.multiply(this.camera.quaternion);
         // tranform it to euler
         e.setFromQuaternion(q);
