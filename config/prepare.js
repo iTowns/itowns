@@ -22,7 +22,9 @@ if (nodeMajorVersion < minNodeMajorVersion) {
     console.log(chalk.green('Node.js version :', process.versions.node));
 }
 
-const npmVersion = execSync('npm --version');
+const npmVersion = execSync('npm --version', {
+    encoding: 'utf8',
+});
 if (npmVersion) {
     console.log(chalk.green('Npm version :', npmVersion), '\n');
 }
