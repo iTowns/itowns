@@ -118,7 +118,7 @@ export default {
                 if (isApplied) {
                     // NOTE: now data source provider use cache on Mesh
                     // TODO move transform in feature2Mesh
-                    mat4.copy(node.matrixWorld).getInverse(mat4).elements[14] -= result.minAltitude;
+                    mat4.copy(node.matrixWorld).invert().elements[14] -= result.minAltitude;
                     applyMatrix4(result, mat4);
                 }
 
