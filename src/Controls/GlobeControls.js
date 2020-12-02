@@ -417,7 +417,7 @@ class GlobeControls extends THREE.EventDispatcher {
             // PANORAMIC Move target camera
             case this.states.PANORAMIC: {
                 this.camera.worldToLocal(cameraTarget.position);
-                const normal = this.camera.position.clone().normalize().applyQuaternion(this.camera.quaternion.clone().inverse());
+                const normal = this.camera.position.clone().normalize().applyQuaternion(this.camera.quaternion.clone().invert());
                 quaterPano.setFromAxisAngle(normal, sphericalDelta.theta).multiply(quaterAxis.setFromAxisAngle(axisX, sphericalDelta.phi));
                 cameraTarget.position.applyQuaternion(quaterPano);
                 this.camera.localToWorld(cameraTarget.position);

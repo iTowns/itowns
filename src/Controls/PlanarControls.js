@@ -415,7 +415,7 @@ class PlanarControls extends THREE.EventDispatcher {
                 offset.applyQuaternion(quat);
 
                 vect.set(0, 0, 1);
-                quat.setFromUnitVectors(this.camera.up, vect).inverse();
+                quat.setFromUnitVectors(this.camera.up, vect).invert();
                 offset.applyQuaternion(quat);
             }
             if (thetaDelta !== 0) {

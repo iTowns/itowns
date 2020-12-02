@@ -66,7 +66,7 @@ export default {
                 // get parent extent transformation
                 const pTrans = builder.computeSharableExtent(parent.extent);
                 // place relative to his parent
-                result.position.sub(pTrans.position).applyQuaternion(pTrans.quaternion.inverse());
+                result.position.sub(pTrans.position).applyQuaternion(pTrans.quaternion.invert());
                 result.quaternion.premultiply(pTrans.quaternion);
             }
 
