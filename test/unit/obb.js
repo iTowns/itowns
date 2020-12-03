@@ -56,7 +56,7 @@ function assertVerticesAreInOBB(builder, extent) {
 
     newTileGeometry(builder, params).then((result) => {
         const geom = result.geometry;
-        const inverse = new THREE.Matrix4().getInverse(geom.OBB.matrix);
+        const inverse = new THREE.Matrix4().copy(geom.OBB.matrix).invert();
 
         let failing = 0;
         const vec = new THREE.Vector3();
