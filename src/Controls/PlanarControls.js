@@ -83,7 +83,7 @@ const defaultOptions = {
     minZenithAngle: 0,
     maxZenithAngle: 82.5,
     focusOnMouseOver: true,
-    focusOnMouseClick: false,
+    focusOnMouseClick: true,
     handleCollision: true,
     minDistanceCollision: 30,
     enableSmartTravel: true,
