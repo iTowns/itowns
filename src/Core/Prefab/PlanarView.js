@@ -55,11 +55,11 @@ class PlanarView extends View {
         placement.heading = placement.heading || 0;
         placement.range = placement.range || max;
 
+        CameraUtils.transformCameraToLookAtTarget(this, camera3D, placement);
+
         if (!options.noControls) {
             this.controls = new PlanarControls(this, options.controls);
         }
-
-        CameraUtils.transformCameraToLookAtTarget(this, camera3D, placement);
 
         this.tileLayer = tileLayer;
     }
