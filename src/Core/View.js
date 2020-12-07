@@ -200,7 +200,10 @@ class View extends THREE.EventDispatcher {
         this._fullSizeDepthBuffer = new Uint8Array(4 * this.camera.width * this.camera.height);
         this._pixelDepthBuffer = new Uint8Array(4);
 
-        // Focus needed to capture some key events.
+        // Indicates that view's domElement can be focused (the negative value indicates that domElement can't be
+        // focused sequentially using tab key). Focus is needed to capture some key events.
+        this.domElement.tabIndex = -1;
+        // Set focus on view's domElement.
         this.domElement.focus();
 
         // push all viewer to keep source.cache
