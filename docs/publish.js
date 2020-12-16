@@ -5,6 +5,8 @@ const template = require('jsdoc/template');
 
 const helper = require('./templateHelper');
 
+const rootProject = path.normalize(`${__dirname}/..`);
+
 // globals
 const outDir = path.normalize(env.opts.destination);
 let view;
@@ -22,8 +24,8 @@ function find(spec) {
     });
 }
 
-function linkToSource(filename, path) {
-    const location = path.split('itowns/')[1];
+function linkToSource(filename, pathFile) {
+    const location = path.relative(rootProject, pathFile);
     return `${location}/${filename}`;
 }
 
