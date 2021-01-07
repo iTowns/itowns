@@ -17,9 +17,13 @@ float getBorderDistance(vec2 uv) {
     return min(p2.x, p2.y);
 }
 
+float tolerance = 0.99;
+
 vec4 applyWhiteToInvisibleEffect(vec4 color, float intensity) {
     float a = dot(color.rgb, vec3(0.333333333));
-    color.a *= 1.0 - pow(abs(a), intensity);
+    if (a >= tolerance) {
+        color.a *= 1.0 - pow(abs(a), intensity);
+    }
     return color;
 }
 
