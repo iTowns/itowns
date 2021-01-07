@@ -57,6 +57,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
      * @param      {number}  [options.mode=MODE.COLOR]  display mode.
      * @param      {THREE.Vector4}  [options.overlayColor=new THREE.Vector4(0, 0, 0, 0)]  overlay color.
      * @param      {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(0, 1)]  intensity range.
+     * @param      {boolean}  [options.applyOpacityClassication=false]  apply opacity classification on all display mode.
      * @param      {Classification}  [options.classification] -  define points classification.
      * @property {Classification}  classification - points classification.
      *
@@ -69,8 +70,12 @@ class PointsMaterial extends THREE.RawShaderMaterial {
     constructor(options = {}) {
         const intensityRange = options.intensityRange || new THREE.Vector2(0, 1);
         const oiMaterial = options.orientedImageMaterial;
+        const classification = options.classification || ClassificationScheme.DEFAULT;
+        const applyOpacityClassication = options.applyOpacityClassication == undefined ? false : options.applyOpacityClassication;
         delete options.orientedImageMaterial;
         delete options.intensityRange;
+        delete options.classification;
+        delete options.applyOpacityClassication;
         super(options);
 
         this.vertexShader = PointsVS;
@@ -85,6 +90,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'opacity', this.opacity);
         CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new THREE.Vector4(0, 0, 0, 0));
         CommonMaterial.setUniformProperty(this, 'intensityRange', intensityRange);
+        CommonMaterial.setUniformProperty(this, 'applyOpacityClassication', applyOpacityClassication);
 
         // add classification texture to apply classification lut.
         const data = new Uint8Array(256 * 4);
@@ -93,7 +99,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'classificationLUT', texture);
 
         // Classification scheme
-        this.classification = options.classification || ClassificationScheme.DEFAULT;
+        this.classification = classification;
 
         // Update classification
         this.recomputeClassification();
