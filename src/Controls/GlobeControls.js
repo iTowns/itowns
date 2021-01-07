@@ -48,7 +48,7 @@ let lastTimeMouseMove = 0;
 
 // Animations and damping
 let enableAnimation = true;
-const dampingFactor = 0.25;
+const dampingFactorDefault = 0.25;
 const dampingMove = new THREE.Quaternion(0, 0, 0, 1);
 const durationDampingMove = 120;
 const durationDampingOrbital = 60;
@@ -216,6 +216,8 @@ class GlobeControls extends THREE.EventDispatcher {
 
         // Enable Damping
         this.enableDamping = true;
+        this.dampingMoveFactor = options.dampingMoveFactor != undefined ? options.dampingMoveFactor : dampingFactorDefault;
+
         this.startEvent = {
             type: 'start',
         };
@@ -493,9 +495,9 @@ class GlobeControls extends THREE.EventDispatcher {
             sphericalDelta.phi = 0;
             moveAroundGlobe.set(0, 0, 0, 1);
         } else {
-            sphericalDelta.theta *= (1 - dampingFactor);
-            sphericalDelta.phi *= (1 - dampingFactor);
-            moveAroundGlobe.slerp(dampingMove, dampingFactor * 0.2);
+            sphericalDelta.theta *= (1 - dampingFactorDefault);
+            sphericalDelta.phi *= (1 - dampingFactorDefault);
+            moveAroundGlobe.slerp(dampingMove, this.dampingMoveFactor * 0.2);
         }
 
         orbitScale = 1;
