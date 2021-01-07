@@ -641,7 +641,6 @@ class GlobeControls extends THREE.EventDispatcher {
         this.player.stop();
         this.onEndingMove();
         if (this.enabled === false) { return; }
-        event.preventDefault();
 
         this.updateTarget();
         previous = CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, pickedPosition);
