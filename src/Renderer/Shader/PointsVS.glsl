@@ -14,6 +14,7 @@ uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
 uniform vec2 intensityRange;
+uniform bool applyOpacityClassication;
 attribute vec3 color;
 attribute vec4 unique_id;
 attribute float intensity;
@@ -75,18 +76,24 @@ void main() {
 
     if (picking) {
         vColor = unique_id;
-    } else if (mode == MODE_INTENSITY) {
-        // adapt the grayscale knowing the range
-        float i = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
-        vColor = vec4(i, i, i, opacity);
-    } else if (mode == MODE_NORMAL) {
-        vColor = vec4(abs(normal), opacity);
-    } else if (mode == MODE_CLASSIFICATION) {
-        vec2 uv = vec2(classification, 0.5);
-        vColor = texture2D(classificationLUT, uv);
     } else {
-        // default to color mode
-        vColor = vec4(mix(color, overlayColor.rgb, overlayColor.a), opacity);
+        vColor.a = opacity;
+        if (applyOpacityClassication || mode == MODE_CLASSIFICATION) {
+            vec2 uv = vec2(classification, 0.5);
+            vColor = texture2D(classificationLUT, uv);
+            vColor.a *= opacity;
+        }
+
+        if (mode == MODE_INTENSITY) {
+            // adapt the grayscale knowing the range
+            float i = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
+            vColor.rgb = vec3(i, i, i);
+        } else if (mode == MODE_NORMAL) {
+            vColor.rgb = abs(normal);
+        } else if (mode == MODE_COLOR) {
+            // default to color mode
+            vColor.rgb = mix(color, overlayColor.rgb, overlayColor.a);
+        }
     }
 
     #include <begin_vertex>
