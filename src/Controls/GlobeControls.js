@@ -384,13 +384,13 @@ class GlobeControls extends THREE.EventDispatcher {
 
     update() {
         // We compute distance between camera's bounding sphere and geometry's obb up face
+        minDistanceZ = Infinity;
         if (this.handleCollision) { // We check distance to the ground/surface geometry
             // add minDistanceZ between camera's bounding and tiles's oriented bounding box (up face only)
             // Depending on the distance of the camera with obbs, we add a slowdown or constrain to the movement.
             // this constraint or deceleration is suitable for two types of movement MOVE_GLOBE and ORBIT.
             // This constraint or deceleration inversely proportional to the camera/obb distance
             if (this.view.tileLayer) {
-                minDistanceZ = Infinity;
                 for (const tile of this.view.tileLayer.level0Nodes) {
                     tile.traverse(this.getMinDistanceCameraBoundingSphereObbsUp.bind(this));
                 }
@@ -439,25 +439,28 @@ class GlobeControls extends THREE.EventDispatcher {
                 const contraryLimit = dynamicRadius * 2;
                 const minContraintPhi = -0.01;
 
-                if (minDistanceZ < slowdownLimit && minDistanceZ > contraryLimit && sphericalDelta.phi > 0) {
-                    // slowdown zone : slowdown sphericalDelta.phi
-                    const slowdownZone = slowdownLimit - contraryLimit;
-                    // the deeper the camera is in this zone, the bigger the factor is
-                    const slowdownFactor = 1 - (slowdownZone - (minDistanceZ - contraryLimit)) / slowdownZone;
-                    // apply slowdown factor on tilt mouvement
-                    sphericalDelta.phi *= slowdownFactor * slowdownFactor;
-                } else if (minDistanceZ < contraryLimit && minDistanceZ > -contraryLimit && sphericalDelta.phi > minContraintPhi) {
-                    // contraint zone : contraint sphericalDelta.phi
-                    const contraryZone = 2 * contraryLimit;
-                    // calculation of the angle of rotation which allows to leave this zone
-                    let contraryPhi = -Math.asin((contraryLimit - minDistanceZ) * 0.25 / spherical.radius);
-                    // clamp contraryPhi to make a less brutal exit
-                    contraryPhi = THREE.MathUtils.clamp(contraryPhi, minContraintPhi, 0);
-                    // the deeper the camera is in this zone, the bigger the factor is
-                    const contraryFactor = 1 - (contraryLimit - minDistanceZ) / contraryZone;
-                    sphericalDelta.phi = THREE.MathUtils.lerp(sphericalDelta.phi, contraryPhi, contraryFactor);
-                    minDistanceZ -= Math.sin(sphericalDelta.phi) * spherical.radius;
+                if (this.handleCollision) {
+                    if (minDistanceZ < slowdownLimit && minDistanceZ > contraryLimit && sphericalDelta.phi > 0) {
+                        // slowdown zone : slowdown sphericalDelta.phi
+                        const slowdownZone = slowdownLimit - contraryLimit;
+                        // the deeper the camera is in this zone, the bigger the factor is
+                        const slowdownFactor = 1 - (slowdownZone - (minDistanceZ - contraryLimit)) / slowdownZone;
+                        // apply slowdown factor on tilt mouvement
+                        sphericalDelta.phi *= slowdownFactor * slowdownFactor;
+                    } else if (minDistanceZ < contraryLimit && minDistanceZ > -contraryLimit && sphericalDelta.phi > minContraintPhi) {
+                        // contraint zone : contraint sphericalDelta.phi
+                        const contraryZone = 2 * contraryLimit;
+                        // calculation of the angle of rotation which allows to leave this zone
+                        let contraryPhi = -Math.asin((contraryLimit - minDistanceZ) * 0.25 / spherical.radius);
+                        // clamp contraryPhi to make a less brutal exit
+                        contraryPhi = THREE.MathUtils.clamp(contraryPhi, minContraintPhi, 0);
+                        // the deeper the camera is in this zone, the bigger the factor is
+                        const contraryFactor = 1 - (contraryLimit - minDistanceZ) / contraryZone;
+                        sphericalDelta.phi = THREE.MathUtils.lerp(sphericalDelta.phi, contraryPhi, contraryFactor);
+                        minDistanceZ -= Math.sin(sphericalDelta.phi) * spherical.radius;
+                    }
                 }
+
                 spherical.theta += sphericalDelta.theta;
                 spherical.phi += sphericalDelta.phi;
 
