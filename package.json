@@ -1,5 +1,5 @@
 {
-  "name": "itowns",
+  "name": "@gchoqueux/itowns",
   "version": "2.28.1",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "main": "lib/Main.js",
@@ -97,5 +97,15 @@
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",
     "whatwg-fetch": "^3.5.0"
-  }
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "lib": "lib",
+    "test": "test"
+  },
+  "keywords": [
+    "itowns"
+  ],
+  "author": "gchoqueux"
 }
