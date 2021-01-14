@@ -147,9 +147,8 @@ let previous;
  *
  * @class      GlobeControls
  * @param      {GlobeView}  view the view where the control will be used
- * @param      {object} placement
- * @param      {Coordinates}  placement.targetCoordinate the target looked by camera, at initialization
- * @param      {number}  placement.range distance between the target looked and camera, at initialization
+ * @param      {CameraTransformOptions} placement   the camera placement options at initialisation, see
+ * {@link CameraTransformOptions} in {@link CameraUtils}.
  * @param      {object}  options
  * @param      {number}  options.zoomSpeed Speed zoom with mouse
  * @param      {number}  options.rotateSpeed Speed camera rotation in orbit and panoramic mode
@@ -1162,7 +1161,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * @param      {number}   [params.zoom]   zoom
      * @param      {number}   [params.scale]   scale
      * @param      {boolean}  isAnimated  Indicates if animated
-     * @return     {Promise}  A promise that resolves when transformation is opened
+     * @return     {Promise}  A promise that resolves when transformation is complete
      */
     lookAtCoordinate(params = {}, isAnimated = this.isAnimationEnabled()) {
         if (params.zoom) {

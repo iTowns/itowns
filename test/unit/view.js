@@ -132,7 +132,7 @@ describe('Viewer', function () {
     it('Should create the correct camera from type', () => {
         const view = new View('EPSG:4326', renderer.domElement, {
             renderer,
-            cameraType: CAMERA_TYPE.ORTHOGRAPHIC,
+            camera: { type: CAMERA_TYPE.ORTHOGRAPHIC },
         });
         assert.ok(view.camera.camera3D.isOrthographicCamera);
     });
@@ -140,7 +140,7 @@ describe('Viewer', function () {
         const camera = new THREE.PerspectiveCamera(50, 0.5);
         const view = new View('', renderer.domElement, {
             renderer,
-            camera,
+            camera: { cameraThree: camera },
         });
         assert.equal(view.camera.camera3D, camera);
     });

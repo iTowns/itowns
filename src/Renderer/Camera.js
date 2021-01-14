@@ -1,11 +1,14 @@
-/**
- * Wrapper around three.js camera to expose some geographic helpers.
- */
-
 import * as THREE from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import DEMUtils from 'Utils/DEMUtils';
 
+/**
+ * @typedef     {object}    Camera~CAMERA_TYPE
+ * Stores the different types of camera usable in iTowns.
+ *
+ * @property    {number}    PERSPECTIVE     Perspective type of camera
+ * @property    {number}    ORTHOGRAPHIC    Orthographic type of camera
+ */
 export const CAMERA_TYPE = {
     PERSPECTIVE: 0,
     ORTHOGRAPHIC: 1,
@@ -59,16 +62,35 @@ function updatePreSse(camera, height, fov) {
     }
 }
 
+/**
+ * Wrapper around Three.js camera to expose some geographic helpers.
+ *
+ * @param   {string}                crs                                     The camera's coordinate projection system
+ * @param   {number}                width                                   The width (in pixels) of the view the camera is
+ * associated to.
+ * @param   {number}                height                                  The height (in pixels) of the view the camera is
+ * associated to.
+ * @param   {object}                [options]                               Options for the camera.
+ * @param   {THREE.Camera}          [options.cameraThree]                   A custom Three.js camera object to wrap around.
+ * @param   {Camera~CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link CAMERA_TYPE}.
+ * @param   {number}                [options.orthoExtent=50]                The height of the extent that a camera from type
+ * `CAMERA_TYPE.ORTHOGRAPHIC` must cover initially.
+ * @constructor
+ */
 function Camera(crs, width, height, options = {}) {
     Object.defineProperty(this, 'crs', { get: () => crs });
 
-    if (options.camera) {
-        this.camera3D = options.camera;
+    if (options.isCamera) {
+        console.warn('options.camera parameter is deprecated. Use options.camera.cameraThree to place a custom ' +
+            'camera as a parameter. See the documentation of Camera.');
+        this.camera3D = options;
+    } else if (options.cameraThree) {
+        this.camera3D = options.cameraThree;
     } else {
         const aspect = width / height;
         const orthoExtent = options.orthoExtent || 50;
 
-        switch (options.cameraType) {
+        switch (options.type) {
             case CAMERA_TYPE.ORTHOGRAPHIC:
                 this.camera3D = new THREE.OrthographicCamera(
                     orthoExtent * aspect / -2, orthoExtent * aspect / 2,

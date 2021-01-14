@@ -12,7 +12,7 @@ describe('Planar Controls', function () {
     const extent = new Extent('EPSG:4326', -100, 100, -100, 100);
 
     const viewPerspective = new PlanarView(renderer.domElement, extent, { renderer });
-    const viewOrtho = new PlanarView(renderer.domElement, extent, { renderer, cameraType: CAMERA_TYPE.ORTHOGRAPHIC });
+    const viewOrtho = new PlanarView(renderer.domElement, extent, { renderer, camera: { type: CAMERA_TYPE.ORTHOGRAPHIC } });
 
     const controlsPerspective = viewPerspective.controls;
     const controlsOrtho = viewOrtho.controls;

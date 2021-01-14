@@ -120,11 +120,25 @@ class View extends THREE.EventDispatcher {
     /**
      * Constructs an Itowns View instance
      *
+     * @example <caption><b>Create a view with a custom Three.js camera.</b></caption>
+     * var viewerDiv = document.getElementById('viewerDiv');
+     * var customCamera = itowns.THREE.PerspectiveCamera();
+     * var view = itowns.View('EPSG:4326', viewerDiv, { camera: { cameraThree: customCamera } });
+     *
+     * @example <caption><b>Create a view with an orthographic camera, and grant it with Three.js custom controls.</b></caption>
+     * var viewerDiv = document.getElementById('viewerDiv');
+     * var view = itowns.View('EPSG:4326', viewerDiv, { camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC } });
+     * var customControls = itowns.THREE.OrbitControls(view.camera.camera3D, viewerDiv);
+     *
+     * @example <caption><b>Enable WebGl 1.0 instead of WebGl 2.0.</b></caption>
+     * var viewerDiv = document.getElementById('viewerDiv');
+     * const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
+     * var view = new itowns.View('EPSG:4326', viewerDiv, {  renderer: { isWebGL2: false } });
+     *
      * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
      * @param {Object=} options - Optional properties.
-     * @param {Camera}  [options.camera] - A camera to use with the view.
-     * @param {CAMERA_TYPE} [options.cameraType=CAMERA_TYPE.PERSPECTIVE] - The type of the camera (`CAMERA_TYPE.PERSPECTIVE` or `CAMERA_TYPE.ORTHOGRAPHIC`).
+     * @param {object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
      * @param {?MainLoop} options.mainLoop - {@link MainLoop} instance to use, otherwise a default one will be constructed
      * @param {?(WebGLRenderer|object)} options.renderer - {@link WebGLRenderer} instance to use, otherwise
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
@@ -167,7 +181,7 @@ class View extends THREE.EventDispatcher {
             this.referenceCrs,
             this.mainLoop.gfxEngine.getWindowSize().x,
             this.mainLoop.gfxEngine.getWindowSize().y,
-            options);
+            options.camera);
 
         this._frameRequesters = { };
         this._layers = [];
