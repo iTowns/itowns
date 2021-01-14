@@ -99,7 +99,8 @@
             ],
 
             "Renderer": [
-                "OrientedImageMaterial"
+                "OrientedImageMaterial",
+                "Camera"
             ],
 
             "3D Tiles": [

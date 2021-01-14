@@ -48,7 +48,7 @@
 
             // instantiate PlanarView with an orthographic camera
             const view = new itowns.PlanarView(viewerDiv, extent, {
-                cameraType: itowns.CAMERA_TYPE.ORTHOGRAPHIC,
+                camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC },
             });
             setupLoadingScreen(viewerDiv, view);
 

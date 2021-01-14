@@ -15,19 +15,19 @@ class PlanarView extends View {
      * @example <caption><b>Enable WebGl 1.0 instead of WebGl 2.0.</b></caption>
      * var viewerDiv = document.getElementById('viewerDiv');
      * const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
-     * var view = new itowns.GlobeView(viewerDiv, extent, {  renderer: { isWebGL2: false } });
+     * var view = new itowns.PlanarView(viewerDiv, extent, {  renderer: { isWebGL2: false } });
      *
      * @example <caption><b>Instance with placement on the ground.</b></caption>
      * var viewerDiv = document.getElementById('viewerDiv');
      * const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
-     * var view = new itowns.GlobeView(viewerDiv, extent, { placement: { heading: -49.6, range: 6200, tilt: 17 } });
+     * var view = new itowns.PlanarView(viewerDiv, extent, { placement: { heading: -49.6, range: 6200, tilt: 17 } });
      *
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
      * @param {Extent} extent - The ground extent.
      * @param {object=} options - See options of {@link View}.
-     * @param {boolean} [options.noControls] - If true, no controls are associated to the view.
-     * @param {object=} [options.controls] - options for the PlanarControls associated to the view, if
+     * @param {boolean} [options.noControls=false] - If true, no controls are associated to the view.
+     * @param {object=} [options.controls] - options for the {@link PlanarControls} associated to the view, if
      * `options.noControls` is false.
      */
     constructor(viewerDiv, extent, options = {}) {
@@ -36,8 +36,8 @@ class PlanarView extends View {
         // If an orthographic camera is requested (by options.cameraType), the extent height is passed in options when
         // calling view constructor. Doing so allows Camera constructor (called in view constructor) to access it, and
         // set the frustrum in order to see the total extent height.
-        if (options.cameraType === CAMERA_TYPE.ORTHOGRAPHIC) {
-            options.orthoExtent = extent.dimensions().y;
+        if (options.camera && options.camera.type === CAMERA_TYPE.ORTHOGRAPHIC) {
+            options.camera.orthoExtent = extent.dimensions().y;
         }
         // Setup View
         super(extent.crs, viewerDiv, options);
