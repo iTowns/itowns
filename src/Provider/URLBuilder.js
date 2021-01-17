@@ -61,15 +61,9 @@ export default {
      * @return {string} the formed url
      */
     xyz: function xyz(coords, source) {
-        if (source.isInverted) {
-            return subDomains(source.url.replace(/(\$\{z\}|%TILEMATRIX)/, coords.zoom)
-                .replace(/(\$\{y\}|%ROW)/, Math.pow(2, coords.zoom) - coords.row - 1) // .replace(/(\$\{y\}|%ROW)/, coords.row)
-                .replace(/(\$\{x\}|%COL)/, coords.col));
-        } else {
-            return subDomains(source.url.replace(/(\$\{z\}|%TILEMATRIX)/, coords.zoom)
-                .replace(/(\$\{y\}|%ROW)/, coords.row)
-                .replace(/(\$\{x\}|%COL)/, coords.col));
-        }
+        return subDomains(source.url.replace(/(\$\{z\}|%TILEMATRIX)/, coords.zoom)
+            .replace(/(\$\{y\}|%ROW)/, coords.row)
+            .replace(/(\$\{x\}|%COL)/, coords.col));
     },
 
     /**

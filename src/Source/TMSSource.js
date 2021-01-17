@@ -66,7 +66,7 @@ class TMSSource extends Source {
 
         if (!source.extent) {
             // default to the global extent
-            this.extent = globalExtentTMS.get(source.projection);
+            this.extent = globalExtentTMS.get(source.projection || source.crs);
         }
 
         this.zoom = source.zoom;
