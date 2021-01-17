@@ -57,26 +57,24 @@ class TMSSource extends Source {
      * @constructor
      */
     constructor(source) {
-        if (!source.crs && !source.projection) {
-            throw new Error('New TMSSource/WMTSSource: crs projection is required');
+        if (!source.projection && !source.crs) {
+            throw new Error('New TMSSource: projection or crs is required');
         }
-
-        source.format = source.format || 'image/png';
-
         super(source);
 
         this.isTMSSource = true;
 
         if (!source.extent) {
             // default to the global extent
-            this.extent = globalExtentTMS.get(source.crs);
+            this.extent = globalExtentTMS.get(source.projection);
         }
 
         this.zoom = source.zoom;
 
         this.isInverted = source.isInverted || false;
+        this.format = this.format || 'image/png';
         this.url = source.url;
-        this.crs = CRS.formatToTms(source.crs);
+        this.projection = CRS.formatToTms(source.projection || source.crs);
         this.tileMatrixSetLimits = source.tileMatrixSetLimits;
 
         if (!this.zoom) {
@@ -98,6 +96,10 @@ class TMSSource extends Source {
 
     urlFromExtent(extent) {
         return URLBuilder.xyz(extent, this);
+    }
+
+    handlingError(err) {
+        console.warn(`err ${this.url}`, err);
     }
 
     extentInsideLimit(extent) {
