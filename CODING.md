@@ -94,6 +94,11 @@ and of course replace 3dtiles.js with the correct filename. You can also append
 the `-- --watch` flag as well. If you want disable reporting and keep error message
 in console add `--reporter min`.
 
+## Release
+
+* `npm run changelog` generates changelog file.
+* `npm run bump --level=minor` bump version, generates changelog file and commit (default level is minor).
+
 ## Contribute back
 
 See [the contributor's guide](CONTRIBUTING.md) for more information on how to
