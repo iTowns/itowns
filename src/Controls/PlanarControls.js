@@ -85,7 +85,7 @@ const defaultOptions = {
     zoomTravelTime: 0.2,
     zoomInFactor: 0.5,
     zoomOutFactor: 0.45,
-    maxAltitude: 12000,
+    maxAltitude: 50000000,
     groundLevel: 200,
     autoTravelTimeMin: 1.5,
     autoTravelTimeMax: 4,
@@ -476,8 +476,10 @@ class PlanarControls extends THREE.EventDispatcher {
         }
 
         this.camera.position.copy(offset);
+        // TODO : lookAt calls an updateMatrixWorld(). It should be replaced by a new method that does not.
         this.camera.lookAt(vectorZero);
         this.camera.position.add(centerPoint);
+        this.camera.updateMatrixWorld();
     }
 
     /**
