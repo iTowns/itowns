@@ -14,6 +14,17 @@ export const CAMERA_TYPE = {
     ORTHOGRAPHIC: 1,
 };
 
+const tmp = {
+    frustum: new THREE.Frustum(),
+    matrix: new THREE.Matrix4(),
+    box3: new THREE.Box3(),
+};
+
+const ndcBox3 = new THREE.Box3(
+    new THREE.Vector3(-1, -1, -1),
+    new THREE.Vector3(1, 1, 1),
+);
+
 function updatePreSse(camera, height, fov) {
     // sse = projected geometric error on screen plane from distance
     // We're using an approximation, assuming that the geometric error of all
@@ -37,148 +48,223 @@ function updatePreSse(camera, height, fov) {
     //
     // We pre-compute the preSSE (= constant part of the screen space error formula) once here
 
-    const verticalFOV = THREE.MathUtils.degToRad(fov);
-    const verticalPreSSE = height / (2.0 * Math.tan(verticalFOV * 0.5));
-
     // Note: the preSSE for the horizontal FOV is the same value
-    // focale = (this.height * 0.5) / Math.tan(verticalFOV * 0.5);
-    // horizontalFOV = 2 * Math.atan(this.width * 0.5 / focale);
+    // focal = (this.height * 0.5) / Math.tan(verticalFOV * 0.5);
+    // horizontalFOV = 2 * Math.atan(this.width * 0.5 / focal);
     // horizontalPreSSE = this.width / (2.0 * Math.tan(horizontalFOV * 0.5)); (1)
     // => replacing horizontalFOV in Math.tan(horizontalFOV * 0.5)
-    // Math.tan(horizontalFOV * 0.5) = Math.tan(2 * Math.atan(this.width * 0.5 / focale) * 0.5)
-    //                               = Math.tan(Math.atan(this.width * 0.5 / focale))
-    //                               = this.width * 0.5 / focale
-    // => now replacing focale
+    // Math.tan(horizontalFOV * 0.5) = Math.tan(2 * Math.atan(this.width * 0.5 / focal) * 0.5)
+    //                               = Math.tan(Math.atan(this.width * 0.5 / focal))
+    //                               = this.width * 0.5 / focal
+    // => now replacing focal
     //                               = this.width * 0.5 / (this.height * 0.5) / Math.tan(verticalFOV * 0.5)
     //                               = Math.tan(verticalFOV * 0.5) * this.width / this.height
     // => back to (1)
     // horizontalPreSSE = this.width / (2.0 * Math.tan(verticalFOV * 0.5) * this.width / this.height)
     //                  = this.height / 2.0 * Math.tan(verticalFOV * 0.5)
     //                  = verticalPreSSE
+
     if (camera.camera3D.isOrthographicCamera) {
         camera._preSSE = height;
     } else {
-        camera._preSSE = verticalPreSSE;
+        const verticalFOV = THREE.MathUtils.degToRad(fov);
+        camera._preSSE = height / (2.0 * Math.tan(verticalFOV * 0.5));
     }
 }
 
 /**
  * Wrapper around Three.js camera to expose some geographic helpers.
  *
- * @param   {string}                crs                                     The camera's coordinate projection system
- * @param   {number}                width                                   The width (in pixels) of the view the camera is
- * associated to.
- * @param   {number}                height                                  The height (in pixels) of the view the camera is
- * associated to.
- * @param   {object}                [options]                               Options for the camera.
- * @param   {THREE.Camera}          [options.cameraThree]                   A custom Three.js camera object to wrap around.
- * @param   {Camera~CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link CAMERA_TYPE}.
- * @param   {number}                [options.orthoExtent=50]                The height of the extent that a camera from type
- * `CAMERA_TYPE.ORTHOGRAPHIC` must cover initially.
- * @constructor
+ * @property    {string}    crs             The camera's coordinate projection system.
+ * @property    {object}    camera3D        The Three.js camera that is wrapped around.
+ * @property    {number}    width           The width of the camera.
+ * @property    {number}    height          The height of the camera.
+ * @property    {number}    _preSSE         The precomputed constant part of the screen space error.
  */
-function Camera(crs, width, height, options = {}) {
-    Object.defineProperty(this, 'crs', { get: () => crs });
+class Camera {
+    /**
+     * @param   {string}                crs                                     The camera's coordinate projection system.
+     * @param   {number}                width                                   The width (in pixels) of the view the
+        * camera is associated to.
+     * @param   {number}                height                                  The height (in pixels) of the view the
+        * camera is associated to.
+     * @param   {object}                [options]                               Options for the camera.
+     * @param   {THREE.Camera}          [options.cameraThree]                   A custom Three.js camera object to wrap
+        * around.
+     * @param   {Camera~CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link
+        * CAMERA_TYPE}.
+     * @param   {number}                [options.orthoExtent=50]                The height of the extent that a camera
+        * from type `CAMERA_TYPE.ORTHOGRAPHIC` must cover initially.
+     * @constructor
+     */
+    constructor(crs, width, height, options = {}) {
+        this.crs = crs;
 
-    if (options.isCamera) {
-        console.warn('options.camera parameter is deprecated. Use options.camera.cameraThree to place a custom ' +
-            'camera as a parameter. See the documentation of Camera.');
-        this.camera3D = options;
-    } else if (options.cameraThree) {
-        this.camera3D = options.cameraThree;
-    } else {
-        const aspect = width / height;
-        const orthoExtent = options.orthoExtent || 50;
+        if (options.isCamera) {
+            console.warn('options.camera parameter is deprecated. Use options.camera.cameraThree to place a custom ' +
+                'camera as a parameter. See the documentation of Camera.');
+            this.camera3D = options;
+        } else if (options.cameraThree) {
+            this.camera3D = options.cameraThree;
+        } else {
+            const orthoExtent = options.orthoExtent || 50;
+            const ratio = width / height;
 
-        switch (options.type) {
-            case CAMERA_TYPE.ORTHOGRAPHIC:
-                this.camera3D = new THREE.OrthographicCamera(
-                    orthoExtent * aspect / -2, orthoExtent * aspect / 2,
-                    orthoExtent / 2, orthoExtent / -2);
-                break;
-            case CAMERA_TYPE.PERSPECTIVE:
-            default:
-                this.camera3D = new THREE.PerspectiveCamera(30, aspect);
-                break;
+            switch (options.type) {
+                case CAMERA_TYPE.ORTHOGRAPHIC:
+                    this.camera3D = new THREE.OrthographicCamera(
+                        orthoExtent * ratio / -2, orthoExtent * ratio / 2,
+                        orthoExtent / 2, orthoExtent / -2,
+                    );
+                    break;
+                case CAMERA_TYPE.PERSPECTIVE:
+                default:
+                    this.camera3D = new THREE.PerspectiveCamera(30, ratio);
+                    break;
+            }
+        }
+
+        this._viewMatrix = new THREE.Matrix4();
+        this.width = width;
+        this.height = height;
+        this._viewMatrixNeedsUpdate = true;
+        this.matrixProjectionNeedsUpdate = false;
+        this.resize(width, height);
+
+        this._preSSE = Infinity;
+
+        if (this.camera3D.isPerspectiveCamera) {
+            let fov = this.camera3D.fov;
+            Object.defineProperty(this.camera3D, 'fov', {
+                get: () => fov,
+                set: (newFov) => {
+                    fov = newFov;
+                    updatePreSse(this, this.height, fov);
+                },
+            });
         }
     }
 
-    this._viewMatrix = new THREE.Matrix4();
-    this.width = width;
-    this.height = height;
-    this._viewMatrixNeedsUpdate = true;
-    this.resize(width, height);
+    resize(width, height) {
+        this.width = width;
+        this.height = height;
 
-    this._preSSE = Infinity;
+        const ratio = width / height;
+        updatePreSse(this, this.height, this.camera3D.fov);
 
-    if (this.camera3D.isPerspectiveCamera) {
-        let fov = this.camera3D.fov;
-        Object.defineProperty(this.camera3D, 'fov', {
-            get: () => fov,
-            set: (newFov) => {
-                fov = newFov;
-                updatePreSse(this, this.height, fov);
-            },
-        });
+        if (this.camera3D.aspect !== ratio) {
+            this.camera3D.aspect = ratio;
+            if (this.camera3D.isOrthographicCamera) {
+                const halfH = (this.camera3D.right - this.camera3D.left) * 0.5 / ratio;
+                const y = (this.camera3D.top + this.camera3D.bottom) * 0.5;
+                this.camera3D.top = y + halfH;
+                this.camera3D.bottom = y - halfH;
+            }
+        }
+
+        if (this.camera3D.updateProjectionMatrix) {
+            this.camera3D.updateProjectionMatrix();
+            this._viewMatrixNeedsUpdate = true;
+        }
+    }
+
+    update() {
+        // update matrix
+        this.camera3D.updateMatrixWorld();
+        if (this.matrixProjectionNeedsUpdate) {
+            this.camera3D.updateProjectionMatrix();
+            this.matrixProjectionNeedsUpdate = false;
+        }
+        this._viewMatrixNeedsUpdate = true;
+    }
+
+    /**
+     * Return the position in the requested CRS, or in camera's CRS if undefined.
+     *
+     * @param   {string}        [crs]   If defined (e.g 'EPSG:4326'), the camera position will be returned in this CRS.
+     *
+     * @return  {Coordinates}   Coordinates object holding camera's position.
+     */
+    position(crs) {
+        return new Coordinates(this.crs, this.camera3D.position).as(crs || this.crs);
+    }
+
+    /**
+     * Set the position of the camera using a Coordinates object.
+     * If you want to modify the position directly using x,y,z values then use `camera.camera3D.position.set(x, y, z)`
+     *
+     * @param   {Coordinates}   position    The new position of the camera.
+     */
+    setPosition(position) {
+        this.camera3D.position.copy(position.as(this.crs));
+    }
+
+    isBox3Visible(box3, matrixWorld) {
+        return this.box3SizeOnScreen(box3, matrixWorld).intersectsBox(ndcBox3);
+    }
+
+    isSphereVisible(sphere, matrixWorld) {
+        if (this._viewMatrixNeedsUpdate) {
+            // update visibility testing matrix
+            this._viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
+            this._viewMatrixNeedsUpdate = false;
+        }
+        if (matrixWorld) {
+            tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
+            tmp.frustum.setFromProjectionMatrix(tmp.matrix);
+        } else {
+            tmp.frustum.setFromProjectionMatrix(this._viewMatrix);
+        }
+        return tmp.frustum.intersectSphere(sphere);
+    }
+
+    box3SizeOnScreen(box3, matrixWorld) {
+        const pts = projectBox3PointsInCameraSpace(this, box3, matrixWorld);
+
+        // All points are in front of the near plane -> box3 is invisible
+        if (!pts) {
+            return tmp.box3.makeEmpty();
+        }
+
+        // Project points on screen
+        for (let i = 0; i < 8; i++) {
+            pts[i].applyMatrix4(this.camera3D.projectionMatrix);
+        }
+
+        return tmp.box3.setFromPoints(pts);
+    }
+
+    /**
+     * Test for collision between camera and a geometry layer (DTM/DSM) to adjust camera position.
+     * It could be modified later to handle an array of geometry layers.
+     * TODO Improve Coordinates class to handle altitude for any coordinate system (even projected one)
+     *
+     * @param   {View}              view                    The view where we test the collision between geometry layers
+     * and the camera
+     * @param   {ElevationLayer}    elevationLayer          The elevation layer (DTM/DSM) used to test the collision
+     * with the camera. Could be another geometry layer.
+     * @param   {number}            minDistanceCollision    The minimum distance allowed between the camera and the
+     * surface.
+     */
+    adjustAltitudeToAvoidCollisionWithLayer(view, elevationLayer, minDistanceCollision) {
+        // We put the camera location in geographic by default to easily handle altitude.
+        // (Should be improved in Coordinates class for all ref)
+        const camLocation = view.camera.position().as('EPSG:4326');
+        if (elevationLayer !== undefined) {
+            const elevationUnderCamera = DEMUtils.getElevationValueAt(elevationLayer, camLocation);
+            if (elevationUnderCamera !== undefined) {
+                const difElevation = camLocation.altitude - (elevationUnderCamera + minDistanceCollision);
+                // We move the camera to avoid collision if too close to terrain
+                if (difElevation < 0) {
+                    camLocation.altitude = elevationUnderCamera + minDistanceCollision;
+                    view.camera.camera3D.position.copy(camLocation.as(view.referenceCrs));
+                    view.notifyChange(this.camera3D);
+                }
+            }
+        }
     }
 }
 
-Camera.prototype.resize = function resize(width, height) {
-    this.width = width;
-    this.height = height;
-
-    const ratio = width / height;
-    updatePreSse(this, this.height, this.camera3D.fov);
-
-    if (this.camera3D.aspect !== ratio) {
-        this.camera3D.aspect = ratio;
-        if (this.camera3D.isOrthographicCamera) {
-            const halfH = (this.camera3D.right - this.camera3D.left) * 0.5 / ratio;
-            const y = (this.camera3D.top + this.camera3D.bottom) * 0.5;
-            this.camera3D.top = y + halfH;
-            this.camera3D.bottom = y - halfH;
-        }
-    }
-
-    if (this.camera3D.updateProjectionMatrix) {
-        this.camera3D.updateProjectionMatrix();
-        this._viewMatrixNeedsUpdate = true;
-    }
-};
-
-Camera.prototype.update = function update() {
-    // update matrix
-    this.camera3D.updateMatrixWorld();
-    if (this.matrixProjectionNeedsUpdate) {
-        this.camera3D.updateProjectionMatrix();
-        this.matrixProjectionNeedsUpdate = false;
-    }
-    this._viewMatrixNeedsUpdate = true;
-};
-
-/**
- * Return the position in the requested CRS, or in camera's CRS if undefined.
- * @param {string} crs if defined (e.g 'EPSG:4236') the camera position will be returned in this CRS
- * @return {Coordinates} Coordinates object holding camera's position
- */
-Camera.prototype.position = function position(crs) {
-    return new Coordinates(this.crs, this.camera3D.position).as(crs || this.crs);
-};
-
-/**
- * Set the position of the camera using a Coordinates object.
- * If you want to modify the position directly using x,y,z value then use camera.camera3D.position.set(x, y, z)
- * @param {Coordinates} position the new position of the camera
- */
-Camera.prototype.setPosition = function setPosition(position) {
-    this.camera3D.position.copy(position.as(this.crs));
-};
-
-const tmp = {
-    frustum: new THREE.Frustum(),
-    matrix: new THREE.Matrix4(),
-    box3: new THREE.Box3(),
-};
 
 const points = [
     new THREE.Vector3(),
@@ -223,68 +309,5 @@ function projectBox3PointsInCameraSpace(camera, box3, matrixWorld) {
     return atLeastOneInFrontOfNearPlane ? points : undefined;
 }
 
-const ndcBox3 = new THREE.Box3(
-    new THREE.Vector3(-1, -1, -1),
-    new THREE.Vector3(1, 1, 1));
-
-Camera.prototype.isBox3Visible = function isBox3Visible(box3, matrixWorld) {
-    return this.box3SizeOnScreen(box3, matrixWorld).intersectsBox(ndcBox3);
-};
-
-Camera.prototype.isSphereVisible = function isSphereVisible(sphere, matrixWorld) {
-    if (this._viewMatrixNeedsUpdate) {
-        // update visibility testing matrix
-        this._viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
-        this._viewMatrixNeedsUpdate = false;
-    }
-    if (matrixWorld) {
-        tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
-        tmp.frustum.setFromProjectionMatrix(tmp.matrix);
-    } else {
-        tmp.frustum.setFromProjectionMatrix(this._viewMatrix);
-    }
-    return tmp.frustum.intersectsSphere(sphere);
-};
-
-Camera.prototype.box3SizeOnScreen = function box3SizeOnScreen(box3, matrixWorld) {
-    const pts = projectBox3PointsInCameraSpace(this, box3, matrixWorld);
-
-    // All points are in front of the near plane -> box3 is invisible
-    if (!pts) {
-        return tmp.box3.makeEmpty();
-    }
-
-    // Project points on screen
-    for (let i = 0; i < 8; i++) {
-        pts[i].applyMatrix4(this.camera3D.projectionMatrix);
-    }
-
-    return tmp.box3.setFromPoints(pts);
-};
-
-/**
- * Test for collision between camera and a geometry layer (DTM/DSM) to adjust camera position
- * It could be modified later to handle an array of geometry layers
- * TODO Improve Coordinates class to handle altitude for any coordinate system (even projected one)
- * @param {view} view where we test the collision between geometry layers and the camera
- * @param {elevationLayer} elevationLayer (DTM/DSM) used to test the collision with the camera. Could be another geometry layer
- * @param {number} minDistanceCollision the minimum distance allowed between the camera and the surface
- */
-Camera.prototype.adjustAltitudeToAvoidCollisionWithLayer = function adjustAltitudeToAvoidCollisionWithLayer(view, elevationLayer, minDistanceCollision) {
-    // We put the camera location in geographic by default to easily handle altitude. (Should be improved in Coordinates class for all ref)
-    const camLocation = view.camera.position().as('EPSG:4326');
-    if (elevationLayer !== undefined) {
-        const elevationUnderCamera = DEMUtils.getElevationValueAt(elevationLayer, camLocation);
-        if (elevationUnderCamera != undefined) {
-            const difElevation = camLocation.altitude - (elevationUnderCamera + minDistanceCollision);
-            // We move the camera to avoid collisions if too close to terrain
-            if (difElevation < 0) {
-                camLocation.altitude = elevationUnderCamera + minDistanceCollision;
-                view.camera.camera3D.position.copy(camLocation.as(view.referenceCrs));
-                view.notifyChange(this.camera3D);
-            }
-        }
-    }
-};
 
 export default Camera;
