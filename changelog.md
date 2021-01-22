@@ -1,3 +1,27 @@
+<a name="2.29.1"></a>
+## [2.29.1](https://github.com/iTowns/itowns/compare/v2.29.0...v2.29.1) (2021-01-22)
+
+
+### Bug Fixes
+
+* **PlanarControls:** fix issues related to cameraOrtho feature ([475c788](https://github.com/iTowns/itowns/commit/475c788))
+
+
+### Workflow and chores
+
+* release v2.29.1 ([3c71abc](https://github.com/iTowns/itowns/commit/3c71abc))
+
+
+### Documentation
+
+* update some deprecated doc ([d16c796](https://github.com/iTowns/itowns/commit/d16c796))
+* **Camera:** modify camera.adjustAltitudeToAvoidCollisionWithLayer doc ([aabe814](https://github.com/iTowns/itowns/commit/aabe814))
+* **GlobeControl:** update class constructor doc ([6fb3d28](https://github.com/iTowns/itowns/commit/6fb3d28))
+* **GlobeControls:** minor correction ([7230b53](https://github.com/iTowns/itowns/commit/7230b53))
+* **View:** update doc of View.getMeterToPixel method ([cc2385c](https://github.com/iTowns/itowns/commit/cc2385c))
+
+
+
 <a name="2.29.0"></a>
 # [2.29.0](https://github.com/iTowns/itowns/compare/v2.28.1...v2.29.0) (2021-01-21)
 
