@@ -193,7 +193,7 @@ export default {
                                     options.overrideMaterials.isMaterial) {
                                     mesh.material = options.overrideMaterials;
                                 } else {
-                                    mesh.material = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                                    mesh.material.depthWrite = true;
                                 }
                             } else if (Capabilities.isLogDepthBufferSupported()
                                         && mesh.material.isRawShaderMaterial
