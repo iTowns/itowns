@@ -656,12 +656,13 @@ class View extends THREE.EventDispatcher {
     /**
      * Convert view coordinates to normalized coordinates (NDC)
      * @param {THREE.Vector2} viewCoords (in pixels, 0-0 = top-left of the View)
+     * @param {THREE.Vector2} target
      * @return {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
      */
-    viewToNormalizedCoords(viewCoords) {
-        _eventCoords.x = 2 * (viewCoords.x / this.camera.width) - 1;
-        _eventCoords.y = -2 * (viewCoords.y / this.camera.height) + 1;
-        return _eventCoords;
+    viewToNormalizedCoords(viewCoords, target = _eventCoords) {
+        target.x = 2 * (viewCoords.x / this.camera.width) - 1;
+        target.y = -2 * (viewCoords.y / this.camera.height) + 1;
+        return target;
     }
 
     /**
