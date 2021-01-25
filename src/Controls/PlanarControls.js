@@ -31,6 +31,7 @@ export const STATE = {
     PAN: 1,
     ROTATE: 2,
     TRAVEL: 3,
+    ORTHO_ZOOM: 4,
 };
 
 const vectorZero = new THREE.Vector3();
@@ -82,7 +83,7 @@ const defaultOptions = {
     rotateSpeed: 2.0,
     minPanSpeed: 0.05,
     maxPanSpeed: 15,
-    zoomTravelTime: 0.2,
+    zoomTravelTime: 0.2,  // must be a number
     zoomInFactor: 0.5,
     zoomOutFactor: 0.45,
     maxAltitude: 50000000,
@@ -176,6 +177,10 @@ class PlanarControls extends THREE.EventDispatcher {
             // Therefore, neutralizing by default the maxAltitude limit allows zooming out with an orthographic camera,
             // no matter its initial position.
             this.maxAltitude = Infinity;
+
+            // the zoom travel time (stored in `this.zoomTravelTime`) can't be `auto` with an orthographic camera
+            this.zoomTravelTime = typeof options.zoomTravelTime === 'number' ?
+                options.zoomTravelTime : defaultOptions.zoomTravelTime;
         } else {
             // enable rotation movements
             this.enableRotation = options.enableRotation === undefined ?
@@ -191,10 +196,10 @@ class PlanarControls extends THREE.EventDispatcher {
 
             // camera altitude is clamped under maxAltitude
             this.maxAltitude = options.maxAltitude || defaultOptions.maxAltitude;
-        }
 
-        // animation duration for the zoom
-        this.zoomTravelTime = options.zoomTravelTime || defaultOptions.zoomTravelTime;
+            // animation duration for the zoom
+            this.zoomTravelTime = options.zoomTravelTime || defaultOptions.zoomTravelTime;
+        }
 
         // zoom movement is equal to the distance to the zoom target, multiplied by zoomFactor
         this.zoomInFactor = options.zoomInFactor || defaultOptions.zoomInFactor;
@@ -309,6 +314,10 @@ class PlanarControls extends THREE.EventDispatcher {
         switch (this.state) {
             case STATE.TRAVEL:
                 this.handleTravel(dt);
+                this.view.notifyChange(this.camera);
+                break;
+            case STATE.ORTHO_ZOOM:
+                this.handleZoomOrtho(dt);
                 this.view.notifyChange(this.camera);
                 break;
             case STATE.DRAG:
@@ -501,52 +510,78 @@ class PlanarControls extends THREE.EventDispatcher {
             delta = -event.detail;
         }
 
-        const pointUnderCursor = this.getWorldPointAtScreenXY(mousePosition);
+        pointUnderCursor.copy(this.getWorldPointAtScreenXY(mousePosition));
         const newPos = new THREE.Vector3();
 
-        // Zoom IN
-        if (delta > 0) {
-            // decrease the camera field of view if the camera is orthographic
+        if (delta > 0 || (delta < 0 && this.maxAltitude > this.camera.position.z)) {
+            const zoomFactor = delta > 0 ? this.zoomInFactor : -1 * this.zoomOutFactor;
+
+            // change the camera field of view if the camera is orthographic
             if (this.camera.isOrthographicCamera) {
+                // switch state to STATE.ZOOM
+                this.state = STATE.ORTHO_ZOOM;
+                this.view.notifyChange(this.camera);
+
+                // camera zoom at the beginning of zoom movement
                 startZoom = this.camera.zoom;
-                endZoom = startZoom * (1 + this.zoomInFactor);
+                // camera zoom at the end of zoom movement
+                endZoom = startZoom * (1 + zoomFactor);
+                // the altitude of the target must be the same as camera's
                 pointUnderCursor.z = this.camera.position.z;
+
+                travelAlpha = 0;
+                travelDuration = this.zoomTravelTime;
+                this.updateMouseCursorType();
+            } else {
+                // target position
+                newPos.lerpVectors(
+                    this.camera.position,
+                    pointUnderCursor,
+                    zoomFactor,
+                );
+                // initiate travel
+                this.initiateTravel(
+                    newPos,
+                    this.zoomTravelTime,
+                    null,
+                    false,
+                );
             }
-            // target position
-            newPos.lerpVectors(
-                this.camera.position,
-                pointUnderCursor,
-                this.zoomInFactor,
-            );
-            // initiate travel
-            this.initiateTravel(
-                newPos,
-                this.zoomTravelTime,
-                null,
-                false,
-            );
-        // Zoom OUT
-        } else if (delta < 0 && this.maxAltitude > this.camera.position.z) {
-            // increase the camera field of view if the camera is orthographic
-            if (this.camera.isOrthographicCamera) {
-                startZoom = this.camera.zoom;
-                endZoom = startZoom * (1 - this.zoomOutFactor);
-                pointUnderCursor.z = this.camera.position.z;
-            }
-            // target position
-            newPos.lerpVectors(
-                this.camera.position,
-                pointUnderCursor,
-                -1 * this.zoomOutFactor,
-            );
-            // initiate travel
-            this.initiateTravel(
-                newPos,
-                this.zoomTravelTime,
-                null,
-                false,
-            );
         }
+    }
+
+    /**
+     * Handle the animated zoom change for an orthographic camera, when state is `ZOOM`.
+     *
+     * @param   {number}    dt  the delta time between two updates in milliseconds
+     * @ignore
+     */
+    handleZoomOrtho(dt) {
+        travelAlpha = Math.min(travelAlpha + (dt / 1000) / travelDuration, 1);
+
+        // new zoom
+        const zoom = startZoom + travelAlpha * (endZoom - startZoom);
+
+        if (this.camera.zoom !== zoom) {
+            // zoom has changed
+            this.camera.zoom = zoom;
+            this.camera.updateProjectionMatrix();
+
+            // current world coordinates under the mouse
+            this.view.viewToNormalizedCoords(mousePosition, vect);
+            vect.z = 0;
+            this.camera.updateProjectionMatrix();
+            vect.unproject(this.camera);
+
+            // new camera position
+            this.camera.position.x += pointUnderCursor.x - vect.x;
+            this.camera.position.y += pointUnderCursor.y - vect.y;
+
+            this.camera.updateMatrixWorld(true);
+        }
+
+        // completion test
+        this.testAnimationEnd();
     }
 
     /**
@@ -733,8 +768,18 @@ class PlanarControls extends THREE.EventDispatcher {
         }
 
         // completion test
+        this.testAnimationEnd();
+    }
+
+    /**
+     * Test if the currently running animation is finished (travelAlpha reached 1).
+     * If it is, reset controls to state NONE.
+     *
+     * @ignore
+     */
+    testAnimationEnd() {
         if (travelAlpha === 1) {
-            // Resume normal behaviour after travel is completed
+            // Resume normal behaviour after animation is completed
             this.state = STATE.NONE;
             this.updateMouseCursorType();
         }
@@ -812,19 +857,22 @@ class PlanarControls extends THREE.EventDispatcher {
      * [getWorldPointFromMathPlaneAtScreenXY]{@link PlanarControls#getWorldPointFromMathPlaneAtScreenXY}.
      *
      * @param   {THREE.Vector2} posXY   the mouse position in screen space (unit : pixel)
+     * @param   {THREE.Vector3} target  the target World coordinates.
      * @return  {THREE.Vector3}
      * @ignore
      */
-    getWorldPointAtScreenXY(posXY) {
+    getWorldPointAtScreenXY(posXY, target = new THREE.Vector3()) {
         // check if there is a valid geometry under cursor
-        if (this.view.getPickingPositionFromDepth(posXY, pointUnderCursor)) {
-            return pointUnderCursor;
+        if (this.view.getPickingPositionFromDepth(posXY, target)) {
+            return target;
         } else {
             // if not, we use the mathematical plane at altitude = groundLevel
-            return this.getWorldPointFromMathPlaneAtScreenXY(
+            this.getWorldPointFromMathPlaneAtScreenXY(
                 posXY,
                 this.groundLevel,
+                target,
             );
+            return target;
         }
     }
 
@@ -888,6 +936,7 @@ class PlanarControls extends THREE.EventDispatcher {
                 this.view.domElement.style.cursor = 'cell';
                 break;
             case STATE.TRAVEL:
+            case STATE.ORTHO_ZOOM:
                 this.view.domElement.style.cursor = 'wait';
                 break;
             case STATE.ROTATE:
