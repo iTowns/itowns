@@ -7,55 +7,13 @@ export const EMPTY_TEXTURE_ZOOM = -1;
 
 const pitch = new THREE.Vector4();
 
-function defineLayerProperty(layer, property, initValue, defaultValue) {
-    let _value = initValue !== undefined ? initValue : defaultValue;
-    Object.defineProperty(layer, property, {
-        get: () => _value,
-        set: (value) => {
-            if (_value !== value) {
-                _value = value;
-            }
-        },
-    });
-}
-
-class MaterialLayer {
+class RasterNode {
     constructor(material, layer) {
         this.layer = layer;
-        this.textureOffset = 0; // will be updated in updateUniforms()
         this.crs = layer.parent.tileMatrixSets.indexOf(CRS.formatToTms(layer.crs));
         if (this.crs == -1) {
             console.error('Unknown crs:', layer.crs);
         }
-
-        defineLayerProperty(this, 'effect', layer.fx, 0);
-
-        const defaultEle = {
-            bias: 0,
-            scale: 1,
-            mode: ELEVATION_MODES.DATA,
-            zmin: 0,
-            zmax: Infinity,
-        };
-
-        let scaleFactor = 1.0;
-
-        // Define elevation properties
-        if (layer.useRgbaTextureElevation) {
-            defaultEle.mode = ELEVATION_MODES.RGBA;
-            defaultEle.zmax = 5000;
-            throw new Error('Restore this feature');
-        } else if (layer.useColorTextureElevation) {
-            scaleFactor = layer.colorTextureElevationMaxZ - layer.colorTextureElevationMinZ;
-            defaultEle.mode = ELEVATION_MODES.COLOR;
-            defaultEle.bias = layer.colorTextureElevationMinZ;
-        }
-
-        defineLayerProperty(this, 'bias', layer.bias, defaultEle.bias);
-        defineLayerProperty(this, 'scale', layer.scale * scaleFactor, defaultEle.scale * scaleFactor);
-        defineLayerProperty(this, 'mode', layer.mode, defaultEle.mode);
-        defineLayerProperty(this, 'zmin', layer.zmin, defaultEle.zmin);
-        defineLayerProperty(this, 'zmax', layer.zmax, defaultEle.zmax);
 
         this.textures = [];
         this.offsetScales = [];
@@ -98,19 +56,6 @@ class MaterialLayer {
         }
     }
 
-    replaceNoDataValueFromParent(parent, nodatavalue) {
-        if (nodatavalue == undefined) {
-            return;
-        }
-        const dataElevation = this.textures[0].image.data;
-        const parentTexture = parent && parent.textures[0];
-        if (dataElevation && parentTexture && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
-            const extent = this.textures[0].extent;
-            extent.offsetToParent(parentTexture.extent, pitch);
-            insertSignificantValuesFromParent(dataElevation, parentTexture.image.data, nodatavalue, pitch);
-        }
-    }
-
     dispose(removeEvent) {
         if (removeEvent) {
             this.layer.removeEventListener('visible-property-changed', this._handlerCBEvent);
@@ -142,4 +87,57 @@ class MaterialLayer {
     }
 }
 
-export default MaterialLayer;
+export default RasterNode;
+
+export class RasterColorNode extends RasterNode {
+    constructor(material, layer) {
+        super(material, layer);
+        this.fx = layer.fx || 0;
+    }
+}
+
+export class RasterElevationNode extends RasterNode {
+    constructor(material, layer) {
+        super(material, layer);
+        const defaultEle = {
+            bias: 0,
+            scale: 1,
+            mode: ELEVATION_MODES.DATA,
+            zmin: 0,
+            zmax: Infinity,
+        };
+
+        let scaleFactor = 1.0;
+
+        // Define elevation properties
+        if (layer.useRgbaTextureElevation) {
+            defaultEle.mode = ELEVATION_MODES.RGBA;
+            defaultEle.zmax = 5000;
+            throw new Error('Restore this feature');
+        } else if (layer.useColorTextureElevation) {
+            scaleFactor = layer.colorTextureElevationMaxZ - layer.colorTextureElevationMinZ;
+            defaultEle.mode = ELEVATION_MODES.COLOR;
+            defaultEle.bias = layer.colorTextureElevationMinZ;
+        }
+
+        this.bias = layer.bias || defaultEle.bias;
+        this.scale = (layer.scale || defaultEle.scale) * scaleFactor;
+        this.mode = layer.mode || defaultEle.mode;
+        this.zmin = layer.zmin || defaultEle.zmin;
+        this.zmax = layer.zmax || defaultEle.zmax;
+    }
+
+    replaceNoDataValueFromParent(parent) {
+        const nodatavalue = this.layer.nodatavalue;
+        if (nodatavalue == undefined) {
+            return;
+        }
+        const dataElevation = this.textures[0].image.data;
+        const parentTexture = parent && parent.textures[0];
+        if (dataElevation && parentTexture && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
+            const extent = this.textures[0].extent;
+            extent.offsetToParent(parentTexture.extent, pitch);
+            insertSignificantValuesFromParent(dataElevation, parentTexture.image.data, nodatavalue, pitch);
+        }
+    }
+}

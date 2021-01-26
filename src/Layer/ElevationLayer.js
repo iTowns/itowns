@@ -1,5 +1,6 @@
 import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
+import { RasterElevationNode } from 'Renderer/MaterialLayer';
 
 /**
  * @property {boolean} isElevationLayer - Used to checkout whether this layer is
@@ -59,6 +60,10 @@ class ElevationLayer extends RasterLayer {
                 }
             });
         });
+    }
+
+    createNode(material) {
+        return new RasterElevationNode(material, this);
     }
 
     update(context, layer, node, parent) {

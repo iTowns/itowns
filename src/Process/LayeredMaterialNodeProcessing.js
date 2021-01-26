@@ -76,9 +76,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         }
 
         if (!nodeLayer) {
-            // Create new MaterialLayer
+            // Create new raster node
             nodeLayer = material.addLayer(layer);
-            // Init the new MaterialLayer by parent
+            // Init the node by parent
             const parentLayer = parent.material && parent.material.getLayer(layer.id);
             nodeLayer.initFromParent(parentLayer, extentsDestination);
         }
@@ -260,7 +260,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             node.setBBoxZ(elevation.min, elevation.max, layer.scale);
             nodeLayer.setTexture(0, elevation.texture, elevation.pitch);
             const nodeParent = parent.material && parent.material.getElevationLayer();
-            nodeLayer.replaceNoDataValueFromParent(nodeParent, layer.noDataValue);
+            nodeLayer.replaceNoDataValueFromParent(nodeParent);
         },
         err => handlingError(err, node, layer, targetLevel, context.view));
 }

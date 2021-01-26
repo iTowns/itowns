@@ -1,5 +1,6 @@
 import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
+import { RasterColorNode } from 'Renderer/MaterialLayer';
 import Style from 'Core/Style';
 
 /**
@@ -68,6 +69,10 @@ class ColorLayer extends RasterLayer {
         this.buildExtent = true;
         this.withNormal = false;
         this.withAltitude = false;
+    }
+
+    createNode(material) {
+        return new RasterColorNode(material, this);
     }
 
     update(context, layer, node, parent) {
