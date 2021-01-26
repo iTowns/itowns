@@ -1,3 +1,24 @@
+<a name="2.29.2"></a>
+## [2.29.2](https://github.com/iTowns/itowns/compare/v2.29.1...v2.29.2) (2021-01-26)
+
+
+### Bug Fixes
+
+* **3dTile:** don't overload the b3dm material. ([d7f14b6](https://github.com/iTowns/itowns/commit/d7f14b6))
+* **PlanarControls:** fix zoom movement with an orthographic camera ([999851a](https://github.com/iTowns/itowns/commit/999851a))
+
+
+### Code Refactoring
+
+* **view:** add vector target viewToNormalizedCoords. ([b83a9c8](https://github.com/iTowns/itowns/commit/b83a9c8))
+
+
+### Workflow and chores
+
+* release v2.29.2 ([62365ea](https://github.com/iTowns/itowns/commit/62365ea))
+
+
+
 <a name="2.29.1"></a>
 ## [2.29.1](https://github.com/iTowns/itowns/compare/v2.29.0...v2.29.1) (2021-01-22)
 
