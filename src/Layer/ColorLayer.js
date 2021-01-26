@@ -1,8 +1,6 @@
-import Layer from 'Layer/Layer';
-import { updateLayeredMaterialNodeImagery, removeLayeredMaterialNodeLayer } from 'Process/LayeredMaterialNodeProcessing';
-import textureConverter from 'Converter/textureConverter';
+import RasterLayer from 'Layer/RasterLayer';
+import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import Style from 'Core/Style';
-import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 /**
  * Fires when the visiblity of the layer has changed.
@@ -23,7 +21,7 @@ import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
  * ColorLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
  */
-class ColorLayer extends Layer {
+class ColorLayer extends RasterLayer {
     /**
      * A simple layer, usually managing a texture to display on a view. For example,
      * it can be an aerial view of the ground or a simple transparent layer with the
@@ -57,7 +55,6 @@ class ColorLayer extends Layer {
      * view.addLayer(color);
      */
     constructor(id, config = {}) {
-        config.cacheLifeTime = config.cacheLifeTime == undefined ? CACHE_POLICIES.TEXTURE : config.cacheLifeTime;
         super(id, config);
         this.isColorLayer = true;
         this.style = new Style(config.style);
@@ -75,19 +72,6 @@ class ColorLayer extends Layer {
 
     update(context, layer, node, parent) {
         return updateLayeredMaterialNodeImagery(context, this, node, parent);
-    }
-
-    convert(data, extentDestination) {
-        return textureConverter.convert(data, extentDestination, this);
-    }
-
-    /**
-    * All layer's textures are removed from scene and disposed from video device.
-    */
-    delete() {
-        for (const root of this.parent.level0Nodes) {
-            root.traverse(removeLayeredMaterialNodeLayer(this.id));
-        }
     }
 }
 
