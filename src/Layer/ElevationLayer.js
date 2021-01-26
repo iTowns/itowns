@@ -1,7 +1,5 @@
-import Layer from 'Layer/Layer';
-import { updateLayeredMaterialNodeElevation, removeLayeredMaterialNodeLayer } from 'Process/LayeredMaterialNodeProcessing';
-import textureConverter from 'Converter/textureConverter';
-import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+import RasterLayer from 'Layer/RasterLayer';
+import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 
 /**
  * @property {boolean} isElevationLayer - Used to checkout whether this layer is
@@ -12,7 +10,7 @@ import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
  * can be used for exageration of the elevation, like in [this
  * example](https://www.itowns-project.org/itowns/examples/#plugins_pyramidal_tiff).
  */
-class ElevationLayer extends Layer {
+class ElevationLayer extends RasterLayer {
     /**
      * A simple layer, managing an elevation texture to add some reliefs on the
      * plane or globe view for example.
@@ -44,7 +42,6 @@ class ElevationLayer extends Layer {
      * view.addLayer(elevation);
      */
     constructor(id, config = {}) {
-        config.cacheLifeTime = config.cacheLifeTime == undefined ? CACHE_POLICIES.TEXTURE : config.cacheLifeTime;
         super(id, config);
         this.isElevationLayer = true;
 
@@ -66,19 +63,6 @@ class ElevationLayer extends Layer {
 
     update(context, layer, node, parent) {
         return updateLayeredMaterialNodeElevation(context, this, node, parent);
-    }
-
-    convert(data, extentDestination) {
-        return textureConverter.convert(data, extentDestination, this);
-    }
-
-    /**
-    * All layer's textures are removed from scene and disposed from video device.
-    */
-    delete() {
-        for (const root of this.parent.level0Nodes) {
-            root.traverse(removeLayeredMaterialNodeLayer(this.id));
-        }
     }
 }
 
