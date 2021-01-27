@@ -570,7 +570,6 @@ class PlanarControls extends THREE.EventDispatcher {
             // current world coordinates under the mouse
             this.view.viewToNormalizedCoords(mousePosition, vect);
             vect.z = 0;
-            this.camera.updateProjectionMatrix();
             vect.unproject(this.camera);
 
             // new camera position
@@ -754,7 +753,7 @@ class PlanarControls extends THREE.EventDispatcher {
         // new zoom
         if (this.camera.isOrthographicCamera && this.camera.zoom !== zoom) {
             this.camera.zoom = zoom;
-            this.view.camera.matrixProjectionNeedsUpdate = true;
+            this.camera.updateProjectionMatrix();
         }
 
         // new rotation

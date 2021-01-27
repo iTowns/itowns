@@ -128,7 +128,6 @@ class Camera {
         this.width = width;
         this.height = height;
         this._viewMatrixNeedsUpdate = true;
-        this.matrixProjectionNeedsUpdate = false;
         this.resize(width, height);
 
         this._preSSE = Infinity;
@@ -171,10 +170,6 @@ class Camera {
     update() {
         // update matrix
         this.camera3D.updateMatrixWorld();
-        if (this.matrixProjectionNeedsUpdate) {
-            this.camera3D.updateProjectionMatrix();
-            this.matrixProjectionNeedsUpdate = false;
-        }
         this._viewMatrixNeedsUpdate = true;
     }
 
