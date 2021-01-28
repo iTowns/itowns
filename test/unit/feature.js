@@ -55,4 +55,14 @@ describe('Feature', function () {
         assert.equal(featureLine.vertices.length, geometry.indices[0].count * featureLine.size);
         assert.equal(featureLine.vertices.length, featureLine.normals.length);
     });
+
+    it('Should bind FeatureGeometries from coordinates list', function () {
+        const featurePoint = new Feature(FEATURE_TYPES.POINT, 'EPSG:4326');
+        const coordinates = [
+            new Coordinates('EPSG:4326', 3.5, 44),
+            new Coordinates('EPSG:4326', 5.2, 43),
+        ];
+        featurePoint.addPointGeometries(coordinates);
+        assert.equal(featurePoint.geometryCount, coordinates.length);
+    });
 });

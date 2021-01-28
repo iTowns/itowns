@@ -249,6 +249,25 @@ class Feature {
     get geometryCount() {
         return this.geometries.length;
     }
+
+    /**
+     * Add point type geometries to the feature from a list of coordinates.
+     *
+     * @param   {Array.<Coordinates>}   coordinates     List of {@link Coordinates}.
+     */
+    addPointGeometries(coordinates) {
+        coordinates.forEach((coordinate) => {
+            // bind geometry to feature
+            const geometry = this.bindNewGeometry();
+
+            // fill geometry with point
+            geometry.startSubGeometry(1, this);
+            geometry.pushCoordinates(coordinate, this);
+            geometry.updateExtent();
+
+            this.updateExtent(geometry);
+        });
+    }
 }
 
 export default Feature;
