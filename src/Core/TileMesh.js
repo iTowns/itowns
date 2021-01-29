@@ -63,13 +63,13 @@ class TileMesh extends THREE.Mesh {
             return;
         }
         // FIXME: Why the floors ? This is not conservative : the obb may be too short by almost 1m !
-        // if (Math.floor(min) !== Math.floor(this.obb.z.min) || Math.floor(max) !== Math.floor(this.obb.z.max)) {
-        this.obb.updateZ(min, max, scale);
-        if (this.horizonCullingPointElevationScaled) {
-            this.horizonCullingPointElevationScaled.setLength(this.obb.z.delta + this.horizonCullingPoint.length());
+        if (Math.floor(min) !== Math.floor(this.obb.z.min) || Math.floor(max) !== Math.floor(this.obb.z.max)) {
+            this.obb.updateZ(min, max, scale);
+            if (this.horizonCullingPointElevationScaled) {
+                this.horizonCullingPointElevationScaled.setLength(this.obb.z.delta + this.horizonCullingPoint.length());
+            }
+            this.obb.box3D.getBoundingSphere(this.boundingSphere);
         }
-        this.obb.box3D.getBoundingSphere(this.boundingSphere);
-        // }
     }
 
     getExtentsByProjection(crs) {
