@@ -25,10 +25,11 @@ export function computeMinMaxElevation(buffer, width, height, pitch) {
 
     const inc = pitch ? Math.max(Math.floor(sizeX / 8), 2) : 16;
 
+    const dataView = new DataView(buffer.buffer);
     for (let y = ys; y < ys + sizeY; y += inc) {
         const pit = y * (width || 0);
         for (let x = xs; x < xs + sizeX; x += inc) {
-            const val = buffer[pit + x];
+            const val = dataView.getFloat32((pit + x) * 4, true);
             if (val > -10) {
                 max = Math.max(max, val);
                 min = Math.min(min, val);
@@ -47,28 +48,32 @@ export function computeMinMaxElevation(buffer, width, height, pitch) {
 
 // We check if the elevation texture has some significant values through corners
 export function checkNodeElevationTextureValidity(data, noDataValue) {
-    const l = data.length;
-    return data[0] > noDataValue &&
-           data[l - 1] > noDataValue &&
-           data[Math.sqrt(l) - 1] > noDataValue &&
-           data[l - Math.sqrt(l)] > noDataValue;
+    // data = new DataView(data.buffer);
+    // const l = data.length;
+    // return data[0] > noDataValue &&
+    //        data[l - 1] > noDataValue &&
+    //        data[Math.sqrt(l) - 1] > noDataValue &&
+    //        data[l - Math.sqrt(l)] > noDataValue;
 }
 
 function getIndiceWithPitch(i, pitch, w) {
     // Return corresponding indice in parent tile using pitch
-    const currentX = (i % w) / w;  // normalized
-    const currentY = Math.floor(i / w) / w; // normalized
-    const newX = pitch.x + currentX * pitch.z;
-    const newY = pitch.y + currentY * pitch.w;
-    const newIndice = Math.floor(newY * w) * w + Math.floor(newX * w);
-    return newIndice;
+    // const currentX = (i % w) / w;  // normalized
+    // const currentY = Math.floor(i / w) / w; // normalized
+    // const newX = pitch.x + currentX * pitch.z;
+    // const newY = pitch.y + currentY * pitch.w;
+    // const newIndice = Math.floor(newY * w) * w + Math.floor(newX * w);
+    // return newIndice;
 }
 
 // This function replaces noDataValue by significant values from parent texture
 export function insertSignificantValuesFromParent(data, dataParent, noDataValue, pitch) {
-    for (let i = 0, l = data.length; i < l; ++i) {
-        if (data[i] === noDataValue) {
-            data[i] = dataParent[getIndiceWithPitch(i, pitch, 256)];
-        }
-    }
+    // data = new DataView(data.buffer);
+    // dataParent = new DataView(data.buffer);
+
+    // for (let i = 0, l = data.length; i < l; ++i) {
+    //     if (data[i] === noDataValue) {
+    //         data[i] = dataParent[getIndiceWithPitch(i, pitch, 256)];
+    //     }
+    // }
 }

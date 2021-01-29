@@ -46,7 +46,10 @@ export default {
                 // See UV construction for more details
                 texture.flipY = false;
             }
-            return textureLayer(texture);
+            texture.generateMipmaps = false;
+            texture.magFilter = THREE.NearestFilter;
+            texture.minFilter = THREE.NearestFilter;
+            return texture;
         }
     },
 };
