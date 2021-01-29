@@ -72,7 +72,9 @@ class ColorLayer extends RasterLayer {
     }
 
     createNode(material) {
-        return new RasterColorNode(material, this);
+        const node = new RasterColorNode(material, this);
+        material.setSequence(this.parent.colorLayersOrder);
+        return node;
     }
 
     update(context, layer, node, parent) {

@@ -238,11 +238,6 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         }
         const rasterNode = layer.createNode(this);
         this.layers.push(rasterNode);
-        if (layer.isColorLayer) {
-            this.setSequence(layer.parent.colorLayersOrder);
-        } else {
-            this.setSequenceElevation(layer.id);
-        }
         return rasterNode;
     }
 

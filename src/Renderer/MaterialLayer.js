@@ -1,14 +1,16 @@
 import * as THREE from 'three';
 import { ELEVATION_MODES } from 'Renderer/LayeredMaterial';
-import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent } from 'Parser/XbilParser';
+import { SIZE_TEXTURE_TILE } from 'Process/LayeredMaterialNodeProcessing';
+import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent, computeMinMaxElevation } from 'Parser/XbilParser';
 import CRS from 'Core/Geographic/Crs';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
 
 const pitch = new THREE.Vector4();
 
-class RasterNode {
+class RasterNode extends THREE.EventDispatcher {
     constructor(material, layer) {
+        super();
         this.layer = layer;
         this.crs = layer.parent.tileMatrixSets.indexOf(CRS.formatToTms(layer.crs));
         if (this.crs == -1) {
@@ -118,6 +120,11 @@ export class RasterElevationNode extends RasterNode {
             scaleFactor = layer.colorTextureElevationMaxZ - layer.colorTextureElevationMinZ;
             defaultEle.mode = ELEVATION_MODES.COLOR;
             defaultEle.bias = layer.colorTextureElevationMinZ;
+            this.min = this.layer.colorTextureElevationMinZ;
+            this.max = this.layer.colorTextureElevationMaxZ;
+        } else {
+            this.min = 0;
+            this.max = 0;
         }
 
         this.bias = layer.bias || defaultEle.bias;
@@ -125,6 +132,16 @@ export class RasterElevationNode extends RasterNode {
         this.mode = layer.mode || defaultEle.mode;
         this.zmin = layer.zmin || defaultEle.zmin;
         this.zmax = layer.zmax || defaultEle.zmax;
+    }
+
+    setTexture(index, texture, offsetScale) {
+        super.setTexture(index, texture, offsetScale);
+        if (texture /* && !this.layer.useColorTextureElevation */) {
+            const { min, max } = computeMinMaxElevation(texture.image.data, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, offsetScale);
+            this.min = !min ? 0 : min;
+            this.max = !max ? 0 : max;
+            this.dispatchEvent({ type: 'updatedElevation', node: this });
+        }
     }
 
     replaceNoDataValueFromParent(parent) {

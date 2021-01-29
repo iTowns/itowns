@@ -63,7 +63,10 @@ class ElevationLayer extends RasterLayer {
     }
 
     createNode(material) {
-        return new RasterElevationNode(material, this);
+        const node = new RasterElevationNode(material, this);
+        material.setSequenceElevation(this.id);
+        node.addEventListener('updatedElevation', a => material.dispatchEvent(a));
+        return node;
     }
 
     update(context, layer, node, parent) {
