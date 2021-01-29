@@ -1,3 +1,22 @@
+import { _readTextureValueWithBilinearFiltering } from 'Utils/DEMUtils';
+
+function computeExtactMinMaxElevation(texture, width, height, pitch) {
+    const u = pitch.x;
+    const v = pitch.y;
+    const w = pitch.z;
+    const z = [
+        _readTextureValueWithBilinearFiltering({}, texture, u, v),
+        _readTextureValueWithBilinearFiltering({}, texture, u + w, v),
+        _readTextureValueWithBilinearFiltering({}, texture, u + w, v + w),
+        _readTextureValueWithBilinearFiltering({}, texture, u, v + w),
+    ];
+    const fZ = z.filter(t => t >= 0);
+    const min = Math.min(...fZ);
+    const max = Math.max(...fZ);
+
+    return { min, max };
+}
+
 /**
   * Calculates the minimum maximum elevation of xbil buffer
   *
@@ -8,6 +27,14 @@
   * @return     {Object}  The minimum maximum elevation.
   */
 export function computeMinMaxElevation(buffer, width, height, pitch) {
+    //
+
+
+    // const foo = _convertUVtoTextureCoords(texture, 0.3, 0.3);
+
+    // const z = _readTextureValueWithBilinearFiltering({}, texture, vertexU, vertexV);
+
+
     let min = 1000000;
     let max = -1000000;
 
@@ -42,6 +69,18 @@ export function computeMinMaxElevation(buffer, width, height, pitch) {
         // Don't return 0, -1000000 or 1000000 because the result will be wrong
         return { min: null, max: null };
     }
+
+    if (max && min && (max - min) < 1) {
+        const texture = {
+            image: {
+                width,
+                height,
+                data: buffer,
+            },
+        };
+        return computeExtactMinMaxElevation(texture, width, height, pitch);
+    }
+
     return { min, max };
 }
 

@@ -171,7 +171,7 @@ function _readTextureValueAt(layer, texture, ...uv) {
     }
 }
 
-function _convertUVtoTextureCoords(texture, u, v) {
+export function _convertUVtoTextureCoords(texture, u, v) {
     const width = texture.image.width;
     const height = texture.image.height;
 
@@ -208,7 +208,7 @@ function _lerpWithUndefinedCheck(x, y, t) {
     }
 }
 
-function _readTextureValueWithBilinearFiltering(layer, texture, vertexU, vertexV) {
+export function _readTextureValueWithBilinearFiltering(layer, texture, vertexU, vertexV) {
     const coords = _convertUVtoTextureCoords(texture, vertexU, vertexV);
 
     const [z11, z21, z12, z22] = _readTextureValueAt(layer, texture,
