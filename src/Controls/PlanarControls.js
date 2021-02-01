@@ -297,15 +297,6 @@ class PlanarControls extends THREE.EventDispatcher {
      * @ignore
      */
     update(dt, updateLoopRestarted) {
-        // We test if camera collides to the geometry layer or is too close to the ground, and adjust its altitude in
-        // case
-        if (this.handleCollision) { // check distance to the ground/surface geometry (could be another geometry layer)
-            this.view.camera.adjustAltitudeToAvoidCollisionWithLayer(
-                this.view,
-                this.view.tileLayer,
-                this.minDistanceCollision,
-            );
-        }
         // dt will not be relevant when we just started rendering. We consider a 1-frame move in this case
         if (updateLoopRestarted) {
             dt = 16;
@@ -335,6 +326,15 @@ class PlanarControls extends THREE.EventDispatcher {
             case STATE.NONE:
             default:
                 break;
+        }
+        // We test if camera collides to the geometry layer or is too close to the ground, and adjust its altitude in
+        // case
+        if (this.handleCollision) { // check distance to the ground/surface geometry (could be another geometry layer)
+            this.view.camera.adjustAltitudeToAvoidCollisionWithLayer(
+                this.view,
+                this.view.tileLayer,
+                this.minDistanceCollision,
+            );
         }
         if (onMovement) {
             this.view.dispatchEvent({ type: PLANAR_CONTROL_EVENT.MOVED });
@@ -396,31 +396,9 @@ class PlanarControls extends THREE.EventDispatcher {
      * @ignore
      */
     handlePanMovement() {
-        // normalized (between 0 and 1) distance between groundLevel and maxAltitude
-        const distToGround = THREE.MathUtils.clamp(
-            (this.camera.position.z - this.groundLevel) / this.maxAltitude,
-            0,
-            1,
-        );
-
-        // pan movement speed, adjusted according to altitude
-        const panSpeed = THREE.MathUtils.lerp(
-            this.minPanSpeed,
-            this.maxPanSpeed,
-            distToGround,
-        );
-
-        // lateral movement (local x axis)
-        vect.set(panSpeed * -1 * deltaMousePosition.x, 0, 0);
-        this.camera.position.copy(this.camera.localToWorld(vect));
-
-        // vertical movement (world z axis)
-        const newAltitude = this.camera.position.z + panSpeed * deltaMousePosition.y;
-
-        // check if altitude is valid
-        if (this.groundLevel < newAltitude && newAltitude < this.maxAltitude) {
-            this.camera.position.z = newAltitude;
-        }
+        vect.set(-deltaMousePosition.x, deltaMousePosition.y, 0);
+        this.camera.localToWorld(vect);
+        this.camera.position.copy(vect);
     }
 
     /**
