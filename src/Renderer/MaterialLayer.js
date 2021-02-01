@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { ELEVATION_MODES } from 'Renderer/LayeredMaterial';
-import { SIZE_TEXTURE_TILE } from 'Process/LayeredMaterialNodeProcessing';
 import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent, computeMinMaxElevation } from 'Parser/XbilParser';
 import CRS from 'Core/Geographic/Crs';
 
@@ -136,8 +135,8 @@ export class RasterElevationNode extends RasterNode {
 
     setTexture(index, texture, offsetScale) {
         super.setTexture(index, texture, offsetScale);
-        if (texture /* && !this.layer.useColorTextureElevation */) {
-            const { min, max } = computeMinMaxElevation(texture.image.data, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, offsetScale);
+        if (texture && !this.layer.useColorTextureElevation) {
+            const { min, max } = computeMinMaxElevation(texture, offsetScale, this.layer.noDataValue);
             this.min = !min ? 0 : min;
             this.max = !max ? 0 : max;
             this.dispatchEvent({ type: 'updatedElevation', node: this });

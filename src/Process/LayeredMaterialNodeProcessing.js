@@ -1,6 +1,5 @@
 import { chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
 import LayerUpdateState from 'Layer/LayerUpdateState';
-import { computeMinMaxElevation } from 'Parser/XbilParser';
 import handlingError from 'Process/handlerNodeError';
 
 export const SIZE_TEXTURE_TILE = 256;
