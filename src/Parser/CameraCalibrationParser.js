@@ -8,16 +8,8 @@ import OrientedImageCamera from 'Renderer/OrientedImageCamera';
  * @module CameraCalibrationParser
  */
 
-const xAxis = new THREE.Vector3();
-const yAxis = new THREE.Vector3();
-const zAxis = new THREE.Vector3();
 const textureLoader = new THREE.TextureLoader();
 const matrix3 = new THREE.Matrix3();
-
-THREE.Matrix4.prototype.makeBasisFromMatrix = function makeBasisFromMatrix(m) {
-    m.extractBasis(xAxis, yAxis, zAxis);
-    return this.makeBasis(xAxis, yAxis, zAxis);
-};
 
 // the json format encodes the following transformation:
 // extrinsics: p_local = rotation * (p_world - position)
@@ -41,7 +33,7 @@ function parseCalibration(calibration, options = {}) {
     camera.position.fromArray(calibration.position);
     // calibration.rotation is row-major but fromArray expects a column-major array, yielding the transposed matrix
     const rotationInverse = matrix3.fromArray(calibration.rotation);
-    camera.matrix.makeBasisFromMatrix(rotationInverse);
+    camera.matrix.setFromMatrix3(rotationInverse);
     camera.quaternion.setFromRotationMatrix(camera.matrix);
 
     // local axes for cameras is (X right, Y up, Z back) rather than (X right, Y down, Z front)
