@@ -160,7 +160,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
         }
     }
 
-    const bClearColor = new Color();
+    const clearColor = new Color();
     const lookAtCameraDebug = new Vector3();
     function renderCameraDebug() {
         if (state.debugCameraWindow && debugCamera) {
@@ -208,7 +208,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
             const deltaY = state.displayCharts ? Math.round(parseFloat(chartDivContainer.style.height.replace('%', '')) * g.height / 100) + 3 : 0;
             helper.visible = true;
             helper.updateMatrixWorld(true);
-            bClearColor.copy(r.getClearColor());
+            r.getClearColor(clearColor);
             r.setViewport(g.width - size.x, deltaY, size.x, size.y);
             r.setScissor(g.width - size.x, deltaY, size.x, size.y);
             r.setScissorTest(true);
@@ -216,7 +216,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
             r.clear();
             r.render(view.scene, debugCamera);
             r.setScissorTest(false);
-            r.setClearColor(bClearColor);
+            r.setClearColor(clearColor);
             r.setViewport(0, 0, g.width, g.height);
 
             helper.visible = false;
