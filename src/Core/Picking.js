@@ -233,7 +233,8 @@ export default {
             { scene: object, camera: view.camera },
             zone);
 
-        const clearColor = view.mainLoop.gfxEngine.renderer.getClearColor();
+        const clearColor = new THREE.Color();
+        view.mainLoop.gfxEngine.renderer.getClearColor(clearColor);
         const clearR = Math.round(255 * clearColor.r);
         const clearG = Math.round(255 * clearColor.g);
         const clearB = Math.round(255 * clearColor.b);
