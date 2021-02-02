@@ -54,7 +54,7 @@ class TileMesh extends THREE.Mesh {
      * @param {?number} scale
      */
     setBBoxZ(min, max, scale) {
-        if (min == undefined && max == undefined) {
+        if (min == null && max == null) {
             return;
         }
         // FIXME: Why the floors ? This is not conservative : the obb may be too short by almost 1m !

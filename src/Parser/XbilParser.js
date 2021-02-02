@@ -1,48 +1,71 @@
+import { readTextureValueWithBilinearFiltering } from 'Utils/DEMUtils';
+
+function minMax4Corners(texture, pitch, noDataValue) {
+    const u = pitch.x;
+    const v = pitch.y;
+    const w = pitch.z;
+    const z = [
+        readTextureValueWithBilinearFiltering({ noDataValue }, texture, u, v),
+        readTextureValueWithBilinearFiltering({ noDataValue }, texture, u + w, v),
+        readTextureValueWithBilinearFiltering({ noDataValue }, texture, u + w, v + w),
+        readTextureValueWithBilinearFiltering({ noDataValue }, texture, u, v + w),
+    ].filter(v => v != undefined && v > -10);
+
+    if (z.length) {
+        return { min: Math.min(...z), max: Math.max(...z) };
+    }
+}
+
 /**
-  * Calculates the minimum maximum elevation of xbil buffer
+  * Calculates the minimum maximum texture elevation with xbil data
   *
-  * @param      {number}  buffer       The buffer to parse
-  * @param      {number}  width        The buffer's width
-  * @param      {number}  height       The buffer's height
+  * @param      {THREE.Texture}  texture       The texture to parse
   * @param      {THREE.Vector4}  pitch  The pitch,  restrict zone to parse
+ * @param      {number}  noDataValue  No data value
   * @return     {Object}  The minimum maximum elevation.
   */
-export function computeMinMaxElevation(buffer, width, height, pitch) {
-    let min = 1000000;
-    let max = -1000000;
-
-    if (!buffer) {
+export function computeMinMaxElevation(texture, pitch, noDataValue) {
+    const { width, height, data } = texture.image;
+    if (!data) {
         // Return null values means there's no elevation values.
         // They can't be determined.
         // Don't return 0 because the result will be wrong
         return { min: null, max: null };
     }
 
-    const sizeX = pitch ? Math.floor(pitch.z * width) : buffer.length;
-    const sizeY = pitch ? Math.floor(pitch.z * height) : 1;
-    const xs = pitch ? Math.floor(pitch.x * width) : 0;
-    const ys = pitch ? Math.floor(pitch.y * height) : 0;
+    // compute extact minimum and maximum elvation on 4 corners texture.
+    let { min, max } = minMax4Corners(texture, pitch, noDataValue) || { max: -Infinity, min: Infinity };
 
-    const inc = pitch ? Math.max(Math.floor(sizeX / 8), 2) : 16;
+    const sizeX = Math.floor(pitch.z * width);
 
-    for (let y = ys; y < ys + sizeY; y += inc) {
-        const pit = y * (width || 0);
-        for (let x = xs; x < xs + sizeX; x += inc) {
-            const val = buffer[pit + x];
-            if (val > -10) {
-                max = Math.max(max, val);
-                min = Math.min(min, val);
+    if (sizeX > 2) {
+        const sizeY = Math.floor(pitch.z * height);
+        const xs = Math.floor(pitch.x * width);
+        const ys = Math.floor(pitch.y * height);
+        const inc = Math.max(Math.floor(sizeX / 32), 2);
+        const limX = ys + sizeY;
+        for (let y = ys; y < limX; y += inc) {
+            const pit = y * (width || 0);
+            let x = pit + xs;
+            const limX = x + sizeX;
+            for (x; x < limX; x += inc) {
+                const val = data[x];
+                if (val > -10 && val != noDataValue) {
+                    max = Math.max(max, val);
+                    min = Math.min(min, val);
+                }
             }
         }
     }
 
-    if (max === -1000000 || min === 1000000) {
+    if (max === -Infinity || min === Infinity) {
         // Return null values means the elevation values are incoherent
         // They can't be determined.
-        // Don't return 0, -1000000 or 1000000 because the result will be wrong
+        // Don't return 0, -Infinity or Infinity because the result will be wrong
         return { min: null, max: null };
+    } else {
+        return { min, max };
     }
-    return { min, max };
 }
 
 // We check if the elevation texture has some significant values through corners
