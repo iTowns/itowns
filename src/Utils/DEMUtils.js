@@ -107,7 +107,7 @@ function tileAt(pt, tile) {
 }
 
 let _canvas;
-function _readTextureValueAt(layer, texture, ...uv) {
+function _readTextureValueAt(metadata, texture, ...uv) {
     for (let i = 0; i < uv.length; i += 2) {
         uv[i] = THREE.MathUtils.clamp(uv[i], 0, texture.image.width - 1);
         uv[i + 1] = THREE.MathUtils.clamp(uv[i + 1], 0, texture.image.height - 1);
@@ -116,12 +116,14 @@ function _readTextureValueAt(layer, texture, ...uv) {
     if (texture.image.data) {
         // read a single value
         if (uv.length === 2) {
-            return texture.image.data[uv[1] * texture.image.width + uv[0]];
+            const v = texture.image.data[uv[1] * texture.image.width + uv[0]];
+            return v != metadata.noDataValue ? v : undefined;
         }
         // or read multiple values
         const result = [];
         for (let i = 0; i < uv.length; i += 2) {
-            result.push(texture.image.data[uv[i + 1] * texture.image.width + uv[i]]);
+            const v = texture.image.data[uv[i + 1] * texture.image.width + uv[i]];
+            result.push(v != metadata.noDataValue ? v : undefined);
         }
         return result;
     } else {
@@ -149,8 +151,6 @@ function _readTextureValueAt(layer, texture, ...uv) {
         ctx.drawImage(texture.image, minx, miny, dw, dh, 0, 0, dw, dh);
         const d = ctx.getImageData(0, 0, dw, dh);
 
-        const elevationLayer = layer.attachedLayers.filter(l => l.isElevationLayer)[0];
-
         const result = [];
         for (let i = 0; i < uv.length; i += 2) {
             const ox = uv[i] - minx;
@@ -158,10 +158,10 @@ function _readTextureValueAt(layer, texture, ...uv) {
 
             // d is 4 bytes per pixel
             const v = THREE.MathUtils.lerp(
-                elevationLayer.colorTextureElevationMinZ,
-                elevationLayer.colorTextureElevationMaxZ,
+                metadata.colorTextureElevationMinZ,
+                metadata.colorTextureElevationMaxZ,
                 d.data[4 * oy * dw + 4 * ox] / 255);
-            result.push(v != elevationLayer.noDataValue ? v : undefined);
+            result.push(v != metadata.noDataValue ? v : undefined);
         }
         if (uv.length === 2) {
             return result[0];
@@ -189,13 +189,13 @@ function _convertUVtoTextureCoords(texture, u, v) {
     return { u1, u2, v1, v2, wu, wv };
 }
 
-function _readTextureValueNearestFiltering(layer, texture, vertexU, vertexV) {
+function _readTextureValueNearestFiltering(metadata, texture, vertexU, vertexV) {
     const coords = _convertUVtoTextureCoords(texture, vertexU, vertexV);
 
     const u = (coords.wu <= 0) ? coords.u1 : coords.u2;
     const v = (coords.wv <= 0) ? coords.v1 : coords.v2;
 
-    return _readTextureValueAt(layer, texture, u, v);
+    return _readTextureValueAt(metadata, texture, u, v);
 }
 
 function _lerpWithUndefinedCheck(x, y, t) {
@@ -208,10 +208,10 @@ function _lerpWithUndefinedCheck(x, y, t) {
     }
 }
 
-function _readTextureValueWithBilinearFiltering(layer, texture, vertexU, vertexV) {
+export function readTextureValueWithBilinearFiltering(metadata, texture, vertexU, vertexV) {
     const coords = _convertUVtoTextureCoords(texture, vertexU, vertexV);
 
-    const [z11, z21, z12, z22] = _readTextureValueAt(layer, texture,
+    const [z11, z21, z12, z22] = _readTextureValueAt(metadata, texture,
         coords.u1, coords.v1,
         coords.u2, coords.v1,
         coords.u1, coords.v2,
@@ -227,7 +227,8 @@ function _readTextureValueWithBilinearFiltering(layer, texture, vertexU, vertexV
 
 
 function _readZFast(layer, texture, uv) {
-    return _readTextureValueNearestFiltering(layer, texture, uv.x, uv.y);
+    const elevationLayer = layer.attachedLayers.filter(l => l.isElevationLayer)[0];
+    return _readTextureValueNearestFiltering(elevationLayer, texture, uv.x, uv.y);
 }
 
 const bary = new THREE.Vector3();
@@ -282,10 +283,12 @@ function _readZCorrect(layer, texture, uv, tileDimensions, tileOwnerDimensions) 
     // bary holds the respective weight of each vertices of the triangles
     tri.getBarycoord(new THREE.Vector3(uv.x, uv.y), bary);
 
+    const elevationLayer = layer.attachedLayers.filter(l => l.isElevationLayer)[0];
+
     // read the 3 interesting values
-    const z1 = _readTextureValueWithBilinearFiltering(layer, texture, tri.a.x, tri.a.y);
-    const z2 = _readTextureValueWithBilinearFiltering(layer, texture, tri.b.x, tri.b.y);
-    const z3 = _readTextureValueWithBilinearFiltering(layer, texture, tri.c.x, tri.c.y);
+    const z1 = readTextureValueWithBilinearFiltering(elevationLayer, texture, tri.a.x, tri.a.y);
+    const z2 = readTextureValueWithBilinearFiltering(elevationLayer, texture, tri.b.x, tri.b.y);
+    const z3 = readTextureValueWithBilinearFiltering(elevationLayer, texture, tri.c.x, tri.c.y);
 
     // Blend with bary
     return z1 * bary.x + z2 * bary.y + z3 * bary.z;
