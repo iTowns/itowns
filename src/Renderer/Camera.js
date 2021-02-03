@@ -210,7 +210,7 @@ class Camera {
         } else {
             tmp.frustum.setFromProjectionMatrix(this._viewMatrix);
         }
-        return tmp.frustum.intersectSphere(sphere);
+        return tmp.frustum.intersectsSphere(sphere);
     }
 
     box3SizeOnScreen(box3, matrixWorld) {
