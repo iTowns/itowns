@@ -93,8 +93,6 @@ class Camera {
         * around.
      * @param   {Camera~CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link
         * CAMERA_TYPE}.
-     * @param   {number}                [options.orthoExtent=50]                The height of the extent that a camera
-        * from type `CAMERA_TYPE.ORTHOGRAPHIC` must cover initially.
      * @constructor
      */
     constructor(crs, width, height, options = {}) {
@@ -107,19 +105,13 @@ class Camera {
         } else if (options.cameraThree) {
             this.camera3D = options.cameraThree;
         } else {
-            const orthoExtent = options.orthoExtent || 50;
-            const ratio = width / height;
-
             switch (options.type) {
                 case CAMERA_TYPE.ORTHOGRAPHIC:
-                    this.camera3D = new THREE.OrthographicCamera(
-                        orthoExtent * ratio / -2, orthoExtent * ratio / 2,
-                        orthoExtent / 2, orthoExtent / -2,
-                    );
+                    this.camera3D = new THREE.OrthographicCamera();
                     break;
                 case CAMERA_TYPE.PERSPECTIVE:
                 default:
-                    this.camera3D = new THREE.PerspectiveCamera(30, ratio);
+                    this.camera3D = new THREE.PerspectiveCamera(30);
                     break;
             }
         }

@@ -147,8 +147,8 @@ let previous;
  *
  * @class      GlobeControls
  * @param      {GlobeView}  view the view where the control will be used
- * @param      {CameraTransformOptions} placement   the camera placement options at initialisation, see
- * {@link CameraTransformOptions} in {@link CameraUtils}.
+ * @param      {CameraTransformOptions|Extent} placement   the {@link CameraTransformOptions} to apply to view's camera
+ * or the extent it must display at initialisation, see {@link CameraTransformOptions} in {@link CameraUtils}.
  * @param      {object}  options
  * @param      {number}  options.zoomSpeed Speed zoom with mouse
  * @param      {number}  options.rotateSpeed Speed camera rotation in orbit and panoramic mode
@@ -273,10 +273,15 @@ class GlobeControls extends THREE.EventDispatcher {
             this.camera.layers.enable(layerTHREEjs);
         }
 
-        positionObject(placement.coord.as('EPSG:4978', xyz), cameraTarget);
+        if (placement.isExtent) {
+            placement.center().as('EPSG:4978', xyz);
+        } else {
+            placement.coord.as('EPSG:4978', xyz);
 
-        placement.tilt = placement.tilt || 89.5;
-        placement.heading = placement.heading || 0;
+            placement.tilt = placement.tilt || 89.5;
+            placement.heading = placement.heading || 0;
+        }
+        positionObject(xyz, cameraTarget);
         this.lookAtCoordinate(placement, false);
     }
 
@@ -1157,31 +1162,33 @@ class GlobeControls extends THREE.EventDispatcher {
      * Zoom parameter is ignored if range is set
      * The tilt's interval is between 4 and 89.5 degree
      *
-     * @param      {CameraUtils~CameraTransformOptions}   params camera transformation to apply
+     * @param      {CameraUtils~CameraTransformOptions|Extent}   params camera transformation to apply
      * @param      {number}   [params.zoom]   zoom
      * @param      {number}   [params.scale]   scale
      * @param      {boolean}  isAnimated  Indicates if animated
      * @return     {Promise}  A promise that resolves when transformation is complete
      */
     lookAtCoordinate(params = {}, isAnimated = this.isAnimationEnabled()) {
-        if (params.zoom) {
-            params.range = this.view.tileLayer.computeDistanceCameraFromTileZoom(params.zoom, this.view.camera);
-        } else if (params.scale) {
-            params.range = this.view.getScaleFromDistance(params.pitch, params.scale);
-            if (params.range < this.minDistance || params.range > this.maxDistance) {
-                // eslint-disable-next-line no-console
-                console.warn(`This scale ${params.scale} can not be reached`);
-                params.range = THREE.MathUtils.clamp(params.range, this.minDistance, this.maxDistance);
+        if (!params.isExtent) {
+            if (params.zoom) {
+                params.range = this.view.tileLayer.computeDistanceCameraFromTileZoom(params.zoom, this.view.camera);
+            } else if (params.scale) {
+                params.range = this.view.getScaleFromDistance(params.pitch, params.scale);
+                if (params.range < this.minDistance || params.range > this.maxDistance) {
+                    // eslint-disable-next-line no-console
+                    console.warn(`This scale ${params.scale} can not be reached`);
+                    params.range = THREE.MathUtils.clamp(params.range, this.minDistance, this.maxDistance);
+                }
             }
-        }
 
-        if (params.tilt !== undefined) {
-            const minTilt = 90 - THREE.MathUtils.radToDeg(this.maxPolarAngle);
-            const maxTilt = 90 - THREE.MathUtils.radToDeg(this.minPolarAngle);
-            if (params.tilt < minTilt || params.tilt > maxTilt) {
-                params.tilt = THREE.MathUtils.clamp(params.tilt, minTilt, maxTilt);
-                // eslint-disable-next-line no-console
-                console.warn('Tilt was clamped to ', params.tilt, ` the interval is between ${minTilt} and ${maxTilt} degree`);
+            if (params.tilt !== undefined) {
+                const minTilt = 90 - THREE.MathUtils.radToDeg(this.maxPolarAngle);
+                const maxTilt = 90 - THREE.MathUtils.radToDeg(this.minPolarAngle);
+                if (params.tilt < minTilt || params.tilt > maxTilt) {
+                    params.tilt = THREE.MathUtils.clamp(params.tilt, minTilt, maxTilt);
+                    // eslint-disable-next-line no-console
+                    console.warn('Tilt was clamped to ', params.tilt, ` the interval is between ${minTilt} and ${maxTilt} degree`);
+                }
             }
         }
 

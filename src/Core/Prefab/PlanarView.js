@@ -2,7 +2,6 @@ import * as THREE from 'three';
 
 import View from 'Core/View';
 import CameraUtils from 'Utils/CameraUtils';
-import { CAMERA_TYPE } from 'Renderer/Camera';
 
 import PlanarControls from 'Controls/PlanarControls';
 import PlanarLayer from './Planar/PlanarLayer';
@@ -29,16 +28,13 @@ class PlanarView extends View {
      * @param {boolean} [options.noControls=false] - If true, no controls are associated to the view.
      * @param {object=} [options.controls] - options for the {@link PlanarControls} associated to the view, if
      * `options.noControls` is false.
+     * @param {CameraUtils~CameraTransformOptions|Extent} [options.placement] - The
+     * {@link CameraUtils~CameraTransformOptions} to apply to view's camera or the extent it must display at
+     * initialization. By default, camera will display the view's extent (given in `extent` parameter).
      */
     constructor(viewerDiv, extent, options = {}) {
         THREE.Object3D.DefaultUp.set(0, 0, 1);
 
-        // If an orthographic camera is requested (by options.cameraType), the extent height is passed in options when
-        // calling view constructor. Doing so allows Camera constructor (called in view constructor) to access it, and
-        // set the frustrum in order to see the total extent height.
-        if (options.camera && options.camera.type === CAMERA_TYPE.ORTHOGRAPHIC) {
-            options.camera.orthoExtent = extent.dimensions().y;
-        }
         // Setup View
         super(extent.crs, viewerDiv, options);
         this.isPlanarView = true;
@@ -48,20 +44,22 @@ class PlanarView extends View {
         const max = Math.max(dim.x, dim.y);
         const camera3D = this.camera.camera3D;
         camera3D.near = 0.1;
-        camera3D.far = 2 * max;
-        this.camera.camera3D.updateProjectionMatrix();
+        camera3D.far = camera3D.isOrthographicCamera ? 2000 : 2 * max;
+        camera3D.updateProjectionMatrix();
 
         const tileLayer = new PlanarLayer('planar', extent, options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
 
         this.addLayer(tileLayer);
 
+        // Configure camera
         const placement = options.placement || {};
-        placement.coord = placement.coord || extent.center();
-        placement.tilt = placement.tilt || 90;
-        placement.heading = placement.heading || 0;
-        placement.range = placement.range || max;
-
+        if (!placement.isExtent) {
+            placement.coord = placement.coord || extent.center();
+            placement.tilt = placement.tilt || 90;
+            placement.heading = placement.heading || 0;
+            placement.range = placement.range || max;
+        }
         CameraUtils.transformCameraToLookAtTarget(this, camera3D, placement);
 
         if (!options.noControls) {
