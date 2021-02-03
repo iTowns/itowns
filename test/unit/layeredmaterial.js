@@ -23,7 +23,7 @@ describe('material state vs layer state', function () {
 
     const extent = new Extent('TMS:4326', 3, 0, 0).as('EPSG:4326');
     const material = new LayeredMaterial();
-    const geom = new THREE.Geometry();
+    const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const node = new TileMesh(geom, material, view.tileLayer, extent);
     node.parent = { };

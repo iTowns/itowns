@@ -56,7 +56,7 @@ describe('DemUtils', function () {
     const extent = new Extent('EPSG:4326', 5.625, 11.25, 45, 50.625);
     const coord = extent.center();
     it('load elevation texture', (done) => {
-        const geom = new THREE.Geometry();
+        const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
         const material = { visible: true };
         const nodeLayer = new MaterialLayer(material, elevationlayer);
