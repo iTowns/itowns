@@ -89,7 +89,7 @@ class GlobeView extends View {
      *
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
-     * @param {CameraTransformOptions} placement - An object to place view
+     * @param {CameraTransformOptions|Extent} placement - An object to place view
      * @param {object=} options - See options of {@link View}.
      */
     constructor(viewerDiv, placement = {}, options = {}) {
@@ -112,10 +112,12 @@ class GlobeView extends View {
         this.addLayer(tileLayer);
         this.tileLayer = tileLayer;
 
-        placement.coord = placement.coord || new Coordinates('EPSG:4326', 0, 0);
-        placement.tilt = placement.tilt || 89.5;
-        placement.heading = placement.heading || 0;
-        placement.range = placement.range || ellipsoidSizes.x * 2.0;
+        if (!placement.isExtent) {
+            placement.coord = placement.coord || new Coordinates('EPSG:4326', 0, 0);
+            placement.tilt = placement.tilt || 89.5;
+            placement.heading = placement.heading || 0;
+            placement.range = placement.range || ellipsoidSizes.x * 2.0;
+        }
 
         if (options.noControls) {
             CameraUtils.transformCameraToLookAtTarget(this, this.camera.camera3D, placement);

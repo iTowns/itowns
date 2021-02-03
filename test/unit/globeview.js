@@ -3,7 +3,10 @@ import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Extent from 'Core/Geographic/Extent';
 import Renderer from './bootstrap';
+import CameraUtils from '../../src/Utils/CameraUtils';
+import OBB from '../../src/Renderer/OBB';
 
 function compareWithEpsilon(a, b, epsilon) {
     return a - epsilon < b && a + epsilon > b;
@@ -86,6 +89,23 @@ describe('GlobeView', function () {
         const pixels = 0.28;
         assert.ok(compareWithEpsilon(computed, pixels, 10e-4));
         assert.ok(compareWithEpsilon(computed, pixels, 10e-4));
+    });
+
+    it('should place camera at given extent', () => {
+        const extent = new Extent('EPSG:4326', 4.6315, 5.6315, 43.6756, 44.6756);
+        const extentViewer = new GlobeView(
+            renderer.domElement,
+            extent,
+            { renderer },
+        );
+        const camera3D = extentViewer.camera.camera3D;
+        const size = new THREE.Vector3();
+        new OBB().setFromExtent(extent).box3D.getSize(size);
+        assert.ok(
+            CameraUtils.getTransformCameraLookingAtTarget(extentViewer, camera3D).range -
+            size.x / (2 * Math.tan(THREE.Math.degToRad(camera3D.fov) / 2))
+            < Math.pow(10, -6),
+        );
     });
 });
 

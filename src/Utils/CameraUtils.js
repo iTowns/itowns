@@ -4,12 +4,15 @@ import DEMUtils from 'Utils/DEMUtils';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Ellipsoid from 'Core/Math/Ellipsoid';
+import OBB from 'Renderer/OBB';
 
 THREE.Object3D.DefaultUp.set(0, 0, 1);
 const targetPosition = new THREE.Vector3();
 const targetCoord = new Coordinates('EPSG:4326', 0, 0, 0);
 const ellipsoid = new Ellipsoid();
 const rigs = [];
+const obb = new OBB();
+const size = new THREE.Vector3();
 
 const deferred = () => {
     let resolve;
@@ -370,10 +373,14 @@ export default {
      *
      * @param      {View}  view    The camera view
      * @param      {Camera}  camera  The camera to transform
-     * @param      {CameraUtils~CameraTransformOptions}  params  The parameters
+     * @param      {CameraUtils~CameraTransformOptions|Extent}  params  The parameters
      * @return     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
      */
     transformCameraToLookAtTarget(view, camera, params = {}) {
+        if (params.isExtent) {
+            params = this.getCameraTransformOptionsFromExtent(view, camera, params);
+        }
+
         params.proxy = params.proxy === undefined || params.proxy;
         const rig = getRig(camera);
         rig.stop(view);
@@ -387,6 +394,64 @@ export default {
         view.notifyChange(camera);
         return Promise.resolve(rig.getParams());
     },
+
+    /**
+     * Compute the CameraTransformOptions that allow a given camera to display a given extent in its entirety.
+     *
+     * @param   {View}    view    The camera view
+     * @param   {Camera}  camera  The camera to get the CameraTransformOptions from
+     * @param   {Extent}  extent  The extent the camera must display
+     *
+     * @return  {CameraUtils~CameraTransformOptions}   The CameraTransformOptions allowing camera to display the extent.
+     */
+    getCameraTransformOptionsFromExtent(view, camera, extent) {
+        const cameraTransformOptions = {
+            coord: new Coordinates(extent.crs, 0, 0, 0),
+            heading: 0,
+            tilt: view.isPlanarView ? 90 : 89.9,
+        };
+
+        let dimensions;
+        if (view.isGlobeView) {
+            extent = extent.as('EPSG:4326');
+            // compute extent's bounding box dimensions
+            obb.setFromExtent(extent);
+            // /!\ WARNING x and y are inverted, see issue #XXXX
+            obb.box3D.getSize(size);
+            dimensions = { x: size.y, y: size.x };
+        } else {
+            extent = extent.as(view.referenceCrs);
+            dimensions = extent.dimensions();
+        }
+
+        extent.center(cameraTransformOptions.coord);
+
+        if (camera.isOrthographicCamera) {
+            // setup camera zoom
+            if (dimensions.x / dimensions.y > camera.aspect) {
+                camera.zoom = (camera.right - camera.left) / dimensions.x;
+            } else {
+                camera.zoom = (camera.top - camera.bottom) / dimensions.y;
+            }
+            camera.updateProjectionMatrix();
+
+            // setup camera placement
+            cameraTransformOptions.range = 1000;
+        } else if (camera.isPerspectiveCamera) {
+            // setup range for camera placement
+            const verticalFOV = THREE.Math.degToRad(camera.fov);
+            if (dimensions.x / dimensions.y > camera.aspect) {
+                const focal = (view.domElement.clientHeight * 0.5) / Math.tan(verticalFOV * 0.5);
+                const horizontalFOV = 2 * Math.atan(view.domElement.clientWidth * 0.5 / focal);
+                cameraTransformOptions.range = dimensions.x / (2 * Math.tan(horizontalFOV * 0.5));
+            } else {
+                cameraTransformOptions.range = dimensions.y / (2 * Math.tan(verticalFOV * 0.5));
+            }
+        }
+
+        return cameraTransformOptions;
+    },
+
     /**
      * Apply transform to camera with animation
      *
