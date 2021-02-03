@@ -50,7 +50,7 @@ describe('Layer with Feature process', function () {
     };
 
     const extent = new Extent('EPSG:4326', 1.40625, 2.8125, 42.1875, 43.59375);
-    const geom = new THREE.Geometry();
+    const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const tile = new TileMesh(geom, new THREE.Material(), viewer.tileLayer, extent, 7);
     tile.parent = {};

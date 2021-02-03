@@ -32,7 +32,7 @@ describe('Provide in Sources', function () {
     supportedParsers.set(`${formatTag}application/json`, supportedParsers.get('application/json'));
 
     // Misc var to initialize a TileMesh instance
-    const geom = new THREE.Geometry();
+    const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const globalExtent = globalExtentTMS.get('EPSG:3857');
     const zoom = 10;

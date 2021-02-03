@@ -11,7 +11,7 @@ import MaterialLayer from 'Renderer/MaterialLayer';
 
 describe('Handling no data source error', function () {
     // Misc var to initialize a TileMesh instance
-    const geom = new THREE.Geometry();
+    const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
 
     const extent = new Extent('EPSG:4326', 6.227531433105469, 6.227874755859375, 44.93614196777344, 44.936485290527344);

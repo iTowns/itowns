@@ -13,7 +13,7 @@ function initBoundingBox(elt, layer) {
     box3.max.multiplyScalar(0.5);
     box3.min.copy(box3.max).negate();
     elt.obj.boxHelper = new THREE.BoxHelper(bboxMesh);
-    elt.obj.boxHelper.geometry = new THREE.Geometry().fromBufferGeometry(elt.obj.boxHelper.geometry.toNonIndexed());
+    elt.obj.boxHelper.geometry = elt.obj.boxHelper.geometry.toNonIndexed();
     elt.obj.boxHelper.computeLineDistances();
     elt.obj.boxHelper.material = elt.childrenBitField ? new THREE.LineDashedMaterial({ dashSize: 0.25, gapSize: 0.25 }) : new THREE.LineBasicMaterial();
     elt.obj.boxHelper.material.color.setHex(0);

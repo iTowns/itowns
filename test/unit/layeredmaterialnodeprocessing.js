@@ -11,7 +11,7 @@ import MaterialLayer from 'Renderer/MaterialLayer';
 
 describe('updateLayeredMaterialNodeImagery', function () {
     // Misc var to initialize a TileMesh instance
-    const geom = new THREE.Geometry();
+    const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const extent = new Extent('EPSG:4326', 0, 11.25, 0, 11.25);
     const material = {};
