@@ -46,9 +46,11 @@
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             const viewerDiv = document.getElementById('viewerDiv');
 
-            // instantiate PlanarView with an orthographic camera
+            // instantiate PlanarView with an orthographic camera.
+            // The extent passed in `placement` is the area that will be displayed by camera.
             const view = new itowns.PlanarView(viewerDiv, extent, {
                 camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC },
+                placement: new itowns.Extent('EPSG:3946', 1838000, 1842000, 5172000, 5174000),
             });
             setupLoadingScreen(viewerDiv, view);
 
