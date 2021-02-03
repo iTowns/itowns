@@ -63,6 +63,7 @@ class VectorTilesSource extends TMSSource {
         }
 
         this.whenReady = promise.then((style) => {
+            this.jsonStyle = style;
             const baseurl = source.sprite || style.sprite;
             if (baseurl) {
                 return Fetcher.json(`${baseurl}.json`, this.networkOptions).then((sprites) => {
