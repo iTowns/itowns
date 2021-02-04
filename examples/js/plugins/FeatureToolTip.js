@@ -11,11 +11,11 @@
  *
  * // Add layers
  * var wfsSource = new itowns.WFSSource(...);
- * var wfsLayer = new itowns.ColorLayer(wfsSource...);
+ * var wfsLayer = new itowns.ColorLayer('id_wfs', { source: wfsSource });
  * view.addLayer(wfsLayer);
  *
  * var fileSource = new itowns.FileSource(...);
- * var fileLayer = new itowns.GeometryLayer(fileSource...);
+ * var fileLayer = new itowns.GeometryLayer('id_myFile', { source: fileSource});
  * view.addLayer(fileLayer);
  *
  * FeatureToolTip.addLayer(wfsLayer);

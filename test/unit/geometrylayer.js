@@ -4,8 +4,8 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import ColorLayer from 'Layer/ColorLayer';
 
 describe('GeometryLayer', function () {
-    const geometry = new GeometryLayer('geometry', new THREE.Group());
-    const color = new ColorLayer('color');
+    const geometry = new GeometryLayer('geometry', new THREE.Group(), { source: false });
+    const color = new ColorLayer('color', { source: false });
 
     it('should attached a color layer', function () {
         geometry.attach(color);

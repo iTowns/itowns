@@ -46,11 +46,14 @@ class Layer extends THREE.EventDispatcher {
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
-     * @param {Object} [config] - Optional configuration, all elements in it
+     * @param {Object} config - configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
-     * contains three elements `name, protocol, extent`, these elements will be
+     * contains three elements `name, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
+     * @param {Source|boolean} config.source - instantiated Source specifies data source to display.
+     * if config.source is a boolean, it can only be false. if config.source is false,
+     * the layer doesn't need Source (like debug Layer or procedural layer).
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
      * This value is used for [Cache]{@link Cache} expiration mechanism.
      *
@@ -79,6 +82,10 @@ class Layer extends THREE.EventDispatcher {
         if (config.projection) {
             console.warn('Layer projection parameter is deprecated, use crs instead.');
             config.crs = config.crs || config.projection;
+        }
+
+        if (config.source === undefined || config.source === true) {
+            throw new Error(`Layer ${id} needs Source`);
         }
         super();
         this.isLayer = true;
