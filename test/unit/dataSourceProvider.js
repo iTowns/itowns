@@ -56,8 +56,8 @@ describe('Provide in Sources', function () {
     };
 
     const planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
-    const colorlayer = new ColorLayer('color', { crs: 'EPSG:3857' });
-    const elevationlayer = new ElevationLayer('elevation', { crs: 'EPSG:3857' });
+    const colorlayer = new ColorLayer('color', { crs: 'EPSG:3857', source: false });
+    const elevationlayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: false });
 
     planarlayer.attach(colorlayer);
     planarlayer.attach(elevationlayer);
@@ -68,7 +68,7 @@ describe('Provide in Sources', function () {
     const nodeLayer = material.getLayer(colorlayer.id);
     const nodeLayerElevation = material.getLayer(elevationlayer.id);
 
-    const featureLayer = new GeometryLayer('geom', new THREE.Group());
+    const featureLayer = new GeometryLayer('geom', new THREE.Group(), { source: false });
     featureLayer.update = FeatureProcessing.update;
     featureLayer.crs = 'EPSG:4978';
     featureLayer.mergeFeatures = false;

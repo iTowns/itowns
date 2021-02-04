@@ -94,6 +94,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
         update: debugIdUpdate,
         visible: false,
         cacheLifeTime: Infinity,
+        source: false,
     });
 
     View.prototype.addLayer.call(view, obbLayer, _3dTileslayer).then((l) => {

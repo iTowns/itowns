@@ -14,7 +14,7 @@ describe('LabelLayer', function () {
     let extent;
 
     before('init LabelLayer and a FeatureCollection like', function () {
-        layer = new LabelLayer('labels');
+        layer = new LabelLayer('labels', { source: false });
         layer.source = {};
         layer.style = new Style();
         layer.style.zoom = {

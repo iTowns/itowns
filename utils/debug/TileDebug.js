@@ -189,6 +189,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         update: debugIdUpdate,
         visible: false,
         cacheLifeTime: Infinity,
+        source: false,
     });
 
     View.prototype.addLayer.call(view, obbLayer, layer).then((l) => {
@@ -201,6 +202,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         update: debugIdUpdate,
         visible: false,
         cacheLifeTime: Infinity,
+        source: false,
     });
 
     View.prototype.addLayer.call(view, sbLayer, layer).then((l) => {

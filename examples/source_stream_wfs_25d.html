@@ -273,10 +273,11 @@
                 },
             });
 
-            var wfsCartoLayer = new itowns.LabelLayer('wfsCarto', 'EPSG:3946');
-            wfsCartoLayer.crs = 'EPSG:3946';
-            wfsCartoLayer.source = wfsCartoSource;
-            wfsCartoLayer.style = wfsCartoStyle;
+            var wfsCartoLayer = new itowns.LabelLayer('wfsCarto', {
+                crs: 'EPSG:3946',
+                source: wfsCartoSource,
+                style: wfsCartoStyle,
+            });
 
             // TODO: enable this again when the stream became available
             // Search for "zone_habitat" in this page https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?SERVICE=WFS&REQUEST=GetCapabilities

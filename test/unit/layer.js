@@ -4,7 +4,7 @@ import ColorLayer from 'Layer/ColorLayer';
 
 describe('Layer', function () {
     it('should emit an event on property changed', function () {
-        const layer = new Layer('testId');
+        const layer = new Layer('testId', { source: false });
         layer.defineLayerProperty('test', 0);
         layer.addEventListener('test-property-changed', (e) => {
             assert.equal(e.type, 'test-property-changed');
@@ -17,10 +17,10 @@ describe('Layer', function () {
 
 describe('ImageryLayers', function () {
     const layers = [
-        new ColorLayer('l0'),
-        new ColorLayer('l1'),
-        new ColorLayer('l2'),
-        new ColorLayer('l3'),
+        new ColorLayer('l0', { source: false }),
+        new ColorLayer('l1', { source: false }),
+        new ColorLayer('l2', { source: false }),
+        new ColorLayer('l3', { source: false }),
     ];
 
     layers[0].sequence = 0;
@@ -61,5 +61,9 @@ describe('ImageryLayers', function () {
         assert.equal(res[1], 'l1');
         assert.equal(res[2], 'l2');
         assert.equal(res[3], 'l0');
+    });
+
+    it('throws error when instance layer without Source', function () {
+        assert.throws(() => new ColorLayer('id'), /^Error: Layer id needs Source$/);
     });
 });

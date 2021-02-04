@@ -62,6 +62,7 @@ class TiledGeometryLayer extends GeometryLayer {
     constructor(id, object3d, schemeTile, builder, config) {
         // cacheLifeTime = CACHE_POLICIES.INFINITE because the cache is handled by the builder
         config.cacheLifeTime = CACHE_POLICIES.INFINITE;
+        config.source = false;
         super(id, object3d, config);
 
         this.isTiledGeometryLayer = true;
