@@ -14,7 +14,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
     const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const extent = new Extent('EPSG:4326', 0, 11.25, 0, 11.25);
-    const material = {};
+    const material = new THREE.Material();
 
     // Mock scheduler
     const context = {

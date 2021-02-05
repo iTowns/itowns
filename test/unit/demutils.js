@@ -58,7 +58,7 @@ describe('DemUtils', function () {
     it('load elevation texture', (done) => {
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
-        const material = { visible: true };
+        const material = new THREE.Material();
         const nodeLayer = new MaterialLayer(material, elevationlayer);
         material.getElevationLayer = () => nodeLayer;
         const tile = new TileMesh(geom, material, viewer.tileLayer, extent, 5);

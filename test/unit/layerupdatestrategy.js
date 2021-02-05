@@ -16,7 +16,7 @@ describe('Handling no data source error', function () {
 
     const extent = new Extent('EPSG:4326', 6.227531433105469, 6.227874755859375, 44.93614196777344, 44.936485290527344);
     extent.zoom = 19;
-    const material = {};
+    const material = new THREE.Material();
 
     // Mock scheduler
     const context = {
