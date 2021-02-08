@@ -91,7 +91,7 @@
     "grunt-bump": "^0.8.0",
     "https-proxy-agent": "^5.0.0",
     "jsdoc": "^3.6.6",
-    "marked": "^1.2.9",
+    "marked": "^2.0.0",
     "mocha": "^8.2.1",
     "node-fetch": "^2.6.1",
     "nyc": "^15.1.0",
