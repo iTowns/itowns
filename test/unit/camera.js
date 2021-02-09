@@ -1,5 +1,5 @@
 import assert from 'assert';
-import Camera from 'Renderer/Camera';
+import Camera, { CAMERA_TYPE } from 'Renderer/Camera';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 function compareWithEpsilon(a, b, epsilon) {
@@ -29,5 +29,25 @@ describe('camera', function () {
         assert.ok(compareWithEpsilon(resultCoordinates.longitude, coordinates.longitude, 10e-8));
         assert.ok(compareWithEpsilon(resultCoordinates.latitude, coordinates.latitude, 10e-8));
         assert.ok(compareWithEpsilon(resultCoordinates.altitude, coordinates.altitude, 10e-8));
+    });
+    it('should correctly resize camera', function () {
+        const dimensions = { width: 78, height: 89 };
+
+        const cameraPerspective = new Camera(
+            'EPSG:4978',
+            100, 50,
+        );
+        cameraPerspective.resize(dimensions.width, dimensions.height);
+        assert.equal(cameraPerspective.width, dimensions.width);
+        assert.equal(cameraPerspective.height, dimensions.height);
+
+        const cameraOrthographic = new Camera(
+            'EPSG:4978',
+            100, 50,
+            { type: CAMERA_TYPE.ORTHOGRAPHIC },
+        );
+        cameraOrthographic.resize(dimensions.width, dimensions.height);
+        assert.equal(cameraOrthographic.width, dimensions.width);
+        assert.equal(cameraOrthographic.height, dimensions.height);
     });
 });

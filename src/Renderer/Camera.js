@@ -115,6 +115,7 @@ class Camera {
                     break;
             }
         }
+        this.camera3D.aspect = this.camera3D.aspect !== undefined ? this.camera3D.aspect : 1;
 
         this._viewMatrix = new THREE.Matrix4();
         this.width = width;
@@ -136,22 +137,31 @@ class Camera {
         }
     }
 
+    /**
+     * Resize the camera to a given width and height
+     *
+     * @param   {number}    width               The width to resize the camera to.
+     * @param   {number}    height              The height to resize the camera to.
+     */
     resize(width, height) {
+        const ratio = width / height;
+        if (this.camera3D.aspect !== ratio) {
+            if (this.camera3D.isOrthographicCamera) {
+                this.camera3D.zoom *= this.width / width;
+                const halfH = this.camera3D.top * this.camera3D.aspect / ratio;
+                this.camera3D.bottom = -halfH;
+                this.camera3D.top = halfH;
+            } else if (this.camera3D.isPerspectiveCamera) {
+                this.camera3D.fov = 2 * THREE.Math.radToDeg(Math.atan(
+                    (height / this.height) * Math.tan(THREE.Math.degToRad(this.camera3D.fov) / 2),
+                ));
+            }
+            this.camera3D.aspect = ratio;
+        }
+
         this.width = width;
         this.height = height;
-
-        const ratio = width / height;
         updatePreSse(this, this.height, this.camera3D.fov);
-
-        if (this.camera3D.aspect !== ratio) {
-            this.camera3D.aspect = ratio;
-            if (this.camera3D.isOrthographicCamera) {
-                const halfH = (this.camera3D.right - this.camera3D.left) * 0.5 / ratio;
-                const y = (this.camera3D.top + this.camera3D.bottom) * 0.5;
-                this.camera3D.top = y + halfH;
-                this.camera3D.bottom = y - halfH;
-            }
-        }
 
         if (this.camera3D.updateProjectionMatrix) {
             this.camera3D.updateProjectionMatrix();
