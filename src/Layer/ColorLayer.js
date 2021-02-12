@@ -1,5 +1,6 @@
 import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
+import { RasterColorNode } from 'Renderer/MaterialLayer';
 import Style from 'Core/Style';
 
 /**
@@ -68,6 +69,23 @@ class ColorLayer extends RasterLayer {
         this.buildExtent = true;
         this.withNormal = false;
         this.withAltitude = false;
+    }
+
+    /**
+     * Setup RasterColorNode added to TileMesh. This RasterColorNode handles
+     * the ColorLayer textures mapped on this TileMesh.
+     *
+     * @param      {TileMesh}  node    The node to apply new RasterColorNode;
+     * @return     {RasterColorNode}  The raster color node added.
+     */
+    setupRasterNode(node) {
+        const rasterColorNode = new RasterColorNode(node.material, this);
+
+        node.material.addLayer(rasterColorNode);
+        // set up ColorLayer ordering.
+        node.material.setSequence(this.parent.colorLayersOrder);
+
+        return rasterColorNode;
     }
 
     update(context, layer, node, parent) {

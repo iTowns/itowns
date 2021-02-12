@@ -1,5 +1,6 @@
 import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
+import { RasterElevationNode } from 'Renderer/MaterialLayer';
 
 /**
  * @property {boolean} isElevationLayer - Used to checkout whether this layer is
@@ -59,6 +60,28 @@ class ElevationLayer extends RasterLayer {
                 }
             });
         });
+    }
+
+    /**
+     * Setup RasterElevationNode added to TileMesh. This RasterElevationNode handles
+     * the ColorLayer textures mapped on this TileMesh.
+     *
+     * @param      {TileMesh}  node    The node to apply new RasterElevationNode;
+     * @return     {RasterElevationNode}  The raster elevation node added.
+     */
+    setupRasterNode(node) {
+        const rasterElevationNode = new RasterElevationNode(node.material, this);
+
+        node.material.addLayer(rasterElevationNode);
+        node.material.setSequenceElevation(this.id);
+        // bounding box initialisation
+        node.setBBoxZ(rasterElevationNode.min, rasterElevationNode.max, this.scale);
+
+        // listen elevation updating
+        rasterElevationNode.addEventListener('updatedElevation', () =>
+            node.setBBoxZ(rasterElevationNode.min, rasterElevationNode.max, this.scale));
+
+        return rasterElevationNode;
     }
 
     update(context, layer, node, parent) {

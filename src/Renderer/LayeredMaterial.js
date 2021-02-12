@@ -4,7 +4,6 @@ import TileFS from 'Renderer/Shader/TileFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
-import MaterialLayer from 'Renderer/MaterialLayer';
 import CommonMaterial from 'Renderer/CommonMaterial';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
@@ -54,6 +53,7 @@ function updateLayersUniforms(uniforms, olayers, max) {
     // flatten the 2d array [i,j] -> layers[_layerIds[i]].textures[j]
     let count = 0;
     for (const layer of olayers) {
+        // textureOffset property is added to RasterNode
         layer.textureOffset = count;
         for (let i = 0, il = layer.textures.length; i < il; ++i, ++count) {
             if (count < max) {
@@ -232,18 +232,11 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         }
     }
 
-    addLayer(layer) {
-        if (layer.id in this.layers) {
+    addLayer(rasterNode) {
+        if (rasterNode.layer.id in this.layers) {
             console.warn('The "{layer.id}" layer was already present in the material, overwritting.');
         }
-        const lml = new MaterialLayer(this, layer);
-        this.layers.push(lml);
-        if (layer.isColorLayer) {
-            this.setSequence(layer.parent.colorLayersOrder);
-        } else {
-            this.setSequenceElevation(layer.id);
-        }
-        return lml;
+        this.layers.push(rasterNode);
     }
 
     getLayer(id) {
