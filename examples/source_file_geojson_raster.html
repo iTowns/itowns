@@ -33,7 +33,7 @@
             var menuGlobe = new GuiTools('menuDiv', view);
 
             setupLoadingScreen(viewerDiv, view);
-            FeatureToolTip.init(viewerDiv, view);
+            // FeatureToolTip.init(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -93,8 +93,8 @@
                         style: ariegeStyle,
                     });
 
-                    return view.addLayer(ariegeLayer);
-                }).then(FeatureToolTip.addLayer);
+                    // return view.addLayer(ariegeLayer);
+                }); // .then(FeatureToolTip.addLayer);
 
             itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson')
                 .then(function _(geojson) {
@@ -120,7 +120,7 @@
                     });
 
                     return view.addLayer(pyoLayer);
-                }).then(FeatureToolTip.addLayer);
+                });// .then(FeatureToolTip.addLayer);
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>

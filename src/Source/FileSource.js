@@ -150,7 +150,7 @@ class FileSource extends Source {
 
         this.whenReady.then(() => this.fetchedData);
 
-        this.zoom = source.zoom || { min: 0, max: Infinity };
+        this.zoom = { min: 0, max: Infinity };
     }
 
     urlFromExtent() {
@@ -190,10 +190,11 @@ class FileSource extends Source {
     }
 
     extentInsideLimit(extent) {
-        // Fix me => may be not
-        const localExtent = this.extent.crs == extent.crs ? extent : extent.as(this.extent.crs, ext);
-        return (extent.zoom == undefined || !(extent.zoom < this.zoom.min || extent.zoom > this.zoom.max)) &&
-            this.extent.intersectsExtent(localExtent);
+        return this.extent.intersectsExtent(extent.as(this.extent.crs, ext));
+    }
+
+    hasDataOnExtent(extent) {
+        return this.extentInsideLimit(extent);
     }
 }
 

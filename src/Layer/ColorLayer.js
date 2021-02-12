@@ -1,5 +1,4 @@
 import RasterLayer from 'Layer/RasterLayer';
-import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterColorNode } from 'Renderer/MaterialLayer';
 import Style from 'Core/Style';
 
@@ -86,10 +85,6 @@ class ColorLayer extends RasterLayer {
         node.material.setSequence(this.parent.colorLayersOrder);
 
         return rasterColorNode;
-    }
-
-    update(context, layer, node, parent) {
-        return updateLayeredMaterialNodeImagery(context, this, node, parent);
     }
 }
 

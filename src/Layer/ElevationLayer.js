@@ -1,5 +1,4 @@
 import RasterLayer from 'Layer/RasterLayer';
-import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterElevationNode } from 'Renderer/MaterialLayer';
 
 /**
@@ -52,6 +51,8 @@ class ElevationLayer extends RasterLayer {
             baseScale = this.colorTextureElevationMaxZ - this.colorTextureElevationMinZ;
         }
 
+        this.visible = true;
+
         this.defineLayerProperty('scale', this.scale || 1.0, (self) => {
             self.parent.object3d.traverse((obj) => {
                 if (obj.layer == self.parent && obj.material) {
@@ -82,10 +83,6 @@ class ElevationLayer extends RasterLayer {
             node.setBBoxZ(rasterElevationNode.min, rasterElevationNode.max, this.scale));
 
         return rasterElevationNode;
-    }
-
-    update(context, layer, node, parent) {
-        return updateLayeredMaterialNodeElevation(context, this, node, parent);
     }
 }
 

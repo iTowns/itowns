@@ -41,7 +41,7 @@ function buildCommand(view, layer, extentsSource, extentsDestination, requester,
     };
 }
 
-export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
+export function updateRasterNode(context, layer, node, parent) {
     const material = node.material;
     if (!parent || !material) {
         return;
@@ -49,29 +49,19 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     const extentsDestination = node.getExtentsByProjection(layer.crs);
 
     const zoom = extentsDestination[0].zoom;
-    if (zoom > layer.zoom.max || zoom < layer.zoom.min) {
+    if (zoom > layer.zoom.max || zoom < layer.zoom.min || zoom < layer.source.zoom.min) {
         return;
     }
 
-    let nodeLayer = material.getLayer(layer.id);
+    let nodeLayer = layer.isColorLayer ? material.getLayer(layer.id) : material.getElevationLayer();
 
     // Initialisation
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-        if (!layer.source.extentsInsideLimit(extentsDestination)) {
-            // we also need to check that tile's parent doesn't have a texture for this layer,
-            // because even if this tile is outside of the layer, it could inherit it's
-            // parent texture
-            if (!layer.noTextureParentOutsideLimit &&
-                parent.material &&
-                parent.material.getLayer &&
-                parent.material.getLayer(layer.id)) {
-                // ok, we're going to inherit our parent's texture
-            } else {
-                node.layerUpdateState[layer.id].noMoreUpdatePossible();
-                return;
-            }
+        if (!layer.source.hasDataOnExtents(extentsDestination)) {
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            return;
         }
 
         if (!nodeLayer) {
@@ -79,7 +69,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             nodeLayer = layer.setupRasterNode(node);
 
             // Init the node by parent
-            const parentLayer = parent.material && parent.material.getLayer(layer.id);
+            const parentLayer = parent.material && (layer.isColorLayer ? parent.material.getLayer(layer.id) : parent.material.getElevationLayer());
             nodeLayer.initFromParent(parentLayer, extentsDestination);
         }
 
@@ -96,23 +86,8 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     }
 
     // Node is hidden, no need to update it
-    if (!material.visible) {
-        return;
-    }
-
-    // An update is pending / or impossible -> abort
-    if (!layer.visible || !node.layerUpdateState[layer.id].canTryUpdate()) {
-        return;
-    }
-
-    if (nodeLayer.level >= extentsDestination[0].zoom) {
-        // default decision method
-        node.layerUpdateState[layer.id].noMoreUpdatePossible();
-        return;
-    }
-
-    // is fetching data from this layer disabled?
-    if (layer.frozen) {
+    if (node.pendingSubdivision || !material.visible || !node.layerUpdateState[layer.id].canTryUpdate() ||
+        layer.frozen || !layer.visible) {
         return;
     }
 
@@ -193,10 +168,9 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         }
     }
 
-    // Possible conditions to *not* update the elevation texture
-    if (layer.frozen ||
-            !material.visible ||
-            !node.layerUpdateState[layer.id].canTryUpdate()) {
+    // Node is hidden, no need to update it
+    if (node.pendingSubdivision || !material.visible || !node.layerUpdateState[layer.id].canTryUpdate() ||
+        layer.frozen || !layer.visible) {
         return;
     }
 

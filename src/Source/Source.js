@@ -221,9 +221,14 @@ class Source extends InformationsData {
 
      * @return {boolean} True if the extent is inside the limit, false otherwise.
      */
-    // eslint-disable-next-line
+    // eslint-disable-next-line no-unused-vars
     extentInsideLimit(extent) {
         throw new Error('In extented Source, you have to implement the method extentInsideLimit!');
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    hasDataOnExtent(extent) {
+        throw new Error('In extented Source, you have to implement the method dataInsideExtent!');
     }
 
     /**
@@ -240,6 +245,15 @@ class Source extends InformationsData {
             }
         }
         return true;
+    }
+
+    hasDataOnExtents(extents) {
+        for (const extent of extents) {
+            if (this.hasDataOnExtent(extent)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

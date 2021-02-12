@@ -100,16 +100,31 @@ class TMSSource extends Source {
         return URLBuilder.xyz(extent, this);
     }
 
+    extentInsideTileMatrixSet(extent) {
+        return extent.row >= this.tileMatrixSetLimits[extent.zoom].minTileRow &&
+            extent.row <= this.tileMatrixSetLimits[extent.zoom].maxTileRow &&
+            extent.col >= this.tileMatrixSetLimits[extent.zoom].minTileCol &&
+            extent.col <= this.tileMatrixSetLimits[extent.zoom].maxTileCol;
+    }
+
     extentInsideLimit(extent) {
         // This layer provides data starting at level = layer.source.zoom.min
         // (the zoom.max property is used when building the url to make
         //  sure we don't use invalid levels)
         return extent.zoom >= this.zoom.min && extent.zoom <= this.zoom.max &&
-                (this.tileMatrixSetLimits == undefined ||
-                (extent.row >= this.tileMatrixSetLimits[extent.zoom].minTileRow &&
-                    extent.row <= this.tileMatrixSetLimits[extent.zoom].maxTileRow &&
-                    extent.col >= this.tileMatrixSetLimits[extent.zoom].minTileCol &&
-                    extent.col <= this.tileMatrixSetLimits[extent.zoom].maxTileCol));
+                (this.tileMatrixSetLimits == undefined || this.extentInsideTileMatrixSet(extent));
+    }
+
+    hasDataOnExtent(extent) {
+        if (this.tileMatrixSetLimits) {
+            for (let z = this.zoom.min; z <= extent.zoom; z++) {
+                if (this.extentInsideTileMatrixSet(extent.tiledExtentParent(z))) {
+                    return true;
+                }
+            }
+        } else {
+            return false;
+        }
     }
 }
 

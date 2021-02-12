@@ -290,13 +290,14 @@ class TiledGeometryLayer extends GeometryLayer {
      * otherwise.
      */
     static hasEnoughTexturesToSubdivide(context, node) {
+        // TODO could be removed, before avoid to subdivise if elevation id too low.
         const layerUpdateState = node.layerUpdateState || {};
         let nodeLayer = node.material.getElevationLayer();
 
         for (const e of context.elevationLayers) {
             const extents = node.getExtentsByProjection(e.crs);
             const zoom = extents[0].zoom;
-            if (zoom > e.zoom.max || zoom < e.zoom.min) {
+            if (zoom > e.zoom.max || zoom < e.zoom.min || zoom < e.source.zoom.min) {
                 continue;
             }
             if (!e.frozen && e.ready && e.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
@@ -314,7 +315,7 @@ class TiledGeometryLayer extends GeometryLayer {
             }
             const extents = node.getExtentsByProjection(c.crs);
             const zoom = extents[0].zoom;
-            if (zoom > c.zoom.max || zoom < c.zoom.min) {
+            if (zoom > c.zoom.max || zoom < c.zoom.min || zoom < c.source.zoom.min) {
                 continue;
             }
             // no stop subdivision in the case of a loading error
