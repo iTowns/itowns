@@ -108,6 +108,17 @@ class GlobeLayer extends TiledGeometryLayer {
         return occupancy;
     }
 
+    subdivision(context, layer, node) {
+        if (node.level == 5) {
+            const row = node.getExtentsByProjection(CRS.tms_4326)[0].row;
+            if (row == 31 || row == 0) {
+                // doesn't subdivise the pole
+                return false;
+            }
+        }
+        return super.subdivision(context, layer, node);
+    }
+
     culling(node, camera) {
         if (super.culling(node, camera)) {
             return true;
