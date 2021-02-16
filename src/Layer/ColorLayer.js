@@ -1,5 +1,6 @@
 import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
+import { RasterColorTile } from 'Renderer/RasterTile';
 import Style from 'Core/Style';
 
 /**
@@ -20,6 +21,16 @@ import Style from 'Core/Style';
  * @property {boolean} isColorLayer - Used to checkout whether this layer is a
  * ColorLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @property {Style} style - default style apply layer features.
+ * @property {boolean} visible - property to display or to hide layer.
+ * @property {number} opacity - property to adjust transparency, opacity is between 0. and 1.
+ * @property {boolean} transparent - specify if the layer could be transparent.
+ * @property {boolean} noTextureParentOutsideLimit - don't parent texture if it's outside limit.
+ * @property {number} fx - special effects apply on raster color.
+ * if `fx` equals:
+ * * `0`: no special effect.
+ * * `> 0. to < 2.0`: light color to invisible effect.
+ * * `>= 2`: white color to invisible effect.
  */
 class ColorLayer extends RasterLayer {
     /**
@@ -43,12 +54,15 @@ class ColorLayer extends RasterLayer {
      * @example
      * // Create a ColorLayer
      * const color = new ColorLayer('roads', {
-     *     source: {
+     *     source: new  SourceWMTS({
      *          protocol: 'wmts',
-     *          url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
+     *          url: 'http://server.geo/wmts/....',
      *          format: 'image/png',
-     *     }
-     *     transparent: true
+     *          name: 'nameService',
+     *          tileMatrixSet: 'PM',
+     *     }),
+     *     transparent: true,
+     *     opacity: 0.5,
      * });
      *
      * // Add the layer
@@ -63,11 +77,29 @@ class ColorLayer extends RasterLayer {
         this.defineLayerProperty('sequence', 0);
         this.transparent = config.transparent || (this.opacity < 1.0);
         this.noTextureParentOutsideLimit = config.source ? config.source.isFileSource : false;
+        this.fx = config.fx || 0;
 
         // Feature options
         this.buildExtent = true;
         this.withNormal = false;
         this.withAltitude = false;
+    }
+
+    /**
+     * Setup RasterColorTile added to TileMesh. This RasterColorTile handles
+     * the ColorLayer textures mapped on this TileMesh.
+     *
+     * @param      {TileMesh}  node    The node to apply new RasterColorTile;
+     * @return     {RasterColorTile}  The raster color node added.
+     */
+    setupRasterNode(node) {
+        const rasterColorNode = new RasterColorTile(node.material, this);
+
+        node.material.addLayer(rasterColorNode);
+        // set up ColorLayer ordering.
+        node.material.setSequence(this.parent.colorLayersOrder);
+
+        return rasterColorNode;
     }
 
     update(context, layer, node, parent) {

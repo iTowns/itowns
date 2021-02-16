@@ -45,6 +45,7 @@
                 "PotreeLayer",
                 "C3DTilesLayer",
                 "LabelLayer",
+                "RasterNode",
 
                 "GlobeLayer",
                 "PlanarLayer"
