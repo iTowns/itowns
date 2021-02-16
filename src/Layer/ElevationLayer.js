@@ -1,5 +1,6 @@
 import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
+import { RasterElevationTile } from 'Renderer/RasterTile';
 
 /**
  * @property {boolean} isElevationLayer - Used to checkout whether this layer is
@@ -9,6 +10,16 @@ import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeP
  * @property {number} scale - Used to apply a scale on the elevation value. It
  * can be used for exageration of the elevation, like in [this
  * example](https://www.itowns-project.org/itowns/examples/#plugins_pyramidal_tiff).
+ * @property {boolean} useColorTextureElevation - the elevation is computed with one color texture channel,
+ * `this.colorTextureElevationMaxZ` and `this.colorTextureElevationMinZ`.
+ *
+ * The formula is:
+ *
+ * ```js
+ * elevation = color.r * (this.colorTextureElevationMaxZ - this.colorTextureElevationMinZ) + this.colorTextureElevationMinZ
+ * ```
+ * @property {number} colorTextureElevationMinZ - elevation minimum in `useColorTextureElevation` mode.
+ * @property {number} colorTextureElevationMaxZ - elevation maximum in `useColorTextureElevation` mode.
  */
 class ElevationLayer extends RasterLayer {
     /**
@@ -26,16 +37,16 @@ class ElevationLayer extends RasterLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
-     * @param {Source} [config.source] - Description and options of the source.
      *
      * @example
      * // Create an ElevationLayer
      * const elevation = new ElevationLayer('IGN_MNT', {
-     *      source: {
-     *          url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
-     *          protocol: 'wmts',
-     *          format: 'image/x-bil;bits=32',
-     *      },
+     *      source: new WMTSSource({
+     *          "url": "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
+     *           "crs": "EPSG:4326",
+     *           "format": "image/x-bil;bits=32",
+     *           "name": "ELEVATION.ELEVATIONGRIDCOVERAGE",
+     *      }),
      * });
      *
      * // Add the layer
@@ -59,6 +70,28 @@ class ElevationLayer extends RasterLayer {
                 }
             });
         });
+    }
+
+    /**
+     * Setup RasterElevationTile added to TileMesh. This RasterElevationTile handles
+     * the elevation texture to displace TileMesh vertices.
+     *
+     * @param      {TileMesh}  node    The node to apply new RasterElevationTile;
+     * @return     {RasterElevationTile}  The raster elevation node added.
+     */
+    setupRasterNode(node) {
+        const rasterElevationNode = new RasterElevationTile(node.material, this);
+
+        node.material.addLayer(rasterElevationNode);
+        node.material.setSequenceElevation(this.id);
+        // bounding box initialisation
+        const updateBBox = () => node.setBBoxZ(rasterElevationNode.min, rasterElevationNode.max, this.scale);
+        updateBBox();
+
+        // listen elevation updating
+        rasterElevationNode.addEventListener('updatedElevation', updateBBox);
+
+        return rasterElevationNode;
     }
 
     update(context, layer, node, parent) {

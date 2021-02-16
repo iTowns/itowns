@@ -1,6 +1,5 @@
 import { chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
 import LayerUpdateState from 'Layer/LayerUpdateState';
-import { computeMinMaxElevation } from 'Parser/XbilParser';
 import handlingError from 'Process/handlerNodeError';
 
 export const SIZE_TEXTURE_TILE = 256;
@@ -76,9 +75,10 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         }
 
         if (!nodeLayer) {
-            // Create new MaterialLayer
-            nodeLayer = material.addLayer(layer);
-            // Init the new MaterialLayer by parent
+            // Create new raster node
+            nodeLayer = layer.setupRasterNode(node);
+
+            // Init the node by parent
             const parentLayer = parent.material && parent.material.getLayer(layer.id);
             nodeLayer.initFromParent(parentLayer, extentsDestination);
         }
@@ -178,7 +178,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // Init elevation layer, and inherit from parent if possible
     let nodeLayer = material.getElevationLayer();
     if (!nodeLayer) {
-        nodeLayer = material.addLayer(layer);
+        nodeLayer = layer.setupRasterNode(node);
     }
 
     if (node.layerUpdateState[layer.id] === undefined) {
@@ -187,18 +187,9 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         const parentLayer = parent.material && parent.material.getLayer(layer.id);
         nodeLayer.initFromParent(parentLayer, extentsDestination);
 
-        if (nodeLayer.level >= 0) {
-            // Compute min max elevation if the node is initialized
-            const { min, max } = computeMinMaxElevation(
-                nodeLayer.textures[0],
-                nodeLayer.offsetScales[0],
-                nodeLayer.layer.noDataValue);
-            node.setBBoxZ(min, max, layer.scale);
-
-            if (nodeLayer.level >= layer.source.zoom.min) {
-                context.view.notifyChange(node, false);
-                return;
-            }
+        if (nodeLayer.level >= layer.source.zoom.min) {
+            context.view.notifyChange(node, false);
+            return;
         }
     }
 
@@ -232,7 +223,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node);
 
     return context.scheduler.execute(command).then(
-        (textures) => {
+        (result) => {
             // Do not apply the new texture if its level is < than the current
             // one.  This is only needed for elevation layers, because we may
             // have several concurrent layers but we can only use one texture.
@@ -240,28 +231,9 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
                 return;
             }
-            const elevation = {
-                texture: textures[0],
-                pitch: extentsDestination[0].offsetToParent(textures[0].extent, nodeLayer.offsetScales[0]),
-            };
-
+            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(result[i].extent, nodeLayer.offsetScales[i]));
+            nodeLayer.setTextures(result, pitchs);
             node.layerUpdateState[layer.id].success();
-
-            if (elevation.texture) {
-                if (layer.useColorTextureElevation) {
-                    elevation.min = layer.colorTextureElevationMinZ;
-                    elevation.max = layer.colorTextureElevationMaxZ;
-                } else {
-                    const { min, max } = computeMinMaxElevation(elevation.texture, elevation.pitch, layer.noDataValue);
-                    elevation.min = !min ? 0 : min;
-                    elevation.max = !max ? 0 : max;
-                }
-            }
-
-            node.setBBoxZ(elevation.min, elevation.max, layer.scale);
-            nodeLayer.setTexture(0, elevation.texture, elevation.pitch);
-            const nodeParent = parent.material && parent.material.getElevationLayer();
-            nodeLayer.replaceNoDataValueFromParent(nodeParent, layer.noDataValue);
         },
         err => handlingError(err, node, layer, targetLevel, context.view));
 }
