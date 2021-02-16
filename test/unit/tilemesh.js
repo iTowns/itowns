@@ -3,9 +3,12 @@ import assert from 'assert';
 import TileMesh from 'Core/TileMesh';
 // import PlanarView from 'Core/Prefab/PlanarView';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';
-import { globalExtentTMS } from 'Core/Geographic/Extent';
+import Extent, { globalExtentTMS } from 'Core/Geographic/Extent';
 import TileProvider from 'Provider/TileProvider';
 import newTileGeometry from 'Core/Prefab/TileBuilder';
+import OBB from 'Renderer/OBB';
+import ElevationLayer from 'Layer/ElevationLayer';
+import Source from 'Source/Source';
 
 // It is relatively long to create TileMesh on the go (in term of code), so we
 // emulate a fake one with the necessary informations in it.
@@ -19,6 +22,10 @@ FakeTileMesh.prototype.constructor = FakeTileMesh;
 FakeTileMesh.prototype.findCommonAncestor = TileMesh.prototype.findCommonAncestor;
 
 describe('TileMesh', function () {
+    const extent = new Extent('TMS:3857', 5, 10, 10);
+    const geom = new THREE.BufferGeometry();
+    geom.OBB = new OBB();
+
     const tree = [
         [new FakeTileMesh(0)],
     ];
@@ -149,5 +156,78 @@ describe('TileMesh', function () {
             assert.equal(r.geometry.index, null);
             done();
         });
+    });
+
+    it('throw error if there\'s not extent in constructor', () => {
+        assert.doesNotThrow(() => {
+            // eslint-disable-next-line no-unused-vars
+            const tileMesh = new TileMesh(geom, new THREE.Material(), planarlayer, extent.as('EPSG:3857'), 0);
+        });
+        assert.throws(() => {
+            // eslint-disable-next-line no-unused-vars
+            const tileMesh = new TileMesh(geom, new THREE.Material(), planarlayer);
+        });
+    });
+
+    // eslint-disable-next-line no-unused-vars
+    const elevationLayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: new Source({ url: 'node' }) });
+    elevationLayer.parent = planarlayer;
+
+    const material = new THREE.Material();
+    material.addLayer = () => {};
+    material.setSequenceElevation = () => {};
+
+    it('event updatedElevation RasterElevationTile sets TileMesh bounding box ', () => {
+        const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
+        const rasterNode = elevationLayer.setupRasterNode(tileMesh);
+        const min = 50;
+        const max = 500;
+        rasterNode.min = min;
+        rasterNode.max = max;
+        rasterNode.dispatchEvent({ type: 'updatedElevation', node: rasterNode });
+        assert.equal(tileMesh.obb.z.min, min);
+        assert.equal(tileMesh.obb.z.max, max);
+
+        rasterNode.min = null;
+        rasterNode.max = null;
+        rasterNode.dispatchEvent({ type: 'updatedElevation', node: rasterNode });
+        assert.equal(tileMesh.obb.z.min, min);
+        assert.equal(tileMesh.obb.z.max, max);
+    });
+
+    it('RasterElevationTile throws error if ElevationLayer.useRgbaTextureElevation is true', () => {
+        elevationLayer.useRgbaTextureElevation = true;
+        const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
+        assert.throws(() => {
+            elevationLayer.setupRasterNode(tileMesh);
+        });
+    });
+
+
+    it('RasterElevationTile is set if ElevationLayer.useColorTextureElevation is true', () => {
+        delete elevationLayer.useRgbaTextureElevation;
+        elevationLayer.useColorTextureElevation = true;
+        elevationLayer.colorTextureElevationMinZ = 10;
+        elevationLayer.colorTextureElevationMaxZ = 100;
+        const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
+        const rasterNode = elevationLayer.setupRasterNode(tileMesh);
+        assert.equal(rasterNode.min, elevationLayer.colorTextureElevationMinZ);
+        assert.equal(rasterNode.max, elevationLayer.colorTextureElevationMaxZ);
+    });
+
+    it('RasterElevationTile min and max are set by xbil texture', () => {
+        delete elevationLayer.useColorTextureElevation;
+        const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
+        const rasterNode = elevationLayer.setupRasterNode(tileMesh);
+        const texture = new THREE.Texture();
+        texture.extent = new Extent('TMS:3857', 4, 10, 10);
+        texture.image = {
+            width: 3,
+            height: 3,
+            data: [14.5, 10, 8, 2.3, 10, 14.5, 8, 2.301, 2.3],
+        };
+        rasterNode.setTextures([texture], [new THREE.Vector3(0, 0, 1)]);
+        assert.equal(rasterNode.min, 2.3);
+        assert.equal(rasterNode.max, 14.5);
     });
 });
