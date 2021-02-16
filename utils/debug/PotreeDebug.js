@@ -1,15 +1,5 @@
 import { MODE } from 'Renderer/PointsMaterial';
 
-function isInHierarchy(elt, hierarchyNode) {
-    if (elt.name.length > hierarchyNode.length) {
-        return elt.name.startsWith(hierarchyNode);
-    } else if (elt.name.length < hierarchyNode.length) {
-        return hierarchyNode.startsWith(elt.name);
-    } else {
-        return hierarchyNode === elt.name;
-    }
-}
-
 export default {
     initTools(view, layer, datUi) {
         const update = () => view.notifyChange(layer, true);
@@ -24,11 +14,10 @@ export default {
             view.notifyChange(layer);
         });
 
-        layer.dbgEnableStickyNode = false;
         layer.dbgStickyNode = '';
+        layer.dbgDisplaySticky = false;
         layer.dbgDisplayChildren = true;
         layer.dbgDisplayParents = true;
-        layer.dbgDisplaybbox = false;
 
         var styleUI = layer.debugUI.addFolder('Styling');
         if (layer.material.mode != undefined) {
@@ -37,51 +26,36 @@ export default {
         }
         styleUI.add(layer, 'opacity', 0, 1).name('Layer Opacity').onChange(update);
         styleUI.add(layer, 'pointSize', 0, 15).name('Point Size').onChange(update);
-        styleUI.add(layer, 'dbgDisplaybbox').name('Display Bounding Boxes').onChange(update);
         if (layer.material.picking != undefined) {
             styleUI.add(layer.material, 'picking').name('Display picking id').onChange(update);
         }
 
         // UI
-        const sticky = layer.debugUI.addFolder('Sticky');
-        sticky.add(layer, 'dbgEnableStickyNode').name('Enable sticky node').onChange(update);
-        sticky.add(layer, 'dbgStickyNode').name('Sticky node name').onChange(update);
-        sticky.add(layer, 'dbgDisplayChildren').name('Display children of sticky node').onChange(update);
-        sticky.add(layer, 'dbgDisplayParents').name('Display parents of sticky node').onChange(update);
+        const debugUI = layer.debugUI.addFolder('Debug');
+        debugUI.add(layer.bboxes, 'visible').name('Display Bounding Boxes').onChange(update);
+        debugUI.add(layer, 'dbgStickyNode').name('Sticky node name').onChange(update);
+        debugUI.add(layer, 'dbgDisplaySticky').name('Display sticky node').onChange(update);
+        debugUI.add(layer, 'dbgDisplayChildren').name('Display children of sticky node').onChange(update);
+        debugUI.add(layer, 'dbgDisplayParents').name('Display parents of sticky node').onChange(update);
+
+        const isInHierarchy = function isInHierarchy(name1, name2) {
+            return (layer.dbgDisplaySticky && name1 === name2)
+                || (layer.dbgDisplayParents && name1.startsWith(name2))
+                || (layer.dbgDisplayChildren && name2.startsWith(name1));
+        };
 
         view.addFrameRequester('before_layer_update', () => {
-            if (layer.bboxes) {
-                layer.bboxes.visible = layer.dbgDisplaybbox;
-            }
-            if (layer.dbgEnableStickyNode) {
+            if (layer.dbgStickyNode.length) {
                 layer.displayedCount = 0;
                 const stickies = layer.dbgStickyNode.split(',');
                 for (const pts of layer.group.children) {
-                    pts.material.visible = false;
-                    for (const name of stickies) {
-                        if (pts.userData.potreeNode.name == name) {
-                            pts.material.visible = true;
-                        } else if (!isInHierarchy(pts.userData.potreeNode, name)) {
-                            continue;
-                        } else if (pts.userData.potreeNode.name.length < name.length) {
-                            pts.material.visible = layer.dbgDisplayParents;
-                            break;
-                        } else {
-                            pts.material.visible = layer.dbgDisplayChildren;
-                        }
-                        if (pts.material.visible) {
-                            break;
-                        }
+                    pts.visible = stickies.some(name => isInHierarchy(name, pts.owner.name));
+                    if (pts.boxHelper) {
+                        pts.boxHelper.visible = pts.visible;
                     }
-                    if (pts.material.visible) {
+                    if (pts.visible) {
                         layer.displayedCount += pts.geometry.attributes.position.count;
                     }
-                }
-            }
-            for (const pts of layer.group.children) {
-                if (pts.boxHelper) {
-                    pts.boxHelper.material.visible = layer.dbgDisplaybbox
-                        && pts.visible && pts.material.visible;
                 }
             }
         });
