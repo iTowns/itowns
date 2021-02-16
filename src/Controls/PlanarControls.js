@@ -84,8 +84,8 @@ const defaultOptions = {
     minPanSpeed: 0.05,
     maxPanSpeed: 15,
     zoomTravelTime: 0.2,  // must be a number
-    zoomInFactor: 0.5,
-    zoomOutFactor: 0.45,
+    zoomInFactor: 2,
+    zoomOutFactor: 0.5,
     maxAltitude: 50000000,
     groundLevel: 200,
     autoTravelTimeMin: 1.5,
@@ -132,10 +132,8 @@ export const PLANAR_CONTROL_EVENT = {
  * @param   {number}        [options.maxPanSpeed=15]            Pan speed when close to maxAltitude.
  * @param   {number}        [options.minPanSpeed=0.05]          Pan speed when close to the ground.
  * @param   {number}        [options.zoomTravelTime=0.2]        Animation time when zooming.
- * @param   {number}        [options.zoomInFactor=0.025]        Zoom movement is equal to the distance to the zoom
- * target, multiplied by this factor when zooming in.
- * @param   {number}        [options.zoomOutFactor=0.4]         Zoom movement is equal to the distance to the zoom
- * target, multiplied by this factor when zooming out.
+ * @param   {number}        [options.zoomInFactor=2]            The factor the scale is multiplied by when zooming in.
+ * @param   {number}        [options.zoomOutFactor=2]           The factor the scale is multiplied by when zooming out.
  * @param   {number}        [options.maxAltitude=12000]         Maximum altitude reachable when panning or zooming out.
  * @param   {number}        [options.groundLevel=200]           Minimum altitude reachable when panning.
  * @param   {number}        [options.autoTravelTimeMin=1.5]     Minimum duration for animated travels with the `auto`
@@ -492,7 +490,7 @@ class PlanarControls extends THREE.EventDispatcher {
         const newPos = new THREE.Vector3();
 
         if (delta > 0 || (delta < 0 && this.maxAltitude > this.camera.position.z)) {
-            const zoomFactor = delta > 0 ? this.zoomInFactor : -1 * this.zoomOutFactor;
+            const zoomFactor = delta > 0 ? this.zoomInFactor : this.zoomOutFactor;
 
             // change the camera field of view if the camera is orthographic
             if (this.camera.isOrthographicCamera) {
@@ -503,7 +501,7 @@ class PlanarControls extends THREE.EventDispatcher {
                 // camera zoom at the beginning of zoom movement
                 startZoom = this.camera.zoom;
                 // camera zoom at the end of zoom movement
-                endZoom = startZoom * (1 + zoomFactor);
+                endZoom = startZoom * zoomFactor;
                 // the altitude of the target must be the same as camera's
                 pointUnderCursor.z = this.camera.position.z;
 
@@ -515,7 +513,7 @@ class PlanarControls extends THREE.EventDispatcher {
                 newPos.lerpVectors(
                     this.camera.position,
                     pointUnderCursor,
-                    zoomFactor,
+                    (1 - 1 / zoomFactor),
                 );
                 // initiate travel
                 this.initiateTravel(
