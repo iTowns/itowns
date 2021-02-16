@@ -43,10 +43,10 @@ function computeScreenSpaceError(context, pointSize, spacing, elt, distance) {
 
 function markForDeletion(elt) {
     if (elt.obj) {
-        elt.obj.material.visible = false;
+        elt.obj.visible = false;
         if (__DEBUG__) {
             if (elt.obj.boxHelper) {
-                elt.obj.boxHelper.material.visible = false;
+                elt.obj.boxHelper.visible = false;
             }
         }
     }
@@ -161,6 +161,9 @@ class PointCloudLayer extends GeometryLayer {
             this.material.opacity = this.opacity;
             this.material.transparent = this.opacity < 1;
             this.material.size = this.pointSize;
+            if (this.material.updateUniforms) {
+                this.material.updateUniforms();
+            }
         }
 
         // lookup lowest common ancestor of changeSources
@@ -219,11 +222,8 @@ class PointCloudLayer extends GeometryLayer {
         // only load geometry if this elements has points
         if (elt.numPoints !== 0) {
             if (elt.obj) {
-                if (elt.obj.material.update) {
-                    elt.obj.material.update(this.material);
-                } else {
-                    elt.obj.material.copy(this.material);
-                }
+                elt.obj.visible = true;
+
                 if (__DEBUG__) {
                     if (this.bboxes.visible) {
                         if (!elt.obj.boxHelper) {
@@ -284,7 +284,7 @@ class PointCloudLayer extends GeometryLayer {
     postUpdate() {
         this.displayedCount = 0;
         for (const pts of this.group.children) {
-            if (pts.material.visible) {
+            if (pts.visible) {
                 const count = pts.geometry.attributes.position.count;
                 pts.geometry.setDrawRange(0, count);
                 this.displayedCount += count;
@@ -299,12 +299,12 @@ class PointCloudLayer extends GeometryLayer {
                 // representation
                 const reduction = this.pointBudget / this.displayedCount;
                 for (const pts of this.group.children) {
-                    if (pts.material.visible) {
+                    if (pts.visible) {
                         const count = Math.floor(pts.geometry.drawRange.count * reduction);
                         if (count > 0) {
                             pts.geometry.setDrawRange(0, count);
                         } else {
-                            pts.material.visible = false;
+                            pts.visible = false;
                         }
                     }
                 }
@@ -320,7 +320,7 @@ class PointCloudLayer extends GeometryLayer {
                 for (const pts of this.group.children) {
                     const count = pts.geometry.attributes.position.count;
                     if (limitHit || (this.displayedCount + count) > this.pointBudget) {
-                        pts.material.visible = false;
+                        pts.visible = false;
                         limitHit = true;
                     } else {
                         this.displayedCount += count;
@@ -332,17 +332,11 @@ class PointCloudLayer extends GeometryLayer {
         const now = Date.now();
         for (let i = this.group.children.length - 1; i >= 0; i--) {
             const obj = this.group.children[i];
-            if (!obj.material.visible && (now - obj.userData.node.notVisibleSince) > 10000) {
+            if (!obj.visible && (now - obj.userData.node.notVisibleSince) > 10000) {
                 // remove from group
                 this.group.children.splice(i, 1);
 
-                if (Array.isArray(obj.material)) {
-                    for (const material of obj.material) {
-                        material.dispose();
-                    }
-                } else {
-                    obj.material.dispose();
-                }
+                // no need to dispose obj.material, as it is shared by all objects of this layer
                 obj.geometry.dispose();
                 obj.material = null;
                 obj.geometry = null;

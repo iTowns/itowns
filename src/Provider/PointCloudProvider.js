@@ -32,7 +32,7 @@ export default {
         const node = command.requester;
 
         return node.load().then((geometry) => {
-            const points = new THREE.Points(geometry, layer.material.clone());
+            const points = new THREE.Points(geometry, layer.material);
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
