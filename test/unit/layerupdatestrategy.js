@@ -7,7 +7,7 @@ import Layer from 'Layer/Layer';
 import Source from 'Source/Source';
 import { STRATEGY_DICHOTOMY, STRATEGY_PROGRESSIVE, STRATEGY_GROUP, chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
 import LayerUpdateState from 'Layer/LayerUpdateState';
-import MaterialLayer from 'Renderer/MaterialLayer';
+import { RasterColorTile } from 'Renderer/RasterTile';
 
 describe('Handling no data source error', function () {
     // Misc var to initialize a TileMesh instance
@@ -16,7 +16,7 @@ describe('Handling no data source error', function () {
 
     const extent = new Extent('EPSG:4326', 6.227531433105469, 6.227874755859375, 44.93614196777344, 44.936485290527344);
     extent.zoom = 19;
-    const material = {};
+    const material = new THREE.Material();
 
     // Mock scheduler
     const context = {
@@ -54,7 +54,7 @@ describe('Handling no data source error', function () {
         },
     });
 
-    const nodeLayer = new MaterialLayer(material, layer);
+    const nodeLayer = new RasterColorTile(material, layer);
     nodeLayer.level = 10;
 
     const node = new TileMesh(geom, material, layer, extent, 19);

@@ -18,7 +18,7 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
-import { EMPTY_TEXTURE_ZOOM } from 'Renderer/MaterialLayer';
+import { EMPTY_TEXTURE_ZOOM } from 'Renderer/RasterTile';
 
 const holes = require('../data/geojson/holesPoints.geojson.json');
 
@@ -62,8 +62,9 @@ describe('Provide in Sources', function () {
     planarlayer.attach(colorlayer);
     planarlayer.attach(elevationlayer);
 
-    material.addLayer(colorlayer);
-    material.addLayer(elevationlayer);
+    const fakeNode = { material,  setBBoxZ: () => {} };
+    colorlayer.setupRasterNode(fakeNode);
+    elevationlayer.setupRasterNode(fakeNode);
 
     const nodeLayer = material.getLayer(colorlayer.id);
     const nodeLayerElevation = material.getLayer(elevationlayer.id);
@@ -292,7 +293,7 @@ describe('Provide in Sources', function () {
         });
     });
 
-    it('should get updated MaterialLayer', (done) => {
+    it('should get updated RasterLayer', (done) => {
         colorlayer.source = new WMTSSource({
             url: 'http://',
             name: 'name',
