@@ -457,10 +457,7 @@ class View extends THREE.EventDispatcher {
      */
 
     getLayerById(layerId) {
-        const layers = this.getLayers(l => l.id === layerId);
-        if (layers.length) {
-            return layers[0];
-        }
+        return this.getLayers(l => l.id === layerId)[0];
     }
 
 
