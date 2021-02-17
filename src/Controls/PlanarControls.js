@@ -84,8 +84,7 @@ const defaultOptions = {
     minPanSpeed: 0.05,
     maxPanSpeed: 15,
     zoomTravelTime: 0.2,  // must be a number
-    zoomInFactor: 2,
-    zoomOutFactor: 0.5,
+    zoomFactor: 2,
     maxAltitude: 50000000,
     groundLevel: 200,
     autoTravelTimeMin: 1.5,
@@ -132,8 +131,8 @@ export const PLANAR_CONTROL_EVENT = {
  * @param   {number}        [options.maxPanSpeed=15]            Pan speed when close to maxAltitude.
  * @param   {number}        [options.minPanSpeed=0.05]          Pan speed when close to the ground.
  * @param   {number}        [options.zoomTravelTime=0.2]        Animation time when zooming.
- * @param   {number}        [options.zoomInFactor=2]            The factor the scale is multiplied by when zooming in.
- * @param   {number}        [options.zoomOutFactor=2]           The factor the scale is multiplied by when zooming out.
+ * @param   {number}        [options.zoomFactor=2]              The factor the scale is multiplied by when zooming
+ * in and divided by when zooming out. This factor can't be null.
  * @param   {number}        [options.maxAltitude=12000]         Maximum altitude reachable when panning or zooming out.
  * @param   {number}        [options.groundLevel=200]           Minimum altitude reachable when panning.
  * @param   {number}        [options.autoTravelTimeMin=1.5]     Minimum duration for animated travels with the `auto`
@@ -200,8 +199,20 @@ class PlanarControls extends THREE.EventDispatcher {
         }
 
         // zoom movement is equal to the distance to the zoom target, multiplied by zoomFactor
-        this.zoomInFactor = options.zoomInFactor || defaultOptions.zoomInFactor;
-        this.zoomOutFactor = options.zoomOutFactor || defaultOptions.zoomOutFactor;
+        if (options.zoomInFactor) {
+            console.warn('Controls zoomInFactor parameter is deprecated. Use zoomFactor instead.');
+            options.zoomFactor = options.zoomFactor || options.zoomInFactor;
+        }
+        if (options.zoomOutFactor) {
+            console.warn('Controls zoomOutFactor parameter is deprecated. Use zoomFactor instead.');
+            options.zoomFactor = options.zoomFactor || options.zoomInFactor || 1 / options.zoomOutFactor;
+        }
+        if (options.zoomFactor === 0) {
+            console.warn('Controls zoomFactor parameter can not be equal to 0. Its value will be set to default.');
+            options.zoomFactor = defaultOptions.zoomFactor;
+        }
+        this.zoomInFactor = options.zoomFactor || defaultOptions.zoomFactor;
+        this.zoomOutFactor = 1 / (options.zoomFactor || defaultOptions.zoomFactor);
 
         // approximate ground altitude value. Camera altitude is clamped above groundLevel
         this.groundLevel = options.groundLevel || defaultOptions.groundLevel;
