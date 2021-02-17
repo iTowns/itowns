@@ -59,7 +59,7 @@ describe('Viewer', function () {
     it('should add color layer', () => {
         viewer.addLayer(globelayer);
         viewer.addLayer(colorLayer, globelayer);
-        const layer = viewer.getParentLayer(colorLayer);
+        const layer = colorLayer.parent;
         assert.equal(globelayer.id, layer.id);
         assert.equal(globelayer.attachedLayers.length, 1);
     });
