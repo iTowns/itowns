@@ -26,6 +26,7 @@ const panOffset = new THREE.Vector3();
 const dollyStart = new THREE.Vector2();
 const dollyEnd = new THREE.Vector2();
 const dollyDelta = new THREE.Vector2();
+let dollyScale;
 
 // Globe move
 const moveAroundGlobe = new THREE.Quaternion();
@@ -150,7 +151,8 @@ let previous;
  * @param      {CameraTransformOptions|Extent} placement   the {@link CameraTransformOptions} to apply to view's camera
  * or the extent it must display at initialisation, see {@link CameraTransformOptions} in {@link CameraUtils}.
  * @param      {object}  options
- * @param      {number}  options.zoomSpeed Speed zoom with mouse
+ * @param      {number}  [options.zoomFactor=2] The factor the scale is multiplied by when dollying (zooming) in or
+ * divided by when dollying out.
  * @param      {number}  options.rotateSpeed Speed camera rotation in orbit and panoramic mode
  * @param      {number}  options.minDistance Minimum distance between ground and camera
  * @param      {number}  options.maxDistance Maximum distance between ground and camera
@@ -178,9 +180,13 @@ class GlobeControls extends THREE.EventDispatcher {
         // Set to false to disable this control
         this.enabled = true;
 
-        // This option actually enables dollying in and out; left as "zoom" for
+        // These options actually enables dollying in and out; left as "zoom" for
         // backwards compatibility
-        this.zoomSpeed = options.zoomSpeed || 2.0;
+        if (options.zoomSpeed) {
+            console.warn('Controls zoomSpeed parameter is deprecated. Use zoomInFactor and zoomOutFactor instead.');
+            options.zoomFactor = options.zoomFactor || options.zoomSpeed;
+        }
+        this.zoomFactor = options.zoomFactor || 1.25;
 
         // Limits to how far you can dolly in and out ( PerspectiveCamera only )
         this.minDistance = options.minDistance || 250;
@@ -285,8 +291,11 @@ class GlobeControls extends THREE.EventDispatcher {
         this.lookAtCoordinate(placement, false);
     }
 
-    get dollyScale() {
-        return 0.95 ** this.zoomSpeed;
+    get dollyInScale() {
+        return this.zoomFactor;
+    }
+    get dollyOutScale() {
+        return 1 / this.zoomFactor;
     }
 
     get isPaused() {
@@ -348,29 +357,14 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
-    dollyIn(dollyScale) {
-        if (dollyScale === undefined) {
-            dollyScale = this.dollyScale;
-        }
+    dolly(delta) {
+        if (delta === 0) { return; }
+        dollyScale = delta > 0 ? this.dollyInScale : this.dollyOutScale;
 
         if (this.camera.isPerspectiveCamera) {
             orbitScale /= dollyScale;
         } else if (this.camera.isOrthographicCamera) {
             this.camera.zoom = THREE.MathUtils.clamp(this.camera.zoom * dollyScale, this.minZoom, this.maxZoom);
-            this.camera.updateProjectionMatrix();
-            this.view.notifyChange(this.camera);
-        }
-    }
-
-    dollyOut(dollyScale) {
-        if (dollyScale === undefined) {
-            dollyScale = this.dollyScale;
-        }
-
-        if (this.camera.isPerspectiveCamera) {
-            orbitScale *= dollyScale;
-        } else if (this.camera.isOrthographicCamera) {
-            this.camera.zoom = THREE.MathUtils.clamp(this.camera.zoom / dollyScale, this.minZoom, this.maxZoom);
             this.camera.updateProjectionMatrix();
             this.view.notifyChange(this.camera);
         }
@@ -552,11 +546,7 @@ class GlobeControls extends THREE.EventDispatcher {
                 dollyEnd.copy(coords);
                 dollyDelta.subVectors(dollyEnd, dollyStart);
 
-                if (dollyDelta.y > 0) {
-                    this.dollyIn();
-                } else if (dollyDelta.y < 0) {
-                    this.dollyOut();
-                }
+                this.dolly(-dollyDelta.y);
                 dollyStart.copy(dollyEnd);
                 break;
             case this.states.PAN:
@@ -747,11 +737,7 @@ class GlobeControls extends THREE.EventDispatcher {
             delta = -event.detail;
         }
 
-        if (delta > 0) {
-            this.dollyOut();
-        } else if (delta < 0) {
-            this.dollyIn();
-        }
+        this.dolly(delta);
 
         const previousRange = this.getRange(pickedPosition);
         this.update();
@@ -884,11 +870,7 @@ class GlobeControls extends THREE.EventDispatcher {
                 dollyEnd.set(0, distance);
                 dollyDelta.subVectors(dollyEnd, dollyStart);
 
-                if (dollyDelta.y > 0) {
-                    this.dollyOut();
-                } else if (dollyDelta.y < 0) {
-                    this.dollyIn();
-                }
+                this.dolly(dollyDelta.y);
 
                 dollyStart.copy(dollyEnd);
 
