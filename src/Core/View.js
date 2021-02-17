@@ -460,21 +460,6 @@ class View extends THREE.EventDispatcher {
         return this.getLayers(l => l.id === layerId)[0];
     }
 
-
-    /**
-     * @param {Layer} layer
-     * @returns {GeometryLayer} the parent layer of the given layer or undefined.
-     */
-    getParentLayer(layer) {
-        for (const geometryLayer of this._layers) {
-            for (const attached of geometryLayer.attachedLayers) {
-                if (attached === layer) {
-                    return geometryLayer;
-                }
-            }
-        }
-    }
-
     /**
      * @name FrameRequester
      * @function
