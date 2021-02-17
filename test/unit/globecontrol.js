@@ -152,13 +152,11 @@ describe('GlobeControls', function () {
     });
 
     it('dolly', function () {
-        controls.dollyIn(10);
+        controls.dolly(1);
         controls.state = controls.states.ORBIT;
         controls.update();
-        controls.dollyOut(10);
+        controls.dolly(-1);
         controls.state = controls.states.NONE;
-        controls.dollyOut();
-        controls.dollyIn();
     });
 
     it('mouse down + crtl', function () {
