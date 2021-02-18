@@ -299,7 +299,7 @@ class TiledGeometryLayer extends GeometryLayer {
             if (zoom > e.zoom.max || zoom < e.zoom.min) {
                 continue;
             }
-            if (!e.frozen && e.ready && e.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
+            if (!e.frozen && e.ready && e.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
                 // no stop subdivision in the case of a loading error
                 if (layerUpdateState[e.id] && layerUpdateState[e.id].inError()) {
                     continue;
@@ -322,7 +322,7 @@ class TiledGeometryLayer extends GeometryLayer {
                 continue;
             }
             nodeLayer = node.material.getLayer(c.id);
-            if (c.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
+            if (c.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
                 return false;
             }
         }

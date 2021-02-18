@@ -37,11 +37,6 @@ function assignLayer(object, layer) {
     }
 }
 
-function extentInsideSource(extent, source) {
-    return !source.extentInsideLimit(extent) ||
-        (source.isFileSource && !extent.isPointInside(source.extent.center(coord)));
-}
-
 export default {
     update(context, layer, node) {
         if (!node.parent && node.children.length) {
@@ -55,9 +50,7 @@ export default {
 
         if (node.layerUpdateState[layer.id] === undefined) {
             node.layerUpdateState[layer.id] = new LayerUpdateState();
-        }
-
-        if (!node.layerUpdateState[layer.id].canTryUpdate()) {
+        } else if (!node.layerUpdateState[layer.id].canTryUpdate()) {
             return;
         }
 
@@ -71,27 +64,22 @@ export default {
 
         const zoomDest = extentsDestination[0].zoom;
 
-        if (zoomDest != layer.zoom.min) {
+        // check if it's tile level is equal to display level layer.
+        if (zoomDest != layer.zoom.min ||
+        // check if there's data in extent tile.
+            !this.source.extentInsideLimit(node.extent, zoomDest) ||
+        // In FileSource case, check if the feature center is in extent tile.
+            (layer.source.isFileSource && !node.extent.isPointInside(layer.source.extent.center(coord)))) {
+        // if not, there's not data to add at this tile.
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
             return;
-        }
-
-        const extentsSource = [];
-        for (const extentDest of extentsDestination) {
-            const ext = layer.source.crs == extentDest.crs ? extentDest : extentDest.as(layer.source.crs);
-            ext.zoom = extentDest.zoom;
-            if (extentInsideSource(ext, layer.source)) {
-                node.layerUpdateState[layer.id].noMoreUpdatePossible();
-                return;
-            }
-            extentsSource.push(extentDest);
         }
 
         node.layerUpdateState[layer.id].newTry();
 
         const command = {
             layer,
-            extentsSource,
+            extentsSource: extentsDestination,
             view: context.view,
             threejsLayer: layer.threejsLayer,
             requester: node,

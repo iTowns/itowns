@@ -59,7 +59,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-        if (!layer.source.extentsInsideLimit(extentsDestination)) {
+        if (!layer.source.extentInsideLimit(node.extent, zoom)) {
             // we also need to check that tile's parent doesn't have a texture for this layer,
             // because even if this tile is outside of the layer, it could inherit it's
             // parent texture
@@ -126,23 +126,13 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
         }
         return;
+    } else if (!layer.source.extentInsideLimit(node.extent, targetLevel)) {
+        node.layerUpdateState[layer.id].noData({ targetLevel });
+        context.view.notifyChange(node, false);
+        return;
     }
 
-    // Get equivalent of extent destination in source
-    const extentsSource = [];
-    for (const extentDestination of extentsDestination) {
-        const extentSource = extentDestination.tiledExtentParent(targetLevel);
-        if (!layer.source.extentInsideLimit(extentSource)) {
-            // Retry extentInsideLimit because you must check with the targetLevel
-            // if the first test extentInsideLimit returns that it is out of limits
-            // and the node inherits from its parent, then it'll still make a command to fetch texture.
-            node.layerUpdateState[layer.id].noData({ targetLevel });
-            context.view.notifyChange(node, false);
-            return;
-        }
-        extentsSource.push(extentSource);
-    }
-
+    const extentsSource = extentsDestination.map(e => e.tiledExtentParent(targetLevel));
     node.layerUpdateState[layer.id].newTry();
     const features = nodeLayer.textures.map(t => layer.isValidData(t.features));
     const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, features);
@@ -206,19 +196,13 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     if (targetLevel <= nodeLayer.level || targetLevel > extentsDestination[0].zoom) {
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return;
+    } else if (!layer.source.extentInsideLimit(node.extent, targetLevel)) {
+        node.layerUpdateState[layer.id].noData({ targetLevel });
+        context.view.notifyChange(node, false);
+        return;
     }
 
-    const extentsSource = [];
-    for (const nodeExtent of extentsDestination) {
-        const extentSource = nodeExtent.tiledExtentParent(targetLevel);
-        if (!layer.source.extentInsideLimit(extentSource)) {
-            node.layerUpdateState[layer.id].noData({ targetLevel });
-            context.view.notifyChange(node, false);
-            return;
-        }
-        extentsSource.push(extentSource);
-    }
-
+    const extentsSource = extentsDestination.map(e => e.tiledExtentParent(targetLevel));
     node.layerUpdateState[layer.id].newTry();
     const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node);
 

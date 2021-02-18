@@ -29,7 +29,6 @@ describe('Sources', function () {
             const source = new Source(paramsSource);
             assert.throws(source.urlFromExtent, Error);
             assert.throws(source.extentInsideLimit, Error);
-            assert.throws(source.extentsInsideLimit, Error);
         });
 
         it('should throw an error for having no url', function () {
@@ -92,6 +91,7 @@ describe('Sources', function () {
             url: 'http://',
             name: 'name',
             crs: 'EPSG:4326',
+            tileMatrixSet: 'PM',
         };
 
         it('should throw an error for having no name', function () {
@@ -103,8 +103,7 @@ describe('Sources', function () {
             const extent = new Extent('TMS:3857', 5, 0, 0);
             assert.ok(source.isWMTSSource);
             assert.ok(source.urlFromExtent(extent));
-            assert.ok(source.extentInsideLimit(extent));
-            assert.ok(source.extentsInsideLimit([extent, extent]));
+            assert.ok(source.extentInsideLimit(extent, 5));
         });
 
         it('should instance with tileMatrixSet', function () {
@@ -118,11 +117,11 @@ describe('Sources', function () {
                 5: { minTileRow: 0, maxTileRow: 32, minTileCol: 0, maxTileCol: 32 },
             };
             const source = new WMTSSource(paramsWMTS);
-            const extent = new Extent('TMS:3857', 5, 0, 0);
+            const extent = new Extent('TMS:3857', 5, 0, 0).as('EPSG:4326');
+            source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
             assert.ok(source.isWMTSSource);
             assert.ok(source.urlFromExtent(extent));
-            assert.ok(source.extentInsideLimit(extent));
-            assert.ok(source.extentsInsideLimit([extent, extent]));
+            assert.ok(source.extentInsideLimit(extent, 5));
         });
     });
 
@@ -134,19 +133,12 @@ describe('Sources', function () {
             crs: 'EPSG:4326',
         };
 
-        it('should throw an error for having no required parameters', function () {
-            assert.throws(() => new WMSSource({}), Error);
-            assert.throws(() => new WMSSource({ name: 'wms' }), Error);
-            assert.throws(() => new WMSSource({ name: 'wms', extent: [] }), Error);
-        });
-
         it('should instance and use WMSSource', function () {
             const source = new WMSSource(paramsWMS);
             const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
             assert.ok(source.isWMSSource);
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent));
-            assert.ok(source.extentsInsideLimit([extent, extent]));
         });
 
         it('should set the correct axisOrder', function () {
@@ -163,15 +155,6 @@ describe('Sources', function () {
             const url = source.urlFromExtent(extent);
             const end = '&buffer=4096&format_options=dpi:300;quantizer:octree&tiled=true';
             assert.ok(url.endsWith(end));
-        });
-
-        it('should assert that the array of extent is outside the limit', function () {
-            const source = new WMSSource(paramsWMS);
-            const extents = [
-                new Extent('EPSG:4326', 0, 10, 0, 10),
-                new Extent('EPSG:4326', -100, -90, 0, 10),
-            ];
-            assert.ok(!source.extentsInsideLimit(extents));
         });
     });
 
@@ -197,15 +180,18 @@ describe('Sources', function () {
         const paramsTMS = {
             url: 'http://',
             crs: 'EPSG:3857',
+            tileMatrixSetLimits: {
+                5: { minTileRow: 0, maxTileRow: 32, minTileCol: 0, maxTileCol: 32 },
+            },
         };
 
         it('should instance and use TMSSource', function () {
             const source = new TMSSource(paramsTMS);
+            source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
             const extent = new Extent('TMS:3857', 5, 0, 0);
             assert.ok(source.isTMSSource);
             assert.ok(source.urlFromExtent(extent));
-            assert.ok(source.extentInsideLimit(extent));
-            assert.ok(source.extentsInsideLimit([extent, extent]));
+            assert.ok(source.extentInsideLimit(extent, extent.zoom));
         });
     });
 
@@ -226,7 +212,6 @@ describe('Sources', function () {
                 const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
                 assert.ok(source.urlFromExtent());
                 assert.ok(source.extentInsideLimit(extent));
-                assert.ok(source.extentsInsideLimit([extent, extent]));
                 assert.ok(source.fetchedData);
                 assert.ok(source.fetchedData);
                 assert.ok(!source.features);

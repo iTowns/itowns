@@ -169,23 +169,16 @@ class LabelLayer extends Layer {
 
         if (!node.layerUpdateState[this.id].canTryUpdate()) {
             return;
+        } else if (!this.source.extentInsideLimit(node.extent, zoomDest)) {
+            node.layerUpdateState[this.id].noMoreUpdatePossible();
+            return;
         }
 
-
-        const extentsSource = [];
-        for (const extentDest of extentsDestination) {
-            const ext = this.source.crs == extentDest.crs ? extentDest : extentDest.as(this.source.crs);
-            if (!this.source.extentInsideLimit(ext)) {
-                node.layerUpdateState[this.id].noMoreUpdatePossible();
-                return;
-            }
-            extentsSource.push(extentDest);
-        }
         node.layerUpdateState[this.id].newTry();
 
         const command = {
             layer: this,
-            extentsSource,
+            extentsSource: extentsDestination,
             view: context.view,
             threejsLayer: this.threejsLayer,
             requester: node,
