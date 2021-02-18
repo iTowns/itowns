@@ -1,9 +1,6 @@
 import Source from 'Source/Source';
 import Cache from 'Core/Scheduler/Cache';
-import Extent from 'Core/Geographic/Extent';
 import CRS from 'Core/Geographic/Crs';
-
-const ext = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
 /**
  * @classdesc
@@ -150,7 +147,7 @@ class FileSource extends Source {
 
         this.whenReady.then(() => this.fetchedData);
 
-        this.zoom = source.zoom || { min: 0, max: Infinity };
+        this.zoom = { min: 0, max: Infinity };
     }
 
     urlFromExtent() {
@@ -190,10 +187,7 @@ class FileSource extends Source {
     }
 
     extentInsideLimit(extent) {
-        // Fix me => may be not
-        const localExtent = this.extent.crs == extent.crs ? extent : extent.as(this.extent.crs, ext);
-        return (extent.zoom == undefined || !(extent.zoom < this.zoom.min || extent.zoom > this.zoom.max)) &&
-            this.extent.intersectsExtent(localExtent);
+        return this.extent.intersectsExtent(extent);
     }
 }
 

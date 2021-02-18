@@ -125,7 +125,7 @@ class WFSSource extends Source {
         }&outputFormat=${this.format
         }&BBOX=%bbox,${this.crs}`;
 
-        this.zoom = source.zoom || { min: 0, max: Infinity };
+        this.zoom = { min: 0, max: Infinity };
 
         this.vendorSpecific = source.vendorSpecific;
         for (const name in this.vendorSpecific) {
@@ -162,8 +162,7 @@ class WFSSource extends Source {
     }
 
     extentInsideLimit(extent) {
-        return (extent.zoom == undefined || (extent.zoom >= this.zoom.min && extent.zoom <= this.zoom.max))
-            && this.extent.intersectsExtent(extent);
+        return this.extent.intersectsExtent(extent);
     }
 }
 

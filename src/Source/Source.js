@@ -225,22 +225,6 @@ class Source extends InformationsData {
     extentInsideLimit(extent) {
         throw new Error('In extented Source, you have to implement the method extentInsideLimit!');
     }
-
-    /**
-     * Tests if an array of extents is inside the source limits.
-     *
-     * @param {Array.<Extent>} extents - Array of extents to test.
-
-     * @return {boolean} True if all extents are inside, false otherwise.
-     */
-    extentsInsideLimit(extents) {
-        for (const extent of extents) {
-            if (!this.extentInsideLimit(extent)) {
-                return false;
-            }
-        }
-        return true;
-    }
 }
 
 export default Source;
