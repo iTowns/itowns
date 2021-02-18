@@ -105,7 +105,7 @@ class RasterTile extends THREE.EventDispatcher {
 export default RasterTile;
 
 export class RasterColorTile extends RasterTile {
-    get fx() {
+    get effect() {
         return this.layer.fx;
     }
 }
