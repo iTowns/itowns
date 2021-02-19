@@ -59,29 +59,19 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-        if (!layer.source.extentInsideLimit(node.extent, zoom)) {
-            // we also need to check that tile's parent doesn't have a texture for this layer,
-            // because even if this tile is outside of the layer, it could inherit it's
-            // parent texture
-            if (!layer.noTextureParentOutsideLimit &&
-                parent.material &&
-                parent.material.getLayer &&
-                parent.material.getLayer(layer.id)) {
-                // ok, we're going to inherit our parent's texture
-            } else {
-                node.layerUpdateState[layer.id].noMoreUpdatePossible();
-                return;
-            }
+        const parentTile = parent.material && layer.getRasterTile(parent);
+
+        // doesn't init raster tile if noTextureParentOutsideLimit
+        if (!layer.source.extentInsideLimit(node.extent, zoom) &&
+            (layer.noTextureParentOutsideLimit || !parentTile)) {
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            return;
         }
 
-        if (!nodeLayer) {
-            // Create new raster node
-            nodeLayer = layer.setupRasterNode(node);
+        nodeLayer = layer.setupRasterNode(node);
 
-            // Init the node by parent
-            const parentLayer = parent.material && parent.material.getLayer(layer.id);
-            nodeLayer.initFromParent(parentLayer, extentsDestination);
-        }
+        // Init the node by parent
+        nodeLayer.initFromParent(parentTile, extentsDestination);
 
         // Proposed new process, two separate processes:
         //      * FIRST PASS: initNodeXXXFromParent and get out of the function
