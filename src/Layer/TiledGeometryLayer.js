@@ -56,6 +56,8 @@ class TiledGeometryLayer extends GeometryLayer {
      * available using `layer.name` or something else depending on the property
      * name.
      * @param {Source} [config.source] - Description and options of the source.
+     * @param {number} [config.maxDeltaElevationLevel=4] - Maximum delta between
+     * two elevations tile.
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
@@ -70,6 +72,8 @@ class TiledGeometryLayer extends GeometryLayer {
         this.protocol = 'tile';
 
         this.sseSubdivisionThreshold = this.sseSubdivisionThreshold || 1.0;
+
+        this.maxDeltaElevationLevel =  this.maxDeltaElevationLevel || 4;
 
         this.schemeTile = schemeTile;
         this.builder = builder;
