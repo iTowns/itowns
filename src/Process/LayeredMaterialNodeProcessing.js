@@ -5,14 +5,6 @@ import handlingError from 'Process/handlerNodeError';
 export const SIZE_TEXTURE_TILE = 256;
 export const SIZE_DIAGONAL_TEXTURE = Math.pow(2 * (SIZE_TEXTURE_TILE * SIZE_TEXTURE_TILE), 0.5);
 
-function materialCommandQueuePriorityFunction(material) {
-    // We know that 'node' is visible because commands can only be
-    // issued for visible nodes.
-    // TODO: need priorization of displayed nodes
-    // Then prefer displayed node over non-displayed one
-    return material.visible ? 100 : 10;
-}
-
 function refinementCommandCancellationFn(cmd) {
     if (!cmd.requester.parent || !cmd.requester.material) {
         return true;
@@ -37,7 +29,7 @@ function buildCommand(view, layer, extentsSource, extentsDestination, requester,
         extentsDestination,
         requester,
         features,
-        priority: materialCommandQueuePriorityFunction(requester.material),
+        priority: 100,
         earlyDropFunction: refinementCommandCancellationFn,
     };
 }
