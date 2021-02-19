@@ -92,7 +92,7 @@ class ColorLayer extends RasterLayer {
      * @param      {TileMesh}  node    The node to apply new RasterColorTile;
      * @return     {RasterColorTile}  The raster color node added.
      */
-    setupRasterNode(node) {
+    setupRasterTile(node) {
         const rasterColorNode = new RasterColorTile(node.material, this);
 
         node.material.addLayer(rasterColorNode);

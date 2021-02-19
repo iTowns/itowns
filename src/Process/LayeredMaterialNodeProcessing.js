@@ -68,7 +68,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             return;
         }
 
-        nodeLayer = layer.setupRasterNode(node);
+        nodeLayer = layer.setupRasterTile(node);
 
         // Init the node by parent
         nodeLayer.initFromParent(parentTile, extentsDestination);
@@ -158,7 +158,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     // Init elevation layer, and inherit from parent if possible
     let nodeLayer = material.getElevationLayer();
     if (!nodeLayer) {
-        nodeLayer = layer.setupRasterNode(node);
+        nodeLayer = layer.setupRasterTile(node);
     }
 
     if (node.layerUpdateState[layer.id] === undefined) {

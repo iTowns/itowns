@@ -179,7 +179,7 @@ describe('TileMesh', function () {
 
     it('event updatedElevation RasterElevationTile sets TileMesh bounding box ', () => {
         const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
-        const rasterNode = elevationLayer.setupRasterNode(tileMesh);
+        const rasterNode = elevationLayer.setupRasterTile(tileMesh);
         const min = 50;
         const max = 500;
         rasterNode.min = min;
@@ -199,7 +199,7 @@ describe('TileMesh', function () {
         elevationLayer.useRgbaTextureElevation = true;
         const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
         assert.throws(() => {
-            elevationLayer.setupRasterNode(tileMesh);
+            elevationLayer.setupRasterTile(tileMesh);
         });
     });
 
@@ -210,7 +210,7 @@ describe('TileMesh', function () {
         elevationLayer.colorTextureElevationMinZ = 10;
         elevationLayer.colorTextureElevationMaxZ = 100;
         const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
-        const rasterNode = elevationLayer.setupRasterNode(tileMesh);
+        const rasterNode = elevationLayer.setupRasterTile(tileMesh);
         assert.equal(rasterNode.min, elevationLayer.colorTextureElevationMinZ);
         assert.equal(rasterNode.max, elevationLayer.colorTextureElevationMaxZ);
     });
@@ -218,7 +218,7 @@ describe('TileMesh', function () {
     it('RasterElevationTile min and max are set by xbil texture', () => {
         delete elevationLayer.useColorTextureElevation;
         const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
-        const rasterNode = elevationLayer.setupRasterNode(tileMesh);
+        const rasterNode = elevationLayer.setupRasterTile(tileMesh);
         const texture = new THREE.Texture();
         texture.extent = new Extent('TMS:3857', 4, 10, 10);
         texture.image = {

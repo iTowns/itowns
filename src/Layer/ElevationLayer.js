@@ -79,7 +79,7 @@ class ElevationLayer extends RasterLayer {
      * @param      {TileMesh}  node    The node to apply new RasterElevationTile;
      * @return     {RasterElevationTile}  The raster elevation node added.
      */
-    setupRasterNode(node) {
+    setupRasterTile(node) {
         const rasterElevationNode = new RasterElevationTile(node.material, this);
 
         node.material.addLayer(rasterElevationNode);
