@@ -94,6 +94,10 @@ class ElevationLayer extends RasterLayer {
         return rasterElevationNode;
     }
 
+    getRasterTile(node) {
+        return node.material.getElevationLayer();
+    }
+
     update(context, layer, node, parent) {
         return updateLayeredMaterialNodeElevation(context, this, node, parent);
     }

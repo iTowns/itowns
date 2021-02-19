@@ -102,6 +102,10 @@ class ColorLayer extends RasterLayer {
         return rasterColorNode;
     }
 
+    getRasterTile(node) {
+        return node.material.getLayer(this.id);
+    }
+
     update(context, layer, node, parent) {
         return updateLayeredMaterialNodeImagery(context, this, node, parent);
     }

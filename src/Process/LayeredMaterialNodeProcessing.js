@@ -20,8 +20,9 @@ function refinementCommandCancellationFn(cmd) {
     // Cancel the command if the tile already has a better texture.
     // This is only needed for elevation layers, because we may have several
     // concurrent layers but we can only use one texture.
-    if (cmd.layer.isElevationLayer && cmd.requester.material.getElevationLayer() &&
-        cmd.targetLevel <= cmd.requester.material.getElevationLayer().level) {
+    const rasterTile = cmd.layer.getRasterTile(cmd.requester);
+    if (cmd.layer.isElevationLayer && rasterTile &&
+        cmd.targetLevel <= rasterTile.level) {
         return true;
     }
 
@@ -53,7 +54,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         return;
     }
 
-    let nodeLayer = material.getLayer(layer.id);
+    let rasterTile = layer.getRasterTile(node);
 
     // Initialisation
     if (node.layerUpdateState[layer.id] === undefined) {
@@ -68,10 +69,10 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             return;
         }
 
-        nodeLayer = layer.setupRasterTile(node);
+        rasterTile = layer.setupRasterTile(node);
 
         // Init the node by parent
-        nodeLayer.initFromParent(parentTile, extentsDestination);
+        rasterTile.initFromParent(parentTile, extentsDestination);
 
         // Proposed new process, two separate processes:
         //      * FIRST PASS: initNodeXXXFromParent and get out of the function
@@ -79,7 +80,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
         // The two-step allows you to filter out unnecessary requests
         // Indeed in the second pass, their state (not visible or not displayed) can block them to fetch
-        if (nodeLayer.level >= layer.source.zoom.min) {
+        if (rasterTile.level >= layer.source.zoom.min) {
             context.view.notifyChange(node, false);
             return;
         }
@@ -95,7 +96,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         return;
     }
 
-    if (nodeLayer.level >= extentsDestination[0].zoom) {
+    if (rasterTile.level >= extentsDestination[0].zoom) {
         // default decision method
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return;
@@ -108,9 +109,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
     const failureParams = node.layerUpdateState[layer.id].failureParams;
     const destinationLevel = extentsDestination[0].zoom || node.level;
-    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, destinationLevel, nodeLayer.level, layer, failureParams);
+    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, destinationLevel, rasterTile.level, layer, failureParams);
 
-    if ((!layer.source.isVectorSource && targetLevel <= nodeLayer.level) || targetLevel > destinationLevel) {
+    if ((!layer.source.isVectorSource && targetLevel <= rasterTile.level) || targetLevel > destinationLevel) {
         if (failureParams.lowestLevelError != Infinity) {
             // this is the highest level found in case of error.
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
@@ -124,14 +125,14 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
     const extentsSource = extentsDestination.map(e => e.tiledExtentParent(targetLevel));
     node.layerUpdateState[layer.id].newTry();
-    const features = nodeLayer.textures.map(t => layer.isValidData(t.features));
+    const features = rasterTile.textures.map(t => layer.isValidData(t.features));
     const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, features);
 
     return context.scheduler.execute(command).then(
         (result) => {
             // TODO: Handle error : result is undefined in provider. throw error
-            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(result[i].extent, nodeLayer.offsetScales[i]));
-            nodeLayer.setTextures(result, pitchs);
+            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(result[i].extent, rasterTile.offsetScales[i]));
+            rasterTile.setTextures(result, pitchs);
             node.layerUpdateState[layer.id].success();
         },
         err => handlingError(err, node, layer, targetLevel, context.view));
@@ -156,18 +157,17 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         return;
     }
     // Init elevation layer, and inherit from parent if possible
-    let nodeLayer = material.getElevationLayer();
-    if (!nodeLayer) {
-        nodeLayer = layer.setupRasterTile(node);
-    }
+    let rasterTile = layer.getRasterTile(node);
 
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-        const parentLayer = parent.material && parent.material.getLayer(layer.id);
-        nodeLayer.initFromParent(parentLayer, extentsDestination);
+        rasterTile = layer.setupRasterTile(node);
 
-        if (nodeLayer.level >= layer.source.zoom.min) {
+        const parentTile = parent.material && layer.getRasterTile(parent);
+        rasterTile.initFromParent(parentTile, extentsDestination);
+
+        if (rasterTile.level >= layer.source.zoom.min) {
             context.view.notifyChange(node, false);
             return;
         }
@@ -181,9 +181,9 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     }
 
     const failureParams = node.layerUpdateState[layer.id].failureParams;
-    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, extentsDestination[0].zoom, nodeLayer.level, layer, failureParams);
+    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, extentsDestination[0].zoom, rasterTile.level, layer, failureParams);
 
-    if (targetLevel <= nodeLayer.level || targetLevel > extentsDestination[0].zoom) {
+    if (targetLevel <= rasterTile.level || targetLevel > extentsDestination[0].zoom) {
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return;
     } else if (!layer.source.extentInsideLimit(node.extent, targetLevel)) {
@@ -201,12 +201,12 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
             // Do not apply the new texture if its level is < than the current
             // one.  This is only needed for elevation layers, because we may
             // have several concurrent layers but we can only use one texture.
-            if (targetLevel <= nodeLayer.level) {
+            if (targetLevel <= rasterTile.level) {
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
                 return;
             }
-            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(result[i].extent, nodeLayer.offsetScales[i]));
-            nodeLayer.setTextures(result, pitchs);
+            const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(result[i].extent, rasterTile.offsetScales[i]));
+            rasterTile.setTextures(result, pitchs);
             node.layerUpdateState[layer.id].success();
         },
         err => handlingError(err, node, layer, targetLevel, context.view));

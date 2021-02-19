@@ -295,7 +295,6 @@ class TiledGeometryLayer extends GeometryLayer {
      */
     static hasEnoughTexturesToSubdivide(context, node) {
         const layerUpdateState = node.layerUpdateState || {};
-        let nodeLayer = node.material.getElevationLayer();
 
         for (const e of context.elevationLayers) {
             const extents = node.getExtentsByProjection(e.crs);
@@ -303,7 +302,8 @@ class TiledGeometryLayer extends GeometryLayer {
             if (zoom > e.zoom.max || zoom < e.zoom.min) {
                 continue;
             }
-            if (!e.frozen && e.ready && e.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
+            const rasterTile = e.getRasterTile(node);
+            if (!e.frozen && e.ready && e.source.extentInsideLimit(node.extent, zoom) && (!rasterTile || rasterTile.level < 0)) {
                 // no stop subdivision in the case of a loading error
                 if (layerUpdateState[e.id] && layerUpdateState[e.id].inError()) {
                     continue;
@@ -325,8 +325,8 @@ class TiledGeometryLayer extends GeometryLayer {
             if (layerUpdateState[c.id] && layerUpdateState[c.id].inError()) {
                 continue;
             }
-            nodeLayer = node.material.getLayer(c.id);
-            if (c.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
+            const rasterTile = c.getRasterTile(node);
+            if (c.source.extentInsideLimit(node.extent, zoom) && (!rasterTile || rasterTile.level < 0)) {
                 return false;
             }
         }
