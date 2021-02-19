@@ -55,6 +55,8 @@ class ElevationLayer extends RasterLayer {
     constructor(id, config = {}) {
         super(id, config);
         this.isElevationLayer = true;
+        // Add visible property but is always true for the moment.
+        this.visible = true;
 
         // This is used to add a factor needed to color texture
         let baseScale = 1.0;

@@ -78,24 +78,12 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         }
     }
 
-    // Node is hidden, no need to update it
-    if (!material.visible) {
+    // Possible conditions to *NOT* update the elevation texture
+    if (!material.visible || !layer.visible || !node.layerUpdateState[layer.id].canTryUpdate() || layer.frozen) {
         return;
-    }
-
-    // An update is pending / or impossible -> abort
-    if (!layer.visible || !node.layerUpdateState[layer.id].canTryUpdate()) {
-        return;
-    }
-
-    if (rasterTile.level >= extentsDestination[0].zoom) {
+    } else if (rasterTile.level >= extentsDestination[0].zoom) {
         // default decision method
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
-        return;
-    }
-
-    // is fetching data from this layer disabled?
-    if (layer.frozen) {
         return;
     }
 
@@ -165,8 +153,9 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         }
     }
 
-    // Possible conditions to *not* update the elevation texture
+    // Possible conditions to *NOT* update the elevation texture
     if (layer.frozen ||
+            !layer.visible ||
             !material.visible ||
             !node.layerUpdateState[layer.id].canTryUpdate()) {
         return;
