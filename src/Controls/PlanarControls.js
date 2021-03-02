@@ -871,6 +871,7 @@ class PlanarControls extends THREE.EventDispatcher {
         this.view.domElement.addEventListener('keydown', this._handlerOnKeyDown, false);
         this.view.domElement.addEventListener('mousedown', this._handlerOnMouseDown, false);
         this.view.domElement.addEventListener('mouseup', this._handlerOnMouseUp, false);
+        this.view.domElement.addEventListener('mouseleave', this._handlerOnMouseUp, false);
         this.view.domElement.addEventListener('mousemove', this._handlerOnMouseMove, false);
         this.view.domElement.addEventListener('mousewheel', this._handlerOnMouseWheel, false);
         // focus policy
@@ -896,6 +897,7 @@ class PlanarControls extends THREE.EventDispatcher {
         this.view.domElement.removeEventListener('keydown', this._handlerOnKeyDown, true);
         this.view.domElement.removeEventListener('mousedown', this._handlerOnMouseDown, false);
         this.view.domElement.removeEventListener('mouseup', this._handlerOnMouseUp, false);
+        this.view.domElement.removeEventListener('mouseleave', this._handlerOnMouseUp, false);
         this.view.domElement.removeEventListener('mousemove', this._handlerOnMouseMove, false);
         this.view.domElement.removeEventListener('mousewheel', this._handlerOnMouseWheel, false);
         this.view.domElement.removeEventListener('mouseover', this._handlerFocusOnMouseOver, false);
