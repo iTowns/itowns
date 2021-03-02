@@ -1,3 +1,48 @@
+<a name="2.31.0"></a>
+# [2.31.0](https://github.com/iTowns/itowns/compare/v2.30.0...v2.31.0) (2021-03-02)
+
+
+### Bug Fixes
+
+* **GlobeLayer:** doesn't subdivise the pole tile mesh. ([53a9f6f](https://github.com/iTowns/itowns/commit/53a9f6f))
+* **PlanarControls:** fix pan movement ([5be30b7](https://github.com/iTowns/itowns/commit/5be30b7))
+* **PlanarControls:** standardize zoom factors for perspective and orthographic camera ([c65bbab](https://github.com/iTowns/itowns/commit/c65bbab))
+* **Points:** remove THREE.Geometry. ([6ff3b3d](https://github.com/iTowns/itowns/commit/6ff3b3d))
+* **RasterColorTile:** wrong getter name. ([1f7eb05](https://github.com/iTowns/itowns/commit/1f7eb05))
+
+
+### Examples
+
+* correct zoom factor parameter in examples ([a86e3f8](https://github.com/iTowns/itowns/commit/a86e3f8))
+
+
+### Code Refactoring
+
+* **Debug:** simplified point debug code. ([c99fb09](https://github.com/iTowns/itowns/commit/c99fb09))
+* **GlobeControls:** refactor zoom speed management ([57f6666](https://github.com/iTowns/itowns/commit/57f6666))
+* **Immersive:** replace Matrix4.makeBasisFromMatrix by Matrix4.setFromMatrix3. ([d442602](https://github.com/iTowns/itowns/commit/d442602))
+* **MaterialLayer:** MaterialLayer to RasterNode. ([46b19f1](https://github.com/iTowns/itowns/commit/46b19f1))
+* **PlanarControls:** refactor zoom speed management ([ca47389](https://github.com/iTowns/itowns/commit/ca47389))
+* **points:** avoid clone point material. ([174a60f](https://github.com/iTowns/itowns/commit/174a60f))
+* **RasterTile:** rename file. ([c73fc38](https://github.com/iTowns/itowns/commit/c73fc38))
+* **View:** remove useless getParentLayer method ([6f0b545](https://github.com/iTowns/itowns/commit/6f0b545))
+* **View:** simplify getLayerById method. ([58874ec](https://github.com/iTowns/itowns/commit/58874ec))
+
+
+### Workflow and chores
+
+* release v2.31.0 ([c3f5e47](https://github.com/iTowns/itowns/commit/c3f5e47))
+* update package-lock.json. ([b3e81fc](https://github.com/iTowns/itowns/commit/b3e81fc))
+* **deps-dev:** bump marked from 1.2.9 to 2.0.0 ([46bc3f9](https://github.com/iTowns/itowns/commit/46bc3f9))
+* update packages. ([09f12c9](https://github.com/iTowns/itowns/commit/09f12c9))
+
+
+### Tests
+
+* **MaterialLayer:** update tests with the MaterialLayer refactoring. ([0fa3c06](https://github.com/iTowns/itowns/commit/0fa3c06))
+
+
+
 <a name="2.30.0"></a>
 # [2.30.0](https://github.com/iTowns/itowns/compare/v2.29.2...v2.30.0) (2021-02-05)
 
