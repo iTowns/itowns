@@ -14,6 +14,7 @@ const mouseButtons = {
     MIDDLECLICK: THREE.MOUSE.MIDDLE,
     RIGHTCLICK: THREE.MOUSE.RIGHT,
 };
+let currentPressedButton;
 
 // starting camera position and orientation target
 const startPosition = new THREE.Vector3();
@@ -950,9 +951,10 @@ class PlanarControls extends THREE.EventDispatcher {
     onMouseDown(event) {
         event.preventDefault();
 
-        if (STATE.TRAVEL === this.state) {
+        if (STATE.NONE !== this.state) {
             return;
         }
+        currentPressedButton = event.button;
 
         this.updateMousePositionAndDelta(event);
 
@@ -992,7 +994,7 @@ class PlanarControls extends THREE.EventDispatcher {
     onMouseUp(event) {
         event.preventDefault();
 
-        if (STATE.TRAVEL !== this.state) {
+        if (STATE.TRAVEL !== this.state && currentPressedButton === event.button) {
             this.state = STATE.NONE;
         }
 
@@ -1023,7 +1025,7 @@ class PlanarControls extends THREE.EventDispatcher {
      * @ignore
      */
     onKeyDown(event) {
-        if (STATE.TRAVEL === this.state) {
+        if (STATE.NONE !== this.state) {
             return;
         }
         switch (event.keyCode) {
