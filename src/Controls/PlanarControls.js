@@ -34,6 +34,16 @@ export const STATE = {
     ORTHO_ZOOM: 4,
 };
 
+// cursor shape linked to control state
+const cursor = {
+    default: 'auto',
+    drag: 'move',
+    pan: 'cell',
+    travel: 'wait',
+    rotate: 'move',
+    ortho_zoom: 'wait',
+};
+
 const vectorZero = new THREE.Vector3();
 
 // mouse movement
@@ -261,6 +271,7 @@ class PlanarControls extends THREE.EventDispatcher {
 
         // control state
         this.state = STATE.NONE;
+        this.cursor = cursor;
 
         if (this.view.controls) {
             // esLint-disable-next-line no-console
@@ -913,20 +924,22 @@ class PlanarControls extends THREE.EventDispatcher {
     updateMouseCursorType() {
         switch (this.state) {
             case STATE.NONE:
-                this.view.domElement.style.cursor = 'auto';
+                this.view.domElement.style.cursor = this.cursor.default;
                 break;
             case STATE.DRAG:
-                this.view.domElement.style.cursor = 'move';
+                this.view.domElement.style.cursor = this.cursor.drag;
                 break;
             case STATE.PAN:
-                this.view.domElement.style.cursor = 'cell';
+                this.view.domElement.style.cursor = this.cursor.pan;
                 break;
             case STATE.TRAVEL:
+                this.view.domElement.style.cursor = this.cursor.travel;
+                break;
             case STATE.ORTHO_ZOOM:
-                this.view.domElement.style.cursor = 'wait';
+                this.view.domElement.style.cursor = this.cursor.ortho_zoom;
                 break;
             case STATE.ROTATE:
-                this.view.domElement.style.cursor = 'move';
+                this.view.domElement.style.cursor = this.cursor.rotate;
                 break;
             default:
                 break;
@@ -939,6 +952,18 @@ class PlanarControls extends THREE.EventDispatcher {
         deltaMousePosition.copy(mousePosition).sub(lastMousePosition);
 
         lastMousePosition.copy(mousePosition);
+    }
+
+    /**
+     * cursor modification for a specifique state.
+     *
+     * @param   {string} state   the state in which we want to change the cursor ('default', 'drag', 'pan', 'travel', 'rotate').
+     * @param   {string} newCursor   the css cursor we want to have for the specified state.
+     * @ignore
+     */
+    setCursor(state, newCursor) {
+        this.cursor[state] = newCursor;
+        this.updateMouseCursorType();
     }
 
     /**
