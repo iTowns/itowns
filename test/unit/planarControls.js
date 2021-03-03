@@ -71,6 +71,7 @@ describe('Planar Controls', function () {
         event.button = THREE.MOUSE.LEFT;
         controlsPerspective.onMouseDown(event);
         assert.equal(STATE.DRAG, controlsPerspective.state);
+        controlsPerspective.state = STATE.NONE;
     });
 
     it('ctrl + left-click should switch controls to ROTATE state, unless rotation is disabled', function () {
@@ -131,26 +132,32 @@ describe('Planar Controls', function () {
         controlsPerspective.state = STATE.TRAVEL;
         controlsPerspective.onMouseDown(event);
         assert.equal(controlsPerspective.state, STATE.TRAVEL);
+        controlsPerspective.state = STATE.NONE;
     });
 
     it('onMouseUp should switch controls to the relevant state', function () {
         // STATE.DRAG
-        controlsPerspective.state = STATE.DRAG;
+        event.button = THREE.MOUSE.LEFT;
+        controlsPerspective.onMouseDown(event);
         controlsPerspective.onMouseUp(event);
         assert.equal(STATE.NONE, controlsPerspective.state);
 
         // STATE.ROTATE
-        controlsPerspective.state = STATE.ROTATE;
+        event.ctrlKey = true;
+        controlsPerspective.onMouseDown(event);
         controlsPerspective.onMouseUp(event);
         assert.equal(STATE.NONE, controlsPerspective.state);
+        event.ctrlKey = false;
 
         // STATE.PAN
-        controlsPerspective.state = STATE.PAN;
+        event.button = THREE.MOUSE.RIGHT;
+        controlsPerspective.onMouseDown(event);
         controlsPerspective.onMouseUp(event);
         assert.equal(STATE.NONE, controlsPerspective.state);
 
         // STATE.TRAVEL
-        controlsPerspective.state = STATE.TRAVEL;
+        event.button = THREE.MOUSE.MIDDLE;
+        controlsPerspective.onMouseDown(event);
         controlsPerspective.onMouseUp(event);
         assert.equal(STATE.TRAVEL, controlsPerspective.state);
         controlsPerspective.state = STATE.NONE;
