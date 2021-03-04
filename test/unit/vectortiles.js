@@ -4,6 +4,7 @@ import HttpsProxyAgent from 'https-proxy-agent';
 import VectorTileParser, { getStyle } from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
 import Extent from 'Core/Geographic/Extent';
+import urlParser from 'Parser/MapBoxUrlParser';
 
 describe('Vector tiles', function () {
     // this PBF file comes from https://github.com/mapbox/vector-tile-js
@@ -214,6 +215,29 @@ describe('Vector tiles', function () {
                 assert.equal(source.styles.fifth[0].zoom.min, 4);
                 done();
             });
+        });
+
+        it('Vector tile source mapbox url', () => {
+            const accessToken = 'pk.xxxxx';
+            const baseurl = 'mapbox://styles/mapbox/outdoors-v11';
+
+            const styleUrl = urlParser.normalizeStyleURL(baseurl, accessToken);
+            assert.ok(styleUrl.startsWith('https://api.mapbox.com'));
+            assert.ok(styleUrl.endsWith(accessToken));
+
+            const spriteUrl = urlParser.normalizeSpriteURL(baseurl, '', '.json', accessToken);
+            assert.ok(spriteUrl.startsWith('https'));
+            assert.ok(spriteUrl.endsWith(accessToken));
+            assert.ok(spriteUrl.includes('sprite.json'));
+
+            const imgUrl = urlParser.normalizeSpriteURL(baseurl, '', '.png', accessToken);
+            assert.ok(imgUrl.includes('sprite.png'));
+
+            const url = 'mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2';
+            const urlSource = urlParser.normalizeSourceURL(url, accessToken);
+            assert.ok(urlSource.startsWith('https'));
+            assert.ok(urlSource.endsWith(accessToken));
+            assert.ok(urlSource.includes('.json'));
         });
     });
 });
