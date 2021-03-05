@@ -212,6 +212,7 @@ class Extent {
             }
 
             target.crs = crs;
+            target.zoom = this.zoom;
             target.set(this.west, this.east, this.south, this.north);
 
             return target;
