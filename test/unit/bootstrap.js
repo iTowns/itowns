@@ -106,6 +106,8 @@ global.document = {
     getElementsByTagName: () => [new DOMElement()],
 };
 
+global.document.documentElement = global.document.createElement();
+
 class Renderer {
     constructor() {
         this.domElement = new DOMElement();

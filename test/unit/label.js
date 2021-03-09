@@ -52,6 +52,7 @@ describe('Label', function () {
             paint: {},
             layout: {
                 'icon-image': 'icon',
+                'icon-size': 1,
             },
         }, {
             img: '',
