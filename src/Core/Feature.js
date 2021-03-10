@@ -290,6 +290,7 @@ export class FeatureCollection {
      *
      * @param      {string}  crs      The crs projection.
      * @param      {FeatureBuildingOptions|Layer}  options  The building options .
+     * @param      {string}  [options.structure='2D']   The structure of the features in the Collection ('2D' or '3D').
      */
     constructor(crs, options) {
         this.isFeatureCollection = true;
@@ -297,6 +298,10 @@ export class FeatureCollection {
         this.crs = crs;
         this.features = [];
         this.optionsFeature = options || {};
+        if (this.optionsFeature.structure) {
+            this.optionsFeature.withAltitude = options.structure !== '2D';
+            this.optionsFeature.withNormal = options.structure !== '2D';
+        }
         if (this.optionsFeature.buildExtent) {
             this.extent = defaultExtent(options.forcedExtentCrs || this.crs);
         }
