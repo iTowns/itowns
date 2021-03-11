@@ -48,7 +48,8 @@
                 "RasterNode",
 
                 "GlobeLayer",
-                "PlanarLayer"
+                "PlanarLayer",
+                "Atmosphere"
             ],
 
             "Points": [

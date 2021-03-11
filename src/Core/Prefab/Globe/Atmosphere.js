@@ -29,7 +29,31 @@ const spaceColor = new THREE.Color(0x030508);
 const limitAlti = 600000;
 const mfogDistance = ellipsoidSizes.x * 160.0;
 
+
 class Atmosphere extends GeometryLayer {
+    /**
+    * It's layer to simulate Globe atmosphere.
+    * There's 2 modes : simple and realistic (atmospheric-scattering).
+     *
+    * The atmospheric-scattering it is taken from :
+    * * [Atmosphere Shader From Space (Atmospheric scattering)](http://stainlessbeer.weebly.com/planets-9-atmospheric-scattering.html)
+    * * [Accurate Atmospheric Scattering (NVIDIA GPU Gems 2)]{@link https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering}.
+    *
+    * @constructor
+    * @extends GeometryLayer
+    *
+    * @param {string} id - The id of the layer Atmosphere.
+    * @param {Object} [options] - options layer.
+    * @param {number} [options.Kr] - `Kr` is the rayleigh scattering constant.
+    * @param {number} [options.Km] - `Km` is the Mie scattering constant.
+    * @param {number} [options.ESun] - `ESun` is the brightness of the sun.
+    * @param {number} [options.g] - constant `g` that affects the symmetry of the scattering.
+    * @param {number} [options.innerRadius] - The inner (planetary) radius
+    * @param {number} [options.outerRadius] - The outer (Atmosphere) radius
+    * @param {number[]} [options.wavelength] - The constant is the `wavelength` (or color) of light.
+    * @param {number} [options.scaleDepth] - The `scale depth` (i.e. the altitude at which the atmosphere's average density is found).
+    * @param {number} [options.mieScaleDepth] - not used.
+    */
     constructor(id = 'atmosphere', options = {}) {
         options.source = false;
         super(id, new THREE.Object3D(), options);
@@ -96,6 +120,21 @@ class Atmosphere extends GeometryLayer {
             distance: mfogDistance,
         };
 
+        // Atmosphere Shader From Space (Atmospheric scattering)
+        // http://stainlessbeer.weebly.com/planets-9-atmospheric-scattering.html
+        // https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering
+        this.realisticAtmosphereInitParams = options.Kr ? options : {
+            Kr: 0.0025,
+            Km: 0.0015,
+            ESun: 20.0,
+            g: -0.950,
+            innerRadius: 6400000,
+            outerRadius: 6700000,
+            wavelength: [0.650, 0.570, 0.475],
+            scaleDepth: 0.25,
+            // mieScaleDepth: 0.1,
+        };
+
         this.object3d.updateMatrixWorld();
     }
 
@@ -138,19 +177,8 @@ class Atmosphere extends GeometryLayer {
 
     // default to non-realistic lightning
     _initRealisticLighning() {
-        // Atmosphere Shader From Space (Atmospheric scattering)
-        // http://stainlessbeer.weebly.com/planets-9-atmospheric-scattering.html
-        const atmosphere = {
-            Kr: 0.0025,
-            Km: 0.0010,
-            ESun: 20.0,
-            g: -0.950,
-            innerRadius: 6400000,
-            outerRadius: 6700000,
-            wavelength: [0.650, 0.570, 0.475],
-            scaleDepth: 0.25,
-            mieScaleDepth: 0.1,
-        };
+        const atmosphere = this.realisticAtmosphereInitParams;
+
         const uniformsAtmosphere = {
             v3LightPosition: { value: LIGHTING_POSITION.clone().normalize() },
             v3InvWavelength: { value: new THREE.Vector3(1 / atmosphere.wavelength[0] ** 4, 1 / atmosphere.wavelength[1] ** 4, 1 / atmosphere.wavelength[2] ** 4) },
