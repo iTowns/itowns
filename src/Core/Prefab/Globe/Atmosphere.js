@@ -226,17 +226,16 @@ class Atmosphere extends GeometryLayer {
     }
 
     setRealisticOn(bool) {
-        if (bool && !this.sky) {
-            this._initRealisticLighning();
+        if (bool) {
+            if (!this.realisticAtmosphere.children.length) {
+                this._initRealisticLighning();
+            }
+            this.realisticLightingPosition = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35).normalize();
+            this.realisticAtmosphere.children.forEach((obj => obj.material.uniforms.v3LightPosition.value.copy(this.realisticLightingPosition)));
         }
 
         this.basicAtmosphere.visible = !bool;
         this.realisticAtmosphere.visible = bool;
-
-        if (bool) {
-            this.realisticLightingPosition = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35).normalize();
-            this.realisticAtmosphere.children.forEach((obj => obj.material.uniforms.v3LightPosition.value.copy(this.realisticLightingPosition)));
-        }
     }
 }
 
