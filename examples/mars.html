@@ -1,0 +1,94 @@
+<html>
+    <head>
+        <title>Itowns - Mars</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <span id="divScaleWidget"> Scale </span>
+        <div id="miniDiv"></div>
+
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            // # Simple Globe viewer
+            // Define initial camera position
+            // mars crs projection is EPSG:104905
+            // Globe view could be use only 4326 and 3857
+            // For the moment, the example uses earth to visualize Mars WMTS.
+            // We keep 'EPSG:104905' in comment for the moment
+            itowns.proj4.defs('EPSG:104905', '+proj=longlat +a=3396190 +rf=169.894447223612 +no_defs +type=crs');
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 77.6, 18.2),
+                range: 25000000,
+            }
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var view = new itowns.GlobeView(viewerDiv, placement, {
+                atmosphere: {
+                    Kr: 0.0025,
+                    Km: 0.0015,
+                    ESun: 15.0,
+                    g: -0.950,
+                    innerRadius: 6400000,
+                    outerRadius: 6600000,
+                    wavelength: [0.350, 0.470, 0.575],
+                    scaleDepth: 0.38,
+                }
+            });
+            setupLoadingScreen(viewerDiv, view);
+
+            // Add a tms imagery source
+            var tmsMarsSource = new itowns.TMSSource({
+                    // crs: 'EPSG:104905',
+                    crs: 'EPSG:4326',
+                    url : 'https://api.nasa.gov/mars-wmts/catalog/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0//default/default028mm/${z}/${y}/${x}.jpg',
+                    zoom: { min: 0, max: 9 },
+                })
+
+            // Add a imagery layer
+            var tmsMarsLayer = new itowns.ColorLayer('wms_imagery', {
+                source: tmsMarsSource,
+            });
+
+            view.addLayer(tmsMarsLayer);
+
+            const demMars = new itowns.ElevationLayer('demMars', {
+                useColorTextureElevation: true,
+                colorTextureElevationMinZ: 0,
+                colorTextureElevationMaxZ: 20000,
+                crs: 'EPSG:4326',
+                source: new itowns.TMSSource({
+                    // crs: 'EPSG:104905',
+                    crs: 'EPSG:4326',
+                    url : 'https://api.nasa.gov/mars-wmts/catalog/Mars_MGS_MOLA_DEM_mosaic_global_463m_8/1.0.0//default/default028mm/${z}/${y}/${x}.png',
+                    zoom: { min: 0, max: 5 },
+                }),
+            });
+            // view.addLayer(demMars);
+
+            var menuGlobe = new GuiTools('menuDiv', view);
+
+            const atmosphere = view.getLayerById('atmosphere');
+            atmosphere.setRealisticOn(true);
+
+            const cRL = menuGlobe.addGUI('RealisticLighting', true, function (v) {
+                atmosphere.setRealisticOn(v);
+                view.notifyChange(atmosphere);
+            });
+
+            debug.createTileDebugUI(menuGlobe.gui, view);
+        </script>
+    </body>
+</html>
