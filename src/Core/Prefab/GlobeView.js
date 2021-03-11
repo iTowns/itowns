@@ -126,7 +126,7 @@ class GlobeView extends View {
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
         }
 
-        this.addLayer(new Atmosphere());
+        this.addLayer(new Atmosphere('atmosphere', options.atmosphere));
 
         // GlobeView needs this.camera.resize to set perpsective matrix camera
         this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
