@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Style from 'Core/Style';
+import Crs from 'Core/Geographic/Crs';
 
 function defaultExtent(crs) {
     return new Extent(crs, Infinity, -Infinity, Infinity, -Infinity);
@@ -18,6 +19,7 @@ const coordOut = new Coordinates('EPSG:4326', 0, 0, 0);
 const defaultNormal = new THREE.Vector3(0, 0, 1);
 
 /**
+ * // TODO : since crs is passed as a parameter of Feature and FeatureCollection constructor, is crs optional property really useful ?
  * @property {string} crs - The CRS to convert the input coordinates to.
  * @property {Extent|boolean} [filteringExtent=undefined] - Optional filter to reject
  * features outside of extent. Extent filetring is file extent if filteringExtent is true.
@@ -294,8 +296,7 @@ export class FeatureCollection {
      */
     constructor(crs, options) {
         this.isFeatureCollection = true;
-        // TODO: Replace crs parameter by CRS.formatToEPSG(options.crs)
-        this.crs = crs;
+        this.crs = Crs.formatToEPSG(crs);
         this.features = [];
         this.optionsFeature = options || {};
         if (this.optionsFeature.structure) {
