@@ -51,6 +51,11 @@
             const view = new itowns.PlanarView(viewerDiv, extent, {
                 camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC },
                 placement: new itowns.Extent('EPSG:3946', 1838000, 1842000, 5172000, 5174000),
+                controls: {
+                    // limit the zoom to a resolution interval
+                    maxResolution: 0.01,  // a pixel shall not represent a metric size smaller than 1 cm
+                    minResolution: 100, // a pixel shall not represent a metric size larger than 100m
+                }
             });
             setupLoadingScreen(viewerDiv, view);
 
