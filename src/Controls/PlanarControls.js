@@ -96,6 +96,8 @@ const defaultOptions = {
     maxPanSpeed: 15,
     zoomTravelTime: 0.2,  // must be a number
     zoomFactor: 2,
+    maxResolution: 1 / Infinity,
+    minResolution: Infinity,
     maxAltitude: 50000000,
     groundLevel: 200,
     autoTravelTimeMin: 1.5,
@@ -144,6 +146,10 @@ export const PLANAR_CONTROL_EVENT = {
  * @param   {number}        [options.zoomTravelTime=0.2]        Animation time when zooming.
  * @param   {number}        [options.zoomFactor=2]              The factor the scale is multiplied by when zooming
  * in and divided by when zooming out. This factor can't be null.
+ * @param   {number}        [options.maxResolution=0]           The smallest size in meters a pixel at the center of the
+ * view can represent.
+ * @param   {number}        [options.minResolution=Infinity]    The biggest size in meters a pixel at the center of the
+ * view can represent.
  * @param   {number}        [options.maxAltitude=12000]         Maximum altitude reachable when panning or zooming out.
  * @param   {number}        [options.groundLevel=200]           Minimum altitude reachable when panning.
  * @param   {number}        [options.autoTravelTimeMin=1.5]     Minimum duration for animated travels with the `auto`
@@ -224,6 +230,10 @@ class PlanarControls extends THREE.EventDispatcher {
         }
         this.zoomInFactor = options.zoomFactor || defaultOptions.zoomFactor;
         this.zoomOutFactor = 1 / (options.zoomFactor || defaultOptions.zoomFactor);
+
+        // the maximum and minimum size (in meters) a pixel at the center of the view can represent
+        this.maxResolution = options.maxResolution || defaultOptions.maxResolution;
+        this.minResolution = options.minResolution || defaultOptions.minResolution;
 
         // approximate ground altitude value. Camera altitude is clamped above groundLevel
         this.groundLevel = options.groundLevel || defaultOptions.groundLevel;
@@ -514,6 +524,12 @@ class PlanarControls extends THREE.EventDispatcher {
 
         if (delta > 0 || (delta < 0 && this.maxAltitude > this.camera.position.z)) {
             const zoomFactor = delta > 0 ? this.zoomInFactor : this.zoomOutFactor;
+
+            // do not zoom if the resolution after the zoom is outside resolution limits
+            const endResolution = this.view.getPixelsToMeters() / zoomFactor;
+            if (this.maxResolution > endResolution || endResolution > this.minResolution) {
+                return;
+            }
 
             // change the camera field of view if the camera is orthographic
             if (this.camera.isOrthographicCamera) {
