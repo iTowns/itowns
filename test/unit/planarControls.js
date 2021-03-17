@@ -268,6 +268,23 @@ describe('Planar Controls', function () {
         controlsOrtho.state = STATE.NONE;
     });
 
+    it('resolution limits on zoom', function () {
+        const orthoScale = viewOrtho.getPixelsToMeters();
+        controlsOrtho.minResolution = orthoScale;
+        controlsOrtho.maxResolution = orthoScale;
+
+        // wheel in
+        wheelMouse(controlsOrtho, cameraOrtho, 10);
+        // camera has not moved
+        assert.ok(cameraOrtho.position.equals(cameraInitialPosition));
+        // zoom has not changed
+        assert.equal(cameraOrtho.zoom, cameraInitialZoom);
+        // reset controls
+        controlsOrtho.minResolution = Infinity;
+        controlsOrtho.maxResolution = 0;
+        controlsOrtho.state = STATE.NONE;
+    });
+
     it('smart travel for a perspective camera', function () {
         event.button = THREE.MOUSE.MIDDLE;
 
