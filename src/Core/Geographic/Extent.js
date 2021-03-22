@@ -589,6 +589,7 @@ class Extent {
     transformedCopy(t, s, extent) {
         if (!CRS.isTms(extent.crs)) {
             this.crs = extent.crs;
+            this.zoom = extent.zoom;
             this.west = (extent.west + t.x) * s.x;
             this.east = (extent.east + t.x) * s.x;
             if (this.west > this.east) {
