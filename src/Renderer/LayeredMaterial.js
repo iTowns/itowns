@@ -7,7 +7,7 @@ import RenderMode from 'Renderer/RenderMode';
 import CommonMaterial from 'Renderer/CommonMaterial';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
-const defaultTex = THREE.Texture();
+const defaultTex = new THREE.Texture();
 
 // from three.js packDepthToRGBA
 const UnpackDownscale = 255 / 256; // 0..1 -> fraction (excluding 1)
