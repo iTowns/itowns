@@ -31,7 +31,7 @@ const extent = new Extent(CRS.tms_4326, 0, 0, 0);
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 20.
  *
- * @example
+ * @example <caption><b>Source from OpenStreetMap server :</b></caption>
  * // Create the source
  * const tmsSource = new itowns.TMSSource({
  *     format: 'image/png',
@@ -50,6 +50,21 @@ const extent = new Extent(CRS.tms_4326, 0, 0, 0);
  *
  * // Add the layer
  * view.addLayer(colorLayer);
+ *
+ * @example <caption><b>Source from Mapbox server :</b></caption>
+ * // Create the source
+ * const orthoSource = new itowns.TMSSource({
+ *     url: 'https://api.mapbox.com/v4/mapbox.satellite/${z}/${x}/${y}.jpg?access_token=' + accessToken,
+ *     crs: 'EPSG:3857',
+ * };
+ *
+ * // Create the layer
+ * const imageryLayer = new itowns.ColorLayer("Ortho", {
+ *     source: orthoSource,
+ * };
+ *
+ * // Add the layer to the view
+ * view.addLayer(imageryLayer);
  */
 class TMSSource extends Source {
     /**
