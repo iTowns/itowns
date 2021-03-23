@@ -317,7 +317,7 @@ describe('Provide in Sources', function () {
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((result) => {
             tile.material.setSequence([colorlayer.id]);
             tile.material.getLayer(colorlayer.id).setTextures(result, [new THREE.Vector4()]);
-            assert.equal(tile.material.uniforms.colorTextures.value[0], undefined);
+            assert.equal(tile.material.uniforms.colorTextures.value[0].extent, undefined);
             tile.material.updateLayersUniforms();
             assert.equal(tile.material.uniforms.colorTextures.value[0].extent.zoom, 10);
             done();
