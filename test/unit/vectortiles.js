@@ -1,7 +1,7 @@
 import fs from 'fs';
 import assert from 'assert';
 import HttpsProxyAgent from 'https-proxy-agent';
-import VectorTileParser, { getStyle } from 'Parser/VectorTileParser';
+import VectorTileParser from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
 import Extent from 'Core/Geographic/Extent';
 import urlParser from 'Parser/MapBoxUrlParser';
@@ -116,12 +116,12 @@ describe('Vector tiles', function () {
             });
             source.whenReady.then(() => {
                 assert.ok(source.styles.land);
-                assert.equal(source.styles.land[0].fill.color, 'rgb(255,0,0)');
+                assert.equal(source.styles.land.fill.color, 'rgb(255,0,0)');
                 done();
             });
         });
 
-        it('creates styles following stops in it', (done) => {
+        it('get style from context', (done) => {
             const source = new VectorTilesSource({
                 url: 'fakeurl',
                 style: {
@@ -137,10 +137,13 @@ describe('Vector tiles', function () {
                 },
             });
             source.whenReady.then(() => {
-                assert.equal(source.styles.land.length, 2);
-                assert.deepEqual(getStyle(source.styles, 'land', 3), source.styles.land[0]);
-                assert.deepEqual(getStyle(source.styles, 'land', 5), source.styles.land[1]);
-                assert.deepEqual(getStyle(source.styles, 'land', 8), source.styles.land[1]);
+                const styleLand_zoom_3 = source.styles.land.drawingStylefromContext({ globals: { zoom: 3 } });
+                const styleLand_zoom_5 = source.styles.land.drawingStylefromContext({ globals: { zoom: 5 } });
+
+                assert.equal(styleLand_zoom_3.fill.color, 'rgb(255,0,0)');
+                assert.equal(styleLand_zoom_3.fill.opacity, 1);
+                assert.equal(styleLand_zoom_5.fill.color, 'rgb(255,0,0)');
+                assert.equal(styleLand_zoom_5.fill.opacity, 0.5);
                 done();
             });
         });
@@ -151,9 +154,10 @@ describe('Vector tiles', function () {
                 networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             });
             source.whenReady.then(() => {
-                assert.equal(source.styles.land.length, 1);
-                assert.equal(source.styles.land[0].zoom.min, 5);
-                assert.equal(source.styles.land[0].zoom.max, 13);
+                assert.equal(source.styles.land.fill.color, 'rgb(255,0,0)');
+                assert.equal(source.styles.land.fill.opacity, 1);
+                assert.equal(source.styles.land.zoom.min, 5);
+                assert.equal(source.styles.land.zoom.max, 13);
                 done();
             });
         });
@@ -180,6 +184,7 @@ describe('Vector tiles', function () {
                         minzoom: 5,
                     }, {
                         // minzoom is 4 (first stop)
+                        // If a style have `stops` expression, should it be used to determine the min zoom?
                         id: 'third',
                         type: 'fill',
                         paint: {
@@ -208,11 +213,11 @@ describe('Vector tiles', function () {
             });
 
             source.whenReady.then(() => {
-                assert.equal(source.styles.first[0].zoom.min, 0);
-                assert.equal(source.styles.second[0].zoom.min, 5);
-                assert.equal(source.styles.third[0].zoom.min, 4);
-                assert.equal(source.styles.fourth[0].zoom.min, 1);
-                assert.equal(source.styles.fifth[0].zoom.min, 4);
+                assert.equal(source.styles.first.zoom.min, 0);
+                assert.equal(source.styles.second.zoom.min, 5);
+                assert.equal(source.styles.third.zoom.min, 0);
+                assert.equal(source.styles.fourth.zoom.min, 0);
+                assert.equal(source.styles.fifth.zoom.min, 3);
                 done();
             });
         });
