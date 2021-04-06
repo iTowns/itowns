@@ -136,7 +136,10 @@ function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, col
     // copy other properties
     for (const key of Object.keys(json)) {
         if (!keyProperties.includes(key.toLowerCase())) {
-            properties[key] = json[key];
+            // create `geojson` key if it does not exist yet
+            properties.geojson = properties.geojson || {};
+            // add key defined property to `geojson` property
+            properties.geojson[key] = json[key];
         }
     }
 
