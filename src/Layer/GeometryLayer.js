@@ -54,9 +54,9 @@ class GeometryLayer extends Layer {
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
-     * @param {THREE.Object3d} object3d - The object3d used to contain the
+     * @param {THREE.Object3D} object3d - The object3D used to contain the
      * geometry of the GeometryLayer. It is usually a `THREE.Group`, but it can
-     * be anything inheriting from a `THREE.Object3d`.
+     * be anything inheriting from a `THREE.Object3D`.
      * @param {Object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements `name, protocol, extent`, these elements will be
@@ -68,7 +68,7 @@ class GeometryLayer extends Layer {
      *
      * @example
      * // Create a GeometryLayer
-     * const geometry = new GeometryLayer('buildings', {
+     * const geometry = new GeometryLayer('buildings', new THREE.Object3D(), {
      *      source: {
      *          url: 'http://server.geo/wfs?',
      *          protocol: 'wfs',
