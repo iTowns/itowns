@@ -5,7 +5,7 @@ import * as mapbox from '@mapbox/mapbox-gl-style-spec';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
 
-const cacheStyle = new Cache();
+export const cacheStyle = new Cache();
 
 const inv255 = 1 / 255;
 const canvas = document.createElement('canvas');
