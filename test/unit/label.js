@@ -1,7 +1,7 @@
 import assert from 'assert';
 import * as THREE from 'three';
 import Label from 'Core/Label';
-import Style from 'Core/Style';
+import Style, { cacheStyle } from 'Core/Style';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
@@ -44,6 +44,10 @@ describe('Label', function () {
     let label;
     let style;
     const c = new Coordinates('EPSG:4978');
+    const sprites = {
+        img: '',
+        icon: { x: 0, y: 0, width: 10, height: 10 },
+    };
 
     before('init style', function () {
         style = new Style();
@@ -54,10 +58,7 @@ describe('Label', function () {
                 'icon-image': 'icon',
                 'icon-size': 1,
             },
-        }, {
-            img: '',
-            icon: { x: 0, y: 0, width: 10, height: 10 },
-        });
+        }, sprites);
     });
 
     it('should throw errors for bad Label construction', function () {
@@ -71,9 +72,15 @@ describe('Label', function () {
     });
 
     it('should set the correct icon anchor position', function () {
-        label = new Label('', c, style);
+        label = new Label('', c, style, sprites);
+
+        // Mock async loading image
+        const img = cacheStyle.get('icon', 1);
+        img.complete = true;
+        img.emitEvent('load');
         assert.equal(label.content.children[0].style.right, 'calc(50% - 5px)');
         assert.equal(label.content.children[0].style.top, 'calc(50% - 5px)');
+
 
         style.text.anchor = 'left';
         label = new Label('', c, style);
