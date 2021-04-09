@@ -8,14 +8,6 @@ function toTMSUrl(url) {
     return url.replace(/\{/g, '${');
 }
 
-function checkStopsValues(obj, target) {
-    for (const p in obj) {
-        if (obj[p].stops) {
-            obj[p].stops.forEach(s => target.push(s[0]));
-        }
-    }
-}
-
 /**
  * @classdesc
  * VectorTilesSource are object containing informations on how to fetch vector
@@ -103,47 +95,19 @@ class VectorTilesSource extends TMSSource {
                 if (layer.type === 'background') {
                     this.backgroundLayer = layer;
                 } else if (ffilter(layer)) {
-                    // TODO: add support for expressions
-                    // https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions
-                    let stops = [];
-                    checkStopsValues(layer.layout, stops);
-                    checkStopsValues(layer.paint, stops);
-
-                    let minStop = Math.min(...stops);
-                    // if none is found, default to 0
-                    minStop = (minStop == Infinity) ? 0 : minStop;
-                    // compare to layer.minzoom and take the highest
-                    minStop = (layer.minzoom == undefined) ? minStop : Math.max(layer.minzoom, minStop);
-
-                    stops.push(minStop);
-                    stops.push(layer.maxzoom == undefined ? 24 : layer.maxzoom);
-                    stops.sort((a, b) => (a - b));
-
-                    // remove all value < minStop
-                    stops = stops.filter(s => s >= minStop);
-
-                    this.styles[layer.id] = [];
-                    for (let i = 0; i < stops.length - 1; i++) {
-                        if (stops[i] == stops[i + 1]) { continue; }
-                        const style = new Style();
-                        style.zoom.min = stops[i];
-                        style.zoom.max = stops[i + 1];
-                        style.setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle);
-                        this.styles[layer.id].push(style);
-                    }
+                    const style = new Style().setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle);
+                    style.zoom.min = layer.minzoom || 0;
+                    style.zoom.max = layer.maxzoom || 24;
+                    this.styles[layer.id] = style;
 
                     if (!this.layers[layer['source-layer']]) {
                         this.layers[layer['source-layer']] = [];
                     }
-
                     this.layers[layer['source-layer']].push({
                         id: layer.id,
                         order,
                         filterExpression: featureFilter(layer.filter),
-                        zoom: {
-                            min: stops[0],
-                            max: stops[stops.length - 1],
-                        },
+                        zoom: style.zoom,
                     });
                 }
             });
