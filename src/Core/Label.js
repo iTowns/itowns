@@ -49,8 +49,9 @@ class Label extends THREE.Object3D {
      * is applied, it cannot be changed directly. However, if it really needed,
      * it can be accessed through `label.content.style`, but it is highly
      * discouraged to do so.
+     * @param {Object} [sprites] the sprites.
      */
-    constructor(content = '', coordinates, style = {}) {
+    constructor(content = '', coordinates, style = {}, sprites) {
         if (coordinates == undefined) {
             throw new Error('coordinates are mandatory to add a Label');
         }
@@ -94,7 +95,7 @@ class Label extends THREE.Object3D {
             if (style.text.haloWidth > 0) {
                 this.content.classList.add('itowns-stroke-single');
             }
-            style.applyToHTML(this.content);
+            style.applyToHTML(this.content, sprites);
         } else {
             this.anchor = [0, 0];
         }

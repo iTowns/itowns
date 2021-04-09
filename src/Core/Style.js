@@ -1,6 +1,7 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 import Cache from 'Core/Scheduler/Cache';
 import Fetcher from 'Provider/Fetcher';
+import * as mapbox from '@mapbox/mapbox-gl-style-spec';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
 
@@ -8,50 +9,70 @@ const cacheStyle = new Cache();
 
 const inv255 = 1 / 255;
 const canvas = document.createElement('canvas');
+const style_properties = {};
+
+function mapPropertiesFromContext(mainKey, from, to, context) {
+    to[mainKey] = to[mainKey] || {};
+    for (const key of style_properties[mainKey]) {
+        const value = readExpression(from[mainKey][key], context);
+        if (value !== undefined) {
+            to[mainKey][key] = value;
+        }
+    }
+}
 
 function rgba2rgb(orig) {
     if (!orig) {
         return {};
-    }
-
-    const result = orig.match(/(?:((hsl|rgb)a? *\(([\d.%]+(?:deg|g?rad|turn)?)[ ,]*([\d.%]+)[ ,]*([\d.%]+)[ ,/]*([\d.%]*)\))|(#((?:[\d\w]{3}){1,2})([\d\w]{1,2})?))/i);
-    if (!result) {
-        return { color: orig, opacity: 1.0 };
-    } else if (result[7]) {
-        let opacity = 1.0;
-        if (result[9]) {
-            opacity = parseInt(result[9].length == 1 ? `${result[9]}${result[9]}` : result[9], 16) * inv255;
+    } else if (orig.stops || orig.expression) {
+        return { color: orig };
+    } else if (typeof orig == 'string') {
+        const result = orig.match(/(?:((hsl|rgb)a? *\(([\d.%]+(?:deg|g?rad|turn)?)[ ,]*([\d.%]+)[ ,]*([\d.%]+)[ ,/]*([\d.%]*)\))|(#((?:[\d\w]{3}){1,2})([\d\w]{1,2})?))/i);
+        if (!result) {
+            return { color: orig, opacity: 1.0 };
+        } else if (result[7]) {
+            let opacity = 1.0;
+            if (result[9]) {
+                opacity = parseInt(result[9].length == 1 ? `${result[9]}${result[9]}` : result[9], 16) * inv255;
+            }
+            return { color: `#${result[8]}`, opacity };
+        } else if (result[0]) {
+            return { color: `${result[2]}(${result[3]},${result[4]},${result[5]})`, opacity: (Number(result[6]) || 1.0) };
         }
-        return { color: `#${result[8]}`, opacity };
-    } else if (result[0]) {
-        return { color: `${result[2]}(${result[3]},${result[4]},${result[5]})`, opacity: (Number(result[6]) || 1.0) };
     }
 }
 
+export function readExpression(property, ctx) {
+    if (property != undefined) {
+        if (property.expression) {
+            return property.expression.evaluate(ctx);
+        } else if (property.stops) {
+            for (var i = property.stops.length - 1; i >= 0; i--) {
+                const stop = property.stops[i];
 
-function readVectorProperty(property, zoom) {
-    if (property == undefined) {
-        //
-    } else if (property.stops) {
-        const p = property.stops.slice().reverse().find(stop => zoom >= stop[0]);
-        return p ? p[1] : property.stops[0][1];
-    } else {
-        return property.base || property;
+                if (ctx.globals.zoom >= stop[0]) {
+                    return stop[1];
+                }
+            }
+            return property.stops[0][1];
+        } else {
+            return property;
+        }
     }
 }
 
-function getImage(target, source, key, size) {
-    if (!target) {
-        target = document.createElement('img');
+function readVectorProperty(property, options) {
+    if (property != undefined) {
+        if (mapbox.expression.isExpression(property)) {
+            return mapbox.expression.createExpression(property, options).value;
+        } else {
+            return property.base || property;
+        }
     }
+}
 
-    target.onload = () => {
-        target.width *= (size || 1);
-        target.height *= (size || 1);
-
-        target.halfWidth = target.width / 2;
-        target.halfHeight = target.height / 2;
-    };
+function getImage(source, key) {
+    const target = document.createElement('img');
 
     if (typeof source == 'string') {
         target.src = source;
@@ -294,6 +315,45 @@ class Style {
     }
 
     /**
+     * Map drawing properties style (fill, stroke and point) from context to object.
+     * Only the necessary properties are mapped to object.
+     * if a property is expression, the mapped value will be the expression result depending on context.
+     * @param      {Object}  context  The context
+     * @return     {Object}  mapped style depending on context.
+     */
+    drawingStylefromContext(context) {
+        const style = {};
+        if (this.fill.color || this.fill.pattern) {
+            mapPropertiesFromContext('fill', this, style, context);
+        }
+        if (this.stroke.color) {
+            mapPropertiesFromContext('stroke', this, style, context);
+        }
+        if (this.point.color) {
+            mapPropertiesFromContext('point', this, style, context);
+        }
+        if (Object.keys(style).length) {
+            return style;
+        }
+    }
+
+    /**
+     * Map symbol properties style (symbol and icon) from context to object.
+     * Only the necessary properties are mapped to object.
+     * if a property is expression, the mapped value will be the expression result depending on context.
+     * @param      {Object}  context  The context
+     * @return     {Object}  mapped style depending on context.
+     */
+    symbolStylefromContext(context) {
+        const style = new Style();
+        mapPropertiesFromContext('text', this, style, context);
+        if (this.icon) {
+            mapPropertiesFromContext('icon', this, style, context);
+        }
+        return style;
+    }
+
+    /**
      * Copies the content of the target style into this style.
      *
      * @param {Style} style - The style to copy.
@@ -336,7 +396,7 @@ class Style {
             this.text.size = properties['label-size'];
 
             if (properties.icon) {
-                this.icon = getImage(this.icon, properties.icon);
+                this.icon = { image: properties.icon, size: 1 };
             }
         } else {
             this.stroke.color = properties.stroke;
@@ -365,41 +425,39 @@ class Style {
 
         this.order = order;
 
-        const zoom = this.zoom.min || 0;
-
         if (layer.type === 'fill' && !this.fill.color) {
-            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern']));
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern'], { type: 'color' }));
             this.fill.color = color;
-            this.fill.opacity = readVectorProperty(layer.paint['fill-opacity'], zoom) || opacity;
+            this.fill.opacity = readVectorProperty(layer.paint['fill-opacity']) || opacity;
             if (layer.paint['fill-pattern'] && sprites) {
-                this.fill.pattern = getImage(this.fill.pattern, sprites, layer.paint['fill-pattern']);
+                this.fill.pattern = getImage(sprites, layer.paint['fill-pattern']);
             }
 
             if (layer.paint['fill-outline-color']) {
-                const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-outline-color']));
+                const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-outline-color'], { type: 'color' }));
                 this.stroke.color = color;
                 this.stroke.opacity = opacity;
                 this.stroke.width = 1.0;
                 this.stroke.dasharray = [];
             }
         } else if (layer.type === 'line' && !this.stroke.color) {
-            const prepare = readVectorProperty(layer.paint['line-color'], zoom);
+            const prepare = readVectorProperty(layer.paint['line-color'], { type: 'color' });
             const { color, opacity } = rgba2rgb(prepare);
-            this.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray'], zoom);
+            this.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray']);
             this.stroke.color = color;
             this.stroke.lineCap = layer.layout['line-cap'];
-            this.stroke.width = readVectorProperty(layer.paint['line-width'], zoom);
-            this.stroke.opacity = readVectorProperty(layer.paint['line-opacity'], zoom) || opacity;
+            this.stroke.width = readVectorProperty(layer.paint['line-width']);
+            this.stroke.opacity = readVectorProperty(layer.paint['line-opacity']) || opacity;
         } else if (layer.type === 'circle' || symbolToCircle) {
-            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['circle-color'], zoom));
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['circle-color'], { type: 'color' }));
             this.point.color = color;
             this.point.opacity = opacity;
-            this.point.radius = readVectorProperty(layer.paint['circle-radius'], zoom);
+            this.point.radius = readVectorProperty(layer.paint['circle-radius']);
         } else if (layer.type === 'symbol') {
             // overlapping order
-            this.text.zOrder = readVectorProperty(layer.layout['symbol-z-order'], zoom);
+            this.text.zOrder = readVectorProperty(layer.layout['symbol-z-order']);
             if (this.text.zOrder == 'auto') {
-                this.text.zOrder = readVectorProperty(layer.layout['symbol-sort-key'], zoom) || 'Y';
+                this.text.zOrder = readVectorProperty(layer.layout['symbol-sort-key']) || 'Y';
             } else if (this.text.zOrder == 'viewport-y') {
                 this.text.zOrder = 'Y';
             } else if (this.text.zOrder == 'source') {
@@ -407,42 +465,38 @@ class Style {
             }
 
             // position
-            this.text.anchor = readVectorProperty(layer.layout['text-anchor'], zoom);
-            this.text.offset = readVectorProperty(layer.layout['text-offset'], zoom);
-            this.text.padding = readVectorProperty(layer.layout['text-padding'], zoom);
-            this.text.size = readVectorProperty(layer.layout['text-size'], zoom);
-            this.text.placement = readVectorProperty(layer.layout['symbol-placement'], zoom);
-            this.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment'], zoom);
+            this.text.anchor = readVectorProperty(layer.layout['text-anchor']);
+            this.text.offset = readVectorProperty(layer.layout['text-offset']);
+            this.text.padding = readVectorProperty(layer.layout['text-padding']);
+            this.text.size = readVectorProperty(layer.layout['text-size']);
+            this.text.placement = readVectorProperty(layer.layout['symbol-placement']);
+            this.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment']);
 
             // content
-            this.text.field = readVectorProperty(layer.layout['text-field'], zoom);
-            this.text.wrap = readVectorProperty(layer.layout['text-max-width'], zoom);
-            this.text.spacing = readVectorProperty(layer.layout['text-letter-spacing'], zoom);
-            this.text.transform = readVectorProperty(layer.layout['text-transform'], zoom);
-            this.text.justify = readVectorProperty(layer.layout['text-justify'], zoom);
+            this.text.field = readVectorProperty(layer.layout['text-field']);
+            this.text.wrap = readVectorProperty(layer.layout['text-max-width']);
+            this.text.spacing = readVectorProperty(layer.layout['text-letter-spacing']);
+            this.text.transform = readVectorProperty(layer.layout['text-transform']);
+            this.text.justify = readVectorProperty(layer.layout['text-justify']);
 
             // appearance
-            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['text-color'], zoom));
+            const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['text-color'], { type: 'color' }));
             this.text.color = color;
-            this.text.opacity = readVectorProperty(layer.paint['text-opacity'], zoom) || (opacity !== undefined && opacity);
-            this.text.font = readVectorProperty(layer.layout['text-font'], zoom);
-            this.text.haloColor = rgba2rgb(readVectorProperty(layer.paint['text-halo-color'], zoom)).color;
-            this.text.haloWidth = readVectorProperty(layer.paint['text-halo-width'], zoom);
-            this.text.haloBlur = readVectorProperty(layer.paint['text-halo-blur'], zoom);
+            this.text.opacity = readVectorProperty(layer.paint['text-opacity']) || (opacity !== undefined && opacity);
+
+            this.text.font = readVectorProperty(layer.layout['text-font']);
+            const haloColor = readVectorProperty(layer.paint['text-halo-color'], { type: 'color' });
+            if (haloColor) {
+                this.text.haloColor = haloColor.color || haloColor;
+                this.text.haloWidth = readVectorProperty(layer.paint['text-halo-width']);
+                this.text.haloBlur = readVectorProperty(layer.paint['text-halo-blur']);
+            }
 
             // additional icon
-            const iconSrc = readVectorProperty(layer.layout['icon-image'], zoom);
-            if (iconSrc) {
-                let size = readVectorProperty(layer.layout['icon-size'], zoom);
-                if (size == undefined) { size = 1; }
-
-                this.icon = cacheStyle.get(iconSrc, size);
-
-                if (!this.icon) {
-                    this.icon = getImage(this.icon, sprites, iconSrc, size);
-                    this.icon.anchor = readVectorProperty(layer.layout['icon-anchor'], zoom) || 'center';
-                    cacheStyle.set(this.icon, iconSrc, size);
-                }
+            const key = readVectorProperty(layer.layout['icon-image']);
+            if (key) {
+                this.icon = { key };
+                this.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
             }
         }
         return this;
@@ -453,15 +507,18 @@ class Style {
      * properties of this style.
      *
      * @param {Element} domElement - The element to set the style to.
+     * @param {Object} sprites - the sprites.
      */
-    applyToHTML(domElement) {
+    applyToHTML(domElement, sprites) {
         domElement.style.padding = `${this.text.padding}px`;
         domElement.style.maxWidth = `${this.text.wrap}em`;
 
         domElement.style.color = this.text.color;
-        domElement.style.fontSize = `${this.text.size}px`;
-        domElement.style.fontFamily = this.text.font.join(',');
+        if (this.text.size > 0) {
+            domElement.style.fontSize = `${this.text.size}px`;
+        }
 
+        domElement.style.fontFamily = this.text.font.join(',');
         domElement.style.textTransform = this.text.transform;
         domElement.style.letterSpacing = `${this.text.spacing}em`;
         domElement.style.textAlign = this.text.justify;
@@ -478,42 +535,72 @@ class Style {
             return;
         }
 
-        this.icon.style.position = 'absolute';
-        switch (this.text.anchor) { // center by default
-            case 'left':
-                this.icon.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
-                this.icon.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
-                break;
-            case 'right':
-                this.icon.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
-                break;
-            case 'top':
-                this.icon.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
-                break;
-            case 'bottom':
-                this.icon.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
-                this.icon.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
-                break;
-            case 'bottom-left':
-                this.icon.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
-                this.icon.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
-                break;
-            case 'bottom-right':
-                this.icon.style.top = `calc(100% - ${this.icon.halfHeight}px)`;
-                break;
-            case 'top-left':
-                this.icon.style.right = `calc(100% - ${this.icon.halfWidth}px)`;
-                break;
-            case 'top-right':
-                break;
-            case 'center':
-            default:
-                this.icon.style.top = `calc(50% - ${this.icon.halfHeight}px)`;
-                this.icon.style.right = `calc(50% - ${this.icon.halfWidth}px)`;
-                break;
+        const image = this.icon.image;
+
+        const size = this.icon.size;
+
+        const key = this.icon.key;
+
+        let icon = cacheStyle.get(image || key, size);
+
+        if (!icon) {
+            if (key && sprites) {
+                icon = getImage(sprites, key);
+            } else {
+                icon = getImage(image);
+            }
+            icon.style.position = 'absolute';
+            cacheStyle.set(icon, image || key, size);
         }
 
-        domElement.appendChild(this.icon.cloneNode());
+        const addIcon = () => {
+            const cIcon = icon.cloneNode();
+            cIcon.width *= size;
+            cIcon.height *= size;
+            switch (this.text.anchor) {
+                case 'left':
+                    cIcon.style.right = `calc(100% - ${cIcon.width * 0.5}px)`;
+                    cIcon.style.top = `calc(50% - ${cIcon.height * 0.5}px)`;
+                    break;
+                case 'right':
+                    cIcon.style.top = `calc(50% - ${cIcon.height * 0.5}px)`;
+                    break;
+                case 'top':
+                    cIcon.style.right = `calc(50% - ${cIcon.width * 0.5}px)`;
+                    break;
+                case 'bottom':
+                    cIcon.style.top = `calc(100% - ${cIcon.height * 0.5}px)`;
+                    cIcon.style.right = `calc(50% - ${cIcon.width * 0.5}px)`;
+                    break;
+                case 'bottom-left':
+                    cIcon.style.top = `calc(100% - ${cIcon.height * 0.5}px)`;
+                    cIcon.style.right = `calc(100% - ${cIcon.width * 0.5}px)`;
+                    break;
+                case 'bottom-right':
+                    cIcon.style.top = `calc(100% - ${cIcon.height * 0.5}px)`;
+                    break;
+                case 'top-left':
+                    cIcon.style.right = `calc(100% - ${cIcon.width * 0.5}px)`;
+                    break;
+                case 'top-right':
+                    break;
+                case 'center':
+                default:
+                    cIcon.style.top = `calc(50% - ${cIcon.height * 0.5}px)`;
+                    cIcon.style.right = `calc(50% - ${cIcon.width * 0.5}px)`;
+                    break;
+            }
+
+            cIcon.style['z-index'] = -1;
+            domElement.appendChild(cIcon);
+            icon.removeEventListener('load', addIcon);
+        };
+
+        if (icon.complete) {
+            addIcon();
+        } else {
+            icon.addEventListener('load', addIcon);
+        }
     }
 
     /**
@@ -530,12 +617,16 @@ class Style {
      * Returns a string, associating `style.text.field` and properties to use to
      * replace the keys in `style.text.field`.
      *
-     * @param {Object} properties - An object containing the properties to use.
+     * @param {Object} ctx - An object containing the feature context.
      *
      * @return {string} The formatted string.
      */
-    getTextFromProperties(properties) {
-        return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (properties[b] || '')).trim();
+    getTextFromProperties(ctx) {
+        if (this.text.field.expression) {
+            return readExpression(this.text.field, ctx);
+        } else {
+            return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (ctx.properties()[b] || '')).trim();
+        }
     }
 }
 
@@ -551,5 +642,13 @@ Object.keys(CustomStyle).forEach((key) => {
 });
 
 document.getElementsByTagName('head')[0].appendChild(customStyleSheet);
+
+const style = new Style();
+
+style_properties.fill = Object.keys(style.fill);
+style_properties.stroke = Object.keys(style.stroke);
+style_properties.point = Object.keys(style.point);
+style_properties.text = Object.keys(style.text);
+style_properties.icon = ['image', 'size', 'key'];
 
 export default Style;

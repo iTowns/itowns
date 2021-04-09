@@ -36,13 +36,13 @@ function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, 
     }
 
     // draw line or edge of polygon
-    if (style.stroke.color) {
+    if (style.stroke) {
         strokeStyle(style, ctx, invCtxScale);
         ctx.stroke();
     }
 
     // fill polygon only
-    if (canBeFilled && (style.fill.color || style.fill.pattern)) {
+    if (canBeFilled && style.fill) {
         fillStyle(style, ctx, invCtxScale);
         ctx.fill();
     }
@@ -56,7 +56,7 @@ function fillStyle(style, ctx, invCtxScale) {
         } else {
             console.warn('Raster pattern isn\'t completely supported on Ie and edge');
         }
-    } else if (style.fill.color && ctx.fillStyle !== style.fill.color) {
+    } else if (ctx.fillStyle !== style.fill.color) {
         ctx.fillStyle = style.fill.color;
     }
     if (style.fill.opacity !== ctx.globalAlpha) {
@@ -106,26 +106,31 @@ const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 function drawFeature(ctx, feature, extent, style, invCtxScale) {
     const extentDim = extent.dimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
+    const globals = { zoom: extent.zoom };
 
     for (const geometry of feature.geometries) {
         if (geometry.extent.intersectsExtent(extent)) {
-            const geoStyle = geometry.properties.style || style;
-            if (feature.type === FEATURE_TYPES.POINT) {
-                // cross multiplication to know in the extent system the real size of
-                // the point
-                const px = (Math.round(geoStyle.point.radius * invCtxScale) || 3 * invCtxScale) * scaleRadius;
-                for (const indice of geometry.indices) {
-                    const offset = indice.offset * feature.size;
-                    const count = offset + indice.count * feature.size;
-                    for (let j = offset; j < count; j += feature.size) {
-                        coord.setFromArray(feature.vertices, j);
-                        if (extent.isPointInside(coord, px)) {
-                            drawPoint(ctx, feature.vertices[j], feature.vertices[j + 1], geoStyle, invCtxScale);
+            const context = { globals, properties: () => geometry.properties };
+            const contextStyle = (geometry.properties.style || style).drawingStylefromContext(context);
+
+            if (contextStyle) {
+                if (feature.type === FEATURE_TYPES.POINT) {
+                    // cross multiplication to know in the extent system the real size of
+                    // the point
+                    const px = (Math.round(contextStyle.point.radius * invCtxScale) || 3 * invCtxScale) * scaleRadius;
+                    for (const indice of geometry.indices) {
+                        const offset = indice.offset * feature.size;
+                        const count = offset + indice.count * feature.size;
+                        for (let j = offset; j < count; j += feature.size) {
+                            coord.setFromArray(feature.vertices, j);
+                            if (extent.isPointInside(coord, px)) {
+                                drawPoint(ctx, feature.vertices[j], feature.vertices[j + 1], contextStyle, invCtxScale);
+                            }
                         }
                     }
+                } else {
+                    drawPolygon(ctx, feature.vertices, geometry.indices, contextStyle, feature.size, extent, invCtxScale, (feature.type == FEATURE_TYPES.POLYGON));
                 }
-            } else {
-                drawPolygon(ctx, feature.vertices, geometry.indices, geoStyle, feature.size, extent, invCtxScale, (feature.type == FEATURE_TYPES.POLYGON));
             }
         }
     }
