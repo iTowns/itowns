@@ -47,7 +47,8 @@
         "effects_postprocessing": "Post processing",
         "effects_split": "Splitted rendering",
         "effects_stereo": "Stereo effects",
-        "mars": "Mars atmosphere"
+        "mars": "Mars atmosphere",
+        "contour_render": "Contour render"
     },
 
     "Miscellaneous": {

@@ -57,7 +57,51 @@ vec4 getLayerColor(int textureOffset, sampler2D tex, vec4 offsetScale, Layer lay
 
     float borderDistance = getBorderDistance(uv.xy);
     if (textureOffset != layer.textureOffset + int(uv.z) || borderDistance < minBorderDistance ) return vec4(0);
+    
     vec4 color = texture2D(tex, pitUV(uv.xy, offsetScale));
+    if(layer.effect == -1.0) {
+        ivec2 textureSize2d = textureSize(tex,0);
+        float textureSize = float(textureSize2d.x);
+        float texelSize = 1.0 / textureSize;
+        // position en pixel arrondi pour être certain de ne pas interpoler une couleur
+        int x = int(uv.x * float(textureSize2d.x));
+        int y = int(uv.y * float(textureSize2d.y));
+    
+        int y_up = y + 1;
+        if (y_up >= textureSize2d.y) y_up = y;
+        int y_down = y - 1;
+        if (y_down < 0) y_down = y;
+        int x_left = x - 1;
+        if (x_left < 0) x_left = x;
+        int x_right = x + 1;
+        if (x_right >= textureSize2d.x) x_right = x;
+
+        vec4 colorUp = texture2D(tex, pitUV(
+            (vec2(float(x), float(y_up))+vec2(0.5, 0.5))*vec2(1./float(textureSize2d.x), 1./float(textureSize2d.y)),
+            offsetScale));
+        vec4 colorDown = texture2D(tex, pitUV(
+            (vec2(float(x), float(y_down))+vec2(0.5, 0.5))*vec2(1./float(textureSize2d.x), 1./float(textureSize2d.y)),
+            offsetScale));
+        vec4 colorLeft = texture2D(tex, pitUV(
+            (vec2(float(x_left), float(y))+vec2(0.5, 0.5))*vec2(1./float(textureSize2d.x), 1./float(textureSize2d.y)),
+            offsetScale));
+        vec4 colorRight = texture2D(tex, pitUV(
+            (vec2(float(x_right), float(y))+vec2(0.5, 0.5))*vec2(1./float(textureSize2d.x), 1./float(textureSize2d.y)),
+            offsetScale));
+        vec4 colorCenter = texture2D(tex, pitUV(
+            (vec2(float(x), float(y))+vec2(0.5, 0.5))*vec2(1./float(textureSize2d.x), 1./float(textureSize2d.y)),
+            offsetScale));
+
+        if (((colorUp.rgb == colorCenter.rgb) && (colorDown.rgb == colorCenter.rgb) ) && 
+            ((colorLeft.rgb == colorCenter.rgb) && (colorRight.rgb == colorCenter.rgb) )){
+            color.a = 0.0;
+        }
+        else {
+            color.r = 1.0;
+            color.g = 0.0;
+            color.b = 0.0;
+        }
+    }
     if(color.a > 0.0) {
         if(layer.effect > 2.0) {
             color.rgb /= color.a;
