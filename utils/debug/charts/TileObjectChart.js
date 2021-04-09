@@ -1,4 +1,4 @@
-import Chart from 'chart.js';
+import { Chart } from 'chart.js';
 import { scales, color_rose, color_blue } from './ChartConfig';
 
 export default function TileObjectsChart(ctx, tileLayer) {

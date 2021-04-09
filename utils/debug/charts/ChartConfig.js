@@ -1,9 +1,9 @@
-import Chart from 'chart.js';
+import { Chart } from 'chart.js';
 
-Chart.defaults.global.defaultFontColor = '#b0b0b0';
+Chart.defaults.color = '#b0b0b0';
 
 export const scales =  {
-    yAxes: [{
+    y: {
         display: true,
         ticks: {
             suggestedMin: 0, // minimum will be 0, unless there is a lower value.
@@ -12,7 +12,7 @@ export const scales =  {
             color: '#606060',
             zeroLineColor: '#606060',
         },
-    }],
+    },
 };
 
 export const color_rose = '#e7c9e5';

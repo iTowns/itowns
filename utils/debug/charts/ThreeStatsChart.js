@@ -1,5 +1,7 @@
-import Chart from 'chart.js';
+import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale,  BarElement,  BarController } from 'chart.js';
 import { scales, color_rose, color_blue } from './ChartConfig';
+
+Chart.register(LineController, LineElement, PointElement, LinearScale,  CategoryScale, BarElement, BarController);
 
 export default function ThreeStatsChart(ctx, renderer) {
     let lastValidCompareIndex = -1;
