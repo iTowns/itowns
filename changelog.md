@@ -1,3 +1,56 @@
+<a name="2.32.0"></a>
+# [2.32.0](https://github.com/iTowns/itowns/compare/v2.31.0...v2.32.0) (2021-04-09)
+
+
+### Features
+
+* **PlanarControls:** add max and min resolution parameters to limit zoom ([ad17590](https://github.com/iTowns/itowns/commit/ad17590))
+* **PlanarControls:** Add property 'Cursor' and method 'setCursor' for cursor modification ([0870ede](https://github.com/iTowns/itowns/commit/0870ede))
+* **Style:** support mapbox expression. ([0581d3d](https://github.com/iTowns/itowns/commit/0581d3d))
+
+
+### Bug Fixes
+
+* **Atmosphere:** avoid several realistic atmosphere initializations. ([b949f75](https://github.com/iTowns/itowns/commit/b949f75))
+* **Camera:** resize preserves the scale ([e44de7f](https://github.com/iTowns/itowns/commit/e44de7f))
+* **extent:** forget copy zoom in Extent#transformedCopy. ([1a607ea](https://github.com/iTowns/itowns/commit/1a607ea))
+* **Extent:** forgetting zoom property copy, in Extent.as(). ([3efea0e](https://github.com/iTowns/itowns/commit/3efea0e))
+* **Label:** wrong div translate. ([5ef7197](https://github.com/iTowns/itowns/commit/5ef7197))
+* **PlanarControls:** fix drag when moving out of view domElement ([a4f0a3f](https://github.com/iTowns/itowns/commit/a4f0a3f))
+* **PlanarControls:** prevent triggering new movement when already moving ([66256bb](https://github.com/iTowns/itowns/commit/66256bb))
+* **test:** apply async icon label loading. ([76d732a](https://github.com/iTowns/itowns/commit/76d732a))
+* **test:** update label test with default icon size. ([72a98d4](https://github.com/iTowns/itowns/commit/72a98d4))
+* **test:** update vector tile style test with context expression. ([c9fc662](https://github.com/iTowns/itowns/commit/c9fc662))
+* **VectorTileSource:** failing to open mapbox url format. ([b6dd383](https://github.com/iTowns/itowns/commit/b6dd383))
+
+
+### Examples
+
+* **Orthographic:** add resolution limit parameters in orthographic examples ([aafd37b](https://github.com/iTowns/itowns/commit/aafd37b))
+* add atmosphere mars example. ([27e28ad](https://github.com/iTowns/itowns/commit/27e28ad))
+* update irrelevant titles in some examples ([2914286](https://github.com/iTowns/itowns/commit/2914286))
+
+
+### Code Refactoring
+
+* **Atmosphere:** move realistic atmosphere options to Atmosphere constructor. ([234a8ee](https://github.com/iTowns/itowns/commit/234a8ee))
+* **Source:** remove extentsInsideLimit. ([035701b](https://github.com/iTowns/itowns/commit/035701b))
+* **VectorTilesSource:** remove useless styles by zoom. ([baabbae](https://github.com/iTowns/itowns/commit/baabbae))
+
+
+### Workflow and chores
+
+* release v2.32.0 ([95c6f37](https://github.com/iTowns/itowns/commit/95c6f37))
+* update packages. ([e9ae835](https://github.com/iTowns/itowns/commit/e9ae835))
+
+
+### Documentation
+
+* **GeometryLayer:** fix example and typo regarding Object3D ([d77c8d6](https://github.com/iTowns/itowns/commit/d77c8d6))
+* **TMSSource:** add example in doc ([dce0032](https://github.com/iTowns/itowns/commit/dce0032))
+
+
+
 <a name="2.31.0"></a>
 # [2.31.0](https://github.com/iTowns/itowns/compare/v2.30.0...v2.31.0) (2021-03-02)
 
