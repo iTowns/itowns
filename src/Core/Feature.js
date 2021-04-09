@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
+import CRS from 'Core/Geographic/Crs';
 import Style from 'Core/Style';
 
 function defaultExtent(crs) {
@@ -275,8 +276,7 @@ export class FeatureCollection {
      */
     constructor(crs, options) {
         this.isFeatureCollection = true;
-        // TODO: Replace crs parameter by CRS.formatToEPSG(options.crs)
-        this.crs = crs;
+        this.crs = CRS.formatToEPSG(options.crs);
         this.features = [];
         this.optionsFeature = options || {};
         if (this.optionsFeature.buildExtent) {
