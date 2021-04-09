@@ -91,10 +91,6 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
     feature.updateExtent(geometry);
 }
 
-export function getStyle(styles, id, zoom) {
-    return styles[id].find(s => s.zoom.min <= zoom && s.zoom.max > zoom);
-}
-
 function readPBF(file, options) {
     options.out = options.out || {};
     const vectorTile = new VectorTile(new Protobuf(file));
@@ -141,13 +137,13 @@ function readPBF(file, options) {
                     feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
                     feature.id = layer.id;
                     feature.order = layer.order;
-                    feature.style = getStyle(options.in.styles, feature.id, z);
+                    feature.style = options.in.styles[feature.id];
                     vtFeatureToFeatureGeometry(vtFeature, feature);
                 } else if (!collection.features.find(f => f.id === layer.id)) {
                     feature = collection.newFeatureByReference(feature);
                     feature.id = layer.id;
                     feature.order = layer.order;
-                    feature.style = getStyle(options.in.styles, feature.id, z);
+                    feature.style = options.in.styles[feature.id];
                 }
             }
         }

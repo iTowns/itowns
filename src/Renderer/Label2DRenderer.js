@@ -5,6 +5,13 @@ function isIntersectedOrOverlaped(a, b) {
         || a.top > b.bottom || a.bottom < b.top);
 }
 
+// find label in children
+function hasLabelChildren(object) {
+    const parent = object.parent;
+    return parent.material && !parent.material.visible &&
+        parent.children.find(c => c.isTileMesh && c.children.find(cc => cc.isLabel));
+}
+
 // A grid to manage labels on the screen.
 class ScreenGrid {
     constructor(x = 12, y = 10, width, height) {
@@ -136,7 +143,7 @@ class Label2DRenderer {
 
         viewProjectionMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
 
-        this.culling(scene, this.infoTileLayer.currentMaxTileZoom, this.infoTileLayer.displayed.extent);
+        this.culling(scene, this.infoTileLayer.displayed.extent);
 
         // sort by order, then by visibility inside those subsets
         // https://docs.mapbox.com/help/troubleshooting/optimize-map-label-placement/#label-hierarchy
@@ -160,7 +167,7 @@ class Label2DRenderer {
         this.grid.hidden.forEach((label) => { label.visible = false; });
     }
 
-    culling(object, currentMaxZoom, extent) {
+    culling(object, extent) {
         if (!object.isLabel) {
             if (!object.visible) {
                 this.hideNodeDOM(object);
@@ -174,10 +181,9 @@ class Label2DRenderer {
 
             this.showNodeDOM(object);
 
-            object.children.forEach(c => this.culling(c, currentMaxZoom, extent));
-        // By verifying the maxzoom and the presence of the label inside the
-        // visible extent, we can filter more labels.
-        } else if (object.zoom.max <= currentMaxZoom || !extent.isPointInside(object.coordinates)) {
+            object.children.forEach(c => this.culling(c, extent));
+        // the presence of the label inside the visible extent and if children has label, we can filter more labels.
+        } else if (!extent.isPointInside(object.coordinates) || hasLabelChildren(object)) {
             this.grid.hidden.push(object);
         // Do some horizon culling (if possible) if the tiles level is small
         // enough. The chosen value of 4 seems to provide a good result.
