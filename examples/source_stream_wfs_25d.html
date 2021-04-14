@@ -7,6 +7,7 @@
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="description">
@@ -25,288 +26,79 @@
             <ul id="info"></ul>
         </div>
         <div id="viewerDiv"></div>
+        <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
         <script type="text/javascript">
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
-            itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+            itowns.proj4.defs('EPSG:2154','+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
             /* global itowns,document, setupLoadingScreen, window */
 
-            var extent;
-            var viewerDiv;
-            var view;
-            var meshes;
-            var p;
-            var wmsImagerySource;
-            var wmsImageryLayer;
-            var rgb;
-            var lyonTclBusSource;
-            var color = new itowns.THREE.Color();
-
             // Define geographic extent: CRS, min/max X, min/max Y
-            extent = new itowns.Extent(
-                'EPSG:3946',
-                1837816.94334, 1847692.32501,
-                5170036.4587, 5178412.82698);
+            const extent = new itowns.Extent(
+                'EPSG:2154',
+                230500, 230900,
+                6759500, 6759900);
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate PlanarView*
             view = new itowns.PlanarView(viewerDiv, extent, {
+                maxSubdivisionLevel: 18,
                 placement: {
-                    coord: new itowns.Coordinates('EPSG:3946', 1840839, 5172718, 0),
+                    coord: new itowns.Coordinates('EPSG:2154',  230772.61032104492,
+                            6759574.437865883, 0),
                     heading: -45,
-                    range: 1800,
+                    range: 20,
                     tilt: 30,
                 }
             });
-            setupLoadingScreen(viewerDiv, view);
 
-            wmsImagerySource = new itowns.WMSSource({
-                url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                networkOptions: { crossOrigin: 'anonymous' },
-                version: '1.3.0',
-                name: 'Ortho2009_vue_ensemble_16cm_CC46',
-                crs: 'EPSG:3946',
-                extent: extent,
-                format: 'image/jpeg',
-            });
+            var menuGlobe = new GuiTools('menuDiv', view);
 
-            // Add a WMS imagery layer
-            wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
-                transparent: false,
-                source: wmsImagerySource,
-            });
-
-            view.addLayer(wmsImageryLayer);
-
-            // Add a WMS elevation source
-            var wmsElevationSource = new itowns.WMSSource({
-                extent: extent,
-                url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                name: 'MNT2012_Altitude_10m_CC46',
-                crs: 'EPSG:3946',
-                width: 256,
-                format: 'image/jpeg',
-            });
-
-            // Add a WMS elevation layer
-            var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
-                useColorTextureElevation: true,
-                colorTextureElevationMinZ: 144,
-                colorTextureElevationMaxZ: 622,
-                source: wmsElevationSource,
-            });
-
-            view.addLayer(wmsElevationLayer);
-
-            function setMaterialLineWidth(result) {
-                result.traverse(function _setLineWidth(mesh) {
-                    if (mesh.material) {
-                        mesh.material.linewidth = 5;
-                    }
-                });
-            }
-
-            function colorLine(properties) {
-                return color.set(Math.round(Math.random() * 0xffffff));
-            }
-
-            var tile;
-            var linesBus = [];
-
-            function altitudeLine(properties, contour) {
-                var result;
-                var z = 0;
-                if (contour) {
-                    result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0, tile);
-                    if (!result) {
-                        result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0);
-                    }
-                    if (result) {
-                        tile = [result.tile];
-                        z = result.coord.z;
-                    }
-                    return z + 5;
-                }
-            }
-
-            function acceptFeatureBus(properties) {
-                if (properties.sens == 'Aller') {
-                    var line = properties.ligne;
-                    if (linesBus.indexOf(line) === -1) {
-                        linesBus.push(line);
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            lyonTclBusSource = new itowns.WFSSource({
-                url: 'https://download.data.grandlyon.com/wfs/rdata?',
-                protocol: 'wfs',
-                version: '2.0.0',
-                id: 'tcl_bus',
-                typeName: 'tcl_sytral.tcllignebus',
-                crs: 'EPSG:3946',
-                extent: {
-                    west: 1822174.60,
-                    east: 1868247.07,
-                    south: 5138876.75,
-                    north: 5205890.19,
+            const optionsGeoJsonParser = {
+                in: {
+                    crs: 'EPSG:2154',
                 },
-                format: 'geojson',
-            });
-
-            var lyonTclBusLayer = new itowns.GeometryLayer('lyon_tcl_bus', new itowns.THREE.Group(), {
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    color: colorLine,
-                    altitude: altitudeLine }),
-                onMeshCreated: setMaterialLineWidth,
-                filter: acceptFeatureBus,
-                source: lyonTclBusSource,
-                zoom: { min: 2 },
-            });
-
-            view.addLayer(lyonTclBusLayer);
-
-            function colorBuildings(properties) {
-                if (properties.geojson.id.indexOf('bati_remarquable') === 0) {
-                    return color.set(0x5555ff);
+                out: {
+                    crs: view.tileLayer.extent.crs,
+                    buildExtent: true,
+                    mergeFeatures: true,
+                    structure: '2d',
                 }
-                if (properties.geojson.id.indexOf('bati_industriel') === 0) {
-                    return color.set(0xff5555);
-                }
-                return color.set(0xeeeeee);
-            }
+            };
 
-            function extrudeBuildings(properties) {
-                return properties.hauteur;
-            }
+            itowns.Fetcher.json('./activePatchs.json')
+                .then(function _(geojson) {
+                    return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
+                }).then(function _(features) {
+                    var pyoSource = new itowns.FileSource({ features });
 
-            function altitudeBuildings(properties) {
-                return properties.z_min - properties.hauteur;
-            }
-
-            meshes = [];
-            function scaler(/* dt */) {
-                var i;
-                var mesh;
-                if (meshes.length) {
-                    view.notifyChange();
-                }
-                for (i = 0; i < meshes.length; i++) {
-                    mesh = meshes[i];
-                    mesh.scale.z = Math.min(
-                        1.0, mesh.scale.z + 0.1);
-                    mesh.updateMatrixWorld(true);
-                }
-                meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
-            }
-
-            function acceptFeature(properties) {
-                return !!properties.hauteur;
-            }
-
-            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
-
-            var wfsBuildingSource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-                version: '2.0.0',
-                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
-                crs: 'EPSG:4326',
-                ipr: 'IGN',
-                format: 'application/json',
-                extent: {
-                    west: 4.568,
-                    east: 5.18,
-                    south: 45.437,
-                    north: 46.03,
-                },
-            });
-
-            var wfsBuildingLayer = new itowns.GeometryLayer('wfsBuilding', new itowns.THREE.Group(), {
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    color: colorBuildings,
-                    batchId: function (property, featureId) { return featureId; },
-                    altitude: altitudeBuildings,
-                    extrude: extrudeBuildings }),
-                onMeshCreated: function scaleZ(mesh) {
-                    mesh.scale.z = 0.01;
-                    meshes.push(mesh);
-                },
-                filter: acceptFeature,
-                overrideAltitudeInToZero: true,
-                crs: 'EPSG:3946',
-                source: wfsBuildingSource,
-                zoom: { min: 4 },
-            });
-
-            view.addLayer(wfsBuildingLayer);
-
-            var wfsCartoSource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-                version: '2.0.0',
-                typeName: 'BDCARTO_BDD_WLD_WGS84G:zone_habitat',
-                crs: 'EPSG:4326',
-                ipr: 'IGN',
-                format: 'application/json',
-                extent: {
-                    west: 4.568,
-                    east: 5.18,
-                    south: 45.437,
-                    north: 46.03,
-                },
-            });
-
-            var wfsCartoStyle = new itowns.Style({
-                zoom: { min: 0, max: 20 },
-                text: {
-                    field: '{toponyme}',
-                    transform: 'uppercase',
-                    size: 20,
-                    haloColor: 'white',
-                    haloWidth: 1,
-                },
-            });
-
-            var wfsCartoLayer = new itowns.LabelLayer('wfsCarto', {
-                crs: 'EPSG:3946',
-                source: wfsCartoSource,
-                style: wfsCartoStyle,
-            });
-
-            // TODO: enable this again when the stream became available
-            // Search for "zone_habitat" in this page https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?SERVICE=WFS&REQUEST=GetCapabilities
-            // view.addLayer(wfsCartoLayer);
-
-            function picking(event) {
-                var htmlInfo = document.getElementById('info');
-                var intersects = view.pickObjectsAt(event, 2, 'wfsBuilding');
-                var properties;
-                var info;
-                var batchId;
-                htmlInfo.innerHTML = ' ';
-
-                if (intersects.length) {
-                    batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
-                    properties = intersects[0].object.feature.geometries[batchId].properties;
-                    Object.keys(properties).map(function (objectKey) {
-                        var value = properties[objectKey];
-                        var key = objectKey.toString();
-                        if (key[0] !== '_' && key !== 'geometry_name') {
-                            info = value.toString();
-                            htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
-                        }
+                    var pyoStyle = new itowns.Style({
+                        fill: {
+                            color: 'white',
+                            opacity: 0.8,
+                        },
+                        stroke: {
+                            color:'IndianRed',
+                        },
                     });
-                    return properties;
-                }
-            }
 
-            window.addEventListener('mousemove', picking, false);
+                    var pyoLayer = new itowns.ColorLayer('pyrenees-orientales', {
+                        name: 'pyrenees-orientales',
+                        transparent: true,
+                        source: pyoSource,
+                        style: pyoStyle,
+                    });
+
+                    return view.addLayer(pyoLayer);
+                });
+
+            debug.createTileDebugUI(menuGlobe.gui, view);
+
         </script>
     </body>
 </html>
