@@ -216,7 +216,7 @@ class Feature {
         this.crs = crs;
         this.normals = structure3d ? [] : undefined;
         this.size = structure3d ? 3 : 2;
-        if (options.buildExtent) {
+        if (options.extent) {
             // this.crs is final crs projection, is out projection.
             // If the extent crs is the same then we use output coordinate (coordOut) to expand it.
             this.extent = defaultExtent(options.forcedExtentCrs || this.crs);
@@ -279,9 +279,7 @@ export class FeatureCollection {
         this.crs = CRS.formatToEPSG(options.crs);
         this.features = [];
         this.optionsFeature = options || {};
-        if (this.optionsFeature.buildExtent) {
-            this.extent = defaultExtent(options.forcedExtentCrs || this.crs);
-        }
+        this.extent = options.buildExtent ? defaultExtent(options.forcedExtentCrs || this.crs) : undefined;
         this.translation = new THREE.Vector3();
         this.scale = new THREE.Vector3(1, 1, 1);
     }
