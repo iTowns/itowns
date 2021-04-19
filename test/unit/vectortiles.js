@@ -18,6 +18,9 @@ describe('Vector tiles', function () {
                 layers,
                 styles: [[]],
             },
+            out: {
+                crs: 'EPSG:3857',
+            },
         });
     }
 
