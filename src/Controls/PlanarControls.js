@@ -1037,7 +1037,13 @@ class PlanarControls extends THREE.EventDispatcher {
     onMouseUp(event) {
         event.preventDefault();
 
-        if (STATE.TRAVEL !== this.state && currentPressedButton === event.button) {
+        // Does not interrupt ongoing camera action if state is TRAVEL or CAMERA_OTHO. This prevents interrupting a zoom
+        // movement or a smart travel by pressing any movement key.
+        // The camera action is also uninterrupted if the released button does not match the button triggering the
+        // ongoing action. This prevents for instance exiting drag mode when right-clicking while dragging the view.
+        if (STATE.TRAVEL !== this.state
+            && STATE.ORTHO_ZOOM !== this.state
+            && currentPressedButton === event.button) {
             this.state = STATE.NONE;
         }
 
