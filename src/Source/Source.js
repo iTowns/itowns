@@ -23,6 +23,8 @@ export const supportedParsers = new Map([
     ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
 ]);
 
+const noCache = { getByArray: () => {}, setByArray: a => a, clear: () => {} };
+
 /**
  * @property {string} crs - data crs projection.
  * @property {boolean} isInverted - This option is to be set to the
@@ -170,12 +172,13 @@ class Source extends InformationsData {
      */
     loadData(extent, out) {
         const cache = this._featuresCaches[out.crs];
+        const key = this.requestToKey(extent);
         // try to get parsed data from cache
-        let features = cache.getByArray(this.requestToKey(extent));
+        let features = cache.getByArray(key);
         if (!features) {
             // otherwise fetch/parse the data
             features = cache.setByArray(fetchSourceData(this, extent).then(file => this.parser(file, { out, in: this }),
-                err => this.handlingError(err)), this.requestToKey(extent));
+                err => this.handlingError(err)), key);
             /* istanbul ignore next */
             if (this.onParsedFile) {
                 features.then((feat) => {
@@ -196,7 +199,10 @@ class Source extends InformationsData {
     onLayerAdded(options) {
         // Added new cache by crs
         if (!this._featuresCaches[options.out.crs]) {
-            this._featuresCaches[options.out.crs] = new Cache();
+            // Cache feature only if it's vector data, the feature are cached in source.
+            // It's not necessary to cache raster in Source,
+            // because it's already cached on layer.
+            this._featuresCaches[options.out.crs] = this.isVectorSource ? new Cache() : noCache;
         }
     }
 
