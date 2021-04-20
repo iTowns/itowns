@@ -74,8 +74,7 @@ var DragNDrop = (function _() {
                         crs: (extension.mode == _GEOMETRY ? _view.referenceCrs : _view.tileLayer.extent.crs),
                         buildExtent: true,
                         mergeFeatures: true,
-                        withNormal: (extension.mode == _GEOMETRY),
-                        withAltitude: (extension.mode == _GEOMETRY),
+                        structure: (extension.mode == _GEOMETRY ? '3d' : '2d'),
                     },
                 }).then(function _(features) {
                     var dimensions = features.extent.dimensions();

@@ -130,7 +130,7 @@ function jsonFeatureToFeature(crsIn, crsOut, json, filteringExtent, options, col
     const feature = options.mergeFeatures ? collection.requestFeatureByType(featureType) : new Feature(featureType, crsOut, options);
     const geometryCount = feature.geometryCount;
     const coordinates = jsonType != 'point' ? json.geometry.coordinates : [json.geometry.coordinates];
-    const setAltitude = !options.overrideAltitudeInToZero && options.withAltitude;
+    const setAltitude = !options.overrideAltitudeInToZero && options.structure == '3d';
     const properties = json.properties || {};
 
     // copy other properties
@@ -199,8 +199,7 @@ export default {
 
         _in.crs = _in.crs || readCRS(json);
         out.mergeFeatures = out.mergeFeatures == undefined ? true : out.mergeFeatures;
-        out.withNormal = out.withNormal == undefined ? true : out.withNormal;
-        out.withAltitude = out.withAltitude == undefined ? true : out.withAltitude;
+        out.structure = out.structure == undefined ? '3d' : out.structure;
 
         let filteringExtent;
         if (out.filteringExtent) {

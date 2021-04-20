@@ -13,15 +13,25 @@ export const deprecatedParsingOptionsToNewOne = (options) => {
         newOptions.out.mergeFeatures = options.mergeFeatures;
         newOptions.out.withNormal = options.withNormal;
         newOptions.out.withAltitude = options.withAltitude;
-        newOptions.out.buildExtent = options.buildExtent;
+        if (options.out.withAltitude && options.out.withNormal) {
+            newOptions.structure = '3d';
+        } else {
+            newOptions.structure = '2d';
+        }
         newOptions.out.filteringExtent = options.filteringExtent;
         newOptions.out.style = options.style;
         newOptions.out.overrideAltitudeInToZero = options.overrideAltitudeInToZero;
         newOptions.out.filter = options.filter;
         return newOptions;
-    } else {
-        return options;
+    } else if (options.out && (options.out.withAltitude !== undefined || options.out.withNormal !== undefined)) {
+        console.warn('Parsing options out.withAltitude and out.withNormal are deprecates, use out.structure: 2d or 3d.');
+        if (options.out.withAltitude && options.out.withNormal) {
+            options.structure = '3d';
+        } else {
+            options.structure = '2d';
+        }
     }
+    return options;
 };
 
 export default {};

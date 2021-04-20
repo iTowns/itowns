@@ -27,10 +27,9 @@ const defaultNormal = new THREE.Vector3(0, 0, 1);
  * @property {string} forcedExtentCrs - force feature extent crs if buildExtent is true.
  * @property {function} [filter] - Filter function to remove features
  * @property {boolean} [mergeFeatures=true] - If true all geometries are merged by type and multi-type
- * @property {boolean} [withNormal=true] - If true each coordinate normal is computed.
- * True if the layer inherits from {@link GeometryLayer}
- * @property {boolean} [withAltitude=true] - If true each coordinate altitude is kept
- * True if the layer inherits from {@link GeometryLayer}
+ * @property {string} [structure='2d'] - data structure type : 2d or 3d.
+ * If the structure is 3d, the feature have 3 dimensions by vertices positions and
+ * a normal for each vertices.
  * @property {boolean} [overrideAltitudeInToZero=false] - If true, the altitude of the source data isn't taken into account for 3D geometry convertions.
  * the altitude will be override to 0. This can be useful if you don't have a DEM or provide a new one when converting (with Layer.convert).
  * @property {Style} style - The style to inherit when creating
@@ -198,8 +197,9 @@ class Feature {
      * @param {string} crs Geographic or Geocentric coordinates system.
      * @param {FeatureBuildingOptions} [options={}] options to build feature.
      * @param {boolean} [options.buildExtent] Build extent and update when adding new vertice.
-     * @param {boolean} [options.withAltitude] Set vertice altitude when adding new vertice.
-     * @param {boolean} [options.withNormal] Set vertice normal when adding new vertice.
+     * @property {string} [options.structure='3d'] - data structure type : `2d` or `3d`.
+     * If the structure is `3d`, the feature have 3 dimensions by vertice position and
+     * a normal for each vertices. The structure `3d` it is adapted to convert in 3d mesh.
      * @param {Style} [options.style] The style to inherit when creating a new
      * style for this feature.
      */
@@ -209,11 +209,12 @@ class Feature {
         } else {
             throw new Error(`Unsupported Feature type: ${type}`);
         }
+        const structure3d = options.structure == '3d';
         this.geometries = [];
         this.vertices = [];
-        this.normals = options.withNormal ? [] : undefined;
         this.crs = crs;
-        this.size = options.withAltitude ? 3 : 2;
+        this.normals = structure3d ? [] : undefined;
+        this.size = structure3d ? 3 : 2;
         if (options.buildExtent) {
             // this.crs is final crs projection, is out projection.
             // If the extent crs is the same then we use output coordinate (coordOut) to expand it.

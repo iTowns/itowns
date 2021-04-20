@@ -234,7 +234,7 @@ describe('Sources', function () {
             assert.ok(source.fetchedData);
             assert.ok(source.isFileSource);
 
-            const layer = new Layer('09-ariege', { crs: 'EPSG:4326', source, withAltitude: false });
+            const layer = new Layer('09-ariege', { crs: 'EPSG:4326', source, structure: '2d' });
             layer.source.onLayerAdded({ out: layer });
 
             layer.whenReady.then(() => {

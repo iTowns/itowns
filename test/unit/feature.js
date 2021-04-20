@@ -4,8 +4,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 
 describe('Feature', function () {
     const options_A = {
-        withNormal: true,
-        withAltitude: true,
+        structure: '3d',
         buildExtent: true,
     };
 

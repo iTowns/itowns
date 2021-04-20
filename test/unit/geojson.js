@@ -62,28 +62,17 @@ describe('GeoJsonParser', function () {
         }).then((collection) => {
             assert.ok(collection.features.length == 3);
         }));
-    it('should return an collection without altitude', () =>
+    it('should return an collection without altitude and normal', () =>
         GeoJsonParser.parse(holes, {
             in: {
                 crs: 'EPSG:3946',
             },
             out: {
                 crs: 'EPSG:3946',
-                withAltitude: false,
+                structure: '2d',
             },
         }).then((collection) => {
             assert.ok(collection.features[0].vertices.length == 32);
-        }));
-    it('should return an collection without normal', () =>
-        GeoJsonParser.parse(holes, {
-            in: {
-                crs: 'EPSG:3946',
-            },
-            out: {
-                crs: 'EPSG:3946',
-                withNormal: false,
-            },
-        }).then((collection) => {
             assert.ok(collection.features[0].normals == undefined);
         }));
 

@@ -81,8 +81,7 @@ class ColorLayer extends RasterLayer {
 
         // Feature options
         this.buildExtent = true;
-        this.withNormal = false;
-        this.withAltitude = false;
+        this.structure = '2d';
     }
 
     /**
