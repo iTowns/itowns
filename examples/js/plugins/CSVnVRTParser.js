@@ -83,6 +83,8 @@ var CSVnVRTParser = (function _() {
     }
 
     function OGRVRTLayer2Feature(layer, data, crs, options) {
+        var collection = new itowns.FeatureCollection(options.out);
+
         var _crs = (layer.LayerSRS && layer.LayerSRS.value) || crs;
 
         var type = itowns.FEATURE_TYPES.POINT;
@@ -90,7 +92,7 @@ var CSVnVRTParser = (function _() {
             type = getGeometryType(layer.GeometryType.value);
         }
 
-        var feature = new itowns.Feature(type, options.out.crs, options.out);
+        var feature = collection.requestFeatureByType(type);
 
         if (layer.Field) {
             if (!layer.Field.length) {
@@ -138,7 +140,9 @@ var CSVnVRTParser = (function _() {
             }
         }
 
-        return feature;
+        collection.updateExtent();
+
+        return collection;
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -153,10 +157,7 @@ var CSVnVRTParser = (function _() {
 
     function readLayer(layer, data, options, crs) {
         if (layer.OGRVRTLayer) {
-            var collection = new itowns.FeatureCollection(options.out.crs, options.out);
-            var feature = OGRVRTLayer2Feature(layer.OGRVRTLayer, data, layer.TargetSRS.value, options);
-            collection.pushFeature(feature);
-            return collection;
+            return OGRVRTLayer2Feature(layer.OGRVRTLayer, data, layer.TargetSRS.value, options);
         } else if (layer.OGRVRTWarpedLayer) {
             return OGRVRTWarpedLayer2Feature(layer, data, options, crs);
         } else if (layer.OGRVRTUnionLayer) {

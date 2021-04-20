@@ -195,36 +195,28 @@ class Feature {
     /**
      *
      * @param {string} type type of Feature. It can be 'point', 'line' or 'polygon'.
-     * @param {string} crs Geographic or Geocentric coordinates system.
-     * @param {FeatureBuildingOptions} [options={}] options to build feature.
-     * @param {boolean} [options.buildExtent] Build extent and update when adding new vertice.
-     * @property {string} [options.structure='3d'] - data structure type : `2d` or `3d`.
-     * If the structure is `3d`, the feature have 3 dimensions by vertice position and
-     * a normal for each vertices. The structure `3d` it is adapted to convert in 3d mesh.
-     * @param {Style} [options.style] The style to inherit when creating a new
-     * style for this feature.
+     * @param {FeatureCollection} collection Parent feature collection.
      */
-    constructor(type, crs, options = {}) {
+    constructor(type, collection) {
         if (Object.keys(FEATURE_TYPES).find(t => FEATURE_TYPES[t] === type)) {
             this.type = type;
         } else {
             throw new Error(`Unsupported Feature type: ${type}`);
         }
-        const structure3d = options.structure == '3d';
         this.geometries = [];
         this.vertices = [];
-        this.crs = crs;
-        this.normals = structure3d ? [] : undefined;
-        this.size = structure3d ? 3 : 2;
-        if (options.extent) {
+        this.crs = collection.crs;
+        this.size = collection.size;
+        this.normals = collection.size == 3 ? [] : undefined;
+        if (collection.extent) {
             // this.crs is final crs projection, is out projection.
             // If the extent crs is the same then we use output coordinate (coordOut) to expand it.
-            this.extent = defaultExtent(options.forcedExtentCrs || this.crs);
-            this.useCrsOut = !options.forceExtentCrs;
+            this.extent = defaultExtent(collection.extent.crs);
+            this.useCrsOut = !collection.forceExtentCrs;
         }
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
-        this.style = new Style({}, options.style);
+        this.style = new Style({}, collection.style);
     }
     /**
      * Instance a new {@link FeatureGeometry}  and push in {@link Feature}.
@@ -256,6 +248,7 @@ class Feature {
 export default Feature;
 
 /**
+ * @property {string} crs - The array of features composing the
  * @property {Feature[]} features - The array of features composing the
  * collection.
  * @property {Extent?} extent - The 2D extent containing all the features
@@ -271,17 +264,20 @@ export class FeatureCollection {
     /**
      * Constructs a new instance.
      *
-     * @param      {string}  crs      The crs projection.
      * @param      {FeatureBuildingOptions|Layer}  options  The building options .
      */
-    constructor(crs, options) {
+    constructor(options) {
         this.isFeatureCollection = true;
         this.crs = CRS.formatToEPSG(options.crs);
         this.features = [];
-        this.optionsFeature = options || {};
+        this.mergeFeatures = options.mergeFeatures === undefined ? true : options.mergeFeatures;
         this.extent = options.buildExtent ? defaultExtent(options.forcedExtentCrs || this.crs) : undefined;
         this.translation = new THREE.Vector3();
         this.scale = new THREE.Vector3(1, 1, 1);
+        this.size = options.structure == '3d' ? 3 : 2;
+        this.filterExtent = options.filterExtent;
+        this.overrideAltitudeInToZero = options.overrideAltitudeInToZero;
+        this.style = options.style;
     }
 
     /**
@@ -316,10 +312,10 @@ export class FeatureCollection {
 
     requestFeature(type, callback) {
         const feature = this.features.find(callback);
-        if (feature && this.optionsFeature.mergeFeatures) {
+        if (feature && this.mergeFeatures) {
             return feature;
         } else {
-            const newFeature = new Feature(type, this.crs, this.optionsFeature);
+            const newFeature = new Feature(type, this);
             this.features.push(newFeature);
             return newFeature;
         }
@@ -355,7 +351,7 @@ export class FeatureCollection {
      * @return     {Feature}  The new referenced feature
      */
     newFeatureByReference(feature) {
-        const ref = new Feature(feature.type, this.crs, this.optionsFeature);
+        const ref = new Feature(feature.type, this);
         ref.extent = feature.extent;
         ref.geometries = feature.geometries;
         ref.normals = feature.normals;

@@ -112,7 +112,7 @@ function readPBF(file, options) {
     options.out.mergeFeatures = true;
     options.out.structure = '2d';
 
-    const collection = new FeatureCollection('EPSG:3857', options.out);
+    const collection = new FeatureCollection(options.out);
 
     const vFeature = vectorTile.layers[sourceLayers[0]];
     // TODO: verify if size is correct because is computed with only one feature (vFeature).
