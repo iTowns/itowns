@@ -110,8 +110,7 @@ function readPBF(file, options) {
 
     options.out.buildExtent = true;
     options.out.mergeFeatures = true;
-    options.out.withAltitude = false;
-    options.out.withNormal = false;
+    options.out.structure = '2d';
 
     const collection = new FeatureCollection('EPSG:3857', options.out);
 

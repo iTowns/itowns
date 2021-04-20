@@ -135,8 +135,7 @@ class GeometryLayer extends Layer {
 
         // Feature options
         this.filteringExtent = !this.source.isFileSource;
-        this.withNormal = true;
-        this.withAltitude = true;
+        this.structure = '3d';
     }
 
     // Attached layers expect to receive the visual representation of a

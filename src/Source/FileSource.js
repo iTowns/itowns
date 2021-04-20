@@ -84,8 +84,7 @@ import CRS from 'Core/Geographic/Crs';
      *             crs: view.tileLayer.extent.crs,
      *             buildExtent: true,
      *             mergeFeatures: true,
-     *             withNormal: false,
-     *             withAltitude: false,
+     *             structure: '2d',
  *             },
  *         });
  *     }).then(function _(features) {
