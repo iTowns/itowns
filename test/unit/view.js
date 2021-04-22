@@ -26,7 +26,7 @@ describe('Viewer', function () {
             crs: 'EPSG:4326',
         });
 
-        colorLayer = new ColorLayer('l0', { source, labelEnabled: true, crs: 'EPSG:4326' });
+        colorLayer = new ColorLayer('l0', { source, addLabelLayer: true, crs: 'EPSG:4326' });
         colorLayer2 = new ColorLayer('l1', { source });
     });
 

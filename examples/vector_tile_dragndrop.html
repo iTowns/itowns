@@ -50,7 +50,7 @@
                 var layer = new itowns.ColorLayer(style.name + ' ' + id, {
                     source,
                     noTextureParentOutsideLimit: true,
-                    labelEnabled: true,
+                    addLabelLayer: true,
                 });
 
                 view.addLayer(layer).then(() => {
