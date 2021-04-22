@@ -18,9 +18,9 @@ import Cache from 'Core/Scheduler/Cache';
  * @property {Promise} whenReady - this promise is resolved when the layer is added and all initializations are done.
  * This promise is resolved with this layer.
  * This promise is returned by [View#addLayer]{@link View}.
- * @property {boolean} [labelEnabled=false] - Used to tell if this layer has
+ * @property {boolean} [addLabelLayer=false] - Used to tell if this layer has
  * labels to display from its data. For example, it needs to be set to `true`
- * for a layer with vector tiles.
+ * for a layer with vector tiles. If it's `true` a new `LabelLayer` is added and attached to this `Layer`.
  * @property {object} [zoom] - This property is used only the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
  * By example,
  * The layer checks the tile zoom level to determine if the layer is visible in this tile.

@@ -13,7 +13,7 @@ const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 
 /**
  * A layer to handle a bunch of `Label`. This layer can be created on its own,
- * but it is better to use the option `labelEnabled` on another `Layer` to let
+ * but it is better to use the option `addLabelLayer` on another `Layer` to let
  * it work with it (see the `vector_tile_raster_2d` example).
  *
  * @property {boolean} isLabelLayer - Used to checkout whether this layer is a
