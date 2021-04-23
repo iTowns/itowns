@@ -303,7 +303,7 @@ class StreetControls extends FirstPersonControls {
             })
             .onUpdate((d) => {
                 // 'manually' slerp the Quaternion to avoid rotation issues
-                THREE.Quaternion.slerp(startQuaternion, this.end.quaternion, this.camera.quaternion, d.t);
+                this.camera.quaternion.slerpQuaternions(startQuaternion, this.end.quaternion, d.t);
             })
             .start();
 

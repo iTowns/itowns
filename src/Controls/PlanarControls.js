@@ -773,10 +773,9 @@ class PlanarControls extends THREE.EventDispatcher {
 
         // new rotation
         if (travelUseRotation === true) {
-            THREE.Quaternion.slerp(
+            this.camera.quaternion.slerpQuaternions(
                 travelStartRot,
                 travelEndRot,
-                this.camera.quaternion,
                 alpha,
             );
         }

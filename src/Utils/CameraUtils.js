@@ -221,10 +221,10 @@ class CameraRig extends THREE.Object3D {
             .onUpdate((d) => {
                 // rotate to coord destination in geocentric projection
                 if (view.referenceCrs == 'EPSG:4978') {
-                    THREE.Quaternion.slerp(this.start.quaternion, this.end.quaternion, this.quaternion, d.t);
+                    this.quaternion.slerpQuaternions(this.start.quaternion, this.end.quaternion, d.t);
                 }
                 // camera rotation
-                THREE.Quaternion.slerp(this.start.camera.quaternion, this.end.camera.quaternion, this.camera.quaternion, d.t);
+                this.camera.quaternion.slerpQuaternions(this.start.camera.quaternion, this.end.camera.quaternion, d.t);
                 // camera's target rotation
                 this.target.rotation.set(0, 0, 0);
                 this.target.rotateZ(THREE.MathUtils.lerp(this.start.target.rotation.z, this.end.target.rotation.z, d.t));
