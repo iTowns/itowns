@@ -1,9 +1,18 @@
 {
+    "basics": {
+        "title": "ITowns basics"
+    },
+    "Create-a-simple-plan": {
+        "title": "Display data in a local CRS"
+    },
     "Create-a-simple-globe": {
-        "title": "Creating a simple Globe"
+        "title": "Display data in a global CRS"
+    },
+    "Display-a-vector-color-layer": {
+        "title": "Display some vector data projected on the ground"
     },
     "Display-a-geometry-layer": {
-        "title": "Display a Geometry Layer"
+        "title": "Display some vector data in 3D"
     },
     "webgl": {
         "title": "WebGL 1.0/2.0"
