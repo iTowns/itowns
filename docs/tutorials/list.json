@@ -1,11 +1,20 @@
 {
-    "Create-a-simple-globe": {
-        "title": "Creating a simple Globe"
-    },
-    "Display-a-geometry-layer": {
-        "title": "Display a Geometry Layer"
+    "Fundamentals": {
+        "title": "Fundamentals"
     },
     "webgl": {
         "title": "WebGL 1.0/2.0"
+    },
+    "Raster-data-Lambert93": {
+        "title": "Lambert conformal conic"
+    },
+    "Raster-data-WGS84": {
+        "title": "WGS84 (EPSG:4326)"
+    },
+    "Vector-data-3d": {
+        "title": "As 3D objects"
+    },
+    "Vector-data-on-ground": {
+        "title": "Projected on the ground"
     }
 }
