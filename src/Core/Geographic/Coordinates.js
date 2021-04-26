@@ -230,7 +230,9 @@ class Coordinates {
                 this.y = THREE.MathUtils.clamp(this.y, -89.999999, 89.999999);
             }
 
-            target.setFromArray(proj4cache(this.crs, crs).forward([this.x, this.y, this.z]));
+            target.setFromArray(proj4cache(this.crs, crs).forward(
+                [this.x, this.y, this.z].map(coord => parseFloat(coord.toFixed(10))),
+            ));
         }
 
         target.crs = crs;
