@@ -163,7 +163,7 @@ class CameraRig extends THREE.Object3D {
             this.target.rotation.x = THREE.MathUtils.degToRad(params.tilt);
         }
         if (params.heading != undefined) {
-            this.target.rotation.z = THREE.MathUtils.degToRad(wrapTo180(params.heading + 180));
+            this.target.rotation.z = THREE.MathUtils.degToRad(-wrapTo180(params.heading + 180));
         }
         if (params.range) {
             this.camera.position.set(0, params.range, 0);
@@ -313,7 +313,7 @@ class CameraRig extends THREE.Object3D {
 
     get tilt() { return THREE.MathUtils.radToDeg(this.target.rotation.x); }
 
-    get heading() { return wrapTo180((THREE.MathUtils.radToDeg(this.target.rotation.z) + 180)); }
+    get heading() { return -wrapTo180((THREE.MathUtils.radToDeg(this.target.rotation.z) + 180)); }
 
     get range() { return this.camera.position.y; }
 }
