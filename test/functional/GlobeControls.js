@@ -149,7 +149,7 @@ describe('GlobeControls with globe example', function _() {
         const mouse = page.mouse;
         await mouse.move(middleWidth, middleHeight, { steps: 20 });
         await mouse.down();
-        await mouse.move((middleWidth) - 50, (middleHeight), { steps: 10 });
+        await mouse.move((middleWidth) + 50, (middleHeight), { steps: 10 });
         await mouse.up();
         await page.keyboard.up('Control');
         const endHeading = await page.evaluate(() => view.controls.getHeading());
