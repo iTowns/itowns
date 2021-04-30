@@ -62,25 +62,13 @@ function coordinatesToVertices(ptsIn, normals, target, altitude = 0, extrude = 0
     countIn *= 3;
     offsetOut *= 3;
     const endIn = startIn + countIn;
-    let fnAltitude;
-    if (!isNaN(altitude)) {
-        fnAltitude = () => altitude;
-    } else if (Array.isArray(altitude)) {
-        fnAltitude = id => altitude[(id - startIn) / 3];
-    } else {
-        fnAltitude = id => altitude({}, coord.setFromArray(ptsIn, id));
-    }
 
     for (let i = startIn, j = offsetOut; i < endIn; i += 3, j += 3) {
         // move the vertex following the normal, to put the point on the good altitude
-        const t = fnAltitude(i) + (Array.isArray(extrude) ? extrude[(i - startIn) / 3] : extrude);
-        if (target.minAltitude) {
-            target.minAltitude = Math.min(t, target.minAltitude);
-        }
         // fill the vertices array at the offset position
-        target[j] = ptsIn[i] + normals[i] * t;
-        target[j + 1] = ptsIn[i + 1] + normals[i + 1] * t;
-        target[j + 2] = ptsIn[i + 2] + normals[i + 2] * t;
+        target[j] = ptsIn[i] + normals[i] * (extrude - altitude);
+        target[j + 1] = ptsIn[i + 1] + normals[i + 1] * (extrude - altitude);
+        target[j + 2] = ptsIn[i + 2] + normals[i + 2] * (extrude - altitude);
     }
 }
 
@@ -138,7 +126,7 @@ function featureToPoint(feature, options) {
     let vertices;
     if (options.altitude !== 0) {
         vertices = new Float32Array(ptsIn.length);
-        coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
+        coordinatesToVertices(ptsIn, normals, vertices, options.fnAltitude);
     } else {
         vertices = new Float32Array(ptsIn);
     }
@@ -162,7 +150,6 @@ function featureToPoint(feature, options) {
     if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
 
     const points = new THREE.Points(geom, pointMaterial);
-    points.minAltitude = 0;
     return points;
 }
 
@@ -177,9 +164,9 @@ function featureToLine(feature, options) {
     let featureId = 0;
 
     let vertices;
-    if (options.altitude !== 0) {
+    if (feature.altitude.min != Infinity) {
         vertices = new Float32Array(ptsIn.length);
-        coordinatesToVertices(ptsIn, normals, vertices, options.altitude);
+        coordinatesToVertices(ptsIn, normals, vertices, feature.altitude.min);
     } else {
         vertices = new Float32Array(ptsIn);
     }
@@ -188,13 +175,16 @@ function featureToLine(feature, options) {
 
     let lines;
 
+    // TODO CREATE material for each feature
+    lineMaterial.linewidth = feature.style.stroke.width;
+
     if (feature.geometries.length > 1) {
         const countIndices = (count - feature.geometries.length) * 2;
         const indices = new Uint16Array(countIndices);
         let i = 0;
         // Multi line case
         for (const geometry of feature.geometries) {
-            const color = getProperty('color', options, randomColor, geometry.properties);
+            const color = feature.style.stroke.color(geometry.properties);
             const start = geometry.indices[0].offset;
             // To avoid integer overflow with indice value (16 bits)
             if (start > 0xffff) {
@@ -233,7 +223,6 @@ function featureToLine(feature, options) {
         }
         lines = new THREE.Line(geom, lineMaterial);
     }
-    lines.minAltitude = 0;
     return lines;
 }
 
@@ -245,7 +234,6 @@ function featureToPolygon(feature, options) {
     const vertices = new Float32Array(ptsIn);
     const colors = new Uint8Array(ptsIn.length);
     const indices = [];
-    vertices.minAltitude = Infinity;
 
     const batchIds = options.batchId ?  new Uint32Array(vertices.length / 3) : undefined;
     let featureId = 0;
@@ -263,7 +251,7 @@ function featureToPolygon(feature, options) {
         const count = end - start;
         const altitude = getProperty('altitude', options, 0, geometry.properties);
         if (altitude !== 0) {
-            coordinatesToVertices(ptsIn, normals, vertices, altitude, 0, start, count);
+            coordinatesToVertices(ptsIn, normals, vertices, () => altitude, 0, start, count);
         }
         fillColorArray(colors, count, color, start);
 
@@ -293,7 +281,6 @@ function featureToPolygon(feature, options) {
     geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
 
     const mesh = new THREE.Mesh(geom, material);
-    mesh.minAltitude = isNaN(vertices.minAltitude) ? 0 : vertices.minAltitude;
     return mesh;
 }
 
@@ -321,30 +308,28 @@ function featureToExtrudedPolygon(feature, options) {
     const indices = [];
     const totalVertices = ptsIn.length / 3;
 
-    vertices.minAltitude = Infinity;
-
     const batchIds = options.batchId ?  new Uint32Array(vertices.length / 3) : undefined;
     let featureId = 0;
 
-    for (const geometry of feature.geometries) {
-        const altitude = getProperty('altitude', options, 0, geometry.properties);
-        const extrude = getProperty('extrude', options, 0, geometry.properties);
+    const delta = feature.altitude.min == Infinity ? 0 : feature.altitude.min;
 
-        const colorTop = getProperty('color', options, randomColor, geometry.properties);
+    for (const geometry of feature.geometries) {
+        const extrude = feature.style.fill.extrusion_height(geometry.properties);
+        const colorTop = feature.style.fill.color(geometry.properties);
         color.copy(colorTop);
-        color.multiplyScalar(0.6);
+        color.multiplyScalar(0.5);
 
         const start = geometry.indices[0].offset;
         const lastIndice = geometry.indices.slice(-1)[0];
         const end = lastIndice.offset + lastIndice.count;
         const count = end - start;
 
-        coordinatesToVertices(ptsIn, normals, vertices, altitude, 0, start, count);
+        coordinatesToVertices(ptsIn, normals, vertices, delta, 0, start, count);
         fillColorArray(colors, count, color, start);
 
         const startTop = start + totalVertices;
         const endTop = end + totalVertices;
-        coordinatesToVertices(ptsIn, normals, vertices, altitude, extrude, startTop, count, start);
+        coordinatesToVertices(ptsIn, normals, vertices, delta, extrude, startTop, count, start);
         fillColorArray(colors, count, colorTop, startTop);
 
         const geomVertices = vertices.slice(startTop * 3, endTop * 3);
@@ -383,7 +368,6 @@ function featureToExtrudedPolygon(feature, options) {
     geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
 
     const mesh = new THREE.Mesh(geom, material);
-    mesh.minAltitude = isNaN(vertices.minAltitude) ? 0 : vertices.minAltitude;
     return mesh;
 }
 
@@ -411,7 +395,7 @@ function featureToMesh(feature, options) {
             mesh = featureToLine(feature, options);
             break;
         case FEATURE_TYPES.POLYGON:
-            if (options.extrude) {
+            if (feature.style.fill.extrusion_height) {
                 mesh = featureToExtrudedPolygon(feature, options);
             } else {
                 mesh = featureToPolygon(feature, options);
@@ -434,22 +418,28 @@ function featuresToThree(features, options) {
     if (features.length == 1) {
         coord.crs = features[0].crs;
         coord.setFromValues(0, 0, 0);
-        return featureToMesh(features[0], options);
+        const mesh = featureToMesh(features[0], options);
+
+        mesh.position.z = features[0].altitude.min == Infinity ? 0 : features[0].altitude.min;
+
+        return mesh;
     }
 
     const group = new THREE.Group();
-    group.minAltitude = Infinity;
 
     for (const feature of features) {
         coord.crs = feature.crs;
         coord.setFromValues(0, 0, 0);
         const mesh = featureToMesh(feature, options);
+        mesh.position.z = feature.altitude.min == Infinity ? features.altitude.min : 0;
+
         group.add(mesh);
-        group.minAltitude = Math.min(mesh.minAltitude, group.minAltitude);
     }
 
     return group;
 }
+
+// const vector3 = new THREE.Vector3();
 
 /**
  * @module Feature2Mesh
@@ -504,7 +494,6 @@ export default {
     convert(options = {}) {
         return function _convert(collection) {
             if (!collection) { return; }
-
             return featuresToThree(collection.features, options);
         };
     },

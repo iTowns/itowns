@@ -67,6 +67,10 @@ export class FeatureGeometry {
             this.extent = defaultExtent(feature.extent.crs);
             this._currentExtent = defaultExtent(feature.extent.crs);
         }
+        this.altitude = {
+            min: Infinity,
+            max: -Infinity,
+        };
     }
     /**
      * Add a new marker to indicate the starting of sub geometry and extends the vertices buffer.
@@ -115,6 +119,14 @@ export class FeatureGeometry {
      * @param {Feature} feature - the feature containing the geometry
      */
     pushCoordinates(coordIn, feature) {
+        if (feature.style) {
+            if (feature.type == FEATURE_TYPES.POLYGON && feature.style.fill.base_altitude) {
+                coordIn.z = feature.style.fill.base_altitude(this.properties, coordIn);
+            } else if (feature.type == FEATURE_TYPES.LINE && feature.style.stroke.base_altitude) {
+                coordIn.z = feature.style.stroke.base_altitude(this.properties, coordIn);
+            }
+        }
+
         coordIn.as(feature.crs, coordOut);
 
         feature.setLocalCoordinates(coordOut);
@@ -127,6 +139,11 @@ export class FeatureGeometry {
         // expand extent if present
         if (this._currentExtent) {
             this._currentExtent.expandByCoordinates(feature.useCrsOut ? coordOut : coordIn);
+        }
+
+        if (this.size == 3) {
+            this.altitude.min = Math.min(this.altitude.min, coordIn.z);
+            this.altitude.max = Math.max(this.altitude.max, coordIn.z);
         }
     }
 
@@ -149,6 +166,11 @@ export class FeatureGeometry {
         // expand extent if present
         if (this._currentExtent) {
             this._currentExtent.expandByValuesCoordinates(long, lat, alt);
+        }
+
+        if (this.size == 3) {
+            this.altitude.min = Math.min(this.altitude.min, alt);
+            this.altitude.max = Math.max(this.altitude.max, alt);
         }
     }
 
@@ -234,6 +256,12 @@ class Feature {
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
         this.style = new Style({}, collection.style);
+
+        this.altitude = {
+            get: collection.altitude.get,
+            min: Infinity,
+            max: -Infinity,
+        };
     }
     /**
      * Instance a new {@link FeatureGeometry}  and push in {@link Feature}.
@@ -251,6 +279,11 @@ class Feature {
     updateExtent(geometry) {
         if (this.extent) {
             this.extent.union(geometry.extent);
+        }
+
+        if (this.size == 3) {
+            this.altitude.min = Math.min(this.altitude.min, geometry.altitude.min);
+            this.altitude.max = Math.max(this.altitude.max, geometry.altitude.max);
         }
     }
 
@@ -337,6 +370,12 @@ export class FeatureCollection  extends THREE.Object3D {
             applyTransformation2D(coord, this);
             this._setLocalCoordinates = applyTransformation2D;
         } : applyTransformation3D;
+
+        this.altitude = {
+            get: options.altitude,
+            min: Infinity,
+            max: -Infinity,
+        };
     }
 
     setLocalCoordinates(coordinates) {
@@ -353,6 +392,13 @@ export class FeatureCollection  extends THREE.Object3D {
             const extents = extent ? [extent] : this.features.map(feature => feature.extent);
             for (const ext of extents) {
                 this.extent.union(ext);
+            }
+        }
+        if (this.size == 3) {
+            const altitudes = this.features.map(feature => feature.altitude);
+            for (const altitude of altitudes) {
+                this.altitude.min = Math.min(this.altitude.min, altitude.min);
+                this.altitude.max = Math.max(this.altitude.max, altitude.max);
             }
         }
     }

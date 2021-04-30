@@ -13,11 +13,9 @@ function assignLayer(object, layer) {
             object.material.opacity = layer.opacity;
             object.material.wireframe = layer.wireframe;
 
+            // TODO move to style !!
             if (layer.size) {
                 object.material.size = layer.size;
-            }
-            if (layer.linewidth) {
-                object.material.linewidth = layer.linewidth;
             }
         }
         object.layers.set(layer.threejsLayer);

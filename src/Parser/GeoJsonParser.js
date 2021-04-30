@@ -34,14 +34,14 @@ const toFeature = {
     populateGeometry(crsIn, coordinates, geometry, collection, feature) {
         geometry.startSubGeometry(coordinates.length, feature);
 
-        const useAlti = !collection.overrideAltitudeInToZero &&
-                        collection.size == 3 &&
-                        typeof coordinates[0][2] == 'number';
+        // const useAlti = !collection.overrideAltitudeInToZero &&
+        //                 collection.size == 3 &&
+        //                 typeof coordinates[0][2] == 'number';
 
         // coordinates is a list of pair [[x1, y1], [x2, y2], ..., [xn, yn]]
         for (const pair of coordinates) {
             coord.crs = crsIn;
-            coord.setFromValues(pair[0], pair[1], useAlti ? pair[2] : 0);
+            coord.setFromValues(pair[0], pair[1], pair[2]);
             geometry.pushCoordinates(coord, feature);
         }
         geometry.updateExtent();

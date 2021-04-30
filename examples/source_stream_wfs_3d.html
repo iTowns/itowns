@@ -113,13 +113,18 @@
             var lyonTclBusLayer = new itowns.GeometryLayer('WFS Bus lines', new itowns.THREE.Group(), {
                 name: 'lyon_tcl_bus',
                 update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    color: colorLine,
-                    altitude: altitudeLine }),
-                linewidth: 5,
+                convert: itowns.Feature2Mesh.convert(),
                 filter: acceptFeatureBus,
                 source: lyonTclBusSource,
                 zoom: { min: 9 },
+
+                style: new itowns.Style({
+                    stroke: {
+                        color: colorLine,
+                        base_altitude: altitudeLine,
+                        width: 2,
+                    }
+                })
             });
             view.addLayer(lyonTclBusLayer);
 
@@ -181,18 +186,23 @@
             var wfsBuildingLayer = new itowns.GeometryLayer('WFS Building', new itowns.THREE.Group(), {
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
-                    color: colorBuildings,
                     batchId: function (property, featureId) { return featureId; },
-                    altitude: altitudeBuildings,
-                    extrude: extrudeBuildings }),
+                }),
                 onMeshCreated: function scaleZ(mesh) {
                     mesh.scale.z = 0.01;
                     meshes.push(mesh);
                 },
                 filter: acceptFeature,
-                overrideAltitudeInToZero: true,
                 source: wfsBuildingSource,
                 zoom: { min: 14 },
+
+                style: new itowns.Style({
+                    fill: {
+                        color: colorBuildings,
+                        base_altitude: altitudeBuildings,
+                        extrusion_height: extrudeBuildings,
+                    }
+                })
             });
             view.addLayer(wfsBuildingLayer);
 
