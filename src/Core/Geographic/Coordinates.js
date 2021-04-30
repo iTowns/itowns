@@ -198,6 +198,16 @@ class Coordinates {
     }
 
     /**
+     * Multiplies this `coordinates` (with an implicit 1 in the 4th dimension) and `mat`.
+     *
+     * @param      {THREE.Matrix4}  mat The matrix.
+     * @return     {Coordinates}  return this object.
+     */
+    applyMatrix4(mat) {
+        return THREE.Vector3.prototype.applyMatrix4.call(this, mat);
+    }
+
+    /**
      * Returns coordinates in the wanted [CRS]{@link http://inspire.ec.europa.eu/theme/rs}.
      *
      * @param {string} crs - The CRS to convert the Coordinates into.
