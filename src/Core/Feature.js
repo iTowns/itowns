@@ -18,6 +18,12 @@ function _extendBuffer(feature, size) {
 const coordOut = new Coordinates('EPSG:4326', 0, 0, 0);
 const defaultNormal = new THREE.Vector3(0, 0, 1);
 
+export const FEATURE_TYPES = {
+    POINT: 0,
+    LINE: 1,
+    POLYGON: 2,
+};
+
 /**
  * @property {string} crs - The CRS to convert the input coordinates to.
  * @property {Extent|boolean} [filteringExtent=undefined] - Optional filter to reject
@@ -167,12 +173,6 @@ function push3DValues(value0, value1, value2 = 0) {
     this.vertices[this._pos++] = value1;
     this.vertices[this._pos++] = value2;
 }
-
-export const FEATURE_TYPES = {
-    POINT: 0,
-    LINE: 1,
-    POLYGON: 2,
-};
 
 /**
  *
