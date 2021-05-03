@@ -48,6 +48,9 @@ var FeatureToolTip = (function _() {
             }
 
             layer = layers[layersId.indexOf(layerId)];
+            if (!layer) {
+                continue;
+            }
             if (typeof layer.options.filterGeometries == 'function') {
                 features[layerId] = layer.options.filterGeometries(features[layerId], layer.layer) || [];
             }
