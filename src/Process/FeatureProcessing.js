@@ -1,18 +1,9 @@
-import * as THREE from 'three';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import handlingError from 'Process/handlerNodeError';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-const mat4 = new THREE.Matrix4();
-
-function applyMatrix4(obj, mat4) {
-    if (obj.geometry) {
-        obj.geometry.applyMatrix4(mat4);
-    }
-    obj.children.forEach(c => applyMatrix4(c, mat4));
-}
 
 function assignLayer(object, layer) {
     if (object) {
@@ -83,13 +74,15 @@ export default {
             view: context.view,
             threejsLayer: layer.threejsLayer,
             requester: node,
+            transform: {
+                matrix: node.matrixWorld,
+            },
         };
 
         return context.scheduler.execute(command).then((result) => {
             // if request return empty json, WFSProvider.getFeatures return undefined
             result = result[0];
             if (result) {
-                const isApplied = !result.layer;
                 assignLayer(result, layer);
                 // call onMeshCreated callback if needed
                 if (layer.onMeshCreated) {
@@ -100,20 +93,7 @@ export default {
                     ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, result);
                     return;
                 }
-                // We don't use node.matrixWorld here, because feature coordinates are
-                // expressed in crs coordinates (which may be different than world coordinates,
-                // if node's layer is attached to an Object with a non-identity transformation)
-                if (isApplied) {
-                    // NOTE: now data source provider use cache on Mesh
-                    // TODO move transform in feature2Mesh
-                    mat4.copy(node.matrixWorld).invert().elements[14] -= result.minAltitude;
-                    applyMatrix4(result, mat4);
-                }
 
-                if (result.minAltitude) {
-                    result.position.z = result.minAltitude;
-                }
-                result.layer = layer;
                 node.add(result);
                 node.updateMatrixWorld();
             } else {

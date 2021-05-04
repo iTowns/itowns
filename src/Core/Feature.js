@@ -117,6 +117,8 @@ export class FeatureGeometry {
     pushCoordinates(coordIn, feature) {
         coordIn.as(feature.crs, coordOut);
 
+        feature.setLocalCoordinates(coordOut);
+
         if (feature.normals) {
             coordOut.geodesicNormal.toArray(feature.normals, feature._pos);
         }
@@ -222,6 +224,7 @@ class Feature {
         this.crs = collection.crs;
         this.size = collection.size;
         this.normals = collection.size == 3 ? [] : undefined;
+        this.setLocalCoordinates = collection.setLocalCoordinates.bind(collection);
         if (collection.extent) {
             // this.crs is final crs projection, is out projection.
             // If the extent crs is the same then we use output coordinate (coordOut) to expand it.
@@ -261,6 +264,17 @@ class Feature {
 
 export default Feature;
 
+const applyTransformation3D = (coord, c) => {
+    coord.geodesicNormal.applyNormalMatrix(c.normalMatrix);
+    coord.applyMatrix4(c.matrixWorldInverse);
+    coord._normalNeedsUpdate = false;
+};
+
+const applyTransformation2D = (coord, c) => {
+    coord.x -= c.position.x;
+    coord.y -= c.position.y;
+};
+
 /**
  * An object regrouping a list of [features]{@link Feature} and the extent of this collection.
  * **Warning**, the data (`extent` or `Coordinates`) can be stored in a local system.
@@ -297,12 +311,10 @@ export default Feature;
  * @property {THREE.Matrix4} matrixWorldInverse - The matrix world inverse.
  *
  */
-
-export class FeatureCollection extends THREE.Object3D {
+export class FeatureCollection  extends THREE.Object3D {
     /**
-     * Constructs a new instance.
-     *
      * @param      {FeatureBuildingOptions|Layer}  options  The building options .
+     * @param      {THREE.Matrix4}  mat  The building options .
      */
     constructor(options) {
         super();
@@ -317,6 +329,18 @@ export class FeatureCollection extends THREE.Object3D {
         this.style = options.style;
         this.isInverted = false;
         this.matrixWorldInverse = new THREE.Matrix4();
+
+        this._setLocalCoordinates = this.size == 2 ? (coord) => {
+            this.position.copy(coord);
+            this.updateMatrix();
+            this.updateMatrixWorld();
+            applyTransformation2D(coord, this);
+            this._setLocalCoordinates = applyTransformation2D;
+        } : applyTransformation3D;
+    }
+
+    setLocalCoordinates(coordinates) {
+        this._setLocalCoordinates(coordinates, this);
     }
 
     /**
@@ -341,6 +365,13 @@ export class FeatureCollection extends THREE.Object3D {
     updateMatrixWorld(force) {
         super.updateMatrixWorld(force);
         this.matrixWorldInverse.copy(this.matrixWorld).invert();
+    }
+
+    setMatrixWorld(matrixWorld) {
+        this.matrixWorld.copy(matrixWorld);
+        this.matrixWorld.decompose(this.position, this.quaternion, this.scale);
+        this.matrixWorldInverse.copy(matrixWorld).invert();
+        this.normalMatrix.getNormalMatrix(this.matrixWorldInverse);
     }
 
     /**

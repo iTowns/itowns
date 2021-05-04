@@ -168,16 +168,17 @@ class Source extends InformationsData {
      *
      * @param      {Extent}  extent   extent requested parsed data.
      * @param      {FeatureBuildingOptions|Layer}  out     The feature returned options
+     * @param      {Object}  [transform]  transform operation on features
      * @return     {FeatureCollection|Texture}  The parsed data.
      */
-    loadData(extent, out) {
+    loadData(extent, out, transform) {
         const cache = this._featuresCaches[out.crs];
         const key = this.requestToKey(extent);
         // try to get parsed data from cache
         let features = cache.getByArray(key);
         if (!features) {
             // otherwise fetch/parse the data
-            features = cache.setByArray(fetchSourceData(this, extent).then(file => this.parser(file, { out, in: this }),
+            features = cache.setByArray(fetchSourceData(this, extent).then(file => this.parser(file, { out, in: this, transform }),
                 err => this.handlingError(err)), key);
             /* istanbul ignore next */
             if (this.onParsedFile) {

@@ -148,6 +148,10 @@ function jsonFeatureToFeature(crsIn, json, collection) {
 function jsonFeaturesToFeatures(crsIn, jsonFeatures, options) {
     const collection = new FeatureCollection(options);
 
+    if (options.transform) {
+        collection.setMatrixWorld(options.transform.matrix);
+    }
+
     const filter = options.filter || (() => true);
 
     for (const jsonFeature of jsonFeatures) {
@@ -175,14 +179,15 @@ export default {
      *
      * @param {string} json - The GeoJSON file content to parse.
      * @param {ParsingOptions} options - Options controlling the parsing.
-
+     * @param {Object} opt - Options controlling the parsing.
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link FeatureCollection}.
      */
-    parse(json, options = {}) {
+    parse(json, options) {
         options = deprecatedParsingOptionsToNewOne(options);
         options.in = options.in || {};
 
         const out = options.out;
+        out.transform = options.transform;
         const _in = options.in;
 
         if (typeof (json) === 'string') {
