@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { Box3, Vector3 } from 'three';
+import { Box3, Vector3, Matrix4, Quaternion } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import CRS from 'Core/Geographic/Crs';
@@ -290,11 +290,16 @@ describe('Extent', function () {
     it('should copy and transform extent', function () {
         const withValues = new Extent('EPSG:4326', [0, 0, 0, 0]);
         const extent = new Extent('EPSG:4326', [minX + 1, maxX - 1, maxY - 1, maxY + 2]);
-        withValues.transformedCopy({ x: 1, y: 2 }, { x: 2, y: -2 }, extent);
-        assert.equal(4, withValues.west);
-        assert.equal(20, withValues.east);
-        assert.equal(-14, withValues.south);
-        assert.equal(-8, withValues.north);
+        const position = new Vector3(1, 2, 0);
+        const scale = new Vector3(2, -2, 1);
+        const quaternion = new Quaternion();
+        const matrix = new Matrix4().compose(position, quaternion, scale);
+
+        withValues.copy(extent).applyMatrix4(matrix);
+        assert.equal(3, withValues.west);
+        assert.equal(19, withValues.east);
+        assert.equal(-8, withValues.south);
+        assert.equal(-2, withValues.north);
     });
 
     it('should get the right center for extrem cases', function () {

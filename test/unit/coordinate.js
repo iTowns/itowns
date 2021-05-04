@@ -1,4 +1,5 @@
 import proj4 from 'proj4';
+import { Vector3, Matrix4, Quaternion } from 'three';
 import assert from 'assert';
 import Coordinates from 'Core/Geographic/Coordinates';
 
@@ -80,5 +81,20 @@ describe('Coordinates', function () {
         assert.equal(0, normal0.x);
         assert.equal(0, normal0.y);
         assert.equal(1, normal0.z);
+    });
+
+    it('should correctly apply Matrix4', function () {
+        const coord0 = new Coordinates('EPSG:3946', 1, 1);
+
+        const position = new Vector3(1, 2, 0);
+        const scale = new Vector3(2, 3, 1);
+        const quaternion = new Quaternion();
+        const matrix = new Matrix4().compose(position, quaternion, scale);
+
+        coord0.applyMatrix4(matrix);
+
+        assertFloatEqual(coord0.x, 3);
+        assertFloatEqual(coord0.y, 5);
+        assertFloatEqual(coord0.z, 0);
     });
 });
