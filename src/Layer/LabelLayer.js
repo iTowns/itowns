@@ -86,7 +86,9 @@ class LabelLayer extends Layer {
                 // NOTE: this only works because only POINT is supported, it
                 // needs more work for LINE and POLYGON
                 coord.setFromArray(f.vertices, g.size * g.indices[0].offset);
-                data.transformCoordinates(coord);
+                // Transform coordinate to data.crs projection
+                coord.applyMatrix4(data.matrixWorld);
+
                 if (f.size == 2) { coord.z = 0; }
                 if (!_extent.isPointInside(coord)) { return; }
 

@@ -179,6 +179,20 @@ function push3DValues(value0, value1, value2 = 0) {
  * This class improves and simplifies the construction and conversion of geographic data structures.
  * It's an intermediary structure between geomatic formats and THREE objects.
  *
+ * **Warning**, the data (`extent` or `Coordinates`) can be stored in a local system.
+ * To use vertices or extent in `Feature.crs` projection,
+ * it's necessary to transform `Coordinates` or `Extent` by `FeatureCollection.matrixWorld`.
+ *
+ * ```js
+ * // To have feature extent in featureCollection.crs projection:
+ * feature.extent.applyMatrix4(featureCollection.matrixWorld);
+ *
+ * // To have feature vertex in feature.crs projection:
+ * coord.crs = feature.crs;
+ * coord.setFromArray(feature.vertices)
+ * coord.applyMatrix4(featureCollection.matrixWorld);
+ *```
+ *
  * @property {string} type - Geometry type, can be `point`, `line`, or
  * `polygon`.
  * @property {number[]} vertices - All the vertices of the Feature.
@@ -248,36 +262,61 @@ class Feature {
 export default Feature;
 
 /**
- * @property {string} crs - The array of features composing the
+ * An object regrouping a list of [features]{@link Feature} and the extent of this collection.
+ * **Warning**, the data (`extent` or `Coordinates`) can be stored in a local system.
+ * To use `Feature` vertices or `FeatureCollection/Feature` extent in FeatureCollection.crs projection,
+ * it's necessary to transform `Coordinates` or `Extent` by `FeatureCollection.matrixWorld`.
+ *
+ * ```js
+ * // To have featureCollection extent in featureCollection.crs projection:
+ * featureCollection.extent.applyMatrix4(featureCollection.matrixWorld);
+ *
+ * // To have feature vertex in featureCollection.crs projection:
+ * const vertices = featureCollection.features[0].vertices;
+ * coord.crs = featureCollection.crs;
+ * coord.setFromArray(vertices)
+ * coord.applyMatrix4(featureCollection.matrixWorld);
+ *```
+ *
+ * @extends THREE.Object3D
+ *
  * @property {Feature[]} features - The array of features composing the
  * collection.
  * @property {Extent?} extent - The 2D extent containing all the features
  * composing the collection.
  * @property {string} crs - Geographic or Geocentric coordinates system.
  * @property {boolean} isFeatureCollection - Used to check whether this is FeatureCollection.
- * @property {THREE.Vector3} translation - Apply translation on vertices and extent to transform on coordinates system.
- * @property {THREE.Vector3} scale - Apply scale on vertices and extent to transform on coordinates system.
+ * @property {number} size - The size structure, it's 3 for 3d and 2 for 2d.
+ * @property {Style} style - The collection style used to display the feature collection.
+ * @property {boolean} isInverted - This option is to be set to the
+ * correct value, true or false (default being false), if the computation of
+ * the coordinates needs to be inverted to same scheme as OSM, Google Maps
+ * or other system. See [this link]{@link
+ * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates}
+ * for more informations.
+ * @property {THREE.Matrix4} matrixWorldInverse - The matrix world inverse.
  *
- * An object regrouping a list of [features]{@link Feature} and the extent of this collection.
  */
-export class FeatureCollection {
+
+export class FeatureCollection extends THREE.Object3D {
     /**
      * Constructs a new instance.
      *
      * @param      {FeatureBuildingOptions|Layer}  options  The building options .
      */
     constructor(options) {
+        super();
         this.isFeatureCollection = true;
         this.crs = CRS.formatToEPSG(options.crs);
         this.features = [];
         this.mergeFeatures = options.mergeFeatures === undefined ? true : options.mergeFeatures;
         this.extent = options.buildExtent ? defaultExtent(options.forcedExtentCrs || this.crs) : undefined;
-        this.translation = new THREE.Vector3();
-        this.scale = new THREE.Vector3(1, 1, 1);
         this.size = options.structure == '3d' ? 3 : 2;
         this.filterExtent = options.filterExtent;
         this.overrideAltitudeInToZero = options.overrideAltitudeInToZero;
         this.style = options.style;
+        this.isInverted = false;
+        this.matrixWorldInverse = new THREE.Matrix4();
     }
 
     /**
@@ -292,6 +331,16 @@ export class FeatureCollection {
                 this.extent.union(ext);
             }
         }
+    }
+
+    /**
+     * Updates the global transform of the object and its descendants.
+     *
+     * @param {booolean}  force   The force
+     */
+    updateMatrixWorld(force) {
+        super.updateMatrixWorld(force);
+        this.matrixWorldInverse.copy(this.matrixWorld).invert();
     }
 
     /**
@@ -360,21 +409,6 @@ export class FeatureCollection {
         ref._pos = feature._pos;
         this.features.push(ref);
         return ref;
-    }
-
-    /**
-     * Transforms a given {@link Coordinates}, using the translation and the
-     * scale of this collection.
-     *
-     * @param {Coordinates} coordinates - The coordinates to transform
-     *
-     * @return {Coordinates} The same coordinates, with transformation applied.
-     */
-    transformCoordinates(coordinates) {
-        coordinates.x = (coordinates.x / this.scale.x) - this.translation.x;
-        coordinates.y = (coordinates.y / this.scale.y) - this.translation.y;
-        coordinates.z = (coordinates.z / this.scale.z) - this.translation.z;
-        return coordinates;
     }
 
     setParentStyle(style) {

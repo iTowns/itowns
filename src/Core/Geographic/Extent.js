@@ -15,6 +15,9 @@ const dimensionTile = new THREE.Vector2();
 const defaultScheme = new THREE.Vector2(2, 2);
 const r = { row: 0, col: 0, invDiff: 0 };
 
+const southWest = new THREE.Vector3();
+const northEast = new THREE.Vector3();
+
 function _rowColfromParent(extent, zoom) {
     const diffLevel = extent.zoom - zoom;
     const diff = 2 ** diffLevel;
@@ -580,32 +583,33 @@ class Extent {
     }
 
     /**
-     * Apply transform and copy this extent to input.  The `transformedCopy`
-     * doesn't handle the issue of overflow of geographic limits.
-     * @param {THREE.Vector2} t translation transform
-     * @param {THREE.Vector2} s scale transform
-     * @param {Extent} extent Extent to copy after transformation.
+     * Multiplies all extent `coordinates` (with an implicit 1 in the 4th dimension) and `matrix`.
+     *
+     * @param      {THREE.Matrix4}  matrix  The matrix
+     * @return     {Extent}  return this extent instance.
      */
-    transformedCopy(t, s, extent) {
-        if (!CRS.isTms(extent.crs)) {
-            this.crs = extent.crs;
-            this.zoom = extent.zoom;
-            this.west = (extent.west + t.x) * s.x;
-            this.east = (extent.east + t.x) * s.x;
+    applyMatrix4(matrix) {
+        if (!CRS.isTms(this.crs)) {
+            southWest.set(this.west, this.south).applyMatrix4(matrix);
+            northEast.set(this.east, this.north).applyMatrix4(matrix);
+            this.west = southWest.x;
+            this.east = northEast.x;
+            this.south = southWest.y;
+            this.north = northEast.y;
             if (this.west > this.east) {
                 const temp = this.west;
                 this.west = this.east;
                 this.east = temp;
             }
-            this.south = (extent.south + t.y) * s.y;
-            this.north = (extent.north + t.y) * s.y;
             if (this.south > this.north) {
                 const temp = this.south;
                 this.south = this.north;
                 this.north = temp;
             }
+            return this;
         }
     }
+
     /**
      * clamp south and north values
      *
