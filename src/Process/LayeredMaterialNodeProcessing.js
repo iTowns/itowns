@@ -28,14 +28,13 @@ function refinementCommandCancellationFn(cmd) {
     return !cmd.requester.material.visible;
 }
 
-function buildCommand(view, layer, extentsSource, extentsDestination, requester, features) {
+function buildCommand(view, layer, extentsSource, extentsDestination, requester) {
     return {
         view,
         layer,
         extentsSource,
         extentsDestination,
         requester,
-        features,
         priority: materialCommandQueuePriorityFunction(requester.material),
         earlyDropFunction: refinementCommandCancellationFn,
     };
@@ -134,8 +133,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
     const extentsSource = extentsDestination.map(e => e.tiledExtentParent(targetLevel));
     node.layerUpdateState[layer.id].newTry();
-    const features = nodeLayer.textures.map(t => layer.isValidData(t.features));
-    const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node, features);
+    const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node);
 
     return context.scheduler.execute(command).then(
         (result) => {
