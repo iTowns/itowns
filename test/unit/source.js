@@ -1,3 +1,4 @@
+import { Matrix4 } from 'three';
 import assert from 'assert';
 import Source from 'Source/Source';
 import Layer from 'Layer/Layer';
@@ -248,12 +249,12 @@ describe('Sources', function () {
         });
 
         it('should instance and use FileSource with features', function () {
+            const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
             const source = new FileSource({
-                features: { foo: 'bar', crs: 'EPSG:4326' },
+                features: { foo: 'bar', crs: 'EPSG:4326', extent, matrixWorld: new Matrix4() },
                 crs: 'EPSG:4326',
             });
             source.onLayerAdded({ out: { crs: source.crs } });
-            const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
             assert.ok(source.urlFromExtent(extent).startsWith('fake-file-url'));
             assert.ok(!source.fetchedData);
 
