@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { FEATURE_TYPES } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Feature2Mesh from 'Converter/Feature2Mesh';
+import CRS from 'Core/Geographic/Crs';
 
 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 const matrix = svg.createSVGMatrix();
@@ -135,6 +137,18 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
     }
 }
 
+const textureRenderTarget = new THREE.WebGLRenderTarget(256, 256, { format: THREE.RGBAFormat });
+textureRenderTarget.depthBuffer = false;
+textureRenderTarget.stencilBuffer = false;
+const sceneTexture = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 1, 1000);
+camera.position.set(0, 0, 100);
+camera.lookAt(new THREE.Vector3());
+const start = new THREE.Vector2();
+const webgl = true;
+
+const convert = Feature2Mesh.convert({});
+
 const origin = new THREE.Vector3();
 const dimension = new THREE.Vector3(0, 0, 1);
 const scale = new THREE.Vector3();
@@ -143,66 +157,139 @@ const world2texture = new THREE.Matrix4();
 const feature2texture = new THREE.Matrix4();
 const worldTextureOrigin = new THREE.Vector3();
 const canvasSize = new THREE.Vector3();
+const clearColor = new THREE.Color();
 
 const featureExtent = new Extent('EPSG:4326', 0, 0, 0, 0);
 
 export default {
     // backgroundColor is a THREE.Color to specify a color to fill the texture
     // with, given there is no feature passed in parameter
-    createTextureFromFeature(collection, extent, sizeTexture, style, backgroundColor) {
+    createTextureFromFeature(collection, extent, sizeTexture, style, backgroundColor, view) {
         let texture;
 
         if (collection) {
-            // A texture is instancied drawn canvas
-            // origin and dimension are used to transform the feature's coordinates to canvas's space
-            extent.dimensions(dimension);
-            const c = document.createElement('canvas');
+            if (webgl) {
+                if (!collection.mesh) {
+                    collection.mesh = convert(collection, { zoom: extent.zoom });
+                    if (!collection.mesh) {
+                        const data = new Uint8Array(3);
+                        data[0] = backgroundColor.r * 255;
+                        data[1] = backgroundColor.g * 255;
+                        data[2] = backgroundColor.b * 255;
+                        texture = new THREE.DataTexture(data, 1, 1, THREE.RGBFormat);
+                        texture.needsUpdate = true;
+                        return texture;
+                    }
+                    collection.mesh.position.copy(collection.position);
+                    collection.mesh.scale.copy(collection.scale);
+                }
+                if (collection.mesh) {
+                    sceneTexture.add(collection.mesh);
+                    const renderer = view.mainLoop.gfxEngine.renderer;
+                    const current = renderer.getRenderTarget();
+                    const center = extent.center();
+                    if (CRS.isMetricUnit(center.crs)) {
+                        camera.position.set(center.x, center.y, 500);
+                    } else {
+                        camera.position.set(center.longitude, center.latitude, 500);
+                    }
+                    extent.dimensions(dimension);
+                    camera.lookAt(new THREE.Vector3(camera.position.x, camera.position.y, 0));
+                    camera.rotateZ(-Math.PI * 0.5);
+                    camera.left = -dimension.x * 0.5;
+                    camera.right = dimension.x * 0.5;
+                    camera.top = dimension.y * 0.5;
+                    camera.bottom = -dimension.y * 0.5;
+                    camera.updateProjectionMatrix();
+                    camera.updateMatrixWorld(true);
+                    renderer.setRenderTarget(textureRenderTarget);
 
-            coord.crs = extent.crs;
+                    const gl = renderer.getContext();
+                    const featureTexture = new THREE.DataTexture(null, 256, 256);
 
-            c.width = sizeTexture;
-            c.height = sizeTexture;
-            const ctx = c.getContext('2d');
-            if (backgroundColor) {
-                ctx.fillStyle = backgroundColor.getStyle();
-                ctx.fillRect(0, 0, sizeTexture, sizeTexture);
-            }
-            ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
-            ctx.imageSmoothingEnabled = false;
-            ctx.lineJoin = 'round';
+                    featureTexture.needsUpdate = true;
+                    featureTexture.generateMipmaps = false;
+                    featureTexture.magFilter = THREE.LinearFilter;
+                    featureTexture.minFilter = THREE.LinearFilter;
 
-            // transform extent to feature projection
-            extent.as(collection.crs, featureExtent);
-            // transform extent to local system
-            featureExtent.applyMatrix4(collection.matrixWorldInverse);
+                    const webglTexture = gl.createTexture();
+                    const properties = renderer.properties.get(featureTexture);
+                    properties.__webglTexture = webglTexture;
+                    properties.__webglInit = true;
 
-            // compute matrix transformation `world2texture` to convert coordinates to texture coordinates
-            if (collection.isInverted) {
-                worldTextureOrigin.set(extent.west, extent.north, 0);
-                canvasSize.set(ctx.canvas.width, -ctx.canvas.height, 1.0);
+                    gl.bindTexture(gl.TEXTURE_2D, webglTexture);
+                    const clearAlpha = renderer.getClearAlpha();
+                    renderer.getClearColor(clearColor);
+
+                    if (backgroundColor) {
+                        renderer.setClearColor(backgroundColor, 1.0);
+                    } else {
+                        renderer.setClearAlpha(0);
+                    }
+                    renderer.clear();
+                    renderer.render(sceneTexture, camera);
+                    renderer.copyFramebufferToTexture(start, featureTexture);
+                    renderer.setClearAlpha(1);
+                    renderer.setRenderTarget(current);
+                    gl.bindTexture(gl.TEXTURE_2D, null);
+
+                    sceneTexture.remove(collection.mesh);
+                    renderer.setClearAlpha(clearAlpha);
+                    renderer.setClearColor(clearColor);
+                    return featureTexture;
+                }
             } else {
-                worldTextureOrigin.set(extent.west, extent.south, 0);
-                canvasSize.set(ctx.canvas.width, ctx.canvas.height, 1.0);
+                // A texture is instancied drawn canvas
+                // origin and dimension are used to transform the feature's coordinates to canvas's space
+                extent.dimensions(dimension);
+                const c = document.createElement('canvas');
+
+                coord.crs = extent.crs;
+
+                c.width = sizeTexture;
+                c.height = sizeTexture;
+                const ctx = c.getContext('2d');
+                if (backgroundColor) {
+                    ctx.fillStyle = backgroundColor.getStyle();
+                    ctx.fillRect(0, 0, sizeTexture, sizeTexture);
+                }
+                ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
+                ctx.imageSmoothingEnabled = false;
+                ctx.lineJoin = 'round';
+
+                // transform extent to feature projection
+                extent.as(collection.crs, featureExtent);
+                // transform extent to local system
+                featureExtent.applyMatrix4(collection.matrixWorldInverse);
+
+                // compute matrix transformation `world2texture` to convert coordinates to texture coordinates
+                if (collection.isInverted) {
+                    worldTextureOrigin.set(extent.west, extent.north, 0);
+                    canvasSize.set(ctx.canvas.width, -ctx.canvas.height, 1.0);
+                } else {
+                    worldTextureOrigin.set(extent.west, extent.south, 0);
+                    canvasSize.set(ctx.canvas.width, ctx.canvas.height, 1.0);
+                }
+
+                world2texture.compose(worldTextureOrigin, quaternion, dimension.divide(canvasSize)).invert();
+
+                // compute matrix transformation `feature2texture` to convert features coordinates to texture coordinates
+                feature2texture.multiplyMatrices(world2texture, collection.matrixWorld);
+                feature2texture.decompose(origin, quaternion, scale);
+
+                ctx.setTransform(scale.x, 0, 0, scale.y, origin.x, origin.y);
+
+                // to scale line width and radius circle
+                const invCtxScale = Math.abs(1 / scale.x);
+
+                // Draw the canvas
+                for (const feature of collection.features) {
+                    drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
+                }
+
+                texture = new THREE.CanvasTexture(c);
+                texture.flipY = collection.isInverted;
             }
-
-            world2texture.compose(worldTextureOrigin, quaternion, dimension.divide(canvasSize)).invert();
-
-            // compute matrix transformation `feature2texture` to convert features coordinates to texture coordinates
-            feature2texture.multiplyMatrices(world2texture, collection.matrixWorld);
-            feature2texture.decompose(origin, quaternion, scale);
-
-            ctx.setTransform(scale.x, 0, 0, scale.y, origin.x, origin.y);
-
-            // to scale line width and radius circle
-            const invCtxScale = Math.abs(1 / scale.x);
-
-            // Draw the canvas
-            for (const feature of collection.features) {
-                drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
-            }
-
-            texture = new THREE.CanvasTexture(c);
-            texture.flipY = collection.isInverted;
         } else if (backgroundColor) {
             const data = new Uint8Array(3);
             data[0] = backgroundColor.r * 255;

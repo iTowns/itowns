@@ -15,7 +15,7 @@ const firstPoint = new Vector2();
 // A polygon is determined by its clockwise direction and the holes are in the opposite direction.
 // Clockwise direction is determined by Shoelace formula https://en.wikipedia.org/wiki/Shoelace_formula
 // Draw polygon with canvas doesn't need to classify however it is necessary for meshs.
-function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
+function vtFeatureToFeatureGeometry(vtFeature, feature, classify = true) {
     let geometry = feature.bindNewGeometry();
     classify = classify && (feature.type === FEATURE_TYPES.POLYGON);
 
@@ -108,9 +108,9 @@ function readPBF(file, options) {
     // Only if the layer.origin is top
     const y = options.in.isInverted ? file.extent.row : (1 << z) - file.extent.row - 1;
 
-    options.out.buildExtent = true;
+    options.out.buildExtent = false;
     options.out.mergeFeatures = true;
-    options.out.structure = '2d';
+    options.out.structure = '3d';
 
     const collection = new FeatureCollection(options.out);
 

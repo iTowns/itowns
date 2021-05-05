@@ -153,8 +153,7 @@ function featureToPoint(feature, options) {
     return points;
 }
 
-var lineMaterial = new THREE.LineBasicMaterial();
-function featureToLine(feature, options) {
+function featureToLine(feature, options, context) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
     const colors = new Uint8Array(ptsIn.length);
@@ -175,16 +174,25 @@ function featureToLine(feature, options) {
 
     let lines;
 
-    // TODO CREATE material for each feature
-    lineMaterial.linewidth = feature.style.stroke.width;
 
+    var lineMaterial = new THREE.LineBasicMaterial();
     if (feature.geometries.length > 1) {
         const countIndices = (count - feature.geometries.length) * 2;
         const indices = new Uint16Array(countIndices);
         let i = 0;
         // Multi line case
         for (const geometry of feature.geometries) {
-            const color = feature.style.stroke.color(geometry.properties);
+            const ctx = { globals: { zoom: context.zoom }, properties: () => geometry.properties };
+            const contextStyle = (geometry.properties.style || feature.style).drawingStylefromContext(ctx);
+
+            if (!contextStyle) {
+                continue;
+            }
+
+            // TODO CREATE material for each feature
+            lineMaterial.linewidth = contextStyle.stroke.width;
+            // console.log('lineMaterial.linewidth', lineMaterial.linewidth);
+            const color = new THREE.Color(contextStyle.stroke.color);
             const start = geometry.indices[0].offset;
             // To avoid integer overflow with indice value (16 bits)
             if (start > 0xffff) {
@@ -213,22 +221,27 @@ function featureToLine(feature, options) {
         geom.setIndex(new THREE.BufferAttribute(indices, 1));
         lines = new THREE.LineSegments(geom, lineMaterial);
     } else {
-        const color = getProperty('color', options, randomColor, feature.geometries[0].properties);
-        fillColorArray(colors, count, color);
-        geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-        if (batchIds) {
-            const id = options.batchId(feature.geometries[0].properties, featureId);
-            fillBatchIdArray(id, batchIds, 0, count);
-            geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
+        const geometry = feature.geometries[0];
+        const ctx = { globals: { zoom: context.zoom }, properties: () => geometry.properties };
+        const contextStyle = (geometry.properties.style || feature.style).drawingStylefromContext(ctx);
+
+        if (contextStyle) {
+            fillColorArray(colors, count, contextStyle.stroke.color);
+            geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+            if (batchIds) {
+                const id = options.batchId(feature.geometries[0].properties, featureId);
+                fillBatchIdArray(id, batchIds, 0, count);
+                geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
+            }
+            lines = new THREE.Line(geom, lineMaterial);
         }
-        lines = new THREE.Line(geom, lineMaterial);
     }
     return lines;
 }
 
 const color = new THREE.Color();
 const material = new THREE.MeshBasicMaterial();
-function featureToPolygon(feature, options) {
+function featureToPolygon(feature, options, context) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
     const vertices = new Float32Array(ptsIn);
@@ -245,11 +258,15 @@ function featureToPolygon(feature, options) {
             console.warn('Feature to Polygon: integer overflow, too many points in polygons');
             break;
         }
-        const color = getProperty('color', options, randomColor, geometry.properties);
+
+        const ctx = { globals: { zoom: context.zoom }, properties: () => geometry.properties };
+        const contextStyle = (geometry.properties.style || feature.style).drawingStylefromContext(ctx);
+
+        const color = new THREE.Color(contextStyle.fill ? contextStyle.fill.color : undefined);
         const lastIndice = geometry.indices.slice(-1)[0];
         const end = lastIndice.offset + lastIndice.count;
         const count = end - start;
-        const altitude = getProperty('altitude', options, 0, geometry.properties);
+        const altitude = 0;
         if (altitude !== 0) {
             coordinatesToVertices(ptsIn, normals, vertices, () => altitude, 0, start, count);
         }
@@ -379,9 +396,10 @@ function featureToExtrudedPolygon(feature, options) {
  * @param {number|function} options.altitude - define the base altitude of the mesh
  * @param {number|function} options.extrude - if defined, polygons will be extruded by the specified amount
  * @param {object|function} options.color - define per feature color
+ * @param {object|function} context - define per feature color
  * @return {THREE.Mesh} mesh
  */
-function featureToMesh(feature, options) {
+function featureToMesh(feature, options, context) {
     if (!feature.vertices) {
         return;
     }
@@ -389,21 +407,22 @@ function featureToMesh(feature, options) {
     var mesh;
     switch (feature.type) {
         case FEATURE_TYPES.POINT:
-            mesh = featureToPoint(feature, options);
+            // mesh = featureToPoint(feature, options, context);
             break;
         case FEATURE_TYPES.LINE:
-            mesh = featureToLine(feature, options);
+            mesh = featureToLine(feature, options, context);
             break;
         case FEATURE_TYPES.POLYGON:
             if (feature.style.fill.extrusion_height) {
-                mesh = featureToExtrudedPolygon(feature, options);
+                mesh = featureToExtrudedPolygon(feature, options, context);
             } else {
-                mesh = featureToPolygon(feature, options);
+                mesh = featureToPolygon(feature, options, context);
             }
             break;
         default:
     }
 
+    mesh = mesh || new THREE.Mesh();
     // set mesh material
     mesh.material.vertexColors = true;
     mesh.material.color = new THREE.Color(0xffffff);
@@ -412,16 +431,17 @@ function featureToMesh(feature, options) {
     return mesh;
 }
 
-function featuresToThree(features, options) {
+function featuresToThree(features, options, context) {
     if (!features || features.length == 0) { return; }
 
     if (features.length == 1) {
         coord.crs = features[0].crs;
         coord.setFromValues(0, 0, 0);
-        const mesh = featureToMesh(features[0], options);
+        const mesh = featureToMesh(features[0], options, context);
 
-        mesh.position.z = features[0].altitude.min == Infinity ? 0 : features[0].altitude.min;
-
+        if (features[0].altitude) {
+            mesh.position.z = features[0].altitude.min == Infinity ? 0 : features[0].altitude.min;
+        }
         return mesh;
     }
 
@@ -430,8 +450,10 @@ function featuresToThree(features, options) {
     for (const feature of features) {
         coord.crs = feature.crs;
         coord.setFromValues(0, 0, 0);
-        const mesh = featureToMesh(feature, options);
-        mesh.position.z = feature.altitude.min == Infinity ? features.altitude.min : 0;
+        const mesh = featureToMesh(feature, options, context);
+        if (feature.altitude) {
+            mesh.position.z = feature.altitude.min == Infinity ? feature.altitude.min : 0;
+        }
 
         group.add(mesh);
     }
@@ -492,9 +514,9 @@ export default {
      * });
      */
     convert(options = {}) {
-        return function _convert(collection) {
+        return function _convert(collection, context) {
             if (!collection) { return; }
-            return featuresToThree(collection.features, options);
+            return featuresToThree(collection.features, options, context);
         };
     },
 };

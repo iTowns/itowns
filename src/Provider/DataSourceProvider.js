@@ -4,6 +4,6 @@ export default {
         const src = command.extentsSource;
         const dst = command.extentsDestination || src;
 
-        return Promise.all(src.map((from, i) => (layer.getData(from, dst[i], command.transform))));
+        return Promise.all(src.map((from, i) => (layer.getData(from, dst[i], command.transform, command.view))));
     },
 };

@@ -9,8 +9,8 @@ class RasterLayer extends Layer {
         super(id, config);
     }
 
-    convert(data, extentDestination) {
-        return textureConverter.convert(data, extentDestination, this);
+    convert(data, extentDestination, view) {
+        return textureConverter.convert(data, extentDestination, this, view);
     }
 
     /**

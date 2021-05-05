@@ -19,7 +19,7 @@ function textureColorLayer(texture, transparent) {
 }
 
 export default {
-    convert(data, extentDestination, layer) {
+    convert(data, extentDestination, layer, view) {
         let texture;
         if (data.isFeatureCollection) {
             const backgroundLayer = layer.source.backgroundLayer;
@@ -28,7 +28,7 @@ export default {
                 undefined;
 
             extentDestination.as(CRS.formatToEPSG(layer.crs), extentTexture);
-            texture = Feature2Texture.createTextureFromFeature(data, extentTexture, 256, layer.style, backgroundColor);
+            texture = Feature2Texture.createTextureFromFeature(data, extentTexture, 256, layer.style, backgroundColor, view);
             texture.features = data;
             texture.extent = extentDestination;
         } else if (data.isTexture) {

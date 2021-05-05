@@ -212,12 +212,12 @@ class Layer extends THREE.EventDispatcher {
         return data;
     }
 
-    getData(from, to, transform = {}) {
+    getData(from, to, transform = {}, view) {
         const key = this.source.requestToKey(this.source.isVectorSource ? to : from);
         let data = this.cache.getByArray(key);
         if (!data) {
             data = this.source.loadData(from, this, transform)
-                .then(feat => this.convert(feat, to), (err) => {
+                .then(feat => this.convert(feat, to, view), (err) => {
                     throw err;
                 });
             this.cache.setByArray(data, key);

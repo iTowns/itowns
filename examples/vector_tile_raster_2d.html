@@ -47,16 +47,19 @@
             setupLoadingScreen(viewerDiv, view);
 
             var mvtSource = new itowns.VectorTilesSource({
-                style: 'https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json',
+                accessToken: 'pk.eyJ1IjoiZ2Nob3F1ZXV4IiwiYSI6ImNqcnc4cjIwajA5ZHQ0OW5oMzBpb3dlaTMifQ.MVueqWYTZYHzjfxBywxiZw',
+                // style: 'mapbox://styles/mapbox/streets-v11',
+                style: 'https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                // style: 'https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json',
                 // eslint-disable-next-line no-template-curly-in-string
-                url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
+                // url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
                 attribution: {
                     name: 'OpenStreetMap',
                     url: 'http://www.openstreetmap.org/',
                 },
                 zoom: {
                     min: 2,
-                    max: 14,
+                    max: 18,
                 },
             });
 
