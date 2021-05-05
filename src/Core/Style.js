@@ -8,7 +8,7 @@ import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_befor
 export const cacheStyle = new Cache();
 
 const inv255 = 1 / 255;
-const canvas = document.createElement('canvas');
+// const canvas = document.createElement('canvas');
 const style_properties = {};
 
 function mapPropertiesFromContext(mainKey, from, to, context) {
@@ -72,19 +72,19 @@ function readVectorProperty(property, options) {
 }
 
 function getImage(source, key) {
-    const target = document.createElement('img');
+    // const target = document.createElement('img');
 
-    if (typeof source == 'string') {
-        target.src = source;
-    } else if (source && source[key]) {
-        const sprite = source[key];
-        canvas.width = sprite.width;
-        canvas.height = sprite.height;
-        canvas.getContext('2d').drawImage(source.img, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, sprite.width, sprite.height);
-        target.src = canvas.toDataURL('image/png');
-    }
+    // if (typeof source == 'string') {
+    //     target.src = source;
+    // } else if (source && source[key]) {
+    //     const sprite = source[key];
+    //     // canvas.width = sprite.width;
+    //     // canvas.height = sprite.height;
+    //     // canvas.getContext('2d').drawImage(source.img, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, sprite.width, sprite.height);
+    //     // target.src = canvas.toDataURL('image/png');
+    // }
 
-    return target;
+    // return target;
 }
 
 const textAnchorPosition = {
@@ -639,14 +639,14 @@ class Style {
 const CustomStyle = {
     itowns_stroke_single_before,
 };
-const customStyleSheet = document.createElement('style');
-customStyleSheet.type = 'text/css';
+// const customStyleSheet = document.createElement('style');
+// customStyleSheet.type = 'text/css';
 
-Object.keys(CustomStyle).forEach((key) => {
-    customStyleSheet.innerHTML += `${CustomStyle[key]}\n\n`;
-});
+// Object.keys(CustomStyle).forEach((key) => {
+//     customStyleSheet.innerHTML += `${CustomStyle[key]}\n\n`;
+// });
 
-document.getElementsByTagName('head')[0].appendChild(customStyleSheet);
+// document.getElementsByTagName('head')[0].appendChild(customStyleSheet);
 
 const style = new Style();
 

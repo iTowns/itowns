@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import Earcut from 'earcut';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { FEATURE_TYPES } from 'Core/Feature';
+import Style from 'Core/Style';
 
 function getProperty(name, options, defaultValue, ...args) {
     const property = options[name];
@@ -183,7 +184,7 @@ function featureToLine(feature, options, context) {
         // Multi line case
         for (const geometry of feature.geometries) {
             const ctx = { globals: { zoom: context.zoom }, properties: () => geometry.properties };
-            const contextStyle = (geometry.properties.style || feature.style).drawingStylefromContext(ctx);
+            const contextStyle = Style.prototype.drawingStylefromContext.call(geometry.properties.style || feature.style, ctx);
 
             if (!contextStyle) {
                 continue;
@@ -223,7 +224,8 @@ function featureToLine(feature, options, context) {
     } else {
         const geometry = feature.geometries[0];
         const ctx = { globals: { zoom: context.zoom }, properties: () => geometry.properties };
-        const contextStyle = (geometry.properties.style || feature.style).drawingStylefromContext(ctx);
+        // const contextStyle = (geometry.properties.style || feature.style).drawingStylefromContext(ctx);
+        const contextStyle = Style.prototype.drawingStylefromContext.call(geometry.properties.style || feature.style, ctx);
 
         if (contextStyle) {
             fillColorArray(colors, count, contextStyle.stroke.color);
@@ -260,7 +262,9 @@ function featureToPolygon(feature, options, context) {
         }
 
         const ctx = { globals: { zoom: context.zoom }, properties: () => geometry.properties };
-        const contextStyle = (geometry.properties.style || feature.style).drawingStylefromContext(ctx);
+        // const contextStyle = (geometry.properties.style || feature.style).drawingStylefromContext(ctx);
+        const contextStyle = Style.prototype.drawingStylefromContext.call(geometry.properties.style || feature.style, ctx);
+
 
         const color = new THREE.Color(contextStyle.fill ? contextStyle.fill.color : undefined);
         const lastIndice = geometry.indices.slice(-1)[0];

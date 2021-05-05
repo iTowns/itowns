@@ -169,31 +169,33 @@ export default {
 
         if (collection) {
             if (webgl) {
-                if (!collection.mesh) {
-                    collection.mesh = convert(collection, { zoom: extent.zoom });
-                    if (!collection.mesh) {
-                        const data = new Uint8Array(3);
-                        data[0] = backgroundColor.r * 255;
-                        data[1] = backgroundColor.g * 255;
-                        data[2] = backgroundColor.b * 255;
-                        texture = new THREE.DataTexture(data, 1, 1, THREE.RGBFormat);
-                        texture.needsUpdate = true;
-                        return texture;
-                    }
-                    collection.mesh.position.copy(collection.position);
-                    collection.mesh.scale.copy(collection.scale);
-                }
-                if (collection.mesh) {
-                    sceneTexture.add(collection.mesh);
+                // eslint-disable-next-line no-debugger
+                // debugger;
+                // if (!collection.mesh) {
+                //     collection.mesh = convert(collection, { zoom: extent.zoom });
+                //     if (!collection.mesh) {
+                //         const data = new Uint8Array(3);
+                //         data[0] = backgroundColor.r * 255;
+                //         data[1] = backgroundColor.g * 255;
+                //         data[2] = backgroundColor.b * 255;
+                //         texture = new THREE.DataTexture(data, 1, 1, THREE.RGBFormat);
+                //         texture.needsUpdate = true;
+                //         return texture;
+                //     }
+                //     collection.mesh.position.copy(collection.position);
+                //     collection.mesh.scale.copy(collection.scale);
+                // }
+                return collection.mesh.then((mesh) => {
+                    sceneTexture.add(mesh);
                     const renderer = view.mainLoop.gfxEngine.renderer;
                     const current = renderer.getRenderTarget();
                     const center = extent.center();
+                    extent.dimensions(dimension);
                     if (CRS.isMetricUnit(center.crs)) {
-                        camera.position.set(center.x, center.y, 500);
+                        camera.position.set(mesh.position.x + dimension.x * 0.5, mesh.position.y - dimension.y * 0.5, 500);
                     } else {
                         camera.position.set(center.longitude, center.latitude, 500);
                     }
-                    extent.dimensions(dimension);
                     camera.lookAt(new THREE.Vector3(camera.position.x, camera.position.y, 0));
                     camera.rotateZ(-Math.PI * 0.5);
                     camera.left = -dimension.x * 0.5;
@@ -233,11 +235,11 @@ export default {
                     renderer.setRenderTarget(current);
                     gl.bindTexture(gl.TEXTURE_2D, null);
 
-                    sceneTexture.remove(collection.mesh);
+                    sceneTexture.remove(mesh);
                     renderer.setClearAlpha(clearAlpha);
                     renderer.setClearColor(clearColor);
                     return featureTexture;
-                }
+                });
             } else {
                 // A texture is instancied drawn canvas
                 // origin and dimension are used to transform the feature's coordinates to canvas's space

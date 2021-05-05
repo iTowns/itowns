@@ -103,7 +103,7 @@ module.exports = (env) => {
                     ],
                     // loader: 'worker!babel?presets[]=es2015',
                     loader: 'worker-loader',
-                    options: { inline: true },
+                    options: { inline: 'no-fallback' },
                     // use: [
                     //       { loader: 'worker-loader' },
                     //       { loader: 'babel-loader' },

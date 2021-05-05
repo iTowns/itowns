@@ -106,7 +106,7 @@ class VectorTilesSource extends TMSSource {
                     this.layers[layer['source-layer']].push({
                         id: layer.id,
                         order,
-                        filterExpression: featureFilter(layer.filter),
+                        filterExpression: layer.filter,
                         zoom: style.zoom,
                     });
                 }
