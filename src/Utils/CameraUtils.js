@@ -150,7 +150,7 @@ class CameraRig extends THREE.Object3D {
         const range = this.camera.position.length();
         this.target.rotation.x = Math.asin(this.camera.position.z / range);
         const cosPlanXY = THREE.MathUtils.clamp(this.camera.position.y / (Math.cos(this.target.rotation.x) * range), -1, 1);
-        this.target.rotation.z = Math.sign(-this.camera.position.x) * Math.acos(cosPlanXY);
+        this.target.rotation.z = Math.sign(-this.camera.position.x || 1) * Math.acos(cosPlanXY);
         this.camera.position.set(0, range, 0);
     }
 
