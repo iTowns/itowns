@@ -118,8 +118,10 @@ function readPBF(file, options) {
     // TODO: verify if size is correct because is computed with only one feature (vFeature).
     const size = vFeature.extent * 2 ** z;
     const center = -0.5 * size;
-    collection.scale.set(size, -size, 1).divide(globalExtent);
-    collection.translation.set(-(vFeature.extent * x + center), -(vFeature.extent * y + center), 0).divide(collection.scale);
+
+    collection.scale.set(globalExtent.x / size, -globalExtent.y / size, 1);
+    collection.position.set(vFeature.extent * x + center, vFeature.extent * y + center, 0).multiply(collection.scale);
+    collection.updateMatrixWorld();
 
     sourceLayers.forEach((layer_id) => {
         if (!options.in.layers[layer_id]) { return; }
@@ -154,6 +156,7 @@ function readPBF(file, options) {
     // TODO verify if is needed to updateExtent for previous features.
     collection.updateExtent();
     collection.extent = file.extent;
+    collection.isInverted = options.in.isInverted;
     return Promise.resolve(collection);
 }
 

@@ -1,7 +1,5 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 import Coordinates from 'Core/Geographic/Coordinates';
-import Extent from 'Core/Geographic/Extent';
-import Crs from 'Core/Geographic/Crs';
 
 function pointIsOverLine(point, linePoints, epsilon, offset, count, size) {
     const x0 = point.x;
@@ -130,7 +128,6 @@ function isFeatureUnderCoordinate(coordinate, feature, epsilon, result) {
     }
 }
 
-const ex = new Extent('EPSG:4326', 0, 0, 0, 0);
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 export default {
     /**
@@ -148,36 +145,25 @@ export default {
     filterFeaturesUnderCoordinate(coordinate, collection, epsilon = 0.1) {
         const result = [];
 
-        coord.copy(coordinate);
+        // transform coordinates to collection system projection
+        coordinate.as(collection.crs, coord);
 
-        // We can take this shortcut because either Feature and
-        // FeatureCollection have an extent property
-        if (collection.extent) {
-            coord.as(Crs.formatToEPSG(collection.extent.crs), coord);
-            collection.extent.as(coord.crs, ex);
+        // transform coordinates to local system
+        coord.applyMatrix4(collection.matrixWorldInverse);
 
-            if (!ex.isPointInside(coord, epsilon)) {
-                return result;
-            // Special case, because of the way tiles in VectorTileParser are
-            // handled (see Feature2Texture for a similar solution)
-            } else if (collection.isFeatureCollection && (collection.scale.x != 1 && collection.scale.y != 1) || (collection.translation.x != 0 && collection.translation.y != 0)) {
-                coord.x = (coord.x + collection.translation.x) * collection.scale.x;
-                coord.y = (coord.y + collection.translation.y) * collection.scale.y;
-                if (collection.scale.x != 1 && collection.scale.y != 1) {
-                    epsilon *= Math.sqrt(collection.scale.x ** 2 + collection.scale.y ** 2);
+        if (collection.extent.isPointInside(coord, epsilon)) {
+            if (collection.isFeatureCollection) {
+                epsilon *= Math.sqrt(collection.scale.x ** 2 + collection.scale.y ** 2);
+                for (const feature of collection.features) {
+                    if (feature.extent && !feature.extent.isPointInside(coord, epsilon)) {
+                        continue;
+                    }
+
+                    isFeatureUnderCoordinate(coord, feature, epsilon, result);
                 }
+            } else if (collection.geometries) {
+                isFeatureUnderCoordinate(coord, collection, epsilon, result);
             }
-        }
-        if (collection.isFeatureCollection) {
-            for (const feature of collection.features) {
-                if (feature.extent && !feature.extent.isPointInside(coord, epsilon)) {
-                    continue;
-                }
-
-                isFeatureUnderCoordinate(coord, feature, epsilon, result);
-            }
-        } else if (collection.geometries) {
-            isFeatureUnderCoordinate(coord, collection, epsilon, result);
         }
 
         return result;

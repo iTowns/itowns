@@ -3,7 +3,6 @@ import { FEATURE_TYPES } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 
-const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 const matrix = svg.createSVGMatrix();
 
@@ -136,10 +135,15 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
     }
 }
 
-const origin = new THREE.Vector2();
-const dimension = new THREE.Vector2();
-const scale = new THREE.Vector2();
-const extentTransformed = new Extent('EPSG:4326', 0, 0, 0, 0);
+const origin = new THREE.Vector3();
+const dimension = new THREE.Vector3(0, 0, 1);
+const scale = new THREE.Vector3();
+const quaternion = new THREE.Quaternion();
+const world2texture = new THREE.Matrix4();
+const feature2texture = new THREE.Matrix4();
+const worldTextureOrigin = new THREE.Vector3();
+
+const featureExtent = new Extent('EPSG:4326', 0, 0, 0, 0);
 
 export default {
     // backgroundColor is a THREE.Color to specify a color to fill the texture
@@ -166,25 +170,38 @@ export default {
             ctx.imageSmoothingEnabled = false;
             ctx.lineJoin = 'round';
 
-            const ex = collection.crs == extent.crs ? extent : extent.as(collection.crs, _extent);
-            const t = collection.translation;
-            const s = collection.scale;
-            extentTransformed.transformedCopy(t, s, ex);
+            // transform extent to feature projection
+            extent.as(collection.crs, featureExtent);
+            // transform extent to local system
+            featureExtent.applyMatrix4(collection.matrixWorldInverse);
 
-            scale.set(ctx.canvas.width, ctx.canvas.width).divide(dimension);
-            origin.set(extent.west, extent.south).add(t).multiply(scale).negate();
-            ctx.setTransform(scale.x / s.x, 0, 0, scale.y / s.y, origin.x, origin.y);
+            // compute matrix transformation `world2texture` to convert coordinates to texture coordinates
+            if (collection.isInverted) {
+                worldTextureOrigin.set(extent.west, extent.north, 0);
+                scale.set(ctx.canvas.width, -ctx.canvas.height, 1.0).divide(dimension);
+            } else {
+                worldTextureOrigin.set(extent.west, extent.south, 0);
+                scale.set(ctx.canvas.width, ctx.canvas.height, 1.0).divide(dimension);
+            }
+
+            world2texture.compose(worldTextureOrigin.multiply(scale).negate(), quaternion, scale);
+
+            // compute matrix transformation `feature2texture` to convert features coordinates to texture coordinates
+            feature2texture.multiplyMatrices(world2texture, collection.matrixWorld);
+            feature2texture.decompose(origin, quaternion, scale);
+
+            ctx.setTransform(scale.x, 0, 0, scale.y, origin.x, origin.y);
 
             // to scale line width and radius circle
-            const invCtxScale = s.x / scale.x;
+            const invCtxScale = Math.abs(1 / scale.x);
 
             // Draw the canvas
             for (const feature of collection.features) {
-                drawFeature(ctx, feature, extentTransformed, feature.style || style, invCtxScale);
+                drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
             }
 
             texture = new THREE.CanvasTexture(c);
-            texture.flipY = false;
+            texture.flipY = collection.isInverted;
         } else if (backgroundColor) {
             const data = new Uint8Array(3);
             data[0] = backgroundColor.r * 255;
