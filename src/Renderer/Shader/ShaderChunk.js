@@ -21,8 +21,13 @@ import projective_texturing_pars_fragment from './Chunk/projective_texturing_par
 import WebGL2_pars_vertex from './Chunk/WebGL2_pars_vertex.glsl';
 import WebGL2_pars_fragment from './Chunk/WebGL2_pars_fragment.glsl';
 
+const custom_header_colorLayer = '// no custom header';
+const custom_body_colorLayer = '// no custom body';
+
 const ShaderChunk = {
     color_layers_pars_fragment,
+    custom_body_colorLayer,
+    custom_header_colorLayer,
     elevation_pars_vertex,
     elevation_vertex,
     fog_fragment,
@@ -67,5 +72,15 @@ ShaderChunk.install = function install(target, chunks, path) {
 
 // Install all default shaders under the itowns
 ShaderChunk.install(THREE.ShaderChunk, ShaderChunk, 'itowns/');
+
+ShaderChunk.customHeaderColorLayer = (header) => {
+    ShaderChunk.custom_header_colorLayer = header;
+    ShaderChunk.install(THREE.ShaderChunk, { custom_header_colorLayer: header }, 'itowns/');
+};
+
+ShaderChunk.customBodyColorLayer = (body) => {
+    ShaderChunk.custom_body_colorLayer = body;
+    ShaderChunk.install(THREE.ShaderChunk, { custom_body_colorLayer: body }, 'itowns/');
+};
 
 export default ShaderChunk;

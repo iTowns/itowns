@@ -5,6 +5,8 @@ struct Layer {
     float opacity;
 };
 
+#include <itowns/custom_header_colorLayer>
+
 uniform sampler2D   colorTextures[NUM_FS_TEXTURES];
 uniform vec4        colorOffsetScales[NUM_FS_TEXTURES];
 uniform Layer       colorLayers[NUM_FS_TEXTURES];
@@ -58,8 +60,10 @@ vec4 getLayerColor(int textureOffset, sampler2D tex, vec4 offsetScale, Layer lay
     float borderDistance = getBorderDistance(uv.xy);
     if (textureOffset != layer.textureOffset + int(uv.z) || borderDistance < minBorderDistance ) return vec4(0);
     vec4 color = texture2D(tex, pitUV(uv.xy, offsetScale));
-    if(color.a > 0.0) {
-        if(layer.effect > 2.0) {
+    if(layer.effect != 0.0) {
+        if (layer.effect <= - 1.0) {
+            #include <itowns/custom_body_colorLayer>
+        } else if(layer.effect > 2.0) {
             color.rgb /= color.a;
             color = applyLightColorToInvisibleEffect(color, layer.effect);
         } else if(layer.effect > 0.0) {
@@ -67,7 +71,6 @@ vec4 getLayerColor(int textureOffset, sampler2D tex, vec4 offsetScale, Layer lay
             color = applyWhiteToInvisibleEffect(color, layer.effect);
         }
     }
-
     color.a *= layer.opacity;
     return color;
 }
