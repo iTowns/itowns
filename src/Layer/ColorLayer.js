@@ -50,6 +50,8 @@ class ColorLayer extends RasterLayer {
      * available using `layer.name` or something else depending on the property
      * name.
      * @param {Source} [config.source] - Description and options of the source.
+     * @param {number} [config.magFilter] - How the texture is sampled when a texel covers more than one pixel. [see](https://threejs.org/docs/?q=texture#api/en/textures/Texture.magFilter)
+     * @param {number} [config.minFilter] - How the texture is sampled when a texel covers less than one pixel. [see](https://threejs.org/docs/?q=texture#api/en/textures/Texture.minFilter)
      *
      * @example
      * // Create a ColorLayer
