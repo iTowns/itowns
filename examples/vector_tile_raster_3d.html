@@ -68,7 +68,8 @@
 
             var mvtLayer = new itowns.ColorLayer('MVT', {
                 source: mvtSource,
-                fx: 2.5,
+                effect_type: itowns.colorLayerEffects.removeLightColor,
+                effect_parameter: 2.5,
                 addLabelLayer: true,
             });
 

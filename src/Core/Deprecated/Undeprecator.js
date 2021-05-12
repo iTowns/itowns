@@ -1,3 +1,19 @@
+import { colorLayerEffects } from 'Renderer/LayeredMaterial';
+
+export const deprecatedColorLayerOptions = (options) => {
+    if (options.fx) {
+        console.warn('ColorLayer fx is deprecated, use ColorLayer.effect_type and ColorLayer.effect_parameter instead.');
+        if (options.fx > 2.0) {
+            options.effect_parameter = options.fx;
+            options.effect_type = colorLayerEffects.removeLightColor;
+        } else if (options.fx > 0.0) {
+            options.effect_parameter = options.fx;
+            options.effect_type = colorLayerEffects.removeWhiteColor;
+        }
+    }
+    return options;
+};
+
 export const deprecatedParsingOptionsToNewOne = (options) => {
     /* istanbul ignore next */
     if (options.crsOut || options.crsIn) {
