@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Simple globe with iTowns</title>
+    <style>
+        html { height: 100%; }
+        body { margin: 0; overflow: hidden; height: 100%; }
+        #viewerDiv { margin: auto; height: 100%; width: 100%; padding: 0; }
+        canvas { display: block }
+    </style>
+</head>
+<body>
+<div id="viewerDiv"></div>
+<script src="../dist/itowns.js"></script>
+<script type="text/javascript">
+    // DISPLAY-VECTOR-COLOR-LAYER
+    var viewerDiv = document.getElementById('viewerDiv');
+
+    // Define the camera initial placement
+    var placement = {
+        coord: new itowns.Coordinates('EPSG:4326', 3.05, 48.97),
+        range: 15000,
+    };
+
+    // Create the view
+    var view = new itowns.GlobeView(viewerDiv, placement);
+
+    // Define the source of the ortho-images
+    var orthoSource = new itowns.WMTSSource({
+        url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+        crs: "EPSG:3857",
+        name: 'ORTHOIMAGERY.ORTHOPHOTOS',
+        tileMatrixSet: 'PM',
+        format: 'image/jpeg',
+    })
+    // Create the ortho-images ColorLayer and add it to the view
+    var orthoLayer = new itowns.ColorLayer('Ortho', {
+        source: orthoSource,
+    });
+    view.addLayer(orthoLayer);
+
+    // Define the source of the dem data
+    var elevationSource = new itowns.WMTSSource({
+        url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+        crs: 'EPSG:4326',
+        name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
+        tileMatrixSet: 'WGS84G',
+        format: 'image/x-bil;bits=32',
+        zoom: {min: 3, max: 10},
+    });
+    // Create the DEM ElevationLayer and add it to the view
+    var elevationLayer = new itowns.ElevationLayer('DEM', {
+        source: elevationSource,
+    });
+    view.addLayer(elevationLayer);
+
+    // Define the source of the flood area data
+    var floodSource = new itowns.FileSource({
+        url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson',
+        crs: 'EPSG:4326',
+        format: 'application/json',
+    });
+
+    // Define a style for the flood area data
+    var floodStyle = new itowns.Style({
+        fill: {
+            color: 'cyan',
+            opacity: 0.3,
+        },
+        stroke: {
+            color: 'blue',
+        },
+    });
+
+    // Create the flood area ColorLayer and add it to the view
+    var floodLayer = new itowns.ColorLayer('GeoJSON', {
+        source: floodSource,
+        style: floodStyle,
+    });
+    view.addLayer(floodLayer);
+
+    // Define the source of the city data
+    var citySource = new itowns.FileSource({
+        url: '../docs/tutorials/cities.geojson',
+        crs: 'EPSG:4326',
+        format: 'application/json',
+    });
+
+    // Define a style for the city data
+    var cityStyle = new itowns.Style({
+        stroke: {
+            color: 'red',
+        },
+        point: {
+            color: 'white',
+            line: 'red',
+            radius: 3,
+        },
+        text: {
+            field: '{name}',
+            anchor: 'bottom-left',
+            size: 18,
+            haloColor: 'white',
+            haloWidth: 1,
+            font: ['monospace'],
+        },
+    });
+
+    // Create the city data ColorLayer and add it to the view
+    var cityLayer = new itowns.ColorLayer('cities', {
+        source: citySource,
+        style: cityStyle,
+        addLabelLayer: true,
+    });
+    view.addLayer(cityLayer);
+
+    // DISPLAY-TEMPERATURE-POINTS
+    // const viewerDiv = document.getElementById('viewerDiv');
+    //
+    // // Define the view geographic extent
+    // itowns.proj4.defs(
+    //     'EPSG:2154',
+    //     '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
+    // );
+    // const viewExtent = new itowns.Extent(
+    //     'EPSG:2154',
+    //     599500.0, 704499.99,
+    //     6767500.0, 6922499.99,
+    // );
+    //
+    // // Define the camera initial placement
+    // const placement = {
+    //     coord: new itowns.Coordinates('EPSG:2154', 653654.957, 6860967.684),
+    //     tilt: 60,
+    //     heading: -30,
+    //     range: 2500,
+    // }
+    //
+    // // Create the planar view
+    // const view = new itowns.PlanarView(viewerDiv, viewExtent, {
+    //     placement: placement,
+    // });
+    // view.tileLayer.maxSubdivisionLevel = 18;
+    //
+    // // Define the source of the ortho-images
+    // const sourceOrtho = new itowns.WMSSource({
+    //     url: "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/r/wms",
+    //     name: "HR.ORTHOIMAGERY.ORTHOPHOTOS",
+    //     format: "image/png",
+    //     crs: 'EPSG:2154',
+    //     extent: viewExtent,
+    // });
+    // // Create the ortho-images ColorLayer and add it to the view
+    // const layerOrtho = new itowns.ColorLayer('Ortho', { source: sourceOrtho });
+    // view.addLayer(layerOrtho);
+    //
+    // // Define the source of the dem data
+    // const sourceDEM = new itowns.WMSSource({
+    //     url: "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/r/wms",
+    //     name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
+    //     format: "image/x-bil;bits=32",
+    //     crs: 'EPSG:2154',
+    //     extent: viewExtent,
+    // });
+    // // Create the dem ElevationLayer and add it to the view
+    // const layerDEM = new itowns.ElevationLayer('DEM', { source: sourceDEM });
+    // view.addLayer(layerDEM);
+    //
+    // // Define the source for the building vector data
+    // const buildingSource = new itowns.WFSSource({
+    //     url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+    //     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+    //     crs: 'EPSG:4326',
+    // });
+    //
+    // // Create the method to set buildings 3D models altitude :
+    // function altitudeBuildings(properties) {
+    //     return properties.z_min - properties.hauteur;
+    // }
+    // // Create the method to set buildings 3D models height :
+    // function extrudeBuildings(properties) {
+    //     return properties.hauteur;
+    // }
+    // // Create the method to set buildings 3D models color :
+    // function colorBuildings(properties) {
+    //     return new itowns.THREE.Color("rgb(247, 229, 218)");
+    // }
+    //
+    // // Create a GeometryLayer to display buildings 3D models and add it to the view
+    // const buildingLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+    //     source: buildingSource,
+    //     update: itowns.FeatureProcessing.update,
+    //     convert: itowns.Feature2Mesh.convert({
+    //         color: colorBuildings,
+    //         altitude: altitudeBuildings,
+    //         extrude: extrudeBuildings
+    //     }),
+    //     zoom: { min: 7 },
+    //     overrideAltitudeInToZero: true,
+    // });
+    // view.addLayer(buildingLayer);
+    //
+    // // Define the source for the temperature data
+    // const temperatureSource = new itowns.FileSource({
+    //     url: '../docs/tutorials/lambert_O_paris_centre.geojson',
+    //     crs: 'EPSG:2154',
+    //     format: 'application/json',
+    // });
+    //
+    // // Create the method to enlarge temperature points
+    // function enlargeTemperature(mesh) {
+    //     mesh.material.size = 100;
+    // }
+    //
+    // // Create the method to color temperature points
+    // const minimalTemp = 290;
+    // const maximalTemp = 330;
+    // function colorTemperature(property) {
+    //     const blue = new itowns.THREE.Color("rgb(0, 0, 255)");
+    //     const red = new itowns.THREE.Color("rgb(255, 0, 0)");
+    //     const alpha = Math.min(255, Math.max(0, (property.temp - minimalTemp) / (maximalTemp - minimalTemp)));
+    //     return blue.lerpHSL(red, alpha);
+    // }
+    //
+    // // Create a GeometryLayer to display temperature points in 3D and add it to the view
+    // const temperatureLayer = new itowns.GeometryLayer('temperature', new itowns.THREE.Group(), {
+    //     source: temperatureSource,
+    //     update: itowns.FeatureProcessing.update,
+    //     convert: itowns.Feature2Mesh.convert({
+    //         color: colorTemperature,
+    //     }),
+    //     onMeshCreated: enlargeTemperature,
+    // });
+    // view.addLayer(temperatureLayer);
+
+    // DISPLAY-GEOMETRY-LAYER
+    // var viewerDiv = document.getElementById('viewerDiv');
+    // var placement = {
+    //     coord: new itowns.Coordinates('EPSG:4326', 4.818, 45.7354),
+    //     range: 1E3,
+    //     tilt: 20,
+    // };
+    // var view = new itowns.GlobeView(viewerDiv, placement);
+    //
+    // var colorSource = new itowns.WMTSSource({
+    //     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+    //     crs: 'EPSG:3857',
+    //     name: 'ORTHOIMAGERY.ORTHOPHOTOS',
+    //     tileMatrixSet: 'PM',
+    //     format: 'image/jpeg'
+    // });
+    //
+    // var colorLayer = new itowns.ColorLayer('Ortho', {
+    //     source: colorSource,
+    // });
+    //
+    // view.addLayer(colorLayer);
+    //
+    // var elevationSource = new itowns.WMTSSource({
+    //     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+    //     crs: 'EPSG:4326',
+    //     name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+    //     tileMatrixSet: 'WGS84G',
+    //     format: 'image/x-bil;bits=32',
+    //     tileMatrixSetLimits: {
+    //         11: {
+    //             minTileRow: 442,
+    //             maxTileRow: 1267,
+    //             minTileCol: 1344,
+    //             maxTileCol: 2683
+    //         },
+    //         12: {
+    //             minTileRow: 885,
+    //             maxTileRow: 2343,
+    //             minTileCol: 3978,
+    //             maxTileCol: 5126
+    //         },
+    //         13: {
+    //             minTileRow: 1770,
+    //             maxTileRow: 4687,
+    //             minTileCol: 7957,
+    //             maxTileCol: 10253
+    //         },
+    //         14: {
+    //             minTileRow: 3540,
+    //             maxTileRow: 9375,
+    //             minTileCol: 15914,
+    //             maxTileCol: 20507
+    //         }
+    //     }
+    // });
+    //
+    // var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
+    //     source: elevationSource,
+    // });
+    //
+    // view.addLayer(elevationLayer);
+    //
+    // function setAltitude(properties) {
+    //     return properties.z_min - properties.hauteur;
+    // }
+    //
+    // function setExtrusion(properties) {
+    //     return properties.hauteur;
+    // }
+    //
+    // function setColor(properties) {
+    //     return new itowns.THREE.Color(0xaaaaaa);
+    // }
+    //
+    // var geometrySource = new itowns.WFSSource({
+    //     url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+    //     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+    //     crs: 'EPSG:4326',
+    // });
+    //
+    // var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
+    //     source: geometrySource,
+    //     update: itowns.FeatureProcessing.update,
+    //     convert: itowns.Feature2Mesh.convert(),
+    //     style: new itowns.Style({
+    //         fill: {
+    //             color: setColor,
+    //             base_altitude: setAltitude,
+    //             extrusion_height: setExtrusion,
+    //         },
+    //     }),
+    //     zoom: { min: 14 },
+    // });
+    //
+    // view.addLayer(geometryLayer);
+</script>
+</body>
+</html>
