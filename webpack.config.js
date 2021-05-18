@@ -66,12 +66,12 @@ module.exports = () => {
                 'whatwg-fetch',
                 './src/MainBundle.js',
             ],
-            debug: ['./utils/debug/Main.js'],
-            // dependOn doesn't work
-            // debug: {
-            //     import: './utils/debug/Main.js',
-            //     dependOn: 'itowns',
-            // },
+            // debug: ['./utils/debug/Main.js'],
+            // dependOn work ???
+            debug: {
+                import: './utils/debug/Main.js',
+                dependOn: 'itowns',
+            },
         },
         devtool: 'source-map',
         output: {
