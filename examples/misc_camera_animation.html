@@ -34,7 +34,6 @@
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
                 range: 25000000,
             }
-            var promises = [];
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
@@ -89,10 +88,7 @@
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                Promise.all(promises).then(function _() {
-                    // let's go
-                    travel().then(travel);
-                }).catch(console.error);
+                travel().then(travel).catch(console.error);
             });
 </script>
 </body>
