@@ -169,7 +169,9 @@ class FileSource extends Source {
             if (data.extent) {
                 this.extent = data.extent.clone();
                 // Transform local extent to data.crs projection.
-                this.extent.applyMatrix4(data.matrixWorld);
+                if (this.extent.crs == data.crs) {
+                    this.extent.applyMatrix4(data.matrixWorld);
+                }
             }
 
             if (data.isFeatureCollection) {
