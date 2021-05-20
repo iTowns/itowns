@@ -226,7 +226,7 @@ class Feature {
             // this.crs is final crs projection, is out projection.
             // If the extent crs is the same then we use output coordinate (coordOut) to expand it.
             this.extent = defaultExtent(collection.extent.crs);
-            this.useCrsOut = !collection.forceExtentCrs;
+            this.useCrsOut = this.extent.crs == this.crs;
         }
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
@@ -300,8 +300,6 @@ export default Feature;
 
 export class FeatureCollection extends THREE.Object3D {
     /**
-     * Constructs a new instance.
-     *
      * @param      {FeatureBuildingOptions|Layer}  options  The building options .
      */
     constructor(options) {
