@@ -283,7 +283,13 @@ export default Feature;
  * @property {Feature[]} features - The array of features composing the
  * collection.
  * @property {Extent?} extent - The 2D extent containing all the features
- * composing the collection.
+ * composing the collection. The extent projection is the same local projection `FeatureCollection`.
+ * To transform `FeatureCollection.extent` to `FeatureCollection.crs` projection, the transformation matrix must be applied.
+ *
+ * **WARNING** if crs is `EPSG:4978` because the 3d geocentric system doesn't work with 2D `Extent`,
+ * The FeatureCollection.extent projection is the original projection.
+ * In this case, there isn't need to transform the extent.
+ *
  * @property {string} crs - Geographic or Geocentric coordinates system.
  * @property {boolean} isFeatureCollection - Used to check whether this is FeatureCollection.
  * @property {number} size - The size structure, it's 3 for 3d and 2 for 2d.
