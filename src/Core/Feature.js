@@ -24,6 +24,8 @@ export const FEATURE_TYPES = {
     POLYGON: 2,
 };
 
+const typeToStyleProperty = ['point', 'stroke', 'fill'];
+
 /**
  * @property {string} crs - The CRS to convert the input coordinates to.
  * @property {Extent|boolean} [filteringExtent=undefined] - Optional filter to reject
@@ -37,8 +39,6 @@ export const FEATURE_TYPES = {
  * @property {string} [structure='2d'] - data structure type : 2d or 3d.
  * If the structure is 3d, the feature have 3 dimensions by vertices positions and
  * a normal for each vertices.
- * @property {boolean} [overrideAltitudeInToZero=false] - If true, the altitude of the source data isn't taken into account for 3D geometry convertions.
- * the altitude will be override to 0. This can be useful if you don't have a DEM or provide a new one when converting (with Layer.convert).
  * @property {Style} style - The style to inherit when creating
  * style for all new features.
  *
@@ -67,6 +67,10 @@ export class FeatureGeometry {
             this.extent = defaultExtent(feature.extent.crs);
             this._currentExtent = defaultExtent(feature.extent.crs);
         }
+        this.altitude = {
+            min: Infinity,
+            max: -Infinity,
+        };
     }
     /**
      * Add a new marker to indicate the starting of sub geometry and extends the vertices buffer.
@@ -115,6 +119,12 @@ export class FeatureGeometry {
      * @param {Feature} feature - the feature containing the geometry
      */
     pushCoordinates(coordIn, feature) {
+        if (this.size == 3) {
+            // set altitude from context
+            const base_altitude = feature.style[typeToStyleProperty[feature.type]].base_altitude;
+            coordIn.z = isNaN(base_altitude) ? base_altitude(this.properties, coordIn) : base_altitude;
+        }
+
         coordIn.as(feature.crs, coordOut);
 
         feature.transformToLocalSystem(coordOut);
@@ -127,6 +137,11 @@ export class FeatureGeometry {
         // expand extent if present
         if (this._currentExtent) {
             this._currentExtent.expandByCoordinates(feature.useCrsOut ? coordOut : coordIn);
+        }
+
+        if (this.size == 3) {
+            this.altitude.min = Math.min(this.altitude.min, coordIn.z);
+            this.altitude.max = Math.max(this.altitude.max, coordIn.z);
         }
     }
 
@@ -149,7 +164,12 @@ export class FeatureGeometry {
         feature._pushValues(long, lat, alt);
         // expand extent if present
         if (this._currentExtent) {
-            this._currentExtent.expandByValuesCoordinates(long, lat, alt);
+            this._currentExtent.expandByValuesCoordinates(long, lat);
+        }
+
+        if (this.size == 3) {
+            this.altitude.min = Math.min(this.altitude.min, alt);
+            this.altitude.max = Math.max(this.altitude.max, alt);
         }
     }
 
@@ -235,6 +255,11 @@ class Feature {
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
         this.style = new Style({}, collection.style);
+
+        this.altitude = {
+            min: Infinity,
+            max: -Infinity,
+        };
     }
     /**
      * Instance a new {@link FeatureGeometry}  and push in {@link Feature}.
@@ -252,6 +277,11 @@ class Feature {
     updateExtent(geometry) {
         if (this.extent) {
             this.extent.union(geometry.extent);
+        }
+
+        if (this.size == 3) {
+            this.altitude.min = Math.min(this.altitude.min, geometry.altitude.min);
+            this.altitude.max = Math.max(this.altitude.max, geometry.altitude.max);
         }
     }
 
@@ -334,7 +364,6 @@ export class FeatureCollection extends THREE.Object3D {
         this.extent = options.buildExtent ? defaultExtent(options.forcedExtentCrs || this.crs) : undefined;
         this.size = options.structure == '3d' ? 3 : 2;
         this.filterExtent = options.filterExtent;
-        this.overrideAltitudeInToZero = options.overrideAltitudeInToZero;
         this.style = options.style;
         this.isInverted = false;
         this.matrixWorldInverse = new THREE.Matrix4();
@@ -374,6 +403,11 @@ export class FeatureCollection extends THREE.Object3D {
             };
             this._transformToLocalSystem = transformToLocalSystem3D;
         }
+
+        this.altitude = {
+            min: Infinity,
+            max: -Infinity,
+        };
     }
 
     /**
@@ -401,6 +435,14 @@ export class FeatureCollection extends THREE.Object3D {
                 this.extent.union(ext);
             }
         }
+        if (this.size == 3) {
+            for (const feature of this.features) {
+                this.altitude.min = Math.min(this.altitude.min, feature.altitude.min);
+                this.altitude.max = Math.max(this.altitude.max, feature.altitude.max);
+            }
+        }
+        this.altitude.min = this.altitude.min == Infinity ? 0 : this.altitude.min;
+        this.altitude.max = this.altitude.max == -Infinity ? 0 : this.altitude.max;
     }
 
     /**

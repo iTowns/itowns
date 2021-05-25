@@ -64,6 +64,10 @@ var FeatureToolTip = (function _() {
         }
     }
 
+    function getGeometryProperties(geometry) {
+        return function properties() { return geometry.properties; };
+    }
+
     function fillToolTip(features, layer, options) {
         var content = '';
         var feature;
@@ -76,9 +80,10 @@ var FeatureToolTip = (function _() {
 
         for (var p = 0; p < features.length; p++) {
             feature = features[p];
-
             geometry = feature.geometry;
             style = (geometry.properties && geometry.properties.style) || feature.style || layer.style;
+            var context = { globals: {}, properties: getGeometryProperties(geometry) };
+            style = style.drawingStylefromContext(context);
             fill = style.fill.color;
             stroke = '1.25px ' + style.stroke.color;
 

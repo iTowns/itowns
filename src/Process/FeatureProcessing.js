@@ -13,13 +13,6 @@ function assignLayer(object, layer) {
             object.material.transparent = layer.opacity < 1.0;
             object.material.opacity = layer.opacity;
             object.material.wireframe = layer.wireframe;
-
-            if (layer.size) {
-                object.material.size = layer.size;
-            }
-            if (layer.linewidth) {
-                object.material.linewidth = layer.linewidth;
-            }
         }
         object.layers.set(layer.threejsLayer);
         for (const c of object.children) {
