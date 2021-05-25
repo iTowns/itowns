@@ -10,6 +10,7 @@ import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
+import Style from 'Core/Style';
 import Renderer from './bootstrap';
 
 describe('Layer with Feature process', function () {
@@ -18,14 +19,6 @@ describe('Layer with Feature process', function () {
     const placement = { coord: new Coordinates('EPSG:4326', 1.5, 43), range: 300000 };
     const viewer = new GlobeView(renderer.domElement, placement, { renderer });
 
-    function extrude() {
-        return 5000;
-    }
-
-    function color() {
-        return new THREE.Color(0xffcc00);
-    }
-
     const source = new FileSource({
         url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
         crs: 'EPSG:4326',
@@ -33,12 +26,17 @@ describe('Layer with Feature process', function () {
         networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
     });
 
-    const ariege = new GeometryLayer('ariege', new THREE.Group(), { source, zoom: { min: 7 } });
-
-    ariege.update = FeatureProcessing.update;
-    ariege.convert = Feature2Mesh.convert({
-        color,
-        extrude,
+    const ariege = new GeometryLayer('ariege', new THREE.Group(), {
+        source,
+        style: new Style({
+            fill: {
+                extrusion_height: 5000,
+                color: new THREE.Color(0xffcc00),
+            },
+        }),
+        zoom: { min: 7 },
+        update: FeatureProcessing.update,
+        convert: Feature2Mesh.convert(),
     });
 
     const context = {
