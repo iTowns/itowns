@@ -25,6 +25,12 @@ function refinementCommandCancellationFn(cmd) {
         return true;
     }
 
+    // Cancel the command if the layer was removed between command scheduling and command execution
+    if (!cmd.requester.layerUpdateState[cmd.layer.id]
+        || !cmd.layer.source._featuresCaches[cmd.layer.source.crs]) {
+        return true;
+    }
+
     return !cmd.requester.material.visible;
 }
 
@@ -137,6 +143,10 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
     return context.scheduler.execute(command).then(
         (result) => {
+            // Does nothing if the layer has been removed while command was being or waiting to be executed
+            if (!node.layerUpdateState[layer.id]) {
+                return;
+            }
             // TODO: Handle error : result is undefined in provider. throw error
             const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(result[i].extent, nodeLayer.offsetScales[i]));
             nodeLayer.setTextures(result, pitchs);
@@ -206,6 +216,11 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
 
     return context.scheduler.execute(command).then(
         (result) => {
+            // Does nothing if the layer has been removed while command was being or waiting to be executed
+            if (!node.layerUpdateState[layer.id]) {
+                return;
+            }
+
             // Do not apply the new texture if its level is < than the current
             // one.  This is only needed for elevation layers, because we may
             // have several concurrent layers but we can only use one texture.
