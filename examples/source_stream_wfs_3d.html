@@ -186,8 +186,10 @@
                     altitude: altitudeBuildings,
                     extrude: extrudeBuildings }),
                 onMeshCreated: function scaleZ(mesh) {
-                    mesh.scale.z = 0.01;
-                    meshes.push(mesh);
+                    mesh.children.forEach(c => {
+                        c.scale.z = 0.01;
+                        meshes.push(c);
+                    })
                 },
                 filter: acceptFeature,
                 overrideAltitudeInToZero: true,

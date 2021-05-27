@@ -428,29 +428,6 @@ function featureToMesh(feature, options) {
     return mesh;
 }
 
-function featuresToThree(features, options) {
-    if (!features || features.length == 0) { return; }
-
-    if (features.length == 1) {
-        coord.crs = features[0].crs;
-        coord.setFromValues(0, 0, 0);
-        return featureToMesh(features[0], options);
-    }
-
-    const group = new THREE.Group();
-    group.minAltitude = Infinity;
-
-    for (const feature of features) {
-        coord.crs = feature.crs;
-        coord.setFromValues(0, 0, 0);
-        const mesh = featureToMesh(feature, options);
-        group.add(mesh);
-        group.minAltitude = Math.min(mesh.minAltitude, group.minAltitude);
-    }
-
-    return group;
-}
-
 /**
  * @module Feature2Mesh
  */
@@ -505,7 +482,19 @@ export default {
         return function _convert(collection) {
             if (!collection) { return; }
 
-            return featuresToThree(collection.features, options);
+            const features = collection.features;
+
+            if (!features || features.length == 0) { return; }
+
+            const group = new THREE.Group();
+            options.GlobalZTrans = collection.center.z;
+
+            features.forEach(feature => group.add(featureToMesh(feature, options)));
+
+            group.quaternion.copy(collection.quaternion);
+            group.position.copy(collection.position);
+
+            return group;
         };
     },
 };
