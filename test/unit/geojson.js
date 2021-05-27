@@ -15,14 +15,14 @@ function parse(geojson) {
 }
 
 describe('GeoJsonParser', function () {
-    it('should set all z coordinates to 1', () =>
+    it('should set all z coordinates to 0', () =>
         parse(holes).then((collection) => {
-            assert.ok(collection.features[0].vertices.every((v, i) => i == 0 || ((i + 1) % 3) != 0 || v == 0));
+            assert.ok(collection.features[0].vertices.every((v, i) => ((i + 1) % 3) != 0 || (v + collection.position.z) == 0));
         }));
 
     it('should respect all z coordinates', () =>
         parse(gpx).then((collection) => {
-            assert.ok(collection.features[0].vertices.every((v, i) => i == 0 || ((i + 1) % 3) != 0 || v != 0));
+            assert.ok(collection.features[0].vertices.every((v, i) => ((i + 1) % 3) != 0 || (v + collection.position.z) != 0));
         }));
 
     it('should return an empty collection', () =>

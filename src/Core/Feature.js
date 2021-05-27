@@ -117,6 +117,8 @@ export class FeatureGeometry {
     pushCoordinates(coordIn, feature) {
         coordIn.as(feature.crs, coordOut);
 
+        feature.transformToLocalSystem(coordOut);
+
         if (feature.normals) {
             coordOut.geodesicNormal.toArray(feature.normals, feature._pos);
         }
@@ -131,6 +133,7 @@ export class FeatureGeometry {
     /**
      * Push new values coordinates in vertices buffer.
      * No geographical conversion is made or the normal doesn't stored.
+     * No local transformation is made on coordinates.
      *
      * @param {Feature} feature - the feature containing the geometry
      * @param {number} long The longitude coordinate.
@@ -222,6 +225,7 @@ class Feature {
         this.crs = collection.crs;
         this.size = collection.size;
         this.normals = collection.size == 3 ? [] : undefined;
+        this.transformToLocalSystem = collection.transformToLocalSystem.bind(collection);
         if (collection.extent) {
             // this.crs is final crs projection, is out projection.
             // If the extent crs is the same then we use output coordinate (coordOut) to expand it.
@@ -261,9 +265,20 @@ class Feature {
 
 export default Feature;
 
+const doNothing = () => {};
+
+const transformToLocalSystem3D = (coord, collection) => {
+    coord.geodesicNormal.applyNormalMatrix(collection.normalMatrixInverse);
+    return coord.applyMatrix4(collection.matrixWorldInverse);
+};
+
+const transformToLocalSystem2D = (coord, collection) => coord.applyMatrix4(collection.matrixWorldInverse);
+const axisZ = new THREE.Vector3(0, 0, 1);
+const alignYtoEast = new THREE.Quaternion();
 /**
  * An object regrouping a list of [features]{@link Feature} and the extent of this collection.
  * **Warning**, the data (`extent` or `Coordinates`) can be stored in a local system.
+ * The local system center is the `center` property.
  * To use `Feature` vertices or `FeatureCollection/Feature` extent in FeatureCollection.crs projection,
  * it's necessary to transform `Coordinates` or `Extent` by `FeatureCollection.matrixWorld`.
  *
@@ -301,6 +316,8 @@ export default Feature;
  * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates}
  * for more informations.
  * @property {THREE.Matrix4} matrixWorldInverse - The matrix world inverse.
+ * @property {Coordinates} center - The local center coordinates in `EPSG:4326`.
+ * The local system is centred in this center.
  *
  */
 
@@ -321,6 +338,55 @@ export class FeatureCollection extends THREE.Object3D {
         this.style = options.style;
         this.isInverted = false;
         this.matrixWorldInverse = new THREE.Matrix4();
+        this.center = new Coordinates('EPSG:4326', 0, 0);
+
+        if (this.size == 2) {
+            this._setLocalSystem = (center) => {
+                // set local system center
+                center.as('EPSG:4326', this.center);
+
+                // set position to local system center
+                this.position.copy(center);
+                this.updateMatrixWorld();
+                this._setLocalSystem = doNothing;
+            };
+            this._transformToLocalSystem = transformToLocalSystem2D;
+        } else {
+            this._setLocalSystem = (center) => {
+                // set local system center
+                center.as('EPSG:4326', this.center);
+
+                if (this.crs == 'EPSG:4978') {
+                    // align Z axe to geodesic normal.
+                    this.quaternion.setFromUnitVectors(axisZ, center.geodesicNormal);
+                    // align Y axe to East
+                    alignYtoEast.setFromAxisAngle(axisZ, THREE.MathUtils.degToRad(90 + this.center.longitude));
+                    this.quaternion.multiply(alignYtoEast);
+                }
+
+                // set position to local system center
+                this.position.copy(center);
+                this.updateMatrixWorld();
+                this.normalMatrix.getNormalMatrix(this.matrix);
+                this.normalMatrixInverse = new THREE.Matrix3().copy(this.normalMatrix).invert();
+
+                this._setLocalSystem = doNothing;
+            };
+            this._transformToLocalSystem = transformToLocalSystem3D;
+        }
+    }
+
+    /**
+     * Apply the matrix World inverse on the coordinates.
+     * This method is used when the coordinates is pushed
+     * to transform it in local system.
+     *
+     * @param   {Coordinates}  coordinates  The coordinates
+     * @returns {Coordinates} The coordinates in local system
+     */
+    transformToLocalSystem(coordinates) {
+        this._setLocalSystem(coordinates);
+        return this._transformToLocalSystem(coordinates, this);
     }
 
     /**
