@@ -1,3 +1,89 @@
+<a name="2.33.0"></a>
+# [2.33.0](https://github.com/iTowns/itowns/compare/v2.32.0...v2.33.0) (2021-05-28)
+
+
+### Features
+
+* **ColorLayer:** add custom shader to ColorLayer. ([2d32888](https://github.com/iTowns/itowns/commit/2d32888))
+* **ColorLayer:** add option to filtering textures Layer. ([da245f9](https://github.com/iTowns/itowns/commit/da245f9))
+* **Coordinates:** add applyMatrix4 method. ([061eda0](https://github.com/iTowns/itowns/commit/061eda0))
+
+
+### Bug Fixes
+
+* **CameraUtils:** count heading in clockwise direction ([880c67d](https://github.com/iTowns/itowns/commit/880c67d))
+* **CameraUtils:** fix rotation animation when start heading is 0 ([1ca0c17](https://github.com/iTowns/itowns/commit/1ca0c17))
+* **CameraUtils:** the camera rotation animation take the shortest angle ([ae194d3](https://github.com/iTowns/itowns/commit/ae194d3))
+* **Controls:** replace deprecated THREE.Quaternion.slerp. ([2e27408](https://github.com/iTowns/itowns/commit/2e27408))
+* **debug:** update coordinates event on mouse move ([9b62770](https://github.com/iTowns/itowns/commit/9b62770))
+* **Feature:** wrong condition to choose extent crs projection. ([73198c7](https://github.com/iTowns/itowns/commit/73198c7))
+* **FeatureToolTip:** avoid undefined layer on move. ([6ae7305](https://github.com/iTowns/itowns/commit/6ae7305))
+* **FileSource:** transform extent source if is needed. ([0177503](https://github.com/iTowns/itowns/commit/0177503))
+* **GeojsonParser:** store geojson properties within a separate property ([121b796](https://github.com/iTowns/itowns/commit/121b796))
+* **LabelLayer:** init LabelLayer visibility with attached ColorLayer. ([67f25a1](https://github.com/iTowns/itowns/commit/67f25a1))
+* **LayeredMaterialNodeProcessing:** prevent errors in layer update when removing layer ([d9fda75](https://github.com/iTowns/itowns/commit/d9fda75))
+* **PlanarControls:** prevent freezing zoom when clicking while zooming with an orthographic camera ([b0f0a2d](https://github.com/iTowns/itowns/commit/b0f0a2d))
+* **test:** use Extent.applyMatrix4 and Coordinates.applyMatrix4. ([bdf50ab](https://github.com/iTowns/itowns/commit/bdf50ab))
+
+
+### Examples
+
+* add custom shader effect example. ([15163d9](https://github.com/iTowns/itowns/commit/15163d9))
+* change buildings id for coloring ([3f7ccd0](https://github.com/iTowns/itowns/commit/3f7ccd0))
+
+
+### Code Refactoring
+
+* **ColorLayer:** add effect type ColorLayer parameter. ([19d58c6](https://github.com/iTowns/itowns/commit/19d58c6))
+* **ColorLayer:** remove useless features in ColorLayer command. ([66ee340](https://github.com/iTowns/itowns/commit/66ee340))
+* **example:** remove unuseless variable. ([041b62a](https://github.com/iTowns/itowns/commit/041b62a))
+* **Feature:** compute and apply local transform matrix in Feature. ([e244f55](https://github.com/iTowns/itowns/commit/e244f55))
+* **Feature:** declare constant in file begining. ([f44c29e](https://github.com/iTowns/itowns/commit/f44c29e))
+* **Feature:** FeatureCollection extends by Object3D and use local transform matrix. ([8d20315](https://github.com/iTowns/itowns/commit/8d20315))
+* **Feature:** normalize crs projection. ([f9df7ff](https://github.com/iTowns/itowns/commit/f9df7ff))
+* **Feature:** remove optionsFeature from FeatureCollection. ([b15c642](https://github.com/iTowns/itowns/commit/b15c642))
+* **Feature:** replace parsing option withNormal and withAltitude by structure. ([420ba1a](https://github.com/iTowns/itowns/commit/420ba1a))
+* **Feature:** simplify build extent check. ([0091a5a](https://github.com/iTowns/itowns/commit/0091a5a))
+* **Layer:** deprecate labelEnable option Layer and replace by addLabelLayer. ([082d22c](https://github.com/iTowns/itowns/commit/082d22c))
+* **ShaderChunk:** introduce shader chunk manager class to instance ShaderChunk. ([e93ed76](https://github.com/iTowns/itowns/commit/e93ed76))
+* **Source:** avoid to cache raster data in Source. ([521ca74](https://github.com/iTowns/itowns/commit/521ca74))
+* **Style/Convert:** move options from Converter to Style. ([23de259](https://github.com/iTowns/itowns/commit/23de259))
+* **VectorTileParser:** remove unnecessary parameters. ([860d748](https://github.com/iTowns/itowns/commit/860d748))
+
+
+### Workflow and chores
+
+* release v2.33.0 ([b1cb970](https://github.com/iTowns/itowns/commit/b1cb970))
+* **chart.js:** update chart.js to 3.0. ([6953e01](https://github.com/iTowns/itowns/commit/6953e01))
+* update packages. ([0f54e2e](https://github.com/iTowns/itowns/commit/0f54e2e))
+
+
+### Documentation
+
+* **FeatureCollection:** clarify FeatureCollection.extent projection. ([f612eb3](https://github.com/iTowns/itowns/commit/f612eb3))
+* **View:** add diffuse parameter documentation. ([fcc16da](https://github.com/iTowns/itowns/commit/fcc16da))
+
+
+### Tests
+
+* **unit:** update unit tests with feature refactoring. ([cbe3e68](https://github.com/iTowns/itowns/commit/cbe3e68))
+
+
+### BREAKING CHANGES
+
+* **Style/Convert:** * `GeometryLayer.convert` options are moved in Style properties. Use
+  * `Style.xxx.color`
+  * `Style.xxx.base_altitude`
+  * `Style.fill.extrusion_height`
+  * `Style.stroke.width`
+  * `Style.point.radius`
+* `overrideAltitudeInToZero` layer options is removed use `Style.xxx.base_altitude` instead.
+* **CameraUtils:** The headings used in CameraUtils are now counted clockwise (they were
+previously counted counter-clockwise).
+* **Feature:** FeatureCollection and Feature signature constructor are changed.
+
+
+
 <a name="2.32.0"></a>
 # [2.32.0](https://github.com/iTowns/itowns/compare/v2.31.0...v2.32.0) (2021-04-09)
 
