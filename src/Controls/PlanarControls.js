@@ -228,8 +228,17 @@ class PlanarControls extends THREE.EventDispatcher {
         this.zoomOutFactor = 1 / (options.zoomFactor || defaultOptions.zoomFactor);
 
         // the maximum and minimum size (in meters) a pixel at the center of the view can represent
-        this.maxResolution = options.maxResolution || defaultOptions.maxResolution;
-        this.minResolution = options.minResolution || defaultOptions.minResolution;
+        // These numbers are rounded with a precision of 1E-6 meters.
+        // In order to be rounded as such, they are stored in micro-meter unit.
+        // This prevents rounding issues when passing parameters with too many decimals.
+        // This rounding issue is the same as if you type in a navigator console : 0.1 + 0.2.
+        // The result is 0.30000000000000004 whereas it should be 0.3.
+        this.maxResolution = Math.floor(
+            (options.maxResolution || defaultOptions.maxResolution) * 1E6,
+        );
+        this.minResolution = Math.ceil(
+            (options.minResolution || defaultOptions.minResolution) * 1E6,
+        );
 
         // approximate ground altitude value. Camera altitude is clamped above groundLevel
         this.groundLevel = options.groundLevel || defaultOptions.groundLevel;
@@ -518,7 +527,13 @@ class PlanarControls extends THREE.EventDispatcher {
 
             // do not zoom if the resolution after the zoom is outside resolution limits
             const endResolution = this.view.getPixelsToMeters() / zoomFactor;
-            if (this.maxResolution > endResolution || endResolution > this.minResolution) {
+            // The endResolution value is rounded to the 1E-6 decimal above when compared to maxResolution,
+            // and it is rounded to the 1E-6 decimal below when compared to minResolution.
+            // This prevents rounding issues when endResolution has too many decimals.
+            if (
+                this.maxResolution > Math.ceil(endResolution * 1E6)
+                || Math.floor(endResolution * 1E6) > this.minResolution
+            ) {
                 return;
             }
 
