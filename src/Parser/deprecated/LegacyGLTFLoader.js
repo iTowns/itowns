@@ -50,10 +50,6 @@ threeExamples.LegacyGLTFLoader = ( function () {
 		}
 
 		parse ( data, path, callback ) {
-
-			// eslint-disable-next-line no-debugger
-			debugger;
-
 			var content;
 			var extensions = {};
 
