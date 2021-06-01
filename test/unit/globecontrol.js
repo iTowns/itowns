@@ -3,6 +3,7 @@ import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { getLookAtFromMath, getRig } from 'Utils/CameraUtils';
+import StateControl from 'Controls/StateControl';
 import Renderer from './bootstrap';
 
 describe('GlobeControls', function () {
@@ -41,6 +42,10 @@ describe('GlobeControls', function () {
 
     it('instance GlobeControls', function () {
         assert.ok(controls);
+    });
+
+    it('should instantiate StateControl', function () {
+        assert(controls.states instanceof StateControl);
     });
 
     it('pickGeoPosition', function () {
