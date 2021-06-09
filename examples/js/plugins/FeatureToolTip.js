@@ -84,17 +84,23 @@ var FeatureToolTip = (function _() {
             style = (geometry.properties && geometry.properties.style) || feature.style || layer.style;
             var context = { globals: {}, properties: getGeometryProperties(geometry) };
             style = style.drawingStylefromContext(context);
-            fill = style.fill.color;
-            stroke = '1.25px ' + style.stroke.color;
 
             if (feature.type === itowns.FEATURE_TYPES.POLYGON) {
                 symb = '&#9724';
+                if (style) {
+                    fill = style.fill && style.fill.color;
+                    stroke = style.stroke && ('1.25px ' + style.stroke.color);
+                }
             } else if (feature.type === itowns.FEATURE_TYPES.LINE) {
                 symb = '&#9473';
-                fill = style.stroke.color;
+                fill = style && style.stroke && style.stroke.color;
                 stroke = '0px';
             } else if (feature.type === itowns.FEATURE_TYPES.POINT) {
                 symb = '&#9679';
+                if (style && style.point) {  // Style and style.point can be undefined if no style options were passed
+                    fill = style.point.color;
+                    stroke = '1.25px ' + style.point.line;
+                }
             }
 
             content += '<div>';
