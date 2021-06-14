@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
-import FeatureProcessing from 'Process/FeatureProcessing';
-import Feature2Mesh from 'Converter/Feature2Mesh';
-import GeometryLayer from 'Layer/GeometryLayer';
+import FeatureGeometryLayer from 'Layer/FeatureGeometryLayer';
 import FileSource from 'Source/FileSource';
 import HttpsProxyAgent from 'https-proxy-agent';
 import Extent from 'Core/Geographic/Extent';
@@ -26,7 +24,7 @@ describe('Layer with Feature process', function () {
         networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
     });
 
-    const ariege = new GeometryLayer('ariege', new THREE.Group(), {
+    const ariege = new FeatureGeometryLayer('ariege', {
         source,
         style: new Style({
             fill: {
@@ -35,8 +33,6 @@ describe('Layer with Feature process', function () {
             },
         }),
         zoom: { min: 7 },
-        update: FeatureProcessing.update,
-        convert: Feature2Mesh.convert(),
     });
 
     const context = {

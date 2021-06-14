@@ -66,19 +66,20 @@ var DragNDrop = (function _() {
                     data = new window.DOMParser().parseFromString(data, 'text/xml');
                 }
 
+                var crs = extension.mode == _GEOMETRY ? _view.referenceCrs : _view.tileLayer.extent.crs;
+
                 extension.parser(data, {
                     in: {
                         crs: 'EPSG:4326',
                     },
                     out: {
-                        crs: (extension.mode == _GEOMETRY ? _view.referenceCrs : _view.tileLayer.extent.crs),
+                        crs: crs,
                         buildExtent: true,
                         mergeFeatures: true,
                         structure: (extension.mode == _GEOMETRY ? '3d' : '2d'),
+                        forcedExtentCrs: crs != 'EPSG:4978' ? crs : 'EPSG:4326',
                     },
                 }).then(function _(features) {
-                    var dimensions = features.extent.dimensions();
-
                     var source = new itowns.FileSource({
                         features: features,
                         crs: 'EPSG:4326',
@@ -102,29 +103,32 @@ var DragNDrop = (function _() {
                             source: source,
                         });
                     } else if (extension.mode == _GEOMETRY) {
-                        layer = new itowns.GeometryLayer(file.name, new itowns.THREE.Group(), {
-                            update: itowns.FeatureProcessing.update,
-                            convert: itowns.Feature2Mesh.convert({
-                                color: new itowns.THREE.Color(randomColor),
-                                // Set the extrusion according to the size of
-                                // the extent containing the data; this quick
-                                // formula is totally arbitrary.
-                                extrude: dimensions.x * dimensions.y / 1e6,
-                            }),
-                            source: source,
-                            opacity: 0.7,
-                        });
+                        layer = new itowns.FeatureGeometryLayer(
+                            file.name,
+                            {
+                                style: new itowns.Style({
+                                    fill: {
+                                        color: 'red',
+                                        extrusion_height: 200,
+                                    },
+                                }),
+                                source: source,
+                                opacity: 0.7,
+                            });
                     } else {
                         throw new Error('Mode of file not supported, please add it using DragNDrop.register');
                     }
 
                     _view.addLayer(layer);
 
-                    // Move the camera to the first vertex
-                    itowns.CameraUtils.animateCameraToLookAtTarget(_view, _view.camera.camera3D, {
-                        coord: new itowns.Coordinates(features.crs, features.features[0].vertices),
-                        range: dimensions.x * dimensions.y * 1e6,
-                    });
+                    var extent = features.extent.clone();
+                    // Transform local extent to data.crs projection.
+                    if (extent.crs == features.crs) {
+                        extent.applyMatrix4(features.matrixWorld);
+                    }
+
+                    // Move the camera
+                    itowns.CameraUtils.transformCameraToLookAtTarget(_view, _view.camera.camera3D, extent);
                 });
             };
 

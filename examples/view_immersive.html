@@ -133,9 +133,7 @@
                 });
 
                 // create geometry layer for the buildings
-                var wfsBuildingLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
-                    update: itowns.FeatureProcessing.update,
-                    convert: itowns.Feature2Mesh.convert(),
+                var wfsBuildingLayer = new itowns.FeatureGeometryLayer('Buildings', {
                     style: new itowns.Style({
                         fill: {
                             base_altitude: altitudeBuildings,
