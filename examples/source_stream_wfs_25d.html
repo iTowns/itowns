@@ -147,9 +147,7 @@
                 format: 'geojson',
             });
 
-            var lyonTclBusLayer = new itowns.GeometryLayer('lyon_tcl_bus', new itowns.THREE.Group(), {
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert(),
+            var lyonTclBusLayer = new itowns.FeatureGeometryLayer('lyon_tcl_bus', {
                 filter: acceptFeatureBus,
                 source: lyonTclBusSource,
                 zoom: { min: 2 },
@@ -219,17 +217,14 @@
                 },
             });
 
-            var wfsBuildingLayer = new itowns.GeometryLayer('wfsBuilding', new itowns.THREE.Group(), {
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    batchId: function (property, featureId) { return featureId; }
-                }),
+            var wfsBuildingLayer = new itowns.FeatureGeometryLayer('wfsBuilding', {
                 onMeshCreated: function scaleZ(mesh) {
                     mesh.children.forEach(c => {
                         c.scale.z = 0.01;
                         meshes.push(c);
                     })
                 },
+                batchId: function (property, featureId) { return featureId; },
                 filter: acceptFeature,
                 crs: 'EPSG:3946',
                 source: wfsBuildingSource,

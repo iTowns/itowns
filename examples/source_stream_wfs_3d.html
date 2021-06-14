@@ -110,10 +110,8 @@
                 format: 'geojson',
             });
 
-            var lyonTclBusLayer = new itowns.GeometryLayer('WFS Bus lines', new itowns.THREE.Group(), {
+            var lyonTclBusLayer = new itowns.FeatureGeometryLayer('WFS Bus lines',{
                 name: 'lyon_tcl_bus',
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert(),
                 filter: acceptFeatureBus,
                 source: lyonTclBusSource,
                 zoom: { min: 9 },
@@ -183,11 +181,8 @@
                 },
             });
 
-            var wfsBuildingLayer = new itowns.GeometryLayer('WFS Building', new itowns.THREE.Group(), {
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    batchId: function (property, featureId) { return featureId; },
-                }),
+            var wfsBuildingLayer = new itowns.FeatureGeometryLayer('WFS Building',{
+                batchId: function (property, featureId) { return featureId; },
                 onMeshCreated: function scaleZ(mesh) {
                     mesh.children.forEach(c => {
                         c.scale.z = 0.01;

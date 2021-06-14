@@ -15,7 +15,7 @@
  * view.addLayer(wfsLayer);
  *
  * var fileSource = new itowns.FileSource(...);
- * var fileLayer = new itowns.GeometryLayer('id_myFile', { source: fileSource});
+ * var fileLayer = new itowns.GeometryLayer('id_myFile', new THREE.Group(), { source: fileSource });
  * view.addLayer(fileLayer);
  *
  * FeatureToolTip.addLayer(wfsLayer);
