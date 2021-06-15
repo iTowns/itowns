@@ -52,18 +52,11 @@
                 return z - (z % 5);
             }
 
+            // Define a VectorTilesSource to load Vector Tiles data from the geoportail
             var mvtSource = new itowns.VectorTilesSource({
-                style: 'https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json',
-                // eslint-disable-next-line no-template-curly-in-string
-                url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
-                attribution: {
-                    name: 'OpenStreetMap',
-                    url: 'http://www.openstreetmap.org/',
-                },
-                zoom: {
-                    min: 2,
-                    max: 14,
-                },
+                style: 'https://wxs.ign.fr/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                // We don't display mountains related data to ease visualisation
+                filter: (layer) => !layer['source-layer'].includes('oro_'),
             });
 
             var mvtLayer = new itowns.ColorLayer('MVT', {
