@@ -137,7 +137,13 @@
                 });
 
                 return view.addLayer(pyoLayer);
-            }).then(FeatureToolTip.addLayer);
+            }).then(FeatureToolTip.addLayer).then(() => {
+                // Center the camera on the data extents
+                const layersExtent = ariegeSource.extent.clone();
+                layersExtent.union(view.getLayerById('pyrenees-orientales').source.extent);
+                view.controls.lookAtCoordinate(layersExtent, false);
+            });
+
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
