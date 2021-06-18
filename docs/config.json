@@ -37,6 +37,7 @@
                 "ColorLayer",
                 "ElevationLayer",
                 "GeometryLayer",
+                "FeatureGeometryLayer",
                 "TiledGeometryLayer",
                 "InfoTiledGeometryLayer",
                 "ColorLayersOrdering",
