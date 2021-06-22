@@ -259,6 +259,7 @@ class GlobeControls extends THREE.EventDispatcher {
         this.view.domElement.addEventListener('touchmove', this._onTouchMove, false);
 
         this.states.addEventListener('travel_in', this._onTravel, false);
+        this.states.addEventListener('travel_out', this._onTravel, false);
 
         // refresh control for each animation's frame
         this.player.addEventListener('animation-frame', this._update);
@@ -684,7 +685,7 @@ class GlobeControls extends THREE.EventDispatcher {
         if (point && range > this.minDistance) {
             return this.lookAtCoordinate({
                 coord: new Coordinates('EPSG:4978', point),
-                range: range * 0.6,
+                range: range * (event.type === 'travel_out' ? 1 / 0.6 : 0.6),
                 time: 1500,
             });
         }
@@ -918,6 +919,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
         this.states.dispose();
         this.states.removeEventListener('travel_in', this._onTravel, false);
+        this.states.removeEventListener('travel_out', this._onTravel, false);
 
         this.player.removeEventListener('animation-frame', this._onKeyUp);
 

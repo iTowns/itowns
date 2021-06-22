@@ -194,10 +194,28 @@ describe('GlobeControls', function () {
         const startRange = controls.getRange();
         controls.travel({
             viewCoords: viewer.eventToViewCoords(event),
+            type: 'travel_in',
         }).then(() => {
             assert.ok(controls.getRange() < startRange);
             done();
         });
+    });
+
+    it('travel out', function (done) {
+        const startRange = controls.getRange();
+        controls.travel({
+            viewCoords: viewer.eventToViewCoords(event),
+            type: 'travel_out',
+        }).then(() => {
+            assert.ok(controls.getRange() > startRange);
+            done();
+        });
+    });
+
+    it('travel should not trigger if controls are disabled', function () {
+        controls.enabled = false;
+        assert.strictEqual(controls.travel(), undefined);
+        controls.enabled = true;
     });
 
     it('touch start', function () {

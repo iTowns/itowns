@@ -51,6 +51,7 @@ describe('StateControl', function () {
             DOLLY: { enable: true, mouseButton: MOUSE.RIGHT },
             PANORAMIC: { enable: true, mouseButton: MOUSE.LEFT, keyboard: 17 },
             TRAVEL_IN: { enable: true, mouseButton: MOUSE.LEFT, double: true },
+            TRAVEL_OUT: { enable: true, mouseButton: MOUSE.RIGHT, double: true },
         };
         states.setFromOptions(options);
 
@@ -60,6 +61,7 @@ describe('StateControl', function () {
         assert.strictEqual(JSON.stringify(options.DOLLY), JSON.stringify(states.DOLLY));
         assert.strictEqual(JSON.stringify(options.PANORAMIC), JSON.stringify(states.PANORAMIC));
         assert.strictEqual(JSON.stringify(options.TRAVEL_IN), JSON.stringify(states.TRAVEL_IN));
+        assert.strictEqual(JSON.stringify(options.TRAVEL_OUT), JSON.stringify(states.TRAVEL_OUT));
     });
 
     it('should dispose event listeners', function () {
