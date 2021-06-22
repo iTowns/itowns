@@ -623,13 +623,13 @@ class View extends THREE.EventDispatcher {
     eventToViewCoords(event, target = _eventCoords, touchIdx = 0) {
         const br = this.domElement.getBoundingClientRect();
 
-        if (event.touches === undefined || !event.touches.length) {
+        if (event.touches && event.touches.length) {
+            return target.set(event.touches[touchIdx].clientX - br.x,
+                event.touches[touchIdx].clientY - br.y);
+        } else if (event.offsetX && event.offsetY) {
             const targetBoundingRect = event.target.getBoundingClientRect();
             return target.set(targetBoundingRect.x + event.offsetX - br.x,
                 targetBoundingRect.y + event.offsetY - br.y);
-        } else {
-            return target.set(event.touches[touchIdx].clientX - br.x,
-                event.touches[touchIdx].clientY - br.y);
         }
     }
 
