@@ -12,12 +12,28 @@ const CONTROL_KEYS = {
 };
 
 
+function stateToTrigger(state) {
+    if (!state) {
+        return undefined;
+    } else if (state.mouseButton === THREE.MOUSE.LEFT && state.double) {
+        return 'dblclick';
+    } else if (state.mouseButton === THREE.MOUSE.RIGHT && state.double) {
+        return 'dblclick-right';
+    } else if (state.keyboard) {
+        return 'keydown';
+    }
+}
+
+
 /**
  * @typedef {Object} StateControl~State
  * @property {boolean} enable=true Indicate whether the state is enabled or not.
  * @property {Number} [mouseButton] The mouse button bound to this state.
  * @property {Number} [keyboard] The keyCode of the keyboard input bound to this state.
  * @property {Number} [finger] The number of fingers on the pad bound to this state.
+ * @property {boolean} [double] True if the mouse button bound to this state must be pressed twice. For
+                                * example, if `double` is set to true with a `mouseButton` set to left click,
+                                * the State will be bound to a double click mouse button.
  */
 
 /**
@@ -37,10 +53,29 @@ const CONTROL_KEYS = {
                                     * to give the feeling that the view is dragged under a static camera.
  * @property {State}    PANORAMIC   {@link State} describing camera panoramic movement : the camera is rotated around
                                     * its own position.
+ * @property {State}    TRAVEL_IN   {@link State} describing camera travel in movement : the camera is zoomed in toward
+                                    * a given position. The choice of the target position is made in the Controls
+                                    * associated to this StateControl.
+                                    * This state can only be associated to double click on mouse buttons (left or right)
+                                    * or a keyboard key.
  */
-class StateControl {
-    constructor(options = {}) {
+class StateControl extends THREE.EventDispatcher {
+    constructor(view, options = {}) {
+        super();
+
+        this._view = view;
+        this._domElement = view.domElement;
+
         this.NONE = {};
+
+        this._handleTravelInEvent = (event) => {
+            if (this.TRAVEL_IN === this.inputToState(event.button, event.keyCode, this.TRAVEL_IN.double)) {
+                this.dispatchEvent({
+                    type: 'travel_in',
+                    viewCoords: this._view.eventToViewCoords(event),
+                });
+            }
+        };
 
         this.setFromOptions(options);
     }
@@ -49,12 +84,17 @@ class StateControl {
      * get the state corresponding to the mouse button and the keyboard key
      * @param      {Number}  mouseButton  The mouse button
      * @param      {Number}  keyboard     The keyboard
+     * @param      {Boolean} [double]     Value of the searched state `double` property
      * @return     {state}  the state corresponding
      */
-    inputToState(mouseButton, keyboard) {
+    inputToState(mouseButton, keyboard, double) {
         for (const key of Object.keys(this)) {
             const state = this[key];
-            if (state.enable && state.mouseButton === mouseButton && state.keyboard === keyboard) {
+            if (state.enable
+                && state.mouseButton === mouseButton
+                && state.keyboard === keyboard
+                && state.double === double
+            ) {
                 return state;
             }
         }
@@ -124,6 +164,23 @@ class StateControl {
             keyboard: CONTROL_KEYS.SHIFT,
             enable: true,
         };
+
+        const newTravelIn = options.TRAVEL_IN || this.TRAVEL_IN || {
+            enable: true,
+            mouseButton: THREE.MOUSE.LEFT,
+            double: true,
+        };
+
+        this._domElement.removeEventListener(stateToTrigger(this.TRAVEL_IN), this._handleTravelInEvent, false);
+        this._domElement.addEventListener(stateToTrigger(newTravelIn), this._handleTravelInEvent, false);
+        this.TRAVEL_IN = newTravelIn;
+    }
+
+    /**
+     * Remove all event listeners created within this instance of `StateControl`
+     */
+    dispose() {
+        this._domElement.removeEventListener(this.TRAVEL_IN.trigger, this._handleTravelInEvent, false);
     }
 }
 
