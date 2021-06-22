@@ -65,6 +65,11 @@ tags are still working inside Markdown in our case.
 When adding a tutorial, also add it in `docs/tutorials/list.json`, and following
 the already present tutorials, add a name to it.
 
+You will also need to specify the section of your tutorial in `docs/config.json`, 
+at the `tutorialSections` property. You can add a new section as long as the 
+`sectionTitle` and `sectionId` parameters you set for your tutorial are different 
+from the ones that are already present.
+
 If you want to add images to the tutorial, add them inside
 `docs/tutorials/images`, and name under `$TUTORIAL_NAME_xxx`, `$TUTORIAL_NAME`
 being the name of the markdown file containing the tutorial, and `xxx` the
