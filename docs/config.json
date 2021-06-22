@@ -120,6 +120,32 @@
                 "FeatureToolTip",
                 "TIFFParser"
             ]
+        },
+        "tutorialSections": {
+            "Fundamentals": {
+                "sectionTitle": "Getting started",
+                "sectionId": 0
+            },
+            "webgl": {
+                "sectionTitle": "Getting started",
+                "sectionId": 0
+            },
+            "Raster-data-Lambert93": {
+                "sectionTitle": "Raster visualization",
+                "sectionId": 1
+            },
+            "Raster-data-WGS84": {
+                "sectionTitle": "Raster visualization",
+                "sectionId": 1
+            },
+            "Vector-data-3d": {
+                "sectionTitle": "Vector visualization",
+                "sectionId": 2
+            },
+            "Vector-data-on-ground": {
+                "sectionTitle": "Vector visualization",
+                "sectionId": 2
+            }
         }
     },
     "templates": {
