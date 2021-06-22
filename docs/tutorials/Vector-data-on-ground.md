@@ -17,7 +17,7 @@ We need to change the starting position to something more appropriate.
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Display some vector data with iTowns</title>
+        <title>Vector data on ground</title>
         <style>
             html { height: 100%; }
             body { margin: 0; overflow: hidden; height: 100%; }
@@ -204,7 +204,7 @@ By reaching here, you are now able to display simple vector data projected on th
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Simple globe with iTowns</title>
+        <title>Vector data on ground</title>
         <style>
             html { height: 100%; }
             body { margin: 0; overflow: hidden; height: 100%; }

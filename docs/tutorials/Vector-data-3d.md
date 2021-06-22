@@ -13,7 +13,7 @@ layer to a more precise one.
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Display a geometry layer with iTowns</title>
+        <title>Vector data in 3D</title>
         <style>
             html { height: 100%; }
             body { margin: 0; overflow: hidden; height: 100%; }
@@ -278,7 +278,7 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Simple globe with iTowns</title>
+        <title>Vector data in 3D</title>
         <style>
             html { height: 100%; }
             body { margin: 0; overflow: hidden; height: 100%; }
