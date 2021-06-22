@@ -58,6 +58,11 @@ function stateToTrigger(state) {
                                     * associated to this StateControl.
                                     * This state can only be associated to double click on mouse buttons (left or right)
                                     * or a keyboard key.
+ * @property {State}    TRAVEL_OUT  {@link State} describing camera travel out movement : the camera is zoomed out from
+                                    * a given position. The choice of the target position is made in the Controls
+                                    * associated to this StateControl.
+                                    * This state can only be associated to double click on mouse buttons (left or right)
+                                    * or a keyboard key. It is disabled by default.
  */
 class StateControl extends THREE.EventDispatcher {
     constructor(view, options = {}) {
@@ -72,6 +77,14 @@ class StateControl extends THREE.EventDispatcher {
             if (this.TRAVEL_IN === this.inputToState(event.button, event.keyCode, this.TRAVEL_IN.double)) {
                 this.dispatchEvent({
                     type: 'travel_in',
+                    viewCoords: this._view.eventToViewCoords(event),
+                });
+            }
+        };
+        this._handleTravelOutEvent = (event) => {
+            if (this.TRAVEL_OUT === this.inputToState(event.button, event.keyCode, this.TRAVEL_OUT.double)) {
+                this.dispatchEvent({
+                    type: 'travel_out',
                     viewCoords: this._view.eventToViewCoords(event),
                 });
             }
@@ -174,6 +187,13 @@ class StateControl extends THREE.EventDispatcher {
         this._domElement.removeEventListener(stateToTrigger(this.TRAVEL_IN), this._handleTravelInEvent, false);
         this._domElement.addEventListener(stateToTrigger(newTravelIn), this._handleTravelInEvent, false);
         this.TRAVEL_IN = newTravelIn;
+
+        const newTravelOut = options.TRAVEL_OUT || this.TRAVEL_OUT || {
+            enable: false,
+        };
+        this._domElement.removeEventListener(stateToTrigger(this.TRAVEL_OUT), this._handleTravelOutEvent, false);
+        this._domElement.addEventListener(stateToTrigger(newTravelOut), this._handleTravelOutEvent, false);
+        this.TRAVEL_OUT = newTravelOut;
     }
 
     /**
@@ -181,6 +201,7 @@ class StateControl extends THREE.EventDispatcher {
      */
     dispose() {
         this._domElement.removeEventListener(this.TRAVEL_IN.trigger, this._handleTravelInEvent, false);
+        this._domElement.removeEventListener(this.TRAVEL_OUT.trigger, this._handleTravelInEvent, false);
     }
 }
 
