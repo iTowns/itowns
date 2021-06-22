@@ -189,10 +189,12 @@ describe('GlobeControls', function () {
         assert.ok(controls.getRange() < startRange);
     });
 
-    it('mouse dblclick', function (done) {
+    it('travel in', function (done) {
         controls.setAnimationEnabled(false);
         const startRange = controls.getRange();
-        controls.ondblclick(event).then(() => {
+        controls.travel({
+            viewCoords: viewer.eventToViewCoords(event),
+        }).then(() => {
             assert.ok(controls.getRange() < startRange);
             done();
         });

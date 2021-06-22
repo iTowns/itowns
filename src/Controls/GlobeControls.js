@@ -174,7 +174,7 @@ class GlobeControls extends THREE.EventDispatcher {
         this.camera = view.camera.camera3D;
 
         // State control
-        this.states = new StateControl();
+        this.states = new StateControl(this.view);
         this.state = this.states.NONE;
 
         // Set to false to disable this control
@@ -242,7 +242,7 @@ class GlobeControls extends THREE.EventDispatcher {
         this._onMouseDown = this.onMouseDown.bind(this);
         this._onMouseWheel = this.onMouseWheel.bind(this);
         this._onContextMenuListener = this.onContextMenuListener.bind(this);
-        this._ondblclick = this.ondblclick.bind(this);
+        this._onTravel = this.travel.bind(this);
         this._onTouchStart = this.onTouchStart.bind(this);
         this._update = this.update.bind(this);
         this._onTouchMove = this.onTouchMove.bind(this);
@@ -253,11 +253,12 @@ class GlobeControls extends THREE.EventDispatcher {
         this.view.domElement.addEventListener('contextmenu', this._onContextMenuListener, false);
         this.view.domElement.addEventListener('mousedown', this._onMouseDown, false);
         this.view.domElement.addEventListener('mousewheel', this._onMouseWheel, false);
-        this.view.domElement.addEventListener('dblclick', this._ondblclick, false);
         this.view.domElement.addEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
         this.view.domElement.addEventListener('touchstart', this._onTouchStart, false);
         this.view.domElement.addEventListener('touchend', this._onMouseUp, false);
         this.view.domElement.addEventListener('touchmove', this._onTouchMove, false);
+
+        this.states.addEventListener('travel_in', this._onTravel, false);
 
         // refresh control for each animation's frame
         this.player.addEventListener('animation-frame', this._update);
@@ -675,10 +676,10 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
-    ondblclick(event) {
-        if (this.enabled === false || currentKey) { return; }
+    travel(event) {
+        if (this.enabled === false) { return; }
         this.player.stop();
-        const point = this.view.getPickingPositionFromDepth(this.view.eventToViewCoords(event));
+        const point = this.view.getPickingPositionFromDepth(event.viewCoords);
         const range = this.getRange(point);
         if (point && range > this.minDistance) {
             return this.lookAtCoordinate({
@@ -910,11 +911,13 @@ class GlobeControls extends THREE.EventDispatcher {
         this.view.domElement.removeEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
         this.view.domElement.removeEventListener('mouseup', this._onMouseUp, false);
         this.view.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
-        this.view.domElement.removeEventListener('dblclick', this._ondblclick, false);
 
         this.view.domElement.removeEventListener('touchstart', this._onTouchStart, false);
         this.view.domElement.removeEventListener('touchend', this._onMouseUp, false);
         this.view.domElement.removeEventListener('touchmove', this._onTouchMove, false);
+
+        this.states.dispose();
+        this.states.removeEventListener('travel_in', this._onTravel, false);
 
         this.player.removeEventListener('animation-frame', this._onKeyUp);
 

@@ -1,9 +1,15 @@
 import { MOUSE } from 'three';
 import assert from 'assert';
-import StateControl from 'Controls/StateControl';
+import Coordinates from 'Core/Geographic/Coordinates';
+import GlobeView from 'Core/Prefab/GlobeView';
+import Renderer from './bootstrap';
 
 describe('StateControl', function () {
-    const states = new StateControl();
+    const renderer = new Renderer();
+
+    const placement = { coord: new Coordinates('EPSG:4326', 2.351323, 48.856712), range: 250000, proxy: false };
+    const viewer = new GlobeView(renderer.domElement, placement, { renderer });
+    const states = viewer.controls.states;
 
     it('inputToState should return the correct state', function () {
         assert.strictEqual(
@@ -44,6 +50,7 @@ describe('StateControl', function () {
             ORBIT: { enable: true, mouseButton: MOUSE.MIDDLE },
             DOLLY: { enable: true, mouseButton: MOUSE.RIGHT },
             PANORAMIC: { enable: true, mouseButton: MOUSE.LEFT, keyboard: 17 },
+            TRAVEL_IN: { enable: true, mouseButton: MOUSE.LEFT, double: true },
         };
         states.setFromOptions(options);
 
@@ -52,5 +59,10 @@ describe('StateControl', function () {
         assert.strictEqual(JSON.stringify(options.ORBIT), JSON.stringify(states.ORBIT));
         assert.strictEqual(JSON.stringify(options.DOLLY), JSON.stringify(states.DOLLY));
         assert.strictEqual(JSON.stringify(options.PANORAMIC), JSON.stringify(states.PANORAMIC));
+        assert.strictEqual(JSON.stringify(options.TRAVEL_IN), JSON.stringify(states.TRAVEL_IN));
+    });
+
+    it('should dispose event listeners', function () {
+        states.dispose();
     });
 });
