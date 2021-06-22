@@ -110,4 +110,4 @@ If you wish to modify the current template, there are multiple things to change:
   documentation from the template
 
 The architecture of the template follows roughly [the one from
-JSDoc](https://github.com/jsdoc3/jsdoc/tree/master/templates/default).
+JSDoc](https://github.com/jsdoc/jsdoc/tree/master/packages/jsdoc/templates/default).
