@@ -7,7 +7,7 @@ In this tutorial, we shall be introduced to the fundamentals of iTowns : how it 
 
 ***
 
-## Data visualization with iTowns
+## The View
 
 The support to display anything within iTowns is called a `{@link View}`.
 
@@ -34,7 +34,7 @@ Tutorials of how to create and use the two `View` types can be found [here]{@tut
 
 ***
 
-## The data supported by iTowns
+## Protocols and data formats
 
 
 ITowns comes with a wide range of compatible data sources. 
@@ -45,7 +45,7 @@ Regarding data formats, iTowns offers several possibilities : [vector tile](http
 
 ***
 
-## The support for visualized data
+## Layers
 
 It was earlier mentioned that data are displayed as [`Layers`]{@link Layer} within iTowns. 
 Several specific types of `Layers` exist, the use of which depends on the data to display :
@@ -64,7 +64,7 @@ Several specific types of `Layers` exist, the use of which depends on the data t
 
 ***
 
-## Vector data appearance
+## Style
 
 ITowns can display vector data in two ways : the data can be displayed in a `{@link View}` as 3D objects, or as entities that are projected on the ground.
 You can see bellow pictures illustrating the two cases.
