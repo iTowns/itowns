@@ -30,7 +30,9 @@ It is important to aknowledge the following facts regarding original raster data
 - a `GlobeView` allows displaying multiple raster data from two different source CRS : [WGS 84](https://epsg.io/4326) and [Pseudo-Mercator](https://epsg.io/3857),
 - a `PlanarView` allows displaying multiple raster data, but all those data sources must have the same CRS.
 
-Tutorials of how to create and use the two `View` types can be found [here]{@tutorial Raster-data-WGS84} for the `GlobeView` and [here]{@tutorial Raster-data-Lambert93} for the `PlanarView`.
+&rarr;[**`Visit GlobeView tutorial`**]{@tutorial Raster-data-WGS84}
+
+&rarr;[**`Visit PlanarView tutorial`**]{@tutorial Raster-data-Lambert93}
 
 ***
 
@@ -103,7 +105,7 @@ In that case, the data basically consist in polygons, lines or points.
 Their appearance can be adjusted by modifying the `{@link Style}` of the `{@link ColorLayer}`. 
 Yet, their positioning can't be modified since it is computed so that tey appear projected on the ground.
 
-Tutorial on how to modify the appearance of some vector data displayed on the ground can be found [here]{@tutorial Vector-data-on-ground}.
+&rarr;[**`Visit tutorial`**]{@tutorial Vector-data-on-ground}
 
 ### Vector data displayed as 3D objects
 
@@ -115,4 +117,4 @@ Two parameters allow modifying the data position :
 
 For example, given a set of polygons, setting `fill.base_altitude` to `500` and `fill.extrusion_height` to `20` will render extruded polygon expanding between 500 and 520 meters of altitude.
 
-You can find tutorial on how to use the `base_altitude` and `extrusion_height` parameters [here]{@tutorial Vector-data-3d}.
+&rarr;[**`Visit tutorial`**]{@tutorial Vector-data-3d}
