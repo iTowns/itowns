@@ -9,14 +9,14 @@ In this tutorial, we shall be introduced to the fundamentals of iTowns : how it 
 
 ## Data visualization with iTowns
 
-The support to display anything within iTowns is called a `View`.
+The support to display anything within iTowns is called a `{@link View}`.
 
-To provide geographic data visualization, a `View` contains a combination of `Layers` which, in a digital map environment, are visual representations of any geographic data.
+To provide geographic data visualization, a `{@link View}` contains a combination of [`Layers`]{@link Layer} which, in a digital map environment, are visual representations of any geographic data.
 In other words, all data that are displayed using iTowns are supported by some `Layer`.
 
 Each `View` in iTowns displays 3D data in a unique Coordinates Reference System (CRS). 
 Yet, the data displayed within a `View` do not necessarily have to be in the `View`'s CRS.
-ITowns comes with two pre-made `View` types : `GlobeView` and `PlanarView`. 
+ITowns comes with two pre-made `View` types : `{@link GlobeView}` and `{@link PlanarView}`. 
 Each of these allows visualizing data from different types (raster or vector) and from different CRS.
 On this matter, iTowns distinguishes two cases : 
 
@@ -47,15 +47,15 @@ Regarding data formats, iTowns offers several possibilities : [vector tile](http
 
 ## The support for visualized data
 
-It was earlier mentioned that data are displayed as `Layers` within iTowns. 
+It was earlier mentioned that data are displayed as [`Layers`]{@link Layer} within iTowns. 
 Several specific types of `Layers` exist, the use of which depends on the data to display :
 
-- `ColorLayer` can be used to display raster graphics or vector data projected on the ground (left picture in the table bellow),
-- `ElevationLayer` can be used to display 3D elevation models (center picture in the table bellow),
-- `GeometryLayer` can be used to display 3D objects, such as geometric shapes or buildings modelling (right picture in the table bellow).
-- `FeatureGeometryLayer` is a pre-configured `GeometryLayer` which simplifies its implementation in given cases.
-- `PointCloudLayer` can be used to display 3D point clouds.
-- `OrientedImageLayer` can be used to display some oriented images.
+- `{@link ColorLayer}` can be used to display raster graphics or vector data projected on the ground (left picture in the table bellow),
+- `{@link ElevationLayer}` can be used to display 3D elevation models (center picture in the table bellow),
+- `{@link GeometryLayer}` can be used to display 3D objects, such as geometric shapes or buildings modelling (right picture in the table bellow).
+- `{@link FeatureGeometryLayer}` is a pre-configured `{@link GeometryLayer}` which simplifies its implementation in given cases.
+- `{@link PointCloudLayer}` can be used to display 3D point clouds.
+- `{@link OrientedImageLayer}` can be used to display some oriented images.
 
 
 | ![color layer](images/Fundamentals-1.png) | ![elevation layer](images/Fundamentals-2.png) | ![geometry layer](images/Fundamentals-3.png) |
@@ -66,14 +66,14 @@ Several specific types of `Layers` exist, the use of which depends on the data t
 
 ## Vector data appearance
 
-ITowns can display vector data in two ways : the data can be displayed in a `View` as 3D objects, or as entities that are projected on the ground.
+ITowns can display vector data in two ways : the data can be displayed in a `{@link View}` as 3D objects, or as entities that are projected on the ground.
 You can see bellow pictures illustrating the two cases.
 
 | ![flattened vector data](images/Fundamentals-4.png) | ![3d vector data](images/Fundamentals-5.png) |
 | :---: | :---: |
 | Vector data projected on the ground | Vector data display as 3D objects |
 
-In both ways, the appearance and positioning of the vector data can be adjusted by modifying the `Style` parameter of the `Layer` the data are displayed in.
+In both ways, the appearance and positioning of the vector data can be adjusted by modifying the `{@link Style}` parameter of the `Layer` the data are displayed in.
 The `Style` in iTowns comes with several properties : 
 - `fill` allows defining style rules for polygons interior,
 - `stroke` allows defining style rules for lines and polygons edges,
@@ -98,17 +98,17 @@ The content of the label will be the content stored in the data under the `name`
 
 ### Vector data projected on the ground
 
-When vector data are flattened on the ground, they are displayed in a `ColorLayer`. 
+When vector data are flattened on the ground, they are displayed in a `{@link ColorLayer}`. 
 In that case, the data basically consist in polygons, lines or points.
-Their appearance can be adjusted by modifying the `Style` of the `ColorLayer`. 
+Their appearance can be adjusted by modifying the `{@link Style}` of the `{@link ColorLayer}`. 
 Yet, their positioning can't be modified since it is computed so that tey appear projected on the ground.
 
 Tutorial on how to modify the appearance of some vector data displayed on the ground can be found [here]{@tutorial Vector-data-on-ground}.
 
 ### Vector data displayed as 3D objects
 
-In the case of vector data represented as 3D objects, the data are displayed in a `GeometryLayer`.
-The appearance and positioning of the vector data can be adjusted by modifying the `Style` of the `GeometryLayer`.
+In the case of vector data represented as 3D objects, the data are displayed in a `{@link GeometryLayer}`.
+The appearance and positioning of the vector data can be adjusted by modifying the `{@link Style}` of the `{@link GeometryLayer}`.
 Two parameters allow modifying the data position :
 - `base_altitude` which defines the altitude at the base of the 3D objects ;
 - `extrusion_height` which defines the height of the 3D objects, giving them volume.
