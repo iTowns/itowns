@@ -15,10 +15,10 @@ const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) =
     return response.arrayBuffer();
 });
 
-function getTextureFloat(buffer, isWebGL2 = true) {
-    if (isWebGL2) {
+function getTextureFloat(buffer, options = { isWebGL2: true, encoding: 32 }) {
+    if (options.isWebGL2) {
         const texture = new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, RedFormat, FloatType);
-        texture.internalFormat = 'R32F';
+        texture.internalFormat = options.encoding === '16F' ? 'R16F' : 'R32F';
         return texture;
     } else {
         return new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, AlphaFormat, FloatType);
@@ -135,8 +135,8 @@ export default {
      */
     textureFloat(url, options = {}) {
         return arrayBuffer(url, options).then((buffer) => {
-            const floatArray = new Float32Array(buffer);
-            const texture = getTextureFloat(floatArray, options.isWebGL2);
+            const floatArray = options.encoding === '16F' ? new Uint16Array(buffer) : new Float32Array(buffer);
+            const texture = getTextureFloat(floatArray, options);
             return texture;
         });
     },

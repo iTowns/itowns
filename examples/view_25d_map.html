@@ -85,11 +85,11 @@
                 crs: 'EPSG:3946',
                 width: 256,
                 format: 'image/jpeg',
+                encoding: 'RGB',
             });
 
             // Add a WMS elevation layer
             var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
-                useColorTextureElevation: true,
                 colorTextureElevationMinZ: 144,
                 colorTextureElevationMaxZ: 622,
                 source: wmsElevationSource,

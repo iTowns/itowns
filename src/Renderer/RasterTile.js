@@ -131,7 +131,7 @@ export class RasterElevationTile extends RasterTile {
             defaultEle.mode = ELEVATION_MODES.RGBA;
             defaultEle.zmax = 5000;
             throw new Error('Restore this feature');
-        } else if (layer.useColorTextureElevation) {
+        } else if (layer.source.encoding === 'RGB') {
             scaleFactor = layer.colorTextureElevationMaxZ - layer.colorTextureElevationMinZ;
             defaultEle.mode = ELEVATION_MODES.COLOR;
             defaultEle.bias = layer.colorTextureElevationMinZ;
@@ -161,7 +161,7 @@ export class RasterElevationTile extends RasterTile {
     }
 
     updateMinMaxElevation() {
-        if (this.textures[0] && !this.layer.useColorTextureElevation) {
+        if (this.textures[0] && this.layer.source.encoding !== 'RGB') {
             const { min, max } = computeMinMaxElevation(this.textures[0], this.offsetScales[0], this.layer.noDataValue);
             if (this.min != min || this.max != max) {
                 this.min = min;

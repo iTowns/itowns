@@ -104,6 +104,7 @@
                 width: 256,
                 format: 'image/jpeg',
                 url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                encoding: 'RGB',
             });
 
             for (index = 0; index < wmsLayers.length; index++) {
@@ -135,7 +136,6 @@
                 view.addLayer(colorLayer, tileLayer);
                 var elevationLayer = new itowns.ElevationLayer('wms_elevation' + wms + index, {
                     source: elevationSource,
-                    useColorTextureElevation: true,
                     colorTextureElevationMinZ: 144,
                     colorTextureElevationMaxZ: 622,
                 });

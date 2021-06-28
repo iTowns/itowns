@@ -65,7 +65,6 @@
             view.addLayer(tmsMarsLayer);
 
             const demMars = new itowns.ElevationLayer('demMars', {
-                useColorTextureElevation: true,
                 colorTextureElevationMinZ: 0,
                 colorTextureElevationMaxZ: 20000,
                 crs: 'EPSG:4326',
@@ -74,6 +73,7 @@
                     crs: 'EPSG:4326',
                     url : 'https://api.nasa.gov/mars-wmts/catalog/Mars_MGS_MOLA_DEM_mosaic_global_463m_8/1.0.0//default/default028mm/${z}/${y}/${x}.png',
                     zoom: { min: 0, max: 5 },
+                    encoding: 'RGB',
                 }),
             });
             // view.addLayer(demMars);

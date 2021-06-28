@@ -10,16 +10,14 @@ import { RasterElevationTile } from 'Renderer/RasterTile';
  * @property {number} scale - Used to apply a scale on the elevation value. It
  * can be used for exageration of the elevation, like in [this
  * example](https://www.itowns-project.org/itowns/examples/#plugins_pyramidal_tiff).
- * @property {boolean} useColorTextureElevation - the elevation is computed with one color texture channel,
- * `this.colorTextureElevationMaxZ` and `this.colorTextureElevationMinZ`.
+ * @property {number} colorTextureElevationMinZ - elevation minimum when source `encoding` parameter is `RGB`.
+ * @property {number} colorTextureElevationMaxZ - elevation maximum when source `encoding` parameter is `RGB`.
  *
- * The formula is:
+ * The formula for elevation computing is:
  *
  * ```js
  * elevation = color.r * (this.colorTextureElevationMaxZ - this.colorTextureElevationMinZ) + this.colorTextureElevationMinZ
  * ```
- * @property {number} colorTextureElevationMinZ - elevation minimum in `useColorTextureElevation` mode.
- * @property {number} colorTextureElevationMaxZ - elevation maximum in `useColorTextureElevation` mode.
  */
 class ElevationLayer extends RasterLayer {
     /**
@@ -53,12 +51,20 @@ class ElevationLayer extends RasterLayer {
      * view.addLayer(elevation);
      */
     constructor(id, config = {}) {
+        if (config.useColorTextureElevation !== undefined) {
+            console.warn(
+                'Elevation.useColorTextureElevation parameter is deprecated. ' +
+                'Use Source.encoding parameter instead',
+            );
+            config.source.encoding = config.source.encoding || config.useColorTextureElevation ? 'RGB' : undefined;
+        }
+
         super(id, config);
         this.isElevationLayer = true;
 
         // This is used to add a factor needed to color texture
         let baseScale = 1.0;
-        if (this.useColorTextureElevation) {
+        if (config.source.encoding === 'RGB') {
             baseScale = this.colorTextureElevationMaxZ - this.colorTextureElevationMinZ;
         }
 
