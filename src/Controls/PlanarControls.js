@@ -34,6 +34,7 @@ export const STATE = {
     ROTATE: 2,
     TRAVEL: 3,
     ORTHO_ZOOM: 4,
+    ZOOM: 5,
 };
 
 // cursor shape linked to control state
@@ -74,6 +75,8 @@ const travelEndPos = new THREE.Vector3();
 const travelStartPos = new THREE.Vector3();
 const travelStartRot = new THREE.Quaternion();
 const travelEndRot = new THREE.Quaternion();
+let travelEndRes;
+let reductionFactor = 1;
 let travelAlpha = 0;
 let travelDuration = 0;
 let travelUseRotation = false;
@@ -346,6 +349,10 @@ class PlanarControls extends THREE.EventDispatcher {
                 this.handleTravel(dt);
                 this.view.notifyChange(this.camera);
                 break;
+            case STATE.ZOOM:
+                this.handleZoom(dt);
+                this.view.notifyChange(this.camera);
+                break;
             case STATE.ORTHO_ZOOM:
                 this.handleZoomOrtho(dt);
                 this.view.notifyChange(this.camera);
@@ -527,8 +534,6 @@ class PlanarControls extends THREE.EventDispatcher {
         if (delta > 0 || (delta < 0 && this.maxAltitude > this.camera.position.z)) {
             const zoomFactor = delta > 0 ? this.zoomInFactor : this.zoomOutFactor;
 
-            const target = CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).coord.toVector3();
-
             // do not zoom if the resolution after the zoom is outside resolution limits
             const endResolution = this.view.getPixelsToMeters() / zoomFactor;
             // The endResolution value is rounded to the 1E-6 decimal above when compared to maxResolution,
@@ -536,6 +541,7 @@ class PlanarControls extends THREE.EventDispatcher {
             // This prevents rounding issues when endResolution has too many decimals.
             console.log('start resolution : ', this.view.getPixelsToMeters() * 1E6);
             console.log('end resolution : ', endResolution * 1E6);
+            console.log('end range : ', CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).range / zoomFactor);
             console.log('');
             if (
                 this.maxResolution > Math.ceil(endResolution * 1E6)
@@ -561,25 +567,30 @@ class PlanarControls extends THREE.EventDispatcher {
                 travelDuration = this.zoomTravelTime;
                 this.updateMouseCursorType();
             } else {
-                // target position
-                newPos.lerpVectors(
+                this.state = STATE.ZOOM;
+                this.view.notifyChange(this.camera);
+
+                // camera position at the beginning of zoom movement
+                travelStartPos.copy(this.camera.position);
+                // camera position at the end of zoom movement
+                travelEndPos.copy(newPos.lerpVectors(
                     this.camera.position,
                     pointUnderCursor,
                     (1 - 1 / zoomFactor),
-                );
-                // initiate travel
-                this.initiateTravel(
-                    newPos,
-                    this.zoomTravelTime,
-                    null,
-                    false,
-                );
+                ));
+                travelEndRes = endResolution;
+
+                reductionFactor = 1;
+
+                travelAlpha = 0;
+                travelDuration = this.zoomTravelTime;
+                this.updateMouseCursorType();
             }
         }
     }
 
     /**
-     * Handle the animated zoom change for an orthographic camera, when state is `ZOOM`.
+     * Handle the animated zoom change for an orthographic camera, when state is `ORTHO_ZOOM`.
      *
      * @param   {number}    dt  the delta time between two updates in milliseconds
      * @ignore
@@ -609,6 +620,43 @@ class PlanarControls extends THREE.EventDispatcher {
 
         // completion test
         this.testAnimationEnd();
+    }
+
+    /**
+     * Handle the animated zoom change for a perspective camera, when state is `ZOOM`.
+     *
+     * @param   {number}    dt  the delta time between two updates in milliseconds
+     * @ignore
+     */
+    handleZoom(dt) {
+        travelAlpha += reductionFactor * (dt / 1000) / THREE.MathUtils.lerp(
+            this.autoTravelTimeMin,
+            this.autoTravelTimeMax,
+            Math.min(
+                1,
+                travelEndPos.distanceTo(this.camera.position) / this.autoTravelTimeDist,
+            ),
+        );
+
+        // new position
+        this.camera.position.lerpVectors(
+            travelStartPos,
+            travelEndPos,
+            travelAlpha,
+        );
+
+        // completion test
+        // TODO : This end test
+        if (travelAlpha > 0.9) {
+            const currentResolution = this.view.getPixelsToMeters();
+            if (Math.abs(Math.floor(travelEndRes * 1E6) - Math.floor(currentResolution * 1E6)) > 1E4) {
+                console.log('current : ', currentResolution, 'end : ', travelEndRes);
+                reductionFactor /= 1.5;
+            } else {
+                this.state = STATE.NONE;
+                this.updateMouseCursorType();
+            }
+        }
     }
 
     /**
