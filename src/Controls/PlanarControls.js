@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+import CameraUtils from 'Utils/CameraUtils';
 
 // event keycode
 export const keys = {
@@ -520,16 +521,22 @@ class PlanarControls extends THREE.EventDispatcher {
         const delta = -event.deltaY;
 
         pointUnderCursor.copy(this.getWorldPointAtScreenXY(mousePosition));
+        // pointUnderCursor.copy(this.getWorldPointAtScreenXY());
         const newPos = new THREE.Vector3();
 
         if (delta > 0 || (delta < 0 && this.maxAltitude > this.camera.position.z)) {
             const zoomFactor = delta > 0 ? this.zoomInFactor : this.zoomOutFactor;
+
+            const target = CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).coord.toVector3();
 
             // do not zoom if the resolution after the zoom is outside resolution limits
             const endResolution = this.view.getPixelsToMeters() / zoomFactor;
             // The endResolution value is rounded to the 1E-6 decimal above when compared to maxResolution,
             // and it is rounded to the 1E-6 decimal below when compared to minResolution.
             // This prevents rounding issues when endResolution has too many decimals.
+            console.log('start resolution : ', this.view.getPixelsToMeters() * 1E6);
+            console.log('end resolution : ', endResolution * 1E6);
+            console.log('');
             if (
                 this.maxResolution > Math.ceil(endResolution * 1E6)
                 || Math.floor(endResolution * 1E6) > this.minResolution

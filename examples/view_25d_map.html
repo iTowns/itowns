@@ -52,8 +52,17 @@
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             viewerDiv = document.getElementById('viewerDiv');
 
+            let startResolution = 3.3874672875230325;
+            let maxResolution = startResolution / 2;
+            let minResolution = startResolution * 2;
+
             // Instanciate PlanarView*
-            view = new itowns.PlanarView(viewerDiv, extent, { placement: { heading: 49.6, range: 6200, tilt: 17 } });
+            view = new itowns.PlanarView(viewerDiv, extent, { placement: { heading: 49.6, range: 6200, tilt: 17 },
+                controls: {
+                    maxResolution,
+                    minResolution,
+                },
+            });
             setupLoadingScreen(viewerDiv, view);
 
             // Add a WMS imagery source
