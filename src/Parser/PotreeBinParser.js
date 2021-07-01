@@ -47,6 +47,11 @@ const POINT_ATTTRIBUTES = {
         arrayType: Float32Array,
         attributeName: 'normal',
     },
+    RGBA: {
+        numElements: 4,
+        arrayType: Uint8Array,
+        attributeName: 'rgba',
+    },
 };
 
 for (const potreeName of Object.keys(POINT_ATTTRIBUTES)) {

@@ -57,7 +57,8 @@
     "pbf": "^3.2.1",
     "regenerator-runtime": "^0.13.7",
     "shpjs": "^3.6.3",
-    "text-encoding-utf-8": "^1.0.2"
+    "text-encoding-utf-8": "^1.0.2",
+    "photogrammetric-camera": "scarllethcastro/photogrammetric-camera#multiple_texturing"
   },
   "peerDependencies": {
     "proj4": "^2.7.2",
@@ -104,6 +105,7 @@
     "webpack": "^4.46.0",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.2",
-    "whatwg-fetch": "^3.6.2"
+    "whatwg-fetch": "^3.6.2",
+    "webpack-glsl-loader": "^1.0.1"
   }
 }

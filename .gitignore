@@ -10,3 +10,5 @@
 coverage
 .nyc_output/
 /src/ThreeExtended/
+.DS_Store
+/examples/data/

@@ -94,6 +94,10 @@ module.exports = (env) => {
                     include,
                     use: babelLoaderOptions,
                 },
+                {
+                    test: /\.glsl$/,
+                    loader: 'webpack-glsl-loader',
+                },
             ],
         },
         devServer: {
