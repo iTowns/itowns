@@ -239,7 +239,33 @@
             var MultiTextureSpriteMaterial = itowns.PhotogrammetricCamera.MultiTextureSpriteMaterial;
             console.log('material:\n', MultiTextureSpriteMaterial);
 
+
             ////////////////
+            // Try to load an image
+            ////////////////
+            // Prepare oriented image source
+            var orientedImageSource = new itowns.TestSource({
+                path: 'data/test/',
+                file: 'test.json',
+            });
+
+
+            // // Create oriented image layer
+            // var olayer = new itowns.OrientedImageLayer('demo_orientedImage', {
+            //     // Radius in meter of the sphere used as a background.
+            //     backgroundDistance: 1200,
+            //     source: orientedImageSource,
+            //     crs: view.referenceCrs,
+            //     useMask: false,
+            // });
+
+            // // when oriented image layer is ready..
+            // view.addLayer(olayer, view.tileLayer);
+
+            ////////////////
+
+
+
 
             var menuGlobe = new GuiTools('menuDiv', view);
             // Listen for globe full initialisation event
