@@ -1,12 +1,14 @@
 import Source from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
+import AlegoriaUtils from 'Utils/AlegoriaUtils';
 import * as PhotogrammetricCamera from 'photogrammetric-camera';
+
 
 /**
  * @classdesc OrientedImageSource is a specific source used to load oriented images.
  * @extends Source
  */
-class TestSource /*extends Source*/ {
+class TestSource /* extends Source */ {
     /**
      * @constructor
      * @param { Object } source - Configuration object
@@ -19,7 +21,7 @@ class TestSource /*extends Source*/ {
      */
     constructor(source) {
         source.format = source.format || 'json';
-        //super(source);
+        // super(source);
         this.isTestSource = true;
 
         // // Fetch the two files
@@ -31,24 +33,9 @@ class TestSource /*extends Source*/ {
         //     calibration: data[1],
         // }));
 
-        this.loadJSON(source.path, source.file);
-    }
+        // this.loadJSON(source.path, source.file);
 
-
-    loadJSON(path, file) {
-        console.log('file:\n', file);
-        var source = new PhotogrammetricCamera.FetchSource(path);
-        source.open(file, 'text').then((json) => {
-            console.log(json);
-            // json = JSON.parse(json);
-
-            // json.ori = json.ori || [];
-            // json.img = json.img || [];
-            // json.autocal = json.autocal || [];
-
-            // json.ori.forEach((orientationUrl, i) => todos.push(() => loadOrientedImage(orientationUrl, json.img[i], source, json.img[i])));
-
-        });
+        this.whenReady = AlegoriaUtils.loadJSON(source.path, source.file).then(data => console.log('finalmente:\n', data));
     }
 }
 

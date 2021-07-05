@@ -58,7 +58,7 @@
     "regenerator-runtime": "^0.13.7",
     "shpjs": "^3.6.3",
     "text-encoding-utf-8": "^1.0.2",
-    "photogrammetric-camera": "scarllethcastro/photogrammetric-camera#multiple_texturing"
+    "photogrammetric-camera": "scarllethcastro/photogrammetric-camera"
   },
   "peerDependencies": {
     "proj4": "^2.7.2",
