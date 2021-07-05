@@ -92,12 +92,14 @@ class Label extends THREE.Object3D {
 
         if (style.isStyle) {
             this.anchor = style.getTextAnchorPosition();
+            this.styleOffset = style.text.offset;
             if (style.text.haloWidth > 0) {
                 this.content.classList.add('itowns-stroke-single');
             }
             style.applyToHTML(this.content, sprites);
         } else {
             this.anchor = [0, 0];
+            this.styleOffset = [0, 0];
         }
 
         this.zoom = {
@@ -146,8 +148,8 @@ class Label extends THREE.Object3D {
             const width = Math.round(rect.width);
             const height = Math.round(rect.height);
             this.offset = {
-                left: width * this.anchor[0],
-                top: height * this.anchor[1],
+                left: width * this.anchor[0] + this.styleOffset[0],
+                top: height * this.anchor[1] + this.styleOffset[1],
             };
             this.offset.right = this.offset.left + width;
             this.offset.bottom = this.offset.top + height;
