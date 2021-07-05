@@ -33,9 +33,10 @@ class TestSource /* extends Source */ {
         //     calibration: data[1],
         // }));
 
-        // this.loadJSON(source.path, source.file);
-
-        this.whenReady = AlegoriaUtils.loadJSON(source.path, source.file).then(data => console.log('finalmente:\n', data));
+        this.whenReady = AlegoriaUtils.loadJSON(source.path, source.file).then(data => ({
+            textures: data[0],
+            cameras: data[1],
+        }));
     }
 }
 

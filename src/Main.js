@@ -61,6 +61,7 @@ export { default as GlobeLayer } from 'Core/Prefab/Globe/GlobeLayer';
 export { default as PlanarLayer } from 'Core/Prefab/Planar/PlanarLayer';
 export { default as LabelLayer } from 'Layer/LabelLayer';
 export { default as EntwinePointTileLayer } from 'Layer/EntwinePointTileLayer';
+export { default as AlegoriaLayer } from 'Layer/AlegoriaLayer';
 
 // Sources provided by default in iTowns
 // A custom source should at least implements Source

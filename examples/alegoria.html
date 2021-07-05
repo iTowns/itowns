@@ -250,14 +250,17 @@
             });
 
 
-            // // Create oriented image layer
-            // var olayer = new itowns.OrientedImageLayer('demo_orientedImage', {
-            //     // Radius in meter of the sphere used as a background.
-            //     backgroundDistance: 1200,
-            //     source: orientedImageSource,
-            //     crs: view.referenceCrs,
-            //     useMask: false,
-            // });
+            // Create oriented image layer
+            var olayer = new itowns.AlegoriaLayer('demo_orientedImage', {
+                // // Radius in meter of the sphere used as a background.
+                // backgroundDistance: 1200,
+                source: orientedImageSource,
+                crs: view.referenceCrs,
+                useMask: false,
+            });
+
+            console.log('textures:\n', olayer.textures);
+            console.log('cameras:\n', olayer.cameras);
 
             // // when oriented image layer is ready..
             // view.addLayer(olayer, view.tileLayer);
