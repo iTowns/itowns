@@ -247,6 +247,8 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * Default is `0`.
  * @property {number|function} text.haloBlur - The blur value of the halo, in pixels.
  * Default is `0`.
+ * @property {boolean} text.hideIcon - Defines whether an icon must be displayed in the label,
+ * at the coordinates of the point.
  *
  * @property {Object} icon - Defines the appearance of icons attached to label.
  * @property {String} icon.source - The url of the icons' image file.
@@ -371,6 +373,7 @@ class Style {
         defineStyleProperty(this, 'text', 'haloColor', params.text.haloColor, '#000000');
         defineStyleProperty(this, 'text', 'haloWidth', params.text.haloWidth, 0);
         defineStyleProperty(this, 'text', 'haloBlur', params.text.haloBlur, 0);
+        defineStyleProperty(this, 'text', 'hideIcon', params.text.hideIcon, false);
 
         this.icon = {};
         defineStyleProperty(this, 'icon', 'domElement', params.icon.domElement);
@@ -463,6 +466,7 @@ class Style {
             this.text.size = properties['label-size'];
 
             if (properties.icon) {
+                // this.text.hideIcon = true;
                 this.icon.source = properties.icon;
             }
         } else {
@@ -562,6 +566,7 @@ class Style {
             // additional icon
             const key = readVectorProperty(layer.layout['icon-image']);
             if (key) {
+                // this.text.hideIcon = true;
                 this.icon.key = key;
                 this.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
             }
@@ -674,6 +679,20 @@ class Style {
             } else {
                 icon.addEventListener('load', addIcon);
             }
+        } else if (!this.text.hideIcon) {
+            icon = document.createElement('canvas');
+            icon.width = 100;
+            icon.height = 100;
+
+            const context = icon.getContext('2d');
+            context.beginPath();
+            context.arc(icon.width / 2, icon.height / 2, 50, 0, 2 * Math.PI, false);
+            context.fillStyle = 'green';
+            context.fillRect(10, 10, 100, 50);
+            context.fill();
+            context.closePath();
+
+            addIcon();
         }
     }
 
