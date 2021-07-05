@@ -80,7 +80,7 @@ let uid = 0;
  * source into Cache.
  * @property {string} url - The url of the resources that are fetched.
  * @property {string} format - The format of the resources that are fetched.
- * @property {string} [encoding='32F'] - The encoding of the resources that are fetched
+ * @property {string} [encoding='32F'] - The encoding the resources that are fetched
  * are encoded on. Can be set to `32F` and `16F` for 32 bits or 16 bits encoded float images,
  * or to `RGB` for rgb encoded elevation data.
  * @property {function} fetcher - The method used to fetch the resources from
