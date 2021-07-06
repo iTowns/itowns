@@ -8,7 +8,7 @@ var OrientedImageMaterial = PhotogrammetricCamera.OrientedImageMaterial;
 
 var textures = {};
 var cameras = new THREE.Group();
-cameras.visible = false;
+cameras.visible = true;
 var textureLoader = new THREE.TextureLoader();
 var uvTexture = textureLoader.load('data/uv.jpg');
 var wireMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true });
@@ -57,7 +57,8 @@ function cameraHelper(camera) {
     {
         var geometry = new THREE.SphereBufferGeometry(0.03, 8, 8);
         var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-        group.add(new THREE.Mesh(geometry, material));
+        var sphereMesh = new THREE.Mesh(geometry, material);
+        group.add(sphereMesh);
     }
 
     return group;

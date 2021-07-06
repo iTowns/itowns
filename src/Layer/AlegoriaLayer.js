@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as PhotogrammetricCamera from 'photogrammetric-camera';
 import GeometryLayer from 'Layer/GeometryLayer';
 import OrientedImageMaterial from 'Renderer/OrientedImageMaterial';
 import GeoJsonParser from 'Parser/GeoJsonParser';
@@ -102,12 +103,14 @@ class AlegoriaLayer extends GeometryLayer {
         this.source.whenReady.then((data) => {
             this.textures = data.textures;
             this.cameras = data.cameras;
+            this.object3d.add(this.cameras);
+            this.newMaterial = new PhotogrammetricCamera.NewMaterial();
         });
     }
 
-    // // eslint-disable-next-line
-    // update() {
-    // }
+    // eslint-disable-next-line
+    update() {
+    }
 
     // set boostLight(value) {
     //     this.material.uniforms.boostLight.value = value;
@@ -117,11 +120,11 @@ class AlegoriaLayer extends GeometryLayer {
     //     return this.material.uniforms.boostLight.value;
     // }
 
-    // preUpdate(context) {
-    //     updatePano(context, context.camera.camera3D, this);
-    //     this.material.updateUniforms(context.camera.camera3D);
-    //     updateBackground(this);
-    // }
+    preUpdate(context) {
+        // updatePano(context, context.camera.camera3D, this);
+        // this.material.updateUniforms(context.camera.camera3D);
+        // updateBackground(this);
+    }
 
     // getNextPano() {
     //     var index = (this.currentPano.index + 1) % this.panos.length;

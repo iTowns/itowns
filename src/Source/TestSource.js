@@ -8,7 +8,7 @@ import * as PhotogrammetricCamera from 'photogrammetric-camera';
  * @classdesc OrientedImageSource is a specific source used to load oriented images.
  * @extends Source
  */
-class TestSource /* extends Source */ {
+class TestSource extends Source {
     /**
      * @constructor
      * @param { Object } source - Configuration object
@@ -20,8 +20,7 @@ class TestSource /* extends Source */ {
      * to find the good texture for each camera for each panoramic.
      */
     constructor(source) {
-        source.format = source.format || 'json';
-        // super(source);
+        super({ url: source.path + source.file });
         this.isTestSource = true;
 
         // // Fetch the two files
