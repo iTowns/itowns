@@ -134,7 +134,11 @@ class Label extends THREE.Object3D {
     }
 
     updateCSSPosition() {
-        this.content.style[STYLE_TRANSFORM] = `translate(${this.boundaries.left + this.padding}px, ${this.boundaries.top + this.padding}px)`;
+        this.content.style[STYLE_TRANSFORM] = `translate(${
+            this.projectedPosition.x + this.offset.left
+        }px, ${
+            this.projectedPosition.y + this.offset.top
+        }px)`;
     }
 
     /**
