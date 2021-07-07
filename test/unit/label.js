@@ -148,7 +148,7 @@ describe('Label', function () {
 
         label.updateProjectedPosition(10.4, 10.6);
         label.updateCSSPosition();
-        assert.equal(label.content.style.transform, 'translate(15.4px, 15.6px)');
+        assert.equal(label.content.style.transform, 'translate(15px, 16px)');
     });
 
     it('updates the horizon culling point', function () {
