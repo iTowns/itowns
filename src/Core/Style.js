@@ -140,6 +140,13 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * - `point` is for all points
  * - `text` contains all {@link Label} related things
  *
+ * Many style property can be set to functions. When that is the case, the function's
+ * return type must necessarily be the same as the types (other than function) of the property.
+ * For instance, if the `fill.pattern` property is set to a function, this function must return
+ * an `Image`, a `Canvas`, or `String`.
+ * The first parameter of functions used to set `Style` properties is always an object containing
+ * the properties of the features displayed with the current `Style` instance.
+ *
  * @property {number} order - Order of the features that will be associated to
  * the style. It can helps sorting and prioritizing features if needed.
  * @property {Object} fill - Polygons and fillings style.
