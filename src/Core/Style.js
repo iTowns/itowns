@@ -692,9 +692,11 @@ class Style {
      *
      * @param {Object} ctx - An object containing the feature context.
      *
-     * @return {string} The formatted string.
+     * @return {string|undefined} The formatted string if `style.text.field` is defined, nothing otherwise.
      */
     getTextFromProperties(ctx) {
+        if (!this.text.field) { return; }
+
         if (this.text.field.expression) {
             return readExpression(this.text.field, ctx);
         } else {
