@@ -259,6 +259,9 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * Default is `0`.
  * @property {number|function} text.haloBlur - The blur value of the halo, in pixels.
  * Default is `0`.
+ * @property {domElement|function} text.domElement - An HTML domElement that is to be
+ * displayed as a label. If this property is set, the other `text` properties will be
+ * overridden, except for `text.anchor` and `text.offset`.
  *
  * @example
  * const style = new itowns.Style({
@@ -354,6 +357,7 @@ class Style {
         defineStyleProperty(this, 'text', 'haloColor', params.text.haloColor, '#000000');
         defineStyleProperty(this, 'text', 'haloWidth', params.text.haloWidth, 0);
         defineStyleProperty(this, 'text', 'haloBlur', params.text.haloBlur, 0);
+        defineStyleProperty(this, 'text', 'domElement', params.text.domElement);
     }
 
     /**
@@ -670,9 +674,11 @@ class Style {
      *
      * @param {Object} ctx - An object containing the feature context.
      *
-     * @return {string} The formatted string.
+     * @return {string|undefined} The formatted string if `style.text.field` is defined, nothing otherwise.
      */
     getTextFromProperties(ctx) {
+        if (!this.text.field) { return; }
+
         if (this.text.field.expression) {
             return readExpression(this.text.field, ctx);
         } else {

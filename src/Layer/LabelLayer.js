@@ -67,7 +67,7 @@ class LabelLayer extends Layer {
     convert(data, extent) {
         const labels = [];
 
-        const layerField = this.style && this.style.text && this.style.text.field;
+        const layerField = this.style && this.style.text && (this.style.text.field || this.style.text.domElement);
 
         // Converting the extent now is faster for further operation
         extent.as(data.crs, _extent);
@@ -80,7 +80,7 @@ class LabelLayer extends Layer {
                 return;
             }
 
-            const featureField = f.style && f.style.text.field;
+            const featureField = f.style && (f.style.text.field || f.style.text.domElement);
 
             f.geometries.forEach((g) => {
                 // NOTE: this only works because only POINT is supported, it
@@ -92,7 +92,9 @@ class LabelLayer extends Layer {
                 if (f.size == 2) { coord.z = 0; }
                 if (!_extent.isPointInside(coord)) { return; }
 
-                const geometryField = g.properties.style && g.properties.style.text.field;
+                const geometryField = g.properties.style && (
+                    g.properties.style.text.field || g.properties.style.text.domElement
+                );
                 let content;
                 const context = { globals, properties: () => g.properties };
                 if (!geometryField && !featureField && !layerField) {
