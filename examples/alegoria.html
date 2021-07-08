@@ -245,27 +245,20 @@
 
 
             function setCameraOnPosition(position) {
-                console.log('entrei no setCamera');
                 if (!position) {
                     return;
                 }
-                console.log('passei do return');
                 view.controls.camera.position.copy(position);
 
                 if (view.controls.view.tileLayer && view.controls.view.tileLayer.isGlobeLayer) {
                     view.controls.camera.up.copy(position).normalize();
-                    console.log('to aqui');
-                    console.log('up: ', view.controls.camera.up);
                 } else {
-                    console.log('nao, to aqui');
                     view.controls.camera.up.set(0, 0, 1);
                 }
-                console.log('up: ', view.controls.camera.up);
 
                 let lookAt2 = new itowns.THREE.Vector3(0., 1., 0.);
                 lookAt2.cross(view.controls.camera.up);
                 lookAt2.add(position);
-                console.log('lookat2: ', lookAt2);
 
                 view.controls.camera.lookAt(lookAt2);
                 view.controls.camera.updateMatrixWorld();
@@ -287,15 +280,18 @@
                 useMask: false,
             });
 
-            console.log('textures1:\n', olayer.textures);
-            console.log('cameras1:\n', olayer.cameras);
-
             // // when oriented image layer is ready..
             itowns.View.prototype.addLayer.call(view, olayer).then((orientedImageLayer) => {
             //view.addLayer(olayer).then((orientedImageLayer) => {
+                var variable = orientedImageLayer.cameras.clone();
+                view.scene.add(variable);
+                
+
                 console.log('textures2:\n', orientedImageLayer.textures);
                 console.log('cameras2:\n', orientedImageLayer.cameras);
                 console.log('object3d:\n', orientedImageLayer.object3d);
+
+                console.log('vertexShader:\n', orientedImageLayer.newMaterial);
 
                 // calculate the lookAt
                 let camera0 = orientedImageLayer.object3d.children[0].children[0];
@@ -304,8 +300,6 @@
                 // set camera on camera position
                 let position0 = new itowns.THREE.Vector3();
                 camera0.getWorldPosition(position0);
-                console.log('local: ', camera0.position);
-                console.log('global: ', position0);
 
                 let position1 = new itowns.THREE.Vector3();
                 camera1.getWorldPosition(position1);                
@@ -314,21 +308,27 @@
                     // key to move to next position (default to Z)
                     if (e.keyCode == 32) {
                         console.log('position0: ', position0);
-                        //console.log('lookat: ', lookAt0);
                         setCameraOnPosition(position0);
+                        // view.camera.camera3D = camera0;
+                        // view.controls.camera = camera0;
+                        orientedImageLayer.newMaterial.map = orientedImageLayer.textures[camera0.name];
                         orientedImageLayer.newMaterial.setCamera(camera0);
                         view.notifyChange();
                     }
                     if (e.keyCode == 66) {
                         console.log('position: ', position1);
-                        //console.log('lookat: ', lookAt0);
                         setCameraOnPosition(position1);
+                        // view.camera.camera3D = camera1;
+                        // view.controls.camera = camera1;
+                        console.log('view.controls.camera:\n', view.controls.camera);
+                        console.log('view.camera.camera3D:\n', view.camera.camera3D);
+                        orientedImageLayer.newMaterial.map = orientedImageLayer.textures[camera1.name];
                         orientedImageLayer.newMaterial.setCamera(camera1);
                         view.notifyChange();
                     }
                 }
                 view.domElement.addEventListener('keydown', onKeyDown);
-                console.log('view:\n', view);
+                // console.log('view:\n', view);
 
                 // var viewMaterialOptions = {
                 //     map: uvTexture,
@@ -395,7 +395,6 @@
             
 
             ////////////////
-
 
 
 

@@ -6,6 +6,7 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
 import CameraCalibrationParser from 'Parser/CameraCalibrationParser';
 import Coordinates from 'Core/Geographic/Coordinates';
 import OrientationUtils from 'Utils/OrientationUtils';
+import { viewMaterialOptions, uvTexture } from 'Utils/AlegoriaUtils';
 
 const coord = new Coordinates('EPSG:4978', 0, 0, 0);
 
@@ -49,13 +50,13 @@ class AlegoriaLayer extends GeometryLayer {
         // }
 
         // currentPano is the current point, means it's the closest from the camera
-        this.currentPano = undefined;
+        // this.currentPano = undefined;
 
         // store a callback to fire event when current panoramic change
-        this.onPanoChanged = config.onPanoChanged || (() => {});
+        // this.onPanoChanged = config.onPanoChanged || (() => {});
 
         // function to get cameras name from panoramic feature
-        this.getCamerasNameFromFeature = config.getCamerasNameFromFeature || (() => {});
+        // this.getCamerasNameFromFeature = config.getCamerasNameFromFeature || (() => {});
 
         // const resolve = this.addInitializationStep();
 
@@ -104,7 +105,11 @@ class AlegoriaLayer extends GeometryLayer {
             this.textures = data.textures;
             this.cameras = data.cameras;
             this.object3d.add(this.cameras);
-            this.newMaterial = new PhotogrammetricCamera.NewMaterial();
+            console.log('viewMaterialOptions:\n', viewMaterialOptions);
+            this.newMaterial = new PhotogrammetricCamera.NewMaterial(viewMaterialOptions);
+            console.log('uvTexture:\n', uvTexture);
+            this.newMaterial.map = uvTexture;
+            console.log('newMaterial:\n', this.newMaterial);
         });
     }
 

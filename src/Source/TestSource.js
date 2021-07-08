@@ -23,15 +23,6 @@ class TestSource extends Source {
         super({ url: source.path + source.file });
         this.isTestSource = true;
 
-        // // Fetch the two files
-        // const promises = [];
-        // promises.push(source.orientationsUrl ? Fetcher.xml(source.orientationsUrl, this.networkOptions) : Promise.resolve());
-        // promises.push(source.calibrationUrl ? Fetcher.xml(source.calibrationUrl, this.networkOptions) : Promise.resolve());
-        // this.whenReady = Promise.all(promises).then(data => ({
-        //     orientation: data[0],
-        //     calibration: data[1],
-        // }));
-
         this.whenReady = AlegoriaUtils.loadJSON(source.path, source.file).then(data => ({
             textures: data[0],
             cameras: data[1],

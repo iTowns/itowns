@@ -4,19 +4,20 @@ import * as THREE from 'three';
 import * as PhotogrammetricCamera from 'photogrammetric-camera';
 
 var Parsers = PhotogrammetricCamera.Parsers;
-var OrientedImageMaterial = PhotogrammetricCamera.OrientedImageMaterial;
+var NewMaterial = PhotogrammetricCamera.NewMaterial;
 
 var textures = {};
 var cameras = new THREE.Group();
 cameras.visible = true;
 var textureLoader = new THREE.TextureLoader();
-var uvTexture = textureLoader.load('data/uv.jpg');
+export const uvTexture = textureLoader.load('data/uv.jpg');
+uvTexture.name = 'uvTexture';
 var wireMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true });
-var viewMaterialOptions = {
+export const viewMaterialOptions = {
     map: uvTexture,
     opacity: 1,
-    transparent: true,
-    blending: THREE.NormalBlending,
+    // transparent: true,
+    // blending: THREE.NormalBlending,
 };
 var viewMaterials = {};
 var sphereRadius = 5000;
@@ -45,11 +46,13 @@ function cameraHelper(camera) {
         geometry.addGroup(0, 12, 0);
         geometry.addGroup(12, 6, 1);
 
-        viewMaterials[camera.name] = new OrientedImageMaterial(viewMaterialOptions);
+        console.log('viewMaterialOptions:\n', viewMaterialOptions);
+        viewMaterials[camera.name] = new NewMaterial(viewMaterialOptions);
         viewMaterials[camera.name].setCamera(camera);
         viewMaterials[camera.name].map = textures[camera.name] || uvTexture;
+        console.log('viewMaterial:\n', viewMaterials[camera.name]);
         var mesh = new THREE.Mesh(geometry, [wireMaterial, viewMaterials[camera.name]]);
-        mesh.scale.set(1.01, 1.01, 1.01); // push frustum base 1% away from the near plane
+        mesh.scale.set(100000.01, 100000.01, 100000.01); // push frustum base 1% away from the near plane
         group.add(mesh);
     }
 
@@ -58,6 +61,7 @@ function cameraHelper(camera) {
         var geometry = new THREE.SphereBufferGeometry(0.03, 8, 8);
         var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         var sphereMesh = new THREE.Mesh(geometry, material);
+        sphereMesh.scale.set(1000000, 1000000, 1000000);
         group.add(sphereMesh);
     }
 
@@ -152,6 +156,7 @@ function loadOrientedImage(orientationUrl, imageUrl, source, name) {
 }
 
 export default {
+
     loadJSON(path, file) {
         var source = new PhotogrammetricCamera.FetchSource(path);
         return source.open(file, 'text').then((json) => {
