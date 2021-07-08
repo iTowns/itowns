@@ -220,10 +220,15 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * @property {string|function} text.color - The color of the text. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is `#000000`.
- * @property {string|function} text.anchor - The anchor of the text compared to its
+ * @property {string|number[]|function} text.anchor - The anchor of the text compared to its
  * position (see {@link Label} for the position). Can be a few value: `top`,
  * `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
  * or `bottom-right`. Default is `center`.
+ *
+ * It can also be defined as an Array of two numbers. Each number defines an offset (in
+ * fraction of the label width and height) between the label position and the top-left
+ * corner of the text. The first value is the horizontal offset, and the second is the
+ * vertical offset. For example, `[-0.5, -0.5]` will be equivalent to `center`.
  * @property {Array|function} text.offset - The offset of the text, depending on its
  * anchor, in pixels. First value is from `left`, second is from `top`. Default
  * is `[0, 0]`.
@@ -647,7 +652,16 @@ class Style {
      * @return {number[]} Two percentage values, for x and y respectively.
      */
     getTextAnchorPosition() {
-        return textAnchorPosition[this.text.anchor];
+        if (typeof this.text.anchor === 'string') {
+            if (Object.keys(textAnchorPosition).includes(this.text.anchor)) {
+                return textAnchorPosition[this.text.anchor];
+            } else {
+                console.error(`${this.text.anchor} is not a valid input for Style.text.anchor parameter.`);
+                return textAnchorPosition.center;
+            }
+        } else {
+            return this.text.anchor;
+        }
     }
 
     /**
