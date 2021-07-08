@@ -79,24 +79,28 @@ class Label extends THREE.Object3D {
         this.projectedPosition = { x: 0, y: 0 };
         this.boundaries = { left: 0, right: 0, top: 0, bottom: 0 };
 
-        this.content = document.createElement('div');
+        if (typeof content === 'string') {
+            this.content = document.createElement('div');
+            this.content.textContent = content;
+        } else {
+            this.content = content.cloneNode(true);
+        }
+
         this.content.classList.add('itowns-label');
         this.content.style.userSelect = 'none';
         this.content.style.position = 'absolute';
-        if (typeof content == 'string') {
-            this.content.textContent = content;
-        } else {
-            this.content.appendChild(content);
-        }
+
         this.baseContent = content;
 
         if (style.isStyle) {
             this.anchor = style.getTextAnchorPosition();
             this.styleOffset = style.text.offset;
-            if (style.text.haloWidth > 0) {
-                this.content.classList.add('itowns-stroke-single');
+            if (typeof content === 'string') {
+                if (style.text.haloWidth > 0) {
+                    this.content.classList.add('itowns-stroke-single');
+                }
+                style.applyToHTML(this.content, sprites);
             }
-            style.applyToHTML(this.content, sprites);
         } else {
             this.anchor = [0, 0];
             this.styleOffset = [0, 0];
