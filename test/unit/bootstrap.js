@@ -57,6 +57,9 @@ class DOMElement {
         }
     }
     createSVGMatrix() {}
+    getElementsByClassName(className) {
+        return [this.children.find(element => element.class === className)];
+    }
 }
 
 // Mock document object for Mocha.
