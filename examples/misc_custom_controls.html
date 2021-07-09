@@ -1,0 +1,96 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Itowns - Custom controls</title>
+
+    <link rel="stylesheet" type="text/css" href="css/example.css">
+    <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+</head>
+<body>
+<div id="description">
+    Key bindings
+    <ul>
+        <li>Left-click + drag : rotate the globe</li>
+        <li>Wheel-click + drag : rotate the camera around its target</li>
+        <li>Ctrl + left-click + drag : rotate the camera around its position</li>
+        <li>Mouse wheel up/down : zoom in/out</li>
+        <li>Double left-click : zoom in</li>
+        <li>Double right-click : zoom out</li>
+        <li>Right-click + drag up/down : zoom in/out</li>
+    </ul>
+</div>
+<div id="viewerDiv"></div>
+
+<script src="../dist/itowns.js"></script>
+<script src="../dist/debug.js"></script>
+<script src="js/GUI/LoadingScreen.js"></script>
+<script src="js/GUI/GuiTools.js"></script>
+<script type="text/javascript">
+    /* global itowns, setupLoadingScreen, GuiTools, debug */
+
+    const viewerDiv = document.getElementById('viewerDiv');
+    const placement = {
+        coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+        range: 25000000,
+    }
+    const view = new itowns.GlobeView(viewerDiv, placement);
+    setupLoadingScreen(viewerDiv, view);
+
+    // Add imagery and elevation layers
+    itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function (config) {
+        config.source = new itowns.WMTSSource(config.source);
+        view.addLayer(
+            new itowns.ColorLayer('Ortho', config),
+        );
+    })
+    function addElevationLayerFromConfig(config) {
+        config.source = new itowns.WMTSSource(config.source);
+        view.addLayer(
+            new itowns.ElevationLayer(config.id, config),
+        );
+    }
+    itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+    itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+    const customControls = {
+        // Disable pan movement
+        PAN: {
+            enable: false,
+        },
+        // Change the key bindings for globe rotation
+        MOVE_GLOBE: {
+            enable: true,
+            mouseButton: itowns.THREE.MOUSE.LEFT,
+        },
+        // Change the key bindings for orbit movement (rotation around the camera target)
+        ORBIT: {
+            enable: true,
+            mouseButton: itowns.THREE.MOUSE.MIDDLE,
+        },
+        // Change the key bindings for dolly movement
+        DOLLY: {
+            enable: true,
+            mouseButton: itowns.THREE.MOUSE.RIGHT,
+        },
+        // Change the key bindings for panoramic movement (rotation around the camera position)
+        PANORAMIC: {
+            enable: true,
+            mouseButton: itowns.THREE.MOUSE.LEFT,
+            keyboard: 17,  // keyCode for the ctrl key
+        },
+        // Allow travel out movement when double right-clicking
+        TRAVEL_OUT: {
+            enable: true,
+            mouseButton: itowns.THREE.MOUSE.RIGHT,
+            double: true,
+        },
+    }
+
+    // Modify view's control to be set as the custom controls we just defined
+    view.controls.states.setFromOptions(customControls);
+</script>
+</body>
+</html>

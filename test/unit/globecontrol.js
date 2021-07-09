@@ -3,6 +3,7 @@ import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { getLookAtFromMath, getRig } from 'Utils/CameraUtils';
+import StateControl from 'Controls/StateControl';
 import Renderer from './bootstrap';
 
 describe('GlobeControls', function () {
@@ -41,6 +42,10 @@ describe('GlobeControls', function () {
 
     it('instance GlobeControls', function () {
         assert.ok(controls);
+    });
+
+    it('should instantiate StateControl', function () {
+        assert(controls.states instanceof StateControl);
     });
 
     it('pickGeoPosition', function () {
@@ -184,13 +189,33 @@ describe('GlobeControls', function () {
         assert.ok(controls.getRange() < startRange);
     });
 
-    it('mouse dblclick', function (done) {
+    it('travel in', function (done) {
         controls.setAnimationEnabled(false);
         const startRange = controls.getRange();
-        controls.ondblclick(event).then(() => {
+        controls.travel({
+            viewCoords: viewer.eventToViewCoords(event),
+            type: 'travel_in',
+        }).then(() => {
             assert.ok(controls.getRange() < startRange);
             done();
         });
+    });
+
+    it('travel out', function (done) {
+        const startRange = controls.getRange();
+        controls.travel({
+            viewCoords: viewer.eventToViewCoords(event),
+            type: 'travel_out',
+        }).then(() => {
+            assert.ok(controls.getRange() > startRange);
+            done();
+        });
+    });
+
+    it('travel should not trigger if controls are disabled', function () {
+        controls.enabled = false;
+        assert.strictEqual(controls.travel(), undefined);
+        controls.enabled = true;
     });
 
     it('touch start', function () {
