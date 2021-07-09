@@ -220,10 +220,15 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * @property {string|function} text.color - The color of the text. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is `#000000`.
- * @property {string|function} text.anchor - The anchor of the text compared to its
+ * @property {string|number[]|function} text.anchor - The anchor of the text compared to its
  * position (see {@link Label} for the position). Can be a few value: `top`,
  * `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
  * or `bottom-right`. Default is `center`.
+ *
+ * It can also be defined as an Array of two numbers. Each number defines an offset (in
+ * fraction of the label width and height) between the label position and the top-left
+ * corner of the text. The first value is the horizontal offset, and the second is the
+ * vertical offset. For example, `[-0.5, -0.5]` will be equivalent to `center`.
  * @property {Array|function} text.offset - The offset of the text, depending on its
  * anchor, in pixels. First value is from `left`, second is from `top`. Default
  * is `[0, 0]`.
@@ -254,6 +259,9 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * Default is `0`.
  * @property {number|function} text.haloBlur - The blur value of the halo, in pixels.
  * Default is `0`.
+ * @property {domElement|function} text.domElement - An HTML domElement that is to be
+ * displayed as a label. If this property is set, the other `text` properties will be
+ * overridden, except for `text.anchor` and `text.offset`.
  *
  * @example
  * const style = new itowns.Style({
@@ -349,6 +357,7 @@ class Style {
         defineStyleProperty(this, 'text', 'haloColor', params.text.haloColor, '#000000');
         defineStyleProperty(this, 'text', 'haloWidth', params.text.haloWidth, 0);
         defineStyleProperty(this, 'text', 'haloBlur', params.text.haloBlur, 0);
+        defineStyleProperty(this, 'text', 'domElement', params.text.domElement);
     }
 
     /**
@@ -647,7 +656,16 @@ class Style {
      * @return {number[]} Two percentage values, for x and y respectively.
      */
     getTextAnchorPosition() {
-        return textAnchorPosition[this.text.anchor];
+        if (typeof this.text.anchor === 'string') {
+            if (Object.keys(textAnchorPosition).includes(this.text.anchor)) {
+                return textAnchorPosition[this.text.anchor];
+            } else {
+                console.error(`${this.text.anchor} is not a valid input for Style.text.anchor parameter.`);
+                return textAnchorPosition.center;
+            }
+        } else {
+            return this.text.anchor;
+        }
     }
 
     /**
@@ -656,9 +674,11 @@ class Style {
      *
      * @param {Object} ctx - An object containing the feature context.
      *
-     * @return {string} The formatted string.
+     * @return {string|undefined} The formatted string if `style.text.field` is defined, nothing otherwise.
      */
     getTextFromProperties(ctx) {
+        if (!this.text.field) { return; }
+
         if (this.text.field.expression) {
             return readExpression(this.text.field, ctx);
         } else {
