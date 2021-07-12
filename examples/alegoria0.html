@@ -1,0 +1,475 @@
+<html>
+    <head>
+        <title>Itowns - Globe + WFS</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <div id="description">
+            <p><b>Building Information</b></p>
+            <ul id="info">
+            </ul>
+        </div>
+        <script type="text/javascript">
+            var PhotogrammetricCamera = itowns.PhotogrammetricCamera;
+            var viewCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
+            // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
+            itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+            // # Simple Globe viewer
+
+            var debugGui;
+            debugGui = new dat.GUI();
+
+            // Define initial camera position
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 4.8539, 46.7813),
+                range: 3000,
+                tilt: 45,
+            }
+            var meshes = [];
+            var linesBus = [];
+            var scaler;
+
+            // Point cloud
+            var potreeLayer;
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var view = new itowns.GlobeView(viewerDiv, placement, { handleCollision: false, camera: viewCamera });
+            setupLoadingScreen(viewerDiv, view);
+
+            // Add one imagery layer to the scene
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
+
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+            var color = new itowns.THREE.Color();
+            var tile;
+            function altitudeLine(properties, contour) {
+                var result;
+                var z = 0;
+                if (contour) {
+                    result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0, tile);
+                    if (!result) {
+                        result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0);
+                    }
+                    tile = [result.tile];
+                    if (result) {
+                        z = result.coord.z;
+                    }
+                    return z + 5;
+                }
+            }
+
+            function colorLine(properties) {
+                return color.set(Math.round(Math.random() * 0xffffff));
+            }
+
+            function acceptFeatureBus(properties) {
+                if (properties.sens == 'Aller') {
+                    var line = properties.ligne;
+                    if (linesBus.indexOf(line) === -1) {
+                        linesBus.push(line);
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            var lyonTclBusSource = new itowns.WFSSource({
+                protocol: 'wfs',
+                url: 'https://download.data.grandlyon.com/wfs/rdata?',
+                version: '2.0.0',
+                typeName: 'tcl_sytral.tcllignebus',
+                crs: 'EPSG:3946',
+                extent: {
+                    west: 1822174.60,
+                    east: 1868247.07,
+                    south: 5138876.75,
+                    north: 5205890.19,
+                },
+                format: 'geojson',
+            });
+
+            var lyonTclBusLayer = new itowns.FeatureGeometryLayer('WFS Bus lines',{
+                name: 'lyon_tcl_bus',
+                filter: acceptFeatureBus,
+                source: lyonTclBusSource,
+                zoom: { min: 9 },
+
+                style: new itowns.Style({
+                    stroke: {
+                        color: colorLine,
+                        base_altitude: altitudeLine,
+                        width: 5,
+                    }
+                })
+            });
+            view.addLayer(lyonTclBusLayer);
+
+            function colorBuildings(properties) {
+                if (properties.geojson.id.indexOf('bati_remarquable') === 0) {
+                    return color.set(0x5555ff);
+                } else if (properties.geojson.id.indexOf('bati_industriel') === 0) {
+                    return color.set(0xff5555);
+                }
+                return color.set(0xeeeeee);
+            }
+
+            function altitudeBuildings(properties) {
+                return properties.z_min - properties.hauteur;
+            }
+
+            function extrudeBuildings(properties) {
+                return properties.hauteur;
+            }
+
+            function acceptFeature(properties) {
+                return !!properties.hauteur;
+            }
+
+            scaler = function update(/* dt */) {
+                var i;
+                var mesh;
+                if (meshes.length) {
+                    view.notifyChange(view.camera.camera3D, true);
+                }
+                for (i = 0; i < meshes.length; i++) {
+                    mesh = meshes[i];
+                    if (mesh) {
+                        mesh.scale.z = Math.min(
+                            1.0, mesh.scale.z + 0.1);
+                        mesh.updateMatrixWorld(true);
+                    }
+                }
+                meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
+                // console.log('view position: ', view.controls.camera.position);
+            };
+
+            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
+
+            // var wfsBuildingSource = new itowns.WFSSource({
+            //     url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+            //     version: '2.0.0',
+            //     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+            //     crs: 'EPSG:4326',
+            //     ipr: 'IGN',
+            //     format: 'application/json',
+            //     zoom: { min: 15, max: 15 },
+            //     extent: {
+            //         west: -10,
+            //         east: 15.18,
+            //         south: 40.437,
+            //         north: 55,
+            //     },
+            // });
+
+            // var wfsBuildingLayer = new itowns.FeatureGeometryLayer('WFS Building',{
+            //     batchId: function (property, featureId) { return featureId; },
+            //     onMeshCreated: function scaleZ(mesh) {
+            //         mesh.children.forEach(c => {
+            //             c.scale.z = 0.01;
+            //             meshes.push(c);
+            //         })
+            //     },
+            //     filter: acceptFeature,
+            //     source: wfsBuildingSource,
+            //     zoom: { min: 15, max: 15 },
+            //     extent: {
+            //         west: -10,
+            //         east: 15.18,
+            //         south: 40.437,
+            //         north: 55,
+            //     },
+
+            //     style: new itowns.Style({
+            //         fill: {
+            //             color: colorBuildings,
+            //             base_altitude: altitudeBuildings,
+            //             extrusion_height: extrudeBuildings,
+            //         }
+            //     })
+            // });
+            // view.addLayer(wfsBuildingLayer);
+
+            ////////////////
+            // Configure Point Cloud layer
+
+            potreeLayer = new itowns.PotreeLayer('SaintHonore', {
+                source: new itowns.PotreeSource({
+                    file: 'cloud.js',
+                    url: './data',
+                    crs: 'EPSG:4326',
+                }),
+                pointSize: 2,
+            });
+
+            // Add potreeLayer to scene
+            function onLayerReady(potreeLayerfct) {
+                debug.PotreeDebug.initTools(view, potreeLayerfct, debugGui);
+            }
+            window.view = view;
+            
+            itowns.View.prototype.addLayer.call(view, potreeLayer).then(onLayerReady(potreeLayer));
+            //view.addLayer(potreeLayer).then(onLayerReady(potreeLayer));
+
+
+            ////////////////
+            // Try to load images
+            ////////////////
+
+
+            function setCameraOnPosition(position) {
+                if (!position) {
+                    return;
+                }
+                view.controls.camera.position.copy(position);
+
+                if (view.controls.view.tileLayer && view.controls.view.tileLayer.isGlobeLayer) {
+                    view.controls.camera.up.copy(position).normalize();
+                } else {
+                    view.controls.camera.up.set(0, 0, 1);
+                }
+
+                let lookAt2 = new itowns.THREE.Vector3(0., 1., 0.);
+                lookAt2.cross(view.controls.camera.up);
+                lookAt2.add(position);
+
+                view.controls.camera.lookAt(lookAt2);
+                view.controls.camera.updateMatrixWorld();
+            }
+
+            function setViewCameraTo(camera) {
+
+            }
+
+            // Prepare oriented image source
+            var orientedImageSource = new itowns.TestSource({
+                path: 'data/test/',
+                file: 'test.json',
+            });
+
+
+            // Create oriented image layer
+            var olayer = new itowns.AlegoriaLayer('demo_orientedImage', {
+                // // Radius in meter of the sphere used as a background.
+                // backgroundDistance: 1200,
+                source: orientedImageSource,
+                crs: view.referenceCrs,
+                useMask: false,
+            }).whenReady.then((orientedImageLayer) => console.log('lulu:\n', orientedImageLayer));
+
+            // // // when oriented image layer is ready..
+            // //itowns.View.prototype.addLayer.call(view, olayer).then((orientedImageLayer) => {
+            // view.addLayer(olayer).then((orientedImageLayer) => {
+            //     //var variable = orientedImageLayer.cameras.clone();
+            //     //view.scene.add(variable);
+                
+
+            //     console.log('textures2:\n', orientedImageLayer.textures);
+            //     console.log('cameras2:\n', orientedImageLayer.cameras);
+            //     console.log('object3d:\n', orientedImageLayer.object3d);
+
+            //     console.log('vertexShader:\n', orientedImageLayer.newMaterial);
+
+            //     let camera0 = orientedImageLayer.object3d.children[0].children[0];
+            //     console.log('camera0: ', camera0);
+            //     var pyramid = camera0.children[0];
+            //     view.scene.add(pyramid);
+            //     view.notifyChange();
+
+            //     let camera1 = orientedImageLayer.object3d.children[0].children[1];
+    
+            //     // set camera on camera position
+            //     let position0 = new itowns.THREE.Vector3();
+            //     camera0.getWorldPosition(position0);
+
+            //     let position1 = new itowns.THREE.Vector3();
+            //     camera1.getWorldPosition(position1);                
+
+            //     function onKeyDown(e) {
+            //         // key to move to next position (default to Z)
+            //         if (e.keyCode == 32) {
+            //             console.log('position0: ', position0);
+            //             // setCameraOnPosition(position0);
+            //             // view.camera.camera3D = camera0;
+            //             // view.controls.camera = camera0;
+            //             view.camera.camera3D.set(camera0);
+            //             view.controls.camera.set(camera0);
+            //             console.log('view.controls.camera:\n', view.controls.camera);
+            //             console.log('view.camera.camera3D:\n', view.camera.camera3D);
+            //             orientedImageLayer.newMaterial.map = orientedImageLayer.textures[camera0.name];
+            //             orientedImageLayer.newMaterial.setCamera(camera0);
+            //             view.notifyChange();
+            //             console.log('camera0.position: ', camera0.position);
+            //         }
+            //         if (e.keyCode == 66) {
+            //             console.log('position: ', position1);
+            //             // setCameraOnPosition(position1);
+            //             // view.camera.camera3D = camera1;
+            //             // view.controls.camera = camera1;
+            //             view.camera.camera3D.set(camera1);
+            //             view.controls.camera.set(camera1);
+            //             console.log('view.controls.camera:\n', view.controls.camera);
+            //             console.log('view.camera.camera3D:\n', view.camera.camera3D);
+            //             orientedImageLayer.newMaterial.map = orientedImageLayer.textures[camera1.name];
+            //             orientedImageLayer.newMaterial.setCamera(camera1);
+            //             view.notifyChange();
+            //         }
+            //     }
+            //     view.domElement.addEventListener('keydown', onKeyDown);
+            //     // console.log('view:\n', view);
+
+            //     // var viewMaterialOptions = {
+            //     //     map: uvTexture,
+            //     //     opacity: 1,
+            //     //     transparent: true,
+            //     //     blending: THREE.NormalBlending,
+            //     // };
+            //     const pyramidGUI = debugGui.addFolder('Camera Pyramids');
+            //     pyramidGUI.add(orientedImageLayer.cameras, 'visible').name('show pyramids');
+            //     //pyramidGUI.add(viewMaterialOptions, 'opacity', 0, 1);
+
+            //     /////////////////////
+            //     // Load the buildings
+            //     /////////////////////
+            //     var wfsBuildingSource = new itowns.WFSSource({
+            //         url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+            //         version: '2.0.0',
+            //         typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+            //         crs: 'EPSG:4326',
+            //         ipr: 'IGN',
+            //         format: 'application/json',
+            //         zoom: { min: 15, max: 15 },
+            //         extent: {
+            //             west: -10,
+            //             east: 15.18,
+            //             south: 40.437,
+            //             north: 55,
+            //         },
+            //     });
+
+            //     var wfsBuildingLayer = new itowns.FeatureGeometryLayer('WFS Building',{
+            //         batchId: function (property, featureId) { return featureId; },
+            //         onMeshCreated: function scaleZ(mesh) {
+            //             mesh.children.forEach(c => {
+            //                 c.scale.z = 0.01;
+            //                 meshes.push(c);
+            //             });
+            //             mesh.traverse(object => object.material = orientedImageLayer.newMaterial);
+            //         },
+            //         filter: acceptFeature,
+            //         source: wfsBuildingSource,
+            //         zoom: { min: 15, max: 15 },
+            //         extent: {
+            //             west: -10,
+            //             east: 15.18,
+            //             south: 40.437,
+            //             north: 55,
+            //         },
+
+            //         style: new itowns.Style({
+            //             fill: {
+            //                 color: colorBuildings,
+            //                 base_altitude: altitudeBuildings,
+            //                 extrusion_height: extrudeBuildings,
+            //             }
+            //         })
+            //     });
+            //     view.addLayer(wfsBuildingLayer).then(() => view.notifyChange());
+
+            //     // Point cloud
+            //     potreeLayer.material = orientedImageLayer.newMaterial;
+            //     view.notifyChange();
+            // });
+            
+
+            ////////////////
+
+
+
+            var menuGlobe = new GuiTools('menuDiv', view);
+            // Listen for globe full initialisation event
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                // eslint-disable-next-line no-console
+                console.info('Globe initialized');
+            });
+
+            debug.createTileDebugUI(menuGlobe.gui, view);
+
+            function picking(event) {
+                if(view.controls.isPaused) {
+                    var htmlInfo = document.getElementById('info');
+                    var intersects = view.pickObjectsAt(event, 3, 'WFS Building');
+                    var properties;
+                    var info;
+                    var batchId;
+
+                    htmlInfo.innerHTML = ' ';
+
+                    if (intersects.length) {
+                        batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
+                        properties = intersects[0].object.feature.geometries[batchId].properties;
+
+                        Object.keys(properties).map(function (objectKey) {
+                            var value = properties[objectKey];
+                            var key = objectKey.toString();
+                            if (key[0] !== '_' && key !== 'geometry_name') {
+                                info = value.toString();
+                                htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
+                            }
+                        });
+                    }
+                }
+            }
+
+            for (var layer of view.getLayers()) {
+                if (layer.id === 'WFS Bus lines') {
+                    layer.whenReady.then( function _(layer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        debug.GeometryDebug.addMaterialLineWidth(gui, view, layer, 1, 10);
+                    });
+                }
+                if (layer.id === 'WFS Building') {
+                    layer.whenReady.then( function _(layer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
+                        window.addEventListener('mousemove', picking, false);
+                    });
+                }
+                if (layer.id === 'WFS Route points') {
+                    layer.whenReady.then( function _(layer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        debug.GeometryDebug.addMaterialSize(gui, view, layer, 1, 200);
+                    });
+                }
+            }
+        </script>
+    </body>
+</html>

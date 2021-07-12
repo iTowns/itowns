@@ -46,13 +46,12 @@ function cameraHelper(camera) {
         geometry.addGroup(0, 12, 0);
         geometry.addGroup(12, 6, 1);
 
-        console.log('viewMaterialOptions:\n', viewMaterialOptions);
         viewMaterials[camera.name] = new NewMaterial(viewMaterialOptions);
         viewMaterials[camera.name].setCamera(camera);
         viewMaterials[camera.name].map = textures[camera.name] || uvTexture;
-        console.log('viewMaterial:\n', viewMaterials[camera.name]);
         var mesh = new THREE.Mesh(geometry, [wireMaterial, viewMaterials[camera.name]]);
-        mesh.scale.set(100000.01, 100000.01, 100000.01); // push frustum base 1% away from the near plane
+        mesh.scale.set(10000000.01, 10000000.01, 10000000.01); // push frustum base 1% away from the near plane
+        mesh.updateMatrixWorld();
         group.add(mesh);
     }
 
@@ -62,6 +61,7 @@ function cameraHelper(camera) {
         var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         var sphereMesh = new THREE.Mesh(geometry, material);
         sphereMesh.scale.set(1000000, 1000000, 1000000);
+        sphereMesh.updateMatrixWorld();
         group.add(sphereMesh);
     }
 
