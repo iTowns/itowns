@@ -24,6 +24,7 @@
             var THREE = itowns.THREE;
             var PhotogrammetricCamera = itowns.PhotogrammetricCamera;
             
+
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
             
@@ -32,8 +33,11 @@
 
             var debugGui;
             debugGui = new dat.GUI();
-            // var menuGlobe = new GuiTools('menuDiv', view);
             // debug.createTileDebugUI(menuGlobe.gui, view);
+
+
+            // Layers
+            var wfsBuildingLayer, potreeLayer, orientedImageLayer;
 
 
             // Globe viewer
@@ -55,6 +59,7 @@
             var view = new itowns.GlobeView(viewerDiv, placement, { /*noControls: true, */handleCollision: false, camera: viewCamera });
             setupLoadingScreen(viewerDiv, view);
 
+
             // Scene
             var scene = view.scene;
             console.log(scene);
@@ -71,7 +76,7 @@
             });
 
             // Create oriented image layer
-            var orientedImageLayer = new itowns.AlegoriaLayer('orientedImageLayer', {
+            orientedImageLayer = new itowns.AlegoriaLayer('orientedImageLayer', {
                 // // Radius in meter of the sphere used as a background.
                 backgroundDistance: 1200,
                 source: orientedImageSource,
@@ -87,31 +92,75 @@
                 pyramidGUI.add(orientedImageLayer.cameras, 'visible').name('show pyramids');
                 camera0 = orientedImageLayer.object3d.children[0].children[0];
                 camera1 = orientedImageLayer.object3d.children[0].children[1];
+
+
+                // Buildings layer
+                var wfsBuildingSource = new itowns.WFSSource({
+                    url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                    version: '2.0.0',
+                    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                    crs: 'EPSG:4326',
+                    ipr: 'IGN',
+                    format: 'application/json',
+                    zoom: { min: 15, max: 15 },
+                    extent: {
+                        west: -10,
+                        east: 15.18,
+                        south: 40.437,
+                        north: 55,
+                    },
+                });
+
+                wfsBuildingLayer = new itowns.FeatureGeometryLayer('WFS Building',{
+                    batchId: function (property, featureId) { return featureId; },
+                    onMeshCreated: function scaleZ(mesh) {
+                        mesh.children.forEach(c => {
+                            c.scale.z = 0.01;
+                            meshes.push(c);
+                        });
+                        mesh.traverse(object => object.material = orientedImageLayer.newMaterial);
+                    },
+                    filter: acceptFeature,
+                    source: wfsBuildingSource,
+                    zoom: { min: 15, max: 15 },
+                    extent: {
+                        west: -10,
+                        east: 15.18,
+                        south: 40.437,
+                        north: 55,
+                    },
+
+                    style: new itowns.Style({
+                        fill: {
+                            color: colorBuildings,
+                            base_altitude: altitudeBuildings,
+                            extrusion_height: extrudeBuildings,
+                        }
+                    })
+                });
+                view.addLayer(wfsBuildingLayer).then(() => view.notifyChange());
+
+
+                // Point cloud layer
+                potreeLayer = new itowns.PotreeLayer('SaintHonore', {
+                    source: new itowns.PotreeSource({
+                        file: 'cloud.js',
+                        url: './data',
+                        crs: 'EPSG:4326',
+                    }),
+                    material: orientedImageLayer.newMaterial,
+                    pointSize: 2,
+                });
+
+                // Add potreeLayer to scene
+                function onLayerReady(potreeLayerfct) {
+                    debug.PotreeDebug.initTools(view, potreeLayerfct, debugGui);
+                }
+                window.view = view;
+                
+                itowns.View.prototype.addLayer.call(view, potreeLayer).then(onLayerReady(potreeLayer));
             });
 
-
-
-            // // Test geometry
-            // //var geometry = new THREE.BoxGeometry(1000000,1000000,1000000);
-            // var geometry = new THREE.BoxGeometry(1,1,1);
-            // console.log(geometry);
-            // var material = new THREE.MeshBasicMaterial({color: 0xff0000});
-            // console.log(material);
-            // var mesh = new THREE.Mesh(geometry, material);
-            // mesh.scale.set(1000000, 1000000, 1000000);
-            // mesh.updateMatrixWorld();
-            // console.log(mesh);
-            // //scene.add(mesh);
-
-            // var meshLayer = new itowns.GeometryLayer('myMesh', mesh, {
-            //     source: false,
-            // });
-            // meshLayer.update = function () {};
-            // view.addLayer(meshLayer).then((layer) => view.notifyChange(true));
-
-            //view.scene.children[0].visible = false;
-            //view.scene.children[1].visible = false;
-            view.notifyChange(true);
 
 
             // Imagery layer
@@ -129,7 +178,7 @@
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
-                // view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
@@ -160,51 +209,6 @@
                 return properties.hauteur;
             }
 
-            var wfsBuildingSource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-                version: '2.0.0',
-                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
-                crs: 'EPSG:4326',
-                ipr: 'IGN',
-                format: 'application/json',
-                zoom: { min: 15, max: 15 },
-                extent: {
-                    west: -10,
-                    east: 15.18,
-                    south: 40.437,
-                    north: 55,
-                },
-            });
-
-            var wfsBuildingLayer = new itowns.FeatureGeometryLayer('WFS Building',{
-                batchId: function (property, featureId) { return featureId; },
-                onMeshCreated: function scaleZ(mesh) {
-                    mesh.children.forEach(c => {
-                        c.scale.z = 0.01;
-                        meshes.push(c);
-                    });
-                    //mesh.traverse(object => object.material = orientedImageLayer.newMaterial);
-                },
-                filter: acceptFeature,
-                source: wfsBuildingSource,
-                zoom: { min: 15, max: 15 },
-                extent: {
-                    west: -10,
-                    east: 15.18,
-                    south: 40.437,
-                    north: 55,
-                },
-
-                style: new itowns.Style({
-                    fill: {
-                        color: colorBuildings,
-                        base_altitude: altitudeBuildings,
-                        extrusion_height: extrudeBuildings,
-                    }
-                })
-            });
-            view.addLayer(wfsBuildingLayer).then(() => view.notifyChange());
-
             scaler = function update(/* dt */) {
                 var i;
                 var mesh;
@@ -225,43 +229,18 @@
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
 
 
-            // Point cloud layer
-            var potreeLayer;
-            potreeLayer = new itowns.PotreeLayer('SaintHonore', {
-                source: new itowns.PotreeSource({
-                    file: 'cloud.js',
-                    url: './data',
-                    crs: 'EPSG:4326',
-                }),
-                pointSize: 2,
-            });
-
-            // Add potreeLayer to scene
-            function onLayerReady(potreeLayerfct) {
-                debug.PotreeDebug.initTools(view, potreeLayerfct, debugGui);
-            }
-            window.view = view;
-            
-            itowns.View.prototype.addLayer.call(view, potreeLayer).then(onLayerReady(potreeLayer));
-
 
             // Interaction
-            // let camera0 = orientedImageLayer.object3d.children[0].children[0];
-            // let camera1 = orientedImageLayer.object3d.children[0].children[1];
 
             function onKeyDown(e) {
                 if (e.keyCode == 32) {
-                    //console.log('position0: ', position0);
                     view.camera.camera3D.set(camera0);
-                    //view.controls.camera.set(camera0);
                     orientedImageLayer.newMaterial.map = orientedImageLayer.textures[camera0.name];
                     orientedImageLayer.newMaterial.setCamera(camera0);
                     view.notifyChange();
                 }
                 if (e.keyCode == 66) {
-                    //console.log('position: ', position1);
                     view.camera.camera3D.set(camera1);
-                    //view.controls.camera.set(camera1);
                     orientedImageLayer.newMaterial.map = orientedImageLayer.textures[camera1.name];
                     orientedImageLayer.newMaterial.setCamera(camera1);
                     view.notifyChange();
@@ -271,17 +250,15 @@
 
 
 
-
-            view.notifyChange(true);
-
-
-
+            var menuGlobe = new GuiTools('menuDiv', view);
             
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
             });
+
+            debug.createTileDebugUI(menuGlobe.gui, view);
 
         </script>
     </body>

@@ -23,6 +23,8 @@ class TestSource extends Source {
         super({ url: source.path + source.file });
         this.isTestSource = true;
 
+        AlegoriaUtils.loadJSON('data/alegoria/', 'chalon.json').then(data => console.log('result:\n', data));
+
         this.whenReady = AlegoriaUtils.loadJSON(source.path, source.file).then(data => ({
             textures: data[0],
             cameras: data[1],

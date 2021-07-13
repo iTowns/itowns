@@ -155,20 +155,79 @@ function loadOrientedImage(orientationUrl, imageUrl, source, name) {
     return loadImage(imageUrl, source, name).then(() => loadOrientation(orientationUrl, source, name));
 }
 
+function getOrientationId(ori) {
+    return ((ori.split('P')[0]).split('-'))[1].split('.').join('');
+}
+
+function getImageId(img) {
+    return (img.split('P')[0]).split('.').join('');
+}
+
+function getAutocalId(autocal) {
+    return (autocal.split('Cam-')[1]).split('P')[0];
+}
+
+function getDateId(date) {
+    return date.split('.').join('');
+}
+
+function bindDates(cameras, dates) {
+    cameras.children.forEach((c) => {
+        const date = dates.find(d => getDateId(d[0]) == getImageId(c.name));
+        console.log('achei data ', date, 'pra camera ', c.name);
+        c.year = date[1];
+    });
+}
+
 export default {
 
     loadJSON(path, file) {
         var source = new PhotogrammetricCamera.FetchSource(path);
         return source.open(file, 'text').then((json) => {
             json = JSON.parse(json);
+            console.log(json);
 
             json.ori = json.ori || [];
             json.img = json.img || [];
             json.autocal = json.autocal || [];
 
+            ///
+            console.log('Ori:\n');
+            json.ori.forEach((ori) => {
+                console.log(getOrientationId(ori));
+            });
+            console.log('Img:\n');
+            json.img.forEach((img) => {
+                console.log(getImageId(img));
+            });
+            console.log('Autocal:\n');
+            json.autocal.forEach((autocal) => {
+                console.log(getAutocalId(autocal));
+            });
+            console.log('Dates:\n');
+            json.date.forEach((date) => {
+                console.log(getDateId(date[0]));
+            });
+            ///
+
             const promises = [];
-            json.ori.forEach((orientationUrl, i) => promises.push(loadOrientedImage(orientationUrl, json.img[i], source, json.img[i])));
-            return Promise.all(promises).then(() => [textures, cameras]);
+            json.ori.forEach((orientationUrl, i) => {
+                const imgUrl = json.img.find(imgUrl => getImageId(imgUrl) == getOrientationId(orientationUrl));
+                console.assert(imgUrl != undefined);
+
+                const autocalUrl = json.autocal.find(auto => getAutocalId(auto) == getOrientationId(orientationUrl));
+                console.assert(autocalUrl != undefined);
+
+                const date = json.date.find(d => getDateId(d[0]) == getOrientationId(orientationUrl));
+                console.assert(date != undefined);
+
+                console.log('matched ', orientationUrl, ' with ', imgUrl, ', ', autocalUrl, ' and ', date);
+                promises.push(loadOrientedImage(orientationUrl, imgUrl, source, imgUrl));
+            });
+            return Promise.all(promises).then(() => {
+                bindDates(cameras, json.date);
+                return [textures, cameras];
+            });
         });
     },
 };
