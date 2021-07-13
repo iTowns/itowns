@@ -108,6 +108,7 @@
             ],
 
             "3D Tiles": [
+                "3dTilesProcessing",
                 "C3DTileset",
                 "C3DTBatchTable",
                 "C3DTBoundingVolume",
