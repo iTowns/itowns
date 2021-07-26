@@ -57,7 +57,15 @@ class /* istanbul ignore next */ ParsingOptions {}
 function fetchSourceData(source, extent) {
     const url = source.urlFromExtent(extent);
 
-    return source.fetcher(url, source.networkOptions).then((f) => {
+    if (source.fetcher in [supportedFetchers['image/x-bil'], supportedFetchers['image/x-bil;bits=32']]) {
+        console.log('coucou');
+    }
+    const options = source.fetcher in [supportedFetchers['image/x-bil'], supportedFetchers['image/x-bil;bits=32']] ?
+        {
+            networkOptions: source.networkOptions,
+            fileOptions: source.fileOptions,
+        } : source.networkOptions;
+    return source.fetcher(url, options).then((f) => {
         f.extent = extent;
         return f;
     }, err => source.handlingError(err));
@@ -136,6 +144,7 @@ class Source extends InformationsData {
         this.parser = source.parser || supportedParsers.get(source.format) || (d => d);
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
+        this.fileOptions = source.fileOptions || { encoding: this.encoding };
         this.attribution = source.attribution;
         this.whenReady = Promise.resolve();
         this._featuresCaches = {};

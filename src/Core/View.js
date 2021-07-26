@@ -333,7 +333,7 @@ class View extends THREE.EventDispatcher {
                     return layer._reject(new Error(`Cant add color layer ${layer.id}: the maximum layer is reached`));
                 }
             } else if (layer.isElevationLayer) {
-                layer.source.networkOptions.encoding = layer.source.encoding;
+                layer.source.fileOptions.encoding = layer.source.encoding;
                 layer.source.networkOptions.isWebGL2 = this.mainLoop.gfxEngine.renderer.capabilities.isWebGL2;
                 parentLayer.attach(layer);
             } else {
