@@ -139,8 +139,8 @@ class Label extends THREE.Object3D {
             // Checking if this.icon is not only zeros is mandatory, to prevent case
             // when a boundary is set to x or y coordinate
             if (
-                this.iconOffset.left !== 0 && this.iconOffset.right !== 0
-                && this.iconOffset.top !== 0 && this.iconOffset.bottom !== 0
+                this.iconOffset.left !== 0 || this.iconOffset.right !== 0
+                || this.iconOffset.top !== 0 || this.iconOffset.bottom !== 0
             ) {
                 this.boundaries.left = Math.min(this.boundaries.left, x + this.iconOffset.left);
                 this.boundaries.right = Math.max(this.boundaries.right, x + this.iconOffset.right);
