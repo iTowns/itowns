@@ -639,7 +639,8 @@ class View extends THREE.EventDispatcher {
      * @param {event} event - event can be a MouseEvent or a TouchEvent
      * @param {THREE.Vector2} target - the target to set the view coords in
      * @param {number} [touchIdx=0] - finger index when using a TouchEvent
-     * @return {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
+     * @return {THREE.Vector2|undefined} - view coordinates (in pixels, 0-0 = top-left of the View).
+     * If the event is neither a `MouseEvent` nor a `TouchEvent`, the return is `undefined`.
      */
     eventToViewCoords(event, target = _eventCoords, touchIdx = 0) {
         const br = this.domElement.getBoundingClientRect();
@@ -647,7 +648,7 @@ class View extends THREE.EventDispatcher {
         if (event.touches && event.touches.length) {
             return target.set(event.touches[touchIdx].clientX - br.x,
                 event.touches[touchIdx].clientY - br.y);
-        } else if (event.offsetX && event.offsetY) {
+        } else if (event.offsetX !== undefined && event.offsetY !== undefined) {
             const targetBoundingRect = event.target.getBoundingClientRect();
             return target.set(targetBoundingRect.x + event.offsetX - br.x,
                 targetBoundingRect.y + event.offsetY - br.y);
