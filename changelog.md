@@ -1,3 +1,73 @@
+<a name="2.34.0"></a>
+# [2.34.0](https://github.com/iTowns/itowns/compare/v2.33.0...v2.34.0) (2021-07-30)
+
+
+### Features
+
+* **GlobeControls:** add support for travel out animation ([9db6ecb](https://github.com/iTowns/itowns/commit/9db6ecb))
+* **Label:** add support to pass custom domElements to labels ([b560005](https://github.com/iTowns/itowns/commit/b560005))
+* **Layer:** add FeatureGeometryLayer. ([0961787](https://github.com/iTowns/itowns/commit/0961787))
+* **StateControl:** add a method to modify class properties ([1e2e11e](https://github.com/iTowns/itowns/commit/1e2e11e))
+* **Style:** add support for custom icon in labels ([7f355c4](https://github.com/iTowns/itowns/commit/7f355c4))
+* **Style:** add support for custom label anchor ([fe2a2d9](https://github.com/iTowns/itowns/commit/fe2a2d9))
+* **TMSSource:** add support for specific TileMatrix identifier ([e394255](https://github.com/iTowns/itowns/commit/e394255))
+* **View:** add double right-click event ([9ce7213](https://github.com/iTowns/itowns/commit/9ce7213))
+
+
+### Bug Fixes
+
+* **3Dtiles:** remove debugger command. ([0a06614](https://github.com/iTowns/itowns/commit/0a06614))
+* **eventToViewCoord:** check if event.offset properties are defined ([26f459a](https://github.com/iTowns/itowns/commit/26f459a))
+* **example:** generate correct URL when sharing EPT example ([8ef0b34](https://github.com/iTowns/itowns/commit/8ef0b34))
+* **FeatureToolTip:** fix tooltip legend icon ([f632308](https://github.com/iTowns/itowns/commit/f632308))
+* **Label:** fix occlusion between icons and label text ([29b6435](https://github.com/iTowns/itowns/commit/29b6435))
+* **Label:** fix Style.text.offset parameter ([26b970b](https://github.com/iTowns/itowns/commit/26b970b))
+* **Label:** rounds the projected coordinates of labels ([5d0ca6f](https://github.com/iTowns/itowns/commit/5d0ca6f))
+* **LayeredMaterialNodeProcessing:** checks for source cache with the layer crs for command cancellation ([7570cad](https://github.com/iTowns/itowns/commit/7570cad))
+* **tutorial:** fix internal link in tutorials ([ce8029c](https://github.com/iTowns/itowns/commit/ce8029c))
+
+
+### Examples
+
+* add an example where user can define custom controls ([00e62c2](https://github.com/iTowns/itowns/commit/00e62c2))
+* **GeoJSON raster:** center the camera initial position on the displayed features ([8d8ac2c](https://github.com/iTowns/itowns/commit/8d8ac2c))
+* **geojson-file:** refactor example to illustrate two ways of displaying data from a file ([4bc0774](https://github.com/iTowns/itowns/commit/4bc0774))
+* **vectorTile:** replace expired source in vector tile examples ([8ccc1a3](https://github.com/iTowns/itowns/commit/8ccc1a3))
+
+
+### Code Refactoring
+
+* **GlobeControls:** switch travel animation to StateControl ([d99827d](https://github.com/iTowns/itowns/commit/d99827d))
+* **View:** eventToViewCoords returns middle view coords by default ([2e501c3](https://github.com/iTowns/itowns/commit/2e501c3))
+
+
+### Workflow and chores
+
+* release v2.34.0 ([4fe8baa](https://github.com/iTowns/itowns/commit/4fe8baa))
+* expose 3dtiles process methods. ([7a94570](https://github.com/iTowns/itowns/commit/7a94570))
+* update packages. ([50cd744](https://github.com/iTowns/itowns/commit/50cd744))
+
+
+### Documentation
+
+* **FeatureGeometryLayer:** add jsdoc to documentation config ([e77f102](https://github.com/iTowns/itowns/commit/e77f102))
+* **README:** update deprecated link ([b483e0d](https://github.com/iTowns/itowns/commit/b483e0d))
+* **README:** update integration badge to github action ([4c77adf](https://github.com/iTowns/itowns/commit/4c77adf))
+* **Style:** add precision on doc ([bcee39f](https://github.com/iTowns/itowns/commit/bcee39f))
+* **tutorials:** add support to sort tutorials in sections ([e9c8510](https://github.com/iTowns/itowns/commit/e9c8510))
+
+
+### Others
+
+* **Fundamentals:** add links to documentation ([cf30e37](https://github.com/iTowns/itowns/commit/cf30e37))
+* **Fundamentals:** change section titles ([296206f](https://github.com/iTowns/itowns/commit/296206f))
+* **Fundamentals:** change tutorial links appearance ([ac167ec](https://github.com/iTowns/itowns/commit/ac167ec))
+* add tutorials on how to use iTowns ([5916ac9](https://github.com/iTowns/itowns/commit/5916ac9))
+* resize tutorial images ([bbb91e7](https://github.com/iTowns/itowns/commit/bbb91e7))
+* update html titles in some examples ([7ea6538](https://github.com/iTowns/itowns/commit/7ea6538))
+
+
+
 <a name="2.33.0"></a>
 # [2.33.0](https://github.com/iTowns/itowns/compare/v2.32.0...v2.33.0) (2021-05-28)
 
