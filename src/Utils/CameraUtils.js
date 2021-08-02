@@ -82,7 +82,7 @@ class CameraRig extends THREE.Object3D {
         this.add(this.seaLevel);
         this.seaLevel.add(this.target);
         this.target.add(this.camera);
-        // sea level's geograohic coordinate
+        // target's geographic coordinate
         this.coord = new Coordinates('EPSG:4978', 0, 0);
         // sea level's worldPoistion
         this.targetWorldPosition = new THREE.Vector3();
@@ -121,9 +121,13 @@ class CameraRig extends THREE.Object3D {
     }
 
     setTargetFromCoordinate(view, coord) {
-        // clamp altitude to seaLevel
+        // compute precise coordinate (coord) altitude and clamp it above seaLevel
         coord.as(tileLayer(view).extent.crs, this.coord);
-        const altitude = Math.max(0, this.coord.z);
+        const altitude = Math.max(0, DEMUtils.getElevationValueAt(
+            tileLayer(view),
+            this.coord,
+            DEMUtils.PRECISE_READ_Z,
+        ) || this.coord.z);
         this.coord.z = altitude;
         // adjust target's position with clamped altitude
         this.coord.as(view.referenceCrs).toVector3(targetPosition);
