@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import CameraUtils from 'Utils/CameraUtils';
+import Coordinates from 'Core/Geographic/Coordinates';
+import Camera from '../Renderer/Camera';
 
 // event keycode
 export const keys = {
@@ -82,6 +84,7 @@ let travelDuration = 0;
 let travelUseRotation = false;
 let travelUseSmooth = false;
 
+const endViewCoords = new THREE.Vector2();
 // zoom changes (for orthographic camera)
 let startZoom = 0;
 let endZoom = 0;
@@ -349,10 +352,10 @@ class PlanarControls extends THREE.EventDispatcher {
                 this.handleTravel(dt);
                 this.view.notifyChange(this.camera);
                 break;
-            case STATE.ZOOM:
-                this.handleZoom(dt);
-                this.view.notifyChange(this.camera);
-                break;
+            // case STATE.ZOOM:
+            //     this.handleZoom(dt);
+            //     this.view.notifyChange(this.camera);
+            //     break;
             case STATE.ORTHO_ZOOM:
                 this.handleZoomOrtho(dt);
                 this.view.notifyChange(this.camera);
@@ -539,10 +542,10 @@ class PlanarControls extends THREE.EventDispatcher {
             // The endResolution value is rounded to the 1E-6 decimal above when compared to maxResolution,
             // and it is rounded to the 1E-6 decimal below when compared to minResolution.
             // This prevents rounding issues when endResolution has too many decimals.
-            console.log('start resolution : ', this.view.getPixelsToMeters() * 1E6);
-            console.log('end resolution : ', endResolution * 1E6);
-            console.log('end range : ', CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).range / zoomFactor);
-            console.log('');
+            // console.log('start resolution : ', this.view.getPixelsToMeters() * 1E6);
+            // console.log('end resolution : ', endResolution * 1E6);
+            // console.log('end range : ', CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).range / zoomFactor);
+            // console.log('');
             if (
                 this.maxResolution > Math.ceil(endResolution * 1E6)
                 || Math.floor(endResolution * 1E6) > this.minResolution
@@ -567,24 +570,69 @@ class PlanarControls extends THREE.EventDispatcher {
                 travelDuration = this.zoomTravelTime;
                 this.updateMouseCursorType();
             } else {
-                this.state = STATE.ZOOM;
-                this.view.notifyChange(this.camera);
+                const cameraTransformOptions = CameraUtils.getTransformCameraLookingAtTarget(
+                    this.view, this.camera,
+                );
 
-                // camera position at the beginning of zoom movement
-                travelStartPos.copy(this.camera.position);
-                // camera position at the end of zoom movement
-                travelEndPos.copy(newPos.lerpVectors(
-                    this.camera.position,
+                const endCoordinates = new THREE.Vector3();
+
+                endCoordinates.lerpVectors(
+                    cameraTransformOptions.coord.as(this.view.referenceCrs).toVector3(),
                     pointUnderCursor,
                     (1 - 1 / zoomFactor),
-                ));
-                travelEndRes = endResolution;
+                );
 
-                reductionFactor = 1;
+                console.log(endCoordinates);
+                const copyEndCoordinates = endCoordinates.clone();
+                copyEndCoordinates.project(this.camera);
+                console.log(endCoordinates);
 
-                travelAlpha = 0;
-                travelDuration = this.zoomTravelTime;
-                this.updateMouseCursorType();
+                const endFloorCoordinates = this.view.getPickingPositionFromDepth(
+                    this.view.normalizedToViewCoords(copyEndCoordinates),
+                );
+                console.log('end coordinates = ', endCoordinates);
+                console.log('end floor coordinates = ', endFloorCoordinates);
+                console.log('distance : ', endCoordinates.distanceTo(endFloorCoordinates));
+
+                cameraTransformOptions.coord = new Coordinates(this.view.referenceCrs).setFromVector3(endFloorCoordinates);
+                cameraTransformOptions.range /= zoomFactor;
+                cameraTransformOptions.range += endCoordinates.distanceTo(endFloorCoordinates);
+                cameraTransformOptions.time = 1000;
+                cameraTransformOptions.easing = CameraUtils.Easing.Quartic.Out;
+                CameraUtils.animateCameraToLookAtTarget(this.view, this.camera, cameraTransformOptions);
+
+                // this.state = STATE.ZOOM;
+                // this.view.notifyChange(this.camera);
+                //
+                // // camera position at the beginning of zoom movement
+                // travelStartPos.copy(this.camera.position);
+                // // camera position at the end of zoom movement
+                // travelEndPos.copy(newPos.lerpVectors(
+                //     this.camera.position,
+                //     pointUnderCursor,
+                //     (1 - 1 / zoomFactor),
+                // ));
+                // travelEndRes = endResolution;
+                //
+                // reductionFactor = 1;
+                //
+                // travelAlpha = 0;
+                // travelDuration = this.zoomTravelTime;
+                // this.updateMouseCursorType();
+
+                // // target position
+                // newPos.lerpVectors(
+                //     this.camera.position,
+                //     pointUnderCursor,
+                //     (1 - 1 / zoomFactor),
+                // );
+                // // initiate travel
+                // this.initiateTravel(
+                //     newPos,
+                //     this.zoomTravelTime,
+                //     null,
+                //     false,
+                // );
             }
         }
     }
