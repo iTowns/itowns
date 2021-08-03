@@ -78,7 +78,6 @@ const travelStartPos = new THREE.Vector3();
 const travelStartRot = new THREE.Quaternion();
 const travelEndRot = new THREE.Quaternion();
 let travelEndRes;
-let reductionFactor = 1;
 let travelAlpha = 0;
 let travelDuration = 0;
 let travelUseRotation = false;
@@ -582,13 +581,11 @@ class PlanarControls extends THREE.EventDispatcher {
                     (1 - 1 / zoomFactor),
                 );
 
-                console.log(endCoordinates);
-                const copyEndCoordinates = endCoordinates.clone();
-                copyEndCoordinates.project(this.camera);
-                console.log(endCoordinates);
+                // const copyEndCoordinates = endCoordinates.clone();
+                // copyEndCoordinates.project(this.camera);
 
                 const endFloorCoordinates = this.view.getPickingPositionFromDepth(
-                    this.view.normalizedToViewCoords(copyEndCoordinates),
+                    this.view.normalizedToViewCoords(endCoordinates.clone().project(this.camera)),
                 );
                 console.log('end coordinates = ', endCoordinates);
                 console.log('end floor coordinates = ', endFloorCoordinates);
@@ -600,25 +597,6 @@ class PlanarControls extends THREE.EventDispatcher {
                 cameraTransformOptions.time = 1000;
                 cameraTransformOptions.easing = CameraUtils.Easing.Quartic.Out;
                 CameraUtils.animateCameraToLookAtTarget(this.view, this.camera, cameraTransformOptions);
-
-                // this.state = STATE.ZOOM;
-                // this.view.notifyChange(this.camera);
-                //
-                // // camera position at the beginning of zoom movement
-                // travelStartPos.copy(this.camera.position);
-                // // camera position at the end of zoom movement
-                // travelEndPos.copy(newPos.lerpVectors(
-                //     this.camera.position,
-                //     pointUnderCursor,
-                //     (1 - 1 / zoomFactor),
-                // ));
-                // travelEndRes = endResolution;
-                //
-                // reductionFactor = 1;
-                //
-                // travelAlpha = 0;
-                // travelDuration = this.zoomTravelTime;
-                // this.updateMouseCursorType();
 
                 // // target position
                 // newPos.lerpVectors(
@@ -668,43 +646,6 @@ class PlanarControls extends THREE.EventDispatcher {
 
         // completion test
         this.testAnimationEnd();
-    }
-
-    /**
-     * Handle the animated zoom change for a perspective camera, when state is `ZOOM`.
-     *
-     * @param   {number}    dt  the delta time between two updates in milliseconds
-     * @ignore
-     */
-    handleZoom(dt) {
-        travelAlpha += reductionFactor * (dt / 1000) / THREE.MathUtils.lerp(
-            this.autoTravelTimeMin,
-            this.autoTravelTimeMax,
-            Math.min(
-                1,
-                travelEndPos.distanceTo(this.camera.position) / this.autoTravelTimeDist,
-            ),
-        );
-
-        // new position
-        this.camera.position.lerpVectors(
-            travelStartPos,
-            travelEndPos,
-            travelAlpha,
-        );
-
-        // completion test
-        // TODO : This end test
-        if (travelAlpha > 0.9) {
-            const currentResolution = this.view.getPixelsToMeters();
-            if (Math.abs(Math.floor(travelEndRes * 1E6) - Math.floor(currentResolution * 1E6)) > 1E4) {
-                console.log('current : ', currentResolution, 'end : ', travelEndRes);
-                reductionFactor /= 1.5;
-            } else {
-                this.state = STATE.NONE;
-                this.updateMouseCursorType();
-            }
-        }
     }
 
     /**
