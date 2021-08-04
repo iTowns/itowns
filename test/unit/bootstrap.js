@@ -62,6 +62,9 @@ class DOMElement {
     }
 }
 
+// Mock HTMLDivElement for Mocha
+global.HTMLDivElement = DOMElement;
+
 // Mock document object for Mocha.
 global.document = {
     createElement: (type) => {
