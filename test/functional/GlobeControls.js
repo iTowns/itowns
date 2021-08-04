@@ -181,7 +181,7 @@ describe('GlobeControls with globe example', function _() {
                     resolve(view.controls.getRange());
                 }
             });
-            const wheelEvent = new WheelEvent('mousewheel', {
+            const wheelEvent = new WheelEvent('wheel', {
                 deltaY: -50000,
             });
             view.domElement.dispatchEvent(wheelEvent, document);

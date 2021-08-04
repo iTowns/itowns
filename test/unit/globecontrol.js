@@ -180,13 +180,13 @@ describe('GlobeControls', function () {
 
     it('mouse wheel', function () {
         const startRange = controls.getRange();
-        event.wheelDelta = -10;
-        controls.onMouseWheel(event);
-        assert.ok(controls.getRange() > startRange);
-        event.wheelDelta = 10;
-        controls.onMouseWheel(event);
+        event.deltaY = -10;
         controls.onMouseWheel(event);
         assert.ok(controls.getRange() < startRange);
+        event.deltaY = 10;
+        controls.onMouseWheel(event);
+        controls.onMouseWheel(event);
+        assert.ok(controls.getRange() > startRange);
     });
 
     it('travel in', function (done) {
