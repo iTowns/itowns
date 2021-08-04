@@ -206,7 +206,7 @@ class Label extends THREE.Object3D {
     }
 
     updateElevationFromLayer(layer) {
-        const elevation = DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z);
+        const elevation = Math.max(0, DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z));
         if (elevation && elevation != this.coordinates.z) {
             this.coordinates.z = elevation;
             this.updateHorizonCullingPoint();
