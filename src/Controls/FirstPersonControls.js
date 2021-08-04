@@ -105,8 +105,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
             view.domElement.addEventListener('touchmove', this._onMouseMove, false);
             view.domElement.addEventListener('mouseup', this._onMouseUp, false);
             view.domElement.addEventListener('touchend', this._onMouseUp, false);
-            view.domElement.addEventListener('mousewheel', this._onMouseWheel, false);
-            view.domElement.addEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
+            view.domElement.addEventListener('wheel', this._onMouseWheel, false);
 
             // TODO: Why windows
             document.addEventListener('keydown', this._onKeyDown, false);
@@ -241,14 +240,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
     // Mouse wheel
     onMouseWheel(event) {
         if (this.enabled == false) { return; }
-
-        let delta = 0;
-        if (event.wheelDelta !== undefined) {
-            delta = -event.wheelDelta;
-        // Firefox
-        } else if (event.detail !== undefined) {
-            delta = event.detail;
-        }
+        const delta = event.deltaY;
 
         this.camera.fov =
             THREE.MathUtils.clamp(this.camera.fov + Math.sign(delta),
@@ -296,8 +288,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
             this.view.domElement.removeEventListener('touchmove', this._onMouseMove, false);
             this.view.domElement.removeEventListener('mouseup', this._onMouseUp, false);
             this.view.domElement.removeEventListener('touchend', this._onMouseUp, false);
-            this.view.domElement.removeEventListener('mousewheel', this._onMouseWheel, false);
-            this.view.domElement.removeEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
+            this.view.domElement.removeEventListener('wheel', this._onMouseWheel, false);
 
             document.removeEventListener('keydown', this._onKeyDown, false);
             document.removeEventListener('keyup', this._onKeyUp, false);

@@ -252,8 +252,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
         this.view.domElement.addEventListener('contextmenu', this._onContextMenuListener, false);
         this.view.domElement.addEventListener('mousedown', this._onMouseDown, false);
-        this.view.domElement.addEventListener('mousewheel', this._onMouseWheel, false);
-        this.view.domElement.addEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
+        this.view.domElement.addEventListener('wheel', this._onMouseWheel, false);
         this.view.domElement.addEventListener('touchstart', this._onTouchStart, false);
         this.view.domElement.addEventListener('touchend', this._onMouseUp, false);
         this.view.domElement.addEventListener('touchmove', this._onTouchMove, false);
@@ -729,16 +728,7 @@ class GlobeControls extends THREE.EventDispatcher {
         event.preventDefault();
 
         this.updateTarget();
-        let delta = 0;
-
-        // WebKit / Opera / Explorer 9
-        if (event.wheelDelta !== undefined) {
-            delta = event.wheelDelta;
-        // Firefox
-        } else if (event.detail !== undefined) {
-            delta = -event.detail;
-        }
-
+        const delta = -event.deltaY;
         this.dolly(delta);
 
         const previousRange = this.getRange(pickedPosition);
@@ -908,8 +898,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
         this.view.domElement.removeEventListener('mousedown', this._onMouseDown, false);
         this.view.domElement.removeEventListener('mousemove', this._onMouseMove, false);
-        this.view.domElement.removeEventListener('mousewheel', this._onMouseWheel, false);
-        this.view.domElement.removeEventListener('DOMMouseScroll', this._onMouseWheel, false); // firefox
+        this.view.domElement.removeEventListener('wheel', this._onMouseWheel, false);
         this.view.domElement.removeEventListener('mouseup', this._onMouseUp, false);
         this.view.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
 
