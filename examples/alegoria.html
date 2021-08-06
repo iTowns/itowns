@@ -23,18 +23,14 @@
         <script type="text/javascript">
             var THREE = itowns.THREE;
             var PhotogrammetricCamera = itowns.PhotogrammetricCamera;
-            
+        </script>
+        <script src="js/Alegoria/PhotogrammetricCameraHelper.js"></script>
+        <script src="js/Alegoria/BuildingsHelper.js"></script>
+        <script type="text/javascript">
 
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
             
-
-            // Gui
-
-            var debugGui;
-            debugGui = new dat.GUI();
-            // debug.createTileDebugUI(menuGlobe.gui, view);
-
 
             // Layers
             var wfsBuildingLayer, potreeLayer, orientedImageLayer;
@@ -52,47 +48,54 @@
                 tilt: 45,
             }
 
-            // View camera
-            var viewCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
-
             // Instanciate iTowns GlobeView
             var view = new itowns.GlobeView(viewerDiv, placement, { /*noControls: true, */handleCollision: false, camera: viewCamera });
             setupLoadingScreen(viewerDiv, view);
 
 
+            // Gui
+            var menuGlobe = new GuiTools('menuDiv', view);
+            debug.createTileDebugUI(menuGlobe.gui, view);
+
+
             // Scene
             var scene = view.scene;
-            console.log(scene);
 
 
-            // Cameras
+            // Renderer
+            var renderer = view.mainLoop.gfxEngine.renderer;
 
-            var camera0, camera1;
+
+            // Materials
+            var textureMaterial;
+            var textures;
+
+
+            // Oriented images
+            var cameras;
 
             // Prepare oriented image source
-            var orientedImageSource = new itowns.TestSource({
-                path: 'data/test/',
-                file: 'test.json',
+            var orientedImageSource = new itowns.AlegoriaSource({
+                path: 'data/alegoria/',
+                file: 'chalon_selection.json',
             });
 
             // Create oriented image layer
             orientedImageLayer = new itowns.AlegoriaLayer('orientedImageLayer', {
-                // // Radius in meter of the sphere used as a background.
-                backgroundDistance: 1200,
                 source: orientedImageSource,
                 crs: view.referenceCrs,
-                useMask: false,
             });
 
             // Add layer to view
             view.addLayer(orientedImageLayer).then((orientedImageLayer) => {
                 view.notifyChange(true);
-                const pyramidGUI = debugGui.addFolder('Camera Pyramids');
+                const pyramidGUI = menuGlobe.gui.addFolder('Camera Pyramids');
                 console.log(orientedImageLayer.cameras);
-                pyramidGUI.add(orientedImageLayer.cameras, 'visible').name('show pyramids');
-                camera0 = orientedImageLayer.object3d.children[0].children[0];
-                camera1 = orientedImageLayer.object3d.children[0].children[1];
+                pyramidGUI.add(orientedImageLayer.cameras, 'visible').name('show pyramids').onChange(() => view.notifyChange(orientedImageLayer, true));
+                cameras = orientedImageLayer.cameras;
+                textures = orientedImageLayer.textures;
 
+                textureMaterial = orientedImageLayer.newMaterial;
 
                 // Buildings layer
                 var wfsBuildingSource = new itowns.WFSSource({
@@ -112,13 +115,18 @@
                 });
 
                 wfsBuildingLayer = new itowns.FeatureGeometryLayer('WFS Building',{
-                    batchId: function (property, featureId) { return featureId; },
+                    batchId: function (property, featureId) {
+                        console.log('property:\n', property);
+                        console.log('featureId: ', featureId);
+                        return featureId;
+                    },
                     onMeshCreated: function scaleZ(mesh) {
                         mesh.children.forEach(c => {
                             c.scale.z = 0.01;
                             meshes.push(c);
                         });
-                        mesh.traverse(object => object.material = orientedImageLayer.newMaterial);
+                        mesh.traverse(object => object.material = textureMaterial);
+                        console.log('mesh:\n', mesh);
                     },
                     filter: acceptFeature,
                     source: wfsBuildingSource,
@@ -138,23 +146,28 @@
                         }
                     })
                 });
-                view.addLayer(wfsBuildingLayer).then(() => view.notifyChange());
+                view.addLayer(wfsBuildingLayer).then((layer) => {
+                    var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                    debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
+                    window.addEventListener('mousemove', picking, false);
+                    view.notifyChange();
+                });
 
 
                 // Point cloud layer
-                potreeLayer = new itowns.PotreeLayer('SaintHonore', {
+                potreeLayer = new itowns.PotreeLayer('PointCloud', {
                     source: new itowns.PotreeSource({
                         file: 'cloud.js',
                         url: './data',
                         crs: 'EPSG:4326',
                     }),
-                    material: orientedImageLayer.newMaterial,
+                    material: textureMaterial,
                     pointSize: 2,
                 });
 
                 // Add potreeLayer to scene
                 function onLayerReady(potreeLayerfct) {
-                    debug.PotreeDebug.initTools(view, potreeLayerfct, debugGui);
+                    debug.PotreeDebug.initTools(view, potreeLayerfct, menuGlobe.gui);
                 }
                 window.view = view;
                 
@@ -184,30 +197,7 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
 
-            // Buildings layer
-            var meshes = [];
-            var color = new itowns.THREE.Color();
-
-            function acceptFeature(properties) {
-                return !!properties.hauteur;
-            }
-
-            function colorBuildings(properties) {
-                if (properties.geojson.id.indexOf('bati_remarquable') === 0) {
-                    return color.set(0x5555ff);
-                } else if (properties.geojson.id.indexOf('bati_industriel') === 0) {
-                    return color.set(0xff5555);
-                }
-                return color.set(0xeeeeee);
-            }
-
-            function altitudeBuildings(properties) {
-                return properties.z_min - properties.hauteur;
-            }
-
-            function extrudeBuildings(properties) {
-                return properties.hauteur;
-            }
+            // For the buildings layer
 
             scaler = function update(/* dt */) {
                 var i;
@@ -225,32 +215,70 @@
                 }
                 meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
             };
-
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
 
+            
+            // Camera interpolation animation
+
+            function animateInterpolation() {
+                requestAnimationFrame((timestamp) => {
+                    interpolateCameras(timestamp);
+                    view.notifyChange(view.camera.camera3D);
+                });
+            }
 
 
             // Interaction
 
-            function onKeyDown(e) {
-                if (e.keyCode == 32) {
-                    view.camera.camera3D.set(camera0);
-                    orientedImageLayer.newMaterial.map = orientedImageLayer.textures[camera0.name];
-                    orientedImageLayer.newMaterial.setCamera(camera0);
-                    view.notifyChange();
-                }
-                if (e.keyCode == 66) {
-                    view.camera.camera3D.set(camera1);
-                    orientedImageLayer.newMaterial.map = orientedImageLayer.textures[camera1.name];
-                    orientedImageLayer.newMaterial.setCamera(camera1);
-                    view.notifyChange();
+            function keyDown(event) {
+                switch(event.key) {
+                    case '+': textureMaterial.size++; setTexture(textureCamera); view.notifyChange(); break;
+                    case '-': textureMaterial.size--; setTexture(textureCamera); view.notifyChange(); break;
+                    case 'ArrowDown': setView(getCamera(nextCamera, -1)); animateInterpolation(); break;
+                    case 'ArrowUp': setView(getCamera(nextCamera, +1)); animateInterpolation(); break;
+                    case 'ArrowLeft': setTexture(getCamera(textureCamera, -1)); view.notifyChange(); break;
+                    case 'ArrowRight': setTexture(getCamera(textureCamera, +1)); view.notifyChange(); break;
+                    case 'PageDown': setCamera(getCamera(nextCamera, -1)); animateInterpolation(); break;
+                    case 'PageUp': setCamera(getCamera(nextCamera, +1)); animateInterpolation(); break;
+                    case 't': setTexture(getCamera(nextCamera)); view.notifyChange(); break;
+                    case 'v': setView(getCamera(textureCamera)); animateInterpolation(); break;
+                    case 'c': console.log(nextCamera); view.notifyChange(); break;
+                    case 'p': console.log(viewCamera.position); view.notifyChange(); break;
+                    default : console.log(event.key, 'is not supported');
                 }
             }
-            view.domElement.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keydown', keyDown, false);
 
 
+            function picking(event) {
+                if(view.controls.isPaused) {
+                    var htmlInfo = document.getElementById('info');
+                    var intersects = view.pickObjectsAt(event, 3, 'WFS Building');
+                    var properties;
+                    var info;
+                    var batchId;
 
-            var menuGlobe = new GuiTools('menuDiv', view);
+                    htmlInfo.innerHTML = ' ';
+
+                    if (intersects.length) {
+                        console.log('intersects:\n', intersects);
+                        batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
+                        //console.log('batchId: ', batchId);
+                        properties = intersects[0].object.feature.geometries[batchId].properties;
+                        //console.log('properties: ', properties);
+
+                        Object.keys(properties).map(function (objectKey) {
+                            var value = properties[objectKey];
+                            var key = objectKey.toString();
+                            if (key[0] !== '_' && key !== 'geometry_name') {
+                                info = value.toString();
+                                htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
+                            }
+                        });
+                    }
+                }
+            }
+
             
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
@@ -258,7 +286,9 @@
                 console.info('Globe initialized');
             });
 
-            debug.createTileDebugUI(menuGlobe.gui, view);
+
+            // Resize
+            window.addEventListener( 'resize', onWindowResize, false );
 
         </script>
     </body>

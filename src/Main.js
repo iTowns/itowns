@@ -77,7 +77,7 @@ export { default as OrientedImageSource } from 'Source/OrientedImageSource';
 export { default as PotreeSource } from 'Source/PotreeSource';
 export { default as C3DTilesSource } from 'Source/C3DTilesSource';
 export { default as EntwinePointTileSource } from 'Source/EntwinePointTileSource';
-export { default as TestSource } from 'Source/TestSource';
+export { default as AlegoriaSource } from 'Source/AlegoriaSource';
 
 // Parsers provided by default in iTowns
 // Custom parser can be implemented as wanted, as long as the main function

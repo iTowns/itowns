@@ -8,7 +8,7 @@ var NewMaterial = PhotogrammetricCamera.NewMaterial;
 
 var textures = {};
 var cameras = new THREE.Group();
-cameras.visible = true;
+cameras.visible = false;
 var textureLoader = new THREE.TextureLoader();
 export const uvTexture = textureLoader.load('data/uv.jpg');
 uvTexture.name = 'uvTexture';
@@ -16,8 +16,8 @@ var wireMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: tru
 export const viewMaterialOptions = {
     map: uvTexture,
     opacity: 1,
-    // transparent: true,
-    // blending: THREE.NormalBlending,
+    transparent: true,
+    blending: THREE.NormalBlending,
 };
 var viewMaterials = {};
 var sphereRadius = 5000;
@@ -50,7 +50,7 @@ function cameraHelper(camera) {
         viewMaterials[camera.name].setCamera(camera);
         viewMaterials[camera.name].map = textures[camera.name] || uvTexture;
         var mesh = new THREE.Mesh(geometry, [wireMaterial, viewMaterials[camera.name]]);
-        mesh.scale.set(10000000.01, 10000000.01, 10000000.01); // push frustum base 1% away from the near plane
+        mesh.scale.set(100.01, 100.01, 100.01); // push frustum base 1% away from the near plane
         mesh.updateMatrixWorld();
         group.add(mesh);
     }
@@ -60,7 +60,7 @@ function cameraHelper(camera) {
         var geometry = new THREE.SphereBufferGeometry(0.03, 8, 8);
         var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         var sphereMesh = new THREE.Mesh(geometry, material);
-        sphereMesh.scale.set(1000000, 1000000, 1000000);
+        sphereMesh.scale.set(100, 100, 100);
         sphereMesh.updateMatrixWorld();
         group.add(sphereMesh);
     }
@@ -101,9 +101,8 @@ function handleOrientation(camera) {
     camera.updateProjectionMatrix();
     camera.add(cameraHelper(camera));
     cameras.add(camera);
+    camera.updateMatrixWorld();
     cameras.children.sort((a, b) => a.name.localeCompare(b.name));
-    // setCamera(camera);
-
     return camera;
 }
 
@@ -151,7 +150,6 @@ function loadOrientation(url, source, name) {
 }
 
 function loadOrientedImage(orientationUrl, imageUrl, source, name) {
-    // access textures and returns texture       // access cameras, adds the camera helper, and return camera
     return loadImage(imageUrl, source, name).then(() => loadOrientation(orientationUrl, source, name));
 }
 
@@ -173,8 +171,9 @@ function getDateId(date) {
 
 function bindDates(cameras, dates) {
     cameras.children.forEach((c) => {
-        const date = dates.find(d => getDateId(d[0]) == getImageId(c.name));
-        console.log('achei data ', date, 'pra camera ', c.name);
+        const imgId = getImageId(c.name);
+        const date = dates.find(d => getDateId(d[0]) == imgId);
+        console.assert(date != undefined);
         c.year = date[1];
     });
 }
@@ -185,43 +184,20 @@ export default {
         var source = new PhotogrammetricCamera.FetchSource(path);
         return source.open(file, 'text').then((json) => {
             json = JSON.parse(json);
-            console.log(json);
 
             json.ori = json.ori || [];
             json.img = json.img || [];
             json.autocal = json.autocal || [];
-
-            ///
-            console.log('Ori:\n');
-            json.ori.forEach((ori) => {
-                console.log(getOrientationId(ori));
-            });
-            console.log('Img:\n');
-            json.img.forEach((img) => {
-                console.log(getImageId(img));
-            });
-            console.log('Autocal:\n');
-            json.autocal.forEach((autocal) => {
-                console.log(getAutocalId(autocal));
-            });
-            console.log('Dates:\n');
-            json.date.forEach((date) => {
-                console.log(getDateId(date[0]));
-            });
-            ///
+            json.date = json.date || [];
 
             const promises = [];
-            json.ori.forEach((orientationUrl, i) => {
+            json.ori.forEach((orientationUrl) => {
                 const imgUrl = json.img.find(imgUrl => getImageId(imgUrl) == getOrientationId(orientationUrl));
                 console.assert(imgUrl != undefined);
 
                 const autocalUrl = json.autocal.find(auto => getAutocalId(auto) == getOrientationId(orientationUrl));
                 console.assert(autocalUrl != undefined);
 
-                const date = json.date.find(d => getDateId(d[0]) == getOrientationId(orientationUrl));
-                console.assert(date != undefined);
-
-                console.log('matched ', orientationUrl, ' with ', imgUrl, ', ', autocalUrl, ' and ', date);
                 promises.push(loadOrientedImage(orientationUrl, imgUrl, source, imgUrl));
             });
             return Promise.all(promises).then(() => {
