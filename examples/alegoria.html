@@ -124,9 +124,23 @@
                         mesh.children.forEach(c => {
                             c.scale.z = 0.01;
                             meshes.push(c);
+
+                            if (c.geometry.hasAttribute('batchId')) {
+
+                                const geom = c.geometry;
+                                const batchIdAttribute = geom.getAttribute('batchId');
+                                const buildingIds = new Uint32Array(batchIdAttribute.count);
+
+                                batchIdAttribute.array.forEach((batchId, i) => {
+                                    const buildingIdString = c.feature.geometries[batchId].properties.id;
+                                    const buildingId = parseInt(buildingIdString.slice(8));
+                                    buildingIds[i] = buildingId;
+                                });
+
+                                geom.setAttribute('buildingId', new THREE.BufferAttribute(buildingIds, 1));
+                            }
                         });
                         mesh.traverse(object => object.material = textureMaterial);
-                        console.log('mesh:\n', mesh);
                     },
                     filter: acceptFeature,
                     source: wfsBuildingSource,
