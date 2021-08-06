@@ -116,8 +116,6 @@
 
                 wfsBuildingLayer = new itowns.FeatureGeometryLayer('WFS Building',{
                     batchId: function (property, featureId) {
-                        console.log('property:\n', property);
-                        console.log('featureId: ', featureId);
                         return featureId;
                     },
                     onMeshCreated: function scaleZ(mesh) {
@@ -126,20 +124,33 @@
                             meshes.push(c);
 
                             if (c.geometry.hasAttribute('batchId')) {
-
+                                
+                                // Set start and end dates for buildings
+                                c.feature.geometries.forEach(building => {
+                                    building.properties.startDate = 0;
+                                    building.properties.endDate = 3000;
+                                });
+                                
+                                // Set buildingIds, start and end dates for buildings' vertices
                                 const geom = c.geometry;
                                 const batchIdAttribute = geom.getAttribute('batchId');
                                 const buildingIds = new Uint32Array(batchIdAttribute.count);
+                                const startDates = new Uint32Array(batchIdAttribute.count);
+                                const endDates = new Uint32Array(batchIdAttribute.count);
 
                                 batchIdAttribute.array.forEach((batchId, i) => {
-                                    const buildingIdString = c.feature.geometries[batchId].properties.id;
-                                    const buildingId = parseInt(buildingIdString.slice(8));
-                                    buildingIds[i] = buildingId;
+                                    const buildingProperties = c.feature.geometries[batchId].properties;
+                                    buildingIds[i] = parseInt(buildingProperties.id.slice(8));
+                                    startDates[i] = buildingProperties.startDate;
+                                    endDates[i] = buildingProperties.endDate;
                                 });
 
                                 geom.setAttribute('buildingId', new THREE.BufferAttribute(buildingIds, 1));
+                                geom.setAttribute('startDate', new THREE.BufferAttribute(startDates, 1));
+                                geom.setAttribute('endDate', new THREE.BufferAttribute(endDates, 1));
                             }
                         });
+                        
                         mesh.traverse(object => object.material = textureMaterial);
                     },
                     filter: acceptFeature,
@@ -275,7 +286,7 @@
                     htmlInfo.innerHTML = ' ';
 
                     if (intersects.length) {
-                        console.log('intersects:\n', intersects);
+                        //console.log('intersects:\n', intersects);
                         batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
                         //console.log('batchId: ', batchId);
                         properties = intersects[0].object.feature.geometries[batchId].properties;
