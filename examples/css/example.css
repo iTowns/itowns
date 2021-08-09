@@ -165,6 +165,7 @@ h3 {
     left: 20;
     bottom: 20;
     color: white;
+    z-index: 1000;
 }
 
 #divScaleWidget {
