@@ -51,7 +51,10 @@
             // Instanciate iTowns GlobeView
             var view = new itowns.GlobeView(viewerDiv, placement, { /*noControls: true, */handleCollision: false, camera: viewCamera });
             setupLoadingScreen(viewerDiv, view);
-
+            const atmospheres = view.getLayers(l => l.isAtmosphere);
+            for (const atmosphere of atmospheres) {
+                view.removeLayer(atmosphere.id);
+            }
 
             // Gui
             var menuGlobe = new GuiTools('menuDiv', view);
@@ -68,6 +71,8 @@
 
             // Materials
             var textureMaterial;
+            var pointsMaterial;
+            var sphereMaterial;
             var textures;
 
 
@@ -96,6 +101,10 @@
                 textures = orientedImageLayer.textures;
 
                 textureMaterial = orientedImageLayer.newMaterial;
+                pointsMaterial = orientedImageLayer.spriteMaterial;
+                sphereMaterial = orientedImageLayer.sphereMaterial;
+
+                
 
                 // Buildings layer
                 var wfsBuildingSource = new itowns.WFSSource({
@@ -134,9 +143,9 @@
                                 // Set buildingIds, start and end dates for buildings' vertices
                                 const geom = c.geometry;
                                 const batchIdAttribute = geom.getAttribute('batchId');
-                                const buildingIds = new Uint32Array(batchIdAttribute.count);
-                                const startDates = new Uint32Array(batchIdAttribute.count);
-                                const endDates = new Uint32Array(batchIdAttribute.count);
+                                const buildingIds = new Int32Array(batchIdAttribute.count);
+                                const startDates = new Int32Array(batchIdAttribute.count);
+                                const endDates = new Int32Array(batchIdAttribute.count);
 
                                 batchIdAttribute.array.forEach((batchId, i) => {
                                     const buildingProperties = c.feature.geometries[batchId].properties;
@@ -150,7 +159,7 @@
                                 geom.setAttribute('endDate', new THREE.BufferAttribute(endDates, 1));
                             }
                         });
-                        
+
                         mesh.traverse(object => object.material = textureMaterial);
                     },
                     filter: acceptFeature,
@@ -186,7 +195,7 @@
                         url: './data',
                         crs: 'EPSG:4326',
                     }),
-                    material: textureMaterial,
+                    material: pointsMaterial,
                     pointSize: 2,
                 });
 
@@ -316,5 +325,6 @@
             window.addEventListener( 'resize', onWindowResize, false );
 
         </script>
+        <canvas id="canvas2d" hidden></canvas>
     </body>
 </html>

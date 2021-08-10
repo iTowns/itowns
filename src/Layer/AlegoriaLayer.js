@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import * as PhotogrammetricCamera from 'photogrammetric-camera';
 import GeometryLayer from 'Layer/GeometryLayer';
-import { viewMaterialOptions, uvTexture } from 'Utils/AlegoriaUtils';
+import { viewMaterialOptions, uvTexture, sphereRadius } from 'Utils/AlegoriaUtils';
 
 
 /**
@@ -28,12 +28,33 @@ class AlegoriaLayer extends GeometryLayer {
 
         this.isAlegoriaLayer = true;
 
+        const materialOptionsWithBuildingDates = {};
+        Object.assign(materialOptionsWithBuildingDates, viewMaterialOptions);
+        materialOptionsWithBuildingDates.defines = materialOptionsWithBuildingDates.defines || {};
+        materialOptionsWithBuildingDates.defines.USE_BUILDING_DATE = '';
+
+        this.newMaterial = new PhotogrammetricCamera.NewMaterial(materialOptionsWithBuildingDates);
+        this.newMaterial.map = uvTexture;
+
+        this.spriteMaterial = new PhotogrammetricCamera.SpriteMaterial();
+        this.spriteMaterial.setScreenSize(window.innerWidth, window.innerHeight);
+
+        this.multiTextureSpriteMaterial = new PhotogrammetricCamera.MultiTextureSpriteMaterial({ numTextures: 3, maxTextures: 50 });
+        this.multiTextureSpriteMaterial.setScreenSize(window.innerWidth, window.innerHeight);
+
+        this.sphereMaterial = new PhotogrammetricCamera.NewMaterial(viewMaterialOptions);
+        this.spriteMaterial.map = uvTexture;
+        this.sphereMaterial.opacity = 0.0;
+
+        const sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(-1, 32, 32), this.sphereMaterial);
+        sphere.scale.set(sphereRadius, sphereRadius, sphereRadius);
+        sphere.updateMatrixWorld();
+        this.object3d.add(sphere);
+
         this.source.whenReady.then((data) => {
             this.textures = data.textures;
             this.cameras = data.cameras;
             this.object3d.add(this.cameras);
-            this.newMaterial = new PhotogrammetricCamera.NewMaterial(viewMaterialOptions);
-            this.newMaterial.map = uvTexture;
         });
     }
 

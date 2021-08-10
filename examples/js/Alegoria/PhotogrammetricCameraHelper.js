@@ -4,6 +4,9 @@ var viewCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
 var nextCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
 var textureCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
 
+var textureLoader = new THREE.TextureLoader();
+const uvTexture = textureLoader.load('data/uv.jpg');
+
 /* callbacks */
 function onWindowResize() {
     const width = window.innerWidth;
@@ -16,6 +19,7 @@ function onWindowResize() {
     prevCamera.updateProjectionMatrix();
     nextCamera.aspect = aspect;
     nextCamera.updateProjectionMatrix();
+    pointsMaterial.setScreenSize(window.innerWidth, window.innerHeight);
 }
 
 /* Keyboard events */
@@ -53,9 +57,17 @@ function setTexture(camera) {
     // textureCameraGUI.name = 'Tex: ' + name;
 
     textureCamera.copy(camera);
+    textureCamera.year = camera.year;
+    textureCamera.number = camera.number;
     textureCamera.updateProjectionMatrix();
 
-    setMaterial(textureMaterial, textureCamera);
+    setMaterial(textureMaterial, camera);
+    setMaterial(sphereMaterial, camera);
+
+    if (pointsMaterial.isPCSpriteMaterial)
+        setMaterial(pointsMaterial, camera);
+    else if (pointsMaterial.isPCMultiTextureSpriteMaterial)
+        pointsMaterial.setTextureCameras(camera, textures[camera.name] || uvTexture, renderer);
 }
 
 function setCamera(camera) {
@@ -94,7 +106,7 @@ function interpolateCameras(timestamp) {
             view.controls.enabled = true;
         }
         viewCamera.near = 1;
-        viewCamera.far = 10000;
+        //viewCamera.far = 10000;
         viewCamera.updateProjectionMatrix();
         //gui.updateCameras();
         animateInterpolation();

@@ -20,8 +20,8 @@ export const viewMaterialOptions = {
     blending: THREE.NormalBlending,
 };
 var viewMaterials = {};
-var sphereRadius = 5000;
-var epsilonRadius = 100;
+export const sphereRadius = 10000000;
+const epsilonRadius = 1000000000;
 
 
 
@@ -175,6 +175,7 @@ function bindDates(cameras, dates) {
         const date = dates.find(d => getDateId(d[0]) == imgId);
         console.assert(date != undefined);
         c.year = date[1];
+        c.number = parseInt(imgId, 10);
     });
 }
 
