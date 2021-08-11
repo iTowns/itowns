@@ -4,6 +4,9 @@ import { FEATURE_TYPES } from 'Core/Feature';
 import { deprecatedFeature2MeshOptions } from 'Core/Deprecated/Undeprecator';
 
 const _color = new THREE.Color();
+const maxValueUint8 = Math.pow(2, 8) - 1;
+const maxValueUint16 = Math.pow(2, 16) - 1;
+const maxValueUint32 = Math.pow(2, 32) - 1;
 
 function toColor(color) {
     if (color) {
@@ -30,6 +33,16 @@ function fillColorArray(colors, length, color, offset = 0) {
 function fillBatchIdArray(batchId, batchIdArray, start, end) {
     for (let i = start; i < end; i++) {
         batchIdArray[i] = batchId;
+    }
+}
+
+function getIntArrayFromSize(data, size) {
+    if (size <= maxValueUint8) {
+        return new Uint8Array(data);
+    } else if (size <= maxValueUint16) {
+        return new Uint16Array(data);
+    } else {
+        return new Uint32Array(data);
     }
 }
 
@@ -172,7 +185,7 @@ function featureToLine(feature, options) {
     const globals = { stroke: true };
     if (feature.geometries.length > 1) {
         const countIndices = (count - feature.geometries.length) * 2;
-        const indices = new Uint16Array(countIndices);
+        const indices = getIntArrayFromSize(countIndices, count);
         let i = 0;
         // Multi line case
         for (const geometry of feature.geometries) {
@@ -245,8 +258,8 @@ function featureToPolygon(feature, options) {
 
     for (const geometry of feature.geometries) {
         const start = geometry.indices[0].offset;
-        // To avoid integer overflow with indice value (16 bits)
-        if (start > 0xffff) {
+        // To avoid integer overflow with index value (32 bits)
+        if (start > maxValueUint32) {
             console.warn('Feature to Polygon: integer overflow, too many points in polygons');
             break;
         }
@@ -282,7 +295,7 @@ function featureToPolygon(feature, options) {
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
 
-    geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
+    geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
 
     return new THREE.Mesh(geom, material);
 }
@@ -374,7 +387,7 @@ function featureToExtrudedPolygon(feature, options) {
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
 
-    geom.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
+    geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
 
     const mesh = new THREE.Mesh(geom, material);
     return mesh;
