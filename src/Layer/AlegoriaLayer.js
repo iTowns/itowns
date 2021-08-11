@@ -59,7 +59,8 @@ class AlegoriaLayer extends GeometryLayer {
     }
 
     // eslint-disable-next-line
-    update() {
+    update(context) {
+        this.spriteMaterial.setViewCamera(context.camera.camera3D);
     }
 }
 
