@@ -163,7 +163,7 @@ let previous;
  * @property   {number} zoomSpeed Speed zoom with mouse
  * @property   {number} rotateSpeed Speed camera rotation in orbit and panoramic mode
  * @property   {number} minDistanceCollision Minimum distance collision between ground and camera
- * @property   {bool} enableDamping enable camera damping, if it's disabled the camera immediately when the mouse button is released.
+ * @property   {boolean} enableDamping enable camera damping, if it's disabled the camera immediately when the mouse button is released.
  * If it's enabled, the camera movement is decelerate.
  */
 class GlobeControls extends THREE.EventDispatcher {
