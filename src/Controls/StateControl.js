@@ -98,7 +98,7 @@ class StateControl extends THREE.EventDispatcher {
      * @param      {Number}  mouseButton  The mouse button
      * @param      {Number}  keyboard     The keyboard
      * @param      {Boolean} [double]     Value of the searched state `double` property
-     * @return     {state}  the state corresponding
+     * @return     {State}  the state corresponding
      */
     inputToState(mouseButton, keyboard, double) {
         for (const key of Object.keys(this)) {
