@@ -36,10 +36,13 @@ class AlegoriaLayer extends GeometryLayer {
         this.newMaterial = new PhotogrammetricCamera.NewMaterial(materialOptionsWithBuildingDates);
         this.newMaterial.map = uvTexture;
 
+        this.multiTextureMaterial = new PhotogrammetricCamera.MultiTextureMaterial({ numTextures: 3, maxTextures: 50, sigma: 1000 });
+        this.multiTextureMaterial.setScreenSize(window.innerWidth, window.innerHeight);
+
         this.spriteMaterial = new PhotogrammetricCamera.SpriteMaterial();
         this.spriteMaterial.setScreenSize(window.innerWidth, window.innerHeight);
 
-        this.multiTextureSpriteMaterial = new PhotogrammetricCamera.MultiTextureSpriteMaterial({ numTextures: 3, maxTextures: 50 });
+        this.multiTextureSpriteMaterial = new PhotogrammetricCamera.MultiTextureSpriteMaterial({ numTextures: 3, maxTextures: 50, sigma: 1000 });
         this.multiTextureSpriteMaterial.setScreenSize(window.innerWidth, window.innerHeight);
 
         const sphereMaterialOptions = {};

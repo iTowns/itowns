@@ -61,13 +61,32 @@ function setTexture(camera) {
     textureCamera.number = camera.number;
     textureCamera.updateProjectionMatrix();
 
-    setMaterial(textureMaterial, camera);
+    // Turn off texturing pyramids visibility if it's on
+    if (pyramidsVisibility.texturingVisible)
+        updateTexturingPyramidsVisibility(false);
+
+    // Sphere
     setMaterial(sphereMaterial, camera);
 
-    if (pointsMaterial.isPCSpriteMaterial)
+    // Buildings
+    if (buildingsMaterial.isPCMultiTextureMaterial)
+        buildingsMaterial.setTextureCameras(camera, textures[camera.name] || uvTexture, renderer);
+    else
+        setMaterial(buildingsMaterial, camera);
+
+    // Points
+    if (pointsMaterial.isPCNewMaterial || pointsMaterial.isPCSpriteMaterial)
         setMaterial(pointsMaterial, camera);
     else if (pointsMaterial.isPCMultiTextureSpriteMaterial)
         pointsMaterial.setTextureCameras(camera, textures[camera.name] || uvTexture, renderer);
+
+    // Test coherence
+    if (buildingsMaterial.isPCMultiTextureMaterial && pointsMaterial.isPCMultiTextureSpriteMaterial)
+        testCoherenceBetweenMaterials();
+
+    // Turn texturing pyramids visibility back on
+    if (pyramidsVisibility.texturingVisible)
+        updateTexturingPyramidsVisibility(true);
 }
 
 function setCamera(camera) {
@@ -111,4 +130,56 @@ function interpolateCameras(timestamp) {
         //gui.updateCameras();
         animateInterpolation();
     }
+}
+
+function testCoherenceBetweenMaterials() {
+    const pointsCameras = pointsMaterial.getTexturingCameras();
+    const buildingsCameras = buildingsMaterial.getTexturingCameras();
+
+    const quantityProblem = pointsCameras.length != buildingsCameras.length;
+    if (quantityProblem) {
+        console.error('Points and buildings material are diverging on the texture cameras\' selection.');
+        return;
+    }
+
+    var indexProblem = false;
+    var weightProblem = false;
+
+    for (let i = 0; i < pointsCameras.length; i++) {
+
+        indexProblem = pointsCameras[i].index != buildingsCameras[i].index;
+        weightProblem = pointsCameras[i].weight != buildingsCameras[i].weight;
+
+        if (indexProblem || weightProblem) {
+            console.error('Points and buildings material are diverging on the texture cameras\' selection.');
+            return;
+        }
+    }
+}
+
+function updateTexturingPyramidsVisibility(value) {
+
+    if (buildingsMaterial.isPCNewMaterial && (pointsMaterial.isPCNewMaterial || pointsMaterial.isPCSpriteMaterial)) {
+
+        const camName = textureCamera.name;
+        const texCam = orientedImageLayer.cameras.children.find( c => c.name == camName );
+        if (texCam == undefined)
+            return;
+        else
+            texCam.visible = value;
+
+    } else if (pointsMaterial.isPCMultiTextureSpriteMaterial) {
+
+        const texCameras = pointsMaterial.getTexturingCameras();
+        texCameras.forEach( c => c.visible = value );
+
+    } else if (buildingsMaterial.isPCMultiTextureMaterial) {
+
+        const texCameras = buildingsMaterial.getTexturingCameras();
+        texCameras.forEach( c => c.visible = value );
+    }
+}
+
+function updateAllPyramidsVisibility(value) {
+    orientedImageLayer.cameras.children.forEach( c => c.visible = value );
 }

@@ -49,7 +49,7 @@
             }
 
             // Instanciate iTowns GlobeView
-            var view = new itowns.GlobeView(viewerDiv, placement, { /*noControls: true, */handleCollision: false, camera: viewCamera });
+            var view = new itowns.GlobeView(viewerDiv, placement, { /*noControls: true, */handleCollision: false, camera: { cameraThree: viewCamera } });
             setupLoadingScreen(viewerDiv, view);
             const atmospheres = view.getLayers(l => l.isAtmosphere);
             for (const atmosphere of atmospheres) {
@@ -70,7 +70,7 @@
 
 
             // Materials
-            var textureMaterial;
+            var buildingsMaterial;
             var pointsMaterial;
             var sphereMaterial;
             var textures;
@@ -78,11 +78,14 @@
 
             // Oriented images
             var cameras;
+            const pyramidsVisibility = { allVisible: false, texturingVisible: false };
 
             // Prepare oriented image source
             var orientedImageSource = new itowns.AlegoriaSource({
-                path: 'data/alegoria/',
+                path: 'data/alegoria_selection_resized/',
                 file: 'chalon_selection.json',
+                // path: 'data/test_image_size/',
+                // file: 'test_image_size.json',
             });
 
             // Create oriented image layer
@@ -96,17 +99,20 @@
                 view.notifyChange(true);
                 const pyramidGUI = menuGlobe.gui.addFolder('Camera Pyramids');
                 console.log(orientedImageLayer.cameras);
-                pyramidGUI.add(orientedImageLayer.cameras, 'visible').name('show pyramids').onChange(() => view.notifyChange(orientedImageLayer, true));
+                pyramidGUI.add(pyramidsVisibility, 'allVisible').name('show all pyr.').onChange((value) => {
+                    updateAllPyramidsVisibility(value);
+                    view.notifyChange(orientedImageLayer, true);
+                });
+                pyramidGUI.add(pyramidsVisibility, 'texturingVisible').name('show tex. pyr.').onChange((value) => {
+                    updateTexturingPyramidsVisibility(value);
+                    view.notifyChange(orientedImageLayer, true);
+                });
                 cameras = orientedImageLayer.cameras;
                 textures = orientedImageLayer.textures;
 
-                // const cameraHelper = view.scene.children.find(c => c.type == 'CameraHelper');
-                // console.log('cameraHelper:\n', cameraHelper);
-                // cameraHelper.visible = true;
-                // view.camera.camera3D.add(orientedImageLayer.sphere);
-
-                textureMaterial = orientedImageLayer.newMaterial;
+                buildingsMaterial = orientedImageLayer.multiTextureMaterial;
                 pointsMaterial = orientedImageLayer.multiTextureSpriteMaterial;
+                //pointsMaterial = orientedImageLayer.spriteMaterial;
                 sphereMaterial = orientedImageLayer.sphereMaterial;
                 const sphereGUI = menuGlobe.gui.addFolder('Sphere');
                 sphereGUI.add(orientedImageLayer.sphere.material, 'opacity', 0.0, 1.0).onChange( value => view.notifyChange(orientedImageLayer));
@@ -166,7 +172,7 @@
                             }
                         });
 
-                        mesh.traverse(object => object.material = textureMaterial);
+                        mesh.traverse(object => object.material = buildingsMaterial);
                     },
                     filter: acceptFeature,
                     source: wfsBuildingSource,

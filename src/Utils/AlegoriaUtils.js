@@ -8,7 +8,7 @@ var NewMaterial = PhotogrammetricCamera.NewMaterial;
 
 var textures = {};
 var cameras = new THREE.Group();
-cameras.visible = false;
+cameras.visible = true;
 var textureLoader = new THREE.TextureLoader();
 export const uvTexture = textureLoader.load('data/uv.jpg');
 uvTexture.name = 'uvTexture';
@@ -100,6 +100,7 @@ function handleOrientation(camera) {
     camera.far = sphereRadius + epsilonRadius;
     camera.updateProjectionMatrix();
     camera.add(cameraHelper(camera));
+    camera.visible = false;
     cameras.add(camera);
     camera.updateMatrixWorld();
     cameras.children.sort((a, b) => a.name.localeCompare(b.name));
