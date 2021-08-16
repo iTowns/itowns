@@ -20,8 +20,8 @@ export const viewMaterialOptions = {
     blending: THREE.NormalBlending,
 };
 var viewMaterials = {};
-export const sphereRadius = 10000000;
-const epsilonRadius = 1000000000;
+export const sphereRadius = 100000;
+const epsilonRadius = 1000;
 
 
 

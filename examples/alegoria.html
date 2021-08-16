@@ -100,10 +100,16 @@
                 cameras = orientedImageLayer.cameras;
                 textures = orientedImageLayer.textures;
 
-                textureMaterial = orientedImageLayer.newMaterial;
-                pointsMaterial = orientedImageLayer.spriteMaterial;
-                sphereMaterial = orientedImageLayer.sphereMaterial;
+                // const cameraHelper = view.scene.children.find(c => c.type == 'CameraHelper');
+                // console.log('cameraHelper:\n', cameraHelper);
+                // cameraHelper.visible = true;
+                // view.camera.camera3D.add(orientedImageLayer.sphere);
 
+                textureMaterial = orientedImageLayer.newMaterial;
+                pointsMaterial = orientedImageLayer.multiTextureSpriteMaterial;
+                sphereMaterial = orientedImageLayer.sphereMaterial;
+                const sphereGUI = menuGlobe.gui.addFolder('Sphere');
+                sphereGUI.add(orientedImageLayer.sphere.material, 'opacity', 0.0, 1.0).onChange( value => view.notifyChange(orientedImageLayer));
                 
 
                 // Buildings layer

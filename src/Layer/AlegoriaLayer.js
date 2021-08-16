@@ -42,14 +42,17 @@ class AlegoriaLayer extends GeometryLayer {
         this.multiTextureSpriteMaterial = new PhotogrammetricCamera.MultiTextureSpriteMaterial({ numTextures: 3, maxTextures: 50 });
         this.multiTextureSpriteMaterial.setScreenSize(window.innerWidth, window.innerHeight);
 
-        this.sphereMaterial = new PhotogrammetricCamera.NewMaterial(viewMaterialOptions);
+        const sphereMaterialOptions = {};
+        Object.assign(sphereMaterialOptions, viewMaterialOptions);
+        sphereMaterialOptions.opacity = 0.5;
+        this.sphereMaterial = new PhotogrammetricCamera.NewMaterial(sphereMaterialOptions);
         this.spriteMaterial.map = uvTexture;
-        this.sphereMaterial.opacity = 0.0;
+        this.sphereMaterial.opacity = 0.75;
 
-        const sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(-1, 32, 32), this.sphereMaterial);
-        sphere.scale.set(sphereRadius, sphereRadius, sphereRadius);
-        sphere.updateMatrixWorld();
-        this.object3d.add(sphere);
+        this.sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(-1, 32, 32), this.sphereMaterial);
+        this.sphere.scale.set(sphereRadius, sphereRadius, sphereRadius);
+        this.sphere.updateMatrixWorld();
+        this.object3d.add(this.sphere);
 
         this.source.whenReady.then((data) => {
             this.textures = data.textures;
@@ -61,6 +64,9 @@ class AlegoriaLayer extends GeometryLayer {
     // eslint-disable-next-line
     update(context) {
         this.spriteMaterial.setViewCamera(context.camera.camera3D);
+        this.multiTextureSpriteMaterial.setViewCamera(context.camera.camera3D);
+        context.camera.camera3D.getWorldPosition(this.sphere.position);
+        this.sphere.updateMatrixWorld();
     }
 }
 
