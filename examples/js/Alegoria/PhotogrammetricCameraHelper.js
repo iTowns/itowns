@@ -4,7 +4,7 @@ var viewCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
 var nextCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
 var textureCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
 
-var viewCameraGUI, textureCameraGUI;
+var viewCameraGUI = {}, textureCameraGUI = {};
 
 var textureLoader = new THREE.TextureLoader();
 const uvTexture = textureLoader.load('data/uv.jpg');

@@ -116,6 +116,18 @@
                 sphereMaterial = orientedImageLayer.sphereMaterial;
                 const sphereGUI = menuGlobe.gui.addFolder('Sphere');
                 sphereGUI.add(orientedImageLayer.sphere.material, 'opacity', 0.0, 1.0).onChange( value => view.notifyChange(orientedImageLayer));
+
+                // Initialize cameras on multi materials
+                if (pointsMaterial.isPCMultiTextureSpriteMaterial || buildingsMaterial.isPCMultiTextureMaterial) {
+                    console.log('Starting initialization of cameras on multi materials.')
+                    var count = 0;
+                    orientedImageLayer.cameras.children.forEach( c => {
+                        setTexture(c);
+                        count++;
+                    });
+                    console.log('Initialized ', count, ' cameras.');
+                    console.log('Finished initialization of cameras on multi materials.');
+                }
                 
 
                 // Buildings layer
