@@ -4,6 +4,8 @@ var viewCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
 var nextCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
 var textureCamera = new PhotogrammetricCamera.PhotogrammetricCamera();
 
+var viewCameraGUI, textureCameraGUI;
+
 var textureLoader = new THREE.TextureLoader();
 const uvTexture = textureLoader.load('data/uv.jpg');
 
@@ -34,9 +36,9 @@ function setView(camera) {
     // update view camera name
     var name = camera.name;
     console.log('View:', name);
-    // if (name.length > 30)
-    //   name = name.substr(0,13)+'[..]'+name.substr(-13,13)
-    // viewCameraGUI.name = 'View: ' + name;
+    if (name.length > 30)
+      name = name.substr(0,13)+'[..]'+name.substr(-13,13)
+    viewCameraGUI.name = 'View: ' + name;
 
     prevCamera.set(viewCamera);
     nextCamera.set(camera);
@@ -52,9 +54,9 @@ function setTexture(camera) {
     // update texture camera name
     var name = camera.name;
     console.log('Texture:', name);
-    // if (name.length > 30)
-    //   name = name.substr(0,13)+'[..]'+name.substr(-13,13)
-    // textureCameraGUI.name = 'Tex: ' + name;
+    if (name.length > 30)
+      name = name.substr(0,13)+'[..]'+name.substr(-13,13)
+    textureCameraGUI.name = 'Tex: ' + name;
 
     textureCamera.copy(camera);
     textureCamera.year = camera.year;

@@ -218,6 +218,9 @@
                 window.view = view;
                 
                 itowns.View.prototype.addLayer.call(view, potreeLayer).then(onLayerReady(potreeLayer));
+
+                viewCameraGUI = menuGlobe.gui.addFolder('View Camera');
+                textureCameraGUI = menuGlobe.gui.addFolder('Texture Camera');
             });
 
 
