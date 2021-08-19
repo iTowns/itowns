@@ -409,6 +409,7 @@ class Style {
         if (this.icon) {
             mapPropertiesFromContext('icon', this, style, context);
         }
+        style.order = this.order;
         return style;
     }
 
