@@ -57,6 +57,12 @@ class LabelLayer extends Layer {
         this.buildExtent = true;
 
         this.labelDomelement = config.domElement;
+
+        // The margin property defines a space around each label that cannot be occupied by another label.
+        // For example, if some labelLayer has a margin value of 5, there will be at least 10 pixels
+        // between each labels of the layer
+        // TODO : this property should be moved to Style after refactoring style properties structure
+        this.margin = config.margin;
     }
 
     /**
@@ -128,6 +134,7 @@ class LabelLayer extends Layer {
 
                 const label = new Label(content, coord.clone(), style, this.source.sprites);
                 label.layerId = this.id;
+                label.padding = this.margin || label.padding;
 
                 if (f.size == 2) {
                     label.needsAltitude = true;
