@@ -45,13 +45,13 @@ describe('StateControl', function () {
 
     it('setFromOptions should set states according to given options', function () {
         const options = {
-            PAN: { enable: false },
-            MOVE_GLOBE: { enable: true, mouseButton: MOUSE.LEFT },
-            ORBIT: { enable: true, mouseButton: MOUSE.MIDDLE },
-            DOLLY: { enable: true, mouseButton: MOUSE.RIGHT },
-            PANORAMIC: { enable: true, mouseButton: MOUSE.LEFT, keyboard: 17 },
-            TRAVEL_IN: { enable: true, mouseButton: MOUSE.LEFT, double: true },
-            TRAVEL_OUT: { enable: true, mouseButton: MOUSE.RIGHT, double: true },
+            PAN: { enable: false, double: false },
+            MOVE_GLOBE: { enable: true, double: false, mouseButton: MOUSE.LEFT },
+            ORBIT: { enable: true, double: false, mouseButton: MOUSE.MIDDLE },
+            DOLLY: { enable: true, double: false, mouseButton: MOUSE.RIGHT },
+            PANORAMIC: { enable: true, double: false, mouseButton: MOUSE.LEFT, keyboard: 17 },
+            TRAVEL_IN: { enable: true, double: true, mouseButton: MOUSE.LEFT },
+            TRAVEL_OUT: { enable: true, double: true, mouseButton: MOUSE.RIGHT },
         };
         states.setFromOptions(options);
 

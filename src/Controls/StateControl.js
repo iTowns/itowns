@@ -12,6 +12,54 @@ const CONTROL_KEYS = {
 };
 
 
+const DEFAULT_STATES = {
+    ORBIT: {
+        enable: true,
+        mouseButton: THREE.MOUSE.LEFT,
+        double: false,
+        keyboard: CONTROL_KEYS.CTRL,
+        finger: 2,
+    },
+    MOVE_GLOBE: {
+        enable: true,
+        mouseButton: THREE.MOUSE.LEFT,
+        double: false,
+        finger: 1,
+    },
+    DOLLY: {
+        enable: true,
+        mouseButton: THREE.MOUSE.MIDDLE,
+        double: false,
+        finger: 2,
+    },
+    PAN: {
+        enable: true,
+        mouseButton: THREE.MOUSE.RIGHT,
+        double: false,
+        finger: 3,
+        up: CONTROL_KEYS.UP,
+        bottom: CONTROL_KEYS.BOTTOM,
+        left: CONTROL_KEYS.LEFT,
+        right: CONTROL_KEYS.RIGHT,
+    },
+    PANORAMIC: {
+        enable: true,
+        mouseButton: THREE.MOUSE.LEFT,
+        double: false,
+        keyboard: CONTROL_KEYS.SHIFT,
+    },
+    TRAVEL_IN: {
+        enable: true,
+        mouseButton: THREE.MOUSE.LEFT,
+        double: true,
+    },
+    TRAVEL_OUT: {
+        enable: false,
+        double: false,
+    },
+};
+
+
 function stateToTrigger(state) {
     if (!state) {
         return undefined;
@@ -106,7 +154,7 @@ class StateControl extends THREE.EventDispatcher {
             if (state.enable
                 && state.mouseButton === mouseButton
                 && state.keyboard === keyboard
-                && state.double === double
+                && (!double || state.double === double)
             ) {
                 return state;
             }
@@ -133,67 +181,46 @@ class StateControl extends THREE.EventDispatcher {
     /**
      * Set the current StateControl {@link State} properties to given values.
      * @param {Object}  options     Object containing the `State` values to set current `StateControl` properties to.
+                                    * The `enable` property do not necessarily need to be specified. In that case, the
+                                    * previous value of this property will be kept for the new {@link State}.
      *
      * @example
-     * // Switch bindings for PAN and MOVE_GLOBE actions :
+     * // Switch bindings for PAN and MOVE_GLOBE actions, and disabling PANORAMIC movement :
      * view.controls.states.setFromOptions({
      *     PAN: {
-     *        enable: true,
-     *        mouseButton: itowns.THREE.MOUSE.LEFT,
+     *         mouseButton: itowns.THREE.MOUSE.LEFT,
      *     },
      *     MOVE_GLOBE: {
-     *         enable: true,
      *         mouseButton: itowns.THREE.MOUSE.RIGHT,
+     *     },
+     *     PANORAMIC: {
+     *         enable: false,
      *     },
      * };
      */
     setFromOptions(options) {
-        this.ORBIT = options.ORBIT || this.ORBIT || {
-            mouseButton: THREE.MOUSE.LEFT,
-            keyboard: CONTROL_KEYS.CTRL,
-            enable: true,
-            finger: 2,
-        };
-        this.DOLLY = options.DOLLY || this.DOLLY || {
-            mouseButton: THREE.MOUSE.MIDDLE,
-            enable: true,
-        };
-        this.PAN = options.PAN || this.PAN || {
-            mouseButton: THREE.MOUSE.RIGHT,
-            up: CONTROL_KEYS.UP,
-            bottom: CONTROL_KEYS.BOTTOM,
-            left: CONTROL_KEYS.LEFT,
-            right: CONTROL_KEYS.RIGHT,
-            enable: true,
-            finger: 3,
-        };
-        this.MOVE_GLOBE = options.MOVE_GLOBE || this.MOVE_GLOBE || {
-            mouseButton: THREE.MOUSE.LEFT,
-            enable: true,
-            finger: 1,
-        };
-        this.PANORAMIC = options.PANORAMIC || this.PANORAMIC || {
-            mouseButton: THREE.MOUSE.LEFT,
-            keyboard: CONTROL_KEYS.SHIFT,
-            enable: true,
-        };
-
-        const newTravelIn = options.TRAVEL_IN || this.TRAVEL_IN || {
-            enable: true,
-            mouseButton: THREE.MOUSE.LEFT,
-            double: true,
-        };
-
         this._domElement.removeEventListener(stateToTrigger(this.TRAVEL_IN), this._handleTravelInEvent, false);
-        this._domElement.addEventListener(stateToTrigger(newTravelIn), this._handleTravelInEvent, false);
-        this.TRAVEL_IN = newTravelIn;
-
-        const newTravelOut = options.TRAVEL_OUT || this.TRAVEL_OUT || {
-            enable: false,
-        };
         this._domElement.removeEventListener(stateToTrigger(this.TRAVEL_OUT), this._handleTravelOutEvent, false);
-        this._domElement.addEventListener(stateToTrigger(newTravelOut), this._handleTravelOutEvent, false);
-        this.TRAVEL_OUT = newTravelOut;
+
+        for (const state in DEFAULT_STATES) {
+            if ({}.hasOwnProperty.call(DEFAULT_STATES, state)) {
+                let newState = {};
+                newState = options[state] || this[state] || Object.assign(newState, DEFAULT_STATES[state]);
+
+                // Copy the previous value of `enable` property if not defined in options
+                if (options[state] && options[state].enable === undefined) {
+                    newState.enable = this[state].enable;
+                }
+                // If no value is provided for the `double` property,
+                // defaults it to `false` instead of leaving it undefined
+                newState.double = !!newState.double;
+
+                this[state] = newState;
+            }
+        }
+
+        this._domElement.addEventListener(stateToTrigger(this.TRAVEL_IN), this._handleTravelInEvent, false);
+        this._domElement.addEventListener(stateToTrigger(this.TRAVEL_OUT), this._handleTravelOutEvent, false);
     }
 
     /**
