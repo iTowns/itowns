@@ -77,9 +77,6 @@ if (enableTargetHelper) {
     helpers.target = new THREE.AxesHelper(500000);
 }
 
-// current downed key
-let currentKey;
-
 /**
  * Globe control pan event. Fires after camera pan
  * @event GlobeControls#pan-changed
@@ -175,7 +172,6 @@ class GlobeControls extends THREE.EventDispatcher {
 
         // State control
         this.states = new StateControl(this.view);
-        this.state = this.states.NONE;
 
         // Set to false to disable this control
         this.enabled = true;
@@ -237,38 +233,41 @@ class GlobeControls extends THREE.EventDispatcher {
         } : function empty() {};
 
         this._onEndingMove = null;
-        this._onMouseMove = this.onMouseMove.bind(this);
-        this._onMouseUp = this.onMouseUp.bind(this);
-        this._onMouseDown = this.onMouseDown.bind(this);
         this._onMouseWheel = this.onMouseWheel.bind(this);
         this._onContextMenuListener = this.onContextMenuListener.bind(this);
         this._onTravel = this.travel.bind(this);
         this._onTouchStart = this.onTouchStart.bind(this);
-        this._update = this.update.bind(this);
+        this._onTouchEnd = this.onTouchEnd.bind(this);
         this._onTouchMove = this.onTouchMove.bind(this);
         this._onKeyDown = this.onKeyDown.bind(this);
-        this._onKeyUp = this.onKeyUp.bind(this);
-        this._onBlurListener = this.onBlurListener.bind(this);
+
+        this._onStateChange = this.onStateChange.bind(this);
+
+        this._onRotation = this.handleRotation.bind(this);
+        this._onDrag = this.handleDrag.bind(this);
+        this._onDolly = this.handleDolly.bind(this);
+        this._onPan = this.handlePan.bind(this);
+        this._onPanoramic = this.handlePanoramic.bind(this);
+
+        this.states.addEventListener('state-changed', this._onStateChange, false);
+
+        this.states.addEventListener(this.states.ORBIT._event, this._onRotation, false);
+        this.states.addEventListener(this.states.MOVE_GLOBE._event, this._onDrag, false);
+        this.states.addEventListener(this.states.DOLLY._event, this._onDolly, false);
+        this.states.addEventListener(this.states.PAN._event, this._onPan, false);
+        this.states.addEventListener(this.states.PANORAMIC._event, this._onPanoramic, false);
 
         this.view.domElement.addEventListener('contextmenu', this._onContextMenuListener, false);
-        this.view.domElement.addEventListener('mousedown', this._onMouseDown, false);
         this.view.domElement.addEventListener('wheel', this._onMouseWheel, false);
         this.view.domElement.addEventListener('touchstart', this._onTouchStart, false);
-        this.view.domElement.addEventListener('touchend', this._onMouseUp, false);
+        this.view.domElement.addEventListener('touchend', this._onTouchEnd, false);
         this.view.domElement.addEventListener('touchmove', this._onTouchMove, false);
 
-        this.states.addEventListener('travel_in', this._onTravel, false);
-        this.states.addEventListener('travel_out', this._onTravel, false);
-
-        // refresh control for each animation's frame
-        this.player.addEventListener('animation-frame', this._update);
+        this.states.addEventListener(this.states.TRAVEL_IN._event, this._onTravel, false);
+        this.states.addEventListener(this.states.TRAVEL_OUT._event, this._onTravel, false);
 
         // TODO: Why windows
         window.addEventListener('keydown', this._onKeyDown, false);
-        window.addEventListener('keyup', this._onKeyUp, false);
-
-        // Reset key/mouse when window loose focus
-        window.addEventListener('blur', this._onBlurListener);
 
         view.scene.add(cameraTarget);
         if (enableTargetHelper) {
@@ -300,7 +299,9 @@ class GlobeControls extends THREE.EventDispatcher {
     }
 
     get isPaused() {
-        return this.state == this.states.NONE;
+        // TODO : also check if CameraUtils is performing an animation
+        return this.states.currentState === this.states.NONE
+            && !this.player.isPlaying();
     }
 
     onEndingMove(current) {
@@ -308,7 +309,6 @@ class GlobeControls extends THREE.EventDispatcher {
             this.player.removeEventListener('animation-stopped', this._onEndingMove);
             this._onEndingMove = null;
         }
-        this.state = this.states.NONE;
         this.handlingEvent(current);
     }
 
@@ -342,7 +342,6 @@ class GlobeControls extends THREE.EventDispatcher {
     // right and down are positive
     mouseToPan(deltaX, deltaY) {
         const gfx = this.view.mainLoop.gfxEngine;
-        this.state = this.states.PAN;
         if (this.camera.isPerspectiveCamera) {
             let targetDistance = this.camera.position.distanceTo(this.getCameraTargetPosition());
             // half of the fov is center to top of screen
@@ -382,7 +381,7 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
-    update() {
+    update(state = this.states.currentState) {
         // We compute distance between camera's bounding sphere and geometry's obb up face
         minDistanceZ = Infinity;
         if (this.handleCollision) { // We check distance to the ground/surface geometry
@@ -396,7 +395,7 @@ class GlobeControls extends THREE.EventDispatcher {
                 }
             }
         }
-        switch (this.state) {
+        switch (state) {
             // MOVE_GLOBE Rotate globe with mouse
             case this.states.MOVE_GLOBE:
                 if (minDistanceZ < 0) {
@@ -516,65 +515,133 @@ class GlobeControls extends THREE.EventDispatcher {
             lastQuaternion.copy(this.camera.quaternion);
         }
         // Launch animationdamping if mouse stops these movements
-        if (this.enableDamping && this.state === this.states.ORBIT && this.player.isStopped() && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
+        if (this.enableDamping && state === this.states.ORBIT && this.player.isStopped() && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
+            this.player.setCallback(() => { this.update(this.states.ORBIT); });
             this.player.playLater(durationDampingOrbital, 2);
         }
     }
 
-    onMouseMove(event) {
-        if (this.player.isPlaying()) {
-            this.player.stop();
+    onStateChange(event) {
+        // If the state changed to NONE, end the movement associated to the previous state.
+        if (this.states.currentState === this.states.NONE) {
+            this.handleEndMovement(event);
+            return;
         }
+
+        // Stop CameraUtils ongoing animations, which can for instance be triggered with `this.travel` or
+        // `this.lookAtCoordinate` methods.
+        CameraUtils.stop(this.view, this.camera);
+
+        // Dispatch events which specify if changes occurred in camera transform options.
+        this.onEndingMove();
+
+        // Stop eventual damping movement.
+        this.player.stop();
+
+        // Update camera transform options.
+        this.updateTarget();
+        previous = CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, pickedPosition);
+
+        // Initialize rotation and panoramic movements.
+        rotateStart.copy(event.viewCoords);
+
+        // Initialize drag movement.
+        if (this.view.getPickingPositionFromDepth(event.viewCoords, pickingPoint)) {
+            pickSphere.radius = pickingPoint.length();
+            lastNormalizedIntersection.copy(pickingPoint).normalize();
+            this.updateHelper(pickingPoint, helpers.picking);
+        }
+
+        // Initialize dolly movement.
+        dollyStart.copy(event.viewCoords);
+
+        // Initialize pan movement.
+        panStart.copy(event.viewCoords);
+    }
+
+    handleRotation(event) {
+        // Stop player if needed. Player can be playing while moving mouse in the case of rotation. This is due to the
+        // fact that a damping move can occur while rotating (without the need of releasing the mouse button)
+        this.player.stop();
+        this.handlePanoramic(event);
+    }
+
+    handleDrag(event) {
+        const normalized = this.view.viewToNormalizedCoords(event.viewCoords);
+
+        raycaster.setFromCamera(normalized, this.camera);
+
+        // If there's intersection then move globe else we stop the move
+        if (raycaster.ray.intersectSphere(pickSphere, intersection)) {
+            normalizedIntersection.copy(intersection).normalize();
+            moveAroundGlobe.setFromUnitVectors(normalizedIntersection, lastNormalizedIntersection);
+            lastTimeMouseMove = Date.now();
+            this.update();
+        } else {
+            this.states.onPointerUp();
+        }
+    }
+
+    handleDolly(event) {
+        dollyEnd.copy(event.viewCoords);
+        dollyDelta.subVectors(dollyEnd, dollyStart);
+
+        this.dolly(-dollyDelta.y);
+        dollyStart.copy(dollyEnd);
+
+        this.update();
+    }
+
+    handlePan(event) {
+        panEnd.copy(event.viewCoords);
+        panDelta.subVectors(panEnd, panStart);
+        this.mouseToPan(panDelta.x, panDelta.y);
+        panStart.copy(panEnd);
+
+        this.update();
+    }
+
+    handlePanoramic(event) {
+        rotateEnd.copy(event.viewCoords);
+        rotateDelta.subVectors(rotateEnd, rotateStart);
+
+        const gfx = this.view.mainLoop.gfxEngine;
+
+        sphericalDelta.theta -= 2 * Math.PI * rotateDelta.x / gfx.width * this.rotateSpeed;
+        // rotating up and down along whole screen attempts to go 360, but limited to 180
+        sphericalDelta.phi -= 2 * Math.PI * rotateDelta.y / gfx.height * this.rotateSpeed;
+
+        rotateStart.copy(rotateEnd);
+        this.update();
+    }
+
+    handleEndMovement(event = {}) {
         if (this.enabled === false) { return; }
 
-        event.preventDefault();
-        const coords = this.view.eventToViewCoords(event);
+        this.dispatchEvent(this.endEvent);
 
-        switch (this.state) {
-            case this.states.ORBIT:
-            case this.states.PANORAMIC: {
-                rotateEnd.copy(coords);
-                rotateDelta.subVectors(rotateEnd, rotateStart);
+        this.player.stop();
 
-                const gfx = this.view.mainLoop.gfxEngine;
-                this.rotateLeft(2 * Math.PI * rotateDelta.x / gfx.width * this.rotateSpeed);
-                // rotating up and down along whole screen attempts to go 360, but limited to 180
-                this.rotateUp(2 * Math.PI * rotateDelta.y / gfx.height * this.rotateSpeed);
-
-                rotateStart.copy(rotateEnd);
-                break; }
-            case this.states.DOLLY:
-                dollyEnd.copy(coords);
-                dollyDelta.subVectors(dollyEnd, dollyStart);
-
-                this.dolly(-dollyDelta.y);
-                dollyStart.copy(dollyEnd);
-                break;
-            case this.states.PAN:
-                panEnd.copy(coords);
-                panDelta.subVectors(panEnd, panStart);
-
-                this.mouseToPan(panDelta.x, panDelta.y);
-
-                panStart.copy(panEnd);
-                break;
-            case this.states.MOVE_GLOBE: {
-                const normalized = this.view.viewToNormalizedCoords(coords);
-                raycaster.setFromCamera(normalized, this.camera);
-                // If there's intersection then move globe else we stop the move
-                if (raycaster.ray.intersectSphere(pickSphere, intersection)) {
-                    normalizedIntersection.copy(intersection).normalize();
-                    moveAroundGlobe.setFromUnitVectors(normalizedIntersection, lastNormalizedIntersection);
-                    lastTimeMouseMove = Date.now();
-                } else {
-                    this.onMouseUp();
-                }
-                break; }
-            default:
-        }
-
-        if (this.state !== this.states.NONE) {
-            this.update();
+        // Launch damping movement for :
+        //      * this.states.ORBIT
+        //      * this.states.MOVE_GLOBE
+        if (this.enableDamping) {
+            if (event.previous === this.states.ORBIT && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
+                this.player.setCallback(() => { this.update(this.states.ORBIT); });
+                this.player.play(durationDampingOrbital);
+                this._onEndingMove = () => this.onEndingMove();
+                this.player.addEventListener('animation-stopped', this._onEndingMove);
+            } else if (event.previous === this.states.MOVE_GLOBE && (Date.now() - lastTimeMouseMove < 50)) {
+                this.player.setCallback(() => { this.update(this.states.MOVE_GLOBE); });
+                // animation since mouse up event occurs less than 50ms after the last mouse move
+                this.player.play(durationDampingMove);
+                this._onEndingMove = () => this.onEndingMove();
+                this.player.addEventListener('animation-stopped', this._onEndingMove);
+            } else {
+                this.onEndingMove();
+            }
+        } else {
+            this.onEndingMove();
         }
     }
 
@@ -632,50 +699,6 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
-    onMouseDown(event) {
-        CameraUtils.stop(this.view, this.camera);
-        this.player.stop();
-        this.onEndingMove();
-        if (this.enabled === false) { return; }
-
-        this.updateTarget();
-        previous = CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, pickedPosition);
-        this.state = this.states.inputToState(event.button, currentKey);
-
-        const coords = this.view.eventToViewCoords(event);
-
-        switch (this.state) {
-            case this.states.ORBIT:
-            case this.states.PANORAMIC:
-                rotateStart.copy(coords);
-                break;
-            case this.states.MOVE_GLOBE: {
-                // update picking on sphere
-                if (this.view.getPickingPositionFromDepth(coords, pickingPoint)) {
-                    pickSphere.radius = pickingPoint.length();
-                    lastNormalizedIntersection.copy(pickingPoint).normalize();
-                    this.updateHelper(pickingPoint, helpers.picking);
-                } else {
-                    this.state = this.states.NONE;
-                }
-                break;
-            }
-            case this.states.DOLLY:
-                dollyStart.copy(coords);
-                break;
-            case this.states.PAN:
-                panStart.copy(coords);
-                break;
-            default:
-        }
-        if (this.state != this.states.NONE) {
-            this.view.domElement.addEventListener('mousemove', this._onMouseMove, false);
-            this.view.domElement.addEventListener('mouseup', this._onMouseUp, false);
-            this.view.domElement.addEventListener('mouseleave', this._onMouseUp, false);
-            this.dispatchEvent(this.startEvent);
-        }
-    }
-
     travel(event) {
         if (this.enabled === false) { return; }
         this.player.stop();
@@ -687,37 +710,6 @@ class GlobeControls extends THREE.EventDispatcher {
                 range: range * (event.type === 'travel_out' ? 1 / 0.6 : 0.6),
                 time: 1500,
             });
-        }
-    }
-
-    onMouseUp() {
-        if (this.enabled === false) { return; }
-
-        this.view.domElement.removeEventListener('mousemove', this._onMouseMove, false);
-        this.view.domElement.removeEventListener('mouseup', this._onMouseUp, false);
-        this.view.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
-        this.dispatchEvent(this.endEvent);
-
-        this.player.stop();
-
-        // Launch damping movement for :
-        //      * this.states.ORBIT
-        //      * this.states.MOVE_GLOBE
-        if (this.enableDamping) {
-            if (this.state === this.states.ORBIT && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
-                this.player.play(durationDampingOrbital);
-                this._onEndingMove = () => this.onEndingMove();
-                this.player.addEventListener('animation-stopped', this._onEndingMove);
-            } else if (this.state === this.states.MOVE_GLOBE && (Date.now() - lastTimeMouseMove < 50)) {
-                // animation since mouse up event occurs less than 50ms after the last mouse move
-                this.player.play(durationDampingMove);
-                this._onEndingMove = () => this.onEndingMove();
-                this.player.addEventListener('animation-stopped', this._onEndingMove);
-            } else {
-                this.onEndingMove();
-            }
-        } else {
-            this.onEndingMove();
         }
     }
 
@@ -745,35 +737,25 @@ class GlobeControls extends THREE.EventDispatcher {
         this.dispatchEvent(this.endEvent);
     }
 
-    onKeyUp() {
-        if (this.enabled === false || this.enableKeys === false) { return; }
-        currentKey = undefined;
-    }
-
     onKeyDown(event) {
         this.player.stop();
         if (this.enabled === false || this.enableKeys === false) { return; }
-        currentKey = event.keyCode;
         switch (event.keyCode) {
             case this.states.PAN.up:
                 this.mouseToPan(0, this.keyPanSpeed);
-                this.state = this.states.PAN;
-                this.update();
+                this.update(this.states.PAN);
                 break;
             case this.states.PAN.bottom:
                 this.mouseToPan(0, -this.keyPanSpeed);
-                this.state = this.states.PAN;
-                this.update();
+                this.update(this.states.PAN);
                 break;
             case this.states.PAN.left:
                 this.mouseToPan(this.keyPanSpeed, 0);
-                this.state = this.states.PAN;
-                this.update();
+                this.update(this.states.PAN);
                 break;
             case this.states.PAN.right:
                 this.mouseToPan(-this.keyPanSpeed, 0);
-                this.state = this.states.PAN;
-                this.update();
+                this.update(this.states.PAN);
                 break;
             default:
         }
@@ -840,7 +822,7 @@ class GlobeControls extends THREE.EventDispatcher {
                     moveAroundGlobe.setFromUnitVectors(normalizedIntersection, lastNormalizedIntersection);
                     lastTimeMouseMove = Date.now();
                 } else {
-                    this.onMouseUp.bind(this)();
+                    this.onTouchEnd();
                 }
                 break; }
             case this.states.ORBIT.finger:
@@ -880,7 +862,7 @@ class GlobeControls extends THREE.EventDispatcher {
         }
 
         if (this.state !== this.states.NONE) {
-            this.update();
+            this.update(this.state);
         }
     }
 
@@ -888,34 +870,32 @@ class GlobeControls extends THREE.EventDispatcher {
         event.preventDefault();
     }
 
-    onBlurListener() {
-        this.onKeyUp();
-        this.onMouseUp();
+    onTouchEnd() {
+        this.handleEndMovement({ previous: this.state });
+        this.state = this.states.NONE;
     }
 
     dispose() {
         this.view.domElement.removeEventListener('contextmenu', this._onContextMenuListener, false);
-
-        this.view.domElement.removeEventListener('mousedown', this._onMouseDown, false);
-        this.view.domElement.removeEventListener('mousemove', this._onMouseMove, false);
         this.view.domElement.removeEventListener('wheel', this._onMouseWheel, false);
-        this.view.domElement.removeEventListener('mouseup', this._onMouseUp, false);
-        this.view.domElement.removeEventListener('mouseleave', this._onMouseUp, false);
-
         this.view.domElement.removeEventListener('touchstart', this._onTouchStart, false);
-        this.view.domElement.removeEventListener('touchend', this._onMouseUp, false);
+        this.view.domElement.removeEventListener('touchend', this._onTouchEnd, false);
         this.view.domElement.removeEventListener('touchmove', this._onTouchMove, false);
 
         this.states.dispose();
-        this.states.removeEventListener('travel_in', this._onTravel, false);
-        this.states.removeEventListener('travel_out', this._onTravel, false);
 
-        this.player.removeEventListener('animation-frame', this._onKeyUp);
+        this.states.removeEventListener('state-changed', this._onStateChange, false);
+
+        this.states.removeEventListener(this.states.ORBIT._event, this._onRotation, false);
+        this.states.removeEventListener(this.states.MOVE_GLOBE._event, this._onDrag, false);
+        this.states.removeEventListener(this.states.DOLLY._event, this._onDolly, false);
+        this.states.removeEventListener(this.states.PAN._event, this._onPan, false);
+        this.states.removeEventListener(this.states.PANORAMIC._event, this._onPanoramic, false);
+
+        this.states.removeEventListener(this.states.TRAVEL_IN._event, this._onTravel, false);
+        this.states.removeEventListener(this.states.TRAVEL_OUT._event, this._onTravel, false);
 
         window.removeEventListener('keydown', this._onKeyDown, false);
-        window.removeEventListener('keyup', this._onKeyUp, false);
-
-        window.removeEventListener('blur', this._onBlurListener);
 
         this.dispatchEvent({ type: 'dispose' });
     }
@@ -995,7 +975,7 @@ class GlobeControls extends THREE.EventDispatcher {
      */
     pan(pVector) {
         this.mouseToPan(pVector.x, pVector.y);
-        this.update();
+        this.update(this.states.PAN);
         return Promise.resolve();
     }
 
