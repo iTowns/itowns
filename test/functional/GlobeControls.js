@@ -166,7 +166,8 @@ describe('GlobeControls with globe example', function _() {
         }));
 
         await page.evaluate(() => { view.controls.enableDamping = false; });
-        await page.mouse.click(middleWidth, middleHeight, { clickCount: 2, delay: 50 });
+        await page.mouse.click(middleWidth, middleHeight);
+        await page.mouse.click(middleWidth, middleHeight);
         const result = await end.then(er => (initialPosition.range * 0.6) - er);
         assert.ok(Math.abs(result) < 100);
     });

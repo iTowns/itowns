@@ -12,6 +12,7 @@ const CONTROL_KEYS = {
 };
 
 
+// TODO : a class should be made for `State`, and the properties marked with `_` prefix should be made private
 const DEFAULT_STATES = {
     ORBIT: {
         enable: true,
@@ -19,18 +20,21 @@ const DEFAULT_STATES = {
         double: false,
         keyboard: CONTROL_KEYS.CTRL,
         finger: 2,
+        _event: 'rotate',
     },
     MOVE_GLOBE: {
         enable: true,
         mouseButton: THREE.MOUSE.LEFT,
         double: false,
         finger: 1,
+        _event: 'drag',
     },
     DOLLY: {
         enable: true,
         mouseButton: THREE.MOUSE.MIDDLE,
         double: false,
         finger: 2,
+        _event: 'dolly',
     },
     PAN: {
         enable: true,
@@ -41,32 +45,37 @@ const DEFAULT_STATES = {
         bottom: CONTROL_KEYS.BOTTOM,
         left: CONTROL_KEYS.LEFT,
         right: CONTROL_KEYS.RIGHT,
+        _event: 'pan',
     },
     PANORAMIC: {
         enable: true,
         mouseButton: THREE.MOUSE.LEFT,
         double: false,
         keyboard: CONTROL_KEYS.SHIFT,
+        _event: 'panoramic',
     },
     TRAVEL_IN: {
         enable: true,
         mouseButton: THREE.MOUSE.LEFT,
         double: true,
+        _event: 'travel_in',
+        _trigger: true,
     },
     TRAVEL_OUT: {
         enable: false,
         double: false,
+        _event: 'travel_out',
+        _trigger: true,
     },
 };
+
+
+const viewCoords = new THREE.Vector2();
 
 
 function stateToTrigger(state) {
     if (!state) {
         return undefined;
-    } else if (state.mouseButton === THREE.MOUSE.LEFT && state.double) {
-        return 'dblclick';
-    } else if (state.mouseButton === THREE.MOUSE.RIGHT && state.double) {
-        return 'dblclick-right';
     } else if (state.keyboard) {
         return 'keydown';
     }
@@ -102,15 +111,13 @@ function stateToTrigger(state) {
  * @property {State}    PANORAMIC   {@link State} describing camera panoramic movement : the camera is rotated around
                                     * its own position.
  * @property {State}    TRAVEL_IN   {@link State} describing camera travel in movement : the camera is zoomed in toward
-                                    * a given position. The choice of the target position is made in the Controls
-                                    * associated to this StateControl.
-                                    * This state can only be associated to double click on mouse buttons (left or right)
-                                    * or a keyboard key.
+                                    * a given position. The target position depends on the key/mouse binding of this
+                                    * state. If bound to a mouse button, the target position is the mouse position.
+                                    * Otherwise, it is the center of the screen.
  * @property {State}    TRAVEL_OUT  {@link State} describing camera travel out movement : the camera is zoomed out from
-                                    * a given position. The choice of the target position is made in the Controls
-                                    * associated to this StateControl.
-                                    * This state can only be associated to double click on mouse buttons (left or right)
-                                    * or a keyboard key. It is disabled by default.
+                                    * a given position. The target position depends on the key/mouse binding of this
+                                    * state. If bound to a mouse button, the target position is the mouse position.
+                                    * Otherwise, it is the center of the screen. It is disabled by default.
  */
 class StateControl extends THREE.EventDispatcher {
     constructor(view, options = {}) {
@@ -121,6 +128,44 @@ class StateControl extends THREE.EventDispatcher {
 
         this.NONE = {};
 
+        let currentState = this.NONE;
+        Object.defineProperty(this, 'currentState', {
+            get: () => currentState,
+            set: (newState) => {
+                if (currentState !== newState) {
+                    const previous = currentState;
+                    currentState = newState;
+                    this.dispatchEvent({ type: 'state-changed', viewCoords, previous });
+                }
+            },
+        });
+
+        // TODO : the 3 next properties should be made private when ES6 allows it
+        this._clickTimeStamp = 0;
+        this._lastMousePressed = { viewCoords: new THREE.Vector2() };
+        this._currentKeyPressed = undefined;
+
+        this._onPointerDown = this.onPointerDown.bind(this);
+        this._onPointerMove = this.onPointerMove.bind(this);
+        this._onPointerUp = this.onPointerUp.bind(this);
+
+        this._onKeyDown = this.onKeyDown.bind(this);
+        this._onKeyUp = this.onKeyUp.bind(this);
+
+        this._onBlur = this.onBlur.bind(this);
+
+        this._domElement.addEventListener('pointerdown', this._onPointerDown, false);
+
+        // The event listener is added on `window` so that key input can be accounted event if the view does not have
+        // the focus. This can occur at page loading, when a mini map is displayed : the minimap initially has the focus
+        // and key input would not be considered on the view's domElement.
+        window.addEventListener('keydown', this._onKeyDown, false);
+        window.addEventListener('keyup', this._onKeyUp, false);
+
+        // Reset key/mouse when window loose focus
+        window.addEventListener('blur', this._onBlur);
+
+        // TODO : this shall be removed when switching keyboard management form Controls to StateControls
         this._handleTravelInEvent = (event) => {
             if (this.TRAVEL_IN === this.inputToState(event.button, event.keyCode, this.TRAVEL_IN.double)) {
                 this.dispatchEvent({
@@ -142,21 +187,25 @@ class StateControl extends THREE.EventDispatcher {
     }
 
     /**
-     * get the state corresponding to the mouse button and the keyboard key
+     * get the state corresponding to the mouse button and the keyboard key. If the input relates to a trigger - a
+     * single event which triggers movement, without the move of the mouse for instance -, dispatch a relevant event.
      * @param      {Number}  mouseButton  The mouse button
      * @param      {Number}  keyboard     The keyboard
      * @param      {Boolean} [double]     Value of the searched state `double` property
      * @return     {State}  the state corresponding
      */
-    inputToState(mouseButton, keyboard, double) {
-        for (const key of Object.keys(this)) {
+    inputToState(mouseButton, keyboard, double = false) {
+        for (const key of Object.keys(DEFAULT_STATES)) {
             const state = this[key];
             if (state.enable
                 && state.mouseButton === mouseButton
                 && state.keyboard === keyboard
-                && (!double || state.double === double)
+                && state.double === double
             ) {
-                return state;
+                // If the input relates to a state, returns it
+                if (!state._trigger) { return state; }
+                // If the input relates to a trigger (TRAVEL_IN, TRAVEL_OUT), dispatch a relevant event.
+                this.dispatchEvent({ type: state._event, viewCoords });
             }
         }
         return this.NONE;
@@ -169,7 +218,7 @@ class StateControl extends THREE.EventDispatcher {
      * @return     {state}  the state corresponding
      */
     touchToState(finger) {
-        for (const key of Object.keys(this)) {
+        for (const key of Object.keys(DEFAULT_STATES)) {
             const state = this[key];
             if (state.enable && finger == state.finger) {
                 return state;
@@ -215,6 +264,10 @@ class StateControl extends THREE.EventDispatcher {
                 // defaults it to `false` instead of leaving it undefined
                 newState.double = !!newState.double;
 
+                // Copy the `_event` and `_trigger` properties
+                newState._event = DEFAULT_STATES[state]._event;
+                newState._trigger = DEFAULT_STATES[state]._trigger;
+
                 this[state] = newState;
             }
         }
@@ -223,10 +276,97 @@ class StateControl extends THREE.EventDispatcher {
         this._domElement.addEventListener(stateToTrigger(this.TRAVEL_OUT), this._handleTravelOutEvent, false);
     }
 
+
+    // ---------- POINTER EVENTS : ----------
+
+    onPointerDown(event) {
+        switch (event.pointerType) {
+            case 'mouse':
+                this.handleMouseDown(event);
+                break;
+            // TODO : add touch event management
+            default:
+        }
+        this._domElement.addEventListener('pointermove', this._onPointerMove, false);
+        this._domElement.addEventListener('pointerup', this._onPointerUp, false);
+        this._domElement.addEventListener('mouseleave', this._onPointerUp, false);
+    }
+
+    onPointerMove(event) {
+        switch (event.pointerType) {
+            case 'mouse':
+                this.handleMouseMove(event);
+                break;
+            // TODO : add touch event management
+            default:
+        }
+    }
+
+    onPointerUp() {
+        this._domElement.removeEventListener('pointermove', this._onPointerMove, false);
+        this._domElement.removeEventListener('pointerup', this._onPointerUp, false);
+        this._domElement.removeEventListener('mouseleave', this._onPointerUp, false);
+
+        this.currentState = this.NONE;
+    }
+
+
+    // ---------- MOUSE EVENTS : ----------
+
+    handleMouseDown(event) {
+        viewCoords.copy(this._view.eventToViewCoords(event));
+
+        // Detect if the mouse button was pressed less than 500 ms before, and if the cursor has not moved two much
+        // since previous click. If so, set dblclick to true.
+        const dblclick = event.timeStamp - this._clickTimeStamp < 500
+            && this._lastMousePressed.button === event.button
+            && this._lastMousePressed.viewCoords.distanceTo(viewCoords) < 5;
+        this._clickTimeStamp = event.timeStamp;
+        this._lastMousePressed.button = event.button;
+        this._lastMousePressed.viewCoords.copy(viewCoords);
+
+        this.currentState = this.inputToState(event.button, this._currentKeyPressed, dblclick);
+    }
+
+    handleMouseMove(event) {
+        event.preventDefault();
+
+        viewCoords.copy(this._view.eventToViewCoords(event));
+        this.dispatchEvent({ type: this.currentState._event, viewCoords });
+    }
+
+
+    // ---------- KEYBOARD EVENTS : ----------
+
+    onKeyDown(event) {
+        this._currentKeyPressed = event.keyCode;
+    }
+
+    onKeyUp() { this._currentKeyPressed = undefined; }
+
+
+    onBlur() {
+        this.onKeyUp();
+        this.onPointerUp();
+    }
+
     /**
      * Remove all event listeners created within this instance of `StateControl`
      */
     dispose() {
+        this._clickTimeStamp = 0;
+        this._lastMousePressed = undefined;
+        this._currentKeyPressed = undefined;
+
+        this._domElement.removeEventListener('pointerdown', this._onPointerDown, false);
+        this._domElement.removeEventListener('pointermove', this._onPointerMove, false);
+        this._domElement.removeEventListener('pointerup', this._onPointerUp, false);
+
+        this._domElement.removeEventListener('keydown', this._onKeyDown, false);
+        this._domElement.removeEventListener('keyup', this._onKeyUp, false);
+
+        window.removeEventListener('blur', this._onBlur);
+
         this._domElement.removeEventListener(this.TRAVEL_IN.trigger, this._handleTravelInEvent, false);
         this._domElement.removeEventListener(this.TRAVEL_OUT.trigger, this._handleTravelInEvent, false);
     }
