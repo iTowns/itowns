@@ -15,6 +15,19 @@ function _extendBuffer(feature, size) {
     }
 }
 
+function _setGeometryValues(geom, feature, long, lat, alt, normal) {
+    if (feature.normals) {
+        normal.toArray(feature.normals, feature._pos);
+    }
+
+    feature._pushValues(long, lat, alt);
+
+    if (geom.size == 3) {
+        geom.altitude.min = Math.min(geom.altitude.min, alt);
+        geom.altitude.max = Math.max(geom.altitude.max, alt);
+    }
+}
+
 const coordOut = new Coordinates('EPSG:4326', 0, 0, 0);
 const defaultNormal = new THREE.Vector3(0, 0, 1);
 
@@ -113,35 +126,29 @@ export class FeatureGeometry {
         const last = this.indices.length - 1;
         return this.indices[last];
     }
+
+    baseAltitude(feature, coordinates) {
+        const base_altitude = feature.style[typeToStyleProperty[feature.type]].base_altitude || 0;
+        return isNaN(base_altitude) ? base_altitude(this.properties, coordinates) : base_altitude;
+    }
+
     /**
      * Push new coordinates in vertices buffer.
      * @param {Coordinates} coordIn The coordinates to push.
      * @param {Feature} feature - the feature containing the geometry
      */
     pushCoordinates(coordIn, feature) {
-        if (this.size == 3) {
-            // set altitude from context
-            const base_altitude = feature.style[typeToStyleProperty[feature.type]].base_altitude;
-            coordIn.z = isNaN(base_altitude) ? base_altitude(this.properties, coordIn) : base_altitude;
-        }
+        coordIn.z = this.baseAltitude(feature, coordIn);
 
         coordIn.as(feature.crs, coordOut);
 
         feature.transformToLocalSystem(coordOut);
 
-        if (feature.normals) {
-            coordOut.geodesicNormal.toArray(feature.normals, feature._pos);
-        }
+        _setGeometryValues(this, feature, coordOut.x, coordOut.y, coordOut.z, coordOut.geodesicNormal);
 
-        feature._pushValues(coordOut.x, coordOut.y, coordOut.z);
         // expand extent if present
         if (this._currentExtent) {
             this._currentExtent.expandByCoordinates(feature.useCrsOut ? coordOut : coordIn);
-        }
-
-        if (this.size == 3) {
-            this.altitude.min = Math.min(this.altitude.min, coordIn.z);
-            this.altitude.max = Math.max(this.altitude.max, coordIn.z);
         }
     }
 
@@ -153,23 +160,16 @@ export class FeatureGeometry {
      * @param {Feature} feature - the feature containing the geometry
      * @param {number} long The longitude coordinate.
      * @param {number} lat The latitude coordinate.
-     * @param {number} [alt=0] The altitude coordinate.
      * @param {THREE.Vector3} [normal=THREE.Vector3(0,0,1)] the normal on coordinates.
      */
-    pushCoordinatesValues(feature, long, lat, alt = 0, normal = defaultNormal) {
-        if (feature.normals) {
-            normal.toArray(feature.normals, feature._pos);
-        }
+    pushCoordinatesValues(feature, long, lat, normal = defaultNormal) {
+        const altitude = this.baseAltitude(feature);
 
-        feature._pushValues(long, lat, alt);
+        _setGeometryValues(this, feature, long, lat, altitude, normal);
+
         // expand extent if present
         if (this._currentExtent) {
             this._currentExtent.expandByValuesCoordinates(long, lat);
-        }
-
-        if (this.size == 3) {
-            this.altitude.min = Math.min(this.altitude.min, alt);
-            this.altitude.max = Math.max(this.altitude.max, alt);
         }
     }
 
@@ -518,6 +518,8 @@ export class FeatureCollection extends THREE.Object3D {
         ref.normals = feature.normals;
         ref.size = feature.size;
         ref.vertices = feature.vertices;
+        ref.altitude.min = feature.altitude.min;
+        ref.altitude.max = feature.altitude.max;
         ref._pos = feature._pos;
         this.features.push(ref);
         return ref;
