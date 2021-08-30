@@ -126,6 +126,13 @@ class VectorTilesSource extends TMSSource {
             }
         });
     }
+
+    onLayerAdded(options) {
+        super.onLayerAdded(options);
+        const keys = Object.keys(this.styles);
+
+        keys.forEach((k) => { this.styles[k].parent = options.out.style; });
+    }
 }
 
 export default VectorTilesSource;
