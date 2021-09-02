@@ -54,9 +54,9 @@
 
             // Define a VectorTilesSource to load Vector Tiles data from the geoportail
             var mvtSource = new itowns.VectorTilesSource({
-                style: 'https://wxs.ign.fr/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
                 // We don't display mountains related data to ease visualisation
-                filter: (layer) => !layer['source-layer'].includes('oro_'),
+                filter: (layer) => !layer['source-layer'].includes('oro_') && !layer['source-layer'].includes('parcellaire'),
             });
 
             var mvtLayer = new itowns.ColorLayer('MVT', {
