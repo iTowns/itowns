@@ -139,6 +139,36 @@ describe('StateControl', function () {
         states.onPointerUp();
     });
 
+    it('should trigger pan event from up arrow key press', function () {
+        event.button = undefined;
+
+        // UP arrow key
+        event.keyCode = 38;
+        assert(testEventTriggering('pan', event, states._onKeyDown));
+        states._onKeyUp();
+    });
+
+    it('should trigger pan event from bottom arrow key press', function () {
+        // BOTTOM arrow key
+        event.keyCode = 40;
+        assert(testEventTriggering('pan', event, states._onKeyDown));
+        states._onKeyUp();
+    });
+
+    it('should trigger pan event from left arrow key press', function () {
+        // LEFT arrow key
+        event.keyCode = 37;
+        assert(testEventTriggering('pan', event, states._onKeyDown));
+        states._onKeyUp();
+    });
+
+    it('should trigger pan event from right arrow key press', function () {
+        // RIGHT arrow key
+        event.keyCode = 39;
+        assert(testEventTriggering('pan', event, states._onKeyDown));
+        states._onKeyUp();
+    });
+
     it('should trigger state-changed event from shift + left-click', function () {
         event.button = MOUSE.LEFT;
         event.keyCode = 16;
@@ -170,16 +200,14 @@ describe('StateControl', function () {
         states.setFromOptions({
             TRAVEL_IN: {
                 keyboard: 80,
-                double: false,
             },
         });
 
         event.button = undefined;
         event.keyCode = 80;
 
-        assert(testEventTriggering('travel_in', event, (event) => {
-            states._handleTravelInEvent(event);
-        }));
+        assert(testEventTriggering('travel_in', event, states._onKeyDown));
+        states._onKeyUp();
     });
 
     it('should no longer trigger travel_in event from mouse event', function () {
@@ -220,9 +248,8 @@ describe('StateControl', function () {
         event.button = undefined;
         event.keyCode = 77;
 
-        assert(testEventTriggering('travel_out', event, (event) => {
-            states._handleTravelOutEvent(event);
-        }));
+        assert(testEventTriggering('travel_out', event, states._onKeyDown));
+        states._onKeyUp();
     });
 
     it('should no longer trigger travel_out event from mouse event', function () {
@@ -270,14 +297,38 @@ describe('StateControl', function () {
         }));
 
         event.button = undefined;
-        event.keyCode = 80;
         assert(!testEventTriggering('travel_in', event, (event) => {
-            states._handleTravelInEvent(event);
+            event.keyCode = 80;
+            states._onKeyDown(event);
+            states._onKeyUp();
         }));
 
-        event.keyCode = 77;
         assert(!testEventTriggering('travel_in', event, (event) => {
-            states._handleTravelInEvent(event);
+            event.keyCode = 77;
+            states._onKeyDown(event);
+            states._onKeyUp();
+        }));
+
+        assert(!testEventTriggering('pan', event, (event) => {
+            // Left arrow key
+            event.keyCode = 37;
+            states._onKeyDown(event);
+            states._onKeyUp();
+
+            // Up arrow key
+            event.keyCode = 38;
+            states._onKeyDown(event);
+            states._onKeyUp();
+
+            // Right arrow key
+            event.keyCode = 39;
+            states._onKeyDown(event);
+            states._onKeyUp();
+
+            // Bottom arrow key
+            event.keyCode = 40;
+            states._onKeyDown(event);
+            states._onKeyUp();
         }));
 
         states.enabled = true;

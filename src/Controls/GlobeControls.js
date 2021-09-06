@@ -8,6 +8,13 @@ import StateControl from 'Controls/StateControl';
 // private members
 const EPS = 0.000001;
 
+const direction = {
+    up: new THREE.Vector2(0, 1),
+    bottom: new THREE.Vector2(0, -1),
+    left: new THREE.Vector2(1, 0),
+    right: new THREE.Vector2(-1, 0),
+};
+
 // Orbit
 const rotateStart = new THREE.Vector2();
 const rotateEnd = new THREE.Vector2();
@@ -221,8 +228,17 @@ class GlobeControls extends THREE.EventDispatcher {
         this.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
         this.minDistanceCollision = 60;
 
-        // Set to true to disable use of the keys
-        this.enableKeys = true;
+        // this.enableKeys property has moved to StateControl
+        Object.defineProperty(this, 'enableKeys', {
+            get: () => this.states.enableKeys,
+            set: (value) => {
+                console.warn(
+                    'GlobeControls.enableKeys property is deprecated. Use StateControl.enableKeys instead ' +
+                    '- which you can access with GlobeControls.states.enableKeys.',
+                );
+                this.states.enableKeys = value;
+            },
+        });
 
         // Enable Damping
         this.enableDamping = true;
@@ -246,7 +262,6 @@ class GlobeControls extends THREE.EventDispatcher {
         this._onTouchStart = this.onTouchStart.bind(this);
         this._onTouchEnd = this.onTouchEnd.bind(this);
         this._onTouchMove = this.onTouchMove.bind(this);
-        this._onKeyDown = this.onKeyDown.bind(this);
 
         this._onStateChange = this.onStateChange.bind(this);
 
@@ -271,9 +286,6 @@ class GlobeControls extends THREE.EventDispatcher {
 
         this.states.addEventListener(this.states.TRAVEL_IN._event, this._onTravel, false);
         this.states.addEventListener(this.states.TRAVEL_OUT._event, this._onTravel, false);
-
-        // TODO: Why windows
-        window.addEventListener('keydown', this._onKeyDown, false);
 
         view.scene.add(cameraTarget);
         if (enableTargetHelper) {
@@ -603,12 +615,17 @@ class GlobeControls extends THREE.EventDispatcher {
     }
 
     handlePan(event) {
-        panEnd.copy(event.viewCoords);
-        panDelta.subVectors(panEnd, panStart);
-        this.mouseToPan(panDelta.x, panDelta.y);
-        panStart.copy(panEnd);
+        if (event.viewCoords) {
+            panEnd.copy(event.viewCoords);
+            panDelta.subVectors(panEnd, panStart);
+            panStart.copy(panEnd);
+        } else if (event.direction) {
+            panDelta.copy(direction[event.direction]).multiplyScalar(this.keyPanSpeed);
+        }
 
-        this.update();
+        this.mouseToPan(panDelta.x, panDelta.y);
+
+        this.update(this.states.PAN);
     }
 
     handlePanoramic(event) {
@@ -714,7 +731,7 @@ class GlobeControls extends THREE.EventDispatcher {
         if (point && range > this.minDistance) {
             return this.lookAtCoordinate({
                 coord: new Coordinates('EPSG:4978', point),
-                range: range * (event.type === 'travel_out' ? 1 / 0.6 : 0.6),
+                range: range * (event.direction === 'out' ? 1 / 0.6 : 0.6),
                 time: 1500,
             });
         }
@@ -743,31 +760,6 @@ class GlobeControls extends THREE.EventDispatcher {
         }
         this.dispatchEvent(this.startEvent);
         this.dispatchEvent(this.endEvent);
-    }
-
-    onKeyDown(event) {
-        this.player.stop();
-        // TODO : this.states.enabled check should be removed when moving keyboard events management to StateControl
-        if (this.states.enabled === false || this.enableKeys === false) { return; }
-        switch (event.keyCode) {
-            case this.states.PAN.up:
-                this.mouseToPan(0, this.keyPanSpeed);
-                this.update(this.states.PAN);
-                break;
-            case this.states.PAN.bottom:
-                this.mouseToPan(0, -this.keyPanSpeed);
-                this.update(this.states.PAN);
-                break;
-            case this.states.PAN.left:
-                this.mouseToPan(this.keyPanSpeed, 0);
-                this.update(this.states.PAN);
-                break;
-            case this.states.PAN.right:
-                this.mouseToPan(-this.keyPanSpeed, 0);
-                this.update(this.states.PAN);
-                break;
-            default:
-        }
     }
 
     onTouchStart(event) {
@@ -903,8 +895,6 @@ class GlobeControls extends THREE.EventDispatcher {
 
         this.states.removeEventListener(this.states.TRAVEL_IN._event, this._onTravel, false);
         this.states.removeEventListener(this.states.TRAVEL_OUT._event, this._onTravel, false);
-
-        window.removeEventListener('keydown', this._onKeyDown, false);
 
         this.dispatchEvent({ type: 'dispose' });
     }

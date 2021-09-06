@@ -130,21 +130,6 @@ describe('GlobeControls', function () {
         controls.states.currentState = controls.states.NONE;
     });
 
-    it.skip('keydown', function () {
-        event.keyCode = controls.states.PAN.up;
-        controls.onKeyDown(event);
-        assert.equal(controls.state, controls.states.PAN);
-        event.keyCode = controls.states.PAN.bottom;
-        controls.onKeyDown(event);
-        assert.equal(controls.state, controls.states.PAN);
-        event.keyCode = controls.states.PAN.left;
-        controls.onKeyDown(event);
-        assert.equal(controls.state, controls.states.PAN);
-        event.keyCode = controls.states.PAN.right;
-        controls.onKeyDown(event);
-        assert.equal(controls.state, controls.states.PAN);
-    });
-
     it('dolly', function () {
         controls.dolly(1);
         controls.state = controls.states.ORBIT;
@@ -171,6 +156,7 @@ describe('GlobeControls', function () {
         controls.travel({
             viewCoords: viewer.eventToViewCoords(event),
             type: 'travel_in',
+            direction: 'in',
         }).then(() => {
             assert.ok(controls.getRange() < startRange);
             done();
@@ -182,6 +168,7 @@ describe('GlobeControls', function () {
         controls.travel({
             viewCoords: viewer.eventToViewCoords(event),
             type: 'travel_out',
+            direction: 'out',
         }).then(() => {
             assert.ok(controls.getRange() > startRange);
             done();

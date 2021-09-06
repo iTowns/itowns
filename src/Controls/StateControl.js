@@ -41,10 +41,6 @@ const DEFAULT_STATES = {
         mouseButton: THREE.MOUSE.RIGHT,
         double: false,
         finger: 3,
-        up: CONTROL_KEYS.UP,
-        bottom: CONTROL_KEYS.BOTTOM,
-        left: CONTROL_KEYS.LEFT,
-        right: CONTROL_KEYS.RIGHT,
         _event: 'pan',
     },
     PANORAMIC: {
@@ -60,26 +56,51 @@ const DEFAULT_STATES = {
         double: true,
         _event: 'travel_in',
         _trigger: true,
+        _direction: 'in',
     },
     TRAVEL_OUT: {
         enable: false,
         double: false,
         _event: 'travel_out',
         _trigger: true,
+        _direction: 'out',
+    },
+    PAN_UP: {
+        enable: true,
+        keyboard: CONTROL_KEYS.UP,
+        double: false,
+        _event: 'pan',
+        _trigger: true,
+        _direction: 'up',
+    },
+    PAN_BOTTOM: {
+        enable: true,
+        keyboard: CONTROL_KEYS.BOTTOM,
+        double: false,
+        _event: 'pan',
+        _trigger: true,
+        _direction: 'bottom',
+    },
+    PAN_LEFT: {
+        enable: true,
+        keyboard: CONTROL_KEYS.LEFT,
+        double: false,
+        _event: 'pan',
+        _trigger: true,
+        _direction: 'left',
+    },
+    PAN_RIGHT: {
+        enable: true,
+        keyboard: CONTROL_KEYS.RIGHT,
+        double: false,
+        _event: 'pan',
+        _trigger: true,
+        _direction: 'right',
     },
 };
 
 
 const viewCoords = new THREE.Vector2();
-
-
-function stateToTrigger(state) {
-    if (!state) {
-        return undefined;
-    } else if (state.keyboard) {
-        return 'keydown';
-    }
-}
 
 
 /**
@@ -120,6 +141,8 @@ function stateToTrigger(state) {
                                     * Otherwise, it is the center of the screen. It is disabled by default.
  * @property {boolean}  enable      Defines whether all input will be communicated to the associated `Controls` or not.
                                     * Default is true.
+ * @property {boolean}  enableKeys  Defines whether keyboard input will be communicated to the associated `Controls` or
+                                    * not. Default is true.
  */
 class StateControl extends THREE.EventDispatcher {
     constructor(view, options = {}) {
@@ -140,6 +163,18 @@ class StateControl extends THREE.EventDispatcher {
             },
         });
 
+        // Set to true to disable use of the keys
+        let enableKeys = true;
+        Object.defineProperty(this, 'enableKeys', {
+            get: () => enableKeys,
+            set: (value) => {
+                if (!value) {
+                    this.onKeyUp();
+                }
+                enableKeys = value;
+            },
+        });
+
         this.NONE = {};
 
         let currentState = this.NONE;
@@ -154,9 +189,10 @@ class StateControl extends THREE.EventDispatcher {
             },
         });
 
-        // TODO : the 3 next properties should be made private when ES6 allows it
+        // TODO : the 4 next properties should be made private when ES6 allows it
         this._clickTimeStamp = 0;
         this._lastMousePressed = { viewCoords: new THREE.Vector2() };
+        this._currentMousePressed = undefined;
         this._currentKeyPressed = undefined;
 
         this._onPointerDown = this.onPointerDown.bind(this);
@@ -182,30 +218,6 @@ class StateControl extends THREE.EventDispatcher {
         // disable context menu when right-clicking
         this._domElement.addEventListener('contextmenu', this._onContextMenu, false);
 
-        // TODO : this shall be removed when switching keyboard management form Controls to StateControls
-        this._handleTravelInEvent = (event) => {
-            if (
-                this.enabled
-                && this.TRAVEL_IN === this.inputToState(event.button, event.keyCode, this.TRAVEL_IN.double)
-            ) {
-                this.dispatchEvent({
-                    type: 'travel_in',
-                    viewCoords: this._view.eventToViewCoords(event),
-                });
-            }
-        };
-        this._handleTravelOutEvent = (event) => {
-            if (
-                this.enabled
-                && this.TRAVEL_OUT === this.inputToState(event.button, event.keyCode, this.TRAVEL_OUT.double)
-            ) {
-                this.dispatchEvent({
-                    type: 'travel_out',
-                    viewCoords: this._view.eventToViewCoords(event),
-                });
-            }
-        };
-
         this.setFromOptions(options);
     }
 
@@ -228,7 +240,12 @@ class StateControl extends THREE.EventDispatcher {
                 // If the input relates to a state, returns it
                 if (!state._trigger) { return state; }
                 // If the input relates to a trigger (TRAVEL_IN, TRAVEL_OUT), dispatch a relevant event.
-                this.dispatchEvent({ type: state._event, viewCoords });
+                this.dispatchEvent({
+                    type: state._event,
+                    // Dont pass viewCoords if the input is only a keyboard input.
+                    viewCoords: mouseButton !== undefined && viewCoords,
+                    direction: state._direction,
+                });
             }
         }
         return this.NONE;
@@ -271,9 +288,6 @@ class StateControl extends THREE.EventDispatcher {
      * };
      */
     setFromOptions(options) {
-        this._domElement.removeEventListener(stateToTrigger(this.TRAVEL_IN), this._handleTravelInEvent, false);
-        this._domElement.removeEventListener(stateToTrigger(this.TRAVEL_OUT), this._handleTravelOutEvent, false);
-
         for (const state in DEFAULT_STATES) {
             if ({}.hasOwnProperty.call(DEFAULT_STATES, state)) {
                 let newState = {};
@@ -290,13 +304,11 @@ class StateControl extends THREE.EventDispatcher {
                 // Copy the `_event` and `_trigger` properties
                 newState._event = DEFAULT_STATES[state]._event;
                 newState._trigger = DEFAULT_STATES[state]._trigger;
+                newState._direction = DEFAULT_STATES[state]._direction;
 
                 this[state] = newState;
             }
         }
-
-        this._domElement.addEventListener(stateToTrigger(this.TRAVEL_IN), this._handleTravelInEvent, false);
-        this._domElement.addEventListener(stateToTrigger(this.TRAVEL_OUT), this._handleTravelOutEvent, false);
     }
 
 
@@ -312,6 +324,7 @@ class StateControl extends THREE.EventDispatcher {
             // TODO : add touch event management
             default:
         }
+
         this._domElement.addEventListener('pointermove', this._onPointerMove, false);
         this._domElement.addEventListener('pointerup', this._onPointerUp, false);
         this._domElement.addEventListener('mouseleave', this._onPointerUp, false);
@@ -332,6 +345,7 @@ class StateControl extends THREE.EventDispatcher {
 
     onPointerUp() {
         if (!this.enabled) { return; }
+        this._currentMousePressed = undefined;
 
         this._domElement.removeEventListener('pointermove', this._onPointerMove, false);
         this._domElement.removeEventListener('pointerup', this._onPointerUp, false);
@@ -346,16 +360,18 @@ class StateControl extends THREE.EventDispatcher {
     handleMouseDown(event) {
         viewCoords.copy(this._view.eventToViewCoords(event));
 
+        this._currentMousePressed = event.button;
+
         // Detect if the mouse button was pressed less than 500 ms before, and if the cursor has not moved two much
         // since previous click. If so, set dblclick to true.
         const dblclick = event.timeStamp - this._clickTimeStamp < 500
-            && this._lastMousePressed.button === event.button
+            && this._lastMousePressed.button === this._currentMousePressed
             && this._lastMousePressed.viewCoords.distanceTo(viewCoords) < 5;
         this._clickTimeStamp = event.timeStamp;
-        this._lastMousePressed.button = event.button;
+        this._lastMousePressed.button = this._currentMousePressed;
         this._lastMousePressed.viewCoords.copy(viewCoords);
 
-        this.currentState = this.inputToState(event.button, this._currentKeyPressed, dblclick);
+        this.currentState = this.inputToState(this._currentMousePressed, this._currentKeyPressed, dblclick);
     }
 
     handleMouseMove(event) {
@@ -367,13 +383,18 @@ class StateControl extends THREE.EventDispatcher {
     // ---------- KEYBOARD EVENTS : ----------
 
     onKeyDown(event) {
-        if (!this.enabled) { return; }
+        if (!this.enabled || !this.enableKeys) { return; }
         this._currentKeyPressed = event.keyCode;
+
+        this.inputToState(this._currentMousePressed, this._currentKeyPressed);
     }
 
     onKeyUp() {
-        if (!this.enabled) { return; }
+        if (!this.enabled || !this.enableKeys) { return; }
         this._currentKeyPressed = undefined;
+        if (this._currentMousePressed === undefined) {
+            this.currentState = this.NONE;
+        }
     }
 
 
@@ -403,9 +424,6 @@ class StateControl extends THREE.EventDispatcher {
 
         window.removeEventListener('blur', this._onBlur);
         this._domElement.removeEventListener('contextmenu', this._onContextMenu, false);
-
-        this._domElement.removeEventListener(this.TRAVEL_IN.trigger, this._handleTravelInEvent, false);
-        this._domElement.removeEventListener(this.TRAVEL_OUT.trigger, this._handleTravelInEvent, false);
     }
 }
 
