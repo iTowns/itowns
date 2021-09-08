@@ -257,7 +257,6 @@ class GlobeControls extends THREE.EventDispatcher {
         } : function empty() {};
 
         this._onEndingMove = null;
-        this._onMouseWheel = this.onMouseWheel.bind(this);
         this._onTravel = this.travel.bind(this);
         this._onTouchStart = this.onTouchStart.bind(this);
         this._onTouchEnd = this.onTouchEnd.bind(this);
@@ -271,6 +270,8 @@ class GlobeControls extends THREE.EventDispatcher {
         this._onPan = this.handlePan.bind(this);
         this._onPanoramic = this.handlePanoramic.bind(this);
 
+        this._onZoom = this.handleZoom.bind(this);
+
         this.states.addEventListener('state-changed', this._onStateChange, false);
 
         this.states.addEventListener(this.states.ORBIT._event, this._onRotation, false);
@@ -279,7 +280,8 @@ class GlobeControls extends THREE.EventDispatcher {
         this.states.addEventListener(this.states.PAN._event, this._onPan, false);
         this.states.addEventListener(this.states.PANORAMIC._event, this._onPanoramic, false);
 
-        this.view.domElement.addEventListener('wheel', this._onMouseWheel, false);
+        this.states.addEventListener('zoom', this._onZoom, false);
+
         this.view.domElement.addEventListener('touchstart', this._onTouchStart, false);
         this.view.domElement.addEventListener('touchend', this._onTouchEnd, false);
         this.view.domElement.addEventListener('touchmove', this._onTouchMove, false);
@@ -737,15 +739,12 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
-    onMouseWheel(event) {
+    handleZoom(event) {
         this.player.stop();
-        // TODO : this.states.enabled check should be removed when moving wheel events management to StateControl
-        if (!this.states.enabled || !this.states.DOLLY.enable) { return; }
         CameraUtils.stop(this.view, this.camera);
-        event.preventDefault();
 
         this.updateTarget();
-        const delta = -event.deltaY;
+        const delta = -event.delta;
         this.dolly(delta);
 
         const previousRange = this.getRange(pickedPosition);
@@ -878,7 +877,6 @@ class GlobeControls extends THREE.EventDispatcher {
     }
 
     dispose() {
-        this.view.domElement.removeEventListener('wheel', this._onMouseWheel, false);
         this.view.domElement.removeEventListener('touchstart', this._onTouchStart, false);
         this.view.domElement.removeEventListener('touchend', this._onTouchEnd, false);
         this.view.domElement.removeEventListener('touchmove', this._onTouchMove, false);
@@ -892,6 +890,8 @@ class GlobeControls extends THREE.EventDispatcher {
         this.states.removeEventListener(this.states.DOLLY._event, this._onDolly, false);
         this.states.removeEventListener(this.states.PAN._event, this._onPan, false);
         this.states.removeEventListener(this.states.PANORAMIC._event, this._onPanoramic, false);
+
+        this.states.removeEventListener('zoom', this._onZoom, false);
 
         this.states.removeEventListener(this.states.TRAVEL_IN._event, this._onTravel, false);
         this.states.removeEventListener(this.states.TRAVEL_OUT._event, this._onTravel, false);

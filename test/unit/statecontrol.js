@@ -266,6 +266,16 @@ describe('StateControl', function () {
         }));
     });
 
+    it('should trigger zoom event from wheel event', function () {
+        assert(testEventTriggering('zoom', event, states._onMouseWheel));
+    });
+
+    it('should not trigger zoom event if zoom trigger is disabled', function () {
+        states.ZOOM.enable = false;
+        assert(!testEventTriggering('zoom', event, states._onMouseWheel));
+        states.ZOOM.enable = true;
+    });
+
     it('blur event should resume currentState to NONE', function () {
         states.currentState = states.MOVE_GLOBE;
         states._onBlur(event);
@@ -330,6 +340,8 @@ describe('StateControl', function () {
             states._onKeyDown(event);
             states._onKeyUp();
         }));
+
+        assert(!testEventTriggering('zoom', event, states._onMouseWheel));
 
         states.enabled = true;
     });
