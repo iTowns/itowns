@@ -65,6 +65,11 @@ const DEFAULT_STATES = {
         _trigger: true,
         _direction: 'out',
     },
+    ZOOM: {
+        enable: true,
+        _event: 'zoom',
+        _trigger: true,
+    },
     PAN_UP: {
         enable: true,
         keyboard: CONTROL_KEYS.UP,
@@ -139,6 +144,7 @@ const viewCoords = new THREE.Vector2();
                                     * a given position. The target position depends on the key/mouse binding of this
                                     * state. If bound to a mouse button, the target position is the mouse position.
                                     * Otherwise, it is the center of the screen. It is disabled by default.
+ * @property {State}    ZOOM        {@link State} describing camera zoom in and out movement.
  * @property {boolean}  enable      Defines whether all input will be communicated to the associated `Controls` or not.
                                     * Default is true.
  * @property {boolean}  enableKeys  Defines whether keyboard input will be communicated to the associated `Controls` or
@@ -198,6 +204,7 @@ class StateControl extends THREE.EventDispatcher {
         this._onPointerDown = this.onPointerDown.bind(this);
         this._onPointerMove = this.onPointerMove.bind(this);
         this._onPointerUp = this.onPointerUp.bind(this);
+        this._onMouseWheel = this.onMouseWheel.bind(this);
 
         this._onKeyDown = this.onKeyDown.bind(this);
         this._onKeyUp = this.onKeyUp.bind(this);
@@ -206,6 +213,7 @@ class StateControl extends THREE.EventDispatcher {
         this._onContextMenu = this.onContextMenu.bind(this);
 
         this._domElement.addEventListener('pointerdown', this._onPointerDown, false);
+        this._domElement.addEventListener('wheel', this._onMouseWheel, false);
 
         // The event listener is added on `window` so that key input can be accounted event if the view does not have
         // the focus. This can occur at page loading, when a mini map is displayed : the minimap initially has the focus
@@ -374,6 +382,17 @@ class StateControl extends THREE.EventDispatcher {
     }
 
 
+    // ---------- WHEEL EVENT : ----------
+
+    onMouseWheel(event) {
+        event.preventDefault();
+
+        if (this.enabled && this.ZOOM.enable) {
+            this.dispatchEvent({ type: this.ZOOM._event, delta: event.deltaY });
+        }
+    }
+
+
     // ---------- KEYBOARD EVENTS : ----------
 
     onKeyDown(event) {
@@ -412,6 +431,7 @@ class StateControl extends THREE.EventDispatcher {
         this._domElement.removeEventListener('pointerdown', this._onPointerDown, false);
         this._domElement.removeEventListener('pointermove', this._onPointerMove, false);
         this._domElement.removeEventListener('pointerup', this._onPointerUp, false);
+        this._domElement.removeEventListener('wheel', this._onMouseWheel, false);
 
         this._domElement.removeEventListener('keydown', this._onKeyDown, false);
         this._domElement.removeEventListener('keyup', this._onKeyUp, false);

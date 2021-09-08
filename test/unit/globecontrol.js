@@ -139,14 +139,14 @@ describe('GlobeControls', function () {
         controls.state = controls.states.NONE;
     });
 
-    it('mouse wheel', function () {
+    it('zoom', function () {
         const startRange = controls.getRange();
-        event.deltaY = -10;
-        controls.onMouseWheel(event);
+        event.delta = -10;
+        controls.handleZoom(event);
         assert.ok(controls.getRange() < startRange);
-        event.deltaY = 10;
-        controls.onMouseWheel(event);
-        controls.onMouseWheel(event);
+        event.delta = 10;
+        controls.handleZoom(event);
+        controls.handleZoom(event);
         assert.ok(controls.getRange() > startRange);
     });
 
