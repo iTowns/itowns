@@ -234,7 +234,6 @@ class GlobeControls extends THREE.EventDispatcher {
 
         this._onEndingMove = null;
         this._onMouseWheel = this.onMouseWheel.bind(this);
-        this._onContextMenuListener = this.onContextMenuListener.bind(this);
         this._onTravel = this.travel.bind(this);
         this._onTouchStart = this.onTouchStart.bind(this);
         this._onTouchEnd = this.onTouchEnd.bind(this);
@@ -257,7 +256,6 @@ class GlobeControls extends THREE.EventDispatcher {
         this.states.addEventListener(this.states.PAN._event, this._onPan, false);
         this.states.addEventListener(this.states.PANORAMIC._event, this._onPanoramic, false);
 
-        this.view.domElement.addEventListener('contextmenu', this._onContextMenuListener, false);
         this.view.domElement.addEventListener('wheel', this._onMouseWheel, false);
         this.view.domElement.addEventListener('touchstart', this._onTouchStart, false);
         this.view.domElement.addEventListener('touchend', this._onTouchEnd, false);
@@ -873,17 +871,12 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
-    onContextMenuListener(event) {
-        event.preventDefault();
-    }
-
     onTouchEnd() {
         this.handleEndMovement({ previous: this.state });
         this.state = this.states.NONE;
     }
 
     dispose() {
-        this.view.domElement.removeEventListener('contextmenu', this._onContextMenuListener, false);
         this.view.domElement.removeEventListener('wheel', this._onMouseWheel, false);
         this.view.domElement.removeEventListener('touchstart', this._onTouchStart, false);
         this.view.domElement.removeEventListener('touchend', this._onTouchEnd, false);

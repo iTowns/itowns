@@ -245,6 +245,10 @@ describe('StateControl', function () {
         assert.ok(states.NONE === states.currentState);
     });
 
+    it('context menu should not appear', function () {
+        states.onContextMenu(event);
+    });
+
     it('should dispose event listeners', function () {
         states.dispose();
     });
