@@ -569,6 +569,10 @@ class GlobeControls extends THREE.EventDispatcher {
     handleDrag(event) {
         const normalized = this.view.viewToNormalizedCoords(event.viewCoords);
 
+        // An updateMatrixWorld on the camera prevents camera jittering when moving globe on a zoomed out view, with
+        // devtools open in web browser.
+        this.camera.updateMatrixWorld();
+
         raycaster.setFromCamera(normalized, this.camera);
 
         // If there's intersection then move globe else we stop the move
@@ -815,6 +819,9 @@ class GlobeControls extends THREE.EventDispatcher {
             case this.states.MOVE_GLOBE.finger: {
                 const coords = this.view.eventToViewCoords(event);
                 const normalized = this.view.viewToNormalizedCoords(coords);
+                // An updateMatrixWorld on the camera prevents camera jittering when moving globe on a zoomed out view, with
+                // devtools open in web browser.
+                this.camera.updateMatrixWorld();
                 raycaster.setFromCamera(normalized, this.camera);
                 // If there's intersection then move globe else we stop the move
                 if (raycaster.ray.intersectSphere(pickSphere, intersection)) {
