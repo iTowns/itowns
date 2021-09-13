@@ -153,6 +153,7 @@ class StateControl extends THREE.EventDispatcher {
         this._onKeyUp = this.onKeyUp.bind(this);
 
         this._onBlur = this.onBlur.bind(this);
+        this._onContextMenu = this.onContextMenu.bind(this);
 
         this._domElement.addEventListener('pointerdown', this._onPointerDown, false);
 
@@ -164,6 +165,8 @@ class StateControl extends THREE.EventDispatcher {
 
         // Reset key/mouse when window loose focus
         window.addEventListener('blur', this._onBlur);
+        // disable context menu when right-clicking
+        this._domElement.addEventListener('contextmenu', this._onContextMenu, false);
 
         // TODO : this shall be removed when switching keyboard management form Controls to StateControls
         this._handleTravelInEvent = (event) => {
@@ -350,6 +353,10 @@ class StateControl extends THREE.EventDispatcher {
         this.onPointerUp();
     }
 
+    onContextMenu(event) {
+        event.preventDefault();
+    }
+
     /**
      * Remove all event listeners created within this instance of `StateControl`
      */
@@ -366,6 +373,7 @@ class StateControl extends THREE.EventDispatcher {
         this._domElement.removeEventListener('keyup', this._onKeyUp, false);
 
         window.removeEventListener('blur', this._onBlur);
+        this._domElement.removeEventListener('contextmenu', this._onContextMenu, false);
 
         this._domElement.removeEventListener(this.TRAVEL_IN.trigger, this._handleTravelInEvent, false);
         this._domElement.removeEventListener(this.TRAVEL_OUT.trigger, this._handleTravelInEvent, false);

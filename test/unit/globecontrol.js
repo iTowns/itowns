@@ -210,10 +210,6 @@ describe('GlobeControls', function () {
         controls.onTouchMove(event);
     });
 
-    it('onContextMenuListener', function () {
-        controls.onContextMenuListener(event);
-    });
-
     it('lookAtCoordinate with animation', function (done) {
         const rig = getRig(viewer.camera.camera3D);
         let i;
