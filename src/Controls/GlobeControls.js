@@ -173,8 +173,17 @@ class GlobeControls extends THREE.EventDispatcher {
         // State control
         this.states = new StateControl(this.view);
 
-        // Set to false to disable this control
-        this.enabled = true;
+        // this.enabled property has moved to StateControl
+        Object.defineProperty(this, 'enabled', {
+            get: () => this.states.enabled,
+            set: (value) => {
+                console.warn(
+                    'GlobeControls.enabled property is deprecated. Use StateControl.enabled instead ' +
+                    '- which you can access with GlobeControls.states.enabled.',
+                );
+                this.states.enabled = value;
+            },
+        });
 
         // These options actually enables dollying in and out; left as "zoom" for
         // backwards compatibility
@@ -618,8 +627,6 @@ class GlobeControls extends THREE.EventDispatcher {
     }
 
     handleEndMovement(event = {}) {
-        if (this.enabled === false) { return; }
-
         this.dispatchEvent(this.endEvent);
 
         this.player.stop();
@@ -702,7 +709,6 @@ class GlobeControls extends THREE.EventDispatcher {
     }
 
     travel(event) {
-        if (this.enabled === false) { return; }
         this.player.stop();
         const point = this.view.getPickingPositionFromDepth(event.viewCoords);
         const range = this.getRange(point);
@@ -717,7 +723,8 @@ class GlobeControls extends THREE.EventDispatcher {
 
     onMouseWheel(event) {
         this.player.stop();
-        if (!this.enabled || !this.states.DOLLY.enable) { return; }
+        // TODO : this.states.enabled check should be removed when moving wheel events management to StateControl
+        if (!this.states.enabled || !this.states.DOLLY.enable) { return; }
         CameraUtils.stop(this.view, this.camera);
         event.preventDefault();
 
@@ -741,7 +748,8 @@ class GlobeControls extends THREE.EventDispatcher {
 
     onKeyDown(event) {
         this.player.stop();
-        if (this.enabled === false || this.enableKeys === false) { return; }
+        // TODO : this.states.enabled check should be removed when moving keyboard events management to StateControl
+        if (this.states.enabled === false || this.enableKeys === false) { return; }
         switch (event.keyCode) {
             case this.states.PAN.up:
                 this.mouseToPan(0, this.keyPanSpeed);
@@ -766,7 +774,8 @@ class GlobeControls extends THREE.EventDispatcher {
     onTouchStart(event) {
         // CameraUtils.stop(view);
         this.player.stop();
-        if (this.enabled === false) { return; }
+        // TODO : this.states.enabled check should be removed when moving touch events management to StateControl
+        if (this.states.enabled === false) { return; }
 
         this.state = this.states.touchToState(event.touches.length);
 
@@ -808,7 +817,8 @@ class GlobeControls extends THREE.EventDispatcher {
         if (this.player.isPlaying()) {
             this.player.stop();
         }
-        if (this.enabled === false) { return; }
+        // TODO : this.states.enabled check should be removed when moving touch events management to StateControl
+        if (this.states.enabled === false) { return; }
 
         event.preventDefault();
         event.stopPropagation();
