@@ -55,6 +55,7 @@ class AnimationPlayer extends THREE.EventDispatcher {
         this.duration = 0;
         this.state = PLAYER_STATE.STOP;
         this.waitTimer = null;
+        this.callback = () => {};
     }
 
     isPlaying() {
@@ -70,6 +71,15 @@ class AnimationPlayer extends THREE.EventDispatcher {
     }
 
     // Public functions
+
+    /**
+     * Set the Player `callback` property. This callback is executed at each animation frame.
+     *
+     * @param {function} callback - The callback to execute at each animation frame.
+     */
+    setCallback(callback) {
+        this.callback = callback;
+    }
 
     /**
      * Play one animation.
@@ -118,6 +128,7 @@ class AnimationPlayer extends THREE.EventDispatcher {
         if (this.keyframe < this.duration) {
             this.keyframe++;
             this.dispatchEvent({ type: 'animation-frame' });
+            this.callback();
         } else {
             this.state = PLAYER_STATE.END;
             finishAnimation(this);
