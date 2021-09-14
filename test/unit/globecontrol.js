@@ -188,12 +188,6 @@ describe('GlobeControls', function () {
         });
     });
 
-    it('travel should not trigger if controls are disabled', function () {
-        controls.enabled = false;
-        assert.strictEqual(controls.travel(), undefined);
-        controls.enabled = true;
-    });
-
     it('touch start', function () {
         controls.onTouchStart(event);
         assert.ok(controls.states.MOVE_GLOBE == controls.state);

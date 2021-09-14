@@ -249,6 +249,40 @@ describe('StateControl', function () {
         states.onContextMenu(event);
     });
 
+    it('should not trigger anything if StateControl is disabled', function () {
+        states.enabled = false;
+
+        assert(!testEventTriggering('state-changed', event, (event) => {
+            // Single left click
+            event.button = MOUSE.LEFT;
+            states._onPointerDown(event);
+            states._onPointerUp();
+
+            // Single right click
+            event.button = MOUSE.RIGHT;
+            states._onPointerDown(event);
+            states._onPointerUp();
+
+            // Single middle click
+            event.button = MOUSE.MIDDLE;
+            states._onPointerDown(event);
+            states._onPointerUp();
+        }));
+
+        event.button = undefined;
+        event.keyCode = 80;
+        assert(!testEventTriggering('travel_in', event, (event) => {
+            states._handleTravelInEvent(event);
+        }));
+
+        event.keyCode = 77;
+        assert(!testEventTriggering('travel_in', event, (event) => {
+            states._handleTravelInEvent(event);
+        }));
+
+        states.enabled = true;
+    });
+
     it('should dispose event listeners', function () {
         states.dispose();
     });

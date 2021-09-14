@@ -126,6 +126,18 @@ class StateControl extends THREE.EventDispatcher {
         this._view = view;
         this._domElement = view.domElement;
 
+        let enabled = true;
+        Object.defineProperty(this, 'enabled', {
+            get: () => enabled,
+            set: (value) => {
+                if (!value) {
+                    this.onKeyUp();
+                    this.onPointerUp();
+                }
+                enabled = value;
+            },
+        });
+
         this.NONE = {};
 
         let currentState = this.NONE;
@@ -170,7 +182,10 @@ class StateControl extends THREE.EventDispatcher {
 
         // TODO : this shall be removed when switching keyboard management form Controls to StateControls
         this._handleTravelInEvent = (event) => {
-            if (this.TRAVEL_IN === this.inputToState(event.button, event.keyCode, this.TRAVEL_IN.double)) {
+            if (
+                this.enabled
+                && this.TRAVEL_IN === this.inputToState(event.button, event.keyCode, this.TRAVEL_IN.double)
+            ) {
                 this.dispatchEvent({
                     type: 'travel_in',
                     viewCoords: this._view.eventToViewCoords(event),
@@ -178,7 +193,10 @@ class StateControl extends THREE.EventDispatcher {
             }
         };
         this._handleTravelOutEvent = (event) => {
-            if (this.TRAVEL_OUT === this.inputToState(event.button, event.keyCode, this.TRAVEL_OUT.double)) {
+            if (
+                this.enabled
+                && this.TRAVEL_OUT === this.inputToState(event.button, event.keyCode, this.TRAVEL_OUT.double)
+            ) {
                 this.dispatchEvent({
                     type: 'travel_out',
                     viewCoords: this._view.eventToViewCoords(event),
@@ -283,6 +301,8 @@ class StateControl extends THREE.EventDispatcher {
     // ---------- POINTER EVENTS : ----------
 
     onPointerDown(event) {
+        if (!this.enabled) { return; }
+
         switch (event.pointerType) {
             case 'mouse':
                 this.handleMouseDown(event);
@@ -296,6 +316,9 @@ class StateControl extends THREE.EventDispatcher {
     }
 
     onPointerMove(event) {
+        event.preventDefault();
+        if (!this.enabled) { return; }
+
         switch (event.pointerType) {
             case 'mouse':
                 this.handleMouseMove(event);
@@ -306,6 +329,8 @@ class StateControl extends THREE.EventDispatcher {
     }
 
     onPointerUp() {
+        if (!this.enabled) { return; }
+
         this._domElement.removeEventListener('pointermove', this._onPointerMove, false);
         this._domElement.removeEventListener('pointerup', this._onPointerUp, false);
         this._domElement.removeEventListener('mouseleave', this._onPointerUp, false);
@@ -332,8 +357,6 @@ class StateControl extends THREE.EventDispatcher {
     }
 
     handleMouseMove(event) {
-        event.preventDefault();
-
         viewCoords.copy(this._view.eventToViewCoords(event));
         this.dispatchEvent({ type: this.currentState._event, viewCoords });
     }
@@ -342,10 +365,14 @@ class StateControl extends THREE.EventDispatcher {
     // ---------- KEYBOARD EVENTS : ----------
 
     onKeyDown(event) {
+        if (!this.enabled) { return; }
         this._currentKeyPressed = event.keyCode;
     }
 
-    onKeyUp() { this._currentKeyPressed = undefined; }
+    onKeyUp() {
+        if (!this.enabled) { return; }
+        this._currentKeyPressed = undefined;
+    }
 
 
     onBlur() {
