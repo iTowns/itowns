@@ -154,7 +154,6 @@ let previous;
  * @param      {number}  options.minDistance Minimum distance between ground and camera
  * @param      {number}  options.maxDistance Maximum distance between ground and camera
  * @param      {bool}  options.handleCollision enable collision camera with ground
- * @property   {bool} enabled enable control
  * @property   {number} minDistance Minimum distance between ground and camera
  * @property   {number} maxDistance Maximum distance between ground and camera
  * @property   {number} zoomSpeed Speed zoom with mouse

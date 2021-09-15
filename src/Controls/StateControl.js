@@ -118,6 +118,8 @@ function stateToTrigger(state) {
                                     * a given position. The target position depends on the key/mouse binding of this
                                     * state. If bound to a mouse button, the target position is the mouse position.
                                     * Otherwise, it is the center of the screen. It is disabled by default.
+ * @property {boolean}  enable      Defines whether all input will be communicated to the associated `Controls` or not.
+                                    * Default is true.
  */
 class StateControl extends THREE.EventDispatcher {
     constructor(view, options = {}) {
