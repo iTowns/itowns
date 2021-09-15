@@ -317,9 +317,26 @@ class StateControl extends THREE.EventDispatcher {
     onPointerDown(event) {
         if (!this.enabled) { return; }
 
+        viewCoords.copy(this._view.eventToViewCoords(event));
+
         switch (event.pointerType) {
             case 'mouse':
-                this.handleMouseDown(event);
+                this._currentMousePressed = event.button;
+
+                this.currentState = this.inputToState(
+                    this._currentMousePressed,
+                    this._currentKeyPressed,
+                    // Detect if the mouse button was pressed less than 500 ms before, and if the cursor has not moved two much
+                    // since previous click. If so, set dblclick to true.
+                    event.timeStamp - this._clickTimeStamp < 500
+                        && this._lastMousePressed.button === this._currentMousePressed
+                        && this._lastMousePressed.viewCoords.distanceTo(viewCoords) < 5,
+                );
+
+                this._clickTimeStamp = event.timeStamp;
+                this._lastMousePressed.button = this._currentMousePressed;
+                this._lastMousePressed.viewCoords.copy(viewCoords);
+
                 break;
             // TODO : add touch event management
             default:
@@ -334,9 +351,11 @@ class StateControl extends THREE.EventDispatcher {
         event.preventDefault();
         if (!this.enabled) { return; }
 
+        viewCoords.copy(this._view.eventToViewCoords(event));
+
         switch (event.pointerType) {
             case 'mouse':
-                this.handleMouseMove(event);
+                this.dispatchEvent({ type: this.currentState._event, viewCoords });
                 break;
             // TODO : add touch event management
             default:
@@ -352,31 +371,6 @@ class StateControl extends THREE.EventDispatcher {
         this._domElement.removeEventListener('mouseleave', this._onPointerUp, false);
 
         this.currentState = this.NONE;
-    }
-
-
-    // ---------- MOUSE EVENTS : ----------
-
-    handleMouseDown(event) {
-        viewCoords.copy(this._view.eventToViewCoords(event));
-
-        this._currentMousePressed = event.button;
-
-        // Detect if the mouse button was pressed less than 500 ms before, and if the cursor has not moved two much
-        // since previous click. If so, set dblclick to true.
-        const dblclick = event.timeStamp - this._clickTimeStamp < 500
-            && this._lastMousePressed.button === this._currentMousePressed
-            && this._lastMousePressed.viewCoords.distanceTo(viewCoords) < 5;
-        this._clickTimeStamp = event.timeStamp;
-        this._lastMousePressed.button = this._currentMousePressed;
-        this._lastMousePressed.viewCoords.copy(viewCoords);
-
-        this.currentState = this.inputToState(this._currentMousePressed, this._currentKeyPressed, dblclick);
-    }
-
-    handleMouseMove(event) {
-        viewCoords.copy(this._view.eventToViewCoords(event));
-        this.dispatchEvent({ type: this.currentState._event, viewCoords });
     }
 
 
