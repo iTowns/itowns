@@ -12,6 +12,9 @@ const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
 const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 
+const divDomElement = document.createElement('div');
+
+
 /**
  * A layer to handle a bunch of `Label`. This layer can be created on its own,
  * but it is better to use the option `addLabelLayer` on another `Layer` to let
@@ -57,12 +60,6 @@ class LabelLayer extends Layer {
         this.buildExtent = true;
 
         this.labelDomelement = config.domElement;
-
-        // The margin property defines a space around each label that cannot be occupied by another label.
-        // For example, if some labelLayer has a margin value of 5, there will be at least 10 pixels
-        // between each labels of the layer
-        // TODO : this property should be moved to Style after refactoring style properties structure
-        this.margin = config.margin;
     }
 
     /**
@@ -85,7 +82,7 @@ class LabelLayer extends Layer {
     convert(data, extent) {
         const labels = [];
 
-        const layerField = this.style && this.style.text && this.style.text.field;
+        const layerField = this.style?.text?.field;
 
         // Converting the extent now is faster for further operation
         extent.as(data.crs, _extent);
@@ -98,7 +95,7 @@ class LabelLayer extends Layer {
                 return;
             }
 
-            const featureField = f.style && f.style.text.field;
+            const featureField = f.style?.text.field;
 
             f.geometries.forEach((g) => {
                 // NOTE: this only works because only POINT is supported, it
@@ -110,16 +107,23 @@ class LabelLayer extends Layer {
                 if (f.size == 2) { coord.z = 0; }
                 if (!_extent.isPointInside(coord)) { return; }
 
-                const geometryField = g.properties.style && g.properties.style.text.field;
+                const geometryField = g.properties.style?.text.field;
                 let content;
                 const context = { globals, properties: () => g.properties };
-                if (this.labelDomelement) {
+
+                const style = (g.properties.style || f.style || this.style).symbolStylefromContext(context);
+
+                if (this.displayPoints) {
+                    style.icon.pointIcon = divDomElement;
+                    style.icon.size = 1;
+                    style.icon.anchor = 'center';
+                } else if (this.labelDomelement) {
                     content = readExpression(this.labelDomelement, context);
                 } else if (!geometryField && !featureField && !layerField) {
                     // Check if there is an icon, with no text
-                    if (!(g.properties.style && (g.properties.style.icon.source || g.properties.style.icon.key))
-                        && !(f.style && (f.style.icon.source || f.style.icon.key))
-                        && !(this.style && (this.style.icon.source || this.style.icon.key))) {
+                    if (!(g.properties.style?.icon.source || g.properties.style?.icon.key)
+                        && !(f.style?.icon.source || f.style?.icon.key)
+                        && !(this.style?.icon.source || this.style?.icon.key)) {
                         return;
                     }
                 } else if (geometryField) {
@@ -130,11 +134,10 @@ class LabelLayer extends Layer {
                     content = this.style.getTextFromProperties(context);
                 }
 
-                const style = (g.properties.style || f.style || this.style).symbolStylefromContext(context);
-
                 const label = new Label(content, coord.clone(), style, this.source.sprites);
                 label.layerId = this.id;
-                label.padding = this.margin || label.padding;
+                label.padding = this.margin ?? label.padding;
+                label.allowOverlapping = this.displayPoints;
 
                 if (f.size == 2) {
                     label.needsAltitude = true;
@@ -218,7 +221,10 @@ class LabelLayer extends Layer {
                         label.updateElevationFromLayer(this.parent);
                     }
 
-                    const present = node.children.find(l => l.isLabel && l.baseContent == label.baseContent);
+                    // TODO : this implies displaying every icon with no baseContent (default to ''). Therefore we will
+                    //  display all duplicate icons. This might be improved.
+                    const present = label.baseContent !== ''
+                        && node.children.find(l => l.isLabel && l.baseContent === label.baseContent);
 
                     if (!present) {
                         node.add(label);

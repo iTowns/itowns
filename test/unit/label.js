@@ -38,6 +38,16 @@ describe('LabelLayer', function () {
         const labels = layer.convert(collection, extent);
         assert.ok(labels[0].isLabel);
     });
+
+    it('should replace style.point by style.icon if displayAsIcon is true', function () {
+        const labelLayer = new LabelLayer('labelLayer', {
+            source: false,
+            style: { point: { color: 'red', line: 'green', displayAsIcon: true } },
+        });
+        labelLayer.source = {};
+        assert.strictEqual(labelLayer.style.point.color, undefined);
+        assert.strictEqual(labelLayer.style.point.line, undefined);
+    });
 });
 
 describe('Label', function () {

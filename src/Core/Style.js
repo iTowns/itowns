@@ -367,6 +367,7 @@ class Style {
         defineStyleProperty(this, 'text', 'haloBlur', params.text.haloBlur, 0);
 
         this.icon = {};
+        defineStyleProperty(this, 'icon', 'pointIcon', params.icon.pointIcon);
         defineStyleProperty(this, 'icon', 'source', params.icon.source);
         defineStyleProperty(this, 'icon', 'key', params.icon.key);
         defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor, 'center');
@@ -406,9 +407,8 @@ class Style {
     symbolStylefromContext(context) {
         const style = new Style();
         mapPropertiesFromContext('text', this, style, context);
-        if (this.icon) {
-            mapPropertiesFromContext('icon', this, style, context);
-        }
+        mapPropertiesFromContext('icon', this, style, context);
+        mapPropertiesFromContext('point', this, style, context);
         style.order = this.order;
         return style;
     }
@@ -592,23 +592,42 @@ class Style {
             domElement.setAttribute('data-before', domElement.textContent);
         }
 
-        if (!this.icon.source && !this.icon.key) {
+        if (!this.icon.pointIcon && !this.icon.source && !this.icon.key) {
             return;
         }
 
-        const image = this.icon.source;
-        const size = this.icon.size;
-        const key = this.icon.key;
+        let icon;
 
-        let icon = cacheStyle.get(image || key, size);
+        if (this.icon.pointIcon) {
+            icon = this.icon.pointIcon;
 
-        if (!icon) {
-            if (key && sprites) {
-                icon = getImage(sprites, key);
-            } else {
-                icon = getImage(image);
+            icon.setAttribute('class', 'itowns-icon');
+
+            icon.width = 2 * (this.point.radius + this.point.width);
+            icon.height = icon.width;
+
+            icon.style.width = 2 * this.point.radius;
+            icon.style.height = icon.style.width;
+            icon.style.backgroundColor = this.point.color;
+            icon.style.border = `${this.point.width}px solid ${this.point.line}`;
+            icon.style.borderRadius = '50%';
+
+            icon.complete = true;
+        } else {
+            const image = this.icon.source;
+            const size = this.icon.size;
+            const key = this.icon.key;
+
+            icon = cacheStyle.get(image || key, size);
+
+            if (!icon) {
+                if (key && sprites) {
+                    icon = getImage(sprites, key);
+                } else {
+                    icon = getImage(image);
+                }
+                cacheStyle.set(icon, image || key, size);
             }
-            cacheStyle.set(icon, image || key, size);
         }
 
         const addIcon = () => {

@@ -83,39 +83,50 @@ function _preprocessLayer(view, layer, parentLayer) {
 
     if (layer.isLabelLayer) {
         view.mainLoop.gfxEngine.label2dRenderer.registerLayer(layer);
-    } else if (layer.labelEnabled || layer.addLabelLayer) {
-        if (layer.labelEnabled) {
-            // eslint-disable-next-line no-console
-            console.info('layer.labelEnabled is deprecated use addLabelLayer, instead of');
+    } else if (layer.labelEnabled || layer.addLabelLayer || layer.displayAsIcon) {
+        if (layer.labelEnabled !== undefined) {
+            console.warn('layer.labelEnabled is deprecated use addLabelLayer, instead of');
+            layer.addLabelLayer = layer.labelEnabled;
         }
         // Because the features are shared between layer and labelLayer.
         layer.buildExtent = true;
-        const labelLayer = new LabelLayer(`${layer.id}-label`, {
-            source,
-            style: layer.style,
-            zoom: layer.zoom,
-            crs: source.crs,
-            visible: layer.visible,
-            margin: 15,
-        });
 
-        layer.addEventListener('visible-property-changed', () => {
-            labelLayer.visible = layer.visible;
-        });
+        const addLabelLayer = (pointOrLabel) => {
+            const labelLayer = new LabelLayer(`${layer.id}-${pointOrLabel}`, {
+                source,
+                style: layer.style,
+                zoom: layer.zoom,
+                crs: source.crs,
+                visible: layer.visible,
+                margin: 15,
+                displayPoints: pointOrLabel === 'point',
+            });
 
-        const removeLabelLayer = (e) => {
-            if (e.layerId === layer.id) {
-                view.removeLayer(labelLayer.id);
-            }
-            view.removeEventListener(VIEW_EVENTS.LAYER_REMOVED, removeLabelLayer);
+            layer.addEventListener('visible-property-changed', () => {
+                labelLayer.visible = layer.visible;
+            });
+
+            const removeLabelLayer = (e) => {
+                if (e.layerId === layer.id) {
+                    view.removeLayer(labelLayer.id);
+                }
+                view.removeEventListener(VIEW_EVENTS.LAYER_REMOVED, removeLabelLayer);
+            };
+
+            view.addEventListener(VIEW_EVENTS.LAYER_REMOVED, removeLabelLayer);
+
+            layer.whenReady = layer.whenReady.then(() => {
+                view.addLayer(labelLayer);
+                return layer;
+            });
         };
 
-        view.addEventListener(VIEW_EVENTS.LAYER_REMOVED, removeLabelLayer);
-
-        layer.whenReady = layer.whenReady.then(() => {
-            view.addLayer(labelLayer);
-            return layer;
-        });
+        if (layer.addLabelLayer) {
+            addLabelLayer('label');
+        }
+        if (layer.displayAsIcon) {
+            addLabelLayer('point');
+        }
     }
 
     return layer;

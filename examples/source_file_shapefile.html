@@ -86,15 +86,29 @@
                     source: velibSource,
                     style: new itowns.Style({
                         zoom: { min: 10, max: 20 },
-                        point: { color: 'white', line: 'green' },
+                        point: {
+                            color: 'white',
+                            line: 'green',
+                            radius: 5,
+                            width: 2,
+                        },
+                        icon: {
+                            source: 'images/arrow.svg',
+                            anchor: 'top-left',
+                            size: 2,
+                        },
                         text: {
                             field: '{name}\n(id: {station_id})',
                             size: 14,
                             haloColor: 'white',
                             haloWidth: 1,
                             font: ['monospace'],
-                        }
+                            anchor: 'top-left',
+                            justify: 'left',
+                            offset: [20, 18],
+                        },
                     }),
+                    displayAsIcon: true,
                     addLabelLayer: true,
                 }));
             }).then((layer => {

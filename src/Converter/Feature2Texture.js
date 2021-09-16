@@ -102,7 +102,7 @@ function drawPoint(ctx, x, y, style = {}, invCtxScale) {
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
-function drawFeature(ctx, feature, extent, style, invCtxScale) {
+function drawFeature(ctx, feature, extent, style, invCtxScale, layer) {
     const extentDim = extent.planarDimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
     const globals = { zoom: extent.zoom };
@@ -117,6 +117,9 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
                     feature.type === FEATURE_TYPES.POINT
                     && contextStyle.point
                 ) {
+                    // Don't display point as raster if they are already displayed as icons.
+                    if (layer.displayAsIcon) { continue; }
+
                     // cross multiplication to know in the extent system the real size of
                     // the point
                     const px = (Math.round(contextStyle.point.radius * invCtxScale) || 3 * invCtxScale) * scaleRadius;
@@ -151,7 +154,7 @@ const featureExtent = new Extent('EPSG:4326', 0, 0, 0, 0);
 export default {
     // backgroundColor is a THREE.Color to specify a color to fill the texture
     // with, given there is no feature passed in parameter
-    createTextureFromFeature(collection, extent, sizeTexture, style, backgroundColor) {
+    createTextureFromFeature(collection, extent, sizeTexture, layer, backgroundColor) {
         let texture;
 
         if (collection) {
@@ -169,7 +172,7 @@ export default {
                 ctx.fillStyle = backgroundColor.getStyle();
                 ctx.fillRect(0, 0, sizeTexture, sizeTexture);
             }
-            ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
+            ctx.globalCompositeOperation = layer.style.globalCompositeOperation || 'source-over';
             ctx.imageSmoothingEnabled = false;
             ctx.lineJoin = 'round';
 
@@ -200,7 +203,7 @@ export default {
 
             // Draw the canvas
             for (const feature of collection.features) {
-                drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
+                drawFeature(ctx, feature, featureExtent, feature.style || layer.style, invCtxScale, layer);
             }
 
             texture = new THREE.CanvasTexture(c);
