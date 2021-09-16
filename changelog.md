@@ -1,3 +1,59 @@
+<a name="2.35.0"></a>
+# [2.35.0](https://github.com/iTowns/itowns/compare/v2.34.0...v2.35.0) (2021-09-16)
+
+
+### Features
+
+* **AnimationPlayer:** add a callback ran at each animation frame ([1280ce0](https://github.com/iTowns/itowns/commit/1280ce0))
+
+
+### Bug Fixes
+
+* **c3DEngine:** fix error when input renderer.domElement is a canvas ([14567c1](https://github.com/iTowns/itowns/commit/14567c1))
+* **CameraUtils:** CameraTransformOptions parameter stopPlaceOnGroundAtEnd is no longer overriden ([7f3a542](https://github.com/iTowns/itowns/commit/7f3a542))
+* **CameraUtils:** compute precise altitude when setting CameraRig ([011fcbc](https://github.com/iTowns/itowns/commit/011fcbc))
+* **Feature2Mesh:** addapt indices array type from the size of polygon ([378c092](https://github.com/iTowns/itowns/commit/378c092))
+* **GlobeControls:** fix jittering move globe when devtool is open ([825841c](https://github.com/iTowns/itowns/commit/825841c))
+* **Label:** clamp labels altitude over 0 ([ddd59e0](https://github.com/iTowns/itowns/commit/ddd59e0))
+* **Label:** enforce Labels div top position to 0 ([08528d7](https://github.com/iTowns/itowns/commit/08528d7))
+* **ShapefileParser:** prevent ignoring input crs wen given ([d2b90b7](https://github.com/iTowns/itowns/commit/d2b90b7))
+
+
+### Examples
+
+* **camera traveling:** add an example where user can pick points and have camera traveling between those points ([6e79ff3](https://github.com/iTowns/itowns/commit/6e79ff3))
+
+
+### Code Refactoring
+
+* **Controls:** change deprecated mouseWheel event to wheel event ([923d10c](https://github.com/iTowns/itowns/commit/923d10c))
+* **Controls:** handle mouse events in StateControls ([ae1c30b](https://github.com/iTowns/itowns/commit/ae1c30b))
+* **Controls:** switch context menu management in StateControl ([5fa010b](https://github.com/iTowns/itowns/commit/5fa010b))
+* **Controls:** switch enabled property from GlobeControls to StateControl ([76130b4](https://github.com/iTowns/itowns/commit/76130b4))
+* **Controls:** switch keyboard management to StateControls ([a392a7b](https://github.com/iTowns/itowns/commit/a392a7b))
+* **Controls:** switch wheel management to StateControl ([4e64b75](https://github.com/iTowns/itowns/commit/4e64b75))
+* **StateControl:** factorise handleMouse in pointer methods ([0e626d8](https://github.com/iTowns/itowns/commit/0e626d8))
+* **StateControls:** simplify setFromOptions method ([a7d175f](https://github.com/iTowns/itowns/commit/a7d175f))
+
+
+### Workflow and chores
+
+* release v2.35.0 ([ade35e8](https://github.com/iTowns/itowns/commit/ade35e8))
+* **examples:** change geoportail key. ([36f0f40](https://github.com/iTowns/itowns/commit/36f0f40))
+* move babel preset-env options to .babelrc ([ad22bcc](https://github.com/iTowns/itowns/commit/ad22bcc))
+* remove import three examples polyfill. ([48d52ae](https://github.com/iTowns/itowns/commit/48d52ae))
+* up three 131.2 ([aed4dbc](https://github.com/iTowns/itowns/commit/aed4dbc))
+* up to webpack 5. ([ea36982](https://github.com/iTowns/itowns/commit/ea36982))
+* update packages. ([909e96e](https://github.com/iTowns/itowns/commit/909e96e))
+
+
+### Documentation
+
+* minor update on Controls documentation ([5f4ace1](https://github.com/iTowns/itowns/commit/5f4ace1))
+* **Controls:** minor doc fixes ([d7c2ffa](https://github.com/iTowns/itowns/commit/d7c2ffa))
+
+
+
 <a name="2.34.0"></a>
 # [2.34.0](https://github.com/iTowns/itowns/compare/v2.33.0...v2.34.0) (2021-07-30)
 
