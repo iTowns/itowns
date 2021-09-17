@@ -159,7 +159,11 @@ function getOrientationId(ori) {
 }
 
 function getImageId(img) {
-    return (img.split('P')[0]).split('.').join('');
+    if (img.slice(0, 1) == 'A') {
+        return (img.split('_')[1].split('P')[0]).split('.').join('');
+    } else {
+        return (img.split('P')[0]).split('.').join('');
+    }
 }
 
 function getAutocalId(autocal) {
@@ -194,13 +198,21 @@ export default {
 
             const promises = [];
             json.ori.forEach((orientationUrl) => {
-                const imgUrl = json.img.find(imgUrl => getImageId(imgUrl) == getOrientationId(orientationUrl));
+                var imgUrl = json.img.find(imgUrl => getImageId(imgUrl) == getOrientationId(orientationUrl));
                 console.assert(imgUrl != undefined);
+
+                if (imgUrl == undefined) {
+                    console.warn('undefined image for orientation: ', orientationUrl);
+                }
+                var name = imgUrl;
+                if (imgUrl.slice(0, 1) == 'A') {
+                    imgUrl = imgUrl.slice(4);
+                }
 
                 const autocalUrl = json.autocal.find(auto => getAutocalId(auto) == getOrientationId(orientationUrl));
                 console.assert(autocalUrl != undefined);
 
-                promises.push(loadOrientedImage(orientationUrl, imgUrl, source, imgUrl));
+                promises.push(loadOrientedImage(orientationUrl, imgUrl, source, name));
             });
             return Promise.all(promises).then(() => {
                 bindDates(cameras, json.date);

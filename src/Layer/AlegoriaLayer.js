@@ -17,8 +17,9 @@ class AlegoriaLayer extends GeometryLayer {
      * @param { Object } config - configuration of the layer
      * @param { string } config.crs - crs projection of the view
      * @param { AlegoriaSource } config.source - Charges textures and cameras from Json
+     * @param { Object } options - Other options
      */
-    constructor(id, config = {}) {
+    constructor(id, config = {}, options = {}) {
         /* istanbul ignore next */
         if (config.projection) {
             console.warn('AlegoriaLayer projection parameter is deprecated, use crs instead.');
@@ -33,24 +34,26 @@ class AlegoriaLayer extends GeometryLayer {
         materialOptionsWithBuildingDates.defines = materialOptionsWithBuildingDates.defines || {};
         materialOptionsWithBuildingDates.defines.USE_BUILDING_DATE = '';
 
+        this.simpleMaterial = new PhotogrammetricCamera.NewMaterial(viewMaterialOptions);
+        this.simpleMaterial.map = uvTexture;
+
         this.newMaterial = new PhotogrammetricCamera.NewMaterial(materialOptionsWithBuildingDates);
         this.newMaterial.map = uvTexture;
 
-        this.multiTextureMaterial = new PhotogrammetricCamera.MultiTextureMaterial({ numTextures: 3, maxTextures: 50, sigma: 1000 });
+        const numTextures = options.numTextures || 1;
+        const maxTextures = options.maxTextures || 10;
+        const sigma = options.sigma || 1000;
+
+        this.multiTextureMaterial = new PhotogrammetricCamera.MultiTextureMaterial({ numTextures, maxTextures, sigma/* , shadowMappingActivated: false */ });
         this.multiTextureMaterial.setScreenSize(window.innerWidth, window.innerHeight);
 
         this.spriteMaterial = new PhotogrammetricCamera.SpriteMaterial();
         this.spriteMaterial.setScreenSize(window.innerWidth, window.innerHeight);
 
-        this.multiTextureSpriteMaterial = new PhotogrammetricCamera.MultiTextureSpriteMaterial({ numTextures: 3, maxTextures: 50, sigma: 1000 });
+        this.multiTextureSpriteMaterial = new PhotogrammetricCamera.MultiTextureSpriteMaterial({ numTextures, maxTextures, sigma/* , shadowMappingActivated: false */ });
         this.multiTextureSpriteMaterial.setScreenSize(window.innerWidth, window.innerHeight);
 
-        const sphereMaterialOptions = {};
-        Object.assign(sphereMaterialOptions, viewMaterialOptions);
-        sphereMaterialOptions.opacity = 0.5;
-        this.sphereMaterial = new PhotogrammetricCamera.NewMaterial(sphereMaterialOptions);
-        this.spriteMaterial.map = uvTexture;
-        this.sphereMaterial.opacity = 0.75;
+        this.sphereMaterial = new PhotogrammetricCamera.MultiTextureMaterial({ numTextures, maxTextures, sigma, opacity: 0.75/* , shadowMappingActivated: false */ });
 
         this.sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(-1, 32, 32), this.sphereMaterial);
         this.sphere.scale.set(sphereRadius, sphereRadius, sphereRadius);
@@ -68,6 +71,7 @@ class AlegoriaLayer extends GeometryLayer {
     update(context) {
         this.spriteMaterial.setViewCamera(context.camera.camera3D);
         this.multiTextureSpriteMaterial.setViewCamera(context.camera.camera3D);
+        this.multiTextureMaterial.setViewCamera(context.camera.camera3D);
         context.camera.camera3D.getWorldPosition(this.sphere.position);
         this.sphere.updateMatrixWorld();
     }

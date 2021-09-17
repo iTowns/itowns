@@ -55,14 +55,14 @@
     "earcut": "^2.2.2",
     "js-priority-queue": "^0.1.5",
     "pbf": "^3.2.1",
+    "photogrammetric-camera": "scarllethcastro/photogrammetric-camera",
     "regenerator-runtime": "^0.13.7",
     "shpjs": "^3.6.3",
     "text-encoding-utf-8": "^1.0.2",
-    "photogrammetric-camera": "scarllethcastro/photogrammetric-camera"
+    "three": "github:mbredif/three.js#no_webglmrts"
   },
   "peerDependencies": {
-    "proj4": "^2.7.2",
-    "three": "0.129.0"
+    "proj4": "^2.7.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.3",
@@ -100,12 +100,11 @@
     "puppeteer": "^9.1.1",
     "q": "^1.5.1",
     "replace-in-file": "^6.2.0",
-    "three": "0.129.0",
     "url-polyfill": "^1.1.12",
     "webpack": "^4.46.0",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.2",
-    "whatwg-fetch": "^3.6.2",
-    "webpack-glsl-loader": "^1.0.1"
+    "webpack-glsl-loader": "^1.0.1",
+    "whatwg-fetch": "^3.6.2"
   }
 }

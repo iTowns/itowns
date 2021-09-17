@@ -24,6 +24,7 @@
             var THREE = itowns.THREE;
             var PhotogrammetricCamera = itowns.PhotogrammetricCamera;
         </script>
+        <script src="js/Alegoria/ScreenQuad.es6.js"></script>
         <script src="js/Alegoria/PhotogrammetricCameraHelper.js"></script>
         <script src="js/Alegoria/BuildingsHelper.js"></script>
         <script type="text/javascript">
@@ -55,25 +56,29 @@
             for (const atmosphere of atmospheres) {
                 view.removeLayer(atmosphere.id);
             }
+            view.texCamera = textureCamera;
+
 
             // Gui
             var menuGlobe = new GuiTools('menuDiv', view);
             debug.createTileDebugUI(menuGlobe.gui, view);
+            const debugGUI = menuGlobe.gui.addFolder('Debug');
+            debugGUI.add(screenQuads, 'visible').name('thumbs visible').onChange(() => view.notifyChange());
 
 
             // Scene
-            var scene = view.scene;
+            scene = view.scene;
+            scene.add(screenQuads);
 
 
             // Renderer
-            var renderer = view.mainLoop.gfxEngine.renderer;
+            renderer = view.mainLoop.gfxEngine.renderer;
 
 
-            // Materials
-            var buildingsMaterial;
-            var pointsMaterial;
-            var sphereMaterial;
-            var textures;
+            // ScreenQuads
+            addScreenQuad("texture");
+            addScreenQuad("textureDepth");
+            screenQuads.visible = false;
 
 
             // Oriented images
@@ -83,22 +88,23 @@
             // Prepare oriented image source
             var orientedImageSource = new itowns.AlegoriaSource({
                 path: 'data/alegoria_selection_resized/',
-                file: 'chalon_selection.json',
-                // path: 'data/test_image_size/',
-                // file: 'test_image_size.json',
+                file: 'chalon_selection_ordered.json',
             });
 
             // Create oriented image layer
             orientedImageLayer = new itowns.AlegoriaLayer('orientedImageLayer', {
                 source: orientedImageSource,
                 crs: view.referenceCrs,
+            }, {
+                numTextures: numTextures,
+                maxTextures: maxTextures,
+                sigma: 1000,
             });
 
             // Add layer to view
             view.addLayer(orientedImageLayer).then((orientedImageLayer) => {
                 view.notifyChange(true);
                 const pyramidGUI = menuGlobe.gui.addFolder('Camera Pyramids');
-                console.log(orientedImageLayer.cameras);
                 pyramidGUI.add(pyramidsVisibility, 'allVisible').name('show all pyr.').onChange((value) => {
                     updateAllPyramidsVisibility(value);
                     view.notifyChange(orientedImageLayer, true);
@@ -112,13 +118,12 @@
 
                 buildingsMaterial = orientedImageLayer.multiTextureMaterial;
                 pointsMaterial = orientedImageLayer.multiTextureSpriteMaterial;
-                //pointsMaterial = orientedImageLayer.spriteMaterial;
                 sphereMaterial = orientedImageLayer.sphereMaterial;
                 const sphereGUI = menuGlobe.gui.addFolder('Sphere');
                 sphereGUI.add(orientedImageLayer.sphere.material, 'opacity', 0.0, 1.0).onChange( value => view.notifyChange(orientedImageLayer));
 
                 // Initialize cameras on multi materials
-                if (pointsMaterial.isPCMultiTextureSpriteMaterial || buildingsMaterial.isPCMultiTextureMaterial) {
+                if (pointsMaterial.isPCMultiTextureSpriteMaterial || buildingsMaterial.isPCMultiTextureMaterial || sphereMaterial.isPCMultiTextureMaterial) {
                     console.log('Starting initialization of cameras on multi materials.')
                     var count = 0;
                     orientedImageLayer.cameras.children.forEach( c => {
@@ -153,8 +158,8 @@
                     },
                     onMeshCreated: function scaleZ(mesh) {
                         mesh.children.forEach(c => {
-                            c.scale.z = 0.01;
-                            meshes.push(c);
+                            // c.scale.z = 0.01;
+                            // meshes.push(c);
 
                             if (c.geometry.hasAttribute('batchId')) {
                                 
@@ -232,7 +237,7 @@
                 itowns.View.prototype.addLayer.call(view, potreeLayer).then(onLayerReady(potreeLayer));
 
                 viewCameraGUI = menuGlobe.gui.addFolder('View Camera');
-                textureCameraGUI = menuGlobe.gui.addFolder('Texture Camera');
+                textureCameraGUI = menuGlobe.gui.addFolder('Texture Camera');                
             });
 
 
@@ -260,23 +265,32 @@
 
             // For the buildings layer
 
-            scaler = function update(/* dt */) {
-                var i;
-                var mesh;
-                if (meshes.length) {
-                    view.notifyChange(view.camera.camera3D, true);
-                }
-                for (i = 0; i < meshes.length; i++) {
-                    mesh = meshes[i];
-                    if (mesh) {
-                        mesh.scale.z = Math.min(
-                            1.0, mesh.scale.z + 0.1);
-                        mesh.updateMatrixWorld(true);
-                    }
-                }
-                meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
-            };
-            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
+            // scaler = function update(/* dt */) {
+            //     var i;
+            //     var mesh;
+            //     if (meshes.length) {
+            //         view.notifyChange(view.camera.camera3D, true);
+            //     }
+            //     for (i = 0; i < meshes.length; i++) {
+            //         mesh = meshes[i];
+            //         if (mesh) {
+            //             mesh.scale.z = Math.min(
+            //                 1.0, mesh.scale.z + 0.1);
+            //             mesh.updateMatrixWorld(true);
+            //         }
+            //     }
+            //     meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
+            // };
+            // view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
+
+
+            // Update depth maps
+
+            updateDepthMaps = function update(dt) {
+                if (dt > updateDepthMapsInterval)
+                    createDepthMap(textureCamera);
+            }
+            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, updateDepthMaps);
 
             
             // Camera interpolation animation
@@ -305,6 +319,7 @@
                     case 'v': setView(getCamera(textureCamera)); animateInterpolation(); break;
                     case 'c': console.log(nextCamera); view.notifyChange(); break;
                     case 'p': console.log(viewCamera.position); view.notifyChange(); break;
+                    case 'd': createDepthMap(textureCamera); view.notifyChange(); break;
                     default : console.log(event.key, 'is not supported');
                 }
             }
@@ -322,11 +337,8 @@
                     htmlInfo.innerHTML = ' ';
 
                     if (intersects.length) {
-                        //console.log('intersects:\n', intersects);
                         batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
-                        //console.log('batchId: ', batchId);
                         properties = intersects[0].object.feature.geometries[batchId].properties;
-                        //console.log('properties: ', properties);
 
                         Object.keys(properties).map(function (objectKey) {
                             var value = properties[objectKey];

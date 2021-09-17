@@ -42,7 +42,8 @@ class c3DEngine {
         this.fullSizeRenderTarget.texture.minFilter = THREE.LinearFilter;
         this.fullSizeRenderTarget.texture.magFilter = THREE.NearestFilter;
         this.fullSizeRenderTarget.depthBuffer = true;
-        this.fullSizeRenderTarget.depthTexture = new THREE.DepthTexture();
+        this.fullSizeRenderTarget.depthTexture = new THREE.DataTexture();
+        this.fullSizeRenderTarget.depthTexture.format = THREE.DepthFormat;
         this.fullSizeRenderTarget.depthTexture.type = THREE.UnsignedShortType;
 
         this.renderView = function _(view) {

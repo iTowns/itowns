@@ -1,5 +1,5 @@
 // Variables for the buildings layer
-var meshes = [];
+// var meshes = [];
 var color = new itowns.THREE.Color();
 
 function acceptFeature(properties) {
