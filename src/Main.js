@@ -6,6 +6,7 @@ export const REVISION = conf.version;
 // Geographic tools
 export { default as Extent } from 'Core/Geographic/Extent';
 export { default as Coordinates } from 'Core/Geographic/Coordinates';
+export { default as GeoidGrid } from 'Core/Geographic/GeoidGrid';
 export { default as CRS } from 'Core/Geographic/Crs';
 
 export { default as Ellipsoid, ellipsoidSizes } from 'Core/Math/Ellipsoid';
@@ -60,6 +61,7 @@ export { default as GlobeLayer } from 'Core/Prefab/Globe/GlobeLayer';
 export { default as PlanarLayer } from 'Core/Prefab/Planar/PlanarLayer';
 export { default as LabelLayer } from 'Layer/LabelLayer';
 export { default as EntwinePointTileLayer } from 'Layer/EntwinePointTileLayer';
+export { default as GeoidLayer } from 'Layer/GeoidLayer';
 
 // Sources provided by default in iTowns
 // A custom source should at least implements Source

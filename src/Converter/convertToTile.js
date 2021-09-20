@@ -81,6 +81,7 @@ export default {
 
             if (parent) {
                 tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max });
+                tile.geoidHeight = parent.geoidHeight;
             }
 
             return tile;
