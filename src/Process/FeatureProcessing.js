@@ -90,6 +90,7 @@ export default {
                 group.layer = layer;
                 group.matrixWorld.copy(node.matrixWorld).invert();
                 group.matrixWorld.decompose(group.position, group.quaternion, group.scale);
+                group.position.z += node.geoidHeight;
                 node.add(group.add(result));
                 group.updateMatrixWorld(true);
             } else {

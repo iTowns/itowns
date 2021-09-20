@@ -66,6 +66,8 @@ class TiledGeometryLayer extends GeometryLayer {
         super(id, object3d, config);
 
         this.isTiledGeometryLayer = true;
+        // TODO : this should be add in a preprocess method specific to GeoidLayer.
+        this.object3d.geoidHeight = 0;
 
         this.protocol = 'tile';
 

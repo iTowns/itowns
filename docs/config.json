@@ -29,13 +29,15 @@
                 "Extent",
                 "OrientationUtils",
                 "OBB",
-                "DEMUtils"
+                "DEMUtils",
+                "GeoidGrid"
             ],
 
             "Layer": [
                 "Layer",
                 "ColorLayer",
                 "ElevationLayer",
+                "GeoidLayer",
                 "GeometryLayer",
                 "FeatureGeometryLayer",
                 "TiledGeometryLayer",

@@ -44,8 +44,10 @@ function GuiTools(domId, view, w) {
         document.body.appendChild(element);
         this.colorGui = this.gui.addFolder('Color Layers');
         this.elevationGui = this.gui.addFolder('Elevation Layers');
+        this.geoidGui = this.gui.addFolder('Geoid Layers');
         this.elevationGui.hide();
         this.colorGui.hide();
+        this.geoidGui.hide();
         this.view = view;
         view.addEventListener('layers-order-changed', (function refreshColorGui() {
             var i;
@@ -64,6 +66,8 @@ GuiTools.prototype.addLayerGUI = function fnAddLayerGUI(layer) {
         this.addImageryLayerGUI(layer);
     } else if (layer.isElevationLayer) {
         this.addElevationLayerGUI(layer);
+    } else if (layer.isGeoidLayer) {
+        this.addGeoidLayerGUI(layer);
     }
 };
 
@@ -103,6 +107,19 @@ GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
     });
     folder.add({ scale: layer.scale }, 'scale').min(1.0).max(20000.0).onChange((function updateScale(value) {
         layer.scale = value;
+        this.view.notifyChange(layer);
+    }).bind(this));
+};
+
+GuiTools.prototype.addGeoidLayerGUI = function addGeoidLayerGUI(layer) {
+    if (this.geoidGui.hasFolder(layer.id)) { return; }
+    this.geoidGui.show();
+    var folder = this.geoidGui.addFolder(layer.id);
+    folder.add({ frozen: layer.frozen }, 'frozen').onChange(function refreshFrozenGui(value) {
+        layer.frozen = value;
+    });
+    folder.add({ visible: layer.visible }, 'visible').onChange((function updateVisibility(value) {
+        layer.visible = value;
         this.view.notifyChange(layer);
     }).bind(this));
 };
