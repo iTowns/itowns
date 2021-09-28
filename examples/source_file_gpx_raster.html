@@ -57,45 +57,37 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
-            // Parse and Convert by iTowns
-            itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
-                .then(function _(gpx) {
-                    var gpxStyle = new itowns.Style({
-                        zoom: {
-                            min: 9,
-                        },
-                        stroke: {
-                            color: 'red',
-                        },
-                        point: {
-                            color: 'white',
-                            line: 'red',
-                        },
-                        text: {
-                            field: '{name}',
-                            transform: 'uppercase',
-                            font: ['Arial', 'sans-serif'],
-                            haloColor: 'white',
-                            haloWidth: 1,
-                        },
-                    });
 
-                    var gpxSource = new itowns.FileSource({
-                        fetchedData: gpx,
-                        crs: 'EPSG:4326',
-                        parser: itowns.GpxParser.parse,
-                    });
+            const gpxSource = new itowns.FileSource({
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
+                crs: 'EPSG:4326',
+                format: 'application/gpx',
+            });
 
-                    var gpxLayer = new itowns.ColorLayer('Gpx', {
-                        name: 'Ultra 2009',
-                        transparent: true,
-                        source: gpxSource,
-                        style: gpxStyle,
-                        addLabelLayer: true,
-                    });
+            const gpxStyle = new itowns.Style({
+                zoom: { min: 9 },
+                stroke: { color: 'red' },
+                point: {
+                    color: 'white',
+                    line: 'red',
+                },
+                text: {
+                    field: '{name}',
+                    transform: 'uppercase',
+                    font: ['Arial', 'sans-serif'],
+                    haloColor: 'white',
+                    haloWidth: 1,
+                },
+            });
 
-                    return view.addLayer(gpxLayer);
-                });
+            const gpxLayer = new itowns.ColorLayer('Gpx', {
+                source: gpxSource,
+                style: gpxStyle,
+                addLabelLayer: true,
+            });
+
+            view.addLayer(gpxLayer);
+
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>

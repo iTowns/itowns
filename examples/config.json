@@ -35,12 +35,12 @@
     },
 
     "Source / File": {
-        "source_file_gpx_3d": "GPX to 3D objects",
-        "source_file_geojson_3d": "GeoJSON to 3D objects",
-        "source_file_shapefile": "Shapefile to raster",
         "source_file_geojson_raster": "GeoJSON to raster",
+        "source_file_geojson_3d": "GeoJSON to 3D objects",
+        "source_file_kml_raster": "KML to raster",
         "source_file_gpx_raster": "GPX to raster",
-        "source_file_kml_raster": "KML to raster"
+        "source_file_gpx_3d": "GPX to 3D objects",
+        "source_file_shapefile": "Shapefile to raster"
     },
 
     "Effects": {
