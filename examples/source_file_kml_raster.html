@@ -60,8 +60,7 @@
             var kmlSource = new itowns.FileSource({
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
                 crs: 'EPSG:4326',
-                fetcher: itowns.Fetcher.xml,
-                parser: itowns.KMLParser.parse,
+                format: 'application/kml',
             });
 
             var kmlStyle = new itowns.Style({
@@ -78,8 +77,6 @@
             });
 
             var kmlLayer = new itowns.ColorLayer('Kml', {
-                name: 'kml',
-                transparent: true,
                 source: kmlSource,
                 style: kmlStyle,
                 addLabelLayer: true,

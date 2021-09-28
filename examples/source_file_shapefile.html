@@ -25,7 +25,7 @@
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
-            // Instanciate iTowns GlobeView*
+            // Instantiate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, placement);
             var menuGlobe = new GuiTools('menuDiv', view);
 
@@ -41,47 +41,52 @@
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
 
-            // Load all the necessary files for a shapefile, parse them and
-            // display them.
-            itowns.Fetcher.multiple('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/shapefile/velib-disponibilite-en-temps-reel', {
-                arrayBuffer: ['shp', 'dbf', 'shx'],
-                text: ['prj'],
-            }).then(function _(res) {
-                return itowns.ShapefileParser.parse(res, {
+
+
+            // As there is no Shapefile fetcher directly bundled within iTowns, we need to specify a method to fetch data.
+            // We use here `multiple` fetcher, which can fetch multiple files within multiple formats.
+            itowns.Fetcher.multiple(
+                'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/shapefile/velib-disponibilite-en-temps-reel',
+                {
+                    // fetch all files whose name match the `url` parameter value, and whose format is either `shp`,
+                    // `dbf`, `shx` or `prj`.
+                    arrayBuffer: ['shp', 'dbf', 'shx'],
+                    text: ['prj'],
+                },
+            ).then((fetched) => {
+                // Once our Shapefile data is fetched, we can parse it by running itowns built-in Shapefile parser.
+                return itowns.ShapefileParser.parse(fetched, {
+                    // Options indicating how the features should be built from data.
                     out: {
+                        // Specitfy the crs to convert the input coordinates to.
                         crs: view.tileLayer.extent.crs,
-                    }
-                });
-            }).then(function _(features) {
-                var velibSource = new itowns.FileSource({ features });
-
-                var velibStyle = new itowns.Style({
-                    zoom: { min: 10, max: 20 },
-                    point: {
-                        color: 'white',
-                        line: 'green',
-                    },
-                    text: {
-                        field: '{name}\n(id: {station_id})',
-                        size: 14,
-                        haloColor: 'white',
-                        haloWidth: 1,
-                        font: ['monospace'],
                     },
                 });
+            }).then((parsed) => {
+                // We can then instantiate a FileSource, passing the parsed data,
+                // and create a Layer bound to this source.
+                const velibSource = new itowns.FileSource({ features: parsed });
 
-                var velibLayer = new itowns.ColorLayer('velib', {
+                return view.addLayer(new itowns.ColorLayer('velib', {
                     source: velibSource,
-                    style: velibStyle,
+                    style: new itowns.Style({
+                        zoom: { min: 10, max: 20 },
+                        point: { color: 'white', line: 'green' },
+                        text: {
+                            field: '{name}\n(id: {station_id})',
+                            size: 14,
+                            haloColor: 'white',
+                            haloWidth: 1,
+                            font: ['monospace'],
+                        }
+                    }),
                     addLabelLayer: true,
-                });
-
-                debug.createTileDebugUI(menuGlobe.gui, view);
-
-                return view.addLayer(velibLayer);
-            }).then(function _(layer) {
+                }));
+            }).then((layer => {
+                // Finally, we generate tooltip for when the mouse hovers the data displayed within our created layer.
                 FeatureToolTip.addLayer(layer, { filterAllProperties: false });
-            });
+            }));
+
         </script>
     </body>
 </html>
