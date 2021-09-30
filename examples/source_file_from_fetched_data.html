@@ -1,0 +1,90 @@
+<html>
+<head>
+    <title>Itowns - FileSource - Handle fetching step</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="css/example.css">
+    <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+</head>
+<body>
+<div id="viewerDiv" class="viewer"></div>
+<script src="js/GUI/GuiTools.js"></script>
+<script src="../dist/itowns.js"></script>
+<script src="../dist/debug.js"></script>
+<script src="js/GUI/LoadingScreen.js"></script>
+<script src="js/plugins/FeatureToolTip.js"></script>
+<script type="text/javascript">
+    /* global itowns, setupLoadingScreen, GuiTools, ToolTip */
+
+
+
+    // ---------- CREATE A GlobeView : ----------
+
+    // Define camera initial position
+    const placement = {
+        coord: new itowns.Coordinates('EPSG:4326', 3.05, 48.95),
+        range: 70000,
+    };
+
+    // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+    const viewerDiv = document.getElementById('viewerDiv');
+
+    // Instantiate iTowns GlobeView
+    const view = new itowns.GlobeView(viewerDiv, placement);
+
+    // Setup loading screen and debug menu
+    setupLoadingScreen(viewerDiv, view);
+    const debugMenu = new GuiTools('menuDiv', view);
+
+
+
+    // ---------- DISPLAY CONTEXTUAL DATA : ----------
+
+    // Add one imagery layer to the scene
+    // This layer is defined in a json file but it could be defined as a plain js
+    // object. See Layer* for more info.
+    itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+        config.source = new itowns.WMTSSource(config.source);
+        var layer = new itowns.ColorLayer('Ortho', config);
+        view.addLayer(layer).then(debugMenu.addLayerGUI.bind(debugMenu));
+    });
+
+
+
+    // ---------- DEFINE DATA SOURCE FROM FETCHED DATA : ----------
+
+    // Handle fetching step.
+    // Should you implement a custom fetcher, it would need to be called here.
+    itowns.Fetcher.json(
+        'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon-roads.geojson',
+    ).then((fetched) => {
+        // Then, create a FileSource, passing it the data just fetched. We also need to specify the `format` or the
+        // `parser` parameter so that iTowns knows which parser it can use.
+        const sourceFromFetchedData = new itowns.FileSource({
+            fetchedData: fetched,
+            crs: 'EPSG:4326',
+            format: 'application/json',
+        });
+
+        view.addLayer(new itowns.ColorLayer('Roads', {
+            source: sourceFromFetchedData,
+            style: new itowns.Style({
+                stroke: { color: 'yellow' },
+            }),
+        })).then(debugMenu.addLayerGUI.bind(debugMenu));
+    });
+
+
+
+    view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+        // Organize the order with which layers are superposing.
+        itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+        // Move the camera to visualize all data.
+        view.controls.lookAtCoordinate(view.getLayerById('Roads').source.extent, false);
+    });
+
+</script>
+</body>
+</html>
