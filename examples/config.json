@@ -28,19 +28,29 @@
         "vector_tile_dragndrop": "Drag and drop a style"
     },
 
-    "Source / Stream": {
+    "WFS source": {
         "source_stream_wfs_25d": "WFS to 2.5D objects",
         "source_stream_wfs_3d": "WFS to 3D objects",
         "source_stream_wfs_raster": "WFS to raster"
     },
 
-    "Source / File": {
+    "Specific source options": {
+        "source_file_from_format": "format",
+        "source_file_from_methods": "fetcher and parser"
+    },
+
+    "FileSource": {
         "source_file_geojson_raster": "GeoJSON to raster",
         "source_file_geojson_3d": "GeoJSON to 3D objects",
         "source_file_kml_raster": "KML to raster",
         "source_file_gpx_raster": "GPX to raster",
-        "source_file_gpx_3d": "GPX to 3D objects",
-        "source_file_shapefile": "Shapefile to raster"
+        "source_file_gpx_3d": "GPX to 3D objects"
+    },
+
+    "Customize FileSource": {
+        "source_file_from_fetched_data": "Handle fetching step",
+        "source_file_from_parsed_data": "Handle parsing step",
+        "source_file_shapefile": "Shapefile case"
     },
 
     "Effects": {
