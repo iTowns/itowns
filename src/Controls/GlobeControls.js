@@ -673,18 +673,20 @@ class GlobeControls extends THREE.EventDispatcher {
     }
 
     updateTarget() {
-        // Update camera's target position
-        this.view.getPickingPositionFromDepth(null, pickedPosition);
-        const distance = !isNaN(pickedPosition.x) ? this.camera.position.distanceTo(pickedPosition) : 100;
-        targetPosition.set(0, 0, -distance);
-        this.camera.localToWorld(targetPosition);
+        // Check if the middle of the screen is on the globe (to prevent having a dark-screen bug if outside the globe)
+        if (this.view.getPickingPositionFromDepth(null, pickedPosition)) {
+            // Update camera's target position
+            const distance = !isNaN(pickedPosition.x) ? this.camera.position.distanceTo(pickedPosition) : 100;
+            targetPosition.set(0, 0, -distance);
+            this.camera.localToWorld(targetPosition);
 
-        // set new camera target on globe
-        positionObject(targetPosition, cameraTarget);
-        cameraTarget.matrixWorldInverse.copy(cameraTarget.matrixWorld).invert();
-        targetPosition.copy(this.camera.position);
-        targetPosition.applyMatrix4(cameraTarget.matrixWorldInverse);
-        spherical.setFromVector3(targetPosition);
+            // set new camera target on globe
+            positionObject(targetPosition, cameraTarget);
+            cameraTarget.matrixWorldInverse.copy(cameraTarget.matrixWorld).invert();
+            targetPosition.copy(this.camera.position);
+            targetPosition.applyMatrix4(cameraTarget.matrixWorldInverse);
+            spherical.setFromVector3(targetPosition);
+        }
     }
 
     handlingEvent(current) {
