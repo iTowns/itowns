@@ -5,15 +5,19 @@
 ?>
 
 <h2>Tutorials</h2>
-<div>
-    <ul class="nav-section">
-    <?js tutorials.children.forEach(function(tutorial) { ?>
-        <li class="nav-item">
-        <a class="nav-link" href="#tutorials/<?js= tutorial.name ?>"><?js= tutorial.title ?></a>
-        </li>
-    <?js }); ?>
-    </ul>
-</div>
+<?js for (const section in sortedTutorials) { ?>
+    <?js const sectionTitle = sortedTutorials[section].title; ?>
+    <div class="package">
+        <h3 class="nav-section"><?js= sectionTitle ?></h3>
+        <ul>
+            <?js sortedTutorials[section].tutorials.forEach(function(tutorial) { ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="#tutorials/<?js= tutorial.name ?>"><?js= tutorial.title ?></a>
+                </li>
+            <?js }); ?>
+        </ul>
+    </div>
+<?js } ?>
 
 <hr class="title-divider"/>
 

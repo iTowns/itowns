@@ -47,7 +47,8 @@
         "effects_postprocessing": "Post processing",
         "effects_split": "Splitted rendering",
         "effects_stereo": "Stereo effects",
-        "mars": "Mars atmosphere"
+        "mars": "Mars atmosphere",
+        "customColorLayerEffect": "Custom Color Effect"
     },
 
     "Miscellaneous": {
@@ -57,7 +58,10 @@
         "misc_camera_animation": "Camera animation",
         "misc_compare_25d_3d": "Compare 2.5D and 3D maps",
         "misc_georeferenced_images": "Georeferenced image",
-        "misc_orthographic_camera": "Orthographic camera"
+        "misc_orthographic_camera": "Orthographic camera",
+        "misc_custom_controls": "Define custom controls",
+        "misc_custom_label": "Custom label popup",
+        "misc_camera_traveling": "Camera traveling"
     },
 
     "Plugins": {

@@ -6,6 +6,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import Label from 'Core/Label';
 import { FEATURE_TYPES } from 'Core/Feature';
+import { readExpression } from 'Core/Style';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
@@ -33,6 +34,15 @@ class LabelLayer extends Layer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
+     * @param {domElement|function} config.domElement - An HTML domElement.
+     * If set, all `Label` displayed within the current instance `LabelLayer`
+     * will be this domElement.
+     *
+     * It can be set to a method. The single parameter of this method gives the
+     * properties of each feature on which a `Label` is created.
+     *
+     * If set, all the parameters set in the `LabelLayer` `Style.text` will be overridden,
+     * except for the `Style.text.anchor` parameter which can help place the label.
      */
     constructor(id, config = {}) {
         super(id, config);
@@ -45,6 +55,8 @@ class LabelLayer extends Layer {
         });
 
         this.buildExtent = true;
+
+        this.labelDomelement = config.domElement;
     }
 
     /**
@@ -95,11 +107,13 @@ class LabelLayer extends Layer {
                 const geometryField = g.properties.style && g.properties.style.text.field;
                 let content;
                 const context = { globals, properties: () => g.properties };
-                if (!geometryField && !featureField && !layerField) {
+                if (this.labelDomelement) {
+                    content = readExpression(this.labelDomelement, context);
+                } else if (!geometryField && !featureField && !layerField) {
                     // Check if there is an icon, with no text
-                    if (!(g.properties.style && g.properties.style.icon)
-                        && !(f.style && f.style.icon)
-                        && !(this.style && this.style.icon)) {
+                    if (!(g.properties.style && (g.properties.style.icon.source || g.properties.style.icon.key))
+                        && !(f.style && (f.style.icon.source || f.style.icon.key))
+                        && !(this.style && (this.style.icon.source || this.style.icon.key))) {
                         return;
                     }
                 } else if (geometryField) {

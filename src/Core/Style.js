@@ -11,6 +11,10 @@ const inv255 = 1 / 255;
 const canvas = document.createElement('canvas');
 const style_properties = {};
 
+function base_altitudeDefault(properties, coordinates = { z: 0 }) {
+    return coordinates.z;
+}
+
 function mapPropertiesFromContext(mainKey, from, to, context) {
     to[mainKey] = to[mainKey] || {};
     for (const key of style_properties[mainKey]) {
@@ -55,6 +59,8 @@ export function readExpression(property, ctx) {
                 }
             }
             return property.stops[0][1];
+        } else if (property instanceof Function) {
+            return property(ctx.properties());
         } else {
             return property;
         }
@@ -134,45 +140,71 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * - `point` is for all points
  * - `text` contains all {@link Label} related things
  *
+ * Many style property can be set to functions. When that is the case, the function's
+ * return type must necessarily be the same as the types (other than function) of the property.
+ * For instance, if the `fill.pattern` property is set to a function, this function must return
+ * an `Image`, a `Canvas`, or `String`.
+ * The first parameter of functions used to set `Style` properties is always an object containing
+ * the properties of the features displayed with the current `Style` instance.
+ *
  * @property {number} order - Order of the features that will be associated to
  * the style. It can helps sorting and prioritizing features if needed.
  * @property {Object} fill - Polygons and fillings style.
- * @property {string} fill.color - Defines the main color of the filling. Can be
+ * @property {string|function} fill.color - Defines the main color of the filling. Can be
  * any [valid color
  * string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is no value, indicating that no filling needs to be done.
- * @property {Image|Canvas|string} fill.pattern - Defines a pattern to fill the
+ * If the `Layer` is a `GeometryLayer` you could use `THREE.Color`.
+ * @property {Image|Canvas|string|function} fill.pattern - Defines a pattern to fill the
  * surface with. It can be an `Image` to use directly, or an url to fetch the
  * pattern from. See [this
  * example](http://www.itowns-project.org/itowns/examples/#source_file_geojson_raster)
  * for how to use.
- * @property {number} fill.opacity - The opacity of the color or the
+ * @property {number|function} fill.opacity - The opacity of the color or the
  * pattern. Can be between `0.0` and `1.0`. Default is `1.0`.
- *
+ * For a `GeometryLayer`, this opacity property isn't used.
+ * @property {number|function} fill.base_altitude - `GeometryLayer` Style, defines altitude
+ * for each Coordinates.
+ * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
+ * then the altitude value is set to 0.
+ * @property {number|function} fill.extrusion_height - `GeometryLayer` Style, if defined,
+ * polygons will be extruded by the specified amount
  * @property {Object} stroke - Lines and polygon edges.
- * @property {string} stroke.color The color of the line. Can be any [valid
+ * @property {string|function} stroke.color The color of the line. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is no value, indicating that no stroke needs to be done.
- * @property {number} stroke.opacity - The opacity of the line. Can be between
+ * If the `Layer` is a `GeometryLayer` you could use `THREE.Color`.
+ * @property {number|function} stroke.opacity - The opacity of the line. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
- * @property {number} stroke.width - The width of the line. Default is `1.0`.
+ * For a `GeometryLayer`, this opacity property isn't used.
+ * @property {number|function} stroke.width - The width of the line. Default is `1.0`.
+ * @property {number|function} stroke.base_altitude - `GeometryLayer` Style, defines altitude
+ * for each Coordinates.
+ * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
+ * then the altitude value is set to 0.
  *
  * @property {Object} point - Point style.
- * @property {string} point.color - The color of the point. Can be any [valid
+ * @property {string|function} point.color - The color of the point. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is no value, indicating that no point will be shown.
- * @property {number} point.radius - The radius of the point, in pixel. Default
+ * @property {number|function} point.radius - The radius of the point, in pixel. Default
  * is `2.0`.
- * @property {string} point.line - The color of the border of the point. Can be
+ * @property {string|function} point.line - The color of the border of the point. Can be
  * any [valid color
  * string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
- * @property {number} point.width - The width of the border, in pixel. Default
+ * It's not supported with a `GeometryLayer`.
+ * @property {number|function} point.width - The width of the border, in pixel. Default
  * is `0.0` (no border).
- * @property {number} point.opacity - The opacity of the point. Can be between
+ * @property {number|function} point.opacity - The opacity of the point. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
+ * It's not supported with a `GeometryLayer`.
+ * @property {number|function} point.base_altitude - `GeometryLayer` Style, defines altitude
+ * for each Coordinates.
+ * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
+ * then the altitude value is set to 0.
  *
  * @property {Object} text - All things {@link Label} related.
- * @property {string} text.field - A string to help read the text field from
+ * @property {string|function} text.field - A string to help read the text field from
  * properties of a `FeatureGeometry`, with the key of the property enclosed by
  * brackets. For example, if each geometry contains a `name` property,
  * `text.field` can be set as `{name}`. Default is no value, indicating that no
@@ -185,43 +217,57 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * multiple properties in one field, like if you want the latin name and the
  * local name of a location. Specifying `{name_latin} - {name_local}` can result
  * in `Marrakesh - مراكش` for example.
- * @property {string} text.color - The color of the text. Can be any [valid
+ * @property {string|function} text.color - The color of the text. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is `#000000`.
- * @property {string} text.anchor - The anchor of the text compared to its
+ * @property {string|number[]|function} text.anchor - The anchor of the text compared to its
  * position (see {@link Label} for the position). Can be a few value: `top`,
  * `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
  * or `bottom-right`. Default is `center`.
- * @property {Array} text.offset - The offset of the text, depending on its
+ *
+ * It can also be defined as an Array of two numbers. Each number defines an offset (in
+ * fraction of the label width and height) between the label position and the top-left
+ * corner of the text. The first value is the horizontal offset, and the second is the
+ * vertical offset. For example, `[-0.5, -0.5]` will be equivalent to `center`.
+ * @property {Array|function} text.offset - The offset of the text, depending on its
  * anchor, in pixels. First value is from `left`, second is from `top`. Default
  * is `[0, 0]`.
- * @property {number} text.padding - The padding outside the text, in pixels.
+ * @property {number|function} text.padding - The padding outside the text, in pixels.
  * Default is `2`.
- * @property {number} text.size - The size of the font, in pixels. Default is
+ * @property {number|function} text.size - The size of the font, in pixels. Default is
  * `16`.
- * @property {number} text.wrap - The maximum width, in pixels, before the text
+ * @property {number|function} text.wrap - The maximum width, in pixels, before the text
  * is wrapped, because the string is too long. Default is `10`.
- * @property {number} text.spacing - The spacing between the letters, in `em`.
+ * @property {number|function} text.spacing - The spacing between the letters, in `em`.
  * Default is `0`.
- * @property {string} text.transform - A value corresponding to the [CSS
+ * @property {string|function} text.transform - A value corresponding to the [CSS
  * property
  * `text-transform`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-transform).
  * Default is `none`.
- * @property {string} text.justify - A value corresponding to the [CSS property
+ * @property {string|function} text.justify - A value corresponding to the [CSS property
  * `text-align`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-align).
  * Default is `center`.
- * @property {number} text.opacity - The opacity of the text. Can be between
+ * @property {number|function} text.opacity - The opacity of the text. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
- * @property {Array} text.font - A list (as an array of string) of font family
+ * @property {Array|function} text.font - A list (as an array of string) of font family
  * names, prioritized in the order it is set. Default is `Open Sans Regular,
  * Arial Unicode MS Regular, sans-serif`.
- * @property {string} text.haloColor - The color of the halo. Can be any [valid
+ * @property {string|function} text.haloColor - The color of the halo. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is `#000000`.
- * @property {number} text.haloWidth - The width of the halo, in pixels.
+ * @property {number|function} text.haloWidth - The width of the halo, in pixels.
  * Default is `0`.
- * @property {number} text.haloBlur - The blur value of the halo, in pixels.
+ * @property {number|function} text.haloBlur - The blur value of the halo, in pixels.
  * Default is `0`.
+ *
+ * @property {Object} icon - Defines the appearance of icons attached to label.
+ * @property {String} icon.source - The url of the icons' image file.
+ * @property {String} icon.key - The key of the icons' image in a vector tile data set.
+ * @property {string} [icon.anchor='center'] - The anchor of the icon compared to the label position.
+ * Can be `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
+ * or `bottom-right`.
+ * @property {number} icon.size - If the icon's image is passed with `icon.source` or
+ * `icon.key`, it size when displayed on screen is multiplied by `icon.size`. Default is `1`.
  *
  * @example
  * const style = new itowns.Style({
@@ -258,6 +304,7 @@ class Style {
             stroke: {},
             point: {},
             text: {},
+            icon: {},
         };
 
         params.zoom = params.zoom || {};
@@ -265,6 +312,7 @@ class Style {
         params.stroke = params.stroke || {};
         params.point = params.point || {};
         params.text = params.text || {};
+        params.icon = params.icon || {};
 
         this.zoom = {};
         defineStyleProperty(this, 'zoom', 'min', params.zoom.min);
@@ -274,6 +322,9 @@ class Style {
         defineStyleProperty(this, 'fill', 'color', params.fill.color);
         defineStyleProperty(this, 'fill', 'opacity', params.fill.opacity, 1.0);
         defineStyleProperty(this, 'fill', 'pattern', params.fill.pattern);
+        defineStyleProperty(this, 'fill', 'base_altitude', params.fill.base_altitude, base_altitudeDefault);
+        defineStyleProperty(this, 'fill', 'extrusion_height', params.fill.extrusion_height);
+
         if (typeof this.fill.pattern == 'string') {
             Fetcher.texture(this.fill.pattern).then((pattern) => {
                 this.fill.pattern = pattern.image;
@@ -285,6 +336,7 @@ class Style {
         defineStyleProperty(this, 'stroke', 'opacity', params.stroke.opacity, 1.0);
         defineStyleProperty(this, 'stroke', 'width', params.stroke.width, 1.0);
         defineStyleProperty(this, 'stroke', 'dasharray', params.stroke.dasharray, []);
+        defineStyleProperty(this, 'stroke', 'base_altitude', params.stroke.base_altitude, base_altitudeDefault);
 
         this.point = {};
         defineStyleProperty(this, 'point', 'color', params.point.color);
@@ -292,6 +344,7 @@ class Style {
         defineStyleProperty(this, 'point', 'opacity', params.point.opacity, 1.0);
         defineStyleProperty(this, 'point', 'radius', params.point.radius, 2.0);
         defineStyleProperty(this, 'point', 'width', params.point.width, 0.0);
+        defineStyleProperty(this, 'point', 'base_altitude', params.point.base_altitude, base_altitudeDefault);
 
         this.text = {};
         defineStyleProperty(this, 'text', 'field', params.text.field);
@@ -312,6 +365,12 @@ class Style {
         defineStyleProperty(this, 'text', 'haloColor', params.text.haloColor, '#000000');
         defineStyleProperty(this, 'text', 'haloWidth', params.text.haloWidth, 0);
         defineStyleProperty(this, 'text', 'haloBlur', params.text.haloBlur, 0);
+
+        this.icon = {};
+        defineStyleProperty(this, 'icon', 'source', params.icon.source);
+        defineStyleProperty(this, 'icon', 'key', params.icon.key);
+        defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor, 'center');
+        defineStyleProperty(this, 'icon', 'size', params.icon.size, 1);
     }
 
     /**
@@ -323,13 +382,13 @@ class Style {
      */
     drawingStylefromContext(context) {
         const style = {};
-        if (this.fill.color || this.fill.pattern) {
+        if (this.fill.color || this.fill.pattern || context.globals.fill) {
             mapPropertiesFromContext('fill', this, style, context);
         }
-        if (this.stroke.color) {
+        if (this.stroke.color || context.globals.stroke) {
             mapPropertiesFromContext('stroke', this, style, context);
         }
-        if (this.point.color) {
+        if (this.point.color || context.globals.point) {
             mapPropertiesFromContext('point', this, style, context);
         }
         if (Object.keys(style).length) {
@@ -365,6 +424,7 @@ class Style {
         Object.assign(this.stroke, style.stroke);
         Object.assign(this.point, style.point);
         Object.assign(this.text, style.text);
+        Object.assign(this.icon, style.icon);
         return this;
     }
 
@@ -396,7 +456,7 @@ class Style {
             this.text.size = properties['label-size'];
 
             if (properties.icon) {
-                this.icon = { image: properties.icon, size: 1 };
+                this.icon.source = properties.icon;
             }
         } else {
             this.stroke.color = properties.stroke;
@@ -495,7 +555,7 @@ class Style {
             // additional icon
             const key = readVectorProperty(layer.layout['icon-image']);
             if (key) {
-                this.icon = { key };
+                this.icon.key = key;
                 this.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
             }
         }
@@ -531,14 +591,12 @@ class Style {
             domElement.setAttribute('data-before', domElement.textContent);
         }
 
-        if (!this.icon) {
+        if (!this.icon.source && !this.icon.key) {
             return;
         }
 
-        const image = this.icon.image;
-
+        const image = this.icon.source;
         const size = this.icon.size;
-
         const key = this.icon.key;
 
         let icon = cacheStyle.get(image || key, size);
@@ -549,45 +607,51 @@ class Style {
             } else {
                 icon = getImage(image);
             }
-            icon.style.position = 'absolute';
             cacheStyle.set(icon, image || key, size);
         }
 
         const addIcon = () => {
             const cIcon = icon.cloneNode();
-            cIcon.width *= size;
-            cIcon.height *= size;
-            switch (this.text.anchor) {
+
+            cIcon.setAttribute('class', 'itowns-icon');
+
+            cIcon.width = icon.width * this.icon.size;
+            cIcon.height = icon.height * this.icon.size;
+            cIcon.style.position = 'absolute';
+            cIcon.style.top = '0';
+            cIcon.style.left = '0';
+
+            switch (this.icon.anchor) { // center by default
                 case 'left':
-                    cIcon.style.right = `calc(100% - ${cIcon.width * 0.5}px)`;
-                    cIcon.style.top = `calc(50% - ${cIcon.height * 0.5}px)`;
+                    cIcon.style.top = `${-0.5 * cIcon.height}px`;
                     break;
                 case 'right':
-                    cIcon.style.top = `calc(50% - ${cIcon.height * 0.5}px)`;
+                    cIcon.style.top = `${-0.5 * cIcon.height}px`;
+                    cIcon.style.left = `${-cIcon.width}px`;
                     break;
                 case 'top':
-                    cIcon.style.right = `calc(50% - ${cIcon.width * 0.5}px)`;
+                    cIcon.style.left = `${-0.5 * cIcon.width}px`;
                     break;
                 case 'bottom':
-                    cIcon.style.top = `calc(100% - ${cIcon.height * 0.5}px)`;
-                    cIcon.style.right = `calc(50% - ${cIcon.width * 0.5}px)`;
+                    cIcon.style.top = `${-cIcon.height}px`;
+                    cIcon.style.left = `${-0.5 * cIcon.width}px`;
                     break;
                 case 'bottom-left':
-                    cIcon.style.top = `calc(100% - ${cIcon.height * 0.5}px)`;
-                    cIcon.style.right = `calc(100% - ${cIcon.width * 0.5}px)`;
+                    cIcon.style.top = `${-cIcon.height}px`;
                     break;
                 case 'bottom-right':
-                    cIcon.style.top = `calc(100% - ${cIcon.height * 0.5}px)`;
+                    cIcon.style.top = `${-cIcon.height}px`;
+                    cIcon.style.left = `${-cIcon.width}px`;
                     break;
                 case 'top-left':
-                    cIcon.style.right = `calc(100% - ${cIcon.width * 0.5}px)`;
                     break;
                 case 'top-right':
+                    cIcon.style.left = `${-cIcon.width}px`;
                     break;
                 case 'center':
                 default:
-                    cIcon.style.top = `calc(50% - ${cIcon.height * 0.5}px)`;
-                    cIcon.style.right = `calc(50% - ${cIcon.width * 0.5}px)`;
+                    cIcon.style.top = `${-0.5 * cIcon.height}px`;
+                    cIcon.style.left = `${-0.5 * cIcon.width}px`;
                     break;
             }
 
@@ -610,7 +674,16 @@ class Style {
      * @return {number[]} Two percentage values, for x and y respectively.
      */
     getTextAnchorPosition() {
-        return textAnchorPosition[this.text.anchor];
+        if (typeof this.text.anchor === 'string') {
+            if (Object.keys(textAnchorPosition).includes(this.text.anchor)) {
+                return textAnchorPosition[this.text.anchor];
+            } else {
+                console.error(`${this.text.anchor} is not a valid input for Style.text.anchor parameter.`);
+                return textAnchorPosition.center;
+            }
+        } else {
+            return this.text.anchor;
+        }
     }
 
     /**
@@ -619,9 +692,11 @@ class Style {
      *
      * @param {Object} ctx - An object containing the feature context.
      *
-     * @return {string} The formatted string.
+     * @return {string|undefined} The formatted string if `style.text.field` is defined, nothing otherwise.
      */
     getTextFromProperties(ctx) {
+        if (!this.text.field) { return; }
+
         if (this.text.field.expression) {
             return readExpression(this.text.field, ctx);
         } else {
@@ -649,6 +724,6 @@ style_properties.fill = Object.keys(style.fill);
 style_properties.stroke = Object.keys(style.stroke);
 style_properties.point = Object.keys(style.point);
 style_properties.text = Object.keys(style.text);
-style_properties.icon = ['image', 'size', 'key'];
+style_properties.icon = Object.keys(style.icon);
 
 export default Style;

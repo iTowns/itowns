@@ -15,7 +15,7 @@
  * view.addLayer(wfsLayer);
  *
  * var fileSource = new itowns.FileSource(...);
- * var fileLayer = new itowns.GeometryLayer('id_myFile', { source: fileSource});
+ * var fileLayer = new itowns.GeometryLayer('id_myFile', new THREE.Group(), { source: fileSource });
  * view.addLayer(fileLayer);
  *
  * FeatureToolTip.addLayer(wfsLayer);
@@ -64,6 +64,10 @@ var FeatureToolTip = (function _() {
         }
     }
 
+    function getGeometryProperties(geometry) {
+        return function properties() { return geometry.properties; };
+    }
+
     function fillToolTip(features, layer, options) {
         var content = '';
         var feature;
@@ -76,20 +80,27 @@ var FeatureToolTip = (function _() {
 
         for (var p = 0; p < features.length; p++) {
             feature = features[p];
-
             geometry = feature.geometry;
             style = (geometry.properties && geometry.properties.style) || feature.style || layer.style;
-            fill = style.fill.color;
-            stroke = '1.25px ' + style.stroke.color;
+            var context = { globals: {}, properties: getGeometryProperties(geometry) };
+            style = style.drawingStylefromContext(context);
 
             if (feature.type === itowns.FEATURE_TYPES.POLYGON) {
                 symb = '&#9724';
+                if (style) {
+                    fill = style.fill && style.fill.color;
+                    stroke = style.stroke && ('1.25px ' + style.stroke.color);
+                }
             } else if (feature.type === itowns.FEATURE_TYPES.LINE) {
                 symb = '&#9473';
-                fill = style.stroke.color;
+                fill = style && style.stroke && style.stroke.color;
                 stroke = '0px';
             } else if (feature.type === itowns.FEATURE_TYPES.POINT) {
                 symb = '&#9679';
+                if (style && style.point) {  // Style and style.point can be undefined if no style options were passed
+                    fill = style.point.color;
+                    stroke = '1.25px ' + style.point.line;
+                }
             }
 
             content += '<div>';

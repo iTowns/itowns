@@ -5,14 +5,6 @@ import handlingError from 'Process/handlerNodeError';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-const mat4 = new THREE.Matrix4();
-
-function applyMatrix4(obj, mat4) {
-    if (obj.geometry) {
-        obj.geometry.applyMatrix4(mat4);
-    }
-    obj.children.forEach(c => applyMatrix4(c, mat4));
-}
 
 function assignLayer(object, layer) {
     if (object) {
@@ -21,13 +13,6 @@ function assignLayer(object, layer) {
             object.material.transparent = layer.opacity < 1.0;
             object.material.opacity = layer.opacity;
             object.material.wireframe = layer.wireframe;
-
-            if (layer.size) {
-                object.material.size = layer.size;
-            }
-            if (layer.linewidth) {
-                object.material.linewidth = layer.linewidth;
-            }
         }
         object.layers.set(layer.threejsLayer);
         for (const c of object.children) {
@@ -89,7 +74,6 @@ export default {
             // if request return empty json, WFSProvider.getFeatures return undefined
             result = result[0];
             if (result) {
-                const isApplied = !result.layer;
                 assignLayer(result, layer);
                 // call onMeshCreated callback if needed
                 if (layer.onMeshCreated) {
@@ -100,22 +84,14 @@ export default {
                     ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, result);
                     return;
                 }
-                // We don't use node.matrixWorld here, because feature coordinates are
-                // expressed in crs coordinates (which may be different than world coordinates,
-                // if node's layer is attached to an Object with a non-identity transformation)
-                if (isApplied) {
-                    // NOTE: now data source provider use cache on Mesh
-                    // TODO move transform in feature2Mesh
-                    mat4.copy(node.matrixWorld).invert().elements[14] -= result.minAltitude;
-                    applyMatrix4(result, mat4);
-                }
-
-                if (result.minAltitude) {
-                    result.position.z = result.minAltitude;
-                }
-                result.layer = layer;
-                node.add(result);
-                node.updateMatrixWorld();
+                // remove old group layer
+                node.remove(...node.children.filter(c => c.layer && c.layer.id == layer.id));
+                const group = new THREE.Group();
+                group.layer = layer;
+                group.matrixWorld.copy(node.matrixWorld).invert();
+                group.matrixWorld.decompose(group.position, group.quaternion, group.scale);
+                node.add(group.add(result));
+                group.updateMatrixWorld(true);
             } else {
                 node.layerUpdateState[layer.id].failure(1, true);
             }

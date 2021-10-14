@@ -1,8 +1,8 @@
-The goal of this tutorial is to give a brief example on how to use iTowns to
-visualize a simple earth, with an elevation layer and a color layer.
-
+The goal of this tutorial is to give an example on how to use iTowns to visualize data in a global geocentric Coordinate Reference System (CRS).
+We shall learn how to display ortho-images as well as a Digital Elevation Model (DEM).
 ## Preparing the webpage
 
+The webpage we want to display data on should be structured as follows :
 ```html
 <!DOCTYPE html>
 <html>
@@ -28,8 +28,9 @@ visualize a simple earth, with an elevation layer and a color layer.
 
 ## Creating a view
 
-In order to be able to display anything with iTowns, we need one thing: a view,
-so we have a support to put our data on. The view needs to be attached to an
+In order to be able to display anything with iTowns, we need one thing : a `View`,
+so we have a support to put our data on. The data we want to display here are in a global CRS, 
+so we can use a `GlobeView`. The view needs to be attached to an
 element of the page in order to be displayed.
 
 ```js
@@ -38,29 +39,29 @@ var placement = {
     coord: new itowns.Coordinates('EPSG:4326', 2.35, 48.8),
     range: 25e6
 };
-var view = new itowns.GlobeView(viewerDiv, position);
+var view = new itowns.GlobeView(viewerDiv, placement);
 ```
 
-Three things are done here. First we get the element of the page, on which the
-view will be displayed. But getting this is not sufficient in our case to
-display a globe view. [The documentation]{@link GlobeView} specifies that a
-second parameter needs to be present: an object that will help place the camera
+Three things are done here. First we get the element of the page on which the
+view will be displayed. However, getting this is not sufficient in our case to
+display a `GlobeView`. [The documentation]{@link GlobeView} specifies that a
+second parameter needs to be present: an object that will help to place the camera
 on the globe.
 
 This object needs to contain two properties : a position which the camera is 
 facing (`coord`), and a camera distance to target coordinates (`range`) in meters.
-For the position argument, we can create a {@link Coordinates} in the WGS84 system -
+For the position argument, we can create a `{@link Coordinates}` object in the WGS84 system -
 whose EPSG code is 4326.
 
-Then, having those two objects, the {@link GlobeView} can be created. It should
+Then, having those two objects, the `{@link GlobeView}` can be created. It should
 result in a simple blue globe like below.
 
-![Simple GlobeView](images/Create-a-simple-globe-1.png)
+![Simple GlobeView](images/Raster-data-WGS84-1.png)
 
 ## Adding a color layer
 
 Now that we have a globe, let's display data on it. For this, let's use a basic
-layer composed of aerial photos. To define this, we also need to describe our
+layer composed of aerial photos. To define this, we first need to describe our
 source.
 
 ```js
@@ -80,15 +81,17 @@ view.addLayer(orthoLayer);
 ```
 
 We want to create and add a layer containing images. The best candidate here is
-the {@link ColorLayer}. Looking at the documentation, we need at least one
-parameter: the `id` of the layer. But that won't be enough to display data if we
-don't tell the layer where to look to get the data. For achieving this, we can
+the `ColorLayer`.
+Looking at [the documentation]{@link ColorLayer}, we need at least one
+parameter: the `id` of the layer. However, that won't be enough to display data if we
+don't tell the layer where to look to get the data. To achieve this, we can
 declare a source in the options.
 
 Images that we choose to display are coming from a WMTS server. So the source
-used will be a {@link WMTSSource}. To declare this source, three elements are
-needed:
-- an `url`, describing the path to the WMTS service
+used will be a `{@link WMTSSource}`. 
+To declare this source, three elements are
+needed :
+- a `url`, describing the path to the WMTS service
 - a `crs` projection in which to fetch the data
 - a `name`, used to build the URL for each image
 - a `tileMatrixSet`, for the same purpose
@@ -97,15 +100,15 @@ A `format` will also be specified in our case, as we are looking for jpeg
 images.
 
 Then, having all the necessary things, the layer can simply be created and added
-to the view using [`addLayer`](View#addLayer). The result is as below.
+to the view using `addLayer`. The result is as below.
 
-![Simple GlobeView with ColorLayer](images/Create-a-simple-globe-2.png)
+![Simple GlobeView with ColorLayer](images/Raster-data-WGS84-2.png)
 
 ## Adding an elevation layer
 
-We can add more depth to the current globe by providing an elevation layer. The
+We can add more depth to the current globe by providing an `{@link ElevationLayer}`. The
 process is quite similar to adding a `ColorLayer`. We are also still using a
-`WMTSSource`, but it needs to be created again as it is different from the
+`WMTSSource`, but it needs to be created again as the elevation data source is different from the
 previous one.
 
 ```js
@@ -126,20 +129,20 @@ view.addLayer(elevationLayer);
 ```
 
 Two things have changed:
-- the layer created, which is an {@link ElevationLayer} instead
+- the layer created, which is an `{@link ElevationLayer}`
 - the configuration, adapted to fit the source.
 
 We also added a property `zoom` in the source configuration.
-It contains the minimum and maximum values of the level, to zoom in the source.
+It contains the minimum and maximum values of the zoom level, between which data shall be fetched in the source.
 
 Now we can zoom in and see some mountains !
 
-![Simple Globe with mountains](images/Create-a-simple-globe-3.png)
+![Simple Globe with mountains](images/Raster-data-WGS84-3.png)
 
 ## Result
 
-Congratulations ! By reaching here, we are now able to display a simple globe
-with an elevation layer and an color layer. Here is the final code:
+Congratulations ! By reaching here, we are now able to display a simple `GlobeView`
+with an `ElevationLayer` and a `ColorLayer`. Here is the final code:
 
 ```html
 <!DOCTYPE html>

@@ -77,6 +77,22 @@ function sortByPackage(members, navList) {
     return packages;
 }
 
+function sortTutorialsBySection(tutorials, navList) {
+    const packages = {};
+
+    for (const tutorial in navList) {
+        packages[navList[tutorial].sectionId] = packages[navList[tutorial].sectionId] || {
+            title: navList[tutorial].sectionTitle,
+            tutorials: [],
+        };
+    }
+
+    tutorials.children.forEach((tutorial) => {
+        packages[navList[tutorial.longname].sectionId].tutorials.push(tutorial);
+    });
+    return packages;
+}
+
 // Generate an html page
 function generate(title, content, filename, template) {
     const outpath = path.join(outDir, filename);
@@ -106,15 +122,17 @@ function buildPages(packages) {
     }
 }
 
-function buildTutorials(tutorials) {
+function buildTutorials(tutorials, sortedTutorials) {
     helper.setTutorials(tutorials);
 
     fs.mkPath(path.join(outDir, 'tutorials'));
 
-    tutorials.children.forEach((tutorial) => {
-        const url = path.join('tutorials', `${tutorial.name}.html`);
-        generate(`Tutorial: ${tutorial.title}`, tutorial.parse(), url, 'tutorial.tmpl');
-    });
+    for (const section in sortedTutorials) {
+        sortedTutorials[section].tutorials.forEach((tutorial) => {
+            const url = path.join('tutorials', `${tutorial.name}.html`);
+            generate(`Tutorial : ${sortedTutorials[section].title} - ${tutorial.title}`, tutorial.parse(), url, 'tutorial.tmpl');
+        });
+    }
 
     // Copy images resources
     const fromDir = path.join(__dirname, 'tutorials/images');
@@ -149,16 +167,20 @@ exports.publish = function publish(taffyData, opts, tutorials) {
         fs.copyFileSync(filename, toDir);
     });
 
-    // Get the navigation configuration
+    // Get the navigation configuration for API and tutorials
     const navList = opts.navigation;
+    const tutorialSections = opts.tutorialSections;
 
     // Sort all the data that will be used by packages
     data = helper.prune(taffyData);
     const members = helper.getMembers(data);
     const packages = sortByPackage(members, navList);
 
+    // Sort tutorials by sections
+    const sortedTutorials = sortTutorialsBySection(tutorials, tutorialSections);
+
     generate('Home - iTowns documentation', opts.readme, 'home.html', 'readme.tmpl');
     buildPages(packages);
-    buildTutorials(tutorials);
-    generate('iTowns documentation', { tutorials, packages: navList }, 'index.html', 'main.tmpl');
+    buildTutorials(tutorials, sortedTutorials);
+    generate('iTowns documentation', { tutorials, packages: navList, sortedTutorials }, 'index.html', 'main.tmpl');
 };
