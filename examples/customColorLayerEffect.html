@@ -1,0 +1,141 @@
+<html>
+    <head>
+        <title>Itowns - Custom ColorLayer effect</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="miniDiv"></div>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script type="text/javascript">
+            // # Orthographic viewer
+
+            // Define geographic extent: CRS, min/max X, min/max Y
+            var extent = new itowns.Extent(
+                'EPSG:3857',
+                -20026376.39, 20026376.39,
+                -20048966.10, 20048966.10);
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate PlanarView
+            // By default itowns' tiles geometry have a "skirt" (ie they have a height),
+            // but in case of orthographic we don't need this feature, so disable it
+            var view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true, maxSubdivisionLevel: 10,
+                camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC },
+                placement: new itowns.Extent('EPSG:3857', -20000000, 20000000, -8000000, 20000000),
+                diffuse: new itowns.THREE.Color(0x444444),
+                controls: {
+                    // Faster zoom in/out speed
+                    zoomFactor: 3,
+                    // prevent from zooming in too much
+                    maxResolution: 0.005  // a pixel shall not represent a metric size smaller than 5 mm
+                },
+            });
+
+            setupLoadingScreen(viewerDiv, view);
+
+            itowns.ShaderChunk.customHeaderColorLayer(`
+                const mat3 sobelKernelX = mat3(1.0, 2.0, 1.0,
+                                0.0, 0.0, 0.0,
+                                -1.0, -2.0, -1.0);
+
+                const mat3 sobelKernelY = mat3(1.0, 0.0, -1.0,
+                                                2.0, 0.0, -2.0,
+                                                1.0, 0.0, -1.0);
+
+                //performs a convolution on an image with the given kernel
+                float convolve(mat3 kernel, mat3 image) {
+                    float result = 0.0;
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            result += kernel[i][j]*image[i][j];
+                        }
+                    }
+                    return result;
+                }
+
+                float edge(sampler2D textu, float stepx, float stepy, vec2 center){
+                    // get samples around pixel
+                    mat3 image = mat3(length(texture2D(textu,center + vec2(-stepx,stepy)).rgb),
+                                      length(texture2D(textu,center + vec2(0,stepy)).rgb),
+                                      length(texture2D(textu,center + vec2(stepx,stepy)).rgb),
+                                      length(texture2D(textu,center + vec2(-stepx,0)).rgb),
+                                      length(texture2D(textu,center).rgb),
+                                      length(texture2D(textu,center + vec2(stepx,0)).rgb),
+                                      length(texture2D(textu,center + vec2(-stepx,-stepy)).rgb),
+                                      length(texture2D(textu,center + vec2(0,-stepy)).rgb),
+                                      length(texture2D(textu,center + vec2(stepx,-stepy)).rgb));
+                    vec2 result;
+                    result.x = convolve(sobelKernelX, image);
+                    result.y = convolve(sobelKernelY, image);
+
+                    float color = clamp(length(result), 0.0, 255.0);
+                    return color;
+                }
+            `);
+
+            itowns.ShaderChunk.customBodyColorLayer(`
+                ivec2 textureSize2d = textureSize(tex,0);
+                vec2 resolution = vec2(float(textureSize2d.x), float(textureSize2d.y));
+
+                float step = layer.effect_parameter;
+
+                vec2 cuv = pitUV(uv.xy, offsetScale);
+
+                float value = edge(tex, step/resolution.x, step/resolution.y, cuv);
+
+                color = vec4(vec3(value * 0.8, 0.0, 0.0), value);
+            `);
+
+            // Add a TMS imagery source
+            var opensmSource = new itowns.TMSSource({
+                crs: 'EPSG:3857',
+                isInverted: true,
+                format: 'image/png',
+                url: 'http://osm.oslandia.io/styles/klokantech-basic/${z}/${x}/${y}.png',
+                tileMatrixSet: 'PM'
+            });
+
+            // Add a TMS imagery layer
+            var opensmEffectLayer = new itowns.ColorLayer('OPENSM_Effect', {
+                source: opensmSource,
+                effect_type: itowns.colorLayerEffects.customEffect,
+                effect_parameter: 1.0,
+                magFilter: itowns.THREE.NearestFilter,
+                minFilter: itowns.THREE.NearestFilter,
+            });
+
+            var opensm = new itowns.ColorLayer('OPENSM', { source: opensmSource });
+
+            view.addLayer(opensm);
+            view.addLayer(opensmEffectLayer);
+
+            // Request redraw
+            view.notifyChange();
+
+            menuGlobe = new GuiTools('menuDiv', view);
+            menuGlobe.addImageryLayersGUI(view.getLayers(function gui(l) { return l.isColorLayer; }));
+            debug.createTileDebugUI(menuGlobe.gui, view);
+
+            menuGlobe.gui.add(opensmEffectLayer, 'effect_parameter', 0.0, 1.0).onChange((v) => {
+                opensmEffectLayer.effect_parameter = v;
+                view.notifyChange(opensmEffectLayer);
+            });
+
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
+                itowns.ColorLayersOrdering.moveLayerToIndex(view, 'OPENSM', 0);
+            });
+        </script>
+    </body>
+</html>

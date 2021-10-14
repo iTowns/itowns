@@ -2,6 +2,11 @@
 const MAX_RETRY = 4;
 
 export default function handlingError(err, node, layer, targetLevel, view) {
+    // Cancel error handling if the layer was removed between command scheduling and its execution
+    if (!node.layerUpdateState[layer.id]) {
+        return;
+    }
+
     if (err.isCancelledCommandException) {
         node.layerUpdateState[layer.id].success();
     } else if (err instanceof SyntaxError) {

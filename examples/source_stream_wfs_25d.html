@@ -56,7 +56,7 @@
             view = new itowns.PlanarView(viewerDiv, extent, {
                 placement: {
                     coord: new itowns.Coordinates('EPSG:3946', 1840839, 5172718, 0),
-                    heading: -45,
+                    heading: 45,
                     range: 1800,
                     tilt: 30,
                 }
@@ -100,18 +100,6 @@
             });
 
             view.addLayer(wmsElevationLayer);
-
-            function setMaterialLineWidth(result) {
-                result.traverse(function _setLineWidth(mesh) {
-                    if (mesh.material) {
-                        mesh.material.linewidth = 5;
-                    }
-                });
-            }
-
-            function colorLine(properties) {
-                return color.set(Math.round(Math.random() * 0xffffff));
-            }
 
             var tile;
             var linesBus = [];
@@ -159,15 +147,17 @@
                 format: 'geojson',
             });
 
-            var lyonTclBusLayer = new itowns.GeometryLayer('lyon_tcl_bus', new itowns.THREE.Group(), {
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    color: colorLine,
-                    altitude: altitudeLine }),
-                onMeshCreated: setMaterialLineWidth,
+            var lyonTclBusLayer = new itowns.FeatureGeometryLayer('lyon_tcl_bus', {
                 filter: acceptFeatureBus,
                 source: lyonTclBusSource,
                 zoom: { min: 2 },
+
+                style: new itowns.Style({
+                    stroke: {
+                        base_altitude: altitudeLine,
+                        width: 5,
+                    }
+                })
             });
 
             view.addLayer(lyonTclBusLayer);
@@ -227,22 +217,26 @@
                 },
             });
 
-            var wfsBuildingLayer = new itowns.GeometryLayer('wfsBuilding', new itowns.THREE.Group(), {
-                update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    color: colorBuildings,
-                    batchId: function (property, featureId) { return featureId; },
-                    altitude: altitudeBuildings,
-                    extrude: extrudeBuildings }),
+            var wfsBuildingLayer = new itowns.FeatureGeometryLayer('wfsBuilding', {
                 onMeshCreated: function scaleZ(mesh) {
-                    mesh.scale.z = 0.01;
-                    meshes.push(mesh);
+                    mesh.children.forEach(c => {
+                        c.scale.z = 0.01;
+                        meshes.push(c);
+                    })
                 },
+                batchId: function (property, featureId) { return featureId; },
                 filter: acceptFeature,
-                overrideAltitudeInToZero: true,
                 crs: 'EPSG:3946',
                 source: wfsBuildingSource,
                 zoom: { min: 4 },
+
+                style: new itowns.Style({
+                    fill: {
+                        color: colorBuildings,
+                        base_altitude: altitudeBuildings,
+                        extrusion_height: extrudeBuildings,
+                    }
+                })
             });
 
             view.addLayer(wfsBuildingLayer);

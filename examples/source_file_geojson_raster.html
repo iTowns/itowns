@@ -56,70 +56,94 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
-            var optionsGeoJsonParser = {
-                in: {
-                    crs: 'EPSG:4326',
-                },
-                out: {
-                    crs: view.tileLayer.extent.crs,
-                    buildExtent: true,
-                    mergeFeatures: true,
-                    structure: '2d',
-                }
-            };
 
-            // Convert by iTowns
-            itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson')
-                .then(function _(geojson) {
-                    return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
-                }).then(function _(features) {
-                    var ariegeSource = new itowns.FileSource({ features });
+            // Display the content of a GeoJSON on terrain with ColorLayer and FileSource.
+            // The GeoJSON is loaded from url, set in FileSource
 
-                    var ariegeStyle = new itowns.Style({
-                        fill: {
-                            color: 'orange',
-                            opacity: 0.5,
-                        },
-                        stroke: {
-                            color:'white',
-                        },
-                    });
+            // Declare the source for the data on Ariege area
+            const ariegeSource = new itowns.FileSource({
+                url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
+                crs: 'EPSG:4326',
+                format: 'application/json',
+            });
+            // Create a ColorLayer for the Ariege area
+            const ariegeLayer = new itowns.ColorLayer('ariege', {
+                name: 'ariege',
+                transparent: true,
+                source: ariegeSource,
+                style: new itowns.Style({
+                    fill: {
+                        color: 'orange',
+                        opacity: 0.5,
+                    },
+                    stroke: {
+                        color: 'white',
+                    },
+                }),
+            });
+            // Add the Ariege ColorLayer to the view and grant it a tooltip
+            view.addLayer(ariegeLayer).then(FeatureToolTip.addLayer);
 
-                    var ariegeLayer = new itowns.ColorLayer('ariege', {
-                        name: 'ariege',
-                        transparent: true,
-                        source: ariegeSource,
-                        style: ariegeStyle,
-                    });
 
-                    return view.addLayer(ariegeLayer);
-                }).then(FeatureToolTip.addLayer);
+            // Display the content of a GeoJSON on terrain with ColorLayer and FileSource.
+            // The GeoJSON content is fetched from the file, then parsed and finally passed into FileSource data.
+            // The process is decomposed so that the fetching and parsing steps are visible.
 
-            itowns.Fetcher.json('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson')
-                .then(function _(geojson) {
-                    return itowns.GeoJsonParser.parse(geojson, optionsGeoJsonParser);
-                }).then(function _(features) {
-                    var pyoSource = new itowns.FileSource({ features });
+            // Fetch data from the GeoJSON file.
+            // Should you implement a custom fetcher, it would need to be called here.
+            itowns.Fetcher.json(
+                'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson'
+            ).then(function _(geojson) {
+                // Parses the fetched data into an itowns FeatureCollection.
+                // See http://www.itowns-project.org/itowns/docs/#api/Base/FeatureCollection.
+                // Should you implement a custom parser, it would need to be called here.
+                // The second parameter of the `parse` method we use here defines options for the transformation from
+                // data to FeatureCollection.
+                return itowns.GeoJsonParser.parse(geojson, {
+                    // Information on the fetched data.
+                    // See http://www.itowns-project.org/itowns/docs/#api/Source/ParsingOptions.
+                    in: {
+                        crs: 'EPSG:4326',
+                    },
+                    // Information on the FeatureCollection that should be created from the fetched data
+                    // Here, we pass a FeatureBuildingOptions (http://www.itowns-project.org/itowns/docs/#api/Base/FeatureBuildingOptions)
+                    out: {
+                        crs: view.tileLayer.extent.crs,
+                        buildExtent: true,
+                        mergeFeatures: true,
+                        structure: '2d',
+                    },
+                });
+            }).then(function _(features) {
+                // Create a FileSource from the parsed FeatureCollection.
+                var pyoSource = new itowns.FileSource({ features });
 
-                    var pyoStyle = new itowns.Style({
-                        fill: {
-                            pattern: 'images/cross.png',
-                            opacity: 0.8,
-                        },
-                        stroke: {
-                            color:'IndianRed',
-                        },
-                    });
+                var pyoStyle = new itowns.Style({
+                    fill: {
+                        pattern: 'images/cross.png',
+                        opacity: 0.8,
+                    },
+                    stroke: {
+                        color:'IndianRed',
+                    },
+                });
 
-                    var pyoLayer = new itowns.ColorLayer('pyrenees-orientales', {
-                        name: 'pyrenees-orientales',
-                        transparent: true,
-                        source: pyoSource,
-                        style: pyoStyle,
-                    });
+                // Create a ColorLayer to display the FeatureCollection.
+                var pyoLayer = new itowns.ColorLayer('pyrenees-orientales', {
+                    name: 'pyrenees-orientales',
+                    transparent: true,
+                    source: pyoSource,
+                    style: pyoStyle,
+                });
 
-                    return view.addLayer(pyoLayer);
-                }).then(FeatureToolTip.addLayer);
+                return view.addLayer(pyoLayer);
+            }).then(FeatureToolTip.addLayer).then(() => {
+                // Center the camera on the data extents
+                const layersExtent = ariegeSource.extent.clone();
+                layersExtent.union(view.getLayerById('pyrenees-orientales').source.extent);
+                view.controls.lookAtCoordinate(layersExtent, false);
+            });
+
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>

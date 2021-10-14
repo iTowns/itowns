@@ -149,7 +149,7 @@ describe('GlobeControls with globe example', function _() {
         const mouse = page.mouse;
         await mouse.move(middleWidth, middleHeight, { steps: 20 });
         await mouse.down();
-        await mouse.move((middleWidth) - 50, (middleHeight), { steps: 10 });
+        await mouse.move((middleWidth) + 50, (middleHeight), { steps: 10 });
         await mouse.up();
         await page.keyboard.up('Control');
         const endHeading = await page.evaluate(() => view.controls.getHeading());
@@ -166,7 +166,8 @@ describe('GlobeControls with globe example', function _() {
         }));
 
         await page.evaluate(() => { view.controls.enableDamping = false; });
-        await page.mouse.click(middleWidth, middleHeight, { clickCount: 2, delay: 50 });
+        await page.mouse.click(middleWidth, middleHeight);
+        await page.mouse.click(middleWidth, middleHeight);
         const result = await end.then(er => (initialPosition.range * 0.6) - er);
         assert.ok(Math.abs(result) < 100);
     });
@@ -181,7 +182,7 @@ describe('GlobeControls with globe example', function _() {
                     resolve(view.controls.getRange());
                 }
             });
-            const wheelEvent = new WheelEvent('mousewheel', {
+            const wheelEvent = new WheelEvent('wheel', {
                 deltaY: -50000,
             });
             view.domElement.dispatchEvent(wheelEvent, document);

@@ -31,6 +31,14 @@ export const VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED,
 };
 
+/**
+ * Fired on current view's domElement when double right-clicking it. Copies all properties of the second right-click
+ * MouseEvent (such as cursor position).
+ * @event View#dblclick-right
+ * @property {string} type  dblclick-right
+ */
+
+
 const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer, view) {
     if (layer.object3d) {
         layer.object3d.visible = layer.visible;
@@ -232,6 +240,19 @@ class View extends THREE.EventDispatcher {
         this.domElement.tabIndex = -1;
         // Set focus on view's domElement.
         this.domElement.focus();
+
+        // Create a custom `dblclick-right` event that is triggered when double right-clicking
+        let rightClickTimeStamp;
+        this.domElement.addEventListener('mouseup', (event) => {
+            if (event.button === 2) {  // If pressed mouse button is right button
+                // If time between two right-clicks is bellow 500 ms, triggers a `dblclick-right` event
+                if (rightClickTimeStamp && event.timeStamp - rightClickTimeStamp < 500) {
+                    this.domElement.dispatchEvent(new MouseEvent('dblclick-right', event));
+                }
+                rightClickTimeStamp = event.timeStamp;
+            }
+        });
+
 
         // push all viewer to keep source.cache
         viewers.push(this);
@@ -618,18 +639,19 @@ class View extends THREE.EventDispatcher {
      * @param {event} event - event can be a MouseEvent or a TouchEvent
      * @param {THREE.Vector2} target - the target to set the view coords in
      * @param {number} [touchIdx=0] - finger index when using a TouchEvent
-     * @return {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
+     * @return {THREE.Vector2|undefined} - view coordinates (in pixels, 0-0 = top-left of the View).
+     * If the event is neither a `MouseEvent` nor a `TouchEvent`, the return is `undefined`.
      */
     eventToViewCoords(event, target = _eventCoords, touchIdx = 0) {
         const br = this.domElement.getBoundingClientRect();
 
-        if (event.touches === undefined || !event.touches.length) {
+        if (event.touches && event.touches.length) {
+            return target.set(event.touches[touchIdx].clientX - br.x,
+                event.touches[touchIdx].clientY - br.y);
+        } else if (event.offsetX !== undefined && event.offsetY !== undefined) {
             const targetBoundingRect = event.target.getBoundingClientRect();
             return target.set(targetBoundingRect.x + event.offsetX - br.x,
                 targetBoundingRect.y + event.offsetY - br.y);
-        } else {
-            return target.set(event.touches[touchIdx].clientX - br.x,
-                event.touches[touchIdx].clientY - br.y);
         }
     }
 

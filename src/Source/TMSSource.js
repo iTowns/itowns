@@ -30,6 +30,10 @@ const extent = new Extent(CRS.tms_4326, 0, 0, 0);
  * is 0.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 20.
+ * @property {function} tileMatrixCallback - a method that create a TileMatrix
+ * identifier from the zoom level. For example, if set to `(zoomLevel) => 'EPSG:4326:' + zoomLevel`,
+ * the TileMatrix that will be fetched at zoom level 5 will be the one with identifier `EPSG:4326:5`.
+ * By default, the method returns the input zoom level.
  *
  * @example <caption><b>Source from OpenStreetMap server :</b></caption>
  * // Create the source
@@ -96,6 +100,7 @@ class TMSSource extends Source {
         this.crs = CRS.formatToTms(source.crs);
         this.tileMatrixSetLimits = source.tileMatrixSetLimits;
         this.extentSetlimits = {};
+        this.tileMatrixCallback = source.tileMatrixCallback || (zoomLevel => zoomLevel);
 
         if (!this.zoom) {
             if (this.tileMatrixSetLimits) {

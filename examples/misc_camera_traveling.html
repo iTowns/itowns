@@ -1,0 +1,148 @@
+<html lang="en">
+    <head>
+        <title>Itowns - Pick positions</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+    	<div id="description">
+	        Controls
+	        <ul>
+	        	<li>Left-Click: camera translation (drag)</li>
+		        <li>Right-Click: camera translation (pan)</li>
+    		    <li>Ctrl + Left-Click: camera rotation (orbit)</li>
+    		    <li>Mouse Wheel: zoom in/out</li>
+            </ul>
+            Recording
+            <ul>
+    		    <li>P: save current camera position</li>
+    		    <li>T: travel through each saved camera positions</li>
+    		    <li>T while traveling: interrupt travel</li>
+    		    <li>C: clear all saved camera positions</li>
+	        </ul>
+	    </div>
+        <div id="viewerDiv"></div>
+
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            /* global itowns */
+
+            // ---------- Display a GlobeView with ortho-images and digital elevation model : ----------
+
+            // `viewerDiv` will contain iTowns rendering area (`<canvas>`) :
+            let viewerDiv = document.getElementById('viewerDiv');
+
+            // Define initial camera position :
+            let initialPlacement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 50000
+            };
+
+            // Instantiate iTowns GlobeView :
+            let view = new itowns.GlobeView(viewerDiv, initialPlacement);
+
+            // Sets a loading screen :
+            setupLoadingScreen(viewerDiv, view);
+
+            // Add one imagery layer to the scene and the miniView.
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                const orthoLayer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(orthoLayer);
+            });
+
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                let layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer);
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+
+            // ---------- Select camera positions and travel through these positions : ----------
+
+            // THREE.Group which stores picked camera positions markers.
+            let cameraHelpers = new itowns.THREE.Group();
+            cameraHelpers.visible = false;
+            view.scene.add(cameraHelpers);
+
+            // Array which stores successive camera transform options (headings, tilts, ranges...
+            // see CameraTransformOptions doc at http://www.itowns-project.org/itowns/docs/#api/Controls/CameraUtils)
+            let travelSteps = [];
+            // Boolean which states if the camera is performing a travel animation or not
+            let travelOn = false;
+
+            function saveCurrentCameraTransformOptions() {
+                // Retrieve current camera transform options
+                const cameraTransformOptions = itowns.CameraUtils.getTransformCameraLookingAtTarget(
+                    view,
+                    view.camera.camera3D,
+                );
+                // Change default easing parameter for animation speed
+                // (see https://sole.github.io/tween.js/examples/03_graphs.html)
+                cameraTransformOptions.easing = itowns.CameraUtils.Easing.Quadratic.InOut;
+
+                // Add the camera transform options to the travel step array
+                travelSteps.push(cameraTransformOptions);
+
+                // Create a CameraHelper (https://threejs.org/docs/index.html?q=Camera#api/en/helpers/CameraHelper) at
+                // the current position of the camera. The camera is copied, and the copy's `far` is lowered. This
+                // renders shorter axes on the displayed CameraHelper.
+                const copyCamera = view.camera.camera3D.clone();
+                copyCamera.far = 50;
+                const helper = new itowns.THREE.CameraHelper(copyCamera);
+                helper.updateWorldMatrix(true, false);
+                cameraHelpers.add(helper);
+                view.notifyChange();
+            }
+
+            function animateCamera() {
+                if (!travelOn) {  // If travel is off, begin travel
+                    travelOn = true;
+                    return itowns.CameraUtils.sequenceAnimationsToLookAtTarget(
+                        view,
+                        view.camera.camera3D,
+                        travelSteps,
+                    ).then(() => { travelOn = false; });
+                }
+
+                itowns.CameraUtils.stop(view, view.camera.camera3D);  // If travel is on, interrupt it
+            }
+
+            // Listens for user input :
+            window.addEventListener('keypress', async function (event) {
+                // If user presses `p` (for 'pick:'), saves the current camera position, heading, tilt...
+                if (event.key === 'p') { saveCurrentCameraTransformOptions(); }
+                // If user presses `t` (for 'travel'), switches travelling mode on or off.
+                else if (event.key === 't') { animateCamera(); }
+                // If user presses `c` (for 'clear'), removes all the picked position from lists.
+                else if (event.key ==='c') {
+                    travelSteps = [];
+                    cameraHelpers.clear();
+                    view.notifyChange();
+                }
+            })
+
+            // Add a menu with an option to display CameraHelpers or not :
+            let menuGlobe = new GuiTools('menuDiv', view);
+            menuGlobe.addGUI('Picked positions', false, function (v) {
+                cameraHelpers.visible = !!v;
+                view.notifyChange();
+            })
+
+        </script>
+    </body>
+</html>
