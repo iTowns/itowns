@@ -34,6 +34,7 @@
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
                 range: 25000000,
             }
+            var promises = [];
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
@@ -46,14 +47,14 @@
             atmosphere.setRealisticOn(true);
 
             pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', 2.0889, 42.809), range: 100000, time: time * 0.2 });
-            pathTravel.push({ range: 13932, time: time * 0.2, tilt: 7.59, heading: 110.9 });
+            pathTravel.push({ range: 13932, time: time * 0.2, tilt: 7.59, heading: -110.9 });
             pathTravel.push({ tilt: 8, time: time * 0.2 });
-            pathTravel.push({ range: 70000, time: time * 0.2, tilt: 5, heading: 90 });
-            pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', 7.0193, 43.991), tilt: 11.5, heading: 127.211, time: time });
+            pathTravel.push({ range: 70000, time: time * 0.2, tilt: 5, heading: -90 });
+            pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', 7.0193, 43.991), tilt: 11.5, heading: -127.211, time: time });
             pathTravel.push({ range: 10414, time: time * 0.2 });
             pathTravel.push({ tilt: 8, time: time * 0.2 });
-            pathTravel.push({ range: 60000, heading: -40, time: time * 0.2 });
-            pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', 9.114, 41.973), tilt: 15.92, heading: 13.18, time: time });
+            pathTravel.push({ range: 60000, heading: 40, time: time * 0.2 });
+            pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', 9.114, 41.973), tilt: 15.92, heading: -13.18, time: time });
             pathTravel.push({ range: 16601, time: time * 0.2 });
 
             function addLayerCb(layer) {
@@ -88,7 +89,10 @@
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                travel().then(travel).catch(console.error);
+                Promise.all(promises).then(function _() {
+                    // let's go
+                    travel().then(travel);
+                }).catch(console.error);
             });
 </script>
 </body>

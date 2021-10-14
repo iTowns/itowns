@@ -2,7 +2,6 @@ import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterColorTile } from 'Renderer/RasterTile';
 import Style from 'Core/Style';
-import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
 
 /**
  * Fires when the visiblity of the layer has changed.
@@ -27,13 +26,11 @@ import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
  * @property {number} opacity - property to adjust transparency, opacity is between 0. and 1.
  * @property {boolean} transparent - specify if the layer could be transparent.
  * @property {boolean} noTextureParentOutsideLimit - don't parent texture if it's outside limit.
- * @property {number} effect_type - type effect to apply on raster color.
- * if `effect_type` equals:
+ * @property {number} fx - special effects apply on raster color.
+ * if `fx` equals:
  * * `0`: no special effect.
- * * `1`: light color to invisible effect.
- * * `2`: white color to invisible effect.
- * * `3`: custom shader effect (defined `ShaderChunk.customBodyColorLayer` and `ShaderChunk.customHeaderColorLayer`).
- * @property {number} effect_parameter - amount value used with effect applied on raster color.
+ * * `> 0. to < 2.0`: light color to invisible effect.
+ * * `>= 2`: white color to invisible effect.
  */
 class ColorLayer extends RasterLayer {
     /**
@@ -53,15 +50,6 @@ class ColorLayer extends RasterLayer {
      * available using `layer.name` or something else depending on the property
      * name.
      * @param {Source} [config.source] - Description and options of the source.
-     * @param {number} [config.magFilter] - How the texture is sampled when a texel covers more than one pixel. [see](https://threejs.org/docs/?q=texture#api/en/textures/Texture.magFilter)
-     * @param {number} [config.minFilter] - How the texture is sampled when a texel covers less than one pixel. [see](https://threejs.org/docs/?q=texture#api/en/textures/Texture.minFilter)
-     * @param {number} [effect_type=0] - type effect to apply on raster color.
-     * if `effect_type` equals:
-     * * `0`: no special effect.
-     * * `1`: light color to invisible effect.
-     * * `2`: white color to invisible effect.
-     * * `3`: custom shader effect (defined `ShaderChunk.customBodyColorLayer` and `ShaderChunk.customHeaderColorLayer`).
-     * @param {number} [effect_parameter=1.0] - amount value used with effect applied on raster color.
      *
      * @example
      * // Create a ColorLayer
@@ -81,7 +69,6 @@ class ColorLayer extends RasterLayer {
      * view.addLayer(color);
      */
     constructor(id, config = {}) {
-        deprecatedColorLayerOptions(config);
         super(id, config);
         this.isColorLayer = true;
         this.style = new Style(config.style);
@@ -90,6 +77,7 @@ class ColorLayer extends RasterLayer {
         this.defineLayerProperty('sequence', 0);
         this.transparent = config.transparent || (this.opacity < 1.0);
         this.noTextureParentOutsideLimit = config.source ? config.source.isFileSource : false;
+        this.fx = config.fx || 0;
 
         // Feature options
         this.buildExtent = true;

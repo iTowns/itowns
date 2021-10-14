@@ -1,9 +1,6 @@
 import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
 
-/** @module 3dTilesProcessing
-*/
-
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw) {
     const command = {
         /* mandatory */
@@ -123,15 +120,6 @@ function _subdivideNodeSubstractive(context, layer, node) {
     }
 }
 
-/**
- * Check if the node is visible in the camera.
- *
- * @param      {C3DTilesLayer} layer       node 3D tiles layer
- * @param      {Camera}   camera           camera
- * @param      {THREE.Object3D}   node             The 3d tile node to check.
- * @param      {THREE.Matrix4}   tileMatrixWorld  The node matrix world
- * @return     {boolean}  return true if the node is visible
- */
 export function $3dTilesCulling(layer, camera, node, tileMatrixWorld) {
     // For viewer Request Volume
     // https://github.com/AnalyticalGraphicsInc/3d-tiles-samples/tree/master/tilesets/TilesetWithRequestVolume
@@ -311,16 +299,6 @@ function markForDeletion(layer, elt) {
     }
 }
 
-/**
- * This funcion builds the method to update 3d tiles node.
- *
- * The returned method checks the 3d tile visibility with `cullingTest` function.
- * It subdivises visible node if `subdivisionTest` return `true`.
- *
- * @param      {Function}  [cullingTest=$3dTilesCulling]                 The culling test method.
- * @param      {Function}  [subdivisionTest=$3dTilesSubdivisionControl]  The subdivision test method.
- * @return     {Function}    { description_of_the_return_value }
- */
 export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTest = $3dTilesSubdivisionControl) {
     return function _process3dTilesNodes(context, layer, node) {
         // early exit if parent's subdivision is in progress
@@ -360,17 +338,6 @@ export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTes
     };
 }
 
-/**
- *
- *
- * the method returns true if the `node` should be subivised.
- *
- * @param      {object}   context  The current context
- * @param      {Camera}   context.camera  The current camera
- * @param      {C3DTilesLayer}   layer  The 3d tile layer
- * @param      {THREE.Object3D}  node  The 3d tile node
- * @return     {boolean}
- */
 export function $3dTilesSubdivisionControl(context, layer, node) {
     if (layer.tileset.tiles[node.tileId].children === undefined) {
         return false;
@@ -381,5 +348,3 @@ export function $3dTilesSubdivisionControl(context, layer, node) {
     const sse = computeNodeSSE(context.camera, node);
     return sse > layer.sseThreshold;
 }
-
-

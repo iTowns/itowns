@@ -101,7 +101,6 @@ class Label2DRenderer {
         this.domElement = document.createElement('div');
         this.domElement.style.overflow = 'hidden';
         this.domElement.style.position = 'absolute';
-        this.domElement.style.top = '0';
         this.domElement.style.height = '100%';
         this.domElement.style.width = '100%';
         this.domElement.style.zIndex = 1;

@@ -510,7 +510,14 @@ class PlanarControls extends THREE.EventDispatcher {
      * @ignore
      */
     initiateZoom(event) {
-        const delta = -event.deltaY;
+        let delta;
+
+        // mousewheel delta
+        if (undefined !== event.wheelDelta) {
+            delta = event.wheelDelta;
+        } else if (undefined !== event.detail) {
+            delta = -event.detail;
+        }
 
         pointUnderCursor.copy(this.getWorldPointAtScreenXY(mousePosition));
         const newPos = new THREE.Vector3();
@@ -893,7 +900,7 @@ class PlanarControls extends THREE.EventDispatcher {
         this.view.domElement.addEventListener('mouseup', this._handlerOnMouseUp, false);
         this.view.domElement.addEventListener('mouseleave', this._handlerOnMouseUp, false);
         this.view.domElement.addEventListener('mousemove', this._handlerOnMouseMove, false);
-        this.view.domElement.addEventListener('wheel', this._handlerOnMouseWheel, false);
+        this.view.domElement.addEventListener('mousewheel', this._handlerOnMouseWheel, false);
         // focus policy
         if (this.focusOnMouseOver) {
             this.view.domElement.addEventListener('mouseover', this._handlerFocusOnMouseOver, false);
@@ -904,6 +911,8 @@ class PlanarControls extends THREE.EventDispatcher {
         // prevent the default context menu from appearing when right-clicking
         // this allows to use right-click for input without the menu appearing
         this.view.domElement.addEventListener('contextmenu', this._handlerContextMenu, false);
+        // for firefox
+        this.view.domElement.addEventListener('MozMousePixelScroll', this._handlerOnMouseWheel, false);
     }
 
     /**
@@ -917,10 +926,12 @@ class PlanarControls extends THREE.EventDispatcher {
         this.view.domElement.removeEventListener('mouseup', this._handlerOnMouseUp, false);
         this.view.domElement.removeEventListener('mouseleave', this._handlerOnMouseUp, false);
         this.view.domElement.removeEventListener('mousemove', this._handlerOnMouseMove, false);
-        this.view.domElement.removeEventListener('wheel', this._handlerOnMouseWheel, false);
+        this.view.domElement.removeEventListener('mousewheel', this._handlerOnMouseWheel, false);
         this.view.domElement.removeEventListener('mouseover', this._handlerFocusOnMouseOver, false);
         this.view.domElement.removeEventListener('click', this._handlerFocusOnMouseClick, false);
         this.view.domElement.removeEventListener('contextmenu', this._handlerContextMenu, false);
+        // for firefox
+        this.view.domElement.removeEventListener('MozMousePixelScroll', this._handlerOnMouseWheel, false);
     }
 
     /**

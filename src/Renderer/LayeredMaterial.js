@@ -31,13 +31,6 @@ export function getMaxColorSamplerUnitsCount() {
     return Math.min(maxSamplerUnitsCount - samplersElevationCount, maxSamplersColorCount);
 }
 
-export const colorLayerEffects = {
-    noEffect: 0,
-    removeLightColor: 1,
-    removeWhiteColor: 2,
-    customEffect: 3,
-};
-
 const defaultStructLayer = {
     bias: 0,
     zmin: 0,
@@ -47,8 +40,7 @@ const defaultStructLayer = {
     textureOffset: 0,
     opacity: 0,
     crs: 0,
-    effect_parameter: 0,
-    effect_type: colorLayerEffects.noEffect,
+    effect: 0,
 };
 
 function updateLayersUniforms(uniforms, olayers, max) {

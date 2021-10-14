@@ -5,17 +5,17 @@ import CRS from 'Core/Geographic/Crs';
 
 const extentTexture = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
-const textureLayer = (texture, layer) => {
+const textureLayer = (texture) => {
     texture.generateMipmaps = false;
-    texture.magFilter = layer.magFilter || THREE.LinearFilter;
-    texture.minFilter = layer.minFilter || THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearFilter;
     return texture;
 };
 
-function textureColorLayer(texture, layer) {
+function textureColorLayer(texture, transparent) {
     texture.anisotropy = 16;
-    texture.premultiplyAlpha = layer.transparent;
-    return textureLayer(texture, layer);
+    texture.premultiplyAlpha = transparent;
+    return textureLayer(texture);
 }
 
 export default {
@@ -38,7 +38,7 @@ export default {
         }
 
         if (layer.isColorLayer) {
-            return textureColorLayer(texture, layer);
+            return textureColorLayer(texture, layer.transparent);
         } else if (layer.isElevationLayer) {
             if (texture.flipY) {
                 // DataTexture default to false, so make sure other Texture types
@@ -46,7 +46,7 @@ export default {
                 // See UV construction for more details
                 texture.flipY = false;
             }
-            return textureLayer(texture, layer);
+            return textureLayer(texture);
         }
     },
 };

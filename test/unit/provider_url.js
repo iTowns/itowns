@@ -4,7 +4,7 @@ import URLBuilder from 'Provider/URLBuilder';
 import Extent from 'Core/Geographic/Extent';
 
 describe('URL creations', function () {
-    const layer = { tileMatrixCallback: (zoomLevel => zoomLevel) };
+    const layer = {};
 
     it('should correctly replace ${x}, ${y} and ${z} by 359, 512 and 10', function () {
         var coords = new Extent('TMS:4857', 10, 512, 359);

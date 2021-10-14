@@ -2,7 +2,6 @@ import { CameraHelper, Color, Vector3 } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import OBB from 'Renderer/OBB';
-import * as THREE from 'three';
 import ThreeStatsChart from './charts/ThreeStatsChart';
 import { backgroundChartDiv, color_blue } from './charts/ChartConfig';
 import OBBHelper from './OBBHelper';
@@ -100,23 +99,18 @@ function Debug(view, datDebugTool, chartDivContainer) {
     let eventFolder;
     const controls = view.controls;
     initialPosition.crs = view.referenceCrs;
-    const cursorWorldPosition = new THREE.Vector3();
 
     const getCenter = (controls && controls.getCameraTargetPosition) ? controls.getCameraTargetPosition : () => view.camera.camera3D.position;
-    const cameraTargetListener = (event) => {
-        if (view.getPickingPositionFromDepth(view.eventToViewCoords(event), cursorWorldPosition)) {
-            initialPosition.setFromVector3(cursorWorldPosition).as('EPSG:4326', geoPosition);
-            state.latitude = `${geoPosition.y.toFixed(6)}`;
-            state.longitude = `${geoPosition.x.toFixed(6)}`;
-        } else {
-            state.latitude = '---------';
-            state.longitude = '---------';
-        }
+    const cameraTargetListener = () => {
+        initialPosition.setFromVector3(getCenter()).as('EPSG:4326', geoPosition);
+        state.latitude = `${geoPosition.y.toFixed(6)}`;
+        state.longitude = `${geoPosition.x.toFixed(6)}`;
         LatController.updateDisplay();
         LongController.updateDisplay();
     };
 
     gui.add(state, 'eventsDebug').name('Debug event').onChange((() => (newValue) => {
+        const listeners = [];
         if (newValue) {
             eventFolder = gui.addFolder('Events');
             eventFolder.open();
@@ -127,9 +121,13 @@ function Debug(view, datDebugTool, chartDivContainer) {
             LatController = eventFolder.add(state, 'latitude');
             LongController = eventFolder.add(state, 'longitude');
 
-            view.domElement.addEventListener('mousemove', cameraTargetListener);
+            view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, cameraTargetListener);
+            listeners.push({ type: MAIN_LOOP_EVENTS.UPDATE_END, stateName: 'cameraTargetUpdated', fn: cameraTargetListener });
         } else {
-            view.domElement.removeEventListener('mousemove', cameraTargetListener);
+            for (const listener of listeners) {
+                controls.removeFrameRequester(listener.type, listener.fn);
+                delete state[listener.stateName];
+            }
             gui.removeFolder('Events');
         }
     })());

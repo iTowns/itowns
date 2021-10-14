@@ -11,12 +11,17 @@ const threeExamples = {};
 
 threeExamples.LegacyGLTFLoader = ( function () {
 
-	class LegacyGLTFLoader extends THREE.Loader {
-		constructor ( manager ) {
-			super(manager);
-		}
+	function LegacyGLTFLoader( manager ) {
 
-		load( url, onLoad, onProgress, onError ) {
+		THREE.Loader.call( this, manager );
+
+	}
+
+	LegacyGLTFLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype ), {
+
+		constructor: LegacyGLTFLoader,
+
+		load: function ( url, onLoad, onProgress, onError ) {
 
 			var scope = this;
 
@@ -47,9 +52,10 @@ threeExamples.LegacyGLTFLoader = ( function () {
 
 			}, onProgress, onError );
 
-		}
+		},
 
-		parse ( data, path, callback ) {
+		parse: function ( data, path, callback ) {
+
 			var content;
 			var extensions = {};
 
@@ -96,7 +102,8 @@ threeExamples.LegacyGLTFLoader = ( function () {
 			} );
 
 		}
-	}
+
+	} );
 
 	/* GLTFREGISTRY */
 

@@ -82,7 +82,7 @@ class CameraRig extends THREE.Object3D {
         this.add(this.seaLevel);
         this.seaLevel.add(this.target);
         this.target.add(this.camera);
-        // target's geographic coordinate
+        // sea level's geograohic coordinate
         this.coord = new Coordinates('EPSG:4978', 0, 0);
         // sea level's worldPoistion
         this.targetWorldPosition = new THREE.Vector3();
@@ -121,13 +121,9 @@ class CameraRig extends THREE.Object3D {
     }
 
     setTargetFromCoordinate(view, coord) {
-        // compute precise coordinate (coord) altitude and clamp it above seaLevel
+        // clamp altitude to seaLevel
         coord.as(tileLayer(view).extent.crs, this.coord);
-        const altitude = Math.max(0, DEMUtils.getElevationValueAt(
-            tileLayer(view),
-            this.coord,
-            DEMUtils.PRECISE_READ_Z,
-        ) || this.coord.z);
+        const altitude = Math.max(0, this.coord.z);
         this.coord.z = altitude;
         // adjust target's position with clamped altitude
         this.coord.as(view.referenceCrs).toVector3(targetPosition);
@@ -154,7 +150,7 @@ class CameraRig extends THREE.Object3D {
         const range = this.camera.position.length();
         this.target.rotation.x = Math.asin(this.camera.position.z / range);
         const cosPlanXY = THREE.MathUtils.clamp(this.camera.position.y / (Math.cos(this.target.rotation.x) * range), -1, 1);
-        this.target.rotation.z = Math.sign(-this.camera.position.x || 1) * Math.acos(cosPlanXY);
+        this.target.rotation.z = Math.sign(-this.camera.position.x) * Math.acos(cosPlanXY);
         this.camera.position.set(0, range, 0);
     }
 
@@ -167,7 +163,7 @@ class CameraRig extends THREE.Object3D {
             this.target.rotation.x = THREE.MathUtils.degToRad(params.tilt);
         }
         if (params.heading != undefined) {
-            this.target.rotation.z = THREE.MathUtils.degToRad(-wrapTo180(params.heading + 180));
+            this.target.rotation.z = THREE.MathUtils.degToRad(wrapTo180(params.heading + 180));
         }
         if (params.range) {
             this.camera.position.set(0, params.range, 0);
@@ -219,12 +215,6 @@ class CameraRig extends THREE.Object3D {
 
         this.addPlaceTargetOnGround(view, camera, params.coord, factor);
         this.end.applyParams(view, params);
-        // compute the angle along z-axis between the starting position and the end position
-        const difference = this.end.target.rotation.z - this.start.target.rotation.z;
-        // if that angle is superior to 180°, recompute the rotation as the complementary angle.
-        if (Math.abs(difference) > Math.PI) {
-            this.end.target.rotation.z = this.start.target.rotation.z + difference - Math.sign(difference) * 2 * Math.PI;
-        }
 
         animations.push(new TWEEN.Tween(factor, tweenGroup).to({ t: 1 }, time)
             .easing(params.easing)
@@ -323,7 +313,7 @@ class CameraRig extends THREE.Object3D {
 
     get tilt() { return THREE.MathUtils.radToDeg(this.target.rotation.x); }
 
-    get heading() { return -wrapTo180((THREE.MathUtils.radToDeg(this.target.rotation.z) + 180)); }
+    get heading() { return wrapTo180((THREE.MathUtils.radToDeg(this.target.rotation.z) + 180)); }
 
     get range() { return this.camera.position.y; }
 }
@@ -347,7 +337,7 @@ export default {
      * @property {boolean} [proxy=true] use proxy to handling camera's transformation. if proxy == true, other camera's transformation stops rig's transformation
      * @property {Number} [easing=TWEEN.Easing.Quartic.InOut] in and out easing animation
      * @property {function} [callback] callback call each animation's frame (params are current cameraTransform and worldTargetPosition)
-     * @property {boolean} [stopPlaceOnGroundAtEnd=false] stop place target on the ground at animation ending
+     * @property {boolean} [stopPlaceOnGroundAtEnd=defaultStopPlaceOnGroundAtEnd] stop place target on the ground at animation ending
      */
     /**
      * Default value for option to stop place target
@@ -478,14 +468,14 @@ export default {
             rig.setProxy(view, camera);
         }
         return rig.animateCameraToLookAtTarget(view, camera, params).promise.then((finished) => {
+            const params = rig.getParams();
             const stopPlaceOnGround = params.stopPlaceOnGroundAtEnd === undefined ?
                 this.defaultStopPlaceOnGroundAtEnd : params.stopPlaceOnGroundAtEnd;
-            const newTransformation = rig.getParams();
             if (stopPlaceOnGround) {
                 rig.stop(view);
             }
-            newTransformation.finished = finished;
-            return newTransformation;
+            params.finished = finished;
+            return params;
         });
     },
 

@@ -1,11 +1,12 @@
-The goal of this tutorial is to give a brief example on how to use iTowns to visualize some vector data as 3D objects.
-These vector data shall represent buildings and be displayed on the `GlobeView` we created in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}.
+The goal of this tutorial is to give a brief example on how to use iTowns to
+visualize some buildings on top of a simple globe view, using a geometry layer.
 
 ## Preparing the field
 
-To display our buildings, we are going to use the data created in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}. As we are trying to display some buildings,
-let's move closer to the ground to see something and let's give the camera an initial rotation. 
-For this, we need to change the starting position to something more appropriate. We also need to modify the elevation
+To display our buildings, we are going to use the data created in the {@tutorial
+Create-a-simple-globe} tutorial. As we are trying to display some buildings,
+let's move closer to the ground to see something. For this, change the starting
+position to something more appropriate. We also need to modify the elevation
 layer to a more precise one.
 
 ```html
@@ -13,7 +14,7 @@ layer to a more precise one.
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Vector data in 3D</title>
+        <title>Simple globe with iTowns</title>
         <style>
             html { height: 100%; }
             body { margin: 0; overflow: hidden; height: 100%; }
@@ -27,9 +28,8 @@ layer to a more precise one.
         <script type="text/javascript">
             var viewerDiv = document.getElementById('viewerDiv');
             var placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 4.818, 45.7354),
-                range: 1000,
-                tilt: 20,
+                coord: new itowns.Coordinates('EPSG:4326', 2.35, 48.8),
+                range: 1E3
             };
             var view = new itowns.GlobeView(viewerDiv, placement);
             
@@ -94,8 +94,7 @@ layer to a more precise one.
 ## Adding a GeometryLayer
 
 We want to create and add a layer containing geometries. The best candidate here
-is `{@link FeatureGeometryLayer}`, which is a pre-made type of `{@link GeometryLayer}` 
-adapted to our use case. Reading the documentation, adding this type
+is of course {@link GeometryLayer}. Reading the documentation, adding this type
 of layer is similar to the other layers. So before declaring the layer, let's
 instantiate the source.
 
@@ -105,37 +104,40 @@ var geometrySource = new itowns.WFSSource({
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
     crs: 'EPSG:4326',
 });
-```
 
-With our source instantiated, we can create our `FeatureGeometryLayer`, giving it the usual `id` and `source` parameters :
-
-```js
-var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {
+var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
     source: geometrySource,
+    update: itowns.FeatureProcessing.update,
+    convert: itowns.Feature2Mesh.convert(),
     zoom: { min: 14 },
 });
 
 view.addLayer(geometryLayer);
 ```
 
-We also added a minimal `zoom` parameter to prevent our data being displayed under a certain 
-zoom level at which we would be too far from the data to distinguish them.
+There is a few differences though:
+- the second parameter, `new itowns.THREE.Group()` in our case, is the
+  `THREE.Object3d` the geometry will be attached to. Here we won't do something
+  with it, so we can declare a simple anonymous object.
+- the second parameter of the options is `update`: it is the method that will be
+  called to update the layer each time the rendering loop is called. For now
+  let's simply put `itowns.FeatureProcessing.update` and don't touch this
+  method.
+- the third parameter is `convert`, that is more interesting to us. It is the
+  method that will tell how to use the data to convert it to meshes, and do
+  other operations on it.
 
-Trying this code will result visually in the following.
+Trying this code will result in... nothing visually ! The data was processed and
+displayed, but it is hidden under the elevation layer. If we remove the
+elevation layer, we can see some shapes on the ground, indicating that buildings
+have indeed been added. So let's place the data on the elevation layer !
 
-![geometry_layer_without_altitude](images/Vector-data-3d-1.png)
-
-We can see the polygons fetched from the data source, each representing a building.
-However, these polygons are not on the ground.
-Indeed, they were placed after the 3D positions stored in the data, which in our case represent points on the roof of buildings.
-So let's start modifying these polygons' altitude to place them on the ground !
+![Flat buildings on GeometryLayer](images/Display-a-geometry-layer-1.png)
 
 ## Placing the data on the ground
 
-To achieve the positioning relative to the elevation layer, we will need to add
-a parameter to the `FeatureGeometryLayer`, which is its `{@link Style}`.
-As mentioned in the [fundamentals]{@tutorial Fundamentals} tutorial, we can modify the appearance and positioning of polygons thanks to the `fill` property of `Style`.
-The altitude at which polygons are displayed can be modified using the `base_altitude` parameter, which we set as follows :
+To achieve the positionning relative to the elevation layer, we will need to add
+a parameter to the `convert` property: `altitude`, a method that will help us.
 
 ```js
 function setAltitude(properties) {
@@ -148,23 +150,22 @@ var geometrySource = new itowns.WFSSource({
     crs: 'EPSG:4326',
 });
 
-var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {
+var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
     source: geometrySource,
-    zoom: { min: 14 },
-    style: new itowns.Style({
-        fill: {
-            base_altitude: setAltitude,
-        }
+    update: itowns.FeatureProcessing.update,
+    convert: itowns.Feature2Mesh.convert({
+        altitude: setAltitude
     }),
+    zoom: { min: 14 },
 });
 
 view.addLayer(geometryLayer);
 ```
 
 If we take a look using `console.log(properties);` at what we have in the
-`properties` object, we will get a lot of output. Our data being constituted of
+`properties` object, we will get a lot of output. Our data being constitued of
 multiple buildings, we get an output for each building. Looking closer to an
-output, here is what we can obtain :
+output, here is what we can obtain:
 
 ```js
 geometry_name: "the_geom"
@@ -178,26 +179,36 @@ z_min: 83.7
 ```
 
 Reading the documentation of the database we are querying ([section 9.1, page
-84](http://professionnels.ign.fr/doc/DC_BDTOPO_3-0.pdf), in French), we have an
+84](http://professionnels.ign.fr/doc/DC_BDTOPO_3-0.pdf), in french), we have an
 explanation on each property. To help us place the data correctly, let's use the
-`z_min` and the `hauteur` properties. 
-The first one corresponds to the altitude of the building roof, and the second one specifies its height.
-We can therefore set the base altitude of our buildings by removing the value of `hauteur` to the value of `z_min` :
+`z_min` property:
+
+```js
+function setAltitude(properties) {
+    return properties.z_min;
+}
+```
+
+And now the buildings are visible ! But if we take a look around by moving the
+mouse, we'll see that the buildings are too high. It's due to the fact that the
+`z_min` doesn't correspond exactly to the altitude of the building. To resolve
+this problem, let's lower the altitude with the height of the building:
 
 ```js
 function setAltitude(properties) {
     return properties.z_min - properties.hauteur;
 }
 ```
-Now we can't see completely our buildings. What can we do about that
+
+But now we can't see completely our buildings again. What can we do about that
 ? Let's give them volume !
 
-![Still flat buildings on GeometryLayer](images/Vector-data-3d-2.png)
+![Still flat buildings on GeometryLayer](images/Display-a-geometry-layer-2.png)
 
 ## Extruding the data
 
-Like the altitude, the volume of buildings can be changed using the `extrusion_height`
-parameter of the `Style.fill` property.
+Like the altitude, the volume of a building can be changed using the `extrude`
+parameter of the `convert` property.
 
 ```js
 function setExtrusion(properties) {
@@ -210,32 +221,31 @@ var geometrySource = new itowns.WFSSource({
     crs: 'EPSG:4326',
 });
 
-var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {
+var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
     source: geometrySource,
-    zoom: { min: 14 },
-    style: new itowns.Style({
-        fill: {
-            base_altitude: setAltitude,
-            extrusion_height: setExtrusion,
-        }
+    update: itowns.FeatureProcessing.update,
+    convert: itowns.Feature2Mesh.convert({
+        altitude: setAltitude,
+        extrude: setExtrusion,
     }),
+    zoom: { min: 14 },
 });
 
 view.addLayer(geometryLayer);
 ```
 
-The parameter `properties` of the `setExtrusion` method is the same as in
-`setAltitude`. We noticed there is a `hauteur` (`height` in French) property that
+The parameter `properties` of the `setExtrusion` method is the same that in
+`setAltitude`. We notice there is a `hauteur` (`height` in french) property that
 we could use to set the height of the building. Moving around with this gives a
-nice view of our buildings :
+nice view of our buildings:
 
-![Extruded buildings on GeometryLayer](images/Vector-data-3d-3.png)
+![Extruded buildings on GeometryLayer](images/Display-a-geometry-layer-3.png)
 
 ## Coloring the data
 
 We are not yet touching the color of the buildings. This results in every
 building being randomly colored at each time. To solve this, as we did before,
-we can add a `color` parameter to the `Style.fill` property.
+we can add a `color` parameter to the `convert` property.
 
 ```js
 function setColor(properties) {
@@ -248,37 +258,36 @@ var geometrySource = new itowns.WFSSource({
     crs: 'EPSG:4326',
 });
 
-var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {
+var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
     source: geometrySource,
-    zoom: { min: 14 },
-    style: new itowns.Style({
-        fill: {
-            color: setColor,
-            base_altitude: setAltitude,
-            extrusion_height: setExtrusion,
-        },
+    update: itowns.FeatureProcessing.update,
+    convert: itowns.Feature2Mesh.convert({
+        altitude: setAltitude,
+        extrude: setExtrusion,
+        color: setColor
     }),
+    zoom: { min: 14 },
 });
 
 view.addLayer(geometryLayer);
 ```
 
-For each building, a new color is created (using `THREE.Color`), and this results
-in all buildings being colored in a light gray.
+For each building, a new color is created (using `THREE.Color`), and the result
+here results in all buildings being in a light gray.
 
-![Extruded and colored buildings on GeometryLayer](images/Vector-data-3d-4.png)
+![Extruded and colored buildings on GeometryLayer](images/Display-a-geometry-layer-4.png)
 
 ## Result
 
-Congratulations ! By reaching here, we know how to display a simple `FeatureGeometryLayer` 
-on a `GlobeView`, and change the appearance and positioning of this layer. Here is the final code:
+Congratulations ! By reaching here, we know how to display a simple geometry
+layer on a globe, and change some things on this layer. Here is the final code:
 
 ```html
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Vector data in 3D</title>
+        <title>Simple globe with iTowns</title>
         <style>
             html { height: 100%; }
             body { margin: 0; overflow: hidden; height: 100%; }
@@ -288,16 +297,15 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
      </head>
      <body>
         <div id="viewerDiv"></div>
-        <script src="js/itowns.js"></script>
+        <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
             var viewerDiv = document.getElementById('viewerDiv');
             var placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 4.818, 45.7354),
-                range: 1E3,
-                tilt: 20,
+                coord: new itowns.Coordinates('EPSG:4326', 2.35, 48.8),
+                range: 1E3
             };
             var view = new itowns.GlobeView(viewerDiv, placement);
-
+            
             var colorSource = new itowns.WMTSSource({
                 url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
                 crs: 'EPSG:3857',
@@ -305,13 +313,13 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
                 tileMatrixSet: 'PM',
                 format: 'image/jpeg'
             });
-
+            
             var colorLayer = new itowns.ColorLayer('Ortho', {
                 source: colorSource,
             });
-
+            
             view.addLayer(colorLayer);
-
+            
             var elevationSource = new itowns.WMTSSource({
                 url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
                 crs: 'EPSG:4326',
@@ -353,7 +361,7 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
             view.addLayer(elevationLayer);
 
             function setAltitude(properties) {
-                return properties.z_min - properties.hauteur;
+                return -properties.hauteur;
             }
 
             function setExtrusion(properties) {
@@ -370,16 +378,15 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
                 crs: 'EPSG:4326',
             });
 
-            var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {
+            var geometryLayer = new itowns.GeometryLayer('Buildings', new itowns.THREE.Group(), {
                 source: geometrySource,
-                zoom: { min: 14 },
-                style: new itowns.Style({
-                    fill: {
-                        color: setColor,
-                        base_altitude: setAltitude,
-                        extrusion_height: setExtrusion,
-                    },
+                update: itowns.FeatureProcessing.update,
+                convert: itowns.Feature2Mesh.convert({
+                    altitude: setAltitude,
+                    extrude: setExtrusion,
+                    color: setColor
                 }),
+                zoom: { min: 14 },
             });
 
             view.addLayer(geometryLayer);

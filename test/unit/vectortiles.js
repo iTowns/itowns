@@ -140,8 +140,9 @@ describe('Vector tiles', function () {
                 },
             });
             source.whenReady.then(() => {
-                const styleLand_zoom_3 = source.styles.land.drawingStylefromContext({ globals: { zoom: 3 }, properties: () => {} });
-                const styleLand_zoom_5 = source.styles.land.drawingStylefromContext({ globals: { zoom: 5 }, properties: () => {} });
+                const styleLand_zoom_3 = source.styles.land.drawingStylefromContext({ globals: { zoom: 3 } });
+                const styleLand_zoom_5 = source.styles.land.drawingStylefromContext({ globals: { zoom: 5 } });
+
                 assert.equal(styleLand_zoom_3.fill.color, 'rgb(255,0,0)');
                 assert.equal(styleLand_zoom_3.fill.opacity, 1);
                 assert.equal(styleLand_zoom_5.fill.color, 'rgb(255,0,0)');

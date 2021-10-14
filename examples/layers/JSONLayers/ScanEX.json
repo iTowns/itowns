@@ -1,7 +1,6 @@
 {
     "id":         "ScanEX",
-    "effect_type": 3,
-    "effect_parameter": 2.5,
+    "fx" :        2.5,
     "source": {
         "crs": "EPSG:3857",
         "url": "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",

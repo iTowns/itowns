@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const mode = process.env.NODE_ENV;
-const noInline = process.env.noInline;
+
 const debugBuild = mode === 'development';
 
 /*
@@ -18,7 +18,16 @@ const debugBuild = mode === 'development';
 // Note that we don't support .babelrc in parent folders
 var babelrc = fs.readFileSync(path.resolve(__dirname, '.babelrc'));
 var babelConf = JSON.parse(babelrc);
+var newPresets = [];
+for (var preset of babelConf.presets) {
+    if (!Array.isArray(preset)) {
+        preset = [preset];
+    }
+    preset.push({ modules: false });
+    newPresets.push(preset);
+}
 
+babelConf.presets = newPresets;
 babelConf.babelrc = false; // disabel babelrc reading, as we've just done it
 const replacementPluginConf = babelConf.plugins.find(plugin => Array.isArray(plugin) && plugin[0] === 'minify-replace');
 replacementPluginConf[1].replacements.find(decl => decl.identifierName === '__DEBUG__').replacement.value = debugBuild;
@@ -29,9 +38,9 @@ const include = [
     path.resolve(__dirname, 'utils'),
 ];
 
-module.exports = () => {
+module.exports = (env) => {
     const babelLoaderOptions = [];
-    if (!noInline) {
+    if (!(env && env.noInline)) {
         babelLoaderOptions.push('babel-inline-import-loader');
     }
     babelLoaderOptions.push({
@@ -41,6 +50,10 @@ module.exports = () => {
 
     return {
         mode,
+        node: {
+            Buffer: false,
+            process: false,
+        },
         context: path.resolve(__dirname),
         resolve: {
             modules: [path.resolve(__dirname, 'src'), 'node_modules'],
@@ -53,10 +66,7 @@ module.exports = () => {
                 'whatwg-fetch',
                 './src/MainBundle.js',
             ],
-            debug: {
-                import: './utils/debug/Main.js',
-                dependOn: 'itowns',
-            },
+            debug: ['./utils/debug/Main.js'],
         },
         devtool: 'source-map',
         output: {
@@ -65,6 +75,11 @@ module.exports = () => {
             library: '[name]',
             libraryTarget: 'umd',
             umdNamedDefine: true,
+        },
+        optimization: {
+            runtimeChunk: {
+                name: 'itowns',
+            },
         },
         module: {
             rules: [
@@ -82,16 +97,7 @@ module.exports = () => {
             ],
         },
         devServer: {
-            devMiddleware: {
-                publicPath: '/dist/',
-            },
-            static: path.resolve(__dirname, './'),
-            client: {
-                overlay: {
-                    errors: true,
-                    warnings: false,
-                },
-            },
+            publicPath: '/dist/',
         },
     };
 };

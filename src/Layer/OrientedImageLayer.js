@@ -147,7 +147,7 @@ class OrientedImageLayer extends GeometryLayer {
             for (const pano of this.panos) {
                 // set position
                 coord.crs = pano.crs;
-                coord.setFromArray(pano.vertices).applyMatrix4(orientation.matrix);
+                coord.setFromArray(pano.vertices);
                 pano.position = coord.toVector3();
 
                 // set quaternion

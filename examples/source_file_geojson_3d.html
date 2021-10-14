@@ -47,23 +47,22 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             // Add a geometry layer, which will contain the multipolygon to display
-            var marne = new itowns.FeatureGeometryLayer('Marne', {
+            var marne = new itowns.GeometryLayer('Marne', new itowns.THREE.Group(), {
                 // Use a FileSource to load a single file once
                 source: new itowns.FileSource({
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson',
                     crs: 'EPSG:4326',
                     format: 'application/json',
                 }),
-                transparent: true,
-                opacity: 0.7,
                 zoom: { min: 10 },
-                style: new itowns.Style({
-                    fill: {
-                        color: new itowns.THREE.Color(0xbbffbb),
-                        extrusion_height: 80,
-                    }
-                })
             });
+            marne.update = itowns.FeatureProcessing.update;
+            marne.convert = itowns.Feature2Mesh.convert({
+                color: new itowns.THREE.Color(0xbbffbb),
+                extrude: 80 });
+            marne.transparent = true;
+            marne.opacity = 0.7;
+
 
             view.addLayer(marne).then(function menu(layer) {
                 var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);

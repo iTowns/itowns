@@ -68,8 +68,13 @@ function onKeyDown(e) {
 }
 
 function onDocumentMouseWheel(event) {
-    const delta = -event.deltaY;
-
+    let delta = 0;
+    if (event.wheelDelta !== undefined) {
+        delta = event.wheelDelta;
+    // Firefox
+    } else if (event.detail !== undefined) {
+        delta = -event.detail;
+    }
     if (delta < 0) {
         this.moves.add(MOVEMENTS.wheelup);
     } else {
@@ -116,7 +121,8 @@ class FlyControls extends THREE.EventDispatcher {
         view.domElement.addEventListener('touchmove', bindedPM, false);
         view.domElement.addEventListener('mouseup', onDocumentMouseUp.bind(this), false);
         view.domElement.addEventListener('touchend', onDocumentMouseUp.bind(this), false);
-        view.domElement.addEventListener('wheel', onDocumentMouseWheel.bind(this), false);
+        view.domElement.addEventListener('mousewheel', onDocumentMouseWheel.bind(this), false);
+        view.domElement.addEventListener('DOMMouseScroll', onDocumentMouseWheel.bind(this), false); // firefox
         view.domElement.addEventListener('keyup', onKeyUp.bind(this), true);
         view.domElement.addEventListener('keydown', onKeyDown.bind(this), true);
 

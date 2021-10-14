@@ -3,7 +3,6 @@ import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { getLookAtFromMath, getRig } from 'Utils/CameraUtils';
-import StateControl from 'Controls/StateControl';
 import Renderer from './bootstrap';
 
 describe('GlobeControls', function () {
@@ -42,10 +41,6 @@ describe('GlobeControls', function () {
 
     it('instance GlobeControls', function () {
         assert.ok(controls);
-    });
-
-    it('should instantiate StateControl', function () {
-        assert(controls.states instanceof StateControl);
     });
 
     it('pickGeoPosition', function () {
@@ -116,18 +111,44 @@ describe('GlobeControls', function () {
     it('update', function () {
         const c1 = controls.getLookAtCoordinate();
         controls.mouseToPan(100, 100);
-        controls.update(controls.states.PAN);
+        controls.state = controls.states.PAN;
+        controls.update();
+        controls.state = controls.states.NONE;
         const c2 = controls.getLookAtCoordinate();
         assert.ok(c1.longitude > c2.longitude);
         assert.ok(c1.latitude < c2.latitude);
     });
 
     it('isPaused', function () {
-        controls.states.currentState = controls.states.NONE;
+        controls.state = controls.states.NONE;
         assert.ok(controls.isPaused);
-        controls.states.currentState = controls.states.PANORAMIC;
+        controls.state = controls.states.PANORAMIC;
         assert.ok(!controls.isPaused);
-        controls.states.currentState = controls.states.NONE;
+        controls.state = controls.states.NONE;
+    });
+
+    it('keydown', function () {
+        event.keyCode = controls.states.PAN.up;
+        controls.onKeyDown(event);
+        assert.equal(controls.state, controls.states.PAN);
+        event.keyCode = controls.states.PAN.bottom;
+        controls.onKeyDown(event);
+        assert.equal(controls.state, controls.states.PAN);
+        event.keyCode = controls.states.PAN.left;
+        controls.onKeyDown(event);
+        assert.equal(controls.state, controls.states.PAN);
+        event.keyCode = controls.states.PAN.right;
+        controls.onKeyDown(event);
+        assert.equal(controls.state, controls.states.PAN);
+    });
+
+    it('mouse down', function () {
+        controls.onKeyUp();
+        controls.onMouseDown(event);
+        assert.ok(controls.state == controls.states.MOVE_GLOBE);
+        controls.onMouseMove(event);
+        controls.onMouseUp(event);
+        assert.ok(controls.state == controls.states.NONE);
     });
 
     it('dolly', function () {
@@ -135,42 +156,39 @@ describe('GlobeControls', function () {
         controls.state = controls.states.ORBIT;
         controls.update();
         controls.dolly(-1);
-        controls.update();
         controls.state = controls.states.NONE;
     });
 
-    it('zoom', function () {
-        const startRange = controls.getRange();
-        event.delta = -10;
-        controls.handleZoom(event);
-        assert.ok(controls.getRange() < startRange);
-        event.delta = 10;
-        controls.handleZoom(event);
-        controls.handleZoom(event);
-        assert.ok(controls.getRange() > startRange);
+    it('mouse down + crtl', function () {
+        event.keyCode = 17;
+        controls.onKeyDown(event);
+        assert.ok(controls.states.NONE == controls.state);
+        controls.onMouseDown(event);
+        assert.ok(controls.states.ORBIT == controls.state);
+        controls.onMouseMove(event);
+        assert.ok(controls.states.ORBIT == controls.state);
+        controls.onMouseUp(event);
+        assert.ok(controls.states.NONE == controls.state);
+        controls.onKeyUp(event);
+        assert.ok(controls.states.NONE == controls.state);
     });
 
-    it('travel in', function (done) {
+    it('mouse wheel', function () {
+        const startRange = controls.getRange();
+        event.wheelDelta = -10;
+        controls.onMouseWheel(event);
+        assert.ok(controls.getRange() > startRange);
+        event.wheelDelta = 10;
+        controls.onMouseWheel(event);
+        controls.onMouseWheel(event);
+        assert.ok(controls.getRange() < startRange);
+    });
+
+    it('mouse dblclick', function (done) {
         controls.setAnimationEnabled(false);
         const startRange = controls.getRange();
-        controls.travel({
-            viewCoords: viewer.eventToViewCoords(event),
-            type: 'travel_in',
-            direction: 'in',
-        }).then(() => {
+        controls.ondblclick(event).then(() => {
             assert.ok(controls.getRange() < startRange);
-            done();
-        });
-    });
-
-    it('travel out', function (done) {
-        const startRange = controls.getRange();
-        controls.travel({
-            viewCoords: viewer.eventToViewCoords(event),
-            type: 'travel_out',
-            direction: 'out',
-        }).then(() => {
-            assert.ok(controls.getRange() > startRange);
             done();
         });
     });
@@ -191,6 +209,16 @@ describe('GlobeControls', function () {
         controls.onTouchMove(event);
     });
 
+    it('onContextMenuListener', function () {
+        controls.onContextMenuListener(event);
+    });
+
+    it('onBlurListener', function () {
+        controls.state = controls.states.MOVE_GLOBE;
+        controls.onBlurListener(event);
+        assert.ok(controls.states.NONE == controls.state);
+    });
+
     it('lookAtCoordinate with animation', function (done) {
         const rig = getRig(viewer.camera.camera3D);
         let i;
@@ -204,6 +232,16 @@ describe('GlobeControls', function () {
         if (rig.animationFrameRequester) {
             i = setInterval(rig.animationFrameRequester, 10);
         }
+    });
+
+    it('mouse down enableDamping', function () {
+        controls.enableDamping = true;
+        controls.onKeyUp();
+        controls.onMouseDown(event);
+        assert.ok(controls.state == controls.states.MOVE_GLOBE);
+        controls.onMouseMove(event);
+        controls.onMouseUp(event);
+        assert.ok(controls.state == controls.states.MOVE_GLOBE);
     });
 
     it('dispose', function () {

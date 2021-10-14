@@ -62,6 +62,7 @@
             var waypointGeometry = new itowns.THREE.BoxGeometry(1, 1, 80);
             var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
             // Listen for globe full initialisation event
+            var waypoints = [];
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
                 itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
@@ -71,36 +72,38 @@
                         },
                         out: {
                             crs: view.referenceCrs,
+                            buildExtent: true,
+                            mergeFeatures: true,
                             structure: '3d',
-                            style: new itowns.Style({
-                                stroke : {
-                                    color: 'red',
-                                    width: 2,
-                                },
-                                point : {
-                                    color: 'white',
-                                }
-                            })
                         }
                     }))
-                    .then(itowns.Feature2Mesh.convert())
+                    .then(collection => itowns.Feature2Mesh.convert({
+                        color: new itowns.THREE.Color(0xff0000),
+                    })(collection))
                     .then(function (mesh) {
                         if (mesh) {
-                            mesh.updateMatrixWorld();
                             mesh.traverse((m) => {
+                                if (m.type == 'Line') {
+                                    m.material.linewidth = 5;
+                                }
+
                                 if (m.type == 'Points') {
                                     var vertices = m.feature.vertices;
-                                    for (var i = 0; i < vertices.length; i += 3) {
+                                    for (var i = 0; i < vertices.length; i++) {
                                         var waypoint = new itowns.THREE.Mesh(waypointGeometry, waypointMaterial);
-                                        waypoint.position.fromArray(vertices, i);
-                                        waypoint.lookAt(mesh.worldToLocal(new itowns.THREE.Vector3()));
+                                        waypoint.position.set(
+                                            vertices[i * 3],
+                                            vertices[i * 3 + 1],
+                                            vertices[i * 3 + 2]);
+                                        waypoint.lookAt(0, 0, 0);
                                         waypoint.onBeforeRender = updatePointScale;
-                                        waypoint.updateMatrix();
-                                        mesh.add(waypoint);
                                         waypoint.updateMatrixWorld();
+                                        waypoints.push(waypoint);
                                     }
                                 }
                             });
+                            mesh.add(...waypoints);
+                            mesh.updateMatrixWorld();
                             view.scene.add(mesh);
                             view.notifyChange();
                         }

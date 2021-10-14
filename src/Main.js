@@ -1,5 +1,5 @@
 const conf = {
-    version: '2.35.0',
+    version: '2.32.0',
 };
 export const REVISION = conf.version;
 
@@ -32,7 +32,7 @@ export { default as DEMUtils } from 'Utils/DEMUtils';
 export { default as CameraUtils } from 'Utils/CameraUtils';
 export { default as OrientationUtils } from 'Utils/OrientationUtils';
 export { default as ShaderChunk } from 'Renderer/Shader/ShaderChunk';
-export { getMaxColorSamplerUnitsCount, colorLayerEffects } from 'Renderer/LayeredMaterial';
+export { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 export { default as Capabilities } from 'Core/System/Capabilities';
 export { CAMERA_TYPE } from 'Renderer/Camera';
 
@@ -48,7 +48,6 @@ export { default as Layer, ImageryLayers } from 'Layer/Layer';
 export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
 export { default as GeometryLayer } from 'Layer/GeometryLayer';
-export { default as FeatureGeometryLayer } from 'Layer/FeatureGeometryLayer';
 export { default as PointCloudLayer } from 'Layer/PointCloudLayer';
 export { default as PotreeLayer } from 'Layer/PotreeLayer';
 export { default as C3DTilesLayer } from 'Layer/C3DTilesLayer';
@@ -96,4 +95,3 @@ export { default as C3DTBatchTable } from './Core/3DTiles/C3DTBatchTable';
 export { default as C3DTExtensions } from './Core/3DTiles/C3DTExtensions';
 export { default as C3DTilesTypes } from './Core/3DTiles/C3DTilesTypes';
 export { default as C3DTBatchTableHierarchyExtension } from './Core/3DTiles/C3DTBatchTableHierarchyExtension';
-export { process3dTilesNode, $3dTilesCulling, $3dTilesSubdivisionControl } from 'Process/3dTilesProcessing';

@@ -61,7 +61,7 @@ export default {
      * @return {string} the formed url
      */
     xyz: function xyz(coords, source) {
-        return subDomains(source.url.replace(/(\$\{z\}|%TILEMATRIX)/, source.tileMatrixCallback(coords.zoom))
+        return subDomains(source.url.replace(/(\$\{z\}|%TILEMATRIX)/, coords.zoom)
             .replace(/(\$\{y\}|%ROW)/, coords.row)
             .replace(/(\$\{x\}|%COL)/, coords.col));
     },

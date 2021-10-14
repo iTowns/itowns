@@ -31,8 +31,6 @@ function updateSurfaces(surfaces, position, norm) {
 
 // vector use in the pick method
 const target = new THREE.Vector3();
-const normal = new THREE.Vector3();
-const normalMatrix = new THREE.Matrix3();
 const up = new THREE.Vector3();
 const startQuaternion = new THREE.Quaternion();
 
@@ -47,9 +45,7 @@ function pick(event, view, buildingsLayer, pickGround = () => {}, pickObject = (
     // to detect pick on building, compare first picked building distance to ground distance
     if (buildings.length && buildings[0].distance < distanceToGround) { // pick buildings
         // callback
-        normalMatrix.getNormalMatrix(buildings[0].object.matrixWorld);
-        normal.copy(buildings[0].face.normal).applyNormalMatrix(normalMatrix);
-        pickObject(buildings[0].point, normal);
+        pickObject(buildings[0].point, buildings[0].face.normal);
     } else if (view.tileLayer) {
         const far = view.camera.camera3D.far * 0.95;
         if (distanceToGround < far) {

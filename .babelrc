@@ -1,5 +1,5 @@
 {
-    "presets": [["@babel/preset-env", { "modules": "auto" }]],
+    "presets": ["@babel/preset-env"],
     "plugins": [
         ["module-resolver",  { "root": ["./src"] } ],
         ["babel-plugin-inline-import", {

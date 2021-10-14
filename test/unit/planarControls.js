@@ -53,7 +53,7 @@ describe('Planar Controls', function () {
             cameraInitialZoom = camera.zoom;
         }
 
-        event.deltaY = wheelDelta;
+        event.wheelDelta = wheelDelta;
         controls.onMouseWheel(event);
         controls.update(20, false);
     }

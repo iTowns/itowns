@@ -108,6 +108,10 @@ function readPBF(file, options) {
     // Only if the layer.origin is top
     const y = options.in.isInverted ? file.extent.row : (1 << z) - file.extent.row - 1;
 
+    options.out.buildExtent = true;
+    options.out.mergeFeatures = true;
+    options.out.structure = '2d';
+
     const collection = new FeatureCollection(options.out);
 
     const vFeature = vectorTile.layers[sourceLayers[0]];

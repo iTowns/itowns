@@ -16,7 +16,6 @@ import ColorLayer from 'Layer/ColorLayer';
 import ElevationLayer from 'Layer/ElevationLayer';
 import GeometryLayer from 'Layer/GeometryLayer';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';
-import Style from 'Core/Style';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
 import { EMPTY_TEXTURE_ZOOM } from 'Renderer/RasterTile';
@@ -70,20 +69,19 @@ describe('Provide in Sources', function () {
     const nodeLayer = material.getLayer(colorlayer.id);
     const nodeLayerElevation = material.getLayer(elevationlayer.id);
 
-    const featureLayer = new GeometryLayer('geom', new THREE.Group(), {
-        update: FeatureProcessing.update,
-        convert: Feature2Mesh.convert(),
-        crs: 'EPSG:4978',
-        mergeFeatures: false,
-        zoom: { min: 10 },
-        source: false,
-        style: new Style({
-            fill: {
-                extrusion_height: 5000,
-                color: new THREE.Color(0xffcc00),
-            },
-        }),
-    });
+    const featureLayer = new GeometryLayer('geom', new THREE.Group(), { source: false });
+    featureLayer.update = FeatureProcessing.update;
+    featureLayer.crs = 'EPSG:4978';
+    featureLayer.mergeFeatures = false;
+    featureLayer.zoom.min = 10;
+
+    function extrude() {
+        return 5000;
+    }
+
+    function color() {
+        return new THREE.Color(0xffcc00);
+    }
 
     featureLayer.source = new WFSSource({
         url: 'http://',
@@ -98,6 +96,7 @@ describe('Provide in Sources', function () {
         featureCountByCb = fc.features.length;
     };
 
+    featureLayer.convert = Feature2Mesh.convert({ color, extrude });
     planarlayer.attach(featureLayer);
 
     context.elevationLayers = [elevationlayer];

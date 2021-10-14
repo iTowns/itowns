@@ -77,7 +77,7 @@ export default {
         }
 
         options.in = options.in || {};
-        options.in.crs = data.prj ? proj4(data.prj).oProj.datumName : options.in.crs;
+        options.in.crs = data.prj ? proj4(data.prj).oProj.datumName : undefined;
 
         return Promise.resolve(result).then(res => GeoJsonParser.parse(res, options));
     },

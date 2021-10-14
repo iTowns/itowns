@@ -78,44 +78,40 @@ describe('Label', function () {
         const img = cacheStyle.get('icon', 1);
         img.complete = true;
         img.emitEvent('load');
-        assert.equal(label.content.children[0].style.left, `${-0.5 * img.width}px`);
-        assert.equal(label.content.children[0].style.top, `${-0.5 * img.height}px`);
+        assert.equal(label.content.children[0].style.right, 'calc(50% - 5px)');
+        assert.equal(label.content.children[0].style.top, 'calc(50% - 5px)');
 
 
-        style.icon.anchor = 'left';
+        style.text.anchor = 'left';
         label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, '0');
-        assert.equal(label.content.children[0].style.top, `${-0.5 * img.height}px`);
+        assert.equal(label.content.children[0].style.right, 'calc(100% - 5px)');
+        assert.equal(label.content.children[0].style.top, 'calc(50% - 5px)');
 
-        style.icon.anchor = 'right';
+        style.text.anchor = 'right';
         label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, `${-img.width}px`);
-        assert.equal(label.content.children[0].style.top, `${-0.5 * img.height}px`);
+        assert.equal(label.content.children[0].style.top, 'calc(50% - 5px)');
 
-        style.icon.anchor = 'top';
+        style.text.anchor = 'top';
         label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, `${-0.5 * img.width}px`);
-        assert.equal(label.content.children[0].style.top, '0');
+        assert.equal(label.content.children[0].style.right, 'calc(50% - 5px)');
 
-        style.icon.anchor = 'bottom';
+        style.text.anchor = 'bottom';
         label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, `${-0.5 * img.width}px`);
-        assert.equal(label.content.children[0].style.top, `${-img.height}px`);
+        assert.equal(label.content.children[0].style.top, 'calc(100% - 5px)');
+        assert.equal(label.content.children[0].style.right, 'calc(50% - 5px)');
 
-        style.icon.anchor = 'bottom-left';
+        style.text.anchor = 'bottom-left';
         label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, '0');
-        assert.equal(label.content.children[0].style.top, `${-img.height}px`);
+        assert.equal(label.content.children[0].style.right, 'calc(100% - 5px)');
+        assert.equal(label.content.children[0].style.top, 'calc(100% - 5px)');
 
-        style.icon.anchor = 'bottom-right';
+        style.text.anchor = 'bottom-right';
         label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, `${-img.width}px`);
-        assert.equal(label.content.children[0].style.top, `${-img.height}px`);
+        assert.equal(label.content.children[0].style.top, 'calc(100% - 5px)');
 
-        style.icon.anchor = 'top-left';
+        style.text.anchor = 'top-left';
         label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, '0');
-        assert.equal(label.content.children[0].style.top, '0');
+        assert.equal(label.content.children[0].style.right, 'calc(100% - 5px)');
     });
 
     it('should hide the DOM', function () {
@@ -129,7 +125,6 @@ describe('Label', function () {
     });
 
     it('initializes the dimensions', function () {
-        style.text.anchor = 'top-left';
         label = new Label('', c, style);
         assert.equal(label.offset, undefined);
 
@@ -153,7 +148,7 @@ describe('Label', function () {
 
         label.updateProjectedPosition(10.4, 10.6);
         label.updateCSSPosition();
-        assert.equal(label.content.style.transform, 'translate(15px, 16px)');
+        assert.equal(label.content.style.transform, 'translate(15.4px, 15.6px)');
     });
 
     it('updates the horizon culling point', function () {

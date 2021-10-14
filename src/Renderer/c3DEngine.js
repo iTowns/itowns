@@ -29,19 +29,8 @@ class c3DEngine {
             options.isWebGL2 = true;
         }
 
-        // If rendererOrDiv parameter is a domElement, we use it as support to display data.
-        // If it is a renderer, we check the renderer.domElement parameter which can be :
-        //    - a domElement, in this case we use this domElement as a support
-        //    - a canvas, in this case we use the canvas parent (which should be a domElement) as a support
-        let renderer;
-        let viewerDiv;
-        if (rendererOrDiv.domElement) {
-            renderer = rendererOrDiv;
-            viewerDiv = renderer.domElement instanceof HTMLDivElement ?
-                renderer.domElement : renderer.domElement.parentElement;
-        } else {
-            viewerDiv = rendererOrDiv;
-        }
+        const renderer = rendererOrDiv.domElement ? rendererOrDiv : undefined;
+        const viewerDiv = renderer ? renderer.domElement : rendererOrDiv;
 
         this.width = viewerDiv.clientWidth;
         this.height = viewerDiv.clientHeight;

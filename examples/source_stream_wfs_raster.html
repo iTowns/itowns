@@ -78,27 +78,11 @@
                 transparent: true,
                 style: {
                     fill: {
-                        color: p => {
-                            if (p.geojson.id.indexOf('bati_remarquable') === 0) {
-                                return '#5555ff';
-                            }
-                            if (p.geojson.id.indexOf('bati_industriel') === 0) {
-                                return '#ff5555';
-                            }
-                            return '#eeeeee';
-                        },
-                        opacity: 0.7
+                        color: 'red',
+                        opacity: 0.5
                     },
                     stroke: {
-                        color: p => {
-                            if (p.geojson.id.indexOf('bati_remarquable') === 0) {
-                                return '#8888ff';
-                            }
-                            if (p.geojson.id.indexOf('bati_industriel') === 0) {
-                                return '#ff8888';
-                            }
-                            return '#ffffff';
-                        },
+                        color: 'white',
                         width: 2.0,
                     },
                 },
