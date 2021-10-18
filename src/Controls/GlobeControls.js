@@ -519,7 +519,7 @@ class GlobeControls extends THREE.EventDispatcher {
         } else {
             sphericalDelta.theta *= (1 - dampingFactorDefault);
             sphericalDelta.phi *= (1 - dampingFactorDefault);
-            moveAroundGlobe.slerp(dampingMove, this.dampingMoveFactor * 0.2);
+            moveAroundGlobe.slerpQuaternions(moveAroundGlobe, dampingMove, this.dampingMoveFactor * 0.2);
         }
 
         orbitScale = 1;
