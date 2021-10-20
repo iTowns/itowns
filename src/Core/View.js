@@ -95,6 +95,7 @@ function _preprocessLayer(view, layer, parentLayer) {
             zoom: layer.zoom,
             crs: source.crs,
             visible: layer.visible,
+            margin: 15,
         });
 
         layer.addEventListener('visible-property-changed', () => {
