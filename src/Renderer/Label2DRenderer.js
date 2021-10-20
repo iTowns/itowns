@@ -12,6 +12,8 @@ function hasLabelChildren(object) {
         parent.children.find(c => c.isTileMesh && c.children.find(cc => cc.isLabel));
 }
 
+const frustum = new THREE.Frustum();
+
 // A grid to manage labels on the screen.
 class ScreenGrid {
     constructor(x = 12, y = 10, width, height) {
@@ -88,8 +90,7 @@ class ScreenGrid {
     }
 }
 
-const viewProjectionMatrix = new THREE.Matrix4();
-const vector = new THREE.Vector3();
+const worldPosition = new THREE.Vector3();
 
 /**
  * This renderer is inspired by the
@@ -142,9 +143,9 @@ class Label2DRenderer {
         if (!this.infoTileLayer || !this.infoTileLayer.layer.attachedLayers.find(l => l.isLabelLayer && l.visible)) { return; }
         this.grid.reset();
 
-        viewProjectionMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
-
-        this.culling(scene, this.infoTileLayer.displayed.extent);
+        // set camera frustum
+        frustum.setFromProjectionMatrix(camera.projectionMatrix);
+        this.culling(scene, this.infoTileLayer.displayed.extent, camera);
 
         // sort by order, then by visibility inside those subsets
         // https://docs.mapbox.com/help/troubleshooting/optimize-map-label-placement/#label-hierarchy
@@ -168,7 +169,7 @@ class Label2DRenderer {
         this.grid.hidden.forEach((label) => { label.visible = false; });
     }
 
-    culling(object, extent) {
+    culling(object, extent, camera) {
         if (!object.isLabel) {
             if (!object.visible) {
                 this.hideNodeDOM(object);
@@ -182,19 +183,22 @@ class Label2DRenderer {
 
             this.showNodeDOM(object);
 
-            object.children.forEach(c => this.culling(c, extent));
+            object.children.forEach(c => this.culling(c, extent, camera));
         // the presence of the label inside the visible extent and if children has label, we can filter more labels.
         } else if (!extent.isPointInside(object.coordinates) || hasLabelChildren(object)) {
+            this.grid.hidden.push(object);
+        // the presence of the label inside frustum camera.
+        } else if (!frustum.containsPoint(object.getWorldPosition(worldPosition).applyMatrix4(camera.matrixWorldInverse))) {
             this.grid.hidden.push(object);
         // Do some horizon culling (if possible) if the tiles level is small
         // enough. The chosen value of 4 seems to provide a good result.
         } else if (object.parent.level < 4 && object.parent.layer.horizonCulling && object.parent.layer.horizonCulling(object.horizonCullingPoint)) {
             this.grid.hidden.push(object);
         } else {
-            vector.setFromMatrixPosition(object.matrixWorld);
-            vector.applyMatrix4(viewProjectionMatrix);
+            // projecting world position object
+            worldPosition.applyMatrix4(camera.projectionMatrix);
 
-            object.updateProjectedPosition(vector.x * this.halfWidth + this.halfWidth, -vector.y * this.halfHeight + this.halfHeight);
+            object.updateProjectedPosition(worldPosition.x * this.halfWidth + this.halfWidth, -worldPosition.y * this.halfHeight + this.halfHeight);
 
             // Are considered duplicates, labels that have the same screen
             // coordinates and the same base content.
