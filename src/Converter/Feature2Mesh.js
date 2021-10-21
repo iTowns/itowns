@@ -7,6 +7,11 @@ const _color = new THREE.Color();
 const maxValueUint8 = Math.pow(2, 8) - 1;
 const maxValueUint16 = Math.pow(2, 16) - 1;
 const maxValueUint32 = Math.pow(2, 32) - 1;
+const quaternion = new THREE.Quaternion();
+const normal = new THREE.Vector3(0, 0, 0);
+const v0 = new THREE.Vector3(0, 0, 0);
+const v1 = new THREE.Vector3(0, 0, 0);
+const vZ = new THREE.Vector3(0, 0, 1);
 
 function toColor(color) {
     if (color) {
@@ -274,8 +279,33 @@ function featureToPolygon(feature, options) {
 
         const geomVertices = vertices.slice(start * 3, end * 3);
         const holesOffsets = geometry.indices.map(i => i.offset - start).slice(1);
-        const triangles = Earcut(geomVertices, holesOffsets, 3);
 
+        const reprojection = options.withoutPlanReprojection ? !options.withoutPlanReprojection : true;
+        if (reprojection) {
+            // transform all vertices to XY plan
+            // calculate average plane from points
+            // http://www.les-mathematiques.net/phorum/read.php?13,728203,728209#msg-728209
+            const size = count * 3;
+            for (let i = 3; i < size; i += 3) {
+                v0.fromArray(geomVertices, i - 3);
+                v1.fromArray(geomVertices, i);
+                normal.x += (v0.y - v1.y) * (v0.z + v1.z);
+                normal.y += (v0.z - v1.z) * (v0.x + v1.x);
+                normal.z += (v0.x - v1.x) * (v0.y + v1.y);
+            }
+
+            // calculate normal plane
+            normal.normalize();
+            // calculate quaternion to transform the normal plane to z axis
+            quaternion.setFromUnitVectors(normal, vZ);
+
+            // apply transformation to vertices
+            for (let i = 0; i < size; i += 3) {
+                v1.fromArray(geomVertices, i).applyQuaternion(quaternion);
+                v1.toArray(geomVertices, i);
+            }
+        }
+        const triangles = Earcut(geomVertices, holesOffsets, 3);
         const startIndice = indices.length;
         indices.length += triangles.length;
 
@@ -442,6 +472,7 @@ export default {
      * a THREE.Group.
      *
      * @param {Object} options - options controlling the conversion
+     * @param {Boolean} [options.withoutPlanReprojection] - to avoid useless plan reprojection for non-vertical meshes
      * @param {function} [options.batchId] - optional function to create batchId attribute. It is passed the feature property and the feature index. As the batchId is using an unsigned int structure on 32 bits, the batchId could be between 0 and 4,294,967,295.
      * @return {function}
      * @example <caption>Example usage of batchId with featureId.</caption>
