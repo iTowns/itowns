@@ -204,9 +204,9 @@ describe('TileMesh', function () {
     });
 
 
-    it('RasterElevationTile is set if ElevationLayer.useColorTextureElevation is true', () => {
+    it('RasterElevationTile is set if ElevationLayer source.encoding is set to `RGB`', () => {
         delete elevationLayer.useRgbaTextureElevation;
-        elevationLayer.useColorTextureElevation = true;
+        elevationLayer.source.encoding = 'RGB';
         elevationLayer.colorTextureElevationMinZ = 10;
         elevationLayer.colorTextureElevationMaxZ = 100;
         const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
@@ -216,7 +216,7 @@ describe('TileMesh', function () {
     });
 
     it('RasterElevationTile min and max are set by xbil texture', () => {
-        delete elevationLayer.useColorTextureElevation;
+        delete elevationLayer.source.encoding;
         const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
         const rasterNode = elevationLayer.setupRasterNode(tileMesh);
         const texture = new THREE.Texture();

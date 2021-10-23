@@ -7,6 +7,7 @@ import Fetcher from 'Provider/Fetcher';
 import Cache from 'Core/Scheduler/Cache';
 
 export const supportedFetchers = new Map([
+    ['image/x-bil', Fetcher.textureFloat],
     ['image/x-bil;bits=32', Fetcher.textureFloat],
     ['geojson', Fetcher.json],
     ['application/json', Fetcher.json],
@@ -56,7 +57,15 @@ class /* istanbul ignore next */ ParsingOptions {}
 function fetchSourceData(source, extent) {
     const url = source.urlFromExtent(extent);
 
-    return source.fetcher(url, source.networkOptions).then((f) => {
+    if (source.fetcher in [supportedFetchers['image/x-bil'], supportedFetchers['image/x-bil;bits=32']]) {
+        console.log('coucou');
+    }
+    const options = source.fetcher in [supportedFetchers['image/x-bil'], supportedFetchers['image/x-bil;bits=32']] ?
+        {
+            networkOptions: source.networkOptions,
+            fileOptions: source.fileOptions,
+        } : source.networkOptions;
+    return source.fetcher(url, options).then((f) => {
         f.extent = extent;
         return f;
     }, err => source.handlingError(err));
@@ -79,6 +88,9 @@ let uid = 0;
  * source into Cache.
  * @property {string} url - The url of the resources that are fetched.
  * @property {string} format - The format of the resources that are fetched.
+ * @property {string} [encoding='32F'] - The encoding the resources that are fetched
+ * are encoded on. Can be set to `32F` and `16F` for 32 bits or 16 bits encoded float images,
+ * or to `RGB` for rgb encoded elevation data.
  * @property {function} fetcher - The method used to fetch the resources from
  * the source. iTowns provides some methods in {@link Fetcher}, but it can be
  * specified a custom one. This method should return a `Promise` containing the
@@ -127,10 +139,12 @@ class Source extends InformationsData {
 
         this.url = source.url;
         this.format = source.format;
+        this.encoding = source.encoding || '32F';
         this.fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
         this.parser = source.parser || supportedParsers.get(source.format) || (d => d);
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
+        this.fileOptions = source.fileOptions || { encoding: this.encoding };
         this.attribution = source.attribution;
         this.whenReady = Promise.resolve();
         this._featuresCaches = {};
