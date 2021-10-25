@@ -133,7 +133,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
                 const l3js = l.threejsLayer;
 
                 if (layer.id == obb_layer_id) {
-                    helper = new OBBHelper(node.obb, `id:${node.id}`);
+                    helper = new OBBHelper(node.obb);
                     if (helper.children[0]) {
                         helper.children[0].layers.set(l3js);
                     }
