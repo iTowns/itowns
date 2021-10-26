@@ -63,7 +63,7 @@ describe('Provide in Sources', function () {
     planarlayer.attach(colorlayer);
     planarlayer.attach(elevationlayer);
 
-    const fakeNode = { material,  setBBoxZ: () => {} };
+    const fakeNode = { material,  setBBoxZ: () => {},  addEventListener: () => {} };
     colorlayer.setupRasterNode(fakeNode);
     elevationlayer.setupRasterNode(fakeNode);
 

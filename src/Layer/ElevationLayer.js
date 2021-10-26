@@ -55,21 +55,7 @@ class ElevationLayer extends RasterLayer {
     constructor(id, config = {}) {
         super(id, config);
         this.isElevationLayer = true;
-
-        // This is used to add a factor needed to color texture
-        let baseScale = 1.0;
-        if (this.useColorTextureElevation) {
-            baseScale = this.colorTextureElevationMaxZ - this.colorTextureElevationMinZ;
-        }
-
-        this.defineLayerProperty('scale', this.scale || 1.0, (self) => {
-            self.parent.object3d.traverse((obj) => {
-                if (obj.layer == self.parent && obj.material) {
-                    obj.material.setElevationScale(self.scale * baseScale);
-                    obj.obb.updateScaleZ(self.scale);
-                }
-            });
-        });
+        this.defineLayerProperty('scale', this.scale || 1.0);
     }
 
     /**
@@ -90,6 +76,13 @@ class ElevationLayer extends RasterLayer {
 
         // listen elevation updating
         rasterElevationNode.addEventListener('updatedElevation', updateBBox);
+
+        // listen scaling elevation updating
+        this.addEventListener('scale-property-changed', updateBBox);
+        // remove scaling elevation updating if node is removed
+        node.addEventListener('dispose', () => {
+            this.removeEventListener('scale-property-changed', updateBBox);
+        });
 
         return rasterElevationNode;
     }

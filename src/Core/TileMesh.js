@@ -57,8 +57,9 @@ class TileMesh extends THREE.Mesh {
         if (min == null && max == null) {
             return;
         }
-        // FIXME: Why the floors ? This is not conservative : the obb may be too short by almost 1m !
-        if (Math.floor(min) !== Math.floor(this.obb.z.min) || Math.floor(max) !== Math.floor(this.obb.z.max)) {
+        // update bbox if min or max have changed by at least one decimal
+        // or if scale changed
+        if (min.toFixed(1) !== this.obb.z.min.toFixed(1) || max.toFixed(1) !== this.obb.z.max.toFixed(1) || scale != this.obb.z.scale) {
             this.obb.updateZ(min, max, scale);
             if (this.horizonCullingPointElevationScaled) {
                 this.horizonCullingPointElevationScaled.setLength(this.obb.z.delta + this.horizonCullingPoint.length());

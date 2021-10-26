@@ -118,13 +118,12 @@ export class RasterElevationTile extends RasterTile {
         super(material, layer);
         const defaultEle = {
             bias: 0,
-            scale: 1,
             mode: ELEVATION_MODES.DATA,
             zmin: 0,
             zmax: Infinity,
         };
 
-        let scaleFactor = 1.0;
+        this.scaleFactor = 1.0;
 
         // Define elevation properties
         if (layer.useRgbaTextureElevation) {
@@ -132,7 +131,7 @@ export class RasterElevationTile extends RasterTile {
             defaultEle.zmax = 5000;
             throw new Error('Restore this feature');
         } else if (layer.useColorTextureElevation) {
-            scaleFactor = layer.colorTextureElevationMaxZ - layer.colorTextureElevationMinZ;
+            this.scaleFactor = layer.colorTextureElevationMaxZ - layer.colorTextureElevationMinZ;
             defaultEle.mode = ELEVATION_MODES.COLOR;
             defaultEle.bias = layer.colorTextureElevationMinZ;
             this.min = this.layer.colorTextureElevationMinZ;
@@ -143,10 +142,22 @@ export class RasterElevationTile extends RasterTile {
         }
 
         this.bias = layer.bias || defaultEle.bias;
-        this.scale = (layer.scale || defaultEle.scale) * scaleFactor;
         this.mode = layer.mode || defaultEle.mode;
         this.zmin = layer.zmin || defaultEle.zmin;
         this.zmax = layer.zmax || defaultEle.zmax;
+
+        layer.addEventListener('scale-property-changed', this._handlerCBEvent);
+    }
+
+    get scale() {
+        return this.layer.scale * this.scaleFactor;
+    }
+
+    dispose(removeEvent) {
+        super.dispose(removeEvent);
+        if (removeEvent) {
+            this.layer.removeEventListener('scale-property-changed', this._handlerCBEvent);
+        }
     }
 
     initFromParent(parent, extents) {
