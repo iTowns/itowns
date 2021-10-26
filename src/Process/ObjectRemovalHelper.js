@@ -25,8 +25,8 @@ export default {
                 } else {
                     obj.material.dispose();
                 }
-                // obj.material = null;
             }
+            obj.dispatchEvent({ type: 'dispose' });
         }
     },
 
