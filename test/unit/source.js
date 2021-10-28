@@ -241,7 +241,7 @@ describe('Sources', function () {
             layer.whenReady.then(() => {
                 const promise = source.loadData([], layer);
                 promise.then((featureCollection) => {
-                    assert.equal(featureCollection.features[0].vertices.length, 3536);
+                    assert.equal(featureCollection.features[0].vertices.length, 3534);
                     done();
                 });
             });
