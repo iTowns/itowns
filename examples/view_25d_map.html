@@ -97,6 +97,34 @@
 
             view.addLayer(wmsElevationLayer);
 
+            var wfsCartoSource = new itowns.WFSSource({
+                url: 'https://wxs.ign.fr/cartovecto/geoportail/wfs?',
+                version: '2.0.0',
+                typeName: 'BDCARTO_BDD_WLD_WGS84G:zone_habitat_mairie',
+                crs: 'EPSG:3946',
+                ipr: 'IGN',
+                format: 'application/json',
+            });
+
+            var wfsCartoStyle = new itowns.Style({
+                zoom: { min: 0, max: 20 },
+                text: {
+                    field: '{toponyme}',
+                    color: 'white',
+                    transform: 'uppercase',
+                    size: 15,
+                    haloColor: 'rgba(20,20,20, 0.8)',
+                    haloWidth: 3,
+                },
+            });
+
+            var wfsCartoLayer = new itowns.LabelLayer('wfsCarto', {
+                source: wfsCartoSource,
+                style: wfsCartoStyle,
+            });
+
+            view.addLayer(wfsCartoLayer);
+
             // Initialize scale :
             const initialScaleSize = 200;  // in pixel
             const divScaleWidget = document.getElementById('divScaleWidget');

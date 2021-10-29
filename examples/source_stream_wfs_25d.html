@@ -242,40 +242,32 @@
             view.addLayer(wfsBuildingLayer);
 
             var wfsCartoSource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                url: 'https://wxs.ign.fr/cartovecto/geoportail/wfs?',
                 version: '2.0.0',
-                typeName: 'BDCARTO_BDD_WLD_WGS84G:zone_habitat',
-                crs: 'EPSG:4326',
+                typeName: 'BDCARTO_BDD_WLD_WGS84G:zone_habitat_mairie',
+                crs: 'EPSG:3946',
                 ipr: 'IGN',
                 format: 'application/json',
-                extent: {
-                    west: 4.568,
-                    east: 5.18,
-                    south: 45.437,
-                    north: 46.03,
-                },
             });
 
             var wfsCartoStyle = new itowns.Style({
                 zoom: { min: 0, max: 20 },
                 text: {
                     field: '{toponyme}',
+                    color: 'white',
                     transform: 'uppercase',
-                    size: 20,
-                    haloColor: 'white',
-                    haloWidth: 1,
+                    size: 15,
+                    haloColor: 'rgba(20,20,20, 0.8)',
+                    haloWidth: 3,
                 },
             });
 
             var wfsCartoLayer = new itowns.LabelLayer('wfsCarto', {
-                crs: 'EPSG:3946',
                 source: wfsCartoSource,
                 style: wfsCartoStyle,
             });
 
-            // TODO: enable this again when the stream became available
-            // Search for "zone_habitat" in this page https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?SERVICE=WFS&REQUEST=GetCapabilities
-            // view.addLayer(wfsCartoLayer);
+            view.addLayer(wfsCartoLayer);
 
             function picking(event) {
                 var htmlInfo = document.getElementById('info');
