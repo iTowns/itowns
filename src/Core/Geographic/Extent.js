@@ -590,8 +590,8 @@ class Extent {
      */
     applyMatrix4(matrix) {
         if (!CRS.isTms(this.crs)) {
-            southWest.set(this.west, this.south).applyMatrix4(matrix);
-            northEast.set(this.east, this.north).applyMatrix4(matrix);
+            southWest.set(this.west, this.south, 0).applyMatrix4(matrix);
+            northEast.set(this.east, this.north, 0).applyMatrix4(matrix);
             this.west = southWest.x;
             this.east = northEast.x;
             this.south = southWest.y;
