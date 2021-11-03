@@ -484,6 +484,7 @@ export default {
 
             group.quaternion.copy(collection.quaternion);
             group.position.copy(collection.position);
+            group.scale.copy(collection.scale);
 
             return group;
         };
