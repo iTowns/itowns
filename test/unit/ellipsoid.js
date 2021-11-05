@@ -36,12 +36,18 @@ describe('Ellipsoid', function () {
         assert.equal(a[0].x, ellipsoid.size.x);
     });
 
-    it('computeDistance', () => {
-        const a = ellipsoid.computeDistance(c1, c1);
+    it('geodesic distance', () => {
+        const a = ellipsoid.geodesicDistance(c1, c1);
         assert.equal(a, 0);
         const c2 = new Coordinates('EPSG:4326', 180, 0, 0);
-        const b = ellipsoid.computeDistance(c1, c2);
+        const b = ellipsoid.geodesicDistance(c1, c2);
         assert.ok(b > ellipsoid.size.x);
+
+        // try example https://geodesie.ign.fr/contenu/fichiers/Distance_longitude_latitude.pdf
+        const c3 = new Coordinates('EPSG:4326', 0, 45, 0);
+        const c4 = new Coordinates('EPSG:4326', 1.83421, 46.2579066, 0);
+
+        const d = ellipsoid.geodesicDistance(c3, c4) / 1000;
+        assert.ok(Math.abs(d - 200) < 0.01);
     });
 });
-

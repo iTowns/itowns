@@ -14,6 +14,7 @@ class Ellipsoid {
         this.size = new THREE.Vector3();
         this._radiiSquared = new THREE.Vector3();
         this._invRadiiSquared = new THREE.Vector3();
+        this.eccentricity = 0;
 
         this.setSize(size);
     }
@@ -40,6 +41,8 @@ class Ellipsoid {
         this._invRadiiSquared.x = (size.x == 0) ? 0 : 1 / this._radiiSquared.x;
         this._invRadiiSquared.y = (size.y == 0) ? 0 : 1 / this._radiiSquared.y;
         this._invRadiiSquared.z = (size.z == 0) ? 0 : 1 / this._radiiSquared.z;
+
+        this.eccentricity = Math.sqrt(this._radiiSquared.x - this._radiiSquared.z) / this.size.x;
     }
 
     cartographicToCartesian(coordCarto, target = new THREE.Vector3()) {
@@ -135,22 +138,37 @@ class Ellipsoid {
     }
 
     computeDistance(coordCarto1, coordCarto2) {
-        var longitude1 = THREE.MathUtils.degToRad(coordCarto1.longitude);
-        var latitude1 = THREE.MathUtils.degToRad(coordCarto1.latitude);
-        var longitude2 = THREE.MathUtils.degToRad(coordCarto2.longitude);
-        var latitude2 = THREE.MathUtils.degToRad(coordCarto2.latitude);
+        console.warn('computeDistance is renamed to geodesicDistance');
+        this.geodesicDistance(coordCarto1, coordCarto2);
+    }
 
-        var distRad = Math.acos(Math.sin(latitude1) * Math.sin(latitude2) + Math.cos(latitude1) * Math.cos(latitude2) * Math.cos(longitude2 - longitude1));
+    /**
+     * Calculate the geodesic distance, between coordCarto1 and coordCarto2.
+     * It's most short distance on ellipsoid surface between coordCarto1 and coordCarto2.
+     * It's called orthodromy.
+     *
+     * @param      {Coordinates}  coordCarto1  The coordinate carto 1
+     * @param      {Coordinates}  coordCarto2  The coordinate carto 2
+     * @return     {number}  { description_of_the_return_value }
+     */
+    geodesicDistance(coordCarto1, coordCarto2) {
+        // The formula uses the distance on approximated sphere,
+        // with the nearest local radius of curvature of the ellipsoid
+        // https://geodesie.ign.fr/contenu/fichiers/Distance_longitude_latitude.pdf
+        const longitude1 = THREE.MathUtils.degToRad(coordCarto1.longitude);
+        const latitude1 = THREE.MathUtils.degToRad(coordCarto1.latitude);
+        const longitude2 = THREE.MathUtils.degToRad(coordCarto2.longitude);
+        const latitude2 = THREE.MathUtils.degToRad(coordCarto2.latitude);
 
-        var a = this.size.x;
-        var b = this.size.z;
-        var e = Math.sqrt((a * a - b * b) / (a * a));
-        var latMoy = (latitude1 + latitude2) / 2;
-        var rho = (a * (1 - e * e)) / Math.sqrt(1 - e * e * Math.sin(latMoy) * Math.sin(latMoy));
-        var N = a / Math.sqrt(1 - e * e * Math.sin(latMoy) * Math.sin(latMoy));
+        const distRad = Math.acos(Math.sin(latitude1) * Math.sin(latitude2) + Math.cos(latitude1) * Math.cos(latitude2) * Math.cos(longitude2 - longitude1));
 
-        var distMeter = distRad * Math.sqrt(rho * N);
-        return distMeter;
+        const e = this.eccentricity;
+        const latMoy = (latitude1 + latitude2) * 0.5;
+        const es = (e * Math.sin(latMoy)) ** 2;
+        const rho = this.size.x * (1 - e ** 2) / ((1 - es) ** (3 / 2));
+        const N = this.size.x / Math.sqrt(1 - es);
+
+        return distRad * Math.sqrt(rho * N);
     }
 }
 
