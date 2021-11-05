@@ -27,6 +27,11 @@ function is4326(crs) {
     return crs === 'EPSG:4326';
 }
 
+function isGeocentric(crs) {
+    const projection = proj4.defs(crs);
+    return !projection ? false : projection.projName == 'geocent';
+}
+
 function _unitFromProj4Unit(projunit) {
     if (projunit === 'degrees') {
         return UNIT.DEGREE;
@@ -120,6 +125,14 @@ export default {
      * @return {boolean}
      */
     is4326,
+    /**
+     * Is the CRS geocentric ?
+     * if crs isn't defined the method returns false.
+     *
+     * @param {string} crs - The CRS to test.
+     * @return {boolean}
+     */
+    isGeocentric,
 
     /**
      * Give a reasonnable epsilon to use with this CRS.
