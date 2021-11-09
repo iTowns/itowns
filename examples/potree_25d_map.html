@@ -52,7 +52,7 @@
                 debugGui = new dat.GUI();
 
                 // TODO: do we really need to disable logarithmicDepthBuffer ?
-                view = new itowns.View('EPSG:3946', viewerDiv);
+                view = new itowns.View('EPSG:2154', viewerDiv);
                 setupLoadingScreen(viewerDiv, view);
                 view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
@@ -64,17 +64,24 @@
                         crs: view.referenceCrs,
                     }),
                 });
+                var v = new itowns.THREE.Vector3();
+
+                itowns.proj4.defs("EPSG:2154","+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+
+                const coord2154 = new itowns.Coordinates('EPSG:2154', 0, 0, 0);
+                const coord4326 = new itowns.Coordinates('EPSG:4326', 0, 0, 0);
 
                 // point selection on double-click
                 function dblClickHandler(event) {
                     var pick = view.pickObjectsAt(event, 5, potreeLayer);
 
                     for (const p of pick) {
-                        console.info('Selected point #' + p.index + ' in position (' +
-                            p.object.position.x + ', ' +
-                            p.object.position.y + ', ' +
-                            p.object.position.z +
-                         ') in Points ' + p.object.layer.id);
+                        const arrayPositions = p.object.geometry.attributes.position.array;
+                        v.fromArray(arrayPositions, p.index * 3).applyMatrix4(p.object.matrixWorld);
+
+                        coord2154.setFromVector3(v).as('EPSG:4326', coord4326);
+
+                        console.info(`Selected point #${p.index} position EPSG:2154(${v.x.toFixed(2)}, ${v.y.toFixed(2)}, ${v.z.toFixed(2)}) EPSG:4326(${coord4326.x.toFixed(8)}, ${coord4326.y.toFixed(8)}) in ${p.object.layer.id}`);
                     }
                 }
                 view.domElement.addEventListener('dblclick', dblClickHandler);
