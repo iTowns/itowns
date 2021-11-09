@@ -97,4 +97,38 @@ describe('Coordinates', function () {
         assertFloatEqual(coord0.y, 5);
         assertFloatEqual(coord0.z, 0);
     });
+
+    it('should instance from dms', function () {
+        const coord0 = Coordinates.fromDms('40° 26′ 46″ N', '79° 58′ 56″ W');
+
+        assertFloatEqual(-79.98222, coord0.x);
+        assertFloatEqual(40.44611, coord0.y);
+        assertFloatEqual(0, coord0.z);
+
+
+        const coordA = Coordinates.fromDms('40° 26′ 46.001″ N', '79° 58′ 56″ W');
+
+        assertFloatEqual(40.44611139, coordA.y, 8);
+
+        const coord1 = Coordinates.fromDms('40° 26′ 46″ N', '79° 58′ 56″ E');
+
+        assertFloatEqual(79.98222, coord1.x);
+        assertFloatEqual(40.44611, coord1.y);
+
+        const coord3 = Coordinates.fromDms('40 26 46 n', '79 58 56 e');
+
+        assertFloatEqual(79.98222, coord3.x);
+        assertFloatEqual(40.44611, coord3.y);
+    });
+
+    it('should throw error with wrong dms', function () {
+        // no direction
+        assert.throws(() => Coordinates.fromDms('88° 26′ 46″', '79° 58′ 56″ E'), Error);
+        // wrong direction
+        assert.throws(() => Coordinates.fromDms('61° 26′ 46 E″', '79° 58′ 56″ E'), Error);
+        // over limit
+        assert.throws(() => Coordinates.fromDms('89° 26′ 46″ N', '180° 58′ 56″ E'), Error);
+        // missing value
+        assert.throws(() => Coordinates.fromDms('89° 26′ N', '180° 58′ 56″ E'), Error);
+    });
 });
