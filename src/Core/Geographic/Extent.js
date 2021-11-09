@@ -69,6 +69,8 @@ class Extent {
      * Extent is geographical bounding rectangle defined by 4 limits: west, east, south and north.
      * If crs is tiled projection (WMTS or TMS), the extent is defined by zoom, row and column.
      *
+     * Warning, using geocentric projection isn't consistent with geographical extent.
+     *
      * @param {String} crs projection of limit values.
      * @param {number|Array.<number>|Coordinates|Object} v0 west value, zoom
      * value, Array of values [west, east, south and north], Coordinates of
@@ -79,6 +81,10 @@ class Extent {
      * @param {number} [v3] north value
      */
     constructor(crs, v0, v1, v2, v3) {
+        if (CRS.isGeocentric(crs)) {
+            throw new Error(`${crs} is geocentric projection, it's not make sense with geographical extent`);
+        }
+
         this.isExtent = true;
         this.crs = crs;
         // Scale/zoom
