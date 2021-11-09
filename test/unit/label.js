@@ -31,7 +31,7 @@ describe('LabelLayer', function () {
         geometry.closeSubGeometry(3, feature);
         geometry.properties = { content: 'foo' };
 
-        extent = new Extent('EPSG:4978', -10, 10, -10, 10);
+        extent = new Extent('EPSG:4326', -10, 10, -10, 10);
     });
 
     it('should create Labels from a FeatureCollection like object', function () {
@@ -43,7 +43,7 @@ describe('LabelLayer', function () {
 describe('Label', function () {
     let label;
     let style;
-    const c = new Coordinates('EPSG:4978');
+    const c = new Coordinates('EPSG:4326');
     const sprites = {
         img: '',
         icon: { x: 0, y: 0, width: 10, height: 10 },

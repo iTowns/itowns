@@ -20,14 +20,6 @@ describe('URL creations', function () {
         assert.equal(result, 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=12&TILEROW=1410&TILECOL=2072');
     });
 
-    it('should correctly replace %bbox by 12,35,14,46', function () {
-        const extent = new Extent('EPSG:4978', 12, 14, 35, 46);
-        layer.crs = 'EPSG:4978';
-        layer.url = 'http://server.geo/wms/BBOX=%bbox&FORMAT=jpg&SERVICE=WMS';
-        const result = URLBuilder.bbox(extent, layer);
-        assert.equal(result, 'http://server.geo/wms/BBOX=12.00,35.00,14.00,46.00&FORMAT=jpg&SERVICE=WMS');
-    });
-
     it('should correctly replace %bbox by 12,14,35,46', function () {
         const extent = new Extent('EPSG:4326', 12, 14, 35, 46);
         layer.crs = 'EPSG:4326';

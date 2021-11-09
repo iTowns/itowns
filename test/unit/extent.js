@@ -60,7 +60,7 @@ describe('Extent', function () {
         const box = new Box3(
             new Vector3(Math.random(), Math.random()),
             new Vector3(Math.random(), Math.random()));
-        const fromBox = Extent.fromBox3('EPSG:4978', box);
+        const fromBox = Extent.fromBox3('EPSG:4326', box);
 
         assert.equal(fromBox.west, box.min.x);
         assert.equal(fromBox.east, box.max.x);
@@ -314,5 +314,9 @@ describe('Extent', function () {
         assert.equal(0, center.x);
         assert.equal(90, center.y);
         assert.equal(0, center.z);
+    });
+
+    it('should throw error when instance with geocentric projection', () => {
+        assert.throws(() => new Extent('EPSG:4978'));
     });
 });
