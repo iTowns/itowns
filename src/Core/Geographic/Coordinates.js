@@ -20,6 +20,42 @@ function proj4cache(crsIn, crsOut) {
     return projectionCache[crsIn][crsOut];
 }
 
+const patterns = {
+    lat: {
+        isDMS: new RegExp(/^(([1-8]?[0-9])\D+([1-5]?[0-9]|60)\D+([1-5]?[0-9]|60)(\.[0-9]+)?|90\D+0\D+0)\D+([NSns])$/),
+        isDDM: new RegExp(/^(([1-8]?[0-9])\D+[1-6]?[0-9](\.\d{1,3})?|90(\D+0)?)\D+([NSns])$/),
+        isDD: new RegExp(/^[+-]?(([1-8]?[0-9])(\.\d{1,6})?|90)\D*[NSns]?$/),
+    },
+    lng: {
+        isDMS: new RegExp(/^((1[0-7][0-9]|[1-9]?[0-9])\D+([1-5]?[0-9]|60)\D+([1-5]?[0-9]|60)(\.[0-9]+)?|180\D+0\D+0)\D+([EWew])$/),
+        isDDM: new RegExp(/^((1[0-7][0-9]|[1-9]?[0-9])\D+[1-6]?[0-9](\.\d{1,3})?|180(\D+0)?)\D+([EWew])$/),
+        isDD: new RegExp(/^[+-]?((1[0-7][0-9]|[1-9]?[0-9])(\.\d{1,6})?|180)\D*[EWew]?$/),
+    },
+};
+
+function parseDms(t, pattern, surfaces) {
+    const match = t.match(pattern);
+
+    if (match) {
+        const degrees = parseFloat(match[2]); // 0-90° or 0-180°
+        const minutes = parseFloat(match[3] || '0'); // 0-59′
+        const secondes = parseFloat((match[4] + (match[5] || '.0')) || '0'); // 0-59.9999"
+
+        if (degrees === 0 && minutes === 0 && secondes == 0) {
+            return 0;
+        }
+
+        const surface = match[6].toLowerCase(); // N/S or E/W
+        if (surface.toLowerCase() === surfaces[0]) {
+            return +(degrees + minutes / 60 + secondes / 3600);
+        } else if (surface.toLowerCase() === surfaces[1]) {
+            return -(degrees + minutes / 60 + secondes / 3600);
+        }
+    } else {
+        throw new Error('Incorrect dms format');
+    }
+}
+
 /**
  * A Coordinates object, defined by a [crs]{@link http://inspire.ec.europa.eu/theme/rs}
  * and three values. These values are accessible through `x`, `y` and `z`,
@@ -84,6 +120,38 @@ class Coordinates {
         }
 
         this._normalNeedsUpdate = true;
+    }
+
+    /**
+     * Instance Coordinates from **dms format**.
+     *
+     * **Degrees Minutes Seconds (DMS)**
+     *  * `40° 26′ 46″ N` `79° 58′ 56″ W`
+     *  * `40° 26′ 46″ S` `79° 58′ 56″ E`
+     *  * `90° 0′ 0″ S` `180° 0′ 0″ E`
+     *  * `40° 26′ 45.9996″ N` `79° 58′ 55.2″ E`
+     *  * `40 26 46 n` `79 58 56 e`
+     *
+     *   **Latitudes** range from `0` to `90`.
+     *
+     *   **Longitudes** range from `0` to `180`.
+     *
+     *   **Minutes** & **Seconds** range from `0-60`.
+     *
+     *   Use **N**, **S**, **E** or **W** as either the last character,
+     *   which represents a compass direction **North**, **South**, **East** or **West**.
+     *
+     *   **D** and **M** must be intergers, **S** may be an interger or float.
+     *
+     * @param      {string}       lat     The latitude in dms format.
+     * @param      {string}       long    The longitude in dms format.
+     * @return     {Coordinates}  Instanced coordinates from dms format
+     */
+    static fromDms(lat, long) {
+        const latitude = parseDms(lat, patterns.lat.isDMS, 'ns');
+        const longitude = parseDms(long, patterns.lng.isDMS, 'ew');
+
+        return new Coordinates('EPSG:4326', longitude, latitude, 0);
     }
 
     /**
