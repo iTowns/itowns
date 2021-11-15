@@ -16,7 +16,7 @@ describe('3Dtiles layer', function () {
 
     const threedTilesLayer = new C3DTilesLayer('3d-tiles-discrete-lod', {
         source: new C3DTilesSource({
-            url: 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/3d-tiles-samples/master/tilesets/TilesetWithDiscreteLOD/tileset.json',
+            url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithDiscreteLOD/tileset.json',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
         }),
         sseThreshold: 0.05,
