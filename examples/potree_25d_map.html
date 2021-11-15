@@ -20,6 +20,23 @@
                     display: none;
                 }
             }
+            .bubble {
+                color:  #7ad7ff;
+                font-family: 'Open Sans', sans-serif;
+                background-color: #404040;
+                border-radius: 10px;
+                text-align: center;
+                padding: 10px 15px;
+                box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, .3), 0 0.0625rem 0.125rem rgba(0, 0, 0, .2);
+            }
+            .pointer {
+                height: 12px;
+                width: 12px;
+                background-color: #404040;
+                transform: translate(-50%, -50%) rotate(45deg);
+                position: relative;
+                left: 80%;
+            }
         </style>
 
         <meta charset="UTF-8">
@@ -45,16 +62,75 @@
                 var debugGui;
                 var view;
                 var controls;
+                var labelLayer;
+
+                const customDiv = document.createElement('div');
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                customDiv.appendChild(bubble);
+                const pointer = document.createElement('div');
+                pointer.classList.add('pointer');
+                customDiv.appendChild(pointer);
+
+                function createFeatureAt(coordinate) {
+                    // create new featureCollection
+                    const collection = new itowns.FeatureCollection({
+                        crs: view.referenceCrs,
+                        buildExtent: false,
+                        structure: '3d',
+                    });
+
+                    // create new feature
+                    const feature = collection.requestFeatureByType(itowns.FEATURE_TYPES.POINT);
+
+                    // add geometries to feature
+                    const geometry = feature.bindNewGeometry();
+                    geometry.startSubGeometry(1, feature);
+                    geometry.pushCoordinates(coordinate, feature);
+                    geometry.properties.position = coordinate;
+
+                    geometry.updateExtent();
+                    feature.updateExtent(geometry);
+                    collection.updateExtent(feature.extent);
+
+                    return collection;
+                }
+
 
                 viewerDiv = document.getElementById('viewerDiv');
                 viewerDiv.style.display = 'block';
 
                 debugGui = new dat.GUI();
 
-                // TODO: do we really need to disable logarithmicDepthBuffer ?
-                view = new itowns.View('EPSG:2154', viewerDiv);
+                itowns.proj4.defs("EPSG:2154","+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+                extent = new itowns.Extent('EPSG:2154',
+                    831300, 831800,
+                    6287500, 6287900);
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+                viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate PlanarView*
+                view = new itowns.PlanarView(viewerDiv, extent, {
+                    placement: {
+                        coord : new itowns.Coordinates('EPSG:2154', 831620, 6287690),
+                        heading: 43,
+                        range: 115,
+                        tilt: 28,
+                    }});
+
+                function setLabelContent(properties) {
+                    const coord = properties.position.as('EPSG:4326');
+                    bubble.textContent = `
+                        lat : ${coord.y.toFixed(5)}° |
+                        lon : ${coord.x.toFixed(5)}° |
+                        alt : ${coord.z.toFixed(2)}m `;
+                    return customDiv;
+                }
                 setupLoadingScreen(viewerDiv, view);
-                view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
+                view.mainLoop.gfxEngine.renderer.setClearColor(0x555555);
+                view.tileLayer.object3d.position.z = 23;
+                view.tileLayer.opacity = 0.001;
 
                 // Configure Point Cloud layer
                 potreeLayer = new itowns.PotreeLayer('eglise_saint_blaise_arles', {
@@ -66,65 +142,61 @@
                 });
                 var v = new itowns.THREE.Vector3();
 
-                itowns.proj4.defs("EPSG:2154","+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
-
                 const coord2154 = new itowns.Coordinates('EPSG:2154', 0, 0, 0);
                 const coord4326 = new itowns.Coordinates('EPSG:4326', 0, 0, 0);
 
+                let id = 0;
+
                 // point selection on double-click
                 function dblClickHandler(event) {
-                    var pick = view.pickObjectsAt(event, 5, potreeLayer);
-
-                    for (const p of pick) {
-                        const arrayPositions = p.object.geometry.attributes.position.array;
-                        v.fromArray(arrayPositions, p.index * 3).applyMatrix4(p.object.matrixWorld);
-
-                        coord2154.setFromVector3(v).as('EPSG:4326', coord4326);
-
-                        console.info(`Selected point #${p.index} position EPSG:2154(${v.x.toFixed(2)}, ${v.y.toFixed(2)}, ${v.z.toFixed(2)}) EPSG:4326(${coord4326.x.toFixed(8)}, ${coord4326.y.toFixed(8)}) in ${p.object.layer.id}`);
+                    // const llabel = view.getLayerById('idLabelLayer');
+                    if (view.getLayerById('idLabelLayer')) {
+                        view.removeLayer('idLabelLayer');
                     }
+
+                    var p = view.pickObjectsAt(event, 2, potreeLayer)[0];
+
+                    if (!p) {
+                        return;
+                    }
+
+                    const arrayPositions = p.object.geometry.attributes.position.array;
+
+                    v.fromArray(arrayPositions, p.index * 3).applyMatrix4(p.object.matrixWorld);
+
+                    coord2154.setFromVector3(v);
+
+                    const features = createFeatureAt(coord2154);
+                    // the source of the feature layer
+                    const source = new itowns.FileSource({ features });
+                    // create labelLayer
+                    labelLayer = new itowns.LabelLayer('idLabelLayer', {
+                        source: source,
+                        domElement: setLabelContent,
+                        style: new itowns.Style({
+                            zoom: {
+                                min: 0,
+                                max: 20,
+                            },
+                            text: { anchor: [-0.8, -1] },
+                        }),
+                    });
+
+                    view.addLayer(labelLayer);
                 }
                 view.domElement.addEventListener('dblclick', dblClickHandler);
 
-                function placeCamera(position, lookAt) {
-                    view.camera.camera3D.position.copy(position);
-                    view.camera.camera3D.lookAt(lookAt);
-                    // create controls
-                    controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
-                    debugGui.add(controls.options, 'moveSpeed', 1, 100).name('Movement speed');
-
-                    view.notifyChange(view.camera.camera3D);
-                }
-
                 // add potreeLayer to scene
                 function onLayerReady() {
-                    var ratio;
-                    var position;
-                    var lookAt = new itowns.THREE.Vector3();
-                    var size = new itowns.THREE.Vector3();
-
-                    potreeLayer.root.bbox.getSize(size);
-                    potreeLayer.root.bbox.getCenter(lookAt);
-
-                    debug.PotreeDebug.initTools(view, potreeLayer, debugGui);
-
-                    view.camera.camera3D.far = 2.0 * size.length();
-
-                    ratio = size.x / size.z;
-                    position = potreeLayer.root.bbox.min.clone().add(
-                        size.multiply({ x: 0, y: 0, z: ratio * 0.5 }));
-                    lookAt.z = potreeLayer.root.bbox.min.z;
-                    placeCamera(position, lookAt);
-                    controls.moveSpeed = size.length() / 3;
-
                     // update stats window
                     var info = document.getElementById('info');
                     view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, () => {
                         info.textContent = potreeLayer.displayedCount.toLocaleString() + ' points';
                     });
                 }
+
                 window.view = view;
-                view.addLayer(potreeLayer).then(onLayerReady);
+                itowns.View.prototype.addLayer.call(view, potreeLayer).then(onLayerReady);
             </script>
     </body>
 </html>
