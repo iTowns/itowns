@@ -149,7 +149,7 @@ class Ellipsoid {
      *
      * @param      {Coordinates}  coordCarto1  The coordinate carto 1
      * @param      {Coordinates}  coordCarto2  The coordinate carto 2
-     * @return     {number}  { description_of_the_return_value }
+     * @return     {number}  The orthodromic distance between the two given coordinates.
      */
     geodesicDistance(coordCarto1, coordCarto2) {
         // The formula uses the distance on approximated sphere,
