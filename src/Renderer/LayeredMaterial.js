@@ -49,6 +49,7 @@ const defaultStructLayer = {
     crs: 0,
     effect_parameter: 0,
     effect_type: colorLayerEffects.noEffect,
+    transparent: false,
 };
 
 function updateLayersUniforms(uniforms, olayers, max) {
