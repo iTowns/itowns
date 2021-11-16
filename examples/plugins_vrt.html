@@ -50,7 +50,6 @@
             }).then(function _(res) {
                 res.csv = Papa.parse(res.csv.trim()).data;
                 return CSVnVRTParser.parse(res, { out: {
-                    buildExtent: true,
                     crs: view.tileLayer.extent.crs,
                 }});
             }).then(function _(features) {

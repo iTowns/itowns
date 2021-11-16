@@ -32,7 +32,6 @@ describe('GeoJsonParser', function () {
             },
             out: {
                 crs: 'EPSG:3946',
-                buildExtent: true,
                 filteringExtent: new Extent('EPSG:3946', 10, 20, 10, 20),
             },
         }).then((collection) => {

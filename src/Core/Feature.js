@@ -41,17 +41,18 @@ const typeToStyleProperty = ['point', 'stroke', 'fill'];
 
 /**
  * @property {string} crs - The CRS to convert the input coordinates to.
- * @property {Extent|boolean} [filteringExtent=undefined] - Optional filter to reject
- * features outside of extent. Extent filetring is file extent if filteringExtent is true.
- * @property {boolean} [buildExtent=false] - If true the geometry will
- * have an extent property containing the area covered by the geometry.
- * True if the layer does not inherit from {@link GeometryLayer}.
- * @property {string} forcedExtentCrs - force feature extent crs if buildExtent is true.
- * @property {function} [filter] - Filter function to remove features
- * @property {boolean} [mergeFeatures=true] - If true all geometries are merged by type and multi-type
  * @property {string} [structure='2d'] - data structure type : 2d or 3d.
  * If the structure is 3d, the feature have 3 dimensions by vertices positions and
  * a normal for each vertices.
+ * @property {Extent|boolean} [filteringExtent=undefined] - Optional filter to reject
+ * features outside of extent. Extent filtering is file extent if filteringExtent is true.
+ * @property {boolean} [buildExtent] - If true the geometry will
+ * have an extent property containing the area covered by the geometry.
+ * Default value is false if `structure` parameter is set to '3d', and true otherwise.
+ * True if the layer does not inherit from {@link GeometryLayer}.
+ * @property {string} forcedExtentCrs - force feature extent crs if buildExtent is true.
+ * @property {function} [filter] - Filter function to remove features
+ * @property {boolean} [mergeFeatures=true] - If true all geometries are merged by type and multi-type.
  * @property {Style} style - The style to inherit when creating
  * style for all new features.
  *
@@ -361,7 +362,6 @@ export class FeatureCollection extends THREE.Object3D {
         this.crs = CRS.formatToEPSG(options.crs);
         this.features = [];
         this.mergeFeatures = options.mergeFeatures === undefined ? true : options.mergeFeatures;
-        this.extent = options.buildExtent ? defaultExtent(options.forcedExtentCrs || this.crs) : undefined;
         this.size = options.structure == '3d' ? 3 : 2;
         this.filterExtent = options.filterExtent;
         this.style = options.style;
@@ -370,6 +370,7 @@ export class FeatureCollection extends THREE.Object3D {
         this.center = new Coordinates('EPSG:4326', 0, 0);
 
         if (this.size == 2) {
+            this.extent = options.buildExtent === false ? undefined : defaultExtent(options.forcedExtentCrs || this.crs);
             this._setLocalSystem = (center) => {
                 // set local system center
                 center.as('EPSG:4326', this.center);
@@ -381,6 +382,7 @@ export class FeatureCollection extends THREE.Object3D {
             };
             this._transformToLocalSystem = transformToLocalSystem2D;
         } else {
+            this.extent = options.buildExtent ? defaultExtent(options.forcedExtentCrs || this.crs) : undefined;
             this._setLocalSystem = (center) => {
                 // set local system center
                 center.as('EPSG:4326', this.center);

@@ -109,9 +109,6 @@
                     // Here, we pass a FeatureBuildingOptions (http://www.itowns-project.org/itowns/docs/#api/Base/FeatureBuildingOptions)
                     out: {
                         crs: view.tileLayer.extent.crs,
-                        buildExtent: true,
-                        mergeFeatures: true,
-                        structure: '2d',
                     },
                 });
             }).then(function _(features) {
