@@ -23,7 +23,7 @@ describe('LabelLayer', function () {
         };
         layer.style.text.field = 'content';
 
-        collection = new FeatureCollection({ crs: 'EPSG:4326', buildExtent: true });
+        collection = new FeatureCollection({ crs: 'EPSG:4326' });
         const feature = collection.requestFeatureByType(FEATURE_TYPES.POINT);
         const geometry = feature.bindNewGeometry();
         geometry.startSubGeometry(0, feature);

@@ -30,7 +30,7 @@ describe('Feature', function () {
 
     it('Should instance Features with options', function () {
         const collection_A = new FeatureCollection(options_A);
-        const collection_B = new FeatureCollection({ crs: 'EPSG:4326' });
+        const collection_B = new FeatureCollection({ crs: 'EPSG:4326', buildExtent: false });
 
         const featureLine_A = collection_A.requestFeatureByType(FEATURE_TYPES.LINE);
         const featureLine_B = collection_B.requestFeatureByType(FEATURE_TYPES.LINE);

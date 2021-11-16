@@ -18,7 +18,6 @@
  * }).then(function _(res) {
  *     res.csv = Papa.parse(res.csv.trim()).data;
  *     return CSVnVRTParser.parse(res, { out: {
- *              buildExtent: true,
  *              crs: 'EPSG:4326'
  *          }
  *     });

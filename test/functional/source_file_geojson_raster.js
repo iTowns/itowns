@@ -30,7 +30,7 @@ describe('source_file_geojson_raster', function _() {
             const promises = [];
             const layers = view.getLayers(l => l.source && l.source.isFileSource);
             for (let i = 0; i < layers.length; i++) {
-                promises.push(layers[i].source.loadData({}, { crs: 'EPSG:4326' }));
+                promises.push(layers[i].source.loadData({}, { crs: 'EPSG:4326', buildExtent: false }));
             }
 
             return Promise.all(promises).then(fa => fa.filter(f => itowns

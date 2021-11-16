@@ -32,7 +32,6 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  *         },
  *         out: {
  *             crs: view.tileLayer.extent.crs,
- *             buildExtent: true,
  *         }
  *     });
  * }).then(function _(geojson) {
