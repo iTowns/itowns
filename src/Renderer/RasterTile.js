@@ -111,6 +111,9 @@ export class RasterColorTile extends RasterTile {
     get effect_parameter() {
         return this.layer.effect_parameter;
     }
+    get transparent() {
+        return this.layer.transparent;
+    }
 }
 
 export class RasterElevationTile extends RasterTile {
