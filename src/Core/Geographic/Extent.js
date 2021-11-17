@@ -10,10 +10,13 @@ import CRS from 'Core/Geographic/Crs';
 const _dim = new THREE.Vector2();
 const _dim2 = new THREE.Vector2();
 const _countTiles = new THREE.Vector2();
+const _box = new THREE.Box3();
 const tmsCoord = new THREE.Vector2();
 const dimensionTile = new THREE.Vector2();
 const defaultScheme = new THREE.Vector2(2, 2);
 const r = { row: 0, col: 0, invDiff: 0 };
+
+const coord =  new Coordinates('EPSG:4326', 0, 0, 0);
 
 const southWest = new THREE.Vector3();
 const northEast = new THREE.Vector3();
@@ -82,7 +85,7 @@ class Extent {
      */
     constructor(crs, v0, v1, v2, v3) {
         if (CRS.isGeocentric(crs)) {
-            throw new Error(`${crs} is geocentric projection, it's not make sense with geographical extent`);
+            throw new Error(`${crs} is a geocentric projection, it doesn't make sense with a geographical extent`);
         }
 
         this.isExtent = true;
@@ -528,12 +531,27 @@ class Extent {
     }
 
     /**
-     * Instance Extent with THREE.Box2
+     * Instance Extent with THREE.Box3.
+     *
+     * If crs is a geocentric projection, the `box3.min` and `box3.max`
+     * should be the geocentric coordinates of `min` and `max` of a `box3`
+     * in local tangent plane.
+     *
      * @param {string} crs Projection of extent to instancied.
-     * @param {THREE.Box2} box
+     * @param {THREE.Box3} box
      * @return {Extent}
      */
     static fromBox3(crs, box) {
+        if (CRS.isGeocentric(crs)) {
+            // if geocentric reproject box on 'EPSG:4326'
+            crs = 'EPSG:4326';
+            box = _box.copy(box);
+            coord.crs = crs;
+            coord.setFromVector3(box.min).as(crs, coord).toVector3(box.min);
+            coord.crs = crs;
+            coord.setFromVector3(box.max).as(crs, coord).toVector3(box.max);
+        }
+
         return new Extent(crs, {
             west: box.min.x,
             east: box.max.x,
