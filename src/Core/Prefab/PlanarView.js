@@ -40,7 +40,7 @@ class PlanarView extends View {
         this.isPlanarView = true;
 
         // Configure camera
-        const dim = extent.dimensions();
+        const dim = extent.planarDimensions();
         const max = Math.max(dim.x, dim.y);
         const camera3D = this.camera.camera3D;
         camera3D.near = 0.1;

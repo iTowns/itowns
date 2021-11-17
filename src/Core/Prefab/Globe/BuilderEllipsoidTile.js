@@ -62,7 +62,7 @@ class BuilderEllipsoidTile {
 
         // let's avoid building too much temp objects
         params.projected = { longitude: 0, latitude: 0 };
-        params.extent.dimensions(this.tmp.dimension);
+        params.extent.planarDimensions(this.tmp.dimension);
     }
 
     // get center tile in cartesian 3D

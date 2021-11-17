@@ -37,7 +37,7 @@ describe('Provide in Sources', function () {
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const globalExtent = globalExtentTMS.get('EPSG:3857');
     const zoom = 10;
-    const sizeTile = globalExtent.dimensions().x / 2 ** zoom;
+    const sizeTile = globalExtent.planarDimensions().x / 2 ** zoom;
     const extent = new Extent('EPSG:3857', 0, sizeTile, 0, sizeTile);
     // const zoom = 4;
     const material = new LayeredMaterial();

@@ -128,22 +128,22 @@ describe('Camera utils unit test', function () {
         CameraUtils.transformCameraToLookAtTarget(view, camera3D, subExtent);
         assert.equal(
             (camera3D.top - camera3D.bottom) / camera3D.zoom,
-            subExtent.dimensions().y,
+            subExtent.planarDimensions().y,
         );
         assert.equal(
             (camera3D.right - camera3D.left) / camera3D.zoom,
-            subExtent.dimensions().y * 1.5,
+            subExtent.planarDimensions().y * 1.5,
         );
 
         // case r < R (r = 1.5 and R = 2.0)
         subExtent.set(0, 10, 0, 5);
         CameraUtils.transformCameraToLookAtTarget(view, camera3D, subExtent);
         assert.ok(
-            (camera3D.top - camera3D.bottom) / camera3D.zoom - subExtent.dimensions().x / 1.5 < Math.pow(10, -14),
+            (camera3D.top - camera3D.bottom) / camera3D.zoom - subExtent.planarDimensions().x / 1.5 < Math.pow(10, -14),
         );
         assert.equal(
             (camera3D.right - camera3D.left) / camera3D.zoom,
-            subExtent.dimensions().x,
+            subExtent.planarDimensions().x,
         );
 
         const perspectiveCamera = new Camera(view.referenceCrs, 60, 40);
@@ -154,7 +154,7 @@ describe('Camera utils unit test', function () {
         camera3D.updateMatrixWorld(true);
         assert.ok(
             CameraUtils.getCameraTransformOptionsFromExtent(view, camera3D, subExtent).range -
-            subExtent.dimensions().y / (2 * Math.tan(THREE.Math.degToRad(camera3D.fov) / 2)) < Math.pow(10, -14),
+            subExtent.planarDimensions().y / (2 * Math.tan(THREE.Math.degToRad(camera3D.fov) / 2)) < Math.pow(10, -14),
         );
     });
 });

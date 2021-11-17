@@ -431,7 +431,7 @@ export default {
             dimensions = { x: size.y, y: size.x };
         } else {
             extent = extent.as(view.referenceCrs);
-            dimensions = extent.dimensions();
+            dimensions = extent.planarDimensions();
         }
 
         extent.center(cameraTransformOptions.coord);

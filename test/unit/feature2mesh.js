@@ -33,7 +33,7 @@ describe('Feature2Mesh', function () {
     it('rect mesh area should match geometry extent', () =>
         parsed.then((collection) => {
             const mesh = Feature2Mesh.convert()(collection);
-            const extentSize = collection.extent.dimensions();
+            const extentSize = collection.extent.planarDimensions();
 
             assert.equal(
                 extentSize.x * extentSize.y,

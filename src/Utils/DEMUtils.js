@@ -308,7 +308,7 @@ function offsetInExtent(point, extent, target = new THREE.Vector2()) {
         throw new Error(`Unsupported mix: ${point.crs} and ${extent.crs}`);
     }
 
-    extent.dimensions(dimension);
+    extent.planarDimensions(dimension);
 
     const originX = (point.x - extent.west) / dimension.x;
     const originY = (extent.north - point.y) / dimension.y;
@@ -364,7 +364,7 @@ function _readZ(layer, method, coord, nodes, cache) {
     //     at (offset.x, offset.y) and we're done
     //   - the correct one: emulate the vertex shader code
     if (method == PRECISE_READ_Z) {
-        pt.z = _readZCorrect(layer, src, temp.offset, tile.extent.dimensions(), tileWithValidElevationTexture.extent.dimensions());
+        pt.z = _readZCorrect(layer, src, temp.offset, tile.extent.planarDimensions(), tileWithValidElevationTexture.extent.planarDimensions());
     } else {
         pt.z = _readZFast(layer, src, temp.offset);
     }
