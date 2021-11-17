@@ -47,12 +47,8 @@ function boundingVolumeToExtent(crs, volume, transform) {
         return Extent.fromBox3(crs, box);
     } else {
         const sphere = tmpSphere.copy(volume.sphere).applyMatrix4(transform);
-        return new Extent(crs, {
-            west: sphere.center.x - sphere.radius,
-            east: sphere.center.x + sphere.radius,
-            south: sphere.center.y - sphere.radius,
-            north: sphere.center.y + sphere.radius,
-        });
+        const box = sphere.getBoundingBox(tmpBox3);
+        return Extent.fromBox3(crs, box);
     }
 }
 
@@ -81,6 +77,7 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
             node.add(tile);
             tile.updateMatrixWorld();
 
+            // The extent is calculated but it's never used in 3D tiles process
             const extent = boundingVolumeToExtent(layer.extent.crs, tile.boundingVolume, tile.matrixWorld);
             tile.traverse((obj) => {
                 obj.extent = extent;
@@ -289,6 +286,7 @@ export function init3dTilesLayer(view, scheduler, layer, rootTile) {
             tile.updateMatrixWorld();
             layer.tileset.tiles[tile.tileId].loaded = true;
             layer.root = tile;
+            // The extent is calculated but it's never used in 3D tiles process
             layer.extent = boundingVolumeToExtent(layer.crs || view.referenceCrs,
                 tile.boundingVolume, tile.matrixWorld);
             layer.onTileContentLoaded(tile);
