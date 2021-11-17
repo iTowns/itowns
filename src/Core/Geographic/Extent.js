@@ -49,7 +49,7 @@ export const schemeTiles = new Map();
 function getInfoTms(crs) {
     const epsg = CRS.formatToEPSG(crs);
     const globalExtent = globalExtentTMS.get(epsg);
-    const globalDimension = globalExtent.dimensions(_dim2);
+    const globalDimension = globalExtent.planarDimensions(_dim2);
     const tms = CRS.formatToTms(crs);
     const sTs = schemeTiles.get(tms) || schemeTiles.get('default');
     // The isInverted parameter is to be set to the correct value, true or false
@@ -132,7 +132,7 @@ class Extent {
             const extent = _extent.copy(this).as(CRS.formatToEPSG(crs), _extent2);
             const { globalExtent, globalDimension, sTs } = getInfoTms(CRS.formatToEPSG(crs));
             extent.clampByExtent(globalExtent);
-            extent.dimensions(dimensionTile);
+            extent.planarDimensions(dimensionTile);
 
             const zoom = (this.zoom + 1) || Math.floor(Math.log2(Math.round(globalDimension.x / (dimensionTile.x * sTs.x))));
             const countTiles = getCountTiles(crs, zoom);
@@ -154,7 +154,7 @@ class Extent {
             const target = new Extent(crs, 0, 0, 0);
             const { globalExtent, globalDimension, sTs, isInverted } = getInfoTms(this.crs);
             const center = this.center(_c);
-            this.dimensions(dimensionTile);
+            this.planarDimensions(dimensionTile);
             // Each level has 2^n * 2^n tiles...
             // ... so we count how many tiles of the same width as tile we can fit in the layer
             // ... 2^zoom = tilecount => zoom = log2(tilecount)
@@ -242,7 +242,7 @@ class Extent {
         if (CRS.isTms(this.crs)) {
             throw new Error('Invalid operation for WMTS bbox');
         }
-        this.dimensions(_dim);
+        this.planarDimensions(_dim);
 
         target.crs = this.crs;
         target.setFromValues(this.west + _dim.x * 0.5, this.south + _dim.y * 0.5);
@@ -391,8 +391,8 @@ class Extent {
                 r.invDiff, r.invDiff);
         }
 
-        extent.dimensions(_dim);
-        this.dimensions(_dim2);
+        extent.planarDimensions(_dim);
+        this.planarDimensions(_dim2);
 
         const originX = (this.west - extent.west) / _dim.x;
         const originY = (extent.north - this.north) / _dim.y;
@@ -650,7 +650,7 @@ class Extent {
      */
     subdivisionByScheme(scheme = defaultScheme) {
         const subdivisedExtents = [];
-        const dimSub = this.dimensions(_dim).divide(scheme);
+        const dimSub = this.planarDimensions(_dim).divide(scheme);
         for (let x = scheme.x - 1; x >= 0; x--) {
             for (let y = scheme.y - 1; y >= 0; y--) {
                 const west = this.west + x * dimSub.x;
