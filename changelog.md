@@ -1,3 +1,60 @@
+<a name="2.36.0"></a>
+# [2.36.0](https://github.com/iTowns/itowns/compare/v2.35.0...v2.36.0) (2021-11-18)
+
+
+### Features
+
+* **Coordinates:** add methods to calculate distance between coordinates. ([acdf643](https://github.com/iTowns/itowns/commit/acdf643))
+* **Crs:** add isGeocentric method. ([1ab76c8](https://github.com/iTowns/itowns/commit/1ab76c8))
+* **Extent:** add methods to calculate extent dimensions. ([ed583d9](https://github.com/iTowns/itowns/commit/ed583d9))
+* **Label:** add parameter to change labels padding property ([33f8680](https://github.com/iTowns/itowns/commit/33f8680))
+
+
+### Bug Fixes
+
+* **ColorLayer:** fix shader when transparent is true ([1a4f44d](https://github.com/iTowns/itowns/commit/1a4f44d))
+* **ElevationLayer:** scale elevation isn't updated ([26d72da](https://github.com/iTowns/itowns/commit/26d72da))
+* **Ellipsoid:** wrong geodesic distance. ([4d462f2](https://github.com/iTowns/itowns/commit/4d462f2))
+* **Extent:** fix wrong calculating when apply matrix. ([04abdd2](https://github.com/iTowns/itowns/commit/04abdd2))
+* **Feature:** wrong altitude and altitude limits. ([4746e86](https://github.com/iTowns/itowns/commit/4746e86))
+* **Feature2Mesh:** set scale transformation from FeatureCollection. ([0f5cd07](https://github.com/iTowns/itowns/commit/0f5cd07))
+* **FirstPersonControls:** prevent context menu from poping ([94bfd57](https://github.com/iTowns/itowns/commit/94bfd57))
+* **GlobeControls:** fix black screen when zooming outside globe ([3e0f23f](https://github.com/iTowns/itowns/commit/3e0f23f))
+* **label2DRenderer:** add frustum culling in global labels culling. ([5ba4e9d](https://github.com/iTowns/itowns/commit/5ba4e9d))
+* **Point/3Dtiles:** wrong geographical extent property for points cloud and 3Dtiles. ([c663ce4](https://github.com/iTowns/itowns/commit/c663ce4))
+* **Style:** copy order property when copying style ([cab78ba](https://github.com/iTowns/itowns/commit/cab78ba))
+* **VectorTileSource:** set style parent with style Layer ([aba0743](https://github.com/iTowns/itowns/commit/aba0743))
+
+
+### Examples
+
+* **3dtiles_basic:** update 3dtiles sources url ([50d6733](https://github.com/iTowns/itowns/commit/50d6733))
+
+
+### Code Refactoring
+
+* **debug:** remove id text in OBB helper. ([d033279](https://github.com/iTowns/itowns/commit/d033279))
+* **examples:** add wfs labels in 2.5d examples. ([944e412](https://github.com/iTowns/itowns/commit/944e412))
+* **Extent:** throw error if the projection is geocentric. ([e0048f7](https://github.com/iTowns/itowns/commit/e0048f7))
+* **Extent:** use Extent.planarDimensions instead of Extent.dimensions ([023d5fa](https://github.com/iTowns/itowns/commit/023d5fa))
+* **OBBHelper:** remove OBBHelper text. ([1e2fc31](https://github.com/iTowns/itowns/commit/1e2fc31))
+* **TerrainMaterial:** rename fogDepth -> vFogDepth ([7d162ec](https://github.com/iTowns/itowns/commit/7d162ec))
+* **View:** change label margin default. ([8c6edf5](https://github.com/iTowns/itowns/commit/8c6edf5))
+
+
+### Workflow and chores
+
+* release v2.36.0 ([091c59b](https://github.com/iTowns/itowns/commit/091c59b))
+* add contributor. ([323b046](https://github.com/iTowns/itowns/commit/323b046))
+* update packages. ([ef204f9](https://github.com/iTowns/itowns/commit/ef204f9))
+
+
+### Documentation
+
+* **Ellipsoid:** minor fix on geodesicDistance doc ([a0cd2a3](https://github.com/iTowns/itowns/commit/a0cd2a3))
+
+
+
 <a name="2.35.0"></a>
 # [2.35.0](https://github.com/iTowns/itowns/compare/v2.34.0...v2.35.0) (2021-09-16)
 
