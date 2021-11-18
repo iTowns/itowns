@@ -10,6 +10,7 @@ The following people have contributed to iTowns 2.
   * [Grégoire Maillet](https://github.com/gmaillet)
   * [Guillaume Liégard](https://github.com/gliegard)
   * [Adrien Berthet](https://github.com/zarov)
+  * [Madec Germerie-Guizouarn](https://github.com/mgermerie)
 
 * [Oslandia](http://www.oslandia.com)
   * [Vincent Picavet](https://github.com/vpicavet)
