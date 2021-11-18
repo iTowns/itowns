@@ -97,4 +97,32 @@ describe('Coordinates', function () {
         assertFloatEqual(coord0.y, 5);
         assertFloatEqual(coord0.z, 0);
     });
+
+    it('should correctly return planar distance to other coordinates', function () {
+        const coord0 = new Coordinates('EPSG:3946', 15.0, 12.0);
+        const coord1 = new Coordinates('EPSG:3946', 16.0, 12.0);
+
+        const distance = coord0.planarDistanceTo(coord1);
+        assert.equal(distance, 1);
+        assert.equal(distance, coord1.planarDistanceTo(coord0));
+    });
+
+    it('should correctly return geodesic distance to other coordinates', function () {
+        // try example https://geodesie.ign.fr/contenu/fichiers/Distance_longitude_latitude.pdf
+        const coord0 = new Coordinates('EPSG:4326', 0, 45, 0);
+        const coord1 = new Coordinates('EPSG:4326', 1.83421, 46.2579066, 0);
+
+        const distance = coord0.geodesicDistanceTo(coord1) / 1000;
+        assert.ok(Math.abs(distance - 200) < 0.01);
+        assert.equal(distance, coord1.geodesicDistanceTo(coord0) / 1000);
+    });
+
+    it('should correctly return earth euclidean distance to other coordinates', function () {
+        const coord0 = new Coordinates('EPSG:4326', 0, 45, 0);
+        const coord1 = new Coordinates('EPSG:4326', 1.83421, 46.2579066, 0);
+
+        const distance = coord0.earthEuclideanDistanceTo(coord1);
+        assert.equal(distance, 199991.80319097277);
+        assert.equal(distance, coord1.earthEuclideanDistanceTo(coord0));
+    });
 });
