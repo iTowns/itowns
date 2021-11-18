@@ -34,7 +34,7 @@ describe('TileMesh', function () {
     for (let i = 1; i < 4; i++) {
         tree[i] = [];
         // four child per parent
-        for (let j = 0; j < Math.pow(4, i); j++) {
+        for (let j = 0; j < 4 ** i; j++) {
             const tile = new FakeTileMesh(i, tree[i - 1][~~(j / 4)]);
             tree[i].push(tile);
         }

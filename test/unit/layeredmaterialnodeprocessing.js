@@ -105,7 +105,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
     });
 
     it('tile should not request texture with level > layer.source.zoom.max', () => {
-        const countTexture = Math.pow(2, 15);
+        const countTexture = 2 ** 15;
         const newExtent = new Extent('EPSG:4326', 0, 180 / countTexture, 0, 180 / countTexture);
         const tile = new TileMesh(geom, material, layer, newExtent, 15);
         // Emulate a situation where tile inherited a level 1 texture

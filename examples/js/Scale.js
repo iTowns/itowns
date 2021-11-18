@@ -13,6 +13,7 @@ function roundPixelsFromMeters(view, pixelSize) {
 
     // Round the metric distance :
     distanceMeters = Math.floor(distanceMeters);
+    // eslint-disable-next-line prefer-exponentiation-operator
     var digit = Math.pow(10, distanceMeters.toString().length - 1);
     distanceMeters = Math.round(distanceMeters / digit) * digit;
 

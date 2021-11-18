@@ -4,9 +4,9 @@ import { FEATURE_TYPES } from 'Core/Feature';
 import { deprecatedFeature2MeshOptions } from 'Core/Deprecated/Undeprecator';
 
 const _color = new THREE.Color();
-const maxValueUint8 = Math.pow(2, 8) - 1;
-const maxValueUint16 = Math.pow(2, 16) - 1;
-const maxValueUint32 = Math.pow(2, 32) - 1;
+const maxValueUint8 = 2 ** 8 - 1;
+const maxValueUint16 = 2 ** 16 - 1;
+const maxValueUint32 = 2 ** 32 - 1;
 
 function toColor(color) {
     if (color) {

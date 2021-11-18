@@ -139,7 +139,7 @@ describe('Camera utils unit test', function () {
         subExtent.set(0, 10, 0, 5);
         CameraUtils.transformCameraToLookAtTarget(view, camera3D, subExtent);
         assert.ok(
-            (camera3D.top - camera3D.bottom) / camera3D.zoom - subExtent.planarDimensions().x / 1.5 < Math.pow(10, -14),
+            (camera3D.top - camera3D.bottom) / camera3D.zoom - subExtent.planarDimensions().x / 1.5 < 10 ** -14,
         );
         assert.equal(
             (camera3D.right - camera3D.left) / camera3D.zoom,
@@ -154,7 +154,7 @@ describe('Camera utils unit test', function () {
         camera3D.updateMatrixWorld(true);
         assert.ok(
             CameraUtils.getCameraTransformOptionsFromExtent(view, camera3D, subExtent).range -
-            subExtent.planarDimensions().y / (2 * Math.tan(THREE.Math.degToRad(camera3D.fov) / 2)) < Math.pow(10, -14),
+            subExtent.planarDimensions().y / (2 * Math.tan(THREE.Math.degToRad(camera3D.fov) / 2)) < 10 ** -14,
         );
     });
 });

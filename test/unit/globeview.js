@@ -104,7 +104,7 @@ describe('GlobeView', function () {
         assert.ok(
             CameraUtils.getTransformCameraLookingAtTarget(extentViewer, camera3D).range -
             size.x / (2 * Math.tan(THREE.Math.degToRad(camera3D.fov) / 2))
-            < Math.pow(10, -6),
+            < 10 ** -6,
         );
     });
 });

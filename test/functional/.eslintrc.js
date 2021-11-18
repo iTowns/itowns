@@ -59,5 +59,6 @@ module.exports = {
         'max-len': 'off',
         'arrow-parens': ['error', 'as-needed', { requireForBlockBody: true }],
         'prefer-object-spread': 'off',
+        'function-paren-newline': 'off',
     },
 };
