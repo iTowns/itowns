@@ -25,7 +25,6 @@ class OBB extends THREE.Object3D {
         this.box3D = new THREE.Box3(min.clone(), max.clone());
         this.natBox = this.box3D.clone();
         this.z = { min: 0, max: 0, scale: 1.0 };
-        return this;
     }
 
     /**

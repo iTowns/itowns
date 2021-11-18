@@ -407,7 +407,7 @@ class TiledGeometryLayer extends GeometryLayer {
                 const offsetScale = nodeLayer.offsetScales[0];
                 const ratio = offsetScale.z;
                 // ratio is node size / texture size
-                if (ratio < 1 / Math.pow(2, this.maxDeltaElevationLevel)) {
+                if (ratio < 1 / 2 ** this.maxDeltaElevationLevel) {
                     return false;
                 }
             }

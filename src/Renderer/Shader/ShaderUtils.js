@@ -1,5 +1,7 @@
-const rePosition = new RegExp('gl_Position.*(?![^]*gl_Position)');
-const reMain = new RegExp('[^\\w]*main[^\\w]*(void)?[^\\w]*{');
+const pattern_gl_Position = 'gl_Position.*(?![^]*gl_Position)';
+const pattern_Main = '[^\\w]*main[^\\w]*(void)?[^\\w]*{';
+const rePosition = new RegExp(pattern_gl_Position);
+const reMain = new RegExp(pattern_Main);
 
 export default {
     patchMaterialForLogDepthSupport(material) {

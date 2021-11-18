@@ -104,6 +104,9 @@ module.exports = {
         'class-methods-use-this': 'off',
         'arrow-parens': ['error', 'as-needed', { requireForBlockBody: true }],
         'max-classes-per-file': ['error', 4],
+        'function-call-argument-newline': 'off',
+        // change default-param-last to on, but there are several breaking changes or default params to add.
+        'default-param-last': 'off',
     },
     globals: {
         __DEBUG__: false,
