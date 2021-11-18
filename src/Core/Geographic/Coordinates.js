@@ -8,6 +8,12 @@ proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 const ellipsoid = new Ellipsoid();
 const projectionCache = {};
 
+const v0 = new THREE.Vector3();
+const v1 = new THREE.Vector3();
+
+let coord0;
+let coord1;
+
 function proj4cache(crsIn, crsOut) {
     if (!projectionCache[crsIn]) {
         projectionCache[crsIn] = {};
@@ -198,6 +204,50 @@ class Coordinates {
     }
 
     /**
+     * Calculate planar distance between this coordinates and `coord`.
+     * Planar distance is the straight-line euclidean distance calculated in a 2D cartesian coordinate system.
+     *
+     * @param  {Coordinates}  coord  The coordinate
+     * @return {number} planar distance
+     *
+     */
+    planarDistanceTo(coord) {
+        this.toVector3(v0).setZ(0);
+        coord.toVector3(v1).setZ(0);
+        return v0.distanceTo(v1);
+    }
+
+    /**
+     * Calculate geodesic distance between this coordinates and `coord`.
+     * **Geodesic distance** is calculated in an ellispoid space as the distance
+     * across the curved surface of the world.
+     *
+     * => As the crow flies/ Orthodromy
+     *
+     * @param  {Coordinates}  coord  The coordinate
+     * @return {number} geodesic distance
+     *
+     */
+    geodesicDistanceTo(coord) {
+        this.as('EPSG:4326', coord0);
+        coord.as('EPSG:4326', coord1);
+        return ellipsoid.geodesicDistance(coord0, coord1);
+    }
+
+    /**
+     * Calculate earth euclidean distance between this coordinates and `coord`.
+     *
+     * @param  {Coordinates}  coord  The coordinate
+     * @return {number} earth euclidean distance
+     *
+     */
+    earthEuclideanDistanceTo(coord) {
+        this.as('EPSG:4978', coord0).toVector3(v0);
+        coord.as('EPSG:4978', coord1).toVector3(v1);
+        return v0.distanceTo(v1);
+    }
+
+    /**
      * Multiplies this `coordinates` (with an implicit 1 in the 4th dimension) and `mat`.
      *
      * @param      {THREE.Matrix4}  mat The matrix.
@@ -248,5 +298,8 @@ class Coordinates {
         return target;
     }
 }
+
+coord0 = new Coordinates('EPSG:4326', 0, 0, 0);
+coord1 = new Coordinates('EPSG:4326', 0, 0, 0);
 
 export default Coordinates;
