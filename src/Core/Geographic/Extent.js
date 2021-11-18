@@ -16,7 +16,9 @@ const dimensionTile = new THREE.Vector2();
 const defaultScheme = new THREE.Vector2(2, 2);
 const r = { row: 0, col: 0, invDiff: 0 };
 
-const coord =  new Coordinates('EPSG:4326', 0, 0, 0);
+const cNorthWest =  new Coordinates('EPSG:4326', 0, 0, 0);
+const cSouthWest =  new Coordinates('EPSG:4326', 0, 0, 0);
+const cNorthEast =  new Coordinates('EPSG:4326', 0, 0, 0);
 
 const southWest = new THREE.Vector3();
 const northEast = new THREE.Vector3();
@@ -256,9 +258,65 @@ class Extent {
     * @return {THREE.Vector2}
     */
     dimensions(target = new THREE.Vector2()) {
+        console.warn('Extent.dimensions is deprecated, use planarDimensions, geodesicDimensions or geodesicChordDimensions');
         target.x = Math.abs(this.east - this.west);
         target.y = Math.abs(this.north - this.south);
         return target;
+    }
+
+    /**
+     *  Planar dimensions are two planar distances west/east and south/north.
+     *  Planar distance straight-line Euclidean distance calculated in a 2D Cartesian coordinate system.
+     *
+     * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
+     * @return     {THREE.Vector2}  Planar dimensions
+     */
+    planarDimensions(target = new THREE.Vector2()) {
+        // Calculte the dimensions for x and y
+        return target.set(Math.abs(this.east - this.west), Math.abs(this.north - this.south));
+    }
+
+    /**
+     *  Geodesic dimensions are two planar distances west/east and south/north.
+     *  Geodesic distance is calculated in an ellispoid space as the distance
+     *  across the curved surface of the world.
+     *
+     * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
+     * @return     {THREE.Vector2}  Planar dimensions
+     */
+    geodesicDimensions(target = new THREE.Vector2()) {
+        // set 3 corners extent
+        cNorthWest.crs = this.crs;
+        cSouthWest.crs = this.crs;
+        cNorthEast.crs = this.crs;
+
+        cNorthWest.setFromValues(this.west, this.north, 0);
+        cSouthWest.setFromValues(this.west, this.south, 0);
+        cNorthEast.setFromValues(this.east, this.north, 0);
+
+        // calcul geodesic distance northWest/northEast and northWest/southWest
+        return target.set(cNorthWest.geodesicDistanceTo(cNorthEast), cNorthWest.geodesicDistanceTo(cSouthWest));
+    }
+
+    /**
+     *  Earth euclidean dimensions are two earth euclidean distances between west/east and south/north.
+     *  Earth euclidean distance chord is calculated in a ellispoid space.
+     *
+     * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
+     * @return     {THREE.Vector2}  Earth euclidean dimensions
+     */
+    earthEuclideanDimensions(target = new THREE.Vector2()) {
+        // set 3 corners extent
+        cNorthWest.crs = this.crs;
+        cSouthWest.crs = this.crs;
+        cNorthEast.crs = this.crs;
+
+        cNorthWest.setFromValues(this.west, this.north, 0);
+        cSouthWest.setFromValues(this.west, this.south, 0);
+        cNorthEast.setFromValues(this.east, this.north, 0);
+
+        // calcul chord distance northWest/northEast and northWest/southWest
+        return target.set(cNorthWest.earthEuclideanDistanceTo(cNorthEast), cNorthWest.earthEuclideanDistanceTo(cSouthWest));
     }
 
     /**
@@ -546,10 +604,11 @@ class Extent {
             // if geocentric reproject box on 'EPSG:4326'
             crs = 'EPSG:4326';
             box = _box.copy(box);
-            coord.crs = crs;
-            coord.setFromVector3(box.min).as(crs, coord).toVector3(box.min);
-            coord.crs = crs;
-            coord.setFromVector3(box.max).as(crs, coord).toVector3(box.max);
+
+            cSouthWest.crs = crs;
+            cSouthWest.setFromVector3(box.min).as(crs, cSouthWest).toVector3(box.min);
+            cNorthEast.crs = crs;
+            cNorthEast.setFromVector3(box.max).as(crs, cNorthEast).toVector3(box.max);
         }
 
         return new Extent(crs, {
