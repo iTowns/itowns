@@ -1,3 +1,18 @@
+<a name="2.36.1"></a>
+## [2.36.1](https://github.com/iTowns/itowns/compare/v2.36.0...v2.36.1) (2021-11-22)
+
+
+### Bug Fixes
+
+* **View:** wrong calculate pick radius with distance/zoom. ([d5efa03](https://github.com/iTowns/itowns/commit/d5efa03))
+
+
+### Workflow and chores
+
+* release v2.36.1 ([b0cf534](https://github.com/iTowns/itowns/commit/b0cf534))
+
+
+
 <a name="2.36.0"></a>
 # [2.36.0](https://github.com/iTowns/itowns/compare/v2.35.0...v2.36.0) (2021-11-18)
 
