@@ -218,17 +218,17 @@ class Coordinates {
     }
 
     /**
-     * Calculate geodesic distance between this coordinates and `coord`.
-     * **Geodesic distance** is calculated in an ellispoid space as the distance
+     * Calculate geodetic distance between this coordinates and `coord`.
+     * **Geodetic distance** is calculated in an ellispoid space as the shortest distance
      * across the curved surface of the world.
      *
      * => As the crow flies/ Orthodromy
      *
      * @param  {Coordinates}  coord  The coordinate
-     * @return {number} geodesic distance
+     * @return {number} geodetic distance
      *
      */
-    geodesicDistanceTo(coord) {
+    geodeticDistanceTo(coord) {
         this.as('EPSG:4326', coord0);
         coord.as('EPSG:4326', coord1);
         return ellipsoid.geodesicDistance(coord0, coord1);
@@ -241,7 +241,7 @@ class Coordinates {
      * @return {number} earth euclidean distance
      *
      */
-    earthEuclideanDistanceTo(coord) {
+    spatialEuclideanDistanceTo(coord) {
         this.as('EPSG:4978', coord0).toVector3(v0);
         coord.as('EPSG:4978', coord1).toVector3(v1);
         return v0.distanceTo(v1);
