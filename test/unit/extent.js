@@ -120,7 +120,7 @@ describe('Extent', function () {
         const extent = new Extent('EPSG:4326', 3, 3.01, 46, 46.01);
         const dimensions = new Vector2();
 
-        extent.earthEuclideanDimensions(dimensions);
+        extent.spatialEuclideanDimensions(dimensions);
         assert.equal(dimensions.x, 774.4934293643765);
         assert.equal(dimensions.y, 1111.5141604285038);
     });
@@ -129,7 +129,7 @@ describe('Extent', function () {
         const extent = new Extent('EPSG:4326', 3, 3.01, 46, 46.01);
         const dimensions = new Vector2();
 
-        extent.geodesicDimensions(dimensions);
+        extent.geodeticDimensions(dimensions);
         assert.equal(dimensions.x, 773.2375602074535);
         assert.equal(dimensions.y, 1113.3197697640906);
     });

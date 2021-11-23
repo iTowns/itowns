@@ -258,7 +258,7 @@ class Extent {
     * @return {THREE.Vector2}
     */
     dimensions(target = new THREE.Vector2()) {
-        console.warn('Extent.dimensions is deprecated, use planarDimensions, geodesicDimensions or geodesicChordDimensions');
+        console.warn('Extent.dimensions is deprecated, use planarDimensions, geodeticDimensions or spatialEuclideanDimensions');
         target.x = Math.abs(this.east - this.west);
         target.y = Math.abs(this.north - this.south);
         return target;
@@ -277,14 +277,14 @@ class Extent {
     }
 
     /**
-     *  Geodesic dimensions are two planar distances west/east and south/north.
-     *  Geodesic distance is calculated in an ellispoid space as the distance
+     *  Geodetic dimensions are two planar distances west/east and south/north.
+     *  Geodetic distance is calculated in an ellispoid space as the distance
      *  across the curved surface of the world.
      *
      * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
-     * @return     {THREE.Vector2}  Planar dimensions
+     * @return     {THREE.Vector2}  geodetic dimensions
      */
-    geodesicDimensions(target = new THREE.Vector2()) {
+    geodeticDimensions(target = new THREE.Vector2()) {
         // set 3 corners extent
         cNorthWest.crs = this.crs;
         cSouthWest.crs = this.crs;
@@ -294,18 +294,18 @@ class Extent {
         cSouthWest.setFromValues(this.west, this.south, 0);
         cNorthEast.setFromValues(this.east, this.north, 0);
 
-        // calcul geodesic distance northWest/northEast and northWest/southWest
-        return target.set(cNorthWest.geodesicDistanceTo(cNorthEast), cNorthWest.geodesicDistanceTo(cSouthWest));
+        // calcul geodetic distance northWest/northEast and northWest/southWest
+        return target.set(cNorthWest.geodeticDistanceTo(cNorthEast), cNorthWest.geodeticDistanceTo(cSouthWest));
     }
 
     /**
-     *  Earth euclidean dimensions are two earth euclidean distances between west/east and south/north.
-     *  Earth euclidean distance chord is calculated in a ellispoid space.
+     *  Spatial euclidean dimensions are two spatial euclidean distances between west/east corner and south/north corner.
+     *  Spatial euclidean distance chord is calculated in a ellispoid space.
      *
      * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
-     * @return     {THREE.Vector2}  Earth euclidean dimensions
+     * @return     {THREE.Vector2}  spatial euclidean dimensions
      */
-    earthEuclideanDimensions(target = new THREE.Vector2()) {
+    spatialEuclideanDimensions(target = new THREE.Vector2()) {
         // set 3 corners extent
         cNorthWest.crs = this.crs;
         cSouthWest.crs = this.crs;
@@ -316,7 +316,7 @@ class Extent {
         cNorthEast.setFromValues(this.east, this.north, 0);
 
         // calcul chord distance northWest/northEast and northWest/southWest
-        return target.set(cNorthWest.earthEuclideanDistanceTo(cNorthEast), cNorthWest.earthEuclideanDistanceTo(cSouthWest));
+        return target.set(cNorthWest.spatialEuclideanDistanceTo(cNorthEast), cNorthWest.spatialEuclideanDistanceTo(cSouthWest));
     }
 
     /**
