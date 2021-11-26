@@ -129,9 +129,11 @@ class VectorTilesSource extends TMSSource {
 
     onLayerAdded(options) {
         super.onLayerAdded(options);
-        const keys = Object.keys(this.styles);
+        if (options.out.style) {
+            const keys = Object.keys(this.styles);
 
-        keys.forEach((k) => { this.styles[k].parent = options.out.style; });
+            keys.forEach((k) => { this.styles[k].parent = options.out.style; });
+        }
     }
 }
 
