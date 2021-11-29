@@ -1,3 +1,25 @@
+<a name="2.36.2"></a>
+## [2.36.2](https://github.com/iTowns/itowns/compare/v2.36.1...v2.36.2) (2021-11-29)
+
+
+### Bug Fixes
+
+* **VectorTileSource:** error if vector tile layer style is undefined. ([b535583](https://github.com/iTowns/itowns/commit/b535583))
+
+
+### Code Refactoring
+
+* **Coordinates/Extent:** rename dimension and distance methods. ([6a436ac](https://github.com/iTowns/itowns/commit/6a436ac))
+* **examples:** replace geoservice keys. ([b81738c](https://github.com/iTowns/itowns/commit/b81738c))
+* **Feature:** defaults buildExtent parameter to true for 2d structure ([3182075](https://github.com/iTowns/itowns/commit/3182075))
+
+
+### Workflow and chores
+
+* release v2.36.2 ([54c2128](https://github.com/iTowns/itowns/commit/54c2128))
+
+
+
 <a name="2.36.1"></a>
 ## [2.36.1](https://github.com/iTowns/itowns/compare/v2.36.0...v2.36.1) (2021-11-22)
 
