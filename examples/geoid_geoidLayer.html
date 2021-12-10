@@ -1,0 +1,102 @@
+<html>
+    <head>
+        <title>Itowns - GeoidLayer</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <!-- Import iTowns LoadingScreen and GuiTools pluggins -->
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
+
+        <script type="text/javascript">
+
+
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 25000000,
+            }
+
+            // `viewerDiv` contains iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
+
+
+
+            // ---------- DISPLAY CONTEXTUAL DATA : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
+            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then((config) => {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ColorLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            });
+
+            // Add two elevaion layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            }
+            itowns.Fetcher.json('layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+
+
+            // ---------- DISPLAY GEOID HEIGHT DATA : ----------
+
+            // As both ElevationLayers data consist in altitudes, and as iTowns GlobeView displays elevation data as
+            // ellipsoid heights, we must add a GeoidLayer to display the altitudes correctly.
+
+            // Define the source of a geoid height grid, which serves as a conversion grid between altitudes and
+            // ellipsoid heights.
+            const geoidSource = new itowns.FileSource({
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/altitude-conversion-grids/' +
+                    'RAF20_float.gtx',
+                crs: 'EPSG:4326',
+                format: 'application/gtx',
+            });
+            // Specify the type geoid height data are encoded with. See GTXParser documentation at
+            // http://www.itowns-project.org/itowns/docs/#api/Parser/GTXParser for more.
+            geoidSource.dataType = 'float';
+
+            // Create a Layer to support geoid height data and add it to the view.
+            const geoidLayer = new itowns.GeoidLayer('geoid', {
+                source: geoidSource,
+            });
+            view.addLayer(geoidLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
+
+
+
+            // ---------- DEBUG TOOLS : ----------
+
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+        </script>
+    </body>
+</html>
