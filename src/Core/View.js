@@ -80,6 +80,14 @@ function _preprocessLayer(view, layer, parentLayer) {
         }
     }
 
+    if (layer.isElevationLayer && view.controls) {
+        layer.addEventListener('visible-property-changed', () => {
+            // To update collision camera with terrain
+            view.notifyChange(view.camera);
+            view.controls.update();
+        });
+    }
+
     if (layer.isLabelLayer) {
         view.mainLoop.gfxEngine.label2dRenderer.registerLayer(layer);
     } else if (layer.labelEnabled || layer.addLabelLayer) {

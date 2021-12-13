@@ -102,13 +102,16 @@ GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
     if (this.elevationGui.hasFolder(layer.id)) { return; }
     this.elevationGui.show();
     var folder = this.elevationGui.addFolder(layer.id);
-    folder.add({ frozen: layer.frozen }, 'frozen').onChange(function refreshFrozenGui(value) {
-        layer.frozen = value;
-    });
+    folder.add({ visible: layer.visible }, 'visible').onChange((function updateVisibility(value) {
+        layer.visible = value;
+    }));
     folder.add({ scale: layer.scale }, 'scale').min(1.0).max(20000.0).onChange((function updateScale(value) {
         layer.scale = value;
         this.view.notifyChange(layer);
     }).bind(this));
+    folder.add({ frozen: layer.frozen }, 'frozen').onChange(function refreshFrozenGui(value) {
+        layer.frozen = value;
+    });
 };
 
 GuiTools.prototype.addGeoidLayerGUI = function addGeoidLayerGUI(layer) {

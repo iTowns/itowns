@@ -127,6 +127,8 @@ export class RasterElevationTile extends RasterTile {
         };
 
         this.scaleFactor = 1.0;
+        this._min = 0;
+        this._max = 0;
 
         // Define elevation properties
         if (layer.useRgbaTextureElevation) {
@@ -139,9 +141,6 @@ export class RasterElevationTile extends RasterTile {
             defaultEle.bias = layer.colorTextureElevationMinZ;
             this.min = this.layer.colorTextureElevationMinZ;
             this.max = this.layer.colorTextureElevationMaxZ;
-        } else {
-            this.min = 0;
-            this.max = 0;
         }
 
         this.bias = layer.bias || defaultEle.bias;
@@ -154,6 +153,22 @@ export class RasterElevationTile extends RasterTile {
 
     get scale() {
         return this.layer.scale * this.scaleFactor;
+    }
+
+    get min() {
+        return this.visible ? this._min : 0;
+    }
+
+    set min(value) {
+        this._min = value;
+    }
+
+    get max() {
+        return this.visible ? this._max : 0;
+    }
+
+    set max(value) {
+        this._max = value;
     }
 
     dispose(removeEvent) {

@@ -192,7 +192,8 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     }
 
     // Possible conditions to *not* update the elevation texture
-    if (layer.frozen ||
+    if (!layer.visible ||
+            layer.frozen ||
             !material.visible ||
             !node.layerUpdateState[layer.id].canTryUpdate()) {
         return;
