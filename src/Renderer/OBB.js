@@ -62,22 +62,22 @@ class OBB extends THREE.Object3D {
     }
 
     /**
-     * Update z min and z max of oriented bounding box
+     * Update z min, z max and z scale of oriented bounding box
      *
-     * @param {number}  min The minimum of oriented bounding box
-     * @param {number}  max The maximum of oriented bounding box
-     * @param {number} scale
+     * @param {Object}  [elevation={}]
+     * @param {number}  [elevation.min]             The minimum of oriented bounding box
+     * @param {number}  [elevation.max]             The maximum of oriented bounding box
+     * @param {number}  [elevation.scale]           The scale of oriented bounding box Z axis
      */
-    updateZ(min, max, scale = this.z.scale) {
-        this.z = { min, max, scale, delta: Math.abs(max - min) * scale };
-        this.box3D.min.z = this.natBox.min.z + min * scale;
-        this.box3D.max.z = this.natBox.max.z + max * scale;
-    }
+    updateZ(elevation = {}) {
+        this.z.min = elevation.min !== undefined && elevation.min !== null ? elevation.min : this.z.min;
+        this.z.max = elevation.max !== undefined && elevation.max !== null ? elevation.max : this.z.max;
 
-    updateScaleZ(scale) {
-        if (scale > 0) {
-            this.updateZ(this.z.min, this.z.max, scale);
-        }
+        this.z.scale = elevation.scale > 0 ? elevation.scale : this.z.scale;
+        this.z.delta = Math.abs(this.z.max - this.z.min) * this.z.scale;
+
+        this.box3D.min.z = this.natBox.min.z + this.z.min * this.z.scale;
+        this.box3D.max.z = this.natBox.max.z + this.z.max * this.z.scale;
     }
 
     /**
@@ -126,7 +126,7 @@ class OBB extends THREE.Object3D {
             obb.natBox.copy(geometry.boundingBox);
             this.copy(obb);
 
-            this.updateZ(minHeight, maxHeight);
+            this.updateZ({ min: minHeight, max: maxHeight });
             this.position.copy(position);
             this.quaternion.copy(quaternion);
             this.updateMatrixWorld(true);

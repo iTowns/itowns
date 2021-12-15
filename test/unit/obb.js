@@ -33,7 +33,7 @@ describe('OBB', function () {
         const o1 = new OBB(min, max);
         o1.z.min = -3;
         o1.z.max = 5;
-        o1.updateScaleZ(2);
+        o1.updateZ({ scale: 2 });
         assert.equal(o1.z.min, -3);
         assert.equal(o1.z.max, 5);
         assert.equal(o1.z.scale, 2);

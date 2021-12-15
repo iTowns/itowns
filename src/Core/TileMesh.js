@@ -49,23 +49,17 @@ class TileMesh extends THREE.Mesh {
      * If specified, update the min and max elevation of the OBB
      * and updates accordingly the bounding sphere and the geometric error
      *
-     * @param {?number} min
-     * @param {?number} max
-     * @param {?number} scale
+     * @param {Object}  elevation
+     * @param {number}  [elevation.min]
+     * @param {number}  [elevation.max]
+     * @param {number}  [elevation.scale]
      */
-    setBBoxZ(min, max, scale) {
-        if (min == null && max == null) {
-            return;
+    setBBoxZ(elevation) {
+        this.obb.updateZ(elevation);
+        if (this.horizonCullingPointElevationScaled) {
+            this.horizonCullingPointElevationScaled.setLength(this.obb.z.delta + this.horizonCullingPoint.length());
         }
-        // update bbox if min or max have changed by at least one decimal
-        // or if scale changed
-        if (min.toFixed(1) !== this.obb.z.min.toFixed(1) || max.toFixed(1) !== this.obb.z.max.toFixed(1) || scale != this.obb.z.scale) {
-            this.obb.updateZ(min, max, scale);
-            if (this.horizonCullingPointElevationScaled) {
-                this.horizonCullingPointElevationScaled.setLength(this.obb.z.delta + this.horizonCullingPoint.length());
-            }
-            this.obb.box3D.getBoundingSphere(this.boundingSphere);
-        }
+        this.obb.box3D.getBoundingSphere(this.boundingSphere);
     }
 
     getExtentsByProjection(crs) {

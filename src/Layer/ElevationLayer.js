@@ -71,7 +71,9 @@ class ElevationLayer extends RasterLayer {
         node.material.addLayer(rasterElevationNode);
         node.material.setSequenceElevation(this.id);
         // bounding box initialisation
-        const updateBBox = () => node.setBBoxZ(rasterElevationNode.min, rasterElevationNode.max, this.scale);
+        const updateBBox = () => node.setBBoxZ({
+            min: rasterElevationNode.min, max: rasterElevationNode.max, scale: this.scale,
+        });
         updateBBox();
 
         // listen elevation updating

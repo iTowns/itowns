@@ -240,7 +240,7 @@ export function removeLayeredMaterialNodeLayer(layerId) {
         if (node.material && node.material.removeLayer) {
             node.material.removeLayer(layerId);
             if (node.material.elevationLayerIds[0] == layerId) {
-                node.setBBoxZ(0, 0);
+                node.setBBoxZ({ min: 0, max: 0 });
             }
         }
         if (node.layerUpdateState && node.layerUpdateState[layerId]) {
