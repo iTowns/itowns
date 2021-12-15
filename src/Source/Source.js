@@ -1,7 +1,10 @@
 import Extent from 'Core/Geographic/Extent';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import KMLParser from 'Parser/KMLParser';
+import GDFParser from 'Parser/GDFParser';
 import GpxParser from 'Parser/GpxParser';
+import GTXParser from 'Parser/GTXParser';
+import ISGParser from 'Parser/ISGParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
 import Cache from 'Core/Scheduler/Cache';
@@ -13,6 +16,9 @@ export const supportedFetchers = new Map([
     ['application/kml', Fetcher.xml],
     ['application/gpx', Fetcher.xml],
     ['application/x-protobuf;type=mapbox-vector', Fetcher.arrayBuffer],
+    ['application/gtx', Fetcher.arrayBuffer],
+    ['application/isg', Fetcher.text],
+    ['application/gdf', Fetcher.text],
 ]);
 
 export const supportedParsers = new Map([
@@ -21,6 +27,9 @@ export const supportedParsers = new Map([
     ['application/kml', KMLParser.parse],
     ['application/gpx', GpxParser.parse],
     ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
+    ['application/gtx', GTXParser.parse],
+    ['application/isg', ISGParser.parse],
+    ['application/gdf', GDFParser.parse],
 ]);
 
 const noCache = { getByArray: () => {}, setByArray: a => a, clear: () => {} };
