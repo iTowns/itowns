@@ -86,7 +86,10 @@
                 "CameraCalibrationParser",
                 "B3dmParser",
                 "ShapefileParser",
-                "LASParser"
+                "LASParser",
+                "GTXParser",
+                "GDFParser",
+                "ISGParser"
             ],
 
             "Converter": [

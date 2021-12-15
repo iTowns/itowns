@@ -87,6 +87,9 @@ export { default as KMLParser } from 'Parser/KMLParser';
 export { default as CameraCalibrationParser } from 'Parser/CameraCalibrationParser';
 export { default as ShapefileParser } from 'Parser/ShapefileParser';
 export { default as LASParser } from 'Parser/LASParser';
+export { default as ISGParser } from 'Parser/ISGParser';
+export { default as GDFParser } from 'Parser/GDFParser';
+export { default as GTXParser } from 'Parser/GTXParser';
 export { enableDracoLoader, glTFLoader, legacyGLTFLoader } from 'Parser/B3dmParser';
 
 // 3D Tiles classes and extensions
