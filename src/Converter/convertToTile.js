@@ -80,7 +80,7 @@ export default {
             setTileFromTiledLayer(tile, layer);
 
             if (parent) {
-                tile.setBBoxZ(parent.obb.z.min, parent.obb.z.max);
+                tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max });
             }
 
             return tile;

@@ -54,7 +54,7 @@ class C3DTBoundingVolume {
             THREE.MathUtils.radToDeg(region[3]));
         const regionBox = new OBB();
         regionBox.setFromExtent(extent);
-        regionBox.updateZ(region[4], region[5]);
+        regionBox.updateZ({ min: region[4], max: region[5] });
         // at this point box.matrix = box.epsg4978_from_local, so
         // we transform it in parent_from_local by using parent's
         // epsg4978_from_local which from our point of view is
