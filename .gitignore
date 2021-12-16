@@ -5,6 +5,8 @@
 
 /node_modules/
 /dist/
+/potree/
+potree
 /lib/
 /docs/out/
 coverage
