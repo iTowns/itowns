@@ -6,6 +6,8 @@ import Feature2Mesh from 'Converter/Feature2Mesh';
 
 const geojson = require('../data/geojson/holes.geojson.json');
 const geojson2 = require('../data/geojson/simple.geojson.json');
+const geojson3 = require('../data/geojson/vertical.geojson.json');
+
 
 proj4.defs('EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
@@ -29,6 +31,7 @@ function computeAreaOfMesh(mesh) {
 describe('Feature2Mesh', function () {
     const parsed = GeoJsonParser.parse(geojson, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false, structure: '3d' } });
     const parsed2 = GeoJsonParser.parse(geojson2, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false, structure: '3d' } });
+    const parsed3 = GeoJsonParser.parse(geojson3, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false, structure: '3d' } });
 
     it('rect mesh area should match geometry extent', () =>
         parsed.then((collection) => {
@@ -43,7 +46,6 @@ describe('Feature2Mesh', function () {
     it('square mesh area should match geometry extent minus holes', () =>
         parsed.then((collection) => {
             const mesh = Feature2Mesh.convert()(collection);
-
             const noHoleArea = computeAreaOfMesh(mesh.children[0]);
             const holeArea = computeAreaOfMesh(mesh.children[1]);
             const meshWithHoleArea = computeAreaOfMesh(mesh.children[2]);
@@ -51,6 +53,26 @@ describe('Feature2Mesh', function () {
             assert.equal(
                 noHoleArea - holeArea,
                 meshWithHoleArea);
+        }));
+
+    it('vertical polygon triangulation', () =>
+        parsed3.then((collection) => {
+            const mesh = Feature2Mesh.convert()(collection);
+            const geom = mesh.children[0].geometry;
+            assert.equal(
+                geom.index.count,
+                6,
+            );
+        }));
+
+    it('vertical polygon triangulation without plan reprojection', () =>
+        parsed3.then((collection) => {
+            const mesh = Feature2Mesh.convert({ withoutPlanReprojection: 'toto' })(collection);
+            const geom = mesh.children[0].geometry;
+            assert.equal(
+                geom.index.count,
+                0,
+            );
         }));
 
     it('convert points, lines and mesh', () =>

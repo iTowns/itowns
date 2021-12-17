@@ -67,7 +67,15 @@ const toFeature = {
 
         // Then read contour and holes
         for (let i = 0; i < coordsIn.length; i++) {
-            this.populateGeometry(crsIn, coordsIn[i], geometry, feature);
+            // GeoJson standard: The first and last positions are equivalent,
+            // and they MUST contain identical values; their representation SHOULD also be identical.
+            const ring = coordsIn[i];
+            if (ring.length > 1) {
+                if (ring[0].every((v, i) => v == ring[ring.length - 1][i])) {
+                    ring.pop();
+                }
+            }
+            this.populateGeometry(crsIn, ring, geometry, feature);
         }
         feature.updateExtent(geometry);
     },
