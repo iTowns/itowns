@@ -91,46 +91,36 @@ jobs:
     name: Deploy to itowns.github.io
     steps:
     # Download artifact from build
-    - name: Download bundle
+    - name: Download bundle itowns
       uses: actions/download-artifact@v2
       with:
         name: dist-itowns
+    - name: Download bundle potree
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: intergration.yml
+        repo: iTowns/potree
+        name: dist-potree
     # Copy files for deployment
     - name: build site
       run: |
         mkdir -p itowns/dist
+        mkdir -p itowns/potree/build
+        mkdir -p itowns/potree/libs
         cp -R dist/*.js itowns/dist/
         cp -R examples itowns/
         cp -R buildDocs itowns/docs
+        cp -R build itowns/potree/
+        cp -R libs itowns/potree/
 
-    # Deploy to itowns.github.io dist
-    - name: Deploy to itowns.github.io dist
+    # Deploy to itowns.github.io
+    - name: Deploy to itowns.github.io
       uses: peaceiris/actions-gh-pages@v3
       with:
         deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         external_repository: iTowns/itowns.github.io
-        publish_dir: ./itowns/dist
-        destination_dir: ./itowns/dist
-        publish_branch: master
-        enable_jekyll: true
-    # Deploy to itowns.github.io examples
-    - name: Deploy to itowns.github.io examples
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-        external_repository: iTowns/itowns.github.io
-        publish_dir: ./itowns/examples
-        destination_dir: ./itowns/examples
-        publish_branch: master
-        enable_jekyll: true
-    # Deploy to itowns.github.io docs
-    - name: Deploy to itowns.github.io docs
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-        external_repository: iTowns/itowns.github.io
-        publish_dir: ./itowns/docs
-        destination_dir: ./itowns/docs
+        publish_dir: ./itowns
+        destination_dir: ./itowns
         publish_branch: master
         enable_jekyll: true
 
