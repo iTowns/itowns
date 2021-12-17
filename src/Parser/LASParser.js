@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { parse } from '@loaders.gl/core';
 import { LASLoader } from '@loaders.gl/las';
 
 // See this document for LAS format specification
@@ -34,7 +35,9 @@ export default {
     parse(data, options = {}) {
         options.in = options.in || {};
         options.out = options.out || {};
-        return LASLoader.parse(data, {
+        return parse(data, LASLoader, {
+            worker: true,
+            reuseWorkers: false,
             las: {
                 colorDepth: options.in.colorDepth || 'auto',
                 skip: options.out.skip || 1,
