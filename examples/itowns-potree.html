@@ -1,0 +1,248 @@
+<html>
+    <head>
+        <title>iTowns - Potree</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <link rel="stylesheet" type="text/css" href="../potree/build/potree/potree.css">
+        <link rel="stylesheet" type="text/css" href="../potree/libs/jquery-ui/jquery-ui.min.css">
+        <link rel="stylesheet" type="text/css" href="../potree/libs/spectrum/spectrum.css">
+        <link rel="stylesheet" type="text/css" href="../potree/libs/jstree/themes/mixed/style.css">
+
+        <style type="text/css">
+            tr { color: white; }
+        </style>
+    </head>
+    <body>
+
+        <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+            <div id="potree_render_area"></div>
+            <div id="potree_sidebar_container"></div>
+        </div>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <!-- Import iTowns LoadingScreen pluggin -->
+        <script src="js/GUI/LoadingScreen.js"></script>
+
+        <!-- Define THREE and proj4 constants so that Potree may access them. Otherwise, we would need to access them
+             with `itowns.THREE` or `itowns.proj4`. -->
+        <script type="text/javascript">
+            const THREE = itowns.THREE;
+            THREE.Object3D.DefaultUp.set(0, 0, 1);
+
+            const proj4 = itowns.proj4;
+        </script>
+
+        <!-- Import Potree source code -->
+        <script src="../potree/libs/jquery/jquery-3.1.1.min.js"></script>
+        <script src="../potree/libs/i18next/i18next.js"></script>
+        <script src="../potree/libs/jstree/jstree.min.js"></script>
+        <script src="../potree/libs/plasio/js/laslaz.js"></script>
+        <script src="../potree/build/potree/potree.js"></script>
+
+        <script type="text/javascript">
+
+
+
+            // `viewerDiv` contains both iTowns and Potree rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('potree_render_area');
+
+
+
+            // ---------- CREATE A POTREE VIEWER FOR SUPPORTING POINT CLOUD VISUALIZATION : ----------
+
+            const coordinates = new itowns.Coordinates('EPSG:4978');
+
+            // Define crs projection of the point cloud data (taken from https://epsg.io/2154, Proj4js section)
+            proj4.defs(
+                'EPSG:2154',
+                '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80'
+                + ' towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
+            );
+            const pointCloudCRS = 'EPSG:2154';
+
+            Potree.setTHREEShaderChunk(itowns.ShaderChunk.target);
+
+            // Create a Potree Viewer to support point cloud visualization
+            const potreeViewer = new Potree.Viewer(viewerDiv, {
+                dynamicNearFar: false,
+                isGeocentric: true,
+                crs: pointCloudCRS,
+
+                // Callback to transform coordinates displayed by Potree `Point measurement` in `EPSG:2154`
+                measureCoordinateCallback: (position) => {
+                    return coordinates.setFromVector3(position).as(pointCloudCRS).toVector3();
+                },
+            });
+
+            potreeViewer.setEDLEnabled(true);
+            potreeViewer.setControls(null);
+            potreeViewer.loadGUI();
+
+            // Override Potree area measure method. The original Potree method gives a planar area delimited from given
+            // points (summits of the area). The area returned by the method is computed from `x` and `y` components of
+            // the points coordinates.
+            //
+            // By default, the points coordinates passed to the method are in iTowns viewer CRS, which is geocentric.
+            // Therefore, computing an area over the `x` and `y` components of these coordinates is incorrect - it
+            // actualy computes its orthogonal projection on the equatorial plane.
+            //
+            // To fix this, we transform each coordinates of the area summits in the point cloud CRS, which is
+            // geographic. We store each transformed coordinates in an array. Finally we override Potree area measure
+            // method so that it computes area from this array.
+            potreeViewer.scene.addEventListener('measurement_added', (e) => {
+                const { measurement } = e;
+
+                if(measurement.name === "Area") {
+                    // Array containing the geographic coordinates of each area summits
+                    const areaPoints = [new itowns.Coordinates(pointCloudCRS)];
+
+                    // Add a Coordinates to the array when an area summit is created.
+                    measurement.addEventListener('marker_added', () => {
+                        areaPoints.push(new itowns.Coordinates(pointCloudCRS));
+                    }, false)
+                    // Translate the area summit coordinates from itowns viewer CRS to geographic CRS when the summit is
+                    // moved. It also happens when the summit is created.
+                    measurement.addEventListener('marker_moved', (event) => {
+                        coordinates.setFromVector3(event.position).as(pointCloudCRS, areaPoints[event.index]);
+                    }, false);
+                    // Clear the coordinates array when we remove an area summit.
+                    measurement.addEventListener('marker_removed', () => {
+                        areaPoints.splice(areaPoints.length - 1, 1);
+                    }, false);
+
+                    // Override potree `Measure.getArea` method to use projected coordinates to compute area
+                    measurement.getArea = () => {
+                        let area = 0;
+                        let j = areaPoints.length - 1;
+
+                        for (let i = 0; i < areaPoints.length; i++) {
+                            let p1 = areaPoints[i];
+                            let p2 = areaPoints[j];
+                            area += (p2.x + p1.x) * (p1.y - p2.y);
+                            j = i
+                        }
+
+                        return Math.abs(area / 2);
+                    };
+                }
+            });
+
+
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING ORTHO-PHOTOGRAPHIES AND DEM VISUALIZATION : ----------
+
+            // Define camera initial position.
+            const placement = {
+                heading: -35,
+                tilt: 30,
+            }
+
+            // Create a GlobeView.
+            const itownsViewer = new itowns.GlobeView(viewerDiv, placement, {
+                renderer: potreeViewer.renderer,
+                scene3D: potreeViewer.scene.scene,
+            });
+
+            // Setup loading screen.
+            setupLoadingScreen(viewerDiv, itownsViewer);
+
+            // Controls and camera specific setting.
+            itownsViewer.controls.minDistanceCollision = 0;
+            itownsViewer.controls.minDistance = 20;
+            itownsViewer.camera.camera3D.near = 0.1;
+
+
+
+            // ---------- TWEAK ITOWNS VIEWER TO SUPPORT POTREE VISUALIZATION : ----------
+
+            itownsViewer.render = () => {};
+
+            // Force iTowns viewer to resize when changing #potree_render_area div size.
+            // This allows the viewer resizing when toggling potree menu.
+            new ResizeObserver(() => itownsViewer.resize()).observe(viewerDiv);
+
+            // Disable iTowns controls when hovering Potree tool (such as a vertex of a displayed polygon).
+            // This prevents iTowns camera from moving when we want to displace a Potree tool marker.
+            viewerDiv.addEventListener('mousemove', () => {
+                itownsViewer.controls.states.enabled = potreeViewer.inputHandler.hoveredElements.length === 0;
+            })
+
+            // Set Potree viewer camera as iTowns viewer camera.
+            const camera = itownsViewer.camera.camera3D;
+            camera.zoomTo = () => {};
+            potreeViewer.scene.cameraP = camera;
+
+            // TODO : should be moved to Label2DRenderer constructor
+            itownsViewer.mainLoop.gfxEngine.label2dRenderer.domElement.style.pointerEvents = 'none';
+
+
+
+            // ---------- DISPLAY CONTEXTUAL DATA USING ITOWNS : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                config.source.zoom = { max: 19, min: 3 };
+                itownsViewer.addLayer(
+                    new itowns.ColorLayer(config.id, config),
+                );
+            });
+
+            // Add two elevaion layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                itownsViewer.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                );
+            }
+            itowns.Fetcher.json('layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+
+
+            // ---------- DISPLAY POINT CLOUD DATA USING POTREE : ----------
+
+            const pointcloudUrl = 'http://lidarhd.pocgpf.ovh/data/';
+
+            itowns.Fetcher.json(
+                pointcloudUrl + 'metadata/pivotTHREE.json'
+            ).then(
+                (pivot) => new THREE.ObjectLoader().parse(pivot)
+            ).then(
+                (pivotTHREE) => {
+                    Potree.loadPointCloud(pointcloudUrl + 'ept/ept.json', 'pointcloud', function(e) {
+                        const pointcloud = e.pointcloud;
+                        const material = pointcloud.material;
+
+                        potreeViewer.scene.addPointCloud(pointcloud);
+
+                        pointcloud.getAttribute('intensity').range = [0, 10000];
+
+                        material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+                        material.shape = Potree.PointShape.CIRCLE
+
+                        pointcloud.position.copy(pivotTHREE.position);
+                        pointcloud.quaternion.copy(pivotTHREE.quaternion);
+                        pointcloud.updateMatrixWorld(true);
+
+                        // Move itowns viewer camera to the center of the point cloud
+                        itownsViewer.controls.lookAtCoordinate({
+                            coord: new itowns.Coordinates('EPSG:4978').setFromVector3(pivotTHREE.position),
+                            range: 1500
+                        }, false);
+                    });
+                }
+            );
+
+        </script>
+    </body>
+</html>
