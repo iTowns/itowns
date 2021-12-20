@@ -41,7 +41,9 @@ export default {
             },
         }).then((parsedData) => {
             const geometry = new THREE.BufferGeometry();
-            geometry.userData = parsedData.loaderData.header;
+            geometry.userData = parsedData.loaderData;
+            geometry.userData.vertexCount = parsedData.header.vertexCount;
+            geometry.userData.boundingBox = parsedData.header.boundingBox;
 
             const positionBuffer = new THREE.BufferAttribute(parsedData.attributes.POSITION.value, 3, false);
             geometry.setAttribute('position', positionBuffer);

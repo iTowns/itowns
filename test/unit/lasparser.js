@@ -20,10 +20,10 @@ describe('LASParser', function () {
 
     it('parses a las file to a THREE.BufferGeometry', async () => {
         const bufferGeometry = await LASParser.parse(lasData);
-        assert.strictEqual(bufferGeometry.userData.pointsCount, 106);
-        assert.strictEqual(bufferGeometry.attributes.position.count, bufferGeometry.userData.pointsCount);
-        assert.strictEqual(bufferGeometry.attributes.intensity.count, bufferGeometry.userData.pointsCount);
-        assert.strictEqual(bufferGeometry.attributes.classification.count, bufferGeometry.userData.pointsCount);
+        assert.strictEqual(bufferGeometry.userData.vertexCount, 106);
+        assert.strictEqual(bufferGeometry.attributes.position.count, bufferGeometry.userData.vertexCount);
+        assert.strictEqual(bufferGeometry.attributes.intensity.count, bufferGeometry.userData.vertexCount);
+        assert.strictEqual(bufferGeometry.attributes.classification.count, bufferGeometry.userData.vertexCount);
         assert.strictEqual(bufferGeometry.attributes.color, undefined);
 
         assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x, bufferGeometry.userData.mins[0], 0.1));
@@ -36,10 +36,10 @@ describe('LASParser', function () {
 
     it('parses a laz file to a THREE.BufferGeometry', async () => {
         const bufferGeometry = await LASParser.parse(lazData);
-        assert.strictEqual(bufferGeometry.userData.pointsCount, 57084);
-        assert.strictEqual(bufferGeometry.attributes.position.count, bufferGeometry.userData.pointsCount);
-        assert.strictEqual(bufferGeometry.attributes.intensity.count, bufferGeometry.userData.pointsCount);
-        assert.strictEqual(bufferGeometry.attributes.classification.count, bufferGeometry.userData.pointsCount);
+        assert.strictEqual(bufferGeometry.userData.vertexCount, 57084);
+        assert.strictEqual(bufferGeometry.attributes.position.count, bufferGeometry.userData.vertexCount);
+        assert.strictEqual(bufferGeometry.attributes.intensity.count, bufferGeometry.userData.vertexCount);
+        assert.strictEqual(bufferGeometry.attributes.classification.count, bufferGeometry.userData.vertexCount);
         assert.strictEqual(bufferGeometry.attributes.color, undefined);
 
         assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x, bufferGeometry.userData.mins[0], 0.1));
