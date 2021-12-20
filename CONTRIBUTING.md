@@ -27,23 +27,6 @@ If you don't know what to do but still want to contribute, check:
 
 ## Submitting an Issue
 
-If you have a question, do not submit an issue; instead, use the iTowns mailing
-lists. There is a user mailing list and a developer mailing list.
-
-You can subscribe to the mailing lists here:
-
-* Developer: https://lists.osgeo.org/mailman/listinfo/itowns-dev
-* User: https://lists.osgeo.org/mailman/listinfo/itowns-user
-
-The mailing list archives are here:
-
-* Developer: https://lists.osgeo.org/pipermail/itowns-dev/
-* User: https://lists.osgeo.org/pipermail/itowns-user/
-
-If you cannot find any information on your problem in the archive, you can start
-a new thread by sending an email to the list, and someone will probably answer
-with a solution.
-
 If you think you've found a bug in iTowns, first search the [iTowns
 issues](https://github.com/iTowns/itowns/issues). If an issue already exists,
 you can add a comment with any additional information. Use reactions (not
@@ -65,6 +48,36 @@ the following information as is relevant:
 * Ideas for how to fix or workaround the issue. Also mention if you are willing
   to help fix it. If so, the iTowns team can often provide guidance and the
   issue may get fixed more quickly with your help.
+
+
+## Ask a question, suggest an improvement
+
+If you have a question or a suggestion not related to a bug iTowns, you can search the
+[iTowns discussions](https://github.com/iTowns/itowns/discussions). If a discussion about
+your question or suggestion already exists, you can add a comment or upvote the original
+comment in the discussion. Otherwise, you can create a new discussion, detailing your
+question or suggestion.
+
+We recommend the use of [iTowns discussions](https://github.com/iTowns/itowns/discussions)
+for suggestions and questions.
+However, there is another way of suggesting imrpovements or asking questions, which is
+through iTowns mailing lists. There is a user mailing list and a developer mailing list.
+
+You can subscribe to the mailing lists here:
+
+* Developer: https://lists.osgeo.org/mailman/listinfo/itowns-dev
+* User: https://lists.osgeo.org/mailman/listinfo/itowns-user
+
+The mailing list archives are here:
+
+* Developer: https://lists.osgeo.org/pipermail/itowns-dev/
+* User: https://lists.osgeo.org/pipermail/itowns-user/
+
+If you cannot find any information on your problem in the archive, you can start
+a new thread by sending an email to the list, and someone will probably answer
+with a solution.
+
+
 
 ## Fixing a bug, developing a feature or coding something
 
