@@ -1,0 +1,129 @@
+<html>
+    <head>
+        <title>Itowns - Compass</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+
+        <!-- Define the style of our compass div -->
+        <style type="text/css">
+            #compass {
+                position: absolute;
+                bottom: 10px;
+                left: 10px;
+                z-index: 10;
+                width: 60px;
+                height: 60px;
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                border-radius: 50%;
+                background-color: #313336bb;
+                border: solid 0.1em;
+                border-color: #222222;
+            }
+            #compass img {
+                height: 90%;
+            }
+        </style>
+    </head>
+    <body>
+
+        <!-- Create a div to support a compass image -->
+        <div id="compass">
+            <img src="images/compass.svg" alt="compass">
+        </div>
+
+
+        <div id="viewerDiv"></div>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <!-- Import iTowns LoadingScreen and GuiTools plugins -->
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
+
+        <script type="text/javascript">
+
+
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 6000,
+                heading: 45,
+                tilt: 50,
+            }
+
+            // `viewerDiv` contains iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
+
+
+
+            // ---------- DISPLAY CONTEXTUAL DATA : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
+            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then((config) => {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ColorLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            });
+
+            // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            }
+            itowns.Fetcher.json('layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+
+
+            // ---------- ROTATE THE COMPASS WHEN MOVING THE VIEW CAMERA : ----------
+
+            const compass = document.getElementById('compass');
+
+            // Update compass rotation when the camera is moved.
+            view.addEventListener(itowns.VIEW_EVENTS.CAMERA_MOVED, (event) => {
+                compass.style.transform = `rotate(${-event.heading}deg)`;
+            });
+
+            // Move camera to a 0 degree heading and an 89.5 degrees tilt when clicking the compass.
+            compass.addEventListener('click', () => {
+                view.controls.lookAtCoordinate({
+                    heading: 0,
+                    tilt: 89.5,
+                });
+            });
+
+
+
+            // ---------- DEBUG TOOLS : ----------
+
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+        </script>
+    </body>
+</html>
