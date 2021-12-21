@@ -83,6 +83,7 @@
 
             potreeViewer.setEDLEnabled(true);
             potreeViewer.setControls(null);
+            potreeViewer.setBackground('black');
             potreeViewer.loadGUI();
 
             // Override Potree area measure method. The original Potree method gives a planar area delimited from given
@@ -153,8 +154,11 @@
             // Setup loading screen.
             setupLoadingScreen(viewerDiv, itownsViewer);
 
+            // Make atmosphere realistic.
+            itownsViewer.getLayerById('atmosphere').setRealisticOn(true);
+
             // Controls and camera specific setting.
-            itownsViewer.controls.minDistanceCollision = 0;
+            itownsViewer.controls.minDistanceCollision = 0.01;
             itownsViewer.controls.minDistance = 20;
             itownsViewer.camera.camera3D.near = 0.1;
 
@@ -211,7 +215,7 @@
 
             // ---------- DISPLAY POINT CLOUD DATA USING POTREE : ----------
 
-            const pointcloudUrl = 'http://lidarhd.pocgpf.ovh/data/';
+            const pointcloudUrl = `${location.protocol}//lidarhd.pocgpf.ovh/data/`;
 
             itowns.Fetcher.json(
                 pointcloudUrl + 'metadata/pivotTHREE.json'
