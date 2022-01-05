@@ -51,6 +51,7 @@ describe('Camera utils unit test', function () {
     view.addFrameRequester = () => {};
     view.removeFrameRequester = () => {};
     view.notifyChange = () => { camera.updateMatrixWorld(true); };
+    view.dispatchEvent = () => {};
 
     const range = 25000000;
     const coord = new Coordinates('EPSG:4326', 2.35, 48.85, 0);

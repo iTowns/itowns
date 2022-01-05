@@ -4,6 +4,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 import CameraUtils from 'Utils/CameraUtils';
 import StateControl from 'Controls/StateControl';
+import { VIEW_EVENTS } from 'Core/View';
 
 // private members
 const EPS = 0.000001;
@@ -38,6 +39,7 @@ let dollyScale;
 // Globe move
 const moveAroundGlobe = new THREE.Quaternion();
 const cameraTarget = new THREE.Object3D();
+const coordCameraTarget = new Coordinates('EPSG:4978');
 cameraTarget.matrixWorldInverse = new THREE.Matrix4();
 
 const xyz = new Coordinates('EPSG:4978', 0, 0, 0);
@@ -309,6 +311,8 @@ class GlobeControls extends THREE.EventDispatcher {
         }
         positionObject(xyz, cameraTarget);
         this.lookAtCoordinate(placement, false);
+
+        coordCameraTarget.crs = this.view.referenceCrs;
     }
 
     get dollyInScale() {
@@ -539,6 +543,14 @@ class GlobeControls extends THREE.EventDispatcher {
             this.player.setCallback(() => { this.update(this.states.ORBIT); });
             this.player.playLater(durationDampingOrbital, 2);
         }
+
+        this.view.dispatchEvent({
+            type: VIEW_EVENTS.CAMERA_MOVED,
+            coord: coordCameraTarget.setFromVector3(cameraTarget.position),
+            range: spherical.radius,
+            heading: -THREE.MathUtils.radToDeg(spherical.theta),
+            tilt: 90 - THREE.MathUtils.radToDeg(spherical.phi),
+        });
     }
 
     onStateChange(event) {
