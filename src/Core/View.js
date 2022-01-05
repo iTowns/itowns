@@ -29,6 +29,7 @@ export const VIEW_EVENTS = {
     LAYER_ADDED: 'layer-added',
     INITIALIZED: 'initialized',
     COLOR_LAYERS_ORDER_CHANGED,
+    CAMERA_MOVED: 'camera-moved',
 };
 
 /**

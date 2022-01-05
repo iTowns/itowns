@@ -5,6 +5,7 @@ import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import OBB from 'Renderer/OBB';
+import { VIEW_EVENTS } from 'Core/View';
 
 THREE.Object3D.DefaultUp.set(0, 0, 1);
 const targetPosition = new THREE.Vector3();
@@ -100,6 +101,13 @@ class CameraRig extends THREE.Object3D {
         } else {
             this.camera.matrixWorld.decompose(camera.position, camera.quaternion, camera.scale);
         }
+        view.dispatchEvent({
+            type: VIEW_EVENTS.CAMERA_MOVED,
+            coord: this.coord,
+            range: this.range,
+            heading: this.heading,
+            tilt: this.tilt,
+        });
     }
 
     setProxy(view, camera) {
