@@ -1138,6 +1138,8 @@ class GlobeControls extends THREE.EventDispatcher {
      * @return     {Promise}  A promise that resolves when transformation is complete
      */
     lookAtCoordinate(params = {}, isAnimated = this.isAnimationEnabled()) {
+        this.player.stop();
+
         if (!params.isExtent) {
             if (params.zoom) {
                 params.range = this.view.tileLayer.computeDistanceCameraFromTileZoom(params.zoom, this.view.camera);
