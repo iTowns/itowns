@@ -58,6 +58,10 @@ module.exports = () => {
                 import: './utils/debug/Main.js',
                 dependOn: 'itowns',
             },
+            itowns_widgets: {
+                import: './utils/gui/Main.js',
+                dependOn: 'itowns',
+            },
         },
         devtool: 'source-map',
         output: {

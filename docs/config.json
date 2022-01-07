@@ -124,7 +124,8 @@
             "Plugins": [
                 "DragNDrop",
                 "FeatureToolTip",
-                "TIFFParser"
+                "TIFFParser",
+                "Navigation"
             ]
         },
         "tutorialSections": {
@@ -162,7 +163,7 @@
         }
     },
     "source": {
-        "include": [ "src", "examples/js/plugins" ],
+        "include": [ "src", "examples/js/plugins", "utils/gui" ],
         "exclude": [ "src/ThreeExtended" ]
     },
     "plugins": ["plugins/markdown"]

@@ -1,0 +1,214 @@
+/* ---------- WIDGETS GROUP SETTINGS : ------------------------------------------------------------------------------ */
+
+#widgets {
+    position: absolute;
+    z-index: 10;
+
+    display: flex;
+    align-items: center;
+}
+
+/* Define widget group flex direction according to widget position and direction settings */
+.column-widget.top-widget {
+    flex-direction: column;
+}
+.column-widget.bottom-widget {
+    flex-direction: column-reverse;
+}
+.row-widget.left-widget {
+    flex-direction: row;
+}
+.row-widget.right-widget {
+    flex-direction: row-reverse;
+}
+
+/* Define widget group position according to widget position settings. */
+.top-widget {
+    top: 10px;
+}
+.bottom-widget {
+    bottom: 10px;
+}
+.left-widget {
+    left: 10px;
+}
+.right-widget {
+    right: 10px;
+}
+
+/* Define spacing between each widgets according to position and direction settings. */
+.column-widget.top-widget > *:not(:first-child),
+.column-widget.bottom-widget > *:not(:last-child)  {
+    margin-top: 5px;
+}
+.column-widget.top-widget > *:not(:last-child),
+.column-widget.bottom-widget > *:not(:first-child)  {
+    margin-bottom: 5px;
+}
+.row-widget.left-widget > *:not(:first-child),
+.row-widget.right-widget > *:not(:last-child)  {
+    margin-left: 5px;
+}
+.row-widget.left-widget > *:not(:last-child),
+.row-widget.right-widget > *:not(:first-child)  {
+    margin-right: 5px;
+}
+
+
+
+/* ---------- WIDGET BUTTON BAR : ----------------------------------------------------------------------------------- */
+
+/* Define button-bar flex direction according to widget position and direction settings. */
+#widgets .widget-button-bar {
+    display: flex;
+}
+.column-widget.top-widget .widget-button-bar {
+    flex-direction: column;
+}
+.column-widget.bottom-widget .widget-button-bar {
+    flex-direction: column-reverse;
+}
+.row-widget.left-widget .widget-button-bar {
+    flex-direction: row;
+}
+.row-widget.right-widget .widget-button-bar {
+    flex-direction: row-reverse;
+}
+
+
+
+/* ---------- BUTTONS GENERIC STYLE : ------------------------------------------------------------------------------- */
+
+#widgets .widget-button {
+    background-color: #313336bb;
+    border: 1px solid #222222;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: 900;
+    font-size: 15px;
+}
+#widgets .widget-button:hover {
+    cursor: pointer;
+}
+#widgets .widget-button:active {
+    background-color: #222222;
+}
+
+
+
+/* ---------- BUTTONS SHAPE AND POSITION WITHIN BUTTON-BAR : -------------------------------------------------------- */
+
+#widgets .widget-button-bar > .widget-button {
+    height: 30px;
+    width: 30px;
+
+    color: white;
+}
+
+/* Buttons shape and position within a column direction widget group. */
+.column-widget.top-widget .widget-button-bar > .widget-button:first-child,
+.column-widget.bottom-widget .widget-button-bar > .widget-button:last-child {
+    border-radius: 7px 7px 0 0;
+}
+.column-widget.top-widget .widget-button-bar > .widget-button:last-child,
+.column-widget.bottom-widget .widget-button-bar > .widget-button:first-child {
+    border-radius: 0 0 7px 7px;
+}
+.column-widget.top-widget .widget-button-bar > .widget-button:not(:last-child),
+.column-widget.bottom-widget .widget-button-bar > .widget-button:not(:first-child) {
+    margin-bottom: -1px;
+}
+
+/* Buttons shape and position within a row direction widget group. */
+.row-widget.left-widget .widget-button-bar > .widget-button:first-child,
+.row-widget.right-widget .widget-button-bar > .widget-button:last-child {
+    border-radius: 7px 0 0 7px;
+}
+.row-widget.left-widget .widget-button-bar > .widget-button:last-child,
+.row-widget.right-widget .widget-button-bar > .widget-button:first-child {
+    border-radius: 0 7px 7px 0;
+}
+.row-widget.left-widget .widget-button-bar > .widget-button:not(:last-child),
+.row-widget.right-widget .widget-button-bar > .widget-button:not(:first-child) {
+    margin-right: -1px;
+}
+
+/* Buttons shape and position within a single button button-bar. */
+#widgets .widget-button-bar > .widget-button:only-child {
+    border-radius: 7px;
+}
+
+
+
+/* ---------- SPECIFIC SHAPE AND POSITION FOR ZOOM-IN AND ZOOM-OUT BUTTON-BAR AND BUTTONS : ------------------------- */
+
+#zoom-button-bar {
+    display: flex;
+}
+.column-widget #zoom-button-bar {
+    flex-direction: column;
+}
+.row-widget #zoom-button-bar {
+    flex-direction: row-reverse;
+}
+
+/* Zoom buttons shape and position within a COLUMN direction widget group. */
+.column-widget #zoom-button-bar > .widget-button:first-child {
+    border-radius: 7px 7px 0 0;
+}
+.column-widget #zoom-button-bar > .widget-button:last-child {
+    border-radius: 0 0 7px 7px;
+}
+.column-widget.bottom-widget #zoom-button-bar > .widget-button:not(:last-child) {
+    margin-top: 0;
+    margin-bottom: -1px;
+}
+
+/* Zoom buttons shape and position within a ROW direction widget group. */
+.row-widget #zoom-button-bar > .widget-button:first-child {
+    border-radius: 0 7px 7px 0;
+}
+.row-widget #zoom-button-bar > .widget-button:last-child {
+    border-radius: 7px 0 0 7px;
+}
+.row-widget.left-widget #zoom-button-bar > .widget-button:not(:last-child) {
+    margin-right: 0;
+    margin-left: -1px;
+}
+
+/* Zoom button shape and position if user decides to show only one of the two zoom buttons. */
+#widgets #zoom-button-bar > .widget-button:only-child {
+    border-radius: 7px;
+}
+
+/* Style of zoom buttons content. */
+#widgets .widget-zoom-button-logo {
+    width: 50%;
+    height: 50%;
+
+    background-image: url('../images/widget-logo.svg');
+    background-size: 100%;
+}
+#widgets #zoom-out-logo {
+    background-position: center -100%;
+}
+
+
+
+/* ---------- SPECIFIC COMPASS SETTINGS : --------------------------------------------------------------------------- */
+
+#widgets #compass {
+    width: 60px;
+    height: 60px;
+
+    border-radius: 50%;
+
+    background-image: url('../images/compass.svg');
+    background-repeat: no-repeat;
+    background-size: auto 90%;
+    background-position: center;
+}
