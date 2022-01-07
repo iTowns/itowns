@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Itowns - Compass</title>
+        <title>Itowns - Widgets</title>
 
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,48 +8,23 @@
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
+        <!-- Import stylesheet for itowns Widgets plugin -->
+        <link rel="stylesheet" type="text/css" href="css/widgets.css">
+
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
-
-        <!-- Define the style of our compass div -->
-        <style type="text/css">
-            #compass {
-                position: absolute;
-                bottom: 10px;
-                left: 10px;
-                z-index: 10;
-                width: 60px;
-                height: 60px;
-
-                display: flex;
-                justify-content: center;
-                align-items: center;
-
-                border-radius: 50%;
-                background-color: #313336bb;
-                border: solid 0.1em;
-                border-color: #222222;
-            }
-            #compass img {
-                height: 90%;
-            }
-        </style>
     </head>
     <body>
-
-        <!-- Create a div to support a compass image -->
-        <div id="compass">
-            <img src="images/compass.svg" alt="compass">
-        </div>
-
-
         <div id="viewerDiv"></div>
 
         <!-- Import iTowns source code -->
         <script src="../dist/itowns.js"></script>
         <script src="../dist/debug.js"></script>
+        <!-- Import iTowns Widgets plugin -->
+        <script src="../dist/itowns_widgets.js"></script>
         <!-- Import iTowns LoadingScreen and GuiTools plugins -->
         <script src="js/GUI/LoadingScreen.js"></script>
         <script src="js/GUI/GuiTools.js"></script>
+
 
         <script type="text/javascript">
 
@@ -61,7 +36,6 @@
             const placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
                 range: 6000,
-                heading: 45,
                 tilt: 50,
             }
 
@@ -101,22 +75,38 @@
 
 
 
-            // ---------- ROTATE THE COMPASS WHEN MOVING THE VIEW CAMERA : ----------
+            // ---------- ADD WIDGETS MENU : ----------
 
-            const compass = document.getElementById('compass');
+            const widgets = new itowns_widgets.Navigation(view);
 
-            // Update compass rotation when the camera is moved.
-            view.addEventListener(itowns.VIEW_EVENTS.CAMERA_MOVED, (event) => {
-                compass.style.transform = `rotate(${-event.heading}deg)`;
-            });
-
-            // Move camera to a 0 degree heading and an 89.5 degrees tilt when clicking the compass.
-            compass.addEventListener('click', () => {
-                view.controls.lookAtCoordinate({
-                    heading: 0,
-                    tilt: 89.5,
-                });
-            });
+            // Example on how to add a new button to the widgets menu
+            widgets.addButton(
+                'rotate-up',
+                '<p style="font-size: 20px">&#8595</p>',
+                () => {
+                    view.controls.lookAtCoordinate({
+                        tilt: view.controls.getTilt() - 10,
+                        time: 500,
+                    });
+                },
+                'button-bar-rotation',
+            );
+            widgets.addButton(
+                'rotate-down',
+                '<p style="font-size: 20px">&#8593</p>',
+                () => {
+                    view.controls.lookAtCoordinate({
+                        tilt: view.controls.getTilt() + 10,
+                        time: 500,
+                    });
+                },
+                'button-bar-rotation',
+            );
+            widgets.addButton(
+                'reset-position',
+                '&#8634',
+                () => { view.controls.lookAtCoordinate(placement) },
+            );
 
 
 
