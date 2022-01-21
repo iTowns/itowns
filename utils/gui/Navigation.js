@@ -1,4 +1,5 @@
 import { VIEW_EVENTS } from 'Core/View';
+import Widget from './Widget';
 
 
 const DEFAULT_OPTIONS = {
@@ -19,7 +20,7 @@ const DEFAULT_OPTIONS = {
  * @property {HTMLElement}  domElement      An html div containing all navigation widgets.
  * @property {HTMLElement}  parentElement   The parent HTML container of `this.domElement`.
  */
-class Navigation {
+class Navigation extends Widget {
     /**
      * @param   {View}          view                                    The iTowns view the navigation should be linked
                                                                         * to.
@@ -53,7 +54,16 @@ class Navigation {
     constructor(view, options = {}) {
         // ---------- BUILD PROPERTIES ACCORDING TO DEFAULT OPTIONS AND OPTIONS PASSED IN PARAMETERS : ----------
 
-        this.parentElement = options.parentElement || DEFAULT_OPTIONS.parentElement;
+        // `top`, `bottom`, `left` and `right` values for `position` option are not relevant for navigation widget.
+        if (['top', 'bottom', 'left', 'right'].includes(options.position)) {
+            console.warn(
+                '\'position\' optional parameter for \'Navigation\' is not a valid option. ' +
+                `It will be set to '${DEFAULT_OPTIONS.position}'.`,
+            );
+            options.position = DEFAULT_OPTIONS.position;
+        }
+
+        super(view, options, DEFAULT_OPTIONS);
 
         this.direction = options.direction || DEFAULT_OPTIONS.direction;
         if (!['column', 'row'].includes(this.direction)) {
@@ -64,15 +74,6 @@ class Navigation {
             this.direction = DEFAULT_OPTIONS.direction;
         }
 
-        this.position = options.position || DEFAULT_OPTIONS.position;
-        if (!['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(this.position)) {
-            console.warn(
-                '\'position\' optional parameter for \'Navigation\' constructor is not a valid option. '
-                + `It will be set to '${DEFAULT_OPTIONS.position}'.`,
-            );
-            this.position = DEFAULT_OPTIONS.position;
-        }
-
         this.animationDuration = options.animationDuration === undefined ?
             DEFAULT_OPTIONS.animationDuration : options.animationDuration;
 
@@ -81,20 +82,10 @@ class Navigation {
         // ---------- CREATE A DomElement WITH id AND classes RELEVANT TO THE WIDGET PROPERTIES : ----------
 
         // Create a div containing all widgets and add it to its specified parent.
-        this.domElement = document.createElement('div');
         this.domElement.id = 'widgets-navigation';
-        this.parentElement.appendChild(this.domElement);
 
         // Position widget div according to options.
-        const positionArray = this.position.split('-');
-        this.domElement.classList.add(`${positionArray[0]}-widget`);
-        this.domElement.classList.add(`${positionArray[1]}-widget`);
         this.domElement.classList.add(`${this.direction}-widget`);
-
-        // Translate widget div according to optional translate parameter.
-        if (options.translate) {
-            this.domElement.style.transform = `translate(${options.translate.x || 0}px, ${options.translate.y || 0}px)`;
-        }
 
 
 
