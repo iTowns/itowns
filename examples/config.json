@@ -79,7 +79,8 @@
     },
 
     "Widgets": {
-        "widgets_navigation": "Navigation"
+        "widgets_navigation": "Navigation",
+        "widgets_minimap": "Minimap"
     },
 
     "Plugins": {
