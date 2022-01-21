@@ -1,3 +1,21 @@
+/* ---------- GENERIC WIDGET SETTINGS : ----------------------------------------------------------------------------- */
+
+/* Define widget position according to its position settings. */
+.top-widget {
+    top: 10px;
+}
+.bottom-widget {
+    bottom: 10px;
+}
+.left-widget {
+    left: 10px;
+}
+.right-widget {
+    right: 10px;
+}
+
+
+
 /* ---------- NAVIGATION WIDGET SETTINGS : -------------------------------------------------------------------------- */
 
 #widgets-navigation {
@@ -20,20 +38,6 @@
 }
 .row-widget.right-widget {
     flex-direction: row-reverse;
-}
-
-/* Define navigation menu position according to its position settings. */
-#widgets-navigation.top-widget {
-    top: 10px;
-}
-#widgets-navigation.bottom-widget {
-    bottom: 10px;
-}
-#widgets-navigation.left-widget {
-    left: 10px;
-}
-#widgets-navigation.right-widget {
-    right: 10px;
 }
 
 /* Define spacing between each navigation widgets according to position and direction settings. */
@@ -211,4 +215,34 @@
     background-repeat: no-repeat;
     background-size: auto 90%;
     background-position: center;
+}
+
+
+
+/* ---------- MINIMAP WIDGET SETTINGS : ----------------------------------------------------------------------------- */
+
+#widgets-minimap {
+    position: absolute;
+    z-index: 10;
+
+    border: 1px solid #222222;
+    border-radius: 7px;
+    overflow: hidden;
+
+    user-select: none;
+}
+
+#widgets-minimap #cursor-wrapper {
+    position: absolute;
+    z-index: 11;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    font-size: 40px;
+    color: #222222;
 }
