@@ -58,7 +58,7 @@ class Navigation {
         this.direction = options.direction || DEFAULT_OPTIONS.direction;
         if (!['column', 'row'].includes(this.direction)) {
             console.warn(
-                '\'direction\' optional parameter for \'Widgets\' constructor is not a valid option. '
+                '\'direction\' optional parameter for \'Navigation\' constructor is not a valid option. '
                 + `It will be set to '${DEFAULT_OPTIONS.direction}'.`,
             );
             this.direction = DEFAULT_OPTIONS.direction;
@@ -67,7 +67,7 @@ class Navigation {
         this.position = options.position || DEFAULT_OPTIONS.position;
         if (!['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(this.position)) {
             console.warn(
-                '\'position\' optional parameter for \'Widgets\' constructor is not a valid option. '
+                '\'position\' optional parameter for \'Navigation\' constructor is not a valid option. '
                 + `It will be set to '${DEFAULT_OPTIONS.position}'.`,
             );
             this.position = DEFAULT_OPTIONS.position;
@@ -82,7 +82,7 @@ class Navigation {
 
         // Create a div containing all widgets and add it to its specified parent.
         this.domElement = document.createElement('div');
-        this.domElement.id = 'widgets';
+        this.domElement.id = 'widgets-navigation';
         this.parentElement.appendChild(this.domElement);
 
         // Position widget div according to options.
