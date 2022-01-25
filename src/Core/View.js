@@ -176,7 +176,6 @@ class View extends THREE.EventDispatcher {
         this.domElement = viewerDiv;
 
         this.referenceCrs = crs;
-        coordinates.crs = crs;
 
         let engine;
         // options.renderer can be 2 separate things:
@@ -884,6 +883,7 @@ class View extends THREE.EventDispatcher {
         }
 
         this.getPickingPositionFromDepth(mouse, positionVector);
+        coordinates.crs = this.referenceCrs;
         coordinates.setFromVector3(positionVector);
 
         // Get the correct precision; the position variable will be set in this
@@ -1033,6 +1033,38 @@ class View extends THREE.EventDispatcher {
         camera.layers.mask = prev;
 
         if (target.length() > 10000000) { return undefined; }
+
+        return target;
+    }
+
+    /**
+     * Returns the world {@link Coordinates} at given view coordinates.
+     *
+     * @param   {THREE.Vector2|event}   [mouse]     The view coordinates at which the world coordinates must be
+                                                    * returned. This parameter can also be set to a mouse event from
+                                                    * which the view coordinates will be deducted. If not specified, it
+                                                    * will be defaulted to the view's center coordinates.
+     * @param   {Coordinates}           [target]    The result will be copied into this {@link Coordinates}. If not
+                                                    * specified, a new {@link Coordinates} instance will be created.
+     *
+     * @returns {Coordinates}   The world {@link Coordinates} at the given view coordinates.
+     */
+    pickCoordinates(mouse, target = new Coordinates(this.tileLayer.extent.crs)) {
+        if (mouse instanceof Event) {
+            this.eventToViewCoords(mouse);
+        } else if (mouse.x !== undefined && mouse.y !== undefined) {
+            _eventCoords.copy(mouse);
+        } else {
+            _eventCoords.set(
+                this.mainLoop.gfxEngine.width / 2,
+                this.mainLoop.gfxEngine.height / 2,
+            );
+        }
+
+        this.getPickingPositionFromDepth(_eventCoords, positionVector);
+        coordinates.crs = this.referenceCrs;
+        coordinates.setFromVector3(positionVector);
+        coordinates.as(target.crs, target);
 
         return target;
     }
