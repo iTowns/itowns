@@ -759,6 +759,9 @@ class View extends THREE.EventDispatcher {
      * @return {number} The zoom scale.
      */
     getScale(pitch = 0.28) {
+        if (this.camera.camera3D.isOrthographicCamera) {
+            return pitch * 1E-3 / this.getPixelsToMeters();
+        }
         return this.getScaleFromDistance(pitch, this.getDistanceFromCamera());
     }
 
