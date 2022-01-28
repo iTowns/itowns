@@ -130,7 +130,8 @@
             "Widgets": [
                 "Navigation",
                 "Minimap",
-                "Scale"
+                "Scale",
+                "Searchbar"
             ]
         },
         "tutorialSections": {
