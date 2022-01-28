@@ -279,3 +279,82 @@
 #widgets-scale.right-widget {
     justify-content: flex-end;
 }
+
+
+
+/* ---------- SEARCHBAR WIDGET SETTINGS : --------------------------------------------------------------------------- */
+
+#widgets-searchbar {
+    position: absolute;
+    z-index: 10;
+}
+
+#widgets-searchbar > form {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    border-radius: 7px;
+}
+#widgets-searchbar.top-widget > form {
+    flex-direction: column;
+}
+#widgets-searchbar.bottom-widget > form {
+    flex-direction: column-reverse;
+}
+#widgets-searchbar > form.focus {
+    box-shadow: 0 0 10px #222222;
+}
+
+
+
+/* ---------- SEARCHBAR INPUT AND SUGGESTIONS : --------------------------------------------------------------------- */
+
+#widgets-searchbar:not(.bottom-widget) form > *:last-child:not(:only-child),
+#widgets-searchbar.bottom-widget form > *:first-child:not(:only-child) {
+    border-radius: 0 0 7px 7px;
+}
+#widgets-searchbar:not(.bottom-widget) form > *:first-child:not(:only-child),
+#widgets-searchbar.bottom-widget form > *:last-child:not(:only-child) {
+    border-radius: 7px 7px 0 0;
+}
+#widgets-searchbar form > *:only-child {
+    border-radius: 7px;
+}
+#widgets-searchbar:not(.bottom-widget) form > *:not(:first-child):not(:last-child) {
+    border-bottom: none;
+}
+#widgets-searchbar.bottom-widget form > *:not(:first-child):not(:last-child) {
+    border-top: none;
+}
+
+#widgets-searchbar form > * {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 10px;
+    background-color: #313336bb;
+    border: 1px solid #222222;
+    color: #ffffff;
+    font-family: Arial;
+}
+
+#widgets-searchbar form > input::placeholder {
+    color: #ffffff80;
+}
+#widgets-searchbar form > input:focus {
+    outline: none !important;
+}
+
+#widgets-searchbar form > div {
+    display: flex;
+    align-items: center;
+}
+#widgets-searchbar form > div.active {
+    background-color: #222222;
+}
+#widgets-searchbar form > div:hover {
+    cursor: pointer;
+}
+
+#widgets-searchbar form > div > p {
+    margin: 8px 0;
+}

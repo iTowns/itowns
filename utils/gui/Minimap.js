@@ -32,13 +32,14 @@ class Minimap extends Widget {
      * @param   {HTMLElement}           [options.parentElement=view.domElement] The parent HTML container of the div
                                                                                 * which contains minimap widgets.
      * @param   {number}                [options.size]                          The size of the minimap. It is a number
-                                                                                * that describing both width and height
+                                                                                * that describes both width and height
                                                                                 * in pixels of the minimap.
      * @param   {number}                [options.width=150]                     The width in pixels of the minimap.
      * @param   {number}                [options.height=150]                    The height in pixels of the minimap.
-     * @param   {string}                [options.position='bottom-left']        Defines which corner of the
+     * @param   {string}                [options.position='bottom-left']        Defines which position within the
                                                                                 * `parentElement` the minimap should be
                                                                                 * displayed to. Possible values are
+                                                                                * `top`, `bottom`, `left`, `right`,
                                                                                 * `top-left`, `top-right`, `bottom-left`
                                                                                 * and `bottom-right`. If the input value
                                                                                 * does not match one of these, it will
