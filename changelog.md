@@ -1,3 +1,55 @@
+<a name="2.37.0"></a>
+# [2.37.0](https://github.com/iTowns/itowns/compare/v2.36.2...v2.37.0) (2022-01-31)
+
+
+### Features
+
+* **Geoid:** add support for geoid heights ([38569f6](https://github.com/iTowns/itowns/commit/38569f6))
+* **Parser:** add parsers for GTX, ISG and GDF file formats ([a55b154](https://github.com/iTowns/itowns/commit/a55b154))
+* **View:** add a method to pick world coordinates ([91ccfe3](https://github.com/iTowns/itowns/commit/91ccfe3))
+* **View:** add support for ortho camera in getScale method ([06eb805](https://github.com/iTowns/itowns/commit/06eb805))
+* **View:** dispatch an event when camera is moved ([37cfb90](https://github.com/iTowns/itowns/commit/37cfb90))
+* **Widget:** add a minimap widget ([6d82c74](https://github.com/iTowns/itowns/commit/6d82c74))
+
+
+### Bug Fixes
+
+* **GlobeControl:** stop damping when launching new animation ([dad7641](https://github.com/iTowns/itowns/commit/dad7641))
+* **test:** fetch local laz files behind proxy. ([b732c0a](https://github.com/iTowns/itowns/commit/b732c0a))
+* **View:** fix picking radius with polygons ([b7be8e9](https://github.com/iTowns/itowns/commit/b7be8e9))
+
+
+### Examples
+
+* **Compass:** add an example of a compass in a GlobeView ([3290820](https://github.com/iTowns/itowns/commit/3290820))
+* **FileSource:** add exemples of FileSource instantiation ([7db9bcb](https://github.com/iTowns/itowns/commit/7db9bcb))
+* **Potree:** add an example of Potree intgration within iTowns ([4bbc772](https://github.com/iTowns/itowns/commit/4bbc772))
+* **Potree:** fix minor issues on the example ([1ee50c8](https://github.com/iTowns/itowns/commit/1ee50c8))
+* **source / file:** simplify FileSource usage ([21317b4](https://github.com/iTowns/itowns/commit/21317b4))
+* **Widget:** add an example of minimap widget ([2b89f83](https://github.com/iTowns/itowns/commit/2b89f83))
+* **Widgets:** add a plugin to display widgets ([ec56fa9](https://github.com/iTowns/itowns/commit/ec56fa9))
+* add GeoidLayer implementation example ([5df8cc5](https://github.com/iTowns/itowns/commit/5df8cc5))
+
+
+### Code Refactoring
+
+* **TileMesh:** refactorize bbox update method ([18196b6](https://github.com/iTowns/itowns/commit/18196b6))
+* **Widgets:** rename widgets to navigation ([509a042](https://github.com/iTowns/itowns/commit/509a042))
+
+
+### Workflow and chores
+
+* release v2.37.0 ([97e59b6](https://github.com/iTowns/itowns/commit/97e59b6))
+* **deps-dev:** bump marked from 4.0.8 to 4.0.10 ([cfc9100](https://github.com/iTowns/itowns/commit/cfc9100))
+* add potree repo and symbolic link to gitignore ([d7bb92c](https://github.com/iTowns/itowns/commit/d7bb92c))
+* change itowns.github.io deploying ([870299f](https://github.com/iTowns/itowns/commit/870299f))
+* deploy itowns and potree bundle. ([b104fd5](https://github.com/iTowns/itowns/commit/b104fd5))
+* fix eslint rules. ([6fff078](https://github.com/iTowns/itowns/commit/6fff078))
+* update CONTRIBUTING.md ([96cfb21](https://github.com/iTowns/itowns/commit/96cfb21))
+* update packages. ([eb7c8d5](https://github.com/iTowns/itowns/commit/eb7c8d5))
+
+
+
 <a name="2.36.2"></a>
 ## [2.36.2](https://github.com/iTowns/itowns/compare/v2.36.1...v2.36.2) (2021-11-29)
 
