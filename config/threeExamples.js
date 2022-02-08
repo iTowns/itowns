@@ -4,6 +4,6 @@ module.exports = {
         './loaders/GLTFLoader.js',
         './loaders/DRACOLoader.js',
         './loaders/DDSLoader.js',
-        './WebGL.js',
+        './capabilities/WebGL.js',
     ],
 };

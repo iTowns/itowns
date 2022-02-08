@@ -95,6 +95,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         // add classification texture to apply classification lut.
         const data = new Uint8Array(256 * 4);
         const texture = new THREE.DataTexture(data, 256, 1, THREE.RGBAFormat);
+        texture.needsUpdate = true;
         texture.magFilter = THREE.NearestFilter;
         CommonMaterial.setUniformProperty(this, 'classificationLUT', texture);
 

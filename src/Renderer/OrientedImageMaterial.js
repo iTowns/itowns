@@ -10,7 +10,8 @@ const ndcToTextureMatrix = new THREE.Matrix4().set(
     0, 0, 2, 0,
     0, 0, 0, 2);
 
-const noMask = new THREE.DataTexture(new Uint8Array([255, 255, 255]), 1, 1, THREE.RGBFormat, THREE.UnsignedByteType);
+const noMask = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, THREE.RGBAFormat, THREE.UnsignedByteType);
+noMask.needsUpdate = true;
 const noTexture = new THREE.Texture();
 
 const rawShaderMaterial = new THREE.RawShaderMaterial();
