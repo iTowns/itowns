@@ -462,7 +462,7 @@ threeExamples.LegacyGLTFLoader = ( function () {
 		5121: THREE.UnsignedByteType,
 		32819: THREE.UnsignedShort4444Type,
 		32820: THREE.UnsignedShort5551Type,
-		33635: THREE.UnsignedShort565Type
+		33635: THREE.UnsignedShort5551Type
 	};
 
 	var WEBGL_SIDES = {

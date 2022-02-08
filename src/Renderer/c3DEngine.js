@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import Capabilities from 'Core/System/Capabilities';
 import { unpack1K } from 'Renderer/LayeredMaterial';
-import { WEBGL } from 'ThreeExtended/WebGL';
+import WEBGL from 'ThreeExtended/capabilities/WebGL';
 import Label2DRenderer from 'Renderer/Label2DRenderer';
 
 const depthRGBA = new THREE.Vector4();
