@@ -60,9 +60,9 @@
             }
 
             var wfsBuildingSource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
                 version: '2.0.0',
-                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                typeName: 'BDTOPO_V3:batiment',
                 crs: 'EPSG:4326',
                 extent: {
                     west: 4.568,
@@ -74,31 +74,31 @@
                 format: 'application/json',
             });
 
+            function colorBuildings(properties) {
+                if (properties.usage_1 === 'Résidentiel') {
+                    return '#FDFDFF';
+                } else if (properties.usage_1 === 'Annexe') {
+                    return '#C6C5B9';
+                } else if (properties.usage_1 === 'Commercial et services') {
+                    return '#62929E';
+                } else if (properties.usage_1 === 'Religieux') {
+                    return '#393D3F';
+                } else if (properties.usage_1 === 'Sportif') {
+                    return '#546A7B';
+                } else {
+                    return '#555555';
+                }
+            }
+
             var wfsBuildingLayer = new itowns.ColorLayer('wfsBuilding', {
                 transparent: true,
                 style: {
                     fill: {
-                        color: p => {
-                            if (p.geojson.id.indexOf('bati_remarquable') === 0) {
-                                return '#5555ff';
-                            }
-                            if (p.geojson.id.indexOf('bati_industriel') === 0) {
-                                return '#ff5555';
-                            }
-                            return '#eeeeee';
-                        },
+                        color: colorBuildings,
                         opacity: 0.7
                     },
                     stroke: {
-                        color: p => {
-                            if (p.geojson.id.indexOf('bati_remarquable') === 0) {
-                                return '#8888ff';
-                            }
-                            if (p.geojson.id.indexOf('bati_industriel') === 0) {
-                                return '#ff8888';
-                            }
-                            return '#ffffff';
-                        },
+                        color: colorBuildings,
                         width: 2.0,
                     },
                 },

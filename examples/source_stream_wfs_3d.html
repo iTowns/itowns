@@ -127,16 +127,23 @@
             view.addLayer(lyonTclBusLayer);
 
             function colorBuildings(properties) {
-                if (properties.geojson.id.indexOf('bati_remarquable') === 0) {
-                    return color.set(0x5555ff);
-                } else if (properties.geojson.id.indexOf('bati_industriel') === 0) {
-                    return color.set(0xff5555);
+                if (properties.usage_1 === 'Résidentiel') {
+                    return color.set(0xFDFDFF);
+                } else if (properties.usage_1 === 'Annexe') {
+                    return color.set(0xC6C5B9);
+                } else if (properties.usage_1 === 'Commercial et services') {
+                    return color.set(0x62929E);
+                } else if (properties.usage_1 === 'Religieux') {
+                    return color.set(0x393D3F);
+                } else if (properties.usage_1 === 'Sportif') {
+                    return color.set(0x546A7B);
                 }
-                return color.set(0xeeeeee);
+
+                return color.set(0x555555);
             }
 
             function altitudeBuildings(properties) {
-                return properties.z_min - properties.hauteur;
+                return properties.altitude_minimale_sol;
             }
 
             function extrudeBuildings(properties) {
@@ -167,9 +174,9 @@
             view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
 
             var wfsBuildingSource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
                 version: '2.0.0',
-                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                typeName: 'BDTOPO_V3:batiment',
                 crs: 'EPSG:4326',
                 ipr: 'IGN',
                 format: 'application/json',
@@ -228,10 +235,12 @@
 
                         Object.keys(properties).map(function (objectKey) {
                             var value = properties[objectKey];
-                            var key = objectKey.toString();
-                            if (key[0] !== '_' && key !== 'geometry_name') {
-                                info = value.toString();
-                                htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
+                            if (value) {
+                                var key = objectKey.toString();
+                                if (key[0] !== '_' && key !== 'geometry_name') {
+                                    info = value.toString();
+                                    htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
+                                }
                             }
                         });
                     }
