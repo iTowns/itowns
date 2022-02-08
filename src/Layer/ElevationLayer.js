@@ -42,7 +42,7 @@ class ElevationLayer extends RasterLayer {
      * // Create an ElevationLayer
      * const elevation = new ElevationLayer('IGN_MNT', {
      *      source: new WMTSSource({
-     *          "url": "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts",
+     *          "url": "https://wxs.ign.fr/altimetrie/geoportail/wmts",
      *           "crs": "EPSG:4326",
      *           "format": "image/x-bil;bits=32",
      *           "name": "ELEVATION.ELEVATIONGRIDCOVERAGE",

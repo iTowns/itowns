@@ -80,7 +80,7 @@
 
             function altitudeBuildings(properties) {
                 // I set altitude building 3 meters down, to be sure building is anchored in the ground
-                return properties.z_min - properties.hauteur - 3;
+                return properties.altitude_minimale_sol - 3;
             }
 
             function extrudeBuildings(properties) {
@@ -115,22 +115,21 @@
 
             // when oriented image layer is ready..
             view.addLayer(olayer, view.tileLayer).then(function addWfsLayer(orientedImageLayer) {
-
                 // prepare WFS source for the buildings
                 var wfsBuildingSource = new itowns.WFSSource({
-                    url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
+                    url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
                     version: '2.0.0',
-                    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
-                    crs: 'EPSG:4326',
-                    ipr: 'IGN',
-                    format: 'application/json',
-                    extent: {
-                        west: 2.334,
-                        east: 2.335,
-                        south: 48.849,
-                        north: 48.851,
-                    },
-                });
+                    typeName: 'BDTOPO_V3:batiment',
+                        crs: 'EPSG:4326',
+                        ipr: 'IGN',
+                        format: 'application/json',
+                        extent: {
+                            west: 2.334,
+                            east: 2.335,
+                            south: 48.849,
+                            north: 48.851,
+                        },
+                    });
 
                 // create geometry layer for the buildings
                 var wfsBuildingLayer = new itowns.FeatureGeometryLayer('Buildings', {

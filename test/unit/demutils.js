@@ -22,7 +22,7 @@ describe('DemUtils', function () {
     const source = new WMTSSource({
         format: 'image/x-bil;bits=32',
         crs: 'EPSG:4326',
-        url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+        url: 'https://wxs.ign.fr/altimetrie/geoportail/wmts',
         name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
         tileMatrixSet: 'WGS84G',
         networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {
