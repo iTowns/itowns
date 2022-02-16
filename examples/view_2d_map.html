@@ -5,16 +5,16 @@
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <link rel="stylesheet" type="text/css" href="css/widgets.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <span id="divScaleWidget"> Scale </span>
 
         <script src="../dist/itowns.js"></script>
+        <script src="../dist/itowns_widgets.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="js/Scale.js"></script>
         <script type="text/javascript">
             // # Orthographic viewer
 
@@ -67,24 +67,11 @@
 
             view.addLayer(opensmLayer);
 
-            // Initialize scale :
-            const initialScaleSize = 200;  // in pixel
-            const divScaleWidget = document.getElementById('divScaleWidget');
-            function updateScaleWidget() {
-                let computedScale = roundPixelsFromMeters(view, initialScaleSize);
-                let format = getMetersUnit(computedScale.meters);
-                divScaleWidget.innerHTML = `${format.distance} ${format.unit}`;
-                divScaleWidget.style.width = `${computedScale.pixels}`;
-            }
-            // Updates scale when needed :
-            view.addEventListener(itowns.VIEW_EVENTS.INITIALIZED, function () {
-                // eslint-disable-next-line no-console
-                console.info('View initialized');
-                updateScaleWidget();
+            // Add a scale :
+            const scale = new itowns_widgets.Scale(view, {
+                position: 'bottom-right',
+                translate: { x: -120 },
             });
-            view.addEventListener(itowns.PLANAR_CONTROL_EVENT.MOVED, function () {
-                updateScaleWidget();
-            })
 
             // Request redraw
             view.notifyChange();

@@ -246,3 +246,36 @@
     font-size: 40px;
     color: #222222;
 }
+
+
+
+/* ---------- SCALE WIDGET SETTINGS : ------------------------------------------------------------------------------- */
+
+#widgets-scale {
+    user-select: none;
+
+    position: absolute;
+    z-index: 10;
+    padding: 0 10px;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+
+    border: 1px solid #ffffffcc;
+    border-radius: 0 0 7px 7px;
+    border-top: none;
+
+    background-image: linear-gradient(#31333600, #313336ff);
+
+    color: #ffffff;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+#widgets-scale.left-widget {
+    justify-content: flex-start;
+}
+#widgets-scale.right-widget {
+    justify-content: flex-end;
+}
