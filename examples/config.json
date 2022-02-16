@@ -80,7 +80,8 @@
 
     "Widgets": {
         "widgets_navigation": "Navigation",
-        "widgets_minimap": "Minimap"
+        "widgets_minimap": "Minimap",
+        "widgets_scale": "Scale"
     },
 
     "Plugins": {

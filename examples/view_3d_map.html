@@ -5,19 +5,20 @@
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <link rel="stylesheet" type="text/css" href="css/widgets.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <span id="divScaleWidget"> Scale </span>
         <div id="miniDiv"></div>
 
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
         <script src="../dist/debug.js"></script>
+        <script src="../dist/itowns_widgets.js"></script>
         <script type="text/javascript">
             // # Simple Globe viewer
             // Define initial camera position
@@ -89,32 +90,7 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             var menuGlobe = new GuiTools('menuDiv', view);
-            var divScaleWidget = document.getElementById('divScaleWidget');
-
-            function updateScaleWidget() {
-                var value = view.getPixelsToMeters(200);
-                value = Math.floor(value);
-                var digit = Math.pow(10, value.toString().length - 1);
-                value = Math.round(value / digit) * digit;
-                var pix = view.getMetersToPixels(value);
-                var unit = 'm';
-                if (value >= 1000) {
-                    value /= 1000;
-                    unit = 'km';
-                }
-                divScaleWidget.innerHTML = `${value} ${unit}`;
-                divScaleWidget.style.width = `${pix}px`;
-            }
-
-            // Listen for globe full initialisation event
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
-                // eslint-disable-next-line no-console
-                console.info('Globe initialized');
-                updateScaleWidget();
-            });
-            view.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
-                updateScaleWidget();
-            });
+            const scale = new itowns_widgets.Scale(view, { position: 'bottom-right', translate: { x: -120 } });
 
             const atmosphere = view.getLayerById('atmosphere');
             atmosphere.setRealisticOn(!view.isDebugMode);
@@ -123,8 +99,6 @@
                 atmosphere.setRealisticOn(v);
                 view.notifyChange(atmosphere);
             });
-
-            window.addEventListener('resize', updateScaleWidget);
 
             debug.createTileDebugUI(menuGlobe.gui, view);
         </script>
