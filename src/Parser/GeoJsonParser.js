@@ -8,14 +8,15 @@ function readCRS(json) {
         if (json.crs.type.toLowerCase() == 'epsg') {
             return `EPSG:${json.crs.properties.code}`;
         } else if (json.crs.type.toLowerCase() == 'name') {
-            const epsgIdx = json.crs.properties.name.toLowerCase().indexOf('epsg:');
-            if (epsgIdx >= 0) {
-                // authority:version:code => EPSG:[...]:code
-                const codeStart = json.crs.properties.name.indexOf(':', epsgIdx + 5);
+            if (json.crs.properties.name.toLowerCase().includes('epsg:')) {
+                // OGC CRS URN: urn:ogc:def:crs:authority:version:code => EPSG:[...]:code
+                // legacy identifier: authority:code => EPSG:code
+                const codeStart = json.crs.properties.name.lastIndexOf(':');
                 if (codeStart > 0) {
                     return `EPSG:${json.crs.properties.name.substr(codeStart + 1)}`;
                 }
             }
+            throw new Error(`Unsupported CRS authority '${json.crs.properties.name}'`);
         }
         throw new Error(`Unsupported CRS type '${json.crs}'`);
     }
