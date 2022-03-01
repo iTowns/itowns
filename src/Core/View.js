@@ -72,7 +72,9 @@ function _preprocessLayer(view, layer, parentLayer) {
         layer.defineLayerProperty('visible', true, () => _syncGeometryLayerVisibility(layer, view));
         _syncGeometryLayerVisibility(layer, view);
         // Find crs projection layer, this is projection destination
-        layer.crs = view.referenceCrs;
+        if (!layer.isVectorTileGeometryLayer) {
+            layer.crs = view.referenceCrs;
+        }
     } else if (!layer.crs) {
         if (parentLayer && parentLayer.tileMatrixSets && parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.crs))) {
             layer.crs = source.crs;

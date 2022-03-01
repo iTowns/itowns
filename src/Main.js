@@ -50,6 +50,7 @@ export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
 export { default as GeometryLayer } from 'Layer/GeometryLayer';
 export { default as FeatureGeometryLayer } from 'Layer/FeatureGeometryLayer';
+export { default as VectorTileGeometryLayer } from 'Layer/VectorTileGeometryLayer';
 export { default as PointCloudLayer } from 'Layer/PointCloudLayer';
 export { default as PotreeLayer } from 'Layer/PotreeLayer';
 export { default as C3DTilesLayer } from 'Layer/C3DTilesLayer';

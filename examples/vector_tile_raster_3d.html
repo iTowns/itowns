@@ -22,8 +22,9 @@
 
             // Define initial camera position
             var placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 2.475, 48.807),
-                range: 12000000,
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 5000,
+                tilt: 45,
             }
             var promises = [];
 
@@ -44,40 +45,76 @@
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ColorLayer('Ortho', config);
-                return view.addLayer(layer);
+                // return view.addLayer(layer);
             }));
 
-            // Add a vector tile layer
-            function inter(z) {
-                return z - (z % 5);
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
 
             // Define a VectorTilesSource to load Vector Tiles data from the geoportail
             var mvtSource = new itowns.VectorTilesSource({
                 style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
                 // We don't display mountains related data to ease visualisation
-                filter: (layer) => !layer['source-layer'].includes('oro_') && !layer['source-layer'].includes('parcellaire'),
+                filter: (layer) => {
+                    const bati = (layer['source-layer'].includes('bati_surf') && layer.id.startsWith('bati surfacique'));
+                    return bati && layer.paint["fill-color"];
+                },
+            });
+
+            var mvtSourceColor = new itowns.VectorTilesSource({
+                style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                // We don't display mountains related data to ease visualisation
+                filter: (layer) => {
+                    const f = layer['source-layer'].includes('bati_surf');
+                    return !f && !layer['source-layer'].includes('oro_');
+                     // && !layer['source-layer'].includes('parcellaire')
+                }
             });
 
             var mvtLayer = new itowns.ColorLayer('MVT', {
-                source: mvtSource,
-                effect_type: itowns.colorLayerEffects.removeLightColor,
-                effect_parameter: 2.5,
+                source: mvtSourceColor,
+                // effect_type: itowns.colorLayerEffects.removeLightColor,
+                // effect_parameter: 2.5,
                 addLabelLayer: true,
             });
 
+            var mvtBuildingLayer = new itowns.VectorTileGeometryLayer('WFS Building',{
+                source: mvtSource,
+                zoom: { min: 15 },
+                style: new itowns.Style({
+                    fill: {
+                        base_altitude: (p) => p.alti_sol || 0,
+                        extrusion_height: (p) => p.hauteur || 0,
+                    }
+                })
+            });
+
+            view.addLayer(mvtBuildingLayer);
             view.addLayer(mvtLayer);
+
+            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.UPDATE_START, (...args) => {
+                if(args[2][0].find(a => a.type == 'PerspectiveCamera')) {
+                    mvtBuildingLayer.object3d.clear();
+                }
+            });
 
             var menuGlobe = new GuiTools('menuDiv', view, 300);
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 Promise.all(promises).then(function () {
                     menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.isColorLayer; }));
-                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+                    // itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
                 }).catch(console.error);
             });
 
             debug.createTileDebugUI(menuGlobe.gui, view);
+            // view.tileLayer.showOutline = true;
         </script>
     </body>
 </html>

@@ -3,6 +3,7 @@ import Earcut from 'earcut';
 import { FEATURE_TYPES } from 'Core/Feature';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { deprecatedFeature2MeshOptions } from 'Core/Deprecated/Undeprecator';
+import { FeatureNode } from 'Process/FeatureProcessing';
 
 const _color = new THREE.Color();
 const maxValueUint8 = 2 ** 8 - 1;
@@ -485,15 +486,20 @@ export default {
             const group = new THREE.Group();
             options.GlobalZTrans = collection.center.z;
 
-            group.layer = options.layer;
-
             features.forEach(feature => group.add(featureToMesh(feature, options)));
 
             group.quaternion.copy(collection.quaternion);
             group.position.copy(collection.position);
             group.scale.copy(collection.scale);
 
-            return group;
+            group.feature = collection;
+
+            const featureNode = new FeatureNode(group);
+            if (options.layer) {
+                featureNode.layer = options.layer;
+                group.layer = options.layer;
+            }
+            return featureNode;
         };
     },
 };

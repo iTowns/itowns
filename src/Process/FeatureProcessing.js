@@ -3,8 +3,56 @@ import LayerUpdateState from 'Layer/LayerUpdateState';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import handlingError from 'Process/handlerNodeError';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Crs from 'Core/Geographic/Crs';
+import OrientationUtils from 'Utils/OrientationUtils';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
+const dim_ref = new THREE.Vector2();
+const dim = new THREE.Vector2();
+
+export class FeatureNode extends THREE.Group {
+    constructor(mesh) {
+        super();
+        this.place = new THREE.Group();
+        this.mesh = mesh;
+        this.add(this.place.add(mesh));
+    }
+
+    as(crs) {
+        if (this.mesh.feature.crs == crs) {
+            return;
+        }
+        const mesh = this.mesh;
+        // calculate the scale transformation to transform the feature.extent
+        // to feature.extent.as(crs)
+        // coord.crs = Crs.formatToEPSG(mesh.feature.extent.crs);
+        coord.crs = Crs.formatToEPSG(mesh.feature.crs);
+        const extent =  mesh.feature.extent.as(coord.crs);
+        extent.spatialEuclideanDimensions(dim_ref);
+        extent.planarDimensions(dim);
+        this.scale.copy(dim_ref).divide(dim).setZ(1);
+
+        // Position and orientation
+        // get method to calculate orientation
+        const crs2crs = OrientationUtils.quaternionFromCRSToCRS('EPSG:4326', crs);
+
+        // remove original position
+        this.place.position.copy(mesh.position).negate();
+
+        // get mesh coordinate
+        coord.setFromVector3(mesh.position);
+
+        // calculate orientation to crs
+        crs2crs(coord.as('EPSG:4326'), this.quaternion);
+
+        // transform position to crs
+        coord.as(crs, coord).toVector3(this.position);
+
+        this.updateMatrixWorld();
+
+        return this;
+    }
+}
 
 export default {
     update(context, layer, node) {
@@ -20,13 +68,10 @@ export default {
         if (node.layerUpdateState[layer.id] === undefined) {
             node.layerUpdateState[layer.id] = new LayerUpdateState();
         } else if (!node.layerUpdateState[layer.id].canTryUpdate()) {
+            // toggle visibility features
+            const features = node.link.filter(n => n.layer && (n.layer.id == layer.id));
+            features.forEach(n => n.layer.object3d.add(n));
             return;
-        }
-
-        const features = node.children.filter(n => n.layer == layer);
-
-        if (features.length > 0) {
-            return features;
         }
 
         const extentsDestination = node.getExtentsByProjection(layer.source.crs) || [node.extent];
@@ -54,31 +99,32 @@ export default {
             requester: node,
         };
 
-        return context.scheduler.execute(command).then((result) => {
-            // if request return empty json, WFSProvider.getFeatures return undefined
-            result = result[0];
-            if (result) {
-                // call onMeshCreated callback if needed
-                if (layer.onMeshCreated) {
-                    layer.onMeshCreated(result);
+        return context.scheduler.execute(command).then((meshes) => {
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+
+            // TODO : find place to clear objet layer
+            meshes.forEach((featureNode) => {
+                if (featureNode) {
+                    featureNode.as(context.view.referenceCrs);
+
+                    // TODO: remove layer.onMeshCreated because there's one more call.
+                    // call onMeshCreated callback if needed
+                    if (layer.onMeshCreated) {
+                        layer.onMeshCreated(featureNode, context);
+                    }
+
+
+                    if (!node.parent) {
+                        // processus de nettoyage
+                        // node.remove(featureNode);
+                        // ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, featureNode);
+                        // return;
+                    } else {
+                        layer.object3d.add(featureNode);
+                        node.link.push(featureNode);
+                    }
                 }
-                node.layerUpdateState[layer.id].success();
-                if (!node.parent) {
-                    ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, result);
-                    return;
-                }
-                // remove old group layer
-                node.remove(...node.children.filter(c => c.layer && c.layer.id == layer.id));
-                const group = new THREE.Group();
-                group.layer = layer;
-                group.matrixWorld.copy(node.matrixWorld).invert();
-                group.matrixWorld.decompose(group.position, group.quaternion, group.scale);
-                group.position.z += node.geoidHeight;
-                node.add(group.add(result));
-                group.updateMatrixWorld(true);
-            } else {
-                node.layerUpdateState[layer.id].failure(1, true);
-            }
+            });
         },
         err => handlingError(err, node, layer, node.level, context.view));
     },

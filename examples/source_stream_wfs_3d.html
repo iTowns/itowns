@@ -210,6 +210,12 @@
             });
             view.addLayer(wfsBuildingLayer);
 
+            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.UPDATE_START, (...args) => {
+                if(args[2][0].find(a => a.type == 'PerspectiveCamera')) {
+                    wfsBuildingLayer.object3d.clear();
+                }
+            });
+
             var menuGlobe = new GuiTools('menuDiv', view);
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
