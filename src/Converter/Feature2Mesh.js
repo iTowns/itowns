@@ -302,10 +302,10 @@ function featureToPolygon(feature, options) {
 
 function area(contour, offset, count) {
     offset *= 3;
-    const n = count * 3;
+    const n = offset + count * 3;
     let a = 0.0;
 
-    for (let p = n + offset - 3, q = offset; q < n; p = q, q += 3) {
+    for (let p = n - 3, q = offset; q < n; p = q, q += 3) {
         a += contour[p] * contour[q + 1] - contour[q] * contour[p + 1];
     }
 
@@ -315,9 +315,6 @@ function area(contour, offset, count) {
 const bottomColor = new THREE.Color();
 function featureToExtrudedPolygon(feature, options) {
     const ptsIn = feature.vertices;
-    const offset = feature.geometries[0].indices[0].offset;
-    const count = feature.geometries[0].indices[0].count;
-    const isClockWise = area(ptsIn, offset, count) < 0;
 
     const normals = feature.normals;
     const vertices = new Float32Array(ptsIn.length * 2);
@@ -345,6 +342,8 @@ function featureToExtrudedPolygon(feature, options) {
         const lastIndice = geometry.indices.slice(-1)[0];
         const end = lastIndice.offset + lastIndice.count;
         const count = end - start;
+        // TODO: the clockwise could be calculated in parser
+        const isClockWise = area(ptsIn, start, count) < 0;
 
         coordinatesToVertices(ptsIn, normals, vertices, z, start, count);
         fillColorArray(colors, count, bottomColor, start);
