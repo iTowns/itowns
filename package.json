@@ -3,6 +3,10 @@
   "version": "2.37.0",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "main": "lib/Main.js",
+  "exports": {
+      ".": "./lib/Main.js",
+      "./widgets": "./lib/Utils/gui/Main.js"
+  },
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\" \"docs/*.js\"",
     "doc": "jsdoc --readme docs/HOMEPAGE.md -c docs/config.json",

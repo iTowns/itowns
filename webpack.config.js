@@ -59,7 +59,7 @@ module.exports = () => {
                 dependOn: 'itowns',
             },
             itowns_widgets: {
-                import: './utils/gui/Main.js',
+                import: './src/Utils/gui/Main.js',
                 dependOn: 'itowns',
             },
         },
