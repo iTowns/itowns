@@ -7,20 +7,17 @@ import * as THREE from 'three';
 import TileMesh from 'Core/TileMesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
 import newTileGeometry from 'Core/Prefab/TileBuilder';
+import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 
 const dimensions = new THREE.Vector2();
 
 function setTileFromTiledLayer(tile, tileLayer) {
-    tile.material.transparent = tileLayer.opacity < 1.0;
-    tile.material.opacity = tileLayer.opacity;
-
     if (tileLayer.diffuse) {
         tile.material.diffuse = tileLayer.diffuse;
     }
 
     if (__DEBUG__) {
         tile.material.showOutline = tileLayer.showOutline || false;
-        tile.material.wireframe = tileLayer.wireframe || false;
     }
 
     if (tileLayer.isGlobeLayer) {
@@ -56,6 +53,8 @@ export default {
             result.geometry._count++;
             const crsCount = layer.tileMatrixSets.length;
             const material = new LayeredMaterial(layer.materialOptions, crsCount);
+            ReferLayerProperties(material, layer);
+
             const tile = new TileMesh(result.geometry, material, layer, extent, level);
 
             // Commented because layer.threejsLayer is undefined;

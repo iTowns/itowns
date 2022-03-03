@@ -6,22 +6,6 @@ import Coordinates from 'Core/Geographic/Coordinates';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
-function assignLayer(object, layer) {
-    if (object) {
-        object.layer = layer;
-        if (object.material) {
-            object.material.transparent = layer.opacity < 1.0;
-            object.material.opacity = layer.opacity;
-            object.material.wireframe = layer.wireframe;
-        }
-        object.layers.set(layer.threejsLayer);
-        for (const c of object.children) {
-            assignLayer(c, layer);
-        }
-        return object;
-    }
-}
-
 export default {
     update(context, layer, node) {
         if (!node.parent && node.children.length) {
@@ -74,7 +58,6 @@ export default {
             // if request return empty json, WFSProvider.getFeatures return undefined
             result = result[0];
             if (result) {
-                assignLayer(result, layer);
                 // call onMeshCreated callback if needed
                 if (layer.onMeshCreated) {
                     layer.onMeshCreated(result);

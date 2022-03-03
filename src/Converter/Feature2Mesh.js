@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Earcut from 'earcut';
 import { FEATURE_TYPES } from 'Core/Feature';
+import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { deprecatedFeature2MeshOptions } from 'Core/Deprecated/Undeprecator';
 
 const _color = new THREE.Color();
@@ -115,7 +116,6 @@ function addExtrudedPolygonSideFaces(indices, length, offset, count, isClockWise
     }
 }
 
-const pointMaterial = new THREE.PointsMaterial();
 function featureToPoint(feature, options) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
@@ -152,12 +152,11 @@ function featureToPoint(feature, options) {
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
 
-    pointMaterial.size = feature.style.point.radius;
+    options.pointMaterial.size = feature.style.point.radius;
 
-    return new THREE.Points(geom, pointMaterial);
+    return new THREE.Points(geom, options.pointMaterial);
 }
 
-var lineMaterial = new THREE.LineBasicMaterial();
 function featureToLine(feature, options) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
@@ -181,7 +180,7 @@ function featureToLine(feature, options) {
     let lines;
 
     // TODO CREATE material for each feature
-    lineMaterial.linewidth = feature.style.stroke.width;
+    options.lineMaterial.linewidth = feature.style.stroke.width;
     const globals = { stroke: true };
     if (feature.geometries.length > 1) {
         const countIndices = (count - feature.geometries.length) * 2;
@@ -218,7 +217,7 @@ function featureToLine(feature, options) {
         geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         if (batchIds) { geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1)); }
         geom.setIndex(new THREE.BufferAttribute(indices, 1));
-        lines = new THREE.LineSegments(geom, lineMaterial);
+        lines = new THREE.LineSegments(geom, options.lineMaterial);
     } else {
         const context = { globals, properties: () => feature.geometries[0].properties };
         const style = feature.style.drawingStylefromContext(context);
@@ -230,12 +229,11 @@ function featureToLine(feature, options) {
             fillBatchIdArray(id, batchIds, 0, count);
             geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
         }
-        lines = new THREE.Line(geom, lineMaterial);
+        lines = new THREE.Line(geom, options.lineMaterial);
     }
     return lines;
 }
 
-const material = new THREE.MeshBasicMaterial();
 function featureToPolygon(feature, options) {
     const ptsIn = feature.vertices;
     const normals = feature.normals;
@@ -297,7 +295,7 @@ function featureToPolygon(feature, options) {
 
     geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
 
-    return new THREE.Mesh(geom, material);
+    return new THREE.Mesh(geom, options.polygonMaterial);
 }
 
 function area(contour, offset, count) {
@@ -397,8 +395,7 @@ function featureToExtrudedPolygon(feature, options) {
 
     geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
 
-    const mesh = new THREE.Mesh(geom, material);
-    return mesh;
+    return new THREE.Mesh(geom, options.polygonMaterial);
 }
 
 /**
@@ -438,6 +435,11 @@ function featureToMesh(feature, options) {
     mesh.feature = feature;
     mesh.position.z = feature.altitude.min - options.GlobalZTrans;
 
+    if (options.layer) {
+        mesh.layer = options.layer;
+        mesh.layers.set(options.layer.threejsLayer);
+    }
+
     return mesh;
 }
 
@@ -450,7 +452,9 @@ export default {
      * a THREE.Group.
      *
      * @param {Object} options - options controlling the conversion
-     * @param {function} [options.batchId] - optional function to create batchId attribute. It is passed the feature property and the feature index. As the batchId is using an unsigned int structure on 32 bits, the batchId could be between 0 and 4,294,967,295.
+     * @param {function} [options.batchId] - optional function to create batchId attribute.
+     * It is passed the feature property and the feature index. As the batchId is using an unsigned int structure on 32 bits,
+     * the batchId could be between 0 and 4,294,967,295.
      * @return {function}
      * @example <caption>Example usage of batchId with featureId.</caption>
      * view.addLayer({
@@ -481,12 +485,23 @@ export default {
         return function _convert(collection) {
             if (!collection) { return; }
 
+            if (!options.pointMaterial) {
+                // Opacity and wireframe refered with layer properties
+                // TODO :next step is move these properties to Style
+                options.pointMaterial = ReferLayerProperties(new THREE.PointsMaterial(), this);
+                options.lineMaterial = ReferLayerProperties(new THREE.LineBasicMaterial(), this);
+                options.polygonMaterial = ReferLayerProperties(new THREE.MeshBasicMaterial(), this);
+                options.layer = this;
+            }
+
             const features = collection.features;
 
             if (!features || features.length == 0) { return; }
 
             const group = new THREE.Group();
             options.GlobalZTrans = collection.center.z;
+
+            group.layer = options.layer;
 
             features.forEach(feature => group.add(featureToMesh(feature, options)));
 

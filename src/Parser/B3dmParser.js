@@ -6,6 +6,7 @@ import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import utf8Decoder from 'Utils/Utf8Decoder';
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
+import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 // For gltf rotation
@@ -201,8 +202,7 @@ export default {
                                 shaderUtils.patchMaterialForLogDepthSupport(mesh.material);
                                 console.warn('b3dm shader has been patched to add log depth buffer support');
                             }
-                            mesh.material.transparent = options.opacity < 1.0;
-                            mesh.material.opacity = options.opacity;
+                            ReferLayerProperties(mesh.material, options.layer);
                         }
                     };
                     gltf.scene.traverse(init_mesh);
