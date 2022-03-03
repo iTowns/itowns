@@ -80,7 +80,14 @@ import CRS from 'Core/Geographic/Crs';
  *     .then(function _(geojson) {
  *         return itowns.GeoJsonParser.parse(geojson, {
  *             in: { crs: 'EPSG:4326' },
- *             out: { crs: view.tileLayer.extent.crs },
+ *             out: { crs: view.tileLayer.extent.crs,
+ *                      style: new itowns.Style({
+ *                          fill: {
+ *                              color: new itowns.THREE.Color(0xffcc00),
+ *                              extrusion_height: () => 5000,
+ *                      }),
+ *                  },
+ *             },
  *         });
  *     }).then(function _(features) {
  *         ariege.source = new itowns.FileSource({

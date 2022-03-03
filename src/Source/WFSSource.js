@@ -80,10 +80,16 @@ import CRS from 'Core/Geographic/Crs';
  * });
  *
  * // Create the layer
- * const geometryLayer = new itowns.GeometryLayer('mesh_build', {
- *     update: itowns.FeatureProcessing.update,
- *     convert: itowns.Feature2Mesh.convert({ extrude: () => 50 }),
+ * const geometryLayer = new itowns.FeatureGeometryLayer('mesh_build', {
+ *     style: new itowns.Style({
+ *         fill: {
+ *             color: new itowns.THREE.Color(0xffcc00),
+ *             base_altitude: (p) => p.altitude,
+ *             extrusion_height: (p) => p.height,
+ *         }
+ *     },
  *     source: wfsSource,
+ *     zoom: { min: 14 },
  * });
  *
  * // Add the layer

@@ -100,31 +100,8 @@ class GeometryLayer extends Layer {
             configurable: true,
         });
 
-        this.defineLayerProperty('opacity', 1.0, () => {
-            const root = this.parent ? this.parent.object3d : this.object3d;
-            root.traverse((object) => {
-                if (object.layer == this) {
-                    this.changeOpacity(object);
-                } else if (object.content && object.content.layer == this) {
-                    object.content.traverse(this.changeOpacity);
-                }
-            });
-        });
-
-        this.defineLayerProperty('wireframe', false, () => {
-            const root = this.parent ? this.parent.object3d : this.object3d;
-            root.traverse((object) => {
-                if (object.layer == this && object.material) {
-                    object.material.wireframe = this.wireframe;
-                } else if (object.content && object.content.layer == this) {
-                    object.content.traverse((o) => {
-                        if (o.material && o.layer == this) {
-                            o.material.wireframe = this.wireframe;
-                        }
-                    });
-                }
-            });
-        });
+        this.opacity = 1.0;
+        this.wireframe = false;
 
         this.attachedLayers = [];
         this.visible = config.visible == undefined ? true : config.visible;
@@ -232,27 +209,6 @@ class GeometryLayer extends Layer {
     pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {
         const object3d = this.parent ? this.parent.object3d : this.object3d;
         return Picking.pickObjectsAt(view, coordinates, radius, object3d, target, this.threejsLayer);
-    }
-
-    /**
-     * Change the opacity of an object, according to the value of the `opacity`
-     * property of this layer.
-     *
-     * @param {Object} object - The object to change the opacity from. It is
-     * usually a `THREE.Object3d` or an implementation of it.
-     */
-    changeOpacity(object) {
-        if (object.material) {
-            // != undefined: we want the test to pass if opacity is 0
-            if (object.material.opacity != undefined) {
-                object.material.transparent = this.opacity < 1.0;
-                object.material.opacity = this.opacity;
-            }
-            if (object.material.uniforms && object.material.uniforms.opacity != undefined) {
-                object.material.transparent = this.opacity < 1.0;
-                object.material.uniforms.opacity.value = this.opacity;
-            }
-        }
     }
 }
 

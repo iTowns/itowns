@@ -13,6 +13,7 @@ function b3dmToMesh(data, layer, url) {
         doNotPatchMaterial: layer.doNotPatchMaterial,
         opacity: layer.opacity,
         registeredExtensions: layer.registeredExtensions,
+        layer,
     };
     return B3dmParser.parse(data, options).then((result) => {
         const batchTable = result.batchTable;
@@ -75,11 +76,6 @@ function executeCommand(command) {
         obj.layers.set(layer.threejsLayer);
         obj.userData.metadata = metadata;
         obj.layer = layer;
-        if (obj.material) {
-            obj.material.transparent = layer.opacity < 1.0;
-            obj.material.opacity = layer.opacity;
-            obj.material.wireframe = layer.wireframe;
-        }
     };
     if (path) {
         // Check if we have relative or absolute url (with tileset's lopocs for example)
