@@ -32,11 +32,13 @@ class FeatureGeometryLayer extends GeometryLayer {
      */
     constructor(id, config = {}) {
         config.update = FeatureProcessing.update;
-        config.convert = Feature2Mesh.convert({
-            batchId: config.batchId,
-        },
-        );
         super(id, config.object3d || new Group(), config);
+
+        this.convert = Feature2Mesh.convert({
+            batchId: config.batchId,
+            layer: this,
+        });
+
         this.isFeatureGeometryLayer = true;
     }
 }
