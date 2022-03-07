@@ -1055,7 +1055,7 @@ class View extends THREE.EventDispatcher {
     pickCoordinates(mouse, target = new Coordinates(this.tileLayer.extent.crs)) {
         if (mouse instanceof Event) {
             this.eventToViewCoords(mouse);
-        } else if (mouse.x !== undefined && mouse.y !== undefined) {
+        } else if (mouse && mouse.x !== undefined && mouse.y !== undefined) {
             _eventCoords.copy(mouse);
         } else {
             _eventCoords.set(
