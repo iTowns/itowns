@@ -12,7 +12,6 @@
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <div id="miniDiv"></div>
 
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
@@ -26,46 +25,13 @@
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
                 range: 25000000,
             }
-            var miniView;
-            var minDistance = 10000000;
-            var maxDistance = 30000000;
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
-            var miniDiv = document.getElementById('miniDiv');
 
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, placement);
             setupLoadingScreen(viewerDiv, view);
-
-            // Dont' instance mini viewer if it's Test env
-            miniView = new itowns.GlobeView(miniDiv, placement, {
-                // `limit globe' subdivision level:
-                // we're don't need a precise globe model
-                // since the mini globe will always be seen from a far point of view (see minDistance above)
-                maxSubdivisionLevel: 2,
-                // Don't instance default controls since miniview's camera will be synced
-                // on the main view's one (see view.addFrameRequester)
-                noControls: true,
-            });
-
-            // Set a 0 alpha clear value (instead of the default '1')
-            // because we want a transparent background for the miniglobe view to be able
-            // to see the main view "behind"
-            miniView.mainLoop.gfxEngine.renderer.setClearColor(0x000000, 0);
-
-            // update miniview's camera with the view's camera position
-            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, function updateMiniView() {
-                // clamp distance camera from globe
-                var distanceCamera = view.camera.camera3D.position.length();
-                var distance = Math.min(Math.max(distanceCamera * 1.5, minDistance), maxDistance);
-                var camera = miniView.camera.camera3D;
-                var cameraTargetPosition = view.controls.getCameraTargetPosition();
-                // Update target miniview's camera
-                camera.position.copy(cameraTargetPosition).setLength(distance);
-                camera.lookAt(cameraTargetPosition);
-                miniView.notifyChange(camera);
-            });
 
 
             // Add one imagery layer to the scene and the miniView
@@ -75,9 +41,6 @@
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ColorLayer('Ortho', config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-
-                var miniLayer = new itowns.ColorLayer('OrthoMini', config);
-                miniView.addLayer(miniLayer);
             });
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
@@ -91,6 +54,21 @@
 
             var menuGlobe = new GuiTools('menuDiv', view);
             const scale = new itowns_widgets.Scale(view, { position: 'bottom-right', translate: { x: -120 } });
+
+            // Create a minimap.
+            const minimap = new itowns_widgets.Minimap(
+                view,
+                new itowns.ColorLayer('minimap', {
+                    source: new itowns.VectorTilesSource({
+                        style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                        // We don't display mountains and plot related data to ease visualisation
+                        filter: (layer) => !layer['source-layer'].includes('oro_')
+                            && !layer['source-layer'].includes('parcellaire'),
+                    }),
+                    addLabelLayer: true,
+                }),
+                { cursor: '+' },
+            );
 
             const atmosphere = view.getLayerById('atmosphere');
             atmosphere.setRealisticOn(!view.isDebugMode);
