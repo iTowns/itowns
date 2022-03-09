@@ -82,6 +82,9 @@ function updatePreSse(camera, height, fov) {
  * @property    {number}    _preSSE         The precomputed constant part of the screen space error.
  */
 class Camera {
+    #_viewMatrixNeedsUpdate = true;
+    #_viewMatrix = new THREE.Matrix4();
+
     /**
      * @param   {string}                crs                                     The camera's coordinate projection system.
      * @param   {number}                width                                   The width (in pixels) of the view the
@@ -115,12 +118,10 @@ class Camera {
                     break;
             }
         }
-        this.camera3D.aspect = this.camera3D.aspect !== undefined ? this.camera3D.aspect : 1;
+        this.camera3D.aspect = this.camera3D.aspect ?? 1;
 
-        this._viewMatrix = new THREE.Matrix4();
         this.width = width;
         this.height = height;
-        this._viewMatrixNeedsUpdate = true;
         this.resize(width, height);
 
         this._preSSE = Infinity;
@@ -165,14 +166,14 @@ class Camera {
 
         if (this.camera3D.updateProjectionMatrix) {
             this.camera3D.updateProjectionMatrix();
-            this._viewMatrixNeedsUpdate = true;
+            this.#_viewMatrixNeedsUpdate = true;
         }
     }
 
     update() {
         // update matrix
         this.camera3D.updateMatrixWorld();
-        this._viewMatrixNeedsUpdate = true;
+        this.#_viewMatrixNeedsUpdate = true;
     }
 
     /**
@@ -201,16 +202,16 @@ class Camera {
     }
 
     isSphereVisible(sphere, matrixWorld) {
-        if (this._viewMatrixNeedsUpdate) {
+        if (this.#_viewMatrixNeedsUpdate) {
             // update visibility testing matrix
-            this._viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
-            this._viewMatrixNeedsUpdate = false;
+            this.#_viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
+            this.#_viewMatrixNeedsUpdate = false;
         }
         if (matrixWorld) {
-            tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
+            tmp.matrix.multiplyMatrices(this.#_viewMatrix, matrixWorld);
             tmp.frustum.setFromProjectionMatrix(tmp.matrix);
         } else {
-            tmp.frustum.setFromProjectionMatrix(this._viewMatrix);
+            tmp.frustum.setFromProjectionMatrix(this.#_viewMatrix);
         }
         return tmp.frustum.intersectsSphere(sphere);
     }

@@ -53,9 +53,9 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
      * @param {Number} [options.debugAlphaBorder=0] - Set this option to 1 to see influence of alphaBorder option.
      */
     constructor(cameras, options = {}) {
-        options.side = options.side !== undefined ? options.side : THREE.DoubleSide;
-        options.transparent = options.transparent !== undefined ? options.transparent : true;
-        options.opacity = options.opacity !== undefined ? options.opacity : 1;
+        options.side = options.side ?? THREE.DoubleSide;
+        options.transparent = options.transparent ?? true;
+        options.opacity = options.opacity ?? 1;
 
         // Filter the rawShaderMaterial options
         const rawShaderMaterialOptions = {};
@@ -69,7 +69,7 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
         }
         super(rawShaderMaterialOptions);
 
-        this.defines.ORIENTED_IMAGES_COUNT = options.OrientedImagesCount !== undefined ? options.OrientedImagesCount : cameras.length;
+        this.defines.ORIENTED_IMAGES_COUNT = options.OrientedImagesCount ?? cameras.length;
 
         // verify that number of textures doesn't exceed GPU capabilities
         const maxTexturesUnits = Capabilities.getMaxTextureUnitsCount();

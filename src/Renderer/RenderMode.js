@@ -5,7 +5,7 @@ const MODES = {
 };
 
 function push(object3d, mode) {
-    const _mode = object3d.mode !== undefined ? object3d.mode : MODES.FINAL;
+    const _mode = object3d.mode ?? MODES.FINAL;
     if (_mode == mode) {
         return () => { };
     }

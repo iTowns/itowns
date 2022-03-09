@@ -12,6 +12,7 @@ import CRS from 'Core/Geographic/Crs';
  * @param {?number} level - the tile level (default = 0)
  */
 class TileMesh extends THREE.Mesh {
+    #_tms = new Map();
     constructor(geometry, material, layer, extent, level = 0) {
         super(geometry, material);
 
@@ -29,10 +30,9 @@ class TileMesh extends THREE.Mesh {
         this.obb = this.geometry.OBB.clone();
         this.boundingSphere = new THREE.Sphere();
         this.obb.box3D.getBoundingSphere(this.boundingSphere);
-        this._tms = new Map();
 
         for (const tms of layer.tileMatrixSets) {
-            this._tms.set(tms, this.extent.tiledCovering(tms));
+            this.#_tms.set(tms, this.extent.tiledCovering(tms));
         }
 
         this.frustumCulled = false;
@@ -65,7 +65,7 @@ class TileMesh extends THREE.Mesh {
     }
 
     getExtentsByProjection(crs) {
-        return this._tms.get(CRS.formatToTms(crs));
+        return this.#_tms.get(CRS.formatToTms(crs));
     }
 
     /**

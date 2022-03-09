@@ -69,8 +69,8 @@ class OBB extends THREE.Object3D {
      * @param {number}  [elevation.scale]           The scale of oriented bounding box Z axis
      */
     updateZ(elevation = {}) {
-        this.z.min = elevation.min !== undefined && elevation.min !== null ? elevation.min : this.z.min;
-        this.z.max = elevation.max !== undefined && elevation.max !== null ? elevation.max : this.z.max;
+        this.z.min = elevation.min ?? this.z.min;
+        this.z.max = elevation.max ?? this.z.max;
 
         this.z.scale = elevation.scale > 0 ? elevation.scale : this.z.scale;
         this.z.delta = Math.abs(this.z.max - this.z.min) * this.z.scale;

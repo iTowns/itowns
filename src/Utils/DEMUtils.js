@@ -321,7 +321,7 @@ function _readZ(layer, method, coord, nodes, cache) {
 
     let tileWithValidElevationTexture = null;
     // first check in cache
-    if (cache && cache.tile && cache.tile.material) {
+    if (cache?.tile?.material) {
         tileWithValidElevationTexture = tileAt(pt, cache.tile);
     }
     for (let i = 0; !tileWithValidElevationTexture && i < nodes.length; i++) {
