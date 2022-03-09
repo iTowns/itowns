@@ -12,8 +12,8 @@ export default {
             return Promise.reject(new CancelledCommandException(command));
         }
 
-        for (let i = 0, size = extentsSource.length; i < size; i++) {
-            promises.push(layer.convert(requester, extentsSource[i]));
+        for (const extent of extentsSource) {
+            promises.push(layer.convert(requester, extent));
         }
 
         return Promise.all(promises);

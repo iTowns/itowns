@@ -5,7 +5,7 @@ import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 class RasterLayer extends Layer {
     constructor(id, config) {
-        config.cacheLifeTime = config.cacheLifeTime == undefined ? CACHE_POLICIES.TEXTURE : config.cacheLifeTime;
+        config.cacheLifeTime = config.cacheLifeTime ?? CACHE_POLICIES.TEXTURE;
         super(id, config);
     }
 

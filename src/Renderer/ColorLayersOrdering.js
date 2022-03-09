@@ -3,7 +3,7 @@ import { ImageryLayers } from 'Layer/Layer';
 function updateLayersOrdering(geometryLayer, imageryLayers) {
     var sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
     var cO = function cO(object) {
-        if (object.material && object.material.setSequence) {
+        if (object.material?.setSequence) {
             object.material.setSequence(sequence);
         }
     };

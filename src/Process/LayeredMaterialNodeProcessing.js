@@ -84,7 +84,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             nodeLayer = layer.setupRasterNode(node);
 
             // Init the node by parent
-            const parentLayer = parent.material && parent.material.getLayer(layer.id);
+            const parentLayer = parent.material?.getLayer(layer.id);
             nodeLayer.initFromParent(parentLayer, extentsDestination);
         }
 
@@ -182,7 +182,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-        const parentLayer = parent.material && parent.material.getLayer(layer.id);
+        const parentLayer = parent.material?.getLayer(layer.id);
         nodeLayer.initFromParent(parentLayer, extentsDestination);
 
         if (nodeLayer.level >= layer.source.zoom.min) {
@@ -237,7 +237,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
 
 export function removeLayeredMaterialNodeLayer(layerId) {
     return function removeLayeredMaterialNodeLayer(node) {
-        if (node.material && node.material.removeLayer) {
+        if (node.material?.removeLayer) {
             node.material.removeLayer(layerId);
             if (node.material.elevationLayerIds[0] == layerId) {
                 node.setBBoxZ({ min: 0, max: 0 });

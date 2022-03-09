@@ -30,7 +30,11 @@ describe('misc_clamp_ground', function _() {
             // compute the on screen cone position
             const coneCenter = new itowns.THREE.Vector3(0, 0, 0)
                 .applyMatrix4(view.mesh.matrixWorld);
-            coneCenter.applyMatrix4(view.camera._viewMatrix);
+
+            const camera3D = view.camera.camera3D;
+            const viewMatrix = new itowns.THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, camera3D.matrixWorldInverse);
+
+            coneCenter.applyMatrix4(viewMatrix);
             const mouse = view.normalizedToViewCoords(coneCenter);
 
             // So read the depth buffer at cone's position

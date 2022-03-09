@@ -80,7 +80,7 @@ class GeometryLayer extends Layer {
      * view.addLayer(geometry);
      */
     constructor(id, object3d, config = {}) {
-        config.cacheLifeTime = config.cacheLifeTime == undefined ? CACHE_POLICIES.GEOMETRY : config.cacheLifeTime;
+        config.cacheLifeTime = config.cacheLifeTime ?? CACHE_POLICIES.GEOMETRY;
         super(id, config);
 
         this.isGeometryLayer = true;
