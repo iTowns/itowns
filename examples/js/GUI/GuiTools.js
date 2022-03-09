@@ -88,7 +88,7 @@ GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
         layer.visible = value;
         this.view.notifyChange(layer);
     }).bind(this));
-    folder.add({ opacity: layer.opacity }, 'opacity').min(0.0).max(1.0).onChange((function updateOpacity(value) {
+    folder.add({ opacity: layer.opacity }, 'opacity', 0.0, 1.0, 0.01).onChange((function updateOpacity(value) {
         layer.opacity = value;
         this.view.notifyChange(layer);
     }).bind(this));
