@@ -35,6 +35,7 @@ class RasterTile extends THREE.EventDispatcher {
 
         this._handlerCBEvent = () => { this.material.layersNeedUpdate = true; };
         layer.addEventListener('visible-property-changed', this._handlerCBEvent);
+        layer.addEventListener('opacity-property-changed', this._handlerCBEvent);
     }
 
     get id() {
@@ -72,6 +73,7 @@ class RasterTile extends THREE.EventDispatcher {
     dispose(removeEvent) {
         if (removeEvent) {
             this.layer.removeEventListener('visible-property-changed', this._handlerCBEvent);
+            this.layer.removeEventListener('opacity-property-changed', this._handlerCBEvent);
             // dispose all events
             this._listeners = {};
         }
