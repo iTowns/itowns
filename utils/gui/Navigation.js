@@ -21,6 +21,8 @@ const DEFAULT_OPTIONS = {
  * @property {HTMLElement}  parentElement   The parent HTML container of `this.domElement`.
  */
 class Navigation extends Widget {
+    #_view;
+
     /**
      * @param   {View}          view                                    The iTowns view the navigation should be linked
                                                                         * to.
@@ -64,6 +66,7 @@ class Navigation extends Widget {
         }
 
         super(view, options, DEFAULT_OPTIONS);
+        this.#_view = view;
 
         this.direction = options.direction || DEFAULT_OPTIONS.direction;
         if (!['column', 'row'].includes(this.direction)) {
@@ -198,6 +201,16 @@ class Navigation extends Widget {
         buttonBar.appendChild(button);
 
         button.addEventListener('click', actionOnClick);
+
+        // The buttons must not be focused using tab key.
+        button.tabIndex = -1;
+        // When releasing the mouse after clicking the button, we give the focus back to the view. Therefore, we can use
+        // key events on the view without having to click the view to grant it focus.
+        window.addEventListener('pointerup', () => {
+            if (document.activeElement === button) {
+                this.#_view.domElement.focus();
+            }
+        });
 
         return button;
     }
