@@ -3,7 +3,6 @@ import Widget from './Widget';
 
 
 const DEFAULT_OPTIONS = {
-    parentElement: document.body,
     displayCompass: true,
     display3DToggle: true,
     displayZoomIn: true,
@@ -17,17 +16,49 @@ const DEFAULT_OPTIONS = {
 /**
  * A widget menu manager for navigation.
  *
- * @property {HTMLElement}  domElement      An html div containing all navigation widgets.
- * @property {HTMLElement}  parentElement   The parent HTML container of `this.domElement`.
+ * @property {HTMLElement}  domElement          An html div containing all navigation widgets.
+ * @property {HTMLElement}  parentElement       The parent HTML container of `this.domElement`.
+ * @property {Object}       onClick             An object containing methods which are executed when clicking one of the
+                                                * default navigation buttons. These default buttons are the compass, the
+                                                * 3D toggle, zoom-in and zoom-out buttons. The `onClick` object can be
+                                                * modified by user in order to implement custom behaviour on default
+                                                * buttons.
+ * @property {function}     onClick.compass     The method ran when clicking the compass button.
+ * @property {function}     onClick.toggle3D    The method ran when clicking the 3D/2D button.
+ * @property {function}     onClick.zoomIn      The method ran when clicking the zoom-in button.
+ * @property {function}     onClick.zoomOut     The method ran when clicking the zoom-out button.
  */
 class Navigation extends Widget {
     #_view;
 
+    #_setActionsOnClick() {
+        const action = (params) => {
+            params.time = this.animationDuration;
+            this.#_view.controls.lookAtCoordinate(params);
+        };
+
+        this.onClick = {};
+
+        this.onClick.compass = () => {
+            action({ heading: 0, tilt: 89.5 });
+        };
+        this.onClick.toggle3D = () => {
+            action({ tilt: this.#_view.controls.getTilt() < 89 ? 89.5 : 40 });
+        };
+        this.onClick.zoomIn = () => {
+            action({ zoom: Math.min(20, this.#_view.controls.getZoom() + 1) });
+        };
+        this.onClick.zoomOut = () => {
+            action({ zoom: Math.max(3, this.#_view.controls.getZoom() - 1) });
+        };
+    }
+
+
     /**
-     * @param   {View}          view                                    The iTowns view the navigation should be linked
+     * @param   {GlobeView}     view                                    The iTowns view the navigation should be linked
                                                                         * to.
      * @param   {Object}        options                                 The navigation menu optional configuration.
-     * @param   {HTMLElement}   [options.parentElement=document.body]   The parent HTML container of the div which
+     * @param   {HTMLElement}   [options.parentElement=view.domElement] The parent HTML container of the div which
                                                                         * contains navigation widgets.
      * @param   {boolean}       [options.displayCompass=true]           Whether the compass widget should be displayed.
      * @param   {boolean}       [options.display3DToggle=true]          Whether the navigation should include a widget
@@ -67,6 +98,7 @@ class Navigation extends Widget {
 
         super(view, options, DEFAULT_OPTIONS);
         this.#_view = view;
+        this.#_setActionsOnClick();
 
         this.direction = options.direction || DEFAULT_OPTIONS.direction;
         if (!['column', 'row'].includes(this.direction)) {
@@ -99,13 +131,7 @@ class Navigation extends Widget {
             this.compass = this.addButton(
                 'compass',
                 '',
-                () => {
-                    view.controls.lookAtCoordinate({
-                        heading: 0,
-                        tilt: 89.5,
-                        time: this.animationDuration,
-                    });
-                },
+                this.onClick.compass,
                 'widgets',
             );
 
@@ -120,15 +146,7 @@ class Navigation extends Widget {
             this.switch3dButton = this.addButton(
                 '3d-button',
                 '3D',
-                () => {
-                    let tilt;
-                    if (view.controls.getTilt() < 89) {
-                        tilt = 89.5;
-                    } else {
-                        tilt = 40;
-                    }
-                    view.controls.lookAtCoordinate({ tilt, time: this.animationDuration });
-                },
+                this.onClick.toggle3D,
             );
 
             // Manage button content toggle when the view's camera is moved.
@@ -142,12 +160,7 @@ class Navigation extends Widget {
             this.zoomInButton = this.addButton(
                 'zoom-in-button',
                 '<span class="widget-zoom-button-logo"></span>',
-                () => {
-                    view.controls.lookAtCoordinate({
-                        zoom: Math.min(20, view.controls.getZoom() + 1),
-                        time: this.animationDuration,
-                    });
-                },
+                this.onClick.zoomIn,
                 'zoom-button-bar',
             );
         }
@@ -157,12 +170,7 @@ class Navigation extends Widget {
             this.zoomOutButton = this.addButton(
                 'zoom-out-button',
                 '<span id="zoom-out-logo" class="widget-zoom-button-logo"></span>',
-                () => {
-                    view.controls.lookAtCoordinate({
-                        zoom: Math.max(3, view.controls.getZoom() - 1),
-                        time: this.animationDuration,
-                    });
-                },
+                this.onClick.zoomOut,
                 'zoom-button-bar',
             );
         }
