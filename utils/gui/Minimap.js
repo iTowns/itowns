@@ -119,7 +119,6 @@ class Minimap extends Widget {
         // Prevent the minimap domElement to get focus when clicked, and prevent click event to be propagated to the
         // main view controls.
         this.domElement.addEventListener('pointerdown', (event) => {
-            event.stopPropagation();
             event.preventDefault();
         });
 

@@ -52,6 +52,11 @@ class Widget {
         if (options.translate) {
             this.domElement.style.transform = `translate(${options.translate.x || 0}px, ${options.translate.y || 0}px)`;
         }
+
+        // Prevent triggering `GlobeControls` and `PlanarControls` mouse or pointer events when clicking the search bar.
+        // For example, this prevents triggering an animated travel when double-clicking search bar in a `GlobeView`.
+        this.domElement.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
+        this.domElement.addEventListener('mousedown', (e) => { e.stopPropagation(); });
     }
 }
 
