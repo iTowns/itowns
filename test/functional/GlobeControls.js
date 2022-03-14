@@ -27,7 +27,7 @@ describe('GlobeControls with globe example', function _() {
                     return target;
                 };
 
-            menuGlobe.gui.remove(cRL);
+            debugMenu.gui.remove(cRL);
         });
 
         middleWidth = await page.evaluate(() => window.innerWidth / 2);
