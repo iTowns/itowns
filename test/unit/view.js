@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
+import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import assert from 'assert';
 import View from 'Core/View';
 import ColorLayer from 'Layer/ColorLayer';
@@ -74,11 +75,24 @@ describe('Viewer', function () {
     });
 
     it('should update sources viewer and notify change', () => {
+        global.requestAnimationFrame = step => step(0);
+        let wasRedraw = false;
+
+        viewer.addFrameRequester(
+            MAIN_LOOP_EVENTS.BEFORE_RENDER,
+            () => {
+                wasRedraw = true;
+            },
+        );
         viewer.addLayer(globelayer);
         viewer.notifyChange(globelayer, true);
-        assert.equal(viewer.mainLoop.needsRedraw, 1);
-        viewer.mainLoop._step(viewer, 0);
-        assert.equal(viewer.mainLoop.needsRedraw, false);
+        assert.equal(wasRedraw, true);
+
+        wasRedraw = false;
+        viewer.notifyChange(globelayer, false);
+        assert.equal(wasRedraw, false);
+
+        global.requestAnimationFrame = () => {};
     });
 
     it('ColorLayersOrdering', (done) => {
