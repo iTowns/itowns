@@ -8,6 +8,7 @@ const DEFAULT_OPTIONS = {
     position: 'top',
     maxSuggestionNumber: 10,
     fontSize: 16,
+    placeholder: 'Search location',
 };
 
 
@@ -93,6 +94,8 @@ class Searchbar extends Widget {
      * @param   {number}        [options.fontSize=16]                   The font size in pixel of the searchbar content.
      * @param   {number}        [options.maxSuggestionNumber=10]        The maximum number of suggestions that should
                                                                         * appear under the searchbar.
+     * @param   {string}        [options.placeholder='Search location'] The placeholder that appears in the searchbar
+                                                                        * when nothing has yet been typed.
      */
     constructor(view, geocodingOptions, options = {}) {
         // ---------- BUILD PROPERTIES ACCORDING TO DEFAULT OPTIONS AND OPTIONS PASSED IN PARAMETERS : ----------
@@ -127,7 +130,7 @@ class Searchbar extends Widget {
         const input = document.createElement('input');
         input.setAttribute('type', 'text');
         input.setAttribute('name', 'mySearch');
-        input.setAttribute('placeholder', 'Search location');
+        input.setAttribute('placeholder', options.placeholder || DEFAULT_OPTIONS.placeholder);
         input.style.height = `${options.height || options.size || DEFAULT_OPTIONS.height}px`;
         input.style.fontSize = `${options.fontSize || DEFAULT_OPTIONS.fontSize}px`;
         form.appendChild(input);
