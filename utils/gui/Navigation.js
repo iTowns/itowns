@@ -56,7 +56,8 @@ class Navigation extends Widget {
 
     /**
      * @param   {GlobeView}     view                                    The iTowns view the navigation should be linked
-                                                                        * to.
+                                                                        * to. For the moment, only `{@link GlobeView}`
+                                                                        * is supported.
      * @param   {Object}        options                                 The navigation menu optional configuration.
      * @param   {HTMLElement}   [options.parentElement=view.domElement] The parent HTML container of the div which
                                                                         * contains navigation widgets.
@@ -86,6 +87,14 @@ class Navigation extends Widget {
      */
     constructor(view, options = {}) {
         // ---------- BUILD PROPERTIES ACCORDING TO DEFAULT OPTIONS AND OPTIONS PASSED IN PARAMETERS : ----------
+
+        // Check if the view is supported.
+        if (!view.isGlobeView) {
+            throw new Error(
+                '\'Navigation\' plugin only supports \'GlobeView\'. Therefore, the \'view\' parameter must be a ' +
+                '\'GlobeView\'.',
+            );
+        }
 
         // `top`, `bottom`, `left` and `right` values for `position` option are not relevant for navigation widget.
         if (['top', 'bottom', 'left', 'right'].includes(options.position)) {
