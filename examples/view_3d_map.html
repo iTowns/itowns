@@ -78,15 +78,15 @@
 
             // ---------- ADD SOME WIDGETS : ----------
 
-            // Add a scale.
+            // ADD A SCALE :
             const scale = new itowns_widgets.Scale(view, { position: 'bottom-right', translate: { x: -120 } });
 
-            // Add a minimap.
+            // ADD A MINIMAP :
             const minimap = new itowns_widgets.Minimap(
                 view,
                 new itowns.ColorLayer('minimap', {
                     source: new itowns.VectorTilesSource({
-                        style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                        style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/gris.json',
                         // We don't display mountains and plot related data to ease visualisation
                         filter: (layer) => !layer['source-layer'].includes('oro_')
                             && !layer['source-layer'].includes('parcellaire'),
@@ -95,6 +95,43 @@
                 }),
                 { cursor: '+' },
             );
+
+            // ADD NAVIGATION TOOLS :
+            const navigation = new itowns_widgets.Navigation(view, {
+                position: 'bottom-right',
+                translate: { y: -40 },
+            });
+
+            // ADD A SEARCH BAR :
+
+            // You can find more precise explanation on searchbar options in the doc
+            // (http://www.itowns-project.org/itowns/docs/#api/Widgets/Searchbar) and in the searchbar example
+            // (https://www.itowns-project.org/itowns/examples/#widgets_searchbar)
+
+            // Define options for geocoding service that should be used by the searchbar.
+            const geocodingOptions = {
+                url: new URL(
+                    'https://wxs.ign.fr/ayxvok72rcocdyn8xyvy32og/ols/apis/completion?text=&type=StreetAddress,' +
+                    'PositionOfInterest',
+                ),
+                parser: (response) => {
+                    const map = new Map();
+                    response.results.forEach(location => {
+                        map.set(location.fulltext, new itowns.Coordinates('EPSG:4326', location.x, location.y));
+                    });
+                    return map;
+                },
+                onSelected: (coordinates) => {
+                    view.controls.lookAtCoordinate({ coord: coordinates, range: 20000, tilt: 45, heading: 0 });
+                },
+            }
+
+            // Create the searchbar
+            const searchbar = new itowns_widgets.Searchbar(view, geocodingOptions, {
+                maxSuggestionNumber: 15,
+                placeholder: 'Search a location in France',
+                position: 'top-right',
+            });
 
 
 
