@@ -11,7 +11,7 @@
 
 <div id="main">
     <iframe id="content" class="scroll-section" frameborder="0" height="100%"></iframe>
-    <div id="view-source" class="text"></div>
+    <button id="view-source" class="text" title="View source"></button>
 </div>
 
 <nav class="scroll-section">
@@ -50,10 +50,10 @@
         iframe.src = url.replace('index.html', '');
         iframe.focus();
 
-        var viewSrc = '<a href="https://github.com/iTowns/itowns/blob/master/examples/';
-        viewSrc += window.location.hash.substr(1) || 'view_3d_map';
-        viewSrc += '.html" target="_blank">View source</a>';
-        document.getElementById('view-source').innerHTML = viewSrc;
+        let viewSrc = `https://github.com/iTowns/itowns/blob/master/examples/${
+            window.location.hash.substr(1) || 'view_3d_map'
+        }.html`;
+        document.getElementById('view-source').onclick = () => { window.open(viewSrc); };
     }
 
     function initNavigation(list) {

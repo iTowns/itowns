@@ -75,8 +75,28 @@ body {
 
 #view-source {
     position: fixed;
-    right: 10px;
+    right: 25px;
     bottom: 10px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    box-sizing: border-box;
+
+    border: 1px solid #222222;
+    border-radius: 7px;
+    background-color: #313336bb;
+
+    background-image: url('../images/code-logo.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 90%;
+}
+
+#view-source:hover {
+    cursor: pointer;
+}
+#view-source:active {
+    background-color: #222222;
 }
 
 /* NAVIGATION (LEFT) */
