@@ -15,6 +15,8 @@ const DEFAULT_OPTIONS = {
 /**
  * A widget for scale
  *
+ * @extends Widget
+ *
  * @property    {HTMLElement}   domElement      An html div containing the scale.
  * @property    {HTMLElement}   parentElement   The parent HTML container of `this.domElement`.
  */

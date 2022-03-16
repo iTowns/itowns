@@ -18,6 +18,8 @@ const DEFAULT_OPTIONS = {
 /**
  * A widget for minimap
  *
+ * @extends Widget
+ *
  * @property    {HTMLElement}   domElement      An html div containing the minimap.
  * @property    {HTMLElement}   parentElement   The parent HTML container of `this.domElement`.
  */
