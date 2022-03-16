@@ -194,7 +194,7 @@
     width: 50%;
     height: 50%;
 
-    background-image: url('../images/widget-logo.svg');
+    background-image: url('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/GUI/widget-logo.svg');
     background-size: 100%;
 }
 #widgets-navigation #zoom-out-logo {
@@ -211,7 +211,7 @@
 
     border-radius: 50%;
 
-    background-image: url('../images/compass.svg');
+    background-image: url('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/GUI/compass.svg');
     background-repeat: no-repeat;
     background-size: auto 90%;
     background-position: center;

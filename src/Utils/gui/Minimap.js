@@ -18,6 +18,12 @@ const DEFAULT_OPTIONS = {
 /**
  * A widget for minimap
  *
+ * To use it, you need to link the widgets' stylesheet to your html webpage. This stylesheet is included in
+ * [itowns bundles](https://github.com/iTowns/itowns/releases) if you downloaded them, or it can be found in
+ * `node_modules/itowns/examples/css` if you installed iTowns with npm. Otherwise, it can be found at
+ * [this link](https://raw.githubusercontent.com/iTowns/itowns/master/examples/css/widgets.css). See
+ * [this example](http://www.itowns-project.org/itowns/examples/#widgets_minimap) for more details.
+ *
  * @extends Widget
  *
  * @property    {HTMLElement}   domElement      An html div containing the minimap.
