@@ -45,6 +45,8 @@ function eraseSuggestionList(form) {
 /**
  * A widget for searchbar
  *
+ * @extends Widget
+ *
  * @property    {HTMLElement}   domElement      An html div containing the searchbar.
  * @property    {HTMLElement}   parentElement   The parent HTML container of `this.domElement`.
  */

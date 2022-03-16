@@ -1,4 +1,11 @@
+/**
+ * An interface that stores common methods for all specific widgets.
+ *
+ * @hideconstructor
+ */
 class Widget {
+    #_display;
+
     constructor(view, options = {}, defaultOptions) {
         this.parentElement = options.parentElement || view.domElement;
 
@@ -57,6 +64,21 @@ class Widget {
         // For example, this prevents triggering an animated travel when double-clicking search bar in a `GlobeView`.
         this.domElement.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
         this.domElement.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+    }
+
+    /**
+     * Change the widget style `display` property so that the widget becomes visible.
+     */
+    show() {
+        this.domElement.style.display = this.#_display;
+    }
+
+    /**
+     * Change the widget style `display` property so that the widget becomes invisible.
+     */
+    hide() {
+        this.#_display = window.getComputedStyle(this.domElement).display;
+        this.domElement.style.display = 'none';
     }
 }
 

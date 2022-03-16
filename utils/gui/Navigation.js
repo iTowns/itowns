@@ -16,6 +16,8 @@ const DEFAULT_OPTIONS = {
 /**
  * A widget menu manager for navigation.
  *
+ * @extends Widget
+ *
  * @property {HTMLElement}  domElement          An html div containing all navigation widgets.
  * @property {HTMLElement}  parentElement       The parent HTML container of `this.domElement`.
  * @property {Object}       onClick             An object containing methods which are executed when clicking one of the
