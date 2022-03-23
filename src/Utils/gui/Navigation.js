@@ -13,6 +13,33 @@ const DEFAULT_OPTIONS = {
 };
 
 
+const DEFAULT_BUTTONS = {
+    compass: {
+        id: 'compass',
+        content: '',
+        info: 'Rotate the camera to face North',
+        parentId: 'widgets',
+    },
+    toggle3D: {
+        id: '3d-button',
+        content: '3D',
+        info: 'Tilt the camera',
+    },
+    zoomIn: {
+        id: 'zoom-in-button',
+        content: '<span class="widget-zoom-button-logo"></span>',
+        info: 'Zoom in',
+        parentId: 'zoom-button-bar',
+    },
+    zoomOut: {
+        id: 'zoom-out-button',
+        content: '<span id="zoom-out-logo" class="widget-zoom-button-logo"></span>',
+        info: 'Zoom out',
+        parentId: 'zoom-button-bar',
+    },
+};
+
+
 /**
  * A widget menu manager for navigation.
  *
@@ -24,41 +51,36 @@ const DEFAULT_OPTIONS = {
  *
  * @extends Widget
  *
- * @property {HTMLElement}  domElement          An html div containing all navigation widgets.
- * @property {HTMLElement}  parentElement       The parent HTML container of `this.domElement`.
- * @property {Object}       onClick             An object containing methods which are executed when clicking one of the
-                                                * default navigation buttons. These default buttons are the compass, the
-                                                * 3D toggle, zoom-in and zoom-out buttons. The `onClick` object can be
-                                                * modified by user in order to implement custom behaviour on default
-                                                * buttons.
- * @property {function}     onClick.compass     The method ran when clicking the compass button.
- * @property {function}     onClick.toggle3D    The method ran when clicking the 3D/2D button.
- * @property {function}     onClick.zoomIn      The method ran when clicking the zoom-in button.
- * @property {function}     onClick.zoomOut     The method ran when clicking the zoom-out button.
+ * @property {HTMLElement}          domElement      An html div containing all navigation widgets.
+ * @property {HTMLElement}          parentElement   The parent HTML container of `this.domElement`.
+ * @property {HTMLButtonElement}    compass         The HTML button for the compass.
+ * @property {HTMLButtonElement}    toggle3D        The HTML button for the 3D/2D toggle button.
+ * @property {HTMLButtonElement}    zoomIn          The HTML button for the zoom-in button.
+ * @property {HTMLButtonElement}    zoomOut         The HTML button for the zoom-out button.
+ *
+ * @example
+ * // Create a Navigation widget in the bottom-right corner of an iTowns view domElement
+ * const navigation = new Navigation(view, { position: 'bottom-right' };
+ *
+ * // Change the tooltip for the compass :
+ * navigation.compass.title = 'new tooltip';
+ *
+ * // Change the method ran when clicking zoom-in button :
+ * function newMethod() {
+ *     // do something
+ * }
+ * navigation.zoomIn.onclick = newMethod;
  */
 class Navigation extends Widget {
     #_view;
 
-    #_setActionsOnClick() {
-        const action = (params) => {
-            params.time = this.animationDuration;
-            this.#_view.controls.lookAtCoordinate(params);
-        };
+    #_action(params) {
+        params.time = this.animationDuration;
+        return this.#_view.controls.lookAtCoordinate(params);
+    }
 
-        this.onClick = {};
-
-        this.onClick.compass = () => {
-            action({ heading: 0, tilt: 89.5 });
-        };
-        this.onClick.toggle3D = () => {
-            action({ tilt: this.#_view.controls.getTilt() < 89 ? 89.5 : 40 });
-        };
-        this.onClick.zoomIn = () => {
-            action({ zoom: Math.min(20, this.#_view.controls.getZoom() + 1) });
-        };
-        this.onClick.zoomOut = () => {
-            action({ zoom: Math.max(3, this.#_view.controls.getZoom() - 1) });
-        };
+    #_addDefaultButton(settings, onclick) {
+        return this.addButton(settings.id, settings.content, settings.info, onclick, settings.parentId);
     }
 
 
@@ -115,7 +137,6 @@ class Navigation extends Widget {
 
         super(view, options, DEFAULT_OPTIONS);
         this.#_view = view;
-        this.#_setActionsOnClick();
 
         this.direction = options.direction || DEFAULT_OPTIONS.direction;
         if (!['column', 'row'].includes(this.direction)) {
@@ -144,14 +165,10 @@ class Navigation extends Widget {
         // ---------- CREATE THE DEFAULT WIDGETS IF NOT HIDDEN (COMPASS, 3D AND ZOOM BUTTONS) : ----------
 
         // Add a compass widget if requested.
-        if (options.displayCompass === undefined ? DEFAULT_OPTIONS.displayCompass : options.displayCompass) {
-            this.compass = this.addButton(
-                'compass',
-                '',
-                'Rotate the camera to face North',
-                this.onClick.compass,
-                'widgets',
-            );
+        if (options.displayCompass ?? DEFAULT_OPTIONS.displayCompass) {
+            this.compass = this.#_addDefaultButton(DEFAULT_BUTTONS.compass, () => {
+                this.#_action({ heading: 0, tilt: 89.5 });
+            });
 
             // Manage compass rotation when the view's camera is moved.
             view.addEventListener(VIEW_EVENTS.CAMERA_MOVED, (event) => {
@@ -160,40 +177,29 @@ class Navigation extends Widget {
         }
 
         // Add a 3D toggle button if requested.
-        if (options.display3DToggle === undefined ? DEFAULT_OPTIONS.display3DToggle : options.display3DToggle) {
-            this.switch3dButton = this.addButton(
-                '3d-button',
-                '3D',
-                'Tilt the camera',
-                this.onClick.toggle3D,
-            );
+        if (options.display3DToggle ?? DEFAULT_OPTIONS.display3DToggle) {
+            this.toggle3D = this.#_addDefaultButton(DEFAULT_BUTTONS.toggle3D, () => {
+                this.#_action({ tilt: this.#_view.controls.getTilt() < 89 ? 89.5 : 40 });
+            });
 
             // Manage button content toggle when the view's camera is moved.
             view.addEventListener(VIEW_EVENTS.CAMERA_MOVED, (event) => {
-                this.switch3dButton.innerHTML = event.tilt < 89 ? '2D' : '3D';
+                this.toggle3D.innerHTML = event.tilt < 89 ? '2D' : '3D';
             });
         }
 
         // Add a zoom-in button if requested.
-        if (options.displayZoomIn === undefined ? DEFAULT_OPTIONS.displayZoomIn : options.displayZoomIn) {
-            this.zoomInButton = this.addButton(
-                'zoom-in-button',
-                '<span class="widget-zoom-button-logo"></span>',
-                'Zoom in',
-                this.onClick.zoomIn,
-                'zoom-button-bar',
-            );
+        if (options.displayZoomIn ?? DEFAULT_OPTIONS.displayZoomIn) {
+            this.zoomIn = this.#_addDefaultButton(DEFAULT_BUTTONS.zoomIn, () => {
+                this.#_action({ zoom: Math.min(20, this.#_view.controls.getZoom() + 1) });
+            });
         }
 
         // Add a zoom-out button if requested.
-        if (options.displayZoomOut === undefined ? DEFAULT_OPTIONS.displayZoomOut : options.displayZoomOut) {
-            this.zoomOutButton = this.addButton(
-                'zoom-out-button',
-                '<span id="zoom-out-logo" class="widget-zoom-button-logo"></span>',
-                'Zoom out',
-                this.onClick.zoomOut,
-                'zoom-button-bar',
-            );
+        if (options.displayZoomOut ?? DEFAULT_OPTIONS.displayZoomOut) {
+            this.zoomOut = this.#_addDefaultButton(DEFAULT_BUTTONS.zoomOut, () => {
+                this.#_action({ zoom: Math.max(3, this.#_view.controls.getZoom() - 1) });
+            });
         }
     }
 
@@ -201,9 +207,9 @@ class Navigation extends Widget {
      *
      * @param   {string}    id              The unique id the created button should be given.
      * @param   {string}    [content='']    An HTML string defining the content of the button.
-     * @param   {string}    [info='']       An HTML string defining information on the button. This string will be
+     * @param   {string}    [title='']      An HTML string defining information on the button. This string will be
                                             * displayed in a tooltip when hovering the button.
-     * @param   {function}  [actionOnClick] The method that should be executed when the button is clicked on.
+     * @param   {function}  [onclick] The method that should be executed when the button is clicked on.
      * @param   {string}    [parentId]      The unique id of a button bar in which the created button should be added.
                                             * A button bar is a group which contains one or several buttons. All
                                             * buttons created with Navigation are in a button bar. If the given id does
@@ -216,8 +222,8 @@ class Navigation extends Widget {
     addButton(
         id,
         content = '',
-        info = '',
-        actionOnClick = () => {},
+        title = '',
+        onclick = () => {},
         parentId,
     ) {
         let buttonBar = document.getElementById(parentId);
@@ -229,11 +235,10 @@ class Navigation extends Widget {
         button.className = 'widget-button';
         button.id = id;
         button.innerHTML = content;
-        button.title = info;
+        button.title = title;
+        button.onclick = onclick;
 
         buttonBar.appendChild(button);
-
-        button.addEventListener('click', actionOnClick);
 
         // The buttons must not be focused using tab key.
         button.tabIndex = -1;
