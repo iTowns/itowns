@@ -161,10 +161,10 @@
 }
 
 /* Zoom buttons shape and position within a COLUMN direction widget group. */
-#widgets-navigation.column-widget #zoom-button-bar > .widget-button:first-child {
+#widgets-navigation.column-widget #zoom-button-bar > .widget-button:first-child:not(:only-child) {
     border-radius: 7px 7px 0 0;
 }
-#widgets-navigation.column-widget #zoom-button-bar > .widget-button:last-child {
+#widgets-navigation.column-widget #zoom-button-bar > .widget-button:last-child:not(:only-child) {
     border-radius: 0 0 7px 7px;
 }
 #widgets-navigation.column-widget.bottom-widget #zoom-button-bar > .widget-button:not(:last-child) {
@@ -173,10 +173,10 @@
 }
 
 /* Zoom buttons shape and position within a ROW direction navigation menu. */
-#widgets-navigation.row-widget #zoom-button-bar > .widget-button:first-child {
+#widgets-navigation.row-widget #zoom-button-bar > .widget-button:first-child:not(:only-child) {
     border-radius: 0 7px 7px 0;
 }
-#widgets-navigation.row-widget #zoom-button-bar > .widget-button:last-child {
+#widgets-navigation.row-widget #zoom-button-bar > .widget-button:last-child:not(:only-child) {
     border-radius: 7px 0 0 7px;
 }
 #widgets-navigation.row-widget.left-widget #zoom-button-bar > .widget-button:not(:last-child) {
