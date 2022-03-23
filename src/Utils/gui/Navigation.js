@@ -148,6 +148,7 @@ class Navigation extends Widget {
             this.compass = this.addButton(
                 'compass',
                 '',
+                'Rotate the camera to face North',
                 this.onClick.compass,
                 'widgets',
             );
@@ -163,6 +164,7 @@ class Navigation extends Widget {
             this.switch3dButton = this.addButton(
                 '3d-button',
                 '3D',
+                'Tilt the camera',
                 this.onClick.toggle3D,
             );
 
@@ -177,6 +179,7 @@ class Navigation extends Widget {
             this.zoomInButton = this.addButton(
                 'zoom-in-button',
                 '<span class="widget-zoom-button-logo"></span>',
+                'Zoom in',
                 this.onClick.zoomIn,
                 'zoom-button-bar',
             );
@@ -187,6 +190,7 @@ class Navigation extends Widget {
             this.zoomOutButton = this.addButton(
                 'zoom-out-button',
                 '<span id="zoom-out-logo" class="widget-zoom-button-logo"></span>',
+                'Zoom out',
                 this.onClick.zoomOut,
                 'zoom-button-bar',
             );
@@ -197,6 +201,8 @@ class Navigation extends Widget {
      *
      * @param   {string}    id              The unique id the created button should be given.
      * @param   {string}    [content='']    An HTML string defining the content of the button.
+     * @param   {string}    [info='']       An HTML string defining information on the button. This string will be
+                                            * displayed in a tooltip when hovering the button.
      * @param   {function}  [actionOnClick] The method that should be executed when the button is clicked on.
      * @param   {string}    [parentId]      The unique id of a button bar in which the created button should be added.
                                             * A button bar is a group which contains one or several buttons. All
@@ -210,6 +216,7 @@ class Navigation extends Widget {
     addButton(
         id,
         content = '',
+        info = '',
         actionOnClick = () => {},
         parentId,
     ) {
@@ -222,6 +229,7 @@ class Navigation extends Widget {
         button.className = 'widget-button';
         button.id = id;
         button.innerHTML = content;
+        button.title = info;
 
         buttonBar.appendChild(button);
 
