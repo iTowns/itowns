@@ -17,7 +17,8 @@ const firstPoint = new Vector2();
 // Draw polygon with canvas doesn't need to classify however it is necessary for meshs.
 function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
     let geometry = feature.bindNewGeometry();
-    classify = classify && (feature.type === FEATURE_TYPES.POLYGON);
+    const isPolygon = feature.type === FEATURE_TYPES.POLYGON;
+    classify = classify && isPolygon;
 
     geometry.properties = vtFeature.properties;
     const pbf = vtFeature._pbf;
@@ -62,7 +63,7 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
             if (count == 1) {
                 firstPoint.set(x, y);
                 lastPoint.set(x, y);
-            } else if (classify && count > 1) {
+            } else if (isPolygon && count > 1) {
                 sum += (lastPoint.x - x) * (lastPoint.y + y);
                 lastPoint.set(x, y);
             }
@@ -70,7 +71,7 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
             if (count) {
                 count++;
                 geometry.pushCoordinatesValues(feature, firstPoint.x, firstPoint.y);
-                if (classify) {
+                if (isPolygon) {
                     sum += (lastPoint.x - firstPoint.x) * (lastPoint.y + firstPoint.y);
                 }
             }
