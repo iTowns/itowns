@@ -5,7 +5,8 @@
         "view_2d_map": "2D map",
         "view_multiglobe": "Multiple globes",
         "view_multi_25d": "Multiple 2.5D maps",
-        "view_immersive": "Immersive view"
+        "view_immersive": "Immersive view",
+        "view_3d_mns_map" : "Digital surface model"
     },
 
     "Geoid": {

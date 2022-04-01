@@ -1,0 +1,157 @@
+<html>
+    <head>
+        <title>Itowns - Globe digital surface model</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <link rel="stylesheet" type="text/css" href="css/widgets.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <!-- Import iTowns Widgets plugin -->
+        <script src="../dist/itowns_widgets.js"></script>
+        <!-- Import iTowns LoadingScreen and GuiTools plugins -->
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+
+
+        <script type="text/javascript">
+
+
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 6.3486, 45.39023),
+                range: 1500,
+                tilt: 14,
+                heading: 25
+            }
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
+
+
+
+            // ---------- DISPLAY ORTHO-IMAGES : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ColorLayer('Ortho', config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            });
+
+
+            // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
+
+            // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            }
+
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNS_HIGHRES.json').then(addElevationLayerFromConfig);
+
+            // ---------- ADD SOME WIDGETS : ----------
+
+            // ADD A SCALE :
+            const scale = new itowns_widgets.Scale(view, { position: 'bottom-right', translate: { x: -80 } });
+
+            // ADD A MINIMAP :
+            const minimap = new itowns_widgets.Minimap(
+                view,
+                new itowns.ColorLayer('minimap', {
+                    source: new itowns.VectorTilesSource({
+                        style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/gris.json',
+                        // We don't display mountains and plot related data to ease visualisation
+                        filter: (layer) => !layer['source-layer'].includes('oro_')
+                            && !layer['source-layer'].includes('parcellaire'),
+                    }),
+                    addLabelLayer: true,
+                }),
+                { cursor: '+' },
+            );
+
+            // ADD NAVIGATION TOOLS :
+            const navigation = new itowns_widgets.Navigation(view, {
+                position: 'bottom-right',
+                translate: { y: -40 },
+            });
+
+            // ADD A SEARCH BAR :
+
+            // You can find more precise explanation on searchbar options in the doc
+            // (http://www.itowns-project.org/itowns/docs/#api/Widgets/Searchbar) and in the searchbar example
+            // (https://www.itowns-project.org/itowns/examples/#widgets_searchbar)
+
+            // Define options for geocoding service that should be used by the searchbar.
+            const geocodingOptions = {
+                url: new URL(
+                    'https://wxs.ign.fr/ayxvok72rcocdyn8xyvy32og/ols/apis/completion?text=&type=StreetAddress,' +
+                    'PositionOfInterest',
+                ),
+                parser: (response) => {
+                    const map = new Map();
+                    response.results.forEach(location => {
+                        map.set(location.fulltext, new itowns.Coordinates('EPSG:4326', location.x, location.y));
+                    });
+                    return map;
+                },
+                onSelected: (coordinates) => {
+                    view.controls.lookAtCoordinate({ coord: coordinates, range: 20000, tilt: 45, heading: 0 });
+                },
+            }
+
+            // Create the searchbar
+            const searchbar = new itowns_widgets.Searchbar(view, geocodingOptions, {
+                maxSuggestionNumber: 15,
+                placeholder: 'Search a location in France',
+                position: 'top-right',
+            });
+
+
+
+            // ---------- DISPLAY ATMOSPHERIC LIGHTING : ----------
+
+            const atmosphere = view.getLayerById('atmosphere');
+            atmosphere.setRealisticOn(!view.isDebugMode);
+
+
+
+            // ---------- DEBUG TOOLS : ----------
+
+            // Toggle atmospheric lighting on/off.
+            const cRL = debugMenu.addGUI('RealisticLighting', !view.isDebugMode, function (v) {
+                atmosphere.setRealisticOn(v);
+                view.notifyChange(atmosphere);
+            });
+
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+        </script>
+    </body>
+</html>
