@@ -69,6 +69,7 @@ export class FeatureBuildingOptions {}
  * anything specified in the GeoJSON under the `properties` property.
  */
 export class FeatureGeometry {
+    #currentExtent;
     /**
      * @param {Feature} feature geometry
      */
@@ -78,7 +79,7 @@ export class FeatureGeometry {
         this.size = feature.size;
         if (feature.extent) {
             this.extent = defaultExtent(feature.extent.crs);
-            this._currentExtent = defaultExtent(feature.extent.crs);
+            this.#currentExtent = defaultExtent(feature.extent.crs);
         }
         this.altitude = {
             min: Infinity,
@@ -99,7 +100,7 @@ export class FeatureGeometry {
             this.indices[last].offset + this.indices[last].count :
             feature.vertices.length / this.size;
         this.indices.push({ offset, count, extent });
-        this._currentExtent = extent;
+        this.#currentExtent = extent;
         _extendBuffer(feature, count);
     }
 
@@ -115,10 +116,10 @@ export class FeatureGeometry {
         const offset = last > -1 ?
             this.indices[last].offset + this.indices[last].count :
             feature.vertices.length / this.size - count;
-        this.indices.push({ offset, count, extent: this._currentExtent });
+        this.indices.push({ offset, count, extent: this.#currentExtent });
         if (this.extent) {
-            this.extent.union(this._currentExtent);
-            this._currentExtent = defaultExtent(this.extent.crs);
+            this.extent.union(this.#currentExtent);
+            this.#currentExtent = defaultExtent(this.extent.crs);
         }
     }
 
@@ -147,8 +148,8 @@ export class FeatureGeometry {
         _setGeometryValues(this, feature, coordOut.x, coordOut.y, coordOut.z, coordOut.geodesicNormal);
 
         // expand extent if present
-        if (this._currentExtent) {
-            this._currentExtent.expandByCoordinates(feature.useCrsOut ? coordOut : coordIn);
+        if (this.#currentExtent) {
+            this.#currentExtent.expandByCoordinates(feature.useCrsOut ? coordOut : coordIn);
         }
     }
 
@@ -168,8 +169,8 @@ export class FeatureGeometry {
         _setGeometryValues(this, feature, long, lat, altitude, normal);
 
         // expand extent if present
-        if (this._currentExtent) {
-            this._currentExtent.expandByValuesCoordinates(long, lat);
+        if (this.#currentExtent) {
+            this.#currentExtent.expandByValuesCoordinates(long, lat);
         }
     }
 
@@ -353,6 +354,8 @@ const alignYtoEast = new THREE.Quaternion();
  */
 
 export class FeatureCollection extends THREE.Object3D {
+    #transformToLocalSystem = transformToLocalSystem2D;
+    #setLocalSystem = doNothing;
     /**
      * @param      {FeatureBuildingOptions|Layer}  options  The building options .
      */
@@ -371,19 +374,18 @@ export class FeatureCollection extends THREE.Object3D {
 
         if (this.size == 2) {
             this.extent = options.buildExtent === false ? undefined : defaultExtent(options.forcedExtentCrs || this.crs);
-            this._setLocalSystem = (center) => {
+            this.#setLocalSystem = (center) => {
                 // set local system center
                 center.as('EPSG:4326', this.center);
 
                 // set position to local system center
                 this.position.copy(center);
                 this.updateMatrixWorld();
-                this._setLocalSystem = doNothing;
+                this.#setLocalSystem = doNothing;
             };
-            this._transformToLocalSystem = transformToLocalSystem2D;
         } else {
             this.extent = options.buildExtent ? defaultExtent(options.forcedExtentCrs || this.crs) : undefined;
-            this._setLocalSystem = (center) => {
+            this.#setLocalSystem = (center) => {
                 // set local system center
                 center.as('EPSG:4326', this.center);
 
@@ -401,9 +403,9 @@ export class FeatureCollection extends THREE.Object3D {
                 this.normalMatrix.getNormalMatrix(this.matrix);
                 this.normalMatrixInverse = new THREE.Matrix3().copy(this.normalMatrix).invert();
 
-                this._setLocalSystem = doNothing;
+                this.#setLocalSystem = doNothing;
             };
-            this._transformToLocalSystem = transformToLocalSystem3D;
+            this.#transformToLocalSystem = transformToLocalSystem3D;
         }
 
         this.altitude = {
@@ -421,8 +423,8 @@ export class FeatureCollection extends THREE.Object3D {
      * @returns {Coordinates} The coordinates in local system
      */
     transformToLocalSystem(coordinates) {
-        this._setLocalSystem(coordinates);
-        return this._transformToLocalSystem(coordinates, this);
+        this.#setLocalSystem(coordinates);
+        return this.#transformToLocalSystem(coordinates, this);
     }
 
     /**
