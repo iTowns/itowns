@@ -29,7 +29,6 @@ function _setGeometryValues(geom, feature, long, lat, alt, normal) {
 }
 
 const coordOut = new Coordinates('EPSG:4326', 0, 0, 0);
-const defaultNormal = new THREE.Vector3(0, 0, 1);
 
 export const FEATURE_TYPES = {
     POINT: 0,
@@ -161,9 +160,9 @@ export class FeatureGeometry {
      * @param {Feature} feature - the feature containing the geometry
      * @param {number} long The longitude coordinate.
      * @param {number} lat The latitude coordinate.
-     * @param {THREE.Vector3} [normal=THREE.Vector3(0,0,1)] the normal on coordinates.
+     * @param {THREE.Vector3} [normal] the normal on coordinates (only for `EPSG:4978` projection).
      */
-    pushCoordinatesValues(feature, long, lat, normal = defaultNormal) {
+    pushCoordinatesValues(feature, long, lat, normal) {
         const altitude = this.baseAltitude(feature);
 
         _setGeometryValues(this, feature, long, lat, altitude, normal);
@@ -245,7 +244,8 @@ class Feature {
         this.vertices = [];
         this.crs = collection.crs;
         this.size = collection.size;
-        this.normals = collection.size == 3 ? [] : undefined;
+        this.normals = collection.crs == 'EPSG:4978' ? [] : undefined;
+
         this.transformToLocalSystem = collection.transformToLocalSystem.bind(collection);
         if (collection.extent) {
             // this.crs is final crs projection, is out projection.
