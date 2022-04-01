@@ -64,12 +64,21 @@ function coordinatesToVertices(ptsIn, normals, target, zTranslation, offsetOut =
     offsetOut *= 3;
     const endIn = startIn + countIn;
 
-    for (let i = startIn, j = offsetOut; i < endIn; i += 3, j += 3) {
-        // move the vertex following the normal, to put the point on the good altitude
-        // fill the vertices array at the offset position
-        target[j] = ptsIn[i] + normals[i] * zTranslation;
-        target[j + 1] = ptsIn[i + 1] + normals[i + 1] * zTranslation;
-        target[j + 2] = ptsIn[i + 2] + normals[i + 2] * zTranslation;
+    if (normals) {
+        for (let i = startIn, j = offsetOut; i < endIn; i += 3, j += 3) {
+            // move the vertex following the normal, to put the point on the good altitude
+            // fill the vertices array at the offset position
+            target[j] = ptsIn[i] + normals[i] * zTranslation;
+            target[j + 1] = ptsIn[i + 1] + normals[i + 1] * zTranslation;
+            target[j + 2] = ptsIn[i + 2] + normals[i + 2] * zTranslation;
+        }
+    } else {
+        for (let i = startIn, j = offsetOut; i < endIn; i += 3, j += 3) {
+            // move the vertex following the z axe
+            target[j] = ptsIn[i];
+            target[j + 1] = ptsIn[i + 1];
+            target[j + 2] = ptsIn[i + 2] + zTranslation;
+        }
     }
 }
 

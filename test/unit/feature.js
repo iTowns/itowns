@@ -31,17 +31,21 @@ describe('Feature', function () {
     it('Should instance Features with options', function () {
         const collection_A = new FeatureCollection(options_A);
         const collection_B = new FeatureCollection({ crs: 'EPSG:4326', buildExtent: false });
+        const collection_C = new FeatureCollection({ crs: 'EPSG:4978', buildExtent: false });
 
         const featureLine_A = collection_A.requestFeatureByType(FEATURE_TYPES.LINE);
         const featureLine_B = collection_B.requestFeatureByType(FEATURE_TYPES.LINE);
+        const featureLine_C = collection_C.requestFeatureByType(FEATURE_TYPES.LINE);
 
         assert.equal(featureLine_A.size, 3);
-        assert.ok(featureLine_A.normals);
+        assert.ok(!featureLine_A.normals);
         assert.ok(featureLine_A.extent);
 
         assert.equal(featureLine_B.size, 2);
         assert.ok(!featureLine_B.normals);
         assert.ok(!featureLine_B.extent);
+
+        assert.ok(featureLine_C.normals);
     });
 
     it('Should push Coordinates in Feature Geometry', function () {
@@ -62,6 +66,5 @@ describe('Feature', function () {
         featureLine.extent.applyMatrix4(collection_A.matrix);
         assert.equal(featureLine.extent.south, -1118889.9748579601);
         assert.equal(featureLine.vertices.length, geometry.indices[0].count * featureLine.size);
-        assert.equal(featureLine.vertices.length, featureLine.normals.length);
     });
 });
