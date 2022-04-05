@@ -34,7 +34,18 @@ here](http://www.itowns-project.org/itowns/examples/). Some examples available:
 
 [![iTowns examples](http://www.itowns-project.org/images/montage.jpg)](http://www.itowns-project.org/itowns/examples/)
 
-## How to use
+## How to run it locally?
+
+Clone the repo and then run:
+
+```
+npm install
+npm start
+```
+
+Try out the examples at http://localhost:8080/examples
+
+## How to use it in your project?
 
 You can use it through npm (the preferred way) or download a bundle from our
 github release page.
