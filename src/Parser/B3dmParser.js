@@ -141,8 +141,9 @@ export default {
                 // sizeBegin is an index to the beginning of the batch table
                 const sizeBegin = headerByteLength + b3dmHeader.FTJSONLength +
                     b3dmHeader.FTBinaryLength;
-                const BTBuffer = buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin);
-                promises.push(new C3DTBatchTable(BTBuffer,
+                const BTBuffer = buffer.slice(sizeBegin, sizeBegin + b3dmHeader.BTJSONLength +
+                    b3dmHeader.BTBinaryLength);
+                promises.push(new C3DTBatchTable(BTBuffer, b3dmHeader.BTJSONLength,
                     b3dmHeader.BTBinaryLength, FTJSON.BATCH_LENGTH, options.registeredExtensions));
             } else {
                 promises.push(Promise.resolve({}));
