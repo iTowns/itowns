@@ -7,10 +7,7 @@ import Extent from 'Core/Geographic/Extent';
 import Renderer from './bootstrap';
 import CameraUtils from '../../src/Utils/CameraUtils';
 import OBB from '../../src/Renderer/OBB';
-
-function compareWithEpsilon(a, b, epsilon) {
-    return a - epsilon < b && a + epsilon > b;
-}
+import { compareWithEpsilon } from './utils';
 
 describe('GlobeView', function () {
     const renderer = new Renderer();

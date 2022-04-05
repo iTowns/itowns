@@ -6,6 +6,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import { computeNodeSSE } from 'Process/3dTilesProcessing';
 import { configureTile } from 'Provider/3dTilesProvider';
 import C3DTileset from '../../src/Core/3DTiles/C3DTileset';
+import { compareWithEpsilon } from './utils';
 
 function tilesetWithRegion(transformMatrix) {
     const tileset = {
@@ -54,10 +55,6 @@ function tilesetWithSphere(transformMatrix) {
         tileset.root.transform = transformMatrix.elements;
     }
     return tileset;
-}
-
-function compareWithEpsilon(a, b, epsilon) {
-    return a - epsilon < b && a + epsilon > b;
 }
 
 describe('Distance computation using boundingVolume.region', function () {
