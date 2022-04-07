@@ -47,11 +47,6 @@
                 return view.addLayer(layer);
             }));
 
-            // Add a vector tile layer
-            function inter(z) {
-                return z - (z % 5);
-            }
-
             // Define a VectorTilesSource to load Vector Tiles data from the geoportail
             var mvtSource = new itowns.VectorTilesSource({
                 style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',

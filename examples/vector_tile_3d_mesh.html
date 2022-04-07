@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <title>Itowns - Globe + vector-tiles 3d</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <link rel="stylesheet" type="text/css" href="css/widgets.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <!-- Import iTowns LoadingScreen and GuiTools plugins -->
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+
+        <script type="text/javascript">
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 5000,
+                tilt: 45,
+            };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // Define poles texture
+            view.tileLayer.noTextureColor = new itowns.THREE.Color(0x95c1e1);
+
+            // Disable atmosphere lighting
+            view.getLayerById('atmosphere').visible = false;
+            view.getLayerById('atmosphere').fog.enable = false;
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view, 300);
+
+
+
+            // ---------- DISPLAY CONTEXTUAL DATA : ----------
+
+            // Add two elevation layers, each with a different level of detail. Each layer's properties are defined in
+            // a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+            // ---------- DISPLAY VECTOR TILED MAP DATA AS A ColorLayer : ----------
+
+            // Define the source of the ColorLayer data : a vector tiled map from the geoportail.
+            const mapSource = new itowns.VectorTilesSource({
+                style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                // We don't display mountains and parcels related data to ease visualisation. Also, we don't display
+                // buildings related data as it will be displayed in another Layer.
+                filter: (layer) => {
+                    return !layer['source-layer'].includes('bati_surf')
+                        && !layer['source-layer'].includes('oro_')
+                        && !layer['source-layer'].includes('routier_ponc')
+                        && !layer['source-layer'].includes('parcellaire')
+                }
+            });
+
+            // Create a ColorLayer to support map data.
+            const mapLayer = new itowns.ColorLayer('MVT', {
+                source: mapSource,
+                effect_type: itowns.colorLayerEffects.removeLightColor,
+                effect_parameter: 2.5,
+                addLabelLayer: true,
+                style: new itowns.Style({
+                    text: {
+                        color: '#000000',
+                        haloColor: '#ffffff',
+                        haloWidth: 3,
+                        haloBlur: 2,
+                    }
+                })
+            });
+
+            // Add the ColorLayer to the scene and to the debug menu.
+            view.addLayer(mapLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
+
+
+            // ---------- DISPLAY ORTHO-IMAGES : ----------
+
+            const ortho = itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                return view.addLayer(layer);
+            });
+
+            // ---------- DISPLAY VECTOR TILED BUILDING DATA AS 3D MESHES : ----------
+
+            // Define the source of the building data : those are vector tiled data from the geoportail.
+            const buildingsSource = new itowns.VectorTilesSource({
+                style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                // We only want to display buildings related data.
+                filter: (layer) => {
+                    return layer['source-layer'].includes('bati_surf')
+                        && layer.paint["fill-color"];
+                },
+            });
+
+            // Create a FeatureGeometryLayer to support building data.
+            var buildingsLayer = new itowns.FeatureGeometryLayer('VTBuilding',{
+                source: buildingsSource,
+                zoom: { min: 15 },
+                accurate: false,
+                style: new itowns.Style({
+                    fill: {
+                        base_altitude: (p) => p.alti_sol || 0,
+                        extrusion_height: (p) => p.hauteur || 0,
+                    }
+                })
+            });
+
+            // Add the FeatureGeometryLayer to the scene and to the debug menu.
+            view.addLayer(buildingsLayer).then((layer) => {
+                const gui = debug.GeometryDebug.createGeometryDebugUI(debugMenu.gui, view, layer);
+                debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
+            })
+
+
+
+            // ---------- DEBUG TOOLS : ----------
+
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                ortho.then(function () {
+                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+                }).catch(console.error);
+            });
+
+        </script>
+    </body>
+</html>
