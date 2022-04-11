@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import CRS from 'Core/Geographic/Crs';
+import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 
 /**
  * A TileMesh is a THREE.Mesh with a geometricError and an OBB
@@ -59,6 +60,7 @@ class TileMesh extends THREE.Mesh {
      * @param {number}  [elevation.scale]
      */
     setBBoxZ(elevation) {
+        elevation.geoidHeight = geoidLayerIsVisible(this.layer) ? this.geoidHeight : 0;
         this.obb.updateZ(elevation);
         if (this.horizonCullingPointElevationScaled) {
             this.horizonCullingPointElevationScaled.setLength(this.obb.z.delta + this.horizonCullingPoint.length());

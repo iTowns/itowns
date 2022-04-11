@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import color_layers_pars_fragment from './Chunk/color_layers_pars_fragment.glsl';
 import elevation_pars_vertex from './Chunk/elevation_pars_vertex.glsl';
 import elevation_vertex from './Chunk/elevation_vertex.glsl';
+import geoid_vertex from './Chunk/geoid_vertex.glsl';
 import fog_fragment from './Chunk/fog_fragment.glsl';
 import fog_pars_fragment from './Chunk/fog_pars_fragment.glsl';
 import lighting_fragment from './Chunk/lighting_fragment.glsl';
@@ -29,6 +30,7 @@ const itownsShaderChunk = {
     custom_header_colorLayer,
     elevation_pars_vertex,
     elevation_vertex,
+    geoid_vertex,
     fog_fragment,
     fog_pars_fragment,
     lighting_fragment,

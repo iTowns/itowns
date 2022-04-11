@@ -2,6 +2,10 @@ import Layer from 'Layer/Layer';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 
 
+export function geoidLayerIsVisible(tilelayer) {
+    return tilelayer?.attachedLayers.filter(l => l.isGeoidLayer)[0]?.visible;
+}
+
 /**
  * `GeoidLayer` is a specific `{@link Layer}` which supports geoid height data. When added to a `{@link View}`, it
  * vertically translates each of the view's tiles by a proper geoid height value. For a given tile, the geoid height
@@ -39,10 +43,9 @@ class GeoidLayer extends Layer {
         this.defineLayerProperty('visible', true);
     }
 
-    updateNodeZ(node, parent) {
-        node.position.z += (this.visible ? 1 : -1) * (node.geoidHeight - parent.geoidHeight);
-        node.updateMatrix();
-        node.updateMatrixWorld(true);
+    updateNodeZ(node) {
+        node.material.geoidHeight = this.visible ? node.geoidHeight : 0;
+        node.obb.updateZ({ geoidHeight: node.material.geoidHeight });
     }
 
     update(context, layer, node, parent) {
@@ -60,7 +63,7 @@ class GeoidLayer extends Layer {
         if (node.layerUpdateState[layer.id] === undefined) {
             node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-            const updateNodeZ = () => this.updateNodeZ(node, parent);
+            const updateNodeZ = () => this.updateNodeZ(node);
             layer.addEventListener('visible-property-changed', updateNodeZ);
             node.addEventListener('dispose', () => {
                 layer.removeEventListener('visible-property-changed', updateNodeZ);
@@ -81,7 +84,7 @@ class GeoidLayer extends Layer {
         return this.getData(node.extent, extentsDestination).then(
             (result) => {
                 node.geoidHeight = result.getHeightAtCoordinates(node.extent.center());
-                this.updateNodeZ(node, parent);
+                this.updateNodeZ(node);
 
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
             },

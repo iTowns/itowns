@@ -24,6 +24,7 @@ void main() {
 
         #include <begin_vertex>
         #include <itowns/elevation_vertex>
+        #include <itowns/geoid_vertex>
         #include <project_vertex>
         #include <logdepthbuf_vertex>
         vHighPrecisionZW = gl_Position.zw;

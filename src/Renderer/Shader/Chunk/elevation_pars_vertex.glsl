@@ -11,6 +11,7 @@
     uniform sampler2D   elevationTextures[NUM_VS_TEXTURES];
     uniform vec4        elevationOffsetScales[NUM_VS_TEXTURES];
     uniform int         elevationTextureCount;
+    uniform float       geoidHeight;
 
     highp float decode32(highp vec4 rgba) {
         highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;

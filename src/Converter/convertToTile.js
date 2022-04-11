@@ -8,6 +8,7 @@ import TileMesh from 'Core/TileMesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
 import newTileGeometry from 'Core/Prefab/TileBuilder';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
+import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 
 const dimensions = new THREE.Vector2();
 
@@ -79,8 +80,10 @@ export default {
             setTileFromTiledLayer(tile, layer);
 
             if (parent) {
-                tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max });
                 tile.geoidHeight = parent.geoidHeight;
+                const geoidHeight = geoidLayerIsVisible(layer) ? tile.geoidHeight : 0;
+                tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max, geoidHeight });
+                tile.material.geoidHeight = geoidHeight;
             }
 
             return tile;

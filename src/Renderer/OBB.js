@@ -67,6 +67,7 @@ class OBB extends THREE.Object3D {
      * @param {number}  [elevation.min]             The minimum of oriented bounding box
      * @param {number}  [elevation.max]             The maximum of oriented bounding box
      * @param {number}  [elevation.scale]           The scale of oriented bounding box Z axis
+     * @param {number}  [elevation.geoidHeight]     The geoid height added to ellipsoid.
      */
     updateZ(elevation = {}) {
         this.z.min = elevation.min ?? this.z.min;
@@ -75,8 +76,10 @@ class OBB extends THREE.Object3D {
         this.z.scale = elevation.scale > 0 ? elevation.scale : this.z.scale;
         this.z.delta = Math.abs(this.z.max - this.z.min) * this.z.scale;
 
-        this.box3D.min.z = this.natBox.min.z + this.z.min * this.z.scale;
-        this.box3D.max.z = this.natBox.max.z + this.z.max * this.z.scale;
+        const geoidHeight = elevation.geoidHeight || 0;
+
+        this.box3D.min.z = this.natBox.min.z + this.z.min * this.z.scale + geoidHeight;
+        this.box3D.max.z = this.natBox.max.z + this.z.max * this.z.scale + geoidHeight;
     }
 
     /**
