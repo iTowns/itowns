@@ -207,8 +207,7 @@ class GeometryLayer extends Layer {
      * specified coordinates.
      */
     pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {
-        const object3d = this.parent ? this.parent.object3d : this.object3d;
-        return Picking.pickObjectsAt(view, coordinates, radius, object3d, target, this.threejsLayer);
+        return Picking.pickObjectsAt(view, coordinates, radius, this.object3d, target, this.threejsLayer);
     }
 }
 

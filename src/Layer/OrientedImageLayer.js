@@ -128,6 +128,7 @@ class OrientedImageLayer extends GeometryLayer {
 
         this.mergeFeatures = false;
         this.filteringExtent = false;
+        this.accurate = true;
         const options = { out: this };
 
         // panos is an array of feature point, representing many panoramics.

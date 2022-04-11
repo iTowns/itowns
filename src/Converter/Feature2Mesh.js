@@ -3,11 +3,84 @@ import Earcut from 'earcut';
 import { FEATURE_TYPES } from 'Core/Feature';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { deprecatedFeature2MeshOptions } from 'Core/Deprecated/Undeprecator';
+import Extent from 'Core/Geographic/Extent';
+import Crs from 'Core/Geographic/Crs';
+import OrientationUtils from 'Utils/OrientationUtils';
+import Coordinates from 'Core/Geographic/Coordinates';
+
+const coord = new Coordinates('EPSG:4326', 0, 0, 0);
+const dim_ref = new THREE.Vector2();
+const dim = new THREE.Vector2();
+const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 
 const _color = new THREE.Color();
 const maxValueUint8 = 2 ** 8 - 1;
 const maxValueUint16 = 2 ** 16 - 1;
 const maxValueUint32 = 2 ** 32 - 1;
+const crsWGS84 = 'EPSG:4326';
+
+class FeatureMesh extends THREE.Group {
+    #currentCrs;
+    #originalCrs;
+    constructor(meshes, collection) {
+        super();
+        this.meshesCollection = new THREE.Group().add(...meshes);
+        this.meshesCollection.quaternion.copy(collection.quaternion);
+        this.meshesCollection.position.copy(collection.position);
+        this.meshesCollection.scale.copy(collection.scale);
+        this.meshesCollection.updateMatrix();
+
+        this.#originalCrs = collection.crs;
+        this.#currentCrs = this.#originalCrs;
+        this.extent = collection.extent;
+        this.place = new THREE.Group();
+        this.geoid = new THREE.Group();
+
+        this.add(this.place.add(this.geoid.add(this.meshesCollection)));
+    }
+
+    as(crs) {
+        if (this.#currentCrs !== crs) {
+            this.#currentCrs = crs;
+            if (crs == this.#originalCrs) {
+                // reset transformation
+                this.place.position.set(0, 0, 0);
+                this.position.set(0, 0, 0);
+                this.scale.set(1, 1, 1);
+                this.quaternion.identity();
+            } else {
+                // calculate the scale transformation to transform the feature.extent
+                // to feature.extent.as(crs)
+                coord.crs = Crs.formatToEPSG(this.#originalCrs);
+                extent.copy(this.extent).applyMatrix4(this.meshesCollection.matrix);
+                extent.as(coord.crs, extent);
+                extent.spatialEuclideanDimensions(dim_ref);
+                extent.planarDimensions(dim);
+                if (dim.x && dim.y) {
+                    this.scale.copy(dim_ref).divide(dim).setZ(1);
+                }
+
+                // Position and orientation
+                // remove original position
+                this.place.position.copy(this.meshesCollection.position).negate();
+
+                // get mesh coordinate
+                coord.setFromVector3(this.meshesCollection.position);
+
+                // get method to calculate orientation
+                const crsInput = this.#originalCrs == 'EPSG:3857' ? crsWGS84 : this.#originalCrs;
+                const crs2crs = OrientationUtils.quaternionFromCRSToCRS(crsInput, crs);
+                // calculate orientation to crs
+                crs2crs(coord.as(crsWGS84), this.quaternion);
+
+                // transform position to crs
+                coord.as(crs, coord).toVector3(this.position);
+            }
+        }
+
+        return this;
+    }
+}
 
 function toColor(color) {
     if (color) {
@@ -507,18 +580,12 @@ export default {
 
             if (!features || features.length == 0) { return; }
 
-            const group = new THREE.Group();
             options.GlobalZTrans = collection.center.z;
 
-            group.layer = options.layer;
+            const meshes = features.map(feature => featureToMesh(feature, options));
+            const featureNode = new FeatureMesh(meshes, collection);
 
-            features.forEach(feature => group.add(featureToMesh(feature, options)));
-
-            group.quaternion.copy(collection.quaternion);
-            group.position.copy(collection.position);
-            group.scale.copy(collection.scale);
-
-            return group;
+            return featureNode;
         };
     },
 };

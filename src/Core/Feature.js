@@ -362,7 +362,7 @@ export class FeatureCollection extends THREE.Object3D {
     constructor(options) {
         super();
         this.isFeatureCollection = true;
-        this.crs = CRS.formatToEPSG(options.crs);
+        this.crs = CRS.formatToEPSG(options.accurate || !options.source?.crs ? options.crs : options.source.crs);
         this.features = [];
         this.mergeFeatures = options.mergeFeatures === undefined ? true : options.mergeFeatures;
         this.size = options.structure == '3d' ? 3 : 2;
