@@ -89,8 +89,8 @@ files.forEach((geojson, i) => {
 
         it(`parsing error without proj4 should be inferior to ${max_error} meter`, function (done) {
             Promise.all([layerNoProj4.whenReady, layerProj4.whenReady]).then(() => {
-                const meshNoProj4 = layerNoProj4.object3d.children[0].meshesCollection.children[0];
-                const mesh = layerProj4.object3d.children[0].meshesCollection.children[0];
+                const meshNoProj4 = layerNoProj4.object3d.children[0].meshes.children[0];
+                const mesh = layerProj4.object3d.children[0].meshes.children[0];
                 const array = mesh.geometry.attributes.position.array;
                 const arrayNoProj4 = meshNoProj4.geometry.attributes.position.array;
                 const vectorNoProj4 = new THREE.Vector3();

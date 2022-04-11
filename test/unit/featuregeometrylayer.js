@@ -107,8 +107,8 @@ describe('Layer with Feature process', function () {
 
     it('parsing error without proj4 should be inferior to 1e-5 meter', function (done) {
         Promise.all([ariegeNoProj4.whenReady, ariege.whenReady]).then(() => {
-            const meshNoProj4 = ariegeNoProj4.object3d.children[0].meshesCollection.children[0];
-            const mesh = ariege.object3d.children[0].meshesCollection.children[0];
+            const meshNoProj4 = ariegeNoProj4.object3d.children[0].meshes.children[0];
+            const mesh = ariege.object3d.children[0].meshes.children[0];
             const array = mesh.geometry.attributes.position.array;
             const arrayNoProj4 = meshNoProj4.geometry.attributes.position.array;
             const vMeshNoProj4 = new THREE.Vector3();

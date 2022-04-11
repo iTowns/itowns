@@ -2,12 +2,9 @@ import LayerUpdateState from 'Layer/LayerUpdateState';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import handlingError from 'Process/handlerNodeError';
 import Coordinates from 'Core/Geographic/Coordinates';
+import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-
-function geoidLayerIsVisible(layer) {
-    return layer.parent?.attachedLayers.filter(l => l.isGeoidLayer)[0]?.visible;
-}
 
 export default {
     update(context, layer, node) {
@@ -27,8 +24,8 @@ export default {
             node.link.forEach((f) => {
                 if (f.layer?.id == layer.id) {
                     f.layer.object3d.add(f);
-                    f.geoid.position.z = geoidLayerIsVisible(layer) ? node.geoidHeight : 0;
-                    f.geoid.updateMatrixWorld();
+                    f.meshes.position.z = geoidLayerIsVisible(layer.parent) ? node.geoidHeight : 0;
+                    f.meshes.updateMatrixWorld();
                 }
             });
             return;
@@ -65,7 +62,7 @@ export default {
             featureMeshes.forEach((featureMesh) => {
                 if (featureMesh) {
                     featureMesh.as(context.view.referenceCrs);
-                    featureMesh.geoid.position.z = geoidLayerIsVisible(layer) ? node.geoidHeight : 0;
+                    featureMesh.meshes.position.z = geoidLayerIsVisible(layer.parent) ? node.geoidHeight : 0;
                     featureMesh.updateMatrixWorld();
 
                     if (layer.onMeshCreated) {

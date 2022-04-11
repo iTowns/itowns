@@ -145,6 +145,8 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'overlayColor', new THREE.Color(1.0, 0.3, 0.0));
         CommonMaterial.setUniformProperty(this, 'objectId', 0);
 
+        CommonMaterial.setUniformProperty(this, 'geoidHeight', 0.0);
+
         // > 0 produces gaps,
         // < 0 causes oversampling of textures
         // = 0 causes sampling artefacts due to bad estimation of texture-uv gradients

@@ -22,21 +22,22 @@ const crsWGS84 = 'EPSG:4326';
 class FeatureMesh extends THREE.Group {
     #currentCrs;
     #originalCrs;
+    #collection = new THREE.Group();
+    #place = new THREE.Group();
     constructor(meshes, collection) {
         super();
-        this.meshesCollection = new THREE.Group().add(...meshes);
-        this.meshesCollection.quaternion.copy(collection.quaternion);
-        this.meshesCollection.position.copy(collection.position);
-        this.meshesCollection.scale.copy(collection.scale);
-        this.meshesCollection.updateMatrix();
+        this.meshes = new THREE.Group().add(...meshes);
+        this.#collection = new THREE.Group().add(this.meshes);
+        this.#collection.quaternion.copy(collection.quaternion);
+        this.#collection.position.copy(collection.position);
+        this.#collection.scale.copy(collection.scale);
+        this.#collection.updateMatrix();
 
         this.#originalCrs = collection.crs;
         this.#currentCrs = this.#originalCrs;
         this.extent = collection.extent;
-        this.place = new THREE.Group();
-        this.geoid = new THREE.Group();
 
-        this.add(this.place.add(this.geoid.add(this.meshesCollection)));
+        this.add(this.#place.add(this.#collection));
     }
 
     as(crs) {
@@ -52,7 +53,7 @@ class FeatureMesh extends THREE.Group {
                 // calculate the scale transformation to transform the feature.extent
                 // to feature.extent.as(crs)
                 coord.crs = Crs.formatToEPSG(this.#originalCrs);
-                extent.copy(this.extent).applyMatrix4(this.meshesCollection.matrix);
+                extent.copy(this.extent).applyMatrix4(this.#collection.matrix);
                 extent.as(coord.crs, extent);
                 extent.spatialEuclideanDimensions(dim_ref);
                 extent.planarDimensions(dim);
@@ -62,10 +63,10 @@ class FeatureMesh extends THREE.Group {
 
                 // Position and orientation
                 // remove original position
-                this.place.position.copy(this.meshesCollection.position).negate();
+                this.#place.position.copy(this.#collection.position).negate();
 
                 // get mesh coordinate
-                coord.setFromVector3(this.meshesCollection.position);
+                coord.setFromVector3(this.#collection.position);
 
                 // get method to calculate orientation
                 const crsInput = this.#originalCrs == 'EPSG:3857' ? crsWGS84 : this.#originalCrs;
