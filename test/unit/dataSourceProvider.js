@@ -226,7 +226,7 @@ describe('Provide in Sources', function () {
 
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
-            assert.equal(features[0].children.length, 4);
+            assert.equal(features[0].meshesCollection.children.length, 4);
             done();
         });
     });
@@ -247,10 +247,10 @@ describe('Provide in Sources', function () {
         featureLayer.source.onLayerAdded({ out: featureLayer });
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
-            assert.ok(features[0].children[0].isMesh);
-            assert.ok(features[0].children[1].isPoints);
-            assert.equal(features[0].children[0].children.length, 0);
-            assert.equal(features[0].children[1].children.length, 0);
+            assert.ok(features[0].meshesCollection.children[0].isMesh);
+            assert.ok(features[0].meshesCollection.children[1].isPoints);
+            assert.equal(features[0].meshesCollection.children[0].children.length, 0);
+            assert.equal(features[0].meshesCollection.children[1].children.length, 0);
             assert.equal(featureCountByCb, 2);
             done();
         });

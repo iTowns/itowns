@@ -1,10 +1,13 @@
-import * as THREE from 'three';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import handlingError from 'Process/handlerNodeError';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
+
+function geoidLayerIsVisible(layer) {
+    return layer.parent?.attachedLayers.filter(l => l.isGeoidLayer)[0]?.visible;
+}
 
 export default {
     update(context, layer, node) {
@@ -20,13 +23,15 @@ export default {
         if (node.layerUpdateState[layer.id] === undefined) {
             node.layerUpdateState[layer.id] = new LayerUpdateState();
         } else if (!node.layerUpdateState[layer.id].canTryUpdate()) {
+            // toggle visibility features
+            node.link.forEach((f) => {
+                if (f.layer?.id == layer.id) {
+                    f.layer.object3d.add(f);
+                    f.geoid.position.z = geoidLayerIsVisible(layer) ? node.geoidHeight : 0;
+                    f.geoid.updateMatrixWorld();
+                }
+            });
             return;
-        }
-
-        const features = node.children.filter(n => n.layer == layer);
-
-        if (features.length > 0) {
-            return features;
         }
 
         const extentsDestination = node.getExtentsByProjection(layer.source.crs) || [node.extent];
@@ -54,31 +59,32 @@ export default {
             requester: node,
         };
 
-        return context.scheduler.execute(command).then((result) => {
-            // if request return empty json, WFSProvider.getFeatures return undefined
-            result = result[0];
-            if (result) {
-                // call onMeshCreated callback if needed
-                if (layer.onMeshCreated) {
-                    layer.onMeshCreated(result);
+        return context.scheduler.execute(command).then((featureMeshes) => {
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+
+            featureMeshes.forEach((featureMesh) => {
+                if (featureMesh) {
+                    featureMesh.as(context.view.referenceCrs);
+                    featureMesh.geoid.position.z = geoidLayerIsVisible(layer) ? node.geoidHeight : 0;
+                    featureMesh.updateMatrixWorld();
+
+                    if (layer.onMeshCreated) {
+                        layer.onMeshCreated(featureMesh, context);
+                    }
+
+                    if (!node.parent) {
+                        // TODO: Clean cache needs a refactory, because it isn't really efficient and used
+                        ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, featureMesh);
+                    } else {
+                        layer.object3d.add(featureMesh);
+                        node.link.push(featureMesh);
+                    }
+                    featureMesh.layer = layer;
+                } else {
+                    // TODO: verify if it's possible the featureMesh is undefined.
+                    node.layerUpdateState[layer.id].failure(1, true);
                 }
-                node.layerUpdateState[layer.id].success();
-                if (!node.parent) {
-                    ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, result);
-                    return;
-                }
-                // remove old group layer
-                node.remove(...node.children.filter(c => c.layer && c.layer.id == layer.id));
-                const group = new THREE.Group();
-                group.layer = layer;
-                group.matrixWorld.copy(node.matrixWorld).invert();
-                group.matrixWorld.decompose(group.position, group.quaternion, group.scale);
-                group.position.z += node.geoidHeight;
-                node.add(group.add(result));
-                group.updateMatrixWorld(true);
-            } else {
-                node.layerUpdateState[layer.id].failure(1, true);
-            }
+            });
         },
         err => handlingError(err, node, layer, node.level, context.view));
     },

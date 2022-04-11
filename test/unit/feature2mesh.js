@@ -32,7 +32,7 @@ describe('Feature2Mesh', function () {
 
     it('rect mesh area should match geometry extent', () =>
         parsed.then((collection) => {
-            const mesh = Feature2Mesh.convert()(collection);
+            const mesh = Feature2Mesh.convert()(collection).meshesCollection;
             const extentSize = collection.extent.planarDimensions();
 
             assert.equal(
@@ -42,7 +42,7 @@ describe('Feature2Mesh', function () {
 
     it('square mesh area should match geometry extent minus holes', () =>
         parsed.then((collection) => {
-            const mesh = Feature2Mesh.convert()(collection);
+            const mesh = Feature2Mesh.convert()(collection).meshesCollection;
 
             const noHoleArea = computeAreaOfMesh(mesh.children[0]);
             const holeArea = computeAreaOfMesh(mesh.children[1]);
@@ -55,7 +55,7 @@ describe('Feature2Mesh', function () {
 
     it('convert points, lines and mesh', () =>
         parsed2.then((collection) => {
-            const mesh = Feature2Mesh.convert()(collection);
+            const mesh = Feature2Mesh.convert()(collection).meshesCollection;
             assert.equal(mesh.children[0].type, 'Points');
             assert.equal(mesh.children[1].type, 'Line');
             assert.equal(mesh.children[2].type, 'Mesh');

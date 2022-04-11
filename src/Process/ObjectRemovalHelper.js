@@ -68,7 +68,10 @@ export default {
      * @return {Array} an array of removed Object3D from obj (not including the recursive removals)
      */
     removeChildrenAndCleanupRecursively(layer, obj) {
-        const toRemove = obj.children.filter(c => (c.layer && c.layer.id) === layer.id);
+        let toRemove = obj.children.filter(c => (c.layer && c.layer.id) === layer.id);
+        if (obj.link) {
+            toRemove = toRemove.concat(obj.link);
+        }
         for (const c of toRemove) {
             this.removeChildrenAndCleanupRecursively(layer, c);
         }
