@@ -946,7 +946,7 @@ threeExamples.LegacyGLTFLoader = ( function () {
 
 		return _each( json.buffers, function ( buffer, name ) {
 
-			if ( name === BINARY_EXTENSION_BUFFER_NAME ) {
+			if ( name === BINARY_EXTENSION_BUFFER_NAME || name === EXTENSIONS.KHR_BINARY_GLTF) {
 
 				return extensions[ EXTENSIONS.KHR_BINARY_GLTF ].body;
 
