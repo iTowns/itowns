@@ -1,3 +1,18 @@
+<a name="2.38.1"></a>
+## [2.38.1](https://github.com/iTowns/itowns/compare/v2.38.0...v2.38.1) (2022-04-13)
+
+
+### Examples
+
+* **Navigation:** fix addButton method call ([c53ae71](https://github.com/iTowns/itowns/commit/c53ae71))
+
+
+### Workflow and chores
+
+* release v2.38.1 ([2ea8b0a](https://github.com/iTowns/itowns/commit/2ea8b0a))
+
+
+
 <a name="2.38.0"></a>
 # [2.38.0](https://github.com/iTowns/itowns/compare/v2.37.0...v2.38.0) (2022-04-13)
 
