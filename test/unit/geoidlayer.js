@@ -48,13 +48,9 @@ describe('GlobeView', function () {
 
     it('update geoid layer', function (done) {
         geoidLayer.whenReady.then(() => {
-            // console.log('geoidLayer');
-            // console.log('geoidLayer', );
-            // geoidLayer.update();
             geoidLayer.update(context, geoidLayer, tile, {}).then(() => {
                 assert.equal(tile.geoidHeight, 45.72800064087844);
                 done();
-                // console.log('tile', tile.geoidHeight);
             });
         });
     });
