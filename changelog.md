@@ -1,3 +1,74 @@
+<a name="2.38.0"></a>
+# [2.38.0](https://github.com/iTowns/itowns/compare/v2.37.0...v2.38.0) (2022-04-13)
+
+
+### Features
+
+* **FeatureGeometryLayer:** introduce FeatureMesh, they are added to layer.object3d. ([0d777ce](https://github.com/iTowns/itowns/commit/0d777ce))
+* **Widgets:** add a searchbar widget ([164b6ee](https://github.com/iTowns/itowns/commit/164b6ee))
+* **Widgets:** add a widget to display a scale ([d3a0154](https://github.com/iTowns/itowns/commit/d3a0154))
+* **Widgets:** add show and hide methods ([59ac32c](https://github.com/iTowns/itowns/commit/59ac32c))
+* **widgets:** Navigation tooltips can be parametrized ([094803f](https://github.com/iTowns/itowns/commit/094803f))
+* **Widgets:** placeholder for searchbar can be modified ([9bd81ce](https://github.com/iTowns/itowns/commit/9bd81ce))
+
+
+### Bug Fixes
+
+* **Feature2Mesh:** fix wrong computing of clockwise polygon. ([bad5e34](https://github.com/iTowns/itowns/commit/bad5e34))
+* **GeoidLayer:** transformation error on tileMesh. ([472e39c](https://github.com/iTowns/itowns/commit/472e39c))
+* **parser:** GeoJsonParser add legacy identifier to fct readCRS() ([a0195c6](https://github.com/iTowns/itowns/commit/a0195c6))
+* **VectorTileParser:** clock wise polygon wasn't calculated. ([135ee7a](https://github.com/iTowns/itowns/commit/135ee7a))
+* **View:** fix pickCoordinates undefined parameter ([0ec49f4](https://github.com/iTowns/itowns/commit/0ec49f4))
+* **Widgets:** fix focus policy and event propagation on widgets ([7775a04](https://github.com/iTowns/itowns/commit/7775a04))
+* **Widgets:** fix in Navigation css ([a85f8b4](https://github.com/iTowns/itowns/commit/a85f8b4))
+
+
+### Examples
+
+* change view source button style ([e593237](https://github.com/iTowns/itowns/commit/e593237))
+* **FeatureGeometryLayer:** add vector tile to 3d object. ([53a42a6](https://github.com/iTowns/itowns/commit/53a42a6))
+* **view 3d:** updates on widgets ([30bee5f](https://github.com/iTowns/itowns/commit/30bee5f))
+* **Widgets:** use minimap widget in view 3D example ([5042ba7](https://github.com/iTowns/itowns/commit/5042ba7))
+
+
+### Code Refactoring
+
+* **Feature:** move properties to private fields. ([02604b9](https://github.com/iTowns/itowns/commit/02604b9))
+* **Feature:** simplify normals data. ([0914834](https://github.com/iTowns/itowns/commit/0914834))
+* **GeometryLayer:** reference to material properties from Layer properties. ([23a0269](https://github.com/iTowns/itowns/commit/23a0269))
+* **label:** render only object with labels. ([c317a8a](https://github.com/iTowns/itowns/commit/c317a8a))
+* **MainLoop:** use class for MainLoop. ([25a48fd](https://github.com/iTowns/itowns/commit/25a48fd))
+* **PlanarControls:** change focus policy ([99fadc0](https://github.com/iTowns/itowns/commit/99fadc0))
+* **view_3d_map:** simplify example ([3786dcf](https://github.com/iTowns/itowns/commit/3786dcf))
+* **View:** move View properties to private fields. ([51f5508](https://github.com/iTowns/itowns/commit/51f5508))
+* **Widgets:** add onClick property in Navigation ([8d9f69e](https://github.com/iTowns/itowns/commit/8d9f69e))
+* **Widgets:** simplify Navigation usage ([7c2bc89](https://github.com/iTowns/itowns/commit/7c2bc89))
+
+
+### Workflow and chores
+
+* release v2.38.0 ([34ae0f3](https://github.com/iTowns/itowns/commit/34ae0f3))
+* add support ecma 2022 ([25080d9](https://github.com/iTowns/itowns/commit/25080d9))
+* **deps:** bump deps to fix security vulnerability. ([1db1ae7](https://github.com/iTowns/itowns/commit/1db1ae7))
+* **deps:** bump minimist from 1.2.5 to 1.2.6 ([09e047a](https://github.com/iTowns/itowns/commit/09e047a))
+* **deps:** bump node-forge from 1.2.1 to 1.3.0 ([e536532](https://github.com/iTowns/itowns/commit/e536532))
+* **submodule:** use submodule for widgets. ([44cc7d0](https://github.com/iTowns/itowns/commit/44cc7d0))
+* update packages. ([e19809f](https://github.com/iTowns/itowns/commit/e19809f))
+
+
+### Documentation
+
+* **core:** Add doc for local execution ([faf58be](https://github.com/iTowns/itowns/commit/faf58be))
+* **Widgets:** specify GlobeView support for navigation ([c209fdc](https://github.com/iTowns/itowns/commit/c209fdc))
+* **Widgets:** specify resources needed to use widgets ([b65c081](https://github.com/iTowns/itowns/commit/b65c081))
+
+
+### Tests
+
+* **Feature2Mesh:** add test to calculate the difference with and without proj4. ([1527c64](https://github.com/iTowns/itowns/commit/1527c64))
+
+
+
 <a name="2.37.0"></a>
 # [2.37.0](https://github.com/iTowns/itowns/compare/v2.36.2...v2.37.0) (2022-01-31)
 
