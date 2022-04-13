@@ -85,6 +85,7 @@
             widgets.addButton(
                 'rotate-up',
                 '<p style="font-size: 20px">&#8595</p>',
+                'rotate camera up',
                 () => {
                     view.controls.lookAtCoordinate({
                         tilt: view.controls.getTilt() - 10,
@@ -96,6 +97,7 @@
             widgets.addButton(
                 'rotate-down',
                 '<p style="font-size: 20px">&#8593</p>',
+                'rotate camera down',
                 () => {
                     view.controls.lookAtCoordinate({
                         tilt: view.controls.getTilt() + 10,
@@ -107,6 +109,7 @@
             widgets.addButton(
                 'reset-position',
                 '&#8634',
+                'reset position',
                 () => { view.controls.lookAtCoordinate(placement) },
             );
 
