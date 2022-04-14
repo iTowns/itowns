@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     patchedPath: './src/ThreeExtended/',
     filesExamples: [
         './loaders/GLTFLoader.js',
