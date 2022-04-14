@@ -1,9 +1,9 @@
-const replace = require('replace-in-file');
-const path = require('path');
-const chalk = require('chalk');
-const { patchedPath } = require('./threeExamples');
+import chalk from 'chalk';
+import replace from 'replace-in-file';
+import path from 'path';
+import threeExamples from './threeExamples.mjs';
 
-const fileGLTFLoader = path.resolve(__dirname.replace('config', ''), patchedPath, './loaders/GLTFLoader.js');
+const fileGLTFLoader = path.resolve(path.dirname('./').replace('config', ''), threeExamples.patchedPath, './loaders/GLTFLoader.js');
 
 // Patch _BATCHID in GLTFLoader
 const patchBatchID = /JOINTS_0: +'skinIndex',/g;

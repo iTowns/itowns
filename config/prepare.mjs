@@ -1,5 +1,10 @@
-const chalk = require('chalk');
-const { execSync } = require('child_process');
+import chalk from 'chalk';
+import copyfiles from 'copyfiles';
+// const chalk = require('chalk');
+import { execSync } from 'child_process';
+import threeExamples from './threeExamples.mjs';
+
+
 
 // Verify Puppeteer configuration
 const pupSkip = process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD;
@@ -29,12 +34,11 @@ if (npmVersion) {
     console.log(chalk.green('Npm version :', npmVersion), '\n');
 }
 
+
+
 // Copy and patch THREE Examples Files
-const copyfiles = require('copyfiles');
-const { filesExamples, patchedPath } = require('./threeExamples.js');
+const paths = threeExamples.filesExamples.map(f => f.replace('./', './node_modules/three/examples/jsm/'));
 
-const paths = filesExamples.map(f => f.replace('./', './node_modules/three/examples/jsm/'));
-
-paths.push(patchedPath);
+paths.push(threeExamples.patchedPath);
 
 copyfiles(paths, { up: 4 }, () => {});
