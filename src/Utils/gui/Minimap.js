@@ -119,12 +119,10 @@ class Minimap extends Widget {
             placement: layer.source.extent,  // TODO : the default placement should be the view extent for ortho camera
             noControls: true,
             maxSubdivisionLevel: view.tileLayer.maxSubdivisionLevel,
+            disableFocusOnStart: true,
         });
         this.view.addLayer(layer);  // TODO : should this promise be returned by constructor so that user can use it ?
 
-        // Give the focus back to the main view. Indeed, `View` constructor takes the focus, and we don't want the focus
-        // on the latest created `View`, which is the minimap view.
-        view.domElement.focus();
         // Prevent the minimap domElement to get focus when clicked, and prevent click event to be propagated to the
         // main view controls.
         this.domElement.addEventListener('pointerdown', (event) => {
