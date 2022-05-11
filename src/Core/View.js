@@ -166,6 +166,7 @@ class View extends THREE.EventDispatcher {
      * @param {?Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
      * @param {?Color} options.diffuse - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
+     * @param {boolean} [options.enableFocusOnStart=true] - enable focus on dom element on start.
      *
      * @constructor
      */
@@ -241,7 +242,9 @@ class View extends THREE.EventDispatcher {
         // focused sequentially using tab key). Focus is needed to capture some key events.
         this.domElement.tabIndex = -1;
         // Set focus on view's domElement.
-        this.domElement.focus();
+        if (!options.disableFocusOnStart) {
+            this.domElement.focus();
+        }
 
         // Create a custom `dblclick-right` event that is triggered when double right-clicking
         let rightClickTimeStamp;
