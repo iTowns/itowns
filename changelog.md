@@ -1,3 +1,18 @@
+<a name="2.38.2"></a>
+## [2.38.2](https://github.com/iTowns/itowns/compare/v2.38.1...v2.38.2) (2022-05-11)
+
+
+### Features
+
+* **View:** Add option viewer to enable/disable focus on start. ([88d7c93](https://github.com/iTowns/itowns/commit/88d7c93))
+
+
+### Workflow and chores
+
+* release v2.38.2 ([36213cc](https://github.com/iTowns/itowns/commit/36213cc))
+
+
+
 <a name="2.38.1"></a>
 ## [2.38.1](https://github.com/iTowns/itowns/compare/v2.38.0...v2.38.1) (2022-04-13)
 
