@@ -29,20 +29,36 @@
         <script src="js/GUI/GuiTools.js"></script>
 
         <script type="text/javascript">
-            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
-
-            // Define camera initial position
-            const placement = {
-                coord: new itowns.Coordinates("EPSG:4326", 2.351323, 48.856712),
-                range: 6000,
-                tilt: 50,
-            };
-
             // `viewerDiv` contains iTowns' rendering area (`<canvas>`)
             const viewerDiv = document.getElementById("viewerDiv");
+            // ---------- CREATE A PlanarView FOR SUPPORTING DATA VISUALIZATION : ----------
 
-            // Create a GlobeView
-            const view = new itowns.GlobeView(viewerDiv, placement);
+            itowns.proj4.defs(
+                'EPSG:3946',
+                '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 ' +
+                    '+towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
+            );
+
+            const viewExtent = new itowns.Extent(
+                "EPSG:3946",
+                1837816.94334,
+                1847692.32501,
+                5170036.4587,
+                5178412.82698
+            );
+
+            // Define the camera initial placement
+            const placement = {
+                coord: viewExtent.center(),
+                tilt: 12,
+                heading: 40,
+                range: 6200,
+            };
+
+            // Create a PlanarView
+            const view = new itowns.PlanarView(viewerDiv, viewExtent, {
+                placement: placement,
+            });
 
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);

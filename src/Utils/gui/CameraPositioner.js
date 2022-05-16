@@ -2,7 +2,9 @@ import { CONTROL_EVENTS } from 'Controls/GlobeControls';
 import { GLOBE_VIEW_EVENTS } from 'Core/Prefab/GlobeView';
 import { PLANAR_CONTROL_EVENT } from 'Controls/PlanarControls';
 import { VIEW_EVENTS } from 'Core/View';
+import * as THREE from 'three';
 import Widget from './Widget';
+
 
 const DEFAULT_OPTIONS = {
     width: 200,
@@ -11,34 +13,6 @@ const DEFAULT_OPTIONS = {
 };
 
 class CameraPositioner extends Widget {
-    /**
-     * @param   {View}                  view                                    The iTowns view the camera-positioner should be
-     * linked to. If it is a
-     * {@link PlanarView} or a
-     * {@link GlobeView}, the camera-positioner will be
-     * automatically updated. Otherwise, user
-     * will need to implement the update
-     * automation using the `camera-positioner.update`
-     * method.
-     * @param   {Object}                [options]                               The camera-positioner optional configuration.
-     * @param   {HTMLElement}           [options.parentElement=view.domElement] The parent HTML container of the div
-     * which contains camera-positioner widgets.
-     * @param   {number}                [options.width=200]                     The width in pixels of the camera-positioner.
-     * @param   {number}                [options.height=30]                     The height in pixels of the camera-positioner.
-     * @param   {string}                [options.position='bottom-left']        Defines which position within the
-     * `parentElement` the camera-positioner should be
-     * displayed to. Possible values are
-     * `top`, `bottom`, `left`, `right`,
-     * `top-left`, `top-right`, `bottom-left`
-     * and `bottom-right`. If the input value
-     * does not match one of these, it will
-     * be defaulted to `bottom-left`.
-     * @param   {Object}                [options.translate]                     An optional translation of the camera-positioner.
-     * @param   {number}                [options.translate.x=0]                 The camera-positioner translation along the page
-     * x-axis.
-     * @param   {number}                [options.translate.y=0]                 The camera-positioner translation along the page
-     * y-axis.
-     */
     constructor(view, options = {}) {
         // ---------- BUILD PROPERTIES ACCORDING TO DEFAULT OPTIONS AND OPTIONS PASSED IN PARAMETERS : ----------
 
@@ -52,12 +26,37 @@ class CameraPositioner extends Widget {
 
         // Initialize the text content of the camera-positioner, which will later be updated by a numerical value.
         this.domElement.innerHTML = 'Camera-positioner';
-        const coordinatesInputElement = this.createInputVector(['x', 'y', 'z'], 'Coordinates', 100);
+        const coordinatesInputElement = this.createInputVector(
+            ['x', 'y', 'z'],
+            'Coordinates',
+            100,
+        );
         this.domElement.appendChild(coordinatesInputElement.title);
         this.domElement.appendChild(coordinatesInputElement.inputVector);
-        const rotationInputElement = this.createInputVector(['x', 'y', 'z'], 'Rotation', 100);
+        const rotationInputElement = this.createInputVector(
+            ['x', 'y', 'z'],
+            'Rotation',
+            100,
+        );
+
         this.domElement.appendChild(rotationInputElement.title);
         this.domElement.appendChild(rotationInputElement.inputVector);
+
+        const travelButton = document.createElement('button');
+        travelButton.innerHTML = 'TRAVEL';
+        const _this = this;
+        travelButton.onclick = function () {
+            const newCameraCoordinates = _this.inputVectorToVector(coordinatesInputElement.inputVector);
+            console.log('Coordinates: ', newCameraCoordinates);
+            const newCameraRotation = _this.inputVectorToVector(rotationInputElement.inputVector);
+            console.log('Rotation: ', newCameraRotation);
+            const newCameraQuaternion = new THREE.Quaternion();
+            newCameraQuaternion.setFromEuler(new THREE.Euler(newCameraRotation.x, newCameraRotation.y, newCameraRotation.z), 'XYZ');
+            console.log('Quaternion: ', newCameraQuaternion);
+            view.controls.initiateTravel(newCameraCoordinates, 'auto', newCameraQuaternion, true);
+        };
+        this.domElement.appendChild(travelButton);
+
 
         this.width = options.width || DEFAULT_OPTIONS.width;
 
@@ -84,27 +83,25 @@ class CameraPositioner extends Widget {
         } else {
             console.warn(
                 "The 'view' linked to camera-positioner widget is neither a 'GlobeView' nor a 'PlanarView'. The " +
-                    "camera-positioner wont automatically update. You can implement its update automation using 'camera-positioner.update' " +
-                    'method.',
+                "camera-positioner wont automatically update. You can implement its update automation using 'camera-positioner.update' " +
+                'method.',
             );
         }
     }
 
-    addEventListeners() {}
+    addEventListeners() { }
 
     /**
      * Update the camera-positioner size and content according to view camera position.
      */
-    update() {
-
-    }
+    update() { }
 
     /**
-   * @param {Array.String} labels List of labels name
-   * @param {String} vectorName Name of the vector
-   * @param {number} step The step of HTMLElement input (type number)
-   * @returns {Object} title => HTMLElement 'h3' ; inputVector => HTMLElement 'div' contains labels and inputs HTMLElements
-   */
+     * @param {Array.String} labels List of labels name
+     * @param {String} vectorName Name of the vector
+     * @param {number} step The step of HTMLElement input (type number)
+     * @returns {Object} title => HTMLElement 'h3' ; inputVector => HTMLElement 'div' contains labels and inputs HTMLElements
+     */
     createInputVector(labels, vectorName, step = 0.5) {
         const titleVector = document.createElement('h3');
         titleVector.innerHTML = vectorName;
@@ -131,6 +128,36 @@ class CameraPositioner extends Widget {
             title: titleVector,
             inputVector,
         };
+    }
+
+    /**
+     * It takes a vector input element and returns a vector object
+     * @param {HTMLElement} inputVector  - The HTML element that contains the input elements.
+     * @returns {THREE.Vector} A vector of the values of the input elements.
+     */
+    inputVectorToVector(inputVector) {
+        const inputEls = inputVector.getElementsByTagName('input');
+
+        const countEls = inputEls.length;
+
+        switch (countEls) {
+            case 2:
+                return new THREE.Vector2(inputEls[0].value, inputEls[1].value);
+            case 3:
+                return new THREE.Vector3(
+                    inputEls[0].value,
+                    inputEls[1].value,
+                    inputEls[2].value,
+                );
+            case 4:
+                return new THREE.Vector4(
+                    inputEls[0].value,
+                    inputEls[1].value,
+                    inputEls[2].value,
+                    inputEls[3].value,
+                );
+            default: return null;
+        }
     }
 }
 
