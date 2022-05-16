@@ -4,8 +4,8 @@
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "main": "lib/Main.js",
   "exports": {
-      ".": "./lib/Main.js",
-      "./widgets": "./lib/Utils/gui/Main.js"
+    ".": "./lib/Main.js",
+    "./widgets": "./lib/Utils/gui/Main.js"
   },
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\" \"docs/*.js\"",

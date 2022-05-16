@@ -1,0 +1,91 @@
+<html>
+    <head>
+        <title>Itowns - Scale widget</title>
+
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <link rel="stylesheet" type="text/css" href="css/example.css" />
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css" />
+
+        <!-- Import stylesheet for itowns Widgets plugin. This stylesheet is included in the bundles if you downloaded
+        them, or it can be found in `node_modules/itowns/examples/css` if you installed iTowns with npm. Otherwise, it
+        can be found here : https://raw.githubusercontent.com/iTowns/itowns/master/examples/css/widgets.css -->
+        <link rel="stylesheet" type="text/css" href="css/widgets.css" />
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <!-- Create a container for itowns viewer -->
+        <div id="viewerDiv"></div>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <!-- Import iTowns Widgets plugin -->
+        <script src="../dist/itowns_widgets.js"></script>
+        <!-- Import iTowns LoadingScreen and GuiTools plugins -->
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
+
+        <script type="text/javascript">
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates("EPSG:4326", 2.351323, 48.856712),
+                range: 6000,
+                tilt: 50,
+            };
+
+            // `viewerDiv` contains iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById("viewerDiv");
+
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools("menuDiv", view);
+
+            // ---------- DISPLAY CONTEXTUAL DATA : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
+            itowns.Fetcher.json("layers/JSONLayers/Ortho.json").then(
+                (config) => {
+                    config.source = new itowns.WMTSSource(config.source);
+                    view.addLayer(
+                        new itowns.ColorLayer(config.id, config)
+                    ).then(debugMenu.addLayerGUI.bind(debugMenu));
+                }
+            );
+
+            // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config)
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            }
+            itowns.Fetcher.json("layers/JSONLayers/WORLD_DTM.json").then(
+                addElevationLayerFromConfig
+            );
+            itowns.Fetcher.json("layers/JSONLayers/IGN_MNT_HIGHRES.json").then(
+                addElevationLayerFromConfig
+            );
+
+            // ---------- ADD SCALE WIDGET : ----------
+
+            const scale = new itowns_widgets.CameraPositioner(view, {
+                position: "top-right",
+                translate: { x: -70 },
+            });
+
+            // ---------- DEBUG TOOLS : ----------
+
+            debug.createTileDebugUI(debugMenu.gui, view);
+        </script>
+    </body>
+</html>
