@@ -5,7 +5,6 @@ import { VIEW_EVENTS } from 'Core/View';
 import * as THREE from 'three';
 import Widget from './Widget';
 
-
 const DEFAULT_OPTIONS = {
     width: 200,
     height: 300,
@@ -28,35 +27,54 @@ class CameraPositioner extends Widget {
         this.domElement.innerHTML = 'Camera-positioner';
         const coordinatesInputElement = this.createInputVector(
             ['x', 'y', 'z'],
-            'Coordinates',
+            'camera_coordinates',
             100,
         );
         this.domElement.appendChild(coordinatesInputElement.title);
         this.domElement.appendChild(coordinatesInputElement.inputVector);
+        this.coordinatesInputElement = coordinatesInputElement;
+        this.setCoordinatesInputs(view.camera.camera3D.position);
+
         const rotationInputElement = this.createInputVector(
             ['x', 'y', 'z'],
-            'Rotation',
+            'camera_rotation',
             100,
         );
-
         this.domElement.appendChild(rotationInputElement.title);
         this.domElement.appendChild(rotationInputElement.inputVector);
+        this.rotationInputElement = rotationInputElement;
+        this.setRotationInputs(view.camera.camera3D.rotation);
 
         const travelButton = document.createElement('button');
         travelButton.innerHTML = 'TRAVEL';
         const _this = this;
         travelButton.onclick = function () {
-            const newCameraCoordinates = _this.inputVectorToVector(coordinatesInputElement.inputVector);
+            const newCameraCoordinates = _this.inputVectorToVector(
+                coordinatesInputElement.inputVector,
+            );
             console.log('Coordinates: ', newCameraCoordinates);
-            const newCameraRotation = _this.inputVectorToVector(rotationInputElement.inputVector);
+            const newCameraRotation = _this.inputVectorToVector(
+                rotationInputElement.inputVector,
+            );
             console.log('Rotation: ', newCameraRotation);
             const newCameraQuaternion = new THREE.Quaternion();
-            newCameraQuaternion.setFromEuler(new THREE.Euler(newCameraRotation.x, newCameraRotation.y, newCameraRotation.z), 'XYZ');
+            newCameraQuaternion.setFromEuler(
+                new THREE.Euler(
+                    newCameraRotation.x,
+                    newCameraRotation.y,
+                    newCameraRotation.z,
+                ),
+                'XYZ',
+            );
             console.log('Quaternion: ', newCameraQuaternion);
-            view.controls.initiateTravel(newCameraCoordinates, 'auto', newCameraQuaternion, true);
+            view.controls.initiateTravel(
+                newCameraCoordinates,
+                'auto',
+                newCameraQuaternion,
+                true,
+            );
         };
         this.domElement.appendChild(travelButton);
-
 
         this.width = options.width || DEFAULT_OPTIONS.width;
 
@@ -89,12 +107,14 @@ class CameraPositioner extends Widget {
         }
     }
 
-    addEventListeners() { }
-
     /**
-     * Update the camera-positioner size and content according to view camera position.
+     * Update the camera-positioner inputs.
      */
-    update() { }
+    update() {
+        console.log('this.update');
+        this.setCoordinatesInputs(this.view.camera.camera3D.position);
+        this.setRotationInputs(this.view.camera.camera3D.rotation);
+    }
 
     /**
      * @param {Array.String} labels List of labels name
@@ -156,7 +176,47 @@ class CameraPositioner extends Widget {
                     inputEls[2].value,
                     inputEls[3].value,
                 );
-            default: return null;
+            default:
+                return null;
+        }
+    }
+
+    setCoordinatesInputs(vec3) {
+        const coordinatesInputEls =
+            this.coordinatesInputElement.inputVector.getElementsByTagName(
+                'input',
+            );
+
+        if (vec3.x !== null) {
+            const element0 = coordinatesInputEls[0];
+            element0.value = Math.round(vec3.x);
+        }
+        if (vec3.y !== null) {
+            const element1 = coordinatesInputEls[1];
+            element1.value = Math.round(vec3.y);
+        }
+
+        if (vec3.z !== null) {
+            const element2 = coordinatesInputEls[2];
+            element2.value = Math.round(vec3.z);
+        }
+    }
+
+    setRotationInputs(vec3) {
+        const rotationInputEls =
+            this.rotationInputElement.inputVector.getElementsByTagName('input');
+
+        if (vec3.x !== null) {
+            const element0 = rotationInputEls[0];
+            element0.value = Math.round(vec3.x * 1000) / 1000;
+        }
+        if (vec3.y !== null) {
+            const element1 = rotationInputEls[1];
+            element1.value = Math.round(vec3.y * 1000) / 1000;
+        }
+        if (vec3.z !== null) {
+            const element2 = rotationInputEls[2];
+            element2.value = Math.round(vec3.z * 1000) / 1000;
         }
     }
 }
