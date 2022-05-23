@@ -16,7 +16,9 @@ global.fetch = fetch;
 global.fetch.Promise = Promise;
 
 // this could be replaced by jsdom.Navigator in https://github.com/iTowns/itowns/pull/1412
-global.navigator = undefined;
+global.navigator = {
+    userAgent: 'firefox',
+};
 
 class DOMElement {
     constructor() {
