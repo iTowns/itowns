@@ -1,0 +1,86 @@
+<html>
+    <head>
+        <title>Itowns - Globe + color layers from vector data</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv" class="viewer"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script type="text/javascript">
+            /* global itowns, setupLoadingScreen, GuiTools, ToolTip */
+
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            itowns.proj4.defs(
+                'EPSG:2154',
+                '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 ' +
+                '+towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+            );
+            const viewExtent = new itowns.Extent(
+                'EPSG:2154',
+                835476.0 - 100, 835597.8 + 100,
+                6522980.0 - 100, 6523132.8 + 100,
+            );
+
+            const placement = {
+                coord: viewExtent.center(),
+            }
+
+            const view = new itowns.PlanarView(viewerDiv, viewExtent, { placement });
+
+            const sourceOrtho = new itowns.WMSSource({
+                url: "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/r/wms",
+                name: "HR.ORTHOIMAGERY.ORTHOPHOTOS",
+                format: 'image/png',
+                crs: 'EPSG:2154',
+                extent: viewExtent,
+            });
+            const layerOrtho = new itowns.ColorLayer('Ortho', { source: sourceOrtho });
+            view.addLayer(layerOrtho);
+
+
+            // Add a multi-polygon ColorLayer
+
+            const sourceTest = new itowns.FileSource({
+                url: 'MultiPoly2.geojson',
+                crs: 'EPSG:2154',
+                format: 'application/json',
+            });
+            const styleTest = new itowns.Style({
+                fill: { color: 'red' },
+            });
+            const layerTest = new itowns.ColorLayer('test', {
+                source: sourceTest,
+                style: styleTest,
+            });
+            view.addLayer(layerTest);
+
+
+            // Change multi-polygon ColorLayer style on click
+
+            view.domElement.addEventListener('click', (event) => {
+                const result = view.pickFeaturesAt(event, 3, 'test').test[0];
+
+                if (result) {
+                    result.geometry.properties.style.fill.color = 'green';
+
+                    layerTest.source.loadData(undefined, layerTest).then((data) => {
+                        view.removeLayer('test');
+                        view.addLayer(new itowns.ColorLayer('test', {
+                            source: new itowns.FileSource({
+                                features: data,
+                            }),
+                        }));
+                    });
+                }
+            });
+
+        </script>
+    </body>
+</html>
