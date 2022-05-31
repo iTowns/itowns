@@ -192,6 +192,17 @@ class Coordinates {
     }
 
     /**
+     * Returns `true` if this Coordinates instance and the Coordinates passed in parameters are the same - i.e. : they
+     * register the same position. Otherwise, it returns `false`.
+     *
+     * @param   {Coordinates}   coordinates     The coordinates to compare to this instance of Coordinates.
+     * @returns {boolean}   `true` if both coordinates are the same, `false` otherwise.
+     */
+    equals(coordinates) {
+        return coordinates.as(this.crs).toVector3().equals(this.toVector3());
+    }
+
+    /**
      * Return this Coordinates values into a `THREE.Vector3`.
      *
      * @param {THREE.Vector3} [target] - The target to put the values in. If not

@@ -125,4 +125,15 @@ describe('Coordinates', function () {
         assert.equal(distance, 199991.80319097277);
         assert.equal(distance, coord1.spatialEuclideanDistanceTo(coord0));
     });
+
+    it('should assert equality for Coordinates', function () {
+        const coord0 = new Coordinates('EPSG:4326', 0, 0);
+        const coord1 = new Coordinates('EPSG:4326', 0, 0);
+        const coord2 = new Coordinates('EPSG:4326', 0, 1);
+        const coord3 = new Coordinates('EPSG:4978', 6378137, 0);
+
+        assert.ok(coord0.equals(coord1));
+        assert.ok(!coord0.equals(coord2));
+        assert.ok(coord0.equals(coord3));
+    });
 });
