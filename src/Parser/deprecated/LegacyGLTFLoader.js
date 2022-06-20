@@ -769,6 +769,21 @@ threeExamples.LegacyGLTFLoader = ( function () {
 
 	}
 
+	/**
+	 * Verifies if the shaders are Cesium specific: if they contain attributes, uniforms or functions starting with 
+	 * `czm_`. The cesium gltf-pipeline (the ancestor of cesium ion) used to create 3D Tiles tilesets they are only 
+	 * defined in Cesium. 
+	 * @param {Object} shaders
+	 */
+	function areShadersCesiumSpecific(shaders) {
+		for (const shaderId in shaders) {
+			if (shaders[shaderId].includes('czm_')) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// Deferred constructor for RawShaderMaterial types
 	function DeferredShaderMaterial( params ) {
 
@@ -1213,278 +1228,310 @@ threeExamples.LegacyGLTFLoader = ( function () {
 
 				} else {
 
-					materialType = DeferredShaderMaterial;
+					const technique = json.techniques[ material.technique ];
 
-					var technique = json.techniques[ material.technique ];
+					// If shaders are Cesium specific, set up a MeshBasicMaterial to avoid an error at shader compilation
+					if (areShadersCesiumSpecific(dependencies.shaders)) {
 
-					materialParams.uniforms = {};
+						materialType = THREE.MeshBasicMaterial;
 
-					var program = json.programs[ technique.program ];
+						// Retrieve texture from uniforms so it is not lost in the process.
+						let texture = null;
+						const uniforms = technique.uniforms;
 
-					if ( program ) {
+						for ( const uniformId in uniforms ) {
 
-						materialParams.fragmentShader = dependencies.shaders[ program.fragmentShader ];
+							const pname = uniforms[uniformId];
+							const shaderParam = technique.parameters[pname];
+							const ptype = shaderParam.type;
 
-						if ( ! materialParams.fragmentShader ) {
-
-							console.warn( "ERROR: Missing fragment shader definition:", program.fragmentShader );
-							materialType = THREE.MeshPhongMaterial;
-
-						}
-
-						var vertexShader = dependencies.shaders[ program.vertexShader ];
-
-						if ( ! vertexShader ) {
-
-							console.warn( "ERROR: Missing vertex shader definition:", program.vertexShader );
-							materialType = THREE.MeshPhongMaterial;
-
-						}
-
-						// IMPORTANT: FIX VERTEX SHADER ATTRIBUTE DEFINITIONS
-						materialParams.vertexShader = replaceTHREEShaderAttributes( vertexShader, technique );
-
-						var uniforms = technique.uniforms;
-
-						for ( var uniformId in uniforms ) {
-
-							var pname = uniforms[ uniformId ];
-							var shaderParam = technique.parameters[ pname ];
-
-							var ptype = shaderParam.type;
-
-							if ( WEBGL_TYPE[ ptype ] ) {
-
-								var pcount = shaderParam.count;
-								var value;
-
-								if ( material.values !== undefined ) value = material.values[ pname ];
-
-								var uvalue = new WEBGL_TYPE[ ptype ]();
-								var usemantic = shaderParam.semantic;
-								var unode = shaderParam.node;
-
-								switch ( ptype ) {
-
-									case WEBGL_CONSTANTS.FLOAT:
-
-										uvalue = shaderParam.value;
-
-										if ( pname == "transparency" ) {
-
-											materialParams.transparent = true;
-
-										}
-
-										if ( value !== undefined ) {
-
-											uvalue = value;
-
-										}
-
-										break;
-
-									case WEBGL_CONSTANTS.FLOAT_VEC2:
-									case WEBGL_CONSTANTS.FLOAT_VEC3:
-									case WEBGL_CONSTANTS.FLOAT_VEC4:
-									case WEBGL_CONSTANTS.FLOAT_MAT3:
-
-										if ( shaderParam && shaderParam.value ) {
-
-											uvalue.fromArray( shaderParam.value );
-
-										}
-
-										if ( value ) {
-
-											uvalue.fromArray( value );
-
-										}
-
-										break;
-
-									case WEBGL_CONSTANTS.FLOAT_MAT2:
-
-										// what to do?
-										console.warn( "FLOAT_MAT2 is not a supported uniform type" );
-										break;
-
-									case WEBGL_CONSTANTS.FLOAT_MAT4:
-
-										if ( pcount ) {
-
-											uvalue = new Array( pcount );
-
-											for ( var mi = 0; mi < pcount; mi ++ ) {
-
-												uvalue[ mi ] = new WEBGL_TYPE[ ptype ]();
-
-											}
-
-											if ( shaderParam && shaderParam.value ) {
-
-												var m4v = shaderParam.value;
-												uvalue.fromArray( m4v );
-
-											}
-
-											if ( value ) {
-
-												uvalue.fromArray( value );
-
-											}
-
-										} else {
-
-											if ( shaderParam && shaderParam.value ) {
-
-												var m4 = shaderParam.value;
-												uvalue.fromArray( m4 );
-
-											}
-
-											if ( value ) {
-
-												uvalue.fromArray( value );
-
-											}
-
-										}
-
-										break;
-
-									case WEBGL_CONSTANTS.SAMPLER_2D:
-
-										if ( value !== undefined ) {
-
-											uvalue = dependencies.textures[ value ];
-
-										} else if ( shaderParam.value !== undefined ) {
-
-											uvalue = dependencies.textures[ shaderParam.value ];
-
-										} else {
-
-											uvalue = null;
-
-										}
-
-										break;
-
+							if (ptype === WEBGL_CONSTANTS.SAMPLER_2D) {
+								let value;
+								if (material.values !== undefined) value = material.values[pname];
+								if (value !== undefined) {
+									texture = dependencies.textures[value];
+								} else if (shaderParam.value !== undefined) {
+									texture = dependencies.textures[shaderParam.value];
 								}
+							}
+						}
 
-								materialParams.uniforms[ uniformId ] = {
-									value: uvalue,
-									semantic: usemantic,
-									node: unode
-								};
+						if (texture) {
+							materialParams.map = texture;
+						}
 
+					} else {
+
+						materialType = DeferredShaderMaterial;
+	
+						materialParams.uniforms = {};
+	
+						var program = json.programs[ technique.program ];
+	
+						if ( program ) {
+	
+							materialParams.fragmentShader = dependencies.shaders[ program.fragmentShader ];
+	
+							if ( ! materialParams.fragmentShader ) {
+	
+								console.warn( "ERROR: Missing fragment shader definition:", program.fragmentShader );
+								materialType = THREE.MeshPhongMaterial;
+	
+							}
+	
+							var vertexShader = dependencies.shaders[ program.vertexShader ];
+	
+							if ( ! vertexShader ) {
+	
+								console.warn( "ERROR: Missing vertex shader definition:", program.vertexShader );
+								materialType = THREE.MeshPhongMaterial;
+	
+							}
+	
+							// IMPORTANT: FIX VERTEX SHADER ATTRIBUTE DEFINITIONS
+							materialParams.vertexShader = replaceTHREEShaderAttributes( vertexShader, technique );
+	
+							const uniforms = technique.uniforms;
+	
+							for ( const uniformId in uniforms ) {
+	
+								const pname = uniforms[ uniformId ];
+								const shaderParam = technique.parameters[ pname ];
+	
+								const ptype = shaderParam.type;
+	
+								if ( WEBGL_TYPE[ ptype ] ) {
+	
+									const pcount = shaderParam.count;
+									let value;
+	
+									if ( material.values !== undefined ) value = material.values[ pname ];
+	
+									var uvalue = new WEBGL_TYPE[ ptype ]();
+									var usemantic = shaderParam.semantic;
+									var unode = shaderParam.node;
+	
+									switch ( ptype ) {
+	
+										case WEBGL_CONSTANTS.FLOAT:
+	
+											uvalue = shaderParam.value;
+	
+											if ( pname == "transparency" ) {
+	
+												materialParams.transparent = true;
+	
+											}
+	
+											if ( value !== undefined ) {
+	
+												uvalue = value;
+	
+											}
+	
+											break;
+	
+										case WEBGL_CONSTANTS.FLOAT_VEC2:
+										case WEBGL_CONSTANTS.FLOAT_VEC3:
+										case WEBGL_CONSTANTS.FLOAT_VEC4:
+										case WEBGL_CONSTANTS.FLOAT_MAT3:
+	
+											if ( shaderParam && shaderParam.value ) {
+	
+												uvalue.fromArray( shaderParam.value );
+	
+											}
+	
+											if ( value ) {
+	
+												uvalue.fromArray( value );
+	
+											}
+	
+											break;
+	
+										case WEBGL_CONSTANTS.FLOAT_MAT2:
+	
+											// what to do?
+											console.warn( "FLOAT_MAT2 is not a supported uniform type" );
+											break;
+	
+										case WEBGL_CONSTANTS.FLOAT_MAT4:
+	
+											if ( pcount ) {
+	
+												uvalue = new Array( pcount );
+	
+												for ( var mi = 0; mi < pcount; mi ++ ) {
+	
+													uvalue[ mi ] = new WEBGL_TYPE[ ptype ]();
+	
+												}
+	
+												if ( shaderParam && shaderParam.value ) {
+	
+													var m4v = shaderParam.value;
+													uvalue.fromArray( m4v );
+	
+												}
+	
+												if ( value ) {
+	
+													uvalue.fromArray( value );
+	
+												}
+	
+											} else {
+	
+												if ( shaderParam && shaderParam.value ) {
+	
+													var m4 = shaderParam.value;
+													uvalue.fromArray( m4 );
+	
+												}
+	
+												if ( value ) {
+	
+													uvalue.fromArray( value );
+	
+												}
+	
+											}
+	
+											break;
+	
+										case WEBGL_CONSTANTS.SAMPLER_2D:
+	
+											if ( value !== undefined ) {
+	
+												uvalue = dependencies.textures[ value ];
+	
+											} else if ( shaderParam.value !== undefined ) {
+	
+												uvalue = dependencies.textures[ shaderParam.value ];
+	
+											} else {
+	
+												uvalue = null;
+	
+											}
+	
+											break;
+	
+									}
+	
+									materialParams.uniforms[ uniformId ] = {
+										value: uvalue,
+										semantic: usemantic,
+										node: unode
+									};
+	
+								} else {
+	
+									throw new Error( "Unknown shader uniform param type: " + ptype );
+	
+								}
+	
+							}
+	
+							var states = technique.states || {};
+							var enables = states.enable || [];
+							var functions = states.functions || {};
+	
+							var enableCullFace = false;
+							var enableDepthTest = false;
+							var enableBlend = false;
+	
+							for ( var i = 0, il = enables.length; i < il; i ++ ) {
+	
+								var enable = enables[ i ];
+	
+								switch ( STATES_ENABLES[ enable ] ) {
+	
+									case 'CULL_FACE':
+	
+										enableCullFace = true;
+	
+										break;
+	
+									case 'DEPTH_TEST':
+	
+										enableDepthTest = true;
+	
+										break;
+	
+									case 'BLEND':
+	
+										enableBlend = true;
+	
+										break;
+	
+									// TODO: implement
+									case 'SCISSOR_TEST':
+									case 'POLYGON_OFFSET_FILL':
+									case 'SAMPLE_ALPHA_TO_COVERAGE':
+	
+										break;
+	
+									default:
+	
+										throw new Error( "Unknown technique.states.enable: " + enable );
+	
+								}
+	
+							}
+	
+							if ( enableCullFace ) {
+	
+								materialParams.side = functions.cullFace !== undefined ? WEBGL_SIDES[ functions.cullFace ] : THREE.FrontSide;
+	
 							} else {
-
-								throw new Error( "Unknown shader uniform param type: " + ptype );
-
+	
+								materialParams.side = THREE.DoubleSide;
+	
 							}
-
-						}
-
-						var states = technique.states || {};
-						var enables = states.enable || [];
-						var functions = states.functions || {};
-
-						var enableCullFace = false;
-						var enableDepthTest = false;
-						var enableBlend = false;
-
-						for ( var i = 0, il = enables.length; i < il; i ++ ) {
-
-							var enable = enables[ i ];
-
-							switch ( STATES_ENABLES[ enable ] ) {
-
-								case 'CULL_FACE':
-
-									enableCullFace = true;
-
-									break;
-
-								case 'DEPTH_TEST':
-
-									enableDepthTest = true;
-
-									break;
-
-								case 'BLEND':
-
-									enableBlend = true;
-
-									break;
-
-								// TODO: implement
-								case 'SCISSOR_TEST':
-								case 'POLYGON_OFFSET_FILL':
-								case 'SAMPLE_ALPHA_TO_COVERAGE':
-
-									break;
-
-								default:
-
-									throw new Error( "Unknown technique.states.enable: " + enable );
-
+	
+							materialParams.depthTest = enableDepthTest;
+							materialParams.depthFunc = functions.depthFunc !== undefined ? WEBGL_DEPTH_FUNCS[ functions.depthFunc ] : THREE.LessDepth;
+							materialParams.depthWrite = functions.depthMask !== undefined ? functions.depthMask[ 0 ] : true;
+	
+							materialParams.blending = enableBlend ? THREE.CustomBlending : THREE.NoBlending;
+							materialParams.transparent = enableBlend;
+	
+							var blendEquationSeparate = functions.blendEquationSeparate;
+	
+							if ( blendEquationSeparate !== undefined ) {
+	
+								materialParams.blendEquation = WEBGL_BLEND_EQUATIONS[ blendEquationSeparate[ 0 ] ];
+								materialParams.blendEquationAlpha = WEBGL_BLEND_EQUATIONS[ blendEquationSeparate[ 1 ] ];
+	
+							} else {
+	
+								materialParams.blendEquation = THREE.AddEquation;
+								materialParams.blendEquationAlpha = THREE.AddEquation;
+	
 							}
-
+	
+							var blendFuncSeparate = functions.blendFuncSeparate;
+	
+							if ( blendFuncSeparate !== undefined ) {
+	
+								materialParams.blendSrc = WEBGL_BLEND_FUNCS[ blendFuncSeparate[ 0 ] ];
+								materialParams.blendDst = WEBGL_BLEND_FUNCS[ blendFuncSeparate[ 1 ] ];
+								materialParams.blendSrcAlpha = WEBGL_BLEND_FUNCS[ blendFuncSeparate[ 2 ] ];
+								materialParams.blendDstAlpha = WEBGL_BLEND_FUNCS[ blendFuncSeparate[ 3 ] ];
+	
+							} else {
+	
+								materialParams.blendSrc = THREE.OneFactor;
+								materialParams.blendDst = THREE.ZeroFactor;
+								materialParams.blendSrcAlpha = THREE.OneFactor;
+								materialParams.blendDstAlpha = THREE.ZeroFactor;
+	
+							}
+	
 						}
-
-						if ( enableCullFace ) {
-
-							materialParams.side = functions.cullFace !== undefined ? WEBGL_SIDES[ functions.cullFace ] : THREE.FrontSide;
-
-						} else {
-
-							materialParams.side = THREE.DoubleSide;
-
-						}
-
-						materialParams.depthTest = enableDepthTest;
-						materialParams.depthFunc = functions.depthFunc !== undefined ? WEBGL_DEPTH_FUNCS[ functions.depthFunc ] : THREE.LessDepth;
-						materialParams.depthWrite = functions.depthMask !== undefined ? functions.depthMask[ 0 ] : true;
-
-						materialParams.blending = enableBlend ? THREE.CustomBlending : THREE.NoBlending;
-						materialParams.transparent = enableBlend;
-
-						var blendEquationSeparate = functions.blendEquationSeparate;
-
-						if ( blendEquationSeparate !== undefined ) {
-
-							materialParams.blendEquation = WEBGL_BLEND_EQUATIONS[ blendEquationSeparate[ 0 ] ];
-							materialParams.blendEquationAlpha = WEBGL_BLEND_EQUATIONS[ blendEquationSeparate[ 1 ] ];
-
-						} else {
-
-							materialParams.blendEquation = THREE.AddEquation;
-							materialParams.blendEquationAlpha = THREE.AddEquation;
-
-						}
-
-						var blendFuncSeparate = functions.blendFuncSeparate;
-
-						if ( blendFuncSeparate !== undefined ) {
-
-							materialParams.blendSrc = WEBGL_BLEND_FUNCS[ blendFuncSeparate[ 0 ] ];
-							materialParams.blendDst = WEBGL_BLEND_FUNCS[ blendFuncSeparate[ 1 ] ];
-							materialParams.blendSrcAlpha = WEBGL_BLEND_FUNCS[ blendFuncSeparate[ 2 ] ];
-							materialParams.blendDstAlpha = WEBGL_BLEND_FUNCS[ blendFuncSeparate[ 3 ] ];
-
-						} else {
-
-							materialParams.blendSrc = THREE.OneFactor;
-							materialParams.blendDst = THREE.ZeroFactor;
-							materialParams.blendSrcAlpha = THREE.OneFactor;
-							materialParams.blendDstAlpha = THREE.ZeroFactor;
-
-						}
-
 					}
-
 				}
 
 				if ( Array.isArray( materialValues.diffuse ) ) {
