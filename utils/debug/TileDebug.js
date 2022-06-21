@@ -4,11 +4,21 @@ import View from 'Core/View';
 import GeometryLayer from 'Layer/GeometryLayer';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
+import LayerUpdateState from 'Layer/LayerUpdateState';
 import TileObjectChart from './charts/TileObjectChart';
 import TileVisibilityChart from './charts/TileVisibilityChart';
 import GeometryDebug from './GeometryDebug';
 import Debug from './Debug';
 import OBBHelper from './OBBHelper';
+
+
+const quaternion = new THREE.Quaternion();
+
+
+function preUpdate() {
+    this.object3d.clear();
+}
+
 
 function applyToNodeFirstMaterial(view, root, layer, cb) {
     root.traverse((object) => {
@@ -117,80 +127,65 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     const geometrySphere = new THREE.SphereGeometry(1, 16, 16);
 
     function debugIdUpdate(context, layer, node) {
-        const enabled = context.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
-
-        if (!node.parent || !enabled) {
+        if (!node.parent) {
             ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, node);
             return;
         }
 
-        let helper = node.children.filter(n => n.layer && (n.layer.id == layer.id))[0];
-
-        if (node.material && node.material.visible) {
-            if (!helper) {
-                // add the ability to hide all the debug obj for one layer at once
-                const l = context.view.getLayerById(layer.id);
-                const l3js = l.threejsLayer;
-
-                if (layer.id == obb_layer_id) {
-                    helper = new OBBHelper(node.obb);
-                    if (helper.children[0]) {
-                        helper.children[0].layers.set(l3js);
-                    }
-                } else if (layer.id == sb_layer_id) {
-                    const color = new THREE.Color(Math.random(), Math.random(), Math.random());
-                    const material = new THREE.MeshBasicMaterial({ color: color.getHex(), wireframe: true });
-                    helper = new THREE.Mesh(geometrySphere, material);
-                    helper.position.copy(node.boundingSphere.center);
-                    helper.scale.multiplyScalar(node.boundingSphere.radius);
-                }
-
-                helper.layers.set(l3js);
-                helper.layer = layer;
-                node.add(helper);
-                helper.updateMatrixWorld(true);
-
-                // if we don't do that, our OBBHelper will never get removed,
-                // because once a node is invisible, children are not removed
-                // any more
-                const hiddenHandler = node.material.addEventListener('hidden', () => {
-                    node.material.removeEventListener(hiddenHandler);
-                    let i = node.children.length;
-                    while (i--) {
-                        const c = node.children[i];
-                        if (c.layer === sb_layer_id) {
-                            if (c.dispose) {
-                                c.dispose();
-                            } else if (Array.isArray(c.material)) {
-                                for (const material of c.material) {
-                                    material.dispose();
-                                }
-                            } else {
-                                c.material.dispose();
-                            }
-                            node.children.splice(i, 1);
-                        }
-                    }
-                });
-            }
-
-            if (layer.id == sb_layer_id) {
-                helper.position.copy(node.boundingSphere.center);
-                helper.scale.set(1, 1, 1).multiplyScalar(node.boundingSphere.radius);
-            }
-            helper.updateMatrixWorld(true);
-            helper.visible = true;
-        } else if (helper) {
-            helper.visible = false;
+        if (!node.visible || !node.material.visible) {
+            return;
         }
+
+        if (node.layerUpdateState[layer.id] === undefined) {
+            node.layerUpdateState[layer.id] = new LayerUpdateState();
+        } else if (!node.layerUpdateState[layer.id].canTryUpdate()) {
+            node.link.forEach((f) => {
+                if (f.layer?.id === layer.id) {
+                    f.layer.object3d.add(f);
+                    f.updateMatrixWorld(true);
+                }
+            });
+            return;
+        }
+
+        const extentDestination = node.getExtentsByProjection(node.extent.crs) || [node.extent];
+
+        node.layerUpdateState[layer.id].newTry();
+
+        const command = {
+            layer,
+            extentsSource: extentDestination,
+            view: context.view,
+            requester: node,
+            options: {
+                node,
+            },
+        };
+
+        return context.scheduler.execute(command).then((helperArray) => {
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            const helper = helperArray[0];
+
+            helper.layer = layer;
+
+            layer.object3d.add(helper);
+            node.link.push(helper);
+
+            helper.updateMatrixWorld(true);
+        });
     }
 
     const obbLayer = new GeometryLayer(obb_layer_id, new THREE.Object3D(), {
         update: debugIdUpdate,
-        visible: false,
+        convert: (from, to, options) => new OBBHelper(options.node.obb),
+        visible: true,
         cacheLifeTime: Infinity,
         source: false,
     });
+    obbLayer.source.urlFromExtent = () => {};
+    obbLayer.source.fetcher = () => Promise.resolve({});
+
+    obbLayer.preUpdate = preUpdate.bind(obbLayer);
 
     View.prototype.addLayer.call(view, obbLayer, layer).then((l) => {
         gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
@@ -200,10 +195,27 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
 
     const sbLayer = new GeometryLayer(sb_layer_id, new THREE.Object3D(), {
         update: debugIdUpdate,
+        convert: (from, to, options) => {
+            const color = new THREE.Color(Math.random(), Math.random(), Math.random());
+            const material = new THREE.MeshBasicMaterial({ color: color.getHex(), wireframe: true });
+            const helper = new THREE.Mesh(geometrySphere, material);
+
+            options.node.getWorldPosition(helper.position);
+            helper.position.add(
+                options.node.boundingSphere.center.applyQuaternion(options.node.getWorldQuaternion(quaternion)),
+            );
+            // helper.position.copy(options.node.boundingSphere.center);
+            helper.scale.multiplyScalar(options.node.boundingSphere.radius);
+            return helper;
+        },
         visible: false,
         cacheLifeTime: Infinity,
         source: false,
     });
+    sbLayer.source.urlFromExtent = () => {};
+    sbLayer.source.fetcher = () => Promise.resolve({});
+
+    sbLayer.preUpdate = preUpdate.bind(sbLayer);
 
     View.prototype.addLayer.call(view, sbLayer, layer).then((l) => {
         gui.add(l, 'visible').name('Bounding Spheres').onChange(() => {

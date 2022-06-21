@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 
+
+const vector3 = new THREE.Vector3();
+
+
 class OBBHelper extends THREE.Box3Helper {
     constructor(OBB, text, color) {
         color = color || new THREE.Color(Math.random(), Math.random(), Math.random());
@@ -26,9 +30,12 @@ class OBBHelper extends THREE.Box3Helper {
             return;
         }
 
-        this.quaternion.copy(this.obb.quaternion);
+        // this.quaternion.copy(this.obb.quaternion);
+        this.obb.getWorldQuaternion(this.quaternion);
 
-        this.obb.box3D.getCenter(this.position).applyQuaternion(this.quaternion).add(this.obb.position);
+        // this.obb.box3D.getCenter(this.position).applyQuaternion(this.quaternion).add(this.obb.position);
+        this.obb.getWorldPosition(this.position);
+        this.position.add(this.obb.box3D.getCenter(vector3).applyQuaternion(this.quaternion));
 
         this.obb.box3D.getSize(this.scale);
 
