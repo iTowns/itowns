@@ -1,74 +1,118 @@
 <html>
     <head>
         <title>Itowns - Globe + Multipolygon Geojson</title>
+
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv" class="viewer"></div>
-        <script src="js/GUI/GuiTools.js"></script>
+
+        <!-- Import iTowns source code -->
         <script src="../dist/itowns.js"></script>
         <script src="../dist/debug.js"></script>
+        <!-- Import iTowns Widgets plugin -->
+        <script src="../dist/itowns_widgets.js"></script>
+        <!-- Import iTowns LoadingScreen and GuiTools plugins -->
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+
+
         <script type="text/javascript">
-            // Define initial camera position
-            var placement = {
+
+
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 3.05, 48.95),
                 range: 70000,
             }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
-            var viewerDiv = document.getElementById('viewerDiv');
+            const viewerDiv = document.getElementById('viewerDiv');
 
-            // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, placement);
-            var menuGlobe = new GuiTools('menuDiv', view);
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
 
-            // Add one imagery layer to the scene
-            // This layer is defined in a json file but it could be defined as a plain js
-            // object. See Layer* for more info.
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
+
+
+
+            // ---------- DISPLAY ORTHO-IMAGES : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(
+                    new itowns.ColorLayer('Ortho', config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
             });
 
-            // Add two elevation layers.
-            // These will deform iTowns globe geometry to represent terrain elevation.
+
+
+            // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
+
+            // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
             }
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
-            // Add a geometry layer, which will contain the multipolygon to display
-            var marne = new itowns.FeatureGeometryLayer('Marne', {
-                // Use a FileSource to load a single file once
-                source: new itowns.FileSource({
-                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson',
-                    crs: 'EPSG:4326',
-                    format: 'application/json',
-                }),
-                transparent: true,
-                opacity: 0.7,
-                zoom: { min: 10 },
-                style: new itowns.Style({
-                    fill: {
-                        color: new itowns.THREE.Color(0xbbffbb),
-                        extrusion_height: 80,
-                    }
-                })
+
+
+            // ---------- DISPLAY A GeoJSON CONTENT IN A GeometryLayer : ----------
+
+            // Define the source of the GeoJSON data file. We use a file source to load the single file once.
+            const marneSource = new itowns.FileSource({
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson',
+                crs: 'EPSG:4326',
+                format: 'application/json',
             });
 
-            view.addLayer(marne).then(function menu(layer) {
-                var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+            // Define the style of the GeometryLayer which will display GeoJSON data.
+            const marneStyle = new itowns.Style({
+                fill: {
+                    color: new itowns.THREE.Color(0xbbffbb),
+                    extrusion_height: 80,
+                },
+            });
+
+            // Create a FeatureGeometryLayer to display GeoJSON data as 3D objects.
+            const marneLayer = new itowns.FeatureGeometryLayer('Marne', {
+                source: marneSource,
+                style: marneStyle,
+                zoom: { min: 10 },
+                // TODO : opacity does not work. Must be fixed.
+                transparent: true,
+                opacity: 0.7,
+            });
+
+            view.addLayer(marneLayer).then((layer) => {
+                const gui = debug.GeometryDebug.createGeometryDebugUI(debugMenu.gui, view, layer);
                 debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
             });
+
+
+
+            // ---------- DEBUG TOOLS : ----------
+
+            debug.createTileDebugUI(debugMenu.gui, view);
+
         </script>
     </body>
 </html>
