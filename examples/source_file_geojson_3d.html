@@ -77,35 +77,35 @@
 
             // ---------- DISPLAY A GeoJSON CONTENT IN A GeometryLayer : ----------
 
-            // Define the source of the GeoJSON data file. We use a file source to load the single file once.
-            const marneSource = new itowns.FileSource({
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson',
-                crs: 'EPSG:4326',
-                format: 'application/json',
-            });
+            let added = 0;
+            function toto() {
+                console.log(`debut : ${added}`);
+                if (added) {
+                    view.removeLayer('Marne');
+                }
 
-            // Define the style of the GeometryLayer which will display GeoJSON data.
-            const marneStyle = new itowns.Style({
-                fill: {
-                    color: new itowns.THREE.Color(0xbbffbb),
-                    extrusion_height: 80,
-                },
-            });
+                view.addLayer(new itowns.FeatureGeometryLayer('Marne', {
+                    // Use a FileSource to load a single file once
+                    source: new itowns.FileSource({
+                        url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson',
+                        crs: 'EPSG:4326',
+                        format: 'application/json',
+                    }),
+                    style: new itowns.Style({
+                        fill: {
+                            color: 'blue',
+                            extrusion_height: 80,
+                        }
+                    })
+                }))
+                    .then(() => {
+                        console.log('threeJS layer : ', view.mainLoop.gfxEngine._nextThreejsLayer);
+                        console.log(`fin : ${added}`);
+                        added += 1;
+                    });
+            }
 
-            // Create a FeatureGeometryLayer to display GeoJSON data as 3D objects.
-            const marneLayer = new itowns.FeatureGeometryLayer('Marne', {
-                source: marneSource,
-                style: marneStyle,
-                zoom: { min: 10 },
-                // TODO : opacity does not work. Must be fixed.
-                transparent: true,
-                opacity: 0.7,
-            });
-
-            view.addLayer(marneLayer).then((layer) => {
-                const gui = debug.GeometryDebug.createGeometryDebugUI(debugMenu.gui, view, layer);
-                debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
-            });
+            // setInterval(toto, 5000);
 
 
 
