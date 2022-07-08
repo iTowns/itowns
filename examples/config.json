@@ -38,6 +38,13 @@
         "source_stream_wfs_raster": "WFS to raster"
     },
 
+
+    "WebXR (experimental)": {
+        "webxr_3dtiles_25d": "3DTiles on 2.5D map (WebXR)",
+        "webxr_potree_25d_map": "Potree on 2.5D map (WebXR)",
+        "webxr_source_stream_wfs_25d": "WFS to 2.5D objects (WebXR)"
+    },
+    
     "Specific source options": {
         "source_file_from_format": "format",
         "source_file_from_methods": "fetcher and parser"
