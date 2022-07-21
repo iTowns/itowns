@@ -20,6 +20,7 @@
     "build": "cross-env NODE_ENV=production webpack",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
     "start": "cross-env NODE_ENV=development webpack serve",
+    "start-https": "cross-env NODE_ENV=development webpack serve --https",
     "debug": "cross-env noInline=true npm start",
     "prepublishOnly": "npm run build && npm run transpile",
     "prepare": "cross-env NO_UPDATE_NOTIFIER=true node ./config/prepare.mjs && node ./config/replace.config.mjs",
