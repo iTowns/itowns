@@ -97,6 +97,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
     // camera-target-updated event
     let LatController;
     let LongController;
+    let AltiController;
     let eventFolder;
     const controls = view.controls;
     initialPosition.crs = view.referenceCrs;
@@ -108,12 +109,15 @@ function Debug(view, datDebugTool, chartDivContainer) {
             initialPosition.setFromVector3(cursorWorldPosition).as('EPSG:4326', geoPosition);
             state.latitude = `${geoPosition.y.toFixed(6)}`;
             state.longitude = `${geoPosition.x.toFixed(6)}`;
+            state.altitude = `${geoPosition.z.toFixed(2)}`;
         } else {
             state.latitude = '---------';
             state.longitude = '---------';
+            state.altitude = '---------';
         }
         LatController.updateDisplay();
         LongController.updateDisplay();
+        AltiController.updateDisplay();
     };
 
     gui.add(state, 'eventsDebug').name('Debug event').onChange((() => (newValue) => {
@@ -124,8 +128,11 @@ function Debug(view, datDebugTool, chartDivContainer) {
             initialPosition.setFromVector3(getCenter()).as('EPSG:4326', geoPosition);
             state.latitude = `${geoPosition.y.toFixed(6)}`;
             state.longitude = `${geoPosition.x.toFixed(6)}`;
+            state.altitude = `${geoPosition.z.toFixed(2)}`;
+
             LatController = eventFolder.add(state, 'latitude');
             LongController = eventFolder.add(state, 'longitude');
+            AltiController = eventFolder.add(state, 'altitude');
 
             view.domElement.addEventListener('mousemove', cameraTargetListener);
         } else {
