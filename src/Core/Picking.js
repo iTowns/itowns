@@ -99,6 +99,7 @@ function findLayerInParent(obj) {
 }
 
 const raycaster = new THREE.Raycaster();
+const normalized = new THREE.Vector2();
 
 /**
  * @module Picking
@@ -208,8 +209,9 @@ export default {
         } else {
             raycaster.layers.enableAll();
         }
+        // Raycaster use NDC coordinate
+        view.viewToNormalizedCoords(viewCoords, normalized);
         if (radius < 0) {
-            const normalized = view.viewToNormalizedCoords(viewCoords);
             raycaster.setFromCamera(normalized, view.camera.camera3D);
 
             const intersects = raycaster.intersectObject(object, true);
@@ -239,8 +241,6 @@ export default {
         const clearG = Math.round(255 * clearColor.g);
         const clearB = Math.round(255 * clearColor.b);
 
-        // Raycaster use NDC coordinate
-        const normalized = view.viewToNormalizedCoords(viewCoords);
         const tmp = normalized.clone();
         traversePickingCircle(radius, (x, y) => {
             // x, y are offset from the center of the picking circle,
