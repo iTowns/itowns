@@ -739,6 +739,9 @@ class View extends THREE.EventDispatcher {
         const mouse = (mouseOrEvt instanceof Event) ? this.eventToViewCoords(mouseOrEvt) : mouseOrEvt;
 
         for (const source of sources) {
+            if (source.isAtmosphere) {
+                continue;
+            }
             if (source.isGeometryLayer) {
                 if (!source.ready) {
                     console.warn('view.pickObjectAt : layer is not ready : ', source);
