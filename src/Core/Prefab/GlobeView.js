@@ -91,6 +91,7 @@ class GlobeView extends View {
      * in the DOM.
      * @param {CameraTransformOptions|Extent} placement - An object to place view
      * @param {object=} options - See options of {@link View}.
+     * @param {Object} options.controls - See options of {@link GlobeControls}
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DefaultUp.set(0, 0, 1);
@@ -122,7 +123,7 @@ class GlobeView extends View {
         if (options.noControls) {
             CameraUtils.transformCameraToLookAtTarget(this, this.camera.camera3D, placement);
         } else {
-            this.controls = new GlobeControls(this, placement);
+            this.controls = new GlobeControls(this, placement, options.controls);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
         }
 
