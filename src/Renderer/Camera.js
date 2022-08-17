@@ -153,8 +153,8 @@ class Camera {
                 this.camera3D.bottom = -halfH;
                 this.camera3D.top = halfH;
             } else if (this.camera3D.isPerspectiveCamera) {
-                this.camera3D.fov = 2 * THREE.Math.radToDeg(Math.atan(
-                    (height / this.height) * Math.tan(THREE.Math.degToRad(this.camera3D.fov) / 2),
+                this.camera3D.fov = 2 * THREE.MathUtils.radToDeg(Math.atan(
+                    (height / this.height) * Math.tan(THREE.MathUtils.degToRad(this.camera3D.fov) / 2),
                 ));
             }
             this.camera3D.aspect = ratio;
