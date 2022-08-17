@@ -103,9 +103,8 @@ describe('GlobeView', function () {
         new OBB().setFromExtent(extent).box3D.getSize(size);
         assert.ok(
             CameraUtils.getTransformCameraLookingAtTarget(extentViewer, camera3D).range -
-            size.x / (2 * Math.tan(THREE.Math.degToRad(camera3D.fov) / 2))
+            size.x / (2 * Math.tan(THREE.MathUtils.degToRad(camera3D.fov) / 2))
             < 10 ** -6,
         );
     });
 });
-

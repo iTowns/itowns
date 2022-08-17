@@ -155,7 +155,7 @@ describe('Camera utils unit test', function () {
         camera3D.updateMatrixWorld(true);
         assert.ok(
             CameraUtils.getCameraTransformOptionsFromExtent(view, camera3D, subExtent).range -
-            subExtent.planarDimensions().y / (2 * Math.tan(THREE.Math.degToRad(camera3D.fov) / 2)) < 10 ** -14,
+            subExtent.planarDimensions().y / (2 * Math.tan(THREE.MathUtils.degToRad(camera3D.fov) / 2)) < 10 ** -14,
         );
     });
 });

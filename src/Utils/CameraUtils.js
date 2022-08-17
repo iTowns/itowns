@@ -457,7 +457,7 @@ export default {
             cameraTransformOptions.range = 1000;
         } else if (camera.isPerspectiveCamera) {
             // setup range for camera placement
-            const verticalFOV = THREE.Math.degToRad(camera.fov);
+            const verticalFOV = THREE.MathUtils.degToRad(camera.fov);
             if (dimensions.x / dimensions.y > camera.aspect) {
                 const focal = (view.domElement.clientHeight * 0.5) / Math.tan(verticalFOV * 0.5);
                 const horizontalFOV = 2 * Math.atan(view.domElement.clientWidth * 0.5 / focal);
