@@ -290,7 +290,14 @@ class LabelLayer extends Layer {
         }
     }
 
-    delete() {
+    /**
+     * All layer's objects and domElements are removed.
+     * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
+     */
+    delete(clearCache) {
+        if (clearCache) {
+            this.cache.clear();
+        }
         this.domElement.parentElement.removeChild(this.domElement);
 
         this.parent.level0Nodes.forEach(obj => this.removeLabelsFromNodeRecursive(obj));

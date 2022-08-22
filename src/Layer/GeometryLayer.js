@@ -1,32 +1,7 @@
 import Layer from 'Layer/Layer';
 import Picking from 'Core/Picking';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
-
-function disposeMesh(obj) {
-    if (obj.dispose) {
-        obj.dispose();
-    } else {
-        if (obj.geometry) {
-            obj.geometry.dispose();
-        }
-        if (obj.material) {
-            if (Array.isArray(obj.material)) {
-                for (const material of obj.material) {
-                    material.dispose();
-                }
-            } else {
-                obj.material.dispose();
-            }
-        }
-    }
-}
-
-function traverse(obj, callback) {
-    for (const child of obj.children) {
-        traverse(child, callback);
-    }
-    callback(obj);
-}
+import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
 /**
  * Fires when the opacity of the layer has changed.
@@ -174,23 +149,23 @@ class GeometryLayer extends Layer {
     }
 
     /**
-     * All layer's meshs are removed from scene and disposed from video device.
+     * All layer's 3D objects are removed from the scene and disposed from the video device.
+     * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
      */
-    delete() {
+    delete(clearCache) {
+        if (clearCache) {
+            this.cache.clear();
+        }
+
         // if Layer is attached
         if (this.parent) {
-            traverse(this.parent.object3d, (obj) => {
-                if (obj.layer && obj.layer.id == this.id) {
-                    obj.parent.remove(obj);
-                    disposeMesh(obj);
-                }
-            });
+            ObjectRemovalHelper.removeChildrenAndCleanupRecursively(this, this.parent.object3d);
         }
 
         if (this.object3d.parent) {
             this.object3d.parent.remove(this.object3d);
         }
-        this.object3d.traverse(disposeMesh);
+        ObjectRemovalHelper.removeChildrenAndCleanupRecursively(this, this.object3d);
     }
 
     /**
