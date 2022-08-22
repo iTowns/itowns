@@ -12,6 +12,7 @@ import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
+import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
 export const VIEW_EVENTS = {
     /**
@@ -271,35 +272,41 @@ class View extends THREE.EventDispatcher {
      * - remove all layers
      * - remove all frame requester
      * - remove all events
+     * @param {boolean} [clearCache=false] Whether to clear all the caches or not (layers cache, style cache, tilesCache)
      */
-    dispose() {
+    dispose(clearCache = false) {
         const id = viewers.indexOf(this);
         if (id == -1) {
             console.warn('View already disposed');
             return;
         }
         // controls dispose
-        if (this.controls && this.controls.dispose) {
-            this.controls.dispose();
+        if (this.controls) {
+            if (typeof this.controls.dispose === 'function') {
+                this.controls.dispose();
+            }
+            delete this.controls;
         }
         // remove alls frameRequester
         this.removeAllFrameRequesters();
         // remove alls events
         this.removeAllEvents();
-        // remove alls layers
+        // remove all layers
         const layers = this.getLayers(l => !l.isTiledGeometryLayer && !l.isAtmosphere);
         for (const layer of layers) {
-            this.removeLayer(layer.id);
+            this.removeLayer(layer.id, clearCache);
         }
         const atmospheres = this.getLayers(l => l.isAtmosphere);
         for (const atmosphere of atmospheres) {
-            this.removeLayer(atmosphere.id);
+            this.removeLayer(atmosphere.id, clearCache);
         }
         const tileLayers = this.getLayers(l => l.isTiledGeometryLayer);
         for (const tileLayer of tileLayers) {
-            this.removeLayer(tileLayer.id);
+            this.removeLayer(tileLayer.id, clearCache);
         }
         viewers.splice(id, 1);
+        // Remove remaining objects in the scene (e.g. helpers, debug, etc.)
+        this.scene.traverse(ObjectRemovalHelper.cleanup);
     }
 
     /**
@@ -378,16 +385,17 @@ class View extends THREE.EventDispatcher {
      * Removes a specific imagery layer from the current layer list. This removes layers inserted with attach().
      * @example
      * view.removeLayer('layerId');
-     * @param      {string}   layerId      The identifier
-     * @return     {boolean}
+     * @param {string} layerId The identifier
+     * @param {boolean} [clearCache=false] Whether to clear all the layer cache or not
+     * @return {boolean}
      */
-    removeLayer(layerId) {
+    removeLayer(layerId, clearCache) {
         const layer = this.getLayerById(layerId);
         if (layer) {
             const parentLayer = layer.parent;
 
             // Remove and dispose all nodes
-            layer.delete();
+            layer.delete(clearCache);
 
             // Detach layer if it's attached
             if (parentLayer && !parentLayer.detach(layer)) {
