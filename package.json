@@ -5,7 +5,8 @@
   "main": "lib/Main.js",
   "exports": {
       ".": "./lib/Main.js",
-      "./widgets": "./lib/Utils/gui/Main.js"
+      "./widgets": "./lib/Utils/gui/Main.js",
+      "./examples/*": "./examples/js/*.js"
   },
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\" \"docs/*.js\"",
