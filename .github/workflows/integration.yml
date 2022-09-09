@@ -99,7 +99,8 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: intergration.yml
-        repo: iTowns/potree
+        repo: LIDAR-HD-IGN/potree
+        branch: itowns_potree
         name: dist-potree
     # Copy files for deployment
     - name: build site
