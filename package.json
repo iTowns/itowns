@@ -4,8 +4,8 @@
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "main": "lib/Main.js",
   "exports": {
-      ".": "./lib/Main.js",
-      "./widgets": "./lib/Utils/gui/Main.js"
+    ".": "./lib/Main.js",
+    "./widgets": "./lib/Utils/gui/Main.js"
   },
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\" \"docs/*.js\"",
@@ -18,6 +18,7 @@
     "test-with-coverage_lcov": "nyc -n src --reporter=lcov cross-env npm run test-unit",
     "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --require @babel/register --file test/unit/bootstrap.js",
     "build": "cross-env NODE_ENV=production webpack",
+    "build-dev": "cross-env NODE_ENV=development webpack",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
     "start": "cross-env NODE_ENV=development webpack serve",
     "start-https": "cross-env NODE_ENV=development webpack serve --https",
