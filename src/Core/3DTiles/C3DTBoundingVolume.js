@@ -117,6 +117,26 @@ class C3DTBoundingVolume {
         }
         return false;
     }
+
+    /**
+     * Gets the bounding box of the bounding volume.
+     * The bounding volume may be represented by a box, a sphere or an itowns OBB. This method is intended to ease
+     * processes using 3D Tiles bounding volumes.
+     * @returns {THREE.Box3} the bounding box of the bounding volume.
+     */
+    getBoundingBox() {
+        if (this.box) {
+            return this.box;
+        } else if (this.sphere) {
+            const box = new THREE.Box3();
+            this.sphere.getBoundingBox(box);
+            return box;
+        } else if (this.region) {
+            return this.region.box3D;
+        } else {
+            console.error('Unknown bounding volume type. Cannot compute C3DTBoundingVolume bounding box');
+        }
+    }
 }
 
 export default C3DTBoundingVolume;
