@@ -342,6 +342,44 @@ export function getRig(camera) {
 }
 
 /**
+ * Computes the range for a camera to have a display that fits the rectangle with the given dimensions. In case of an
+ * ortographic camera, we compute and set the zoom value and return a default range of 1000. In case of a perspective
+ * camera, we compute and return the camera range.
+ * @param {View} view the view of the camera
+ * @param {THREE.Camera} camera the camera to compute the range for
+ * @param {Object} dimensions the dimensions of the rectangle to display
+ * @returns {Number} the range of the camera to fit the given dimensions
+ */
+function computeCameraRangeFromDimensions(view, camera, dimensions) {
+    let range = 0;
+    if (camera.isOrthographicCamera) {
+        // setup camera zoom
+        if (dimensions.x / dimensions.y > camera.aspect) {
+            camera.zoom = (camera.right - camera.left) / dimensions.x;
+        } else {
+            camera.zoom = (camera.top - camera.bottom) / dimensions.y;
+        }
+        camera.updateProjectionMatrix();
+
+        // setup camera placement
+        range = 1000; // TODO: why 1000? Make it configurable with a default value at least
+    } else if (camera.isPerspectiveCamera) {
+        // setup range for camera placement
+        const verticalFOV = THREE.Math.degToRad(camera.fov);
+        if (dimensions.x / dimensions.y > camera.aspect) {
+            const focal = (view.domElement.clientHeight * 0.5) / Math.tan(verticalFOV * 0.5);
+            const horizontalFOV = 2 * Math.atan(view.domElement.clientWidth * 0.5 / focal);
+            range = dimensions.x / (2 * Math.tan(horizontalFOV * 0.5));
+        } else {
+            range = dimensions.y / (2 * Math.tan(verticalFOV * 0.5));
+        }
+    } else {
+        console.error('CameraUtils only supports ortographic and perspective camera.');
+    }
+    return range;
+}
+
+/**
  * @module CameraUtils
  */
 export default {
@@ -377,9 +415,9 @@ export default {
      * Gets the current parameters transform camera looking at target.
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to get transform
+     * @param      {THREE.Camera}  camera  The camera to get transform
      * @param      {THREE.Vector3} [target] - The optional target
-     * @return     {CameraUtils~CameraTransformOptions}  The transform camera looking at target
+     * @returns     {CameraUtils~CameraTransformOptions}  The transform camera looking at target
      */
     getTransformCameraLookingAtTarget(view, camera, target) {
         const rig = getRig(camera);
@@ -390,9 +428,9 @@ export default {
      * Apply transform to camera
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to transform
+     * @param      {THREE.Camera}  camera  The camera to transform
      * @param      {CameraUtils~CameraTransformOptions|Extent}  params  The parameters
-     * @return     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
+     * @returns     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
      */
     transformCameraToLookAtTarget(view, camera, params = {}) {
         if (params.isExtent) {
@@ -417,10 +455,10 @@ export default {
      * Compute the CameraTransformOptions that allow a given camera to display a given extent in its entirety.
      *
      * @param   {View}    view    The camera view
-     * @param   {Camera}  camera  The camera to get the CameraTransformOptions from
+     * @param   {THREE.Camera}  camera  The camera to get the CameraTransformOptions from
      * @param   {Extent}  extent  The extent the camera must display
      *
-     * @return  {CameraUtils~CameraTransformOptions}   The CameraTransformOptions allowing camera to display the extent.
+     * @returns  {CameraUtils~CameraTransformOptions}   The CameraTransformOptions allowing camera to display the extent.
      */
     getCameraTransformOptionsFromExtent(view, camera, extent) {
         const cameraTransformOptions = {
@@ -444,28 +482,46 @@ export default {
 
         extent.center(cameraTransformOptions.coord);
 
-        if (camera.isOrthographicCamera) {
-            // setup camera zoom
-            if (dimensions.x / dimensions.y > camera.aspect) {
-                camera.zoom = (camera.right - camera.left) / dimensions.x;
-            } else {
-                camera.zoom = (camera.top - camera.bottom) / dimensions.y;
-            }
-            camera.updateProjectionMatrix();
+        cameraTransformOptions.range = computeCameraRangeFromDimensions(view, camera, dimensions);
 
-            // setup camera placement
-            cameraTransformOptions.range = 1000;
-        } else if (camera.isPerspectiveCamera) {
-            // setup range for camera placement
-            const verticalFOV = THREE.Math.degToRad(camera.fov);
-            if (dimensions.x / dimensions.y > camera.aspect) {
-                const focal = (view.domElement.clientHeight * 0.5) / Math.tan(verticalFOV * 0.5);
-                const horizontalFOV = 2 * Math.atan(view.domElement.clientWidth * 0.5 / focal);
-                cameraTransformOptions.range = dimensions.x / (2 * Math.tan(horizontalFOV * 0.5));
-            } else {
-                cameraTransformOptions.range = dimensions.y / (2 * Math.tan(verticalFOV * 0.5));
-            }
+        return cameraTransformOptions;
+    },
+
+    /**
+     * Computes the {@link CameraUtils~CameraTransformOptions} to apply to the camera to center it on the given bounding
+     * box. This function computes the target coordinates and the range to apply to the camera. The other
+     * {@link CameraUtils~CameraTransformOptions} are set to their default values except for the tilt that is set to
+     * 45 and for the heading that is set to 0. All {@link CameraUtils~CameraTransformOptions} can be changed with
+     * the options argument.
+     * @param {View} view the camera view
+     * @param {THREE.Camera} camera the camera to get transform options for
+     * @param {Three.Box3} boundingBox the bounding box to center the camera on
+     * @param {CameraUtils~CameraTransformOptions} [options = {}] camera transform options to apply to the returned value
+     * (except coord and range).
+     * @returns {CameraUtils~CameraTransformOptions} The CameraTransformOptions to apply to the camera to display the
+     * bounding box.
+     */
+    getCameraTransformOptionsFromBoundingBox(view, camera, boundingBox, options = {}) {
+        if (!view || !camera || !boundingBox || !boundingBox.isBox3) {
+            console.error('Invalid parameters. Cannot get camera transform options from bounding box');
         }
+        const cameraTransformOptions = options;
+
+        if (!cameraTransformOptions.tilt) {
+            cameraTransformOptions.tilt = 45;
+        }
+        if (!cameraTransformOptions.heading) {
+            cameraTransformOptions.heading = 0;
+        }
+
+        const target = new THREE.Vector3();
+        boundingBox.getCenter(target);
+        cameraTransformOptions.coord = new Coordinates(view.referenceCrs, target);
+
+        var size = new THREE.Vector3();
+        boundingBox.getSize(size);
+        var dimensions = { x: size.y, y: size.x };
+        cameraTransformOptions.range = computeCameraRangeFromDimensions(view, camera, dimensions);
 
         return cameraTransformOptions;
     },
@@ -474,9 +530,9 @@ export default {
      * Apply transform to camera with animation
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to animate
+     * @param      {THREE.Camera}  camera  The camera to animate
      * @param      {CameraUtils~CameraTransformOptions}  params  The parameters
-     * @return     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
+     * @returns     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
      */
     animateCameraToLookAtTarget(view, camera, params = {}) {
         params.proxy = params.proxy === undefined || params.proxy;
@@ -501,9 +557,9 @@ export default {
      * chain animation transform to camera
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to animate
+     * @param      {THREE.Camera}  camera  The camera to animate
      * @param      {CameraUtils~CameraTransformOptions[]}  params  array parameters, each parameters transforms are apply to camera, in serial
-     * @return     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
+     * @returns     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
      */
     sequenceAnimationsToLookAtTarget(view, camera, params = [{}]) {
         const promiseSerial = funcs =>
@@ -529,7 +585,7 @@ export default {
      *
      * @param      {CameraUtils~CameraTransformOptions}  first  param to compare with the second
      * @param      {CameraUtils~CameraTransformOptions}  second param to compare with the first
-     * @return     {object} The difference parameters
+     * @returns     {object} The difference parameters
      */
     getDiffParams(first, second) {
         if (!first || !second) {
