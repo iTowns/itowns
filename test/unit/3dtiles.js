@@ -1,11 +1,12 @@
 import proj4 from 'proj4';
 import assert from 'assert';
-import { Matrix4, Object3D } from 'three';
+import { Matrix4, Object3D, Vector3, Box3 } from 'three';
 import Camera from 'Renderer/Camera';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { computeNodeSSE } from 'Process/3dTilesProcessing';
 import { configureTile } from 'Provider/3dTilesProvider';
 import C3DTileset from '../../src/Core/3DTiles/C3DTileset';
+import C3DTBoundingVolume from '../../src/Core/3DTiles/C3DTBoundingVolume';
 
 function tilesetWithRegion(transformMatrix) {
     const tileset = {
@@ -163,5 +164,30 @@ describe('Distance computation using boundingVolume.sphere', function () {
         computeNodeSSE(camera, tile);
 
         assert.equal(tile.distance, 100 - 1 * 0.01 - 10);
+    });
+});
+
+describe('Compute C3DTilesBoundingVolume bounding box', function () {
+    it('Get bounding box from box', function () {
+        const json = {
+            box: [0, 0, 10,
+                100, 0, 0,
+                0, 100, 0,
+                0, 0, 10,
+            ],
+        };
+        const boundingVolume = new C3DTBoundingVolume(json);
+        const box = boundingVolume.getBoundingBox();
+        const expectedBox = new Box3(new Vector3(-100, -100, 0), new Vector3(100, 100, 20));
+        assert.deepStrictEqual(box, expectedBox);
+    });
+    it('Get bounding box from sphere', function () {
+        const json = {
+            sphere: [0, 0, 10, 140],
+        };
+        const boundingVolume = new C3DTBoundingVolume(json);
+        const box = boundingVolume.getBoundingBox();
+        const expectedBox = new Box3(new Vector3(-140, -140, -130), new Vector3(140, 140, 150));
+        assert.deepStrictEqual(box, expectedBox);
     });
 });
