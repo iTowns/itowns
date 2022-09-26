@@ -23,6 +23,9 @@
 
 <nav class="scroll-section">
     <img id="goToHome" src="images/itowns_logo.png" width="245px" onclick="goTo('home.html', 'home')"/>
+    <p id="version-switch-text"></p>
+    <button id="switch-button">Switch to <span id="switch-button-text">next version</span></button>
+    <hr class="title-divider">
     <div class="filterBlock">
         <input type="text" id="filterInput" placeholder="Type to filter"
         autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -35,6 +38,10 @@
 <script src="scripts/linenumber.js"> </script>
 <script type="text/javascript">
     var baseURI = document.baseURI;
+
+    if (baseURI.includes('/itowns/dev/')) {
+        document.getElementById('goToHome').setAttribute('src', 'images/itowns_logo_next.png');
+    }
 
     function bindIframe() {
         var navLinks = document.getElementsByClassName('nav-link');
@@ -128,9 +135,33 @@
         }
     }
 
+    // Add version switch
+    function initVersionSwitch() {
+        document.getElementById('version-switch-text').innerHTML = `
+            iTowns documentation of the ${
+                (baseURI.includes("/itowns/dev/") && "next version (current master branch)") 
+                    || "latest stable released version"
+            }.
+        `;
+
+        document.getElementById('switch-button-text').innerHTML = `${
+            (baseURI.includes("/itowns/dev/") && "latest release") || "next version"
+        }`;
+
+        document.getElementById('switch-button').onclick = () => {
+            if (baseURI.includes("/itowns/dev/")) {
+                window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
+            } else {
+                window.location.href = document.location.href.replace('/itowns/', '/itowns/dev/');
+            }
+        };
+    }
+
+
     function onLoad() {
         bindIframe();
         initNavigation();
+        initVersionSwitch();
     }
 </script>
 </body>

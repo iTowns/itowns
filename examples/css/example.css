@@ -167,6 +167,31 @@ h3 {
     margin-bottom: 5px;
 }
 
+.title-divider {
+    margin: 26px 0;
+}
+
+#version-switch {
+    text-align: justify;
+    line-height: 1.6;
+}
+
+.switch-button {
+    width: 100%;
+    height: 30px;
+    border: 1px solid #222222;
+    border-radius: 7px;
+    margin-bottom: 10px;
+}
+.switch-button:hover {
+    cursor: pointer;
+    background-color: #E5E5E5;
+}
+.switch-button:active {
+    background-color: #404E76;
+    color: white;
+}
+
 
 /* IFRAME/EXAMPLE CONTENT */
 #viewerDiv {

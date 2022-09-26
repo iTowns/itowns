@@ -1,3 +1,5 @@
+name: integration
+
 on:
   push:
     branches:
@@ -7,180 +9,235 @@ on:
       - master
   workflow_dispatch: {}
 
-name: integration
-env:
-  CI: true
 
 jobs:
+
+  # Build bundle, doc and run tests (unit, functional and coverage)
   tests:
     name: Build and test validation
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v2
-
-    - name: Use Node.js 15.x
-      uses: actions/setup-node@v2
-      with:
-        node-version: 15.x
-    # install package
-    # TODO: add cache npm to speed up installing
-    - name: Install packages
-      run: npm ci
-    # Prepare before build
-    - name: Prepare
-      run: npm run prepare
-    # Check linter
-    - name: Linter
-      run: npm run lint -- --max-warnings=0
-    # Build bundle
-    - name: Build bundle
-      if: ${{ success() }}
-      run:  npm run build
-    # Unit tests
-    - name: Unit tests
-      run: npm run test-with-coverage_lcov
-    # run functional tests
-    # TODO functional tests don't stop if one fails
-    - name: Functional tests
-      if: ${{ success() }}
-      run: npm run test-functional
-    # Build documention
-    - name: Build documentation
-      if: ${{ success() }}
-      run: npm run doc -- -d buildDocs
-    # Prepare archive to deploying
-    - name: Archive production artifacts
-      if: ${{ success() && github.ref == 'refs/heads/master' }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: dist-itowns
-        path: |
-          dist/**/*.js
-          dist/**/*.map
-          examples
-          buildDocs
-    # Code coverage
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-
-  # Publish package npm
-  publish:
-    needs: tests
-    if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
-    runs-on: ubuntu-latest
-    name: Publish NPM package
-    steps:
+      # Use specific Node.js version
       - uses: actions/checkout@v2
+      - name: Use Node.js 15.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 15.x
+
+      # Install packages
+      # TODO: add cache npm to speed up installing
+      - name: Install packages
+        run: npm ci
+
+      # Prepare before build
+      - name: Prepare
+        run: npm run prepare
+
+      # Check linter
+      - name: Linter
+        run: npm run lint -- --max-warnings=0
+
+      # Build bundle
+      - name: Build bundle
+        if: ${{ success() }}
+        run: npm run build
+
+      # Run unit tests
+      - name: Unit tests
+        run: npm run test-with-coverage_lcov
+
+      # Run functional tests
+      # TODO: functional tests don't stop if one fails
+      - name: Functional tests
+        if: ${{ success() }}
+        run: npm run test-functional
+
+      # Code coverage
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build documentation
+      - name: Build documentation
+        if: ${{ success() && github.ref == 'refs/heads/master' }}
+        run: npm run doc -- -d buildDocs
+
+      # Prepare archive for deploying
+      - name: Archive production artifacts
+        if: ${{ success() && github.ref == 'refs/heads/master' }}
+        uses: actions/upload-artifact@v2
+        with:
+            name: dist-itowns
+            path: |
+                dist/**/*.js
+                examples
+                buildDocs
+
+
+  # Publish NPM package
+  # TODO: publish another npm package matching master branch
+  publish:
+    name: Publish NPM package
+    if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+
       - uses: actions/setup-node@v1
         with:
           node-version: 15
           registry-url: https://registry.npmjs.org/
+
       - run: npm ci
       - run: npm run prepare
       - run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  # Deploy on web site
+
+  # Deploy on itowns.github.io website
   deploy:
-    needs: tests
-    if: ${{ github.ref == 'refs/heads/master' }}
-    runs-on: ubuntu-latest
     name: Deploy to itowns.github.io
-    steps:
-    # Download artifact from build
-    - name: Download bundle itowns
-      uses: actions/download-artifact@v2
-      with:
-        name: dist-itowns
-    - name: Download bundle potree
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        workflow: intergration.yml
-        repo: LIDAR-HD-IGN/potree
-        branch: itowns_potree
-        name: dist-potree
-    # Copy files for deployment
-    - name: build site
-      run: |
-        mkdir -p itowns/dist
-        mkdir -p itowns/potree/build
-        mkdir -p itowns/potree/libs
-        cp -R dist/*.js itowns/dist/
-        cp -R examples itowns/
-        cp -R buildDocs itowns/docs
-        cp -R build itowns/potree/
-        cp -R libs itowns/potree/
-
-    # Deploy to itowns.github.io
-    - name: Deploy to itowns.github.io
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-        external_repository: iTowns/itowns.github.io
-        publish_dir: ./itowns
-        destination_dir: ./itowns
-        publish_branch: master
-        enable_jekyll: true
-
-  # Create github release
-  release:
+    if: ${{ github.ref == 'refs/heads/master' }}
     needs: tests
-    name: Release Github
-    if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 15.x
-      uses: actions/setup-node@v2
-      with:
-        node-version: 15.x
-    - name: Message commit
-      run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
-    - name: Get the version
-      run: echo ::set-output name=VERSION::$(node -e "console.log(require('./package.json').version);")
-      id: npm_pack
-    - name:  itowns Version
-      run: echo "The iTowns release version is ${{ steps.npm_pack.outputs.VERSION }}"
-    # Add tag
-    - name: Tag branch
-      run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git tag -a v${{ steps.npm_pack.outputs.VERSION }} -m "release v${{ steps.npm_pack.outputs.VERSION }}."
-        git push --follow-tags
-    # Get archive to deploying
-    - name: Download bundle
-      uses: actions/download-artifact@v2
-      with:
-        name: dist-itowns
-    # Create release
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ steps.npm_pack.outputs.VERSION }}
-        release_name: Release ${{ steps.npm_pack.outputs.VERSION }}
-        body_path: ./changelog.md
-        draft: false
-        prerelease: false
-    # Zip assets bundle
-    - name: Zip assets
-      run: |
-        zip --junk-paths bundles ./dist/*.js ./dist/*.map
-    # Upload release Asset
-    - name: Upload release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./bundles.zip
-        asset_name: bundles.zip
-        asset_content_type: application/zip
+
+      # Download artifact from build
+      - name: Download itowns bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: dist-itowns
+
+      # Deploy potree repo artifact
+      # TODO : this should be done in potree integration script
+      - name: Download potree bundle
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          # TODO : rename potree file...
+          workflow: intergration.yml
+          repo: LIDAR-HD-IGN/potree
+          branch: itowns_potree
+          name: dist-potree
+
+      # Copy files for deployment
+      - name: build site
+        run: |
+          mkdir -p itowns/dist
+          mkdir -p itowns/potree/build
+          mkdir -p itowns/potree/libs
+          cp -R dist/*.js itowns/dist/
+          cp -R examples itowns/
+          cp -R buildDocs itowns/docs
+          cp -R build itowns/potree/
+          cp -R libs itowns/potree/
+
+      # When deploying a release, we copy itowns bundles in dev folder to be published on
+      # iTowns/itowns.github.io. This is because we can't publish both a release version
+      # (in itowns/ folder) and a @next version (in itowns/dev folder) at the same time.
+      - name: add dev bundle if release
+        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+        run: |
+          cp -R itowns dev
+          mv dev itowns/
+
+      # Deploy to itowns.github.io LTS
+      - name: Deploy LTS to itowns.github.io
+        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          external_repository: iTowns/itowns.github.io
+          publish_dir: ./itowns
+          destination_dir: ./itowns
+          publish_branch: master
+          enable_jekyll: true
+
+      # Deploy to itowns.github.io Dev
+      - name: Deploy Dev to itowns.github.io
+        # Prevent deploying @next version when a release is done. Doing so would cause an issue,
+        # since it is not possible to use the same deploy key to simultaneously deploy two different
+        # folders on iTowns/itowns.github.io (the release bundle on previous step and this one.
+        if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          external_repository: iTowns/itowns.github.io
+          publish_dir: ./itowns
+          destination_dir: ./itowns/dev
+          publish_branch: master
+          enable_jekyll: true
+
+
+  # Create GitHub release
+  release:
+    name: Release GitHub
+    if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js 15.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 15.x
+
+      - name: Message commit
+        run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
+
+      - name: Get release version
+        run: echo ::set-output name=VERSION::$(node -e "console.log(require('./package.json').version);")
+        id: npm_pack
+
+      - name: itowns Version
+        run: echo "The iTowns release version is ${{ steps.npm_pack.outputs.VERSION }}"
+
+      # Add tag
+      - name: Tag branch
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag -a v${{ steps.npm_pack.outputs.VERSION }} -m "release v${{ steps.npm_pack.outputs.VERSION }}."
+          git push --follow-tags
+
+      # Download artifact from build
+      - name: Download itowns bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: dist-itowns
+
+      # Create release
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.npm_pack.outputs.VERSION }}
+          release_name: Release ${{ steps.npm_pack.outputs.VERSION }}
+          body_path: ./changelog.md
+          draft: false
+          prerelease: false
+
+      # Zip assets into bundle
+      - name: Zip assets
+        run: |
+          zip --junk-paths bundles ./dist/*.js ./dist/*.map
+
+      # Upload release asset
+      - name: upload release asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bundles.zip
+          asset_name: bundles.zip
+          asset_content_type: application/zip

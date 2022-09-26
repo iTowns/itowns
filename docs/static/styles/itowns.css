@@ -76,9 +76,28 @@ nav h2 {
 
 #clearFilterButton {
     position: absolute;
-    right: 2rem;
-    top: 149px;
+    font-size: 1.3em;
+    margin-left: 15px;
+    text-decoration: none;
 }
+
+/* Version switch button */
+#switch-button {
+    width: 100%;
+    height: 30px;
+    border: 1px solid #222222;
+    border-radius: 7px;
+    margin-bottom: 10px;
+}
+#switch-button:hover {
+    cursor: pointer;
+    background-color: #E5E5E5;
+}
+#switch-button:active {
+    background-color: #404E76;
+    color: white;
+}
+
 
 /* MAIN SECTION (RIGHT) */
 #main {
