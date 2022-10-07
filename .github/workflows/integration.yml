@@ -77,15 +77,17 @@ jobs:
 
 
   # Publish NPM package
-  # TODO: publish another npm package matching master branch
   publish:
     name: Publish NPM package
-    if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
+    if: ${{ github.ref == 'refs/heads/master' }}
     needs: tests
     runs-on: ubuntu-latest
     steps:
 
       - uses: actions/checkout@v2
+
+      # Configure git user for later command induced commits
+      - uses: fregante/setup-git-user@v1
 
       - uses: actions/setup-node@v1
         with:
@@ -94,7 +96,17 @@ jobs:
 
       - run: npm ci
       - run: npm run prepare
-      - run: npm publish --access public
+
+      - name: publish itowns@latest npm package
+        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+        run: npm run publish-latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: publish itowns@next npm package
+        run: |
+          npm run publish-next
+          git push
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
