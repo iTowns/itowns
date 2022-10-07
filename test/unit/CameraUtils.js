@@ -114,10 +114,11 @@ describe('Camera utils unit test', function () {
         });
     });
 
-    it('should transform camera from given extent', function () {
+    it('should transform ortographic camera from given extent in planar view (EPSG:2154)', function () {
         view.isPlanarView = true;
         view.isGlobeView = false;
         view.referenceCrs = 'EPSG:2154';
+
         const orthographicCamera = new Camera(view.referenceCrs, 60, 40, { type: CAMERA_TYPE.ORTHOGRAPHIC });
         let camera3D = orthographicCamera.camera3D;
 
@@ -157,5 +158,33 @@ describe('Camera utils unit test', function () {
             CameraUtils.getCameraTransformOptionsFromExtent(view, camera3D, subExtent).range -
             subExtent.planarDimensions().y / (2 * Math.tan(THREE.Math.degToRad(camera3D.fov) / 2)) < 10 ** -14,
         );
+    });
+
+    it('should transform perspective camera from given bounding box in globe view', function () {
+        view.isPlanarView = false;
+        view.isGlobeView = true;
+        view.referenceCrs = 'EPSG:4978';
+        view.domElement = {};
+        view.domElement.clientHeight = 350;
+        view.domElement.clientWidth = 556;
+
+        const perspectiveCamera = new Camera(view.referenceCrs, 60, 40, { type: CAMERA_TYPE.PERSPECTIVE });
+        const camera3D = perspectiveCamera.camera3D;
+        camera3D.aspect = 1.58;
+        camera3D.fov = 30;
+
+        const boundingBox = new THREE.Box3(
+            new THREE.Vector3(4440583, 374007, 4547154),
+            new THREE.Vector3(4441385, 375904, 4547994));
+
+        const expectedCameraTransform = {
+            coord: new Coordinates(view.referenceCrs, 4440984, 374955.5, 4547574),
+            tilt: 45,
+            heading: 0,
+            range: 2228.3229619472627,
+        };
+        const cameraTransform = CameraUtils.getCameraTransformOptionsFromBoundingBox(view, camera3D, boundingBox);
+
+        assert.deepStrictEqual(cameraTransform, expectedCameraTransform);
     });
 });
