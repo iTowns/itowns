@@ -6,6 +6,24 @@ import C3DTExtensions from 'Core/3DTiles/C3DTExtensions';
 
 const update = process3dTilesNode();
 
+/**
+ * @classdesc
+ * A layer representing a 3D Tiles dataset.
+ * @extends GeometryLayer
+ * @property {boolean} isC3DTilesLayer - Read-only flag to check if a given object is of type C3DTilesLayer.
+ * @property {string} name - the layer name
+ * @property {Number} [sseThreshold=16] - the [Screen Space Error](https://github.com/CesiumGS/3d-tiles/tree/main/specification#geometric-error)
+ * (SSE) is the error if a tile is rendered and its children are not. sseThreshold is the threshold to decide if a tile
+ * children must be rendered. A smaller value of the sseThreshold means a more aggressive refinement of the tiles (i.e.
+ * the leaf tiles will be rendered at lower zoom levels). Default is 16 (default value of Cesium which is developing the
+ * 3D Tiles standard).
+ * @property {Number} [cleanupDelay=1000] - the delay in ms before removing a tile content from the cache after it has
+ * become invisible (e.g. because it has been culled out because it is not in the viewing frustum).
+ * @property {Function} onTileContentLoaded - user-specifiable callback triggered when a tile has been loaded, with the
+ * loaded tile content given in parameter.
+ * @property {C3DTExtensions} registeredExtensions - 3D Tiles extensions managers registered to this layer to
+ * interpret 3D Tiles extensions of the dataset. See {@link C3DTExtensions} for more information.
+ */
 class C3DTilesLayer extends GeometryLayer {
     /**
      * Constructs a new instance of 3d tiles layer.
@@ -22,35 +40,44 @@ class C3DTilesLayer extends GeometryLayer {
      * }, view);
      * View.prototype.addLayer.call(view, l3dt);
      *
-     * @param      {string}  id - The id of the layer, that should be unique.
+     * @param {string} id - The id of the layer, that should be unique.
      *     It is not mandatory, but an error will be emitted if this layer is
      *     added a
      * {@link View} that already has a layer going by that id.
-     * @param      {object}  config   configuration, all elements in it
-     * will be merged as is in the layer.
+     * @param {object} config - specific options for the layer.
      * @param {C3TilesSource} config.source The source of 3d Tiles.
-     *
-     * name.
-     * @param  {View}  view  The view
+     * @param {Function} config.onTileContentLoaded user-specifiable callback triggered when a tile has been loaded,
+     * with the loaded tile content given in parameter.
+     * @property {C3DTExtensions} registeredExtensions - 3D Tiles extensions managers registered to this layer to
+     * interpret 3D Tiles extensions of the dataset. See {@link C3DTExtensions} for more information.
+     * @param {View} view - The view in which the layer will be rendered
      */
     constructor(id, config, view) {
-        super(id, new THREE.Group(), { source: config.source });
-        this.isC3DTilesLayer = true;
+        super(id, new THREE.Group(), { source: config.source }); // TODO: should be called with config as third parameter ?
+        this.isC3DTilesLayer = true; // TODO: define as not writtable
         this.sseThreshold = config.sseThreshold || 16;
         this.cleanupDelay = config.cleanupDelay || 1000;
         this.onTileContentLoaded = config.onTileContentLoaded || (() => {});
-        this.protocol = '3d-tiles';
-        // custom cesium shaders are not functional;
-        this.overrideMaterials = config.overrideMaterials !== undefined ? config.overrideMaterials : true;
+        this.protocol = '3d-tiles'; // TODO: make it private
+        this.overrideMaterials = config.overrideMaterials !== undefined ? config.overrideMaterials : true; // TODO: make it private
         this.name = config.name;
         this.registeredExtensions = config.registeredExtensions || new C3DTExtensions();
 
-        this._cleanableTiles = [];
+        this._cleanableTiles = []; // TODO: make it private
 
         const resolve = this.addInitializationStep();
 
         this.source.whenReady.then((tileset) => {
             this.tileset = new C3DTileset(tileset, this.source.baseUrl, this.registeredExtensions);
+            // The bounding box of the tileset is the bounding box of its root tile (tileset.tiles[0]) multiplied by the
+            // root tile transform matrix.
+            const rootTile = this.tileset.tiles[0];
+            this.boundingBox = rootTile.boundingVolume.getBoundingBox();
+            if (rootTile.transform) {
+                const transform = new THREE.Matrix4();
+                transform.fromArray(rootTile.transform.elements);
+                this.boundingBox.applyMatrix4(transform);
+            }
             // Verify that extensions of the tileset have been registered in the layer
             if (this.tileset.extensionsUsed) {
                 for (const extensionUsed of this.tileset.extensionsUsed) {
