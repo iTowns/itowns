@@ -176,7 +176,7 @@ class GeometryLayer extends Layer {
     /**
      * All layer's meshs are removed from scene and disposed from video device.
      */
-    delete() {
+    dispose() {
         // if Layer is attached
         if (this.parent) {
             traverse(this.parent.object3d, (obj) => {
@@ -191,6 +191,14 @@ class GeometryLayer extends Layer {
             this.object3d.parent.remove(this.object3d);
         }
         this.object3d.traverse(disposeMesh);
+    }
+
+    /**
+     * Deprecated function. Use dispose()
+     */
+    delete() {
+        console.warn('`GeometryLayer.delete` method is deprecated. Please use `GeometryLayer.dispose` instead.');
+        this.dispose();
     }
 
     /**

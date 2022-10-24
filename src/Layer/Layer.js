@@ -238,8 +238,16 @@ class Layer extends THREE.EventDispatcher {
      * Remove and dispose all objects from layer.
      */
     // eslint-disable-next-line
-    delete() {
+    dispose() {
         console.warn('Function delete doesn\'t exist for this layer');
+    }
+
+    /**
+     * Deprecated function. Use dispose()
+     */
+    delete() {
+        console.warn('`Layer.delete` method is deprecated. Please use `Layer.dispose` instead.');
+        this.dispose();
     }
 }
 
