@@ -17,13 +17,18 @@ class RasterLayer extends Layer {
     * All layer's textures are removed from scene and disposed from video device.
     * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
     */
-    dispose(clearCache) {
-        if (clearCache) {
-            this.cache.dispose();
-        }
+    dispose() {
         for (const root of this.parent.level0Nodes) {
             root.traverse(removeLayeredMaterialNodeLayer(this.id));
         }
+    }
+
+    /**
+     * Deprecated function. Use dispose()
+     */
+    delete() {
+        console.warn('`RasterLayer.delete` method is deprecated. Please use `RasterLayer.dispose` instead.');
+        this.dispose();
     }
 }
 

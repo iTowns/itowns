@@ -252,13 +252,13 @@ class Layer extends THREE.EventDispatcher {
      * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
      */
     // eslint-disable-next-line
-    dispose(clearCache) {
-        if (clearCache) {
-            this.cache.dispose();
-        }
-        console.warn('Function dispose only clears the cache for this layer');
+    dispose() {
+        console.warn('Function delete doesn\'t exist for this layer');
     }
 
+    /**
+     * Deprecated function. Use dispose()
+     */
     delete() {
         console.warn('`Layer.delete` method is deprecated. Please use `Layer.dispose` instead.');
         this.dispose();

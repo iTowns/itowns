@@ -171,11 +171,7 @@ class GeometryLayer extends Layer {
      * All layer's 3D objects are removed from the scene and disposed from the video device.
      * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
      */
-    dispose(clearCache) {
-        if (clearCache) {
-            this.cache.dispose();
-        }
-
+    dispose() {
         // if Layer is attached
         if (this.parent) {
             ObjectRemovalHelper.removeChildrenAndCleanupRecursively(this, this.parent.object3d);
@@ -185,6 +181,14 @@ class GeometryLayer extends Layer {
             this.object3d.parent.remove(this.object3d);
         }
         ObjectRemovalHelper.removeChildrenAndCleanupRecursively(this, this.object3d);
+    }
+
+    /**
+     * Deprecated function. Use dispose()
+     */
+    delete() {
+        console.warn('`GeometryLayer.delete` method is deprecated. Please use `GeometryLayer.dispose` instead.');
+        this.dispose();
     }
 
     /**
