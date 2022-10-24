@@ -290,7 +290,7 @@ class LabelLayer extends Layer {
         }
     }
 
-    delete() {
+    dispose() {
         this.domElement.parentElement.removeChild(this.domElement);
 
         this.parent.level0Nodes.forEach(obj => this.removeLabelsFromNodeRecursive(obj));

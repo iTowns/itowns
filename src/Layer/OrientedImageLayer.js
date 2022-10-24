@@ -206,8 +206,8 @@ class OrientedImageLayer extends GeometryLayer {
      * You need to replace OrientedImageLayer.material applied on each object, if you want to continue displaying them.
      * This issue (see #1018 {@link https://github.com/iTowns/itowns/issues/1018}) will be fixed when OrientedImageLayer will be a ColorLayer.
      */
-    delete() {
-        super.delete();
+    dispose() {
+        super.dispose();
         this.material.visible = false;
         console.warn('You need to replace OrientedImageLayer.material applied on each object. This issue will be fixed when OrientedImageLayer will be a ColorLayer. the material visibility is set to false. To follow issue see https://github.com/iTowns/itowns/issues/1018');
     }
