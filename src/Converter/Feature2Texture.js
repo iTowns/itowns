@@ -24,7 +24,7 @@ function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, 
     // build contour
     ctx.beginPath();
     for (const indice of indices) {
-        if (indice.extent && indice.extent.intersectsExtent(extent)) {
+        if (indice.extent && Extent.intersectsExtent(indice.extent, extent)) {
             const offset = indice.offset * size;
             const count = offset + indice.count * size;
             ctx.moveTo(vertices[offset], vertices[offset + 1]);
@@ -108,7 +108,7 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
     const globals = { zoom: extent.zoom };
 
     for (const geometry of feature.geometries) {
-        if (geometry.extent.intersectsExtent(extent)) {
+        if (Extent.intersectsExtent(geometry.extent, extent)) {
             const context = { globals, properties: () => geometry.properties };
             const contextStyle = (geometry.properties.style || style).drawingStylefromContext(context);
 
