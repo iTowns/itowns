@@ -70,8 +70,13 @@ class WMTSSource extends TMSSource {
         super(source);
 
         this.isWMTSSource = true;
+
+        // Add ? at the end of the url if it is not already in the given URL
+        if (!this.url.endsWith('?')) {
+            this.url = `${this.url}?`;
+        }
         this.url = `${this.url}` +
-            `?LAYER=${source.name}` +
+            `LAYER=${source.name}` +
             `&FORMAT=${this.format}` +
             '&SERVICE=WMTS' +
             `&VERSION=${source.version || '1.0.0'}` +

@@ -114,7 +114,11 @@ class WMSSource extends Source {
 
         const crsPropName = (this.version === '1.3.0') ? 'CRS' : 'SRS';
 
-        this.url = `${source.url}?SERVICE=WMS&REQUEST=GetMap&LAYERS=${
+        // Add ? at the end of the url if it is not already in the given URL
+        if (!this.url.endsWith('?')) {
+            this.url = `${this.url}?`;
+        }
+        this.url = `${this.url}SERVICE=WMS&REQUEST=GetMap&LAYERS=${
             this.name}&VERSION=${
             this.version}&STYLES=${
             this.style}&FORMAT=${
