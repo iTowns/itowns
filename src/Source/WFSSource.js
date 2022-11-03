@@ -124,6 +124,10 @@ class WFSSource extends Source {
         this.typeName = source.typeName;
         this.version = source.version || '2.0.2';
 
+        // Add ? at the end of the url if it is not already in the given URL
+        if (!this.url.endsWith('?')) {
+            this.url = `${this.url}?`;
+        }
         this.url = `${source.url
         }SERVICE=WFS&REQUEST=GetFeature&typeName=${this.typeName
         }&VERSION=${this.version
