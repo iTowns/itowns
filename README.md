@@ -29,7 +29,7 @@ here](http://www.itowns-project.org/itowns/examples/). Some examples available:
 
 * [Globe with WFS data](http://www.itowns-project.org/itowns/examples/#source_stream_wfs_3d)
 * [Plane mode with Vector Tiles](http://www.itowns-project.org/itowns/examples/#vector_tile_raster_2d)
-* [3D effect using scene postprocessing](http://www.itowns-project.org/itowns/examples/#effects-stereo)
+* [3D effect using scene postprocessing](http://www.itowns-project.org/itowns/examples/#effects_stereo)
 * [Globe with split rendering](http://www.itowns-project.org/itowns/examples/#effects_split)
 
 [![iTowns examples](http://www.itowns-project.org/images/montage.jpg)](http://www.itowns-project.org/itowns/examples/)
