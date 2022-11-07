@@ -495,6 +495,14 @@ class LabelLayer extends GeometryLayer {
 
         this.parent.level0Nodes.forEach(obj => this.removeLabelsFromNodeRecursive(obj));
     }
+
+    /**
+     * Deprecated function. Use dispose()
+     */
+    delete() {
+        console.warn('`LabelLayer.delete` method is deprecated. Please use `LabelLayer.dispose` instead.');
+        this.dispose();
+    }
 }
 
 export default LabelLayer;
