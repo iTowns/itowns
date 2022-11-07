@@ -194,6 +194,14 @@ class GeometryLayer extends Layer {
     }
 
     /**
+     * Deprecated function. Use dispose()
+     */
+    delete() {
+        console.warn('`GeometryLayer.delete` method is deprecated. Please use `GeometryLayer.dispose` instead.');
+        this.dispose();
+    }
+
+    /**
      * Picking method for this layer. It uses the {@link Picking#pickObjectsAt}
      * method.
      *

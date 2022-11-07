@@ -241,6 +241,14 @@ class Layer extends THREE.EventDispatcher {
     dispose() {
         console.warn('Function delete doesn\'t exist for this layer');
     }
+
+    /**
+     * Deprecated function. Use dispose()
+     */
+    delete() {
+        console.warn('`Layer.delete` method is deprecated. Please use `Layer.dispose` instead.');
+        this.dispose();
+    }
 }
 
 export default Layer;
