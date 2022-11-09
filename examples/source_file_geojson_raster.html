@@ -33,7 +33,7 @@
             var menuGlobe = new GuiTools('menuDiv', view);
 
             setupLoadingScreen(viewerDiv, view);
-            FeatureToolTip.init(viewerDiv, view);
+            // FeatureToolTip.init(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -62,15 +62,18 @@
 
             // Declare the source for the data on Ariege area
             const ariegeSource = new itowns.FileSource({
-                url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
+                url: './vector.json',
                 crs: 'EPSG:4326',
                 format: 'application/json',
+                parser: itowns.WorkerParser.parse,
+                // parser: itowns.GeoJsonParser.parse,
             });
             // Create a ColorLayer for the Ariege area
             const ariegeLayer = new itowns.ColorLayer('ariege', {
                 name: 'ariege',
                 transparent: true,
                 source: ariegeSource,
+                crs: 'EPSG:4326',
                 style: new itowns.Style({
                     fill: {
                         color: 'orange',
@@ -82,38 +85,13 @@
                 }),
             });
             // Add the Ariege ColorLayer to the view and grant it a tooltip
-            view.addLayer(ariegeLayer).then(FeatureToolTip.addLayer);
-
-
-            // Declare the source for the data on Pyrenees Orientales area
-            const pyoSource = new itowns.FileSource({
-                url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson',
-                crs: 'EPSG:4326',
-                format: 'application/json',
-            });
-            // Create a ColorLayer for the Pyrenees Orientales area
-            const pyoLayer = new itowns.ColorLayer('pyrenees-orientales', {
-                name: 'pyrenees-orientales',
-                transparent: true,
-                source: pyoSource,
-                style: new itowns.Style({
-                    fill: {
-                        pattern: 'images/cross.png',
-                        opacity: 0.8,
-                    },
-                    stroke: {
-                        color:'IndianRed',
-                    },
-                }),
-            });
-            // Add The Pyrennees Orientales ColorLayer to the view and grant it a tooltip
-            view.addLayer(pyoLayer).then(FeatureToolTip.addLayer);
+            view.addLayer(ariegeLayer)//.then(FeatureToolTip.addLayer);
 
 
             // Center the camera on the data extents
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 const layersExtent = ariegeSource.extent.clone();
-                layersExtent.union(pyoSource.extent);
+                // layersExtent.union(pyoSource.extent);
                 view.controls.lookAtCoordinate(layersExtent, false);
             });
 
