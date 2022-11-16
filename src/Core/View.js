@@ -195,7 +195,7 @@ class View extends THREE.EventDispatcher {
 
         this.scene = options.scene3D || new THREE.Scene();
         if (!options.scene3D) {
-            this.scene.autoUpdate = false;
+            this.scene.matrixWorldAutoUpdate = false;
         }
 
         this.camera = new Camera(
