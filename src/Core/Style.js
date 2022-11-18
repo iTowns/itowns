@@ -1,4 +1,3 @@
-import { FEATURE_TYPES } from 'Core/Feature';
 import Cache from 'Core/Scheduler/Cache';
 import Fetcher from 'Provider/Fetcher';
 import * as mapbox from '@mapbox/mapbox-gl-style-spec';
@@ -437,41 +436,6 @@ class Style {
     clone() {
         const clone = new Style();
         return clone.copy(this);
-    }
-
-    /**
-     * set Style from geojson properties.
-     * @param {object} properties geojson properties.
-     * @param {number} type
-     * @returns {Style}
-     */
-    setFromGeojsonProperties(properties, type) {
-        // TODO !! FT GC
-        // To be removed because the user himself had to define the map properties to style
-        if (type === FEATURE_TYPES.POINT) {
-            this.point.color = properties.fill;
-            this.point.opacity = properties['fill-opacity'];
-            this.point.line = properties.stroke;
-            this.point.radius = properties.radius;
-
-            this.text.color = properties['label-color'];
-            this.text.opacity = properties['label-opacity'];
-            this.text.size = properties['label-size'];
-
-            if (properties.icon) {
-                this.icon.source = properties.icon;
-            }
-        } else {
-            this.stroke.color = properties.stroke;
-            this.stroke.width = properties['stroke-width'];
-            this.stroke.opacity = properties['stroke-opacity'];
-
-            if (type !== FEATURE_TYPES.LINE) {
-                this.fill.color = properties.fill;
-                this.fill.opacity = properties['fill-opacity'];
-            }
-        }
-        return this;
     }
 
     /**

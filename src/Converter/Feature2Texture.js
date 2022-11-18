@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { FEATURE_TYPES } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Style from '../Core/Style';
 
 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 const matrix = svg.createSVGMatrix();
@@ -110,6 +111,9 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
     for (const geometry of feature.geometries) {
         if (Extent.intersectsExtent(geometry.extent, extent)) {
             const context = { globals, properties: () => geometry.properties };
+            if (geometry.properties.style && geometry.properties.style.isStyle !== true) {
+                geometry.properties.style = new Style(geometry.properties.style);
+            }
             const contextStyle = (geometry.properties.style || style).drawingStylefromContext(context);
 
             if (contextStyle) {
