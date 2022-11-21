@@ -48,8 +48,6 @@
                 "PotreeLayer",
                 "C3DTilesLayer",
                 "LabelLayer",
-                "RasterNode",
-
                 "GlobeLayer",
                 "PlanarLayer",
                 "Atmosphere"
@@ -109,7 +107,8 @@
             "Renderer": [
                 "OrientedImageMaterial",
                 "Camera",
-                "ShaderChunkManager"
+                "ShaderChunkManager",
+                "RasterTile"
             ],
 
             "3D Tiles": [
