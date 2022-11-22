@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import B3dmParser from 'Parser/B3dmParser';
 import PntsParser from 'Parser/PntsParser';
 import Fetcher from 'Provider/Fetcher';
+import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import utf8Decoder from 'Utils/Utf8Decoder';
 
 function b3dmToMesh(data, layer, url) {
@@ -28,6 +29,10 @@ function pntsParse(data, layer) {
         const material = layer.material ?
             layer.material.clone() :
             new THREE.PointsMaterial({ size: 0.05, vertexColors: true });
+
+        // refer material properties in the layer so when layers opacity and visibility is updated, the material is
+        // automatically updated
+        ReferLayerProperties(material, layer);
 
         // creation points with geometry and material
         const points = new THREE.Points(result.point.geometry, material);
