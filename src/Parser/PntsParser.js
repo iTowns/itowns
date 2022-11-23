@@ -67,7 +67,7 @@ export default {
                 // parse batch table
                 const sizeBegin = byteOffset + pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
                 const BTBuffer = buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin);
-                batchTable = new C3DTBatchTable(BTBuffer, pntsHeader.BTBinaryLength, FTJSON.BATCH_LENGTH, registeredExtensions);
+                batchTable = new C3DTBatchTable(BTBuffer, pntsHeader.BTJSONLength, pntsHeader.BTBinaryLength, FTJSON.BATCH_LENGTH, registeredExtensions);
             }
 
             const pnts = { point, batchTable };
