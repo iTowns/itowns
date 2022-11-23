@@ -6,7 +6,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import Label from 'Core/Label';
 import { FEATURE_TYPES } from 'Core/Feature';
-import { readExpression } from 'Core/Style';
+import Style, { readExpression } from 'Core/Style';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
@@ -110,7 +110,7 @@ class LabelLayer extends Layer {
                 if (f.size == 2) { coord.z = 0; }
                 if (!_extent.isPointInside(coord)) { return; }
 
-                const geometryField = g.properties.style && g.properties.style.text.field;
+                const geometryField = g.properties.style && g.properties.style.text && g.properties.style.text.field;
                 let content;
                 const context = { globals, properties: () => g.properties };
                 if (this.labelDomelement) {
@@ -130,9 +130,12 @@ class LabelLayer extends Layer {
                     content = this.style.getTextFromProperties(context);
                 }
 
+                if (g.properties.style && g.properties.style.isStyle !== true) {
+                    g.properties.style = new Style(g.properties.style);
+                }
                 const style = (g.properties.style || f.style || this.style).symbolStylefromContext(context);
-
                 const label = new Label(content, coord.clone(), style, this.source.sprites);
+
                 label.layerId = this.id;
                 label.padding = this.margin || label.padding;
 

@@ -25,6 +25,7 @@ function readCRS(json) {
 
 function setPropertiesStyle(type, properties) {
     const style = {};
+    // console.log(properties);
     if (type === FEATURE_TYPES.POINT) {
         const point = {
             ...(properties.fill !== undefined && { color: properties.fill }),
@@ -43,9 +44,18 @@ function setPropertiesStyle(type, properties) {
         if (Object.keys(point).length) {
             style.text = text;
         }
-        if (properties.icon) {
-            style.icon = { source: properties.icon };
+        const icon = {
+            ...(properties.icon !== undefined && { source: properties.icon }),
+            ...(properties['icon-scale'] !== undefined && { size: properties['icon-scale'] }),
+            ...(properties['icon-opacity'] !== undefined && { opacity: properties['icon-opacity'] }),
+            ...(properties['icon-color'] !== undefined && { color: properties['icon-color'] }),
+        };
+        if (Object.keys(icon).length) {
+            style.icon = icon;
         }
+        // if (properties.icon) {
+        //     style.icon = { source: properties.icon };
+        // }
     } else {
         const stroke = {
             ...(properties.stroke !== undefined && { color: properties.stroke }),
