@@ -38,6 +38,24 @@ body {
     margin: 0px;
 }
 
+#attribution {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 25%;
+    overflow: hidden;
+}
+
+#attribution, .text {
+    z-index: 2;
+    color: #eee;
+    font: 13px 'Lucida Grande',sans-serif;
+    max-width: 40%;
+    background: #1a1a1a;
+    opacity: 0.8;
+    padding: 10px;
+}
+
 .text a {
     color: lightcoral;
 }
