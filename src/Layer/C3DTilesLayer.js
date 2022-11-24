@@ -22,7 +22,7 @@ class C3DTilesLayer extends GeometryLayer {
      * }, view);
      * View.prototype.addLayer.call(view, l3dt);
      *
-     * // Create a new 3d-tiles layer from a Cesion ion server
+     * // Create a new 3d-tiles layer from a Cesium ion server
      * const l3dt = new C3DTilesLayer('3dtiles', {
      *      name: '3dtl',
      *      source: new C3DTilesIonSource({
