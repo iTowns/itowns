@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Itowns - 3d-tiles from Cesium ion example</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <style type="text/css">
+            #description {
+                z-index: 2;
+                left: 10px;
+                width: 30%;
+            }
+        </style>
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="description">
+            <p><b>This example displays a dataset representing extruded OSM buildings from Cesium ion 
+                with Cesium default access token. Zoom to any place in the world to see the buildings. <br>
+                Buildings may appear to "fly" above the ground in some places, this is due to the combination 
+                of precision errors of this dataset and of the 3D terrain we use in this example. </b>
+            </p>
+        </div>
+        <div id="attribution"></div>
+        <div id="viewerDiv"></div>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+        <!-- Import iTowns LoadingScreen plugin -->
+        <script src="js/GUI/LoadingScreen.js"></script>
+
+        <script type="text/javascript">
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 25000000,
+            }
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            var viewOptions = {
+                diffuse: new itowns.THREE.Color(0xa0d5fc)
+            };
+            var view = new itowns.GlobeView(viewerDiv, placement, viewOptions);
+            
+            // Setup loading screen
+            setupLoadingScreen(viewerDiv, view);
+
+            // ---------- ADD A BASEMAP: ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
+                config.source = new itowns.TMSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer);
+            });
+
+            // ---------- ADD DIGITAL ELEVATION MODELS : ----------
+
+             // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                );
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+            // ---------- ADD 3D TILES MODEL FROM CESIUM ION SERVER : ----------
+
+            // Enable draco compression (used by this tileset)
+            itowns.enableDracoLoader('./libs/draco/');
+
+            // Create a new 3D Tiles batch table hierarchy extension manager and add it to the tileset since this tileset
+            // uses this extension
+            const extensions = new itowns.C3DTExtensions();
+            extensions.registerExtension("3DTILES_batch_table_hierarchy",
+                { [itowns.C3DTilesTypes.batchtable]:
+                    itowns.C3DTBatchTableHierarchyExtension });
+            
+            // Create a 3D Tiles layer from Cesium ion server with Cesium default access token and assetId of the 
+            // OSM buildings dataset.
+            var threeDTilesIonSource = new itowns.C3DTilesIonSource({
+                accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmMmM4Yzc0YS02ZTM4LTQwODItOGI4ZC04OTI3Yzk5MjJlMGEiLCJpZCI6MjU5LCJpYXQiOjE2Njk5MDUxNDh9.tcSYhz3-NLfuOdb1w9wHOw-Ps85-AyR_mBYRHDifEi8',
+                assetId: 96188
+            });
+            threeDTilesIonSource.whenReady.then(displayAttributions); // Add attributions returned by cesium ion server
+            var threeDTilesIonLayer = new itowns.C3DTilesLayer('3d-tiles-cesium-ion', {
+                name: '3D Tiles from Cesium Ion',
+                source: threeDTilesIonSource,
+                registeredExtensions: extensions,
+            }, view);
+
+            itowns.View.prototype.addLayer.call(view, threeDTilesIonLayer);
+
+            // Automatically convert cesium html attributions into html node elements and append them to the
+            // attributions div
+            function displayAttributions() {
+                var attribDiv = document.getElementById('attribution');
+                for (attrib of threeDTilesIonSource.attribution) {
+                    var attribElt = document.createElement('template');
+                    attribElt.innerHTML = attrib.html;
+                    attribDiv.appendChild(attribElt.content.firstChild);
+                }
+            }
+
+            // ---------- ADD LIGHTS: ----------
+            var ambLight = new itowns.THREE.AmbientLight(0xffffff, 1);
+            view.scene.add( ambLight );
+        </script>
+    </body>
+</html>
