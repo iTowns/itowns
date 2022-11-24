@@ -13,11 +13,21 @@ class C3DTilesLayer extends GeometryLayer {
      * @extends GeometryLayer
      *
      * @example
-     * // Create a new Layer 3d-tiles For DiscreteLOD
+     * // Create a new 3d-tiles layer from a web server
      * const l3dt = new C3DTilesLayer('3dtiles', {
      *      name: '3dtl',
      *      source: new C3DTilesSource({
      *           url: 'https://tileset.json'
+     *      })
+     * }, view);
+     * View.prototype.addLayer.call(view, l3dt);
+     *
+     * // Create a new 3d-tiles layer from a Cesion ion server
+     * const l3dt = new C3DTilesLayer('3dtiles', {
+     *      name: '3dtl',
+     *      source: new C3DTilesIonSource({
+     *              accessToken: 'myAccessToken',
+                    assetId: 12
      *      })
      * }, view);
      * View.prototype.addLayer.call(view, l3dt);
