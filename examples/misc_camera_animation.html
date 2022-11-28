@@ -2,49 +2,82 @@
     <head>
         <title>Itowns - Globe travel</title>
 
-        <style type="text/css">
-            #miniDiv {
-                display: block;
-                margin-bottom: 20px;
-                margin-right: 20px;
-                position: absolute;
-                width:100px;
-                height:100px;
-                left: 20;
-                bottom: 0;
-                color: white;
-            }
-        </style>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="js/GUI/GuiTools.js"></script>
+
+        <!-- Import iTowns source code -->
         <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+
+
         <script type="text/javascript">
-            // # Simple Globe viewer
-            /* global itowns, Promise */
-            // Define initial camera position
-            var placement = {
+
+
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
                 range: 25000000,
             }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
-            var viewerDiv = document.getElementById('viewerDiv');
+            const viewerDiv = document.getElementById('viewerDiv');
 
-            // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, placement);
-            var time = 50000;
-            var pathTravel = [];
-            const atmosphere = view.getLayerById('atmosphere');
-            atmosphere.setRealisticOn(true);
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
 
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+
+            // Display a realistic atmosphere
+            view.getLayerById('atmosphere').setRealisticOn(true);
+
+
+            // ---------- DISPLAY ORTHO-IMAGES : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ColorLayer('Ortho', config),
+                );
+            });
+
+
+
+            // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
+
+            // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                );
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+
+
+            // ---------- ANIMATE CAMERA : ----------
+
+            const time = 50000;
+
+            // Array containing CameraTransformOptions (see
+            // http://www.itowns-project.org/itowns/docs/#api/Controls/CameraUtils) for each step of the animation.
+            const pathTravel = [];
             pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', 2.0889, 42.809), range: 100000, time: time * 0.2 });
             pathTravel.push({ range: 13932, time: time * 0.2, tilt: 7.59, heading: 110.9 });
             pathTravel.push({ tilt: 8, time: time * 0.2 });
@@ -56,33 +89,11 @@
             pathTravel.push({ coord: new itowns.Coordinates('EPSG:4326', 9.114, 41.973), tilt: 15.92, heading: 13.18, time: time });
             pathTravel.push({ range: 16601, time: time * 0.2 });
 
-            function addLayerCb(layer) {
-                return view.addLayer(layer);
-            }
-
             function travel() {
-                var camera = view.camera.camera3D;
                 return itowns.CameraUtils
-                    .sequenceAnimationsToLookAtTarget(view, camera, pathTravel);
+                    .sequenceAnimationsToLookAtTarget(view, view.camera.camera3D, pathTravel);
             }
 
-            // Add one imagery layer to the scene
-            // This layer is defined in a json file but it could be defined as a plain js
-            // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer);
-            });
-            // Add two elevation layers.
-            // These will deform iTowns globe geometry to represent terrain elevation.
-            function addElevationLayerFromConfig(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer);
-            }
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
