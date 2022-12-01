@@ -125,13 +125,13 @@ class FileSource extends Source {
             console.warn('FileSource projection parameter is deprecated, use crs instead.');
             source.crs = source.crs || source.projection;
         }
-        if (!source.crs) {
-            if (source.features && source.features.crs) {
-                source.crs = source.features.crs;
-            } else {
-                throw new Error('source.crs is required in FileSource');
-            }
-        }
+        // if (!source.crs) {
+        //     if (source.features && source.features.crs) {
+        //         source.crs = source.features.crs;
+        //     } else {
+        //         throw new Error('source.crs is required in FileSource');
+        //     }
+        // }
 
         if (!source.url && !source.fetchedData && !source.features) {
             throw new Error(`url, fetchedData and features are not set in
