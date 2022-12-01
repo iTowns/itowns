@@ -1,6 +1,14 @@
-import Source from 'Source/Source';
+import Source, { supportedParsers } from 'Source/Source';
 import Cache from 'Core/Scheduler/Cache';
 import CRS from 'Core/Geographic/Crs';
+
+function checkResponse(response) {
+    if (!response.ok) {
+        var error = new Error(`Error loading ${response.url}: status ${response.status}`);
+        error.response = response;
+        throw error;
+    }
+}
 
 /**
  * @classdesc
@@ -136,11 +144,56 @@ class FileSource extends Source {
 
         this.isFileSource = true;
 
+        const supportedFetchers = new Map([
+            // ['image/x-bil;bits=32', Fetcher.textureFloat],
+            // ['geojson', Fetcher.json],
+            ['application/json', function json(res) { return res.json(); }],
+            ['application/geo+json', function json(res) { return res.json(); }],
+            // ['text/plain', function text(res) {
+            //     return res.text()
+            //         .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
+            // }],
+            ['application/kml', function kml(res) {
+                return res.text()
+                    .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
+            }],
+            ['application/vnd.google-earth.kml+xml', function kml(res) {
+                return res.text()
+                    .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
+            }],
+            // ['application/gpx', Fetcher.xml],
+            // ['application/x-protobuf;type=mapbox-vector', Fetcher.arrayBuffer],
+            // ['application/gtx', Fetcher.arrayBuffer],
+            // ['application/isg', Fetcher.text],
+            // ['application/gdf', Fetcher.text],
+        ]);
+
         this.fetchedData = source.fetchedData;
         if (!this.fetchedData && !source.features) {
-            this.whenReady = this.fetcher(this.urlFromExtent(), this.networkOptions).then((f) => {
-                this.fetchedData = f;
-            });
+            // this.whenReady = this.fetcher(this.urlFromExtent(), this.networkOptions)
+            //     .then((f) => {
+            //         this.fetchedData = f;
+            //     });
+            this.whenReady = fetch(this.urlFromExtent(), this.networkOptions)
+                .then((response) => {
+                    checkResponse(response);
+                    const contentType = this.format ? this.format : response.headers.get('content-type').split(';')[0];
+                    console.log(contentType);
+                    // console.log(this.parser);
+                    if (!this.parser) { this.parser = supportedParsers.get(contentType); }
+                    this.isVectorSource = true;
+                    return supportedFetchers.get(contentType)(response);
+                })
+                .then((f) => {
+                    if (!source.crs) {
+                        console.log('TOP');
+                        console.log(f);
+                        console.log(source);
+                        source.crs =  f.crs || 'EPSG:4326';
+                    }
+                    console.log(f);
+                    this.fetchedData = f;
+                });
         } else if (source.features) {
             this._featuresCaches[source.features.crs] = new Cache();
             this._featuresCaches[source.features.crs].setByArray(Promise.resolve(source.features), [0]);
