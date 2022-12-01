@@ -24,7 +24,10 @@ export const supportedFetchers = new Map([
 export const supportedParsers = new Map([
     ['geojson', GeoJsonParser.parse],
     ['application/json', GeoJsonParser.parse],
+    ['application/geo+json', GeoJsonParser.parse],
     ['application/kml', KMLParser.parse],
+    ['application/vnd.google-earth.kml+xml', KMLParser.parse],
+    ['text/plain', KMLParser.parse],
     ['application/gpx', GpxParser.parse],
     ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
     ['application/gtx', GTXParser.parse],
@@ -137,8 +140,10 @@ class Source extends InformationsData {
         this.url = source.url;
         this.format = source.format;
         this.fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
-        this.parser = source.parser || supportedParsers.get(source.format) || (d => d);
-        this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
+        // this.parser = source.parser || supportedParsers.get(source.format) || (d => d);
+        this.parser = source.parser || supportedParsers.get(source.format);
+        // this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
+        this.isVectorSource = false;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.attribution = source.attribution;
         this.whenReady = Promise.resolve();
@@ -186,6 +191,7 @@ class Source extends InformationsData {
         let features = cache.getByArray(key);
         if (!features) {
             // otherwise fetch/parse the data
+            if (!this.parser) { this.parser = (d => d); }
             features = cache.setByArray(fetchSourceData(this, extent).then(file => this.parser(file, { out, in: this }),
                 err => this.handlingError(err)), key);
             /* istanbul ignore next */
