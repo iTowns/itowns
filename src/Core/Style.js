@@ -368,10 +368,13 @@ class Style {
         this.icon = {};
         defineStyleProperty(this, 'icon', 'source', params.icon.source);
         defineStyleProperty(this, 'icon', 'key', params.icon.key);
-        defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor, 'center');
-        defineStyleProperty(this, 'icon', 'size', params.icon.size, 1);
+        // defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor, 'center');
+        defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor);
+        // defineStyleProperty(this, 'icon', 'size', params.icon.size, 1);
+        defineStyleProperty(this, 'icon', 'size', params.icon.size);
         defineStyleProperty(this, 'icon', 'color', params.icon.color);
-        defineStyleProperty(this, 'icon', 'opacity', params.icon.opacity, 1.0);
+        // defineStyleProperty(this, 'icon', 'opacity', params.icon.opacity, 1.0);
+        defineStyleProperty(this, 'icon', 'opacity', params.icon.opacity);
     }
 
     /**
@@ -589,6 +592,8 @@ class Style {
 
             cIcon.width = icon.width * this.icon.size;
             cIcon.height = icon.height * this.icon.size;
+            cIcon.style.color = this.icon.color;
+            cIcon.style.opacity = this.icon.opacity;
             cIcon.style.position = 'absolute';
             cIcon.style.top = '0';
             cIcon.style.left = '0';
