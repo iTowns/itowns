@@ -53,7 +53,7 @@ function _preprocessLayer(view, layer, parentLayer) {
         // Find crs projection layer, this is projection destination
         layer.crs = view.referenceCrs;
     } else if (!layer.crs) {
-        if (parentLayer && parentLayer.tileMatrixSets && parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.crs))) {
+        if (parentLayer && parentLayer.tileMatrixSets && source.crs && parentLayer.tileMatrixSets.includes(CRS.formatToTms(source.crs))) {
             layer.crs = source.crs;
         } else {
             layer.crs = parentLayer && parentLayer.extent.crs;
