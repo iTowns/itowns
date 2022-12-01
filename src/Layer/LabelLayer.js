@@ -130,10 +130,25 @@ class LabelLayer extends Layer {
                     content = this.style.getTextFromProperties(context);
                 }
 
-                if (g.properties.style && g.properties.style.isStyle !== true) {
-                    g.properties.style = new Style(g.properties.style);
-                }
-                const style = (g.properties.style || f.style || this.style).symbolStylefromContext(context);
+                // if (g.properties.style && g.properties.style.isStyle !== true) {
+                //     g.properties.style = new Style(g.properties.style);
+                // }
+                // const style = (g.properties.style || f.style || this.style).symbolStylefromContext(context);
+
+                const styleConc = {
+                    icon: {
+                        ...JSON.parse(JSON.stringify(this.style.icon)),
+                        ...JSON.parse(JSON.stringify(g.properties.style.icon)),
+                        ...JSON.parse(JSON.stringify(f.style.icon)),
+                    },
+                    text: {
+                        ...JSON.parse(JSON.stringify(this.style.text)),
+                        ...JSON.parse(JSON.stringify(g.properties.style.text)),
+                        ...JSON.parse(JSON.stringify(f.style.text)),
+                    },
+                };
+                const style = new Style(styleConc).symbolStylefromContext(context);
+
                 const label = new Label(content, coord.clone(), style, this.source.sprites);
 
                 label.layerId = this.id;
