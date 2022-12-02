@@ -138,12 +138,12 @@ class LabelLayer extends Layer {
                 const styleConc = {
                     icon: {
                         ...JSON.parse(JSON.stringify(this.style.icon)),
-                        ...JSON.parse(JSON.stringify(g.properties.style.icon)),
+                        ...JSON.parse(JSON.stringify(g.properties.style ? g.properties.style.icon : {})),
                         ...JSON.parse(JSON.stringify(f.style.icon)),
                     },
                     text: {
                         ...JSON.parse(JSON.stringify(this.style.text)),
-                        ...JSON.parse(JSON.stringify(g.properties.style.text)),
+                        ...JSON.parse(JSON.stringify(g.properties.style && g.properties.style.text ? g.properties.style.text : {})),
                         ...JSON.parse(JSON.stringify(f.style.text)),
                     },
                 };
