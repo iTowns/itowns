@@ -111,10 +111,23 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
     for (const geometry of feature.geometries) {
         if (Extent.intersectsExtent(geometry.extent, extent)) {
             const context = { globals, properties: () => geometry.properties };
-            if (geometry.properties.style && geometry.properties.style.isStyle !== true) {
-                geometry.properties.style = new Style(geometry.properties.style);
-            }
-            const contextStyle = (geometry.properties.style || style).drawingStylefromContext(context);
+            // const contextStyle = (geometry.properties.style || style).drawingStylefromContext(context);
+            const styleConc = {
+                fill: {
+                    ...geometry.properties.style && geometry.properties.style.fill ? geometry.properties.style.fill : {},
+                    ...style.fill,
+                },
+                stroke: {
+                    ...geometry.properties.style && geometry.properties.style.stroke ? geometry.properties.style.stroke : {},
+                    ...style.stroke,
+                },
+                point: {
+                    ...geometry.properties.style && geometry.properties.style.point ? geometry.properties.style.point : {},
+                    ...style.point,
+                },
+            };
+
+            const contextStyle = new Style(styleConc).drawingStylefromContext(context);
 
             if (contextStyle) {
                 if (
@@ -204,7 +217,8 @@ export default {
 
             // Draw the canvas
             for (const feature of collection.features) {
-                drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
+                // drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
+                drawFeature(ctx, feature, featureExtent, style, invCtxScale);
             }
 
             texture = new THREE.CanvasTexture(c);
