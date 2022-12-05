@@ -84,7 +84,8 @@ class ColorLayer extends RasterLayer {
         deprecatedColorLayerOptions(config);
         super(id, config);
         this.isColorLayer = true;
-        this.style = new Style(config.style);
+        // this.style = new Style(config.style);
+        this.style = config.style;
         this.defineLayerProperty('visible', true);
         this.defineLayerProperty('opacity', 1.0);
         this.defineLayerProperty('sequence', 0);

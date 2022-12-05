@@ -7,6 +7,7 @@ import Extent from 'Core/Geographic/Extent';
 import Crs from 'Core/Geographic/Crs';
 import OrientationUtils from 'Utils/OrientationUtils';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Style from '../Core/Style';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 const dim_ref = new THREE.Vector2();
@@ -217,7 +218,7 @@ function featureToPoint(feature, options) {
     const globals = { point: true };
     for (const geometry of feature.geometries) {
         const context = { globals, properties: () => geometry.properties };
-        const style = feature.style.drawingStylefromContext(context);
+        const style = new Style(feature.style).drawingStylefromContext(context);
 
         const start = geometry.indices[0].offset;
         const count = geometry.indices[0].count;
@@ -272,7 +273,7 @@ function featureToLine(feature, options) {
         // Multi line case
         for (const geometry of feature.geometries) {
             const context = { globals, properties: () => geometry.properties };
-            const style = feature.style.drawingStylefromContext(context);
+            const style = new Style(feature.style).drawingStylefromContext(context);
 
             const start = geometry.indices[0].offset;
             // To avoid integer overflow with indice value (16 bits)
@@ -303,7 +304,7 @@ function featureToLine(feature, options) {
         lines = new THREE.LineSegments(geom, options.lineMaterial);
     } else {
         const context = { globals, properties: () => feature.geometries[0].properties };
-        const style = feature.style.drawingStylefromContext(context);
+        const style = new Style(feature.style).drawingStylefromContext(context);
 
         fillColorArray(colors, count, toColor(style.stroke.color));
         geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
@@ -345,7 +346,8 @@ function featureToPolygon(feature, options) {
             break;
         }
         const context = { globals, properties: () => geometry.properties };
-        const style = feature.style.drawingStylefromContext(context);
+        // const style = feature.style.drawingStylefromContext(context);
+        const style = new Style(feature.style).drawingStylefromContext(context);
 
         const lastIndice = geometry.indices.slice(-1)[0];
         const end = lastIndice.offset + lastIndice.count;
@@ -411,7 +413,7 @@ function featureToExtrudedPolygon(feature, options) {
 
     for (const geometry of feature.geometries) {
         const context = { globals, properties: () => geometry.properties };
-        const style = feature.style.drawingStylefromContext(context);
+        const style = new Style(feature.style).drawingStylefromContext(context);
 
         // topColor is assigned to the top of extruded polygon
         const topColor = toColor(style.fill.color);

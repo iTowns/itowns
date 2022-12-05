@@ -98,7 +98,7 @@ class LabelLayer extends Layer {
                 return;
             }
 
-            const featureField = f.style && f.style.text.field;
+            // const featureField = f.style && f.style.text.field;
 
             f.geometries.forEach((g) => {
                 // NOTE: this only works because only POINT is supported, it
@@ -115,7 +115,8 @@ class LabelLayer extends Layer {
                 const context = { globals, properties: () => g.properties };
                 if (this.labelDomelement) {
                     content = readExpression(this.labelDomelement, context);
-                } else if (!geometryField && !featureField && !layerField) {
+                // } else if (!geometryField && !featureField && !layerField) {
+                } else if (!geometryField && !layerField) {
                     // Check if there is an icon, with no text
                     if (!(g.properties.style && (g.properties.style.icon.source || g.properties.style.icon.key))
                         && !(f.style && (f.style.icon.source || f.style.icon.key))
@@ -123,11 +124,11 @@ class LabelLayer extends Layer {
                         return;
                     }
                 } else if (geometryField) {
-                    content = g.properties.style.getTextFromProperties(context);
-                } else if (featureField) {
-                    content = f.style.getTextFromProperties(context);
+                    content = new Style(g.properties.style).getTextFromProperties(context);
+                // } else if (featureField) {
+                //     content = new Style(f.style).getTextFromProperties(context);
                 } else if (layerField) {
-                    content = this.style.getTextFromProperties(context);
+                    content = new Style(this.style).getTextFromProperties(context);
                 }
 
                 // if (g.properties.style && g.properties.style.isStyle !== true) {
@@ -137,16 +138,17 @@ class LabelLayer extends Layer {
 
                 const styleConc = {
                     icon: {
-                        ...JSON.parse(JSON.stringify(this.style.icon)),
+                        // ...JSON.parse(JSON.stringify(data.style.icon)),
                         ...JSON.parse(JSON.stringify(g.properties.style ? g.properties.style.icon : {})),
-                        ...JSON.parse(JSON.stringify(f.style.icon)),
+                        ...JSON.parse(JSON.stringify(this.style.icon)),
                     },
                     text: {
-                        ...JSON.parse(JSON.stringify(this.style.text)),
+                        // ...JSON.parse(JSON.stringify(data.style.text)),
                         ...JSON.parse(JSON.stringify(g.properties.style && g.properties.style.text ? g.properties.style.text : {})),
-                        ...JSON.parse(JSON.stringify(f.style.text)),
+                        ...JSON.parse(JSON.stringify(this.style.text)),
                     },
                 };
+
                 const style = new Style(styleConc).symbolStylefromContext(context);
 
                 const label = new Label(content, coord.clone(), style, this.source.sprites);
