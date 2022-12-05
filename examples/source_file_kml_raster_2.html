@@ -59,22 +59,29 @@
             // Fetch, Parse and Convert by iTowns
             var kmlSource = new itowns.FileSource({
                 url: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month_depth.kml',
-                crs: 'EPSG:4326',
+                // crs: 'EPSG:4326',
                 // format: 'application/kml',
             });
+            function ftest(properties){
+                console.log('red');
+                return 'red'
+            };
 
-            var kmlStyle = new itowns.Style({
+            // var kmlStyle = new itowns.Style({
+            var kmlStyle = {
                 zoom: { min: 10, max: 20 },
                 text: {
                     field: '{name}',
-                    // haloColor: 'white',
+                    haloColor: 'white',
                     // haloWidth: 1,
                     // transform: 'uppercase',
                 },
-                // icon: {
-                //     anchor: 'bottom',
-                // },
-            });
+                icon: {
+                    // anchor: 'bottom',
+                    // size: 0.5,
+                },
+            // });
+            };
 
             var kmlLayer = new itowns.ColorLayer('Kml', {
                 source: kmlSource,

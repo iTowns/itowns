@@ -109,7 +109,7 @@ var FeatureToolTip = (function _() {
             content += '</span>';
 
             if (geometry.properties) {
-                content += (geometry.properties.name || geometry.properties.nom || geometry.properties.description || layer.name || '');
+                content += (geometry.properties.description || geometry.properties.name || geometry.properties.nom || layer.name || '');
             }
 
             if (feature.type === itowns.FEATURE_TYPES.POINT) {
