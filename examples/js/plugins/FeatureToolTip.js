@@ -81,7 +81,7 @@ var FeatureToolTip = (function _() {
         for (var p = 0; p < features.length; p++) {
             feature = features[p];
             geometry = feature.geometry;
-            style = (geometry.properties && geometry.properties.style) || feature.style || layer.style;
+            style = new itowns.Style(geometry.properties && geometry.properties.style) || feature.style || layer.style;
             var context = { globals: {}, properties: getGeometryProperties(geometry) };
             style = style.drawingStylefromContext(context);
 
