@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Itowns - Globe + color layers from vector data</title>
+        <title>Itowns - Planar + color layers from vector data</title>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -16,24 +16,33 @@
         <script src="js/GUI/LoadingScreen.js"></script>
         <script src="js/plugins/FeatureToolTip.js"></script>
         <script type="text/javascript">
-            // # Simple Globe viewer
-            /* global itowns, setupLoadingScreen, GuiTools, ToolTip */
+            // # Planar view with one single layer of vector tile
 
-            // Define initial camera position
-            var placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 3.5, 44),
-                range: 1000000,
-            }
+            // Define geographic extent: CRS, min/max X, min/max Y
+            var extent = new itowns.Extent(
+                'EPSG:3857',
+                -20037508.342789244, 20037508.342789244,
+                -20037508.342789255, 20037508.342789244);
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
-            // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, placement);
-            var menuGlobe = new GuiTools('menuDiv', view);
+            // Instanciate PlanarView
+            var view = new itowns.PlanarView(viewerDiv, extent, {
+                maxSubdivisionLevel: 20,
+                controls: {
+                    // We do not want the user to zoom out too much
+                    maxAltitude: 40000000,
+                    // We want to keep the rotation disabled, to only have a view from the top
+                    enableRotation: false,
+                    // Don't zoom too much on smart zoom
+                    smartTravelHeightMax: 100000,
+                },
+            });
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
 
             setupLoadingScreen(viewerDiv, view);
-            FeatureToolTip.init(viewerDiv, view);
+            // FeatureToolTip.init(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -62,9 +71,12 @@
 
             // Declare the source for the data on Ariege area
             const ariegeSource = new itowns.FileSource({
-                url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
-                // crs: 'EPSG:4326',
-                format: 'application/json',
+                // url: './vector2154.geojson',
+                // crs: 'EPSG:2154',
+                url: './vector.json',
+                crs: 'EPSG:4326',
+                // format: 'application/json',
+                // parser: itowns.WorkerParser.parse,
                 // parser: itowns.GeoJsonParser.parse,
             });
             // Create a ColorLayer for the Ariege area
@@ -73,52 +85,29 @@
                 transparent: true,
                 source: ariegeSource,
                 crs: 'EPSG:4326',
-                // style: new itowns.Style({
-                style: {
+                style: new itowns.Style({
                     fill: {
-                        color: 'orange',
+                        color: 'red',
                         opacity: 0.5,
                     },
                     stroke: {
                         color: 'white',
                     },
-                // }),
-                },
-            });
-            // Add the Ariege ColorLayer to the view and grant it a tooltip
-            view.addLayer(ariegeLayer).then(FeatureToolTip.addLayer);
-
-            // Declare the source for the data on Pyrenees Orientales area
-            const pyoSource = new itowns.FileSource({
-                url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson',
-                // crs: 'EPSG:4326',
-                format: 'application/json',
-            });
-            // Create a ColorLayer for the Pyrenees Orientales area
-            const pyoLayer = new itowns.ColorLayer('pyrenees-orientales', {
-                name: 'pyrenees-orientales',
-                transparent: true,
-                source: pyoSource,
-                style: new itowns.Style({
-                    fill: {
-                        pattern: 'images/cross.png',
-                        opacity: 0.8,
-                    },
-                    stroke: {
-                        color:'IndianRed',
-                    },
                 }),
             });
-            // Add The Pyrennees Orientales ColorLayer to the view and grant it a tooltip
-            view.addLayer(pyoLayer).then(FeatureToolTip.addLayer);
+            // Add the Ariege ColorLayer to the view and grant it a tooltip
+            view.addLayer(ariegeLayer)//.then(FeatureToolTip.addLayer);
+
+            // Request redraw
+            view.notifyChange(true);
 
 
-            // Center the camera on the data extents
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
-                const layersExtent = ariegeSource.extent.clone();
-                layersExtent.union(pyoSource.extent);
-                view.controls.lookAtCoordinate(layersExtent, false);
-            });
+            // // Center the camera on the data extents
+            // view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            //     const layersExtent = ariegeSource.extent.clone();
+            //     // layersExtent.union(pyoSource.extent);
+            //     view.controls.lookAtCoordinate(layersExtent, false);
+            // });
 
 
             debug.createTileDebugUI(menuGlobe.gui, view);
