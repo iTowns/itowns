@@ -47,7 +47,6 @@ export default {
                     forcedExtentCrs: options.out.forcedExtentCrs,
                 },
             };
-
             pool.exec('parse', [data, sia(_options)])
                 .then((result) => {
                     const deSia2 = new DeSia({ constructors: itownsConstructors });
@@ -66,6 +65,9 @@ export default {
                     featureCollection.updateMatrixWorld();
                     featureCollection.extent.copy(resDeBuf.extent);
                     resolve(featureCollection);
+                })
+                .catch((err) => {
+                    console.log('***ERROR in worker***\n', err);
                 });
         });
     },

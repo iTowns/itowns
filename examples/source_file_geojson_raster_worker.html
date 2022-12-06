@@ -65,8 +65,8 @@
                 url: './vector.json',
                 crs: 'EPSG:4326',
                 format: 'application/json',
-                // parser: itowns.WorkerParser.parse,
-                parser: itowns.GeoJsonParser.parse,
+                parser: itowns.WorkerParser.parse,
+                // parser: itowns.GeoJsonParser.parse,
             });
             // Create a ColorLayer for the lyonZU area
             const lyonZULayer = new itowns.ColorLayer('lyonZU', {

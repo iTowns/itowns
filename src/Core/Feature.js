@@ -265,10 +265,10 @@ export class Feature {
             stroke: {},
             point: {},
         };
-        this.style.fill.base_altitude = (collection.style.fill && collection.style.fill.base_altitude) || base_altitudeDefault;
-        this.style.fill.extrusion_height = (collection.style.fill && collection.style.fill.extrusion_height);
-        this.style.stroke.base_altitude = (collection.style.stroke && collection.style.stroke.base_altitude) || base_altitudeDefault;
-        this.style.point.base_altitude = (collection.style.point && collection.style.point.base_altitude) || base_altitudeDefault;
+        this.style.fill.base_altitude = (collection.style && collection.style.fill && collection.style.fill.base_altitude) || base_altitudeDefault;
+        this.style.fill.extrusion_height = (collection.style && collection.style.fill && collection.style.fill.extrusion_height);
+        this.style.stroke.base_altitude = (collection.style && collection.style.stroke && collection.style.stroke.base_altitude) || base_altitudeDefault;
+        this.style.point.base_altitude = (collection.style && collection.style.point && collection.style.point.base_altitude) || base_altitudeDefault;
 
         this.altitude = {
             min: Infinity,
