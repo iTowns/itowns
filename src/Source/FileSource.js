@@ -143,6 +143,10 @@ class FileSource extends Source {
         super(source);
 
         this.isFileSource = true;
+        function fetcherXml(res) {
+            return res.text()
+                .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
+        }
 
         const supportedFetchers = new Map([
             // ['image/x-bil;bits=32', Fetcher.textureFloat],
@@ -153,15 +157,9 @@ class FileSource extends Source {
             //     return res.text()
             //         .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
             // }],
-            ['application/kml', function kml(res) {
-                return res.text()
-                    .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
-            }],
-            ['application/vnd.google-earth.kml+xml', function kml(res) {
-                return res.text()
-                    .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
-            }],
-            // ['application/gpx', Fetcher.xml],
+            ['application/kml', fetcherXml],
+            ['application/vnd.google-earth.kml+xml', fetcherXml],
+            ['application/gpx', fetcherXml],
             // ['application/x-protobuf;type=mapbox-vector', Fetcher.arrayBuffer],
             // ['application/gtx', Fetcher.arrayBuffer],
             // ['application/isg', Fetcher.text],
