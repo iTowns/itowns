@@ -201,6 +201,7 @@ function addExtrudedPolygonSideFaces(indices, length, offset, count, isClockWise
 }
 
 function featureToPoint(feature, options) {
+    // console.log('featureToPoint');
     const ptsIn = feature.vertices;
     const normals = feature.normals;
     const colors = new Uint8Array(ptsIn.length);
@@ -218,7 +219,8 @@ function featureToPoint(feature, options) {
     const globals = { point: true };
     for (const geometry of feature.geometries) {
         const context = { globals, properties: () => geometry.properties };
-        const style = new Style(feature.style).drawingStylefromContext(context);
+        // const style = new Style(feature.style).drawingStylefromContext(context);
+        const style = new Style(options.layer.style).drawingStylefromContext(context);
 
         const start = geometry.indices[0].offset;
         const count = geometry.indices[0].count;
@@ -264,7 +266,8 @@ function featureToLine(feature, options) {
     let lines;
 
     // TODO CREATE material for each feature
-    options.lineMaterial.linewidth = feature.style.stroke.width;
+    // options.lineMaterial.linewidth = feature.style.stroke.width;
+    options.lineMaterial.linewidth = options.layer.style.stroke.width;
     const globals = { stroke: true };
     if (feature.geometries.length > 1) {
         const countIndices = (count - feature.geometries.length) * 2;
@@ -273,7 +276,8 @@ function featureToLine(feature, options) {
         // Multi line case
         for (const geometry of feature.geometries) {
             const context = { globals, properties: () => geometry.properties };
-            const style = new Style(feature.style).drawingStylefromContext(context);
+            // const style = new Style(feature.style).drawingStylefromContext(context);
+            const style = new Style(options.layer.style).drawingStylefromContext(context);
 
             const start = geometry.indices[0].offset;
             // To avoid integer overflow with indice value (16 bits)
@@ -304,7 +308,8 @@ function featureToLine(feature, options) {
         lines = new THREE.LineSegments(geom, options.lineMaterial);
     } else {
         const context = { globals, properties: () => feature.geometries[0].properties };
-        const style = new Style(feature.style).drawingStylefromContext(context);
+        // const style = new Style(feature.style).drawingStylefromContext(context);
+        const style = new Style(options.layer.style).drawingStylefromContext(context);
 
         fillColorArray(colors, count, toColor(style.stroke.color));
         geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
@@ -346,8 +351,8 @@ function featureToPolygon(feature, options) {
             break;
         }
         const context = { globals, properties: () => geometry.properties };
-        // const style = feature.style.drawingStylefromContext(context);
-        const style = new Style(feature.style).drawingStylefromContext(context);
+        // const style = new Style(feature.style).drawingStylefromContext(context);
+        const style = new Style(options.layer.style).drawingStylefromContext(context);
 
         const lastIndice = geometry.indices.slice(-1)[0];
         const end = lastIndice.offset + lastIndice.count;
@@ -413,7 +418,8 @@ function featureToExtrudedPolygon(feature, options) {
 
     for (const geometry of feature.geometries) {
         const context = { globals, properties: () => geometry.properties };
-        const style = new Style(feature.style).drawingStylefromContext(context);
+        // const style = new Style(feature.style).drawingStylefromContext(context);
+        const style = new Style(options.layer.style).drawingStylefromContext(context);
 
         // topColor is assigned to the top of extruded polygon
         const topColor = toColor(style.fill.color);
