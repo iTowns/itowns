@@ -21,15 +21,15 @@
             // Define geographic extent: CRS, min/max X, min/max Y
             var extent = new itowns.Extent(
                 'EPSG:3857',
-                -20037508.342789244, 20037508.342789244,
-                -20037508.342789255, 20037508.342789244);
+                -20037508.34, 20037508.34,
+                -20048966.1, 20048966.1);
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate PlanarView
             var view = new itowns.PlanarView(viewerDiv, extent, {
-                maxSubdivisionLevel: 20,
+                maxSubdivisionLevel: 10,
                 controls: {
                     // We do not want the user to zoom out too much
                     maxAltitude: 40000000,
@@ -42,7 +42,7 @@
             var menuGlobe = new GuiTools('menuDiv', view, 300);
 
             setupLoadingScreen(viewerDiv, view);
-            // FeatureToolTip.init(viewerDiv, view);
+            FeatureToolTip.init(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
@@ -70,33 +70,40 @@
             // The GeoJSONs are loaded from url, set in FileSource
 
             // Declare the source for the data on Ariege area
-            const ariegeSource = new itowns.FileSource({
-                // url: './vector2154.geojson',
-                // crs: 'EPSG:2154',
-                url: './vector.json',
-                crs: 'EPSG:4326',
+            const earthquakeSource = new itowns.FileSource({
+                url: './Earthquakes_3857.geojson',
+                // crs: 'EPSG:3857',
                 // format: 'application/json',
                 // parser: itowns.WorkerParser.parse,
-                // parser: itowns.GeoJsonParser.parse,
             });
-            // Create a ColorLayer for the Ariege area
-            const ariegeLayer = new itowns.ColorLayer('ariege', {
-                name: 'ariege',
-                transparent: true,
-                source: ariegeSource,
-                crs: 'EPSG:4326',
-                style: new itowns.Style({
-                    fill: {
-                        color: 'red',
-                        opacity: 0.5,
+
+            // Create a ColorLayer with the earthquake information
+            const earthquakeLayer = new itowns.ColorLayer('ariege', {
+                name: 'earthquakes',
+                source: earthquakeSource,
+                // crs: 'EPSG:3857',
+                style: {
+                    point: {
+                        color: function (p) { return p.alert; },
+                        radius: 5,
                     },
-                    stroke: {
-                        color: 'white',
+                    // fill: {
+                    //     color: 'red',
+                    //     opacity: 0.5,
+                    // },
+                    // stroke: {
+                    //     color: 'white',
+                    // },
+                    text: {
+                        field: '{title}',
+                        haloColor: 'black',
+                        haloWidth: 1,
                     },
-                }),
+                },
+                addLabelLayer: true,
             });
             // Add the Ariege ColorLayer to the view and grant it a tooltip
-            view.addLayer(ariegeLayer)//.then(FeatureToolTip.addLayer);
+            view.addLayer(earthquakeLayer).then(FeatureToolTip.addLayer);
 
             // Request redraw
             view.notifyChange(true);
