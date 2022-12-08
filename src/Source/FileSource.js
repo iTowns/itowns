@@ -144,8 +144,8 @@ class FileSource extends Source {
 
         this.isFileSource = true;
         function fetcherXml(res) {
-            return res.text()
-                .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
+            return res.text();
+            //  .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
         }
 
         const supportedFetchers = new Map([
@@ -175,12 +175,12 @@ class FileSource extends Source {
             this.whenReady = fetch(this.urlFromExtent(), this.networkOptions)
                 .then((response) => {
                     checkResponse(response);
-                    const contentType = this.format ? this.format : response.headers.get('content-type').split(';')[0];
-                    console.log(contentType);
+                    this.format = this.format ? this.format : response.headers.get('content-type').split(';')[0];
+                    console.log(this.format);
                     // console.log(this.parser);
-                    if (!this.parser) { this.parser = supportedParsers.get(contentType); }
+                    if (!this.parser) { this.parser = supportedParsers.get(this.format); }
                     this.isVectorSource = true;
-                    return supportedFetchers.get(contentType)(response);
+                    return supportedFetchers.get(this.format)(response);
                 })
                 .then((f) => {
                     console.log(f);

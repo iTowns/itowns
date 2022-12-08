@@ -10,6 +10,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  * @module KMLParser
  */
 export default {
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Parse a KML file content and return a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
@@ -20,8 +21,9 @@ export default {
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
      */
-    parse(kmlFile, options) {
+    parse(kmlFile, options, DOMParser = window.DOMParser) {
         options = deprecatedParsingOptionsToNewOne(options);
-        return GeoJsonParser.parse(kml(kmlFile), options);
+        const xmlDom = new DOMParser().parseFromString(kmlFile, 'text/xml');
+        return GeoJsonParser.parse(kml(xmlDom), options);
     },
 };
