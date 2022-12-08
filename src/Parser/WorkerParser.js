@@ -3,7 +3,7 @@ import itownsConstructors from 'workers/constructors';
 // import GeoJsonParser from 'Parser/GeoJsonParser';
 import { sia, DeSia } from 'sializer';
 import { FeatureCollection } from '../Core/Feature';
-import Style from '../Core/Style';
+// import Style from '../Core/Style';
 
 const { Buffer } = require('buffer/');
 
@@ -54,13 +54,14 @@ export default {
                     const resDeBuf = deSia2.deserialize(dataBuffed);
 
                     const featureCollection = new FeatureCollection(options.out);
-                    featureCollection.style.copy(options.out.style);
+                    // featureCollection.style.copy(options.out.style);
+                    featureCollection.style = options.out.style;
                     featureCollection.position.copy(resDeBuf.position);
                     featureCollection.quaternion.copy(resDeBuf.quaternion);
                     featureCollection.features = resDeBuf.features;
-                    featureCollection.features.forEach((feature) => {
-                        feature.style = new Style({}, featureCollection.style);
-                    });
+                    // featureCollection.features.forEach((feature) => {
+                    //     feature.style = new Style({}, featureCollection.style);
+                    // });
                     featureCollection.updateMatrix();
                     featureCollection.updateMatrixWorld();
                     featureCollection.extent.copy(resDeBuf.extent);
