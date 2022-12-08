@@ -10,6 +10,28 @@ function checkResponse(response) {
     }
 }
 
+// TO move to CRS probably
+function readCRS(json) {
+    if (json.crs) {
+        if (json.crs.type.toLowerCase() == 'epsg') {
+            return `EPSG:${json.crs.properties.code}`;
+        } else if (json.crs.type.toLowerCase() == 'name') {
+            if (json.crs.properties.name.toLowerCase().includes('epsg:')) {
+                // OGC CRS URN: urn:ogc:def:crs:authority:version:code => EPSG:[...]:code
+                // legacy identifier: authority:code => EPSG:code
+                const codeStart = json.crs.properties.name.lastIndexOf(':');
+                if (codeStart > 0) {
+                    return `EPSG:${json.crs.properties.name.substr(codeStart + 1)}`;
+                }
+            }
+            throw new Error(`Unsupported CRS authority '${json.crs.properties.name}'`);
+        }
+        throw new Error(`Unsupported CRS type '${json.crs}'`);
+    }
+    // assume default crs
+    return 'EPSG:4326';
+}
+
 /**
  * @classdesc
  * An object defining the source of a single resource to get from a direct
@@ -183,10 +205,12 @@ class FileSource extends Source {
                     return supportedFetchers.get(this.format)(response);
                 })
                 .then((f) => {
-                    console.log(f);
+                    // console.log(f);
                     if (!source.crs) {
                         console.log('source:', source);
-                        source.crs =  f.crs || 'EPSG:4326';
+                        // source.crs =  (f.crs && readCRS(f)) || 'EPSG:4326';
+                        source.crs =  readCRS(f);
+                        this.crs = source.crs;
                         console.log('crs not in source ->', source.crs);
                     }
                     this.fetchedData = f;
