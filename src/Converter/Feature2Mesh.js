@@ -201,7 +201,6 @@ function addExtrudedPolygonSideFaces(indices, length, offset, count, isClockWise
 }
 
 function featureToPoint(feature, options) {
-    // console.log('featureToPoint');
     const ptsIn = feature.vertices;
     const normals = feature.normals;
     const colors = new Uint8Array(ptsIn.length);
@@ -220,7 +219,8 @@ function featureToPoint(feature, options) {
     for (const geometry of feature.geometries) {
         const context = { globals, properties: () => geometry.properties };
         // const style = new Style(feature.style).drawingStylefromContext(context);
-        const style = new Style(options.layer.style).drawingStylefromContext(context);
+        // const style = new Style(options.layer.style).drawingStylefromContext(context);
+        const style = new Style((options.layer && options.layer.style) || options.collection.style).drawingStylefromContext(context);
 
         const start = geometry.indices[0].offset;
         const count = geometry.indices[0].count;
@@ -244,6 +244,7 @@ function featureToPoint(feature, options) {
 }
 
 function featureToLine(feature, options) {
+    console.log('featureToLine');
     const ptsIn = feature.vertices;
     const normals = feature.normals;
     const colors = new Uint8Array(ptsIn.length);
@@ -267,7 +268,7 @@ function featureToLine(feature, options) {
 
     // TODO CREATE material for each feature
     // options.lineMaterial.linewidth = feature.style.stroke.width;
-    options.lineMaterial.linewidth = options.layer.style.stroke.width;
+    options.lineMaterial.linewidth = (options.layer && options.layer.style.stroke.width) || options.collection.style.stroke.width;
     const globals = { stroke: true };
     if (feature.geometries.length > 1) {
         const countIndices = (count - feature.geometries.length) * 2;
@@ -309,7 +310,8 @@ function featureToLine(feature, options) {
     } else {
         const context = { globals, properties: () => feature.geometries[0].properties };
         // const style = new Style(feature.style).drawingStylefromContext(context);
-        const style = new Style(options.layer.style).drawingStylefromContext(context);
+        // const style = new Style(options.layer.style).drawingStylefromContext(context);
+        const style = new Style((options.layer && options.layer.style) || options.collection.style).drawingStylefromContext(context);
 
         fillColorArray(colors, count, toColor(style.stroke.color));
         geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
@@ -589,6 +591,7 @@ export default {
             if (!features || features.length == 0) { return; }
 
             options.GlobalZTrans = collection.center.z;
+            options.collection = { style: collection.style };
 
             const meshes = features.map(feature => featureToMesh(feature, options));
             const featureNode = new FeatureMesh(meshes, collection);
