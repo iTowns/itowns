@@ -116,13 +116,15 @@
                 source: lyonTclBusSource,
                 zoom: { min: 9 },
 
-                style: new itowns.Style({
+                // style: new itowns.Style({
+                style: {
                     stroke: {
                         color: colorLine,
                         base_altitude: altitudeLine,
                         width: 5,
                     }
-                })
+                // })
+                }
             });
             view.addLayer(lyonTclBusLayer);
 
