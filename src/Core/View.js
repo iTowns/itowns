@@ -1088,6 +1088,11 @@ class View extends THREE.EventDispatcher {
      * the viewer with. By default it is the `clientHeight` of the `viewerDiv`.
      */
     resize(width, height) {
+        if (width < 0 || height < 0) {
+            console.warn(`Trying to resize the View with negative height (${height}) or width (${width}). Skipping resize.`);
+            return;
+        }
+
         if (width == undefined) {
             width = this.domElement.clientWidth;
         }
@@ -1098,8 +1103,10 @@ class View extends THREE.EventDispatcher {
 
         this.#fullSizeDepthBuffer = new Uint8Array(4 * width * height);
         this.mainLoop.gfxEngine.onWindowResize(width, height);
-        this.camera.resize(width, height);
-        this.notifyChange(this.camera.camera3D);
+        if (width !== 0 && height !== 0) {
+            this.camera.resize(width, height);
+            this.notifyChange(this.camera.camera3D);
+        }
     }
 }
 

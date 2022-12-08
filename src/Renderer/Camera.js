@@ -139,12 +139,16 @@ class Camera {
     }
 
     /**
-     * Resize the camera to a given width and height
+     * Resize the camera to a given width and height.
      *
-     * @param   {number}    width               The width to resize the camera to.
-     * @param   {number}    height              The height to resize the camera to.
+     * @param {number} width The width to resize the camera to. Must be strictly positive, won't resize otherwise.
+     * @param {number} height The height to resize the camera to. Must be strictly positive, won't resize otherwise.
      */
     resize(width, height) {
+        if (!width || width <= 0 || !height || height <= 0) {
+            console.warn(`Trying to resize the Camera with invalid height (${height}) or width (${width}). Skipping resize.`);
+            return;
+        }
         const ratio = width / height;
         if (this.camera3D.aspect !== ratio) {
             if (this.camera3D.isOrthographicCamera) {
