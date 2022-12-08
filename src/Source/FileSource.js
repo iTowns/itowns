@@ -183,13 +183,12 @@ class FileSource extends Source {
                     return supportedFetchers.get(contentType)(response);
                 })
                 .then((f) => {
-                    if (!source.crs) {
-                        console.log('TOP');
-                        console.log(f);
-                        console.log(source);
-                        source.crs =  f.crs || 'EPSG:4326';
-                    }
                     console.log(f);
+                    if (!source.crs) {
+                        console.log('source:', source);
+                        source.crs =  f.crs || 'EPSG:4326';
+                        console.log('crs not in source ->', source.crs);
+                    }
                     this.fetchedData = f;
                 });
         } else if (source.features) {
