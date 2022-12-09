@@ -60,8 +60,9 @@
 
             const gpxSource = new itowns.FileSource({
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
-                crs: 'EPSG:4326',
+                // crs: 'EPSG:4326',
                 format: 'application/gpx',
+                parser: itowns.WorkerParser.parse,
             });
 
             const gpxStyle = new itowns.Style({

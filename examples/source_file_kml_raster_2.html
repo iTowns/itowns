@@ -61,6 +61,8 @@
                 url: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month_depth.kml',
                 // crs: 'EPSG:4326',
                 // format: 'application/kml',
+                // parser: itowns.KMLParser.parse,
+                parser: itowns.WorkerParser.parse,
             });
 
             // var kmlStyle = new itowns.Style({

@@ -63,8 +63,8 @@
             // Declare the source for the data on lyonZU area
             const lyonZUSource = new itowns.FileSource({
                 url: './vector.json',
-                crs: 'EPSG:4326',
-                format: 'application/json',
+                // crs: 'EPSG:4326',
+                // format: 'application/json',
                 parser: itowns.WorkerParser.parse,
                 // parser: itowns.GeoJsonParser.parse,
             });
@@ -74,8 +74,8 @@
                 transparent: true,
                 source: lyonZUSource,
                 crs: 'EPSG:4326',
-                style: new itowns.Style({
-                // style: {
+                // style: new itowns.Style({
+                style: {
                     fill: {
                         color: 'red',
                         opacity: 0.5,
@@ -83,8 +83,8 @@
                     stroke: {
                         color: 'white',
                     },
-                }),
-                // },
+                // }),
+                },
             });
             // Add the lyonZU ColorLayer to the view and grant it a tooltip
             view.addLayer(lyonZULayer)//.then(FeatureToolTip.addLayer);
