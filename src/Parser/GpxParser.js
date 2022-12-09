@@ -10,6 +10,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  * @module GpxParser
  */
 export default {
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Parse a GPX file content and return a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
@@ -20,8 +21,9 @@ export default {
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
      */
-    parse(gpxFile, options) {
+    parse(gpxFile, options, DOMParser = window.DOMParser) {
         options = deprecatedParsingOptionsToNewOne(options);
-        return GeoJsonParser.parse(gpx(gpxFile), options);
+        const xmlDom = new DOMParser().parseFromString(gpxFile, 'text/xml');
+        return GeoJsonParser.parse(gpx(xmlDom), options);
     },
 };

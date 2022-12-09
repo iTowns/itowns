@@ -12,7 +12,7 @@ const supportedParsers = new Map([
     ['application/kml', 'kml'],
     ['application/vnd.google-earth.kml+xml', 'kml'],
     // ['text/plain', KMLParser.parse],
-    // ['application/gpx', GpxParser.parse],
+    ['application/gpx', 'gpx'],
     // ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
     // ['application/gtx', GTXParser.parse],
     // ['application/isg', ISGParser.parse],
