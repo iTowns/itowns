@@ -2,8 +2,6 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
 import KmlParser from 'Parser/KMLParser';
 import GpxParser from 'Parser/GpxParser';
 
-import { DOMParser } from 'xmldom';
-
 import newConstructors from 'workers/constructors';
 import { desia, Sia } from '../Sia/Sia';
 
@@ -26,7 +24,7 @@ function geojson(data, options) {
 }
 
 function kml(data, options) {
-    return KmlParser.parse(data, desia(options), DOMParser)
+    return KmlParser.parse(data, desia(options))
         .then((parsedData) => {
             const dataToSend = {};
             ['extent', 'position', 'quaternion', 'features']
@@ -42,7 +40,7 @@ function kml(data, options) {
 }
 
 function gpx(data, options) {
-    return GpxParser.parse(data, desia(options), DOMParser)
+    return GpxParser.parse(data, desia(options))
         .then((parsedData) => {
             const dataToSend = {};
             ['extent', 'position', 'quaternion', 'features']

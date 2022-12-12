@@ -1,4 +1,5 @@
 import { gpx } from '@tmcw/togeojson';
+import { DOMParser } from 'xmldom';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
@@ -21,7 +22,7 @@ export default {
      * @return {Promise} A promise resolving with a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
      */
-    parse(gpxFile, options, DOMParser = window.DOMParser) {
+    parse(gpxFile, options) {
         options = deprecatedParsingOptionsToNewOne(options);
         const xmlDom = new DOMParser().parseFromString(gpxFile, 'text/xml');
         return GeoJsonParser.parse(gpx(xmlDom), options);
