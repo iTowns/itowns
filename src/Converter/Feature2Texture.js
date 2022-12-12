@@ -168,7 +168,7 @@ const featureExtent = new Extent('EPSG:4326', 0, 0, 0, 0);
 export default {
     // backgroundColor is a THREE.Color to specify a color to fill the texture
     // with, given there is no feature passed in parameter
-    createTextureFromFeature(collection, extent, sizeTexture, style, backgroundColor) {
+    createTextureFromFeature(collection, extent, sizeTexture, style = {}, backgroundColor) {
         let texture;
 
         if (collection) {
@@ -186,6 +186,8 @@ export default {
                 ctx.fillStyle = backgroundColor.getStyle();
                 ctx.fillRect(0, 0, sizeTexture, sizeTexture);
             }
+
+            // Documentation needed !!
             ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
             ctx.imageSmoothingEnabled = false;
             ctx.lineJoin = 'round';
