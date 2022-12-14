@@ -1,6 +1,8 @@
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import KmlParser from 'Parser/KMLParser';
 import GpxParser from 'Parser/GpxParser';
+import ShapefileParser from 'Parser/ShapefileParser';
+import VectorTileParser from 'Parser/VectorTileParser';
 
 import newConstructors from 'workers/constructors';
 import { desia, Sia } from '../Sia/Sia';
@@ -55,8 +57,42 @@ function gpx(data, options) {
         });
 }
 
+function shp(data, options) {
+    return ShapefileParser.parse(data, desia(options))
+        .then((parsedData) => {
+            const dataToSend = {};
+            ['extent', 'position', 'quaternion', 'features']
+                .forEach((key) => {
+                    dataToSend[key] = parsedData[key];
+                });
+            const sia = new Sia({ constructors: newConstructors });
+            return sia.serialize(dataToSend);
+        })
+        .catch((err) => {
+            throw err;
+        });
+}
+
+function vectorTile(data, options) {
+    return VectorTileParser.parse(data, desia(options))
+        .then((parsedData) => {
+            const dataToSend = {};
+            ['extent', 'position', 'quaternion', 'features']
+                .forEach((key) => {
+                    dataToSend[key] = parsedData[key];
+                });
+            const sia = new Sia({ constructors: newConstructors });
+            return sia.serialize(dataToSend);
+        })
+        .catch((err) => {
+            throw err;
+        });
+}
+
 workerpool.worker({
     geojson,
     kml,
     gpx,
+    shp,
+    vectorTile,
 });
