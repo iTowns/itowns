@@ -169,12 +169,15 @@ class FileSource extends Source {
             return res.text();
             //  .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
         }
+        function fetcherJson(res) {
+            return res.json();
+        }
 
         const supportedFetchers = new Map([
             // ['image/x-bil;bits=32', Fetcher.textureFloat],
             // ['geojson', Fetcher.json],
-            ['application/json', function json(res) { return res.json(); }],
-            ['application/geo+json', function json(res) { return res.json(); }],
+            ['application/json', fetcherJson],
+            ['application/geo+json', fetcherJson],
             // ['text/plain', function text(res) {
             //     return res.text()
             //         .then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
@@ -198,8 +201,7 @@ class FileSource extends Source {
                 .then((response) => {
                     checkResponse(response);
                     this.format = this.format ? this.format : response.headers.get('content-type').split(';')[0];
-                    console.log(this.format);
-                    // console.log(this.parser);
+                    // console.log(this.format);
                     if (!this.parser) { this.parser = supportedParsers.get(this.format); }
                     this.isVectorSource = true;
                     return supportedFetchers.get(this.format)(response);
