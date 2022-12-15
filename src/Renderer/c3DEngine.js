@@ -222,7 +222,7 @@ class c3DEngine {
 
     bufferToImage(pixelBuffer, width, height) {
         var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d');
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         // size the canvas to your desired image
         canvas.width = width;
