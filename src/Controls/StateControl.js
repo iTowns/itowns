@@ -214,15 +214,11 @@ class StateControl extends THREE.EventDispatcher {
 
         this._domElement.addEventListener('pointerdown', this._onPointerDown, false);
         this._domElement.addEventListener('wheel', this._onMouseWheel, false);
-
-        // The event listener is added on `window` so that key input can be accounted event if the view does not have
-        // the focus. This can occur at page loading, when a mini map is displayed : the minimap initially has the focus
-        // and key input would not be considered on the view's domElement.
-        window.addEventListener('keydown', this._onKeyDown, false);
-        window.addEventListener('keyup', this._onKeyUp, false);
+        this._domElement.addEventListener('keydown', this._onKeyDown, false);
+        this._domElement.addEventListener('keyup', this._onKeyUp, false);
 
         // Reset key/mouse when window loose focus
-        window.addEventListener('blur', this._onBlur);
+        this._domElement.addEventListener('blur', this._onBlur);
         // disable context menu when right-clicking
         this._domElement.addEventListener('contextmenu', this._onContextMenu, false);
 
@@ -436,7 +432,7 @@ class StateControl extends THREE.EventDispatcher {
         this._domElement.removeEventListener('keydown', this._onKeyDown, false);
         this._domElement.removeEventListener('keyup', this._onKeyUp, false);
 
-        window.removeEventListener('blur', this._onBlur);
+        this._domElement.removeEventListener('blur', this._onBlur);
         this._domElement.removeEventListener('contextmenu', this._onContextMenu, false);
     }
 }
