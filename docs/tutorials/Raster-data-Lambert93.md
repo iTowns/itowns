@@ -1,6 +1,6 @@
 The goal of this tutorial is to give an example on how to use iTowns to visualize data that are in [RGF93 / Lambert-93](https://epsg.io/2154) Coordinate Reference System (CRS).
-These data are ortho-images provided by the [Geoportail](https://www.geoportail.gouv.fr) API.
-This tutorial also aims at teaching how to visualize some elevation data, by superposing ortho-images with a Digital Elevation Model (DEM).
+We will display a Digital Elevation Model (DEM) and layer ortho-images from the 
+[French Geoportail](https://www.geoportail.gouv.fr) API on it.
 
 ## Preparing the webpage
 
@@ -20,20 +20,23 @@ The webpage we want to display data on should be structured as follows :
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="js/itowns.js"></script>
+        <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
-            // Our code goes here
+            // Tutorial code should go here
         </script>
     </body>
 </html>
 ```
 
 What we are doing here is fairly simple :
-- we create a container `<div id="viewerDiv"></div>` that shall serve as a support for the data we wish to display ;
+- we create a container `<div id="viewerDiv"></div>` that will contain the 3D view ;
 - we define the layout of this container within our webpage ;
-- we import iTowns framework (which in our case is imported within a `js/` repository).
+- we import iTowns framework (which in our case is imported from the `dist/` repository).
 
-We shall then add javascript to use iTowns to display data within a `<script>` markup following iTowns import.
+We will then add javascript to use iTowns to display data within a `<script>` markup following iTowns import.
+
+To work as is, this web page should be placed in the `examples/` folder of [itowns](https://github.com/iTowns/itowns) but you can put it anywhere else as 
+long as you have a local web server and that you adapt the link to itowns (`<script src="../dist/itowns.js"></script>`).
 
 ## Create a view
 
@@ -59,22 +62,22 @@ const view = new itowns.PlanarView(viewerDiv, viewExtent);
 ```
 
 Several things are done here :
-- First, we retrieve the `DomElement` relative to the container we created to serve as a support for iTowns.
+- First, we retrieve the `DomElement` relative to the container we created that will contain iTowns visualisation.
 - Then we define the geographic extent of our view by instantiating iTowns `{@link Extent}` class.
 To do so, we need to pass five argument to `Extent` constructor, which are :
   - The Coordinates Reference System (CRS) of the extent, given as its EPSG code.
     Here, we use [RGF93 / Lambert-93](https://epsg.io/2154) CRS.
     Not all CRS are defined by default within iTowns, which is why we need to define our CRS using [proj4](https://proj.org/) prior to instantiating the `Extent` ;
   - The westernmost, easternmost, southernmost and northernmost coordinates of the extent.
-- Finally, we create a `PlanarView` giving it the required `DomElement` and `Extent` parameters.
+- Finally, we create a `{@link PlanarView}` giving it the required `DomElement` and `Extent` parameters.
     
 At this stage, our webpage should look like this : 
 
 ![Simple PlanarView](images/Raster-data-Lambert93-1.png)
 
 The blue rectangle you can see is the view we just created.
-By default, iTowns position the camera on top of the view center.
-We can change the initial camera position by passing a `CameraTransformOption` object as an optional parameter of `PlanarView` constructor.
+By default, iTowns positions the camera on top of the view center.
+We can change the initial camera position by passing a `[CameraTransformOption]{@link CameraUtils}` object as an optional parameter of `PlanarView` constructor.
 
 To do so, we first need to create our `CameraTransformOption` object :
 
@@ -90,7 +93,7 @@ const placement = {
 We are specifying here that the camera should target the center of the extent, with an azimuth of 40 degrees and a pitch of 12 degrees under the horizontal plane.
 The camera should also be at a distance of 16000 meters from its target (i.e. from the view extent center).
 
-We can then just pass this object into `PlanarView` constructor parameters :
+We can then just pass this object to the `PlanarView` constructor parameters :
 
 ```js
 const view = new itowns.PlanarView(viewerDiv, viewExtent, {
@@ -102,7 +105,7 @@ Our webpage should now look like this :
 
 ![PlanarView with placement](images/Raster-data-Lambert93-2.png)
 
-Now that we have a functional `View`, we shall use it to display geographic data.
+Now that we have created a view, we will use it to display geographic data.
 
 ## Add a color layer
 
@@ -123,7 +126,7 @@ view.addLayer(layerOrtho);
 ```
 
 In this code, we first define the source specifications of the data we wish to fetch. 
-`{@link WMSSource}` needs several mandatory parameters :
+`{@link WMSSource}` has several mandatory parameters :
 - the server `url`, the `name` of the data and their `format`, which are used to generate the final `url` at which data shall be fetched ;
 - the CRS of the fetched data ;
 - the geographic extent of the resources (set here as the extent of the view).
@@ -161,7 +164,7 @@ The camera has been zoomed in to get a more precise rendering of the elevation v
 
 ## Result
 
-With this tutorial, we learnt how to use iTowns `ColorLayer` and an `ElevationLayer` to display data in a local conic projection. 
+With this tutorial, we have learnt how to use iTowns `ColorLayer` and an `ElevationLayer` to display data in a local conic projection. 
 The code that is shown bellow sums up all the steps it took to do so.
 
 ```html
@@ -179,7 +182,7 @@ The code that is shown bellow sums up all the steps it took to do so.
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="js/itowns.js"></script>
+        <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
     
             // Retrieve the view container
