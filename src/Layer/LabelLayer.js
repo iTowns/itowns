@@ -274,6 +274,7 @@ class LabelLayer extends Layer {
         node.children.forEach((c) => {
             if (c.isLabel && c.layerId === this.id) {
                 node.remove(c);
+                delete node.layerUpdateState[this.id];
             } else if (c.isTileMesh) {
                 this.removeLabelsFromNodeRecursive(c);
             }
