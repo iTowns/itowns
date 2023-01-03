@@ -82,9 +82,13 @@ export default {
     removeChildrenAndCleanupRecursively(layer, obj) {
         // Objects are filtered by id because the obj hierarchy may also contain labels that have been added as childs
         // of the objects which have their own removal logic
-        let toRemove = obj.children.filter(c => (c.layer && c.layer.id) === layer.id);
+        let toRemove = obj.children.filter(c => c.layer && c.layer.id === layer.id);
         if (obj.link) {
-            toRemove = toRemove.concat(obj.link);
+            const linkedObjects = obj.link.filter(c => c.layer && c.layer.id === layer.id);
+            if (linkedObjects.length) {
+                toRemove = toRemove.concat(linkedObjects);
+                obj.link = obj.link.filter(c => c.layer && c.layer.id !== layer.id);
+            }
         }
         for (const c of toRemove) {
             this.removeChildrenAndCleanupRecursively(layer, c);
