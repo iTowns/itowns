@@ -16,11 +16,6 @@ class OBBHelper extends THREE.Box3Helper {
         this.updateMatrixWorld(true);
     }
 
-    removeChildren() {
-        this.material.dispose();
-        this.geometry.dispose();
-    }
-
     updateMatrixWorld(force = false) {
         if (this.obb.box3D.isEmpty()) {
             return;
