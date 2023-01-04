@@ -125,17 +125,6 @@ jobs:
         with:
           name: dist-itowns
 
-      # Deploy potree repo artifact
-      # TODO : this should be done in potree integration script
-      - name: Download potree bundle
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          # TODO : rename potree file...
-          workflow: intergration.yml
-          repo: LIDAR-HD-IGN/potree
-          branch: itowns_potree
-          name: dist-potree
-
       # Copy files for deployment
       - name: build site
         run: |
@@ -145,8 +134,6 @@ jobs:
           cp -R dist/*.js itowns/dist/
           cp -R examples itowns/
           cp -R buildDocs itowns/docs
-          cp -R build itowns/potree/
-          cp -R libs itowns/potree/
 
       # When deploying a release, we copy itowns bundles in dev folder to be published on
       # iTowns/itowns.github.io. This is because we can't publish both a release version
