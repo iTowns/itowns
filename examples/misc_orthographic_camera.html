@@ -46,6 +46,8 @@
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             const viewerDiv = document.getElementById('viewerDiv');
 
+            const startResolution = 3.5429583702391496;
+
             // instantiate PlanarView with an orthographic camera.
             // The extent passed in `placement` is the area that will be displayed by camera.
             const view = new itowns.PlanarView(viewerDiv, extent, {
@@ -53,8 +55,10 @@
                 placement: new itowns.Extent('EPSG:3946', 1838000, 1842000, 5172000, 5174000),
                 controls: {
                     // limit the zoom to a resolution interval
-                    maxResolution: 0.01,  // a pixel shall not represent a metric size smaller than 1 cm
-                    minResolution: 100, // a pixel shall not represent a metric size larger than 100m
+                    // maxResolution: 0.01,  // a pixel shall not represent a metric size smaller than 1 cm
+                    // minResolution: 100, // a pixel shall not represent a metric size larger than 100m
+                    maxResolution: startResolution / 2,
+                    minResolution: startResolution * 2,
                 }
             });
             setupLoadingScreen(viewerDiv, view);
@@ -73,6 +77,25 @@
                 source: wmsImagerySource,
             });
             view.addLayer(wmsImageryLayer);
+
+            var wmsElevationSource = new itowns.WMSSource({
+                extent: extent,
+                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                name: 'MNT2012_Altitude_10m_CC46',
+                crs: 'EPSG:3946',
+                width: 256,
+                format: 'image/jpeg',
+            });
+
+            // Add a WMS elevation layer
+            var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
+                useColorTextureElevation: true,
+                colorTextureElevationMinZ: 144,
+                colorTextureElevationMaxZ: 622,
+                source: wmsElevationSource,
+            });
+
+            view.addLayer(wmsElevationLayer);
 
             // Add a scale :
             const scale = new itowns_widgets.Scale(view, {

@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+import CameraUtils from 'Utils/CameraUtils';
+import Coordinates from 'Core/Geographic/Coordinates';
+import Camera from '../Renderer/Camera';
 
 // event keycode
 export const keys = {
@@ -33,6 +36,7 @@ export const STATE = {
     ROTATE: 2,
     TRAVEL: 3,
     ORTHO_ZOOM: 4,
+    ZOOM: 5,
 };
 
 // cursor shape linked to control state
@@ -73,11 +77,13 @@ const travelEndPos = new THREE.Vector3();
 const travelStartPos = new THREE.Vector3();
 const travelStartRot = new THREE.Quaternion();
 const travelEndRot = new THREE.Quaternion();
+let travelEndRes;
 let travelAlpha = 0;
 let travelDuration = 0;
 let travelUseRotation = false;
 let travelUseSmooth = false;
 
+const endViewCoords = new THREE.Vector2();
 // zoom changes (for orthographic camera)
 let startZoom = 0;
 let endZoom = 0;
@@ -228,8 +234,17 @@ class PlanarControls extends THREE.EventDispatcher {
         this.zoomOutFactor = 1 / (options.zoomFactor || defaultOptions.zoomFactor);
 
         // the maximum and minimum size (in meters) a pixel at the center of the view can represent
-        this.maxResolution = options.maxResolution || defaultOptions.maxResolution;
-        this.minResolution = options.minResolution || defaultOptions.minResolution;
+        // These numbers are rounded with a precision of 1E-6 meters.
+        // In order to be rounded as such, they are stored in micro-meter unit.
+        // This prevents rounding issues when passing parameters with too many decimals.
+        // This rounding issue is the same as if you type in a navigator console : 0.1 + 0.2.
+        // The result is 0.30000000000000004 whereas it should be 0.3.
+        this.maxResolution = Math.floor(
+            (options.maxResolution || defaultOptions.maxResolution) * 1E6,
+        );
+        this.minResolution = Math.ceil(
+            (options.minResolution || defaultOptions.minResolution) * 1E6,
+        );
 
         // approximate ground altitude value. Camera altitude is clamped above groundLevel
         this.groundLevel = options.groundLevel || defaultOptions.groundLevel;
@@ -336,6 +351,10 @@ class PlanarControls extends THREE.EventDispatcher {
                 this.handleTravel(dt);
                 this.view.notifyChange(this.camera);
                 break;
+            // case STATE.ZOOM:
+            //     this.handleZoom(dt);
+            //     this.view.notifyChange(this.camera);
+            //     break;
             case STATE.ORTHO_ZOOM:
                 this.handleZoomOrtho(dt);
                 this.view.notifyChange(this.camera);
@@ -511,6 +530,7 @@ class PlanarControls extends THREE.EventDispatcher {
         const delta = -event.deltaY;
 
         pointUnderCursor.copy(this.getWorldPointAtScreenXY(mousePosition));
+        // pointUnderCursor.copy(this.getWorldPointAtScreenXY());
         const newPos = new THREE.Vector3();
 
         if (delta > 0 || (delta < 0 && this.maxAltitude > this.camera.position.z)) {
@@ -518,7 +538,17 @@ class PlanarControls extends THREE.EventDispatcher {
 
             // do not zoom if the resolution after the zoom is outside resolution limits
             const endResolution = this.view.getPixelsToMeters() / zoomFactor;
-            if (this.maxResolution > endResolution || endResolution > this.minResolution) {
+            // The endResolution value is rounded to the 1E-6 decimal above when compared to maxResolution,
+            // and it is rounded to the 1E-6 decimal below when compared to minResolution.
+            // This prevents rounding issues when endResolution has too many decimals.
+            // console.log('start resolution : ', this.view.getPixelsToMeters() * 1E6);
+            // console.log('end resolution : ', endResolution * 1E6);
+            // console.log('end range : ', CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).range / zoomFactor);
+            // console.log('');
+            if (
+                this.maxResolution > Math.ceil(endResolution * 1E6)
+                || Math.floor(endResolution * 1E6) > this.minResolution
+            ) {
                 return;
             }
 
@@ -539,25 +569,54 @@ class PlanarControls extends THREE.EventDispatcher {
                 travelDuration = this.zoomTravelTime;
                 this.updateMouseCursorType();
             } else {
-                // target position
-                newPos.lerpVectors(
-                    this.camera.position,
+                const cameraTransformOptions = CameraUtils.getTransformCameraLookingAtTarget(
+                    this.view, this.camera,
+                );
+
+                const endCoordinates = new THREE.Vector3();
+
+                endCoordinates.lerpVectors(
+                    cameraTransformOptions.coord.as(this.view.referenceCrs).toVector3(),
                     pointUnderCursor,
                     (1 - 1 / zoomFactor),
                 );
-                // initiate travel
-                this.initiateTravel(
-                    newPos,
-                    this.zoomTravelTime,
-                    null,
-                    false,
+
+                // const copyEndCoordinates = endCoordinates.clone();
+                // copyEndCoordinates.project(this.camera);
+
+                const endFloorCoordinates = this.view.getPickingPositionFromDepth(
+                    this.view.normalizedToViewCoords(endCoordinates.clone().project(this.camera)),
                 );
+                console.log('end coordinates = ', endCoordinates);
+                console.log('end floor coordinates = ', endFloorCoordinates);
+                console.log('distance : ', endCoordinates.distanceTo(endFloorCoordinates));
+
+                cameraTransformOptions.coord = new Coordinates(this.view.referenceCrs).setFromVector3(endFloorCoordinates);
+                cameraTransformOptions.range /= zoomFactor;
+                cameraTransformOptions.range += endCoordinates.distanceTo(endFloorCoordinates);
+                cameraTransformOptions.time = 1000;
+                cameraTransformOptions.easing = CameraUtils.Easing.Quartic.Out;
+                CameraUtils.animateCameraToLookAtTarget(this.view, this.camera, cameraTransformOptions);
+
+                // // target position
+                // newPos.lerpVectors(
+                //     this.camera.position,
+                //     pointUnderCursor,
+                //     (1 - 1 / zoomFactor),
+                // );
+                // // initiate travel
+                // this.initiateTravel(
+                //     newPos,
+                //     this.zoomTravelTime,
+                //     null,
+                //     false,
+                // );
             }
         }
     }
 
     /**
-     * Handle the animated zoom change for an orthographic camera, when state is `ZOOM`.
+     * Handle the animated zoom change for an orthographic camera, when state is `ORTHO_ZOOM`.
      *
      * @param   {number}    dt  the delta time between two updates in milliseconds
      * @ignore
