@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Itowns - WebXR Example</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/"
+                }
+            }
+        </script>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+
+        <script type="module">
+
+            import { VRButton } from 'three/addons/webxr/VRButton.js';
+
+            // ---------- SETUP THE VR VIEW : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 6.227, 45.167),
+                range: 15000,
+                tilt: 5,
+                heading: 62,
+            }
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement, {
+                webXR: { scale: 0.005 },
+            });
+
+            // Instantiate three's VR Button
+            const vrButton = VRButton.createButton(view.renderer);
+            viewerDiv.appendChild(vrButton);
+
+            // ---------- DISPLAY ORTHO-IMAGES : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are
+            // defined in a json file, but it could be defined as a plain js
+            // object. See `Layer` documentation for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then((config) => {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(new itowns.ColorLayer('Ortho', config),
+                );
+            });
+
+            // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
+
+            // Add two elevation layers, each with a different level of detail.
+            // Here again, each layer's properties are defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                );
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json')
+                .then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json')
+                .then(addElevationLayerFromConfig);
+        </script>
+    </body>
+</html>

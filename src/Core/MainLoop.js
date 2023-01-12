@@ -113,7 +113,12 @@ class MainLoop extends EventDispatcher {
                 document.title += ' ⌛';
             }
 
-            requestAnimationFrame((timestamp) => { this.#step(view, timestamp); });
+            // TODO Fix asynchronization between xr and MainLoop render loops.
+            // WebGLRenderer#setAnimationLoop must be used for WebXR projects.
+            // (see WebXR#initializeWebXR).
+            if (!this.gfxEngine.renderer.xr.isPresenting) {
+                requestAnimationFrame((timestamp) => { this.step(view, timestamp); });
+            }
         }
     }
 
@@ -163,7 +168,7 @@ class MainLoop extends EventDispatcher {
         }
     }
 
-    #step(view, timestamp) {
+    step(view, timestamp) {
         const dt = timestamp - this.#lastTimestamp;
         view._executeFrameRequestersRemovals();
 

@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import fetch from 'node-fetch';
+import { Camera } from 'three';
 
 global.window = {
     addEventListener: () => {},
@@ -165,9 +166,21 @@ global.document = {
     },
     createElementNS: (_, type) => (global.document.createElement(type)),
     getElementsByTagName: () => [new DOMElement()],
+    events: new Map(),
 };
 
+global.document.addEventListener = (event, cb) => { global.document.events.set(event, cb); };
+global.document.removeEventListener = () => {};
+global.document.emitEvent = (event, params) => {
+    const callback = global.document.events.get(event);
+    if (callback) {
+        return callback(params);
+    }
+};
 global.document.documentElement = global.document.createElement();
+global.document.body = new DOMElement();
+
+global.XRRigidTransform = () => {};
 
 class Path2D {
     moveTo() {}
@@ -176,11 +189,35 @@ class Path2D {
 
 global.Path2D = Path2D;
 
+class EventDispatcher {
+    constructor() {
+        this.events = new Map();
+    }
+
+    addEventListener(type, listener) {
+        this.events.set(type, listener);
+    }
+
+    dispatchEvent(event) {
+        this.events.get(event.type).call(this, event);
+    }
+}
+
 class Renderer {
     constructor() {
         this.domElement = new DOMElement();
         this.domElement.parentElement = new DOMElement();
         this.domElement.parentElement.appendChild(this.domElement);
+
+        this.xr = new EventDispatcher();
+        this.xr.isPresenting = false;
+        this.xr.getReferenceSpace = () => ({
+            getOffsetReferenceSpace: () => {},
+        });
+        this.xr.setReferenceSpace = () => {};
+        this.xr.getCamera = () => new Camera();
+        this.xr.setAnimationLoop = () => {};
+        this.xr.getSession = () => {};
 
         this.context = {
             getParameter: () => 16,
