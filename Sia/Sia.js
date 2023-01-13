@@ -310,7 +310,7 @@ class Sia {
                 };
             }
         }
-        throw `Serialization of item ${item} is not supported`;
+        throw `Serialization of item ${item} ${constructor} is not supported`;
     }
     serialize(data) {
         this.data = data;
@@ -384,7 +384,7 @@ class DeSia {
             }
 
             default:
-                throw `Key of type ${blockType} is invalid.`;
+                throw `Key of type ${blockType} (name: ${Object.entries(SIA_TYPES).filter((key, value) => value === blockType)[0][0]}) is invalid.`;
         }
     }
     readBlock() {
@@ -572,7 +572,7 @@ class DeSia {
 
             default:
                 // const error = `Unsupported type: ${blockType}`;
-                throw `ERROR Unsupported type: ${blockType}`;
+                throw `ERROR Unsupported type: ${blockType} (name: ${Object.entries(SIA_TYPES).filter((key, value) => value === blockType)[0][0]})`;
         }
     }
     readUInt8() {
@@ -605,10 +605,6 @@ class DeSia {
             this.offset += 8;
             return uInt64;
         } catch (error) {
-            console.log('error');
-            console.log(error);
-            console.log('offset:', this.offset);
-            console.log('error');
             if (this.offset === 162 || this.offset === 171) {
                 this.offset += 8;
             }
