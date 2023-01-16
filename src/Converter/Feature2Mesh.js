@@ -201,6 +201,7 @@ function addExtrudedPolygonSideFaces(indices, length, offset, count, isClockWise
 }
 
 function featureToPoint(feature, options) {
+    // console.log('featureToPoint');
     const ptsIn = feature.vertices;
     const normals = feature.normals;
     const colors = new Uint8Array(ptsIn.length);
@@ -244,7 +245,7 @@ function featureToPoint(feature, options) {
 }
 
 function featureToLine(feature, options) {
-    console.log('featureToLine');
+    // console.log('featureToLine');
     const ptsIn = feature.vertices;
     const normals = feature.normals;
     const colors = new Uint8Array(ptsIn.length);
@@ -326,6 +327,7 @@ function featureToLine(feature, options) {
 }
 
 function featureToPolygon(feature, options) {
+    // console.log('featureToPolygon');
     const ptsIn = feature.vertices;
     const normals = feature.normals;
 
@@ -404,6 +406,7 @@ function area(contour, offset, count) {
 
 const bottomColor = new THREE.Color();
 function featureToExtrudedPolygon(feature, options) {
+    // console.log('featureToExtrudedPolygon');
     const ptsIn = feature.vertices;
 
     const normals = feature.normals;
@@ -420,8 +423,24 @@ function featureToExtrudedPolygon(feature, options) {
 
     for (const geometry of feature.geometries) {
         const context = { globals, properties: () => geometry.properties };
+
+        const styleConc = {
+            fill: {
+                ...geometry.properties.style && geometry.properties.style.fill ? geometry.properties.style.fill : {},
+                ...options.layer.style.fill,
+            },
+            stroke: {
+                ...geometry.properties.style && geometry.properties.style.stroke ? geometry.properties.style.stroke : {},
+                ...options.layer.style.stroke,
+            },
+            point: {
+                ...geometry.properties.style && geometry.properties.style.point ? geometry.properties.style.point : {},
+                ...options.layer.style.point,
+            },
+        };
+        const style = new Style(styleConc).drawingStylefromContext(context);
+
         // const style = new Style(feature.style).drawingStylefromContext(context);
-        const style = new Style(options.layer.style).drawingStylefromContext(context);
 
         // topColor is assigned to the top of extruded polygon
         const topColor = toColor(style.fill.color);
