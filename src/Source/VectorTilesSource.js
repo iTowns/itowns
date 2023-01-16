@@ -1,4 +1,3 @@
-import { featureFilter } from '@mapbox/mapbox-gl-style-spec';
 import Style from 'Core/Style';
 import TMSSource from 'Source/TMSSource';
 import Fetcher from 'Provider/Fetcher';
@@ -108,7 +107,8 @@ class VectorTilesSource extends TMSSource {
                     this.layers[layer['source-layer']].push({
                         id: layer.id,
                         order,
-                        filterExpression: featureFilter(layer.filter),
+                        // filterExpression: featureFilter(layer.filter),
+                        filterExpression: layer.filter,
                         zoom: style.zoom,
                     });
                 }
