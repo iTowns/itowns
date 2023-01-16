@@ -11,7 +11,6 @@ function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style =
     if (vertices.length === 0) {
         return;
     }
-
     if (style.length) {
         for (const s of style) {
             _drawPolygon(ctx, vertices, indices, s, size, extent, invCtxScale, canBeFilled);
@@ -115,14 +114,17 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
             const styleConc = {
                 fill: {
                     ...geometry.properties.style && geometry.properties.style.fill ? geometry.properties.style.fill : {},
+                    ...feature.style.isExtraStyle && feature.style.fill ? feature.style.fill : {},
                     ...style.fill,
                 },
                 stroke: {
                     ...geometry.properties.style && geometry.properties.style.stroke ? geometry.properties.style.stroke : {},
+                    ...feature.style.isExtraStyle && feature.style.stroke ? feature.style.stroke : {},
                     ...style.stroke,
                 },
                 point: {
                     ...geometry.properties.style && geometry.properties.style.point ? geometry.properties.style.point : {},
+                    ...feature.style.isExtraStyle && feature.style.point ? feature.style.point : {},
                     ...style.point,
                 },
             };
@@ -131,9 +133,9 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
 
             if (contextStyle) {
                 if (
-                    feature.type === FEATURE_TYPES.POINT
-                    && contextStyle.point
+                    feature.type === FEATURE_TYPES.POINT && contextStyle.point
                 ) {
+                    // console.log('^^^drawPoint^^^');
                     // cross multiplication to know in the extent system the real size of
                     // the point
                     const px = (Math.round(contextStyle.point.radius * invCtxScale) || 3 * invCtxScale) * scaleRadius;
