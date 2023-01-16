@@ -8,9 +8,10 @@ const itownsConstructors = [
     {
         constructor: Extent, // The custom class you want to support
         code: 2, // A unique positive code point for this class, the smaller the better
-        args: item => [item.crs, item.west, item.east, item.south, item.north], // A function to serialize the instances of the class
-        build(crs, west, east, south, north) { // A function for restoring instances of the class
-            return new Extent(crs, west, east, south, north);
+        args: item => [item.crs, item.west, item.east, item.south, item.north, item.row, item.col, item.zoom], // A function to serialize the instances of the class
+        build(crs, west, east, south, north, row, col, zoom) { // A function for restoring instances of the class
+            const extent = new Extent(crs, west || zoom, east || row, south || col, north);
+            return extent;
         },
     },
     {
@@ -47,8 +48,12 @@ const itownsConstructors = [
     {
         constructor: Feature,
         code: 6,
-        args: item => [item.type, item.geometries, item.vertices, item.crs, item.size, item.normals, item.extent, item.altitude],
-        build(type, geometries, vertices, crs, size, normals, extent, altitude) {
+        args: item => [item.type, item.geometries, item.vertices, item.crs, item.size, item.normals, item.extent, item.altitude,
+            item.hasExtraStyle,
+        ],
+        build(type, geometries, vertices, crs, size, normals, extent, altitude,
+            hasExtraStyle,
+        ) {
             const feature = new Feature(type, { transformToLocalSystem: () => {}, extent });
             feature.geometries = geometries;
             feature.vertices = vertices;
@@ -57,6 +62,7 @@ const itownsConstructors = [
             feature.normals = normals;
             feature.extent = extent;
             feature.altitude = altitude;
+            if (hasExtraStyle) { feature.hasExtraStyle = hasExtraStyle; }
             return feature;
         },
     },
