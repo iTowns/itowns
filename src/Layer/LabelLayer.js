@@ -47,6 +47,7 @@ class LabelLayer extends Layer {
     constructor(id, config = {}) {
         super(id, config);
 
+        this.style = config.style || {};
         this.isLabelLayer = true;
         this.domElement = document.createElement('div');
         this.domElement.id = `itowns-label-${this.id}`;
@@ -119,8 +120,8 @@ class LabelLayer extends Layer {
                 } else if (!geometryField && !layerField) {
                     // Check if there is an icon, with no text
                     if (!(g.properties.style && (g.properties.style.icon.source || g.properties.style.icon.key))
-                        && !(f.style && (f.style.icon.source || f.style.icon.key))
-                        && !(this.style && (this.style.icon.source || this.style.icon.key))) {
+                        && !(f.style && f.style.icon && (f.style.icon.source || f.style.icon.key))
+                        && !(this.style && this.style.icon && (this.style.icon.source || this.style.icon.key))) {
                         return;
                     }
                 } else if (geometryField) {
@@ -136,10 +137,12 @@ class LabelLayer extends Layer {
                 const styleConc = {
                     icon: {
                         ...g.properties.style && g.properties.style.icon,
+                        ...f.style.icon,
                         ...this.style.icon,
                     },
                     text: {
                         ...g.properties.style && g.properties.style.text,
+                        ...f.style.text,
                         ...this.style.text,
                     },
                 };
