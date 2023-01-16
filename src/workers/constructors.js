@@ -32,14 +32,15 @@ const itownsConstructors = [
     {
         constructor: FeatureGeometry,
         code: 5,
-        args: item => [item.indices, item.properties, item.size, item.extent, item.altitude],
-        build(indices, properties, size, extent, altitude) {
+        args: item => [item.indices, item.properties, item.size, item.extent, item.altitude, item.verticePos],
+        build(indices, properties, size, extent, altitude, verticePos) {
             const fg = new FeatureGeometry({ extent });
             fg.indices = indices;
             fg.properties = properties;
             fg.size = size;
             fg.altitude = altitude;
             fg.extent = extent;
+            fg.verticePos = verticePos;
             return fg;
         },
     },

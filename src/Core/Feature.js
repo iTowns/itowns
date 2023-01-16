@@ -18,7 +18,6 @@ function _setGeometryValues(geom, feature, long, lat, alt, normal) {
     if (feature.normals) {
         normal.toArray(feature.normals, feature._pos);
     }
-
     feature._pushValues(long, lat, alt);
 
     if (geom.size == 3) {
@@ -84,6 +83,8 @@ export class FeatureGeometry {
             min: Infinity,
             max: -Infinity,
         };
+
+        this.verticePos = [];
     }
     /**
      * Add a new marker to indicate the starting of sub geometry and extends the vertices buffer.
@@ -164,6 +165,7 @@ export class FeatureGeometry {
      */
     pushCoordinatesValues(feature, long, lat, normal) {
         const altitude = this.baseAltitude(feature);
+        this.verticePos.push(feature._pos);
 
         _setGeometryValues(this, feature, long, lat, altitude, normal);
 
