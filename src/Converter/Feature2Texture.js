@@ -2,25 +2,25 @@ import * as THREE from 'three';
 import { FEATURE_TYPES } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
-import Style from '../Core/Style';
+import Style, { getImage } from '../Core/Style';
 
 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 const matrix = svg.createSVGMatrix();
 
-function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style = {}, size, extent, invCtxScale, canBeFilled) {
+function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style = {}, size, extent, invCtxScale, canBeFilled, sprites) {
     if (vertices.length === 0) {
         return;
     }
     if (style.length) {
         for (const s of style) {
-            _drawPolygon(ctx, vertices, indices, s, size, extent, invCtxScale, canBeFilled);
+            _drawPolygon(ctx, vertices, indices, s, size, extent, invCtxScale, canBeFilled, sprites);
         }
     } else {
-        _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled);
+        _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled, sprites);
     }
 }
 
-function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled) {
+function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled, sprites) {
     // build contour
     ctx.beginPath();
     for (const indice of indices) {
@@ -42,12 +42,16 @@ function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, 
 
     // fill polygon only
     if (canBeFilled && style.fill) {
-        fillStyle(style, ctx, invCtxScale);
+        fillStyle(style, ctx, invCtxScale, sprites);
         ctx.fill();
     }
 }
 
-function fillStyle(style, ctx, invCtxScale) {
+function fillStyle(style, ctx, invCtxScale, sprites) {
+    if (style.fill.pattern && style.fill.pattern.image) {
+        style.fill.pattern = getImage(sprites, style.fill.pattern.image);
+        console.log(ctx.fillStyle);
+    }
     if (style.fill.pattern && ctx.fillStyle.src !== style.fill.pattern.src) {
         ctx.fillStyle = ctx.createPattern(style.fill.pattern, 'repeat');
         if (ctx.fillStyle.setTransform) {
@@ -102,7 +106,7 @@ function drawPoint(ctx, x, y, style = {}, invCtxScale) {
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
-function drawFeature(ctx, feature, extent, style, invCtxScale) {
+function drawFeature(ctx, feature, extent, style, invCtxScale, sprites) {
     const extentDim = extent.planarDimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
     const globals = { zoom: extent.zoom };
@@ -150,7 +154,7 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
                         }
                     }
                 } else {
-                    drawPolygon(ctx, feature.vertices, geometry.indices, contextStyle, feature.size, extent, invCtxScale, (feature.type == FEATURE_TYPES.POLYGON));
+                    drawPolygon(ctx, feature.vertices, geometry.indices, contextStyle, feature.size, extent, invCtxScale, (feature.type == FEATURE_TYPES.POLYGON), sprites);
                 }
             }
         }
@@ -170,7 +174,7 @@ const featureExtent = new Extent('EPSG:4326', 0, 0, 0, 0);
 export default {
     // backgroundColor is a THREE.Color to specify a color to fill the texture
     // with, given there is no feature passed in parameter
-    createTextureFromFeature(collection, extent, sizeTexture, style = {}, backgroundColor) {
+    createTextureFromFeature(collection, extent, sizeTexture, style = {}, backgroundColor, sprites) {
         let texture;
 
         if (collection) {
@@ -222,7 +226,7 @@ export default {
             // Draw the canvas
             for (const feature of collection.features) {
                 // drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
-                drawFeature(ctx, feature, featureExtent, style, invCtxScale);
+                drawFeature(ctx, feature, featureExtent, style, invCtxScale, sprites);
             }
 
             texture = new THREE.CanvasTexture(c);

@@ -76,7 +76,7 @@ function readVectorProperty(property, options) {
     }
 }
 
-function getImage(source, key) {
+export function getImage(source, key) {
     const target = document.createElement('img');
 
     if (typeof source == 'string') {
@@ -470,9 +470,8 @@ class Style {
             style.fill.color = color;
             style.fill.opacity = readVectorProperty(layer.paint['fill-opacity']) || opacity;
             if (layer.paint['fill-pattern'] && sprites) {
-                console.log(sprites);
-                console.log(layer.paint['fill-pattern']);
                 // style.fill.pattern = getImage(sprites, layer.paint['fill-pattern']);
+                style.fill.pattern = { image: layer.paint['fill-pattern'] };
             }
 
             if (layer.paint['fill-outline-color']) {
