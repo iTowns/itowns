@@ -5,12 +5,14 @@ import ShapefileParser from 'Parser/ShapefileParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 
 import newConstructors from 'workers/constructors';
-import { desia, Sia } from '../Sia/Sia';
+import { Sia, DeSia } from '../Sia/Sia';
 
 const workerpool = require('workerpool');
 
+const desiaOptions = new DeSia();
+
 function geojson(data, options) {
-    return GeoJsonParser.parse(data, desia(options))
+    return GeoJsonParser.parse(data, desiaOptions.deserialize(options))
         .then((parsedData) => {
             const dataToSend = {};
             ['extent', 'position', 'quaternion', 'features']
@@ -26,7 +28,7 @@ function geojson(data, options) {
 }
 
 function kml(data, options) {
-    return KmlParser.parse(data, desia(options))
+    return KmlParser.parse(data, desiaOptions.deserialize(options))
         .then((parsedData) => {
             const dataToSend = {};
             ['extent', 'position', 'quaternion', 'features']
@@ -42,7 +44,7 @@ function kml(data, options) {
 }
 
 function gpx(data, options) {
-    return GpxParser.parse(data, desia(options))
+    return GpxParser.parse(data, desiaOptions.deserialize(options))
         .then((parsedData) => {
             const dataToSend = {};
             ['extent', 'position', 'quaternion', 'features']
@@ -58,7 +60,7 @@ function gpx(data, options) {
 }
 
 function shp(data, options) {
-    return ShapefileParser.parse(data, desia(options))
+    return ShapefileParser.parse(data, desiaOptions.deserialize(options))
         .then((parsedData) => {
             const dataToSend = {};
             ['extent', 'position', 'quaternion', 'features']
@@ -74,10 +76,10 @@ function shp(data, options) {
 }
 
 function vectorTile(data, options) {
-    return VectorTileParser.parse(data, desia(options))
+    return VectorTileParser.parse(data, desiaOptions.deserialize(options))
         .then((parsedData) => {
             const dataToSend = {};
-            ['extent', 'position', 'quaternion', 'features']
+            ['extent', 'position', 'quaternion', 'features', 'scale']
                 .forEach((key) => {
                     dataToSend[key] = parsedData[key];
                 });
@@ -85,6 +87,7 @@ function vectorTile(data, options) {
             return sia.serialize(dataToSend);
         })
         .catch((err) => {
+            console.log('ERR:', err);
             throw err;
         });
 }
