@@ -192,8 +192,19 @@ class Source extends InformationsData {
         if (!features) {
             // otherwise fetch/parse the data
             if (!this.parser) { this.parser = (d => d); }
-            features = cache.setByArray(fetchSourceData(this, extent).then(file => this.parser(file, { out, in: this }),
-                err => this.handlingError(err)), key);
+            features = cache.setByArray(fetchSourceData(this, extent).then(file =>
+                // return this.parser(file, { out, in: JSON.parse(JSON.stringify(this)) });
+                this.parser(file, { out,
+                    in: {
+                        format: this.format,
+                        // extent: JSON.parse(JSON.stringify(this.extent)),
+                        isInverted: this.isInverted,
+                        crs: this.crs,
+                        ...{ layers: this.layers },
+                        ...{ styles: this.styles },
+                    },
+                }),
+            err => this.handlingError(err)), key);
             /* istanbul ignore next */
             if (this.onParsedFile) {
                 features.then((feat) => {
