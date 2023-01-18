@@ -59,6 +59,7 @@ class VectorTilesSource extends TMSSource {
         this.accessToken = source.accessToken;
 
         if (source.style) {
+            // console.log(source.style);
             if (typeof source.style == 'string') {
                 const styleUrl = urlParser.normalizeStyleURL(source.style, this.accessToken);
                 promise = Fetcher.json(styleUrl, this.networkOptions);
@@ -70,6 +71,7 @@ class VectorTilesSource extends TMSSource {
         }
 
         this.whenReady = promise.then((style) => {
+            // console.log(style);
             this.jsonStyle = style;
             const baseurl = source.sprite || style.sprite;
             if (baseurl) {
@@ -94,6 +96,7 @@ class VectorTilesSource extends TMSSource {
                 if (layer.type === 'background') {
                     this.backgroundLayer = layer;
                 } else if (ffilter(layer)) {
+                    // console.log(layer.paint);
                     const style = Style.setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle);
                     style.zoom = {
                         min: layer.minzoom || 0,
@@ -136,9 +139,9 @@ class VectorTilesSource extends TMSSource {
                 console.warn('With VectorTilesSource and FeatureGeometryLayer, the accurate option is always false');
                 options.out.accurate = false;
             }
-            const keys = Object.keys(this.styles);
+            // const keys = Object.keys(this.styles);
 
-            keys.forEach((k) => { this.styles[k].parent = options.out.style; });
+            // keys.forEach((k) => { this.styles[k].parent = options.out.style; });
         }
     }
 }
