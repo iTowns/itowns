@@ -616,7 +616,10 @@ class DeSia {
         return str;
     }
     deserialize(buffer) {
-        this.buffer = buffer;
+        // this.buffer = buffer;
+        this.buffer = ArrayBuffer.isView(buffer)
+            ? BufferClass.from(buffer.buffer, buffer.byteOffset, buffer.byteLength)
+            : BufferClass.from(buffer);
         this.reset();
         return this.readBlock();
     }
