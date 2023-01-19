@@ -1,0 +1,108 @@
+<html>
+    <head>
+        <title>Itowns - Elevation measurement widget</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <!-- Import stylesheet for itowns Widgets plugin. This stylesheet is included in the bundles if you downloaded
+        them, or it can be found in `node_modules/itowns/examples/css` if you installed iTowns with npm. Otherwise, it
+        can be found here : https://raw.githubusercontent.com/iTowns/itowns/master/examples/css/widgets.css -->
+        <link rel="stylesheet" type="text/css" href="css/widgets.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <!-- Add a description -->
+        <div id="description">
+            Click on the elevation measurement tool button to activate the tool. Then, click anywhere in the scene to 
+            measure the elevation at a given point.
+        </div>
+
+        <!-- Create a container for itowns viewer -->
+        <div id="viewerDiv"></div>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <!-- Import iTowns Widgets plugin -->
+        <script src="../dist/itowns_widgets.js"></script>
+        <!-- Import iTowns LoadingScreen and GuiTools plugins -->
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
+
+
+        <script type="text/javascript">
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 4.830119, 45.771966),
+                range: 3000,
+                tilt: 25,
+                heading: 10,
+            }
+
+            // `viewerDiv` contains iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
+
+            // ---------- DISPLAY CONTEXTUAL DATA : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
+            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then((config) => {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ColorLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            });
+
+            // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            }
+            itowns.Fetcher.json('layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+            // 3D Tiles Layer
+            itowns.enableDracoLoader('./libs/draco/');
+            const lyon3DSource = new itowns.C3DTilesSource({
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/3DTiles/lyon_1_4978/tileset.json'
+            });
+            const lyon3DLayer = new itowns.C3DTilesLayer('bordeaux', {
+                name: 'bordeaux',
+                source: lyon3DSource,
+            }, view);
+
+            itowns.View.prototype.addLayer.call(view, lyon3DLayer);
+
+            // ---------- ADD ELEVATION MEASUREMENT WIDGET : ----------
+
+            const elevationMeasure = new itowns_widgets.ElevationMeasure(view);
+
+            // ---------- ADD LIGHTS ----------------------------------
+            var ambLight = new itowns.THREE.AmbientLight(0xffffff);
+            view.scene.add( ambLight );
+
+            // ---------- DEBUG TOOLS : ----------
+
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+        </script>
+    </body>
+</html>
