@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import RenderMode from 'Renderer/RenderMode';
 import { unpack1K } from 'Renderer/LayeredMaterial';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 const depthRGBA = new THREE.Vector4();
 // TileMesh picking support function
@@ -84,6 +85,11 @@ function findLayerInParent(obj) {
 const raycaster = new THREE.Raycaster();
 const normalized = new THREE.Vector2();
 
+const pointPos = new THREE.Vector3();
+const pointPosCoord = new Coordinates('EPSG:4978'); // default crs, will be set to view crs when used
+const cameraPos = new THREE.Vector3();
+const cameraPosCoord = new Coordinates('EPSG:4978'); // default crs, will be set to view crs when used
+
 /**
  * @module Picking
  *
@@ -166,9 +172,22 @@ export default {
                 // if baseId matches objId, the clicked point belongs to `o`
                 for (let i = 0; i < candidates.length; i++) {
                     if (candidates[i].objId == o.baseId) {
+                        // Get point position: get the picked point from the buffer geometry and apply local to world
+                        // transform of the picked object
+                        pointPos.fromBufferAttribute(o.geometry.attributes.position, candidates[i].index);
+                        o.localToWorld(pointPos);
+                        // Compute distance to the camera
+                        pointPosCoord.setCrs(view.referenceCrs);
+                        pointPosCoord.setFromVector3(pointPos);
+                        view.camera.camera3D.getWorldPosition(cameraPos);
+                        cameraPosCoord.setCrs(view.referenceCrs);
+                        cameraPosCoord.setFromVector3(cameraPos);
+                        const dist = pointPosCoord.spatialEuclideanDistanceTo(cameraPosCoord);
                         result.push({
                             object: o,
+                            point: pointPos, // the position of the point in the 3D view. Same name and value than what's returned by pickObjectsAt
                             index: candidates[i].index,
+                            distance: dist,
                             layer,
                         });
                     }
