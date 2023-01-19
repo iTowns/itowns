@@ -956,12 +956,12 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
-     * Returns the world position (view's crs: referenceCrs) under view coordinates.
+     * Returns the world position on the terrain (view's crs: referenceCrs) under view coordinates.
      * This position is computed with depth buffer.
      *
      * @param      {THREE.Vector2}  mouse  position in view coordinates (in pixel), if it's null so it's view's center.
      * @param      {THREE.Vector3}  [target=THREE.Vector3()] target. the result will be copied into this Vector3. If not present a new one will be created.
-     * @return     {THREE.Vector3}  the world position in view's crs: referenceCrs.
+     * @return     {THREE.Vector3}  the world position on the terrain in view's crs: referenceCrs.
      */
 
     getPickingPositionFromDepth(mouse, target = new THREE.Vector3()) {
@@ -1028,7 +1028,7 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
-     * Returns the world {@link Coordinates} at given view coordinates.
+     * Returns the world {@link Coordinates} of the terrain at given view coordinates.
      *
      * @param   {THREE.Vector2|event}   [mouse]     The view coordinates at which the world coordinates must be
                                                     * returned. This parameter can also be set to a mouse event from
@@ -1037,9 +1037,9 @@ class View extends THREE.EventDispatcher {
      * @param   {Coordinates}           [target]    The result will be copied into this {@link Coordinates}. If not
                                                     * specified, a new {@link Coordinates} instance will be created.
      *
-     * @returns {Coordinates}   The world {@link Coordinates} at the given view coordinates.
+     * @returns {Coordinates}   The world {@link Coordinates} of the terrain at the given view coordinates.
      */
-    pickCoordinates(mouse, target = new Coordinates(this.tileLayer.extent.crs)) {
+    pickTerrainCoordinates(mouse, target = new Coordinates(this.referenceCrs)) {
         if (mouse instanceof Event) {
             this.eventToViewCoords(mouse);
         } else if (mouse && mouse.x !== undefined && mouse.y !== undefined) {
@@ -1057,6 +1057,25 @@ class View extends THREE.EventDispatcher {
         coordinates.as(target.crs, target);
 
         return target;
+    }
+
+    /**
+     * Returns the world {@link Coordinates} of the terrain at given view coordinates.
+     *
+     * @param   {THREE.Vector2|event}   [mouse]     The view coordinates at which the world coordinates must be
+                                                    * returned. This parameter can also be set to a mouse event from
+                                                    * which the view coordinates will be deducted. If not specified, it
+                                                    * will be defaulted to the view's center coordinates.
+     * @param   {Coordinates}           [target]    The result will be copied into this {@link Coordinates}. If not
+                                                    * specified, a new {@link Coordinates} instance will be created.
+     *
+     * @returns {Coordinates}   The world {@link Coordinates} of the terrain at the given view coordinates.
+     *
+     * @deprecated Use View#pickTerrainCoordinates instead.
+     */
+    pickCoordinates(mouse, target = new Coordinates(this.referenceCrs)) {
+        console.warn('Deprecated, use View#pickTerrainCoordinates instead.');
+        return this.pickTerrainCoordinates(mouse, target);
     }
 
     /**
