@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector3, Camera, Object3D, MathUtils } from 'three';
 import TWEEN from '@tweenjs/tween.js';
 import DEMUtils from 'Utils/DEMUtils';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
@@ -7,13 +8,13 @@ import Ellipsoid from 'Core/Math/Ellipsoid';
 import OBB from 'Renderer/OBB';
 import { VIEW_EVENTS } from 'Core/View';
 
-THREE.Object3D.DefaultUp.set(0, 0, 1);
-const targetPosition = new THREE.Vector3();
+Object3D.DefaultUp.set(0, 0, 1);
+const targetPosition = new Vector3();
 const targetCoord = new Coordinates('EPSG:4326', 0, 0, 0);
 const ellipsoid = new Ellipsoid();
 const rigs = [];
 const obb = new OBB();
-const size = new THREE.Vector3();
+const size = new Vector3();
 
 const deferred = () => {
     let resolve;
@@ -31,7 +32,7 @@ function tileLayer(view) {
 }
 
 export function getLookAtFromMath(view, camera) {
-    const direction = new THREE.Vector3(0, 0, 0.5);
+    const direction = new Vector3(0, 0, 0.5);
     direction.unproject(camera);
     direction.sub(camera.position).normalize();
     if (view.referenceCrs == 'EPSG:4978') {
@@ -70,23 +71,23 @@ function proxyProperty(view, camera, rig, key) {
 //
 // When all transformations are calculated,
 // this.camera's transformation is applied to view.camera.camera
-class CameraRig extends THREE.Object3D {
+class CameraRig extends Object3D {
     constructor() {
         super();
         // seaLevel is on rig's z axis, it's at altitude zero
-        this.seaLevel = new THREE.Object3D();
+        this.seaLevel = new Object3D();
         // target is on seaLevel's z axis and target.position.z is the DEM altitude
-        this.target = new THREE.Object3D();
+        this.target = new Object3D();
         this.target.rotation.order = 'ZXY';
         // camera look at target
-        this.camera = new THREE.Camera();
+        this.camera = new Camera();
         this.add(this.seaLevel);
         this.seaLevel.add(this.target);
         this.target.add(this.camera);
         // target's geographic coordinate
         this.coord = new Coordinates('EPSG:4978', 0, 0);
         // sea level's worldPoistion
-        this.targetWorldPosition = new THREE.Vector3();
+        this.targetWorldPosition = new Vector3();
         this.removeAll = () => {};
 
         this._onChangeCallback = null;
@@ -112,7 +113,7 @@ class CameraRig extends THREE.Object3D {
 
     setProxy(view, camera) {
         if (!this.proxy && view && camera) {
-            this.proxy = { position: new THREE.Vector3() };
+            this.proxy = { position: new Vector3() };
             Object.keys(camera.position).forEach(key => proxyProperty(view, camera, this, key));
             this._onChangeCallback = camera.quaternion._onChangeCallback;
             camera.quaternion._onChange(() => this.removeProxy(view, camera));
@@ -161,7 +162,7 @@ class CameraRig extends THREE.Object3D {
         this.target.worldToLocal(this.camera.position);
         const range = this.camera.position.length();
         this.target.rotation.x = Math.asin(this.camera.position.z / range);
-        const cosPlanXY = THREE.MathUtils.clamp(this.camera.position.y / (Math.cos(this.target.rotation.x) * range), -1, 1);
+        const cosPlanXY = MathUtils.clamp(this.camera.position.y / (Math.cos(this.target.rotation.x) * range), -1, 1);
         this.target.rotation.z = Math.sign(-this.camera.position.x || 1) * Math.acos(cosPlanXY);
         this.camera.position.set(0, range, 0);
     }
@@ -172,10 +173,10 @@ class CameraRig extends THREE.Object3D {
             this.setTargetFromCoordinate(view, params.coord);
         }
         if (params.tilt != undefined) {
-            this.target.rotation.x = THREE.MathUtils.degToRad(params.tilt);
+            this.target.rotation.x = MathUtils.degToRad(params.tilt);
         }
         if (params.heading != undefined) {
-            this.target.rotation.z = THREE.MathUtils.degToRad(-wrapTo180(params.heading + 180));
+            this.target.rotation.z = MathUtils.degToRad(-wrapTo180(params.heading + 180));
         }
         if (params.range) {
             this.camera.position.set(0, params.range, 0);
@@ -245,8 +246,8 @@ class CameraRig extends THREE.Object3D {
                 this.camera.quaternion.slerpQuaternions(this.start.camera.quaternion, this.end.camera.quaternion, d.t);
                 // camera's target rotation
                 this.target.rotation.set(0, 0, 0);
-                this.target.rotateZ(THREE.MathUtils.lerp(this.start.target.rotation.z, this.end.target.rotation.z, d.t));
-                this.target.rotateX(THREE.MathUtils.lerp(this.start.target.rotation.x, this.end.target.rotation.x, d.t));
+                this.target.rotateZ(MathUtils.lerp(this.start.target.rotation.z, this.end.target.rotation.z, d.t));
+                this.target.rotateX(MathUtils.lerp(this.start.target.rotation.x, this.end.target.rotation.x, d.t));
             }));
 
         // translate to coordinate destination in planar projection
@@ -329,9 +330,9 @@ class CameraRig extends THREE.Object3D {
         }
     }
 
-    get tilt() { return THREE.MathUtils.radToDeg(this.target.rotation.x); }
+    get tilt() { return MathUtils.radToDeg(this.target.rotation.x); }
 
-    get heading() { return -wrapTo180((THREE.MathUtils.radToDeg(this.target.rotation.z) + 180)); }
+    get heading() { return -wrapTo180((MathUtils.radToDeg(this.target.rotation.z) + 180)); }
 
     get range() { return this.camera.position.y; }
 }
@@ -457,7 +458,7 @@ export default {
             cameraTransformOptions.range = 1000;
         } else if (camera.isPerspectiveCamera) {
             // setup range for camera placement
-            const verticalFOV = THREE.MathUtils.degToRad(camera.fov);
+            const verticalFOV = MathUtils.degToRad(camera.fov);
             if (dimensions.x / dimensions.y > camera.aspect) {
                 const focal = (view.domElement.clientHeight * 0.5) / Math.tan(verticalFOV * 0.5);
                 const horizontalFOV = 2 * Math.atan(view.domElement.clientWidth * 0.5 / focal);

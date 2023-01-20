@@ -1,12 +1,13 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector2, Vector3, Matrix4 } from 'three';
 import DEMUtils from 'Utils/DEMUtils';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 const temp = {
-    v: new THREE.Vector3(),
+    v: new Vector3(),
     coord1: new Coordinates('EPSG:4978'),
     coord2: new Coordinates('EPSG:4978'),
-    offset: new THREE.Vector2(),
+    offset: new Vector2(),
 };
 
 function _updateVector3(layer, method, nodes, vecCRS, vec, offset, matrices = {}, coords, cache) {
@@ -67,7 +68,7 @@ function placeObjectOnGround(layer, crs, obj, options = {}, tileHint) {
         }
         const matrices = {
             worldFromLocal: obj.parent ? obj.parent.matrixWorld : undefined,
-            localFromWorld: obj.parent ? new THREE.Matrix4().copy(obj.parent.matrixWorld).invert() : undefined,
+            localFromWorld: obj.parent ? new Matrix4().copy(obj.parent.matrixWorld).invert() : undefined,
         };
         const result = _updateVector3(
             layer,
@@ -91,7 +92,7 @@ function placeObjectOnGround(layer, crs, obj, options = {}, tileHint) {
     } else {
         const matrices = {
             worldFromLocal: obj.matrixWorld,
-            localFromWorld: new THREE.Matrix4().copy(obj.matrixWorld).invert(),
+            localFromWorld: new Matrix4().copy(obj.matrixWorld).invert(),
         };
 
         const geometry = obj.geometry;
@@ -131,7 +132,7 @@ function placeObjectOnGround(layer, crs, obj, options = {}, tileHint) {
             }
             let success = true;
 
-            const tmp = new THREE.Vector3();
+            const tmp = new Vector3();
             const coord = new Coordinates(crs);
             for (let i = 0; i < geometry.attributes.position.count; i++) {
                 const cached = options.cache ? options.cache[i] : undefined;

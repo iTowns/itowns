@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Uniform } from 'three';
 
 export default {
     setDefineMapping(object, PROPERTY, mapping) {
@@ -21,7 +22,7 @@ export default {
     },
 
     setUniformProperty(object, property, initValue) {
-        object.uniforms[property] = new THREE.Uniform(initValue);
+        object.uniforms[property] = new Uniform(initValue);
         Object.defineProperty(object, property, {
             get: () => object.uniforms[property].value,
             set: (value) => {

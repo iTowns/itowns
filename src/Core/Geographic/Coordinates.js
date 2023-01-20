@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector3, MathUtils } from 'three';
 import proj4 from 'proj4';
 import CRS from 'Core/Geographic/Crs';
 import Ellipsoid from 'Core/Math/Ellipsoid';
@@ -8,8 +9,8 @@ proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 const ellipsoid = new Ellipsoid();
 const projectionCache = {};
 
-const v0 = new THREE.Vector3();
-const v1 = new THREE.Vector3();
+const v0 = new Vector3();
+const v1 = new Vector3();
 
 let coord0;
 let coord1;
@@ -79,7 +80,7 @@ class Coordinates {
         this.z = 0;
 
         // Normal
-        this._normal = new THREE.Vector3();
+        this._normal = new Vector3();
 
         if (v0.length > 0) {
             this.setFromArray(v0);
@@ -199,7 +200,7 @@ class Coordinates {
      *
      * @return {THREE.Vector3}
      */
-    toVector3(target = new THREE.Vector3()) {
+    toVector3(target = new Vector3()) {
         return target.copy(this);
     }
 
@@ -254,7 +255,7 @@ class Coordinates {
      * @return     {Coordinates}  return this object.
      */
     applyMatrix4(mat) {
-        return THREE.Vector3.prototype.applyMatrix4.call(this, mat);
+        return Vector3.prototype.applyMatrix4.call(this, mat);
     }
 
     /**
@@ -287,7 +288,7 @@ class Coordinates {
             target.copy(this);
         } else {
             if (CRS.is4326(this.crs) && crs == 'EPSG:3857') {
-                this.y = THREE.MathUtils.clamp(this.y, -89.999999, 89.999999);
+                this.y = MathUtils.clamp(this.y, -89.999999, 89.999999);
             }
 
             target.setFromArray(proj4cache(this.crs, crs).forward([this.x, this.y, this.z]));

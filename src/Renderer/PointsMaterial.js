@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector2, Vector4, Color, RawShaderMaterial, DataTexture, RGBAFormat, NearestFilter, NoBlending, NormalBlending } from 'three';
 import PointsVS from 'Renderer/Shader/PointsVS.glsl';
 import PointsFS from 'Renderer/Shader/PointsFS.glsl';
 import Capabilities from 'Core/System/Capabilities';
@@ -12,7 +13,7 @@ export const MODE = {
     NORMAL: 3,
 };
 
-const white = new THREE.Color(1.0,  1.0,  1.0);
+const white = new Color(1.0,  1.0,  1.0);
 
 /**
  * Every lidar point can have a classification assigned to it that defines
@@ -32,24 +33,24 @@ class /* istanbul ignore next */ Classification {}
 
 export const ClassificationScheme = {
     DEFAULT: {
-        0: { visible: true, name: 'never classified', color: new THREE.Color(0.5,  0.5,  0.5), opacity: 1.0 },
-        1: { visible: true, name: 'unclassified', color: new THREE.Color(0.5,  0.5,  0.5), opacity: 1.0 },
-        2: { visible: true, name: 'ground', color: new THREE.Color(0.63, 0.32, 0.18), opacity: 1.0 },
-        3: { visible: true, name: 'low vegetation', color: new THREE.Color(0.0,  1.0,  0.0), opacity: 1.0 },
-        4: { visible: true, name: 'medium vegetation', color: new THREE.Color(0.0,  0.8,  0.0), opacity: 1.0 },
-        5: { visible: true, name: 'high vegetation', color: new THREE.Color(0.0,  0.6,  0.0), opacity: 1.0 },
-        6: { visible: true, name: 'building', color: new THREE.Color(1.0,  0.66, 0.0), opacity: 1.0 },
-        7: { visible: true, name: 'low point(noise)', color: new THREE.Color(1.0,  0.0,  1.0), opacity: 1.0 },
-        8: { visible: true, name: 'key-point', color: new THREE.Color(1.0,  0.0,  0.0), opacity: 1.0 },
-        9: { visible: true, name: 'water', color: new THREE.Color(0.0,  0.0,  1.0), opacity: 1.0 },
-        10: { visible: true, name: 'rail', color: new THREE.Color(0.8,  0.8,  1.0), opacity: 1.0 },
-        11: { visible: true, name: 'road Surface', color: new THREE.Color(0.4,  0.4,  0.7), opacity: 1.0 },
-        12: { visible: true, name: 'overlap', color: new THREE.Color(1.0,  1.0,  0.0), opacity: 1.0 },
-        DEFAULT: { visible: true, name: 'default', color: new THREE.Color(0.3,  0.6,  0.6), opacity: 0.5 },
+        0: { visible: true, name: 'never classified', color: new Color(0.5,  0.5,  0.5), opacity: 1.0 },
+        1: { visible: true, name: 'unclassified', color: new Color(0.5,  0.5,  0.5), opacity: 1.0 },
+        2: { visible: true, name: 'ground', color: new Color(0.63, 0.32, 0.18), opacity: 1.0 },
+        3: { visible: true, name: 'low vegetation', color: new Color(0.0,  1.0,  0.0), opacity: 1.0 },
+        4: { visible: true, name: 'medium vegetation', color: new Color(0.0,  0.8,  0.0), opacity: 1.0 },
+        5: { visible: true, name: 'high vegetation', color: new Color(0.0,  0.6,  0.0), opacity: 1.0 },
+        6: { visible: true, name: 'building', color: new Color(1.0,  0.66, 0.0), opacity: 1.0 },
+        7: { visible: true, name: 'low point(noise)', color: new Color(1.0,  0.0,  1.0), opacity: 1.0 },
+        8: { visible: true, name: 'key-point', color: new Color(1.0,  0.0,  0.0), opacity: 1.0 },
+        9: { visible: true, name: 'water', color: new Color(0.0,  0.0,  1.0), opacity: 1.0 },
+        10: { visible: true, name: 'rail', color: new Color(0.8,  0.8,  1.0), opacity: 1.0 },
+        11: { visible: true, name: 'road Surface', color: new Color(0.4,  0.4,  0.7), opacity: 1.0 },
+        12: { visible: true, name: 'overlap', color: new Color(1.0,  1.0,  0.0), opacity: 1.0 },
+        DEFAULT: { visible: true, name: 'default', color: new Color(0.3,  0.6,  0.6), opacity: 0.5 },
     },
 };
 
-class PointsMaterial extends THREE.RawShaderMaterial {
+class PointsMaterial extends RawShaderMaterial {
     /**
      * @class      PointsMaterial
      * @param      {object}  [options={}]  The options
@@ -68,7 +69,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
      * pointMaterial.recomputeClassification();
      */
     constructor(options = {}) {
-        const intensityRange = options.intensityRange || new THREE.Vector2(0, 1);
+        const intensityRange = options.intensityRange || new Vector2(0, 1);
         const oiMaterial = options.orientedImageMaterial;
         const classification = options.classification || ClassificationScheme.DEFAULT;
         const applyOpacityClassication = options.applyOpacityClassication == undefined ? false : options.applyOpacityClassication;
@@ -88,15 +89,15 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'mode', options.mode || MODE.COLOR);
         CommonMaterial.setUniformProperty(this, 'picking', false);
         CommonMaterial.setUniformProperty(this, 'opacity', this.opacity);
-        CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new THREE.Vector4(0, 0, 0, 0));
+        CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new Vector4(0, 0, 0, 0));
         CommonMaterial.setUniformProperty(this, 'intensityRange', intensityRange);
         CommonMaterial.setUniformProperty(this, 'applyOpacityClassication', applyOpacityClassication);
 
         // add classification texture to apply classification lut.
         const data = new Uint8Array(256 * 4);
-        const texture = new THREE.DataTexture(data, 256, 1, THREE.RGBAFormat);
+        const texture = new DataTexture(data, 256, 1, RGBAFormat);
         texture.needsUpdate = true;
-        texture.magFilter = THREE.NearestFilter;
+        texture.magFilter = NearestFilter;
         CommonMaterial.setUniformProperty(this, 'classificationLUT', texture);
 
         // Classification scheme
@@ -199,7 +200,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
 
     enablePicking(picking) {
         this.picking = picking;
-        this.blending = picking ? THREE.NoBlending : THREE.NormalBlending;
+        this.blending = picking ? NoBlending : NormalBlending;
     }
 
     update(source) {

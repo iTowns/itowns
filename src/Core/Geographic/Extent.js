@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector2, Vector3, Vector4, Box3 } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import CRS from 'Core/Geographic/Crs';
 
@@ -7,21 +8,21 @@ import CRS from 'Core/Geographic/Crs';
  * It can use explicit coordinates (e.g: lon/lat) or implicit (WMTS coordinates)
  */
 
-const _dim = new THREE.Vector2();
-const _dim2 = new THREE.Vector2();
-const _countTiles = new THREE.Vector2();
-const _box = new THREE.Box3();
-const tmsCoord = new THREE.Vector2();
-const dimensionTile = new THREE.Vector2();
-const defaultScheme = new THREE.Vector2(2, 2);
+const _dim = new Vector2();
+const _dim2 = new Vector2();
+const _countTiles = new Vector2();
+const _box = new Box3();
+const tmsCoord = new Vector2();
+const dimensionTile = new Vector2();
+const defaultScheme = new Vector2(2, 2);
 const r = { row: 0, col: 0, invDiff: 0 };
 
 const cNorthWest =  new Coordinates('EPSG:4326', 0, 0, 0);
 const cSouthWest =  new Coordinates('EPSG:4326', 0, 0, 0);
 const cNorthEast =  new Coordinates('EPSG:4326', 0, 0, 0);
 
-const southWest = new THREE.Vector3();
-const northEast = new THREE.Vector3();
+const southWest = new Vector3();
+const northEast = new Vector3();
 
 function _rowColfromParent(extent, zoom) {
     const diffLevel = extent.zoom - zoom;
@@ -257,7 +258,7 @@ class Extent {
     *
     * @return {THREE.Vector2}
     */
-    dimensions(target = new THREE.Vector2()) {
+    dimensions(target = new Vector2()) {
         console.warn('Extent.dimensions is deprecated, use planarDimensions, geodeticDimensions or spatialEuclideanDimensions');
         target.x = Math.abs(this.east - this.west);
         target.y = Math.abs(this.north - this.south);
@@ -271,7 +272,7 @@ class Extent {
      * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
      * @return     {THREE.Vector2}  Planar dimensions
      */
-    planarDimensions(target = new THREE.Vector2()) {
+    planarDimensions(target = new Vector2()) {
         // Calculte the dimensions for x and y
         return target.set(Math.abs(this.east - this.west), Math.abs(this.north - this.south));
     }
@@ -284,7 +285,7 @@ class Extent {
      * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
      * @return     {THREE.Vector2}  geodetic dimensions
      */
-    geodeticDimensions(target = new THREE.Vector2()) {
+    geodeticDimensions(target = new Vector2()) {
         // set 3 corners extent
         cNorthWest.crs = this.crs;
         cSouthWest.crs = this.crs;
@@ -305,7 +306,7 @@ class Extent {
      * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
      * @return     {THREE.Vector2}  spatial euclidean dimensions
      */
-    spatialEuclideanDimensions(target = new THREE.Vector2()) {
+    spatialEuclideanDimensions(target = new Vector2()) {
         // set 3 corners extent
         cNorthWest.crs = this.crs;
         cSouthWest.crs = this.crs;
@@ -379,7 +380,7 @@ class Extent {
      * @param {THREE.Vector4} target copy the result to target.
      * @return {THREE.Vector4} {x: translation on west-east, y: translation on south-north, z: scale on west-east, w: scale on south-north}
      */
-    offsetToParent(extent, target = new THREE.Vector4()) {
+    offsetToParent(extent, target = new Vector4()) {
         if (this.crs != extent.crs) {
             throw new Error('unsupported mix');
         }
@@ -746,8 +747,8 @@ const extent3857 = globalExtentTMS.get('EPSG:4326').as('EPSG:3857');
 extent3857.clampSouthNorth(extent3857.west, extent3857.east);
 globalExtentTMS.set('EPSG:3857', extent3857);
 
-schemeTiles.set('default', new THREE.Vector2(1, 1));
+schemeTiles.set('default', new Vector2(1, 1));
 schemeTiles.set(CRS.tms_3857, schemeTiles.get('default'));
-schemeTiles.set(CRS.tms_4326, new THREE.Vector2(2, 1));
+schemeTiles.set(CRS.tms_4326, new Vector2(2, 1));
 
 export default Extent;
