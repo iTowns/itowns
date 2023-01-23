@@ -70,7 +70,6 @@
 
                 // building coordinate
                 var coord = new itowns.Coordinates('EPSG:4326', 4.2165, 44.844, 1417);
-                var colladaID = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
 
                 model.position.copy(coord.as(view.referenceCrs));
                 // align up vector with geodesic normal
@@ -78,10 +77,6 @@
                 // user rotate building to align with ortho image
                 model.rotateZ(-Math.PI * 0.2);
                 model.scale.set(1.2, 1.2, 1.2);
-
-                // set camera's layer to do not disturb the picking
-                model.traverse(function _(obj) { obj.layers.set(colladaID); });
-                view.camera.camera3D.layers.enable(colladaID);
 
                 // update coordinate of the mesh
                 model.updateMatrixWorld();

@@ -242,21 +242,6 @@ class c3DEngine {
         return image;
     }
 
-    getUniqueThreejsLayer() {
-        // We use three.js Object3D.layers feature to manage visibility of
-        // geometry layers; so we need an internal counter to assign a new
-        // one to each new geometry layer.
-        // Warning: only 32 ([0, 31]) different layers can exist.
-        if (this._nextThreejsLayer > 31) {
-            console.warn('Too much three.js layers. Starting from now all of them will use layerMask = 31');
-            this._nextThreejsLayer = 31;
-        }
-
-        const result = this._nextThreejsLayer++;
-
-        return result;
-    }
-
     depthBufferRGBAValueToOrthoZ(depthBufferRGBA, camera) {
         depthRGBA.fromArray(depthBufferRGBA).divideScalar(255.0);
 
