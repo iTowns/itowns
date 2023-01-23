@@ -305,10 +305,6 @@ class GlobeControls extends THREE.EventDispatcher {
         if (enableTargetHelper) {
             cameraTarget.add(helpers.target);
             view.scene.add(helpers.picking);
-            const layerTHREEjs = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
-            helpers.target.layers.set(layerTHREEjs);
-            helpers.picking.layers.set(layerTHREEjs);
-            this.camera.layers.enable(layerTHREEjs);
         }
 
         if (placement.isExtent) {
