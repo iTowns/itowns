@@ -12,6 +12,7 @@ const center = new THREE.Vector3();
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 let obb;
 
+// it could be considered to remove THREE.Object3D extend.
 class OBB extends THREE.Object3D {
     /**
      * Oriented bounding box
@@ -50,14 +51,6 @@ class OBB extends THREE.Object3D {
         this.z.max = cOBB.z.max;
         this.z.scale = cOBB.z.scale;
         return this;
-    }
-
-    /**
-     * Update the top point world
-     *
-     */
-    update() {
-        this.updateMatrixWorld(true);
     }
 
     /**

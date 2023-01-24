@@ -272,7 +272,7 @@ class TiledGeometryLayer extends GeometryLayer {
 
     // eslint-disable-next-line
     culling(node, camera) {
-        return !camera.isBox3Visible(node.obb.box3D, node.obb.matrixWorld);
+        return !camera.isBox3Visible(node.obb.box3D, node.matrixWorld);
     }
 
     /**
