@@ -17,7 +17,7 @@ describe('OBB', function () {
     obb.translateX(translate.x);
     obb.translateY(translate.y);
     obb.translateZ(translate.z);
-    obb.update();
+    obb.updateMatrixWorld(true);
 
     it('should correctly instance obb', () => {
         assert.equal(obb.natBox.min.x, min.x);

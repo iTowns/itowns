@@ -71,8 +71,6 @@ export default {
             tile.visible = false;
             tile.updateMatrix();
 
-            tile.add(tile.obb);
-
             setTileFromTiledLayer(tile, layer);
 
             if (parent) {
