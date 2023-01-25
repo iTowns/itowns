@@ -36,7 +36,6 @@ function updatePano(context, camera, layer) {
             // put informations about image URL as extent to be used by generic DataSourceProvider, OrientedImageSource will use that.
             extentsSource: imagesInfo,
             view: context.view,
-            threejsLayer: layer.threejsLayer,
             requester: newPano,
             earlyDropFunction: commandCancellation,
         };

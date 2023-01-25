@@ -78,7 +78,6 @@ function executeCommand(command) {
     const path = metadata.content && (metadata.content.url || metadata.content.uri);
 
     const setLayer = (obj) => {
-        obj.layers.set(layer.threejsLayer);
         obj.userData.metadata = metadata;
         obj.layer = layer;
     };

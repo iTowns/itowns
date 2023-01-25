@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import TWEEN from '@tweenjs/tween.js';
-import View from 'Core/View';
 import GeometryLayer from 'Layer/GeometryLayer';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
@@ -117,100 +116,81 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     const geometrySphere = new THREE.SphereGeometry(1, 16, 16);
 
     function debugIdUpdate(context, layer, node) {
-        const enabled = context.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
-
-        if (!node.parent || !enabled) {
+        if (!node.parent || !layer.visible) {
             ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, node);
             return;
         }
 
-        let helper = node.children.filter(n => n.layer && (n.layer.id == layer.id))[0];
-
-        if (node.material && node.material.visible) {
+        // filtering helper attached to node with the current debug layer
+        let helper = node.link.filter(n => n.layer && (n.layer.id == layer.id))[0];
+        if (node.visible && node.material && node.material.visible) {
             if (!helper) {
-                // add the ability to hide all the debug obj for one layer at once
-                const l = context.view.getLayerById(layer.id);
-                const l3js = l.threejsLayer;
+                helper = new THREE.Group();
+                helper.layer = layer;
+                node.matrixWorld.decompose(helper.position, helper.quaternion, helper.scale);
 
                 if (layer.id == obb_layer_id) {
-                    helper = new OBBHelper(node.obb);
-                    if (helper.children[0]) {
-                        helper.children[0].layers.set(l3js);
-                    }
+                    const obbHelper = new OBBHelper(node.obb);
+                    obbHelper.layer = layer;
+                    helper.add(obbHelper);
                 } else if (layer.id == sb_layer_id) {
                     const color = new THREE.Color(Math.random(), Math.random(), Math.random());
                     const material = new THREE.MeshBasicMaterial({ color: color.getHex(), wireframe: true });
-                    helper = new THREE.Mesh(geometrySphere, material);
-                    helper.position.copy(node.boundingSphere.center);
-                    helper.scale.multiplyScalar(node.boundingSphere.radius);
+                    const sphereHelper = new THREE.Mesh(geometrySphere, material);
+                    sphereHelper.position.copy(node.boundingSphere.center);
+                    sphereHelper.scale.multiplyScalar(node.boundingSphere.radius);
+                    sphereHelper.scale.set(1, 1, 1).multiplyScalar(node.boundingSphere.radius);
+                    sphereHelper.layer = layer;
+                    helper.add(sphereHelper);
                 }
 
-                helper.layers.set(l3js);
-                helper.layer = layer;
-                node.add(helper);
-                helper.updateMatrixWorld(true);
-
-                // if we don't do that, our OBBHelper will never get removed,
-                // because once a node is invisible, children are not removed
-                // any more
-                const hiddenHandler = node.material.addEventListener('hidden', () => {
-                    node.material.removeEventListener(hiddenHandler);
-                    let i = node.children.length;
-                    while (i--) {
-                        const c = node.children[i];
-                        if (c.layer === sb_layer_id) {
-                            if (c.dispose) {
-                                c.dispose();
-                            } else if (Array.isArray(c.material)) {
-                                for (const material of c.material) {
-                                    material.dispose();
-                                }
-                            } else {
-                                c.material.dispose();
-                            }
-                            node.children.splice(i, 1);
-                        }
-                    }
-                });
+                node.link.push(helper);
             }
 
-            if (layer.id == sb_layer_id) {
-                helper.position.copy(node.boundingSphere.center);
-                helper.scale.set(1, 1, 1).multiplyScalar(node.boundingSphere.radius);
-            }
+            layer.object3d.add(helper);
             helper.updateMatrixWorld(true);
-            helper.visible = true;
         } else if (helper) {
-            helper.visible = false;
+            layer.object3d.remove(helper);
         }
     }
 
-    const obbLayer = new GeometryLayer(obb_layer_id, new THREE.Object3D(), {
-        update: debugIdUpdate,
+    class DebugLayer extends GeometryLayer {
+        constructor(id, options = {}) {
+            options.update = debugIdUpdate;
+            super(id, options.object3d || new THREE.Group(), options);
+            this.isDebugLayer = true;
+        }
+
+        preUpdate(context, sources) {
+            if (sources.has(this.parent)) {
+                this.object3d.clear();
+            }
+        }
+    }
+
+    const obbLayer = new DebugLayer(obb_layer_id, {
         visible: false,
         cacheLifeTime: Infinity,
         source: false,
     });
 
-    View.prototype.addLayer.call(view, obbLayer, layer).then((l) => {
+    view.addLayer(obbLayer).then((l) => {
         gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
             view.notifyChange(l);
         });
     });
 
-    const sbLayer = new GeometryLayer(sb_layer_id, new THREE.Object3D(), {
-        update: debugIdUpdate,
+    const sbLayer = new DebugLayer(sb_layer_id, {
         visible: false,
         cacheLifeTime: Infinity,
         source: false,
     });
 
-    View.prototype.addLayer.call(view, sbLayer, layer).then((l) => {
+    view.addLayer(sbLayer).then((l) => {
         gui.add(l, 'visible').name('Bounding Spheres').onChange(() => {
             view.notifyChange(l);
         });
     });
-
 
     const viewerDiv = document.getElementById('viewerDiv');
     const circle = document.createElement('span');

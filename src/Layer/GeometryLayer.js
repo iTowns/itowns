@@ -56,6 +56,11 @@ class GeometryLayer extends Layer {
      */
     constructor(id, object3d, config = {}) {
         config.cacheLifeTime = config.cacheLifeTime ?? CACHE_POLICIES.GEOMETRY;
+
+        // Remove this part when Object.assign(this, config) will be removed from Layer Constructor
+        const visible = config.visible;
+        delete config.visible;
+
         super(id, config);
 
         this.isGeometryLayer = true;
@@ -79,7 +84,7 @@ class GeometryLayer extends Layer {
         this.wireframe = false;
 
         this.attachedLayers = [];
-        this.visible = config.visible == undefined ? true : config.visible;
+        this.visible = visible ?? true;
         Object.defineProperty(this.zoom, 'max', {
             value: Infinity,
             writable: false,
@@ -88,6 +93,20 @@ class GeometryLayer extends Layer {
         // Feature options
         this.filteringExtent = !this.source.isFileSource;
         this.structure = '3d';
+    }
+
+    get visible() {
+        return this.object3d.visible;
+    }
+
+    set visible(value) {
+        if (this.object3d.visible !== value) {
+            const event = { type: 'visible-property-changed', previous: {}, new: {} };
+            event.previous.visible = this.object3d.visible;
+            event.new.visible = value;
+            this.dispatchEvent(event);
+            this.object3d.visible = value;
+        }
     }
 
     // Attached layers expect to receive the visual representation of a
@@ -182,7 +201,7 @@ class GeometryLayer extends Layer {
      * specified coordinates.
      */
     pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {
-        return Picking.pickObjectsAt(view, coordinates, radius, this.object3d, target, this.threejsLayer);
+        return Picking.pickObjectsAt(view, coordinates, radius, this.object3d, target);
     }
 }
 
