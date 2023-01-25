@@ -52,7 +52,6 @@ export default {
             layer,
             extentsSource: extentsDestination,
             view: context.view,
-            threejsLayer: layer.threejsLayer,
             requester: node,
         };
 

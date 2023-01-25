@@ -40,21 +40,6 @@ export const VIEW_EVENTS = {
  * @property {string} type  dblclick-right
  */
 
-
-const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer, view) {
-    if (layer.object3d) {
-        layer.object3d.visible = layer.visible;
-    }
-
-    if (layer.threejsLayer) {
-        if (layer.visible) {
-            view.camera.camera3D.layers.enable(layer.threejsLayer);
-        } else {
-            view.camera.camera3D.layers.disable(layer.threejsLayer);
-        }
-    }
-};
-
 function _preprocessLayer(view, layer, parentLayer) {
     const source = layer.source;
     if (parentLayer && !layer.extent) {
@@ -65,13 +50,6 @@ function _preprocessLayer(view, layer, parentLayer) {
     }
 
     if (layer.isGeometryLayer) {
-        if (parentLayer) {
-            // layer.threejsLayer *must* be assigned before preprocessing,
-            // because TileProvider.preprocessDataLayer function uses it.
-            layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
-        }
-        layer.defineLayerProperty('visible', true, () => _syncGeometryLayerVisibility(layer, view));
-        _syncGeometryLayerVisibility(layer, view);
         // Find crs projection layer, this is projection destination
         layer.crs = view.referenceCrs;
     } else if (!layer.crs) {
@@ -1001,10 +979,6 @@ class View extends THREE.EventDispatcher {
         mouse.x = Math.floor(mouse.x);
         mouse.y = Math.floor(mouse.y);
 
-        // Prepare state
-        const prev = camera.layers.mask;
-        camera.layers.mask = 1 << this.tileLayer.threejsLayer;
-
         // Render/Read to buffer
         let buffer;
         if (viewPaused) {
@@ -1047,8 +1021,6 @@ class View extends THREE.EventDispatcher {
             target.set(screen.x, screen.y, gl_FragCoord_Z);
             target.unproject(camera);
         }
-
-        camera.layers.mask = prev;
 
         if (target.length() > 10000000) { return undefined; }
 

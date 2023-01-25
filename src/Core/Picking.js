@@ -2,19 +2,6 @@ import * as THREE from 'three';
 import RenderMode from 'Renderer/RenderMode';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 
-function hideEverythingElse(view, object, threejsLayer = 0) {
-    // We want to render only 'object' and its hierarchy.
-    // So if it uses threejsLayer defined -> force it on the camera
-    // (or use the default one: 0)
-    const prev = view.camera.camera3D.layers.mask;
-
-    view.camera.camera3D.layers.mask = 1 << threejsLayer;
-
-    return () => {
-        view.camera.camera3D.layers.mask = prev;
-    };
-}
-
 const depthRGBA = new THREE.Vector4();
 // TileMesh picking support function
 function screenCoordsToNodeId(view, tileLayer, viewCoords, radius = 0) {
@@ -24,8 +11,6 @@ function screenCoordsToNodeId(view, tileLayer, viewCoords, radius = 0) {
 
     const restore = tileLayer.level0Nodes.map(n => RenderMode.push(n, RenderMode.MODES.ID));
 
-    const undoHide = hideEverythingElse(view, tileLayer.object3d, tileLayer.threejsLayer);
-
     const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
         { camera: view.camera, scene: tileLayer.object3d },
         {
@@ -34,8 +19,6 @@ function screenCoordsToNodeId(view, tileLayer, viewCoords, radius = 0) {
             width: 1 + radius * 2,
             height: 1 + radius * 2,
         });
-
-    undoHide();
 
     restore.forEach(r => r());
 
@@ -144,8 +127,6 @@ export default {
             }
         });
 
-        const undoHide = hideEverythingElse(view, layer.object3d, layer.threejsLayer);
-
         // render 1 pixel
         // TODO: support more than 1 pixel selection
         const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
@@ -156,8 +137,6 @@ export default {
                 width: 1 + radius * 2,
                 height: 1 + radius * 2,
             });
-
-        undoHide();
 
         const candidates = [];
 
@@ -203,12 +182,7 @@ export default {
     /*
      * Default picking method. Uses THREE.Raycaster
      */
-    pickObjectsAt(view, viewCoords, radius, object, target = [], threejsLayer) {
-        if (threejsLayer !== undefined) {
-            raycaster.layers.set(threejsLayer);
-        } else {
-            raycaster.layers.enableAll();
-        }
+    pickObjectsAt(view, viewCoords, radius, object, target = []) {
         // Raycaster use NDC coordinate
         view.viewToNormalizedCoords(viewCoords, normalized);
         if (radius < 0) {

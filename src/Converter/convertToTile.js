@@ -58,10 +58,6 @@ export default {
 
             const tile = new TileMesh(result.geometry, material, layer, extent, level);
 
-            // Commented because layer.threejsLayer is undefined;
-            // Fix me: conflict with object3d added in view.scene;
-            // tile.layers.set(layer.threejsLayer);
-
             if (parent && parent.isTileMesh) {
                 // get parent extent transformation
                 const pTrans = builder.computeSharableExtent(parent.extent);

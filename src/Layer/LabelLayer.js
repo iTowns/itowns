@@ -194,7 +194,6 @@ class LabelLayer extends Layer {
             layer: this,
             extentsSource: extentsDestination,
             view: context.view,
-            threejsLayer: this.threejsLayer,
             requester: node,
         };
 

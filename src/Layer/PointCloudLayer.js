@@ -21,7 +21,6 @@ function initBoundingBox(elt, layer) {
     elt.obj.boxHelper.frustumCulled = false;
     elt.obj.boxHelper.position.copy(elt.tightbbox.min).add(box3.max);
     elt.obj.boxHelper.autoUpdateMatrix = false;
-    elt.obj.boxHelper.layers.mask = layer.bboxes.layers.mask;
     layer.bboxes.add(elt.obj.boxHelper);
     elt.obj.boxHelper.updateMatrix();
     elt.obj.boxHelper.updateMatrixWorld();

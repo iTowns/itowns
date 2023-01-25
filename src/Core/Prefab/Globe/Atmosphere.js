@@ -229,9 +229,6 @@ class Atmosphere extends GeometryLayer {
         const skyDome = new Sky();
         skyDome.frustumCulled = false;
 
-        ground.layers.mask = this.object3d.layers.mask;
-        sky.layers.mask = this.object3d.layers.mask;
-        skyDome.layers.mask = this.object3d.layers.mask;
         this.realisticAtmosphere.add(ground);
         this.realisticAtmosphere.add(sky);
         this.realisticAtmosphere.add(skyDome);
