@@ -6,6 +6,8 @@ const mode = process.env.NODE_ENV;
 const noInline = process.env.noInline;
 const debugBuild = mode === 'development';
 
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
 /*
    configuring babel:
    - when babel runs alone (for `test-unit` for instance), we let him deal with
@@ -47,9 +49,10 @@ module.exports = () => {
             modules: [path.resolve(__dirname, 'src'), 'node_modules'],
         },
         entry: {
-            worker: [
-                './src/WorkerPoolParser.js',
-            ],
+            worker: {
+                import: './src/WorkerPoolParser.js',
+                // dependOn: 'itowns',
+            },
             itowns: [
                 'core-js',
                 'regenerator-runtime/runtime',
@@ -83,9 +86,12 @@ module.exports = () => {
                 },
             ],
         },
-        plugins: [new ESLintPlugin({
-            files: include,
-        })],
+        plugins: [
+            new ESLintPlugin({
+                files: include,
+            }),
+            new BundleAnalyzerPlugin(),
+        ],
         devServer: {
             devMiddleware: {
                 publicPath: '/dist/',
