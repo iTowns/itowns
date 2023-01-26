@@ -2,7 +2,6 @@ import workerpool from 'workerpool';
 import itownsConstructors from 'workers/constructors';
 import { Sia, DeSia } from '../../Sia/Sia';
 import { FeatureCollection } from '../Core/Feature';
-// import Style from '../Core/Style';
 
 const supportedParsers = new Map([
     ['geojson', 'geojson'],
