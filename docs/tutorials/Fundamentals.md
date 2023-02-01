@@ -16,17 +16,17 @@ In other words, all data that are displayed using iTowns are supported by some `
 
 Each `View` in iTowns displays 3D data in a unique Coordinates Reference System (CRS). 
 Yet, the data displayed within a `View` do not necessarily have to be in the `View`'s CRS.
-ITowns comes with two pre-made `View` types : `{@link GlobeView}` and `{@link PlanarView}`. 
+ITowns comes with two pre-made `View` types : `{@link GlobeView}` and `{@link PlanarView}`.
 Each of these allows visualizing data from different types (raster or vector) and from different CRS.
 On this matter, iTowns distinguishes two cases : 
 
 - The first one regards data that are to be displayed as raster. 
-  These data can either be original raster data or vector data whose representation is projected on the ground. 
+  These data can either be original raster data or vector data which are rasterized by iTowns and projected on the ground. 
   Data from this type are displayed in a `GlobeView` if their source CRS is [WGS 84](https://epsg.io/4326) or [Pseudo-Mercator](https://epsg.io/3857).
   However, if their source CRS defines a local projection (such as [RGF93 / Lambert 93](https://epsg.io/2154) for instance), they are displayed in a `PlanarView`.
-- On another hand, vector data that are to be displayed as 3D objects can be displayed in any type of `View`, regardless of their source CRS.
+- On another hand, vector data that are to be displayed as 3D objects can be displayed in any type of `View`, regardless of their source CRS since they can be converted by iTowns.
 
-It is important to aknowledge the following facts regarding original raster data and `Views` :
+It is important to acknowledge the following facts regarding original raster data and `Views` :
 - a `GlobeView` allows displaying multiple raster data from two different source CRS : [WGS 84](https://epsg.io/4326) and [Pseudo-Mercator](https://epsg.io/3857),
 - a `PlanarView` allows displaying multiple raster data, but all those data sources must have the same CRS.
 
@@ -39,11 +39,20 @@ It is important to aknowledge the following facts regarding original raster data
 ## Protocols and data formats
 
 
-ITowns comes with a wide range of compatible data sources. 
-It can be used to display data from web servers that use protocols such as Web Map (Tile) Service ([WMS](https://www.ogc.org/standards/wms) and [WMTS](https://www.ogc.org/standards/wmts)), Web Feature Service ([WFS](https://www.ogc.org/standards/wfs)) and Tile Map Service ([TMS](https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification)).
-Data from user given files can also be displayed.
+ITowns comes with a wide range of compatible data sources. All available sources can be seen in the `Source` section of the
+API documentation.
+iTowns supports all the main geographic protocols: [Web Map Service](https://www.ogc.org/standards/wms) with `{@link WMSSource}`, 
+[Web Map Tiled Service](https://www.ogc.org/standards/wmts) with `{@link WMTSSource}`, [Web Feature Service](https://www.ogc.org/standards/wfs)
+with `{@link WFSSource}` and [Tile Map Service](https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification) and XYZ with `{@link TMSSource}`.
 
-Regarding data formats, iTowns offers several possibilities : [vector tile](https://docs.mapbox.com/help/glossary/vector-tiles/) resources from [MapBox](https://www.mapbox.com/), [Potree](https://github.com/potree/potree) 3D point clouds, oriented images, [GeoJSON](https://geojson.org/), [KML](https://www.ogc.org/standards/kml) or [GPX](https://www.topografix.com/gpx.asp).
+iTowns also has sources for many data formats: [vector tile](https://docs.mapbox.com/help/glossary/vector-tiles/) resources from [MapBox](https://www.mapbox.com/) with `{@link VectorTilesSource}`, [Potree](https://github.com/potree/potree) (`{@link PotreeSource}`) and 
+[Entwine](https://entwine.io/) (`{@link EntwinePointTileSource}`) 3D point clouds, [3DTiles](https://www.ogc.org/standards/3DTiles) 
+mesh (b3dm) and point clouds (pnts) from web servers (`{@link C3DTilesSource}`) and from Cesium ion `{@link C3DTilesIonSource}`, 
+[GeoJSON](https://geojson.org/) with `{@link FileSource}` and `{@link GeoJsonParser}`, 
+[KML](https://www.ogc.org/standards/kml) with `{@link FileSource}` and `{@link KMLParser}`, [GPX](https://www.topografix.com/gpx.asp)
+with `{@link FileSource}` and `{@link GpxParser}` and oriented images with `{@link OrientedImageSource}`.
+
+It is also possible to create your own source and/or your own parser to read and add data from any format or protocol that is not supported by itowns.
 
 ***
 
@@ -52,17 +61,22 @@ Regarding data formats, iTowns offers several possibilities : [vector tile](http
 It was earlier mentioned that data are displayed as [`Layers`]{@link Layer} within iTowns. 
 Several specific types of `Layers` exist, the use of which depends on the data to display :
 
-- `{@link ColorLayer}` can be used to display raster graphics or vector data projected on the ground (left picture in the table bellow),
+- `{@link ColorLayer}` can be used to display raster graphics or vector data that needs to be rasterized to be projected on the ground (left picture in the table bellow),
 - `{@link ElevationLayer}` can be used to display 3D elevation models (center picture in the table bellow),
-- `{@link GeometryLayer}` can be used to display 3D objects, such as geometric shapes or buildings modelling (right picture in the table bellow).
-- `{@link FeatureGeometryLayer}` is a pre-configured `{@link GeometryLayer}` which simplifies its implementation in given cases.
-- `{@link PointCloudLayer}` can be used to display 3D point clouds.
-- `{@link OrientedImageLayer}` can be used to display some oriented images.
+- `{@link GeometryLayer}` can be used to display 2D vector data or 3D objects, such as geometric shapes or buildings modelling (right picture in the table bellow).
+- `{@link FeatureGeometryLayer}` is a pre-configured `{@link GeometryLayer}` which simplifies its implementation in given cases (e.g. to extrude 3D buildings).
+- `{@link PointCloudLayer}` can be used to display 3D point clouds. Any point cloud formats are supported as long as the corresponding `Source` is provided.
+Some point clouds formats such as Potree, Las and Entwine already have parsers defined in itowns that you can use. For 3D Tiles point clouds (pnts), use
+`C3DTilesLayer`.
+- `{@link C3DTilesLayer}` can be used to display 3D Tiles layer (only b3dm and pnts).
+- `{@link OrientedImageLayer}` can be used to display oriented images.
 
 
 | ![color layer](images/Fundamentals-1.png) | ![elevation layer](images/Fundamentals-2.png) | ![geometry layer](images/Fundamentals-3.png) |
 | :---: | :---: | :---: |
 | A simple `ColorLayer` is displayed | An `ElevationLayer` is added to represent terrain elevation | A `GeometryLayer` is added to model the buildings |
+
+Note that `{@link ColorLayer}` and `{@link ElevationLayer}` don't have their own geometry and are always *attached* to a `{@link GeometryLayer}` (generally the layer representing the geometry of the globe or of the plane). `{@link ColorLayer}` are projected onto this `{@link GeometryLayer}` and `{@link ElevationLayer}` are used to read elevation and to apply it to a `{@link GeometryLayer}`.
 
 ***
 

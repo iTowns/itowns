@@ -12,6 +12,7 @@ import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
+import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
 export const VIEW_EVENTS = {
     /**
@@ -39,21 +40,6 @@ export const VIEW_EVENTS = {
  * @property {string} type  dblclick-right
  */
 
-
-const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer, view) {
-    if (layer.object3d) {
-        layer.object3d.visible = layer.visible;
-    }
-
-    if (layer.threejsLayer) {
-        if (layer.visible) {
-            view.camera.camera3D.layers.enable(layer.threejsLayer);
-        } else {
-            view.camera.camera3D.layers.disable(layer.threejsLayer);
-        }
-    }
-};
-
 function _preprocessLayer(view, layer, parentLayer) {
     const source = layer.source;
     if (parentLayer && !layer.extent) {
@@ -64,13 +50,6 @@ function _preprocessLayer(view, layer, parentLayer) {
     }
 
     if (layer.isGeometryLayer) {
-        if (parentLayer) {
-            // layer.threejsLayer *must* be assigned before preprocessing,
-            // because TileProvider.preprocessDataLayer function uses it.
-            layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
-        }
-        layer.defineLayerProperty('visible', true, () => _syncGeometryLayerVisibility(layer, view));
-        _syncGeometryLayerVisibility(layer, view);
         // Find crs projection layer, this is projection destination
         layer.crs = view.referenceCrs;
     } else if (!layer.crs) {
@@ -195,7 +174,7 @@ class View extends THREE.EventDispatcher {
 
         this.scene = options.scene3D || new THREE.Scene();
         if (!options.scene3D) {
-            this.scene.autoUpdate = false;
+            this.scene.matrixWorldAutoUpdate = false;
         }
 
         this.camera = new Camera(
@@ -271,35 +250,41 @@ class View extends THREE.EventDispatcher {
      * - remove all layers
      * - remove all frame requester
      * - remove all events
+     * @param {boolean} [clearCache=false] Whether to clear all the caches or not (layers cache, style cache, tilesCache)
      */
-    dispose() {
+    dispose(clearCache = false) {
         const id = viewers.indexOf(this);
         if (id == -1) {
             console.warn('View already disposed');
             return;
         }
         // controls dispose
-        if (this.controls && this.controls.dispose) {
-            this.controls.dispose();
+        if (this.controls) {
+            if (typeof this.controls.dispose === 'function') {
+                this.controls.dispose();
+            }
+            delete this.controls;
         }
         // remove alls frameRequester
         this.removeAllFrameRequesters();
         // remove alls events
         this.removeAllEvents();
-        // remove alls layers
+        // remove all layers
         const layers = this.getLayers(l => !l.isTiledGeometryLayer && !l.isAtmosphere);
         for (const layer of layers) {
-            this.removeLayer(layer.id);
+            this.removeLayer(layer.id, clearCache);
         }
         const atmospheres = this.getLayers(l => l.isAtmosphere);
         for (const atmosphere of atmospheres) {
-            this.removeLayer(atmosphere.id);
+            this.removeLayer(atmosphere.id, clearCache);
         }
         const tileLayers = this.getLayers(l => l.isTiledGeometryLayer);
         for (const tileLayer of tileLayers) {
-            this.removeLayer(tileLayer.id);
+            this.removeLayer(tileLayer.id, clearCache);
         }
         viewers.splice(id, 1);
+        // Remove remaining objects in the scene (e.g. helpers, debug, etc.)
+        this.scene.traverse(ObjectRemovalHelper.cleanup);
     }
 
     /**
@@ -378,16 +363,17 @@ class View extends THREE.EventDispatcher {
      * Removes a specific imagery layer from the current layer list. This removes layers inserted with attach().
      * @example
      * view.removeLayer('layerId');
-     * @param      {string}   layerId      The identifier
-     * @return     {boolean}
+     * @param {string} layerId The identifier
+     * @param {boolean} [clearCache=false] Whether to clear all the layer cache or not
+     * @return {boolean}
      */
-    removeLayer(layerId) {
+    removeLayer(layerId, clearCache) {
         const layer = this.getLayerById(layerId);
         if (layer) {
             const parentLayer = layer.parent;
 
             // Remove and dispose all nodes
-            layer.dispose();
+            layer.dispose(clearCache);
 
             // Detach layer if it's attached
             if (parentLayer && !parentLayer.detach(layer)) {
@@ -993,10 +979,6 @@ class View extends THREE.EventDispatcher {
         mouse.x = Math.floor(mouse.x);
         mouse.y = Math.floor(mouse.y);
 
-        // Prepare state
-        const prev = camera.layers.mask;
-        camera.layers.mask = 1 << this.tileLayer.threejsLayer;
-
         // Render/Read to buffer
         let buffer;
         if (viewPaused) {
@@ -1039,8 +1021,6 @@ class View extends THREE.EventDispatcher {
             target.set(screen.x, screen.y, gl_FragCoord_Z);
             target.unproject(camera);
         }
-
-        camera.layers.mask = prev;
 
         if (target.length() > 10000000) { return undefined; }
 
@@ -1088,6 +1068,11 @@ class View extends THREE.EventDispatcher {
      * the viewer with. By default it is the `clientHeight` of the `viewerDiv`.
      */
     resize(width, height) {
+        if (width < 0 || height < 0) {
+            console.warn(`Trying to resize the View with negative height (${height}) or width (${width}). Skipping resize.`);
+            return;
+        }
+
         if (width == undefined) {
             width = this.domElement.clientWidth;
         }
@@ -1098,8 +1083,10 @@ class View extends THREE.EventDispatcher {
 
         this.#fullSizeDepthBuffer = new Uint8Array(4 * width * height);
         this.mainLoop.gfxEngine.onWindowResize(width, height);
-        this.camera.resize(width, height);
-        this.notifyChange(this.camera.camera3D);
+        if (width !== 0 && height !== 0) {
+            this.camera.resize(width, height);
+            this.notifyChange(this.camera.camera3D);
+        }
     }
 }
 

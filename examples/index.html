@@ -16,12 +16,16 @@
 
 <nav class="scroll-section">
     <a href="/">
-        <img src="images/itowns_logo.png" width="245px"/>
+        <img src="images/itowns_logo.png" width="245px" id="itowns-logo">
     </a>
 </nav>
 
 <script type="text/javascript">
     var baseURI = document.baseURI;
+
+    if (baseURI.includes('/itowns/dev/')) {
+        document.getElementById('itowns-logo').setAttribute('src', 'images/itowns_logo_next.png');
+    }
 
     function bindIframe() {
         var navLinks = document.getElementsByClassName('nav-link');
@@ -57,6 +61,37 @@
     }
 
     function initNavigation(list) {
+        // Add version switch :
+        const versionSwitchText = document.createElement('p');
+        versionSwitchText.innerHTML = `iTowns examples of the ${
+            (baseURI.includes("/itowns/dev/") && "next version (current master branch)")
+                || "latest released version"
+        }.`;
+
+        const versionSwitchButton = document.createElement('button');
+        versionSwitchButton.classList.add('switch-button');
+        versionSwitchButton.innerHTML = `Switch to ${
+            (baseURI.includes("/itowns/dev/") && "latest release") || "next version"
+        }`;
+        versionSwitchButton.onclick = () => {
+            if (baseURI.includes("/itowns/dev/")) {
+                window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
+            } else {
+                window.location.href = document.location.href.replace('/itowns/', '/itowns/dev/');
+            }
+        };
+
+        const versionSwitch = document.createElement('div');
+        versionSwitch.id = "version-switch";
+        versionSwitch.appendChild(versionSwitchText);
+        versionSwitch.appendChild(versionSwitchButton);
+        document.getElementsByTagName('nav')[0].appendChild(versionSwitch);
+
+        // Add horizontal divider :
+        const titleDivider = document.createElement('hr');
+        titleDivider.classList.add('title-divider');
+        document.getElementsByTagName('nav')[0].appendChild(titleDivider);
+
         var nav = '<h2>Examples</h2>';
 
         for (var section in list) {

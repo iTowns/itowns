@@ -1,4 +1,5 @@
 import utf8Decoder from 'Utils/Utf8Decoder';
+import binaryPropertyAccessor from './utils/BinaryPropertyAccessor';
 import C3DTilesTypes from './C3DTilesTypes';
 
 /** @classdesc
@@ -17,41 +18,67 @@ import C3DTilesTypes from './C3DTilesTypes';
  */
 class C3DTBatchTable {
     /**
-     * @param {ArrayBuffer} buffer - batch table buffer to parse.
-     * @param {ArrayBuffer} binaryLength - the length of the binary part of
-     * the batch table (not supported yet)
+     * @param {ArrayBuffer} buffer - batch table buffer to parse
+     * @param {number} jsonLength - batch table json part length
+    * @param {number} binaryLength - batch table binary part length
      * @param {number} batchLength - the length of the batch.
      * @param {Object} registeredExtensions - extensions registered to the layer
      */
-    constructor(buffer, binaryLength, batchLength, registeredExtensions) {
+    constructor(buffer, jsonLength, binaryLength, batchLength, registeredExtensions) {
+        if (arguments.length === 4 &&
+            typeof batchLength === 'object' &&
+            !Array.isArray(batchLength) &&
+            batchLength !== null) {
+            console.warn('You most likely used a deprecated constructor of C3DTBatchTable.');
+        }
+        if (jsonLength + binaryLength !== buffer.byteLength) {
+            console.error('3DTiles batch table json length and binary length are not consistent with total buffer' +
+            ' length. The batch table may be wrong.');
+        }
+
         this.type = C3DTilesTypes.batchtable;
         this.batchLength = batchLength;
 
-        // Parse Batch table content
-        let jsonBuffer = buffer;
-        // Batch table has a json part and can have a binary part (not supported yet)
-        if (binaryLength > 0) {
-            console.warn('Binary batch table content not supported yet.');
-            jsonBuffer = buffer.slice(0, buffer.byteLength - binaryLength);
-        }
+        const jsonBuffer = buffer.slice(0, jsonLength);
+        const jsonContent = JSON.parse(utf8Decoder.decode(new Uint8Array(jsonBuffer)));
 
-        // Parse JSON content
-        const content = utf8Decoder.decode(new Uint8Array(jsonBuffer));
-        const json = JSON.parse(content);
+        if (binaryLength > 0) {
+            const binaryBuffer = buffer.slice(jsonLength, jsonLength + binaryLength);
+
+            for (const propKey in jsonContent) {
+                if (!Object.prototype.hasOwnProperty.call(jsonContent, propKey)) {
+                    continue;
+                }
+                const propVal = jsonContent[propKey];
+                // Batch table entries that have already been parsed from the JSON buffer have an array of values.
+                if (Array.isArray(propVal)) {
+                    continue;
+                }
+                if (typeof propVal?.byteOffset !== 'undefined' &&
+                    typeof propVal?.componentType !== 'undefined' &&
+                    typeof propVal?.type !== 'undefined') {
+                    jsonContent[propKey] = binaryPropertyAccessor(binaryBuffer, this.batchLength, propVal.byteOffset,
+                        propVal.componentType, propVal.type);
+                } else {
+                    console.error('Invalid 3D Tiles batch table property that is neither a JSON array nor a valid ' +
+                    'accessor to a binary body');
+                }
+            }
+        }
 
         // Separate the content and the possible extensions
         // When an extension is found, we call its parser and append the
         // returned object to batchTable.extensions
         // Extensions must be registered in the layer (see an example of this in
         // 3dtiles_hierarchy.html)
-        if (json.extensions) {
+        if (jsonContent.extensions) {
             this.extensions =
-                registeredExtensions.parseExtensions(json.extensions, this.type);
-            delete json.extensions;
+                registeredExtensions.parseExtensions(jsonContent.extensions, this.type);
+            delete jsonContent.extensions;
         }
 
         // Store batch table json content
-        this.content = json;
+        this.content = jsonContent;
     }
 
     /**
@@ -86,8 +113,13 @@ class C3DTBatchTable {
         for (const property in this.content) {
             // check that the property is not inherited from prototype chain
             if (Object.prototype.hasOwnProperty.call(this.content, property)) {
-                featureDisplayableInfo.batchTable[property] =
-                    this.content[property][batchID];
+                const val = this.content[property][batchID];
+                // Property value may be a threejs vector (see 3D Tiles spec and BinaryPropertyAccessor.js)
+                if (val && (val.isVector2 || val.isVector3 || val.isVector4)) {
+                    featureDisplayableInfo.batchTable[property] = val.toArray();
+                } else {
+                    featureDisplayableInfo.batchTable[property] = val;
+                }
             }
         }
 

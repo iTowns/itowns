@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
+import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
 /** @module 3dTilesProcessing
 */
@@ -166,7 +167,7 @@ function cleanup3dTileset(layer, n, depth = 0) {
         // skip non-tiles elements
         if (!n.children[i].content) {
             if (canCleanCompletely) {
-                n.children[i].traverse(_cleanupObject3D);
+                ObjectRemovalHelper.removeChildrenAndCleanupRecursively(n.children[i].layer, n.children[i]);
             }
         } else {
             cleanup3dTileset(layer, n.children[i], depth + 1);
@@ -190,31 +191,6 @@ function cleanup3dTileset(layer, n, depth = 0) {
         const tiles = getChildTiles(n);
         n.remove(...tiles);
     }
-}
-
-// This function is used to cleanup a Object3D hierarchy.
-// (no 3dtiles spectific code here because this is managed by cleanup3dTileset)
-function _cleanupObject3D(n) {
-    // all children of 'n' are raw Object3D
-    for (const child of n.children) {
-        _cleanupObject3D(child);
-    }
-    // free resources
-    if (n.material) {
-        // material can be either a THREE.Material object, or an array of
-        // THREE.Material objects
-        if (Array.isArray(n.material)) {
-            for (const material of n.material) {
-                material.dispose();
-            }
-        } else {
-            n.material.dispose();
-        }
-    }
-    if (n.geometry) {
-        n.geometry.dispose();
-    }
-    n.remove(...n.children);
 }
 
 // this is a layer

@@ -1,32 +1,7 @@
 import Layer from 'Layer/Layer';
 import Picking from 'Core/Picking';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
-
-function disposeMesh(obj) {
-    if (obj.dispose) {
-        obj.dispose();
-    } else {
-        if (obj.geometry) {
-            obj.geometry.dispose();
-        }
-        if (obj.material) {
-            if (Array.isArray(obj.material)) {
-                for (const material of obj.material) {
-                    material.dispose();
-                }
-            } else {
-                obj.material.dispose();
-            }
-        }
-    }
-}
-
-function traverse(obj, callback) {
-    for (const child of obj.children) {
-        traverse(child, callback);
-    }
-    callback(obj);
-}
+import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
 /**
  * Fires when the opacity of the layer has changed.
@@ -81,6 +56,11 @@ class GeometryLayer extends Layer {
      */
     constructor(id, object3d, config = {}) {
         config.cacheLifeTime = config.cacheLifeTime ?? CACHE_POLICIES.GEOMETRY;
+
+        // Remove this part when Object.assign(this, config) will be removed from Layer Constructor
+        const visible = config.visible;
+        delete config.visible;
+
         super(id, config);
 
         this.isGeometryLayer = true;
@@ -104,7 +84,7 @@ class GeometryLayer extends Layer {
         this.wireframe = false;
 
         this.attachedLayers = [];
-        this.visible = config.visible == undefined ? true : config.visible;
+        this.visible = visible ?? true;
         Object.defineProperty(this.zoom, 'max', {
             value: Infinity,
             writable: false,
@@ -113,6 +93,20 @@ class GeometryLayer extends Layer {
         // Feature options
         this.filteringExtent = !this.source.isFileSource;
         this.structure = '3d';
+    }
+
+    get visible() {
+        return this.object3d.visible;
+    }
+
+    set visible(value) {
+        if (this.object3d.visible !== value) {
+            const event = { type: 'visible-property-changed', previous: {}, new: {} };
+            event.previous.visible = this.object3d.visible;
+            event.new.visible = value;
+            this.dispatchEvent(event);
+            this.object3d.visible = value;
+        }
     }
 
     // Attached layers expect to receive the visual representation of a
@@ -174,23 +168,23 @@ class GeometryLayer extends Layer {
     }
 
     /**
-     * All layer's meshs are removed from scene and disposed from video device.
+     * All layer's 3D objects are removed from the scene and disposed from the video device.
+     * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
      */
-    dispose() {
+    dispose(clearCache) {
+        if (clearCache) {
+            this.cache.clear();
+        }
+
         // if Layer is attached
         if (this.parent) {
-            traverse(this.parent.object3d, (obj) => {
-                if (obj.layer && obj.layer.id == this.id) {
-                    obj.parent.remove(obj);
-                    disposeMesh(obj);
-                }
-            });
+            ObjectRemovalHelper.removeChildrenAndCleanupRecursively(this, this.parent.object3d);
         }
 
         if (this.object3d.parent) {
             this.object3d.parent.remove(this.object3d);
         }
-        this.object3d.traverse(disposeMesh);
+        ObjectRemovalHelper.removeChildrenAndCleanupRecursively(this, this.object3d);
     }
 
     /**
@@ -207,7 +201,7 @@ class GeometryLayer extends Layer {
      * specified coordinates.
      */
     pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {
-        return Picking.pickObjectsAt(view, coordinates, radius, this.object3d, target, this.threejsLayer);
+        return Picking.pickObjectsAt(view, coordinates, radius, this.object3d, target);
     }
 }
 

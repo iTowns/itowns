@@ -520,7 +520,6 @@ function featureToMesh(feature, options) {
 
     if (options.layer) {
         mesh.layer = options.layer;
-        mesh.layers.set(options.layer.threejsLayer);
     }
 
     return mesh;

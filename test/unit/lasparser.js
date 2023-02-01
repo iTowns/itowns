@@ -2,14 +2,11 @@ import assert from 'assert';
 import HttpsProxyAgent from 'https-proxy-agent';
 import LASParser from 'Parser/LASParser';
 import Fetcher from 'Provider/Fetcher';
+import { compareWithEpsilon } from './utils';
 
 describe('LASParser', function () {
     let lasData;
     let lazData;
-
-    function compareWithEpsilon(a, b, epsilon) {
-        return a - epsilon < b && a + epsilon > b;
-    }
 
     before(async () => {
         const networkOptions = process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {};

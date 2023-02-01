@@ -1,5 +1,5 @@
 The goal of this tutorial is to give a brief example on how to use iTowns to visualize some vector data as 3D objects.
-These vector data shall represent buildings and be displayed on the `GlobeView` we created in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}.
+The vector data we will use in this tutorial represent buildings and will be displayed on the `GlobeView` we created in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}.
 
 ## Preparing the field
 
@@ -23,7 +23,7 @@ layer to a more precise one.
      </head>
      <body>
         <div id="viewerDiv"></div>
-        <script src="js/itowns.js"></script>
+        <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
             var viewerDiv = document.getElementById('viewerDiv');
             var placement = {
@@ -93,11 +93,10 @@ layer to a more precise one.
 
 ## Adding a GeometryLayer
 
-We want to create and add a layer containing geometries. The best candidate here
-is `{@link FeatureGeometryLayer}`, which is a pre-made type of `{@link GeometryLayer}` 
-adapted to our use case. Reading the documentation, adding this type
-of layer is similar to the other layers. So before declaring the layer, let's
-instantiate the source.
+We will use a WFS stream that provides buildings footprints geometries and altitude information for each building. 
+We will display the buildings by extruding the building footprints to the altitude value. iTowns provides a specific
+layer for such usecases: `{@link FeatureGeometryLayer}` (which is a pre-configured type of `{@link GeometryLayer}`).
+Before creating this layer, let's instantiate the data source:
 
 ```js
 var geometrySource = new itowns.WFSSource({
@@ -118,15 +117,15 @@ var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {
 view.addLayer(geometryLayer);
 ```
 
-We also added a minimal `zoom` parameter to prevent our data being displayed under a certain 
-zoom level at which we would be too far from the data to distinguish them.
+We also added a minimal `zoom` parameter to prevent our data being displayed before a certain 
+zoom level at which we would be too far from the data to distinguish the buildings.
 
 Trying this code will result visually in the following.
 
 ![geometry_layer_without_altitude](images/Vector-data-3d-1.png)
 
 We can see the polygons fetched from the data source, each representing a building.
-However, these polygons are not on the ground.
+However, these polygons are not yet placed on the ground.
 Indeed, they were placed after the 3D positions stored in the data, which in our case represent points on the roof of buildings.
 So let's start modifying these polygons' altitude to place them on the ground !
 
@@ -180,9 +179,9 @@ z_min: 83.7
 Reading the documentation of the database we are querying ([section 9.1, page
 84](http://professionnels.ign.fr/doc/DC_BDTOPO_3-0.pdf), in French), we have an
 explanation on each property. To help us place the data correctly, let's use the
-`z_min` and the `hauteur` properties. 
+`z_min` and the `hauteur` (height) properties. 
 The first one corresponds to the altitude of the building roof, and the second one specifies its height.
-We can therefore set the base altitude of our buildings by removing the value of `hauteur` to the value of `z_min` :
+We can therefore set the base altitude of our buildings by substracting the value of `hauteur` to the value of `z_min` :
 
 ```js
 function setAltitude(properties) {
@@ -225,7 +224,7 @@ view.addLayer(geometryLayer);
 ```
 
 The parameter `properties` of the `setExtrusion` method is the same as in
-`setAltitude`. We noticed there is a `hauteur` (`height` in French) property that
+`setAltitude`. We noticed there is a `hauteur` (height) property that
 we could use to set the height of the building. Moving around with this gives a
 nice view of our buildings :
 
@@ -288,7 +287,7 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
      </head>
      <body>
         <div id="viewerDiv"></div>
-        <script src="js/itowns.js"></script>
+        <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
             var viewerDiv = document.getElementById('viewerDiv');
             var placement = {

@@ -16,5 +16,11 @@
     },
     "Vector-data-on-ground": {
         "title": "Projected on the ground"
+    },
+    "3DTiles-mesh-b3dm": {
+        "title": "3D textured buildings"
+    },
+    "3DTiles-point-cloud-pnts": {
+        "title": "3D point clouds"
     }
 }

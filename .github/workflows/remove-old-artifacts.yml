@@ -1,4 +1,4 @@
-name: 'Delete old artifacts'
+name: Delete old artifacts
 on:
   schedule:
     - cron: '0 0 * * *' # every day

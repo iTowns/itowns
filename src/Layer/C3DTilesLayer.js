@@ -13,11 +13,21 @@ class C3DTilesLayer extends GeometryLayer {
      * @extends GeometryLayer
      *
      * @example
-     * // Create a new Layer 3d-tiles For DiscreteLOD
+     * // Create a new 3d-tiles layer from a web server
      * const l3dt = new C3DTilesLayer('3dtiles', {
      *      name: '3dtl',
      *      source: new C3DTilesSource({
      *           url: 'https://tileset.json'
+     *      })
+     * }, view);
+     * View.prototype.addLayer.call(view, l3dt);
+     *
+     * // Create a new 3d-tiles layer from a Cesium ion server
+     * const l3dt = new C3DTilesLayer('3dtiles', {
+     *      name: '3dtl',
+     *      source: new C3DTilesIonSource({
+     *              accessToken: 'myAccessToken',
+                    assetId: 12
      *      })
      * }, view);
      * View.prototype.addLayer.call(view, l3dt);
@@ -31,6 +41,16 @@ class C3DTilesLayer extends GeometryLayer {
      * @param {C3TilesSource} config.source The source of 3d Tiles.
      *
      * name.
+     * @param {Number} [config.sseThreshold=16] The [Screen Space Error](https://github.com/CesiumGS/3d-tiles/blob/main/specification/README.md#geometric-error)
+     * threshold at which child nodes of the current node will be loaded and added to the scene.
+     * @param {Number} [config.cleanupDelay=1000] The time (in ms) after which a tile content (and its children) are
+     * removed from the scene.
+     * @param {Function} [config.onTileContentLoaded] Callback executed when the content of a tile is loaded.
+     * @param {Boolean|Material} [config.overrideMaterials='false'] option to override the materials of all the layer's
+     * objects. If true, a threejs [MeshBasicMaterial](https://threejs.org/docs/index.html?q=meshbasic#api/en/materials/MeshBasicMaterial)
+     * is set up. config.overrideMaterials can also be a threejs [Material](https://threejs.org/docs/index.html?q=material#api/en/materials/Material)
+     * in which case it will be used as the material for all objects of the layer.
+     * @param {C3DTExtensions} [config.registeredExtensions] 3D Tiles extensions managers registered for this tileset.
      * @param  {View}  view  The view
      */
     constructor(id, config, view) {
@@ -40,8 +60,7 @@ class C3DTilesLayer extends GeometryLayer {
         this.cleanupDelay = config.cleanupDelay || 1000;
         this.onTileContentLoaded = config.onTileContentLoaded || (() => {});
         this.protocol = '3d-tiles';
-        // custom cesium shaders are not functional;
-        this.overrideMaterials = config.overrideMaterials !== undefined ? config.overrideMaterials : true;
+        this.overrideMaterials = config.overrideMaterials ?? false;
         this.name = config.name;
         this.registeredExtensions = config.registeredExtensions || new C3DTExtensions();
 

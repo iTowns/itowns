@@ -1,5 +1,5 @@
 const conf = {
-    version: '2.38.2',
+    version: '2.39.0',
 };
 export const REVISION = conf.version;
 
@@ -76,6 +76,7 @@ export { default as VectorTilesSource } from 'Source/VectorTilesSource';
 export { default as OrientedImageSource } from 'Source/OrientedImageSource';
 export { default as PotreeSource } from 'Source/PotreeSource';
 export { default as C3DTilesSource } from 'Source/C3DTilesSource';
+export { default as C3DTilesIonSource } from 'Source/C3DTilesIonSource';
 export { default as EntwinePointTileSource } from 'Source/EntwinePointTileSource';
 
 // Parsers provided by default in iTowns

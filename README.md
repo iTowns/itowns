@@ -29,7 +29,7 @@ here](http://www.itowns-project.org/itowns/examples/). Some examples available:
 
 * [Globe with WFS data](http://www.itowns-project.org/itowns/examples/#source_stream_wfs_3d)
 * [Plane mode with Vector Tiles](http://www.itowns-project.org/itowns/examples/#vector_tile_raster_2d)
-* [3D effect using scene postprocessing](http://www.itowns-project.org/itowns/examples/#effects-stereo)
+* [3D effect using scene postprocessing](http://www.itowns-project.org/itowns/examples/#effects_stereo)
 * [Globe with split rendering](http://www.itowns-project.org/itowns/examples/#effects_split)
 
 [![iTowns examples](http://www.itowns-project.org/images/montage.jpg)](http://www.itowns-project.org/itowns/examples/)
@@ -58,7 +58,7 @@ In your project:
 npm install --save itowns
 ```
 
-This package contains the ES5-compatible sources of iTowns.
+This package contains the ES5-compatible sources of iTowns, up to date with the latest release.
 
 If you're using a module bundler (like wepback), you can directly write
 `require('itowns')` in your code.
@@ -77,6 +77,21 @@ that exposes `itowns` in `window`:
 See our [release page](https://github.com/iTowns/itowns/releases). Note that
 there isn't a lot of support for older version of iTowns, we highly recommand to
 use the last release everytime.
+
+### Try modifications before they are released
+
+If you want to try some features or bug fixes that are planned for the next release, we provide
+a @next version of itowns. You can install it as such :
+
+```bash
+npm install --save itowns@next
+```
+
+To switch back to the version to date with the latest release, you need to run :
+
+```bash
+npm install --save itowns@latest
+```
 
 ## Contributing
 

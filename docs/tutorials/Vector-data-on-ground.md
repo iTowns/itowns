@@ -27,7 +27,7 @@ We need to change the starting position to something more appropriate.
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="js/itowns.js"></script>
+        <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
             
             // Retrieve the view container
@@ -91,12 +91,10 @@ var floodSource = new itowns.FileSource({
 We give three arguments to our `FileSource`, which are pretty self-explanatory. 
 The `url` and `crs` define the URL at which our file can be found, and the Coordinates Reference System (CRS) of the data contained within the file.
 The `format` parameter defines the format of our file. 
-ITowns needs this format to determine which method it shall use to download data and transform them into iTowns understandable objects.
+Itowns needs this format to determine which method it shall use to download data and transform them into iTowns internal objects.
 
 Now that the source of our vector data is set, we need to create a `Layer` which will contain the data.
-We want our vector data to be displayed as flattened on the ground entities.
-To obtain this result, the data must be contained in a `{@link ColorLayer}`.
-We can therefore create our data `ColorLayer` and add it to our `GlobeView` as such : 
+We want our vector data to be projected on the ground. Therefore, we use a `{@link ColorLayer}` and add it to our `GlobeView` :
 
 ```js
 var floodLayer = new itowns.ColorLayer('flood', {
@@ -105,9 +103,9 @@ var floodLayer = new itowns.ColorLayer('flood', {
 view.addLayer(floodLayer);
 ```
 
-Doing this will result visually in nothing.
-That is because we did not yet define a `Style` for our vector data. 
-To be more precise, our data consist in polygons, and we did not tell iTowns which appearance it should use to display these polygons, so iTowns did not display them.
+If you run the example now, you will notice that nothing is displayed yet.
+That is because we did not yet define a `{@link Style}` for our vector data. 
+To be more precise, our data consists in polygons, and we did not tell iTowns how these polygons should be displayed, so iTowns doesn't display them.
 We can correct this by creating a `{@link Style}` and applying it to our `ColorLayer` :
 
 ```js
@@ -176,7 +174,7 @@ Here, we decided of the following style concerning the content of our data :
   They shall be written in a `'monospace'` font and in a given size, with white halo around each letter.
   The labels shall be placed so that the position of the point matches with the bottom left corner of the label.
 
-Finally, we can create a `ColorLayer` to support our data, and add it to the view :
+Finally, we can create a `ColorLayer` that will contain the data source we created, and add it to the view :
 
 ```js
 var cityLayer = new itowns.ColorLayer('cities', {
@@ -187,7 +185,7 @@ var cityLayer = new itowns.ColorLayer('cities', {
 view.addLayer(cityLayer);
 ```
 
-As you may notice, we added a parameter to the `ColorLayer`, which is `addLabelLayer`. 
+As you may have noticed, we added a parameter to the `ColorLayer`, which is `addLabelLayer`. 
 This parameter needs to be set to true if we want to display labels on the `ColorLayer`.
 Had we left it to false, only the points and polygons would have been displayed on our `ColorLayer`. 
 
@@ -214,7 +212,7 @@ By reaching here, you are now able to display simple vector data projected on th
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="js/itowns.js"></script>
+        <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
 
             // Retrieve the view container

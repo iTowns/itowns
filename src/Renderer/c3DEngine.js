@@ -222,7 +222,7 @@ class c3DEngine {
 
     bufferToImage(pixelBuffer, width, height) {
         var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d');
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         // size the canvas to your desired image
         canvas.width = width;
@@ -240,21 +240,6 @@ class c3DEngine {
         image.src = canvas.toDataURL();
 
         return image;
-    }
-
-    getUniqueThreejsLayer() {
-        // We use three.js Object3D.layers feature to manage visibility of
-        // geometry layers; so we need an internal counter to assign a new
-        // one to each new geometry layer.
-        // Warning: only 32 ([0, 31]) different layers can exist.
-        if (this._nextThreejsLayer > 31) {
-            console.warn('Too much three.js layers. Starting from now all of them will use layerMask = 31');
-            this._nextThreejsLayer = 31;
-        }
-
-        const result = this._nextThreejsLayer++;
-
-        return result;
     }
 
     depthBufferRGBAValueToOrthoZ(depthBufferRGBA, camera) {

@@ -49,6 +49,10 @@ var writerOpts = {
             discard = false;
         });
 
+        if (commit.header && commit.header.includes('-next.')) {
+            return;
+        }
+
         if (['feat', 'features', 'feature'].includes(commit.type)) {
             commit.type = 'Features';
         } else if (commit.type === 'fix') {

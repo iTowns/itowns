@@ -8,6 +8,8 @@ import WMSSource from 'Source/WMSSource';
 import TMSSource from 'Source/TMSSource';
 import FileSource from 'Source/FileSource';
 import OrientedImageSource from 'Source/OrientedImageSource';
+import C3DTilesSource from 'Source/C3DTilesSource';
+import C3DTilesIonSource from 'Source/C3DTilesIonSource';
 import Extent from 'Core/Geographic/Extent';
 import HttpsProxyAgent from 'https-proxy-agent';
 
@@ -280,6 +282,31 @@ describe('Sources', function () {
                 });
                 assert.strictEqual(source.crs, 'EPSG:4326');
             });
+        });
+    });
+
+    describe('C3DTilesSource', function () {
+        const params3DTiles = {
+            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/3DTiles/lyon_1_4978/tileset.json',
+        };
+
+        it('should throw an error for having no required parameters', function () {
+            assert.throws(() => new C3DTilesSource({}), Error);
+        });
+
+        it('should instance C3DTilesSource', function () {
+            const source = new C3DTilesSource(params3DTiles);
+            assert.ok(source.isC3DTilesSource);
+            assert.strictEqual(source.url, params3DTiles.url);
+            assert.strictEqual(source.baseUrl, 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/3DTiles/lyon_1_4978/');
+        });
+    });
+
+    describe('C3DTilesIonSource', function () {
+        it('should throw an error for having no required parameters', function () {
+            assert.throws(() => new C3DTilesIonSource({}), Error);
+            assert.throws(() => new C3DTilesIonSource({ accessToken: 'free-3d-tiles' }), Error);
+            assert.throws(() => new C3DTilesIonSource({ assetId: '66666' }), Error);
         });
     });
 });
