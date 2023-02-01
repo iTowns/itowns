@@ -215,14 +215,6 @@ class OrientedImageLayer extends GeometryLayer {
         console.warn('You need to replace OrientedImageLayer.material applied on each object. This issue will be fixed when OrientedImageLayer will be a ColorLayer. the material visibility is set to false. To follow issue see https://github.com/iTowns/itowns/issues/1018');
     }
 
-    /**
-     * Deprecated function. Use dispose()
-     */
-    delete() {
-        console.warn('`OrientedImageLayer.delete` method is deprecated. Please use `OrientedImageLayer.dispose` instead.');
-        this.dispose();
-    }
-
     mostNearPano(position) {
         let minDistance = Infinity;
         let nearPano;
