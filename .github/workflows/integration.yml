@@ -85,6 +85,9 @@ jobs:
     steps:
 
       - uses: actions/checkout@v2
+        with:
+          # fetch all branches
+          fetch-depth: 0
 
       # Configure git user for later command induced commits
       - uses: fregante/setup-git-user@v1
@@ -103,8 +106,21 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: publish itowns@next npm package
+      - name: publish itowns@next npm package (following a release)
+        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
         run: |
+          git checkout next
+          git reset --hard master
+          npm run publish-next
+          git push -f
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: publish itowns@next npm package
+        if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
+        run: |
+          git checkout next
+          git merge master
           npm run publish-next
           git push
         env:
