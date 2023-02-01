@@ -198,17 +198,6 @@ class Cache {
     }
 
     /**
-     * Deprecated function. Use remove(key1, key2, key3)
-     * @param {string|number} key1
-     * @param {string|number} key2
-     * @param {string|number} key3
-     */
-    delete(key1, key2, key3) {
-        console.warn('`Cached.delete` method is deprecated. Please use `Cache.remove` instead.');
-        this.remove(key1, key2, key3);
-    }
-
-    /**
      * Removes all entries of the cache.
      *
      */
@@ -216,14 +205,6 @@ class Cache {
         this.data.clear();
     }
 
-    clear() {
-        console.warn('`Cached.clear` method is deprecated. Please use `Cache.dispose` instead.');
-        this.dispose();
-    }
-
-    /**
-     * Deprecated function. Use dispose()
-     */
     clear() {
         console.warn('`Cached.clear` method is deprecated. Please use `Cache.dispose` instead.');
         this.dispose();

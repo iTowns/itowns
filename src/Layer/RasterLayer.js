@@ -22,14 +22,6 @@ class RasterLayer extends Layer {
             root.traverse(removeLayeredMaterialNodeLayer(this.id));
         }
     }
-
-    /**
-     * Deprecated function. Use dispose()
-     */
-    delete() {
-        console.warn('`RasterLayer.delete` method is deprecated. Please use `RasterLayer.dispose` instead.');
-        this.dispose();
-    }
 }
 
 export default RasterLayer;
