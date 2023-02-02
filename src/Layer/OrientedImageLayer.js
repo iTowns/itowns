@@ -208,9 +208,16 @@ class OrientedImageLayer extends GeometryLayer {
      * Delete background, but doesn't delete OrientedImageLayer.material. For the moment, this material visibility is set to false.
      * You need to replace OrientedImageLayer.material applied on each object, if you want to continue displaying them.
      * This issue (see #1018 {@link https://github.com/iTowns/itowns/issues/1018}) will be fixed when OrientedImageLayer will be a ColorLayer.
-     */
-    dispose() {
-        super.dispose();
+    * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
+    */
+    dispose(clearCache) {
+        if (this.background) {
+            // only delete geometries if it has some
+            super.dispose();
+        }
+        if (clearCache) {
+            this.cache.dispose();
+        }
         this.material.visible = false;
         console.warn('You need to replace OrientedImageLayer.material applied on each object. This issue will be fixed when OrientedImageLayer will be a ColorLayer. the material visibility is set to false. To follow issue see https://github.com/iTowns/itowns/issues/1018');
     }
