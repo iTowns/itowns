@@ -19,11 +19,11 @@ jobs:
     steps:
 
       # Use specific Node.js version
-      - uses: actions/checkout@v2
-      - name: Use Node.js 15.x
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
         with:
-          node-version: 15.x
+          node-version: 16.x
 
       # Install packages
       # TODO: add cache npm to speed up installing
@@ -67,7 +67,7 @@ jobs:
       # Prepare archive for deploying
       - name: Archive production artifacts
         if: ${{ success() && github.ref == 'refs/heads/master' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
             name: dist-itowns
             path: |
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           # fetch all branches
           fetch-depth: 0
@@ -92,9 +92,9 @@ jobs:
       # Configure git user for later command induced commits
       - uses: fregante/setup-git-user@v1
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
-          node-version: 15
+          node-version: 16
           registry-url: https://registry.npmjs.org/
 
       - run: npm ci
@@ -137,7 +137,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist-itowns
 
@@ -196,12 +196,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Use Node.js 15.x
-        uses: actions/setup-node@v2
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
         with:
-          node-version: 15.x
+          node-version: 16.x
 
       - name: Message commit
         run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
@@ -223,7 +223,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist-itowns
 
