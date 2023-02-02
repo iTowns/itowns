@@ -19,7 +19,7 @@ class RasterLayer extends Layer {
     */
     dispose(clearCache) {
         if (clearCache) {
-            super.dispose();
+            this.cache.dispose();
         }
         for (const root of this.parent.level0Nodes) {
             root.traverse(removeLayeredMaterialNodeLayer(this.id));

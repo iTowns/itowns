@@ -173,7 +173,7 @@ class GeometryLayer extends Layer {
      */
     dispose(clearCache) {
         if (clearCache) {
-            super.dispose();
+            this.cache.dispose();
         }
 
         // if Layer is attached
