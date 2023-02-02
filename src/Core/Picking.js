@@ -216,7 +216,6 @@ export default {
         const clearB = Math.round(255 * clearColor.b);
 
         // Raycaster use NDC coordinate
-        const normalized = view.viewToNormalizedCoords(viewCoords);
         const tmp = normalized.clone();
         traversePickingCircle(radius, (x, y) => {
             // x, y are offset from the center of the picking circle,
