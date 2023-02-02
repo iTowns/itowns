@@ -295,7 +295,7 @@ class LabelLayer extends Layer {
      */
     dispose(clearCache) {
         if (clearCache) {
-            this.cache.clear();
+            this.cache.dispose();
         }
         this.domElement.parentElement.removeChild(this.domElement);
 
