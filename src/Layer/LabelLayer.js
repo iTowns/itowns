@@ -494,9 +494,9 @@ class LabelLayer extends GeometryLayer {
      * All layer's objects and domElements are removed.
      * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
      */
-    delete(clearCache) {
+    dispose(clearCache) {
         if (clearCache) {
-            this.cache.clear();
+            super.dispose();
         }
         this.domElement.dom.parentElement.removeChild(this.domElement.dom);
 

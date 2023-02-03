@@ -42,6 +42,8 @@ The following people have contributed to iTowns.
 * [Prolexia](http://prolexia.fr/)
   * [Dorian MOFFROID](https://github.com/dorian-moffroid-prolexia)
 
+* [Jamie Myose](https://github.com/jamesmyose)
+
 * [Diginove](http://diginove.com/index.php/fr/diginove-lexpertise-en-traitement-dimages/):
   * [Michel Benet](https://github.com/mbenevole)
 
