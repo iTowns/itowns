@@ -496,7 +496,7 @@ class LabelLayer extends GeometryLayer {
      */
     dispose(clearCache) {
         if (clearCache) {
-            this.cache.dispose();
+            super.dispose();
         }
         this.domElement.parentElement.removeChild(this.domElement);
 
