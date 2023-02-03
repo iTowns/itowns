@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-// import { CSS2DRenderer, CSS2DObject } from 'ThreeExtended/renderers/CSS2DRenderer';
+import { CSS2DRenderer, CSS2DObject } from 'ThreeExtended/renderers/CSS2DRenderer';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import Coordinates from 'Core/Geographic/Coordinates';
 import DEMUtils from 'Utils/DEMUtils';
@@ -14,7 +14,7 @@ const DEFAULT_OPTIONS = {
 };
 
 const loader = new THREE.TextureLoader();
-const POINT_TEXTURE = loader.load('sprites/mycircle.png'); // TODO: update url once PR itowns sample data accepted
+const POINT_TEXTURE = loader.load('https://github.com/iTowns/iTowns2-sample-data/blob/master/GUI/circle.png');
 
 const MOVE_POINT_MATERIAL = new THREE.PointsMaterial({
     color: 0xff0000,
@@ -379,7 +379,7 @@ class ElevationMeasure extends Widget {
      * a callback to render the label at each frame, the div holding the label and a threejs label object.
      */
     initLabel() {
-        this.#labelRenderer = null;
+        this.#labelRenderer = new CSS2DRenderer();
         this.#labelRenderer.setSize(window.innerWidth, window.innerHeight);
         this.#labelRenderer.domElement.style.position = 'absolute';
         this.#labelRenderer.domElement.style.top = '0px';
@@ -397,7 +397,7 @@ class ElevationMeasure extends Widget {
         // Translation obtained empirically
         posLabel.style.transform = `translateY(${-((pointSize / 2) + 12)}px)`;
         labelDiv.appendChild(posLabel);
-        this.#labelObj = null;
+        this.#labelObj = new CSS2DObject(labelDiv);
         this.#view.scene.add(this.#labelObj);
 
         this.onWindowResize = this.onWindowResize.bind(this);
