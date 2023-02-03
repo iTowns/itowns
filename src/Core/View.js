@@ -373,7 +373,7 @@ class View extends THREE.EventDispatcher {
             const parentLayer = layer.parent;
 
             // Remove and dispose all nodes
-            layer.delete(clearCache);
+            layer.dispose(clearCache);
 
             // Detach layer if it's attached
             if (parentLayer && !parentLayer.detach(layer)) {
