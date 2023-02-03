@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CSS2DRenderer, CSS2DObject } from 'ThreeExtended/renderers/CSS2DRenderer';
+// import { CSS2DRenderer, CSS2DObject } from 'ThreeExtended/renderers/CSS2DRenderer';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import Coordinates from 'Core/Geographic/Coordinates';
 import DEMUtils from 'Utils/DEMUtils';
@@ -379,7 +379,7 @@ class ElevationMeasure extends Widget {
      * a callback to render the label at each frame, the div holding the label and a threejs label object.
      */
     initLabel() {
-        this.#labelRenderer = new CSS2DRenderer();
+        this.#labelRenderer = null;
         this.#labelRenderer.setSize(window.innerWidth, window.innerHeight);
         this.#labelRenderer.domElement.style.position = 'absolute';
         this.#labelRenderer.domElement.style.top = '0px';
@@ -397,7 +397,7 @@ class ElevationMeasure extends Widget {
         // Translation obtained empirically
         posLabel.style.transform = `translateY(${-((pointSize / 2) + 12)}px)`;
         labelDiv.appendChild(posLabel);
-        this.#labelObj = new CSS2DObject(labelDiv);
+        this.#labelObj = null;
         this.#view.scene.add(this.#labelObj);
 
         this.onWindowResize = this.onWindowResize.bind(this);
