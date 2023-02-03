@@ -83,7 +83,7 @@
 
 /* ---------- BUTTONS GENERIC STYLE : ------------------------------------------------------------------------------- */
 
-#widgets-navigation .widget-button {
+.widget-button {
     background-color: #313336bb;
     border: 1px solid #222222;
     padding: 0;
@@ -95,10 +95,10 @@
     font-weight: 900;
     font-size: 15px;
 }
-#widgets-navigation .widget-button:hover {
+.widget-button:hover {
     cursor: pointer;
 }
-#widgets-navigation .widget-button:active {
+.widget-button:active {
     background-color: #222222;
 }
 
@@ -357,4 +357,33 @@
 
 #widgets-searchbar form > div > p {
     margin: 8px 0;
+}
+
+/* ---------- ELEVATION MEASURE WIDGET : ---------------------------------------------------------------------------- */
+#widgets-elevation {
+    position: absolute;
+    z-index: 10;
+}
+
+#widgets-elevation .widget-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-image: url('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/GUI/widget-elevation-measure.svg'); 
+    background-repeat: no-repeat;
+    background-size: auto 90%;
+    background-position: center;
+}
+
+#widgets-elevation .widget-button-active {
+    background-color: #8B0000;
+    border: 1px solid #800000;
+}
+
+.label-elevation {
+    background-color: #313336bb;
+    color: white;
+    padding: 1;
+    font-weight: 900;
+    font-size: 15px;
 }
