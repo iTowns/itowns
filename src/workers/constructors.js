@@ -3,7 +3,7 @@ import { FeatureGeometry, Feature } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
 import { constructors } from '../../Sia/Sia';
 
-const newConstructors = [
+const itownsConstructors = [
     ...constructors,
     {
         constructor: Extent, // The custom class you want to support
@@ -61,4 +61,4 @@ const newConstructors = [
     },
 ];
 
-export default newConstructors;
+export default itownsConstructors;
