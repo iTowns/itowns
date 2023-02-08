@@ -65,6 +65,7 @@
     "pbf": "^3.2.1",
     "regenerator-runtime": "^0.13.9",
     "shpjs": "^4.0.2",
+    "sializer": "^0.2.0",
     "text-encoding-utf-8": "^1.0.2"
   },
   "peerDependencies": {

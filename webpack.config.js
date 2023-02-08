@@ -47,6 +47,9 @@ module.exports = () => {
             modules: [path.resolve(__dirname, 'src'), 'node_modules'],
         },
         entry: {
+            worker: [
+                './src/WorkerPoolParser.js',
+            ],
             itowns: [
                 'core-js',
                 'regenerator-runtime/runtime',
