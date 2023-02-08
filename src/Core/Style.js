@@ -8,7 +8,7 @@ import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_befor
 export const cacheStyle = new Cache();
 
 const inv255 = 1 / 255;
-const canvas = document.createElement('canvas');
+const canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
 const style_properties = {};
 
 function base_altitudeDefault(properties, coordinates = { z: 0 }) {
@@ -446,6 +446,8 @@ class Style {
      * @returns {Style}
      */
     setFromGeojsonProperties(properties, type) {
+        // TODO !! FT GC
+        // To be removed because the user himself had to define the map properties to style
         if (type === FEATURE_TYPES.POINT) {
             this.point.color = properties.fill;
             this.point.opacity = properties['fill-opacity'];
@@ -710,14 +712,18 @@ class Style {
 const CustomStyle = {
     itowns_stroke_single_before,
 };
-const customStyleSheet = document.createElement('style');
+
+
+const customStyleSheet = (typeof document !== 'undefined') ? document.createElement('style') : {};
 customStyleSheet.type = 'text/css';
 
 Object.keys(CustomStyle).forEach((key) => {
     customStyleSheet.innerHTML += `${CustomStyle[key]}\n\n`;
 });
 
-document.getElementsByTagName('head')[0].appendChild(customStyleSheet);
+if (typeof document !== 'undefined') {
+    document.getElementsByTagName('head')[0].appendChild(customStyleSheet);
+}
 
 const style = new Style();
 
