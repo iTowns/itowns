@@ -229,7 +229,7 @@ function push3DValues(value0, value1, value2 = 0) {
  * @property {Extent?} extent - The extent containing all the geometries
  * composing the feature.
  */
-class Feature {
+export class Feature {
     /**
      *
      * @param {string} type type of Feature. It can be 'point', 'line' or 'polygon'.
