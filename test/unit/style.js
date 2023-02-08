@@ -1,4 +1,5 @@
 import Style from 'Core/Style';
+import { FEATURE_TYPES } from 'Core/Feature';
 import assert from 'assert';
 import Fetcher from 'Provider/Fetcher';
 import { TextureLoader } from 'three';
@@ -276,6 +277,87 @@ describe('Style', function () {
                         done();
                     }).catch(done);
             });
+        });
+    });
+
+    describe('setFromProperties', () => {
+        it('FEATURE_TYPES.POINT', () => {
+            const properties = {
+                radius: 2,
+                'label-color': '#eba55f',
+                'icon-color': '#eba55f',
+            };
+            const style = Style.setFromProperties(properties, FEATURE_TYPES.POINT);
+            assert.equal(style.point.radius, 2);
+            assert.equal(style.text.color, '#eba55f');
+            assert.equal(style.icon.color, '#eba55f');
+        });
+        it('FEATURE_TYPES.POLYGON', () => {
+            const properties = {
+                fill: '#eba55f',
+                stroke: '#eba55f',
+            };
+            const style = Style.setFromProperties(properties, FEATURE_TYPES.POLYGON);
+            assert.equal(style.stroke.color, '#eba55f');
+            assert.equal(style.fill.color, '#eba55f');
+        });
+    });
+
+    describe('setFromVectorTileLayer', () => {
+        describe("layer.type==='fill'", () => {
+            const imgId = 'filler';
+            const vectorTileLayer = {
+                type: 'fill',
+                paint: {
+                    'fill-pattern': imgId,
+                    'fill-outline-color': '#eba55f',
+                },
+            };
+            it('with fill-pattern (and sprites)', () => {
+                const sprites = {
+                    filler: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
+                    source: 'ImgUrl',
+                };
+                const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                // fill-pattern
+                assert.equal(style.fill.pattern.id, imgId);
+                assert.equal(style.fill.pattern.cropValues, sprites[imgId]);
+            });
+            it('without fill-pattern (or sprites)', () => {
+                const style = Style.setFromVectorTileLayer(vectorTileLayer);
+                // fill-outline-color
+                assert.equal(style.stroke.color, '#eba55f');
+            });
+        });
+        it("layer.type==='line'", () => {
+            const vectorTileLayer = {
+                type: 'line',
+                paint: {
+                    'line-color': '#eba55f',
+                },
+            };
+            const style = Style.setFromVectorTileLayer(vectorTileLayer);
+            assert.equal(style.stroke.color, '#eba55f');
+        });
+        it("layer.type==='circle'", () => {
+            const vectorTileLayer = {
+                type: 'circle',
+                paint: {
+                    'circle-color': '#eba55f',
+                },
+            };
+            const style = Style.setFromVectorTileLayer(vectorTileLayer);
+            assert.equal(style.point.color, '#eba55f');
+        });
+        it("layer.type==='symbol'", () => {
+            const vectorTileLayer = {
+                type: 'symbol',
+                layout: {
+                    'symbol-z-order': 'auto',
+                },
+            };
+            const style = Style.setFromVectorTileLayer(vectorTileLayer);
+            assert.equal(style.text.zOrder, 'Y');
         });
     });
 });

@@ -73,8 +73,9 @@ const toFeature = {
         }
 
         const geometry = feature.bindNewGeometry();
+        properties.style = Style.setFromProperties(properties, feature.type);
         geometry.properties = properties;
-        geometry.properties.style = new Style({}, feature.style).setFromGeojsonProperties(properties, feature.type);
+
         this.populateGeometry(crsIn, coordsIn, geometry, feature);
         feature.updateExtent(geometry);
     },
@@ -84,8 +85,8 @@ const toFeature = {
             return;
         }
         const geometry = feature.bindNewGeometry();
+        properties.style = Style.setFromProperties(properties, feature.type);
         geometry.properties = properties;
-        geometry.properties.style = new Style({}, feature.style).setFromGeojsonProperties(properties, feature.type);
 
         // Then read contour and holes
         for (let i = 0; i < coordsIn.length; i++) {

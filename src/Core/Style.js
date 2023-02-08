@@ -695,17 +695,26 @@ class Style {
      *
      * @returns {StyleOptions} containing all properties for itowns.Style
      */
-    setFromGeojsonProperties(properties, type) {
+    static setFromProperties(properties, type) {
+        const style = {};
         if (type === FEATURE_TYPES.POINT) {
-            this.point.color = properties.fill;
-            this.point.opacity = properties['fill-opacity'];
-            this.point.line = properties.stroke;
-            this.point.radius = properties.radius;
-
-            this.text.color = properties['label-color'];
-            this.text.opacity = properties['label-opacity'];
-            this.text.size = properties['label-size'];
-
+            const point = {
+                ...(properties.fill !== undefined && { color: properties.fill }),
+                ...(properties['fill-opacity'] !== undefined && { opacity: properties['fill-opacity'] }),
+                ...(properties.stroke !== undefined && { line: properties.stroke }),
+                ...(properties.radius !== undefined && { radius: properties.radius }),
+            };
+            if (Object.keys(point).length) {
+                style.point = point;
+            }
+            const text = {
+                ...(properties['label-color'] !== undefined && { color: properties['label-color'] }),
+                ...(properties['label-opacity'] !== undefined && { opacity: properties['label-opacity'] }),
+                ...(properties['label-size'] !== undefined && { size: properties['label-size'] }),
+            };
+            if (Object.keys(point).length) {
+                style.text = text;
+            }
             const icon = {
                 ...(properties.icon !== undefined && { source: properties.icon }),
                 ...(properties['icon-scale'] !== undefined && { size: properties['icon-scale'] }),
@@ -713,19 +722,28 @@ class Style {
                 ...(properties['icon-color'] !== undefined && { color: properties['icon-color'] }),
             };
             if (Object.keys(icon).length) {
-                this.icon = icon;
+                style.icon = icon;
             }
         } else {
-            this.stroke.color = properties.stroke;
-            this.stroke.width = properties['stroke-width'];
-            this.stroke.opacity = properties['stroke-opacity'];
-
+            const stroke = {
+                ...(properties.stroke !== undefined && { color: properties.stroke }),
+                ...(properties['stroke-width'] !== undefined && { width: properties['stroke-width'] }),
+                ...(properties['stroke-opacity'] !== undefined && { opacity: properties['stroke-opacity'] }),
+            };
+            if (Object.keys(stroke).length) {
+                style.stroke = stroke;
+            }
             if (type !== FEATURE_TYPES.LINE) {
-                this.fill.color = properties.fill;
-                this.fill.opacity = properties['fill-opacity'];
+                const fill = {
+                    ...(properties.fill !== undefined && { color: properties.fill }),
+                    ...(properties['fill-opacity'] !== undefined && { opacity: properties['fill-opacity'] }),
+                };
+                if (Object.keys(fill).length) {
+                    style.fill = fill;
+                }
             }
         }
-        return this;
+        return style;
     }
 
     /**
