@@ -2,29 +2,29 @@ import * as THREE from 'three';
 import { FEATURE_TYPES } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Style, { getImage } from '../Core/Style';
 
 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 const matrix = svg.createSVGMatrix();
 
-function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style = {}, size, extent, invCtxScale, canBeFilled) {
+function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style = {}, size, extent, invCtxScale, canBeFilled, sprites) {
     if (vertices.length === 0) {
         return;
     }
-
     if (style.length) {
         for (const s of style) {
-            _drawPolygon(ctx, vertices, indices, s, size, extent, invCtxScale, canBeFilled);
+            _drawPolygon(ctx, vertices, indices, s, size, extent, invCtxScale, canBeFilled, sprites);
         }
     } else {
-        _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled);
+        _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled, sprites);
     }
 }
 
-function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled) {
+function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled, sprites) {
     // build contour
     ctx.beginPath();
     for (const indice of indices) {
-        if (indice.extent && indice.extent.intersectsExtent(extent)) {
+        if (indice.extent && Extent.intersectsExtent(indice.extent, extent)) {
             const offset = indice.offset * size;
             const count = offset + indice.count * size;
             ctx.moveTo(vertices[offset], vertices[offset + 1]);
@@ -42,12 +42,16 @@ function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, 
 
     // fill polygon only
     if (canBeFilled && style.fill) {
-        fillStyle(style, ctx, invCtxScale);
+        fillStyle(style, ctx, invCtxScale, sprites);
         ctx.fill();
     }
 }
 
-function fillStyle(style, ctx, invCtxScale) {
+function fillStyle(style, ctx, invCtxScale, sprites) {
+    if (style.fill.pattern && style.fill.pattern.image) {
+        style.fill.pattern = getImage(sprites, style.fill.pattern.image);
+        console.log(ctx.fillStyle);
+    }
     if (style.fill.pattern && ctx.fillStyle.src !== style.fill.pattern.src) {
         ctx.fillStyle = ctx.createPattern(style.fill.pattern, 'repeat');
         if (ctx.fillStyle.setTransform) {
@@ -102,21 +106,40 @@ function drawPoint(ctx, x, y, style = {}, invCtxScale) {
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
-function drawFeature(ctx, feature, extent, style, invCtxScale) {
+function drawFeature(ctx, feature, extent, style, invCtxScale, sprites) {
     const extentDim = extent.planarDimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
     const globals = { zoom: extent.zoom };
 
     for (const geometry of feature.geometries) {
-        if (geometry.extent.intersectsExtent(extent)) {
+        if (Extent.intersectsExtent(geometry.extent, extent)) {
             const context = { globals, properties: () => geometry.properties };
-            const contextStyle = (geometry.properties.style || style).drawingStylefromContext(context);
+            // const contextStyle = (geometry.properties.style || style).drawingStylefromContext(context);
+            const styleConc = {
+                fill: {
+                    ...geometry.properties.style && geometry.properties.style.fill ? geometry.properties.style.fill : {},
+                    ...feature.style.isExtraStyle && feature.style.fill ? feature.style.fill : {},
+                    ...style.fill,
+                },
+                stroke: {
+                    ...geometry.properties.style && geometry.properties.style.stroke ? geometry.properties.style.stroke : {},
+                    ...feature.style.isExtraStyle && feature.style.stroke ? feature.style.stroke : {},
+                    ...style.stroke,
+                },
+                point: {
+                    ...geometry.properties.style && geometry.properties.style.point ? geometry.properties.style.point : {},
+                    ...feature.style.isExtraStyle && feature.style.point ? feature.style.point : {},
+                    ...style.point,
+                },
+            };
+
+            const contextStyle = new Style(styleConc).drawingStylefromContext(context);
 
             if (contextStyle) {
                 if (
-                    feature.type === FEATURE_TYPES.POINT
-                    && contextStyle.point
+                    feature.type === FEATURE_TYPES.POINT && contextStyle.point
                 ) {
+                    // console.log('^^^drawPoint^^^');
                     // cross multiplication to know in the extent system the real size of
                     // the point
                     const px = (Math.round(contextStyle.point.radius * invCtxScale) || 3 * invCtxScale) * scaleRadius;
@@ -131,7 +154,7 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
                         }
                     }
                 } else {
-                    drawPolygon(ctx, feature.vertices, geometry.indices, contextStyle, feature.size, extent, invCtxScale, (feature.type == FEATURE_TYPES.POLYGON));
+                    drawPolygon(ctx, feature.vertices, geometry.indices, contextStyle, feature.size, extent, invCtxScale, (feature.type == FEATURE_TYPES.POLYGON), sprites);
                 }
             }
         }
@@ -151,7 +174,7 @@ const featureExtent = new Extent('EPSG:4326', 0, 0, 0, 0);
 export default {
     // backgroundColor is a THREE.Color to specify a color to fill the texture
     // with, given there is no feature passed in parameter
-    createTextureFromFeature(collection, extent, sizeTexture, style, backgroundColor) {
+    createTextureFromFeature(collection, extent, sizeTexture, style = {}, backgroundColor, sprites) {
         let texture;
 
         if (collection) {
@@ -169,6 +192,8 @@ export default {
                 ctx.fillStyle = backgroundColor.getStyle();
                 ctx.fillRect(0, 0, sizeTexture, sizeTexture);
             }
+
+            // Documentation needed !!
             ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
             ctx.imageSmoothingEnabled = false;
             ctx.lineJoin = 'round';
@@ -200,7 +225,8 @@ export default {
 
             // Draw the canvas
             for (const feature of collection.features) {
-                drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
+                // drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
+                drawFeature(ctx, feature, featureExtent, style, invCtxScale, sprites);
             }
 
             texture = new THREE.CanvasTexture(c);

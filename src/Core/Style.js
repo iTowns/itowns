@@ -1,4 +1,3 @@
-import { FEATURE_TYPES } from 'Core/Feature';
 import Cache from 'Core/Scheduler/Cache';
 import Fetcher from 'Provider/Fetcher';
 import * as mapbox from '@mapbox/mapbox-gl-style-spec';
@@ -8,7 +7,7 @@ import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_befor
 export const cacheStyle = new Cache();
 
 const inv255 = 1 / 255;
-const canvas = document.createElement('canvas');
+const canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
 const style_properties = {};
 
 function base_altitudeDefault(properties, coordinates = { z: 0 }) {
@@ -77,7 +76,7 @@ function readVectorProperty(property, options) {
     }
 }
 
-function getImage(source, key) {
+export function getImage(source, key) {
     const target = document.createElement('img');
 
     if (typeof source == 'string') {
@@ -322,7 +321,8 @@ class Style {
         defineStyleProperty(this, 'fill', 'color', params.fill.color);
         defineStyleProperty(this, 'fill', 'opacity', params.fill.opacity, 1.0);
         defineStyleProperty(this, 'fill', 'pattern', params.fill.pattern);
-        defineStyleProperty(this, 'fill', 'base_altitude', params.fill.base_altitude, base_altitudeDefault);
+        // defineStyleProperty(this, 'fill', 'base_altitude', params.fill.base_altitude, base_altitudeDefault);
+        defineStyleProperty(this, 'fill', 'base_altitude', params.fill.base_altitude);
         defineStyleProperty(this, 'fill', 'extrusion_height', params.fill.extrusion_height);
 
         if (typeof this.fill.pattern == 'string') {
@@ -336,7 +336,8 @@ class Style {
         defineStyleProperty(this, 'stroke', 'opacity', params.stroke.opacity, 1.0);
         defineStyleProperty(this, 'stroke', 'width', params.stroke.width, 1.0);
         defineStyleProperty(this, 'stroke', 'dasharray', params.stroke.dasharray, []);
-        defineStyleProperty(this, 'stroke', 'base_altitude', params.stroke.base_altitude, base_altitudeDefault);
+        // defineStyleProperty(this, 'stroke', 'base_altitude', params.stroke.base_altitude, base_altitudeDefault);
+        defineStyleProperty(this, 'stroke', 'base_altitude', params.stroke.base_altitude);
 
         this.point = {};
         defineStyleProperty(this, 'point', 'color', params.point.color);
@@ -344,7 +345,8 @@ class Style {
         defineStyleProperty(this, 'point', 'opacity', params.point.opacity, 1.0);
         defineStyleProperty(this, 'point', 'radius', params.point.radius, 2.0);
         defineStyleProperty(this, 'point', 'width', params.point.width, 0.0);
-        defineStyleProperty(this, 'point', 'base_altitude', params.point.base_altitude, base_altitudeDefault);
+        // defineStyleProperty(this, 'point', 'base_altitude', params.point.base_altitude, base_altitudeDefault);
+        defineStyleProperty(this, 'point', 'base_altitude', params.point.base_altitude);
 
         this.text = {};
         defineStyleProperty(this, 'text', 'field', params.text.field);
@@ -371,6 +373,8 @@ class Style {
         defineStyleProperty(this, 'icon', 'key', params.icon.key);
         defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor, 'center');
         defineStyleProperty(this, 'icon', 'size', params.icon.size, 1);
+        defineStyleProperty(this, 'icon', 'color', params.icon.color);
+        defineStyleProperty(this, 'icon', 'opacity', params.icon.opacity, 1.0);
     }
 
     /**
@@ -440,39 +444,6 @@ class Style {
     }
 
     /**
-     * set Style from geojson properties.
-     * @param {object} properties geojson properties.
-     * @param {number} type
-     * @returns {Style}
-     */
-    setFromGeojsonProperties(properties, type) {
-        if (type === FEATURE_TYPES.POINT) {
-            this.point.color = properties.fill;
-            this.point.opacity = properties['fill-opacity'];
-            this.point.line = properties.stroke;
-            this.point.radius = properties.radius;
-
-            this.text.color = properties['label-color'];
-            this.text.opacity = properties['label-opacity'];
-            this.text.size = properties['label-size'];
-
-            if (properties.icon) {
-                this.icon.source = properties.icon;
-            }
-        } else {
-            this.stroke.color = properties.stroke;
-            this.stroke.width = properties['stroke-width'];
-            this.stroke.opacity = properties['stroke-opacity'];
-
-            if (type !== FEATURE_TYPES.LINE) {
-                this.fill.color = properties.fill;
-                this.fill.opacity = properties['fill-opacity'];
-            }
-        }
-        return this;
-    }
-
-    /**
      * set Style from vector tile layer properties.
      * @param {object} layer vector tile layer.
      * @param {Object} sprites vector tile layer.
@@ -480,87 +451,99 @@ class Style {
      * @param {boolean} [symbolToCircle=false]
      * @returns {Style}
      */
-    setFromVectorTileLayer(layer, sprites, order = 0, symbolToCircle = false) {
+    static setFromVectorTileLayer(layer, sprites, order = 0, symbolToCircle = false) {
+        const style = {
+            fill: {},
+            stroke: {},
+            point: {},
+            text: {},
+            icon: {},
+        };
+
         layer.layout = layer.layout || {};
         layer.paint = layer.paint || {};
 
-        this.order = order;
+        style.order = order;
 
-        if (layer.type === 'fill' && !this.fill.color) {
+        if (layer.type === 'fill' && !style.fill.color) {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern'], { type: 'color' }));
-            this.fill.color = color;
-            this.fill.opacity = readVectorProperty(layer.paint['fill-opacity']) || opacity;
+            style.fill.color = color;
+            style.fill.opacity = readVectorProperty(layer.paint['fill-opacity']) || opacity;
             if (layer.paint['fill-pattern'] && sprites) {
-                this.fill.pattern = getImage(sprites, layer.paint['fill-pattern']);
+                // style.fill.pattern = getImage(sprites, layer.paint['fill-pattern']);
+                style.fill.pattern = { image: layer.paint['fill-pattern'] };
             }
 
             if (layer.paint['fill-outline-color']) {
                 const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-outline-color'], { type: 'color' }));
-                this.stroke.color = color;
-                this.stroke.opacity = opacity;
-                this.stroke.width = 1.0;
-                this.stroke.dasharray = [];
+                style.stroke.color = color;
+                style.stroke.opacity = opacity;
+                style.stroke.width = 1.0;
+                style.stroke.dasharray = [];
             }
-        } else if (layer.type === 'line' && !this.stroke.color) {
+        } else if (layer.type === 'line' && !style.stroke.color) {
             const prepare = readVectorProperty(layer.paint['line-color'], { type: 'color' });
             const { color, opacity } = rgba2rgb(prepare);
-            this.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray']);
-            this.stroke.color = color;
-            this.stroke.lineCap = layer.layout['line-cap'];
-            this.stroke.width = readVectorProperty(layer.paint['line-width']);
-            this.stroke.opacity = readVectorProperty(layer.paint['line-opacity']) || opacity;
+            style.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray']);
+            style.stroke.color = color;
+            style.stroke.lineCap = layer.layout['line-cap'];
+            style.stroke.width = readVectorProperty(layer.paint['line-width']);
+            style.stroke.opacity = readVectorProperty(layer.paint['line-opacity']) || opacity;
         } else if (layer.type === 'circle' || symbolToCircle) {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['circle-color'], { type: 'color' }));
-            this.point.color = color;
-            this.point.opacity = opacity;
-            this.point.radius = readVectorProperty(layer.paint['circle-radius']);
+            style.point.color = color;
+            style.point.opacity = opacity;
+            style.point.radius = readVectorProperty(layer.paint['circle-radius']);
         } else if (layer.type === 'symbol') {
             // overlapping order
-            this.text.zOrder = readVectorProperty(layer.layout['symbol-z-order']);
-            if (this.text.zOrder == 'auto') {
-                this.text.zOrder = readVectorProperty(layer.layout['symbol-sort-key']) || 'Y';
-            } else if (this.text.zOrder == 'viewport-y') {
-                this.text.zOrder = 'Y';
-            } else if (this.text.zOrder == 'source') {
-                this.text.zOrder = 0;
+            style.text.zOrder = readVectorProperty(layer.layout['symbol-z-order']);
+            if (style.text.zOrder == 'auto') {
+                style.text.zOrder = readVectorProperty(layer.layout['symbol-sort-key']) || 'Y';
+            } else if (style.text.zOrder == 'viewport-y') {
+                style.text.zOrder = 'Y';
+            } else if (style.text.zOrder == 'source') {
+                style.text.zOrder = 0;
             }
 
             // position
-            this.text.anchor = readVectorProperty(layer.layout['text-anchor']);
-            this.text.offset = readVectorProperty(layer.layout['text-offset']);
-            this.text.padding = readVectorProperty(layer.layout['text-padding']);
-            this.text.size = readVectorProperty(layer.layout['text-size']);
-            this.text.placement = readVectorProperty(layer.layout['symbol-placement']);
-            this.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment']);
+            style.text.anchor = readVectorProperty(layer.layout['text-anchor']);
+            style.text.offset = readVectorProperty(layer.layout['text-offset']);
+            style.text.padding = readVectorProperty(layer.layout['text-padding']);
+            style.text.size = readVectorProperty(layer.layout['text-size']);
+            style.text.placement = readVectorProperty(layer.layout['symbol-placement']);
+            style.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment']);
 
             // content
-            this.text.field = readVectorProperty(layer.layout['text-field']);
-            this.text.wrap = readVectorProperty(layer.layout['text-max-width']);
-            this.text.spacing = readVectorProperty(layer.layout['text-letter-spacing']);
-            this.text.transform = readVectorProperty(layer.layout['text-transform']);
-            this.text.justify = readVectorProperty(layer.layout['text-justify']);
+            style.text.field = readVectorProperty(layer.layout['text-field']);
+            style.text.wrap = readVectorProperty(layer.layout['text-max-width']);
+            style.text.spacing = readVectorProperty(layer.layout['text-letter-spacing']);
+            style.text.transform = readVectorProperty(layer.layout['text-transform']);
+            style.text.justify = readVectorProperty(layer.layout['text-justify']);
 
             // appearance
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['text-color'], { type: 'color' }));
-            this.text.color = color;
-            this.text.opacity = readVectorProperty(layer.paint['text-opacity']) || (opacity !== undefined && opacity);
+            style.text.color = color;
+            style.text.opacity = readVectorProperty(layer.paint['text-opacity']) || (opacity !== undefined && opacity);
 
-            this.text.font = readVectorProperty(layer.layout['text-font']);
+            style.text.font = readVectorProperty(layer.layout['text-font']);
             const haloColor = readVectorProperty(layer.paint['text-halo-color'], { type: 'color' });
             if (haloColor) {
-                this.text.haloColor = haloColor.color || haloColor;
-                this.text.haloWidth = readVectorProperty(layer.paint['text-halo-width']);
-                this.text.haloBlur = readVectorProperty(layer.paint['text-halo-blur']);
+                style.text.haloColor = haloColor.color || haloColor;
+                style.text.haloWidth = readVectorProperty(layer.paint['text-halo-width']);
+                style.text.haloBlur = readVectorProperty(layer.paint['text-halo-blur']);
             }
 
             // additional icon
             const key = readVectorProperty(layer.layout['icon-image']);
             if (key) {
-                this.icon.key = key;
-                this.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
+                style.icon.key = key;
+                style.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
+                const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['icon-color'], { type: 'color' }));
+                style.icon.color = color;
+                style.icon.opacity = readVectorProperty(layer.paint['icon-opacity']) || (opacity !== undefined && opacity);
             }
         }
-        return this;
+        return style;
     }
 
     /**
@@ -618,6 +601,8 @@ class Style {
 
             cIcon.width = icon.width * this.icon.size;
             cIcon.height = icon.height * this.icon.size;
+            cIcon.style.color = this.icon.color;
+            cIcon.style.opacity = this.icon.opacity;
             cIcon.style.position = 'absolute';
             cIcon.style.top = '0';
             cIcon.style.left = '0';
@@ -710,14 +695,18 @@ class Style {
 const CustomStyle = {
     itowns_stroke_single_before,
 };
-const customStyleSheet = document.createElement('style');
+
+
+const customStyleSheet = (typeof document !== 'undefined') ? document.createElement('style') : {};
 customStyleSheet.type = 'text/css';
 
 Object.keys(CustomStyle).forEach((key) => {
     customStyleSheet.innerHTML += `${CustomStyle[key]}\n\n`;
 });
 
-document.getElementsByTagName('head')[0].appendChild(customStyleSheet);
+if (typeof document !== 'undefined') {
+    document.getElementsByTagName('head')[0].appendChild(customStyleSheet);
+}
 
 const style = new Style();
 

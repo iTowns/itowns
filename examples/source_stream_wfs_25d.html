@@ -152,12 +152,14 @@
                 source: lyonTclBusSource,
                 zoom: { min: 2 },
 
-                style: new itowns.Style({
+                // style: new itowns.Style({
+                style: {
                     stroke: {
                         base_altitude: altitudeLine,
                         width: 5,
                     }
-                })
+                // })
+                }
             });
 
             view.addLayer(lyonTclBusLayer);
@@ -236,13 +238,15 @@
                 source: wfsBuildingSource,
                 zoom: { min: 4 },
 
-                style: new itowns.Style({
+                // style: new itowns.Style({
+                style: {
                     fill: {
                         color: colorBuildings,
                         base_altitude: altitudeBuildings,
                         extrusion_height: extrudeBuildings,
                     }
-                })
+                // })
+                }
             });
 
             view.addLayer(wfsBuildingLayer);

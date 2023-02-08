@@ -1,0 +1,180 @@
+<html>
+    <head>
+        <title>Itowns - Globe + color layers from vector data</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv" class="viewer"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
+        <script type="text/javascript">
+            // # Simple Globe viewer
+            /* global itowns, setupLoadingScreen, GuiTools, ToolTip */
+
+            // Define initial camera position
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 3.5, 44),
+                range: 1000000,
+            }
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var view = new itowns.GlobeView(viewerDiv, placement);
+            var menuGlobe = new GuiTools('menuDiv', view);
+
+            setupLoadingScreen(viewerDiv, view);
+            // FeatureToolTip.init(viewerDiv, view);
+
+            // Add one imagery layer to the scene
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer).then(function _() {
+                    menuGlobe.addLayerGUI.bind(menuGlobe);
+                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+                });
+            });
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+
+            // Display the content of two GeoJSON files on terrain with ColorLayer and FileSource.
+            // The GeoJSONs are loaded from url, set in FileSource
+
+            // Declare the source for the data on lyonZU area
+            const lyonZUSource = new itowns.FileSource({
+                url: './vector.json',
+                // crs: 'EPSG:4326',
+                // format: 'application/json',
+                parser: itowns.WorkerParser.parse,
+                // parser: itowns.GeoJsonParser.parse,
+            });
+            // Create a ColorLayer for the lyonZU area
+            const lyonZULayer = new itowns.ColorLayer('lyonZU', {
+                name: 'lyonZU',
+                transparent: true,
+                source: lyonZUSource,
+                crs: 'EPSG:4326',
+                style: {
+                    fill: {
+                        color: 'red',
+                        opacity: 0.5,
+                    },
+                    stroke: {
+                        color: 'white',
+                    },
+                },
+            });
+            // Add the lyonZU ColorLayer to the view and grant it a tooltip
+            view.addLayer(lyonZULayer)//.then(FeatureToolTip.addLayer);
+
+            const lyonZUSource2 = new itowns.FileSource({
+                url: './vector.json',
+                // crs: 'EPSG:4326',
+                // format: 'application/json',
+                parser: itowns.WorkerParser.parse,
+                // parser: itowns.GeoJsonParser.parse,
+            });
+            // Create a ColorLayer for the lyonZU area
+            const lyonZULayer2 = new itowns.ColorLayer('lyonZU2', {
+                name: 'lyonZU2',
+                transparent: true,
+                source: lyonZUSource2,
+                crs: 'EPSG:4326',
+                style: {
+                    fill: {
+                        color: 'blue',
+                        opacity: 0.5,
+                    },
+                    stroke: {
+                        color: 'white',
+                    },
+                },
+            });
+            // Add the lyonZU ColorLayer to the view and grant it a tooltip
+            view.addLayer(lyonZULayer2)//.then(FeatureToolTip.addLayer);
+
+            const lyonZUSource3 = new itowns.FileSource({
+                url: './vector.json',
+                // crs: 'EPSG:4326',
+                // format: 'application/json',
+                parser: itowns.WorkerParser.parse,
+                // parser: itowns.GeoJsonParser.parse,
+            });
+            // Create a ColorLayer for the lyonZU area
+            const lyonZULayer3 = new itowns.ColorLayer('lyonZU3', {
+                name: 'lyonZU3',
+                transparent: true,
+                source: lyonZUSource3,
+                crs: 'EPSG:4326',
+                style: {
+                    fill: {
+                        color: 'yellow',
+                        opacity: 0.5,
+                    },
+                    stroke: {
+                        color: 'white',
+                    },
+                },
+            });
+            // Add the lyonZU ColorLayer to the view and grant it a tooltip
+            view.addLayer(lyonZULayer3)//.then(FeatureToolTip.addLayer);
+
+            const lyonZUSource4 = new itowns.FileSource({
+                url: './vector.json',
+                // crs: 'EPSG:4326',
+                // format: 'application/json',
+                parser: itowns.WorkerParser.parse,
+                pool: view.pool,
+                // parser: itowns.GeoJsonParser.parse,
+            });
+            // Create a ColorLayer for the lyonZU area
+            const lyonZULayer4 = new itowns.ColorLayer('lyonZU4', {
+                name: 'lyonZU4',
+                transparent: true,
+                source: lyonZUSource4,
+                crs: 'EPSG:4326',
+                style: {
+                    fill: {
+                        color: 'green',
+                        opacity: 0.5,
+                    },
+                    stroke: {
+                        color: 'white',
+                    },
+                },
+            });
+            // Add the lyonZU ColorLayer to the view and grant it a tooltip
+            view.addLayer(lyonZULayer4)//.then(FeatureToolTip.addLayer);
+
+
+            // Center the camera on the data extents
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                const layersExtent = lyonZUSource.extent.clone();
+                view.controls.lookAtCoordinate(layersExtent, false);
+            });
+
+
+            debug.createTileDebugUI(menuGlobe.gui, view);
+        </script>
+    </body>
+</html>

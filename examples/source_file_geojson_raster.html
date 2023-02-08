@@ -63,15 +63,18 @@
             // Declare the source for the data on Ariege area
             const ariegeSource = new itowns.FileSource({
                 url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
-                crs: 'EPSG:4326',
+                // crs: 'EPSG:4326',
                 format: 'application/json',
+                // parser: itowns.GeoJsonParser.parse,
             });
             // Create a ColorLayer for the Ariege area
             const ariegeLayer = new itowns.ColorLayer('ariege', {
                 name: 'ariege',
                 transparent: true,
                 source: ariegeSource,
-                style: new itowns.Style({
+                crs: 'EPSG:4326',
+                // style: new itowns.Style({
+                style: {
                     fill: {
                         color: 'orange',
                         opacity: 0.5,
@@ -79,16 +82,16 @@
                     stroke: {
                         color: 'white',
                     },
-                }),
+                // }),
+                },
             });
             // Add the Ariege ColorLayer to the view and grant it a tooltip
             view.addLayer(ariegeLayer).then(FeatureToolTip.addLayer);
 
-
             // Declare the source for the data on Pyrenees Orientales area
             const pyoSource = new itowns.FileSource({
                 url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/66-pyrenees-orientales/departement-66-pyrenees-orientales.geojson',
-                crs: 'EPSG:4326',
+                // crs: 'EPSG:4326',
                 format: 'application/json',
             });
             // Create a ColorLayer for the Pyrenees Orientales area

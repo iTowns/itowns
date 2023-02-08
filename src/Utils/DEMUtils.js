@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector2, Vector3, Triangle, MathUtils } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import placeObjectOnGround from 'Utils/placeObjectOnGround';
 
@@ -109,8 +110,8 @@ function tileAt(pt, tile) {
 let _canvas;
 function _readTextureValueAt(metadata, texture, ...uv) {
     for (let i = 0; i < uv.length; i += 2) {
-        uv[i] = THREE.MathUtils.clamp(uv[i], 0, texture.image.width - 1);
-        uv[i + 1] = THREE.MathUtils.clamp(uv[i + 1], 0, texture.image.height - 1);
+        uv[i] = MathUtils.clamp(uv[i], 0, texture.image.width - 1);
+        uv[i + 1] = MathUtils.clamp(uv[i + 1], 0, texture.image.height - 1);
     }
 
     if (texture.image.data) {
@@ -157,7 +158,7 @@ function _readTextureValueAt(metadata, texture, ...uv) {
             const oy = uv[i + 1] - miny;
 
             // d is 4 bytes per pixel
-            const v = THREE.MathUtils.lerp(
+            const v = MathUtils.lerp(
                 metadata.colorTextureElevationMinZ,
                 metadata.colorTextureElevationMaxZ,
                 d.data[4 * oy * dw + 4 * ox] / 255);
@@ -204,7 +205,7 @@ function _lerpWithUndefinedCheck(x, y, t) {
     } else if (y == undefined) {
         return x;
     } else {
-        return THREE.MathUtils.lerp(x, y, t);
+        return MathUtils.lerp(x, y, t);
     }
 }
 
@@ -231,7 +232,7 @@ function _readZFast(layer, texture, uv) {
     return _readTextureValueNearestFiltering(elevationLayer, texture, uv.x, uv.y);
 }
 
-const bary = new THREE.Vector3();
+const bary = new Vector3();
 function _readZCorrect(layer, texture, uv, tileDimensions, tileOwnerDimensions) {
     // We need to emulate the vertex shader code that does 2 thing:
     //   - interpolate (u, v) between triangle vertices: u,v will be multiple of 1/nsegments
@@ -275,13 +276,13 @@ function _readZCorrect(layer, texture, uv, tileDimensions, tileOwnerDimensions) 
     // (low-right = on the line 21-22 or under the diagonal lu = 1 - lv)
     const lowerRightTriangle = (lv == 1) || lu / (1 - lv) >= 1;
 
-    const tri = new THREE.Triangle(
-        new THREE.Vector3(u1, v2),
-        new THREE.Vector3(u2, v1),
-        lowerRightTriangle ? new THREE.Vector3(u2, v2) : new THREE.Vector3(u1, v1));
+    const tri = new Triangle(
+        new Vector3(u1, v2),
+        new Vector3(u2, v1),
+        lowerRightTriangle ? new Vector3(u2, v2) : new Vector3(u1, v1));
 
     // bary holds the respective weight of each vertices of the triangles
-    tri.getBarycoord(new THREE.Vector3(uv.x, uv.y), bary);
+    tri.getBarycoord(new Vector3(uv.x, uv.y), bary);
 
     const elevationLayer = layer.attachedLayers.filter(l => l.isElevationLayer)[0];
 
@@ -295,15 +296,15 @@ function _readZCorrect(layer, texture, uv, tileDimensions, tileOwnerDimensions) 
 }
 
 const temp = {
-    v: new THREE.Vector3(),
+    v: new Vector3(),
     coord1: new Coordinates('EPSG:4978'),
     coord2: new Coordinates('EPSG:4978'),
-    offset: new THREE.Vector2(),
+    offset: new Vector2(),
 };
 
-const dimension = new THREE.Vector2();
+const dimension = new Vector2();
 
-function offsetInExtent(point, extent, target = new THREE.Vector2()) {
+function offsetInExtent(point, extent, target = new Vector2()) {
     if (point.crs != extent.crs) {
         throw new Error(`Unsupported mix: ${point.crs} and ${extent.crs}`);
     }

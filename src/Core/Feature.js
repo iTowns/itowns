@@ -1,8 +1,8 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector3, Quaternion, Matrix3, Matrix4, Object3D, MathUtils } from 'three';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import CRS from 'Core/Geographic/Crs';
-import Style from 'Core/Style';
 
 function defaultExtent(crs) {
     return new Extent(crs, Infinity, -Infinity, Infinity, -Infinity);
@@ -19,7 +19,6 @@ function _setGeometryValues(geom, feature, long, lat, alt, normal) {
     if (feature.normals) {
         normal.toArray(feature.normals, feature._pos);
     }
-
     feature._pushValues(long, lat, alt);
 
     if (geom.size == 3) {
@@ -85,6 +84,8 @@ export class FeatureGeometry {
             min: Infinity,
             max: -Infinity,
         };
+
+        this.verticePos = [];
     }
     /**
      * Add a new marker to indicate the starting of sub geometry and extends the vertices buffer.
@@ -165,6 +166,7 @@ export class FeatureGeometry {
      */
     pushCoordinatesValues(feature, long, lat, normal) {
         const altitude = this.baseAltitude(feature);
+        this.verticePos.push(feature._pos);
 
         _setGeometryValues(this, feature, long, lat, altitude, normal);
 
@@ -198,6 +200,10 @@ function push3DValues(value0, value1, value2 = 0) {
     this.vertices[this._pos++] = value2;
 }
 
+function base_altitudeDefault(properties, coordinates = { z: 0 }) {
+    return coordinates.z;
+}
+
 /**
  *
  * This class improves and simplifies the construction and conversion of geographic data structures.
@@ -229,7 +235,7 @@ function push3DValues(value0, value1, value2 = 0) {
  * @property {Extent?} extent - The extent containing all the geometries
  * composing the feature.
  */
-class Feature {
+export class Feature {
     /**
      *
      * @param {string} type type of Feature. It can be 'point', 'line' or 'polygon'.
@@ -256,7 +262,16 @@ class Feature {
         }
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
-        this.style = new Style({}, collection.style);
+        // this.style = new Style({}, collection.style);
+        this.style = {
+            fill: {},
+            stroke: {},
+            point: {},
+        };
+        this.style.fill.base_altitude = (collection.style && collection.style.fill && collection.style.fill.base_altitude) || base_altitudeDefault;
+        this.style.fill.extrusion_height = (collection.style && collection.style.fill && collection.style.fill.extrusion_height);
+        this.style.stroke.base_altitude = (collection.style && collection.style.stroke && collection.style.stroke.base_altitude) || base_altitudeDefault;
+        this.style.point.base_altitude = (collection.style && collection.style.point && collection.style.point.base_altitude) || base_altitudeDefault;
 
         this.altitude = {
             min: Infinity,
@@ -305,8 +320,9 @@ const transformToLocalSystem3D = (coord, collection) => {
 };
 
 const transformToLocalSystem2D = (coord, collection) => coord.applyMatrix4(collection.matrixWorldInverse);
-const axisZ = new THREE.Vector3(0, 0, 1);
-const alignYtoEast = new THREE.Quaternion();
+// const axisZ = new THREE.Vector3(0, 0, 1);
+const axisZ = new Vector3(0, 0, 1);
+const alignYtoEast = new Quaternion();
 /**
  * An object regrouping a list of [features]{@link Feature} and the extent of this collection.
  * **Warning**, the data (`extent` or `Coordinates`) can be stored in a local system.
@@ -353,7 +369,7 @@ const alignYtoEast = new THREE.Quaternion();
  *
  */
 
-export class FeatureCollection extends THREE.Object3D {
+export class FeatureCollection extends Object3D {
     #transformToLocalSystem = transformToLocalSystem2D;
     #setLocalSystem = doNothing;
     /**
@@ -369,7 +385,7 @@ export class FeatureCollection extends THREE.Object3D {
         this.filterExtent = options.filterExtent;
         this.style = options.style;
         this.isInverted = false;
-        this.matrixWorldInverse = new THREE.Matrix4();
+        this.matrixWorldInverse = new Matrix4();
         this.center = new Coordinates('EPSG:4326', 0, 0);
 
         if (this.size == 2) {
@@ -393,7 +409,7 @@ export class FeatureCollection extends THREE.Object3D {
                     // align Z axe to geodesic normal.
                     this.quaternion.setFromUnitVectors(axisZ, center.geodesicNormal);
                     // align Y axe to East
-                    alignYtoEast.setFromAxisAngle(axisZ, THREE.MathUtils.degToRad(90 + this.center.longitude));
+                    alignYtoEast.setFromAxisAngle(axisZ, MathUtils.degToRad(90 + this.center.longitude));
                     this.quaternion.multiply(alignYtoEast);
                 }
 
@@ -401,7 +417,7 @@ export class FeatureCollection extends THREE.Object3D {
                 this.position.copy(center);
                 this.updateMatrixWorld();
                 this.normalMatrix.getNormalMatrix(this.matrix);
-                this.normalMatrixInverse = new THREE.Matrix3().copy(this.normalMatrix).invert();
+                this.normalMatrixInverse = new Matrix3().copy(this.normalMatrix).invert();
 
                 this.#setLocalSystem = doNothing;
             };

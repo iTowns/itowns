@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector3, Vector4, Texture, Uniform, Color, RawShaderMaterial } from 'three';
 import TileVS from 'Renderer/Shader/TileVS.glsl';
 import TileFS from 'Renderer/Shader/TileFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
@@ -6,12 +7,12 @@ import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
 import CommonMaterial from 'Renderer/CommonMaterial';
 
-const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
-const defaultTex = new THREE.Texture();
+const identityOffsetScale = new Vector4(0.0, 0.0, 1.0, 1.0);
+const defaultTex = new Texture();
 
 // from three.js packDepthToRGBA
 const UnpackDownscale = 255 / 256; // 0..1 -> fraction (excluding 1)
-const bitSh = new THREE.Vector4(
+const bitSh = new Vector4(
     UnpackDownscale / (256.0 * 256.0 * 256.0),
     UnpackDownscale / (256.0 * 256.0),
     UnpackDownscale / 256.0,
@@ -94,7 +95,7 @@ export const ELEVATION_MODES = {
 
 let nbSamplers;
 const fragmentShader = [];
-class LayeredMaterial extends THREE.RawShaderMaterial {
+class LayeredMaterial extends RawShaderMaterial {
     #_visible = true;
     constructor(options = {}, crsCount) {
         super(options);
@@ -112,9 +113,9 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
 
         if (__DEBUG__) {
             this.defines.DEBUG = 1;
-            const outlineColors = [new THREE.Vector3(1.0, 0.0, 0.0)];
+            const outlineColors = [new Vector3(1.0, 0.0, 0.0)];
             if (crsCount > 1) {
-                outlineColors.push(new THREE.Vector3(1.0, 0.5, 0.0));
+                outlineColors.push(new Vector3(1.0, 0.5, 0.0));
             }
             CommonMaterial.setUniformProperty(this, 'showOutline', true);
             CommonMaterial.setUniformProperty(this, 'outlineWidth', 0.008);
@@ -131,18 +132,18 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         this.fragmentShader = fragmentShader[crsCount];
 
         // Color uniforms
-        CommonMaterial.setUniformProperty(this, 'diffuse', new THREE.Color(0.04, 0.23, 0.35));
+        CommonMaterial.setUniformProperty(this, 'diffuse', new Color(0.04, 0.23, 0.35));
         CommonMaterial.setUniformProperty(this, 'opacity', this.opacity);
 
         // Lighting uniforms
         CommonMaterial.setUniformProperty(this, 'lightingEnabled', false);
-        CommonMaterial.setUniformProperty(this, 'lightPosition', new THREE.Vector3(-0.5, 0.0, 1.0));
+        CommonMaterial.setUniformProperty(this, 'lightPosition', new Vector3(-0.5, 0.0, 1.0));
 
         // Misc properties
         CommonMaterial.setUniformProperty(this, 'fogDistance', 1000000000.0);
-        CommonMaterial.setUniformProperty(this, 'fogColor', new THREE.Color(0.76, 0.85, 1.0));
+        CommonMaterial.setUniformProperty(this, 'fogColor', new Color(0.76, 0.85, 1.0));
         CommonMaterial.setUniformProperty(this, 'overlayAlpha', 0);
-        CommonMaterial.setUniformProperty(this, 'overlayColor', new THREE.Color(1.0, 0.3, 0.0));
+        CommonMaterial.setUniformProperty(this, 'overlayColor', new Color(1.0, 0.3, 0.0));
         CommonMaterial.setUniformProperty(this, 'objectId', 0);
 
         CommonMaterial.setUniformProperty(this, 'geoidHeight', 0.0);
@@ -159,16 +160,16 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
         this.colorLayerIds = [];
 
         // elevation layer uniforms, to be updated using updateUniforms()
-        this.uniforms.elevationLayers = new THREE.Uniform(new Array(nbSamplers[0]).fill(defaultStructLayer));
-        this.uniforms.elevationTextures = new THREE.Uniform(new Array(nbSamplers[0]).fill(defaultTex));
-        this.uniforms.elevationOffsetScales = new THREE.Uniform(new Array(nbSamplers[0]).fill(identityOffsetScale));
-        this.uniforms.elevationTextureCount = new THREE.Uniform(0);
+        this.uniforms.elevationLayers = new Uniform(new Array(nbSamplers[0]).fill(defaultStructLayer));
+        this.uniforms.elevationTextures = new Uniform(new Array(nbSamplers[0]).fill(defaultTex));
+        this.uniforms.elevationOffsetScales = new Uniform(new Array(nbSamplers[0]).fill(identityOffsetScale));
+        this.uniforms.elevationTextureCount = new Uniform(0);
 
         // color layer uniforms, to be updated using updateUniforms()
-        this.uniforms.colorLayers = new THREE.Uniform(new Array(nbSamplers[1]).fill(defaultStructLayer));
-        this.uniforms.colorTextures = new THREE.Uniform(new Array(nbSamplers[1]).fill(defaultTex));
-        this.uniforms.colorOffsetScales = new THREE.Uniform(new Array(nbSamplers[1]).fill(identityOffsetScale));
-        this.uniforms.colorTextureCount = new THREE.Uniform(0);
+        this.uniforms.colorLayers = new Uniform(new Array(nbSamplers[1]).fill(defaultStructLayer));
+        this.uniforms.colorTextures = new Uniform(new Array(nbSamplers[1]).fill(defaultTex));
+        this.uniforms.colorOffsetScales = new Uniform(new Array(nbSamplers[1]).fill(identityOffsetScale));
+        this.uniforms.colorTextureCount = new Uniform(0);
 
         // can't do an ES6 setter/getter here
         Object.defineProperty(this, 'visible', {

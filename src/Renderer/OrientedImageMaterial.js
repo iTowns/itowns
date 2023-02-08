@@ -1,20 +1,21 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector3, Color, DataTexture, RGBAFormat, UnsignedByteType, Matrix4, Texture, RawShaderMaterial, DoubleSide, Group, Uniform } from 'three';
 import Capabilities from 'Core/System/Capabilities';
 import textureVS from 'Renderer/Shader/ProjectiveTextureVS.glsl';
 import textureFS from 'Renderer/Shader/ProjectiveTextureFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 
-const ndcToTextureMatrix = new THREE.Matrix4().set(
+const ndcToTextureMatrix = new Matrix4().set(
     1, 0, 0, 1,
     0, 1, 0, 1,
     0, 0, 2, 0,
     0, 0, 0, 2);
 
-const noMask = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, THREE.RGBAFormat, THREE.UnsignedByteType);
+const noMask = new DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, RGBAFormat, UnsignedByteType);
 noMask.needsUpdate = true;
-const noTexture = new THREE.Texture();
+const noTexture = new Texture();
 
-const rawShaderMaterial = new THREE.RawShaderMaterial();
+const rawShaderMaterial = new RawShaderMaterial();
 /**
  * @classdesc OrientedImageMaterial is a custom shader material used to do projective texture mapping.<br/>
  *
@@ -33,7 +34,7 @@ const rawShaderMaterial = new THREE.RawShaderMaterial();
  * <br/>
  * To get a more comprehensive support of camera Micmac models, you can consider using [three-photogrammetric-camera]{@link https://github.com/mbredif/three-photogrammetric-camera} instead.
  */
-class OrientedImageMaterial extends THREE.RawShaderMaterial {
+class OrientedImageMaterial extends RawShaderMaterial {
     /**
      * @constructor
      * @param { OrientedImageCamera[]} cameras - Array of {@link OrientedImageCamera}. Each camera will project a texture.
@@ -53,7 +54,7 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
      * @param {Number} [options.debugAlphaBorder=0] - Set this option to 1 to see influence of alphaBorder option.
      */
     constructor(cameras, options = {}) {
-        options.side = options.side ?? THREE.DoubleSide;
+        options.side = options.side ?? DoubleSide;
         options.transparent = options.transparent ?? true;
         options.opacity = options.opacity ?? 1;
 
@@ -93,28 +94,28 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
         const texture = [];
         const mask = [];
         const distortion = [];
-        this.group = new THREE.Group();
+        this.group = new Group();
 
         for (let i = 0; i < this.defines.ORIENTED_IMAGES_COUNT; ++i) {
             texture[i] = noTexture;
             mask[i] = noMask;
-            textureMatrix[i] = new THREE.Matrix4();
+            textureMatrix[i] = new Matrix4();
             cameras[i].needsUpdate = true;
             distortion[i] = cameras[i].distortion;
             this.group.add(cameras[i]);
         }
 
-        this.uniforms.opacity = new THREE.Uniform(this.opacity);
-        this.uniforms.projectiveTextureAlphaBorder = new THREE.Uniform(this.alphaBorder);
-        this.uniforms.projectiveTextureDistortion = new THREE.Uniform(distortion);
-        this.uniforms.projectiveTextureMatrix = new THREE.Uniform(textureMatrix);
-        this.uniforms.projectiveTexture = new THREE.Uniform(texture);
-        this.uniforms.mask = new THREE.Uniform(mask);
-        this.uniforms.boostLight = new THREE.Uniform(false);
+        this.uniforms.opacity = new Uniform(this.opacity);
+        this.uniforms.projectiveTextureAlphaBorder = new Uniform(this.alphaBorder);
+        this.uniforms.projectiveTextureDistortion = new Uniform(distortion);
+        this.uniforms.projectiveTextureMatrix = new Uniform(textureMatrix);
+        this.uniforms.projectiveTexture = new Uniform(texture);
+        this.uniforms.mask = new Uniform(mask);
+        this.uniforms.boostLight = new Uniform(false);
 
-        this.uniforms.noProjectiveMaterial = new THREE.Uniform({
-            lightDirection: new THREE.Vector3(0.5, 0.5, -0.5),
-            ambient: new THREE.Color(0.1, 0.1, 0.1),
+        this.uniforms.noProjectiveMaterial = new Uniform({
+            lightDirection: new Vector3(0.5, 0.5, -0.5),
+            ambient: new Color(0.1, 0.1, 0.1),
             opacity: 0.75,
         });
 

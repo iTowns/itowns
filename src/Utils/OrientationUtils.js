@@ -1,17 +1,18 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector3, Quaternion, Matrix4, Euler, MathUtils } from 'three';
 import proj4 from 'proj4';
 import Coordinates from '../Core/Geographic/Coordinates';
 
-const DEG2RAD = THREE.MathUtils.DEG2RAD;
-const matrix = new THREE.Matrix4();
-const north = new THREE.Vector3();
-const east = new THREE.Vector3();
-const axis = new THREE.Vector3().set(0, 0, 1);
+const DEG2RAD = MathUtils.DEG2RAD;
+const matrix = new Matrix4();
+const north = new Vector3();
+const east = new Vector3();
+const axis = new Vector3().set(0, 0, 1);
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-const euler = new THREE.Euler();
-const quat = new THREE.Quaternion();
+const euler = new Euler();
+const quat = new Quaternion();
 
-function quaternionIdentity(coordinates, target = new THREE.Quaternion()) {
+function quaternionIdentity(coordinates, target = new Quaternion()) {
     return coordinates ? target.set(0, 0, 0, 1) : quaternionIdentity;
 }
 
@@ -61,7 +62,7 @@ export default {
      *
      * @return {THREE.Quaternion} target quaternion
      */
-    quaternionFromRollPitchHeading(roll = 0, pitch = 0, heading = 0, target = new THREE.Quaternion()) {
+    quaternionFromRollPitchHeading(roll = 0, pitch = 0, heading = 0, target = new Quaternion()) {
         roll *= DEG2RAD;
         pitch *= DEG2RAD;
         heading *= DEG2RAD;
@@ -89,7 +90,7 @@ export default {
      *
      * @return {THREE.Quaternion} target quaternion
      */
-    quaternionFromOmegaPhiKappa(omega = 0, phi = 0, kappa = 0, target = new THREE.Quaternion()) {
+    quaternionFromOmegaPhiKappa(omega = 0, phi = 0, kappa = 0, target = new Quaternion()) {
         omega *= DEG2RAD;
         phi *= DEG2RAD;
         kappa *= DEG2RAD;
@@ -107,7 +108,7 @@ export default {
      *
      * @return {THREE.Quaternion} target quaternion
      */
-    quaternionFromAttitude(attitude, target = new THREE.Quaternion()) {
+    quaternionFromAttitude(attitude, target = new Quaternion()) {
         if ((attitude.roll !== undefined) || (attitude.pitch !== undefined) || (attitude.heading !== undefined)) {
             return this.quaternionFromRollPitchHeading(attitude.roll, attitude.pitch, attitude.heading, target);
         }
@@ -150,9 +151,9 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
      */
-    quaternionFromEnuToGeocent(coordinates, target = new THREE.Quaternion()) {
+    quaternionFromEnuToGeocent(coordinates, target = new Quaternion()) {
         if (coordinates) { return this.quaternionFromEnuToGeocent()(coordinates, target); }
-        return (coordinates, target = new THREE.Quaternion()) => {
+        return (coordinates, target = new Quaternion()) => {
             const up = coordinates.geodesicNormal;
             if (up.x == 0 && up.y == 0) {
                 return target.set(0, 0, 0, 1);
@@ -176,10 +177,10 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
      */
-    quaternionFromGeocentToEnu(coordinates, target = new THREE.Quaternion()) {
+    quaternionFromGeocentToEnu(coordinates, target = new Quaternion()) {
         if (coordinates) { return this.quaternionFromGeocentToEnu()(coordinates, target); }
         const toGeocent = this.quaternionFromEnuToGeocent();
-        return (coordinates, target = new THREE.Quaternion()) => toGeocent(coordinates, target).conjugate();
+        return (coordinates, target = new Quaternion()) => toGeocent(coordinates, target).conjugate();
     },
 
 
@@ -198,10 +199,10 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
     */
-    quaternionFromLCCToEnu(proj, coordinates, target = new THREE.Quaternion()) {
+    quaternionFromLCCToEnu(proj, coordinates, target = new Quaternion()) {
         if (coordinates) { return this.quaternionFromLCCToEnu(proj)(coordinates, target); }
         const sinlat0 = Math.sin(proj.lat0);
-        return (coordinates, target = new THREE.Quaternion()) => {
+        return (coordinates, target = new Quaternion()) => {
             const long = coordinates.as(coord.crs, coord).longitude * DEG2RAD;
             return target.setFromAxisAngle(axis, sinlat0 * (proj.long0 - long));
         };
@@ -222,10 +223,10 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
     */
-    quaternionFromEnuToLCC(proj, coordinates, target = new THREE.Quaternion()) {
+    quaternionFromEnuToLCC(proj, coordinates, target = new Quaternion()) {
         if (coordinates) { return this.quaternionFromEnuToLCC(proj)(coordinates, target); }
         const fromLCC = this.quaternionFromLCCToEnu(proj);
-        return (coordinates, target = new THREE.Quaternion()) => fromLCC(coordinates, target).conjugate();
+        return (coordinates, target = new Quaternion()) => fromLCC(coordinates, target).conjugate();
     },
 
     /**
@@ -246,13 +247,13 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
     */
-    quaternionFromTMercToEnu(proj, coordinates, target = new THREE.Quaternion()) {
+    quaternionFromTMercToEnu(proj, coordinates, target = new Quaternion()) {
         if (coordinates) { return this.quaternionFromTMercToEnu(proj)(coordinates, target); }
         const a2 = proj.a * proj.a;
         const b2 = proj.b * proj.b;
         const e2 = proj.e * proj.e;
         const eta0 = proj.e ? (e2 / (1 - e2)) : (a2 / b2 - 1);
-        return (coordinates, target = new THREE.Quaternion()) => {
+        return (coordinates, target = new Quaternion()) => {
             coordinates.as(coord.crs, coord);
             const long = coord.longitude * DEG2RAD;
             const lat = coord.latitude * DEG2RAD;
@@ -287,10 +288,10 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
     */
-    quaternionFromEnuToTMerc(proj, coordinates, target = new THREE.Quaternion()) {
+    quaternionFromEnuToTMerc(proj, coordinates, target = new Quaternion()) {
         if (coordinates) { return this.quaternionFromEnuToTMerc(proj)(coordinates, target); }
         const fromTMerc = this.quaternionFromTMercToEnu(proj);
-        return (coordinates, target = new THREE.Quaternion()) => fromTMerc(coordinates, target).conjugate();
+        return (coordinates, target = new Quaternion()) => fromTMerc(coordinates, target).conjugate();
     },
 
     /**
@@ -302,7 +303,7 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
      */
-    quaternionFromLongLatToEnu(coordinates, target = new THREE.Quaternion()) {
+    quaternionFromLongLatToEnu(coordinates, target = new Quaternion()) {
         return quaternionIdentity(coordinates, target);
     },
 
@@ -315,7 +316,7 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
      */
-    quaternionFromEnuToLongLat(coordinates, target = new THREE.Quaternion()) {
+    quaternionFromEnuToLongLat(coordinates, target = new Quaternion()) {
         return quaternionIdentity(coordinates, target);
     },
 
@@ -332,7 +333,7 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
      */
-    quaternionUnimplemented(proj, coordinates, target = new THREE.Quaternion()) {
+    quaternionUnimplemented(proj, coordinates, target = new Quaternion()) {
         console.warn('This quaternion function is not implemented for projections of type', proj.projName);
         return quaternionIdentity(coordinates, target);
     },
@@ -349,7 +350,7 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
      */
-    quaternionFromEnuToCRS(crsOrProj, coordinates, target = new THREE.Quaternion()) {
+    quaternionFromEnuToCRS(crsOrProj, coordinates, target = new Quaternion()) {
         if (coordinates) { return this.quaternionFromEnuToCRS(crsOrProj)(coordinates, target); }
         const proj = crsOrProj.projName ? crsOrProj : proj4.defs(crsOrProj);
         switch (proj.projName) {
@@ -373,7 +374,7 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
      */
-    quaternionFromCRSToEnu(crsOrProj, coordinates, target = new THREE.Quaternion()) {
+    quaternionFromCRSToEnu(crsOrProj, coordinates, target = new Quaternion()) {
         if (coordinates) { return this.quaternionFromCRSToEnu(crsOrProj)(coordinates, target); }
         const proj = crsOrProj.projName ? crsOrProj : proj4.defs(crsOrProj);
         switch (proj.projName) {
@@ -396,16 +397,16 @@ export default {
      * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
      * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
     */
-    quaternionFromCRSToCRS(crsIn, crsOut, coordinates, target = new THREE.Quaternion()) {
+    quaternionFromCRSToCRS(crsIn, crsOut, coordinates, target = new Quaternion()) {
         if (coordinates) { return this.quaternionFromCRSToCRS(crsIn, crsOut)(coordinates, target); }
         if (crsIn == crsOut) {
-            return (origin, target = new THREE.Quaternion()) => target.set(0, 0, 0, 1);
+            return (origin, target = new Quaternion()) => target.set(0, 0, 0, 1);
         }
 
         // get rotations from the local East/North/Up (ENU) frame to both CRS.
         const fromCrs = this.quaternionFromCRSToEnu(crsIn);
         const toCrs = this.quaternionFromEnuToCRS(crsOut);
-        return (origin, target = new THREE.Quaternion()) =>
+        return (origin, target = new Quaternion()) =>
             toCrs(origin, target).multiply(fromCrs(origin, quat));
     },
 };

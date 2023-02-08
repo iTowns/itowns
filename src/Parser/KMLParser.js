@@ -1,4 +1,5 @@
 import { kml } from '@tmcw/togeojson';
+import { DOMParser } from 'xmldom';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
@@ -10,6 +11,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  * @module KMLParser
  */
 export default {
+    // eslint-disable-next-line valid-jsdoc
     /**
      * Parse a KML file content and return a [FeatureCollection]{@link
      * module:GeoJsonParser~FeatureCollection}.
@@ -22,6 +24,7 @@ export default {
      */
     parse(kmlFile, options) {
         options = deprecatedParsingOptionsToNewOne(options);
-        return GeoJsonParser.parse(kml(kmlFile), options);
+        const xmlDom = new DOMParser().parseFromString(kmlFile, 'text/xml');
+        return GeoJsonParser.parse(kml(xmlDom), options);
     },
 };

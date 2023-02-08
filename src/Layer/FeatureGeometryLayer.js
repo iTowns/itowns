@@ -49,8 +49,7 @@ class FeatureGeometryLayer extends GeometryLayer {
         options.update = FeatureProcessing.update;
         options.convert = Feature2Mesh.convert({
             batchId: options.batchId,
-        },
-        );
+        });
         super(id, options.object3d || new Group(), options);
         this.isFeatureGeometryLayer = true;
         this.accurate = options.accurate ?? true;

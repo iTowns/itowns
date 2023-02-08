@@ -6,7 +6,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import Label from 'Core/Label';
 import { FEATURE_TYPES } from 'Core/Feature';
-import { readExpression } from 'Core/Style';
+import Style, { readExpression } from 'Core/Style';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
@@ -47,6 +47,7 @@ class LabelLayer extends Layer {
     constructor(id, config = {}) {
         super(id, config);
 
+        this.style = config.style || {};
         this.isLabelLayer = true;
         this.domElement = document.createElement('div');
         this.domElement.id = `itowns-label-${this.id}`;
@@ -98,7 +99,7 @@ class LabelLayer extends Layer {
                 return;
             }
 
-            const featureField = f.style && f.style.text.field;
+            // const featureField = f.style && f.style.text.field;
 
             f.geometries.forEach((g) => {
                 // NOTE: this only works because only POINT is supported, it
@@ -110,29 +111,46 @@ class LabelLayer extends Layer {
                 if (f.size == 2) { coord.z = 0; }
                 if (!_extent.isPointInside(coord)) { return; }
 
-                const geometryField = g.properties.style && g.properties.style.text.field;
+                const geometryField = g.properties.style && g.properties.style.text && g.properties.style.text.field;
                 let content;
                 const context = { globals, properties: () => g.properties };
                 if (this.labelDomelement) {
                     content = readExpression(this.labelDomelement, context);
-                } else if (!geometryField && !featureField && !layerField) {
+                // } else if (!geometryField && !featureField && !layerField) {
+                } else if (!geometryField && !layerField) {
                     // Check if there is an icon, with no text
                     if (!(g.properties.style && (g.properties.style.icon.source || g.properties.style.icon.key))
-                        && !(f.style && (f.style.icon.source || f.style.icon.key))
-                        && !(this.style && (this.style.icon.source || this.style.icon.key))) {
+                        && !(f.style && f.style.icon && (f.style.icon.source || f.style.icon.key))
+                        && !(this.style && this.style.icon && (this.style.icon.source || this.style.icon.key))) {
                         return;
                     }
                 } else if (geometryField) {
-                    content = g.properties.style.getTextFromProperties(context);
-                } else if (featureField) {
-                    content = f.style.getTextFromProperties(context);
+                    content = new Style(g.properties.style).getTextFromProperties(context);
+                // } else if (featureField) {
+                //     content = new Style(f.style).getTextFromProperties(context);
                 } else if (layerField) {
-                    content = this.style.getTextFromProperties(context);
+                    content = new Style(this.style).getTextFromProperties(context);
                 }
 
-                const style = (g.properties.style || f.style || this.style).symbolStylefromContext(context);
+                // const style = (g.properties.style || f.style || this.style).symbolStylefromContext(context);
+
+                const styleConc = {
+                    icon: {
+                        ...g.properties.style && g.properties.style.icon,
+                        ...f.style.icon,
+                        ...this.style.icon,
+                    },
+                    text: {
+                        ...g.properties.style && g.properties.style.text,
+                        ...f.style.text,
+                        ...this.style.text,
+                    },
+                };
+
+                const style = new Style(styleConc).symbolStylefromContext(context);
 
                 const label = new Label(content, coord.clone(), style, this.source.sprites);
+
                 label.layerId = this.id;
                 label.padding = this.margin || label.padding;
 

@@ -151,15 +151,15 @@ class GlobeView extends View {
         if (!layer || !layer.isLayer) {
             return Promise.reject(new Error('Add Layer type object'));
         }
-        if (layer.isColorLayer) {
-            if (!this.tileLayer.tileMatrixSets.includes(CRS.formatToTms(layer.source.crs))) {
-                return layer._reject(`Only ${this.tileLayer.tileMatrixSets} tileMatrixSet are currently supported for color layers`);
-            }
-        } else if (layer.isElevationLayer) {
-            if (CRS.formatToTms(layer.source.crs) !== this.tileLayer.tileMatrixSets[0]) {
-                return layer._reject(`Only ${this.tileLayer.tileMatrixSets[0]} tileMatrixSet is currently supported for elevation layers`);
-            }
-        }
+        // if (layer.isColorLayer) {
+        //     if (!this.tileLayer.tileMatrixSets.includes(CRS.formatToTms(layer.source.crs))) {
+        //         return layer._reject(`Only ${this.tileLayer.tileMatrixSets} tileMatrixSet are currently supported for color layers`);
+        //     }
+        // } else if (layer.isElevationLayer) {
+        //     if (CRS.formatToTms(layer.source.crs) !== this.tileLayer.tileMatrixSets[0]) {
+        //         return layer._reject(`Only ${this.tileLayer.tileMatrixSets[0]} tileMatrixSet is currently supported for elevation layers`);
+        //     }
+        // }
 
         return super.addLayer(layer, this.tileLayer);
     }

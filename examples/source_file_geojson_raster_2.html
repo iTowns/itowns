@@ -1,0 +1,123 @@
+<html>
+    <head>
+        <title>Itowns - Planar + color layers from vector data</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv" class="viewer"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
+        <script type="text/javascript">
+            // # Planar view with one single layer of vector tile
+
+            // Define geographic extent: CRS, min/max X, min/max Y
+            var extent = new itowns.Extent(
+                'EPSG:3857',
+                -20037508.34, 20037508.34,
+                -20048966.1, 20048966.1);
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate PlanarView
+            var view = new itowns.PlanarView(viewerDiv, extent, {
+                maxSubdivisionLevel: 10,
+                controls: {
+                    // We do not want the user to zoom out too much
+                    maxAltitude: 40000000,
+                    // We want to keep the rotation disabled, to only have a view from the top
+                    enableRotation: false,
+                    // Don't zoom too much on smart zoom
+                    smartTravelHeightMax: 100000,
+                },
+            });
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
+
+            setupLoadingScreen(viewerDiv, view);
+            FeatureToolTip.init(viewerDiv, view);
+
+            // Add one imagery layer to the scene
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer).then(function _() {
+                    menuGlobe.addLayerGUI.bind(menuGlobe);
+                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+                });
+            });
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+
+
+            // Display the content of two GeoJSON files on terrain with ColorLayer and FileSource.
+            // The GeoJSONs are loaded from url, set in FileSource
+
+            // Declare the source for the data on Ariege area
+            const earthquakeSource = new itowns.FileSource({
+                url: './Earthquakes_3857.geojson',
+                // crs: 'EPSG:3857',
+                // format: 'application/json',
+                // parser: itowns.WorkerParser.parse,
+            });
+
+            // Create a ColorLayer with the earthquake information
+            const earthquakeLayer = new itowns.ColorLayer('ariege', {
+                name: 'earthquakes',
+                source: earthquakeSource,
+                // crs: 'EPSG:3857',
+                style: {
+                    point: {
+                        color: function (p) { return p.alert; },
+                        radius: 5,
+                    },
+                    // fill: {
+                    //     color: 'red',
+                    //     opacity: 0.5,
+                    // },
+                    // stroke: {
+                    //     color: 'white',
+                    // },
+                    text: {
+                        field: '{title}',
+                        haloColor: 'black',
+                        haloWidth: 1,
+                    },
+                },
+                addLabelLayer: true,
+            });
+            // Add the Ariege ColorLayer to the view and grant it a tooltip
+            view.addLayer(earthquakeLayer).then(FeatureToolTip.addLayer);
+
+            // Request redraw
+            view.notifyChange(true);
+
+
+            // // Center the camera on the data extents
+            // view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            //     const layersExtent = ariegeSource.extent.clone();
+            //     // layersExtent.union(pyoSource.extent);
+            //     view.controls.lookAtCoordinate(layersExtent, false);
+            // });
+
+
+            debug.createTileDebugUI(menuGlobe.gui, view);
+        </script>
+    </body>
+</html>

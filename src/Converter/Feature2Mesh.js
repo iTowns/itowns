@@ -7,6 +7,7 @@ import Extent from 'Core/Geographic/Extent';
 import Crs from 'Core/Geographic/Crs';
 import OrientationUtils from 'Utils/OrientationUtils';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Style from '../Core/Style';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 const dim_ref = new THREE.Vector2();
@@ -200,6 +201,7 @@ function addExtrudedPolygonSideFaces(indices, length, offset, count, isClockWise
 }
 
 function featureToPoint(feature, options) {
+    // console.log('featureToPoint');
     const ptsIn = feature.vertices;
     const normals = feature.normals;
     const colors = new Uint8Array(ptsIn.length);
@@ -217,7 +219,9 @@ function featureToPoint(feature, options) {
     const globals = { point: true };
     for (const geometry of feature.geometries) {
         const context = { globals, properties: () => geometry.properties };
-        const style = feature.style.drawingStylefromContext(context);
+        // const style = new Style(feature.style).drawingStylefromContext(context);
+        // const style = new Style(options.layer.style).drawingStylefromContext(context);
+        const style = new Style((options.layer && options.layer.style) || options.collection.style).drawingStylefromContext(context);
 
         const start = geometry.indices[0].offset;
         const count = geometry.indices[0].count;
@@ -241,6 +245,7 @@ function featureToPoint(feature, options) {
 }
 
 function featureToLine(feature, options) {
+    // console.log('featureToLine');
     const ptsIn = feature.vertices;
     const normals = feature.normals;
     const colors = new Uint8Array(ptsIn.length);
@@ -263,7 +268,8 @@ function featureToLine(feature, options) {
     let lines;
 
     // TODO CREATE material for each feature
-    options.lineMaterial.linewidth = feature.style.stroke.width;
+    // options.lineMaterial.linewidth = feature.style.stroke.width;
+    options.lineMaterial.linewidth = (options.layer && options.layer.style.stroke.width) || options.collection.style.stroke.width;
     const globals = { stroke: true };
     if (feature.geometries.length > 1) {
         const countIndices = (count - feature.geometries.length) * 2;
@@ -272,7 +278,8 @@ function featureToLine(feature, options) {
         // Multi line case
         for (const geometry of feature.geometries) {
             const context = { globals, properties: () => geometry.properties };
-            const style = feature.style.drawingStylefromContext(context);
+            // const style = new Style(feature.style).drawingStylefromContext(context);
+            const style = new Style(options.layer.style).drawingStylefromContext(context);
 
             const start = geometry.indices[0].offset;
             // To avoid integer overflow with indice value (16 bits)
@@ -303,7 +310,9 @@ function featureToLine(feature, options) {
         lines = new THREE.LineSegments(geom, options.lineMaterial);
     } else {
         const context = { globals, properties: () => feature.geometries[0].properties };
-        const style = feature.style.drawingStylefromContext(context);
+        // const style = new Style(feature.style).drawingStylefromContext(context);
+        // const style = new Style(options.layer.style).drawingStylefromContext(context);
+        const style = new Style((options.layer && options.layer.style) || options.collection.style).drawingStylefromContext(context);
 
         fillColorArray(colors, count, toColor(style.stroke.color));
         geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
@@ -318,6 +327,7 @@ function featureToLine(feature, options) {
 }
 
 function featureToPolygon(feature, options) {
+    // console.log('featureToPolygon');
     const ptsIn = feature.vertices;
     const normals = feature.normals;
 
@@ -345,7 +355,8 @@ function featureToPolygon(feature, options) {
             break;
         }
         const context = { globals, properties: () => geometry.properties };
-        const style = feature.style.drawingStylefromContext(context);
+        // const style = new Style(feature.style).drawingStylefromContext(context);
+        const style = new Style(options.layer.style).drawingStylefromContext(context);
 
         const lastIndice = geometry.indices.slice(-1)[0];
         const end = lastIndice.offset + lastIndice.count;
@@ -395,6 +406,7 @@ function area(contour, offset, count) {
 
 const bottomColor = new THREE.Color();
 function featureToExtrudedPolygon(feature, options) {
+    // console.log('featureToExtrudedPolygon');
     const ptsIn = feature.vertices;
 
     const normals = feature.normals;
@@ -411,7 +423,24 @@ function featureToExtrudedPolygon(feature, options) {
 
     for (const geometry of feature.geometries) {
         const context = { globals, properties: () => geometry.properties };
-        const style = feature.style.drawingStylefromContext(context);
+
+        const styleConc = {
+            fill: {
+                ...geometry.properties.style && geometry.properties.style.fill ? geometry.properties.style.fill : {},
+                ...options.layer.style.fill,
+            },
+            stroke: {
+                ...geometry.properties.style && geometry.properties.style.stroke ? geometry.properties.style.stroke : {},
+                ...options.layer.style.stroke,
+            },
+            point: {
+                ...geometry.properties.style && geometry.properties.style.point ? geometry.properties.style.point : {},
+                ...options.layer.style.point,
+            },
+        };
+        const style = new Style(styleConc).drawingStylefromContext(context);
+
+        // const style = new Style(feature.style).drawingStylefromContext(context);
 
         // topColor is assigned to the top of extruded polygon
         const topColor = toColor(style.fill.color);
@@ -502,7 +531,8 @@ function featureToMesh(feature, options) {
             mesh = featureToLine(feature, options);
             break;
         case FEATURE_TYPES.POLYGON:
-            if (feature.style.fill.extrusion_height) {
+            // if (feature.style.fill.extrusion_height) {
+            if (options.layer.style.fill.extrusion_height) {
                 mesh = featureToExtrudedPolygon(feature, options);
             } else {
                 mesh = featureToPolygon(feature, options);
@@ -581,6 +611,7 @@ export default {
             if (!features || features.length == 0) { return; }
 
             options.GlobalZTrans = collection.center.z;
+            options.collection = { style: collection.style };
 
             const meshes = features.map(feature => featureToMesh(feature, options));
             const featureNode = new FeatureMesh(meshes, collection);

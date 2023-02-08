@@ -1,7 +1,8 @@
+import { featureFilter } from '@mapbox/mapbox-gl-style-spec';
 import { Vector2, Vector3 } from 'three';
 import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
-import { globalExtentTMS } from 'Core/Geographic/Extent';
+import Extent, { globalExtentTMS } from 'Core/Geographic/Extent';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
@@ -101,6 +102,10 @@ function readPBF(file, options) {
         return;
     }
 
+    if (!file.extent) {
+        file.extent = new Extent(options.extent.crs, options.extent.zoom, options.extent.row, options.extent.col);
+    }
+
     // x,y,z tile coordinates
     const x = file.extent.col;
     const z = file.extent.zoom;
@@ -127,7 +132,7 @@ function readPBF(file, options) {
 
         for (let i = sourceLayer.length - 1; i >= 0; i--) {
             const vtFeature = sourceLayer.feature(i);
-            const layers = options.in.layers[layer_id].filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.zoom.min && z < l.zoom.max);
+            const layers = options.in.layers[layer_id].filter(l => featureFilter(l.filterExpression).filter({ zoom: z }, vtFeature) && z >= l.zoom.min && z < l.zoom.max);
             let feature;
 
             for (const layer of layers) {
@@ -135,13 +140,16 @@ function readPBF(file, options) {
                     feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
                     feature.id = layer.id;
                     feature.order = layer.order;
-                    feature.style = options.in.styles[feature.id];
+                    // feature.style = options.in.styles[feature.id];
+                    vtFeature.properties.style = options.in.styles[feature.id];
                     vtFeatureToFeatureGeometry(vtFeature, feature);
                 } else if (!collection.features.find(f => f.id === layer.id)) {
                     feature = collection.newFeatureByReference(feature);
                     feature.id = layer.id;
                     feature.order = layer.order;
                     feature.style = options.in.styles[feature.id];
+                    feature.style.isExtraStyle = true;
+                    feature.hasExtraStyle = feature.id;
                 }
             }
         }

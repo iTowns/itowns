@@ -72,7 +72,8 @@
                         out: {
                             crs: view.referenceCrs,
                             structure: '3d',
-                            style: new itowns.Style({
+                            // style: new itowns.Style({
+                            style: {
                                 stroke : {
                                     color: 'red',
                                     width: 2,
@@ -80,7 +81,8 @@
                                 point : {
                                     color: 'white',
                                 }
-                            })
+                            // })
+                            },
                         }
                     }))
                     .then(itowns.Feature2Mesh.convert())

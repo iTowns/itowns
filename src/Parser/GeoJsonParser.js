@@ -1,6 +1,5 @@
 import Coordinates from 'Core/Geographic/Coordinates';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
-import Style from 'Core/Style';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 function readCRS(json) {
@@ -22,6 +21,63 @@ function readCRS(json) {
     }
     // assume default crs
     return 'EPSG:4326';
+}
+
+function setPropertiesStyle(type, properties) {
+    const style = {};
+    // console.log(properties);
+    if (type === FEATURE_TYPES.POINT) {
+        const point = {
+            ...(properties.fill !== undefined && { color: properties.fill }),
+            ...(properties['fill-opacity'] !== undefined && { opacity: properties['fill-opacity'] }),
+            ...(properties.stroke !== undefined && { line: properties.stroke }),
+            ...(properties.radius !== undefined && { radius: properties.radius }),
+        };
+        if (Object.keys(point).length) {
+            style.point = point;
+        }
+        const text = {
+            ...(properties['label-color'] !== undefined && { color: properties['label-color'] }),
+            ...(properties['label-opacity'] !== undefined && { opacity: properties['label-opacity'] }),
+            ...(properties['label-size'] !== undefined && { size: properties['label-size'] }),
+        };
+        if (Object.keys(point).length) {
+            style.text = text;
+        }
+        const icon = {
+            ...(properties.icon !== undefined && { source: properties.icon }),
+            ...(properties['icon-scale'] !== undefined && { size: properties['icon-scale'] }),
+            ...(properties['icon-opacity'] !== undefined && { opacity: properties['icon-opacity'] }),
+            ...(properties['icon-color'] !== undefined && { color: properties['icon-color'] }),
+        };
+        if (Object.keys(icon).length) {
+            style.icon = icon;
+        }
+        // if (properties.icon) {
+        //     style.icon = { source: properties.icon };
+        // }
+    } else {
+        const stroke = {
+            ...(properties.stroke !== undefined && { color: properties.stroke }),
+            ...(properties['stroke-width'] !== undefined && { width: properties['stroke-width'] }),
+            ...(properties['stroke-opacity'] !== undefined && { opacity: properties['stroke-opacity'] }),
+        };
+        if (Object.keys(stroke).length) {
+            style.stroke = stroke;
+        }
+        if (type !== FEATURE_TYPES.LINE) {
+            const fill = {
+                ...(properties.fill !== undefined && { color: properties.fill }),
+                ...(properties['fill-opacity'] !== undefined && { opacity: properties['fill-opacity'] }),
+            };
+            if (Object.keys(fill).length) {
+                style.fill = fill;
+            }
+        }
+    }
+    if (Object.keys(style).length) {
+        properties.style = style;
+    }
 }
 
 const coord = new Coordinates('EPSG:4978', 0, 0, 0);
@@ -74,7 +130,11 @@ const toFeature = {
 
         const geometry = feature.bindNewGeometry();
         geometry.properties = properties;
-        geometry.properties.style = new Style({}, feature.style).setFromGeojsonProperties(properties, feature.type);
+        // TODO !! FT GC
+        // New Style() is not necessary as style can be replaced by feature.style + context.properties
+        // geometry.properties.style = new Style({}, feature.style).setFromGeojsonProperties(properties, feature.type);
+        setPropertiesStyle(feature.type, properties);
+
         this.populateGeometry(crsIn, coordsIn, geometry, feature);
         feature.updateExtent(geometry);
     },
@@ -85,7 +145,10 @@ const toFeature = {
         }
         const geometry = feature.bindNewGeometry();
         geometry.properties = properties;
-        geometry.properties.style = new Style({}, feature.style).setFromGeojsonProperties(properties, feature.type);
+        // TODO !! FT GC
+        // New Style() is not necessary as style can be replaced by feature.style.drawingStylefromContext(context.properties)
+        // geometry.properties.style = new Style({}, feature.style).setFromGeojsonProperties(properties, feature.type);
+        setPropertiesStyle(feature.type, properties);
 
         // Then read contour and holes
         for (let i = 0; i < coordsIn.length; i++) {

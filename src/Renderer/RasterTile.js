@@ -1,11 +1,12 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
+import { Vector4, EventDispatcher } from 'three';
 import { ELEVATION_MODES } from 'Renderer/LayeredMaterial';
 import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent, computeMinMaxElevation } from 'Parser/XbilParser';
 import CRS from 'Core/Geographic/Crs';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
 
-const pitch = new THREE.Vector4();
+const pitch = new Vector4();
 
 
 /**
@@ -19,7 +20,7 @@ const pitch = new THREE.Vector4();
  *
  * @class RasterTile
  */
-class RasterTile extends THREE.EventDispatcher {
+class RasterTile extends EventDispatcher {
     constructor(material, layer) {
         super();
         this.layer = layer;
