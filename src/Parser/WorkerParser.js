@@ -1,10 +1,7 @@
 import workerpool from 'workerpool';
-import newConstructors from 'workers/constructors';
+import itownsConstructors from 'workers/constructors';
 // import GeoJsonParser from 'Parser/GeoJsonParser';
-// import serialize from 'serialize-javascript';
 import { sia, DeSia } from 'sializer';
-// import { sia, DeSia, constructors } from '../../Sia/Sia';
-// import { builtins } from 'sializer';
 import { FeatureCollection } from '../Core/Feature';
 import Style from '../Core/Style';
 
@@ -53,7 +50,7 @@ export default {
 
             pool.exec('parse', [data, sia(_options)])
                 .then((result) => {
-                    const deSia2 = new DeSia({ constructors: newConstructors });
+                    const deSia2 = new DeSia({ constructors: itownsConstructors });
                     const dataBuffed = typedarrayToBuffer(result);
                     const resDeBuf = deSia2.deserialize(dataBuffed);
 
