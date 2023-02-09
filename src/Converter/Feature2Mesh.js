@@ -7,7 +7,7 @@ import Extent from 'Core/Geographic/Extent';
 import Crs from 'Core/Geographic/Crs';
 import OrientationUtils from 'Utils/OrientationUtils';
 import Coordinates from 'Core/Geographic/Coordinates';
-import { StyleContext } from 'Core/Style';
+import Style, { StyleContext } from 'Core/Style';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 const context = new StyleContext();
@@ -194,6 +194,7 @@ function featureToPoint(feature, options) {
 
     const pointMaterialSize = [];
     context.globals = { point: true };
+    context.setFeature(feature);
 
     for (const geometry of feature.geometries) {
         const start = geometry.indices[0].offset;
@@ -208,7 +209,7 @@ function featureToPoint(feature, options) {
             }
 
             coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, v));
-            const style = feature.style.applyContext(context);
+            const style = Style.applyContext(context);
             const { base_altitude, color, radius } = style.point;
             coord.z = 0;
 
@@ -253,6 +254,7 @@ function featureToLine(feature, options) {
 
     const lineMaterialWidth = [];
     context.globals = { stroke: true };
+    context.setFeature(feature);
 
     const countIndices = (count - feature.geometries.length) * 2;
     const indices = getIntArrayFromSize(countIndices, count);
@@ -288,7 +290,7 @@ function featureToLine(feature, options) {
             }
 
             coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, v));
-            const style = feature.style.applyContext(context);
+            const style = Style.applyContext(context);
             const { base_altitude, color, width } = style.stroke;
             coord.z = 0;
 
@@ -322,6 +324,7 @@ function featureToPolygon(feature, options) {
     const batchIds = new Uint32Array(vertices.length / 3);
     const batchId = options.batchId || ((p, id) => id);
     context.globals = { fill: true };
+    context.setFeature(feature);
 
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     normal.set(0, 0, 1).multiply(inverseScale);
@@ -349,7 +352,7 @@ function featureToPolygon(feature, options) {
             }
 
             coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, i));
-            const style = feature.style.applyContext(context);
+            const style = Style.applyContext(context);
             const { base_altitude, color } = style.fill;
             coord.z = 0;
 
@@ -410,6 +413,7 @@ function featureToExtrudedPolygon(feature, options) {
     let featureId = 0;
 
     context.globals = { fill: true };
+    context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     normal.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
@@ -435,7 +439,7 @@ function featureToExtrudedPolygon(feature, options) {
 
             coord.copy(context.setLocalCoordinatesFromArray(ptsIn, i));
 
-            const style = feature.style.applyContext(context);
+            const style = Style.applyContext(context);
             const { base_altitude, extrusion_height, color } = style.fill;
             coord.z = 0;
 
@@ -653,6 +657,7 @@ export default {
                 // as in examples/source_file_gpx_3d.html.
                 options.layer = this || { style: options.style };
             }
+            context.layerStyle = options.layer.style;
 
             context.setCollection(collection);
 

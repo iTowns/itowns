@@ -166,6 +166,7 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * @property {Object}           collection The FeatureCollection to which the FeatureGeometry is attached.
  * @property {Object}           properties Properties of the FeatureGeometry.
  * @property {string}           type Geometry type of the feature. Can be `point`, `line`, or `polygon`.
+ * @property {Style}            style Style of the FeatureGeometry computed from Layer.style and user.style.
  * @property {Coordinates}      coordinates The coordinates (in world space) of the last vertex (x, y, z) set with
  *                                  setLocalCoordinatesFromArray().
  * private properties:
@@ -213,6 +214,38 @@ export class StyleContext {
 
     get type() {
         return this.#feature.type;
+    }
+
+    get style() {
+        const layerStyle = this.layerStyle || {};
+        let featureStyle = this.#feature.style;
+        if (featureStyle instanceof Function) {
+            featureStyle = readExpression(featureStyle, this);
+        }
+        const style = {
+            fill: {
+                ...featureStyle.fill,
+                ...layerStyle.fill,
+            },
+            stroke: {
+                ...featureStyle.stroke,
+                ...layerStyle.stroke,
+            },
+            point: {
+                ...featureStyle.point,
+                ...layerStyle.point,
+            },
+            icon: {
+                ...featureStyle.icon,
+                ...layerStyle.icon,
+            },
+            text: {
+                ...featureStyle.text,
+                ...layerStyle.text,
+            },
+            order: layerStyle.order || featureStyle.order,
+        };
+        return style;
     }
 
     get coordinates() {
@@ -645,10 +678,10 @@ class Style {
     }
 
     /**
-     * Clones this style.
-     *
-     * @return {Style} The new style, cloned from this one.
-     */
+         * Clones this style.
+         *
+         * @return {Style} The new style, cloned from this one.
+         */
     clone() {
         const clone = new Style();
         return clone.copy(this);
@@ -662,25 +695,45 @@ class Style {
      *
      * @return {Style}  mapped style depending on context.
      */
-    applyContext(context) {
+    static applyContext(context) {
+        const styleConc = new Style(context.style);
         const style = {};
-        if (this.fill.color || this.fill.pattern || context.globals.fill) {
-            mapPropertiesFromContext('fill', this, style, context);
+        if (styleConc.fill.color || styleConc.fill.pattern || context.globals.fill) {
+            mapPropertiesFromContext('fill', styleConc, style, context);
         }
-        if (this.stroke.color || context.globals.stroke) {
-            mapPropertiesFromContext('stroke', this, style, context);
+        if (styleConc.stroke.color || context.globals.stroke) {
+            mapPropertiesFromContext('stroke', styleConc, style, context);
         }
-        if (this.point.color || this.point.model || context.globals.point) {
-            mapPropertiesFromContext('point', this, style, context);
+        if (styleConc.point.color || styleConc.point.model || context.globals.point) {
+            mapPropertiesFromContext('point', styleConc, style, context);
         }
-        if (this.text || context.globals.text) {
-            mapPropertiesFromContext('text', this, style, context);
+
+        if (styleConc.text || context.globals.text) {
+            mapPropertiesFromContext('text', styleConc, style, context);
         }
-        if (this.icon || context.globals.icon) {
-            mapPropertiesFromContext('icon', this, style, context);
+        if (styleConc.icon || context.globals.icon) {
+            mapPropertiesFromContext('icon', styleConc, style, context);
         }
-        style.order = this.order;
+        style.order = styleConc.order;
         return new Style(style);
+    }
+
+    /**
+     * Returns a string, associating `style.text.field` and properties to use to
+     * replace the keys in `style.text.field`.
+     *
+     * @param {FeatureContext} context The context linked to the feature
+     *
+     * @return {string|undefined} The formatted string if `style.text.field` is defined, nothing otherwise.
+     */
+    getTextFromProperties(context) {
+        if (!this.text.field) { return; }
+
+        if (this.text.field.expression) {
+            return readExpression(this.text.field, context);
+        } else {
+            return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (context.properties()[b] || '')).trim();
+        }
     }
 
     /**
@@ -1053,24 +1106,6 @@ class Style {
             }
         } else {
             return this.text.anchor;
-        }
-    }
-
-    /**
-     * Returns a string, associating `style.text.field` and properties to use to
-     * replace the keys in `style.text.field`.
-     *
-     * @param {Object} ctx - An object containing the feature context.
-     *
-     * @return {String|undefined} The formatted string if `style.text.field` is defined, nothing otherwise.
-     */
-    getTextFromProperties(ctx) {
-        if (!this.text.field) { return; }
-
-        if (this.text.field.expression) {
-            return readExpression(this.text.field, ctx);
-        } else {
-            return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (ctx.properties[b] || '')).trim();
         }
     }
 }
