@@ -424,7 +424,7 @@ export class FeatureCollection extends THREE.Object3D {
     /**
      * Updates the global transform of the object and its descendants.
      *
-     * @param {booolean}  force   The force
+     * @param {boolean}  force   The force
      */
     updateMatrixWorld(force) {
         super.updateMatrixWorld(force);
@@ -497,13 +497,5 @@ export class FeatureCollection extends THREE.Object3D {
         ref._pos = feature._pos;
         this.features.push(ref);
         return ref;
-    }
-
-    setParentStyle(style) {
-        if (style) {
-            this.features.forEach((f) => {
-                f.style.parent = style;
-            });
-        }
     }
 }
