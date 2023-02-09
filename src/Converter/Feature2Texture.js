@@ -25,7 +25,6 @@ function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style =
     if (vertices.length === 0) {
         return;
     }
-
     if (style.length) {
         for (const s of style) {
             _drawPolygon(ctx, vertices, indices, s, size, extent, invCtxScale, canBeFilled);
@@ -73,19 +72,21 @@ function drawPoint(ctx, x, y, style = {}, invCtxScale) {
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
-function drawFeature(ctx, feature, extent, style, invCtxScale) {
+function drawFeature(ctx, feature, extent, invCtxScale) {
     const extentDim = extent.planarDimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
+
+    context.setFeature(feature);
 
     for (const geometry of feature.geometries) {
         if (Extent.intersectsExtent(geometry.extent, extent)) {
             context.setGeometry(geometry);
-            const contextStyle = (geometry.properties.style || style).applyContext(context);
+
+            const contextStyle = Style.applyContext(context);
 
             if (contextStyle) {
                 if (
-                    feature.type === FEATURE_TYPES.POINT
-                    && contextStyle.point
+                    feature.type === FEATURE_TYPES.POINT && contextStyle.point
                 ) {
                     // cross multiplication to know in the extent system the real size of
                     // the point
@@ -121,8 +122,9 @@ const featureExtent = new Extent('EPSG:4326', 0, 0, 0, 0);
 export default {
     // backgroundColor is a THREE.Color to specify a color to fill the texture
     // with, given there is no feature passed in parameter
-    createTextureFromFeature(collection, extent, sizeTexture, style = {}, backgroundColor) {
+    createTextureFromFeature(collection, extent, sizeTexture, layerStyle = {}, backgroundColor) {
         let texture;
+        context.layerStyle = layerStyle;
 
         if (collection) {
             // A texture is instancied drawn canvas
@@ -139,7 +141,9 @@ export default {
                 ctx.fillStyle = backgroundColor.getStyle();
                 ctx.fillRect(0, 0, sizeTexture, sizeTexture);
             }
-            ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
+
+            // Documentation needed !!
+            ctx.globalCompositeOperation = layerStyle.globalCompositeOperation || 'source-over';
             ctx.imageSmoothingEnabled = false;
             ctx.lineJoin = 'round';
 
@@ -177,7 +181,7 @@ export default {
 
             // Draw the canvas
             for (const feature of collection.features) {
-                drawFeature(ctx, feature, featureExtent, feature.style || style, invCtxScale);
+                drawFeature(ctx, feature, featureExtent, invCtxScale);
             }
 
             texture = new THREE.CanvasTexture(c);
