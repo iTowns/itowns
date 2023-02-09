@@ -138,9 +138,6 @@ class VectorTilesSource extends TMSSource {
                 console.warn('With VectorTilesSource and FeatureGeometryLayer, the accurate option is always false');
                 options.out.accurate = false;
             }
-            const keys = Object.keys(this.styles);
-
-            keys.forEach((k) => { this.styles[k].parent = options.out.style; });
         }
     }
 }

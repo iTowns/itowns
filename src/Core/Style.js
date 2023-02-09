@@ -146,13 +146,7 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
         name,
         {
             enumerable: true,
-            get: () => {
-                if (property === undefined) {
-                    return style.parent[category][name] || defaultValue;
-                } else {
-                    return property;
-                }
-            },
+            get: () => property ?? defaultValue,
             set: (v) => {
                 property = v;
             },
@@ -548,23 +542,12 @@ class Style {
      * @param {StyleOptions} [params={}] An object that contain any properties
      * (order, zoom, fill, stroke, point, text or/and icon)
      * and sub properties of a Style (@see {@link StyleOptions}).
-     * @param {Style} [parent] The parent style, that is looked onto if a value
-     * is missing.
      * @constructor
      */
-    constructor(params = {}, parent) {
+    constructor(params = {}) {
         this.isStyle = true;
 
         this.order = params.order || 0;
-
-        this.parent = parent || {
-            zoom: {},
-            fill: {},
-            stroke: {},
-            point: {},
-            text: {},
-            icon: {},
-        };
 
         params.zoom = params.zoom || {};
         params.fill = params.fill || {};

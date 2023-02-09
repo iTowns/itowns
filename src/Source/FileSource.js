@@ -175,10 +175,6 @@ class FileSource extends Source {
                     this.extent.applyMatrix4(data.matrixWorld);
                 }
             }
-
-            if (data.isFeatureCollection) {
-                data.setParentStyle(options.out.style);
-            }
         });
     }
 
