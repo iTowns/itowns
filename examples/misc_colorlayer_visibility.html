@@ -41,8 +41,8 @@
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addColorLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/Cada.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function _() {
                 // eslint-disable-next-line no-console

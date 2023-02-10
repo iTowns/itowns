@@ -44,8 +44,8 @@
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer);
             }
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
             // update the waypoint
             var distance, scale, point = new itowns.THREE.Vector3();
