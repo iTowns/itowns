@@ -124,7 +124,7 @@ export class RasterElevationTile extends RasterTile {
         const defaultEle = {
             bias: 0,
             mode: ELEVATION_MODES.DATA,
-            zmin: 0,
+            zmin: -Infinity,
             zmax: Infinity,
         };
 
@@ -145,11 +145,10 @@ export class RasterElevationTile extends RasterTile {
             this.min = 0;
             this.max = 0;
         }
-
-        this.bias = layer.bias || defaultEle.bias;
-        this.mode = layer.mode || defaultEle.mode;
-        this.zmin = layer.zmin || defaultEle.zmin;
-        this.zmax = layer.zmax || defaultEle.zmax;
+        this.bias = layer.bias ?? defaultEle.bias;
+        this.mode = layer.mode ?? defaultEle.mode;
+        this.zmin = layer.zmin ?? defaultEle.zmin;
+        this.zmax = layer.zmax ?? defaultEle.zmax;
 
         layer.addEventListener('scale-property-changed', this._handlerCBEvent);
     }
@@ -186,7 +185,14 @@ export class RasterElevationTile extends RasterTile {
 
     updateMinMaxElevation() {
         if (this.textures[0] && !this.layer.useColorTextureElevation) {
-            const { min, max } = computeMinMaxElevation(this.textures[0], this.offsetScales[0], this.layer.noDataValue);
+            const { min, max } = computeMinMaxElevation(
+                this.textures[0],
+                this.offsetScales[0],
+                {
+                    noDataValue: this.layer.noDataValue,
+                    zmin: this.layer.zmin,
+                    zmax: this.layer.zmax,
+                });
             if (this.min != min || this.max != max) {
                 this.min = min;
                 this.max = max;

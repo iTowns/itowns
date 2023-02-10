@@ -40,6 +40,7 @@ export const colorLayerEffects = {
 
 const defaultStructLayer = {
     bias: 0,
+    noDataValue: -99999,
     zmin: 0,
     zmax: 0,
     scale: 0,
