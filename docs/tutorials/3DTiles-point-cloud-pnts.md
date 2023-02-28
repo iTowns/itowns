@@ -68,7 +68,7 @@ We won't go into the details of creating the view, adding the ortho images and t
     view.addLayer(orthoLayer);
 
     var elevationSource = new itowns.WMTSSource({
-        url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+        url: 'http://wxs.ign.fr/altimetrie/geoportail/wmts',
         crs: 'EPSG:4326',
         name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
         tileMatrixSet: 'WGS84G',
@@ -235,7 +235,7 @@ The full code to achieve this result is:
             view.addLayer(orthoLayer);
 
             var elevationSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'http://wxs.ign.fr/altimetrie/geoportail/wmts',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
                 tileMatrixSet: 'WGS84G',
