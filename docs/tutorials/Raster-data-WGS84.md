@@ -71,7 +71,7 @@ Adding a layer to itowns is done in three steps: creating a data `{@link Source}
 
 ```js
 var orthoSource = new itowns.WMTSSource({
-    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+    url: 'http://wxs.ign.fr/decouverte/geoportail/wmts',
     crs: 'EPSG:3857',
     name: 'ORTHOIMAGERY.ORTHOPHOTOS',
     tileMatrixSet: 'PM',
@@ -113,7 +113,7 @@ previous one.
 
 ```js
 var elevationSource = new itowns.WMTSSource({
-    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+    url: 'http://wxs.ign.fr/altimetrie/geoportail/wmts',
     crs: 'EPSG:4326',
     name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
     tileMatrixSet: 'WGS84G',
@@ -167,7 +167,7 @@ Here is the final code:
             var view = new itowns.GlobeView(viewerDiv, placement);
 
             var orthoSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'https://wxs.ign.fr/decouverte/geoportail/wmts',
                 crs: "EPSG:3857",
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
@@ -181,7 +181,7 @@ Here is the final code:
             view.addLayer(orthoLayer);
 
             var elevationSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'https://wxs.ign.fr/altimetrie/geoportail/wmts',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
                 tileMatrixSet: 'WGS84G',

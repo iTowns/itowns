@@ -115,8 +115,8 @@ We can start displaying ortho-images provided by the [Geoportail](https://www.ge
 
 ```js
 const sourceOrtho = new itowns.WMSSource({
-    url: "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/r/wms",
-    name: "HR.ORTHOIMAGERY.ORTHOPHOTOS",
+    url: "https://wxs.ign.fr/inspire/inspire/r/wms",
+    name: "OI.OrthoimageCoverage.HR",
     format: 'image/png',
     crs: 'EPSG:2154',
     extent: viewExtent,
@@ -147,7 +147,7 @@ Then we can simply create the `ElevationLayer`, giving it a unique `id` and the 
 
 ```js
 const sourceDEM = new itowns.WMSSource({
-    url: "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/r/wms",
+    url: "https://wxs.ign.fr/altimetrie/geoportail/r/wms",
     name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
     format: "image/x-bil;bits=32",
     crs: 'EPSG:2154',
@@ -214,8 +214,8 @@ The code that is shown bellow sums up all the steps it took to do so.
             
             // Define the source of the ortho-images
             const sourceOrtho = new itowns.WMSSource({
-                url: "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/r/wms",
-                name: "HR.ORTHOIMAGERY.ORTHOPHOTOS",
+                url: "https://wxs.ign.fr/inspire/inspire/r/wms",
+                name: "OI.OrthoimageCoverage.HR",
                 format: "image/png",
                 crs: 'EPSG:2154',
                 extent: viewExtent,
@@ -226,7 +226,7 @@ The code that is shown bellow sums up all the steps it took to do so.
             
             // Define the source of the dem data
             const sourceDEM = new itowns.WMSSource({
-                url: "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/r/wms",
+                url: "https://wxs.ign.fr/altimetrie/geoportail/r/wms",
                 name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
                 format: "image/x-bil;bits=32",
                 crs: 'EPSG:2154',
