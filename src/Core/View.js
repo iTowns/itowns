@@ -185,7 +185,8 @@ class View extends THREE.EventDispatcher {
 
         this._frameRequesters = { };
 
-        window.addEventListener('resize', () => this.resize(), false);
+        this._resizeListener = () => this.resize();
+        window.addEventListener('resize', this._resizeListener, false);
 
         this._changeSources = new Set();
 
@@ -258,6 +259,9 @@ class View extends THREE.EventDispatcher {
             console.warn('View already disposed');
             return;
         }
+
+        window.removeEventListener('resize', this._resizeListener);
+
         // controls dispose
         if (this.controls) {
             if (typeof this.controls.dispose === 'function') {
