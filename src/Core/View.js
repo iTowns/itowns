@@ -692,10 +692,9 @@ class View extends THREE.EventDispatcher {
      * the top left corner of the window) or `MouseEvent` or `TouchEvent`.
      * @param {number} [radius=0] - The picking will happen in a circle centered
      * on mouseOrEvt. This is the radius of this circle, in pixels.
-     * @param {...GeometryLayer|string|Object3D} [where] - Where to look for
-     * objects. It can be anything of {@link GeometryLayer}, IDs of layers, or
-     * `THREE.Object3D`. If no location is specified, it will query on all
-     * {@link GeometryLayer} present in this `View`.
+     * @param {GeometryLayer|string|Object3D|Array<GeometryLayer|string|Object3D>} [where] - Where to look for
+     * objects. It can be a single {@link GeometryLayer}, `THREE.Object3D`, ID of a layer or an array of one of these or
+     * of a mix of these. If no location is specified, it will query on all {@link GeometryLayer} present in this `View`.
      *
      * @return {Object[]} - An array of objects. Each element contains at least
      * an object property which is the `THREE.Object3D` under the cursor. Then
@@ -707,10 +706,15 @@ class View extends THREE.EventDispatcher {
      * view.pickObjectsAt({ x, y }, 1, 'wfsBuilding')
      * view.pickObjectsAt({ x, y }, 3, 'wfsBuilding', myLayer)
      */
-    pickObjectsAt(mouseOrEvt, radius = 0, ...where) {
+    pickObjectsAt(mouseOrEvt, radius = 0, where) {
         const sources = [];
 
-        where = where.length == 0 ? this.getLayers(l => l.isGeometryLayer) : where;
+        if (!where || where.length === 0) {
+            where = this.getLayers(l => l.isGeometryLayer);
+        }
+        if (!Array.isArray(where)) {
+            where = [where];
+        }
         where.forEach((l) => {
             if (typeof l === 'string') {
                 l = this.getLayerById(l);
