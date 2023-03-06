@@ -82,8 +82,16 @@ class Label extends THREE.Object3D {
         if (typeof content === 'string') {
             this.content = document.createElement('div');
             this.content.textContent = content;
+        } else if (content instanceof HTMLCanvasElement) {
+            this.content = content;
         } else {
             this.content = content.cloneNode(true);
+        }
+
+        // Display labels with content (either text or domElement) on top of content-less labels (such as labels with
+        // only an icon for instance).
+        if (content !== '') {
+            this.content.style.zIndex = '1';
         }
 
         this.content.classList.add('itowns-label');

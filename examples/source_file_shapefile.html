@@ -16,35 +16,48 @@
         <script src="js/plugins/FeatureToolTip.js"></script>
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
-            // Define initial camera position
-            var placement = {
+
+
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
                 range: 25000,
-            }
+            };
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
-            var viewerDiv = document.getElementById('viewerDiv');
+            const viewerDiv = document.getElementById('viewerDiv');
 
-            // Instantiate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, placement);
-            var menuGlobe = new GuiTools('menuDiv', view);
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
 
+            // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
             FeatureToolTip.init(viewerDiv, view);
 
-            // Add one imagery layer to the scene
-            // This layer is defined in a json file but it could be defined as a plain js
-            // object. See Layer* for more info.
+
+
+            // ---------- DISPLAY ORTHO-IMAGES : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
+            // defined as a plain js object. See `Layer` documentation for more info.
             itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
                 config.source = new itowns.TMSSource(config.source);
-                var layer = new itowns.ColorLayer('OPENSM', config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(
+                    new itowns.ColorLayer('OPENSM', config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
             });
 
 
 
-            // As there is no Shapefile fetcher directly bundled within iTowns, we need to specify a method to fetch data.
-            // We use here `multiple` fetcher, which can fetch multiple files within multiple formats.
+            // ---------- DISPLAY DATA FROM .shp FILE : ----------
+
+            // Handle fetching step.
+            // As there is no Shapefile fetcher directly bundled within iTowns, we need to specify a method to fetch
+            // data. We use here `multiple` fetcher, which can fetch multiple files within multiple formats.
             itowns.Fetcher.multiple(
                 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/shapefile/velib-disponibilite-en-temps-reel',
                 {
@@ -54,38 +67,60 @@
                     text: ['prj'],
                 },
             ).then((fetched) => {
-                // Once our Shapefile data is fetched, we can parse it by running itowns built-in Shapefile parser.
+                // Handle parsing step.
+                // We parse the fetched data into a FeatureCollection by running iTowns built-in Shapefile parser.
+                // See http://www.itowns-project.org/itowns/docs/#api/Base/FeatureCollection.
                 return itowns.ShapefileParser.parse(fetched, {
-                    // Options indicating how the features should be built from data.
+                    // Information on the FeatureCollection that should be created from the fetched data. Here, we pass
+                    // a FeatureBuildingOptions.
+                    // See (http://www.itowns-project.org/itowns/docs/#api/Base/FeatureBuildingOptions).
                     out: {
-                        // Specitfy the crs to convert the input coordinates to.
                         crs: view.tileLayer.extent.crs,
                     },
                 });
             }).then((parsed) => {
-                // We can then instantiate a FileSource, passing the parsed data,
-                // and create a Layer bound to this source.
+                // Define a FileSource from the parsed data and create a Layer bound to this source.
                 const velibSource = new itowns.FileSource({ features: parsed });
 
                 return view.addLayer(new itowns.ColorLayer('velib', {
                     source: velibSource,
                     style: new itowns.Style({
                         zoom: { min: 10, max: 20 },
-                        point: { color: 'white', line: 'green' },
+                        point: {
+                            color: 'white',
+                            line: 'green',
+                            radius: 5,
+                            width: 2,
+                        },
+                        icon: {
+                            source: 'images/arrow.svg',
+                            anchor: 'top-left',
+                            size: 2,
+                        },
                         text: {
                             field: '{name}\n(id: {station_id})',
                             size: 14,
                             haloColor: 'white',
                             haloWidth: 1,
                             font: ['monospace'],
-                        }
+                            anchor: 'top-left',
+                            justify: 'left',
+                            offset: [20, 18],
+                        },
                     }),
+                    displayAsIcon: true,
                     addLabelLayer: true,
                 }));
             }).then((layer => {
                 // Finally, we generate tooltip for when the mouse hovers the data displayed within our created layer.
                 FeatureToolTip.addLayer(layer, { filterAllProperties: false });
             }));
+
+
+
+            // ---------- DEBUG TOOLS : ----------
+
+            debug.createTileDebugUI(debugMenu.gui, view);
 
         </script>
     </body>

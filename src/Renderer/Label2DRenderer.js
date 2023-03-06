@@ -69,12 +69,16 @@ class ScreenGrid {
         const miny = Math.max(0, Math.floor(obj.boundaries.top / this.height * this.y));
         const maxy = Math.min(this.y - 1, Math.floor(obj.boundaries.bottom / this.height * this.y));
 
-        for (let i = minx; i <= maxx; i++) {
-            for (let j = miny; j <= maxy; j++) {
-                if (this.grid[i][j].length > 0) {
-                    if (this.grid[i][j].some(l => isIntersectedOrOverlaped(l.boundaries, obj.boundaries))) {
-                        this.hidden.push(obj);
-                        return false;
+        if (!obj.allowOverlapping) {
+            for (let i = minx; i <= maxx; i++) {
+                for (let j = miny; j <= maxy; j++) {
+                    if (this.grid[i][j].length > 0) {
+                        if (this.grid[i][j].some(
+                            l => !l.allowOverlapping && isIntersectedOrOverlaped(l.boundaries, obj.boundaries))
+                        ) {
+                            this.hidden.push(obj);
+                            return false;
+                        }
                     }
                 }
             }
