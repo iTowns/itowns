@@ -30,6 +30,10 @@ class LayerUpdateState {
         };
     }
 
+    hasFinished() {
+        return UPDATE_STATE.FINISHED == this.state;
+    }
+
     canTryUpdate(timestamp = Date.now()) {
         switch (this.state) {
             case UPDATE_STATE.IDLE: {
