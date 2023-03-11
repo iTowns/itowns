@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Itowns - Minimap widget</title>
+        <title>Itowns - Elevation measurement widget</title>
 
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +18,8 @@
     <body>
         <!-- Add a description -->
         <div id="description">
-            Double click on the minimap to travel to the cursor location.
+            Click on the elevation measurement tool button to activate the tool. Then, click anywhere in the scene to 
+            measure the elevation at a given point.
         </div>
 
         <!-- Create a container for itowns viewer -->
@@ -36,15 +37,14 @@
 
         <script type="text/javascript">
 
-
-
             // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
 
             // Define camera initial position
             const placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
-                range: 6000,
-                tilt: 50,
+                coord: new itowns.Coordinates('EPSG:4326', 4.830119, 45.771966),
+                range: 3000,
+                tilt: 25,
+                heading: 10,
             }
 
             // `viewerDiv` contains iTowns' rendering area (`<canvas>`)
@@ -56,8 +56,6 @@
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
             const debugMenu = new GuiTools('menuDiv', view);
-
-
 
             // ---------- DISPLAY CONTEXTUAL DATA : ----------
 
@@ -81,39 +79,25 @@
             itowns.Fetcher.json('layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
-
-
-            // ---------- ADD MINIMAP WIDGET : ----------
-
-            // Create a ColorLayer that shall be displayed on the minimap.
-            const minimapColorLayer = new itowns.ColorLayer('minimap', {
-                source: new itowns.VectorTilesSource({
-                    style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
-                    // We don't display mountains and plot related data to ease visualisation
-                    filter: (layer) => !layer['source-layer'].includes('oro_')
-                        && !layer['source-layer'].includes('parcellaire'),
-                }),
-                addLabelLayer: true,
+            // 3D Tiles Layer
+            itowns.enableDracoLoader('./libs/draco/');
+            const lyon3DSource = new itowns.C3DTilesSource({
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/3DTiles/lyon_1_4978/tileset.json'
             });
+            const lyon3DLayer = new itowns.C3DTilesLayer('bordeaux', {
+                name: 'bordeaux',
+                source: lyon3DSource,
+            }, view);
 
-            // Create a minimap.
-            const minimap = new itowns_widgets.Minimap(view, minimapColorLayer, {
-                cursor: '+',
-                size: 200,
-            });
+            itowns.View.prototype.addLayer.call(view, lyon3DLayer);
 
+            // ---------- ADD ELEVATION MEASUREMENT WIDGET : ----------
 
+            const elevationMeasure = new itowns_widgets.ElevationMeasure(view);
 
-            // ---------- ADD INTERACTION WITH MINIMAP : ----------
-
-            // When double-clicking the minimap, travel to the cursor location.
-            const cursorCoordinates = new itowns.Coordinates(minimap.view.referenceCrs);
-            minimap.domElement.addEventListener('dblclick', (event) => {
-                minimap.view.pickTerrainCoordinates(event, cursorCoordinates);
-                view.controls.lookAtCoordinate({ coord: cursorCoordinates });
-            });
-
-
+            // ---------- ADD LIGHTS ----------------------------------
+            var ambLight = new itowns.THREE.AmbientLight(0xffffff);
+            view.scene.add( ambLight );
 
             // ---------- DEBUG TOOLS : ----------
 

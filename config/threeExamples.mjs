@@ -5,5 +5,6 @@ export default {
         './loaders/DRACOLoader.js',
         './loaders/DDSLoader.js',
         './capabilities/WebGL.js',
+        './renderers/CSS2DRenderer.js',
     ],
 };

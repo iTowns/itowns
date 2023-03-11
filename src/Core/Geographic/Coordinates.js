@@ -58,7 +58,11 @@ class Coordinates {
     /**
      * @constructor
      *
-     * @param {string} crs - A supported crs (see the `crs` property below).
+     * @param {string} crs - A supported Coordinate Reference System. 'EPSG:4978' and 'EPSG:4326' are
+     * supported by default. To use another CRS, you have to declare it with proj4. For instance:
+     * @example
+     * itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+     * You can find most projections and their proj4 code at [epsg.io]{@link https://epsg.io/}
      * @param {number|Array<number>|Coordinates|THREE.Vector3} [v0=0] -
      * x or longitude value, or a more complex one: it can be an array of three
      * numbers, being x/lon, x/lat, z/alt, or it can be `THREE.Vector3`. It can
@@ -90,6 +94,15 @@ class Coordinates {
         }
 
         this._normalNeedsUpdate = true;
+    }
+
+    /**
+     * Sets the Coordinate Reference System.
+     * @param {String} crs Coordinate Reference System (e.g. 'EPSG:4978')
+     */
+    setCrs(crs) {
+        CRS.isValid(crs);
+        this.crs = crs;
     }
 
     /**
