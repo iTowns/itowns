@@ -77,7 +77,7 @@ class ElevationLayer extends RasterLayer {
         updateBBox();
 
         // listen elevation updating
-        rasterElevationNode.addEventListener('updatedElevation', updateBBox);
+        rasterElevationNode.addEventListener('rasterElevationLevelChanged', updateBBox);
 
         // listen scaling elevation updating
         this.addEventListener('scale-property-changed', updateBBox);

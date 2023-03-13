@@ -177,20 +177,20 @@ describe('TileMesh', function () {
     material.addLayer = () => {};
     material.setSequenceElevation = () => {};
 
-    it('event updatedElevation RasterElevationTile sets TileMesh bounding box ', () => {
+    it('event rasterElevationLevelChanged RasterElevationTile sets TileMesh bounding box ', () => {
         const tileMesh = new TileMesh(geom, material, planarlayer, extent.as('EPSG:3857'), 0);
         const rasterNode = elevationLayer.setupRasterNode(tileMesh);
         const min = 50;
         const max = 500;
         rasterNode.min = min;
         rasterNode.max = max;
-        rasterNode.dispatchEvent({ type: 'updatedElevation', node: rasterNode });
+        rasterNode.dispatchEvent({ type: 'rasterElevationLevelChanged', node: rasterNode });
         assert.equal(tileMesh.obb.z.min, min);
         assert.equal(tileMesh.obb.z.max, max);
 
         rasterNode.min = null;
         rasterNode.max = null;
-        rasterNode.dispatchEvent({ type: 'updatedElevation', node: rasterNode });
+        rasterNode.dispatchEvent({ type: 'rasterElevationLevelChanged', node: rasterNode });
         assert.equal(tileMesh.obb.z.min, min);
         assert.equal(tileMesh.obb.z.max, max);
     });
