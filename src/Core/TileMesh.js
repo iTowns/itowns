@@ -47,7 +47,7 @@ class TileMesh extends THREE.Mesh {
 
         this.geoidHeight = 0;
 
-        this.link = [];
+        this.link = {};
     }
 
     /**
