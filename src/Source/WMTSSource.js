@@ -37,6 +37,12 @@ import TMSSource from 'Source/TMSSource';
  * is 2.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 20.
+ * @property {Object} vendorSpecific - An object containing vendor specific
+ * parameters. See for example a [list of these parameters for GeoServer]{@link
+ * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html}. This
+ * object is read simply with the `key` being the name of the parameter and
+ * `value` being the value of the parameter. If used, this property should be
+ * set in the constructor parameters.
  *
  * @example
  * // Create the source
