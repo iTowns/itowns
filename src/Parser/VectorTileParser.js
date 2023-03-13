@@ -136,6 +136,7 @@ function readPBF(file, options) {
                     feature.id = layer.id;
                     feature.order = layer.order;
                     feature.style = options.in.styles[feature.id];
+                    feature.hasRawElevationData = false;
                     vtFeatureToFeatureGeometry(vtFeature, feature);
                 } else if (!collection.features.find(f => f.id === layer.id)) {
                     feature = collection.newFeatureByReference(feature);
