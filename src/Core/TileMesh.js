@@ -14,6 +14,7 @@ import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
  */
 class TileMesh extends THREE.Mesh {
     #_tms = new Map();
+    #visible = true;
     constructor(geometry, material, layer, extent, level = 0) {
         super(geometry, material);
 
@@ -48,8 +49,17 @@ class TileMesh extends THREE.Mesh {
         this.geoidHeight = 0;
 
         this.link = {};
-    }
 
+        Object.defineProperty(this, 'visible', {
+            get() { return this.#visible; },
+            set(v) {
+                if (this.#visible != v) {
+                    this.#visible = v;
+                    this.dispatchEvent({ type: v ? 'shown' : 'hidden' });
+                }
+            },
+        });
+    }
     /**
      * If specified, update the min and max elevation of the OBB
      * and updates accordingly the bounding sphere and the geometric error
