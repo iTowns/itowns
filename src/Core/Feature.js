@@ -223,6 +223,8 @@ function push3DValues(value0, value1, value2 = 0) {
  * @property {number[]} normals - All the normals of the Feature.
  * @property {number} size - the number of values of the array that should be associated with a coordinates.
  * The size is 3 with altitude and 2 without altitude.
+ * @property {boolean} hasRawElevationData - indicates if the geographic coordinates, from original source, has an elevation,
+ * the coordinates has a third coordinate.
  * @property {string} crs - Geographic or Geocentric coordinates system.
  * @property {FeatureGeometry[]} geometries - An array containing all {@link
  * FeatureGeometry}.
@@ -246,6 +248,7 @@ class Feature {
         this.crs = collection.crs;
         this.size = collection.size;
         this.normals = collection.crs == 'EPSG:4978' ? [] : undefined;
+        this.hasRawElevationData = false;
 
         this.transformToLocalSystem = collection.transformToLocalSystem.bind(collection);
         if (collection.extent) {
