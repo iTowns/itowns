@@ -37,6 +37,10 @@ import TMSSource from 'Source/TMSSource';
  * is 2.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 20.
+ * @property {Object} vendorSpecific - An object containing vendor specific
+ * parameters. This object is read simply with the `key` being the name of the
+ * parameter and `value` being the value of the parameter. If used, this
+ * property should be set in the constructor parameters.
  *
  * @example
  * // Create the source
@@ -84,6 +88,13 @@ class WMTSSource extends TMSSource {
             `&STYLE=${source.style || 'normal'}` +
             `&TILEMATRIXSET=${source.tileMatrixSet}` +
             '&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL';
+
+        this.vendorSpecific = source.vendorSpecific;
+        for (const name in this.vendorSpecific) {
+            if (Object.prototype.hasOwnProperty.call(this.vendorSpecific, name)) {
+                this.url = `${this.url}&${name}=${this.vendorSpecific[name]}`;
+            }
+        }
     }
 }
 
