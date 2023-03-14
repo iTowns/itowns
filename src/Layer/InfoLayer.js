@@ -65,7 +65,7 @@ export class InfoTiledGeometryLayer extends InfoLayer {
     }
 
     update(tile) {
-        if (tile.material.visible) {
+        if (tile.visible && tile.material.visible) {
             this.displayed.tiles.add(tile);
         } else {
             this.displayed.tiles.delete(tile);
