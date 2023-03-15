@@ -166,14 +166,22 @@ export class RasterElevationTile extends RasterTile {
     }
 
     initFromParent(parent, extents) {
+        const currentLevel = this.level;
         super.initFromParent(parent, extents);
         this.updateMinMaxElevation();
+        if (currentLevel !== this.level) {
+            this.dispatchEvent({ type: 'rasterElevationLevelChanged', node: this });
+        }
     }
 
     setTextures(textures, offsetScales) {
+        const currentLevel = this.level;
         this.replaceNoDataValueFromTexture(textures[0]);
         super.setTextures(textures, offsetScales);
         this.updateMinMaxElevation();
+        if (currentLevel !== this.level) {
+            this.dispatchEvent({ type: 'rasterElevationLevelChanged', node: this });
+        }
     }
 
     updateMinMaxElevation() {
@@ -182,7 +190,6 @@ export class RasterElevationTile extends RasterTile {
             if (this.min != min || this.max != max) {
                 this.min = min;
                 this.max = max;
-                this.dispatchEvent({ type: 'updatedElevation', node: this });
             }
         }
     }
