@@ -202,6 +202,8 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * for each Coordinates.
  * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
  * then the altitude value is set to 0.
+ * @property {Object} point.model - `model` is for point to 3D Model
+
  *
  * @property {Object} text - All things {@link Label} related.
  * @property {string|function} text.field - A string to help read the text field from
@@ -345,6 +347,7 @@ class Style {
         defineStyleProperty(this, 'point', 'radius', params.point.radius, 2.0);
         defineStyleProperty(this, 'point', 'width', params.point.width, 0.0);
         defineStyleProperty(this, 'point', 'base_altitude', params.point.base_altitude, base_altitudeDefault);
+        defineStyleProperty(this, 'point', 'model', params.point.model);
 
         this.text = {};
         defineStyleProperty(this, 'text', 'field', params.text.field);
@@ -388,7 +391,7 @@ class Style {
         if (this.stroke.color || context.globals.stroke) {
             mapPropertiesFromContext('stroke', this, style, context);
         }
-        if (this.point.color || context.globals.point) {
+        if (this.point.color || this.point.model || context.globals.point) {
             mapPropertiesFromContext('point', this, style, context);
         }
         if (Object.keys(style).length) {

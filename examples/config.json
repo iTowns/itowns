@@ -78,7 +78,8 @@
         "misc_orthographic_camera": "Orthographic camera",
         "misc_custom_controls": "Define custom controls",
         "misc_custom_label": "Custom label popup",
-        "misc_camera_traveling": "Camera traveling"
+        "misc_camera_traveling": "Camera traveling",
+        "misc_instancing": "3D objects instancing"
     },
 
     "Widgets": {

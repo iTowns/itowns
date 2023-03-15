@@ -144,6 +144,11 @@ const keyProperties = ['type', 'geometry', 'properties'];
 const firstCoordinates = a => (a === undefined || (Array.isArray(a) && !isNaN(a[0])) ? a : firstCoordinates(a[0]));
 
 function jsonFeatureToFeature(crsIn, json, collection) {
+    if (!json.geometry?.type) {
+        console.warn('No geometry provided');
+        return null;
+    }
+
     const jsonType = json.geometry.type.toLowerCase();
     const featureType = toFeatureType(jsonType);
     const feature = collection.requestFeatureByType(featureType);
