@@ -175,7 +175,7 @@ class LabelLayer extends Layer {
         const elevationLayer = node.material.getElevationLayer();
         if (elevationLayer && node.layerUpdateState[elevationLayer.id].canTryUpdate()) {
             node.children.forEach((c) => {
-                if (c.isLabel && c.needsAltitude && c.updateElevationFromLayer(this.parent)) {
+                if (c.isLabel && c.needsAltitude && c.updateElevationFromLayer(this.parent, [node])) {
                     c.update3dPosition(context.view.referenceCrs);
                 }
             });
@@ -214,7 +214,7 @@ class LabelLayer extends Layer {
 
                 labels.forEach((label) => {
                     if (label.needsAltitude) {
-                        label.updateElevationFromLayer(this.parent);
+                        label.updateElevationFromLayer(this.parent, [node]);
                     }
 
                     const present = node.children.find(l => l.isLabel && l.baseContent == label.baseContent);

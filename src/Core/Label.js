@@ -205,8 +205,8 @@ class Label extends THREE.Object3D {
         this.updateMatrixWorld();
     }
 
-    updateElevationFromLayer(layer) {
-        const elevation = Math.max(0, DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z));
+    updateElevationFromLayer(layer, nodes) {
+        const elevation = Math.max(0, DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z, nodes));
         if (elevation && elevation != this.coordinates.z) {
             this.coordinates.z = elevation;
             this.updateHorizonCullingPoint();
