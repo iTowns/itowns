@@ -41,7 +41,9 @@ function pntsParse(data, layer) {
             points.position.copy(result.point.offset);
         }
 
-        return { object3d: points };
+        return { object3d: points ,
+                 batchTable: result.batchTable,
+                };
     });
 }
 
