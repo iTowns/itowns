@@ -109,7 +109,7 @@
             // When double-clicking the minimap, travel to the cursor location.
             const cursorCoordinates = new itowns.Coordinates(minimap.view.referenceCrs);
             minimap.domElement.addEventListener('dblclick', (event) => {
-                minimap.view.pickCoordinates(event, cursorCoordinates);
+                minimap.view.pickTerrainCoordinates(event, cursorCoordinates);
                 view.controls.lookAtCoordinate({ coord: cursorCoordinates });
             });
 
