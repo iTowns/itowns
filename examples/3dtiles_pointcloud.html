@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Itowns - Pointcloud classification</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="description">
+            Pointcloud classification
+            <ul>
+              <li>Display your pointcloud</li>
+              <li>Use classification to assign colour to each points</li>
+              <li>Switch between mode on the left panel</li>             
+            </ul>
+        </div>
+        <div id="viewerDiv"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/3dTilesHelper.js"></script>
+        <script type="text/javascript">
+            /* global itowns,document,GuiTools*/
+
+            
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 3.695885, 43.397379, 0),
+
+                range: 3000,
+                tilt: 55,
+                heading: 180
+            }
+            // iTowns namespace defined here
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            var view = new itowns.GlobeView(viewerDiv, placement);
+            view.camera.camera3D.near = 5;
+            setupLoadingScreen(viewerDiv, view);
+
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
+
+            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
+                config.source = new itowns.TMSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
+            function updatePointCloudSize({tileContent}) {
+                tileContent.traverse(function (obj) {
+                    if (obj.isPoints) {
+                        obj.material.size = 2.0;
+                    }
+                });
+            }
+            // Create a new Layer 3d-tiles For Pointcloud
+            // -------------------------------------------
+            var $3dTilesLayerSetePC = new itowns.C3DTilesLayer('3d-tiles-sete', {
+                name: 'SetePC',
+                sseThreshold: 5,
+                pntsMode: itowns.PNTS_MODE.CLASSIFICATION,
+                source: new itowns.C3DTilesSource({
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json',
+                }),
+            }, view);
+
+            $3dTilesLayerSetePC.addEventListener(
+                itowns.C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED,
+                updatePointCloudSize,
+            );
+
+            itowns.View.prototype.addLayer.call(view, $3dTilesLayerSetePC);
+            function switchMode(){
+                let pntsLayer = view.getLayerById("3d-tiles-sete");
+                
+                if(pntsLayer){
+                    pntsLayer = pntsLayer;
+                    pntsLayer.pntsMode = pntsLayer.pntsMode == itowns.PNTS_MODE.COLOR ? itowns.PNTS_MODE.CLASSIFICATION : itowns.PNTS_MODE.COLOR;
+                    view.notifyChange(view.camera.camera3D);
+                }
+            }
+        
+            // Add the UI Debug
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerSetePC, d);
+
+            d.switch = function() {
+                switchMode();
+            }
+            menuGlobe.gui.add(d, 'switch').name('Mode Switch');
+
+            
+
+          
+
+        </script>
+    </body>
+</html>

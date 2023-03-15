@@ -70,6 +70,7 @@ export default {
 
                 // If the BATCH_ID semantic is not defined, then the Batch Table stores per-point metadata, and the length of the Batch Table arrays will equal POINTS_LENGTH.
                 batchTable = new C3DTBatchTable(BTBuffer, pntsHeader.BTJSONLength, pntsHeader.BTBinaryLength, (FTJSON.BATCH_ID && FTJSON.BATCH_LENGTH) ? FTJSON.BATCH_LENGTH : FTJSON.POINTS_LENGTH, registeredExtensions);
+                point = setClassification(point, batchTable);
             }
 
             const pnts = { point, batchTable };
@@ -128,4 +129,11 @@ function parseFeatureBinary(array, byteOffset, FTJSONLength) {
         geometry,
         offset,
     };
+}
+
+
+function setClassification(point, batchTable) {
+    if (!point.geometry) { return; }
+    if (batchTable.content && batchTable.content.Classification) { point.geometry.setAttribute('classification', new THREE.BufferAttribute(new Uint8Array(batchTable.content.Classification), 1, true)); }
+    return point;
 }

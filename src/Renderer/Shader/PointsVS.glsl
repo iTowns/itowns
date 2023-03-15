@@ -78,19 +78,19 @@ void main() {
         vColor = unique_id;
     } else {
         vColor.a = opacity;
-        if (applyOpacityClassication || mode == MODE_CLASSIFICATION) {
+        if (applyOpacityClassication || mode == PNTS_MODE_CLASSIFICATION) {
             vec2 uv = vec2(classification, 0.5);
             vColor = texture2D(classificationLUT, uv);
             vColor.a *= opacity;
         }
 
-        if (mode == MODE_INTENSITY) {
+        if (mode == PNTS_MODE_INTENSITY) {
             // adapt the grayscale knowing the range
             float i = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
             vColor.rgb = vec3(i, i, i);
-        } else if (mode == MODE_NORMAL) {
+        } else if (mode == PNTS_MODE_NORMAL) {
             vColor.rgb = abs(normal);
-        } else if (mode == MODE_COLOR) {
+        } else if (mode ==PNTS_MODE_COLOR) {
             // default to color mode
             vColor.rgb = mix(color, overlayColor.rgb, overlayColor.a);
         }

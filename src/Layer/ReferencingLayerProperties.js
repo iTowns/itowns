@@ -16,6 +16,11 @@ function ReferLayerProperties(material, layer) {
                 get: () => material.layer.opacity,
             });
         }
+        if (material.uniforms && material.uniforms.mode != undefined) {
+            Object.defineProperty(material.uniforms.mode, 'value', {
+                get: () => material.layer.pntsMode,
+            });
+        }
 
         Object.defineProperty(material, 'wireframe', {
             get: () => material.layer.wireframe,
