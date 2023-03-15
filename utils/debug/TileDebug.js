@@ -122,7 +122,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         }
 
         // filtering helper attached to node with the current debug layer
-        let helper = node.link.filter(n => n.layer && (n.layer.id == layer.id))[0];
+        let helper = node.link[layer.id];
         if (node.visible && node.material && node.material.visible) {
             if (!helper) {
                 helper = new THREE.Group();
@@ -144,7 +144,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
                     helper.add(sphereHelper);
                 }
 
-                node.link.push(helper);
+                node.link[layer.id] = helper;
             }
 
             layer.object3d.add(helper);
