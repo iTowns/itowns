@@ -141,13 +141,15 @@ function toFeatureType(jsonType) {
 
 const keyProperties = ['type', 'geometry', 'properties'];
 
+const firstCoordinates = a => (Array.isArray(a) && !isNaN(a[0])  ? a : firstCoordinates(a[0]));
+
 function jsonFeatureToFeature(crsIn, json, collection) {
     const jsonType = json.geometry.type.toLowerCase();
     const featureType = toFeatureType(jsonType);
     const feature = collection.requestFeatureByType(featureType);
     const coordinates = jsonType != 'point' ? json.geometry.coordinates : [json.geometry.coordinates];
     const properties = json.properties || {};
-    feature.hasRawElevationData = coordinates[0]?.length === 3;
+    feature.hasRawElevationData = firstCoordinates(coordinates)?.length === 3;
 
     // copy other properties
     for (const key of Object.keys(json)) {
