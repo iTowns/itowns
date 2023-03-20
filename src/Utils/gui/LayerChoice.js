@@ -209,6 +209,13 @@ class LayerChoice extends Widget {
         return html;
     }
 
+    /**
+     * It takes a title element, a title string, and a list of elements, and toggles the display of the
+     * list elements based on the title element's innerHTML
+     * @param {HTMLElement} tiltleHtmlElement - The HTML element that contains the title of the list.
+     * @param {string} titleString - The string that will be displayed in the title element.
+     * @param {Array<HtmlElement>}lists - an array of HTML elements that you want to show/hide
+     */
     showHideListLayers(tiltleHtmlElement, titleString, lists) {
         const hideListCharacter = '►';
         const showListCharacter = '▼';
