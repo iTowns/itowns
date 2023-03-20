@@ -41,10 +41,10 @@
 
             const viewExtent = new itowns.Extent(
                 'EPSG:3946',
-                1837816.94334,
-                1847692.32501,
-                5170036.4587,
-                5178412.82698,
+                1837817,
+                1847693,
+                5169000,
+                5181000,
             );
 
             // Define the camera initial placement
@@ -110,13 +110,99 @@
                 debugMenu.addLayerGUI.bind(debugMenu),
             );
 
+
+
             // Create the 3D Tiles layer
-            var $3DTilesLayerLyon = new itowns.C3DTilesLayer(
-                '3d-tiles-lyon',
+            var $3DTilesLayerLyon1 = new itowns.C3DTilesLayer(
+                '3d-tiles-lyon-1',
                 {
                     name: 'BTHierarchy',
                     source: new itowns.C3DTilesSource({
-                        url: 'https://dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/Demo/UD-Demo-vcity-py3dtilers-lyon/Lyon-1_2018_LODS/tileset.json',
+                        url: 'https://dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/2015/Lyon-1_2015/tileset.json',
+                    })
+                },
+                view,
+            );
+
+            // Create the 3D Tiles layer
+            var $3DTilesLayerLyon2 = new itowns.C3DTilesLayer(
+                '3d-tiles-lyon-2',
+                {
+                    name: 'BTHierarchy',
+                    source: new itowns.C3DTilesSource({
+                        url: 'https://dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/2015/Lyon-2_2015/tileset.json',
+                    })
+                },
+                view,
+            );
+
+            // Create the 3D Tiles layer
+            var $3DTilesLayerLyon3 = new itowns.C3DTilesLayer(
+                '3d-tiles-lyon-3',
+                {
+                    name: 'BTHierarchy',
+                    source: new itowns.C3DTilesSource({
+                        url: 'https://dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/2015/Lyon-3_2015/tileset.json',
+                    })
+                },
+                view,
+            );
+
+            // Create the 3D Tiles layer
+            var $3DTilesLayerLyon4 = new itowns.C3DTilesLayer(
+                '3d-tiles-lyon-4',
+                {
+                    name: 'BTHierarchy',
+                    source: new itowns.C3DTilesSource({
+                        url: 'https://dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/2015/Lyon-4_2015/tileset.json',
+                    })
+                },
+                view,
+            );
+
+            // Create the 3D Tiles layer
+            var $3DTilesLayerLyon5 = new itowns.C3DTilesLayer(
+                '3d-tiles-lyon-5',
+                {
+                    name: 'BTHierarchy',
+                    source: new itowns.C3DTilesSource({
+                        url: 'https://dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/2015/Lyon-5_2015/tileset.json',
+                    })
+                },
+                view,
+            );
+
+            // Create the 3D Tiles layer
+            var $3DTilesLayerLyon6 = new itowns.C3DTilesLayer(
+                '3d-tiles-lyon-6',
+                {
+                    name: 'BTHierarchy',
+                    source: new itowns.C3DTilesSource({
+                        url: 'https://dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/2015/Lyon-6_2015/tileset.json',
+                    })
+                },
+                view,
+            );
+
+            // Create the 3D Tiles layer
+            var $3DTilesLayerLyon7 = new itowns.C3DTilesLayer(
+                '3d-tiles-lyon-7',
+                {
+                    name: 'BTHierarchy',
+                    source: new itowns.C3DTilesSource({
+                        url: 'https://dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/2015/Lyon-7_2015/tileset.json',
+                    })
+                },
+                view,
+            );
+
+            // Create the 3D Tiles layer
+            var $3DTilesLayerLyon8 = new itowns.C3DTilesLayer(
+                '3d-tiles-lyon-8',
+                {
+                    name: 'BTHierarchy',
+                    source: new itowns.C3DTilesSource({
+                        url: 'https://dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/2015/Lyon-8_2015/tileset.json',
                     })
                 },
                 view,
@@ -134,7 +220,15 @@
                 view,
             );
 
-            itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon);
+            
+            itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon1);
+            itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon2);
+            itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon3);
+            itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon4);
+            itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon5);
+            itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon6);
+            itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon7);
+            itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon8);
             itowns.View.prototype.addLayer.call(view, $3DTilesLayerLyon9);
 
             // Add lights in the scene
