@@ -255,9 +255,18 @@
     padding: 0 10px;
     box-sizing: border-box;
 
+    align-items: center;
+
     border: 1px solid #222222;
     border-radius: 7px;
 
+    background-color: #313336bb;
+    color: #ffffff;
+
+}
+
+#widgets-layer-choice h3 {
+    color: #ffffff;
 }
 
 /* ---------- SCALE WIDGET SETTINGS : ------------------------------------------------------------------------------- */
