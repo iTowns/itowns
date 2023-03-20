@@ -59,8 +59,8 @@ class LayerChoice extends Widget {
     initContentColorLayers() {
         const html = document.createElement('div');
         const titleColorLayers = document.createElement('h3');
-        titleColorLayers.innerHTML = 'Color Layers : ';
         html.appendChild(titleColorLayers);
+        const titleString = 'Color Layers';
 
         const list = document.createElement('div');
 
@@ -102,8 +102,10 @@ class LayerChoice extends Widget {
 
             list.appendChild(divLayer);
         }
-        html.appendChild(list);
+        this.showHideListLayers(titleColorLayers, titleString, [list]); // Default Hide
+        titleColorLayers.onclick = () => { this.showHideListLayers(titleColorLayers, titleString, [list]); };
 
+        html.appendChild(list);
         return html;
     }
 
@@ -111,7 +113,7 @@ class LayerChoice extends Widget {
     initContentElevationLayers() {
         const html = document.createElement('div');
         const titleElevationLayers = document.createElement('h3');
-        titleElevationLayers.innerHTML = 'Elevation Layers : ';
+        const titleString = 'Elevation Layers ';
         html.appendChild(titleElevationLayers);
 
         const list = document.createElement('div');
@@ -125,9 +127,6 @@ class LayerChoice extends Widget {
             const labelScale = document.createElement('label');
             labelScale.innerHTML = ' Scale : ';
             divLayer.appendChild(labelScale);
-            const spanScale = document.createElement('span');
-            spanScale.innerHTML = layer.scale;
-            labelScale.appendChild(spanScale);
 
             const inputScale = document.createElement('input');
             inputScale.type = 'number';
@@ -140,10 +139,12 @@ class LayerChoice extends Widget {
             inputScale.oninput = (event) => {
                 layer.scale = event.target.valueAsNumber;
                 this.view.notifyChange();
-                spanScale.innerHTML = layer.scale;
             };
             list.appendChild(divLayer);
         }
+        this.showHideListLayers(titleElevationLayers, titleString, [list]); // Default Hide
+        titleElevationLayers.onclick = () => { this.showHideListLayers(titleElevationLayers, titleString, [list]); };
+
         html.appendChild(list);
 
         return html;
@@ -153,7 +154,7 @@ class LayerChoice extends Widget {
     initContentGeometryLayers() {
         const html = document.createElement('div');
         const titleGeometryLayers = document.createElement('h3');
-        titleGeometryLayers.innerHTML = 'Geometry Layers : ';
+        const titleString = 'Geometry Layers';
         html.appendChild(titleGeometryLayers);
 
         const divCheckAll = document.createElement('div');
@@ -200,10 +201,24 @@ class LayerChoice extends Widget {
                 inputCheckbox.dispatchEvent(new Event('click'));
             }
         };
+        this.showHideListLayers(titleGeometryLayers, titleString, [divCheckAll, list]); // Default Hide
+        titleGeometryLayers.onclick = () => { this.showHideListLayers(titleGeometryLayers, titleString, [divCheckAll, list]); };
 
         html.appendChild(list);
 
         return html;
+    }
+
+    showHideListLayers(tiltleHtmlElement, titleString, lists) {
+        const hideListCharacter = '►';
+        const showListCharacter = '▼';
+        const showBool = tiltleHtmlElement.innerHTML.includes('►');
+        lists.forEach((list) => {
+            if (showBool) { list.style.display = ''; tiltleHtmlElement.innerHTML = `${titleString} ${showListCharacter}`; } else {
+                list.style.display = 'none';
+                tiltleHtmlElement.innerHTML = `${titleString} ${hideListCharacter}`;
+            }
+        });
     }
 
     /**

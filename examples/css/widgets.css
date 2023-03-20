@@ -267,6 +267,7 @@
 
 #widgets-layer-choice h3 {
     color: #ffffff;
+    cursor: pointer;
 }
 
 /* ---------- SCALE WIDGET SETTINGS : ------------------------------------------------------------------------------- */
