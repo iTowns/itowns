@@ -108,7 +108,7 @@ describe('Provide in Sources', function () {
         context.scheduler.commands = [];
     });
 
-    it('should get wmts texture with DataSourceProvider', () => {
+    it('should get wmts texture with DataSourceProvider', (done) => {
         colorlayer.source = new WMTSSource({
             url: 'http://',
             name: 'name',
@@ -131,11 +131,13 @@ describe('Provide in Sources', function () {
 
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
-            assert.equal(textures[0].extent.zoom, zoom);
-            assert.equal(textures[0].extent.row, 511);
-            assert.equal(textures[0].extent.col, 512);
-        });
+        DataSourceProvider.executeCommand(context.scheduler.commands[0])
+            .then((textures) => {
+                assert.equal(textures[0].extent.zoom, zoom);
+                assert.equal(textures[0].extent.row, 511);
+                assert.equal(textures[0].extent.col, 512);
+                done();
+            }, done);
     });
 
     it('should get wmts texture elevation with DataSourceProvider', (done) => {
@@ -159,12 +161,13 @@ describe('Provide in Sources', function () {
 
         updateLayeredMaterialNodeElevation(context, elevationlayer, tile, tile.parent);
         updateLayeredMaterialNodeElevation(context, elevationlayer, tile, tile.parent);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
-            assert.equal(textures[0].extent.zoom, zoom);
-            assert.equal(textures[0].extent.row, 511);
-            assert.equal(textures[0].extent.col, 512);
-            done();
-        });
+        DataSourceProvider.executeCommand(context.scheduler.commands[0])
+            .then((textures) => {
+                assert.equal(textures[0].extent.zoom, zoom);
+                assert.equal(textures[0].extent.row, 511);
+                assert.equal(textures[0].extent.col, 512);
+                done();
+            }, done);
     });
     it('should get wms texture with DataSourceProvider', (done) => {
         colorlayer.source = new WMSSource({
@@ -188,15 +191,16 @@ describe('Provide in Sources', function () {
 
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
-            const e = textures[0].extent.as(tile.extent.crs);
-            assert.equal(e.zoom, zoom);
-            assert.equal(e.west, tile.extent.west);
-            assert.equal(e.east, tile.extent.east);
-            assert.equal(e.north, tile.extent.north);
-            assert.equal(e.south, tile.extent.south);
-            done();
-        });
+        DataSourceProvider.executeCommand(context.scheduler.commands[0])
+            .then((textures) => {
+                const e = textures[0].extent.as(tile.extent.crs);
+                assert.equal(e.zoom, zoom);
+                assert.equal(e.west, tile.extent.west);
+                assert.equal(e.east, tile.extent.east);
+                assert.equal(e.north, tile.extent.north);
+                assert.equal(e.south, tile.extent.south);
+                done();
+            }, done);
     });
     it('should get 4 TileMesh from TileProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
@@ -205,14 +209,15 @@ describe('Provide in Sources', function () {
         tile.parent = { };
 
         planarlayer.subdivideNode(context, tile);
-        TileProvider.executeCommand(context.scheduler.commands[0]).then((tiles) => {
-            assert.equal(tiles.length, 4);
-            assert.equal(tiles[0].extent.west, tile.extent.east * 0.5);
-            assert.equal(tiles[0].extent.east, tile.extent.east);
-            assert.equal(tiles[0].extent.north, tile.extent.north);
-            assert.equal(tiles[0].extent.south, tile.extent.north * 0.5);
-            done();
-        });
+        TileProvider.executeCommand(context.scheduler.commands[0])
+            .then((tiles) => {
+                assert.equal(tiles.length, 4);
+                assert.equal(tiles[0].extent.west, tile.extent.east * 0.5);
+                assert.equal(tiles[0].extent.east, tile.extent.east);
+                assert.equal(tiles[0].extent.north, tile.extent.north);
+                assert.equal(tiles[0].extent.south, tile.extent.north * 0.5);
+                done();
+            }, done);
     });
     it('should get 3 meshs with WFS source and DataSourceProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, featureLayer.zoom.min);
@@ -225,10 +230,11 @@ describe('Provide in Sources', function () {
         featureLayer.source.onLayerAdded({ out: featureLayer });
 
         featureLayer.update(context, featureLayer, tile);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
-            assert.equal(features[0].meshes.children.length, 4);
-            done();
-        });
+        DataSourceProvider.executeCommand(context.scheduler.commands[0])
+            .then((features) => {
+                assert.equal(features[0].meshes.children.length, 4);
+                done();
+            }, done);
     });
 
     it('should get 1 mesh with WFS source and DataSourceProvider and mergeFeatures == true', (done) => {
@@ -246,14 +252,15 @@ describe('Provide in Sources', function () {
         featureLayer.source._featuresCaches = {};
         featureLayer.source.onLayerAdded({ out: featureLayer });
         featureLayer.update(context, featureLayer, tile);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
-            assert.ok(features[0].meshes.children[0].isMesh);
-            assert.ok(features[0].meshes.children[1].isPoints);
-            assert.equal(features[0].meshes.children[0].children.length, 0);
-            assert.equal(features[0].meshes.children[1].children.length, 0);
-            assert.equal(featureCountByCb, 2);
-            done();
-        });
+        DataSourceProvider.executeCommand(context.scheduler.commands[0])
+            .then((features) => {
+                assert.ok(features[0].meshes.children[0].isMesh);
+                assert.ok(features[0].meshes.children[1].isPoints);
+                assert.equal(features[0].meshes.children[0].children.length, 0);
+                assert.equal(features[0].meshes.children[1].children.length, 0);
+                assert.equal(featureCountByCb, 2);
+                done();
+            }, done);
     });
     it('should get 1 texture with WFS source and DataSourceProvider', (done) => {
         const tile = new TileMesh(
@@ -287,11 +294,12 @@ describe('Provide in Sources', function () {
         colorlayerWfs.source.onLayerAdded({ out: colorlayerWfs });
         updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
         updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
-            assert.equal(textures.length, 1);
-            assert.ok(textures[0].isTexture);
-            done();
-        });
+        DataSourceProvider.executeCommand(context.scheduler.commands[0])
+            .then((textures) => {
+                assert.equal(textures.length, 1);
+                assert.ok(textures[0].isTexture);
+                done();
+            }, done);
     });
 
     it('should get updated RasterLayer', (done) => {
@@ -315,13 +323,14 @@ describe('Provide in Sources', function () {
 
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((result) => {
-            tile.material.setSequence([colorlayer.id]);
-            tile.material.getLayer(colorlayer.id).setTextures(result, [new THREE.Vector4()]);
-            assert.equal(tile.material.uniforms.colorTextures.value[0].extent, undefined);
-            tile.material.updateLayersUniforms();
-            assert.equal(tile.material.uniforms.colorTextures.value[0].extent.zoom, 10);
-            done();
-        });
+        DataSourceProvider.executeCommand(context.scheduler.commands[0])
+            .then((result) => {
+                tile.material.setSequence([colorlayer.id]);
+                tile.material.getLayer(colorlayer.id).setTextures(result, [new THREE.Vector4()]);
+                assert.equal(tile.material.uniforms.colorTextures.value[0].extent, undefined);
+                tile.material.updateLayersUniforms();
+                assert.equal(tile.material.uniforms.colorTextures.value[0].extent.zoom, 10);
+                done();
+            }, done);
     });
 });

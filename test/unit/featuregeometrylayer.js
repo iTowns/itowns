@@ -70,61 +70,66 @@ describe('Layer with Feature process', function () {
     tile.parent = {};
 
     it('add layer', function (done) {
-        viewer.addLayer(ariege).then((layer) => {
-            assert.ok(layer);
-            done();
-        });
+        viewer.addLayer(ariege)
+            .then((layer) => {
+                assert.ok(layer);
+                done();
+            }, done);
     });
     it('update', function (done) {
-        ariege.whenReady.then(() => {
-            tile.visible = true;
-            ariege.update(context, ariege, tile)
-                .then(() => {
-                    assert.equal(ariege.object3d.children.length, 1);
-                    done();
-                });
-        });
+        ariege.whenReady
+            .then(() => {
+                tile.visible = true;
+                ariege.update(context, ariege, tile)
+                    .then(() => {
+                        assert.equal(ariege.object3d.children.length, 1);
+                        done();
+                    });
+            }, done);
     });
 
     it('add layer no proj4', function (done) {
-        viewer.addLayer(ariegeNoProj4).then((layer) => {
-            assert.ok(layer);
-            done();
-        });
+        viewer.addLayer(ariegeNoProj4)
+            .then((layer) => {
+                assert.ok(layer);
+                done();
+            }, done);
     });
 
     it('update no proj4', function (done) {
-        ariegeNoProj4.whenReady.then(() => {
-            tile.visible = true;
-            context.layer = ariegeNoProj4;
-            ariegeNoProj4.update(context, ariegeNoProj4, tile)
-                .then(() => {
-                    assert.equal(ariegeNoProj4.object3d.children.length, 1);
-                    done();
-                });
-        });
+        ariegeNoProj4.whenReady
+            .then(() => {
+                tile.visible = true;
+                context.layer = ariegeNoProj4;
+                ariegeNoProj4.update(context, ariegeNoProj4, tile)
+                    .then(() => {
+                        assert.equal(ariegeNoProj4.object3d.children.length, 1);
+                        done();
+                    });
+            }, done);
     });
 
     it('parsing error without proj4 should be inferior to 1e-5 meter', function (done) {
-        Promise.all([ariegeNoProj4.whenReady, ariege.whenReady]).then(() => {
-            const meshNoProj4 = ariegeNoProj4.object3d.children[0].meshes.children[0];
-            const mesh = ariege.object3d.children[0].meshes.children[0];
-            const array = mesh.geometry.attributes.position.array;
-            const arrayNoProj4 = meshNoProj4.geometry.attributes.position.array;
-            const vMeshNoProj4 = new THREE.Vector3();
-            const v = new THREE.Vector3();
-            let error = 0;
-            for (var i = array.length / 3 - 1; i >= 0; i--) {
-                vMeshNoProj4.fromArray(arrayNoProj4).applyMatrix4(meshNoProj4.matrixWorld);
-                v.fromArray(array).applyMatrix4(mesh.matrixWorld);
-                error += v.distanceTo(vMeshNoProj4);
-            }
+        Promise.all([ariegeNoProj4.whenReady, ariege.whenReady])
+            .then(() => {
+                const meshNoProj4 = ariegeNoProj4.object3d.children[0].meshes.children[0];
+                const mesh = ariege.object3d.children[0].meshes.children[0];
+                const array = mesh.geometry.attributes.position.array;
+                const arrayNoProj4 = meshNoProj4.geometry.attributes.position.array;
+                const vMeshNoProj4 = new THREE.Vector3();
+                const v = new THREE.Vector3();
+                let error = 0;
+                for (var i = array.length / 3 - 1; i >= 0; i--) {
+                    vMeshNoProj4.fromArray(arrayNoProj4).applyMatrix4(meshNoProj4.matrixWorld);
+                    v.fromArray(array).applyMatrix4(mesh.matrixWorld);
+                    error += v.distanceTo(vMeshNoProj4);
+                }
 
-            error /= (array.length / 3);
+                error /= (array.length / 3);
 
-            assert.ok(error < 1e-5);
-            done();
-        });
+                assert.ok(error < 1e-5);
+                done();
+            }, done);
     });
 });
 
