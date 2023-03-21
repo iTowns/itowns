@@ -38,11 +38,12 @@ describe('3Dtiles batch table', function () {
         }, viewer);
 
     it('Add 3dtiles layer with batch table', function (done) {
-        View.prototype.addLayer.call(viewer, threedTilesLayerBTHierarchy).then((layer) => {
-            assert.equal(layer.root.children.length, 1);
-            const batchLength = viewer.getLayerById('3d-tiles-bt-hierarchy').root.batchTable.batchLength;
-            assert.equal(batchLength, 30);
-            done();
-        });
+        View.prototype.addLayer.call(viewer, threedTilesLayerBTHierarchy)
+            .then((layer) => {
+                assert.equal(layer.root.children.length, 1);
+                const batchLength = viewer.getLayerById('3d-tiles-bt-hierarchy').root.batchTable.batchLength;
+                assert.equal(batchLength, 30);
+                done();
+            }, done);
     });
 });

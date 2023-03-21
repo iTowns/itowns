@@ -52,18 +52,20 @@ describe('Oriented Image Layer', function () {
     };
 
     it('Add oriented image layer', function (done) {
-        olayer.whenReady.then(() => {
-            assert.equal(olayer.cameras.length, 5);
-            done();
-        });
+        olayer.whenReady
+            .then(() => {
+                assert.equal(olayer.cameras.length, 5);
+                done();
+            }, done);
     });
 
     it('PreUpdate oriented image layer', function (done) {
-        olayer.whenReady.then(() => {
-            assert.equal(olayer.currentPano, undefined);
-            olayer.preUpdate(context);
-            assert.equal(olayer.currentPano.id, 482);
-            done();
-        });
+        olayer.whenReady
+            .then(() => {
+                assert.equal(olayer.currentPano, undefined);
+                olayer.preUpdate(context);
+                assert.equal(olayer.currentPano.id, 482);
+                done();
+            }, done);
     });
 });

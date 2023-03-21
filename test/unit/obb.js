@@ -54,42 +54,46 @@ function assertVerticesAreInOBB(builder, extent) {
         segment: 1,
     };
 
-    newTileGeometry(builder, params).then((result) => {
-        const geom = result.geometry;
-        const inverse = new THREE.Matrix4().copy(geom.OBB.matrix).invert();
+    return newTileGeometry(builder, params)
+        .then((result) => {
+            const geom = result.geometry;
+            const inverse = new THREE.Matrix4().copy(geom.OBB.matrix).invert();
 
-        let failing = 0;
-        const vec = new THREE.Vector3();
-        for (let i = 0; i < geom.attributes.position.count; i++) {
-            vec.fromArray(geom.attributes.position.array, 3 * i);
+            let failing = 0;
+            const vec = new THREE.Vector3();
+            for (let i = 0; i < geom.attributes.position.count; i++) {
+                vec.fromArray(geom.attributes.position.array, 3 * i);
 
-            vec.applyMatrix4(inverse);
-            if (!geom.OBB.box3D.containsPoint(vec)) {
-                failing++;
+                vec.applyMatrix4(inverse);
+                if (!geom.OBB.box3D.containsPoint(vec)) {
+                    failing++;
+                }
             }
-        }
-        assert.equal(geom.attributes.position.count - failing, geom.attributes.position.count, 'All points should be inside OBB');
-    });
+            assert.equal(geom.attributes.position.count - failing, geom.attributes.position.count, 'All points should be inside OBB');
+        });
 }
 
 describe('Planar tiles OBB computation', function () {
     const builder = new PlanarTileBuilder({ crs: 'EPSG:3946', uvCount: 1 });
 
-    it('should compute OBB correctly', function () {
+    it('should compute OBB correctly', function (done) {
         const extent = new Extent('EPSG:3946', -100, 100, -50, 50);
-        assertVerticesAreInOBB(builder, extent);
+        assertVerticesAreInOBB(builder, extent)
+            .then(done, done);
     });
 });
 describe('Ellipsoid tiles OBB computation', function () {
     const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount: 1 });
 
-    it('should compute globe-level 0 OBB correctly', function () {
+    it('should compute globe-level 0 OBB correctly', function (done) {
         const extent = new Extent('EPSG:4326', -180, 0, -90, 90);
-        assertVerticesAreInOBB(builder, extent);
+        assertVerticesAreInOBB(builder, extent)
+            .then(done, done);
     });
 
-    it('should compute globe-level 2 OBB correctly', function () {
+    it('should compute globe-level 2 OBB correctly', function (done) {
         const extent = new Extent('EPSG:4326', 0, 45, -45, 0);
-        assertVerticesAreInOBB(builder, extent);
+        assertVerticesAreInOBB(builder, extent)
+            .then(done, done);
     });
 });

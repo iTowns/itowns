@@ -43,12 +43,13 @@ describe('Potree', function () {
     });
 
     it('Add point potree layer', function (done) {
-        View.prototype.addLayer.call(viewer, potreeLayer).then((layer) => {
-            context.camera.camera3D.updateMatrixWorld();
-            assert.equal(layer.root.children.length, 7);
-            layer.bboxes.visible = true;
-            done();
-        });
+        View.prototype.addLayer.call(viewer, potreeLayer)
+            .then((layer) => {
+                context.camera.camera3D.updateMatrixWorld();
+                assert.equal(layer.root.children.length, 7);
+                layer.bboxes.visible = true;
+                done();
+            }, done);
     });
 
     it('preupdate potree layer', function () {
@@ -59,10 +60,11 @@ describe('Potree', function () {
     it('update potree layer', function (done) {
         assert.equal(potreeLayer.group.children.length, 0);
         potreeLayer.update(context, potreeLayer, elt[0]);
-        elt[0].promise.then(() => {
-            assert.equal(potreeLayer.group.children.length, 1);
-            done();
-        });
+        elt[0].promise
+            .then(() => {
+                assert.equal(potreeLayer.group.children.length, 1);
+                done();
+            }, done);
     });
 
     it('postUpdate potree layer', function () {
@@ -82,20 +84,23 @@ describe('Potree', function () {
 
         it('load octree', function (done) {
             const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
-            root.loadOctree().then(() => {
-                assert.equal(7, root.children.length);
-                done();
-            });
+            root.loadOctree()
+                .then(() => {
+                    assert.equal(7, root.children.length);
+                    done();
+                }, done);
         });
 
         it('load child node', function (done) {
             const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
-            root.loadOctree().then(() => {
-                root.children[0].load().then(() => {
-                    assert.equal(2, root.children[0].children.length);
-                    done();
-                });
-            });
+            root.loadOctree()
+                .then(() => {
+                    root.children[0].load()
+                        .then(() => {
+                            assert.equal(2, root.children[0].children.length);
+                            done();
+                        });
+                }, done);
         });
     });
 

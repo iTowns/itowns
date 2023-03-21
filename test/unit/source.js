@@ -173,10 +173,11 @@ describe('Sources', function () {
     describe('OrientedImageSource', function () {
         it('instance OrientedImageSource', function (done) {
             const source = new OrientedImageSource({ url: 'none' });
-            source.whenReady.then((a) => {
-                assert.equal(Object.keys(a).length, 2);
-                done();
-            });
+            source.whenReady
+                .then((a) => {
+                    assert.equal(Object.keys(a).length, 2);
+                    done();
+                }, done);
         });
 
         it('should return keys OrientedImageSource from request', function () {
@@ -220,18 +221,19 @@ describe('Sources', function () {
                 networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             });
 
-            source.whenReady.then(() => {
-                const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
-                assert.ok(source.urlFromExtent());
-                assert.ok(source.extentInsideLimit(extent));
-                assert.ok(source.fetchedData);
-                assert.ok(source.fetchedData);
-                assert.ok(!source.features);
-                assert.ok(source.isFileSource);
-                fetchedData = source.fetchedData;
-                assert.equal(fetchedData.properties.nom, 'Ariège');
-                done();
-            });
+            source.whenReady
+                .then(() => {
+                    const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
+                    assert.ok(source.urlFromExtent());
+                    assert.ok(source.extentInsideLimit(extent));
+                    assert.ok(source.fetchedData);
+                    assert.ok(source.fetchedData);
+                    assert.ok(!source.features);
+                    assert.ok(source.isFileSource);
+                    fetchedData = source.fetchedData;
+                    assert.equal(fetchedData.properties.nom, 'Ariège');
+                    done();
+                }, done);
         });
 
         it('should instance FileSource with fetchedData and parse data with a layer', function (done) {
@@ -249,13 +251,17 @@ describe('Sources', function () {
             const layer = new Layer('09-ariege', { crs: 'EPSG:4326', source, structure: '2d' });
             layer.source.onLayerAdded({ out: layer });
 
-            layer.whenReady.then(() => {
-                const promise = source.loadData([], layer);
-                promise.then((featureCollection) => {
-                    assert.equal(featureCollection.features[0].vertices.length, 3536);
-                    done();
+            layer.whenReady
+                .then(() => {
+                    source.loadData([], layer)
+                        .then((featureCollection) => {
+                            assert.equal(featureCollection.features[0].vertices.length, 3536);
+                            done();
+                        })
+                        .catch((err) => {
+                            done(err);
+                        });
                 });
-            });
             layer._resolve();
         });
 
