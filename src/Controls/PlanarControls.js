@@ -90,6 +90,7 @@ const plane = new THREE.Plane(
 
 // default parameters :
 const defaultOptions = {
+    enabled: true,
     enableRotation: true,
     rotateSpeed: 2.0,
     minPanSpeed: 0.05,
@@ -134,6 +135,7 @@ export const PLANAR_CONTROL_EVENT = {
  * @class   PlanarControls
  * @param   {PlanarView}    view                                the view where the controls will be used
  * @param   {object}        options
+ * @param   {boolean}       [options.enabled=true]              Set to false to disable this control
  * @param   {boolean}       [options.enableRotation=true]       Enable the rotation with the `CTRL + Left mouse button`
  * and in animations, like the smart zoom.
  * @param   {boolean}       [options.enableSmartTravel=true]    Enable smart travel with the `wheel-click / space-bar`.
@@ -172,6 +174,9 @@ class PlanarControls extends THREE.EventDispatcher {
         super();
         this.view = view;
         this.camera = view.camera.camera3D;
+
+        // Set to false to disable this control
+        this.enabled = typeof options.enabled == 'boolean' ? options.enabled : defaultOptions.enabled;
 
         if (this.camera.isOrthographicCamera) {
             cameraInitialZoom = this.camera.zoom;
@@ -969,6 +974,10 @@ class PlanarControls extends THREE.EventDispatcher {
      * @ignore
      */
     onMouseDown(event) {
+        if (!this.enabled) {
+            return;
+        }
+
         event.preventDefault();
 
         this.view.domElement.focus();
@@ -1036,6 +1045,10 @@ class PlanarControls extends THREE.EventDispatcher {
      * @ignore
      */
     onMouseMove(event) {
+        if (!this.enabled) {
+            return;
+        }
+
         event.preventDefault();
 
         this.updateMousePositionAndDelta(event);
@@ -1053,7 +1066,7 @@ class PlanarControls extends THREE.EventDispatcher {
      * @ignore
      */
     onKeyDown(event) {
-        if (STATE.NONE !== this.state) {
+        if (STATE.NONE !== this.state || !this.enabled) {
             return;
         }
         switch (event.keyCode) {
@@ -1083,6 +1096,10 @@ class PlanarControls extends THREE.EventDispatcher {
      * @ignore
      */
     onMouseWheel(event) {
+        if (!this.enabled) {
+            return;
+        }
+
         event.preventDefault();
         event.stopPropagation();
 
