@@ -74,6 +74,8 @@ class LabelsNode extends THREE.Group {
         this.domElements.labels = new DomNode();
 
         this.domElements.add(this.domElements.labels);
+
+        this.domElements.labels.dom.style.opacity = '0';
     }
 
     // add node label
@@ -184,6 +186,8 @@ class LabelLayer extends GeometryLayer {
         this.crs = config.source.crs;
         this.performance = config.performance || true;
         this.forceClampToTerrain = config.forceClampToTerrain || false;
+
+        this.toHide = new THREE.Group();
 
         this.labelDomelement = domElement;
 
@@ -306,15 +310,11 @@ class LabelLayer extends GeometryLayer {
     }
 
     #submitToRendering(labelsNode) {
-        labelsNode.domElements?.labels.show();
-
         this.object3d.add(labelsNode);
     }
 
     #disallowToRendering(labelsNode) {
-        labelsNode.domElements?.labels.hide();
-
-        this.object3d.remove(labelsNode);
+        this.toHide.add(labelsNode);
     }
 
     #findClosestDomElement(node) {
@@ -449,6 +449,7 @@ class LabelLayer extends GeometryLayer {
 
             if (labelsNode.count()) {
                 labelsNode.domElements.labels.hide();
+                labelsNode.domElements.labels.dom.style.opacity = '1.0';
 
                 node.addEventListener('show', () => labelsNode.domElements.labels.show());
 

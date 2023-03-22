@@ -148,7 +148,7 @@ class Label2DRenderer {
 
                             this.culling(label, camera);
                         });
-
+                    labelsNode.domElements.labels.show();
                     labelsNode.needsUpdate = false;
                 });
         });
@@ -172,6 +172,11 @@ class Label2DRenderer {
             } else {
                 l.visible = false;
             }
+        });
+
+        labelLayers.forEach((labelLayer) => {
+            labelLayer.toHide.children.forEach(labelsNode => labelsNode.domElements?.labels.hide());
+            labelLayer.toHide.clear();
         });
     }
 
