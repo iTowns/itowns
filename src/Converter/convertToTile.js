@@ -41,12 +41,14 @@ export default {
         const builder = layer.builder;
         const parent = requester;
         const level = (parent !== undefined) ? (parent.level + 1) : 0;
+        layer.segments = layer.segments || 16;
 
         const paramsGeometry = {
             extent,
             level,
-            segment: layer.segments || 16,
+            segment: layer.segments,
             disableSkirt: layer.disableSkirt,
+            hideSkirt: layer.hideSkirt,
         };
 
         return newTileGeometry(builder, paramsGeometry).then((result) => {
