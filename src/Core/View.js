@@ -146,7 +146,9 @@ class View extends THREE.EventDispatcher {
      * @param {?Color} options.diffuse - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
      * @param {boolean} [options.enableFocusOnStart=true] - enable focus on dom element on start.
-     *
+     * @param {boolean} [options.undergroundVisualisation=false] - enable underground visualisation.
+     * @param {number} [options.altitudeForZeroOpacity=420] - Altitude (used for underground visualization) at which the ground is full hidden.
+     * @param {number} [options.altitudeForFullOpacity=2400] - Altitude (used for underground visualization) at which the ground is full shown.
      * @constructor
      */
     constructor(crs, viewerDiv, options = {}) {
@@ -238,6 +240,23 @@ class View extends THREE.EventDispatcher {
             }
         });
 
+        // configure dynamic opacity
+        if (options.altitudeForZeroOpacity === undefined || options.altitudeForZeroOpacity === null) {
+            this.altitudeForZeroOpacity = 420;
+        } else {
+            this.altitudeForZeroOpacity = options.altitudeForZeroOpacity;
+        }
+
+        if (options.altitudeForFullOpacity === undefined || options.altitudeForFullOpacity === null) {
+            this.altitudeForFullOpacity = 2400;
+        } else {
+            this.altitudeForFullOpacity = options.altitudeForFullOpacity;
+        }
+        this.undergroundVisualisation = options.undergroundVisualisation == true;
+
+        if (this.undergroundVisualisation) {
+            this.setUndergroundVisualization(this.undergroundVisualisation);
+        }
 
         // push all viewer to keep source.cache
         viewers.push(this);
@@ -289,6 +308,29 @@ class View extends THREE.EventDispatcher {
         viewers.splice(id, 1);
         // Remove remaining objects in the scene (e.g. helpers, debug, etc.)
         this.scene.traverse(ObjectRemovalHelper.cleanup);
+    }
+
+
+
+    /**
+     * Update layer opacity depending on camera position.
+     *
+     * @param {Event} event Event used to get camera target position.
+     */
+    #updateTiledLayerOpacity(event) {
+        var cameraTargetPosition;
+        if (event && event.coord) {
+            cameraTargetPosition = event.coord;
+        } else {
+            cameraTargetPosition = this.controls.getLookAtCoordinate();
+        }
+        var cameraTargetPosition2 = new Coordinates(cameraTargetPosition.crs, cameraTargetPosition).as('EPSG:4978');
+        var cameraPosition = this.camera.position('EPSG:4978');
+
+        const distance = Math.sqrt(((cameraTargetPosition2.x - cameraPosition.x) * (cameraTargetPosition2.x - cameraPosition.x)  + (cameraTargetPosition2.y - cameraPosition.y) * (cameraTargetPosition2.y - cameraPosition.y) + (cameraTargetPosition2.z - cameraPosition.z) * (cameraTargetPosition2.z - cameraPosition.z)));
+
+        var opacity = THREE.MathUtils.clamp((distance - this.altitudeForZeroOpacity) / (this.altitudeForFullOpacity - this.altitudeForZeroOpacity), 0, 1);
+        this.tileLayer.opacity = opacity;
     }
 
     /**
@@ -1111,6 +1153,35 @@ class View extends THREE.EventDispatcher {
             this.camera.resize(width, height);
             this.notifyChange(this.camera.camera3D);
         }
+    }
+
+    /**
+     * Trigger underground visualization
+     * @param {boolean} [trigger] - Enable/Disable the underground visualization.
+     */
+    setUndergroundVisualization(trigger) {
+        const atmo = this.getLayerById('atmosphere');
+        if (trigger) {
+            this.#updateTiledLayerOpacity();
+            this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, this.#updateTiledLayerOpacity);
+            this.tileLayer.hideSkirt = true;
+
+
+            if (atmo) {
+                this.scene.background = new THREE.Color(0x000000);
+                atmo.visible = false;
+            }
+        } else {
+            this.removeEventListener(VIEW_EVENTS.CAMERA_MOVED, this.#updateTiledLayerOpacity);
+            this.tileLayer.hideSkirt = false;
+
+            if (atmo) {
+                atmo.visible = true;
+            }
+            this.tileLayer.opacity = 1;
+        }
+        this.undergroundVisualisation = trigger;
+        this.notifyChange();
     }
 }
 

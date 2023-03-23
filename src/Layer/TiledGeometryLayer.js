@@ -97,6 +97,16 @@ class TiledGeometryLayer extends GeometryLayer {
             this.object3d.add(...level0s);
             this.object3d.updateMatrixWorld();
         }));
+
+        let _hideSkirt = this.hideSkirt;
+
+        Object.defineProperty(this, 'hideSkirt', {
+            get: () => _hideSkirt,
+            set: (value) => {
+                _hideSkirt = value;
+                this.#hideExistingSkirt(value);
+            },
+        });
     }
 
     /**
@@ -264,6 +274,20 @@ class TiledGeometryLayer extends GeometryLayer {
 
     convert(requester, extent) {
         return convertToTile.convert(requester, extent, this);
+    }
+
+    #hideExistingSkirt(value) {
+        for (const node of this.level0Nodes) {
+            node.traverse((obj) => {
+                if (obj.isTileMesh) {
+                    if (value) {
+                        obj.geometry.setDrawRange(0, this.segments * this.segments * 2 * 3);  //  bufferIndex = (nSeg) * (nSeg) * 2 * 3 (computeBufferTileGeometry.js)
+                    } else {
+                        obj.geometry.setDrawRange(0, Infinity);
+                    }
+                }
+            });
+        }
     }
 
     countColorLayersTextures(...layers) {
