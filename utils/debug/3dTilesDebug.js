@@ -19,14 +19,19 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
     const obb_layer_id = `${_3dTileslayer.id}_obb_debug`;
 
     function debugIdUpdate(context, layer, node) {
-        const enabled = context.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
-
-        if (!enabled) {
-            return;
-        }
         const metadata = node.userData.metadata;
 
         let helper = node.userData.obb;
+
+        if (!layer.visible) {
+            if (helper) {
+                helper.visible = false;
+                if (typeof helper.setMaterialVisibility === 'function') {
+                    helper.setMaterialVisibility(false);
+                }
+            }
+            return;
+        }
 
         if (node.visible && metadata.boundingVolume) {
             if (!helper) {
