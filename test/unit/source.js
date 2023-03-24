@@ -126,6 +126,15 @@ describe('Sources', function () {
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent, 5));
         });
+
+        it('should use vendor specific parameters for the creation of the WMTS url', function () {
+            paramsWMTS.vendorSpecific = vendorSpecific;
+            const source = new WMTSSource(paramsWMTS);
+            const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
+            const url = source.urlFromExtent(extent);
+            const end = '&buffer=4096&format_options=dpi:300;quantizer:octree&tiled=true';
+            assert.ok(url.endsWith(end));
+        });
     });
 
     describe('WMSSource', function () {

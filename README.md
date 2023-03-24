@@ -107,18 +107,19 @@ Incorporated libraries are published under their original licences.
 
 See [LICENSE.md](LICENSE.md) for more information.
 
-## Support
+## Maintainers
 
 iTowns is an original work from French IGN, [MATIS research
-laboratory](http://recherche.ign.fr/labos/matis/).  It has been funded through
+laboratory](http://recherche.ign.fr/labos/matis/). It has been funded through
 various research programs involving the French National Research Agency, Cap
-Digital, UPMC, Mines ParisTec, CNRS, LCPC.
-
-iTowns is currently maintained by [IGN](http://www.ign.fr) and
-[AtolCD](https://www.atolcd.com), and has been maintained by [Oslandia]() in the
-past. It has also received contributions from people [listed
+Digital, UPMC, Mines ParisTec, CNRS, LCPC and maintained by several organizations
+along the years (IGN, Oslandia, AtolCD, CIRIL Group). It has also received contributions from people [listed
 here](CONTRIBUTORS.md).
 
-[![IGN](https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/logo_ign.png)](https://www.ign.fr)
-[![AtolCD](https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/logo_atolcd.jpg)](https://www.atolcd.com)
-[![Oslandia](https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/logo_oslandia.png)](https://www.oslandia.com)
+iTowns is currently maintained by [IGN](http://www.ign.fr) and
+[CIRIL Group](https://www.cirilgroup.com/en/). 
+
+Contributions in any forms and new contributors and maintainers are welcome. Get in touch with us if you are interested :)
+
+[![IGN](./img/logo_ign.png)](https://www.ign.fr)
+[![CIRIL Group](./img/CIRIL_Group_logo.png)](https://www.cirilgroup.com/en/)
