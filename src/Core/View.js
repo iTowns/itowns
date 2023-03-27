@@ -79,6 +79,7 @@ function _preprocessLayer(view, layer, parentLayer) {
             crs: source.crs,
             visible: layer.visible,
             margin: 15,
+            forceClampToTerrain: layer.addLabelLayer.forceClampToTerrain,
         });
 
         layer.addEventListener('visible-property-changed', () => {
