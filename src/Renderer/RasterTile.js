@@ -7,6 +7,15 @@ export const EMPTY_TEXTURE_ZOOM = -1;
 
 const pitch = new THREE.Vector4();
 
+function getIndiceWithPitch(i, pitch, w) {
+    // Return corresponding indice in parent tile using pitch
+    const currentX = (i % w) / w;  // normalized
+    const currentY = Math.floor(i / w) / w; // normalized
+    const newX = pitch.x + currentX * pitch.z;
+    const newY = pitch.y + currentY * pitch.w;
+    const newIndice = Math.floor(newY * w) * w + Math.floor(newX * w);
+    return newIndice;
+}
 
 /**
  * A `RasterTile` is part of raster [`Layer`]{@link Layer} data.
@@ -205,13 +214,18 @@ export class RasterElevationTile extends RasterTile {
         if (nodatavalue == undefined) {
             return;
         }
-        // replace no datat value with parent texture value.
+        // replace no data value with parent texture value or 0 (if no significant value found).
         const parentTexture = this.textures[0];
         const parentDataElevation = parentTexture && parentTexture.image && parentTexture.image.data;
         const dataElevation = texture.image && texture.image.data;
-        if (dataElevation && parentDataElevation && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
-            texture.extent.offsetToParent(parentTexture.extent, pitch);
-            insertSignificantValuesFromParent(dataElevation, parentDataElevation, nodatavalue, pitch);
+
+        if (dataElevation && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
+            insertSignificantValuesFromParent(dataElevation, parentDataElevation && dataParent(texture, parentTexture, parentDataElevation, pitch), nodatavalue);
         }
     }
+}
+
+function dataParent(texture, parentTexture, parentDataElevation, pitch) {
+    texture.extent.offsetToParent(parentTexture.extent, pitch);
+    return i => parentDataElevation[getIndiceWithPitch(i, pitch, 256)];
 }

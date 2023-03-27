@@ -87,21 +87,11 @@ export function checkNodeElevationTextureValidity(data, noDataValue) {
            data[l - Math.sqrt(l)] > noDataValue;
 }
 
-function getIndiceWithPitch(i, pitch, w) {
-    // Return corresponding indice in parent tile using pitch
-    const currentX = (i % w) / w;  // normalized
-    const currentY = Math.floor(i / w) / w; // normalized
-    const newX = pitch.x + currentX * pitch.z;
-    const newY = pitch.y + currentY * pitch.w;
-    const newIndice = Math.floor(newY * w) * w + Math.floor(newX * w);
-    return newIndice;
-}
-
-// This function replaces noDataValue by significant values from parent texture
-export function insertSignificantValuesFromParent(data, dataParent, noDataValue, pitch) {
+// This function replaces noDataValue by significant values from parent texture (or 0)
+export function insertSignificantValuesFromParent(data, dataParent = () => 0, noDataValue) {
     for (let i = 0, l = data.length; i < l; ++i) {
         if (data[i] === noDataValue) {
-            data[i] = dataParent[getIndiceWithPitch(i, pitch, 256)];
+            data[i] = dataParent(i);
         }
     }
 }
