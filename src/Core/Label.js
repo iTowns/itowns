@@ -206,8 +206,17 @@ class Label extends THREE.Object3D {
     }
 
     updateElevationFromLayer(layer, nodes) {
-        const elevation = Math.max(0, DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z, nodes));
-        if (elevation && elevation != this.coordinates.z) {
+        if (layer.attachedLayers.filter(l => l.isElevationLayer).length == 0) {
+            return;
+        }
+
+        let elevation = Math.max(0, DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z, nodes));
+
+        if (isNaN(elevation)) {
+            elevation = Math.max(0, DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z));
+        }
+
+        if (!isNaN(elevation) && elevation != this.coordinates.z) {
             this.coordinates.z = elevation;
             this.updateHorizonCullingPoint();
             return true;
