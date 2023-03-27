@@ -183,6 +183,7 @@ class LabelLayer extends GeometryLayer {
         this.buildExtent = true;
         this.crs = config.source.crs;
         this.performance = config.performance || true;
+        this.forceClampToTerrain = config.forceClampToTerrain || false;
 
         this.labelDomelement = domElement;
 
@@ -250,7 +251,7 @@ class LabelLayer extends GeometryLayer {
             const isDefaultElevationStyle = altitudeStyle instanceof Function && altitudeStyle.name == 'base_altitudeDefault';
 
             // determine if the altitude needs update with ElevationLayer
-            labels.needsAltitude = labels.needsAltitude || (isDefaultElevationStyle && !f.hasRawElevationData);
+            labels.needsAltitude = labels.needsAltitude || this.forceClampToTerrain === true || (isDefaultElevationStyle && !f.hasRawElevationData);
 
             f.geometries.forEach((g) => {
                 // NOTE: this only works because only POINT is supported, it

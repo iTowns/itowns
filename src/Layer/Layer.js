@@ -59,6 +59,7 @@ class Layer extends THREE.EventDispatcher {
      * You can also configure it with [LabelLayer]{@link LabelLayer} options described below such as: `addLabelLayer: { performance: true }`.
      * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
      * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
+     * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.
      *
      * @example
      * // Add and create a new Layer
