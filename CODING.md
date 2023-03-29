@@ -48,13 +48,14 @@ Or you can download it manually, and then:
 * then use the env var `CHROME` to tell itowns/mocha/puppeteer what Chrome app
   it should use: `CHROME=/opt/google/chrome-beta/chrome npm run test-examples`
 
-Then tests can be ran with four differents methods:
-* `npm run test`: build and ran all tests in iTowns
-* `npm run test-unit`: ran unit tests only
-* `npm run test-functional`: ran functional testing with examples only, use
+Then tests can be run with five differents methods:
+* `npm run test`: build and run all tests in iTowns (the one used by github action)
+* `npm run test-dev`: build in development mode and run all tests in iTowns (to get more messages)
+* `npm run test-unit`: run unit tests only
+* `npm run test-functional`: run functional testing with examples only, use
   `npx mocha -t 30000 test/functional/bootstrap.js
   test/functional/<test_case>.js` to run a single example
-* `npm run test-with-coverage`: build and ran all tests in iTowns and generate a
+* `npm run test-with-coverage`: build and run all tests in iTowns and generate a
   report on the coverage of the tests
 
 
