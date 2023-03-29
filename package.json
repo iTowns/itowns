@@ -12,6 +12,7 @@
     "doc": "jsdoc --readme docs/HOMEPAGE.md -c docs/config.json",
     "doclint": "npm run doc -- -t templates/silent",
     "test": "npm run lint -- --max-warnings=0 && npm run build && npm run test-with-coverage && npm run test-functional",
+    "test-dev": "npm run lint -- --max-warnings=0 && npm run build-dev && npm run test-with-coverage && npm run test-functional",
     "test-unit": "npm run base-test-unit test/unit",
     "test-functional": "mocha -t 60000 --require test/hooks_functional.js --recursive test/functional",
     "test-with-coverage": "nyc -n src -r html cross-env npm run test-unit",
