@@ -47,7 +47,11 @@ class DOMElement {
         this[att] = val;
     }
     focus() {}
-    appendChild(c) { this.children.push(c); }
+    appendChild(c) {
+        c.parentNode = this;
+        this.children.push(c);
+    }
+    append(c) { this.appendChild(c); }
     cloneNode() { return Object.create(this); }
     getBoundingClientRect() { return { x: 0, y: 0, width: this.width, height: this.height }; }
     addEventListener(event, cb) { this.events.set(event, cb); }
