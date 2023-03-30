@@ -108,7 +108,7 @@ class GlobeView extends View {
         const sun = new THREE.DirectionalLight();
         sun.position.set(-0.5, 0, 1);
         sun.updateMatrixWorld(true);
-        tileLayer.object3d.add(sun);
+        this.scene.add(sun);
 
         this.addLayer(tileLayer);
         this.tileLayer = tileLayer;
