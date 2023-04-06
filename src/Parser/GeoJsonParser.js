@@ -141,7 +141,7 @@ function toFeatureType(jsonType) {
 
 const keyProperties = ['type', 'geometry', 'properties'];
 
-const firstCoordinates = a => (Array.isArray(a) && !isNaN(a[0])  ? a : firstCoordinates(a[0]));
+const firstCoordinates = a => (a === undefined || (Array.isArray(a) && !isNaN(a[0])) ? a : firstCoordinates(a[0]));
 
 function jsonFeatureToFeature(crsIn, json, collection) {
     const jsonType = json.geometry.type.toLowerCase();
