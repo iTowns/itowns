@@ -1,0 +1,119 @@
+<html>
+    <head>
+        <title>Itowns - Planar + color layers from vector data</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv" class="viewer"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="js/plugins/FeatureToolTip.js"></script>
+        <script type="text/javascript">
+            // # Orthographic viewer with one geojson layer and a TMS background layer
+
+            // Define geographic extent: CRS, min/max X, min/max Y
+            var extent = new itowns.Extent(
+                'EPSG:3857',
+                -20037508.34, 20037508.34,
+                -20048966.1, 20048966.1);
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate PlanarView (with ortho camera)
+            // By default itowns' tiles geometry have a "skirt" (ie they have a height),
+            // but in case of orthographic we don't need this feature, so disable it
+            var view = new itowns.PlanarView(viewerDiv, extent, {
+                disableSkirt: true,
+                maxSubdivisionLevel: 10,
+                camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC },
+                placement: new itowns.Extent('EPSG:3857', -20000000, 20000000, -20000000, 20000000),
+                controls: {
+                    // Faster zoom in/out speed
+                    zoomFactor: 3,
+                    // prevent from zooming in too much
+                    maxResolution: 0.005  // a pixel shall not represent a metric size smaller than 5 mm
+                },
+            });
+
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
+
+            setupLoadingScreen(viewerDiv, view);
+            FeatureToolTip.init(viewerDiv, view);
+
+            // Add a TMS layer to have a background (OpenStreetMap)
+            // -> TMS imagery source
+            var opensmSource = new itowns.TMSSource({
+                isInverted: true,
+                url: 'https://tile.openstreetmap.org/${z}/${x}/${y}.png',
+                networkOptions: { crossOrigin: 'anonymous' },
+                extent,
+                crs: 'EPSG:3857',
+                attribution: {
+                    name: 'OpenStreetMap',
+                    url: 'http://www.openstreetmap.org/',
+                },
+            });
+            // -> TMS imagery layer
+            var opensmLayer = new itowns.ColorLayer('OPENSM', {
+                updateStrategy: {
+                    type: itowns.STRATEGY_DICHOTOMY,
+                },
+                source: opensmSource,
+            });
+            view.addLayer(opensmLayer);
+
+            // Display the content of the GeoJSON file with ColorLayer and FileSource.
+            // The GeoJSON are loaded from url, set in FileSource
+
+            // Declare the source for the earthquakes data
+            const earthquakeSource = new itowns.FileSource({
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/' +
+                        'geojson/Earthquakes_3857.geojson',
+                crs: 'EPSG:3857',
+                format: 'application/json',
+            });
+
+            function offset(properties) {
+                const radius = properties.mag;
+                return [ 0, -radius ];
+            }
+
+            // Create a ColorLayer with the earthquake information
+            const earthquakeLayer = new itowns.ColorLayer('earthquakes', {
+                source: earthquakeSource,
+                style: new itowns.Style({
+                    point: {
+                        color: function (p) { return p.alert; },
+                        radius: function (p) { return p.mag; },
+                        line: 'black',
+                        width: 0.5,
+                    },
+                    text: {
+                        field: '{title}',
+                        haloColor: 'black',
+                        haloWidth: 1,
+                        anchor: 'bottom',
+                        offset: offset,
+                    },
+                }),
+                addLabelLayer: true,
+            });
+
+            // Add the earthquakes ColorLayer to the view and grant it a tooltip
+            view.addLayer(earthquakeLayer).then(FeatureToolTip.addLayer);
+
+            // Request redraw
+            view.notifyChange(true);
+
+            debug.createTileDebugUI(menuGlobe.gui, view);
+        </script>
+    </body>
+</html>
