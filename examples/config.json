@@ -48,6 +48,7 @@
 
     "FileSource": {
         "source_file_geojson_raster": "GeoJSON to raster",
+        "source_file_geojson_raster_2": "USGS GeoJSON flux to raster (planar view)",
         "source_file_geojson_3d": "GeoJSON to 3D objects",
         "source_file_kml_raster": "KML to raster",
         "source_file_kml_raster_usgs": "USGS KML flux to raster",
