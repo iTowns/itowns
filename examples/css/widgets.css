@@ -247,7 +247,28 @@
     color: #222222;
 }
 
+/* ---------- LAYER CHOICE WIDGET SETTINGS : ------------------------------------------------------------------------ */
 
+#widgets-layer-choice {
+    position: absolute;
+    z-index: 10;
+    padding: 0 10px;
+    box-sizing: border-box;
+
+    align-items: center;
+
+    border: 1px solid #222222;
+    border-radius: 7px;
+
+    background-color: #313336bb;
+    color: #ffffff;
+
+}
+
+#widgets-layer-choice h3 {
+    color: #ffffff;
+    cursor: pointer;
+}
 
 /* ---------- SCALE WIDGET SETTINGS : ------------------------------------------------------------------------------- */
 
