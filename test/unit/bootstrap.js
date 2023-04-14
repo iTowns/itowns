@@ -92,6 +92,22 @@ global.document = {
                     image.height = dh;
                     return image;
                 },
+                getImageData: (sx, sy, sw, sh) => {
+                    const imageData = {
+                        data: new Uint8ClampedArray(sw * sh * 4),
+                        colorSpace: 'srgb',
+                        height: sh,
+                        width: sw,
+                    };
+                    return imageData;
+                },
+                // eslint-disable-next-line no-unused-vars
+                putImageData: (imageData, dx, dy) => {
+                    const image = global.document.createElement('img');
+                    image.width = imageData.sw;
+                    image.height = imageData.sh;
+                    return image;
+                },
                 canvas,
             });
 
