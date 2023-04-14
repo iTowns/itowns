@@ -1,6 +1,6 @@
 {
   "name": "itowns",
-  "version": "2.39.1-next.16",
+  "version": "2.39.1-next.17",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "main": "lib/Main.js",
   "exports": {
