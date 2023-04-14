@@ -7,6 +7,15 @@ export const EMPTY_TEXTURE_ZOOM = -1;
 
 const pitch = new THREE.Vector4();
 
+function getIndiceWithPitch(i, pitch, w) {
+    // Return corresponding indice in parent tile using pitch
+    const currentX = (i % w) / w;  // normalized
+    const currentY = Math.floor(i / w) / w; // normalized
+    const newX = pitch.x + currentX * pitch.z;
+    const newY = pitch.y + currentY * pitch.w;
+    const newIndice = Math.floor(newY * w) * w + Math.floor(newX * w);
+    return newIndice;
+}
 
 /**
  * A `RasterTile` is part of raster [`Layer`]{@link Layer} data.
@@ -124,7 +133,7 @@ export class RasterElevationTile extends RasterTile {
         const defaultEle = {
             bias: 0,
             mode: ELEVATION_MODES.DATA,
-            zmin: 0,
+            zmin: -Infinity,
             zmax: Infinity,
         };
 
@@ -145,11 +154,10 @@ export class RasterElevationTile extends RasterTile {
             this.min = 0;
             this.max = 0;
         }
-
-        this.bias = layer.bias || defaultEle.bias;
-        this.mode = layer.mode || defaultEle.mode;
-        this.zmin = layer.zmin || defaultEle.zmin;
-        this.zmax = layer.zmax || defaultEle.zmax;
+        this.bias = layer.bias ?? defaultEle.bias;
+        this.mode = layer.mode ?? defaultEle.mode;
+        this.zmin = layer.zmin ?? defaultEle.zmin;
+        this.zmax = layer.zmax ?? defaultEle.zmax;
 
         layer.addEventListener('scale-property-changed', this._handlerCBEvent);
     }
@@ -186,7 +194,14 @@ export class RasterElevationTile extends RasterTile {
 
     updateMinMaxElevation() {
         if (this.textures[0] && !this.layer.useColorTextureElevation) {
-            const { min, max } = computeMinMaxElevation(this.textures[0], this.offsetScales[0], this.layer.noDataValue);
+            const { min, max } = computeMinMaxElevation(
+                this.textures[0],
+                this.offsetScales[0],
+                {
+                    noDataValue: this.layer.noDataValue,
+                    zmin: this.layer.zmin,
+                    zmax: this.layer.zmax,
+                });
             if (this.min != min || this.max != max) {
                 this.min = min;
                 this.max = max;
@@ -199,13 +214,18 @@ export class RasterElevationTile extends RasterTile {
         if (nodatavalue == undefined) {
             return;
         }
-        // replace no datat value with parent texture value.
+        // replace no data value with parent texture value or 0 (if no significant value found).
         const parentTexture = this.textures[0];
         const parentDataElevation = parentTexture && parentTexture.image && parentTexture.image.data;
         const dataElevation = texture.image && texture.image.data;
-        if (dataElevation && parentDataElevation && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
-            texture.extent.offsetToParent(parentTexture.extent, pitch);
-            insertSignificantValuesFromParent(dataElevation, parentDataElevation, nodatavalue, pitch);
+
+        if (dataElevation && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
+            insertSignificantValuesFromParent(dataElevation, parentDataElevation && dataParent(texture, parentTexture, parentDataElevation, pitch), nodatavalue);
         }
     }
+}
+
+function dataParent(texture, parentTexture, parentDataElevation, pitch) {
+    texture.extent.offsetToParent(parentTexture.extent, pitch);
+    return i => parentDataElevation[getIndiceWithPitch(i, pitch, 256)];
 }

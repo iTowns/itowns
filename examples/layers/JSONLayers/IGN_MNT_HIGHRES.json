@@ -1,6 +1,9 @@
 {
 	"id":         "IGN_MNT_HIGHRES",
 	"noDataValue" : -99999,
+	"clampValues": {
+        "min": 0
+    },
 	"updateStrategy": {
 		"type": 1,
 		"options": {

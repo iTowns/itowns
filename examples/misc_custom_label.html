@@ -57,8 +57,8 @@
         config.source = new itowns.WMTSSource(config.source);
         view.addLayer(new itowns.ElevationLayer(config.id, config));
     }
-    itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
     itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+    itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
     debug.createTileDebugUI(menuGlobe.gui, view);
 
     // Create a custom div which will be displayed as a label
