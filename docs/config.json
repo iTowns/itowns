@@ -133,7 +133,8 @@
                 "Navigation",
                 "Minimap",
                 "Scale",
-                "Searchbar"
+                "Searchbar",
+                "C3DTilesStyle"
             ]
         },
         "tutorialSections": {

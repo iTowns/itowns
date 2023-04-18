@@ -358,3 +358,31 @@
 #widgets-searchbar form > div > p {
     margin: 8px 0;
 }
+
+/* ---------- 3D Tiles Style : --------------------------------------------------------------------- */
+
+#widgets-3dtilesstyle {
+    position: absolute;
+    z-index: 2;
+    background-color: #313336bb; /* maybe create global variables for this file */
+    padding: 5px;
+}
+
+#widgets-3dtilesstyle select,input{
+    width: 100%;
+    background-color: inherit;
+}
+
+#widgets-3dtilesstyle option {
+    color:black;
+}
+
+#widgets-3dtilesstyle * {
+    color:#ffffff;
+    padding: 2px;
+}
+
+#widgets-3dtilesstyle label {
+    text-transform: uppercase;
+    display: block;
+}
