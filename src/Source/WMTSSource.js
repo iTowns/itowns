@@ -4,9 +4,9 @@ import TMSSource from 'Source/TMSSource';
  * @classdesc
  * An object defining the source of resources to get from a
  * [WMTS]{@link http://www.opengeospatial.org/standards/wmts} server. It inherits
- * from {@link Source}.
+ * from {@link TMSSource}.
  *
- * @extends Source
+ * @extends TMSSource
  *
  * @property {boolean} isWMTSSource - Used to checkout whether this source is a
  * WMTSSource. Default is true. You should not change this, as it is used
