@@ -30,22 +30,24 @@ describe('3dtiles_batch_table', function _() {
     // extension picked information are correct for object at { x: 218, y: 90 }
     it('should return the batch table and batch hierarchy picked information',
         async () => {
-            // Picks the object at (218,90) and gets its pickingInfo from
-            // the batch table and the batch table hierarchy
-            const pickingInfo = await page.evaluate(
+            // Picks the object at (218,90) and gets its closest c3DTileFeature
+            const pickResult = await page.evaluate(
                 () => {
                     const intersects = view.pickObjectsAt({
                         x: 218,
                         y: 90,
                     });
                     const layer = view.getLayerById('3d-tiles-bt-hierarchy');
-                    return layer.getInfoFromIntersectObject(intersects);
+                    const c3DTileFeaturePicked = layer.getC3DTileFeatureFromIntersectsArray(intersects);
+                    return {
+                        info: c3DTileFeaturePicked.getInfo(),
+                        batchId: c3DTileFeaturePicked.batchId,
+                    };
                 },
             );
 
             // Create the expected object
             const expectedPickingInfo = {
-                batchID: 29,
                 batchTable: {
                     height: 10,
                     area: 20,
@@ -68,7 +70,8 @@ describe('3dtiles_batch_table', function _() {
                     },
                 },
             };
-
-            assert.deepStrictEqual(pickingInfo, expectedPickingInfo);
+            const expectedBatchId = 29;
+            assert.deepStrictEqual(pickResult.batchId, expectedBatchId);
+            assert.deepStrictEqual(pickResult.info, expectedPickingInfo);
         });
 });

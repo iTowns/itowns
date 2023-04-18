@@ -31,6 +31,7 @@ The following people have contributed to iTowns.
   * [Marie Lamure](https://github.com/mlamure)
   * [Vincent Jaillot](https://github.com/jailln)
   * [Valentin Rigolle](https://github.com/Crejak)
+  * [Valentin Machado](https://github.com/valentinMachado)
 
 * [virtualcitySYSTEMS](https://www.virtualcitysystems.de/)
   * [Ben Kuster](https://github.com/bkuster)

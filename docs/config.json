@@ -118,7 +118,8 @@
                 "C3DTBatchTable",
                 "C3DTBoundingVolume",
                 "C3DTExtensions",
-                "C3DTBatchTableHierarchyExtension"
+                "C3DTBatchTableHierarchyExtension",
+                "C3DTFeature"
             ],
 
             "Plugins": [
@@ -132,7 +133,8 @@
                 "Navigation",
                 "Minimap",
                 "Scale",
-                "Searchbar"
+                "Searchbar",
+                "C3DTilesStyle"
             ]
         },
         "tutorialSections": {

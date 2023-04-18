@@ -18,13 +18,13 @@ import C3DTilesTypes from './C3DTilesTypes';
  */
 class C3DTBatchTable {
     /**
-     * @param {ArrayBuffer} buffer - batch table buffer to parse
-     * @param {number} jsonLength - batch table json part length
-    * @param {number} binaryLength - batch table binary part length
-     * @param {number} batchLength - the length of the batch.
-     * @param {Object} registeredExtensions - extensions registered to the layer
+     * @param {ArrayBuffer} [buffer=new ArrayBuffer()] - batch table buffer to parse
+     * @param {number} [jsonLength=0] - batch table json part length
+    * @param {number} [binaryLength=0] - batch table binary part length
+     * @param {number} [batchLength=0] - the length of the batch.
+     * @param {Object} [registeredExtensions] - extensions registered to the layer
      */
-    constructor(buffer, jsonLength, binaryLength, batchLength, registeredExtensions) {
+    constructor(buffer = new ArrayBuffer(), jsonLength = 0, binaryLength = 0, batchLength = 0, registeredExtensions) {
         if (arguments.length === 4 &&
             typeof batchLength === 'object' &&
             !Array.isArray(batchLength) &&
@@ -40,7 +40,8 @@ class C3DTBatchTable {
         this.batchLength = batchLength;
 
         const jsonBuffer = buffer.slice(0, jsonLength);
-        const jsonContent = JSON.parse(utf8Decoder.decode(new Uint8Array(jsonBuffer)));
+        const decodedJsonBuffer = utf8Decoder.decode(new Uint8Array(jsonBuffer));
+        const jsonContent = decodedJsonBuffer === '' ? null : JSON.parse(decodedJsonBuffer);
 
         if (binaryLength > 0) {
             const binaryBuffer = buffer.slice(jsonLength, jsonLength + binaryLength);
@@ -71,7 +72,7 @@ class C3DTBatchTable {
         // returned object to batchTable.extensions
         // Extensions must be registered in the layer (see an example of this in
         // 3dtiles_hierarchy.html)
-        if (jsonContent.extensions) {
+        if (jsonContent && jsonContent.extensions) {
             this.extensions =
                 registeredExtensions.parseExtensions(jsonContent.extensions, this.type);
             delete jsonContent.extensions;

@@ -148,10 +148,10 @@ export default {
                     b3dmHeader.FTBinaryLength;
                 const BTBuffer = buffer.slice(sizeBegin, sizeBegin + b3dmHeader.BTJSONLength +
                     b3dmHeader.BTBinaryLength);
-                promises.push(new C3DTBatchTable(BTBuffer, b3dmHeader.BTJSONLength,
-                    b3dmHeader.BTBinaryLength, FTJSON.BATCH_LENGTH, options.registeredExtensions));
+                promises.push(Promise.resolve(new C3DTBatchTable(BTBuffer, b3dmHeader.BTJSONLength,
+                    b3dmHeader.BTBinaryLength, FTJSON.BATCH_LENGTH, options.registeredExtensions)));
             } else {
-                promises.push(Promise.resolve({}));
+                promises.push(Promise.resolve(new C3DTBatchTable()));
             }
 
             const posGltf = headerByteLength +

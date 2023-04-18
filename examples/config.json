@@ -85,7 +85,8 @@
         "widgets_navigation": "Navigation",
         "widgets_minimap": "Minimap",
         "widgets_scale": "Scale",
-        "widgets_searchbar": "Searchbar"
+        "widgets_searchbar": "Searchbar",
+        "widgets_3dtiles_style": "3DTiles Style"
     },
 
     "Plugins": {
