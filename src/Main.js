@@ -52,7 +52,7 @@ export { default as GeometryLayer } from 'Layer/GeometryLayer';
 export { default as FeatureGeometryLayer } from 'Layer/FeatureGeometryLayer';
 export { default as PointCloudLayer } from 'Layer/PointCloudLayer';
 export { default as PotreeLayer } from 'Layer/PotreeLayer';
-export { default as C3DTilesLayer } from 'Layer/C3DTilesLayer';
+export { default as C3DTilesLayer, C3DTILES_LAYER_EVENTS } from 'Layer/C3DTilesLayer';
 export { default as TiledGeometryLayer } from 'Layer/TiledGeometryLayer';
 export { default as OrientedImageLayer } from 'Layer/OrientedImageLayer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from 'Layer/LayerUpdateStrategy';
@@ -96,6 +96,7 @@ export { enableDracoLoader, glTFLoader, legacyGLTFLoader } from 'Parser/B3dmPars
 // 3D Tiles classes and extensions
 // Exported to allow one to implement its own 3D Tiles extension which needs to
 // know the classes it extends
+export { default as C3DTFeature } from './Core/3DTiles/C3DTFeature';
 export { default as C3DTileset } from './Core/3DTiles/C3DTileset';
 export { default as C3DTBoundingVolume } from './Core/3DTiles/C3DTBoundingVolume';
 export { default as C3DTBatchTable } from './Core/3DTiles/C3DTBatchTable';
