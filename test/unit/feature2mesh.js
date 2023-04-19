@@ -30,7 +30,7 @@ describe('Feature2Mesh', function () {
     const parsed = GeoJsonParser.parse(geojson, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false, structure: '3d' } });
     const parsed2 = GeoJsonParser.parse(geojson2, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false, structure: '3d' } });
 
-    it('rect mesh area should match geometry extent', () =>
+    it('rect mesh area should match geometry extent', function (done) {
         parsed.then((collection) => {
             const mesh = Feature2Mesh.convert()(collection).meshes;
             const extentSize = collection.extent.planarDimensions();
@@ -38,9 +38,11 @@ describe('Feature2Mesh', function () {
             assert.equal(
                 extentSize.x * extentSize.y,
                 computeAreaOfMesh(mesh.children[0]));
-        }));
+            done();
+        }, done);
+    });
 
-    it('square mesh area should match geometry extent minus holes', () =>
+    it('square mesh area should match geometry extent minus holes', function (done) {
         parsed.then((collection) => {
             const mesh = Feature2Mesh.convert()(collection).meshes;
 
@@ -51,13 +53,17 @@ describe('Feature2Mesh', function () {
             assert.equal(
                 noHoleArea - holeArea,
                 meshWithHoleArea);
-        }));
+            done();
+        }, done);
+    });
 
-    it('convert points, lines and mesh', () =>
+    it('convert points, lines and mesh', function (done) {
         parsed2.then((collection) => {
             const mesh = Feature2Mesh.convert()(collection).meshes;
             assert.equal(mesh.children[0].type, 'Points');
             assert.equal(mesh.children[1].type, 'Line');
             assert.equal(mesh.children[2].type, 'Mesh');
-        }));
+            done();
+        }, done);
+    });
 });
