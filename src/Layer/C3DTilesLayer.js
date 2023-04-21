@@ -359,7 +359,7 @@ class C3DTilesLayer extends GeometryLayer {
 
         const currentMaterials = [];// list materials used for this update
         this.object3d.traverse((object) => {
-            if (object.tileId && this.tilesC3DTileFeatures.has(object.tileId)) {
+            if (this.tilesC3DTileFeatures.has(object.tileId)) {
                 // object is a tile content
                 const c3DTileFeatures = this.tilesC3DTileFeatures.get(object.tileId);
                 object.traverse((child) => {
