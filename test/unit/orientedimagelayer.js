@@ -56,7 +56,7 @@ describe('Oriented Image Layer', function () {
             .then(() => {
                 assert.equal(olayer.cameras.length, 5);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('PreUpdate oriented image layer', function (done) {
@@ -66,6 +66,6 @@ describe('Oriented Image Layer', function () {
                 olayer.preUpdate(context);
                 assert.equal(olayer.currentPano.id, 482);
                 done();
-            }, done);
+            }).catch(done);
     });
 });

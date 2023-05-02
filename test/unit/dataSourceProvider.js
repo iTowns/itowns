@@ -137,7 +137,7 @@ describe('Provide in Sources', function () {
                 assert.equal(textures[0].extent.row, 511);
                 assert.equal(textures[0].extent.col, 512);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should get wmts texture elevation with DataSourceProvider', (done) => {
@@ -167,7 +167,7 @@ describe('Provide in Sources', function () {
                 assert.equal(textures[0].extent.row, 511);
                 assert.equal(textures[0].extent.col, 512);
                 done();
-            }, done);
+            }).catch(done);
     });
     it('should get wms texture with DataSourceProvider', (done) => {
         colorlayer.source = new WMSSource({
@@ -200,7 +200,7 @@ describe('Provide in Sources', function () {
                 assert.equal(e.north, tile.extent.north);
                 assert.equal(e.south, tile.extent.south);
                 done();
-            }, done);
+            }).catch(done);
     });
     it('should get 4 TileMesh from TileProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
@@ -217,7 +217,7 @@ describe('Provide in Sources', function () {
                 assert.equal(tiles[0].extent.north, tile.extent.north);
                 assert.equal(tiles[0].extent.south, tile.extent.north * 0.5);
                 done();
-            }, done);
+            }).catch(done);
     });
     it('should get 3 meshs with WFS source and DataSourceProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, featureLayer.zoom.min);
@@ -234,7 +234,7 @@ describe('Provide in Sources', function () {
             .then((features) => {
                 assert.equal(features[0].meshes.children.length, 4);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should get 1 mesh with WFS source and DataSourceProvider and mergeFeatures == true', (done) => {
@@ -260,7 +260,7 @@ describe('Provide in Sources', function () {
                 assert.equal(features[0].meshes.children[1].children.length, 0);
                 assert.equal(featureCountByCb, 2);
                 done();
-            }, done);
+            }).catch(done);
     });
     it('should get 1 texture with WFS source and DataSourceProvider', (done) => {
         const tile = new TileMesh(
@@ -299,7 +299,7 @@ describe('Provide in Sources', function () {
                 assert.equal(textures.length, 1);
                 assert.ok(textures[0].isTexture);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should get updated RasterLayer', (done) => {
@@ -331,6 +331,6 @@ describe('Provide in Sources', function () {
                 tile.material.updateLayersUniforms();
                 assert.equal(tile.material.uniforms.colorTextures.value[0].extent.zoom, 10);
                 done();
-            }, done);
+            }).catch(done);
     });
 });

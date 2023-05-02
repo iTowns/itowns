@@ -177,7 +177,7 @@ describe('Sources', function () {
                 .then((a) => {
                     assert.equal(Object.keys(a).length, 2);
                     done();
-                }, done);
+                }).catch(done);
         });
 
         it('should return keys OrientedImageSource from request', function () {
@@ -233,7 +233,7 @@ describe('Sources', function () {
                     fetchedData = source.fetchedData;
                     assert.equal(fetchedData.properties.nom, 'Ariège');
                     done();
-                }, done);
+                }).catch(done);
         });
 
         it('should instance FileSource with fetchedData and parse data with a layer', function (done) {

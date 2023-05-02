@@ -16,6 +16,7 @@ The following people have contributed to iTowns.
 
 * [CIRIL Group](https://www.cirilgroup.com/en/):
   * [Vincent Jaillot](https://github.com/jailln)
+  * [Anthony Gullient](https://github.com/AnthonyGlt)
 
 * [Oslandia](http://www.oslandia.com)
   * [Vincent Picavet](https://github.com/vpicavet)

@@ -63,7 +63,7 @@ describe('GlobeControls', function () {
                 assert.equal(e.tilt, tilt);
                 assert.equal((tilt / controls.getTilt()).toFixed(8), 1);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('Set heading', function (done) {
@@ -72,7 +72,7 @@ describe('GlobeControls', function () {
                 assert.equal(e.heading, heading);
                 assert.equal((heading / controls.getHeading()).toFixed(8), 1);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('getCameraOrientation', function () {
@@ -97,7 +97,7 @@ describe('GlobeControls', function () {
             .then(() => {
                 assert.equal(zoom, controls.getZoom());
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('Set range', function (done) {
@@ -106,7 +106,7 @@ describe('GlobeControls', function () {
             .then((e) => {
                 assert.equal((e.range / range).toFixed(8), 1);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('Set scale', function (done) {
@@ -115,7 +115,7 @@ describe('GlobeControls', function () {
             .then(() => {
                 assert.equal((viewer.getScale() / scale).toFixed(8), 1);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('update', function () {
@@ -166,7 +166,7 @@ describe('GlobeControls', function () {
             .then(() => {
                 assert.ok(controls.getRange() < startRange);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('travel out', function (done) {
@@ -179,7 +179,7 @@ describe('GlobeControls', function () {
             .then(() => {
                 assert.ok(controls.getRange() > startRange);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('touch start', function () {
@@ -207,7 +207,7 @@ describe('GlobeControls', function () {
                 assert.equal((e.coord.latitude / placement.coord.latitude).toFixed(8), 1);
                 clearInterval(i);
                 done();
-            }, done);
+            }).catch(done);
 
         if (rig.animationFrameRequester) {
             i = setInterval(rig.animationFrameRequester, 10);

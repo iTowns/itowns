@@ -40,6 +40,6 @@ describe('pnts parser', function () {
                     155);
 
                 done();
-            }, done);
+            }).catch(done);
     });
 });

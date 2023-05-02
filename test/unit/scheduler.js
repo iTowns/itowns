@@ -38,7 +38,7 @@ describe('Command execution', function () {
             .then((c) => {
                 assert.ok(c.done);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should execute 100 commands', function (done) {
@@ -53,7 +53,7 @@ describe('Command execution', function () {
                     assert.ok(cmd.done);
                 }
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should execute balance commands between layers', function (done) {
@@ -74,6 +74,6 @@ describe('Command execution', function () {
             // layer1 commands must be all finished before layer0 commands
             assert.ok(results.lastIndexOf('layer1') < results.lastIndexOf('layer0'));
             done();
-        }, done);
+        }).catch(done);
     });
 });

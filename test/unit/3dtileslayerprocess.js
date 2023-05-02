@@ -35,7 +35,7 @@ describe('3Dtiles layer', function () {
             .then((layer) => {
                 assert.equal(layer.root.children.length, 1);
                 done();
-            }, done);
+            }).catch(done);
     });
     it('preUpdate 3dtiles layer', function () {
         const elements = threedTilesLayer.preUpdate(context, new Set([threedTilesLayer]));

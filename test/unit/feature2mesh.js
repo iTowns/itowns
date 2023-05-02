@@ -39,7 +39,7 @@ describe('Feature2Mesh', function () {
                 extentSize.x * extentSize.y,
                 computeAreaOfMesh(mesh.children[0]));
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('square mesh area should match geometry extent minus holes', function (done) {
@@ -54,7 +54,7 @@ describe('Feature2Mesh', function () {
                 noHoleArea - holeArea,
                 meshWithHoleArea);
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('convert points, lines and mesh', function (done) {
@@ -64,6 +64,6 @@ describe('Feature2Mesh', function () {
             assert.equal(mesh.children[1].type, 'Line');
             assert.equal(mesh.children[2].type, 'Mesh');
             done();
-        }, done);
+        }).catch(done);
     });
 });
