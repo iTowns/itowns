@@ -68,12 +68,12 @@ files.forEach((geojson, i) => {
             layerProj4.whenReady
                 .then(() => {
                     tile.visible = true;
-                    layerProj4.update(context, layerProj4, tile)
+                    return layerProj4.update(context, layerProj4, tile)
                         .then(() => {
                             assert.equal(layerProj4.object3d.children.length, 1);
                             done();
-                        }, done);
-                }, done);
+                        });
+                }).catch(done);
         });
 
         it('update without proj4', function (done) {
@@ -81,12 +81,12 @@ files.forEach((geojson, i) => {
                 .then(() => {
                     tile.visible = true;
                     context.layer = layerNoProj4;
-                    layerNoProj4.update(context, layerNoProj4, tile)
+                    return layerNoProj4.update(context, layerNoProj4, tile)
                         .then(() => {
                             assert.equal(layerNoProj4.object3d.children.length, 1);
                             done();
-                        }, done);
-                }, done);
+                        });
+                }).catch(done);
         });
 
         it(`parsing error without proj4 should be inferior to ${max_error} meter`, function (done) {
@@ -118,7 +118,7 @@ files.forEach((geojson, i) => {
 
                     assert.ok(error < max_error);
                     done();
-                }, done);
+                }).catch(done);
         });
     });
 });

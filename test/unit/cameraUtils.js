@@ -64,7 +64,7 @@ describe('Camera utils unit test', function () {
                 assert.ok(equalToFixed(result.coord.longitude, params.coord.longitude, 4));
                 assert.ok(equalToFixed(result.coord.latitude, params.coord.latitude, 4));
                 done();
-            }, done);
+            }).catch(done);
     });
     it('should set range like expected', function (done) {
         const params = { range: 10000 };
@@ -73,7 +73,7 @@ describe('Camera utils unit test', function () {
                 const range = result.range;
                 assert.ok(equalToFixed(range, params.range, 1));
                 done();
-            }, done);
+            }).catch(done);
     });
     it('should look at coordinate like expected', function (done) {
         const params = { coord: coord.clone() };
@@ -83,7 +83,7 @@ describe('Camera utils unit test', function () {
                 assert.ok(equalToFixed(result.coord.longitude, params.coord.longitude, 4));
                 assert.ok(equalToFixed(result.coord.latitude, params.coord.latitude, 4));
                 done();
-            }, done);
+            }).catch(done);
     });
     it('should tilt like expected', function (done) {
         const params = { tilt: 38 };
@@ -91,7 +91,7 @@ describe('Camera utils unit test', function () {
             .then((result) => {
                 assert.ok(equalToFixed(result.tilt, params.tilt, 4));
                 done();
-            }, done);
+            }).catch(done);
     });
     it('should heading like expected', function (done) {
         const params = { heading: 147 };
@@ -99,7 +99,7 @@ describe('Camera utils unit test', function () {
             .then((result) => {
                 assert.ok(equalToFixed(result.heading, params.heading, 4));
                 done();
-            }, done);
+            }).catch(done);
     });
     it('should heading, tilt, range and coordinate like expected', function (done) {
         const params = { heading: 17, tilt: 80, range: 20000, coord: coord.clone() };
@@ -112,7 +112,7 @@ describe('Camera utils unit test', function () {
                 assert.ok(equalToFixed(result.coord.longitude, params.coord.longitude, 4));
                 assert.ok(equalToFixed(result.coord.latitude, params.coord.latitude, 4));
                 done();
-            }, done);
+            }).catch(done);
     });
 
     // TODO: to verify and recode
@@ -129,7 +129,7 @@ describe('Camera utils unit test', function () {
                 assert.ok(equalToFixed(result.coord.longitude, params.coord.longitude, 4));
                 assert.ok(equalToFixed(result.coord.latitude, params.coord.latitude, 4));
                 done();
-            }, done);// neither here
+            }).catch(done);// neither here
     });
     */
 

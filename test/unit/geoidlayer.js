@@ -44,7 +44,7 @@ describe('GlobeView', function () {
         view.addLayer(geoidLayer)
             .then(() => {
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('update geoid layer', function (done) {
@@ -55,6 +55,6 @@ describe('GlobeView', function () {
                         assert.equal(tile.geoidHeight, 45.72800064087844);
                         done();
                     });
-            }, done);
+            }).catch(done);
     });
 });

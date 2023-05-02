@@ -74,7 +74,7 @@ describe('Layer with Feature process', function () {
             .then((layer) => {
                 assert.ok(layer);
                 done();
-            }, done);
+            }).catch(done);
     });
     it('update', function (done) {
         ariege.whenReady
@@ -85,7 +85,7 @@ describe('Layer with Feature process', function () {
                         assert.equal(ariege.object3d.children.length, 1);
                         done();
                     });
-            }, done);
+            }).catch(done);
     });
 
     it('add layer no proj4', function (done) {
@@ -93,7 +93,7 @@ describe('Layer with Feature process', function () {
             .then((layer) => {
                 assert.ok(layer);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('update no proj4', function (done) {
@@ -106,7 +106,7 @@ describe('Layer with Feature process', function () {
                         assert.equal(ariegeNoProj4.object3d.children.length, 1);
                         done();
                     });
-            }, done);
+            }).catch(done);
     });
 
     it('parsing error without proj4 should be inferior to 1e-5 meter', function (done) {
@@ -129,7 +129,7 @@ describe('Layer with Feature process', function () {
 
                 assert.ok(error < 1e-5);
                 done();
-            }, done);
+            }).catch(done);
     });
 });
 

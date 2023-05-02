@@ -44,6 +44,6 @@ describe('3Dtiles batch table', function () {
                 const batchLength = viewer.getLayerById('3d-tiles-bt-hierarchy').root.batchTable.batchLength;
                 assert.equal(batchLength, 30);
                 done();
-            }, done);
+            }).catch(done);
     });
 });
