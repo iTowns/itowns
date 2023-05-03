@@ -315,28 +315,6 @@ class View extends THREE.EventDispatcher {
     }
 
 
-
-    /**
-     * Update layer opacity depending on camera position.
-     *
-     * @param {Event} event Event used to get camera target position.
-     */
-    #updateTiledLayerOpacity(event) {
-        var cameraTargetPosition;
-        if (event && event.coord) {
-            cameraTargetPosition = event.coord;
-        } else {
-            cameraTargetPosition = this.controls.getLookAtCoordinate();
-        }
-        var cameraTargetPosition2 = new Coordinates(cameraTargetPosition.crs, cameraTargetPosition).as('EPSG:4978');
-        var cameraPosition = this.camera.position('EPSG:4978');
-
-        const distance = Math.sqrt(((cameraTargetPosition2.x - cameraPosition.x) * (cameraTargetPosition2.x - cameraPosition.x)  + (cameraTargetPosition2.y - cameraPosition.y) * (cameraTargetPosition2.y - cameraPosition.y) + (cameraTargetPosition2.z - cameraPosition.z) * (cameraTargetPosition2.z - cameraPosition.z)));
-
-        var opacity = THREE.MathUtils.clamp((distance - this.altitudeForZeroOpacity) / (this.altitudeForFullOpacity - this.altitudeForZeroOpacity), 0, 1);
-        this.tileLayer.opacity = opacity;
-    }
-
     /**
      * Add layer in viewer.
      * The layer id must be unique.
@@ -1180,8 +1158,8 @@ class View extends THREE.EventDispatcher {
     setUndergroundVisualization(trigger) {
         const atmo = this.getLayerById('atmosphere');
         if (trigger) {
-            this.#updateTiledLayerOpacity();
-            this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, this.#updateTiledLayerOpacity);
+            this.tileLayer.updateTiledLayerOpacity({ target: this });
+            this.addEventListener(VIEW_EVENTS.CAMERA_MOVED,  this.tileLayer.updateTiledLayerOpacity);
             this.tileLayer.hideSkirt = true;
 
 
@@ -1190,7 +1168,7 @@ class View extends THREE.EventDispatcher {
                 atmo.visible = false;
             }
         } else {
-            this.removeEventListener(VIEW_EVENTS.CAMERA_MOVED, this.#updateTiledLayerOpacity);
+            this.removeEventListener(VIEW_EVENTS.CAMERA_MOVED,  this.tileLayer.updateTiledLayerOpacity);
             this.tileLayer.hideSkirt = false;
 
             if (atmo) {

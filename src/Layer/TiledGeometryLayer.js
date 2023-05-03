@@ -7,6 +7,8 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { SIZE_DIAGONAL_TEXTURE } from 'Process/LayeredMaterialNodeProcessing';
 import { ImageryLayers } from 'Layer/Layer';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+import Coordinates from 'Core/Geographic/Coordinates';
+
 
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
@@ -100,15 +102,8 @@ class TiledGeometryLayer extends GeometryLayer {
 
         this.maxScreenSizeNode = this.sseSubdivisionThreshold * (SIZE_DIAGONAL_TEXTURE * 2);
 
-        let _hideSkirt = this.hideSkirt;
 
-        Object.defineProperty(this, 'hideSkirt', {
-            get: () => _hideSkirt,
-            set: (value) => {
-                _hideSkirt = value;
-                this.#hideExistingSkirt(value);
-            },
-        });
+        this.updateTiledLayerOpacity = this._updateTiledLayerOpacity.bind(this);
     }
 
     /**
@@ -126,6 +121,20 @@ class TiledGeometryLayer extends GeometryLayer {
      */
     pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {
         return Picking.pickTilesAt(view, coordinates, radius, this, target);
+    }
+
+    /**
+     * Update layer opacity depending on camera position.
+     *
+     * @param {Event} event Event used to get camera target position.
+     */
+    _updateTiledLayerOpacity(event) {
+        const target = event.target;
+        const cameraTargetPosition = event?.coord || target.controls.getLookAtCoordinate();
+        const cameraTargetPosition2 = new Coordinates(cameraTargetPosition.crs, cameraTargetPosition);
+        const cameraPosition = target.camera.position('EPSG:4978');
+        const distance = cameraTargetPosition2.spatialEuclideanDistanceTo(cameraPosition);
+        this.opacity = THREE.MathUtils.clamp((distance - target.altitudeForZeroOpacity) / (target.altitudeForFullOpacity - target.altitudeForZeroOpacity), 0, 1);
     }
 
     /**
@@ -276,20 +285,6 @@ class TiledGeometryLayer extends GeometryLayer {
 
     convert(requester, extent) {
         return convertToTile.convert(requester, extent, this);
-    }
-
-    #hideExistingSkirt(value) {
-        for (const node of this.level0Nodes) {
-            node.traverse((obj) => {
-                if (obj.isTileMesh) {
-                    if (value) {
-                        obj.geometry.setDrawRange(0, this.segments * this.segments * 2 * 3);  //  bufferIndex = (nSeg) * (nSeg) * 2 * 3 (computeBufferTileGeometry.js)
-                    } else {
-                        obj.geometry.setDrawRange(0, Infinity);
-                    }
-                }
-            });
-        }
     }
 
     countColorLayersTextures(...layers) {

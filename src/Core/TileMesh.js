@@ -108,6 +108,12 @@ class TileMesh extends THREE.Mesh {
     }
 
     onBeforeRender() {
+        if (this.layer.hideSkirt) {
+            this.geometry.setDrawRange(0, this.layer.segments * this.layer.segments * 2 * 3);  //  bufferIndex = (nSeg) * (nSeg) * 2 * 3 (computeBufferTileGeometry.js)
+        } else if (this.geometry.drawRange.count != Infinity) {
+            this.geometry.setDrawRange(0, Infinity);
+        }
+
         if (this.material.layersNeedUpdate) {
             this.material.updateLayersUniforms();
         }
