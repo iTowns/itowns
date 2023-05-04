@@ -7,6 +7,8 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { SIZE_DIAGONAL_TEXTURE } from 'Process/LayeredMaterialNodeProcessing';
 import { ImageryLayers } from 'Layer/Layer';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+import Coordinates from 'Core/Geographic/Coordinates';
+
 
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
@@ -97,6 +99,9 @@ class TiledGeometryLayer extends GeometryLayer {
             this.object3d.add(...level0s);
             this.object3d.updateMatrixWorld();
         }));
+
+
+        this.updateTiledLayerOpacity = this._updateTiledLayerOpacity.bind(this);
     }
 
     /**
@@ -114,6 +119,23 @@ class TiledGeometryLayer extends GeometryLayer {
      */
     pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {
         return Picking.pickTilesAt(view, coordinates, radius, this, target);
+    }
+
+    /**
+     * Update layer opacity depending on camera position.
+     *
+     * @param {Event} event Event used to get camera target position.
+     */
+    _updateTiledLayerOpacity(event) {
+        if (event == null) {
+            return;
+        }
+        const view = event.target;
+        var cameraTargetPosition = event?.coord || view.controls.getLookAtCoordinate();
+        var cameraTargetPosition2 = new Coordinates(cameraTargetPosition.crs, cameraTargetPosition);
+        var cameraPosition = view.camera.position('EPSG:4978');
+        const distance = cameraTargetPosition2.spatialEuclideanDistanceTo(cameraPosition);
+        this.opacity = THREE.MathUtils.clamp((distance - view.altitudeForZeroOpacity) / (view.altitudeForFullOpacity - view.altitudeForZeroOpacity), 0, 1);
     }
 
     /**

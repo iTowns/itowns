@@ -68,6 +68,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
 
     layer.showOutline = false;
     layer.wireframe = false;
+    layer.dynamicOpacity = false;
     const state = {
         objectChart: true,
         visibilityChart: true,
@@ -81,6 +82,11 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         applyToNodeFirstMaterial(view, layer.object3d, layer, (material) => {
             material.showOutline = newValue;
         });
+    });
+
+    // dynamic tiles opacity
+    gui.add(layer, 'dynamicOpacity').name('Dynamic opacity').onChange(() => {
+        view.setUndergroundVisualization(layer.dynamicOpacity);
     });
 
     // tiles wireframe

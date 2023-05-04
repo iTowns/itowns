@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+import { VIEW_EVENTS } from 'Core/View';
+import CameraUtils from 'Utils/CameraUtils';
 
 // event keycode
 export const keys = {
@@ -372,6 +374,7 @@ class PlanarControls extends THREE.EventDispatcher {
         }
         if (onMovement) {
             this.view.dispatchEvent({ type: PLANAR_CONTROL_EVENT.MOVED });
+            this.view.dispatchEvent({ type: VIEW_EVENTS.CAMERA_MOVED });
         }
         deltaMousePosition.set(0, 0);
     }
@@ -420,6 +423,15 @@ class PlanarControls extends THREE.EventDispatcher {
      */
     initiatePan() {
         this.state = STATE.PAN;
+    }
+
+
+    /**
+     * Returns the {@linkcode Coordinates} of the central point on screen in the crs of the view. See {@linkcode Coordinates} for conversion.
+     * @return {Coordinates} coordinate
+     */
+    getLookAtCoordinate() {
+        return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).coord;
     }
 
     /**

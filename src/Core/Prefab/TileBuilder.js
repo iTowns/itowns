@@ -51,7 +51,9 @@ export default function newTileGeometry(builder, params) {
 
         const geometry = new TileGeometry(params, buffers);
         geometry.OBB = new OBB(geometry.boundingBox.min, geometry.boundingBox.max);
-
+        if (params.hideSkirt) {
+            geometry.setDrawRange(0, params.segment * params.segment * 2 * 3);//  bufferIndex = (nSeg) * (nSeg) * 2 * 3 (computeBufferTileGeometry.js)
+        }
         geometry._count = 0;
         geometry.dispose = () => {
             geometry._count--;
