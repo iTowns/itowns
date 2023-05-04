@@ -129,6 +129,9 @@ class TiledGeometryLayer extends GeometryLayer {
      * @param {Event} event Event used to get camera target position.
      */
     _updateTiledLayerOpacity(event) {
+        if (event == null) {
+            return;
+        }
         const target = event.target;
         const cameraTargetPosition = event?.coord || target.controls.getLookAtCoordinate();
         const cameraTargetPosition2 = new Coordinates(cameraTargetPosition.crs, cameraTargetPosition);
