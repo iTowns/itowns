@@ -132,12 +132,12 @@ class TiledGeometryLayer extends GeometryLayer {
         if (event == null) {
             return;
         }
-        const target = event.target;
-        const cameraTargetPosition = event?.coord || target.controls.getLookAtCoordinate();
+        const view = event.target;
+        const cameraTargetPosition = event?.coord || view.controls.getLookAtCoordinate();
         const cameraTargetPosition2 = new Coordinates(cameraTargetPosition.crs, cameraTargetPosition);
-        const cameraPosition = target.camera.position('EPSG:4978');
+        const cameraPosition = view.camera.position('EPSG:4978');
         const distance = cameraTargetPosition2.spatialEuclideanDistanceTo(cameraPosition);
-        this.opacity = THREE.MathUtils.clamp((distance - target.altitudeForZeroOpacity) / (target.altitudeForFullOpacity - target.altitudeForZeroOpacity), 0, 1);
+        this.opacity = THREE.MathUtils.clamp((distance - view.altitudeForZeroOpacity) / (view.altitudeForFullOpacity - view.altitudeForZeroOpacity), 0, 1);
     }
 
     /**
