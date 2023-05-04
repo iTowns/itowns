@@ -374,12 +374,9 @@ class PlanarControls extends THREE.EventDispatcher {
         }
         if (onMovement) {
             this.view.dispatchEvent({ type: PLANAR_CONTROL_EVENT.MOVED });
+            this.view.dispatchEvent({ type: VIEW_EVENTS.CAMERA_MOVED });
         }
         deltaMousePosition.set(0, 0);
-
-        this.view.dispatchEvent({
-            type: VIEW_EVENTS.CAMERA_MOVED,
-        });
     }
 
     /**
