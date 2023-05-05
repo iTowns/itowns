@@ -778,7 +778,7 @@ class GlobeControls extends THREE.EventDispatcher {
         var range = this.getRange(pickedPosition);
         range *= (event.delta > 0 ?  this.zoomInScale :  this.zoomOutScale);
 
-        if (point && (range > this.minDistance && range < this.maxDistance)) {  // check if the zoom is in the allowed interval
+        if (range > this.minDistance && range < this.maxDistance) {  // check if the zoom is in the allowed interval
             const camPos = this.getLookAtCoordinate().toVector3();
 
             point = new Coordinates('EPSG:4978', point).as('EPSG:4326').toVector3();
