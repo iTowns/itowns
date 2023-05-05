@@ -203,6 +203,7 @@ class StateControl extends THREE.EventDispatcher {
 
         this._onPointerDown = this.onPointerDown.bind(this);
         this._onPointerMove = this.onPointerMove.bind(this);
+        this._cancelZoom = this.cancelZoom.bind(this);
         this._onPointerUp = this.onPointerUp.bind(this);
         this._onMouseWheel = this.onMouseWheel.bind(this);
 
@@ -386,9 +387,17 @@ class StateControl extends THREE.EventDispatcher {
         if (this.enabled && this.ZOOM.enable) {
             viewCoords.copy(this._view.eventToViewCoords(event));
             this.dispatchEvent({ type: this.ZOOM._event, delta: event.deltaY, viewCoords });
+            this._domElement.addEventListener('pointermove', this._cancelZoom, false);
         }
     }
 
+    cancelZoom(event) {
+        if (this.enabled && this.ZOOM.enable) {
+            event.preventDefault();
+            this._domElement.removeEventListener('pointermove', this._cancelZoom, false);
+            this.dispatchEvent({ type: 'state-changed', viewCoords, previous: this.ZOOM });
+        }
+    }
 
     // ---------- KEYBOARD EVENTS : ----------
 

@@ -35,7 +35,8 @@ const dollyStart = new THREE.Vector2();
 const dollyEnd = new THREE.Vector2();
 const dollyDelta = new THREE.Vector2();
 let dollyScale;
-let dollyOrigin;    // will store the picking position at the start
+
+let zoomOrigin;    // will store the picking position at the start
 
 // Globe move
 const moveAroundGlobe = new THREE.Quaternion();
@@ -340,6 +341,7 @@ class GlobeControls extends THREE.EventDispatcher {
             this.player.removeEventListener('animation-stopped', this._onEndingMove);
             this._onEndingMove = null;
         }
+        zoomOrigin = null;
         this.handlingEvent(current);
     }
 
@@ -628,17 +630,14 @@ class GlobeControls extends THREE.EventDispatcher {
 
 
     handleDolly(event) {
-        if (!dollyOrigin) {
-            dollyOrigin = this.view.getPickingPositionFromDepth(event.viewCoords);        // mouse position
-        }
         dollyEnd.copy(event.viewCoords);
         dollyDelta.subVectors(dollyEnd, dollyStart);
         dollyStart.copy(dollyEnd);
-        const delta = dollyDelta.y;
-        if (delta === 0) { return; }
+        event.delta = dollyDelta.y;
+        if (event.delta === 0) { return; }
 
 
-        this.handleZoom({ delta }, dollyOrigin);
+        this.handleZoom(event);
     }
 
     handlePan(event) {
@@ -671,9 +670,6 @@ class GlobeControls extends THREE.EventDispatcher {
 
     handleEndMovement(event = {}) {
         this.dispatchEvent(this.endEvent);
-        dollyOrigin = null;
-
-
         this.player.stop();
 
         // Launch damping movement for :
@@ -768,11 +764,16 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
-    handleZoom(event, dollyOrigin) {
+    handleZoom(event) {
         this.player.stop();
         CameraUtils.stop(this.view, this.camera);
 
-        var point = dollyOrigin ?? this.view.getPickingPositionFromDepth(event.viewCoords);        // mouse position
+        if (!zoomOrigin) {
+            zoomOrigin = this.view.getPickingPositionFromDepth(event.viewCoords);        // mouse position
+        }
+        var point = new THREE.Vector3();
+        point.copy(zoomOrigin);
+
         this.view.getPickingPositionFromDepth(null, pickedPosition);
         var range = this.getRange(pickedPosition);
         range *= (event.delta > 0 ?  this.zoomInScale :  this.zoomOutScale);
