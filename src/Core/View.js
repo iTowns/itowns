@@ -836,8 +836,9 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
-     * Searches for {@link Feature} in {@link ColorLayer}, under the mouse of at
-     * a specified coordinates, in this view.
+     * Searches for {@link FeatureGeometry} in {@link ColorLayer}, under the mouse or at
+     * the specified coordinates, in this view. Combining them per layer and in a Feature
+     * like format.
      *
      * @param {Object} mouseOrEvt - Mouse position in window coordinates (from
      * the top left corner of the window) or `MouseEvent` or `TouchEvent`.
@@ -847,10 +848,15 @@ class View extends THREE.EventDispatcher {
      * into. If not specified, all {@link ColorLayer} and {@link GeometryLayer}
      * layers of this view will be looked in.
      *
-     * @return {Object} - An object, with a property per layer. For example,
-     * looking for features on layers `wfsBuilding` and `wfsRoads` will give an
-     * object like `{ wfsBuilding: [...], wfsRoads: [] }`. Each property is made
-     * of an array, that can be empty or filled with found features.
+     * @return {Object} - An object, having one property per layer.
+     * For example, looking for features on layers `wfsBuilding` and `wfsRoads`
+     * will give an object like `{ wfsBuilding: [...], wfsRoads: [] }`.
+     * Each property is made of an array, that can be empty or filled with
+     * Feature like objects composed of:
+     * - the FeatureGeometry
+     * - the feature type
+     * - the style
+     * - the coordinate if the FeatureGeometry is a point
      *
      * @example
      * view.pickFeaturesAt({ x, y });
@@ -924,8 +930,12 @@ class View extends THREE.EventDispatcher {
 
                     precision = CRS.isMetricUnit(texture.features.crs) ? precisions.M : precisions.D;
 
-                    result[materialLayer.id] = result[materialLayer.id].concat(
-                        FeaturesUtils.filterFeaturesUnderCoordinate(coordinates, texture.features, precision));
+                    const featuresUnderCoor = FeaturesUtils.filterFeaturesUnderCoordinate(coordinates, texture.features, precision);
+                    featuresUnderCoor.forEach((feature) => {
+                        if (!result[materialLayer.id].find(f => f.geometry === feature.geometry)) {
+                            result[materialLayer.id].push(feature);
+                        }
+                    });
                 }
             }
         }
