@@ -75,6 +75,7 @@ function _preprocessLayer(view, layer, parentLayer) {
             source,
             style: layer.style,
             zoom: layer.zoom,
+            performance: layer.addLabelLayer.performance,
             crs: source.crs,
             visible: layer.visible,
             margin: 15,

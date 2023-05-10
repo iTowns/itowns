@@ -97,6 +97,8 @@ class TiledGeometryLayer extends GeometryLayer {
             this.object3d.add(...level0s);
             this.object3d.updateMatrixWorld();
         }));
+
+        this.maxScreenSizeNode = this.sseSubdivisionThreshold * (SIZE_DIAGONAL_TEXTURE * 2);
     }
 
     /**

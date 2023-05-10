@@ -7,10 +7,15 @@ import Extent from 'Core/Geographic/Extent';
 import Label from 'Core/Label';
 import { FEATURE_TYPES } from 'Core/Feature';
 import { readExpression } from 'Core/Style';
+import { ScreenGrid } from 'Renderer/Label2DRenderer';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
 const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
+
+const nodeDimensions = new THREE.Vector2();
+const westNorthNode = new THREE.Vector2();
+const labelPosition = new THREE.Vector2();
 
 /**
  * DomNode is a node in the tree data structure of labels divs.
@@ -138,6 +143,7 @@ class LabelsNode extends THREE.Group {
  * internally for optimisation.
  */
 class LabelLayer extends GeometryLayer {
+    #filterGrid = new ScreenGrid();
     /**
      * @constructor
      * @extends Layer
@@ -150,6 +156,11 @@ class LabelLayer extends GeometryLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
+     * @param {boolean} [config.performance=true] - remove labels that have no chance of being visible.
+     * if the `config.performance` is set to true then the performance is improved
+     * proportional to the amount of unnecessary labels that are removed.
+     * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
+     * We advise you to not use this option if your data is optimized.
      * @param {domElement|function} config.domElement - An HTML domElement.
      * If set, all `Label` displayed within the current instance `LabelLayer`
      * will be this domElement.
@@ -171,6 +182,7 @@ class LabelLayer extends GeometryLayer {
         this.domElement.dom.id = `itowns-label-${this.id}`;
         this.buildExtent = true;
         this.crs = config.source.crs;
+        this.performance = config.performance || true;
 
         this.labelDomelement = domElement;
 
@@ -286,6 +298,9 @@ class LabelLayer extends GeometryLayer {
     preUpdate(context, sources) {
         if (sources.has(this.parent)) {
             this.object3d.clear();
+            this.#filterGrid.width = this.parent.maxScreenSizeNode * 0.5;
+            this.#filterGrid.height = this.parent.maxScreenSizeNode * 0.5;
+            this.#filterGrid.resize();
         }
     }
 
@@ -311,6 +326,44 @@ class LabelLayer extends GeometryLayer {
 
     #hasLabelChildren(object) {
         return object.children.every(c => c.layerUpdateState && c.layerUpdateState[this.id]?.hasFinished());
+    }
+
+    // Remove all labels invisible with pre-culling with screen grid
+    // We use the screen grid with maximum size of node on screen
+    #removeCulledLabels(node) {
+        // copy labels array
+        const labels = node.children.slice();
+
+        // reset filter
+        this.#filterGrid.reset();
+
+        // sort labels by order
+        labels.sort((a, b) => b.order - a.order);
+
+        labels.forEach((label) => {
+            // get node dimensions
+            node.nodeParent.extent.planarDimensions(nodeDimensions);
+            coord.crs = node.nodeParent.extent.crs;
+
+            // get west/north node coordinates
+            coord.setFromValues(node.nodeParent.extent.west, node.nodeParent.extent.north, 0).toVector3(westNorthNode);
+
+            // get label position
+            coord.copy(label.coordinates).as(node.nodeParent.extent.crs, coord).toVector3(labelPosition);
+
+            // transform label position to local node system
+            labelPosition.sub(westNorthNode);
+            labelPosition.y += nodeDimensions.y;
+            labelPosition.divide(nodeDimensions).multiplyScalar(this.#filterGrid.width);
+
+            // update the projected position to transform to local filter grid sytem
+            label.updateProjectedPosition(labelPosition.x, labelPosition.y);
+
+            // use screen grid to remove all culled labels
+            if (!this.#filterGrid.insert(label)) {
+                node.removeLabel(label);
+            }
+        });
     }
 
     update(context, layer, node, parent) {
@@ -405,6 +458,10 @@ class LabelLayer extends GeometryLayer {
 
                 if (labelsNode.needsAltitude && node.material.getElevationLayer()) {
                     node.material.getElevationLayer().addEventListener('rasterElevationLevelChanged', () => { labelsNode.needsUpdate = true; });
+                }
+
+                if (this.performance) {
+                    this.#removeCulledLabels(labelsNode);
                 }
             }
 

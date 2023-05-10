@@ -9,7 +9,7 @@ function isIntersectedOrOverlaped(a, b) {
 const frustum = new THREE.Frustum();
 
 // A grid to manage labels on the screen.
-class ScreenGrid {
+export class ScreenGrid {
     constructor(x = 12, y = 10, width, height) {
         this.x = x;
         this.y = y;
