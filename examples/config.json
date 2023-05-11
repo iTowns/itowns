@@ -48,8 +48,10 @@
 
     "FileSource": {
         "source_file_geojson_raster": "GeoJSON to raster",
+        "source_file_geojson_raster_2": "USGS GeoJSON flux to raster (planar view)",
         "source_file_geojson_3d": "GeoJSON to 3D objects",
         "source_file_kml_raster": "KML to raster",
+        "source_file_kml_raster_usgs": "USGS KML flux to raster",
         "source_file_gpx_raster": "GPX to raster",
         "source_file_gpx_3d": "GPX to 3D objects"
     },
@@ -85,7 +87,8 @@
         "widgets_navigation": "Navigation",
         "widgets_minimap": "Minimap",
         "widgets_scale": "Scale",
-        "widgets_searchbar": "Searchbar"
+        "widgets_searchbar": "Searchbar",
+        "widgets_3dtiles_style": "3DTiles Style"
     },
 
     "Plugins": {

@@ -65,57 +65,60 @@ files.forEach((geojson, i) => {
         viewer.addLayer(layerNoProj4);
 
         it('update proj4', function (done) {
-            layerProj4.whenReady.then(() => {
-                tile.visible = true;
-                layerProj4.update(context, layerProj4, tile)
-                    .then(() => {
-                        assert.equal(layerProj4.object3d.children.length, 1);
-                        done();
-                    });
-            });
+            layerProj4.whenReady
+                .then(() => {
+                    tile.visible = true;
+                    layerProj4.update(context, layerProj4, tile)
+                        .then(() => {
+                            assert.equal(layerProj4.object3d.children.length, 1);
+                            done();
+                        }, done);
+                }, done);
         });
 
         it('update without proj4', function (done) {
-            layerNoProj4.whenReady.then(() => {
-                tile.visible = true;
-                context.layer = layerNoProj4;
-                layerNoProj4.update(context, layerNoProj4, tile)
-                    .then(() => {
-                        assert.equal(layerNoProj4.object3d.children.length, 1);
-                        done();
-                    });
-            });
+            layerNoProj4.whenReady
+                .then(() => {
+                    tile.visible = true;
+                    context.layer = layerNoProj4;
+                    layerNoProj4.update(context, layerNoProj4, tile)
+                        .then(() => {
+                            assert.equal(layerNoProj4.object3d.children.length, 1);
+                            done();
+                        }, done);
+                }, done);
         });
 
         it(`parsing error without proj4 should be inferior to ${max_error} meter`, function (done) {
-            Promise.all([layerNoProj4.whenReady, layerProj4.whenReady]).then(() => {
-                const meshNoProj4 = layerNoProj4.object3d.children[0].meshes.children[0];
-                const mesh = layerProj4.object3d.children[0].meshes.children[0];
-                const array = mesh.geometry.attributes.position.array;
-                const arrayNoProj4 = meshNoProj4.geometry.attributes.position.array;
-                const vectorNoProj4 = new THREE.Vector3();
-                const vectorProj4 = new THREE.Vector3();
-                let error = 0;
+            Promise.all([layerNoProj4.whenReady, layerProj4.whenReady])
+                .then(() => {
+                    const meshNoProj4 = layerNoProj4.object3d.children[0].meshes.children[0];
+                    const mesh = layerProj4.object3d.children[0].meshes.children[0];
+                    const array = mesh.geometry.attributes.position.array;
+                    const arrayNoProj4 = meshNoProj4.geometry.attributes.position.array;
+                    const vectorNoProj4 = new THREE.Vector3();
+                    const vectorProj4 = new THREE.Vector3();
+                    let error = 0;
 
-                for (var i = array.length - 3; i >= 0; i -= 3) {
-                    // transform proj4 vertex to final projection
-                    vectorProj4.fromArray(array, i);
-                    vectorProj4.applyMatrix4(mesh.matrixWorld);
+                    for (var i = array.length - 3; i >= 0; i -= 3) {
+                        // transform proj4 vertex to final projection
+                        vectorProj4.fromArray(array, i);
+                        vectorProj4.applyMatrix4(mesh.matrixWorld);
 
-                    // transform proj4 vertex to final projection
-                    vectorNoProj4.fromArray(arrayNoProj4, i);
-                    vectorNoProj4.applyMatrix4(meshNoProj4.matrixWorld);
+                        // transform proj4 vertex to final projection
+                        vectorNoProj4.fromArray(arrayNoProj4, i);
+                        vectorNoProj4.applyMatrix4(meshNoProj4.matrixWorld);
 
-                    // compute diff between proj4 vertex and no proj4 vertex
-                    const distance = vectorProj4.distanceTo(vectorNoProj4);
-                    error += distance;
-                }
+                        // compute diff between proj4 vertex and no proj4 vertex
+                        const distance = vectorProj4.distanceTo(vectorNoProj4);
+                        error += distance;
+                    }
 
-                error /= (array.length / 3);
+                    error /= (array.length / 3);
 
-                assert.ok(error < max_error);
-                done();
-            });
+                    assert.ok(error < max_error);
+                    done();
+                }, done);
         });
     });
 });

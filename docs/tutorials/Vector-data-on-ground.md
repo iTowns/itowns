@@ -44,7 +44,7 @@ We need to change the starting position to something more appropriate.
             
             // Define the source of the ortho-images
             var orthoSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'https://wxs.ign.fr/decouverte/geoportail/wmts',
                 crs: "EPSG:3857",
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
@@ -58,7 +58,7 @@ We need to change the starting position to something more appropriate.
             
             // Define the source of the dem data
             var elevationSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'https://wxs.ign.fr/altimetrie/geoportail/wmts',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
                 tileMatrixSet: 'WGS84G',
@@ -229,7 +229,7 @@ By reaching here, you are now able to display simple vector data projected on th
 
             // Define the source of the ortho-images
             var orthoSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'https://wxs.ign.fr/decouverte/geoportail/wmts',
                 crs: "EPSG:3857",
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
@@ -243,7 +243,7 @@ By reaching here, you are now able to display simple vector data projected on th
 
             // Define the source of the dem data
             var elevationSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'https://wxs.ign.fr/altimetrie/geoportail/wmts',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
                 tileMatrixSet: 'WGS84G',

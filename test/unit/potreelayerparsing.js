@@ -21,7 +21,7 @@ describe('Potree Provider', function () {
             octreeDir: 'eglise_saint_blaise_arles',
         };
 
-        const ps = [];
+        const layers = [];
         let source = new PotreeSource({
             file: 'eglise_saint_blaise_arles.js',
             url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
@@ -29,9 +29,9 @@ describe('Potree Provider', function () {
             cloud,
         });
 
-        const p1 = new PotreeLayer('pointsCloud1', { source, crs: view.referenceCrs });
-        ps.push(p1);
-        p1.whenReady.then((l) => {
+        const layer1 = new PotreeLayer('pointsCloud1', { source, crs: view.referenceCrs });
+        layers.push(layer1);
+        const p1 = layer1.whenReady.then((l) => {
             const normalDefined = l.material.defines.NORMAL || l.material.defines.NORMAL_SPHEREMAPPED || l.material.defines.NORMAL_OCT16;
             assert.ok(!normalDefined);
         });
@@ -49,9 +49,9 @@ describe('Potree Provider', function () {
             },
         });
 
-        const p2 = new PotreeLayer('pointsCloud2', { source, crs: view.referenceCrs });
-        ps.push(p2);
-        p2.whenReady.then((l) => {
+        const layer2 = new PotreeLayer('pointsCloud2', { source, crs: view.referenceCrs });
+        layers.push(layer2);
+        const p2 = layer2.whenReady.then((l) => {
             assert.ok(l.material.defines.NORMAL);
             assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(!l.material.defines.NORMAL_OCT16);
@@ -69,10 +69,10 @@ describe('Potree Provider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        const p3 = new PotreeLayer('pointsCloud3', { source, crs: view.referenceCrs });
+        const layer3 = new PotreeLayer('pointsCloud3', { source, crs: view.referenceCrs });
 
-        ps.push(p3);
-        p3.whenReady.then((l) => {
+        layers.push(layer3);
+        const p3 = layer3.whenReady.then((l) => {
             assert.ok(!l.material.defines.NORMAL);
             assert.ok(l.material.defines.NORMAL_SPHEREMAPPED);
             assert.ok(!l.material.defines.NORMAL_OCT16);
@@ -90,18 +90,21 @@ describe('Potree Provider', function () {
                 octreeDir: 'eglise_saint_blaise_arles',
             },
         });
-        const p4 = new PotreeLayer('pointsCloud4', { source, crs: view.referenceCrs });
+        const layer4 = new PotreeLayer('pointsCloud4', { source, crs: view.referenceCrs });
 
-        ps.push(p4);
-        p4.whenReady.then((l) => {
-            assert.ok(!l.material.defines.NORMAL);
-            assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
-            assert.ok(l.material.defines.NORMAL_OCT16);
-        });
+        layers.push(layer4);
+        const p4 = layer4.whenReady
+            .then((l) => {
+                assert.ok(!l.material.defines.NORMAL);
+                assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
+                assert.ok(l.material.defines.NORMAL_OCT16);
+            });
 
-        ps.forEach(p => View.prototype.addLayer.call(view, p));
+        layers.forEach(p => View.prototype.addLayer.call(view, p));
 
-        Promise.all(ps.map(p => p.whenReady)).then(() => done());
+        Promise.all([p1, p2, p3, p4])
+            .then(() => done())
+            .catch(done);
     });
 });
 

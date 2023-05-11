@@ -25,17 +25,23 @@ describe('source_file_geojson_raster', function _() {
 
     it('should pick feature from Layer with SourceFile', async () => {
         const pickedFeatures = await page.evaluate(() => {
+            /* global itowns */
             const precision = view.getPixelsToDegrees(5);
             const geoCoord = new itowns.Coordinates('EPSG:4326', 1.41955, 42.88613, 0);
             const promises = [];
             const layers = view.getLayers(l => l.source && l.source.isFileSource);
             for (let i = 0; i < layers.length; i++) {
-                promises.push(layers[i].source.loadData({}, { crs: 'EPSG:4326', buildExtent: false }));
+                promises.push(
+                    layers[i].source.loadData({}, { crs: 'EPSG:4326', buildExtent: false })
+                        .then(fc => itowns.FeaturesUtils.filterFeaturesUnderCoordinate(geoCoord, fc, precision)),
+                );
             }
-
-            return Promise.all(promises).then(fa => fa.filter(f => itowns
-                .FeaturesUtils.filterFeaturesUnderCoordinate(geoCoord, f, precision).length));
+            return Promise.all(promises);
         });
-        assert.equal(1, pickedFeatures.length);
+
+        assert.equal(pickedFeatures.length, 2);// 2 layers added
+        assert.equal(pickedFeatures[0].length, 1, 'feature(s) picked on first layer');
+        assert.equal(pickedFeatures[1].length, 0, 'feature(s) picked on second layer');
+        assert.equal(pickedFeatures[0][0].geometry.properties.nom, 'Ariège');
     });
 });

@@ -15,9 +15,10 @@ describe('Entwine Point Tile', function () {
     });
 
     it('loads the EPT structure', (done) => {
-        source.whenReady.then(() => {
-            done();
-        });
+        source.whenReady
+            .then(() => {
+                done();
+            }, done);
     });
 
     describe('Layer', function () {
@@ -41,9 +42,10 @@ describe('Entwine Point Tile', function () {
                 view,
             };
 
-            View.prototype.addLayer.call(view, layer).then(() => {
-                done();
-            });
+            View.prototype.addLayer.call(view, layer)
+                .then(() => {
+                    done();
+                }, done);
         });
 
         it('pre updates and finds the root', () => {
@@ -61,12 +63,14 @@ describe('Entwine Point Tile', function () {
             view.controls.lookAtCoordinate({
                 coord: source.center,
                 range: 250,
-            }, false).then(() => {
-                layer.update(context, layer, layer.root);
-                layer.root.promise.then(() => {
-                    done();
-                });
-            });
+            }, false)
+                .then(() => {
+                    layer.update(context, layer, layer.root);
+                    layer.root.promise
+                        .then(() => {
+                            done();
+                        });
+                }, done);
         });
 
         it('post updates', function () {

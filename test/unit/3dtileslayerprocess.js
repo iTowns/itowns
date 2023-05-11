@@ -31,10 +31,11 @@ describe('3Dtiles layer', function () {
     };
 
     it('Add 3dtiles layer', function (done) {
-        View.prototype.addLayer.call(viewer, threedTilesLayer).then((layer) => {
-            assert.equal(layer.root.children.length, 1);
-            done();
-        });
+        View.prototype.addLayer.call(viewer, threedTilesLayer)
+            .then((layer) => {
+                assert.equal(layer.root.children.length, 1);
+                done();
+            }, done);
     });
     it('preUpdate 3dtiles layer', function () {
         const elements = threedTilesLayer.preUpdate(context, new Set([threedTilesLayer]));

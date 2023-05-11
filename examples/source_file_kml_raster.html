@@ -53,8 +53,8 @@
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
             // Fetch, Parse and Convert by iTowns
             var kmlSource = new itowns.FileSource({
@@ -79,7 +79,7 @@
             var kmlLayer = new itowns.ColorLayer('Kml', {
                 source: kmlSource,
                 style: kmlStyle,
-                addLabelLayer: true,
+                addLabelLayer: { forceClampToTerrain: true },
             });
 
             debug.createTileDebugUI(menuGlobe.gui, view);

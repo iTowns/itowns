@@ -28,17 +28,18 @@ describe('pnts parser', function () {
     it('should return the correct points', function (done) {
         const buffer = bufferFromString(pnts, 16 * 8 + 2);
 
-        PntsParser.parse(buffer).then((result) => {
-            // 2 points of 3 components in the geometry
-            assert.equal(
-                result.point.geometry.attributes.position.array.length,
-                2 * 3);
-            // 'Red': 224, 'Green': 155, 'Blue': 133
-            assert.equal(
-                result.point.geometry.attributes.color.array[1],
-                155);
+        PntsParser.parse(buffer)
+            .then((result) => {
+                // 2 points of 3 components in the geometry
+                assert.equal(
+                    result.point.geometry.attributes.position.array.length,
+                    2 * 3);
+                // 'Red': 224, 'Green': 155, 'Blue': 133
+                assert.equal(
+                    result.point.geometry.attributes.color.array[1],
+                    155);
 
-            done();
-        });
+                done();
+            }, done);
     });
 });

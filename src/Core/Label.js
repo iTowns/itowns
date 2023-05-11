@@ -90,8 +90,6 @@ class Label extends THREE.Object3D {
         this.content.style.userSelect = 'none';
         this.content.style.position = 'absolute';
 
-        this.baseContent = content;
-
         if (style.isStyle) {
             this.anchor = style.getTextAnchorPosition();
             this.styleOffset = style.text.offset;
@@ -199,18 +197,23 @@ class Label extends THREE.Object3D {
     }
 
     update3dPosition(crs) {
-        this.coordinates.as(crs, coord);
-        coord.toVector3(this.position);
-        this.parent.worldToLocal(this.position);
+        this.coordinates.as(crs, coord).toVector3(this.position);
         this.updateMatrixWorld();
     }
 
-    updateElevationFromLayer(layer) {
-        const elevation = Math.max(0, DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z));
-        if (elevation && elevation != this.coordinates.z) {
+    updateElevationFromLayer(layer, nodes) {
+        if (layer.attachedLayers.filter(l => l.isElevationLayer).length == 0) {
+            return;
+        }
+
+        let elevation = Math.max(0, DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z, nodes));
+
+        if (isNaN(elevation)) {
+            elevation = Math.max(0, DEMUtils.getElevationValueAt(layer, this.coordinates, DEMUtils.FAST_READ_Z));
+        }
+
+        if (!isNaN(elevation) && elevation != this.coordinates.z) {
             this.coordinates.z = elevation;
-            this.updateHorizonCullingPoint();
-            return true;
         }
     }
 

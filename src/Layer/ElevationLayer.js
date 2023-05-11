@@ -7,6 +7,8 @@ import { RasterElevationTile } from 'Renderer/RasterTile';
  * an ElevationLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
  * @property {number} noDataValue - Used to specify a **null** or **no data value** in the elevation terrain.
+ * @property {number} [zmin] - Used to specify a minimum value for the elevation terrain (if the data goes lower, it will be clamped).
+ * @property {number} [zmax] - Used to specify a maximum value for the elevation terrain (if the data goes higher, it will be clamped)
  * @property {number} scale - Used to apply a scale on the elevation value. It
  * can be used for exageration of the elevation, like in [this
  * example](https://www.itowns-project.org/itowns/examples/#plugins_pyramidal_tiff).
@@ -37,6 +39,11 @@ class ElevationLayer extends RasterLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
+     * @param {number} [config.noDataValue]   The value coding the noData in the data set
+     * @param {Object} [config.clampValues] - Optional information for clamping
+     * the elevation between a minimum and a maximum value
+     * @param {number} [config.clampValues.min]   The minimum value to clamp the elevation
+     * @param {number} [config.clampValues.max]   The maximum value to clamp the elevation
      *
      * @example
      * // Create an ElevationLayer
@@ -54,6 +61,11 @@ class ElevationLayer extends RasterLayer {
      */
     constructor(id, config = {}) {
         super(id, config);
+        if (config.zmin || config.zmax) {
+            console.warn('Config using zmin and zmax are deprecated, use {clampValues: {min, max}} structure.');
+        }
+        this.zmin = config.clampValues?.min ?? config.zmin;
+        this.zmax = config.clampValues?.max ?? config.zmax;
         this.isElevationLayer = true;
         this.defineLayerProperty('scale', this.scale || 1.0);
     }
@@ -77,7 +89,7 @@ class ElevationLayer extends RasterLayer {
         updateBBox();
 
         // listen elevation updating
-        rasterElevationNode.addEventListener('updatedElevation', updateBBox);
+        rasterElevationNode.addEventListener('rasterElevationLevelChanged', updateBBox);
 
         // listen scaling elevation updating
         this.addEventListener('scale-property-changed', updateBBox);

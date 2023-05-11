@@ -61,8 +61,8 @@
                     new itowns.ElevationLayer(config.id, config),
                 ).then(debugMenu.addLayerGUI.bind(debugMenu));
             }
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
             // ---------- DISPLAY VECTOR TILED MAP DATA AS A ColorLayer : ----------
 
@@ -84,7 +84,7 @@
                 source: mapSource,
                 effect_type: itowns.colorLayerEffects.removeLightColor,
                 effect_parameter: 2.5,
-                addLabelLayer: true,
+                addLabelLayer: { performance: true },
                 style: new itowns.Style({
                     text: {
                         color: '#000000',

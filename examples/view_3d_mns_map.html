@@ -72,8 +72,6 @@
                     new itowns.ElevationLayer(config.id, config),
                 ).then(debugMenu.addLayerGUI.bind(debugMenu));
             }
-
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNS_HIGHRES.json').then(addElevationLayerFromConfig);
 
             // ---------- ADD SOME WIDGETS : ----------
@@ -91,7 +89,7 @@
                         filter: (layer) => !layer['source-layer'].includes('oro_')
                             && !layer['source-layer'].includes('parcellaire'),
                     }),
-                    addLabelLayer: true,
+                    addLabelLayer: { performance: true },
                 }),
                 { cursor: '+' },
             );

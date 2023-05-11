@@ -18,9 +18,6 @@ import Cache from 'Core/Scheduler/Cache';
  * @property {Promise} whenReady - this promise is resolved when the layer is added and all initializations are done.
  * This promise is resolved with this layer.
  * This promise is returned by [View#addLayer]{@link View}.
- * @property {boolean} [addLabelLayer=false] - Used to tell if this layer has
- * labels to display from its data. For example, it needs to be set to `true`
- * for a layer with vector tiles. If it's `true` a new `LabelLayer` is added and attached to this `Layer`.
  * @property {object} [zoom] - This property is used only the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
  * By example,
  * The layer checks the tile zoom level to determine if the layer is visible in this tile.
@@ -56,6 +53,13 @@ class Layer extends THREE.EventDispatcher {
      * the layer doesn't need Source (like debug Layer or procedural layer).
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
      * This value is used for [Cache]{@link Cache} expiration mechanism.
+     * @param {(boolean|Object)} [config.addLabelLayer=false] - Used to tell if this layer has
+     * labels to display from its data. For example, it needs to be set to `true`
+     * for a layer with vector tiles. If it's `true` a new `LabelLayer` is added and attached to this `Layer`.
+     * You can also configure it with [LabelLayer]{@link LabelLayer} options described below such as: `addLabelLayer: { performance: true }`.
+     * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
+     * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
+     * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.
      *
      * @example
      * // Add and create a new Layer

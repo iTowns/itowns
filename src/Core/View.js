@@ -49,7 +49,7 @@ function _preprocessLayer(view, layer, parentLayer) {
         }
     }
 
-    if (layer.isGeometryLayer) {
+    if (layer.isGeometryLayer && !layer.isLabelLayer) {
         // Find crs projection layer, this is projection destination
         layer.crs = view.referenceCrs;
     } else if (!layer.crs) {
@@ -69,13 +69,17 @@ function _preprocessLayer(view, layer, parentLayer) {
         }
         // Because the features are shared between layer and labelLayer.
         layer.buildExtent = true;
+        // label layer needs 3d data structure.
+        layer.structure = '3d';
         const labelLayer = new LabelLayer(`${layer.id}-label`, {
             source,
             style: layer.style,
             zoom: layer.zoom,
+            performance: layer.addLabelLayer.performance,
             crs: source.crs,
             visible: layer.visible,
             margin: 15,
+            forceClampToTerrain: layer.addLabelLayer.forceClampToTerrain,
         });
 
         layer.addEventListener('visible-property-changed', () => {
@@ -185,7 +189,8 @@ class View extends THREE.EventDispatcher {
 
         this._frameRequesters = { };
 
-        window.addEventListener('resize', () => this.resize(), false);
+        this._resizeListener = () => this.resize();
+        window.addEventListener('resize', this._resizeListener, false);
 
         this._changeSources = new Set();
 
@@ -258,6 +263,9 @@ class View extends THREE.EventDispatcher {
             console.warn('View already disposed');
             return;
         }
+
+        window.removeEventListener('resize', this._resizeListener);
+
         // controls dispose
         if (this.controls) {
             if (typeof this.controls.dispose === 'function') {
@@ -688,10 +696,9 @@ class View extends THREE.EventDispatcher {
      * the top left corner of the window) or `MouseEvent` or `TouchEvent`.
      * @param {number} [radius=0] - The picking will happen in a circle centered
      * on mouseOrEvt. This is the radius of this circle, in pixels.
-     * @param {...GeometryLayer|string|Object3D} [where] - Where to look for
-     * objects. It can be anything of {@link GeometryLayer}, IDs of layers, or
-     * `THREE.Object3D`. If no location is specified, it will query on all
-     * {@link GeometryLayer} present in this `View`.
+     * @param {GeometryLayer|string|Object3D|Array<GeometryLayer|string|Object3D>} [where] - Where to look for
+     * objects. It can be a single {@link GeometryLayer}, `THREE.Object3D`, ID of a layer or an array of one of these or
+     * of a mix of these. If no location is specified, it will query on all {@link GeometryLayer} present in this `View`.
      *
      * @return {Object[]} - An array of objects. Each element contains at least
      * an object property which is the `THREE.Object3D` under the cursor. Then
@@ -703,10 +710,15 @@ class View extends THREE.EventDispatcher {
      * view.pickObjectsAt({ x, y }, 1, 'wfsBuilding')
      * view.pickObjectsAt({ x, y }, 3, 'wfsBuilding', myLayer)
      */
-    pickObjectsAt(mouseOrEvt, radius = 0, ...where) {
+    pickObjectsAt(mouseOrEvt, radius = 0, where) {
         const sources = [];
 
-        where = where.length == 0 ? this.getLayers(l => l.isGeometryLayer) : where;
+        if (!where || where.length === 0) {
+            where = this.getLayers(l => l.isGeometryLayer);
+        }
+        if (!Array.isArray(where)) {
+            where = [where];
+        }
         where.forEach((l) => {
             if (typeof l === 'string') {
                 l = this.getLayerById(l);
@@ -956,12 +968,12 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
-     * Returns the world position (view's crs: referenceCrs) under view coordinates.
+     * Returns the world position on the terrain (view's crs: referenceCrs) under view coordinates.
      * This position is computed with depth buffer.
      *
      * @param      {THREE.Vector2}  mouse  position in view coordinates (in pixel), if it's null so it's view's center.
      * @param      {THREE.Vector3}  [target=THREE.Vector3()] target. the result will be copied into this Vector3. If not present a new one will be created.
-     * @return     {THREE.Vector3}  the world position in view's crs: referenceCrs.
+     * @return     {THREE.Vector3}  the world position on the terrain in view's crs: referenceCrs.
      */
 
     getPickingPositionFromDepth(mouse, target = new THREE.Vector3()) {
@@ -1028,18 +1040,19 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
-     * Returns the world {@link Coordinates} at given view coordinates.
+     * Returns the world {@link Coordinates} of the terrain at given view coordinates.
      *
-     * @param   {THREE.Vector2|event}   [mouse]     The view coordinates at which the world coordinates must be
-                                                    * returned. This parameter can also be set to a mouse event from
-                                                    * which the view coordinates will be deducted. If not specified, it
-                                                    * will be defaulted to the view's center coordinates.
-     * @param   {Coordinates}           [target]    The result will be copied into this {@link Coordinates}. If not
-                                                    * specified, a new {@link Coordinates} instance will be created.
+     * @param {THREE.Vector2|event} [mouse] The view coordinates at which the world coordinates must be returned. This
+     * parameter can also be set to a mouse event from which the view coordinates will be deducted. If not specified,
+     * it will be defaulted to the view's center coordinates.
+     * @param {Coordinates} [target] The result will be copied into this {@link Coordinates} in the coordinate reference
+     * system of the given coordinate. If not specified, a new {@link Coordinates} instance will be created (in the
+     * view referenceCrs).
      *
-     * @returns {Coordinates}   The world {@link Coordinates} at the given view coordinates.
+     * @returns {Coordinates}   The world {@link Coordinates} of the terrain at the given view coordinates in the
+     * coordinate reference system of the target or in the view referenceCrs if no target is specified.
      */
-    pickCoordinates(mouse, target = new Coordinates(this.tileLayer.extent.crs)) {
+    pickTerrainCoordinates(mouse, target = new Coordinates(this.referenceCrs)) {
         if (mouse instanceof Event) {
             this.eventToViewCoords(mouse);
         } else if (mouse && mouse.x !== undefined && mouse.y !== undefined) {
@@ -1057,6 +1070,25 @@ class View extends THREE.EventDispatcher {
         coordinates.as(target.crs, target);
 
         return target;
+    }
+
+    /**
+     * Returns the world {@link Coordinates} of the terrain at given view coordinates.
+     *
+     * @param   {THREE.Vector2|event}   [mouse]     The view coordinates at which the world coordinates must be
+                                                    * returned. This parameter can also be set to a mouse event from
+                                                    * which the view coordinates will be deducted. If not specified, it
+                                                    * will be defaulted to the view's center coordinates.
+     * @param   {Coordinates}           [target]    The result will be copied into this {@link Coordinates}. If not
+                                                    * specified, a new {@link Coordinates} instance will be created.
+     *
+     * @returns {Coordinates}   The world {@link Coordinates} of the terrain at the given view coordinates.
+     *
+     * @deprecated Use View#pickTerrainCoordinates instead.
+     */
+    pickCoordinates(mouse, target = new Coordinates(this.referenceCrs)) {
+        console.warn('Deprecated, use View#pickTerrainCoordinates instead.');
+        return this.pickTerrainCoordinates(mouse, target);
     }
 
     /**

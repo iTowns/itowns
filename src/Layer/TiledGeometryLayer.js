@@ -97,6 +97,8 @@ class TiledGeometryLayer extends GeometryLayer {
             this.object3d.add(...level0s);
             this.object3d.updateMatrixWorld();
         }));
+
+        this.maxScreenSizeNode = this.sseSubdivisionThreshold * (SIZE_DIAGONAL_TEXTURE * 2);
     }
 
     /**
@@ -272,7 +274,7 @@ class TiledGeometryLayer extends GeometryLayer {
 
     // eslint-disable-next-line
     culling(node, camera) {
-        return !camera.isBox3Visible(node.obb.box3D, node.obb.matrixWorld);
+        return !camera.isBox3Visible(node.obb.box3D, node.matrixWorld);
     }
 
     /**

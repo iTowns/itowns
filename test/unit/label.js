@@ -6,7 +6,13 @@ import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import LabelLayer from 'Layer/LabelLayer';
-import Label2DRenderer from 'Renderer/Label2DRenderer';
+import GlobeView from 'Core/Prefab/GlobeView';
+import ColorLayer from 'Layer/ColorLayer';
+import FileSource from 'Source/FileSource';
+import HttpsProxyAgent from 'https-proxy-agent';
+import Renderer from './bootstrap';
+
+const geojson = require('../data/geojson/simple.geojson.json');
 
 describe('LabelLayer', function () {
     let layer;
@@ -173,63 +179,104 @@ describe('Label', function () {
 });
 
 describe('Label2DRenderer', function () {
-    let node;
+    const renderer = new Renderer();
+    const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), range: 100000 };
+    const view = new GlobeView(renderer.domElement, placement, { renderer });
 
-    function checkVisible(node) {
-        assert.ok(node.domElements.foo.visible);
-        assert.equal(node.domElements.foo.dom.style.display, 'block');
-    }
-
-    function checkHidden(node) {
-        assert.ok(!node.domElements.foo.visible);
-        assert.equal(node.domElements.foo.dom.style.display, 'none');
-    }
-
-    before('initialize the node and its children', function () {
-        node = {
-            domElements: { foo: { visible: true, dom: { style: { display: 'block' } } } },
-            children: [{
-                domElements: { foo: { visible: true, dom: { style: { display: 'block' } } } },
-                isTileMesh: true,
-            }, {
-                domElements: { foo: { visible: true, dom: { style: { display: 'block' } } } },
-                isTileMesh: true,
-                children: [{
-                    domElements: { foo: { visible: true, dom: { style: { display: 'block' } } } },
-                    isTileMesh: true,
-                }],
-            }],
-        };
+    const gpxSource = new FileSource({
+        fetchedData: geojson,
+        crs: 'EPSG:4326',
+        format: 'application/json',
+        networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
     });
 
-    it('hides the DOM of a node', function () {
-        checkVisible(node);
-        Label2DRenderer.prototype.hideNodeDOM(node);
-        checkHidden(node);
+    const gpxStyle = new Style({ text: { field: '{name}' } });
+
+    const gpxLayer = new ColorLayer('Gpx', {
+        source: gpxSource,
+        style: gpxStyle,
+        addLabelLayer: true,
     });
 
-    it('shows the DOM of a node', function () {
-        checkHidden(node);
-        Label2DRenderer.prototype.showNodeDOM(node);
-        checkVisible(node);
+    const context = {
+        camera: view.camera,
+        engine: view.mainLoop.gfxEngine,
+        scheduler: view.mainLoop.scheduler,
+        view,
+    };
+
+    let tiles;
+    let labelLayer;
+
+    it('add color layer with LabelLayer', function (done) {
+        view.addLayer(gpxLayer).then(() => {
+            tiles = view.tileLayer.object3d.children.filter(n => n.isTileMesh);
+            labelLayer = view.getLayers(l => l.isLabelLayer)[0];
+            assert.ok(labelLayer.isLabelLayer);
+            done();
+        }, done);
     });
 
-    it('hides the DOM of a node\'s children', function () {
-        delete node.domElements.foo;
-        checkVisible(node.children[0]);
-        checkVisible(node.children[1]);
-        Label2DRenderer.prototype.hideNodeDOM(node);
-        checkHidden(node.children[0]);
-        checkHidden(node.children[1]);
+    const promises = [];
+    it('update labelLayer add LabelNode to tile', function (done) {
+        labelLayer.whenReady.then(async () => {
+            tiles.forEach((tile) => {
+                tile.visible = true;
+                promises.push(labelLayer.update(context, labelLayer, tile, tile.parent));
+            });
 
-        Label2DRenderer.prototype.showNodeDOM(node.children[0]);
-        Label2DRenderer.prototype.showNodeDOM(node.children[1]);
+            await Promise.all(promises);
+            const count = tiles.reduce((a, t) => a + t.link[labelLayer.id].children.length, 0);
+            assert.equal(count, 1);
+            done();
+        }, done);
+    });
 
-        delete node.children[1].domElements.foo;
-        checkVisible(node.children[0]);
-        checkVisible(node.children[1].children[0]);
-        Label2DRenderer.prototype.hideNodeDOM(node);
-        checkHidden(node.children[0]);
-        checkHidden(node.children[1].children[0]);
+    it('LabelNode has textContent', function (done) {
+        labelLayer.whenReady.then(() => {
+            Promise.all(promises).then(() => {
+                const textContent = tiles[0].link[labelLayer.id].children[0].content.textContent;
+                assert.equal(textContent, 'testPoint');
+                done();
+            });
+        }, done);
+    });
+
+    it('LabelNode is submit to rendering', function (done) {
+        labelLayer.whenReady.then(() => {
+            assert.equal(0, labelLayer.object3d.children.length);
+            labelLayer.update(context, labelLayer, tiles[0], tiles[0].parent);
+            assert.equal(1, labelLayer.object3d.children.length);
+            done();
+        }, done);
+    });
+
+    it('LabelNode is disallow to rendering', function (done) {
+        labelLayer.whenReady.then(() => {
+            assert.equal(1, labelLayer.object3d.children.length);
+            tiles[0].visible = false;
+            assert.equal(0, labelLayer.object3d.children.length);
+            tiles[0].visible = true;
+            done();
+        }, done);
+    });
+
+    const allAreVisible = dom => dom.style.display === 'block' && (dom.parentNode ? allAreVisible(dom.parentNode) : true);
+
+    it('Dom label is visible after rendering', function (done) {
+        labelLayer.whenReady.then(async () => {
+            const label2dRenderer = view.mainLoop.gfxEngine.label2dRenderer;
+            labelLayer.update(context, labelLayer, tiles[0], tiles[0].parent);
+            assert.equal(1, labelLayer.object3d.children.length);
+            view.controls.lookAtCoordinate({ coord: labelLayer.object3d.children[0].children[0].coordinates, range: 1000 }, false).then(() => {
+                view.camera.camera3D.updateMatrixWorld(true);
+                label2dRenderer.render(view.scene, view.camera.camera3D);
+                assert.equal(1, label2dRenderer.grid.visible.length);
+                const label = label2dRenderer.grid.visible[0];
+                assert.ok(label.visible);
+                assert.ok(allAreVisible(label.content));
+                done();
+            });
+        }, done);
     });
 });

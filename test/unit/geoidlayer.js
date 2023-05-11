@@ -41,17 +41,20 @@ describe('GlobeView', function () {
     tile.parent = {};
 
     it('add geoid layer', function (done) {
-        view.addLayer(geoidLayer).then(() => {
-            done();
-        });
+        view.addLayer(geoidLayer)
+            .then(() => {
+                done();
+            }, done);
     });
 
     it('update geoid layer', function (done) {
-        geoidLayer.whenReady.then(() => {
-            geoidLayer.update(context, geoidLayer, tile, {}).then(() => {
-                assert.equal(tile.geoidHeight, 45.72800064087844);
-                done();
-            });
-        });
+        geoidLayer.whenReady
+            .then(() => {
+                geoidLayer.update(context, geoidLayer, tile, {})
+                    .then(() => {
+                        assert.equal(tile.geoidHeight, 45.72800064087844);
+                        done();
+                    });
+            }, done);
     });
 });

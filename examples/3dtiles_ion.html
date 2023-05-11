@@ -77,8 +77,8 @@
                     new itowns.ElevationLayer(config.id, config),
                 );
             }
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
             // ---------- ADD 3D TILES MODEL FROM CESIUM ION SERVER : ----------
 
@@ -95,7 +95,7 @@
             // Create a 3D Tiles layer from Cesium ion server with Cesium default access token and assetId of the 
             // OSM buildings dataset.
             var threeDTilesIonSource = new itowns.C3DTilesIonSource({
-                accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmMmM4Yzc0YS02ZTM4LTQwODItOGI4ZC04OTI3Yzk5MjJlMGEiLCJpZCI6MjU5LCJpYXQiOjE2Njk5MDUxNDh9.tcSYhz3-NLfuOdb1w9wHOw-Ps85-AyR_mBYRHDifEi8',
+                accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzOTkxZjY3NS0yNDU4LTQ3MTAtOGQ2NC1lOGI4YmY5ODhhYjQiLCJpZCI6Mzg4OTQsImlhdCI6MTYwNjkyMDkwOH0.aVrPA4xnpbSUlqfJ9RkSWmZtms_hnSRz7m596h1R7ew',
                 assetId: 96188
             });
             threeDTilesIonSource.whenReady.then(displayAttributions); // Add attributions returned by cesium ion server

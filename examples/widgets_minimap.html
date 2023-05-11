@@ -78,8 +78,8 @@
                     new itowns.ElevationLayer(config.id, config),
                 ).then(debugMenu.addLayerGUI.bind(debugMenu));
             }
-            itowns.Fetcher.json('layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
 
 
@@ -93,7 +93,7 @@
                     filter: (layer) => !layer['source-layer'].includes('oro_')
                         && !layer['source-layer'].includes('parcellaire'),
                 }),
-                addLabelLayer: true,
+                addLabelLayer: { performance: true },
             });
 
             // Create a minimap.
@@ -109,7 +109,7 @@
             // When double-clicking the minimap, travel to the cursor location.
             const cursorCoordinates = new itowns.Coordinates(minimap.view.referenceCrs);
             minimap.domElement.addEventListener('dblclick', (event) => {
-                minimap.view.pickCoordinates(event, cursorCoordinates);
+                minimap.view.pickTerrainCoordinates(event, cursorCoordinates);
                 view.controls.lookAtCoordinate({ coord: cursorCoordinates });
             });
 

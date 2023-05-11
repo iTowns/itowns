@@ -47,10 +47,11 @@ describe('DemUtils', function () {
     };
 
     it('add elevation layer', (done) => {
-        viewer.addLayer(elevationlayer).then((l) => {
-            assert.equal('worldelevation', l.id);
-            done();
-        });
+        viewer.addLayer(elevationlayer)
+            .then((l) => {
+                assert.equal('worldelevation', l.id);
+                done();
+            }, done);
     });
     const tiles = [];
     const extent = new Extent('EPSG:4326', 5.625, 11.25, 45, 50.625);
@@ -64,10 +65,11 @@ describe('DemUtils', function () {
         const tile = new TileMesh(geom, material, viewer.tileLayer, extent, 5);
         tile.layerUpdateState[elevationlayer.id] = new LayerUpdateState();
         tiles.push(tile);
-        updateLayeredMaterialNodeElevation(context, elevationlayer, tile, {}).then(() => {
-            assert.equal(nodeLayer.textures[0].image.data[0], 357.3833923339844);
-            done();
-        });
+        updateLayeredMaterialNodeElevation(context, elevationlayer, tile, {})
+            .then(() => {
+                assert.equal(nodeLayer.textures[0].image.data[0], 357.3833923339844);
+                done();
+            }, done);
     });
 
     it('get elevation value at with PRECISE_READ_Z', () => {
