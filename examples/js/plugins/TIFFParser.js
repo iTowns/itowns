@@ -36,7 +36,7 @@ var TIFFParser = (function _() {
          * @memberof module:TIFFParser
          */
         parse: function _(data) {
-            var IFD = UTIF.decode(data)[0];
+            var IFD = data.extent.ifd || UTIF.decode(data)[0];
             UTIF.decodeImage(data, IFD);
             IFD.data = UTIF.toRGBA8(IFD);
 
