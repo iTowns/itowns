@@ -415,21 +415,9 @@ class TiledGeometryLayer extends GeometryLayer {
 
         subdivisionVector.setFromMatrixScale(node.matrixWorld);
         boundingSphereCenter.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
-
-        let nodeElevation = 0;
-        if (!Number.isNaN(node.obb.z.max)) {
-            nodeElevation = node.obb.z.max;
-        }
-        if (nodeLayer) {
-            if (!node.geometry.boundingSphere) {
-                node.geometry.computeBoundingSphere();
-            }
-            nodeElevation = node.geometry.boundingSphere.radius * 2;
-        }
-
         const distance = Math.max(
             0.0,
-            nodeElevation + context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
+            context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
 
         // Size projection on pixel of bounding
         if (context.camera.camera3D.isOrthographicCamera) {
