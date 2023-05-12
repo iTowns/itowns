@@ -402,14 +402,6 @@ class TiledGeometryLayer extends GeometryLayer {
         // The induced geometric error is much too large and distorts the SSE
         const nodeLayer = node.material.getElevationLayer();
         if (nodeLayer) {
-            // prevent to the camera close to the tile to a short distance
-            // subdivise the node too large
-            // If elevationLayer has a number of maxZoom
-            const elevationLayer = nodeLayer.layer;
-            const level = node.level;
-            if (level >= elevationLayer.zoom.max) {
-                return false;
-            }
             const currentTexture = nodeLayer.textures[0];
             if (currentTexture && currentTexture.extent) {
                 const offsetScale = nodeLayer.offsetScales[0];
