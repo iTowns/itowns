@@ -147,7 +147,7 @@ function _readTextureValueAt(metadata, texture, ...uv) {
         _canvas.width = Math.max(_canvas.width, dw);
         _canvas.height = Math.max(_canvas.height, dh);
 
-        const ctx = _canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         ctx.drawImage(texture.image, minx, miny, dw, dh, 0, 0, dw, dh);
         const d = ctx.getImageData(0, 0, dw, dh);
 
