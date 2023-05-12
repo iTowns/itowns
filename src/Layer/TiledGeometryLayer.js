@@ -402,6 +402,14 @@ class TiledGeometryLayer extends GeometryLayer {
         // The induced geometric error is much too large and distorts the SSE
         const nodeLayer = node.material.getElevationLayer();
         if (nodeLayer) {
+            // prevent to the camera close to the tile to a short distance
+            // subdivise the node too large
+            // If elevationLayer has a number of maxZoom
+            const elevationLayer = nodeLayer.layer;
+            const level = node.level;
+            if (level >= elevationLayer.zoom.max) {
+                return false;
+            }
             const currentTexture = nodeLayer.textures[0];
             if (currentTexture && currentTexture.extent) {
                 const offsetScale = nodeLayer.offsetScales[0];
@@ -415,9 +423,21 @@ class TiledGeometryLayer extends GeometryLayer {
 
         subdivisionVector.setFromMatrixScale(node.matrixWorld);
         boundingSphereCenter.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
+
+        let nodeElevation = 0;
+        if (!Number.isNaN(node.obb.z.max)) {
+            nodeElevation = node.obb.z.max;
+        }
+        if (nodeLayer) {
+            if (!node.geometry.boundingSphere) {
+                node.geometry.computeBoundingSphere();
+            }
+            nodeElevation = node.geometry.boundingSphere.radius * 2;
+        }
+
         const distance = Math.max(
             0.0,
-            context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
+            nodeElevation + context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
 
         // Size projection on pixel of bounding
         if (context.camera.camera3D.isOrthographicCamera) {
