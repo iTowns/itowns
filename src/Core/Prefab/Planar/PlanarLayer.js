@@ -50,7 +50,7 @@ class PlanarLayer extends TiledGeometryLayer {
         this.extent = extent;
         this.minSubdivisionLevel = this.minSubdivisionLevel == undefined ? 0 : this.minSubdivisionLevel;
         this.maxSubdivisionLevel = this.maxSubdivisionLevel == undefined ? 5 : this.maxSubdivisionLevel;
-        this.maxDeltaElevation = this.maxDeltaElevation || 4.0;
+        this.maxDeltaElevationLevel = this.maxDeltaElevationLevel || 4.0;
     }
 }
 
