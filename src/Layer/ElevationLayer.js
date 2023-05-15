@@ -67,6 +67,7 @@ class ElevationLayer extends RasterLayer {
         this.zmin = config.clampValues?.min ?? config.zmin;
         this.zmax = config.clampValues?.max ?? config.zmax;
         this.isElevationLayer = true;
+        this.defineLayerProperty('visible', true);
         this.defineLayerProperty('scale', this.scale || 1.0);
     }
 
@@ -93,8 +94,11 @@ class ElevationLayer extends RasterLayer {
 
         // listen scaling elevation updating
         this.addEventListener('scale-property-changed', updateBBox);
+        // listen visibility elevation updating
+        this.addEventListener('visible-property-changed', updateBBox);
         // remove scaling elevation updating if node is removed
         node.addEventListener('dispose', () => {
+            this.removeEventListener('visible-property-changed', updateBBox);
             this.removeEventListener('scale-property-changed', updateBBox);
         });
 

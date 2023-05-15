@@ -5,6 +5,7 @@
         int mode;
         float zmin;
         float zmax;
+        bool visible;
     };
 
     uniform Layer       elevationLayers[NUM_VS_TEXTURES];
