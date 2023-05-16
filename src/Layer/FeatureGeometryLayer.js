@@ -61,6 +61,16 @@ class FeatureGeometryLayer extends GeometryLayer {
             this.object3d.clear();
         }
     }
+
+    invalidateCache() {
+        this.cache.clear();
+        this.parent.level0Nodes.forEach((node0) => {
+            node0.traverse((tile) => {
+                tile.layerUpdateState[this.id] = undefined;
+                tile.redraw = true;
+            });
+        });
+    }
 }
 
 export default FeatureGeometryLayer;
