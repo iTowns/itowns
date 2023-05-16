@@ -78,6 +78,12 @@ class FeatureGeometryLayer extends GeometryLayer {
         }
         return undefined;
     }
+
+    redrawFeature(geometry) {
+        if (geometry) {
+            Feature2Mesh.setColor(geometry.mesh, this.style);
+        }
+    }
 }
 
 export default FeatureGeometryLayer;
