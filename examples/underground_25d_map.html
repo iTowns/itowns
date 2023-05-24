@@ -26,23 +26,12 @@ and open the template in the editor.
         </div>
         <div id="viewerDiv" class="viewer"></div>
         <script src="./js/GUI/GuiTools.js"></script>
-        <script src="./js/GUI/LoadingScreen.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="../dist/debug.js"></script>
 
         <script>
             var THREE = itowns.THREE;
             var linesBus = [];
-
-            Math.Clamp = function clamp(n, min, max) {
-                if (n > max) {
-                    return max;
-                } else if (n < min) {
-                    return min;
-                } else {
-                    return n;
-                }
-            };
 
             // Retrieve the view container
             const viewerDiv = document.getElementById("viewerDiv");
