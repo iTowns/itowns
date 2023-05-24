@@ -1,4 +1,4 @@
-/* global itowns, Promise, THREE, UTIF */
+/* global itowns, THREE, UTIF */
 
 /**
  * The TIFFParser module provides a [parse]{@link module:TIFFParser.parse}
@@ -19,7 +19,7 @@
  *
  * @module TIFFParser
  */
-var TIFFParser = (function _() {
+const TIFFParser = (function _() {
     if (typeof THREE == 'undefined'  && itowns.THREE) {
         // eslint-disable-next-line no-global-assign
         THREE = itowns.THREE;
@@ -36,11 +36,11 @@ var TIFFParser = (function _() {
          * @memberof module:TIFFParser
          */
         parse: function _(data) {
-            var IFD = UTIF.decode(data)[0];
+            const IFD = UTIF.decode(data)[0];
             UTIF.decodeImage(data, IFD);
             IFD.data = UTIF.toRGBA8(IFD);
 
-            var maxSize = itowns.Capabilities.getMaxTextureSize();
+            const maxSize = itowns.Capabilities.getMaxTextureSize();
             // A 4096 limitation sounds the most probable here
             // https://webglstats.com/webgl/parameter/MAX_TEXTURE_SIZE
             if (IFD.width > maxSize || IFD.height > maxSize) {
@@ -48,28 +48,28 @@ var TIFFParser = (function _() {
             }
 
             // Round to next power of two
-            var width = THREE.MathUtils.ceilPowerOfTwo(IFD.width);
-            var height = THREE.MathUtils.ceilPowerOfTwo(IFD.height);
+            const width = THREE.MathUtils.ceilPowerOfTwo(IFD.width);
+            const height = THREE.MathUtils.ceilPowerOfTwo(IFD.height);
 
-            var resizedData;
+            let resizedData;
             if (width == IFD.width && height == IFD.height) {
                 resizedData = IFD.data;
             } else {
                 resizedData = new IFD.data.constructor(width * height * 4);
 
-                var it = IFD.data.values();
-                var rowSize = IFD.height * 4;
-                var rowOffset = 0;
-                for (var i = 0; i < IFD.width; i++) {
+                const it = IFD.data.values();
+                const rowSize = IFD.height * 4;
+                let rowOffset = 0;
+                for (let i = 0; i < IFD.width; i++) {
                     rowOffset = i * width * 4;
                     resizedData.fill(255, rowOffset, rowOffset + rowSize);
-                    for (var j = 0; j < rowSize; j++) {
+                    for (let j = 0; j < rowSize; j++) {
                         resizedData[rowOffset + j] = it.next().value;
                     }
                 }
             }
 
-            var texture = new THREE.DataTexture(resizedData, width, height, THREE.RGBAFormat);
+            const texture = new THREE.DataTexture(resizedData, width, height, THREE.RGBAFormat);
             texture.flipY = true;
             texture.needsUpdate = true;
 

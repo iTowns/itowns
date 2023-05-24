@@ -29,7 +29,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
     this.chartDivContainer = chartDivContainer;
     const canvas = this.createChartContainer('three-info');
 
-    var ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
 
     this.charts = [];
 

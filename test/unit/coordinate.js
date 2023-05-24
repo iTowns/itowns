@@ -21,38 +21,38 @@ function assertCoordEqual(coord1, coord2) {
 
 describe('Coordinates', function () {
     it('should correctly convert from EPSG:4326 to EPSG:4978', function () {
-        var coord1 = new Coordinates('EPSG:4326', 15.0, 12.0);
-        var coord2 = coord1.as('EPSG:4978');
+        const coord1 = new Coordinates('EPSG:4326', 15.0, 12.0);
+        const coord2 = coord1.as('EPSG:4978');
         // verify value for x and y.
         assertFloatEqual(6027050.95, coord2.x, 2);
         assertFloatEqual(1614943.43, coord2.y, 2);
     });
     it('should correctly convert from EPSG:4326 to EPSG:4978 and back to EPSG:4326', function () {
-        var coord1 = new Coordinates('EPSG:4326', 15.0, 12.0);
-        var coord2 = coord1.as('EPSG:4978');
-        var coord3 = coord2.as('EPSG:4326');
+        const coord1 = new Coordinates('EPSG:4326', 15.0, 12.0);
+        const coord2 = coord1.as('EPSG:4978');
+        const coord3 = coord2.as('EPSG:4326');
         assertCoordEqual(coord1, coord3);
     });
     it('should correctly convert from EPSG:3946 to EPSG:4978 and back to EPSG:3946', function () {
-        var coord1 = new Coordinates('EPSG:3946', 1500000, 5100000, 12);
-        var coord2 = coord1.as('EPSG:4978');
-        var coord3 = coord2.as('EPSG:3946');
+        const coord1 = new Coordinates('EPSG:3946', 1500000, 5100000, 12);
+        const coord2 = coord1.as('EPSG:4978');
+        const coord3 = coord2.as('EPSG:3946');
         assertCoordEqual(coord1, coord3);
     });
     // This case happend in iTowns when we convert the tile extent (4326) to a target WFS server (EPSG:3946 for example) to request Lyon bus line in WFS.
     it('should correctly convert from EPSG:4326 to EPSG:3946 and back to EPSG:4326', function () {
         // geographic example for EPSG 4326 in degrees
-        var longIn = 4.82212;
-        var latIn = 45.723722;
+        const longIn = 4.82212;
+        const latIn = 45.723722;
         // let's define an input coordinate EPSG:4326.
-        var coord1 = new Coordinates('EPSG:4326', longIn, latIn);
+        const coord1 = new Coordinates('EPSG:4326', longIn, latIn);
         // convert coordinate in EPSG:3946
-        var coord2 = coord1.as('EPSG:3946');
+        const coord2 = coord1.as('EPSG:3946');
         // verify intermediate values
         assertFloatEqual(1841825.45, coord2.x, 2);
         assertFloatEqual(5170916.93, coord2.y, 2);
         // and convert back to EPSG:4626 standard in degree.
-        var coord3 = coord2.as('EPSG:4326');
+        const coord3 = coord2.as('EPSG:4326');
         // verify coordinates
         assertFloatEqual(longIn, coord3.longitude);
         assertFloatEqual(latIn, coord3.latitude);

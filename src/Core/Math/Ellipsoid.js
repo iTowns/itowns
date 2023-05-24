@@ -92,8 +92,8 @@ class Ellipsoid {
     }
 
     cartographicToCartesianArray(coordCartoArray) {
-        var cartesianArray = [];
-        for (var i = 0; i < coordCartoArray.length; i++) {
+        const cartesianArray = [];
+        for (let i = 0; i < coordCartoArray.length; i++) {
             cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
         }
 
@@ -101,36 +101,36 @@ class Ellipsoid {
     }
 
     intersection(ray) {
-        var EPSILON = 0.0001;
-        var O_C = ray.origin;
-        var dir = ray.direction;
+        const EPSILON = 0.0001;
+        const O_C = ray.origin;
+        const dir = ray.direction;
         // normalizeVector( dir );
 
-        var a =
+        const a =
             ((dir.x * dir.x) * this._invRadiiSquared.x) + ((dir.y * dir.y) * this._invRadiiSquared.y) + ((dir.z * dir.z) * this._invRadiiSquared.z);
 
-        var b =
+        const b =
             ((2 * O_C.x * dir.x) * this._invRadiiSquared.x) + ((2 * O_C.y * dir.y) * this._invRadiiSquared.y) + ((2 * O_C.z * dir.z) * this._invRadiiSquared.z);
-        var c =
+        const c =
             ((O_C.x * O_C.x) * this._invRadiiSquared.x) + ((O_C.y * O_C.y) * this._invRadiiSquared.y) + ((O_C.z * O_C.z) * this._invRadiiSquared.z) - 1;
 
-        var d = ((b * b) - (4 * a * c));
+        let d = ((b * b) - (4 * a * c));
         if (d < 0 || a === 0 || b === 0 || c === 0) { return false; }
 
         d = Math.sqrt(d);
 
-        var t1 = (-b + d) / (2 * a);
-        var t2 = (-b - d) / (2 * a);
+        const t1 = (-b + d) / (2 * a);
+        const t2 = (-b - d) / (2 * a);
 
         if (t1 <= EPSILON && t2 <= EPSILON) { return false; } // both intersections are behind the ray origin
         // var back = (t1 <= EPSILON || t2 <= EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
-        var t = 0;
+        let t = 0;
         if (t1 <= EPSILON) { t = t2; } else
         if (t2 <= EPSILON) { t = t1; } else { t = (t1 < t2) ? t1 : t2; }
 
         if (t < EPSILON) { return false; } // Too close to intersection
 
-        var inter = new THREE.Vector3();
+        const inter = new THREE.Vector3();
 
         inter.addVectors(ray.origin, dir.clone().setLength(t));
 

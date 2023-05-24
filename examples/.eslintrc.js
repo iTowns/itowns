@@ -5,7 +5,7 @@ module.exports = {
         '../.eslintrc.js',
     ],
     parserOptions: {
-        ecmaVersion: 5,
+        ecmaVersion: 13,
         sourceType: 'script',
         ecmaFeatures: {
             impliedStrict: true,
@@ -13,7 +13,7 @@ module.exports = {
     },
     env: {
         browser: true,
-        es6: false,
+        es6: true,
         amd: true,
         commonjs: true,
     },

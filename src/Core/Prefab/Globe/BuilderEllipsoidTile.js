@@ -45,13 +45,13 @@ class BuilderEllipsoidTile {
     prepare(params) {
         params.nbRow = 2 ** (params.level + 1.0);
 
-        var st1 = WGS84ToOneSubY(params.extent.south);
+        let st1 = WGS84ToOneSubY(params.extent.south);
 
         if (!isFinite(st1)) { st1 = 0; }
 
-        var sizeTexture = 1.0 / params.nbRow;
+        const sizeTexture = 1.0 / params.nbRow;
 
-        var start = (st1 % (sizeTexture));
+        const start = (st1 % (sizeTexture));
 
         params.deltaUV1 = (st1 - start) * params.nbRow;
 

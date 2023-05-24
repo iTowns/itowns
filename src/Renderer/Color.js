@@ -1,8 +1,8 @@
 export function lab2rgb(lab) {
-    var y = (lab[0] + 16) / 116;
-    var x = lab[1] / 500 + y;
-    var z = y - lab[2] / 200;
-    var r; var g; var
+    let y = (lab[0] + 16) / 116;
+    let x = lab[1] / 500 + y;
+    let z = y - lab[2] / 200;
+    let r; let g; let
         b;
 
     x = 0.95047 * ((x * x * x > 0.008856) ? x * x * x : (x - 16 / 116) / 7.787);
@@ -24,10 +24,10 @@ export function lab2rgb(lab) {
 
 
 export function rgb2lab(rgb) {
-    var r = rgb.r || rgb[0] / 255;
-    var g = rgb.g || rgb[1] / 255;
-    var b = rgb.b || rgb[2] / 255;
-    var x; var y; var
+    let r = rgb.r || rgb[0] / 255;
+    let g = rgb.g || rgb[1] / 255;
+    let b = rgb.b || rgb[2] / 255;
+    let x; let y; let
         z;
 
     r = (r > 0.04045) ? ((r + 0.055) / 1.055) ** 2.4 : r / 12.92;
@@ -50,20 +50,20 @@ export function rgb2lab(rgb) {
 export function deltaE(rgbA, rgbB) {
     const labA = rgb2lab(rgbA);
     const labB = rgb2lab(rgbB);
-    var deltaL = labA[0] - labB[0];
-    var deltaA = labA[1] - labB[1];
-    var deltaB = labA[2] - labB[2];
-    var c1 = Math.sqrt(labA[1] * labA[1] + labA[2] * labA[2]);
-    var c2 = Math.sqrt(labB[1] * labB[1] + labB[2] * labB[2]);
-    var deltaC = c1 - c2;
-    var deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
+    const deltaL = labA[0] - labB[0];
+    const deltaA = labA[1] - labB[1];
+    const deltaB = labA[2] - labB[2];
+    const c1 = Math.sqrt(labA[1] * labA[1] + labA[2] * labA[2]);
+    const c2 = Math.sqrt(labB[1] * labB[1] + labB[2] * labB[2]);
+    const deltaC = c1 - c2;
+    let deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
     deltaH = deltaH < 0 ? 0 : Math.sqrt(deltaH);
-    var sc = 1.0 + 0.045 * c1;
-    var sh = 1.0 + 0.015 * c1;
-    var deltaLKlsl = deltaL / (1.0);
-    var deltaCkcsc = deltaC / (sc);
-    var deltaHkhsh = deltaH / (sh);
-    var i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
+    const sc = 1.0 + 0.045 * c1;
+    const sh = 1.0 + 0.015 * c1;
+    const deltaLKlsl = deltaL / (1.0);
+    const deltaCkcsc = deltaC / (sc);
+    const deltaHkhsh = deltaH / (sh);
+    const i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
     return i < 0 ? 0 : Math.sqrt(i);
 }
 

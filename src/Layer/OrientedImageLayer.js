@@ -62,15 +62,15 @@ function updateBackground(layer) {
 
 function createBackground(radius) {
     if (!radius || radius <= 0) { return undefined; }
-    var geometry = new THREE.SphereGeometry(radius, 32, 32);
-    var material = new THREE.MeshPhongMaterial({
+    const geometry = new THREE.SphereGeometry(radius, 32, 32);
+    const material = new THREE.MeshPhongMaterial({
         color: 0x7777ff,
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.5,
         wireframe: true,
     });
-    var sphere = new THREE.Mesh(geometry, material);
+    const sphere = new THREE.Mesh(geometry, material);
     sphere.visible = true;
     sphere.name = 'OrientedImageBackground';
     return sphere;
@@ -191,7 +191,7 @@ class OrientedImageLayer extends GeometryLayer {
     }
 
     getNextPano() {
-        var index = (this.currentPano.index + 1) % this.panos.length;
+        const index = (this.currentPano.index + 1) % this.panos.length;
         return this.panos[index];
     }
 
@@ -200,7 +200,7 @@ class OrientedImageLayer extends GeometryLayer {
     }
 
     getPreviousPano() {
-        var index = (this.currentPano.index - 1) % this.panos.length;
+        const index = (this.currentPano.index - 1) % this.panos.length;
         return this.panos[index];
     }
 

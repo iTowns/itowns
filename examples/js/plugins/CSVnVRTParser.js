@@ -1,4 +1,4 @@
-/* global itowns, Promise */
+/* global itowns */
 
 /**
  * A module to parse OGR Virtual Format files.
@@ -29,30 +29,30 @@
  *
  * @module CSVnVRTParser
  */
-var CSVnVRTParser = (function _() {
-    var coord = new itowns.Coordinates('EPSG:4326');
-    var header;
+const CSVnVRTParser = (function _() {
+    const coord = new itowns.Coordinates('EPSG:4326');
+    let header;
 
     function xml2json(xml, json) {
-        var res = {};
+        const res = {};
 
-        var attributes = xml.getAttributeNames();
+        const attributes = xml.getAttributeNames();
         if (attributes.length > 0) {
             res['@attributes'] = {};
-            for (var i = 0; i < attributes.length; i++) {
+            for (let i = 0; i < attributes.length; i++) {
                 res['@attributes'][attributes[i]] = xml.getAttributeNode(attributes[i]).value;
             }
         }
 
         if (xml.childElementCount > 0) {
-            for (var j = 0; j < xml.childElementCount; j++) {
+            for (let j = 0; j < xml.childElementCount; j++) {
                 xml2json(xml.children[j], res);
             }
         } else if (xml.textContent) {
             res.value = xml.textContent;
         }
 
-        var name = xml.nodeName;
+        const name = xml.nodeName;
 
         if (!json[name]) {
             json[name] = res;
@@ -82,42 +82,41 @@ var CSVnVRTParser = (function _() {
     }
 
     function OGRVRTLayer2Feature(layer, data, crs, options) {
-        var collection = new itowns.FeatureCollection(options.out);
+        const collection = new itowns.FeatureCollection(options.out);
 
-        var _crs = (layer.LayerSRS && layer.LayerSRS.value) || crs;
+        const _crs = (layer.LayerSRS && layer.LayerSRS.value) || crs;
 
-        var type = itowns.FEATURE_TYPES.POINT;
+        let type = itowns.FEATURE_TYPES.POINT;
         if (layer.GeometryType) {
             type = getGeometryType(layer.GeometryType.value);
         }
 
-        var feature = collection.requestFeatureByType(type);
+        const feature = collection.requestFeatureByType(type);
 
         if (layer.Field) {
             if (!layer.Field.length) {
                 layer.Field = [layer.Field];
             }
 
-            for (var f = 0; f < layer.Field.length; f++) {
+            for (let f = 0; f < layer.Field.length; f++) {
                 layer.Field[f]['@attributes'].pos = header.indexOf(layer.Field[f]['@attributes'].src);
             }
         }
 
         if (layer.GeometryField) {
             switch (layer.GeometryField['@attributes'].encoding) {
-                case 'PointFromColumns':
-                    var x = header.indexOf(layer.GeometryField['@attributes'].x);
-                    var y = header.indexOf(layer.GeometryField['@attributes'].y);
-                    var z = header.indexOf(layer.GeometryField['@attributes'].z);
-                    // var m = header.indexOf(layer.GeometryField['@attributes'].m);
+                case 'PointFromColumns': {
+                    const x = header.indexOf(layer.GeometryField['@attributes'].x);
+                    const y = header.indexOf(layer.GeometryField['@attributes'].y);
+                    const z = header.indexOf(layer.GeometryField['@attributes'].z);
+                    // const m = header.indexOf(layer.GeometryField['@attributes'].m);
 
-                    var line;
-                    for (var i = 0; i < data.length; i++) {
-                        line = data[i];
-                        var geometry = feature.bindNewGeometry();
+                    for (let i = 0; i < data.length; i++) {
+                        const line = data[i];
+                        const geometry = feature.bindNewGeometry();
 
                         if (layer.Field) {
-                            for (var p = 0; p < layer.Field.length; p++) {
+                            for (let p = 0; p < layer.Field.length; p++) {
                                 geometry.properties[layer.Field[p]['@attributes'].name] = line[layer.Field[p]['@attributes'].pos];
                             }
                         }
@@ -132,6 +131,7 @@ var CSVnVRTParser = (function _() {
                     }
 
                     break;
+                }
                 case undefined:
                     break;
                 default:
@@ -184,11 +184,11 @@ var CSVnVRTParser = (function _() {
             if (!data.csv || !data.vrt) {
                 throw new Error('Missing files when parsing');
             }
-            var schema = xml2json(data.vrt.children[0], {});
+            const schema = xml2json(data.vrt.children[0], {});
 
             header = data.csv.shift();
 
-            var collection = readLayer(schema.OGRVRTDataSource, data.csv, options);
+            const collection = readLayer(schema.OGRVRTDataSource, data.csv, options);
 
             return Promise.resolve(collection);
         },

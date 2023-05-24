@@ -59,7 +59,7 @@ const CoordStars = {
         }
 
         function getEclipticLongitude(M, C) {
-            var P = rad * 102.9372; // perihelion of the Earth
+            const P = rad * 102.9372; // perihelion of the Earth
             return M + C + P + PI;
         }
 
@@ -89,10 +89,10 @@ const CoordStars = {
 
     // Return scene coordinate ({x,y,z}) of sun
     getSunPositionInScene(date, lat, lon) {
-        var sun = CoordStars.getSunPosition()(date, lat, lon);
-        var dayMilliSec = 24 * 3600000;
-        var longitude = sun.ascension + ((date % dayMilliSec) / dayMilliSec) * -360 + 180; // cause midday
-        var coSunCarto = new Coordinates('EPSG:4326', longitude, lat, 50000000)
+        const sun = CoordStars.getSunPosition()(date, lat, lon);
+        const dayMilliSec = 24 * 3600000;
+        const longitude = sun.ascension + ((date % dayMilliSec) / dayMilliSec) * -360 + 180; // cause midday
+        const coSunCarto = new Coordinates('EPSG:4326', longitude, lat, 50000000)
             .as('EPSG:4978').toVector3();
 
         return coSunCarto;

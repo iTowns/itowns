@@ -90,7 +90,7 @@ class Atmosphere extends GeometryLayer {
 
         this.basicAtmosphere.add(basicAtmosphereOut);
 
-        var materialAtmoIn = new THREE.ShaderMaterial({
+        const materialAtmoIn = new THREE.ShaderMaterial({
             uniforms: {
                 atmoIN: {
                     type: 'i',
