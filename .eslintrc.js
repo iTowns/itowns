@@ -74,7 +74,7 @@ module.exports = {
         'max-len': 'off',
         'no-param-reassign': 'off',
         'no-else-return': 'off',
-        'no-var': 'off',
+        'no-var': 'error',
         'vars-on-top': 'off',
         'no-shadow': 'off',
         'no-restricted-properties': 'off',

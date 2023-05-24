@@ -120,6 +120,8 @@ Request.
 * If you added third-party libraries, including new version of existing
   libraries, update [LICENSE.md](LICENSE.md). If you plan to add a third-party
   library, start a new issue first.
+* Split the PR if it contains features from different scopes
+* Squash all commits having the same scope
 
 ## IP
 
