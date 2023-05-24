@@ -147,8 +147,6 @@ class View extends THREE.EventDispatcher {
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
      * @param {boolean} [options.enableFocusOnStart=true] - enable focus on dom element on start.
      * @param {boolean} [options.undergroundVisualisation=false] - enable underground visualisation.
-     * @param {number} [options.altitudeForZeroOpacity=420] - Altitude (used for underground visualization) at which the ground is full hidden.
-     * @param {number} [options.altitudeForFullOpacity=2400] - Altitude (used for underground visualization) at which the ground is full shown.
      * @constructor
      */
     constructor(crs, viewerDiv, options = {}) {
@@ -241,17 +239,7 @@ class View extends THREE.EventDispatcher {
         });
 
         // configure dynamic opacity
-        if (options.altitudeForZeroOpacity === undefined || options.altitudeForZeroOpacity === null) {
-            this.altitudeForZeroOpacity = 420;
-        } else {
-            this.altitudeForZeroOpacity = options.altitudeForZeroOpacity;
-        }
 
-        if (options.altitudeForFullOpacity === undefined || options.altitudeForFullOpacity === null) {
-            this.altitudeForFullOpacity = 2400;
-        } else {
-            this.altitudeForFullOpacity = options.altitudeForFullOpacity;
-        }
         this.undergroundVisualisation = options.undergroundVisualisation == true;
 
         if (this.undergroundVisualisation) {

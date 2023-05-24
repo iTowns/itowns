@@ -58,6 +58,8 @@ class TiledGeometryLayer extends GeometryLayer {
      * available using `layer.name` or something else depending on the property
      * name.
      * @param {Source} [config.source] - Description and options of the source.
+     * @param {number} [config.altitudeForZeroOpacity=420] - Altitude (used for underground visualization) at which the ground is full hidden.
+     * @param {number} [config.altitudeForFullOpacity=2400] - Altitude (used for underground visualization) at which the ground is full shown.
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
@@ -99,7 +101,19 @@ class TiledGeometryLayer extends GeometryLayer {
             this.object3d.add(...level0s);
             this.object3d.updateMatrixWorld();
         }));
+        // configure dynamic opacity
 
+        if (config.altitudeForZeroOpacity === undefined || config.altitudeForZeroOpacity === null) {
+            this.altitudeForZeroOpacity = 420;
+        } else {
+            this.altitudeForZeroOpacity = config.altitudeForZeroOpacity;
+        }
+
+        if (config.altitudeForFullOpacity === undefined || config.altitudeForFullOpacity === null) {
+            this.altitudeForFullOpacity = 2400;
+        } else {
+            this.altitudeForFullOpacity = config.altitudeForFullOpacity;
+        }
 
         this.updateTiledLayerOpacity = this._updateTiledLayerOpacity.bind(this);
     }
@@ -135,7 +149,7 @@ class TiledGeometryLayer extends GeometryLayer {
         var cameraTargetPosition2 = new Coordinates(cameraTargetPosition.crs, cameraTargetPosition);
         var cameraPosition = view.camera.position('EPSG:4978');
         const distance = cameraTargetPosition2.spatialEuclideanDistanceTo(cameraPosition);
-        this.opacity = THREE.MathUtils.clamp((distance - view.altitudeForZeroOpacity) / (view.altitudeForFullOpacity - view.altitudeForZeroOpacity), 0, 1);
+        this.opacity = THREE.MathUtils.clamp((distance - this.altitudeForZeroOpacity) / (this.altitudeForFullOpacity - this.altitudeForZeroOpacity), 0, 1);
     }
 
     /**
