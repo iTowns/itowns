@@ -100,7 +100,7 @@ files.forEach((geojson, i) => {
                     const vectorProj4 = new THREE.Vector3();
                     let error = 0;
 
-                    for (var i = array.length - 3; i >= 0; i -= 3) {
+                    for (let i = array.length - 3; i >= 0; i -= 3) {
                         // transform proj4 vertex to final projection
                         vectorProj4.fromArray(array, i);
                         vectorProj4.applyMatrix4(mesh.matrixWorld);

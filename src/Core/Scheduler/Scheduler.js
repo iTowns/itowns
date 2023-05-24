@@ -278,7 +278,7 @@ Scheduler.prototype.getProtocolProvider = function getProtocolProvider(protocol)
 
 Scheduler.prototype.commandsWaitingExecutionCount = function commandsWaitingExecutionCount() {
     let sum = this.defaultQueue.counters.pending + this.defaultQueue.counters.executing;
-    for (var q of this.hostQueues) {
+    for (const q of this.hostQueues) {
         sum += q[1].counters.pending + q[1].counters.executing;
     }
     return sum;
@@ -287,7 +287,7 @@ Scheduler.prototype.commandsWaitingExecutionCount = function commandsWaitingExec
 Scheduler.prototype.commandsRunningCount = function commandsRunningCount() {
     let sum = this.defaultQueue.counters.executing;
 
-    for (var q of this.hostQueues) {
+    for (const q of this.hostQueues) {
         sum += q[1].counters.executing;
     }
     return sum;
@@ -296,7 +296,7 @@ Scheduler.prototype.commandsRunningCount = function commandsRunningCount() {
 Scheduler.prototype.resetCommandsCount = function resetCommandsCount(type) {
     let sum = this.defaultQueue.counters[type];
     this.defaultQueue.counters[type] = 0;
-    for (var q of this.hostQueues) {
+    for (const q of this.hostQueues) {
         sum += q[1].counters[type];
         q[1].counters[type] = 0;
     }
@@ -304,9 +304,9 @@ Scheduler.prototype.resetCommandsCount = function resetCommandsCount(type) {
 };
 
 Scheduler.prototype.deQueue = function deQueue(queue) {
-    var st = drawNextLayer(queue.storages);
+    const st = drawNextLayer(queue.storages);
     while (st && st.length > 0) {
-        var cmd = st.dequeue();
+        const cmd = st.dequeue();
 
         if (cmd.earlyDropFunction && cmd.earlyDropFunction(cmd)) {
             queue.counters.pending--;

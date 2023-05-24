@@ -7,7 +7,7 @@
 /* global dat, itowns */
 
 dat.GUI.prototype.removeFolder = function removeFolder(name) {
-    var folder = this.__folders[name];
+    const folder = this.__folders[name];
     if (!folder) {
         return;
     }
@@ -18,12 +18,11 @@ dat.GUI.prototype.removeFolder = function removeFolder(name) {
 };
 
 dat.GUI.prototype.colorLayerFolder = function colorLayerFolder(name, value) {
-    var folder = this.__folders[name];
-    var title;
+    const folder = this.__folders[name];
     if (!folder) {
         return;
     }
-    title = folder.__ul.getElementsByClassName('title')[0];
+    const title = folder.__ul.getElementsByClassName('title')[0];
 
     if (title.style) {
         title.style.background = value;
@@ -36,8 +35,8 @@ dat.GUI.prototype.hasFolder = function hasFolder(name) {
 
 function GuiTools(domId, view, w) {
     if (view) {
-        var width = w || 245;
-        var element = document.createElement('div');
+        const width = w || 245;
+        const element = document.createElement('div');
         element.id = 'menuDiv';
         this.gui = new dat.GUI({ autoPlace: false, width: width });
         element.appendChild(this.gui.domElement);
@@ -50,8 +49,8 @@ function GuiTools(domId, view, w) {
         this.geoidGui.hide();
         this.view = view;
         view.addEventListener('layers-order-changed', (function refreshColorGui() {
-            var i;
-            var colorLayers = view.getLayers(function filter(l) { return l.isColorLayer; });
+            let i;
+            const colorLayers = view.getLayers(function filter(l) { return l.isColorLayer; });
             for (i = 0; i < colorLayers.length; i++) {
                 this.removeLayersGUI(colorLayers[i].id);
             }
@@ -83,7 +82,7 @@ GuiTools.prototype.addLayersGUI = function fnAddLayersGUI() {
 GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
     if (this.colorGui.hasFolder(layer.id)) { return; }
     this.colorGui.show();
-    var folder = this.colorGui.addFolder(layer.id);
+    const folder = this.colorGui.addFolder(layer.id);
     folder.add({ visible: layer.visible }, 'visible').onChange((function updateVisibility(value) {
         layer.visible = value;
         this.view.notifyChange(layer);
@@ -101,7 +100,7 @@ GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
 GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
     if (this.elevationGui.hasFolder(layer.id)) { return; }
     this.elevationGui.show();
-    var folder = this.elevationGui.addFolder(layer.id);
+    const folder = this.elevationGui.addFolder(layer.id);
     folder.add({ frozen: layer.frozen }, 'frozen').onChange(function refreshFrozenGui(value) {
         layer.frozen = value;
     });
@@ -114,7 +113,7 @@ GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
 GuiTools.prototype.addGeoidLayerGUI = function addGeoidLayerGUI(layer) {
     if (this.geoidGui.hasFolder(layer.id)) { return; }
     this.geoidGui.show();
-    var folder = this.geoidGui.addFolder(layer.id);
+    const folder = this.geoidGui.addFolder(layer.id);
     folder.add({ frozen: layer.frozen }, 'frozen').onChange(function refreshFrozenGui(value) {
         layer.frozen = value;
     });
@@ -125,9 +124,9 @@ GuiTools.prototype.addGeoidLayerGUI = function addGeoidLayerGUI(layer) {
 };
 
 GuiTools.prototype.addImageryLayersGUI = function addImageryLayersGUI(layers) {
-    var i;
-    var seq = itowns.ImageryLayers.getColorLayersIdOrderedBySequence(layers);
-    var sortedLayers = layers.sort(function comp(a, b) {
+    let i;
+    const seq = itowns.ImageryLayers.getColorLayersIdOrderedBySequence(layers);
+    const sortedLayers = layers.sort(function comp(a, b) {
         return seq.indexOf(a.id) < seq.indexOf(b.id);
     });
     for (i = 0; i < sortedLayers.length; i++) {
@@ -136,7 +135,7 @@ GuiTools.prototype.addImageryLayersGUI = function addImageryLayersGUI(layers) {
 };
 
 GuiTools.prototype.addElevationLayersGUI = function addElevationLayersGUI(layers) {
-    var i;
+    let i;
     for (i = 0; i < layers.length; i++) {
         this.addElevationLayerGUI(layers[i]);
     }
@@ -159,13 +158,13 @@ GuiTools.prototype.colorLayerFolder = function colorLayerFolder(nameLayer, value
 // object
 // eslint-disable-next-line no-unused-vars
 function createHTMLListFromObject(jsObject) {
-    var list = document.createElement('ul');
+    const list = document.createElement('ul');
     // Change the padding (top: 0, right:0, bottom:0 and left:1.5)
     list.style.padding = '0 0 0 1.5rem';
     // For each property of the object
     Object.keys(jsObject).forEach(function _(property) {
         // create item
-        var item = document.createElement('li');
+        const item = document.createElement('li');
         // append property name
         item.appendChild(document.createTextNode(property));
 

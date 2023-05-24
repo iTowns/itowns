@@ -493,7 +493,7 @@ function featureToMesh(feature, options) {
         return;
     }
 
-    var mesh;
+    let mesh;
     switch (feature.type) {
         case FEATURE_TYPES.POINT:
             mesh = featureToPoint(feature, options);

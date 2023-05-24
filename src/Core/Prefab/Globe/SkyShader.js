@@ -16,7 +16,7 @@
 
 import * as THREE from 'three';
 
-var skyShader = {
+const skyShader = {
 
     uniforms: {
 
@@ -263,9 +263,9 @@ var skyShader = {
 
 class Sky extends THREE.Mesh {
     constructor() {
-        var skyUniforms = THREE.UniformsUtils.clone(skyShader.uniforms);
+        const skyUniforms = THREE.UniformsUtils.clone(skyShader.uniforms);
 
-        var skyMat = new THREE.ShaderMaterial({
+        const skyMat = new THREE.ShaderMaterial({
             fragmentShader: skyShader.fragmentShader,
             vertexShader: skyShader.vertexShader,
             uniforms: skyUniforms,
@@ -274,7 +274,7 @@ class Sky extends THREE.Mesh {
             depthWrite: false,
         });
 
-        var skyGeo = new THREE.SphereBufferGeometry(40000, 32, 15);
+        const skyGeo = new THREE.SphereBufferGeometry(40000, 32, 15);
         super(skyGeo, skyMat);
     }
 }

@@ -4,7 +4,7 @@ const textureLoader = new TextureLoader();
 const SIZE_TEXTURE_TILE = 256;
 function checkResponse(response) {
     if (!response.ok) {
-        var error = new Error(`Error loading ${response.url}: status ${response.status}`);
+        const error = new Error(`Error loading ${response.url}: status ${response.status}`);
         error.response = response;
         throw error;
     }

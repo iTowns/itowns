@@ -53,7 +53,7 @@ export function readExpression(property, ctx) {
         if (property.expression) {
             return property.expression.evaluate(ctx);
         } else if (property.stops) {
-            for (var i = property.stops.length - 1; i >= 0; i--) {
+            for (let i = property.stops.length - 1; i >= 0; i--) {
                 const stop = property.stops[i];
 
                 if (ctx.globals.zoom >= stop[0]) {
@@ -96,7 +96,7 @@ function getImage(source, value) {
                     const pix = imgd.data;
 
                     const colorToChange = new Color('white');
-                    for (var i = 0, n = pix.length; i < n; i += 4) {
+                    for (let i = 0, n = pix.length; i < n; i += 4) {
                         const d = deltaE(pix.slice(i, i + 3), colorToChange) / 100;
                         pix[i] = (pix[i] * d +  color.r * 255 * (1 - d));
                         pix[i + 1] = (pix[i + 1] * d +  color.g * 255 * (1 - d));

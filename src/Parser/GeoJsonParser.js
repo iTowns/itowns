@@ -54,7 +54,7 @@ const toFeature = {
         let sum = 0;
         first.setFromValues(coordinates[0][0], coordinates[0][1], coordinates[0][2]);
         last.copy(first);
-        for (var i = 0; i < coordinates.length; i++) {
+        for (let i = 0; i < coordinates.length; i++) {
             coord.setFromValues(coordinates[i][0], coordinates[i][1], coordinates[i][2]);
             sum += (last.x - coord.x) * (last.y + coord.y);
             last.copy(coord);

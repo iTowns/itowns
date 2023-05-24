@@ -10,13 +10,9 @@ function placeObjectFromCoordinate(object, coord) {
 }
 
 function createTexturedPlane(textureUrl, opacity) {
-    var texture;
-    var geometry;
-    var material;
-
-    texture = new itowns.THREE.TextureLoader().load(textureUrl);
-    geometry = new itowns.THREE.PlaneGeometry(1, 1, 32);
-    material = new itowns.THREE.MeshBasicMaterial({
+    const texture = new itowns.THREE.TextureLoader().load(textureUrl);
+    const geometry = new itowns.THREE.PlaneGeometry(1, 1, 32);
+    const material = new itowns.THREE.MeshBasicMaterial({
         map: texture,
         color: 0xffffff,
         transparent: true,
@@ -26,8 +22,8 @@ function createTexturedPlane(textureUrl, opacity) {
 }
 
 function transformTexturedPlane(camera, distance, plane) {
-    var Yreel = 2 * Math.tan(itowns.THREE.MathUtils.degToRad(camera.fov / 2)) * distance;
-    var Xreel = camera.aspect * Yreel;
+    const Yreel = 2 * Math.tan(itowns.THREE.MathUtils.degToRad(camera.fov / 2)) * distance;
+    const Xreel = camera.aspect * Yreel;
 
     // set position and scale
     plane.scale.set(Xreel, Yreel, 1);
@@ -39,23 +35,17 @@ function transformTexturedPlane(camera, distance, plane) {
 // eslint-disable-next-line no-unused-vars
 function initCamera(view, image, coord, EnhToOrientationUp, EnhToOrientationLookAt, rotMatrix,
     orientationToCameraUp, orientationToCameraLookAt, distance, size, focale) {
-    var fov = itowns.THREE.MathUtils.radToDeg((2 * Math.atan((size[1] / 2) / focale)));
-    var coordView;
-    var localSpace;
-    var orientedImage;
-    var quaternion;
-    var camera;
-
-    coordView = coord.as(view.referenceCrs);
+    const fov = itowns.THREE.MathUtils.radToDeg((2 * Math.atan((size[1] / 2) / focale)));
+    const coordView = coord.as(view.referenceCrs);
 
     // create 'local space', with the origin placed on 'coord',
     // with Y axis to the north, X axis to the east and Z axis as the geodesic normal.
-    localSpace = new itowns.THREE.Object3D();
+    const localSpace = new itowns.THREE.Object3D();
     view.scene.add(localSpace);
     placeObjectFromCoordinate(localSpace, coordView);
 
     // add second object : 'oriented image'
-    orientedImage = new itowns.THREE.Object3D();
+    const orientedImage = new itowns.THREE.Object3D();
     // setup initial convention orientation.
     orientedImage.up.copy(EnhToOrientationUp);
     orientedImage.lookAt(EnhToOrientationLookAt);
@@ -64,12 +54,12 @@ function initCamera(view, image, coord, EnhToOrientationUp, EnhToOrientationLook
     localSpace.add(orientedImage);
 
     // apply rotation
-    quaternion = new itowns.THREE.Quaternion().setFromRotationMatrix(rotMatrix);
+    const quaternion = new itowns.THREE.Quaternion().setFromRotationMatrix(rotMatrix);
     orientedImage.quaternion.multiply(quaternion);
     // orientedImage.updateMatrixWorld();
 
     // create a THREE JS Camera
-    camera = new itowns.THREE.PerspectiveCamera(fov, size[0] / size[1], distance / 2, distance * 2);
+    const camera = new itowns.THREE.PerspectiveCamera(fov, size[0] / size[1], distance / 2, distance * 2);
     camera.up.copy(orientationToCameraUp);
     camera.lookAt(orientationToCameraLookAt);
 
@@ -82,7 +72,7 @@ function initCamera(view, image, coord, EnhToOrientationUp, EnhToOrientationLook
 // eslint-disable-next-line no-unused-vars
 function setupPictureFromCamera(camera, imageUrl, opacity, distance) {
     // create a textured plane, representing the picture.
-    var plane = createTexturedPlane(imageUrl, opacity);
+    const plane = createTexturedPlane(imageUrl, opacity);
     camera.add(plane);
 
     transformTexturedPlane(camera, distance, plane);
@@ -102,8 +92,8 @@ function setupViewCameraLookingAtObject(camera, coord, objectToLookAt) {
 // set camera settings to view.camera, even the up vector !
 // eslint-disable-next-line no-unused-vars
 function setupViewCameraDecomposing(view, camera) {
-    var upWorld;
-    var viewCamera = view.camera.camera3D;
+    let upWorld;
+    const viewCamera = view.camera.camera3D;
     camera.matrixWorld.decompose(viewCamera.position, viewCamera.quaternion, viewCamera.scale);
 
     // setup up vector
@@ -115,14 +105,14 @@ function setupViewCameraDecomposing(view, camera) {
 // add a camera helper to debug camera position..
 // eslint-disable-next-line no-unused-vars
 function addCameraHelper(view, camera) {
-    var cameraHelper = new itowns.THREE.CameraHelper(camera);
+    const cameraHelper = new itowns.THREE.CameraHelper(camera);
     view.scene.add(cameraHelper);
     cameraHelper.updateMatrixWorld(true);
 }
 
 // eslint-disable-next-line no-unused-vars
 function setupPictureUI(menu, pictureInfos, plane, updateDistanceCallback, view, min, max) {
-    var orientedImageGUI = menu.gui.addFolder('Oriented Image');
+    const orientedImageGUI = menu.gui.addFolder('Oriented Image');
     orientedImageGUI.add(pictureInfos, 'distance', min, max).name('Distance').onChange(function distanceChanged(value) {
         pictureInfos.distance = value;
         updateDistanceCallback();

@@ -119,7 +119,7 @@ describe('Layer with Feature process', function () {
                 const vMeshNoProj4 = new THREE.Vector3();
                 const v = new THREE.Vector3();
                 let error = 0;
-                for (var i = array.length / 3 - 1; i >= 0; i--) {
+                for (let i = array.length / 3 - 1; i >= 0; i--) {
                     vMeshNoProj4.fromArray(arrayNoProj4).applyMatrix4(meshNoProj4.matrixWorld);
                     v.fromArray(array).applyMatrix4(mesh.matrixWorld);
                     error += v.distanceTo(vMeshNoProj4);
