@@ -7,7 +7,7 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { SIZE_DIAGONAL_TEXTURE } from 'Process/LayeredMaterialNodeProcessing';
 import { ImageryLayers } from 'Layer/Layer';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
-import Coordinates from 'Core/Geographic/Coordinates';
+import CameraUtils from 'Utils/CameraUtils';
 
 
 const subdivisionVector = new THREE.Vector3();
@@ -145,10 +145,7 @@ class TiledGeometryLayer extends GeometryLayer {
             return;
         }
         const view = event.target;
-        var cameraTargetPosition = event?.coord || view.controls.getLookAtCoordinate();
-        var cameraTargetPosition2 = new Coordinates(cameraTargetPosition.crs, cameraTargetPosition);
-        var cameraPosition = view.camera.position('EPSG:4978');
-        const distance = cameraTargetPosition2.spatialEuclideanDistanceTo(cameraPosition);
+        const distance = CameraUtils.getTransformCameraLookingAtTarget(view, view.controls.camera).range;
         this.opacity = THREE.MathUtils.clamp((distance - this.altitudeForZeroOpacity) / (this.altitudeForFullOpacity - this.altitudeForZeroOpacity), 0, 1);
     }
 
