@@ -12,9 +12,17 @@ export const C3DTILES_LAYER_EVENTS = {
     /**
      * Fires when a tile content has been loaded
      * @event C3DTilesLayer#on-tile-content-loaded
-     * @property type {string} on-tile-content-loaded
+     * @type {object}
+     * @property {THREE.Object3D} tileContent - object3D of the tile
      */
     ON_TILE_CONTENT_LOADED: 'on-tile-content-loaded',
+    /**
+     * Fires when a tile is requested
+     * @event C3DTilesLayer#on-tile-requested
+     * @type {object}
+     * @property {object} metadata - tile
+     */
+    ON_TILE_REQUESTED: 'on-tile-requested',
 };
 
 const update = process3dTilesNode();
