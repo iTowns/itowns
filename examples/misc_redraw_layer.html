@@ -1,0 +1,154 @@
+<html>
+    <head>
+        <title>Itowns - Globe + WFS</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="description" style="border-radius: 5%;">
+            <select id="styleBox" onChange="selectStyle()" style="font-size: 15px; background-color: rgba(0,0,0,0.3); border-radius: 5%; width: 100px; height: 25px; color: white; text-align: center;">
+                <option>Style 1</option>
+                <option>Style 2</option>
+            </select> 
+        </div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
+            itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+            
+            // # Simple Globe viewer
+
+            // Define initial camera position
+            // var positionOnGlobe = { longitude: 4.4985, latitude: 46.3417, altitude: 5000 };
+            var placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 4.4985, 46.3417),
+                range: 5000,
+            }
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var view = new itowns.GlobeView(viewerDiv, placement);
+            var menuGlobe = new GuiTools('menuDiv', view);
+
+            setupLoadingScreen(viewerDiv, view);
+
+            // Add one imagery layer to the scene
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer).then(function _() {
+                    menuGlobe.addLayerGUI.bind(menuGlobe);
+                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+                });
+            });
+
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+
+            // Declare the source for the data on a rural area from the geoportail
+            var wfsAgriLayer = new itowns.WFSSource({
+                url: 'https://wxs.ign.fr/agriculture/geoportail/wfs?',
+                version: '2.0.0',
+                typeName: 'RPG.2013:rpg_2013',
+                crs: 'EPSG:4326',
+                extent: {
+                    west: 4.3764,
+                    east: 4.6341,
+                    south: 46.2729,
+                    north: 46.3855,
+                },
+                ipr: 'IGN',
+                format: 'application/json',
+            });
+
+
+            // Define the functions that sets the color according to the properties
+            function color1(properties) {
+                if (properties.code_cultu == '28') { return '#FD8A8A'; }
+                else if (properties.code_cultu == '01') { return '#F1F7B5'; }
+                else if (properties.code_cultu == '02') { return '#A8D1D1'; }
+                else if (properties.code_cultu == '03') { return '#9EA1D4'; }
+                else if (properties.code_cultu == '04') { return '#3CA59D'; }
+                else if (properties.code_cultu == '05') { return '#5A3D55'; }
+                else if (properties.code_cultu == '18') { return '#A2DE96'; }
+                else if (properties.code_cultu == '19') { return '#E79C2A'; }
+                else { return '#E0E0E0'; }
+            }
+
+            function color2(properties) {
+                let surf = parseFloat(properties.surf_cultu);
+                if (surf >=0 && surf < 2.84) { return '#f4cdd7'; }
+                else if (surf >= 2.84 && surf < 6.19) { return '#e5a4b0'; }
+                else if (surf >= 6.19 && surf < 10.43) { return '#d47c86'; }
+                else if (surf >= 10.43 && surf < 15.2) { return '#bf545b'; }
+                else if (surf > 15.2) { return '#a6292f'; }
+                else { return '#E0E0E0'; }
+            }
+
+            // Set the two different styles
+            const style1 = {
+                fill: {
+                    color: color1,
+                    opacity: 0.8
+                },
+                stroke: {
+                    color: 'black',
+                    width: 1.0,
+                },
+            };
+
+            const style2 = {
+                fill: {
+                    color: color2,
+                    opacity: 0.8
+                },
+                stroke: {
+                    color: 'black',
+                    width: 1.0,
+                },
+            };
+
+            // Create the layer where you specified the starting style
+            var wfsAgriLayer = new itowns.ColorLayer('wfsAgri', {
+                transparent: true,
+                style: style1,
+                source: wfsAgriLayer,
+                zoom: { min: 11 },
+            });
+            view.addLayer(wfsAgriLayer);
+
+            // Function that calls the onChange event in the combobox
+            function selectStyle() {
+                const styleBox = document.getElementById('styleBox');
+                const layer = view.getLayerById('wfsAgri');
+                if (styleBox.value === 'Style 1') {
+                    layer.setStyle(style1);
+                } else if (styleBox.value === 'Style 2') {
+                    layer.setStyle(style2);
+                }
+                view.redrawLayer('wfsAgri');
+            }
+
+        </script>
+    </body>
+</html>
