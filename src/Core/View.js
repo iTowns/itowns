@@ -302,7 +302,6 @@ class View extends THREE.EventDispatcher {
         this.scene.traverse(ObjectRemovalHelper.cleanup);
     }
 
-
     /**
      * Add layer in viewer.
      * The layer id must be unique.

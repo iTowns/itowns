@@ -425,15 +425,6 @@ class PlanarControls extends THREE.EventDispatcher {
         this.state = STATE.PAN;
     }
 
-
-    /**
-     * Returns the {@linkcode Coordinates} of the central point on screen in the crs of the view. See {@linkcode Coordinates} for conversion.
-     * @return {Coordinates} coordinate
-     */
-    getLookAtCoordinate() {
-        return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).coord;
-    }
-
     /**
      * Handle the pan movement (translation on local x / world z plane) when user moves the mouse while
      * STATE.PAN. The drag movement is previously initiated by [initiatePan]{@link PlanarControls#initiatePan}.
