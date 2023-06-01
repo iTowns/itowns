@@ -1,5 +1,5 @@
 import assert from 'assert';
-import HttpsProxyAgent from 'https-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import Fetcher from 'Provider/Fetcher';
 import ISGParser from 'Parser/ISGParser';
 

@@ -11,7 +11,7 @@ import OrientedImageSource from 'Source/OrientedImageSource';
 import C3DTilesSource from 'Source/C3DTilesSource';
 import C3DTilesIonSource from 'Source/C3DTilesIonSource';
 import Extent from 'Core/Geographic/Extent';
-import HttpsProxyAgent from 'https-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 describe('Sources', function () {
     // geojson url to parse

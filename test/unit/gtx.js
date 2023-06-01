@@ -1,5 +1,5 @@
 import assert from 'assert';
-import HttpsProxyAgent from 'https-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import GTXParser from 'Parser/GTXParser';
 import Fetcher from 'Provider/Fetcher';
 

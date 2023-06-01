@@ -1,5 +1,5 @@
 import assert from 'assert';
-import HttpsProxyAgent from 'https-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import LASParser from 'Parser/LASParser';
 import Fetcher from 'Provider/Fetcher';
 import { compareWithEpsilon } from './utils';
