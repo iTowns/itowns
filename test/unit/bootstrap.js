@@ -6,8 +6,13 @@ global.window = {
     setTimeout,
 };
 
-global.URL = function URL() {
-    this.ref = undefined;
+global.URL = function URL(url) {
+    return {
+        host: url.split('://')[1]?.split('/')[0],
+        hostname: url.split('://')[1]?.split(':')[0],
+        port: url.split('://')[1]?.split(':')[1],
+        protocol: url.split('://')[0],
+    };
 };
 
 global.Event = () => {};

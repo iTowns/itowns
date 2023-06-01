@@ -1,6 +1,7 @@
 import assert from 'assert';
 import proj4 from 'proj4';
 import * as THREE from 'three';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import Extent from 'Core/Geographic/Extent';
 import PlanarView from 'Core/Prefab/PlanarView';
 import Style from 'Core/Style';
@@ -28,6 +29,7 @@ describe('3DTilesLayer Style', () => {
             source: new C3DTilesSource({
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/' +
                     '3DTiles/lyon1_with_surface_type_2018/tileset.json',
+                networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             }),
         },
         view,
