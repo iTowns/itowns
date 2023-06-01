@@ -13,7 +13,7 @@ describe('Underground Visualization', function () {
     const view = new PlanarView(renderer.domElement, extent, { renderer, camera: { type: CAMERA_TYPE.ORTHOGRAPHIC } });
 
     it('should decrease opacity while zooming', function () {
-        var opacity0;
+        let opacity0;
         const layer = view.getLayers(l => l.isPlanarLayer)[0];
         if (layer) {
             opacity0 = layer.opacity;
@@ -26,7 +26,7 @@ describe('Underground Visualization', function () {
             view, camera, params,
         );
 
-        var opacity1;
+        let opacity1;
         if (layer) {
             opacity1 = layer.opacity;
         }
@@ -37,13 +37,13 @@ describe('Underground Visualization', function () {
 
 
     it('should restore opacity when disabled', async () => {
-        var opacity0;
+        let opacity0;
         const layer = view.getLayers(l => l.isPlanarLayer)[0];
         if (layer) {
             opacity0 = layer.opacity;
         }
         view.setUndergroundVisualization(false);
-        var opacity1;
+        let opacity1;
         if (layer) {
             opacity1 = layer.opacity;
         }
