@@ -5,7 +5,6 @@ import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import OBB from 'Renderer/OBB';
-import { VIEW_EVENTS } from 'Core/View';
 
 THREE.Object3D.DefaultUp.set(0, 0, 1);
 const targetPosition = new THREE.Vector3();
