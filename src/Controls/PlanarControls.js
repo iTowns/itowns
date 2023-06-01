@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import { VIEW_EVENTS } from 'Core/View';
-import CameraUtils from 'Utils/CameraUtils';
 
 // event keycode
 export const keys = {
