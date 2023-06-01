@@ -337,7 +337,7 @@ class CameraRig extends THREE.Object3D {
 }
 
 export function getRig(camera) {
-    rigs[camera.uuid] = rigs[camera.uuid] || new CameraRig(camera);
+    rigs[camera.uuid] = rigs[camera.uuid] || new CameraRig();
     return rigs[camera.uuid];
 }
 
