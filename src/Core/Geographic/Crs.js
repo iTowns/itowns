@@ -2,19 +2,31 @@ import proj4 from 'proj4';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
+function isString(s) {
+    return typeof s === 'string' || s instanceof String;
+}
+
+function mustBeString(crs) {
+    if (!isString(crs)) {
+        throw new Error(`Crs parameter value must be a string: '${crs}'`);
+    }
+}
+
 function isTms(crs) {
-    return crs.startsWith('TMS');
+    return isString(crs) && crs.startsWith('TMS');
 }
 
 function isEpsg(crs) {
-    return crs.startsWith('EPSG');
+    return isString(crs) && crs.startsWith('EPSG');
 }
 
 function formatToTms(crs) {
+    mustBeString(crs);
     return isTms(crs) ? crs : `TMS:${crs.match(/\d+/)[0]}`;
 }
 
 function formatToEPSG(crs) {
+    mustBeString(crs);
     return isEpsg(crs) ? crs : `EPSG:${crs.match(/\d+/)[0]}`;
 }
 
@@ -28,6 +40,7 @@ function is4326(crs) {
 }
 
 function isGeocentric(crs) {
+    mustBeString(crs);
     const projection = proj4.defs(crs);
     return !projection ? false : projection.projName == 'geocent';
 }
@@ -43,6 +56,7 @@ function _unitFromProj4Unit(projunit) {
 }
 
 function toUnit(crs) {
+    mustBeString(crs);
     switch (crs) {
         case 'EPSG:4326' : return UNIT.DEGREE;
         case 'EPSG:4978' : return UNIT.METER;
@@ -57,9 +71,10 @@ function toUnit(crs) {
 }
 
 function toUnitWithError(crs) {
+    mustBeString(crs);
     const u = toUnit(crs);
-    if (crs === undefined || u === undefined) {
-        throw new Error(`Invalid crs parameter value '${crs}'`);
+    if (u === undefined) {
+        throw new Error(`No unit found for crs: '${crs}'`);
     }
     return u;
 }
