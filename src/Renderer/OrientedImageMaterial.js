@@ -4,7 +4,7 @@ import textureVS from 'Renderer/Shader/ProjectiveTextureVS.glsl';
 import textureFS from 'Renderer/Shader/ProjectiveTextureFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 
-const ndcToTextureMatrix = new THREE.Matrix4().set(
+const ndcToTextureMatrix = new THREE.Matrix4(
     1, 0, 0, 1,
     0, 1, 0, 1,
     0, 0, 2, 0,
