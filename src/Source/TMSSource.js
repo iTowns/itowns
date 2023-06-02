@@ -14,7 +14,7 @@ const extent = new Extent(CRS.tms_4326, 0, 0, 0);
  * @extends Source
  *
  * @property {boolean} isTMSSource - Used to checkout whether this source is a
- * TMSSource. Default is true. You should not change this, as it is used
+ * TMSSource. Default is tue. You should not change this, as it is used
  * internally for optimisation.
  * @property {boolean} isInverted - The isInverted property is to be set to the
  * correct value, true or false (default being false) if the computation of the
@@ -78,13 +78,13 @@ class TMSSource extends Source {
      * @constructor
      */
     constructor(source) {
-        if (!source.crs && !source.projection) {
-            throw new Error('New TMSSource/WMTSSource: crs projection is required');
-        }
-
         source.format = source.format || 'image/png';
 
         super(source);
+
+        if (!source.crs) {
+            throw new Error('New TMSSource/WMTSSource: crs is required');
+        }
 
         this.isTMSSource = true;
 

@@ -8,6 +8,7 @@ import ISGParser from 'Parser/ISGParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
 import Cache from 'Core/Scheduler/Cache';
+import CRS from 'Core/Geographic/Crs';
 
 export const supportedFetchers = new Map([
     ['image/x-bil;bits=32', Fetcher.textureFloat],
@@ -50,6 +51,9 @@ class InformationsData {
         if (options.projection) {
             console.warn('Source projection parameter is deprecated, use crs instead.');
             options.crs = options.crs || options.projection;
+        }
+        if (options.crs) {
+            CRS.isValid(options.crs);
         }
         this.crs = options.crs;
     }
