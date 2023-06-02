@@ -274,7 +274,7 @@ class Sky extends THREE.Mesh {
             depthWrite: false,
         });
 
-        const skyGeo = new THREE.SphereBufferGeometry(40000, 32, 15);
+        const skyGeo = new THREE.SphereGeometry(40000, 32, 15);
         super(skyGeo, skyMat);
     }
 }

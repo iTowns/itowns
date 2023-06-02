@@ -210,7 +210,7 @@ export default {
             data[0] = backgroundColor.r * 255;
             data[1] = backgroundColor.g * 255;
             data[2] = backgroundColor.b * 255;
-            texture = new THREE.DataTexture(data, 1, 1, THREE.RGBFormat);
+            texture = new THREE.DataTexture(data, 1, 1, THREE.RGBAFormat);
         } else {
             texture = new THREE.Texture();
         }

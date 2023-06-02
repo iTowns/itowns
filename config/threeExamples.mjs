@@ -4,6 +4,7 @@ export default {
         './loaders/GLTFLoader.js',
         './loaders/DRACOLoader.js',
         './loaders/DDSLoader.js',
+        './utils/BufferGeometryUtils.js',
         './capabilities/WebGL.js',
     ],
 };

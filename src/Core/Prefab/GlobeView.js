@@ -94,7 +94,7 @@ class GlobeView extends View {
      * @param {Object} options.controls - See options of {@link GlobeControls}
      */
     constructor(viewerDiv, placement = {}, options = {}) {
-        THREE.Object3D.DefaultUp.set(0, 0, 1);
+        THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
         // Setup View
         super('EPSG:4978', viewerDiv, options);
         this.isGlobeView = true;
