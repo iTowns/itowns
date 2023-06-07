@@ -253,7 +253,7 @@ h3 {
 
 .tooltip {
     display: none;
-    background-image: linear-gradient(rgba(80, 80, 80,0.95), rgba(60, 60, 60,0.95));
+    background-image: linear-gradient(rgba(167, 164, 164, 0.95), rgba(60, 60, 60,0.95));
     box-shadow: -1px 2px 5px 1px rgba(0, 0, 0, 0.5);
     margin-top: 20px;
     margin-left: 20px;
