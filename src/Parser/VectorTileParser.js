@@ -4,11 +4,26 @@ import { VectorTile } from '@mapbox/vector-tile';
 import { globalExtentTMS } from 'Core/Geographic/Extent';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 const worldDimension3857 = globalExtentTMS.get('EPSG:3857').planarDimensions();
 const globalExtent = new Vector3(worldDimension3857.x, worldDimension3857.y, 1);
 const lastPoint = new Vector2();
 const firstPoint = new Vector2();
+
+// Calculate the projected coordinates in EPSG:4326 of a given point in the VT local system
+// adapted from @mapbox/vector-tile
+function project(x, y, tileNumbers, tileExtent) {
+    const size = tileExtent * 2 ** tileNumbers.z;
+    const x0 = tileExtent * tileNumbers.x;
+    const y0 = tileExtent * tileNumbers.y;
+    const y2 = 180 - (y + y0) * 360 / size;
+    return new Coordinates(
+        'EPSG:4326',
+        (x + x0) * 360 / size - 180,
+        360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90,
+    );
+}
 
 // Classify option, it allows to classify a full polygon and its holes.
 // Each polygon with its holes are in one FeatureGeometry.
@@ -59,9 +74,15 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
                 sum = 0;
             }
             count++;
-            geometry.pushCoordinatesValues(feature, x, y);
+            const coordProj = project(
+                x,
+                y,
+                vtFeature.tileNumbers,
+                vtFeature.extent);
+            geometry.pushCoordinatesValues(feature, { x, y }, coordProj);
             if (count == 1) {
                 firstPoint.set(x, y);
+                firstPoint.coordProj = coordProj;
                 lastPoint.set(x, y);
             } else if (isPolygon && count > 1) {
                 sum += (lastPoint.x - x) * (lastPoint.y + y);
@@ -70,7 +91,7 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
         } else if (cmd === 7) {
             if (count) {
                 count++;
-                geometry.pushCoordinatesValues(feature, firstPoint.x, firstPoint.y);
+                geometry.pushCoordinatesValues(feature, { x: firstPoint.x, y: firstPoint.y }, firstPoint.coordProj);
                 if (isPolygon) {
                     sum += (lastPoint.x - firstPoint.x) * (lastPoint.y + firstPoint.y);
                 }
@@ -127,6 +148,7 @@ function readPBF(file, options) {
 
         for (let i = sourceLayer.length - 1; i >= 0; i--) {
             const vtFeature = sourceLayer.feature(i);
+            vtFeature.tileNumbers = { x, y: file.extent.row, z };
             const layers = options.in.layers[layer_id].filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.zoom.min && z < l.zoom.max);
             let feature;
 

@@ -33,7 +33,7 @@ describe('LabelLayer', function () {
         const feature = collection.requestFeatureByType(FEATURE_TYPES.POINT);
         const geometry = feature.bindNewGeometry();
         geometry.startSubGeometry(0, feature);
-        geometry.pushCoordinatesValues(feature, 0, 0);
+        geometry.pushCoordinatesValues(feature, { x: 0, y: 0 });
         geometry.closeSubGeometry(3, feature);
         geometry.properties = { content: 'foo' };
 

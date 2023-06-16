@@ -14,17 +14,16 @@ function _extendBuffer(feature, size) {
         feature.normals.length = feature.vertices.length;
     }
 }
-
-function _setGeometryValues(geom, feature, long, lat, alt, normal) {
+function _setGeometryValues(geom, feature, coord) {
     if (feature.normals) {
-        normal.toArray(feature.normals, feature._pos);
+        coord.geodesicNormal.toArray(feature.normals, feature._pos);
     }
 
-    feature._pushValues(long, lat, alt);
+    feature._pushValues(coord.x, coord.y, coord.z);
 
     if (geom.size == 3) {
-        geom.altitude.min = Math.min(geom.altitude.min, alt);
-        geom.altitude.max = Math.max(geom.altitude.max, alt);
+        geom.altitude.min = Math.min(geom.altitude.min, coord.z);
+        geom.altitude.max = Math.max(geom.altitude.max, coord.z);
     }
 }
 
@@ -147,10 +146,9 @@ export class FeatureGeometry {
         coordIn.z = this.baseAltitude(feature, coordIn);
 
         coordIn.as(feature.crs, coordOut);
-
         feature.transformToLocalSystem(coordOut);
 
-        _setGeometryValues(this, feature, coordOut.x, coordOut.y, coordOut.z, coordOut.geodesicNormal);
+        _setGeometryValues(this, feature, coordOut);
 
         // expand extent if present
         if (this.#currentExtent) {
@@ -159,23 +157,30 @@ export class FeatureGeometry {
     }
 
     /**
-     * Push new values coordinates in vertices buffer.
+     * Push new values coordinates in vertices buffer without any transformation.
      * No geographical conversion is made or the normal doesn't stored.
-     * No local transformation is made on coordinates.
      *
      * @param {Feature} feature - the feature containing the geometry
-     * @param {number} long The longitude coordinate.
-     * @param {number} lat The latitude coordinate.
-     * @param {THREE.Vector3} [normal] the normal on coordinates (only for `EPSG:4978` projection).
-     */
-    pushCoordinatesValues(feature, long, lat, normal) {
-        const altitude = this.baseAltitude(feature);
+     * @param {Object} coordIn An object containing the coordinates values to push.
+     * @param {number} coordIn.x the x coordinate (in a local system).
+     * @param {number} coordIn.y the y coordinate (in a local system).
+     * @param {THREE.Vector3} [coordIn.normal] the normal on coordinates (only for `EPSG:4978` projection).
+     * @param {Coordinates} [coordProj] An optional argument containing the geodesic coordinates in EPSG:4326
+     * It allows the user to get access to the feature coordinates to set style.base_altitude.
+    */
+    pushCoordinatesValues(feature, coordIn, coordProj, ...args) {
+        if (args.length > 0) {
+            console.warn('Deprecated: change in arguments, use pushCoordinatesValues(feature, {x: long, y: lat, normal}, coordProj) instead');
+            this.pushCoordinatesValues(feature, { x: coordIn, y: coordProj, normal: args[0] }, args[1]);
+            return;
+        }
+        coordIn.z = this.baseAltitude(feature, coordProj);
 
-        _setGeometryValues(this, feature, long, lat, altitude, normal);
+        _setGeometryValues(this, feature, coordIn);
 
         // expand extent if present
         if (this.#currentExtent) {
-            this.#currentExtent.expandByValuesCoordinates(long, lat);
+            this.#currentExtent.expandByValuesCoordinates(coordIn.x, coordIn.y);
         }
     }
 
