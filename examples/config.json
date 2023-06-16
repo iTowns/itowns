@@ -33,6 +33,7 @@
         "vector_tile_raster_3d": "Raster on 3D map",
         "vector_tile_raster_2d": "Raster on 2D map",
         "vector_tile_3d_mesh": "Vector tile to 3d objects",
+        "vector_tile_3d_mesh_mapbox": "Mapbox Vector tile to 3d objects",
         "vector_tile_dragndrop": "Drag and drop a style"
     },
 

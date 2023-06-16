@@ -74,7 +74,7 @@ function readVectorProperty(property, options) {
         if (mapbox.expression.isExpression(property)) {
             return mapbox.expression.createExpression(property, options).value;
         } else {
-            return property.base || property;
+            return property;
         }
     }
 }
