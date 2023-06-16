@@ -43,10 +43,10 @@ exports.find = helper.find;
 const longnameToUrl = helper.longnameToUrl;
 const toTutorial = helper.toTutorial;
 
-var hasOwnProp = Object.prototype.hasOwnProperty;
+const hasOwnProp = Object.prototype.hasOwnProperty;
 
 function parseType(longname) {
-    var err;
+    let err;
 
     longname = longname.replace('&lt;', '<');
 
@@ -116,18 +116,17 @@ function getShortName(longname) {
  * @return {string} The HTML link, or the link text if the link is not available.
  */
 function buildLink(longname, linkText, options) {
-    var classString = options.cssClass ? util.format(' class="%s"', options.cssClass) : '';
-    var fileUrl;
-    var fragmentString = fragmentHash(options.fragmentId);
-    var stripped;
-    var text;
+    const classString = options.cssClass ? util.format(' class="%s"', options.cssClass) : '';
+    let fileUrl;
+    const fragmentString = fragmentHash(options.fragmentId);
+    let text;
 
-    var parsedType;
+    let parsedType;
 
     // handle cases like:
     // @see <http://example.org>
     // @see http://example.org
-    stripped = longname ? longname.replace(/^<|>$/g, '') : '';
+    const stripped = longname ? longname.replace(/^<|>$/g, '') : '';
     if (hasUrlPrefix(stripped)) {
         fileUrl = stripped;
         text = linkText || stripped;
@@ -160,9 +159,9 @@ function buildLink(longname, linkText, options) {
 }
 
 function useMonospace(tag, text) {
-    var cleverLinks;
-    var monospaceLinks;
-    var result;
+    let cleverLinks;
+    let monospaceLinks;
+    let result;
 
     if (hasUrlPrefix(text)) {
         result = false;
@@ -183,9 +182,9 @@ function useMonospace(tag, text) {
 }
 
 function splitLinkText(text) {
-    var linkText;
-    var target;
-    var splitIndex;
+    let linkText;
+    let target;
+    let splitIndex;
 
     // if a pipe is not present, we split on the first space
     splitIndex = text.indexOf('|');
@@ -223,13 +222,11 @@ function shouldShortenLongname() {
  * @return {string} The linkified text.
  */
 exports.resolveLinks = function resolveLinks(str) {
-    var replacers;
-
     function extractLeadingText(string, completeTag) {
-        var tagIndex = string.indexOf(completeTag);
-        var leadingText = null;
-        var leadingTextRegExp = /\[(.+?)\]/g;
-        var leadingTextInfo = leadingTextRegExp.exec(string);
+        const tagIndex = string.indexOf(completeTag);
+        let leadingText = null;
+        const leadingTextRegExp = /\[(.+?)\]/g;
+        let leadingTextInfo = leadingTextRegExp.exec(string);
 
         // did we find leading text, and if so, does it immediately precede the tag?
         while (leadingTextInfo && leadingTextInfo.length) {
@@ -249,19 +246,16 @@ exports.resolveLinks = function resolveLinks(str) {
     }
 
     function processLink(string, tagInfo) {
-        var leading = extractLeadingText(string, tagInfo.completeTag);
-        var linkText = leading.leadingText;
-        var monospace;
-        var split;
-        var target;
+        const leading = extractLeadingText(string, tagInfo.completeTag);
+        let linkText = leading.leadingText;
 
         string = leading.string;
 
-        split = splitLinkText(tagInfo.text);
-        target = split.target;
+        const split = splitLinkText(tagInfo.text);
+        const target = split.target;
         linkText = linkText || split.linkText;
 
-        monospace = useMonospace(tagInfo.tag, tagInfo.text);
+        const monospace = useMonospace(tagInfo.tag, tagInfo.text);
 
         return string.replace(tagInfo.completeTag, buildLink(target, linkText, {
             linkMap: longnameToUrl,
@@ -271,7 +265,7 @@ exports.resolveLinks = function resolveLinks(str) {
     }
 
     function processTutorial(string, tagInfo) {
-        var leading = extractLeadingText(string, tagInfo.completeTag);
+        const leading = extractLeadingText(string, tagInfo.completeTag);
 
         string = leading.string;
 
@@ -280,7 +274,7 @@ exports.resolveLinks = function resolveLinks(str) {
         ));
     }
 
-    replacers = {
+    const replacers = {
         link: processLink,
         linkcode: processLink,
         linkplain: processLink,

@@ -51,7 +51,7 @@ describe('DemUtils', function () {
             .then((l) => {
                 assert.equal('worldelevation', l.id);
                 done();
-            }, done);
+            }).catch(done);
     });
     const tiles = [];
     const extent = new Extent('EPSG:4326', 5.625, 11.25, 45, 50.625);
@@ -69,7 +69,7 @@ describe('DemUtils', function () {
             .then(() => {
                 assert.equal(nodeLayer.textures[0].image.data[0], 357.3833923339844);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('get elevation value at with PRECISE_READ_Z', () => {

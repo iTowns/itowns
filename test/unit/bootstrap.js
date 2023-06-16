@@ -47,7 +47,11 @@ class DOMElement {
         this[att] = val;
     }
     focus() {}
-    appendChild(c) { this.children.push(c); }
+    appendChild(c) {
+        c.parentNode = this;
+        this.children.push(c);
+    }
+    append(c) { this.appendChild(c); }
     cloneNode() { return Object.create(this); }
     getBoundingClientRect() { return { x: 0, y: 0, width: this.width, height: this.height }; }
     addEventListener(event, cb) { this.events.set(event, cb); }
@@ -90,6 +94,22 @@ global.document = {
                     const image = global.document.createElement('img');
                     image.width = dw;
                     image.height = dh;
+                    return image;
+                },
+                getImageData: (sx, sy, sw, sh) => {
+                    const imageData = {
+                        data: new Uint8ClampedArray(sw * sh * 4),
+                        colorSpace: 'srgb',
+                        height: sh,
+                        width: sw,
+                    };
+                    return imageData;
+                },
+                // eslint-disable-next-line no-unused-vars
+                putImageData: (imageData, dx, dy) => {
+                    const image = global.document.createElement('img');
+                    image.width = imageData.sw;
+                    image.height = imageData.sh;
                     return image;
                 },
                 canvas,

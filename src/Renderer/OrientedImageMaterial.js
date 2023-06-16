@@ -174,7 +174,7 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
      * @param {THREE.Camera} viewCamera - Camera of the scene.
      */
     updateUniforms(viewCamera) {
-        for (var i = 0; i < this.group.children.length; ++i) {
+        for (let i = 0; i < this.group.children.length; ++i) {
             const camera = this.group.children[i];
             if (camera.needsUpdate) {
                 camera.textureMatrixWorldInverse.multiplyMatrices(ndcToTextureMatrix, camera.projectionMatrix);

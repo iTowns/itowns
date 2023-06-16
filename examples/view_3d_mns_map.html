@@ -89,7 +89,7 @@
                         filter: (layer) => !layer['source-layer'].includes('oro_')
                             && !layer['source-layer'].includes('parcellaire'),
                     }),
-                    addLabelLayer: true,
+                    addLabelLayer: { performance: true },
                 }),
                 { cursor: '+' },
             );

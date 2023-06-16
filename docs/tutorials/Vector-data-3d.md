@@ -34,7 +34,7 @@ layer to a more precise one.
             var view = new itowns.GlobeView(viewerDiv, placement);
             
             var colorSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'http://wxs.ign.fr/decouverte/geoportail/wmts',
                 crs: 'EPSG:3857',
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
@@ -48,7 +48,7 @@ layer to a more precise one.
             view.addLayer(colorLayer);
             
             var elevationSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'http://wxs.ign.fr/altimetrie/geoportail/wmts',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
                 tileMatrixSet: 'WGS84G',
@@ -99,11 +99,16 @@ layer for such usecases: `{@link FeatureGeometryLayer}` (which is a pre-configur
 Before creating this layer, let's instantiate the data source:
 
 ```js
+
 var geometrySource = new itowns.WFSSource({
-    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+    url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+    version: '2.0.0',
+    typeName: 'BDTOPO_V3:batiment',
     crs: 'EPSG:4326',
+    ipr: 'IGN',
+    format: 'application/json',
 });
+
 ```
 
 With our source instantiated, we can create our `FeatureGeometryLayer`, giving it the usual `id` and `source` parameters :
@@ -142,9 +147,12 @@ function setAltitude(properties) {
 }
 
 var geometrySource = new itowns.WFSSource({
-    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+    url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+    version: '2.0.0',
+    typeName: 'BDTOPO_V3:batiment',
     crs: 'EPSG:4326',
+    ipr: 'IGN',
+    format: 'application/json',
 });
 
 var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {
@@ -176,16 +184,15 @@ z_max: 83.7
 z_min: 83.7
 ```
 
-Reading the documentation of the database we are querying ([section 9.1, page
-84](http://professionnels.ign.fr/doc/DC_BDTOPO_3-0.pdf), in French), we have an
+Reading the documentation of the database we are querying ([section 7.2, page
+66](https://geoservices.ign.fr/sites/default/files/2023-01/DC_BDTOPO_3-3.pdf), in French), we have an
 explanation on each property. To help us place the data correctly, let's use the
-`z_min` and the `hauteur` (height) properties. 
-The first one corresponds to the altitude of the building roof, and the second one specifies its height.
-We can therefore set the base altitude of our buildings by substracting the value of `hauteur` to the value of `z_min` :
+`altitude_minimale_sol` property. 
+It corresponds to the minimal altitude of the building floor.
 
 ```js
 function setAltitude(properties) {
-    return properties.z_min - properties.hauteur;
+    return properties.altitude_minimale_sol;
 }
 ```
 Now we can't see completely our buildings. What can we do about that
@@ -204,9 +211,12 @@ function setExtrusion(properties) {
 }
 
 var geometrySource = new itowns.WFSSource({
-    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+    url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+    version: '2.0.0',
+    typeName: 'BDTOPO_V3:batiment',
     crs: 'EPSG:4326',
+    ipr: 'IGN',
+    format: 'application/json',
 });
 
 var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {
@@ -242,9 +252,12 @@ function setColor(properties) {
 }
 
 var geometrySource = new itowns.WFSSource({
-    url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+    url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+    version: '2.0.0',
+    typeName: 'BDTOPO_V3:batiment',
     crs: 'EPSG:4326',
+    ipr: 'IGN',
+    format: 'application/json',
 });
 
 var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {
@@ -298,7 +311,7 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
             var view = new itowns.GlobeView(viewerDiv, placement);
 
             var colorSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'http://wxs.ign.fr/decouverte/geoportail/wmts',
                 crs: 'EPSG:3857',
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
@@ -312,7 +325,7 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
             view.addLayer(colorLayer);
 
             var elevationSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                url: 'http://wxs.ign.fr/altimetrie/geoportail/wmts',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
                 tileMatrixSet: 'WGS84G',
@@ -352,7 +365,7 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
             view.addLayer(elevationLayer);
 
             function setAltitude(properties) {
-                return properties.z_min - properties.hauteur;
+                return properties.altitude_minimale_sol;
             }
 
             function setExtrusion(properties) {
@@ -363,10 +376,14 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
                 return new itowns.THREE.Color(0xaaaaaa);
             }
 
+          
             var geometrySource = new itowns.WFSSource({
-                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wfs?',
-                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_indifferencie',
+                url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+                version: '2.0.0',
+                typeName: 'BDTOPO_V3:batiment',
                 crs: 'EPSG:4326',
+                ipr: 'IGN',
+                format: 'application/json',
             });
 
             var geometryLayer = new itowns.FeatureGeometryLayer('Buildings', {

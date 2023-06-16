@@ -46,7 +46,7 @@ describe('3D Tiles batch table', function () {
         const binPartUint8 = new Uint8Array(binVal);
         const binPartBuffer = binPartUint8.buffer;
 
-        var batchTableBuffer = new Uint8Array(jsonPartBuffer.byteLength + binPartBuffer.byteLength);
+        const batchTableBuffer = new Uint8Array(jsonPartBuffer.byteLength + binPartBuffer.byteLength);
         batchTableBuffer.set(new Uint8Array(jsonPartBuffer), 0);
         batchTableBuffer.set(new Uint8Array(binPartBuffer), jsonPartBuffer.byteLength);
 

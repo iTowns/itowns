@@ -9,7 +9,7 @@ describe('ThreeJS Utils', function () {
         // WebGLRenderer.info value which lists used GPU resources but WebGLRenderer is not available for unit tests.
         // Another way, that is implemented here, is to create a material and a all possible textures and to count the
         // number of dispatched 'dispose' events
-        var disposeCounter = {
+        const disposeCounter = {
             nb: 0,
         };
         const increment = function () {

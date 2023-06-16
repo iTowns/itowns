@@ -1,3 +1,7 @@
+## Before contributing
+
+Read [CONTRIBUTING.md](https://github.com/iTowns/itowns/blob/master/CONTRIBUTING.md) and [CODING.md](https://github.com/iTowns/itowns/blob/master/CONTRIBUTING.md) to apply `iTowns` conventions on PRs, Git history and code.
+
 ## Description
 <!--- Describe your changes in detail -->
 

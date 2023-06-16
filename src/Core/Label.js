@@ -90,8 +90,6 @@ class Label extends THREE.Object3D {
         this.content.style.userSelect = 'none';
         this.content.style.position = 'absolute';
 
-        this.baseContent = content;
-
         if (style.isStyle) {
             this.anchor = style.getTextAnchorPosition();
             this.styleOffset = style.text.offset;
@@ -199,9 +197,7 @@ class Label extends THREE.Object3D {
     }
 
     update3dPosition(crs) {
-        this.coordinates.as(crs, coord);
-        coord.toVector3(this.position);
-        this.parent.worldToLocal(this.position);
+        this.coordinates.as(crs, coord).toVector3(this.position);
         this.updateMatrixWorld();
     }
 
@@ -218,8 +214,6 @@ class Label extends THREE.Object3D {
 
         if (!isNaN(elevation) && elevation != this.coordinates.z) {
             this.coordinates.z = elevation;
-            this.updateHorizonCullingPoint();
-            return true;
         }
     }
 

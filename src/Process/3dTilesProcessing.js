@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
+import { C3DTILES_LAYER_EVENTS } from '../Layer/C3DTilesLayer';
 
 /** @module 3dTilesProcessing
 */
@@ -16,6 +17,8 @@ function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw
         metadata,
         redraw,
     };
+
+    geometryLayer.dispatchEvent({ type: C3DTILES_LAYER_EVENTS.ON_TILE_REQUESTED, metadata });
 
     return scheduler.execute(command);
 }

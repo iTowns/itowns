@@ -221,20 +221,20 @@ class c3DEngine {
     }
 
     bufferToImage(pixelBuffer, width, height) {
-        var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         // size the canvas to your desired image
         canvas.width = width;
         canvas.height = height;
 
-        var imgData = ctx.getImageData(0, 0, width, height);
+        const imgData = ctx.getImageData(0, 0, width, height);
         imgData.data.set(pixelBuffer);
 
         ctx.putImageData(imgData, 0, 0);
 
         // create a new img object
-        var image = new Image();
+        const image = new Image();
 
         // set the img.src to the canvas data url
         image.src = canvas.toDataURL();

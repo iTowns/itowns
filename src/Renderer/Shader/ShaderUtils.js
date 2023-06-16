@@ -36,12 +36,12 @@ export default {
     unrollLoops(string, defines) {
         // look for a for loop with an unroll_loop pragma
         // The detection of the scope of the for loop is hacky as it does not support nested scopes
-        var pattern = /#pragma unroll_loop\s+for\s*\(\s*int\s+i\s*=\s*([\w\d]+);\s*i\s+<\s+([\w\d]+);\s*i\s*\+\+\s*\)\s*\{\n([^}]*)\}/g;
+        const pattern = /#pragma unroll_loop\s+for\s*\(\s*int\s+i\s*=\s*([\w\d]+);\s*i\s+<\s+([\w\d]+);\s*i\s*\+\+\s*\)\s*\{\n([^}]*)\}/g;
         function replace(match, start, end, snippet) {
-            var unroll = '';
+            let unroll = '';
             start = start in defines ? defines[start] : parseInt(start, 10);
             end = end in defines ? defines[end] : parseInt(end, 10);
-            for (var i = start; i < end; i++) {
+            for (let i = start; i < end; i++) {
                 unroll += snippet.replace(/\bi\b/g, ` ${i} `);
             }
             return unroll;

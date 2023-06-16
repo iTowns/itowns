@@ -13,7 +13,7 @@ describe('FeaturesUtils', function () {
         promise.then((collection) => {
             assert.equal(collection.features.length, 3);
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('should correctly compute extent geojson', function (done) {
@@ -24,7 +24,7 @@ describe('FeaturesUtils', function () {
             assert.equal(extent.south, 42.91620643817353);
             assert.equal(extent.north, 43.72744458647463);
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('should correctly filter point', function (done) {
@@ -34,7 +34,7 @@ describe('FeaturesUtils', function () {
             assert.equal(filter.length, 1.0);
             assert.equal(filter[0].type == FEATURE_TYPES.POINT, 1.0);
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('should correctly filter polygon', function (done) {
@@ -44,7 +44,7 @@ describe('FeaturesUtils', function () {
             assert.equal(filter.length, 1.0);
             assert.equal(filter[0].type == FEATURE_TYPES.POLYGON, 1.0);
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('should correctly filter line', function (done) {
@@ -54,13 +54,13 @@ describe('FeaturesUtils', function () {
             assert.equal(filter.length, 1.0);
             assert.equal(filter[0].type == FEATURE_TYPES.LINE, 1.0);
             done();
-        }, done);
+        }).catch(done);
     });
 
     it('should remember individual feature properties', function (done) {
         promise.then((collection) => {
             assert.equal(collection.features[2].geometries[0].properties.my_prop, 14);
             done();
-        }, done);
+        }).catch(done);
     });
 });

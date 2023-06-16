@@ -1,12 +1,12 @@
-/* global itowns, Promise */
-var manager = new itowns.THREE.LoadingManager();
+/* global itowns */
+const manager = new itowns.THREE.LoadingManager();
 
 // namespace ThreeLoader.
-var ThreeLoader = {};
+const ThreeLoader = {};
 
 // Utility method to use Promise.
 function defer() {
-    var deferredPromise = {};
+    const deferredPromise = {};
     deferredPromise.promise = new Promise(function _(resolve, reject) {
         deferredPromise.resolve = resolve;
         deferredPromise.reject = reject;
@@ -20,8 +20,8 @@ function defer() {
  * @returns {Promise} A promise resolved when the script is loaded.
  */
 function loadScriptAsync(uri) {
-    var deferredPromise = defer();
-    var tag = document.createElement('script');
+    const deferredPromise = defer();
+    const tag = document.createElement('script');
     tag.async = true;
     tag.onload = function r() {
         deferredPromise.resolve();
@@ -38,7 +38,7 @@ function loadScriptAsync(uri) {
  * @returns {Promise} A promise with the ThreeJS Loader
  */
 ThreeLoader.getThreeJsLoader = function getThreeJsLoader(format) {
-    var deferredPromise = defer();
+    const deferredPromise = defer();
     // eslint-disable-next-line no-undef
     THREE = itowns.THREE;
     loadScriptAsync('https://cdn.rawgit.com/mrdoob/three.js/r' + itowns.THREE.REVISION + '/examples/js/loaders/' + format + 'Loader.js')
@@ -57,7 +57,7 @@ ThreeLoader.getThreeJsLoader = function getThreeJsLoader(format) {
  * @returns {Promise} A promise resolved when the ressource is loaded.
  */
 ThreeLoader.useThreeJsLoader = function useThreeJsLoader(loader, url) {
-    var deferredPromise = defer();
+    const deferredPromise = defer();
     loader.load(url, deferredPromise.resolve, function _() {}, deferredPromise.reject);
     return deferredPromise.promise;
 };

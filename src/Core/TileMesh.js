@@ -44,8 +44,6 @@ class TileMesh extends THREE.Mesh {
         this.layerUpdateState = {};
         this.isTileMesh = true;
 
-        this.domElements = {};
-
         this.geoidHeight = 0;
 
         this.link = {};
@@ -112,12 +110,6 @@ class TileMesh extends THREE.Mesh {
     onBeforeRender() {
         if (this.material.layersNeedUpdate) {
             this.material.updateLayersUniforms();
-        }
-    }
-
-    findClosestDomElement(id) {
-        if (this.parent.isTileMesh) {
-            return this.parent.domElements[id] || this.parent.findClosestDomElement(id);
         }
     }
 }

@@ -13,7 +13,7 @@ describe('3D Tiles Binary Property Accessor', function () {
         const componentType = 'FLOAT';
         const type = 'SCALAR';
 
-        var parsedArray = binaryPropertyAccessor(buffer, batchLength, byteOffset, componentType, type);
+        const parsedArray = binaryPropertyAccessor(buffer, batchLength, byteOffset, componentType, type);
 
         assert.ok(compareArrayWithEpsilon(parsedArray, refArray, 0.001));
     });

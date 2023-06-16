@@ -20,7 +20,7 @@ describe('GeoJsonParser', function () {
             .then((collection) => {
                 assert.ok(collection.features[0].vertices.every((v, i) => ((i + 1) % 3) != 0 || (v + collection.position.z) == 0));
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should respect all z coordinates', function (done) {
@@ -28,7 +28,7 @@ describe('GeoJsonParser', function () {
             .then((collection) => {
                 assert.ok(collection.features[0].vertices.every((v, i) => ((i + 1) % 3) != 0 || (v + collection.position.z) != 0));
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should detect if there is the raw elevation data', function (done) {
@@ -36,7 +36,7 @@ describe('GeoJsonParser', function () {
             .then((collection) => {
                 assert.ok(collection.features[0].hasRawElevationData);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should detect if there is not the raw elevation data', function (done) {
@@ -44,7 +44,7 @@ describe('GeoJsonParser', function () {
             .then((collection) => {
                 assert.ok(!collection.features[0].hasRawElevationData);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should return an empty collection', function (done) {
@@ -60,7 +60,7 @@ describe('GeoJsonParser', function () {
             .then((collection) => {
                 assert.ok(collection.features.length == 0);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should return an merged collection', function (done) {
@@ -76,7 +76,7 @@ describe('GeoJsonParser', function () {
             .then((collection) => {
                 assert.ok(collection.features.length == 1);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should return an no merged collection', function (done) {
@@ -92,7 +92,7 @@ describe('GeoJsonParser', function () {
             .then((collection) => {
                 assert.ok(collection.features.length == 3);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should return an collection without altitude and normal', function (done) {
@@ -109,7 +109,7 @@ describe('GeoJsonParser', function () {
                 assert.ok(collection.features[0].vertices.length == 32);
                 assert.ok(collection.features[0].normals == undefined);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('parses Point and MultiPoint', function (done) {
@@ -128,6 +128,6 @@ describe('GeoJsonParser', function () {
                 assert.equal(collection.features[1].geometries.length, 1);
                 assert.equal(collection.features[2].geometries.length, 5);
                 done();
-            }, done);
+            }).catch(done);
     });
 });

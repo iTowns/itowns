@@ -37,7 +37,7 @@ let _extent;
 let _extent2;
 
 const cardinals = new Array(8);
-for (var i = cardinals.length - 1; i >= 0; i--) {
+for (let i = cardinals.length - 1; i >= 0; i--) {
     cardinals[i] = new Coordinates('EPSG:4326', 0, 0, 0, 0);
 }
 

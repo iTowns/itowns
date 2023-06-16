@@ -48,7 +48,7 @@ describe('GlobeView', function () {
                 const node = viewer.tileLayer.level0Nodes[0];
                 viewer.tileLayer.update(context, viewer.tileLayer, node);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('ObjectRemovalHelper', function (done) {
@@ -58,7 +58,7 @@ describe('GlobeView', function () {
                 ObjectRemovalHelper.removeChildrenAndCleanup(viewer.tileLayer, node);
                 ObjectRemovalHelper.removeChildren(viewer.tileLayer, node);
                 done();
-            }, done);
+            }).catch(done);
     });
 
     it('should get the zoom scale', () => {

@@ -3,8 +3,18 @@
 iTowns needs `nodejs` (10+) and `npm` (at least 6.x) installed on the system.
 See the [node website](https://nodejs.org) to install node and npm.
 
-## Building
+## Coding rules
 
+* Search and use existing methods to avoid duplicate code
+* Avoid instance `class/object` in method (optimization with the garbage collector)
+* Give explicite name to constants
+* Avoid duplicate code and encapsulate to simplify
+* For performance reasons, update objects only when needed
+* Don't add dead code
+* Remove obsolete comments
+
+## Building
+  
 * Download dependencies: `npm install`
 * Run the dev server:
    * `npm start` (you can change the port: `npm start -- --port 3000`. If you

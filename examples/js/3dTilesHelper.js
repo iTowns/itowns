@@ -18,12 +18,12 @@ function fillHTMLWithPickingInfo(event, pickingArg) {
     }
 
     // Get intersected objects
-    var intersects = pickingArg.view.pickObjectsAt(event, 5, pickingArg.layer);
+    const intersects = pickingArg.view.pickObjectsAt(event, 5, pickingArg.layer);
     if (intersects.length === 0) { return; }
 
     // Get information from intersected objects (from the batch table and
     // eventually the 3D Tiles extensions
-    var closestC3DTileFeature = pickingArg.layer.getC3DTileFeatureFromIntersectsArray(intersects);
+    const closestC3DTileFeature = pickingArg.layer.getC3DTileFeatureFromIntersectsArray(intersects);
 
     if (closestC3DTileFeature) {
         // eslint-disable-next-line

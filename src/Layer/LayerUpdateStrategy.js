@@ -25,7 +25,7 @@ function _minimizeNetworkTraffic(node, nodeLevel, currentLevel) {
 //     * nodeLevel = 7 -> 7
 //     * nodeLevel = 15 -> 12
 function _group(nodeLevel, options) {
-    var f = options.groups.filter(val => (val <= nodeLevel));
+    const f = options.groups.filter(val => (val <= nodeLevel));
     return f.length ? f[f.length - 1] : options.groups[0];
 }
 

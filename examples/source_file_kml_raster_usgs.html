@@ -22,7 +22,6 @@
             // Define initial camera position
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 6.8, 45.9),
-                range: 50000,
             }
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
@@ -53,25 +52,30 @@
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
 
             // Fetch, Parse and Convert by iTowns
             var kmlSource = new itowns.FileSource({
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
+                url: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month_depth.kml',
                 crs: 'EPSG:4326',
                 format: 'application/kml',
             });
+
+            function offset(properties) {
+                const sizeIcon = 64;
+                const scaleIcon = properties['icon-scale'];
+                return [ 0, -0.5 * scaleIcon * sizeIcon ];
+            }
 
             var kmlStyle = new itowns.Style({
                 zoom: { min: 10, max: 20 },
                 text: {
                     field: '{name}',
-                    haloColor: 'white',
+                    haloColor: 'black',
                     haloWidth: 1,
-                    transform: 'uppercase',
-                },
-                icon: {
+                    color: 'white',
+                    offset: offset,
                     anchor: 'bottom',
                 },
             });
@@ -79,7 +83,7 @@
             var kmlLayer = new itowns.ColorLayer('Kml', {
                 source: kmlSource,
                 style: kmlStyle,
-                addLabelLayer: { forceClampToTerrain: true },
+                addLabelLayer: true,
             });
 
             debug.createTileDebugUI(menuGlobe.gui, view);

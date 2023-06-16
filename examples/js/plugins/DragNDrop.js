@@ -31,34 +31,34 @@
  * DragNDrop.register('geojson', DragNDrop.JSON, itowns.GeoJsonParser.parse, DragNDrop.COLOR);
  * DragNDrop.register('gpx', DragNDrop.XML, itowns.GpxParser.parse, DragNDrop.GEOMETRY);
  */
-var DragNDrop = (function _() {
+const DragNDrop = (function _() {
     // TYPE
-    var _TEXT = 1;
-    var _JSON = 2;
-    var _BINARY = 3;
-    var _IMAGE = 4;
-    var _XML = 5;
+    const _TEXT = 1;
+    const _JSON = 2;
+    const _BINARY = 3;
+    const _IMAGE = 4;
+    const _XML = 5;
 
     // MODE
-    var _COLOR = 6;
-    var _GEOMETRY = 7;
+    const _COLOR = 6;
+    const _GEOMETRY = 7;
 
-    var extensionsMap = {};
-    var fileReader = new FileReader();
+    const extensionsMap = {};
+    const fileReader = new FileReader();
 
-    var _view;
+    let _view;
 
     function addFiles(event, files) {
         event.preventDefault();
 
         // Read each file
-        for (var i = 0; i < files.length; i++) {
-            var file = files[i];
-            var extension = extensionsMap[file.name.split('.').pop().toLowerCase()];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const extension = extensionsMap[file.name.split('.').pop().toLowerCase()];
 
             // eslint-disable-next-line no-loop-func
             fileReader.onload = function onload(e) {
-                var data = e.target.result;
+                let data = e.target.result;
 
                 if (extension.type == _JSON) {
                     data = JSON.parse(data);
@@ -66,7 +66,7 @@ var DragNDrop = (function _() {
                     data = new window.DOMParser().parseFromString(data, 'text/xml');
                 }
 
-                var crs = extension.mode == _GEOMETRY ? _view.referenceCrs : _view.tileLayer.extent.crs;
+                const crs = extension.mode == _GEOMETRY ? _view.referenceCrs : _view.tileLayer.extent.crs;
 
                 extension.parser(data, {
                     in: {
@@ -80,14 +80,14 @@ var DragNDrop = (function _() {
                         forcedExtentCrs: crs != 'EPSG:4978' ? crs : 'EPSG:4326',
                     },
                 }).then(function _(features) {
-                    var source = new itowns.FileSource({
+                    const source = new itowns.FileSource({
                         features: features,
                         crs: 'EPSG:4326',
                     });
 
-                    var randomColor = Math.round(Math.random() * 0xffffff);
+                    const randomColor = Math.round(Math.random() * 0xffffff);
 
-                    var layer;
+                    let layer;
                     if (extension.mode == _COLOR) {
                         layer = new itowns.ColorLayer(file.name, {
                             transparent: true,
@@ -121,7 +121,7 @@ var DragNDrop = (function _() {
 
                     _view.addLayer(layer);
 
-                    var extent = features.extent.clone();
+                    const extent = features.extent.clone();
                     // Transform local extent to data.crs projection.
                     if (extent.crs == features.crs) {
                         extent.applyMatrix4(features.matrixWorld);
