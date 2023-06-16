@@ -1,0 +1,176 @@
+<html>
+    <head>
+        <title>Itowns - Globe + vector-tiles 3d</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <link rel="stylesheet" type="text/css" href="css/widgets.css">
+        <link rel="stylesheet" type="text/css" href="css/mapbox.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+
+        <!-- Import iTowns source code -->
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <!-- Import iTowns LoadingScreen and GuiTools plugins -->
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <div id="description">
+            <p><b>Building Information</b></p>
+            <ul id="info">
+            </ul>
+        </div>
+        <div id='map'>
+            <a href="http://mapbox.com/about/maps" class='mapbox-logo' target="_blank">Mapbox</a>
+            <div class="mapbox-attribution-container">
+              <a href="https://www.mapbox.com/about/maps/">© Mapbox | </a>
+              <a href="http://www.openstreetmap.org/copyright">© OpenStreetMap | </a>
+              <a href="https://www.mapbox.com/map-feedback/" target="_blank"><strong>Improve this map</strong></a>
+            </div>
+          </div>
+        <script type="text/javascript">
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 5.223762, 46.192268),
+                range: 5000,
+                tilt: 45,
+            };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // Define poles texture
+            view.tileLayer.noTextureColor = new itowns.THREE.Color(0x95c1e1);
+
+            // Disable atmosphere lighting
+            view.getLayerById('atmosphere').visible = false;
+            view.getLayerById('atmosphere').fog.enable = false;
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view, 300);
+
+            // ---------- DISPLAY CONTEXTUAL DATA : ----------
+
+            // Add one imagery layer to the scene. This layer's properties are
+            // defined in a json file, but it could be defined as a plain js
+            // object. See `Layer` documentation for more info.
+            const ortho = itowns.Fetcher.json('./layers/JSONLayers/Ortho.json')
+                .then(function _(config) {
+                    config.source = new itowns.WMTSSource(config.source);
+                    var layer = new itowns.ColorLayer('Ortho', config);
+                    return view.addLayer(layer);
+                });
+
+            // Add an elevation layer, whose properties are defined in a json 
+            // file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(new itowns.ElevationLayer(config.id, config))
+                    .then(debugMenu.addLayerGUI.bind(debugMenu));
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json')
+                .then(addElevationLayerFromConfig);
+            
+
+
+            // ---------- DISPLAY VECTOR TILED BUILDING DATA AS 3D MESHES : ----------
+
+            // Define the source of the building data. We use the mapbox Streets v8 tileset and Style JSON
+            // https://docs.mapbox.com/data/tilesets/reference/mapbox-streets-v8/
+
+            const buildingsSource = new itowns.VectorTilesSource({
+                style: 'mapbox://styles/mapbox/streets-v8',
+                accessToken: 'pk.eyJ1IjoiZnRvcm9tYW5vZmYiLCJhIjoiY2xrc2Zpa2o3MDQxNTNxcG5sczJyaTlncyJ9.5KFKdMLIiy-b_fAjSVhjCQ',
+                filter: (layer) => {
+                    return layer.id === 'building';
+                },
+            });
+
+            // Get buildings ground elevation
+            function altitudeBuildings(properties, coord) {
+                if (coord) {
+                    return itowns.DEMUtils.getElevationValueAt(view.tileLayer, coord);
+                }
+            }
+
+            // Create a FeatureGeometryLayer to support building data.
+            var buildingsLayer = new itowns.FeatureGeometryLayer('VTBuilding',{
+                batchId: function (property, featureId) { return featureId; },
+                source: buildingsSource,
+                zoom: {
+                    min: 15,
+                },
+                style: {
+                    fill: {
+                        // the building with type = roof doesn't have same properties as the others
+                        base_altitude: (p, c) => {
+                            return (altitudeBuildings(p, c) || 0) + (p.min_height || 0);
+                        },
+                        extrusion_height: (p) => {
+                            return p.height || 0;
+                        },
+                    },
+                }
+            });
+
+            // Add the FeatureGeometryLayer to the scene and to the debug menu.
+            view.addLayer(buildingsLayer);
+
+            // ---------- DEBUG TOOLS : ----------
+
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+            function picking(event) {
+                if(view.controls.isPaused) {
+                    var htmlInfo = document.getElementById('info');
+                    var intersects = view.pickObjectsAt(event, 3, 'VTBuilding');
+                    var properties;
+                    var info;
+                    var batchId;
+
+                    htmlInfo.innerHTML = ' ';
+
+                    if (intersects.length) {
+                        batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
+                        properties = intersects[0].object.feature.geometries[batchId].properties;
+
+                        Object.keys(properties).map(function (objectKey) {
+                            var value = properties[objectKey];
+                            if (value) {
+                                var key = objectKey.toString();
+                                if (key[0] !== '_' && key !== 'geometry_name') {
+                                    info = value.toString();
+                                    htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+            for (var layer of view.getLayers()) {
+                if (layer.id === 'VTBuilding') {
+                    layer.whenReady.then( function _(layer) {
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(debugMenu.gui, view, layer);
+                        debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
+                        window.addEventListener('mousemove', picking, false);
+                    });
+                }
+            }
+
+        </script>
+    </body>
+</html>
