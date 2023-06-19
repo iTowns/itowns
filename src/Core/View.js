@@ -150,7 +150,7 @@ class View extends THREE.EventDispatcher {
      * @param {?Color} options.diffuse - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
      * @param {boolean} [options.enableFocusOnStart=true] - enable focus on dom element on start.
-     *
+     * @param {boolean} [options.undergroundVisualisation=false] - enable underground visualisation.
      * @constructor
      */
     constructor(crs, viewerDiv, options = {}) {
@@ -242,6 +242,13 @@ class View extends THREE.EventDispatcher {
             }
         });
 
+        // configure dynamic opacity
+
+        this.undergroundVisualisation = options.undergroundVisualisation == true;
+
+        if (this.undergroundVisualisation) {
+            this.setUndergroundVisualization(this.undergroundVisualisation);
+        }
 
         // push all viewer to keep source.cache
         viewers.push(this);
@@ -1129,6 +1136,35 @@ class View extends THREE.EventDispatcher {
             this.camera.resize(width, height);
             this.notifyChange(this.camera.camera3D);
         }
+    }
+
+    /**
+     * Trigger underground visualization
+     * @param {boolean} [trigger] - Enable/Disable the underground visualization.
+     */
+    setUndergroundVisualization(trigger) {
+        const atmo = this.getLayerById('atmosphere');
+        if (trigger) {
+            this.tileLayer.updateTiledLayerOpacity({ target: this });
+            this.addEventListener(VIEW_EVENTS.CAMERA_MOVED,  this.tileLayer.updateTiledLayerOpacity);
+            this.tileLayer.hideSkirt = true;
+
+
+            if (atmo) {
+                this.scene.background = new THREE.Color(0x000000);
+                atmo.visible = false;
+            }
+        } else {
+            this.removeEventListener(VIEW_EVENTS.CAMERA_MOVED,  this.tileLayer.updateTiledLayerOpacity);
+            this.tileLayer.hideSkirt = false;
+
+            if (atmo) {
+                atmo.visible = true;
+            }
+            this.tileLayer.opacity = 1;
+        }
+        this.undergroundVisualisation = trigger;
+        this.notifyChange();
     }
 }
 

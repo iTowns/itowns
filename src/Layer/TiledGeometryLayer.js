@@ -7,6 +7,8 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { SIZE_DIAGONAL_TEXTURE } from 'Process/LayeredMaterialNodeProcessing';
 import { ImageryLayers } from 'Layer/Layer';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+import CameraUtils from 'Utils/CameraUtils';
+
 
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
@@ -56,6 +58,8 @@ class TiledGeometryLayer extends GeometryLayer {
      * available using `layer.name` or something else depending on the property
      * name.
      * @param {Source} [config.source] - Description and options of the source.
+     * @param {number} [config.altitudeForZeroOpacity=420] - Altitude (used for underground visualization) at which the ground is full hidden.
+     * @param {number} [config.altitudeForFullOpacity=2400] - Altitude (used for underground visualization) at which the ground is full shown.
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
@@ -97,8 +101,34 @@ class TiledGeometryLayer extends GeometryLayer {
             this.object3d.add(...level0s);
             this.object3d.updateMatrixWorld();
         }));
+        // configure dynamic opacity
 
+        let _hideSkirt = this.hideSkirt;
+
+
+        Object.defineProperty(this, 'hideSkirt', {
+            get: () => _hideSkirt,
+            set: (value) => {
+                _hideSkirt = value;
+                this.#hideExistingSkirt(value);
+            },
+        });
+
+        if (config.altitudeForZeroOpacity === undefined || config.altitudeForZeroOpacity === null) {
+            this.altitudeForZeroOpacity = 420;
+        } else {
+            this.altitudeForZeroOpacity = config.altitudeForZeroOpacity;
+        }
+
+        if (config.altitudeForFullOpacity === undefined || config.altitudeForFullOpacity === null) {
+            this.altitudeForFullOpacity = 2400;
+        } else {
+            this.altitudeForFullOpacity = config.altitudeForFullOpacity;
+        }
         this.maxScreenSizeNode = this.sseSubdivisionThreshold * (SIZE_DIAGONAL_TEXTURE * 2);
+
+
+        this.updateTiledLayerOpacity = this._updateTiledLayerOpacity.bind(this);
     }
 
     /**
@@ -116,6 +146,20 @@ class TiledGeometryLayer extends GeometryLayer {
      */
     pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {
         return Picking.pickTilesAt(view, coordinates, radius, this, target);
+    }
+
+    /**
+     * Update layer opacity depending on camera position.
+     *
+     * @param {Event} event Event used to get camera target position.
+     */
+    _updateTiledLayerOpacity(event) {
+        if (event == null) {
+            return;
+        }
+        const view = event.target;
+        const distance = CameraUtils.getTransformCameraLookingAtTarget(view, view.controls.camera).range;
+        this.opacity = THREE.MathUtils.clamp((distance - this.altitudeForZeroOpacity) / (this.altitudeForFullOpacity - this.altitudeForZeroOpacity), 0, 1);
     }
 
     /**
@@ -263,6 +307,22 @@ class TiledGeometryLayer extends GeometryLayer {
         this.info.update(node);
         return ObjectRemovalHelper.removeChildren(this, node);
     }
+
+    #hideExistingSkirt(value) {
+        for (const node of this.level0Nodes) {
+            node.traverse((obj) => {
+                if (obj.isTileMesh) {
+                    if (value) {
+                        obj.geometry.setDrawRange(0, this.segments * this.segments * 2 * 3);  //  bufferIndex = (nSeg) * (nSeg) * 2 * 3 (computeBufferTileGeometry.js)
+                    } else {
+                        obj.geometry.setDrawRange(0, Infinity);
+                    }
+                }
+            });
+        }
+    }
+
+
 
     convert(requester, extent) {
         return convertToTile.convert(requester, extent, this);
