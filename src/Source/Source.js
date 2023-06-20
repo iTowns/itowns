@@ -64,6 +64,8 @@ let uid = 0;
  * To extend a Source, it is necessary to implement two functions:
  * `urlFromExtent` and `extentInsideLimit`.
  *
+ * @extends InformationsData
+ *
  * @property {boolean} isSource - Used to checkout whether this source is a
  * Source. Default is true. You should not change this, as it is used internally
  * for optimisation.
@@ -105,7 +107,6 @@ class Source extends InformationsData {
      * Source. Only the `url` property is mandatory.
      *
      * @constructor
-     * @extends InformationsData
      */
     constructor(source) {
         super(source);
@@ -124,6 +125,7 @@ class Source extends InformationsData {
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.attribution = source.attribution;
+        /** @type {Promise<any>} */
         this.whenReady = Promise.resolve();
         this._featuresCaches = {};
         if (source.extent && !(source.extent.isExtent)) {
