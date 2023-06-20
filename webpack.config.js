@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const webpack = require('webpack');
 const ESLintPlugin = require('eslint-webpack-plugin');
 
 const mode = process.env.NODE_ENV;
@@ -17,8 +18,8 @@ const debugBuild = mode === 'development';
    - we also dynamise the value of __DEBUG__ according to the env var
 */
 // Note that we don't support .babelrc in parent folders
-var babelrc = fs.readFileSync(path.resolve(__dirname, '.babelrc'));
-var babelConf = JSON.parse(babelrc);
+const babelrc = fs.readFileSync(path.resolve(__dirname, '.babelrc'));
+const babelConf = JSON.parse(babelrc);
 
 babelConf.babelrc = false; // disabel babelrc reading, as we've just done it
 const replacementPluginConf = babelConf.plugins.find(plugin => Array.isArray(plugin) && plugin[0] === 'minify-replace');
@@ -80,19 +81,27 @@ module.exports = () => {
                 },
             ],
         },
-        plugins: [new ESLintPlugin({
-            files: include,
-        })],
+        plugins: [
+            new ESLintPlugin({
+                files: include,
+            }),
+            // Prevent the generation of module fs for import on copc dependency
+            // See https://webpack.js.org/plugins/ignore-plugin/
+            new webpack.IgnorePlugin({
+                resourceRegExp: /^fs$/,
+                contextRegExp: /copc/,
+            }),
+        ],
         devServer: {
             devMiddleware: {
                 publicPath: '/dist/',
             },
             static: {
-				directory: path.resolve(__dirname, './'),
-				watch: {
-					ignored: path.resolve(__dirname, '.git')
-				}
-			},
+                directory: path.resolve(__dirname, './'),
+                watch: {
+                    ignored: path.resolve(__dirname, '.git'),
+                },
+            },
             client: {
                 overlay: {
                     errors: true,

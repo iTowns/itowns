@@ -1,66 +1,76 @@
 import * as THREE from 'three';
-import { LASLoader } from '@loaders.gl/las';
+import LASLoader from 'Parser/LASLoader';
 
-// See this document for LAS format specification
-// https://www.asprs.org/wp-content/uploads/2010/12/LAS_1_4_r13.pdf
-// http://www.cs.unc.edu/~isenburg/lastools/download/laszip.pdf
+const lasLoader = new LASLoader();
 
-/**
- * The LASParser module provides a [parse]{@link module:LASParser.parse} method
- * that takes a LAS file or a LAZ (LASZip) file in, and gives a
- * `THREE.BufferGeometry` containing all the necessary attributes to be
+/** The LASParser module provides a [parse]{@link
+ * module:LASParser.parse} method that takes a LAS or LAZ (LASZip) file in, and
+ * gives a `THREE.BufferGeometry` containing all the necessary attributes to be
  * displayed in iTowns. It uses the
- * [LASLoader](https://loaders.gl/modules/las/docs/api-reference/las-loader)
- * from `loaders.gl`.
+ * [copc.js](https://github.com/connormanning/copc.js/) library.
  *
  * @module LASParser
  */
 export default {
+    /*
+     * Set the laz-perf decoder path.
+     * @param {string} path - path to `laz-perf.wasm` folder.
+     */
+    enableLazPerf(path) {
+        if (!path) {
+            throw new Error('Path to laz-perf is mandatory');
+        }
+        lasLoader.lazPerf = path;
+    },
     /**
      * Parses a LAS file or a LAZ (LASZip) file and return the corresponding
      * `THREE.BufferGeometry`.
      *
      * @param {ArrayBuffer} data - The file content to parse.
-     * @param {Object} [options] - Options to give to the parser.
-     * @param {number|string} [options.in.colorDepth='auto'] - Does the color
-     * encoding is known ? Is it `8` or `16` bits ? By default it is to
-     * `'auto'`, but it will be more performant if a specific value is set.
-     * @param {number} [options.out.skip=1] - Read one point from every `skip`
-     * points.
+     * @param {Object} [options]
+     * @param {Object} [options.in] - Options to give to the parser.
+     * @param { 8 | 16 } [options.in.colorDepth] - Color depth (in bits).
+     * Defaults to 8 bits for LAS 1.2 and 16 bits for later versions
+     * (as mandatory by the specification)
      *
      * @return {Promise} A promise resolving with a `THREE.BufferGeometry`. The
      * header of the file is contained in `userData`.
      */
     parse(data, options = {}) {
-        options.in = options.in || {};
-        options.out = options.out || {};
-        return LASLoader.parse(data, {
-            las: {
-                colorDepth: options.in.colorDepth || 'auto',
-                skip: options.out.skip || 1,
-            },
+        if (options.out?.skip) {
+            console.warn("Warning: options 'skip' not supported anymore");
+        }
+        return lasLoader.parseFile(data, {
+            colorDepth: options.in?.colorDepth,
         }).then((parsedData) => {
             const geometry = new THREE.BufferGeometry();
-            geometry.userData = parsedData.loaderData;
-            geometry.userData.vertexCount = parsedData.header.vertexCount;
-            geometry.userData.boundingBox = parsedData.header.boundingBox;
+            const attributes = parsedData.attributes;
+            geometry.userData = parsedData.header;
 
-            const positionBuffer = new THREE.BufferAttribute(parsedData.attributes.POSITION.value, 3);
+            const positionBuffer = new THREE.BufferAttribute(attributes.position, 3);
             geometry.setAttribute('position', positionBuffer);
 
-            const intensityBuffer = new THREE.BufferAttribute(parsedData.attributes.intensity.value, 1, true);
+            const intensityBuffer = new THREE.BufferAttribute(attributes.intensity, 1, true);
             geometry.setAttribute('intensity', intensityBuffer);
 
-            const classificationBuffer = new THREE.BufferAttribute(parsedData.attributes.classification.value, 1, true);
-            geometry.setAttribute('classification', classificationBuffer);
+            const returnNumber = new THREE.BufferAttribute(attributes.returnNumber, 1);
+            geometry.setAttribute('returnNumber', returnNumber);
 
-            if (parsedData.attributes.COLOR_0) {
-                const colorBuffer = new THREE.BufferAttribute(parsedData.attributes.COLOR_0.value, 4, true);
+            const numberOfReturns = new THREE.BufferAttribute(attributes.numberOfReturns, 1);
+            geometry.setAttribute('numberOfReturns', numberOfReturns);
+
+            const classBuffer = new THREE.BufferAttribute(attributes.classification, 1, true);
+            geometry.setAttribute('classification', classBuffer);
+
+            const pointSourceID = new THREE.BufferAttribute(attributes.pointSourceID, 1);
+            geometry.setAttribute('pointSourceID', pointSourceID);
+
+            if (attributes.color) {
+                const colorBuffer = new THREE.BufferAttribute(attributes.color, 4, true);
                 geometry.setAttribute('color', colorBuffer);
             }
 
             geometry.computeBoundingBox();
-
             return geometry;
         });
     },
