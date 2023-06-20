@@ -1,0 +1,128 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+
+        <title>Itowns - COPC loader</title>
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <style>
+            #description {
+                z-index: 2;
+                left: 10px;
+            }
+        </style>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="description">Specify the URL of a COPC file to load:
+            <input type="text" id="url" />
+            <button onclick="readURL()">Load</button>
+            <div>
+                <button onClick="loadAutzen()">Load Autzen Stadium (80mb)</button>
+                <button onClick="loadSofi()">Load SoFI Stadium (2.3gb)</button>
+                <button onClick="loadMillsite()">Load Millsite (1.9gb)</button>
+            <div id="share"></div>
+            </div>
+        </div>
+        <div id="viewerDiv"></div>
+
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            let layer; // COPCLayer
+
+            const uri = new URL(location);
+
+            const gui = new dat.GUI();
+
+            const viewerDiv = document.getElementById('viewerDiv');
+            const view = new itowns.View('EPSG:4326', viewerDiv);
+            const controls = new itowns.PlanarControls(view);
+            view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
+
+            setUrl(uri.searchParams.get('copc'));
+
+            function onLayerReady(layer) {
+                const camera = view.camera.camera3D;
+
+                const lookAt = new itowns.THREE.Vector3();
+                const size = new itowns.THREE.Vector3();
+                layer.root.bbox.getSize(size);
+                layer.root.bbox.getCenter(lookAt);
+
+                camera.far = 2.0 * size.length();
+
+                controls.groundLevel = layer.root.bbox.min.z;
+                const position = layer.root.bbox.min.clone().add(
+                    size.multiply({ x: 1, y: 1, z: size.x / size.z }),
+                );
+
+                camera.position.copy(position);
+                camera.lookAt(lookAt);
+                camera.updateProjectionMatrix();
+
+                view.notifyChange(camera);
+            }
+
+
+            function readURL() {
+                const url = document.getElementById('url').value;
+
+                if (url) {
+                    setUrl(url);
+                }
+            }
+
+            function setUrl(url) {
+                if (!url) return;
+
+                const input_url = document.getElementById('url');
+                if (!input_url) return;
+
+                uri.searchParams.set('copc', url);
+                history.replaceState(null, null, `?${uri.searchParams.toString()}`);
+
+                input_url.value = url;
+                load(url);
+            }
+
+
+            function load(url) {
+                const source = new itowns.CopcSource({ url });
+
+                if (layer) {
+                    gui.removeFolder(layer.debugUI);
+                    view.removeLayer('COPC');
+                    view.notifyChange();
+                    layer.delete();
+                }
+
+                layer = new itowns.CopcLayer('COPC', {
+                    source,
+                    crs: view.referenceCrs,
+                    sseThreshold: 2,
+                    pointBudget: 3000000,
+                });
+                view.addLayer(layer).then(onLayerReady);
+                debug.PotreeDebug.initTools(view, layer, gui);
+            }
+
+            function loadAutzen() {
+                setUrl("https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz");
+            }
+
+            function loadSofi() {
+                setUrl("https://s3.amazonaws.com/hobu-lidar/sofi.copc.laz");
+            }
+
+            function loadMillsite() {
+                setUrl("https://s3.amazonaws.com/data.entwine.io/millsite.copc.laz");
+            }
+        </script>
+    </body>
+</html>
