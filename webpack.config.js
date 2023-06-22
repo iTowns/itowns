@@ -87,7 +87,12 @@ module.exports = () => {
             devMiddleware: {
                 publicPath: '/dist/',
             },
-            static: path.resolve(__dirname, './'),
+            static: {
+				directory: path.resolve(__dirname, './'),
+				watch: {
+					ignored: path.resolve(__dirname, '.git')
+				}
+			},
             client: {
                 overlay: {
                     errors: true,
