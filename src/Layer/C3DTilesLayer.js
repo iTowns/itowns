@@ -108,7 +108,7 @@ class C3DTilesLayer extends GeometryLayer {
 
         if (config.onTileContentLoaded) {
             console.warn('DEPRECATED onTileContentLoaded should not be passed at the contruction, use C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED event instead');
-            this.addEventListener(C3DTilesLayer.EVENT_TILE_CONTENT_LOADED, config.onTileContentLoaded);
+            this.addEventListener(C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED, config.onTileContentLoaded);
         }
 
         if (config.overrideMaterials) {
