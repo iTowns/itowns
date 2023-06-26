@@ -18,6 +18,11 @@ function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw
         redraw,
     };
 
+    if (geometryLayer.source.isC3DTilesGoogleSource) {
+        // special case to handle non-standard 3dTilesGoogle behavior
+        geometryLayer.source.completeMetadata(metadata);
+    }
+
     geometryLayer.dispatchEvent({ type: C3DTILES_LAYER_EVENTS.ON_TILE_REQUESTED, metadata });
 
     return scheduler.execute(command);
