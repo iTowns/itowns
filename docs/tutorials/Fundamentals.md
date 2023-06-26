@@ -47,7 +47,7 @@ with `{@link WFSSource}` and [Tile Map Service](https://wiki.osgeo.org/wiki/Tile
 
 iTowns also has sources for many data formats: [vector tile](https://docs.mapbox.com/help/glossary/vector-tiles/) resources from [MapBox](https://www.mapbox.com/) with `{@link VectorTilesSource}`, [Potree](https://github.com/potree/potree) (`{@link PotreeSource}`) and 
 [Entwine](https://entwine.io/) (`{@link EntwinePointTileSource}`) 3D point clouds, [3DTiles](https://www.ogc.org/standards/3DTiles) 
-mesh (b3dm) and point clouds (pnts) from web servers (`{@link C3DTilesSource}`) and from Cesium ion `{@link C3DTilesIonSource}`, 
+mesh (b3dm) and point clouds (pnts) from web servers (`{@link C3DTilesSource}`), Cesium ion `{@link C3DTilesIonSource}` and from Google api `{@link C3DTilesGoogleSource}`, 
 [GeoJSON](https://geojson.org/) with `{@link FileSource}` and `{@link GeoJsonParser}`, 
 [KML](https://www.ogc.org/standards/kml) with `{@link FileSource}` and `{@link KMLParser}`, [GPX](https://www.topografix.com/gpx.asp)
 with `{@link FileSource}` and `{@link GpxParser}` and oriented images with `{@link OrientedImageSource}`.
@@ -68,7 +68,7 @@ Several specific types of `Layers` exist, the use of which depends on the data t
 - `{@link PointCloudLayer}` can be used to display 3D point clouds. Any point cloud formats are supported as long as the corresponding `Source` is provided.
 Some point clouds formats such as Potree, Las and Entwine already have parsers defined in itowns that you can use. For 3D Tiles point clouds (pnts), use
 `C3DTilesLayer`.
-- `{@link C3DTilesLayer}` can be used to display 3D Tiles layer (only b3dm and pnts).
+- `{@link C3DTilesLayer}` can be used to display 3D Tiles datasets in version 1.0 (b3dm, pnts and gltf tiles are supported).
 - `{@link OrientedImageLayer}` can be used to display oriented images.
 
 

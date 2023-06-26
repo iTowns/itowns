@@ -77,6 +77,7 @@ export { default as OrientedImageSource } from 'Source/OrientedImageSource';
 export { default as PotreeSource } from 'Source/PotreeSource';
 export { default as C3DTilesSource } from 'Source/C3DTilesSource';
 export { default as C3DTilesIonSource } from 'Source/C3DTilesIonSource';
+export { default as C3DTilesGoogleSource } from 'Source/C3DTilesGoogleSource';
 export { default as EntwinePointTileSource } from 'Source/EntwinePointTileSource';
 
 // Parsers provided by default in iTowns
@@ -91,7 +92,7 @@ export { default as LASParser } from 'Parser/LASParser';
 export { default as ISGParser } from 'Parser/ISGParser';
 export { default as GDFParser } from 'Parser/GDFParser';
 export { default as GTXParser } from 'Parser/GTXParser';
-export { enableDracoLoader, enableKtx2Loader, glTFLoader, legacyGLTFLoader } from 'Parser/B3dmParser';
+export { default as GLTFParser,  enableDracoLoader, enableKtx2Loader, glTFLoader, legacyGLTFLoader } from 'Parser/GLTFParser';
 
 // 3D Tiles classes and extensions
 // Exported to allow one to implement its own 3D Tiles extension which needs to

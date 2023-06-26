@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import B3dmParser from 'Parser/B3dmParser';
 import PntsParser from 'Parser/PntsParser';
+import GLTFParser from 'Parser/GLTFParser';
 import Fetcher from 'Provider/Fetcher';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import PointsMaterial from 'Renderer/PointsMaterial';
@@ -14,7 +15,6 @@ function b3dmToMesh(data, layer, url) {
         urlBase,
         overrideMaterials: layer.overrideMaterials,
         doNotPatchMaterial: layer.doNotPatchMaterial,
-        opacity: layer.opacity,
         registeredExtensions: layer.registeredExtensions,
         layer,
     };
@@ -24,6 +24,11 @@ function b3dmToMesh(data, layer, url) {
         const object3d = result.gltf.scene;
         return { batchTable, object3d };
     });
+}
+
+function gltfToMesh(data, layer, url) {
+    const urlBase = THREE.LoaderUtils.extractUrlBase(url);
+    return GLTFParser.parse(data, urlBase).then(result => ({ object3d: result.scene }));
 }
 
 function pntsParse(data, layer) {
@@ -92,10 +97,14 @@ function executeCommand(command) {
     };
     if (path) {
         // Check if we have relative or absolute url (with tileset's lopocs for example)
-        const url = path.startsWith('http') ? path : metadata.baseURL + path;
+        let url = path.startsWith('http') ? path : metadata.baseURL + path;
+        if (layer.source.isC3DTilesGoogleSource) {
+            url = layer.source.getTileUrl(url);
+        }
         const supportedFormats = {
             b3dm: b3dmToMesh,
             pnts: pntsParse,
+            gltf: gltfToMesh,
         };
         return Fetcher.arrayBuffer(url, layer.source.networkOptions).then((result) => {
             if (result !== undefined) {
@@ -103,12 +112,16 @@ function executeCommand(command) {
                 const magic = utf8Decoder.decode(new Uint8Array(result, 0, 4));
                 if (magic[0] === '{') {
                     result = JSON.parse(utf8Decoder.decode(new Uint8Array(result)));
-                    const newPrefix = url.slice(0, url.lastIndexOf('/') + 1);
+                    // Another specifics of 3D tiles from Google: tilesets in tilesets are required from the root base
+                    // url and not from their parent base url
+                    const newPrefix = layer.source.isC3DTilesGoogleSource ? layer.source.baseUrl : url.slice(0, url.lastIndexOf('/') + 1);
                     layer.tileset.extendTileset(result, metadata.tileId, newPrefix, layer.registeredExtensions);
                 } else if (magic == 'b3dm') {
                     func = supportedFormats.b3dm;
                 } else if (magic == 'pnts') {
                     func = supportedFormats.pnts;
+                } else if (magic == 'glTF') {
+                    func = supportedFormats.gltf;
                 } else {
                     return Promise.reject(`Unsupported magic code ${magic}`);
                 }

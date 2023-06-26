@@ -82,6 +82,7 @@
 
             "Parser": [
                 "GeoJsonParser",
+                "GLTFParser",
                 "GpxParser",
                 "VectorTileParser",
                 "CameraCalibrationParser",
