@@ -11,6 +11,8 @@ import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { MeshBasicMaterial } from 'three';
 import disposeThreeMaterial from 'Utils/ThreeUtils';
 
+import GLTFParser from './GLTFParser';
+
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 // For gltf rotation
 const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
@@ -18,29 +20,6 @@ const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 
 export const glTFLoader = new GLTFLoader();
 
 export const legacyGLTFLoader = new LegacyGLTFLoader();
-
-function filterUnsupportedSemantics(obj) {
-    // see GLTFLoader GLTFShader.prototype.update function
-    const supported = [
-        'MODELVIEW',
-        'MODELVIEWINVERSETRANSPOSE',
-        'PROJECTION',
-        'JOINTMATRIX'];
-
-    if (obj.gltfShader) {
-        const names = [];
-        // eslint-disable-next-line guard-for-in
-        for (const name in obj.gltfShader.boundUniforms) {
-            names.push(name);
-        }
-        for (const name of names) {
-            const semantic = obj.gltfShader.boundUniforms[name].semantic;
-            if (!supported.includes(semantic)) {
-                delete obj.gltfShader.boundUniforms[name];
-            }
-        }
-    }
-}
 
 /**
  * @module B3dmParser
@@ -185,64 +164,26 @@ export default {
             const gltfBuffer = buffer.slice(posGltf);
             const headerView = new DataView(gltfBuffer, 0, 20);
 
-            promises.push(new Promise((resolve/* , reject */) => {
-                const onload = (gltf) => {
-                    for (const scene of gltf.scenes) {
-                        scene.traverse(filterUnsupportedSemantics);
-                    }
-                    // Rotation managed
-                    if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
-                        gltf.scene.applyMatrix4(matrixChangeUpVectorZtoY);
-                    } else if (gltfUpAxis === 'X') {
-                        gltf.scene.applyMatrix4(matrixChangeUpVectorZtoX);
-                    }
+            // Rotation managed
+            if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
+                options.gltfUpAxisMatrix = matrixChangeUpVectorZtoY;
+            } else if (gltfUpAxis === 'X') {
+                options.gltfUpAxisMatrix = matrixChangeUpVectorZtoX;
+            }
 
-                    // Apply relative center from Feature table.
-                    gltf.scene.position.copy(FT_RTC);
+            promises.push(GLTFParser.parse(gltfBuffer, options).then((gltf) => {
+                // Apply relative center from Feature table.
+                gltf.scene.position.copy(FT_RTC);
 
-                    // Apply relative center from gltf json.
-                    const contentArray = new Uint8Array(gltfBuffer, 20, headerView.getUint32(12, true));
-                    const content = utf8Decoder.decode(new Uint8Array(contentArray));
-                    const json = JSON.parse(content);
-                    if (json.extensions && json.extensions.CESIUM_RTC) {
-                        gltf.scene.position.fromArray(json.extensions.CESIUM_RTC.center);
-                        gltf.scene.updateMatrixWorld(true);
-                    }
-
-                    const init_mesh = function f_init(mesh) {
-                        mesh.frustumCulled = false;
-                        if (mesh.material) {
-                            if (options.overrideMaterials) {
-                                const oldMat = mesh.material;
-                                // Set up new material
-                                if (typeof (options.overrideMaterials) === 'object' &&
-                                options.overrideMaterials.isMaterial) {
-                                    mesh.material = options.overrideMaterials;
-                                } else {
-                                    mesh.material = new MeshBasicMaterial();
-                                }
-                                disposeThreeMaterial(oldMat);
-                            } else if (Capabilities.isLogDepthBufferSupported()
-                                        && mesh.material.isRawShaderMaterial
-                                        && !options.doNotPatchMaterial) {
-                                shaderUtils.patchMaterialForLogDepthSupport(mesh.material);
-                                console.warn('b3dm shader has been patched to add log depth buffer support');
-                            }
-                            ReferLayerProperties(mesh.material, options.layer);
-                        }
-                    };
-                    gltf.scene.traverse(init_mesh);
-
-                    resolve(gltf);
-                };
-
-                const version = headerView.getUint32(4, true);
-
-                if (version === 1) {
-                    legacyGLTFLoader.parse(gltfBuffer, urlBase, onload);
-                } else {
-                    glTFLoader.parse(gltfBuffer, urlBase, onload);
+                // Apply relative center from gltf json.
+                const contentArray = new Uint8Array(gltfBuffer, 20, headerView.getUint32(12, true));
+                const content = utf8Decoder.decode(new Uint8Array(contentArray));
+                const json = JSON.parse(content);
+                if (json.extensions && json.extensions.CESIUM_RTC) {
+                    gltf.scene.position.fromArray(json.extensions.CESIUM_RTC.center);
+                    gltf.scene.updateMatrixWorld(true);
                 }
+                return gltf;
             }));
             return Promise.all(promises).then(values => ({ gltf: values[1], batchTable: values[0] }));
         } else {

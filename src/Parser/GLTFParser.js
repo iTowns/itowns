@@ -5,14 +5,11 @@ import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
 import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import utf8Decoder from 'Utils/Utf8Decoder';
-import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { MeshBasicMaterial } from 'three';
 import disposeThreeMaterial from 'Utils/ThreeUtils';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
-// For gltf rotation
-const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
 
 export const glTFLoader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
@@ -81,7 +78,7 @@ export default {
     /** Parse gltf buffer and extract THREE.Scene and batch table
      * @param {ArrayBuffer} buffer - the gltf buffer.
      * @param {Object} options - additional properties.
-     * @param {string=} [options.gltfUpAxis='Y'] - embedded glTF model up axis.
+     * @param {Matrix4=} [options.gltfUpAxisMatrix={}] - Matrix4f up axis transformation, by default Z->Y is applied
      * @param {string} options.urlBase - the base url of the glTF file (used to fetch textures for the embedded glTF model).
      * @param {boolean=} [options.doNotPatchMaterial='false'] - disable patching material with logarithmic depth buffer support.
      * @param {float} [options.opacity=1.0] - the b3dm opacity. // unused here for now
@@ -93,7 +90,7 @@ export default {
      *
      */
     parse(buffer, options) {
-        const gltfUpAxis = options.gltfUpAxis;
+        const gltfUpAxisMatrix = options.gltfUpAxisMatrix;
         const urlBase = options.urlBase;
         if (!buffer) {
             throw new Error('No array buffer provided.');
@@ -106,21 +103,17 @@ export default {
         gltfHeader.magic = utf8Decoder.decode(new Uint8Array(buffer, 0, magicNumberByteLength));
         if (gltfHeader.magic) {
             const promises = [];
-            const FT_RTC = new THREE.Vector3();
             promises.push(new Promise((resolve/* , reject */) => {
                 const onload = (gltf) => {
                     for (const scene of gltf.scenes) {
                         scene.traverse(filterUnsupportedSemantics);
                     }
-                    // Rotation managed
-                    if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
+                    // for gltf Z->Y is applied
+                    if (!gltfUpAxisMatrix) {
                         gltf.scene.applyMatrix4(matrixChangeUpVectorZtoY);
-                    } else if (gltfUpAxis === 'X') {
-                        gltf.scene.applyMatrix4(matrixChangeUpVectorZtoX);
+                    } else {
+                        gltf.scene.applyMatrix4(gltfUpAxisMatrix);
                     }
-
-                    // Apply relative center from Feature table.
-                    gltf.scene.position.copy(FT_RTC);
 
                     const init_mesh = function f_init(mesh) {
                         mesh.frustumCulled = false;
@@ -139,7 +132,7 @@ export default {
                                         && mesh.material.isRawShaderMaterial
                                         && !options.doNotPatchMaterial) {
                                 shaderUtils.patchMaterialForLogDepthSupport(mesh.material);
-                                console.warn('b3dm shader has been patched to add log depth buffer support');
+                                console.warn('glTF shader has been patched to add log depth buffer support');
                             }
                             ReferLayerProperties(mesh.material, options.layer);
                         }
@@ -148,9 +141,16 @@ export default {
 
                     resolve(gltf);
                 };
-                glTFLoader.parse(buffer, urlBase, onload);
+                const headerView = new DataView(buffer, 0, 20);
+                const version = headerView.getUint32(4, true);
+
+                if (version === 1) {
+                    legacyGLTFLoader.parse(buffer, urlBase, onload);
+                } else {
+                    glTFLoader.parse(buffer, urlBase, onload);
+                }
             }));
-            return Promise.all(promises).then(values => ({ gltf: values[1], batchTable: values[0] }));
+            return Promise.all(promises).then(values => (values[0]));
         } else {
             throw new Error('Invalid gLTF file.');
         }

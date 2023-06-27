@@ -37,12 +37,7 @@ function gltfoMesh(data, layer, url) {
         registeredExtensions: layer.registeredExtensions,
         layer,
     };
-    return GLTFParser.parse(data, options).then((result) => {
-        const batchTable = result.batchTable;
-        // object3d is actually a THREE.Scene
-        const object3d = batchTable.scene;
-        return { batchTable, object3d };
-    });
+    return GLTFParser.parse(data, options).then(result => ({ object3d: result.scene }));
 }
 
 function pntsParse(data, layer) {
