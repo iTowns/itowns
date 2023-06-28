@@ -68,7 +68,7 @@ Several specific types of `Layers` exist, the use of which depends on the data t
 - `{@link PointCloudLayer}` can be used to display 3D point clouds. Any point cloud formats are supported as long as the corresponding `Source` is provided.
 Some point clouds formats such as Potree, Las and Entwine already have parsers defined in itowns that you can use. For 3D Tiles point clouds (pnts), use
 `C3DTilesLayer`.
-- `{@link C3DTilesLayer}` can be used to display 3D Tiles layer (only b3dm and pnts).
+- `{@link C3DTilesLayer}` can be used to display 3D Tiles layer (only b3dm and pnts and Google Photorealistic 3D Tiles).
 - `{@link OrientedImageLayer}` can be used to display oriented images.
 
 
