@@ -5,5 +5,6 @@ export default {
         './loaders/DRACOLoader.js',
         './loaders/DDSLoader.js',
         './capabilities/WebGL.js',
+        './utils/BufferGeometryUtils.js',
     ],
 };

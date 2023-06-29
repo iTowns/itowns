@@ -79,7 +79,7 @@
             // Add 3D Tiles layer
             // This 3D Tiles tileset uses the draco compression that is an
             // extension of gltf. We need to enable it.
-            itowns.enableDracoLoader('./libs/draco/');
+            itowns.enableDracoLoader('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 
             var $3dTilesLayer = new itowns.C3DTilesLayer(
                 '3d-tiles-layer-building', {

@@ -108,7 +108,7 @@ The 3D Tiles dataset we are using in this example has a geometry that is compres
 decoder:
 
 ```js
-itowns.enableDracoLoader('./libs/draco/');
+itowns.enableDracoLoader('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 ```
 
 As for every data displayed in iTowns, we first need to define a data `Source`.
@@ -254,7 +254,7 @@ The final code to do so is the following :
             // Add 3D Tiles layer
             // This 3D Tiles tileset uses the draco compression that is an
             // extension of gltf. We need to enable it.
-            itowns.enableDracoLoader('./libs/draco/');
+            itowns.enableDracoLoader('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 
             const buildingsSource = new itowns.C3DTilesSource({
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/' +
