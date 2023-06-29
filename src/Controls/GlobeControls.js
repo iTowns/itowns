@@ -773,11 +773,11 @@ class GlobeControls extends THREE.EventDispatcher {
     handleZoom(event, dollyOrigin) {
         this.player.stop();
         CameraUtils.stop(this.view, this.camera);
+        const zoomScale = event.delta > 0 ? this.zoomInScale : this.zoomOutScale;
 
         var point = dollyOrigin ?? this.view.getPickingPositionFromDepth(event.viewCoords);        // mouse position
         var range = this.camera.position.distanceTo(cameraTarget.position);
-
-        range *= (event.delta > 0 ?  this.zoomInScale :  this.zoomOutScale);
+        range *= zoomScale;
 
         if (point && (range > this.minDistance && range < this.maxDistance)) {  // check if the zoom is in the allowed interval
             const camPos = xyz.setFromVector3(cameraTarget.position).as('EPSG:4326', c).toVector3();
