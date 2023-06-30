@@ -26,7 +26,7 @@ function b3dmToMesh(data, layer, url) {
     });
 }
 
-function gltfoMesh(data, layer, url) {
+function gltfToMesh(data, layer, url) {
     const urlBase = THREE.LoaderUtils.extractUrlBase(url);
     const options = {
         gltfUpAxis: layer.tileset.asset.gltfUpAxis,
@@ -102,7 +102,6 @@ function executeCommand(command) {
     // Patch for supporting 3D Tiles pre 1.0 (metadata.content.url) and 1.0
     // (metadata.content.uri)
 
-    // TODO should be responsability of each C3DTilesSource.completeMetadata to give the correct path.
     const path = metadata.content && (metadata.content.url || metadata.content.uri);
 
     const setLayer = (obj) => {
@@ -115,7 +114,7 @@ function executeCommand(command) {
         const supportedFormats = {
             b3dm: b3dmToMesh,
             pnts: pntsParse,
-            gltf: gltfoMesh,
+            gltf: gltfToMesh,
         };
         return Fetcher.arrayBuffer(url, layer.source.networkOptions, layer.source.urlParameters).then((result) => {
             if (result !== undefined) {

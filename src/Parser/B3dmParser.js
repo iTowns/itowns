@@ -1,15 +1,8 @@
 import * as THREE from 'three';
-import Capabilities from 'Core/System/Capabilities';
 import { GLTFLoader } from 'ThreeExtended/loaders/GLTFLoader';
-import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
-import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
 import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
-import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import utf8Decoder from 'Utils/Utf8Decoder';
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
-import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
-import { MeshBasicMaterial } from 'three';
-import disposeThreeMaterial from 'Utils/ThreeUtils';
 
 import GLTFParser from './GLTFParser';
 
@@ -24,56 +17,6 @@ export const legacyGLTFLoader = new LegacyGLTFLoader();
 /**
  * @module B3dmParser
  */
-/**
- * Enable Draco decoding for gltf.
- *
- * The Draco library files are in folder itowns/examples/libs/draco/.
- * You must indicate this path when you want to enable Draco Decoding.
- * For more information on Draco, read /itowns/examples/libs/draco/README.md.
- *
- * @example <caption>Enable draco decoder</caption>
- * // if you copied /itowns/examples/libs/draco/ to the root folder of your project,you can set the path to './'.
- * itowns.enableDracoLoader('./');
- *
- *  @param {string} path path to draco library folder.
- * This library is mandatory to load b3dm and gltf with Draco compression.
- * @param {object} config optional configuration for Draco compression.
- */
-export function enableDracoLoader(path, config) {
-    if (!path) {
-        throw new Error('Path to draco folder is mandatory');
-    }
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath(path);
-    if (config) {
-        dracoLoader.setDecoderConfig(config);
-    }
-    glTFLoader.setDRACOLoader(dracoLoader);
-}
-
-/**
- * Enable KTX2 decoding for gltf. This library is mandatory to load b3dm and gltf with KTX2 compression.
- *
- * The KTX2 library files are in folder itowns/examples/libs/basis/.
- * You must indicate this path when you want to enable KTX2 decoding.
- * For more information about KTX2, read /itowns/examples/libs/basis/README.md.
- *
- * @example <caption>Enable ktx2 decoder</caption>
- * // if you copied /itowns/examples/libs/draco/ to the root folder of your project,you can set the path to './'.
- * itowns.enableKtx2Loader('./', view.mainLoop.gfxEngine.renderer);
- *
- * @param {string} path path to KTX2 library folder.
- * @param {THREE.WebGLRenderer} renderer the threejs renderer
- */
-export function enableKtx2Loader(path, renderer) {
-    if (!path || !renderer) {
-        throw new Error('Path to ktx2 folder and renderer are mandatory');
-    }
-    const ktx2Loader = new KTX2Loader();
-    ktx2Loader.setTranscoderPath(path);
-    ktx2Loader.detectSupport(renderer);
-    glTFLoader.setKTX2Loader(ktx2Loader);
-}
 
 export default {
     /** Parse b3dm buffer and extract THREE.Scene and batch table
@@ -83,6 +26,7 @@ export default {
      * @param {string} options.urlBase - the base url of the b3dm file (used to fetch textures for the embedded glTF model).
      * @param {boolean=} [options.doNotPatchMaterial='false'] - disable patching material with logarithmic depth buffer support.
      * @param {float} [options.opacity=1.0] - the b3dm opacity.
+     * @param {boolean=} [options.frustumCulled='false'] - enable frustum culling.
      * @param {boolean|Material=} [options.overrideMaterials='false'] - override b3dm's embedded glTF materials. If
      * true, a threejs [MeshBasicMaterial](https://threejs.org/docs/index.html?q=meshbasic#api/en/materials/MeshBasicMaterial)
      * is set up. config.overrideMaterials can also be a threejs [Material](https://threejs.org/docs/index.html?q=material#api/en/materials/Material)
@@ -92,7 +36,8 @@ export default {
      */
     parse(buffer, options) {
         const gltfUpAxis = options.gltfUpAxis;
-        const urlBase = options.urlBase;
+        options.frustumCulled = !!(options.frustumCulled);
+
         if (!buffer) {
             throw new Error('No array buffer provided.');
         }

@@ -20,6 +20,7 @@ function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw
 
     if (geometryLayer.source.isC3DTilesGoogleSource) {
         // special case to handle non-standard 3dTilesGoogle behavior
+        // see also https://github.com/CesiumGS/3d-tiles/issues/746
         geometryLayer.source.completeMetadata(metadata);
     }
 

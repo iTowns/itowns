@@ -3,9 +3,9 @@ import C3DTilesSource from './C3DTilesSource';
 
 /**
  * @classdesc
- * An object defining the source connection to a 3DTiles asset of a [Google api](https://tile.googleapis.com).
+ * An object defining the source connection to a 3DTiles asset from a [Google api](https://tile.googleapis.com).
  *
- * @extends Source
+ * @extends C3DTilesSource
  *
  * @property {boolean} isC3DTilesGoogleSource - Used to checkout whether this source is a C3DTilesGoogleSource. Default is
  * true. You should not change this, as it is used internally for optimisation.
@@ -17,7 +17,7 @@ class C3DTilesGoogleSource extends C3DTilesSource {
      * Create a new Source for 3D Tiles data from Google api.
      *
      * @constructor
-     * @extends Source
+     * @extends C3DTilesSource
      *
      * @property {boolean} isC3DTilesGoogleSource - Used to checkout whether this source is a C3DTilesGoogleSource. Default is
      * true. You should not change this, as it is used internally for optimisation.
