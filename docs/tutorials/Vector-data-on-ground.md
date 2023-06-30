@@ -109,7 +109,7 @@ To be more precise, our data consists in polygons, and we did not tell iTowns ho
 We can correct this by creating a `{@link Style}` and applying it to our `ColorLayer` :
 
 ```js
-var floodStyle = new itowns.Style({
+var floodStyle = {
     fill: {
         color: 'cyan',
         opacity: 0.5,
@@ -117,7 +117,7 @@ var floodStyle = new itowns.Style({
     stroke: {
         color: 'blue',
     },
-});
+};
 
 var floodLayer = new itowns.ColorLayer('flood', {
     source: floodSource,
@@ -147,7 +147,7 @@ var citySource = new itowns.FileSource({
 Then we can define the `Style` with which our data shall be displayed :
 
 ```js
-var cityStyle = new itowns.Style({
+var cityStyle = {
     stroke: {
         color: 'red',
     },
@@ -164,7 +164,7 @@ var cityStyle = new itowns.Style({
         haloWidth: 1,
         font: ['monospace'],
     },
-});
+};
 ```
 
 Here, we decided of the following style concerning the content of our data :
@@ -264,7 +264,7 @@ By reaching here, you are now able to display simple vector data projected on th
             });
             
             // Define a style for the flood area data
-            var floodStyle = new itowns.Style({
+            var floodStyle = {
                 fill: {
                     color: 'cyan',
                     opacity: 0.3,
@@ -272,7 +272,7 @@ By reaching here, you are now able to display simple vector data projected on th
                 stroke: {
                     color: 'blue',
                 },
-            });
+            };
             
             // Create the flood area ColorLayer and add it to the view
             var floodLayer = new itowns.ColorLayer('flood', {
@@ -289,7 +289,7 @@ By reaching here, you are now able to display simple vector data projected on th
             });
             
             // Define a style for the city data
-            var cityStyle = new itowns.Style({
+            var cityStyle = {
                 stroke: {
                     color: 'red',
                 },
@@ -306,7 +306,7 @@ By reaching here, you are now able to display simple vector data projected on th
                     haloWidth: 1,
                     font: ['monospace'],
                 },
-            });
+            };
             
             // Create the city data ColorLayer and add it to the view
             var cityLayer = new itowns.ColorLayer('cities', {
