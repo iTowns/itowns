@@ -1,7 +1,7 @@
 import assert from 'assert';
 import * as THREE from 'three';
 import Label from 'Core/Label';
-import Style, { cacheStyle } from 'Core/Style';
+import Style from 'Core/Style';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
@@ -75,53 +75,6 @@ describe('Label', function () {
     it('should correctly create Labels', function () {
         assert.doesNotThrow(() => { label = new Label('', c); });
         assert.doesNotThrow(() => { label = new Label(document.createElement('div'), c); });
-    });
-
-    it('should set the correct icon anchor position', function () {
-        label = new Label('', c, style, sprites);
-
-        // Mock async loading image
-        const img = cacheStyle.get('icon', 1);
-        img.complete = true;
-        img.emitEvent('load');
-        assert.equal(label.content.children[0].style.left, `${-0.5 * img.width}px`);
-        assert.equal(label.content.children[0].style.top, `${-0.5 * img.height}px`);
-
-
-        style.icon.anchor = 'left';
-        label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, '0');
-        assert.equal(label.content.children[0].style.top, `${-0.5 * img.height}px`);
-
-        style.icon.anchor = 'right';
-        label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, `${-img.width}px`);
-        assert.equal(label.content.children[0].style.top, `${-0.5 * img.height}px`);
-
-        style.icon.anchor = 'top';
-        label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, `${-0.5 * img.width}px`);
-        assert.equal(label.content.children[0].style.top, '0');
-
-        style.icon.anchor = 'bottom';
-        label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, `${-0.5 * img.width}px`);
-        assert.equal(label.content.children[0].style.top, `${-img.height}px`);
-
-        style.icon.anchor = 'bottom-left';
-        label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, '0');
-        assert.equal(label.content.children[0].style.top, `${-img.height}px`);
-
-        style.icon.anchor = 'bottom-right';
-        label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, `${-img.width}px`);
-        assert.equal(label.content.children[0].style.top, `${-img.height}px`);
-
-        style.icon.anchor = 'top-left';
-        label = new Label('', c, style);
-        assert.equal(label.content.children[0].style.left, '0');
-        assert.equal(label.content.children[0].style.top, '0');
     });
 
     it('should hide the DOM', function () {

@@ -288,7 +288,7 @@ class LabelLayer extends GeometryLayer {
 
                 const style = (g.properties.style || f.style || this.style).symbolStylefromContext(context);
 
-                const label = new Label(content, coord.clone(), style, this.source.sprites);
+                const label = new Label(content, coord.clone(), style);
                 label.layerId = this.id;
                 label.padding = this.margin || label.padding;
 
