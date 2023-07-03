@@ -49,11 +49,13 @@ class Label extends THREE.Object3D {
      * is applied, it cannot be changed directly. However, if it really needed,
      * it can be accessed through `label.content.style`, but it is highly
      * discouraged to do so.
-     * @param {Object} [sprites] the sprites.
      */
-    constructor(content = '', coordinates, style = {}, sprites) {
+    constructor(content = '', coordinates, style = {}) {
         if (coordinates == undefined) {
             throw new Error('coordinates are mandatory to add a Label');
+        }
+        if (arguments.length > 3) {
+            console.warn('Deprecated argument sprites in Label constructor. Sprites must be configured in style argument.');
         }
 
         super();
@@ -97,14 +99,18 @@ class Label extends THREE.Object3D {
                 if (style.text.haloWidth > 0) {
                     this.content.classList.add('itowns-stroke-single');
                 }
-                style.applyToHTML(this.content, sprites);
+                style.applyToHTML(this.content)
+                    .then((icon) => {
+                        if (icon) { // Not sure if that test is needed...
+                            this.icon = icon;
+                        }
+                    });
             }
         } else {
             this.anchor = [0, 0];
             this.styleOffset = [0, 0];
         }
 
-        this.icon = this.content.getElementsByClassName('itowns-icon')[0];
         this.iconOffset = { left: 0, right: 0, top: 0, bottom: 0 };
 
         this.zoom = {

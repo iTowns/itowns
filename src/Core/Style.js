@@ -9,6 +9,9 @@ import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_befor
 
 export const cacheStyle = new Cache();
 
+const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+const matrix = svg.createSVGMatrix();
+
 const inv255 = 1 / 255;
 const canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
 const style_properties = {};
@@ -79,44 +82,44 @@ function readVectorProperty(property, options) {
     }
 }
 
-function getImage(source, value) {
-    const target = document.createElement('img');
-
-    if (typeof source == 'string') {
-        if (value) {
-            const color = new Color(value);
-            Fetcher.texture(source, { crossOrigin: 'anonymous' })
-                .then((texture) => {
-                    const img = texture.image;
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
-                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                    ctx.drawImage(img, 0, 0);
-                    const imgd = ctx.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
-                    const pix = imgd.data;
-
-                    const colorToChange = new Color('white');
-                    for (let i = 0, n = pix.length; i < n; i += 4) {
-                        const d = deltaE(pix.slice(i, i + 3), colorToChange) / 100;
-                        pix[i] = (pix[i] * d +  color.r * 255 * (1 - d));
-                        pix[i + 1] = (pix[i + 1] * d +  color.g * 255 * (1 - d));
-                        pix[i + 2] = (pix[i + 2] * d +  color.b * 255 * (1 - d));
-                    }
-                    ctx.putImageData(imgd, 0, 0);
-                    target.src = canvas.toDataURL('image/png');
-                });
-        } else {
-            target.src = source;
-        }
-    } else if (source && source[value]) {
-        const sprite = source[value];
-        canvas.width = sprite.width;
-        canvas.height = sprite.height;
-        canvas.getContext('2d').drawImage(source.img, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, sprite.width, sprite.height);
-        target.src = canvas.toDataURL('image/png');
+async function loadImage(source) {
+    let promise = cacheStyle.get(source, 'null');
+    if (!promise) {
+        promise = Fetcher.texture(source, { crossOrigin: 'anonymous' });
+        cacheStyle.set(promise, source, 'null');
     }
+    return (await promise).image;
+}
 
-    return target;
+function cropImage(img, cropValues = { width: img.naturalWidth, height: img.naturalHeight }) {
+    canvas.width = cropValues.width;
+    canvas.height = cropValues.height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img,
+        cropValues.x || 0, cropValues.y || 0, cropValues.width, cropValues.height,
+        0, 0, cropValues.width, cropValues.height);
+    return ctx.getImageData(0, 0, cropValues.width, cropValues.height);
+}
+
+function replaceWhitePxl(imgd, color, id) {
+    if (!color) {
+        return imgd;
+    }
+    const imgdColored = cacheStyle.get(id, color);
+    if (!imgdColored) {
+        const pix = imgd.data;
+        const newColor = new Color(color);
+        const colorToChange = new Color('white');
+        for (let i = 0, n = pix.length; i < n; i += 4) {
+            const d = deltaE(pix.slice(i, i + 3), colorToChange) / 100;
+            pix[i] = (pix[i] * d +  newColor.r * 255 * (1 - d));
+            pix[i + 1] = (pix[i + 1] * d +  newColor.g * 255 * (1 - d));
+            pix[i + 2] = (pix[i + 2] * d +  newColor.b * 255 * (1 - d));
+        }
+        cacheStyle.set(imgd, id, color);
+        return imgd;
+    }
+    return imgdColored;
 }
 
 const textAnchorPosition = {
@@ -170,10 +173,16 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * any [valid color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is no value, which means no fill.
  * If the `Layer` is a `GeometryLayer` you can use `THREE.Color`.
- * @property {Image|Canvas|string|function} [fill.pattern] - Defines a pattern to fill the
- * surface with. It can be an `Image` to use directly, or an url to fetch the pattern
+ * @property {Image|Canvas|string|object|function} [fill.pattern] - Defines a pattern to fill the
+ * surface with. It can be an `Image` to use directly, an url to fetch the pattern or an object containing
+ * the url of the image to fetch and the transformation to apply.
  * from. See [this example] (http://www.itowns-project.org/itowns/examples/#source_file_geojson_raster)
  * for how to use.
+ * @property {string} [fill.pattern.source] the url to fetch the pattern image
+ * @property {object} [fill.pattern.cropValues] the x, y, width and height (in pixel) of the sub image to use.
+ * @property {THREE.Color} [fill.pattern.color] Can be any [valid color string]
+ * (https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+ * It will change the color of the white pixels of the source image.
  * @property {number|function} [fill.opacity] - The opacity of the color or of the
  * pattern. Can be between `0.0` and `1.0`. Default is `1.0`.
  * For a `GeometryLayer`, this opacity property isn't used.
@@ -277,12 +286,13 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  *
  * @property {Object} [icon] - Defines the appearance of icons attached to label.
  * @property {string} [icon.source] - The url of the icons' image file.
- * @property {string} [icon.key] - The key of the icons' image in a vector tile data set.
+ * @property {string} [icon.id] - The id of the icons' sub-image in a vector tile data set.
+ * @property {string} [icon.cropValues] - the x, y, width and height (in pixel) of the sub image to use.
  * @property {string} [icon.anchor] - The anchor of the icon compared to the label position.
  * Can be `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
  * or `bottom-right`. Default is `center`.
- * @property {number} [icon.size] - If the icon's image is passed with `icon.source` or
- * `icon.key`, its size when displayed on screen is multiplied by `icon.size`. Default is `1`.
+ * @property {number} [icon.size] - If the icon's image is passed with `icon.source` and/or
+ * `icon.id`, its size when displayed on screen is multiplied by `icon.size`. Default is `1`.
  * @property {string|function} [icon.color] - The color of the icon. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * It will change the color of the white pixels of the icon source image.
@@ -436,12 +446,13 @@ export class StyleOptions {}
  *
  * @property {Object} icon - Defines the appearance of icons attached to label.
  * @property {string} icon.source - The url of the icons' image file.
- * @property {string} icon.key - The key of the icons' image in a vector tile data set.
+ * @property {string} icon.id - The id of the icons' sub-image in a vector tile data set.
+ * @property {string} icon.cropValues - the x, y, width and height (in pixel) of the sub image to use.
  * @property {string} icon.anchor - The anchor of the icon compared to the label position.
  * Can be `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
  * or `bottom-right`. Default is `center`.
- * @property {number} icon.size - If the icon's image is passed with `icon.source` or
- * `icon.key`, its size when displayed on screen is multiplied by `icon.size`. Default is `1`.
+ * @property {number} icon.size - If the icon's image is passed with `icon.source` and/or
+ * `icon.id`, its size when displayed on screen is multiplied by `icon.size`. Default is `1`.
  * @property {string|function} icon.color - The color of the icon. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * It will change the color of the white pixels of the icon source image.
@@ -505,12 +516,6 @@ class Style {
         defineStyleProperty(this, 'fill', 'base_altitude', params.fill.base_altitude, base_altitudeDefault);
         defineStyleProperty(this, 'fill', 'extrusion_height', params.fill.extrusion_height);
 
-        if (typeof this.fill.pattern == 'string') {
-            Fetcher.texture(this.fill.pattern).then((pattern) => {
-                this.fill.pattern = pattern.image;
-            });
-        }
-
         this.stroke = {};
         defineStyleProperty(this, 'stroke', 'color', params.stroke.color);
         defineStyleProperty(this, 'stroke', 'opacity', params.stroke.opacity, 1.0);
@@ -549,7 +554,12 @@ class Style {
 
         this.icon = {};
         defineStyleProperty(this, 'icon', 'source', params.icon.source);
-        defineStyleProperty(this, 'icon', 'key', params.icon.key);
+        if (params.icon.key) {
+            console.warn("'icon.key' is deprecated: use 'icon.id' instead");
+            params.icon.id = params.icon.key;
+        }
+        defineStyleProperty(this, 'icon', 'id', params.icon.id);
+        defineStyleProperty(this, 'icon', 'cropValues', params.icon.cropValues);
         defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor, 'center');
         defineStyleProperty(this, 'icon', 'size', params.icon.size, 1);
         defineStyleProperty(this, 'icon', 'color', params.icon.color);
@@ -626,6 +636,7 @@ class Style {
      * set Style from (geojson-like) properties.
      * @param {object} properties (geojson-like) properties.
      * @param {number} type
+     *
      * @returns {StyleOptions} containing all properties for itowns.Style
      */
     setFromGeojsonProperties(properties, type) {
@@ -667,6 +678,7 @@ class Style {
      * @param {Object} sprites vector tile layer.
      * @param {number} [order=0]
      * @param {boolean} [symbolToCircle=false]
+     *
      * @returns {StyleOptions} containing all properties for itowns.Style
      */
     setFromVectorTileLayer(layer, sprites, order = 0, symbolToCircle = false) {
@@ -679,8 +691,17 @@ class Style {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern'], { type: 'color' }));
             this.fill.color = color;
             this.fill.opacity = readVectorProperty(layer.paint['fill-opacity']) || opacity;
-            if (layer.paint['fill-pattern'] && sprites) {
-                this.fill.pattern = getImage(sprites, layer.paint['fill-pattern']);
+            if (layer.paint['fill-pattern']) {
+                try {
+                    this.fill.pattern = {
+                        id: layer.paint['fill-pattern'],
+                        source: sprites.source,
+                        cropValues: sprites[layer.paint['fill-pattern']],
+                    };
+                } catch (err) {
+                    err.message = `VTlayer '${layer.id}': argument sprites must not be null when using layer.paint['fill-pattern']`;
+                    throw err;
+                }
             }
 
             if (layer.paint['fill-outline-color']) {
@@ -743,16 +764,89 @@ class Style {
             }
 
             // additional icon
-            const key = readVectorProperty(layer.layout['icon-image']);
-            if (key) {
-                this.icon.key = key;
-                this.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
-                const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['icon-color'], { type: 'color' }));
-                this.icon.color = color;
-                this.icon.opacity = readVectorProperty(layer.paint['icon-opacity']) || (opacity !== undefined && opacity);
+            const iconImg = readVectorProperty(layer.layout['icon-image']);
+            if (iconImg) {
+                try {
+                    this.icon.id = iconImg;
+                    this.icon.source = sprites.source;
+                    this.icon.cropValues = sprites[iconImg];
+
+                    this.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
+                    const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['icon-color'], { type: 'color' }));
+                    this.icon.color = color;
+                    this.icon.opacity = readVectorProperty(layer.paint['icon-opacity']) || (opacity !== undefined && opacity);
+                } catch (err) {
+                    err.message = `VTlayer '${layer.id}': argument sprites must not be null when using layer.layout['icon-image']`;
+                    throw err;
+                }
             }
         }
         return this;
+    }
+
+    /**
+     * Applies the style.fill to a polygon of the texture canvas.
+     * @param {CanvasRenderingContext2D} txtrCtx The Context 2D of the texture canvas.
+     * @param {Path2D} polygon The current texture canvas polygon.
+     * @param {Number} invCtxScale The ratio to scale line width and radius circle.
+     * @param {Boolean} canBeFilled - true if feature.type == FEATURE_TYPES.POLYGON.
+     */
+    applyToCanvasPolygon(txtrCtx, polygon, invCtxScale, canBeFilled) {
+        // draw line or edge of polygon
+        if (this.stroke) {
+            // TO DO add possibility of using a pattern (https://github.com/iTowns/itowns/issues/2210)
+            Style.prototype._applyStrokeToPolygon.call(this, txtrCtx, invCtxScale, polygon);
+        }
+
+        // fill inside of polygon
+        if (canBeFilled && this.fill) {
+            // canBeFilled can be move to StyleContext in the later PR
+            Style.prototype._applyFillToPolygon.call(this, txtrCtx, invCtxScale, polygon);
+        }
+    }
+
+    _applyStrokeToPolygon(txtrCtx, invCtxScale, polygon) {
+        if (txtrCtx.strokeStyle !== this.stroke.color) {
+            txtrCtx.strokeStyle = this.stroke.color;
+        }
+        const width = (this.stroke.width || 2.0) * invCtxScale;
+        if (txtrCtx.lineWidth !== width) {
+            txtrCtx.lineWidth = width;
+        }
+        const alpha = this.stroke.opacity == undefined ? 1.0 : this.stroke.opacity;
+        if (alpha !== txtrCtx.globalAlpha && typeof alpha == 'number') {
+            txtrCtx.globalAlpha = alpha;
+        }
+        if (txtrCtx.lineCap !== this.stroke.lineCap) {
+            txtrCtx.lineCap = this.stroke.lineCap;
+        }
+        txtrCtx.setLineDash(this.stroke.dasharray.map(a => a * invCtxScale * 2));
+        txtrCtx.stroke(polygon);
+    }
+
+    async _applyFillToPolygon(txtrCtx, invCtxScale, polygon) {
+        // if (this.fill.pattern && txtrCtx.fillStyle.src !== this.fill.pattern.src) {
+        // need doc for the txtrCtx.fillStyle.src that seems to always be undefined
+        if (this.fill.pattern) {
+            let img = this.fill.pattern;
+            if (this.fill.pattern.source) {
+                img = await loadImage(this.fill.pattern.source);
+            }
+            cropImage(img, this.fill.pattern.cropValues);
+
+            txtrCtx.fillStyle = txtrCtx.createPattern(canvas, 'repeat');
+            if (txtrCtx.fillStyle.setTransform) {
+                txtrCtx.fillStyle.setTransform(matrix.scale(invCtxScale));
+            } else {
+                console.warn('Raster pattern isn\'t completely supported on Ie and edge', txtrCtx.fillStyle);
+            }
+        } else if (txtrCtx.fillStyle !== this.fill.color) {
+            txtrCtx.fillStyle = this.fill.color;
+        }
+        if (this.fill.opacity !== txtrCtx.globalAlpha) {
+            txtrCtx.globalAlpha = this.fill.opacity;
+        }
+        txtrCtx.fill(polygon);
     }
 
     /**
@@ -760,9 +854,15 @@ class Style {
      * properties of this style.
      *
      * @param {Element} domElement - The element to set the style to.
-     * @param {Object} sprites - the sprites.
+     *
+     * @returns {undefined|Promise<HTMLImageElement>}
+     *          for a text label: undefined.
+     *          for an icon: a Promise resolving with the HTMLImageElement containing the image.
      */
-    applyToHTML(domElement, sprites) {
+    async applyToHTML(domElement) {
+        if (arguments.length > 1) {
+            console.warn('Deprecated argument sprites. Sprites must be configured in style.');
+        }
         domElement.style.padding = `${this.text.padding}px`;
         domElement.style.maxWidth = `${this.text.wrap}em`;
 
@@ -784,83 +884,79 @@ class Style {
             domElement.setAttribute('data-before', domElement.textContent);
         }
 
-        if (!this.icon.source && !this.icon.key) {
+        if (!this.icon.source) {
             return;
         }
 
-        const image = this.icon.source;
-        const size = this.icon.size;
-        const key = this.icon.key;
-        const color = this.icon.color;
+        const icon = document.createElement('img');
 
-        let icon = cacheStyle.get(image || key, size, color);
+        const iconPromise  = new Promise((resolve, reject) => {
+            icon.onload = () => resolve(this._addIcon(icon, domElement));
+            icon.onerror = err => reject(err);
+        });
 
-        if (!icon) {
-            if (key && sprites) {
-                icon = getImage(sprites, key);
-            } else {
-                icon = getImage(image, color);
-            }
-            cacheStyle.set(icon, image || key, size, color);
-        }
-
-        const addIcon = () => {
-            const cIcon = icon.cloneNode();
-
-            cIcon.setAttribute('class', 'itowns-icon');
-
-            cIcon.width = icon.width * this.icon.size;
-            cIcon.height = icon.height * this.icon.size;
-            cIcon.style.color = this.icon.color;
-            cIcon.style.opacity = this.icon.opacity;
-            cIcon.style.position = 'absolute';
-            cIcon.style.top = '0';
-            cIcon.style.left = '0';
-
-            switch (this.icon.anchor) { // center by default
-                case 'left':
-                    cIcon.style.top = `${-0.5 * cIcon.height}px`;
-                    break;
-                case 'right':
-                    cIcon.style.top = `${-0.5 * cIcon.height}px`;
-                    cIcon.style.left = `${-cIcon.width}px`;
-                    break;
-                case 'top':
-                    cIcon.style.left = `${-0.5 * cIcon.width}px`;
-                    break;
-                case 'bottom':
-                    cIcon.style.top = `${-cIcon.height}px`;
-                    cIcon.style.left = `${-0.5 * cIcon.width}px`;
-                    break;
-                case 'bottom-left':
-                    cIcon.style.top = `${-cIcon.height}px`;
-                    break;
-                case 'bottom-right':
-                    cIcon.style.top = `${-cIcon.height}px`;
-                    cIcon.style.left = `${-cIcon.width}px`;
-                    break;
-                case 'top-left':
-                    break;
-                case 'top-right':
-                    cIcon.style.left = `${-cIcon.width}px`;
-                    break;
-                case 'center':
-                default:
-                    cIcon.style.top = `${-0.5 * cIcon.height}px`;
-                    cIcon.style.left = `${-0.5 * cIcon.width}px`;
-                    break;
-            }
-
-            cIcon.style['z-index'] = -1;
-            domElement.appendChild(cIcon);
-            icon.removeEventListener('load', addIcon);
-        };
-
-        if (icon.complete) {
-            addIcon();
+        if (!this.icon.cropValues && !this.icon.color) {
+            icon.src = this.icon.source;
         } else {
-            icon.addEventListener('load', addIcon);
+            const img = await loadImage(this.icon.source);
+            const imgd = cropImage(img, this.icon.cropValues);
+            const imgdColored = replaceWhitePxl(imgd, this.icon.color, this.icon.id || this.icon.source);
+            canvas.getContext('2d').putImageData(imgdColored, 0, 0);
+            icon.src = canvas.toDataURL('image/png');
         }
+        return iconPromise;
+    }
+
+    _addIcon(icon, domElement) {
+        const cIcon = icon.cloneNode();
+
+        cIcon.setAttribute('class', 'itowns-icon');
+
+        cIcon.width = icon.width * this.icon.size;
+        cIcon.height = icon.height * this.icon.size;
+        cIcon.style.color = this.icon.color;
+        cIcon.style.opacity = this.icon.opacity;
+        cIcon.style.position = 'absolute';
+        cIcon.style.top = '0';
+        cIcon.style.left = '0';
+
+        switch (this.icon.anchor) { // center by default
+            case 'left':
+                cIcon.style.top = `${-0.5 * cIcon.height}px`;
+                break;
+            case 'right':
+                cIcon.style.top = `${-0.5 * cIcon.height}px`;
+                cIcon.style.left = `${-cIcon.width}px`;
+                break;
+            case 'top':
+                cIcon.style.left = `${-0.5 * cIcon.width}px`;
+                break;
+            case 'bottom':
+                cIcon.style.top = `${-cIcon.height}px`;
+                cIcon.style.left = `${-0.5 * cIcon.width}px`;
+                break;
+            case 'bottom-left':
+                cIcon.style.top = `${-cIcon.height}px`;
+                break;
+            case 'bottom-right':
+                cIcon.style.top = `${-cIcon.height}px`;
+                cIcon.style.left = `${-cIcon.width}px`;
+                break;
+            case 'top-left':
+                break;
+            case 'top-right':
+                cIcon.style.left = `${-cIcon.width}px`;
+                break;
+            case 'center':
+            default:
+                cIcon.style.top = `${-0.5 * cIcon.height}px`;
+                cIcon.style.left = `${-0.5 * cIcon.width}px`;
+                break;
+        }
+
+        cIcon.style['z-index'] = -1;
+        domElement.appendChild(cIcon);
+        return cIcon;
     }
 
     /**

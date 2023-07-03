@@ -2,10 +2,23 @@ import * as THREE from 'three';
 import { FEATURE_TYPES } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
+import Style from 'Core/Style';
 
-const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-const matrix = svg.createSVGMatrix();
-
+/**
+ * Draw polygon (contour, line edge and fill) based on feature vertices into canvas
+ * using the given style(s). Several styles will re-draws the polygon each one with
+ * a different style.
+ * @param      {CanvasRenderingContext2D} ctx - canvas' 2D rendering context.
+ * @param      {Number[]} vertices - All the vertices of the Feature.
+ * @param      {Object[]} indices - Contains the indices that define the geometry.
+ * Objects stored in this array have two properties, an `offset` and a `count`.
+* The offset is related to the overall number of vertices in the Feature.
+ * @param      {Object}  style - object defining the style of the polygon.
+ * @param      {Number} size - The size of the feature.
+ * @param      {Number} extent - The extent.
+ * @param      {Number} invCtxScale - The ration to scale line width and radius circle.
+ * @param      {Boolean} canBeFilled - true if feature.type == FEATURE_TYPES.POLYGON
+ */
 function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style = {}, size, extent, invCtxScale, canBeFilled) {
     if (vertices.length === 0) {
         return;
@@ -22,63 +35,19 @@ function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], style =
 
 function _drawPolygon(ctx, vertices, indices, style, size, extent, invCtxScale, canBeFilled) {
     // build contour
-    ctx.beginPath();
+    const path = new Path2D();
+
     for (const indice of indices) {
         if (indice.extent && Extent.intersectsExtent(indice.extent, extent)) {
             const offset = indice.offset * size;
             const count = offset + indice.count * size;
-            ctx.moveTo(vertices[offset], vertices[offset + 1]);
+            path.moveTo(vertices[offset], vertices[offset + 1]);
             for (let j = offset + size; j < count; j += size) {
-                ctx.lineTo(vertices[j], vertices[j + 1]);
+                path.lineTo(vertices[j], vertices[j + 1]);
             }
         }
     }
-
-    // draw line or edge of polygon
-    if (style.stroke) {
-        strokeStyle(style, ctx, invCtxScale);
-        ctx.stroke();
-    }
-
-    // fill polygon only
-    if (canBeFilled && style.fill) {
-        fillStyle(style, ctx, invCtxScale);
-        ctx.fill();
-    }
-}
-
-function fillStyle(style, ctx, invCtxScale) {
-    if (style.fill.pattern && ctx.fillStyle.src !== style.fill.pattern.src) {
-        ctx.fillStyle = ctx.createPattern(style.fill.pattern, 'repeat');
-        if (ctx.fillStyle.setTransform) {
-            ctx.fillStyle.setTransform(matrix.scale(invCtxScale));
-        } else {
-            console.warn('Raster pattern isn\'t completely supported on Ie and edge');
-        }
-    } else if (ctx.fillStyle !== style.fill.color) {
-        ctx.fillStyle = style.fill.color;
-    }
-    if (style.fill.opacity !== ctx.globalAlpha) {
-        ctx.globalAlpha = style.fill.opacity;
-    }
-}
-
-function strokeStyle(style, ctx, invCtxScale) {
-    if (ctx.strokeStyle !== style.stroke.color) {
-        ctx.strokeStyle = style.stroke.color;
-    }
-    const width = (style.stroke.width || 2.0) * invCtxScale;
-    if (ctx.lineWidth !== width) {
-        ctx.lineWidth = width;
-    }
-    const alpha = style.stroke.opacity == undefined ? 1.0 : style.stroke.opacity;
-    if (alpha !== ctx.globalAlpha && typeof alpha == 'number') {
-        ctx.globalAlpha = alpha;
-    }
-    if (ctx.lineCap !== style.stroke.lineCap) {
-        ctx.lineCap = style.stroke.lineCap;
-    }
-    ctx.setLineDash(style.stroke.dasharray.map(a => a * invCtxScale * 2));
+    Style.prototype.applyToCanvasPolygon.call(style, ctx, path, invCtxScale, canBeFilled);
 }
 
 function drawPoint(ctx, x, y, style = {}, invCtxScale) {

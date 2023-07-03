@@ -79,10 +79,8 @@ class VectorTilesSource extends TMSSource {
                 return Fetcher.json(spriteUrl, this.networkOptions).then((sprites) => {
                     this.sprites = sprites;
                     const imgUrl = urlParser.normalizeSpriteURL(baseurl, '', '.png', this.accessToken);
-                    return Fetcher.texture(imgUrl, this.networkOptions).then((texture) => {
-                        this.sprites.img = texture.image;
-                        return style;
-                    });
+                    this.sprites.source = imgUrl;
+                    return style;
                 });
             }
 
@@ -108,7 +106,10 @@ class VectorTilesSource extends TMSSource {
                         id: layer.id,
                         order,
                         filterExpression: featureFilter(layer.filter),
-                        zoom: style.zoom,
+                        zoom: {
+                            min: layer.minzoom || 0,
+                            max: layer.maxzoom || 24,
+                        },
                     });
                 }
             });

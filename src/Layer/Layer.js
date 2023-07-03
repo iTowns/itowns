@@ -99,6 +99,10 @@ class Layer extends THREE.EventDispatcher {
         }
         super();
         if (config.style && !(config.style instanceof Style)) {
+            if (typeof config.style.fill?.pattern === 'string') {
+                console.warn('Using style.fill.pattern = { source: Img|url } is adviced');
+                config.style.fill.pattern = { source: config.style.fill.pattern };
+            }
             config.style = new Style(config.style);
         }
         this.isLayer = true;
@@ -109,7 +113,6 @@ class Layer extends THREE.EventDispatcher {
             value: id,
             writable: false,
         });
-
         // Default properties
         this.options = config.options || {};
 
