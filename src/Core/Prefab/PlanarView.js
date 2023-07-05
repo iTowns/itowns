@@ -33,7 +33,7 @@ class PlanarView extends View {
      * initialization. By default, camera will display the view's extent (given in `extent` parameter).
      */
     constructor(viewerDiv, extent, options = {}) {
-        THREE.Object3D.DefaultUp.set(0, 0, 1);
+        THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 
         // Setup View
         super(extent.crs, viewerDiv, options);

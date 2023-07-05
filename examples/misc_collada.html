@@ -3,73 +3,97 @@
         <title>Itowns - collada</title>
 
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="js/GUI/GuiTools.js"></script>
+
+        <!-- Import iTowns source code -->
         <script src="../dist/itowns.js"></script>
-        <script src="js/ThreeLoader.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
         <script src="../dist/debug.js"></script>
+
+        <!-- Import iTowns LoadingScreen and GuiTools plugins -->
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+
+        <!-- Import ThreeLoader plugin to get ColladaLoader from three.js -->
+        <script src="js/ThreeLoader.js"></script>
+
         <script type="text/javascript">
-            // # Simple Globe viewer
 
-            // Define initial camera position
-            // Coordinate can be found on https://www.geoportail.gouv.fr/carte
-            // setting is "coordonnée geographiques en degres decimaux"
 
-            // Position near Gerbier mountain.
-            var placement = {
+
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 4.21655, 44.84415),
                 range: 500,
                 heading: 180,
                 tilt: 60,
-            }
+            };
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
-            var viewerDiv = document.getElementById('viewerDiv');
+            const viewerDiv = document.getElementById('viewerDiv');
 
-            // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, placement);
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
 
-            var menuGlobe = new GuiTools('menuDiv', view);
-
+            // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
 
-            function addLayerCb(layer) {
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            }
 
-            // Add one imagery layer to the scene
-            // This layer is defined in a json file but it could be defined as a plain js
-            // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer(config.id, config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            });
-            // Add two elevation layers.
-            // These will deform iTowns globe geometry to represent terrain elevation.
+
+            // ---------- DISPLAY CONTEXTUAL DATA : ----------
+
+            // Display ortho-images
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json')
+                .then(function _(config) {
+                    config.source = new itowns.WMTSSource(config.source);
+                    view.addLayer(
+                        new itowns.ColorLayer('Ortho', config),
+                    ).then(debugMenu.addLayerGUI.bind(debugMenu));
+                });
+
+            // Display elevation data
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(
+                    new itowns.ElevationLayer(config.id, config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json')
+                .then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json')
+                .then(addElevationLayerFromConfig);
 
-            // ThreeLoader can load each format proposed in ThreeJs examples loaders : https://github.com/mrdoob/three.js/tree/dev/examples/js/loaders
-            var promiseCollada = ThreeLoader.load('Collada', 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae')
-            .then(collada => {
-                var model = collada.scene;
+
+
+
+            // ---------- DISPLAY COLLADA DATA : ----------
+
+            // ThreeLoader can load each format proposed in ThreeJs examples loaders : 
+            // https://github.com/mrdoob/three.js/tree/dev/examples/js/loaders
+            // Note : As this previous folder has been removed in three r148,
+            // TheeLoader will only use loaders from three r147 version. This
+            // is a temporary solution and shall be updated.
+            const promiseCollada = ThreeLoader.load(
+                'Collada', 
+                'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae',
+            ).then(collada => {
+                const model = collada.scene;
 
                 // building coordinate
-                var coord = new itowns.Coordinates('EPSG:4326', 4.2165, 44.844, 1417);
+                const coord = new itowns.Coordinates(
+                    'EPSG:4326', 4.2165, 44.844, 1417,
+                );
 
                 model.position.copy(coord.as(view.referenceCrs));
                 // align up vector with geodesic normal
@@ -84,6 +108,7 @@
                 view.scene.add(model);
                 view.notifyChange();
             });
+
         </script>
     </body>
 </html>

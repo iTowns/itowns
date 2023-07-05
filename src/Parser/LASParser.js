@@ -45,7 +45,7 @@ export default {
             geometry.userData.vertexCount = parsedData.header.vertexCount;
             geometry.userData.boundingBox = parsedData.header.boundingBox;
 
-            const positionBuffer = new THREE.BufferAttribute(parsedData.attributes.POSITION.value, 3, false);
+            const positionBuffer = new THREE.BufferAttribute(parsedData.attributes.POSITION.value, 3);
             geometry.setAttribute('position', positionBuffer);
 
             const intensityBuffer = new THREE.BufferAttribute(parsedData.attributes.intensity.value, 1, true);
