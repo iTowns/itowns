@@ -1,0 +1,97 @@
+import * as THREE from 'three';
+
+import { workerType } from '../Utils/WorkerPool';
+
+export default {
+    /** @module Potree2BinParser */
+    /** Parse .bin PotreeConverter 2.0 format and convert to a THREE.BufferGeometry
+     * @function parse
+     * @param {ArrayBuffer} buffer - the bin buffer.
+     * @param {Object} options
+     * @param {string[]} options.in.pointAttributes - the point attributes information contained in metadata.js
+     * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
+     *
+     */
+    parse: function parse(buffer, options) {
+        return new Promise((resolve) => {
+            const source = options.in;
+            const layer = options.out;
+            const metadata = layer.metadata;
+            const node = options.node;
+
+            const type = metadata.encoding === 'BROTLI' ? workerType.DECODER_WORKER_BROTLI : workerType.DECODER_WORKER;
+            const worker = source.workerPool.getWorker(type);
+
+            worker.onmessage = (e) => {
+                const data = e.data;
+                const buffers = data.attributeBuffers;
+
+                source.workerPool.returnWorker(type, worker);
+
+                const geometry = new THREE.BufferGeometry();
+                Object.keys(buffers).forEach((property) => {
+                    const buffer = buffers[property].buffer;
+
+                    if (property === 'position') {
+                        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+                    } else if (property === 'rgba') {
+                        geometry.setAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+                    } else if (property === 'NORMAL') {
+                        // geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+                        geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+                    } else if (property === 'INDICES') {
+                        const bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
+                        bufferAttribute.normalized = true;
+                        geometry.setAttribute('indices', bufferAttribute);
+                    } else {
+                        const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+
+                        const batchAttribute = buffers[property].attribute;
+                        bufferAttribute.potree = {
+                            offset: buffers[property].offset,
+                            scale: buffers[property].scale,
+                            preciseBuffer: buffers[property].preciseBuffer,
+                            range: batchAttribute.range,
+                        };
+
+                        geometry.setAttribute(property, bufferAttribute);
+                    }
+                });
+
+                geometry.computeBoundingBox();
+
+                // indices ??
+
+                node.density = data.density;
+                node.geometry = geometry;
+                node.loaded = true;
+                node.loading = false;
+
+                resolve(geometry);
+            };
+
+            const pointAttributes = layer.pointAttributes;
+            const scale = metadata.scale;
+            const box = node.bbox;
+            const min = layer.offset.clone().add(box.min);
+            const size = box.max.clone().sub(box.min);
+            const max = min.clone().add(size);
+            const offset = metadata.offset;
+            const numPoints = node.numPoints;
+
+            const message = {
+                id: node.id,
+                buffer,
+                pointAttributes,
+                scale,
+                min,
+                max,
+                size,
+                offset,
+                numPoints,
+            };
+
+            worker.postMessage(message, [message.buffer]);
+        });
+    },
+};

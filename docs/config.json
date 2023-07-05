@@ -71,6 +71,7 @@
                 "FileSource",
                 "OrientedImageSource",
                 "PotreeSource",
+                "Potree2Source",
                 "VectorTilesSource",
                 "EntwinePointTileSource"
             ],
