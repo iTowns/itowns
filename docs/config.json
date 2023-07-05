@@ -49,6 +49,7 @@
                 "PointCloudLayer",
                 "PotreeLayer",
                 "CopcLayer",
+                "Potree2Layer",
                 "C3DTilesLayer",
                 "LabelLayer",
                 "GlobeLayer",
@@ -72,6 +73,7 @@
                 "FileSource",
                 "OrientedImageSource",
                 "PotreeSource",
+                "Potree2Source",
                 "VectorTilesSource",
                 "EntwinePointTileSource",
                 "CopcSource"

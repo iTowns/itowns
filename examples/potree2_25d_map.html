@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Point Cloud Viewer</title>
+
+        <style type="text/css">
+            #info {
+                color: #7ad7ff;
+                font-family: 'Open Sans', sans-serif;
+                position: absolute;
+                top: 0;
+                left: 0;
+                padding: 0.3rem;
+                background-color: #404040;
+                z-index: 1;
+            }
+            @media (max-width: 600px) {
+                #info,
+                .dg {
+                    display: none;
+                }
+            }
+        </style>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="viewerDiv">
+            <div id="info"></div>
+        </div>
+
+        <div>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+            <script src="../dist/itowns.js"></script>
+            <script src="js/GUI/LoadingScreen.js"></script>
+            <script src="../dist/debug.js"></script>
+            <script type="text/javascript">
+                var potreeLayer;
+                var oldPostUpdate;
+                var viewerDiv;
+                var debugGui;
+                var view;
+                var controls;
+
+                // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
+                itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+
+                viewerDiv = document.getElementById('viewerDiv');
+                viewerDiv.style.display = 'block';
+
+                debugGui = new dat.GUI();
+
+                // TODO: do we really need to disable logarithmicDepthBuffer ?
+                view = new itowns.View('EPSG:3946', viewerDiv);
+                setupLoadingScreen(viewerDiv, view);
+                view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
+
+                // Configure Point Cloud layer
+                potreeLayer = new itowns.Potree2Layer('Lion', {
+                    source: new itowns.Potree2Source({
+                        file: 'metadata.json',
+                        url: 'https://blocinbloc-public-test.s3.fr-par.scw.cloud/lion-potree2',
+                        crs: view.referenceCrs,
+                    }),
+                });
+
+                // point selection on double-click
+                function dblClickHandler(event) {
+                    var pick = view.pickObjectsAt(event, 5, potreeLayer);
+
+                    for (const p of pick) {
+                        console.info('Selected point #' + p.index + ' in position (' +
+                            p.object.position.x + ', ' +
+                            p.object.position.y + ', ' +
+                            p.object.position.z +
+                         ') in Points ' + p.object.layer.id);
+                    }
+                }
+                view.domElement.addEventListener('dblclick', dblClickHandler);
+
+                function placeCamera(position, lookAt) {
+                    view.camera.camera3D.position.copy(position);
+                    view.camera.camera3D.lookAt(lookAt);
+                    // create controls
+                    controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
+                    debugGui.add(controls.options, 'moveSpeed', 1, 100).name('Movement speed');
+
+                    view.notifyChange(view.camera.camera3D);
+                }
+
+                // add potreeLayer to scene
+                function onLayerReady() {
+                    var ratio;
+                    var position;
+                    var lookAt = new itowns.THREE.Vector3();
+                    var size = new itowns.THREE.Vector3();
+
+                    potreeLayer.root.bbox.getSize(size);
+                    potreeLayer.root.bbox.getCenter(lookAt);
+
+                    debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);
+
+                    view.camera.camera3D.far = 2.0 * size.length();
+
+                    ratio = size.x / size.z;
+                    position = potreeLayer.root.bbox.min.clone().add(
+                        size.multiply({ x: 0, y: 0, z: ratio * 0.5 }));
+                    lookAt.z = potreeLayer.root.bbox.min.z;
+                    placeCamera(position, lookAt);
+                    controls.moveSpeed = size.length() / 3;
+
+                    // update stats window
+                    var info = document.getElementById('info');
+                    view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, () => {
+                        info.textContent = potreeLayer.displayedCount.toLocaleString() + ' points';
+                    });
+                }
+                window.view = view;
+                view.addLayer(potreeLayer).then(onLayerReady);
+            </script>
+    </body>
+</html>
+
