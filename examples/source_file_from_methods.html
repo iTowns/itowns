@@ -65,10 +65,10 @@
 
     view.addLayer(new itowns.ColorLayer('Hydro', {
         source: sourceFromFetcherAndParser,
-        style: new itowns.Style({
+        style: {
             fill: { color: 'cyan', opacity: 0.5 },
             stroke: { color: 'blue',},
-        }),
+        },
     })).then(debugMenu.addLayerGUI.bind(debugMenu));
 
 

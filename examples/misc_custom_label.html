@@ -109,9 +109,9 @@
         const layer = new itowns.LabelLayer('idLabelLayer', {
             source: source,
             domElement: setLabelContent,
-            style: new itowns.Style({
+            style: {
                 text: { anchor: [-0.8, -1] },
-            }),
+            },
         });
 
         view.addLayer(layer);

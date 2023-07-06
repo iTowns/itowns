@@ -106,12 +106,12 @@ const DragNDrop = (function _() {
                         layer = new itowns.FeatureGeometryLayer(
                             file.name,
                             {
-                                style: new itowns.Style({
+                                style: {
                                     fill: {
                                         color: 'red',
                                         extrusion_height: 200,
                                     },
-                                }),
+                                },
                                 source: source,
                                 opacity: 0.7,
                             });

@@ -118,12 +118,12 @@
                 source: buildingsSource,
                 zoom: { min: 15 },
                 accurate: false,
-                style: new itowns.Style({
+                style: {
                     fill: {
                         base_altitude: () => 0,
                         extrusion_height: (p) => p.hauteur || 0,
                     },
-                }),
+                },
             });
 
             // Add the FeatureGeometryLayer to the scene and to the debug menu.
@@ -157,13 +157,13 @@
                     gltf.scene.position.z = 2;
                     model.scale.set(6, 6, 6);
 
-                    var styleModel3D = new itowns.Style({
+                    var styleModel3D = {
                         point: {
                             model: {
                                 object: model,
                             },
                         },
-                    });
+                    };
 
                     var lightsLayer = new itowns.FeatureGeometryLayer(
                         "lights",
@@ -192,13 +192,13 @@
             );
 
             //Tree
-            var styleModel3D = new itowns.Style({
+            var styleModel3D = {
                 point: {
                     model: {
                         object: makeTree(),
                     },
                 },
-            });
+            };
 
             var treesSource = new itowns.FileSource({
                 url: "https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geojson/arbres_bordeaux.geojson",
