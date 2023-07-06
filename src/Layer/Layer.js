@@ -258,6 +258,10 @@ class Layer extends THREE.EventDispatcher {
     delete(clearCache) {
         console.warn('Function delete doesn\'t exist for this layer');
     }
+
+    selectGeometry() {
+        throw new Error('selectGeometry is not supported yet in this type of layer');
+    }
 }
 
 export default Layer;

@@ -116,6 +116,13 @@ class ColorLayer extends RasterLayer {
     update(context, layer, node, parent) {
         return updateLayeredMaterialNodeImagery(context, this, node, parent);
     }
+
+    selectGeometry(mouseOrEvt, radius, view) {
+        const results = view.pickFeaturesAt(mouseOrEvt, radius, this.id);
+        if (results[this.id].length) {
+            return results[this.id][0].geometry;
+        }
+    }
 }
 
 export default ColorLayer;
