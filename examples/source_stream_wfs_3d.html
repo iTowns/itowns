@@ -62,84 +62,25 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
-            var color = new itowns.THREE.Color();
-            var tile;
-            function altitudeLine(properties, contour) {
-                var result;
-                var z = 0;
-                if (contour) {
-                    result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0, tile);
-                    if (!result) {
-                        result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0);
-                    }
-                    tile = [result.tile];
-                    if (result) {
-                        z = result.coord.z;
-                    }
-                    return z + 5;
-                }
-            }
-
-            function colorLine(properties) {
-                return color.set(Math.round(Math.random() * 0xffffff));
-            }
-
-            function acceptFeatureBus(properties) {
-                if (properties.sens == 'Aller') {
-                    var line = properties.ligne;
-                    if (linesBus.indexOf(line) === -1) {
-                        linesBus.push(line);
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            var lyonTclBusSource = new itowns.WFSSource({
-                protocol: 'wfs',
-                url: 'https://download.data.grandlyon.com/wfs/rdata?',
-                version: '2.0.0',
-                typeName: 'tcl_sytral.tcllignebus',
-                crs: 'EPSG:3946',
-                extent: {
-                    west: 1822174.60,
-                    east: 1868247.07,
-                    south: 5138876.75,
-                    north: 5205890.19,
-                },
-                format: 'geojson',
-            });
-
-            var lyonTclBusLayer = new itowns.FeatureGeometryLayer('WFS Bus lines',{
-                name: 'lyon_tcl_bus',
-                filter: acceptFeatureBus,
-                source: lyonTclBusSource,
-                zoom: { min: 9 },
-
-                style: {
-                    stroke: {
-                        color: colorLine,
-                        base_altitude: altitudeLine,
-                        width: 5,
-                    }
-                }
-            });
-            view.addLayer(lyonTclBusLayer);
-
+            var buildcolor = new itowns.THREE.Color();
             function colorBuildings(properties) {
-                if (properties.usage_1 === 'Résidentiel') {
-                    return color.set(0xFDFDFF);
-                } else if (properties.usage_1 === 'Annexe') {
-                    return color.set(0xC6C5B9);
-                } else if (properties.usage_1 === 'Commercial et services') {
-                    return color.set(0x62929E);
-                } else if (properties.usage_1 === 'Religieux') {
-                    return color.set(0x393D3F);
-                } else if (properties.usage_1 === 'Sportif') {
-                    return color.set(0x546A7B);
+                if (!properties.selected) {
+                    if (properties.usage_1 === 'Résidentiel') {
+                        return buildcolor.set(0xFDFDFF);
+                    } else if (properties.usage_1 === 'Annexe') {
+                        return buildcolor.set(0xC6C5B9);
+                    } else if (properties.usage_1 === 'Commercial et services') {
+                        return buildcolor.set(0x62929E);
+                    } else if (properties.usage_1 === 'Religieux') {
+                        return buildcolor.set(0x393D3F);
+                    } else if (properties.usage_1 === 'Sportif') {
+                        return buildcolor.set(0x546A7B);
+                    }
+                } else {
+                    return buildcolor.set(0xFFFF00);
                 }
 
-                return color.set(0x555555);
+                return buildcolor.set(0x555555);
             }
 
             function altitudeBuildings(properties) {
@@ -188,6 +129,7 @@
                 },
             });
 
+            console.log(wfsBuildingSource);
             var wfsBuildingLayer = new itowns.FeatureGeometryLayer('WFS Building',{
                 batchId: function (property, featureId) { return featureId; },
                 onMeshCreated: function scaleZ(mesh) {
@@ -210,6 +152,72 @@
             });
             view.addLayer(wfsBuildingLayer);
 
+            var tile;
+            var linesBus = [];
+
+            function altitudeLine(properties, ctx) {
+                var result;
+                var z = 0;
+                if (ctx.coordinates) {
+                    result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, ctx.coordinates, 0, tile);
+                    if (!result) {
+                        result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, ctx.coordinates, 0);
+                    }
+                    if (result) {
+                        tile = [result.tile];
+                        z = result.coord.z;
+                    }
+                    return z + 5;
+                }
+            }
+
+            function acceptFeatureBus(properties) {
+                return properties.sens === "Aller";
+            }
+
+            lyonTclBusSource = new itowns.WFSSource({
+                url: "https://data.grandlyon.com/geoserver/sytral/ows?",
+                protocol: 'wfs',
+                version: '2.0.0',
+                id: 'tcl_bus',
+                typeName: "tcl_sytral.tcllignebus_2_0_0",
+                crs: 'EPSG:3946',
+                extent: {
+                    west: 1822174.60,
+                    east: 1868247.07,
+                    south: 5138876.75,
+                    north: 5205890.19,
+                },
+                format: 'application/json',
+            });
+
+            const colorsLine = new Map();
+
+            function colorLine(properties) {
+                const line = properties.ligne;
+                var lineColor = colorsLine.get(line);
+                if (lineColor === undefined) {
+                    lineColor = new itowns.THREE.Color(0xffffff * Math.random());
+                    colorsLine.set(line, lineColor);
+                }
+                return colorsLine.get(line);
+            }
+
+            var lyonTclBusLayer = new itowns.FeatureGeometryLayer('WFS Bus lines', {
+                filter: acceptFeatureBus,
+                source: lyonTclBusSource,
+                zoom: { min: 1 },
+
+                style: {
+                    stroke: {
+                        base_altitude: altitudeLine,
+                        color: colorLine,
+                        width: 5,
+                    }
+                }
+            });
+            view.addLayer(lyonTclBusLayer);
+
             var menuGlobe = new GuiTools('menuDiv', view);
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
@@ -220,31 +228,37 @@
             debug.createTileDebugUI(menuGlobe.gui, view);
 
             function picking(event) {
-                if(view.controls.isPaused) {
-                    var htmlInfo = document.getElementById('info');
-                    var intersects = view.pickObjectsAt(event, 3, 'WFS Building');
-                    var properties;
-                    var info;
-                    var batchId;
+                var htmlInfo = document.getElementById('info');
+                var properties;
+                var info;
+                var intersects;
 
-                    htmlInfo.innerHTML = ' ';
-
-                    if (intersects.length) {
-                        batchId = intersects[0].object.geometry.attributes.batchId.array[intersects[0].face.a];
-                        properties = intersects[0].object.feature.geometries[batchId].properties;
-
-                        Object.keys(properties).map(function (objectKey) {
-                            var value = properties[objectKey];
-                            if (value) {
-                                var key = objectKey.toString();
-                                if (key[0] !== '_' && key !== 'geometry_name') {
-                                    info = value.toString();
-                                    htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
-                                }
-                            }
-                        });
-                    }
+                var intersects = view.pickGeometryAt(event, 3, 'WFS Building');
+                var layer = view.getLayerById('WFS Building');
+                
+                htmlInfo.innerHTML = ' ';
+                if (layer.selectedGeometry) {
+                    layer.selectedGeometry.geometry.properties.selected = false;
                 }
+                if (intersects) {
+                    properties = intersects.geometry.properties;
+                    layer.selectedGeometry = intersects;
+                    intersects.geometry.properties.selected = true;
+
+                    Object.keys(properties).map(function (objectKey) {
+                        var value = properties[objectKey];
+                        if (value) {
+                            var key = objectKey.toString();
+                            if (key[0] !== '_' && key !== 'geometry_name') {
+                                info = value.toString();
+                                htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
+                            }
+                        }
+                    });
+                } 
+                layer.redrawFeature(intersects);
+                layer.redrawFeature(layer.selectedGeometry);
+                view.notifyChange(layer);
             }
 
             for (var layer of view.getLayers()) {
