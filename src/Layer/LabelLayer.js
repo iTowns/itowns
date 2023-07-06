@@ -251,8 +251,8 @@ class LabelLayer extends GeometryLayer {
             const featureField = f.style.text.field;
 
             // determine if altitude style is specified by the user
-            const altitudeStyle = f.style.point.base_altitude;
-            const isDefaultElevationStyle = altitudeStyle instanceof Function && altitudeStyle.name == 'base_altitudeDefault';
+            const altitudeStyle = f.baseAltitude.point;
+            const isDefaultElevationStyle = altitudeStyle instanceof Function && altitudeStyle.name == 'baseAltitudeDefault';
 
             // determine if the altitude needs update with ElevationLayer
             labels.needsAltitude = labels.needsAltitude || this.forceClampToTerrain === true || (isDefaultElevationStyle && !f.hasRawElevationData);

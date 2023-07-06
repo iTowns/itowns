@@ -129,8 +129,8 @@ export class FeatureGeometry {
     }
 
     baseAltitude(feature, coordinates) {
-        const base_altitude = feature.style[typeToStyleProperty[feature.type]].base_altitude || 0;
-        return isNaN(base_altitude) ? base_altitude(this.properties, coordinates) : base_altitude;
+        const baseAltitude = feature.baseAltitude[typeToStyleProperty[feature.type]];
+        return isNaN(baseAltitude) ? baseAltitude(this.properties, coordinates) : baseAltitude;
     }
 
     /**
@@ -198,6 +198,10 @@ function push3DValues(value0, value1, value2 = 0) {
     this.vertices[this._pos++] = value2;
 }
 
+function baseAltitudeDefault(properties, coordinates) {
+    return coordinates?.z || 0;
+}
+
 /**
  *
  * This class improves and simplifies the construction and conversion of geographic data structures.
@@ -260,6 +264,7 @@ class Feature {
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
         this.style = new Style({}, collection.style);
+        this.baseAltitude = collection.baseAltitude;
 
         this.altitude = {
             min: Infinity,
@@ -371,6 +376,11 @@ export class FeatureCollection extends THREE.Object3D {
         this.size = options.structure == '3d' ? 3 : 2;
         this.filterExtent = options.filterExtent;
         this.style = options.style;
+        this.baseAltitude = {
+            fill: (options.style?.fill?.base_altitude) || baseAltitudeDefault,
+            stroke: (options.style?.stroke?.base_altitude) || baseAltitudeDefault,
+            point: (options.style?.point?.base_altitude) || baseAltitudeDefault,
+        };
         this.isInverted = false;
         this.matrixWorldInverse = new THREE.Matrix4();
         this.center = new Coordinates('EPSG:4326', 0, 0);
