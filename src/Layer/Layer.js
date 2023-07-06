@@ -98,6 +98,8 @@ class Layer extends THREE.EventDispatcher {
             throw new Error(`Layer ${id} needs Source`);
         }
         super();
+        this.isLayer = true;
+
         if (config.style && !(config.style instanceof Style)) {
             if (typeof config.style.fill?.pattern === 'string') {
                 console.warn('Using style.fill.pattern = { source: Img|url } is adviced');
@@ -105,8 +107,7 @@ class Layer extends THREE.EventDispatcher {
             }
             config.style = new Style(config.style);
         }
-        this.isLayer = true;
-
+        this.style = config.style || new Style();
         Object.assign(this, config);
 
         Object.defineProperty(this, 'id', {

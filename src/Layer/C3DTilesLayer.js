@@ -373,6 +373,9 @@ class C3DTilesLayer extends GeometryLayer {
         if (!this._style) {
             return false;
         }
+        if (!this.object3d) {
+            return false;
+        }
 
         const currentMaterials = [];// list materials used for this update
 

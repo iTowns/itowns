@@ -6,7 +6,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import Label from 'Core/Label';
 import { FEATURE_TYPES } from 'Core/Feature';
-import Style, { readExpression, StyleContext } from 'Core/Style';
+import { readExpression, StyleContext } from 'Core/Style';
 import { ScreenGrid } from 'Renderer/Label2DRenderer';
 
 const context = new StyleContext();
@@ -238,18 +238,11 @@ class LabelLayer extends GeometryLayer {
     convert(data, extent) {
         const labels = [];
 
-        const layerField = this.style && this.style.text && this.style.text.field;
-
         // Converting the extent now is faster for further operation
         extent.as(data.crs, _extent);
         coord.crs = data.crs;
 
-        context.globals = {
-            icon: true,
-            text: true,
-            zoom: extent.zoom,
-        };
-        context.layerStyle = this.style;
+        context.setZoom(extent.zoom);
 
         data.features.forEach((f) => {
             // TODO: add support for LINE and POLYGON
@@ -279,20 +272,20 @@ class LabelLayer extends GeometryLayer {
 
                 context.setGeometry(g);
                 let content;
+                this.style.setContext(context);
+                const layerField = this.style.text && this.style.text.field;
                 if (this.labelDomelement) {
                     content = readExpression(this.labelDomelement, context);
                 } else if (!geometryField && !featureField && !layerField) {
                     // Check if there is an icon, with no text
                     if (!(g.properties.style && (g.properties.style.icon.source || g.properties.style.icon.key))
                         && !(f.style && f.style.icon && (f.style.icon.source || f.style.icon.key))
-                        && !(this.style && this.style.icon && (this.style.icon.source || this.style.icon.key))) {
+                        && !(this.style.icon && (this.style.icon.source || this.style.icon.key))) {
                         return;
                     }
                 }
 
-                const style = Style.applyContext(context);
-
-                const label = new Label(content, coord.clone(), style);
+                const label = new Label(content, coord.clone(), this.style);
 
                 label.layerId = this.id;
                 label.padding = this.margin || label.padding;

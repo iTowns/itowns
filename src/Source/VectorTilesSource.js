@@ -95,10 +95,6 @@ class VectorTilesSource extends TMSSource {
                     this.backgroundLayer = layer;
                 } else if (ffilter(layer)) {
                     const style = Style.setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle);
-                    style.zoom = {
-                        min: layer.minzoom || 0,
-                        max: layer.maxzoom || 24,
-                    };
                     this.styles[layer.id] = style;
 
                     if (!this.layers[layer['source-layer']]) {
