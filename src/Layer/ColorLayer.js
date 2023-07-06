@@ -1,7 +1,6 @@
 import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterColorTile } from 'Renderer/RasterTile';
-import Style from 'Core/Style';
 import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
 
 /**
@@ -84,7 +83,7 @@ class ColorLayer extends RasterLayer {
         deprecatedColorLayerOptions(config);
         super(id, config);
         this.isColorLayer = true;
-        this.style = new Style(config.style);
+        this.style = config.style;
         this.defineLayerProperty('visible', true);
         this.defineLayerProperty('opacity', 1.0);
         this.defineLayerProperty('sequence', 0);
