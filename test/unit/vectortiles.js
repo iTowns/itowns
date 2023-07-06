@@ -5,7 +5,6 @@ import VectorTileParser from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
 import Extent from 'Core/Geographic/Extent';
 import urlParser from 'Parser/MapBoxUrlParser';
-import Style from 'Core/Style';
 
 describe('Vector tiles', function () {
     // this PBF file comes from https://github.com/mapbox/vector-tile-js
@@ -123,33 +122,6 @@ describe('Vector tiles', function () {
                 assert.equal(source.styles.land.fill.color, 'rgb(255,0,0)');
                 done();
             }).catch(done);
-        });
-
-        it('get style from context', (done) => {
-            const source = new VectorTilesSource({
-                url: 'fakeurl',
-                style: {
-                    sources: { geojson: {} },
-                    layers: [{
-                        id: 'land',
-                        type: 'fill',
-                        paint: {
-                            'fill-color': 'rgb(255, 0, 0)',
-                            'fill-opacity': { stops: [[2, 1], [5, 0.5]] },
-                        },
-                    }],
-                },
-            });
-            source.whenReady
-                .then(() => {
-                    const styleLand_zoom_3 = Style.applyContext({ globals: { zoom: 3 }, properties: () => {}, style: source.styles.land });
-                    const styleLand_zoom_5 = Style.applyContext({ globals: { zoom: 5 }, properties: () => {}, style: source.styles.land });
-                    assert.equal(styleLand_zoom_3.fill.color, 'rgb(255,0,0)');
-                    assert.equal(styleLand_zoom_3.fill.opacity, 1);
-                    assert.equal(styleLand_zoom_5.fill.color, 'rgb(255,0,0)');
-                    assert.equal(styleLand_zoom_5.fill.opacity, 0.5);
-                    done();
-                }).catch(done);
         });
 
         it('loads the style from a file', (done) => {

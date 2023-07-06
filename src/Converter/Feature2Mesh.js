@@ -11,6 +11,8 @@ import Style, { StyleContext } from 'Core/Style';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 const context = new StyleContext();
+const defaultStyle = new Style();
+let style;
 
 const dim_ref = new THREE.Vector2();
 const dim = new THREE.Vector2();
@@ -193,7 +195,6 @@ function featureToPoint(feature, options) {
     normal.set(0, 0, 1).multiply(inverseScale);
 
     const pointMaterialSize = [];
-    context.globals = { point: true };
     context.setFeature(feature);
 
     for (const geometry of feature.geometries) {
@@ -209,7 +210,7 @@ function featureToPoint(feature, options) {
             }
 
             coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, v));
-            const style = Style.applyContext(context);
+            style.setContext(context);
             const { base_altitude, color, radius } = style.point;
             coord.z = 0;
 
@@ -253,7 +254,6 @@ function featureToLine(feature, options) {
     geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 
     const lineMaterialWidth = [];
-    context.globals = { stroke: true };
     context.setFeature(feature);
 
     const countIndices = (count - feature.geometries.length) * 2;
@@ -290,7 +290,7 @@ function featureToLine(feature, options) {
             }
 
             coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, v));
-            const style = Style.applyContext(context);
+            style.setContext(context);
             const { base_altitude, color, width } = style.stroke;
             coord.z = 0;
 
@@ -323,7 +323,6 @@ function featureToPolygon(feature, options) {
 
     const batchIds = new Uint32Array(vertices.length / 3);
     const batchId = options.batchId || ((p, id) => id);
-    context.globals = { fill: true };
     context.setFeature(feature);
 
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
@@ -352,7 +351,7 @@ function featureToPolygon(feature, options) {
             }
 
             coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, i));
-            const style = Style.applyContext(context);
+            style.setContext(context);
             const { base_altitude, color } = style.fill;
             coord.z = 0;
 
@@ -412,7 +411,6 @@ function featureToExtrudedPolygon(feature, options) {
 
     let featureId = 0;
 
-    context.globals = { fill: true };
     context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     normal.set(0, 0, 1).multiply(inverseScale);
@@ -439,7 +437,7 @@ function featureToExtrudedPolygon(feature, options) {
 
             coord.copy(context.setLocalCoordinatesFromArray(ptsIn, i));
 
-            const style = Style.applyContext(context);
+            style.setContext(context);
             const { base_altitude, extrusion_height, color } = style.fill;
             coord.z = 0;
 
@@ -529,13 +527,12 @@ function createInstancedMesh(mesh, count, ptsIn) {
  * Convert a [Feature]{@link Feature} of type POINT to a Instanced meshes
  *
  * @param {Object} feature
- * @param {Object} options - options controlling the conversion
  * @returns {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
  */
-function pointsToInstancedMeshes(feature, options) {
+function pointsToInstancedMeshes(feature) {
     const ptsIn = feature.vertices;
     const count = feature.geometries.length;
-    const modelObject = options.layer.style.point.model.object;
+    const modelObject = style.point.model.object;
 
     if (modelObject instanceof THREE.Mesh) {
         return createInstancedMesh(modelObject, count, ptsIn);
@@ -552,9 +549,9 @@ function pointsToInstancedMeshes(feature, options) {
 
 /**
  * Convert a [Feature]{@link Feature} to a Mesh
- *
  * @param {Feature} feature - the feature to convert
  * @param {Object} options - options controlling the conversion
+ *
  * @return {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
  */
 function featureToMesh(feature, options) {
@@ -565,9 +562,9 @@ function featureToMesh(feature, options) {
     let mesh;
     switch (feature.type) {
         case FEATURE_TYPES.POINT:
-            if (options.layer?.style?.point?.model?.object) {
+            if (style.point?.model?.object) {
                 try {
-                    mesh = pointsToInstancedMeshes(feature, options);
+                    mesh = pointsToInstancedMeshes(feature);
                     mesh.isInstancedMesh = true;
                 } catch (e) {
                     mesh = featureToPoint(feature, options);
@@ -580,7 +577,7 @@ function featureToMesh(feature, options) {
             mesh = featureToLine(feature, options);
             break;
         case FEATURE_TYPES.POLYGON:
-            if (options.layer?.style?.fill.extrusion_height) {
+            if (style.fill && Object.keys(style.fill).includes('extrusion_height')) {
                 mesh = featureToExtrudedPolygon(feature, options);
             } else {
                 mesh = featureToPolygon(feature, options);
@@ -594,10 +591,6 @@ function featureToMesh(feature, options) {
         mesh.material.color = new THREE.Color(0xffffff);
     }
     mesh.feature = feature;
-
-    if (options.layer) {
-        mesh.layer = options.layer;
-    }
 
     return mesh;
 }
@@ -614,6 +607,8 @@ export default {
      * @param {function} [options.batchId] - optional function to create batchId attribute.
      * It is passed the feature property and the feature index. As the batchId is using an unsigned int structure on 32 bits,
      * the batchId could be between 0 and 4,294,967,295.
+     * @param {StyleOptions} [options.style] - optional style properties. Only needed if the convert is used without instancing
+     * a layer beforehand.
      * @return {function}
      * @example <caption>Example usage of batchId with featureId.</caption>
      * view.addLayer({
@@ -646,25 +641,28 @@ export default {
 
             if (!options.pointMaterial) {
                 // Opacity and wireframe refered with layer properties
-                // TODO :next step is move these properties to Style
+                // TODO: next step is move these properties to Style
                 options.pointMaterial = ReferLayerProperties(new THREE.PointsMaterial(), this);
                 options.lineMaterial = ReferLayerProperties(new THREE.LineBasicMaterial(), this);
                 options.polygonMaterial = ReferLayerProperties(new THREE.MeshBasicMaterial(), this);
-                // options.layer.style will be used later on to define the final style.
-                // In the case we didn't instanciate the layer before the convert, we can directly
-                // pass a style using options.style.
-                // This is usually done in some tests and if you want to use Feature2Mesh.convert()
-                // as in examples/source_file_gpx_3d.html.
-                options.layer = this || { style: options.style };
             }
-            context.layerStyle = options.layer.style;
+
+            // In the case we didn't instanciate the layer (this) before the convert, we can pass
+            // style properties (@link StyleOptions) using options.style.
+            // This is usually done in some tests and if you want to use Feature2Mesh.convert()
+            // as in examples/source_file_gpx_3d.html.
+            style = this?.style || (options.style ? new Style(options.style) :  defaultStyle);
 
             context.setCollection(collection);
 
             const features = collection.features;
             if (!features || features.length == 0) { return; }
 
-            const meshes = features.map(feature => featureToMesh(feature, options));
+            const meshes = features.map((feature) => {
+                const mesh = featureToMesh(feature, options);
+                mesh.layer = this;
+                return mesh;
+            });
             const featureNode = new FeatureMesh(meshes, collection);
 
             return featureNode;

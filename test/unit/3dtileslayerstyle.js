@@ -4,7 +4,6 @@ import * as THREE from 'three';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import Extent from 'Core/Geographic/Extent';
 import PlanarView from 'Core/Prefab/PlanarView';
-import Style from 'Core/Style';
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 import C3DTilesSource from 'Source/C3DTilesSource';
 import C3DTilesLayer from 'Layer/C3DTilesLayer';
@@ -35,6 +34,27 @@ describe('3DTilesLayer Style', () => {
         view,
     );
 
+    $3dTilesLayer.style = {
+        fill: {
+            color: (c3DTileFeature) => {
+                if (c3DTileFeature.batchId > 1) {
+                    return 'red';
+                } else {
+                    return 'blue';
+                }
+            },
+            opacity: (c3DTileFeature) => {
+                if (c3DTileFeature.getInfo().something) {
+                    return 0.1;
+                } else if (c3DTileFeature.userData.something === 'random') {
+                    return 1;
+                } else {
+                    return 0.5;
+                }
+            },
+        },
+    };
+
     // Create a 'fake' tile content for this test purpose
     const createTileContent = (tileId) => {
         const geometry = new THREE.SphereGeometry(15, 32, 16);
@@ -60,28 +80,6 @@ describe('3DTilesLayer Style', () => {
 
         return result;
     };
-
-    $3dTilesLayer.style = new Style({
-        fill: {
-            color: (c3DTileFeature) => {
-                if (c3DTileFeature.batchId > 1) {
-                    return 'red';
-                } else {
-                    return 'blue';
-                }
-            },
-            opacity: (c3DTileFeature) => {
-                if (c3DTileFeature.getInfo().something) {
-                    return 0.1;
-                } else if (c3DTileFeature.userData.something === 'random') {
-                    return 1;
-                } else {
-                    return 0.5;
-                }
-            },
-        },
-    });
-
 
     it('Load tile content', function () {
         for (let index = 0; index < 10; index++) {
