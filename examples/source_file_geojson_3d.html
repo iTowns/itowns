@@ -57,12 +57,12 @@
                 transparent: true,
                 opacity: 0.7,
                 zoom: { min: 10 },
-                style: new itowns.Style({
+                style: {
                     fill: {
                         color: new itowns.THREE.Color(0xbbffbb),
                         extrusion_height: 80,
                     }
-                })
+                }
             });
 
             view.addLayer(marne).then(function menu(layer) {

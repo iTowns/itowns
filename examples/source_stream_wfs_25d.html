@@ -152,12 +152,12 @@
                 source: lyonTclBusSource,
                 zoom: { min: 2 },
 
-                style: new itowns.Style({
+                style: {
                     stroke: {
                         base_altitude: altitudeLine,
                         width: 5,
                     }
-                })
+                }
             });
 
             view.addLayer(lyonTclBusLayer);
@@ -236,13 +236,13 @@
                 source: wfsBuildingSource,
                 zoom: { min: 4 },
 
-                style: new itowns.Style({
+                style: {
                     fill: {
                         color: colorBuildings,
                         base_altitude: altitudeBuildings,
                         extrusion_height: extrudeBuildings,
                     }
-                })
+                }
             });
 
             view.addLayer(wfsBuildingLayer);
@@ -256,7 +256,7 @@
                 format: 'application/json',
             });
 
-            var wfsCartoStyle = new itowns.Style({
+            var wfsCartoStyle = {
                 zoom: { min: 0, max: 20 },
                 text: {
                     field: '{toponyme}',
@@ -266,7 +266,7 @@
                     haloColor: 'rgba(20,20,20, 0.8)',
                     haloWidth: 3,
                 },
-            });
+            };
 
             var wfsCartoLayer = new itowns.LabelLayer('wfsCarto', {
                 source: wfsCartoSource,

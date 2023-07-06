@@ -69,7 +69,7 @@
 
                 return view.addLayer(new itowns.ColorLayer('velib', {
                     source: velibSource,
-                    style: new itowns.Style({
+                    style: {
                         zoom: { min: 10, max: 20 },
                         point: { color: 'white', line: 'green' },
                         text: {
@@ -79,7 +79,7 @@
                             haloWidth: 1,
                             font: ['monospace'],
                         }
-                    }),
+                    },
                     addLabelLayer: true,
                 }));
             }).then((layer => {

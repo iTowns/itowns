@@ -63,10 +63,10 @@
 
     view.addLayer(new itowns.ColorLayer('Urban Area', {
         source: sourceFromFormat,
-        style: new itowns.Style({
+        style: {
             fill: { color: 'red', opacity: 0.5 },
             stroke: { color: 'red' },
-        }),
+        },
     })).then(debugMenu.addLayerGUI.bind(debugMenu));
 
 

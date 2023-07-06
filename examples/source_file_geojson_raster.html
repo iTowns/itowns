@@ -71,7 +71,7 @@
                 name: 'ariege',
                 transparent: true,
                 source: ariegeSource,
-                style: new itowns.Style({
+                style: {
                     fill: {
                         color: 'orange',
                         opacity: 0.5,
@@ -79,11 +79,10 @@
                     stroke: {
                         color: 'white',
                     },
-                }),
+                },
             });
             // Add the Ariege ColorLayer to the view and grant it a tooltip
             view.addLayer(ariegeLayer).then(FeatureToolTip.addLayer);
-
 
             // Declare the source for the data on Pyrenees Orientales area
             const pyoSource = new itowns.FileSource({
@@ -96,7 +95,7 @@
                 name: 'pyrenees-orientales',
                 transparent: true,
                 source: pyoSource,
-                style: new itowns.Style({
+                style: {
                     fill: {
                         pattern: 'images/cross.png',
                         opacity: 0.8,
@@ -104,7 +103,7 @@
                     stroke: {
                         color:'IndianRed',
                     },
-                }),
+                },
             });
             // Add The Pyrennees Orientales ColorLayer to the view and grant it a tooltip
             view.addLayer(pyoLayer).then(FeatureToolTip.addLayer);

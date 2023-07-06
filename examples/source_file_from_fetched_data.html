@@ -70,9 +70,9 @@
 
         view.addLayer(new itowns.ColorLayer('Roads', {
             source: sourceFromFetchedData,
-            style: new itowns.Style({
+            style: {
                 stroke: { color: 'yellow' },
-            }),
+            },
         })).then(debugMenu.addLayerGUI.bind(debugMenu));
     });
 

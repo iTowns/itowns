@@ -82,9 +82,9 @@
 
         view.addLayer(new itowns.ColorLayer('Trains', {
             source: sourceFromParsedData,
-            style: new itowns.Style({
+            style: {
                 stroke: { color: 'black', width: 2 },
-            }),
+            },
         })).then(debugMenu.addLayerGUI.bind(debugMenu));
     });
 

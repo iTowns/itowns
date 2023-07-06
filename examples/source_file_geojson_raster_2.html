@@ -89,7 +89,7 @@
             // Create a ColorLayer with the earthquake information
             const earthquakeLayer = new itowns.ColorLayer('earthquakes', {
                 source: earthquakeSource,
-                style: new itowns.Style({
+                style: {
                     point: {
                         color: function (p) { return p.alert; },
                         radius: function (p) { return p.mag; },
@@ -103,7 +103,7 @@
                         anchor: 'bottom',
                         offset: offset,
                     },
-                }),
+                },
                 addLabelLayer: true,
             });
 
