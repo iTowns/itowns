@@ -61,6 +61,15 @@
 
             var waypointGeometry = new itowns.THREE.BoxGeometry(1, 1, 80);
             var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
+            const style = {
+                stroke: {
+                    color: 'red',
+                    width: 2,
+                },
+                point: {
+                    color: 'white',
+                }
+            };
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
@@ -72,18 +81,9 @@
                         out: {
                             crs: view.referenceCrs,
                             structure: '3d',
-                            style: new itowns.Style({
-                                stroke: {
-                                    color: 'red',
-                                    width: 2,
-                                },
-                                point: {
-                                    color: 'white',
-                                }
-                            }),
                         }
                     }))
-                    .then(itowns.Feature2Mesh.convert())
+                    .then(itowns.Feature2Mesh.convert({style}))
                     .then(function (mesh) {
                         if (mesh) {
                             mesh.updateMatrixWorld();

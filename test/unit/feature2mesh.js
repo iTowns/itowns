@@ -3,7 +3,6 @@ import proj4 from 'proj4';
 import assert from 'assert';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import Feature2Mesh from 'Converter/Feature2Mesh';
-import Style from 'Core/Style';
 
 const geojson = require('../data/geojson/holes.geojson.json');
 const geojson2 = require('../data/geojson/simple.geojson.json');
@@ -58,63 +57,66 @@ describe('Feature2Mesh', function () {
     const parsed3 = GeoJsonParser.parse(geojson3, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false, structure: '3d' } });
 
     it('rect mesh area should match geometry extent', function (done) {
-        parsed.then((collection) => {
-            const mesh = Feature2Mesh.convert()(collection).meshes;
-            const extentSize = collection.extent.planarDimensions();
+        parsed
+            .then((collection) => {
+                const mesh = Feature2Mesh.convert()(collection).meshes;
+                const extentSize = collection.extent.planarDimensions();
 
-            assert.equal(
-                extentSize.x * extentSize.y,
-                computeAreaOfMesh(mesh.children[0]));
-            done();
-        }).catch(done);
+                assert.equal(
+                    extentSize.x * extentSize.y,
+                    computeAreaOfMesh(mesh.children[0]));
+                done();
+            }).catch(done);
     });
 
     it('square mesh area should match geometry extent minus holes', function (done) {
-        parsed.then((collection) => {
-            const mesh = Feature2Mesh.convert()(collection).meshes;
+        parsed
+            .then((collection) => {
+                const mesh = Feature2Mesh.convert()(collection).meshes;
 
-            const noHoleArea = computeAreaOfMesh(mesh.children[0]);
-            const holeArea = computeAreaOfMesh(mesh.children[1]);
-            const meshWithHoleArea = computeAreaOfMesh(mesh.children[2]);
+                const noHoleArea = computeAreaOfMesh(mesh.children[0]);
+                const holeArea = computeAreaOfMesh(mesh.children[1]);
+                const meshWithHoleArea = computeAreaOfMesh(mesh.children[2]);
 
-            assert.equal(
-                noHoleArea - holeArea,
-                meshWithHoleArea);
-            done();
-        }).catch(done);
+                assert.equal(
+                    noHoleArea - holeArea, meshWithHoleArea,
+                );
+                done();
+            }).catch(done);
     });
 
     it('convert points, lines and mesh', function (done) {
-        parsed2.then((collection) => {
-            const mesh = Feature2Mesh.convert()(collection).meshes;
-            assert.equal(mesh.children[0].type, 'Points');
-            assert.equal(mesh.children[1].type, 'LineSegments');
-            assert.equal(mesh.children[2].type, 'Mesh');
-            done();
-        }).catch(done);
+        parsed2
+            .then((collection) => {
+                const mesh = Feature2Mesh.convert()(collection).meshes;
+                assert.equal(mesh.children[0].type, 'Points');
+                assert.equal(mesh.children[1].type, 'LineSegments');
+                assert.equal(mesh.children[2].type, 'Mesh');
+                done();
+            }).catch(done);
     });
 
     it('convert to instanced meshes', function (done) {
-        const styleModel3D = new Style({
+        const styleModel3D = {
             point: {
                 model: { object: makeTree() },
             },
-        });
-        parsed3.then((collection) => {
-            for (const feat of collection.features) { feat.style = styleModel3D; }
-            const mesh = Feature2Mesh.convert()(collection).meshes;
+        };
+        parsed3
+            .then((collection) => {
+                const mesh = Feature2Mesh.convert({ style: styleModel3D })(collection).meshes;
 
-            let isInstancedMesh = false;
-            mesh.traverse((obj) => {
-                if (obj.isInstancedMesh) {
-                    isInstancedMesh = true;
-                    return null;
-                }
-            },
-            );
-            assert.ok(isInstancedMesh);
-            assert.equal(mesh.children.length, 3);
-            done();
-        }).catch(done);
+                let isInstancedMesh = false;
+                mesh.traverse((obj) => {
+                    if (obj.isInstancedMesh) {
+                        isInstancedMesh = true;
+                        return null;
+                    }
+                },
+                );
+                assert.ok(isInstancedMesh);
+                assert.equal(mesh.children.length, 3);
+                done();
+            }).catch(done);
     });
 });

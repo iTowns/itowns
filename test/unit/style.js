@@ -287,7 +287,7 @@ describe('Style', function () {
                 'label-color': '#eba55f',
                 'icon-color': '#eba55f',
             };
-            const style = Style.setFromProperties(properties, FEATURE_TYPES.POINT);
+            const style = Style.setFromProperties(properties, { type: FEATURE_TYPES.POINT });
             assert.equal(style.point.radius, 2);
             assert.equal(style.text.color, '#eba55f');
             assert.equal(style.icon.color, '#eba55f');
@@ -297,7 +297,7 @@ describe('Style', function () {
                 fill: '#eba55f',
                 stroke: '#eba55f',
             };
-            const style = Style.setFromProperties(properties, FEATURE_TYPES.POLYGON);
+            const style = Style.setFromProperties(properties, { type: FEATURE_TYPES.POLYGON });
             assert.equal(style.stroke.color, '#eba55f');
             assert.equal(style.fill.color, '#eba55f');
         });
