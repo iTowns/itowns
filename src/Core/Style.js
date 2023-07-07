@@ -674,11 +674,12 @@ class Style {
     /**
      * set Style from (geojson-like) properties.
      * @param {Object} properties (geojson-like) properties.
-     * @param {Number} type
+     * @param {FeatureContext} featCtx the context of the feature
      *
      * @returns {StyleOptions} containing all properties for itowns.Style
      */
-    static setFromProperties(properties, type) {
+    static setFromProperties(properties, featCtx) {
+        const type = featCtx.type;
         const style = {};
         if (type === FEATURE_TYPES.POINT) {
             const point = {

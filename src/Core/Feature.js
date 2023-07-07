@@ -251,7 +251,7 @@ class Feature {
         }
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
-        this.style = new Style({}, collection.style);
+        this.style = Style.setFromProperties;
     }
     /**
      * Instance a new {@link FeatureGeometry}  and push in {@link Feature}.
