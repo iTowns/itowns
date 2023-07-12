@@ -21,10 +21,18 @@
         <script src="js/GUI/GuiTools.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
 
-        <!-- Import ThreeLoader plugin to get ColladaLoader from three.js -->
-        <script src="js/ThreeLoader.js"></script>
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "../node_modules/three/build/three.module.js",
+                    "three/addons/": "../node_modules/three/examples/jsm/"
+                }
+            }
+        </script>
 
-        <script type="text/javascript">
+        <script type="module">
+
+            import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 
 
 
@@ -79,35 +87,35 @@
 
             // ---------- DISPLAY COLLADA DATA : ----------
 
-            // ThreeLoader can load each format proposed in ThreeJs examples loaders : 
-            // https://github.com/mrdoob/three.js/tree/dev/examples/js/loaders
-            // Note : As this previous folder has been removed in three r148,
-            // TheeLoader will only use loaders from three r147 version. This
-            // is a temporary solution and shall be updated.
-            const promiseCollada = ThreeLoader.load(
-                'Collada', 
-                'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae',
-            ).then(collada => {
-                const model = collada.scene;
+            const colladaLoader = new ColladaLoader(
+                new itowns.THREE.LoadingManager(),
+            );
 
-                // building coordinate
-                const coord = new itowns.Coordinates(
-                    'EPSG:4326', 4.2165, 44.844, 1417,
-                );
+            colladaLoader.load(
+                'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/'
+                    + 'master/models/collada/building.dae',
+                (collada) => {
+                    const model = collada.scene;
 
-                model.position.copy(coord.as(view.referenceCrs));
-                // align up vector with geodesic normal
-                model.lookAt(model.position.clone().add(coord.geodesicNormal));
-                // user rotate building to align with ortho image
-                model.rotateZ(-Math.PI * 0.2);
-                model.scale.set(1.2, 1.2, 1.2);
+                    // building coordinate
+                    const coord = new itowns.Coordinates(
+                        'EPSG:4326', 4.2165, 44.844, 1417,
+                    );
 
-                // update coordinate of the mesh
-                model.updateMatrixWorld();
+                    model.position.copy(coord.as(view.referenceCrs));
+                    // align up vector with geodesic normal
+                    model.lookAt(model.position.clone().add(coord.geodesicNormal));
+                    // user rotate building to align with ortho image
+                    model.rotateZ(-Math.PI * 0.2);
+                    model.scale.set(1.2, 1.2, 1.2);
 
-                view.scene.add(model);
-                view.notifyChange();
-            });
+                    // update coordinate of the mesh
+                    model.updateMatrixWorld();
+
+                    view.scene.add(model);
+                    view.notifyChange();
+                },
+            );
 
         </script>
     </body>
