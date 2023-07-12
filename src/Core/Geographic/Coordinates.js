@@ -65,7 +65,7 @@ class Coordinates {
      * You can find most projections and their proj4 code at [epsg.io]{@link https://epsg.io/}
      * @param {number|Array<number>|Coordinates|THREE.Vector3} [v0=0] -
      * x or longitude value, or a more complex one: it can be an array of three
-     * numbers, being x/lon, x/lat, z/alt, or it can be `THREE.Vector3`. It can
+     * numbers, being x/lon, y/lat, z/alt, or it can be `THREE.Vector3`. It can
      * also simply be a Coordinates.
      * @param {number} [v1=0] - y or latitude value.
      * @param {number} [v2=0] - z or altitude value.

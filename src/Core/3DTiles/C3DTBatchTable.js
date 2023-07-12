@@ -1,6 +1,6 @@
 import utf8Decoder from 'Utils/Utf8Decoder';
 import binaryPropertyAccessor from './utils/BinaryPropertyAccessor';
-import C3DTilesTypes from './C3DTilesTypes';
+import { C3DTilesTypes } from './C3DTilesEnums';
 
 /** @classdesc
  * A 3D Tiles
