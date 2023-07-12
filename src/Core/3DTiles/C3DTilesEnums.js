@@ -8,10 +8,14 @@
  * @property {String} batchtable - value: 'batchtable'
  * @property {String} boundingVolume - value: 'bounding volume'
  */
-const C3DTilesTypes = {
+export const C3DTilesTypes = {
     tileset: 'tileset',
     batchtable: 'batchtable',
     boundingVolume: 'boundingVolume',
 };
 
-export default C3DTilesTypes;
+export const C3DTilesBoundingVolumeTypes = {
+    region: 'region',
+    box: 'box',
+    sphere: 'sphere',
+};

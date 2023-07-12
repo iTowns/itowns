@@ -1,8 +1,12 @@
 import * as THREE from 'three';
 import C3DTBoundingVolume from './C3DTBoundingVolume';
-import C3DTilesTypes from './C3DTilesTypes';
+import { C3DTilesTypes } from './C3DTilesEnums';
 
-const inverseTileTransform = new THREE.Matrix4();
+// Inverse transform of a tile, computed from the tile transform and used when parsing the bounding volume of a tile
+// if the bounding volume is a region (https://github.com/CesiumGS/3d-tiles/tree/main/specification#region) which is
+// in global coordinates and other bounding volumes are not. To harmonize, we transform back the bounding volume region
+// to a reference local to the tile.
+const tileMatrixInverse = new THREE.Matrix4();
 
 /** @classdesc
  * A 3D Tiles
@@ -74,23 +78,20 @@ class C3DTileset {
             }
         }
 
-        // inverseTileTransform is only used for volume.region
+        // tileMatrixInverse is only used for volume.region
         if ((tile.viewerRequestVolume && tile.viewerRequestVolume.region)
             || (tile.boundingVolume && tile.boundingVolume.region)) {
             if (tile._worldFromLocalTransform) {
-                inverseTileTransform.copy(tile._worldFromLocalTransform).invert();
+                tileMatrixInverse.copy(tile._worldFromLocalTransform).invert();
             } else {
-                inverseTileTransform.identity();
+                tileMatrixInverse.identity();
             }
         }
 
         tile.viewerRequestVolume = tile.viewerRequestVolume ?
-            new C3DTBoundingVolume(tile.viewerRequestVolume,
-                inverseTileTransform,
-                registeredExtensions) : undefined;
+            new C3DTBoundingVolume(tile.viewerRequestVolume, tileMatrixInverse, registeredExtensions) : null;
         tile.boundingVolume = tile.boundingVolume ?
-            new C3DTBoundingVolume(tile.boundingVolume,
-                inverseTileTransform, registeredExtensions) : undefined;
+            new C3DTBoundingVolume(tile.boundingVolume, tileMatrixInverse, registeredExtensions) : null;
 
         this.tiles.push(tile);
         tile.tileId = this.tiles.length - 1;

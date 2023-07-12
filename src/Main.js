@@ -101,6 +101,6 @@ export { default as C3DTileset } from './Core/3DTiles/C3DTileset';
 export { default as C3DTBoundingVolume } from './Core/3DTiles/C3DTBoundingVolume';
 export { default as C3DTBatchTable } from './Core/3DTiles/C3DTBatchTable';
 export { default as C3DTExtensions } from './Core/3DTiles/C3DTExtensions';
-export { default as C3DTilesTypes } from './Core/3DTiles/C3DTilesTypes';
+export { C3DTilesTypes, C3DTilesBoundingVolumeTypes } from './Core/3DTiles/C3DTilesEnums';
 export { default as C3DTBatchTableHierarchyExtension } from './Core/3DTiles/C3DTBatchTableHierarchyExtension';
 export { process3dTilesNode, $3dTilesCulling, $3dTilesSubdivisionControl } from 'Process/3dTilesProcessing';

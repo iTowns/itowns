@@ -1,6 +1,6 @@
 import proj4 from 'proj4';
 import assert from 'assert';
-import { Matrix4, Object3D } from 'three';
+import { Matrix4, Object3D, Sphere } from 'three';
 import Camera from 'Renderer/Camera';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { computeNodeSSE } from 'Process/3dTilesProcessing';
@@ -13,9 +13,9 @@ function tilesetWithRegion(transformMatrix) {
         root: {
             boundingVolume: {
                 region: [
-                    -0.1, -0.1,
-                    0.1, 0.1,
-                    0, 0],
+                    -0.01, -0.01,
+                    0.01, 0.01,
+                    -10, 10],
             },
         },
     };
@@ -57,9 +57,9 @@ function tilesetWithSphere(transformMatrix) {
     return tileset;
 }
 
-describe('Distance computation using boundingVolume.region', function () {
+describe('Distance computation for boundingVolume region', function () {
     const camera = new Camera('EPSG:4978', 100, 100);
-    camera.camera3D.position.copy(new Coordinates('EPSG:4326', 0, 0, 10000).as('EPSG:4978').toVector3());
+    camera.camera3D.position.copy(new Coordinates('EPSG:4326', 0, 0, 100000).as('EPSG:4978').toVector3());
     camera.camera3D.updateMatrixWorld(true);
 
     it('should compute distance correctly', function () {
@@ -70,7 +70,8 @@ describe('Distance computation using boundingVolume.region', function () {
 
         computeNodeSSE(camera, tile);
 
-        assert.ok(compareWithEpsilon(tile.distance, camera.position().as('EPSG:4326').altitude, 10e-5));
+        const expectedDist = Math.max(0.0, tile.boundingVolume.volume.distanceToPoint(camera.camera3D.position));
+        assert.ok(compareWithEpsilon(tile.distance, expectedDist, 10e-5));
     });
 
     it('should not be affected by transform', function () {
@@ -83,11 +84,15 @@ describe('Distance computation using boundingVolume.region', function () {
 
         computeNodeSSE(camera, tile);
 
-        assert.ok(compareWithEpsilon(tile.distance, camera.position().as('EPSG:4326').altitude, 10e-5));
+        const boundingVolumeSphere = new Sphere();
+        boundingVolumeSphere.copy(tile.boundingVolume.volume);
+        boundingVolumeSphere.applyMatrix4(tile.matrixWorld);
+        const expectedDist = Math.max(0.0, boundingVolumeSphere.distanceToPoint(camera.camera3D.position));
+        assert.ok(compareWithEpsilon(tile.distance, expectedDist, 10e-5));
     });
 });
 
-describe('Distance computation using boundingVolume.box', function () {
+describe('Distance computation for boundingVolume box', function () {
     proj4.defs('EPSG:3946',
         '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
@@ -125,7 +130,7 @@ describe('Distance computation using boundingVolume.box', function () {
     });
 });
 
-describe('Distance computation using boundingVolume.sphere', function () {
+describe('Distance computation for boundingVolume sphere', function () {
     proj4.defs('EPSG:3946',
         '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 

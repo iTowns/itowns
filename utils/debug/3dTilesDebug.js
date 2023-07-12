@@ -1,109 +1,75 @@
 import * as THREE from 'three';
 import View from 'Core/View';
 import GeometryLayer from 'Layer/GeometryLayer';
+import { C3DTilesBoundingVolumeTypes } from 'Core/3DTiles/C3DTilesEnums';
 import { PNTS_SHAPE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
 import GeometryDebug from './GeometryDebug';
-import OBBHelper from './OBBHelper';
 
 const bboxMesh = new THREE.Mesh();
 
 export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) {
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, _3dTileslayer);
 
-    const regionBoundingBoxParent = new THREE.Group();
-    view.scene.add(regionBoundingBoxParent);
-
     // add wireframe
     GeometryDebug.addWireFrameCheckbox(gui, view, _3dTileslayer);
 
     // Bounding box control
-    const obb_layer_id = `${_3dTileslayer.id}_obb_debug`;
+    const boundingVolumeID = `${_3dTileslayer.id}_bounding_volume_debug`;
 
     function debugIdUpdate(context, layer, node) {
-        const metadata = node.userData.metadata;
+        // Tile (https://github.com/CesiumGS/3d-tiles/blob/main/specification/schema/tile.schema.json) containing
+        // metadata for the tile
+        const tile = node.userData.metadata;
 
-        let helper = node.userData.obb;
+        // Get helper from the node if it has already been computed
+        let helper = node.userData.boundingVolumeHelper;
 
-        if (!layer.visible) {
-            if (helper) {
-                helper.visible = false;
-                if (typeof helper.setMaterialVisibility === 'function') {
-                    helper.setMaterialVisibility(false);
-                }
-            }
+        // Hide bounding volumes if 3D Tiles layer is hidden
+        if (helper) {
+            helper.visible = !!(layer.visible && node.visible);
             return;
         }
 
-        if (node.visible && metadata.boundingVolume) {
-            if (!helper) {
-                // 3dtiles with region
-                if (metadata.boundingVolume.region) {
-                    helper = new OBBHelper(metadata.boundingVolume.region, `id:${node.id}`);
-                    regionBoundingBoxParent.add(helper);
-                    helper.updateMatrixWorld(true);
-                // 3dtiles with box
-                } else if (metadata.boundingVolume.box) {
-                    bboxMesh.geometry.boundingBox = metadata.boundingVolume.box;
-                    helper = new THREE.BoxHelper(bboxMesh);
-                    helper.material.linewidth = 2;
-                // 3dtiles with Sphere
-                } else if (metadata.boundingVolume.sphere) {
-                    const geometry = new THREE.SphereGeometry(metadata.boundingVolume.sphere.radius, 32, 32);
-                    const material = new THREE.MeshBasicMaterial({ wireframe: true });
-                    helper = new THREE.Mesh(geometry, material);
-                    helper.position.copy(metadata.boundingVolume.sphere.center);
-                }
-
-                if (helper) {
-                    helper.layer = layer;
-                    // add the ability to hide all the debug obj for one layer at once
-                    const l3js = layer.threejsLayer;
-                    helper.layers.set(l3js);
-                    if (helper.children.length) {
-                        helper.children[0].layers.set(l3js);
-                    }
-                    node.userData.obb = helper;
-                    helper.updateMatrixWorld();
-                }
-
-                if (helper && !metadata.boundingVolume.region) {
-                    // compensate B3dm orientation correction
+        if (layer.visible && node.visible && tile.boundingVolume) {
+            if (tile.boundingVolume.initialVolumeType === C3DTilesBoundingVolumeTypes.box) {
+                bboxMesh.geometry.boundingBox = tile.boundingVolume.volume;
+                helper = new THREE.BoxHelper(bboxMesh);
+                helper.material.linewidth = 2;
+                // compensate GLTF orientation correction based on gltfUpAxis only for b3dm tiles
+                if (tile.content?.uri && tile.content?.uri.endsWith('b3dm')) {
                     const gltfUpAxis = _3dTileslayer.tileset.asset.gltfUpAxis;
                     if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
                         helper.rotation.x = -Math.PI * 0.5;
                     } else if (gltfUpAxis === 'X') {
                         helper.rotation.z = -Math.PI * 0.5;
                     }
-
-                    // Add helper to parent to apply the correct transformation
-                    node.parent.add(helper);
                     helper.updateMatrix();
-                    helper.updateMatrixWorld(true);
                 }
+            } else if (tile.boundingVolume.initialVolumeType === C3DTilesBoundingVolumeTypes.sphere ||
+                       tile.boundingVolume.initialVolumeType === C3DTilesBoundingVolumeTypes.region) {
+                const geometry = new THREE.SphereGeometry(tile.boundingVolume.volume.radius, 32, 32);
+                const material = new THREE.MeshBasicMaterial({ wireframe: true, color: Math.random() * 0xffffff });
+                helper = new THREE.Mesh(geometry, material);
+            } else {
+                console.warn(`[3D Tiles Debug]: Unknown bounding volume: ${tile.boundingVolume}`);
+                return;
             }
 
-            if (helper) {
-                helper.visible = true;
-                if (typeof helper.setMaterialVisibility === 'function') {
-                    helper.setMaterialVisibility(true);
-                }
-            }
-        } else if (helper) {
-            helper.visible = false;
-            if (typeof helper.setMaterialVisibility === 'function') {
-                helper.setMaterialVisibility(false);
-            }
+            node.userData.boundingVolumeHelper = helper;
+
+            node.parent.add(helper);
+            helper.updateMatrixWorld(true);
         }
     }
 
-    const obbLayer = new GeometryLayer(obb_layer_id, new THREE.Object3D(), {
+    const boundingVolumeLayer = new GeometryLayer(boundingVolumeID, new THREE.Object3D(), {
         update: debugIdUpdate,
         visible: false,
         cacheLifeTime: Infinity,
         source: false,
     });
 
-    View.prototype.addLayer.call(view, obbLayer, _3dTileslayer).then((l) => {
+    View.prototype.addLayer.call(view, boundingVolumeLayer, _3dTileslayer).then((l) => {
         gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
             view.notifyChange(view.camera3D);
         });
@@ -113,6 +79,10 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
     gui.add(_3dTileslayer, 'sseThreshold', 0, 100).name('sseThreshold').onChange(() => {
         view.notifyChange(view.camera3D);
     });
+    gui.add({ frozen: _3dTileslayer.frozen }, 'frozen').onChange(((value) => {
+        _3dTileslayer.frozen = value;
+        view.notifyChange(_3dTileslayer);
+    }));
     gui.add(_3dTileslayer, 'pntsShape', PNTS_SHAPE).name('Points Shape').onChange(() => {
         view.notifyChange(view.camera.camera3D);
     });
