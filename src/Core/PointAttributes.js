@@ -1,11 +1,8 @@
-import attributes from 'three/addons/renderers/common/Attributes';
-
 /**
  * Some types of possible point attribute data formats
  *
  * @class
  */
-// Inspired by https://github.com/potree/potree/blob/develop/src/loader/PointAttributes.js
 const PointAttributeTypes = {
     DATA_TYPE_DOUBLE: { ordinal: 0, name: 'double', size: 8 },
     DATA_TYPE_FLOAT: { ordinal: 1, name: 'float',  size: 4 },
@@ -114,8 +111,9 @@ export class PointAttributes {
     }
 
     hasNormals() {
-        for (let index = 0; index < attributes.length; index++) {
-            const pointAttribute = this.attributes[this.attributes[index]];
+        for (let index = 0; index < this.attributes.length; index++) {
+            const name = this.attributes[index];
+            const pointAttribute = this.attributes[name];
             if (pointAttribute === PointAttribute.NORMAL_SPHEREMAPPED ||
                 pointAttribute === PointAttribute.NORMAL_FLOATS ||
                 pointAttribute === PointAttribute.NORMAL ||

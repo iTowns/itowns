@@ -31,6 +31,10 @@ const include = [
     path.resolve(__dirname, 'utils'),
 ];
 
+const exclude = [
+    path.resolve(__dirname, 'src/Libs'),
+];
+
 module.exports = () => {
     const babelLoaderOptions = [];
     if (!noInline) {
@@ -81,6 +85,7 @@ module.exports = () => {
         plugins: [
             new ESLintPlugin({
                 files: include,
+				exclude
             }),
             // Prevent the generation of module fs for import on copc dependency
             // See https://webpack.js.org/plugins/ignore-plugin/

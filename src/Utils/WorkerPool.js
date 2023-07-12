@@ -4,7 +4,7 @@ export const workerType = {
     DECODER_WORKER: 'DECODER_WORKER',
 };
 
-export default class WorkerPool {
+class WorkerPool {
     constructor() {
         this.workers = {};
     }
@@ -44,3 +44,5 @@ export default class WorkerPool {
         this.workers[type].push(worker);
     }
 }
+
+export default WorkerPool;

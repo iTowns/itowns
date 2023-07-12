@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import {PointAttributes, PointAttribute, PointAttributeTypes} from "../../Core/PointAttributes";
-import {BrotliDecode} from "../../../libs/brotli/decode";
+import {BrotliDecode} from "../../Libs/brotli/decode";
 
 const typedArrayMapping = {
     "int8":   Int8Array,
