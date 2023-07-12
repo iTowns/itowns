@@ -74,6 +74,7 @@ jobs:
                 dist/**/*.js
                 examples
                 buildDocs
+                node_modules/three
 
 
   # Publish NPM package
@@ -147,9 +148,11 @@ jobs:
           mkdir -p itowns/dist
           mkdir -p itowns/potree/build
           mkdir -p itowns/potree/libs
+          mkdir -p itowns/node_modules
           cp -R dist/*.js itowns/dist/
           cp -R examples itowns/
-          cp -R buildDocs itowns/docs
+          cp -R buildDocs itowns/docs/
+          cp -R node_modules/three itowns/node_modules/
 
       # When deploying a release, we copy itowns bundles in dev folder to be published on
       # iTowns/itowns.github.io. This is because we can't publish both a release version
