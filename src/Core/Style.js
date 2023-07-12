@@ -27,27 +27,6 @@ function mapPropertiesFromContext(mainKey, from, to, context) {
     }
 }
 
-function rgba2rgb(orig) {
-    if (!orig) {
-        return {};
-    } else if (orig.stops || orig.expression) {
-        return { color: orig };
-    } else if (typeof orig == 'string') {
-        const result = orig.match(/(?:((hsl|rgb)a? *\(([\d.%]+(?:deg|g?rad|turn)?)[ ,]*([\d.%]+)[ ,]*([\d.%]+)[ ,/]*([\d.%]*)\))|(#((?:[\d\w]{3}){1,2})([\d\w]{1,2})?))/i);
-        if (!result) {
-            return { color: orig, opacity: 1.0 };
-        } else if (result[7]) {
-            let opacity = 1.0;
-            if (result[9]) {
-                opacity = parseInt(result[9].length == 1 ? `${result[9]}${result[9]}` : result[9], 16) * inv255;
-            }
-            return { color: `#${result[8]}`, opacity };
-        } else if (result[0]) {
-            return { color: `${result[2]}(${result[3]},${result[4]},${result[5]})`, opacity: (Number(result[6]) || 1.0) };
-        }
-    }
-}
-
 export function readExpression(property, ctx) {
     if (property != undefined) {
         if (property.expression) {
@@ -65,6 +44,27 @@ export function readExpression(property, ctx) {
             return property(ctx.properties());
         } else {
             return property;
+        }
+    }
+}
+
+function rgba2rgb(orig) {
+    if (!orig) {
+        return {};
+    } else if (orig.stops || orig.expression) {
+        return { color: orig };
+    } else if (typeof orig == 'string') {
+        const result = orig.match(/(?:((hsl|rgb)a? *\(([\d.%]+(?:deg|g?rad|turn)?)[ ,]*([\d.%]+)[ ,]*([\d.%]+)[ ,/]*([\d.%]*)\))|(#((?:[\d\w]{3}){1,2})([\d\w]{1,2})?))/i);
+        if (!result) {
+            return { color: orig, opacity: 1.0 };
+        } else if (result[7]) {
+            let opacity = 1.0;
+            if (result[9]) {
+                opacity = parseInt(result[9].length == 1 ? `${result[9]}${result[9]}` : result[9], 16) * inv255;
+            }
+            return { color: `#${result[8]}`, opacity };
+        } else if (result[0]) {
+            return { color: `${result[2]}(${result[3]},${result[4]},${result[5]})`, opacity: (Number(result[6]) || 1.0) };
         }
     }
 }
@@ -155,16 +155,163 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
 }
 
 /**
- * A Style is an object that defines the visual appearance of {@link
+ * @typedef {Object} StyleOptions
+ * @memberof StyleOptions
+ *
+ * @property {number} [order] - Order of the features that will be associated to
+ * the style. It can helps sorting and prioritizing features if needed.
+ *
+ * @property {Object} [zoom] - Level on which to display the feature
+ * @property {number} [zoom.max] - max level
+ * @property {number} [zoom.min] - min level
+ *
+ * @property {Object} [fill] - Fill style for polygons.
+ * @property {string|function|THREE.Color} [fill.color] - Defines the main fill color. Can be
+ * any [valid color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+ * Default is no value, which means no fill.
+ * If the `Layer` is a `GeometryLayer` you can use `THREE.Color`.
+ * @property {Image|Canvas|string|function} [fill.pattern] - Defines a pattern to fill the
+ * surface with. It can be an `Image` to use directly, or an url to fetch the pattern
+ * from. See [this example] (http://www.itowns-project.org/itowns/examples/#source_file_geojson_raster)
+ * for how to use.
+ * @property {number|function} [fill.opacity] - The opacity of the color or of the
+ * pattern. Can be between `0.0` and `1.0`. Default is `1.0`.
+ * For a `GeometryLayer`, this opacity property isn't used.
+ * @property {number|function} [fill.base_altitude] - `GeometryLayer` style option, defines altitude
+ * for each coordinate.
+ * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
+ * then the altitude value is set to 0.
+ * @property {number|function} [fill.extrusion_height] - `GeometryLayer` style option, if defined,
+ * polygons will be extruded by the specified amount
+ *
+ * @property {Object} [stroke] - Lines and polygons edges.
+ * @property {string|function|THREE.Color} [stroke.color] The color of the line. Can be any [valid
+ * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+ * Default is no value, which means no stroke.
+ * If the `Layer` is a `GeometryLayer` you can use `THREE.Color`.
+ * @property {number|function} [stroke.opacity] - The opacity of the line. Can be between
+ * `0.0` and `1.0`. Default is `1.0`.
+ * For a `GeometryLayer`, this opacity property isn't used.
+ * @property {number|function} [stroke.width] - The width of the line. Default is `1.0`.
+ * @property {number|function} [stroke.base_altitude] - `GeometryLayer` style option, defines altitude
+ * for each coordinate.
+ * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
+ * then the altitude value is set to 0.
+ *
+ * @property {Object} [point] - Point style.
+ * @property {string|function} [point.color] - The color of the point. Can be any [valid
+ * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+ * Default is no value, which means points won't be displayed.
+ * @property {number|function} [point.radius] - The radius of the point, in pixel. Default
+ * is `2.0`.
+ * @property {string|function} [point.line] - The color of the border of the point. Can be
+ * any [valid color
+ * string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+ * Not supported for a `GeometryLayer`.
+ * @property {number|function} [point.width] - The width of the border, in pixel. Default
+ * is `0.0` (no border).
+ * @property {number|function} [point.opacity] - The opacity of the point. Can be between
+ * `0.0` and `1.0`. Default is `1.0`.
+ * Not supported for `GeometryLayer`.
+ * @property {number|function} [point.base_altitude] - `GeometryLayer` style option, defines altitude
+ * for each coordinate.
+ * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
+ * then the altitude value is set to 0.
+ * @property {Object} [point.model] - 3D model to instantiate at each point position.
+ *
+ * @property {Object} [text] - All things {@link Label} related.
+ * @property {string|function} [text.field] - A string representing a property key of
+ * a `FeatureGeometry` enclosed in brackets, that will be replaced by the value of the
+ * property for each geometry. For example, if each geometry contains a `name` property,
+ * `text.field` can be set to `{name}`. Default is no value, indicating that no
+ * text will be displayed.
+ *
+ * It's also possible to create more complex expressions. For example, you can combine
+ * text that will always be displayed (e.g. `foo`) and variable properties (e.g. `{bar}`)
+ * like the following: `foo {bar}`. You can also use multiple variables in one field.
+ * Let's say for instance that you have two properties latin name and local name of a
+ * place, you can write something like `{name_latin} - {name_local}` which can result
+ * in `Marrakesh - مراكش` for example.
+ * @property {string|function} [text.color] - The color of the text. Can be any [valid
+ * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+ * Default is `#000000`.
+ * @property {string|number[]|function} [text.anchor] - The anchor of the text compared to its
+ * position (see {@link Label} for the position). Can be one of the following values: `top`,
+ * `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
+ * or `bottom-right`. Default is `center`.
+ *
+ * It can also be defined as an Array of two numbers. Each number defines an offset (in
+ * fraction of the label width and height) between the label position and the top-left
+ * corner of the text. The first value is the horizontal offset, and the second is the
+ * vertical offset. For example, `[-0.5, -0.5]` will be equivalent to `center`.
+ * @property {Array|function} [text.offset] - The offset of the text, depending on its
+ * anchor, in pixels. First value is from `left`, second is from `top`. Default
+ * is `[0, 0]`.
+ * @property {number|function} [text.padding] - The padding outside the text, in pixels.
+ * Default is `2`.
+ * @property {number|function} [text.size] - The size of the font, in pixels. Default is
+ * `16`.
+ * @property {number|function} [text.wrap] - The maximum width, in pixels, before the text
+ * is wrapped, because the string is too long. Default is `10`.
+ * @property {number|function} [text.spacing] - The spacing between the letters, in `em`.
+ * Default is `0`.
+ * @property {string|function} [text.transform] - A value corresponding to the [CSS
+ * property
+ * `text-transform`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-transform).
+ * Default is `none`.
+ * @property {string|function} [text.justify] - A value corresponding to the [CSS property
+ * `text-align`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-align).
+ * Default is `center`.
+ * @property {number|function} [text.opacity] - The opacity of the text. Can be between
+ * `0.0` and `1.0`. Default is `1.0`.
+ * @property {Array|function} [text.font] - A list (as an array of string) of font family
+ * names, prioritized in the order it is set. Default is `Open Sans Regular,
+ * Arial Unicode MS Regular, sans-serif`.
+ * @property {string|function} [text.haloColor] - The color of the halo. Can be any [valid
+ * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+ * Default is `#000000`.
+ * @property {number|function} [text.haloWidth] - The width of the halo, in pixels.
+ * Default is `0`.
+ * @property {number|function} [text.haloBlur] - The blur value of the halo, in pixels.
+ * Default is `0`.
+ *
+ * @property {Object} [icon] - Defines the appearance of icons attached to label.
+ * @property {string} [icon.source] - The url of the icons' image file.
+ * @property {string} [icon.key] - The key of the icons' image in a vector tile data set.
+ * @property {string} [icon.anchor] - The anchor of the icon compared to the label position.
+ * Can be `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
+ * or `bottom-right`. Default is `center`.
+ * @property {number} [icon.size] - If the icon's image is passed with `icon.source` or
+ * `icon.key`, its size when displayed on screen is multiplied by `icon.size`. Default is `1`.
+ * @property {string|function} [icon.color] - The color of the icon. Can be any [valid
+ * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+ * It will change the color of the white pixels of the icon source image.
+ * @property {number|function} [icon.opacity] - The opacity of the icon. Can be between
+ * `0.0` and `1.0`. Default is `1.0`.
+*/
+
+/**
+ * @description An object that can contain any properties
+ * (order, zoom, fill, stroke, point, text or/and icon)
+ * and sub properties of a Style.<br/>
+ * Used for the instanciation of a {@link Style}.
+ * @hideconstructor
+ */
+export class StyleOptions {}
+
+/**
+ * @class
+ * @classdesc A Style is a class that defines the visual appearance of {@link
  * FeatureCollection} and {@link Feature}. It is taken into account when drawing
  * them in textures that will be placed onto tiles.
  *
- * As there are four basic elements present in `Features`, there are also four
+ * As there are five basic elements present in `Features`, there are also five
  * main components in a `Style` object:
  * - `fill` is for all fillings and polygons
  * - `stroke` is for all lines and polygons edges
  * - `point` is for all points
  * - `text` contains all {@link Label} related things
+ * - `icon` defines the appearance of icons attached to label.
  *
  * Many style property can be set to functions. When that is the case, the function's
  * return type must necessarily be the same as the types (other than function) of the property.
@@ -176,36 +323,36 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * @property {number} order - Order of the features that will be associated to
  * the style. It can helps sorting and prioritizing features if needed.
  * @property {Object} fill - Polygons and fillings style.
- * @property {string|function} fill.color - Defines the main color of the filling. Can be
+ * @property {string|function|THREE.Color} fill.color - Defines the main color of the filling. Can be
  * any [valid color
  * string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is no value, indicating that no filling needs to be done.
- * If the `Layer` is a `GeometryLayer` you could use `THREE.Color`.
+ * If the `Layer` is a `GeometryLayer` you can use `THREE.Color`.
  * @property {Image|Canvas|string|function} fill.pattern - Defines a pattern to fill the
  * surface with. It can be an `Image` to use directly, or an url to fetch the
  * pattern from. See [this
  * example](http://www.itowns-project.org/itowns/examples/#source_file_geojson_raster)
- * for how to use.
- * @property {number|function} fill.opacity - The opacity of the color or the
+ * for an example.
+ * @property {number|function} fill.opacity - The opacity of the color or of the
  * pattern. Can be between `0.0` and `1.0`. Default is `1.0`.
  * For a `GeometryLayer`, this opacity property isn't used.
- * @property {number|function} fill.base_altitude - `GeometryLayer` Style, defines altitude
- * for each Coordinates.
+ * @property {number|function} fill.base_altitude - Only for {@link GeometryLayer}, defines altitude
+ * for each coordinate.
  * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
  * then the altitude value is set to 0.
- * @property {number|function} fill.extrusion_height - `GeometryLayer` Style, if defined,
+ * @property {number|function} fill.extrusion_height - Only for {@link GeometryLayer}, if defined,
  * polygons will be extruded by the specified amount
- * @property {Object} stroke - Lines and polygon edges.
- * @property {string|function} stroke.color The color of the line. Can be any [valid
+ * @property {Object} stroke - Lines and polygons edges.
+ * @property {string|function|THREE.Color} stroke.color The color of the line. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is no value, indicating that no stroke needs to be done.
- * If the `Layer` is a `GeometryLayer` you could use `THREE.Color`.
+ * If the `Layer` is a `GeometryLayer` you can use `THREE.Color`.
  * @property {number|function} stroke.opacity - The opacity of the line. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
  * For a `GeometryLayer`, this opacity property isn't used.
  * @property {number|function} stroke.width - The width of the line. Default is `1.0`.
- * @property {number|function} stroke.base_altitude - `GeometryLayer` Style, defines altitude
- * for each Coordinates.
+ * @property {number|function} stroke.base_altitude - Only for {@link GeometryLayer}, defines altitude
+ * for each coordinate.
  * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
  * then the altitude value is set to 0.
  *
@@ -218,38 +365,37 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * @property {string|function} point.line - The color of the border of the point. Can be
  * any [valid color
  * string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
- * It's not supported with a `GeometryLayer`.
+ * Not supported for `GeometryLayer`.
  * @property {number|function} point.width - The width of the border, in pixel. Default
  * is `0.0` (no border).
  * @property {number|function} point.opacity - The opacity of the point. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
- * It's not supported with a `GeometryLayer`.
- * @property {number|function} point.base_altitude - `GeometryLayer` Style, defines altitude
- * for each Coordinates.
+ * Not supported for `GeometryLayer`.
+ * @property {number|function} point.base_altitude - Only for {@link GeometryLayer}, defines altitude
+ * for each coordinate.
  * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
  * then the altitude value is set to 0.
- * @property {Object} point.model - `model` is for point to 3D Model
+ * @property {Object} point.model - 3D model to instantiate at each point position
 
  *
  * @property {Object} text - All things {@link Label} related.
- * @property {string|function} text.field - A string to help read the text field from
- * properties of a `FeatureGeometry`, with the key of the property enclosed by
- * brackets. For example, if each geometry contains a `name` property,
- * `text.field` can be set as `{name}`. Default is no value, indicating that no
- * text will be shown.
+ * @property {string|function} text.field - A string representing a property key of
+ * a `FeatureGeometry` enclosed in brackets, that will be replaced by the value of the
+ * property for each geometry. For example, if each geometry contains a `name` property,
+ * `text.field` can be set to `{name}`. Default is no value, indicating that no
+ * text will be displayed.
  *
- * The brackets allows the use of complex fields. For
- * example, if a static string `foo` is attached to the changing property `bar`,
- * you can specify `foo {bar}`, and `foo` will stay everytime, while `{bar}`
- * will change into the value of the property of the geometry. You can also have
- * multiple properties in one field, like if you want the latin name and the
- * local name of a location. Specifying `{name_latin} - {name_local}` can result
+ * It's also possible to create more complex expressions. For example, you can combine
+ * text that will always be displayed (e.g. `foo`) and variable properties (e.g. `{bar}`)
+ * like the following: `foo {bar}`. You can also use multiple variables in one field.
+ * Let's say for instance that you have two properties latin name and local name of a
+ * place, you can write something like `{name_latin} - {name_local}` which can result
  * in `Marrakesh - مراكش` for example.
  * @property {string|function} text.color - The color of the text. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is `#000000`.
- * @property {string|number[]|function} text.anchor - The anchor of the text compared to its
- * position (see {@link Label} for the position). Can be a few value: `top`,
+ * @property {string|number[]|function} text.anchor - The anchor of the text relative to its
+ * position (see {@link Label} for the position). Can be one of the following values: `top`,
  * `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
  * or `bottom-right`. Default is `center`.
  *
@@ -291,11 +437,11 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * @property {Object} icon - Defines the appearance of icons attached to label.
  * @property {string} icon.source - The url of the icons' image file.
  * @property {string} icon.key - The key of the icons' image in a vector tile data set.
- * @property {string} [icon.anchor='center'] - The anchor of the icon compared to the label position.
+ * @property {string} icon.anchor - The anchor of the icon compared to the label position.
  * Can be `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
- * or `bottom-right`.
+ * or `bottom-right`. Default is `center`.
  * @property {number} icon.size - If the icon's image is passed with `icon.source` or
- * `icon.key`, it size when displayed on screen is multiplied by `icon.size`. Default is `1`.
+ * `icon.key`, its size when displayed on screen is multiplied by `icon.size`. Default is `1`.
  * @property {string|function} icon.color - The color of the icon. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * It will change the color of the white pixels of the icon source image.
@@ -317,13 +463,14 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  *
  * view.addLayer(layer);
  */
+
 class Style {
     /**
-     * @param {Object} [params={}] An object that can contain all properties of
-     * a Style.
+     * @param {StyleOptions} [params={}] An object that contain any properties
+     * (order, zoom, fill, stroke, point, text or/and icon)
+     * and sub properties of a Style (@see {@link StyleOptions}).
      * @param {Style} [parent] The parent style, that is looked onto if a value
      * is missing.
-     *
      * @constructor
      */
     constructor(params = {}, parent) {
@@ -414,7 +561,7 @@ class Style {
      * Only the necessary properties are mapped to object.
      * if a property is expression, the mapped value will be the expression result depending on context.
      * @param      {Object}  context  The context
-     * @return     {Object}  mapped style depending on context.
+     * @return     {Style}  mapped style depending on context.
      */
     drawingStylefromContext(context) {
         const style = {};
@@ -476,10 +623,10 @@ class Style {
     }
 
     /**
-     * set Style from geojson properties.
-     * @param {object} properties geojson properties.
+     * set Style from (geojson-like) properties.
+     * @param {object} properties (geojson-like) properties.
      * @param {number} type
-     * @returns {Style}
+     * @returns {StyleOptions} containing all properties for itowns.Style
      */
     setFromGeojsonProperties(properties, type) {
         if (type === FEATURE_TYPES.POINT) {
@@ -520,7 +667,7 @@ class Style {
      * @param {Object} sprites vector tile layer.
      * @param {number} [order=0]
      * @param {boolean} [symbolToCircle=false]
-     * @returns {Style}
+     * @returns {StyleOptions} containing all properties for itowns.Style
      */
     setFromVectorTileLayer(layer, sprites, order = 0, symbolToCircle = false) {
         layer.layout = layer.layout || {};

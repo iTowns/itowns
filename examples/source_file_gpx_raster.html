@@ -64,7 +64,7 @@
                 format: 'application/gpx',
             });
 
-            const gpxStyle = new itowns.Style({
+            const gpxStyle = {
                 zoom: { min: 9 },
                 stroke: { color: 'red' },
                 point: {
@@ -78,7 +78,7 @@
                     haloColor: 'white',
                     haloWidth: 1,
                 },
-            });
+            };
 
             const gpxLayer = new itowns.ColorLayer('Gpx', {
                 source: gpxSource,

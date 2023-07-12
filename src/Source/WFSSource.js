@@ -81,7 +81,7 @@ import CRS from 'Core/Geographic/Crs';
  *
  * // Create the layer
  * const geometryLayer = new itowns.FeatureGeometryLayer('mesh_build', {
- *     style: new itowns.Style({
+ *     style: {
  *         fill: {
  *             color: new itowns.THREE.Color(0xffcc00),
  *             base_altitude: (p) => p.altitude,
@@ -90,7 +90,7 @@ import CRS from 'Core/Geographic/Crs';
  *     },
  *     source: wfsSource,
  *     zoom: { min: 14 },
- * });
+ * };
  *
  * // Add the layer
  * view.addLayer(geometryLayer);

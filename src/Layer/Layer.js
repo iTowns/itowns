@@ -3,6 +3,7 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
 import Source from 'Source/Source';
 import Cache from 'Core/Scheduler/Cache';
+import Style from 'Core/Style';
 
 /**
  * @property {boolean} isLayer - Used to checkout whether this layer is a Layer.
@@ -51,6 +52,11 @@ class Layer extends THREE.EventDispatcher {
      * @param {Source|boolean} config.source - instantiated Source specifies data source to display.
      * if config.source is a boolean, it can only be false. if config.source is false,
      * the layer doesn't need Source (like debug Layer or procedural layer).
+     * @param {StyleOptions|Style} [config.style] - an object that contain any properties
+     * (order, zoom, fill, stroke, point, text or/and icon)
+     * and sub properties of a Style (@see {@link StyleOptions}). Or directly a {@link Style} .<br/>
+     * When entering a StyleOptions the missing style properties will be look for in the data (if any)
+     * what won't be done when you use a Style.
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
      * This value is used for [Cache]{@link Cache} expiration mechanism.
      * @param {(boolean|Object)} [config.addLabelLayer=false] - Used to tell if this layer has
@@ -92,6 +98,9 @@ class Layer extends THREE.EventDispatcher {
             throw new Error(`Layer ${id} needs Source`);
         }
         super();
+        if (config.style && !(config.style instanceof Style)) {
+            config.style = new Style(config.style);
+        }
         this.isLayer = true;
 
         Object.assign(this, config);

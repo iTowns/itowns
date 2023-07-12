@@ -1,7 +1,6 @@
 import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterColorTile } from 'Renderer/RasterTile';
-import Style from 'Core/Style';
 import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
 
 /**
@@ -22,7 +21,8 @@ import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
  * @property {boolean} isColorLayer - Used to checkout whether this layer is a
  * ColorLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
- * @property {Style} style - default style apply layer features.
+ * @property {StyleOptions|Style} style - style properties or a Style defined by the user,
+ * to apply to the layer features.
  * @property {boolean} visible - property to display or to hide layer.
  * @property {number} opacity - property to adjust transparency, opacity is between 0. and 1.
  * @property {boolean} transparent - specify if the layer could be transparent.
@@ -84,7 +84,7 @@ class ColorLayer extends RasterLayer {
         deprecatedColorLayerOptions(config);
         super(id, config);
         this.isColorLayer = true;
-        this.style = new Style(config.style);
+        this.style = config.style;
         this.defineLayerProperty('visible', true);
         this.defineLayerProperty('opacity', 1.0);
         this.defineLayerProperty('sequence', 0);

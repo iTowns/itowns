@@ -133,12 +133,12 @@
 
                 // create geometry layer for the buildings
                 var wfsBuildingLayer = new itowns.FeatureGeometryLayer('Buildings', {
-                    style: new itowns.Style({
+                    style: {
                         fill: {
                             base_altitude: altitudeBuildings,
                             extrusion_height: extrudeBuildings,
                         }
-                    }),
+                    },
                     // when a building is created, it get the projective texture mapping, from oriented image layer.
                     onMeshCreated: (mesh) => mesh.traverse(object => object.material = orientedImageLayer.material),
                     source: wfsBuildingSource,

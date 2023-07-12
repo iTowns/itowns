@@ -85,14 +85,14 @@
                 effect_type: itowns.colorLayerEffects.removeLightColor,
                 effect_parameter: 2.5,
                 addLabelLayer: { performance: true },
-                style: new itowns.Style({
+                style: {
                     text: {
                         color: '#000000',
                         haloColor: '#ffffff',
                         haloWidth: 3,
                         haloBlur: 2,
                     }
-                })
+                },
             });
 
             // Add the ColorLayer to the scene and to the debug menu.
@@ -124,12 +124,12 @@
                 source: buildingsSource,
                 zoom: { min: 15 },
                 accurate: false,
-                style: new itowns.Style({
+                style: {
                     fill: {
                         base_altitude: (p) => p.alti_sol || 0,
                         extrusion_height: (p) => p.hauteur || 0,
                     }
-                })
+                },
             });
 
             // Add the FeatureGeometryLayer to the scene and to the debug menu.

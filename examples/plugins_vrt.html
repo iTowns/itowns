@@ -57,7 +57,7 @@
 
                 var velibLayer = new itowns.ColorLayer('velib', {
                     source: velibSource,
-                    style: new itowns.Style({
+                    style: {
                         zoom: { min: 10, max: 20 },
                         point: {
                             color: 'cyan',
@@ -69,7 +69,7 @@
                             haloColor: 'white',
                             haloWidth: 1,
                         },
-                    }),
+                    },
                     addLabelLayer: true,
                 });
 
