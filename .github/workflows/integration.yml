@@ -78,54 +78,54 @@ jobs:
 
 
   # Publish NPM package
-  publish:
-    name: Publish NPM package
-    if: ${{ github.ref == 'refs/heads/master' }}
-    needs: tests
-    runs-on: ubuntu-latest
-    steps:
+  # publish:
+  #   name: Publish NPM package
+  #   if: ${{ github.ref == 'refs/heads/master' }}
+  #   needs: tests
+  #   runs-on: ubuntu-latest
+  #   steps:
 
-      - uses: actions/checkout@v3
-        with:
-          # fetch all branches
-          fetch-depth: 0
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         # fetch all branches
+  #         fetch-depth: 0
 
-      # Configure git user for later command induced commits
-      - uses: fregante/setup-git-user@v1
+  #     # Configure git user for later command induced commits
+  #     - uses: fregante/setup-git-user@v1
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
+  #         registry-url: https://registry.npmjs.org/
 
-      - run: npm ci
-      - run: npm run prepare
+  #     - run: npm ci
+  #     - run: npm run prepare
 
-      - name: publish itowns@latest npm package
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
-        run: npm run publish-latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #     - name: publish itowns@latest npm package
+  #       if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+  #       run: npm run publish-latest
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: publish itowns@next npm package (following a release)
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
-        run: |
-          git checkout next
-          git reset --hard master
-          npm run publish-next
-          git push -f
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #     - name: publish itowns@next npm package (following a release)
+  #       if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+  #       run: |
+  #         git checkout next
+  #         git reset --hard master
+  #         npm run publish-next
+  #         git push -f
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: publish itowns@next npm package
-        if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
-        run: |
-          git checkout next
-          git merge master
-          npm run publish-next
-          git push
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #     - name: publish itowns@next npm package
+  #       if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
+  #       run: |
+  #         git checkout next
+  #         git merge master
+  #         npm run publish-next
+  #         git push
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 
   # Deploy on itowns.github.io website
@@ -169,7 +169,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          external_repository: iTowns/itowns.github.io
+          external_repository: mgermerie/itowns.github.io
           publish_dir: ./itowns
           destination_dir: ./itowns
           publish_branch: master
@@ -184,7 +184,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          external_repository: iTowns/itowns.github.io
+          external_repository: mgermerie/itowns.github.io
           publish_dir: ./itowns
           destination_dir: ./itowns/dev
           publish_branch: master
