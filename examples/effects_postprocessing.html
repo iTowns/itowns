@@ -63,7 +63,7 @@
             // Simple postprocessing setup
             //
             var postprocessScene = new itowns.THREE.Scene();
-            var quad = new itowns.THREE.Mesh(new itowns.THREE.PlaneBufferGeometry(2, 2), null);
+            var quad = new itowns.THREE.Mesh(new itowns.THREE.PlaneGeometry(2, 2), null);
             var cam = new itowns.THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
 
             setupLoadingScreen(viewerDiv, view);
