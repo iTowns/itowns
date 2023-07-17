@@ -90,8 +90,18 @@ function changeIntensityRange(layer) {
     }
 }
 
+function changeElevationRange(layer) {
+    if (layer.material.elevationRange) {
+        layer.material.elevationRange.set(
+            layer.minElevationRange,
+            layer.maxElevationRange,
+        );
+    }
+}
+
 /**
  * The basis for all point clouds related layers.
+ * @extends GeometryLayer
  *
  * @property {boolean} isPointCloudLayer - Used to checkout whether this layer
  * is a PointCloudLayer. Default is `true`. You should not change this, as it is
@@ -121,6 +131,12 @@ function changeIntensityRange(layer) {
  * @property {number} [maxIntensityRange=1] - The maximal intensity of the
  * layer. Changing this value will affect the material, if it has the
  * corresponding uniform. The value is normalized between 0 and 1.
+ * @property {number} [minElevationRange=0] - The minimal elevation of the
+ * layer. Changing this value will affect the material, if it has the
+ * corresponding uniform.
+ * @property {number} [maxElevationRange=1] - The maximal elevation of the
+ * layer. Changing this value will affect the material, if it has the
+ * corresponding uniform.
  */
 class PointCloudLayer extends GeometryLayer {
     /**
@@ -129,7 +145,6 @@ class PointCloudLayer extends GeometryLayer {
      * directly, but rather implemented using `extends`.
      *
      * @constructor
-     * @extends GeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -160,6 +175,8 @@ class PointCloudLayer extends GeometryLayer {
 
         this.defineLayerProperty('minIntensityRange', config.minIntensityRange || 0, changeIntensityRange);
         this.defineLayerProperty('maxIntensityRange', config.maxIntensityRange || 1, changeIntensityRange);
+        this.defineLayerProperty('minElevationRange', config.minElevationRange || 0, changeElevationRange);
+        this.defineLayerProperty('maxElevationRange', config.maxElevationRange || 1, changeElevationRange);
 
         this.material = config.material || {};
         if (!this.material.isMaterial) {

@@ -10,6 +10,10 @@ export const PNTS_MODE = {
     INTENSITY: 1,
     CLASSIFICATION: 2,
     NORMAL: 3,
+    RETURN_NUMBER: 4,
+    NUMBER_OF_RETURNS: 5,
+    POINT_SOURCE_ID: 6,
+    ELEVATION: 7,
 };
 
 export const PNTS_SHAPE = {
@@ -68,6 +72,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
      * @param      {number}  [options.mode=PNTS_SHAPE.CIRCLE]  rendered points shape.
      * @param      {THREE.Vector4}  [options.overlayColor=new THREE.Vector4(0, 0, 0, 0)]  overlay color.
      * @param      {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(0, 1)]  intensity range.
+     * @param      {THREE.Vector2}  [options.elevationRange=new THREE.Vector2(0, 1)] - elevation range.
      * @param      {boolean}  [options.applyOpacityClassication=false]  apply opacity classification on all display mode.
      * @param      {Classification}  [options.classification] -  define points classification.
      * @param      {number}  [options.sizeMode=PNTS_SIZE_MODE.VALUE]  point cloud size mode. Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance from point to camera.
@@ -83,6 +88,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
      */
     constructor(options = {}) {
         const intensityRange = options.intensityRange || new THREE.Vector2(0, 1);
+        const elevationRange = options.elevationRange || new THREE.Vector2(0, 1);
         const oiMaterial = options.orientedImageMaterial;
         const classification = options.classification || ClassificationScheme.DEFAULT;
         const applyOpacityClassication = options.applyOpacityClassication == undefined ? false : options.applyOpacityClassication;
@@ -95,6 +101,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
 
         delete options.orientedImageMaterial;
         delete options.intensityRange;
+        delete options.elevationRange;
         delete options.classification;
         delete options.applyOpacityClassication;
         delete options.size;
@@ -121,6 +128,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'opacity', this.opacity);
         CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new THREE.Vector4(0, 0, 0, 0));
         CommonMaterial.setUniformProperty(this, 'intensityRange', intensityRange);
+        CommonMaterial.setUniformProperty(this, 'elevationRange', elevationRange);
         CommonMaterial.setUniformProperty(this, 'applyOpacityClassication', applyOpacityClassication);
         CommonMaterial.setUniformProperty(this, 'sizeMode', sizeMode);
         CommonMaterial.setUniformProperty(this, 'scale', scale);

@@ -7,6 +7,24 @@
 #include <common>
 #include <logdepthbuf_pars_vertex>
 
+// For now, we only consider 3-bits uint values for return numbers.
+// On LAS 1.4 PDRF >= 6, return numbers are encoded on 4 bits, so we clamp them
+// to 3 bits.
+#define RETURN_NUMBER_MAX 7.
+
+attribute vec3 color;
+attribute float intensity;
+attribute float classification;
+attribute float returnNumber;
+attribute float numberOfReturns;
+attribute float pointSourceID;
+attribute float gpsTime;
+
+uniform mat4 modelMatrix;
+
+uniform vec2 intensityRange;
+uniform vec2 elevationRange;
+
 uniform float size;
 uniform float scale;
 
@@ -14,12 +32,8 @@ uniform bool picking;
 uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
-uniform vec2 intensityRange;
 uniform bool applyOpacityClassication;
-attribute vec3 color;
 attribute vec4 unique_id;
-attribute float intensity;
-attribute float classification;
 uniform sampler2D classificationLUT;
 uniform int sizeMode;
 uniform float minAttenuatedSize;
@@ -28,6 +42,7 @@ uniform float maxAttenuatedSize;
 #if defined(NORMAL_OCT16)
 attribute vec2 oct16Normal;
 #elif defined(NORMAL_SPHEREMAPPED)
+
 attribute vec2 sphereMappedNormal;
 #else
 attribute vec3 normal;
@@ -97,6 +112,22 @@ void main() {
         } else if (mode == PNTS_MODE_COLOR) {
             // default to color mode
             vColor.rgb = mix(color, overlayColor.rgb, overlayColor.a);
+        } else if (mode == PNTS_MODE_RETURN_NUMBER) {
+            float n = returnNumber / RETURN_NUMBER_MAX;
+            vColor.rgb = vec3(n, n, n);
+        } else if (mode == PNTS_MODE_NUMBER_OF_RETURNS) {
+            float n = numberOfReturns / RETURN_NUMBER_MAX;
+            vColor.rgb = vec3(n, n, n);
+        } else if (mode == PNTS_MODE_POINT_SOURCE_ID) {
+            // group ids by their 4 least significant bits
+            float i = mod(pointSourceID, 16.) / 16.;
+            vColor.rgb = vec3(i, i, i);
+        } else if (mode == PNTS_MODE_ELEVATION) {
+            // apply scale and offset transform
+            vec4 model = modelMatrix * vec4(position, 1.0);
+            float z = (model.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
+            // adapt the grayscale knowing the range
+            vColor.rgb = vec3(z, z, z);
         }
     }
 
