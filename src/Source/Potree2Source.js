@@ -1,7 +1,6 @@
 import Source from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
 import Potree2BinParser from 'Parser/Potree2BinParser';
-import WorkerPool from '../Utils/WorkerPool';
 
 /**
  * @classdesc
@@ -111,7 +110,6 @@ class Potree2Source extends Source {
         this.file = source.file;
         this.fetcher = Fetcher.arrayBuffer;
         this.extensionOctree = 'octree.bin';
-        this.workerPool = new WorkerPool();
 
         this.whenReady = (source.cloud ? Promise.resolve(source.cloud) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
             .then((cloud) => {

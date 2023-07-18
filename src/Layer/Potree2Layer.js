@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import Potree2Node from 'Core/Potree2Node';
 import Extent from 'Core/Geographic/Extent';
-import Potree2Utils from '../Utils/Potree2Utils';
+import Potree2Utils from 'Utils/Potree2Utils';
 
 const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();

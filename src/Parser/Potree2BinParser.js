@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { workerType } from '../Utils/WorkerPool';
+import { WORKER_TYPE, getWorker, returnWorker } from 'Worker/potree2.0/WorkerPool';
 
 export default {
     /** @module Potree2BinParser */
@@ -14,19 +14,18 @@ export default {
      */
     parse: function parse(buffer, options) {
         return new Promise((resolve) => {
-            const source = options.in;
             const layer = options.out;
             const metadata = layer.metadata;
             const node = options.node;
 
-            const type = metadata.encoding === 'BROTLI' ? workerType.DECODER_WORKER_BROTLI : workerType.DECODER_WORKER;
-            const worker = source.workerPool.getWorker(type);
+            const type = metadata.encoding === 'BROTLI' ? WORKER_TYPE.DECODER_WORKER_BROTLI : WORKER_TYPE.DECODER_WORKER;
+            const worker = getWorker(type);
 
             worker.onmessage = (e) => {
                 const data = e.data;
                 const buffers = data.attributeBuffers;
 
-                source.workerPool.returnWorker(type, worker);
+                returnWorker(type, worker);
 
                 const geometry = new THREE.BufferGeometry();
                 Object.keys(buffers).forEach((property) => {

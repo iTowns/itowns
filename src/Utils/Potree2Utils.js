@@ -1,4 +1,4 @@
-import { PointAttribute, PointAttributes, PointAttributeTypes } from '../Core/PointAttributes';
+import { PointAttribute, PointAttributes, PointAttributeTypes } from 'Core/PointAttributes';
 
 class Potree2Utils {
     static typeNameAttributeMap = {

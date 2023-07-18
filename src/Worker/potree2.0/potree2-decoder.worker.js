@@ -1,6 +1,5 @@
 /* eslint-disable */
-
-import {PointAttributes, PointAttribute, PointAttributeTypes} from "../../Core/PointAttributes";
+import {PointAttributes, PointAttribute, PointAttributeTypes} from "Core/PointAttributes";
 
 const typedArrayMapping = {
     "int8":   Int8Array,

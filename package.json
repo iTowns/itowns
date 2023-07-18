@@ -36,7 +36,8 @@
     "exclude": [
       "**/*ThreeExtended",
       "**/*src/Utils/placeObjectOnGround.js",
-      "**/*src/Parser/deprecated/LegacyGLTFLoader.js"
+      "**/*src/Parser/deprecated/LegacyGLTFLoader.js",
+      "**/*Libs"
     ]
   },
   "files": [
