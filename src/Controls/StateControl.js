@@ -324,17 +324,24 @@ class StateControl extends THREE.EventDispatcher {
         viewCoords.copy(this._view.eventToViewCoords(event));
 
         switch (event.pointerType) {
-            case 'mouse':
+            case 'mouse': {
                 this._currentMousePressed = event.button;
 
+                if (this._currentKeyPressed === undefined) {
+                    if (event.ctrlKey) {
+                        this._currentKeyPressed = CONTROL_KEYS.CTRL;
+                    } else if (event.shiftKey) {
+                        this._currentKeyPressed = CONTROL_KEYS.SHIFT;
+                    }
+                }
                 this.currentState = this.inputToState(
                     this._currentMousePressed,
                     this._currentKeyPressed,
                     // Detect if the mouse button was pressed less than 500 ms before, and if the cursor has not moved two much
                     // since previous click. If so, set dblclick to true.
                     event.timeStamp - this._clickTimeStamp < 500
-                        && this._lastMousePressed.button === this._currentMousePressed
-                        && this._lastMousePressed.viewCoords.distanceTo(viewCoords) < 5,
+                    && this._lastMousePressed.button === this._currentMousePressed
+                    && this._lastMousePressed.viewCoords.distanceTo(viewCoords) < 5,
                 );
 
                 this._clickTimeStamp = event.timeStamp;
@@ -342,6 +349,7 @@ class StateControl extends THREE.EventDispatcher {
                 this._lastMousePressed.viewCoords.copy(viewCoords);
 
                 break;
+            }
             // TODO : add touch event management
             default:
         }
