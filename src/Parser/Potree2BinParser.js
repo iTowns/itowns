@@ -1,6 +1,46 @@
 import * as THREE from 'three';
 
-import { WORKER_TYPE, getWorker, returnWorker } from 'Worker/potree2.0/WorkerPool';
+// Create enums for different types of workers
+const WORKER_TYPE = {
+    DECODER_WORKER_BROTLI: 'DECODER_WORKER_BROTLI',
+    DECODER_WORKER: 'DECODER_WORKER',
+};
+
+const workers = {};
+
+function createWorker(type) {
+    if (type === WORKER_TYPE.DECODER_WORKER_BROTLI) {
+        return new Worker(
+            /* webpackChunkName: "potree2-brotli-decoder.worker" */ new URL('Worker/potree2.0/potree2-brotli-decoder.worker.js', import.meta.url),
+            { type: 'module' },
+        );
+    } else if (type === WORKER_TYPE.DECODER_WORKER) {
+        return new Worker(
+            /* webpackChunkName: "potree2-decoder.worker" */ new URL('Worker/potree2.0/potree2-decoder.worker.js', import.meta.url),
+            { type: 'module' },
+        );
+    } else {
+        throw new Error('Unknown worker type');
+    }
+}
+
+function getWorker(type) {
+    if (!workers[type]) {
+        workers[type] = [];
+    }
+
+    if (workers[type].length === 0) {
+        const worker = createWorker(type);
+        workers[type].push(worker);
+    }
+
+    const worker = workers[type].pop();
+    return worker;
+}
+
+function returnWorker(type, worker) {
+    workers[type].push(worker);
+}
 
 export default {
     /** @module Potree2BinParser */
