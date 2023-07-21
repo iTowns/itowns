@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Display a Glb/Gltf object with iTowns</title>
+
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" type="text/css" href="css/example.css" />
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="../dist/itowns.js"></script>
+        <script type="text/javascript">
+            var THREE = itowns.THREE
+            // iTowns namespace defined here
+            var viewerDiv = document.getElementById("viewerDiv");
+
+            var placement = {
+                coord: new itowns.Coordinates(
+                    "EPSG:4326",
+                    4.827361189714537,
+                    45.78537982365657,
+                    10
+                ),
+                tilt: 22,
+                heading: 0,
+                range: 2840,
+            };
+
+            var view = new itowns.GlobeView(viewerDiv, placement);
+
+            var orthoSource = new itowns.TMSSource({
+                crs: "EPSG:3857",
+                isInverted: true,
+                format: "image/png",
+                url: "http://osm.oslandia.io/styles/klokantech-basic/${z}/${x}/${y}.png",
+                attribution: {
+                    name: "OpenStreetMap",
+                    url: "http://www.openstreetmap.org/",
+                },
+                tileMatrixSet: "PM",
+            });
+
+            var orthoLayer = new itowns.ColorLayer("Ortho", {
+                source: orthoSource,
+            });
+
+            view.addLayer(orthoLayer);
+
+            // Load a new gltf object
+            itowns.glTFLoader.load(
+                "https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/lampadaire/scene.gltf ",
+                (gltf) => {
+                    var model = gltf.scene;
+                    model.scale.set(10,10,10)
+                    model.updateMatrixWorld();
+                    model.rotation.set(Math.PI / 2.1, 0, -Math.PI / 4.1);
+
+                    // Set coordinates of the GLB
+                    coord = new itowns.Coordinates(
+                        "EPSG:4326",
+                        4.829501189714537,
+                        45.78510982365657
+                    ).as("EPSG:4978");
+                    model.position.set(coord.x, coord.y, coord.z);
+
+                    // Set his own position to work with Itowns referencement
+                    object = model;
+                    const boundingBox = new THREE.Box3();
+                    boundingBox.setFromObject(object);
+                    const center = boundingBox.getCenter(new THREE.Vector3());
+
+                    object.position.x += object.position.x - center.x;
+                    object.position.y += object.position.y - center.y;
+                    object.position.z += object.position.z - center.z;
+
+                    view.scene.add(model);
+                },
+                () => {},
+                (error) => {
+                    // eslint-disable-next-line no-console
+                    console.log("An error happened :");
+                    // eslint-disable-next-line no-console
+                    console.log(error);
+                }
+            );
+        </script>
+    </body>
+</html>
