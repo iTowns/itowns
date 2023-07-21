@@ -56,6 +56,7 @@ class VectorTilesSource extends TMSSource {
         this.layers = {};
         this.styles = {};
         let promise;
+        this.isVectorTileSource = true;
 
         this.accessToken = source.accessToken;
 
