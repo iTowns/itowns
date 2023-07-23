@@ -254,7 +254,7 @@ class Layer extends THREE.EventDispatcher {
     // eslint-disable-next-line
     dispose(clearCache) {
         if (clearCache) {
-            super.dispose();
+            this.cache.dispose();
         }
         console.warn('Function dispose only clears the cache for this layer');
     }
