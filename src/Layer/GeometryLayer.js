@@ -172,7 +172,7 @@ class GeometryLayer extends Layer {
      * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
      */
     dispose(clearCache) {
-        super.dispose();
+        super.dispose(clearCache);
 
         // if Layer is attached
         if (this.parent) {

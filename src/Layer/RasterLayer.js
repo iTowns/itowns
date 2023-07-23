@@ -18,7 +18,7 @@ class RasterLayer extends Layer {
     * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
     */
     dispose(clearCache) {
-        super.dispose();
+        super.dispose(clearCache);
         for (const root of this.parent.level0Nodes) {
             root.traverse(removeLayeredMaterialNodeLayer(this.id));
         }
