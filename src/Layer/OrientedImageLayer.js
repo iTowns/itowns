@@ -215,9 +215,6 @@ class OrientedImageLayer extends GeometryLayer {
             // only delete geometries if it has some
             super.dispose();
         }
-        if (clearCache) {
-            super.dispose();
-        }
         this.material.visible = false;
         console.warn('You need to replace OrientedImageLayer.material applied on each object. This issue will be fixed when OrientedImageLayer will be a ColorLayer. the material visibility is set to false. To follow issue see https://github.com/iTowns/itowns/issues/1018');
     }
