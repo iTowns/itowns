@@ -193,7 +193,7 @@ class Cache {
     }
 
     delete(key1, key2, key3) {
-        console.warn('`Cached.delete` method is deprecated. Please use `Cache.remove` instead.');
+        console.warn('`Cache.delete` method is deprecated. Please use `Cache.remove` instead.');
         this.remove(key1, key2, key3);
     }
 
@@ -206,7 +206,7 @@ class Cache {
     }
 
     clear() {
-        console.warn('`Cached.clear` method is deprecated. Please use `Cache.dispose` instead.');
+        console.warn('`Cache.clear` method is deprecated. Please use `Cache.dispose` instead.');
         this.dispose();
     }
 
