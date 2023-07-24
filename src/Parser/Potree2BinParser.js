@@ -11,12 +11,12 @@ const workers = {};
 function createWorker(type) {
     if (type === WORKER_TYPE.DECODER_WORKER_BROTLI) {
         return new Worker(
-            /* webpackChunkName: "potree2-brotli-decoder.worker" */ new URL('Worker/potree2.0/potree2-brotli-decoder.worker.js', import.meta.url),
+            /* webpackChunkName: "potree2-brotli-decoder.worker" */ new URL('../Workers/potree2-brotli-decoder.worker.js', import.meta.url),
             { type: 'module' },
         );
     } else if (type === WORKER_TYPE.DECODER_WORKER) {
         return new Worker(
-            /* webpackChunkName: "potree2-decoder.worker" */ new URL('Worker/potree2.0/potree2-decoder.worker.js', import.meta.url),
+            /* webpackChunkName: "potree2-decoder.worker" */ new URL('../Workers/potree2-decoder.worker.js', import.meta.url),
             { type: 'module' },
         );
     } else {
