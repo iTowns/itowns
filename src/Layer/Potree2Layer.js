@@ -1,16 +1,117 @@
+/*
+============
+== POTREE ==
+============
+
+http://potree.org
+
+Copyright (c) 2011-2020, Markus Schütz
+All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+    either expressed or implied, of the FreeBSD Project.
+ */
+
 import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import Potree2Node from 'Core/Potree2Node';
 import Extent from 'Core/Geographic/Extent';
-import Potree2Utils from 'Utils/Potree2Utils';
+
+import { PointAttribute, Potree2PointAttributes, PointAttributeTypes } from 'Core/Potree2PointAttributes';
 
 const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
 bboxMesh.geometry.boundingBox = box3;
 
+const typeNameAttributeMap = {
+    double: PointAttributeTypes.DATA_TYPE_DOUBLE,
+    float: PointAttributeTypes.DATA_TYPE_FLOAT,
+    int8: PointAttributeTypes.DATA_TYPE_INT8,
+    uint8: PointAttributeTypes.DATA_TYPE_UINT8,
+    int16: PointAttributeTypes.DATA_TYPE_INT16,
+    uint16: PointAttributeTypes.DATA_TYPE_UINT16,
+    int32: PointAttributeTypes.DATA_TYPE_INT32,
+    uint32: PointAttributeTypes.DATA_TYPE_UINT32,
+    int64: PointAttributeTypes.DATA_TYPE_INT64,
+    uint64: PointAttributeTypes.DATA_TYPE_UINT64,
+};
+
+function parseAttributes(jsonAttributes) {
+    const attributes = new Potree2PointAttributes();
+
+    const replacements = {
+        rgb: 'rgba',
+    };
+
+    for (const jsonAttribute of jsonAttributes) {
+        const { name, numElements, min, max } = jsonAttribute;
+
+        const type = typeNameAttributeMap[jsonAttribute.type];
+
+        const potreeAttributeName = replacements[name] ? replacements[name] : name;
+
+        const attribute = new PointAttribute(potreeAttributeName, type, numElements);
+
+        if (numElements === 1) {
+            attribute.range = [min[0], max[0]];
+        } else {
+            attribute.range = [min, max];
+        }
+
+        if (name === 'gps-time') { // HACK: Guard against bad gpsTime range in metadata, see potree/potree#909
+            if (attribute.range[0] === attribute.range[1]) {
+                attribute.range[1] += 1;
+            }
+        }
+
+        attribute.initialRange = attribute.range;
+
+        attributes.add(attribute);
+    }
+
+    {
+        // check if it has normals
+        const hasNormals =
+            attributes.attributes.find(a => a.name === 'NormalX') !== undefined &&
+            attributes.attributes.find(a => a.name === 'NormalY') !== undefined &&
+            attributes.attributes.find(a => a.name === 'NormalZ') !== undefined;
+
+        if (hasNormals) {
+            const vector = {
+                name: 'NORMAL',
+                attributes: ['NormalX', 'NormalY', 'NormalZ'],
+            };
+            attributes.addVector(vector);
+        }
+    }
+
+    return attributes;
+}
+
 /**
  * @property {boolean} isPotreeLayer - Used to checkout whether this layer
- * is a Potre2eLayer. Default is `true`. You should not change this, as it is
+ * is a Potree2Layer. Default is `true`. You should not change this, as it is
  * used internally for optimisation.
  */
 class Potree2Layer extends PointCloudLayer {
@@ -52,10 +153,9 @@ class Potree2Layer extends PointCloudLayer {
 
         this.source.whenReady.then((metadata) => {
             this.scale = new THREE.Vector3(1, 1, 1);
-            this.spacing = metadata.spacing;
-            this.hierarchyStepSize = metadata.hierarchy.stepSize;
             this.metadata = metadata;
-            this.pointAttributes = Potree2Utils.parseAttributes(metadata.attributes);
+            this.pointAttributes = parseAttributes(metadata.attributes);
+            this.spacing = metadata.spacing;
 
             const min = new THREE.Vector3(...metadata.boundingBox.min);
             const max = new THREE.Vector3(...metadata.boundingBox.max);
@@ -68,23 +168,14 @@ class Potree2Layer extends PointCloudLayer {
 
             const root = new Potree2Node(0, 0, this);
 
-            root.spacing = metadata.spacing;
-            root.scale = metadata.scale;
-            root.offset = metadata.offset;
-
-            root.projection = metadata.projection;
             root.bbox = boundingBox;
-            root.tightBoundingBox = boundingBox.clone();
             root.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
-            root.tightBoundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
-            root.offset = offset;
 
             root.id = 'r';
             root.depth = 0;
             root.nodeType = 2;
             root.hierarchyByteOffset = 0n;
             root.hierarchyByteSize = BigInt(metadata.hierarchy.firstChunkSize);
-            root.spacing = metadata.spacing;
             root.byteOffset = 0;
 
             this.root = root;

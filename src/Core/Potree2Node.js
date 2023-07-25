@@ -1,3 +1,38 @@
+/*
+============
+== POTREE ==
+============
+
+http://potree.org
+
+Copyright (c) 2011-2020, Markus Schütz
+All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+    either expressed or implied, of the FreeBSD Project.
+ */
+
 import * as THREE from 'three';
 import PointCloudNode from 'Core/PointCloudNode';
 
@@ -5,6 +40,12 @@ import PointCloudNode from 'Core/PointCloudNode';
 // (PotreeConverter protocol builds implicit octree hierarchy by applying the same
 // subdivision algo recursively)
 const dHalfLength = new THREE.Vector3();
+
+const NODE_TYPE = {
+    NORMAL: 0,
+    LEAF: 1,
+    PROXY: 2,
+};
 
 class Potree2Node extends PointCloudNode {
     constructor(numPoints = 0, childrenBitField = 0, layer) {
@@ -74,6 +115,7 @@ class Potree2Node extends PointCloudNode {
         const networkOptions = {
             ...this.layer.source.networkOptions,
             headers: {
+                ...this.layer.source.networkOptions.headers,
                 'content-type': 'multipart/byteranges',
                 Range: `bytes=${first}-${last}`,
             },
@@ -89,7 +131,7 @@ class Potree2Node extends PointCloudNode {
         }
 
         return this.layer.source.fetcher(this.url, this.networkOptions(this.byteOffset, this.byteSize))
-            .then(file => this.layer.source.parse(file, { out: this.layer, in: this.layer.source, node: this }));
+            .then(file => this.layer.source.parser(file, { out: this.layer, in: this.layer.source, node: this }));
     }
 
     async loadOctree() {
@@ -97,7 +139,7 @@ class Potree2Node extends PointCloudNode {
             return;
         }
         this.loading = true;
-        return (this.nodeType === 2) ? this.loadHierarchy() : Promise.resolve();
+        return (this.nodeType === NODE_TYPE.PROXY) ? this.loadHierarchy() : Promise.resolve();
     }
 
     async loadHierarchy() {
@@ -125,12 +167,12 @@ class Potree2Node extends PointCloudNode {
             const byteOffset = view.getBigInt64(offset + 6, true);
             const byteSize = view.getBigInt64(offset + 14, true);
 
-            if (current.nodeType === 2) {
+            if (current.nodeType === NODE_TYPE.PROXY) {
                 // replace proxy with real node
                 current.byteOffset = byteOffset;
                 current.byteSize = byteSize;
                 current.numPoints = numPoints;
-            } else if (type === 2) {
+            } else if (type === NODE_TYPE.PROXY) {
                 // load proxy
                 current.hierarchyByteOffset = byteOffset;
                 current.hierarchyByteSize = byteSize;
@@ -143,7 +185,7 @@ class Potree2Node extends PointCloudNode {
             }
 
             if (current.byteSize === 0n) {
-                // workaround for issue #1125
+                // workaround for issue potree/potree#1125
                 // some inner nodes erroneously report >0 points even though have 0 points
                 // however, they still report a byteSize of 0, so based on that we now set node.numPoints to 0
                 current.numPoints = 0;
@@ -151,7 +193,7 @@ class Potree2Node extends PointCloudNode {
 
             current.nodeType = type;
 
-            if (current.nodeType === 2) {
+            if (current.nodeType === NODE_TYPE.PROXY) {
                 continue;
             }
 

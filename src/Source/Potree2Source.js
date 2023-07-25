@@ -109,16 +109,16 @@ class Potree2Source extends Source {
         super(source);
         this.file = source.file;
         this.fetcher = Fetcher.arrayBuffer;
-        this.extensionOctree = 'octree.bin';
 
         this.whenReady = (source.cloud ? Promise.resolve(source.cloud) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
-            .then((cloud) => {
-                this.pointAttributes = cloud.attributes;
+            .then((metadata) => {
+                this.metadata = metadata;
+                this.pointAttributes = metadata.attributes;
                 this.baseurl = `${this.url}`;
                 this.extension = 'bin';
-                this.parse = Potree2BinParser.parse;
+                this.parser = Potree2BinParser.parse;
 
-                return cloud;
+                return metadata;
             });
     }
 }

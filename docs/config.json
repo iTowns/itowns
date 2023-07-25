@@ -48,6 +48,7 @@
                 "OrientedImageLayer",
                 "PointCloudLayer",
                 "PotreeLayer",
+                "Potree2Layer",
                 "C3DTilesLayer",
                 "LabelLayer",
                 "GlobeLayer",

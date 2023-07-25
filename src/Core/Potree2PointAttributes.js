@@ -1,19 +1,54 @@
+/*
+============
+== POTREE ==
+============
+
+http://potree.org
+
+Copyright (c) 2011-2020, Markus Schütz
+All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+    either expressed or implied, of the FreeBSD Project.
+ */
+
 /**
  * Some types of possible point attribute data formats
  *
  * @class
  */
 const PointAttributeTypes = {
-    DATA_TYPE_DOUBLE: { ordinal: 0, name: 'double', size: 8 },
-    DATA_TYPE_FLOAT: { ordinal: 1, name: 'float',  size: 4 },
-    DATA_TYPE_INT8: { ordinal: 2, name: 'int8',   size: 1 },
-    DATA_TYPE_UINT8: { ordinal: 3, name: 'uint8',  size: 1 },
-    DATA_TYPE_INT16: { ordinal: 4, name: 'int16',  size: 2 },
-    DATA_TYPE_UINT16: { ordinal: 5, name: 'uint16', size: 2 },
-    DATA_TYPE_INT32: { ordinal: 6, name: 'int32',  size: 4 },
-    DATA_TYPE_UINT32: { ordinal: 7, name: 'uint32', size: 4 },
-    DATA_TYPE_INT64: { ordinal: 8, name: 'int64',  size: 8 },
-    DATA_TYPE_UINT64: { ordinal: 9, name: 'uint64', size: 8 },
+    DATA_TYPE_DOUBLE: { name: 'double', size: 8 },
+    DATA_TYPE_FLOAT: { name: 'float',  size: 4 },
+    DATA_TYPE_INT8: { name: 'int8',   size: 1 },
+    DATA_TYPE_UINT8: { name: 'uint8',  size: 1 },
+    DATA_TYPE_INT16: { name: 'int16',  size: 2 },
+    DATA_TYPE_UINT16: { name: 'uint16', size: 2 },
+    DATA_TYPE_INT32: { name: 'int32',  size: 4 },
+    DATA_TYPE_UINT32: { name: 'uint32', size: 4 },
+    DATA_TYPE_INT64: { name: 'int64',  size: 8 },
+    DATA_TYPE_UINT64: { name: 'uint64', size: 8 },
 };
 
 Object.keys(PointAttributeTypes).forEach((type, index) => {
@@ -82,22 +117,12 @@ PointAttribute.GPS_TIME = new PointAttribute(
 
 export { PointAttribute };
 
-export class PointAttributes {
-    constructor(pointAttributes) {
+export class Potree2PointAttributes {
+    constructor() {
         this.attributes = [];
         this.byteSize = 0;
         this.size = 0;
         this.vectors = [];
-
-        if (pointAttributes != null) {
-            for (let i = 0; i < pointAttributes.length; i++) {
-                const pointAttributeName = pointAttributes[i];
-                const pointAttribute = PointAttribute[pointAttributeName];
-                this.attributes.push(pointAttribute);
-                this.byteSize += pointAttribute.byteSize;
-                this.size++;
-            }
-        }
     }
 
     add(pointAttribute) {

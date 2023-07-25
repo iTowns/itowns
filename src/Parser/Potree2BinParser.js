@@ -1,5 +1,10 @@
 import * as THREE from 'three';
 
+import { BrotliWorkerClass } from 'Workers/potree2-brotli-decoder';
+import { DecoderWorkerClass } from 'Workers/potree2-decoder';
+import BrotliWorker from 'Workers/potree2-brotli-decoder.worker';
+import DecoderWorker from 'Workers/potree2-decoder.worker';
+
 // Create enums for different types of workers
 const WORKER_TYPE = {
     DECODER_WORKER_BROTLI: 'DECODER_WORKER_BROTLI',
@@ -8,17 +13,21 @@ const WORKER_TYPE = {
 
 const workers = {};
 
+const runningNodeJS = typeof process !== 'undefined' && process.release && process.release.name === 'node';
+
 function createWorker(type) {
     if (type === WORKER_TYPE.DECODER_WORKER_BROTLI) {
-        return new Worker(
-            /* webpackChunkName: "potree2-brotli-decoder.worker" */ new URL('../Workers/potree2-brotli-decoder.worker.js', import.meta.url),
-            { type: 'module' },
-        );
+        if (runningNodeJS) {
+            return new BrotliWorkerClass();
+        } else {
+            return new BrotliWorker();
+        }
     } else if (type === WORKER_TYPE.DECODER_WORKER) {
-        return new Worker(
-            /* webpackChunkName: "potree2-decoder.worker" */ new URL('../Workers/potree2-decoder.worker.js', import.meta.url),
-            { type: 'module' },
-        );
+        if (runningNodeJS) {
+            return new DecoderWorkerClass();
+        } else {
+            return new DecoderWorker();
+        }
     } else {
         throw new Error('Unknown worker type');
     }
@@ -55,7 +64,7 @@ export default {
     parse: function parse(buffer, options) {
         return new Promise((resolve) => {
             const layer = options.out;
-            const metadata = layer.metadata;
+            const metadata = options.in.metadata;
             const node = options.node;
 
             const type = metadata.encoding === 'BROTLI' ? WORKER_TYPE.DECODER_WORKER_BROTLI : WORKER_TYPE.DECODER_WORKER;
@@ -76,24 +85,13 @@ export default {
                     } else if (property === 'rgba') {
                         geometry.setAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
                     } else if (property === 'NORMAL') {
-                        // geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
                         geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
                     } else if (property === 'INDICES') {
                         const bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
                         bufferAttribute.normalized = true;
                         geometry.setAttribute('indices', bufferAttribute);
                     } else {
-                        const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-
-                        const batchAttribute = buffers[property].attribute;
-                        bufferAttribute.potree = {
-                            offset: buffers[property].offset,
-                            scale: buffers[property].scale,
-                            preciseBuffer: buffers[property].preciseBuffer,
-                            range: batchAttribute.range,
-                        };
-
-                        geometry.setAttribute(property, bufferAttribute);
+                        geometry.setAttribute(property, new THREE.BufferAttribute(new Float32Array(buffer), 1));
                     }
                 });
 
