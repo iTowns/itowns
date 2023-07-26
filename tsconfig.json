@@ -1,0 +1,29 @@
+{
+    "include": [ "src/Main.js" ],
+    "exclude": [ "node_modules", "lib", "dist" ],
+    "compilerOptions": {
+        /* Type Checking */
+        "strict": true,
+        /* Modules */
+        "baseUrl": ".",
+        "paths": {
+            "*": [ "src/*" ]
+        },
+        "moduleResolution": "nodenext",
+        /* Emit */
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "outDir": "types",
+        /* JavaScript Support */
+        "allowJs": true,
+        "checkJs": false, // set to true for type checking of js files
+        /* Interop Constraints */
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "isolatedModules": true,
+        /* Language and Environment */
+        "target": "esnext",
+        /* Completeness */
+        "skipLibCheck": true
+    }
+}

@@ -29,18 +29,37 @@
             var parent;
             var index;
             var wms;
+            var wmsUrl;
             var obj;
             var offset;
             var tileLayer;
             var config;
 
-            var wmsLayers = [
-                'fpc_fond_plan_communaut.fpcilot',
-                'pvo_patrimoine_voirie.pvochausseetrottoir',
-                'Ortho2009_vue_ensemble_16cm_CC46',
-                'pos_opposable.poshauvoi',
-                'MNT2015_Ombrage_2m',
-                'cad_cadastre.cadilot',
+            var wmsSources = [
+                {
+                    name: 'fpc_fond_plan_communaut.fpcilot',
+                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                },
+                {
+                    name: 'pvo_patrimoine_voirie.pvochausseetrottoir',
+                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                },
+                {
+                    name: 'ortho_latest',
+                    url: 'https://imagerie.data.grandlyon.com/wms/grandlyon',
+                },
+                {
+                    name: 'pos_opposable.poshauvoi',
+                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                },
+                {
+                    name: 'MNT2015_Ombrage_2m',
+                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                },
+                {
+                    name: 'cad_cadastre.cadilot',
+                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                },
             ];
 
             var cubeTransformations = [
@@ -99,15 +118,15 @@
             var elevationSource = new itowns.WMSSource({
                 extent,
                 version: '1.3.0',
-                name: 'MNT2012_Altitude_10m_CC46',
+                name: 'MNT2018_Altitude_2m',
                 crs: 'EPSG:3946',
                 width: 256,
                 format: 'image/jpeg',
-                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                url: 'https://imagerie.data.grandlyon.com/wms/grandlyon',
             });
 
-            for (index = 0; index < wmsLayers.length; index++) {
-                wms = wmsLayers[index];
+            for (index = 0; index < wmsSources.length; index++) {
+                wms = wmsSources[index];
                 obj = new itowns.THREE.Object3D();
                 offset = extent.center().toVector3().negate().applyEuler(cubeTransformations[index].rotation);
                 offset.add(cubeTransformations[index].position.divide(scale));
@@ -116,24 +135,24 @@
                 parent.add(obj);
                 obj.updateMatrixWorld(true);
 
-                tileLayer = new itowns.PlanarLayer('planar' + wms + index,
+                tileLayer = new itowns.PlanarLayer('planar' + wms.name + index,
                     extent, obj, { disableSkirt: true });
 
                 view.addLayer(tileLayer);
 
                 var colorSource = new itowns.WMSSource({
-                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                    url: wms.url,
                     version: '1.3.0',
-                    name: wms,
+                    name: wms.name,
                     crs: 'EPSG:3946',
                     format: 'image/jpeg',
                     extent,
                 });
-                var colorLayer = new itowns.ColorLayer('wms_imagery' + wms + index, {
+                var colorLayer = new itowns.ColorLayer('wms_imagery' + wms.name + index, {
                     source: colorSource,
                 });
                 view.addLayer(colorLayer, tileLayer);
-                var elevationLayer = new itowns.ElevationLayer('wms_elevation' + wms + index, {
+                var elevationLayer = new itowns.ElevationLayer('wms_elevation' + wms.name + index, {
                     source: elevationSource,
                     useColorTextureElevation: true,
                     colorTextureElevationMinZ: 144,

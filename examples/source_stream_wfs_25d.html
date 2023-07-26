@@ -64,10 +64,10 @@
             setupLoadingScreen(viewerDiv, view);
 
             wmsImagerySource = new itowns.WMSSource({
-                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                url: 'https://imagerie.data.grandlyon.com/wms/grandlyon',
                 networkOptions: { crossOrigin: 'anonymous' },
                 version: '1.3.0',
-                name: 'Ortho2009_vue_ensemble_16cm_CC46',
+                name: 'ortho_latest',
                 crs: 'EPSG:3946',
                 extent: extent,
                 format: 'image/jpeg',
@@ -84,8 +84,8 @@
             // Add a WMS elevation source
             var wmsElevationSource = new itowns.WMSSource({
                 extent: extent,
-                url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                name: 'MNT2012_Altitude_10m_CC46',
+                url: 'https://imagerie.data.grandlyon.com/wms/grandlyon',
+                name: 'MNT2018_Altitude_2m',
                 crs: 'EPSG:3946',
                 width: 256,
                 format: 'image/jpeg',
@@ -132,11 +132,11 @@
             }
 
             lyonTclBusSource = new itowns.WFSSource({
-                url: 'https://download.data.grandlyon.com/wfs/rdata?',
+                url: "https://data.grandlyon.com/geoserver/sytral/ows?",
                 protocol: 'wfs',
                 version: '2.0.0',
                 id: 'tcl_bus',
-                typeName: 'tcl_sytral.tcllignebus',
+                typeName: "tcl_sytral.tcllignebus_2_0_0",
                 crs: 'EPSG:3946',
                 extent: {
                     west: 1822174.60,
@@ -144,7 +144,7 @@
                     south: 5138876.75,
                     north: 5205890.19,
                 },
-                format: 'geojson',
+                format: 'application/json',
             });
 
             var lyonTclBusLayer = new itowns.FeatureGeometryLayer('lyon_tcl_bus', {

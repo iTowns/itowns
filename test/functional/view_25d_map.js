@@ -11,6 +11,10 @@ describe('view_25d_map', function _() {
     });
 
     it('should subdivise planar correctly', async () => {
+        // Test that there is a given number of "visible" tiles (i.e.
+        // `material.visible` property of a tile is set) for each tested level.
+        // Uses the property `view.tileLayer.info.displayed.tiles` of type
+        // InfoTiledGeometryLayer to retrieve such information
         const displayedTiles = await page.evaluate(() => {
             r = {};
             [...view.tileLayer.info.displayed.tiles]

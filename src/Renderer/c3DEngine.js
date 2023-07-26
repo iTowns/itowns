@@ -64,6 +64,11 @@ class c3DEngine {
             }
         }.bind(this);
 
+        /**
+         * @type {function}
+         * @param {number} w
+         * @param {number} h
+         */
         this.onWindowResize = function _(w, h) {
             this.width = w;
             this.height = h;
