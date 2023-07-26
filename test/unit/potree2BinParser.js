@@ -12,13 +12,49 @@ describe('Potree2BinParser', function () {
 
         const options = {
             in: {
-                pointAttributes: ['POSITION_CARTESIAN'],
-            },
-            out: {
-                offset: new THREE.Vector3(),
                 metadata: {
                     encoding: 'BROTLI',
                 },
+            },
+            out: {
+                pointAttributes: {
+                    attributes: [{
+                        name: 'position',
+                        type: {
+                            name: 'int32',
+                            size: 4,
+                        },
+                        numElements: 3,
+                        byteSize: 12,
+                        description: '',
+                        range: [
+                            [
+                                -0.748212993144989,
+                                -2.7804059982299805,
+                                2.547821283340454,
+                            ],
+                            [
+                                2.45141482234382,
+                                1.4893437627414672,
+                                7.195710657650866,
+                            ],
+                        ],
+                        initialRange: [
+                            [
+                                -0.748212993144989,
+                                -2.7804059982299805,
+                                2.547821283340454,
+                            ],
+                            [
+                                2.45141482234382,
+                                1.4893437627414672,
+                                7.195710657650866,
+                            ],
+                        ],
+                    }],
+                    vectors: [],
+                },
+                offset: new THREE.Vector3(),
             },
             node: {
                 bbox: new THREE.Box3(),

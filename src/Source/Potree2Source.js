@@ -20,9 +20,17 @@ class Potree2Source extends Source {
      *
      * * __`version`__ - The metadata.json format may change over time. The version number is
      * necessary so that parsers know how to interpret the data.
-     * * __`boundingBox`__ - Contains the minimum and maximum of the axis aligned bounding box. This bounding box is cubic and aligned to fit to the octree root.
-     * * __`tightBoundingBox`__ - This bounding box thightly fits the point data (optional).
+     * * __`name`__ - Point cloud name.
+     * * __`description`__ - Point cloud description.
+     * * __`points`__ - Total number of points.
+     * * __`projection`__ - Point cloud geographic projection system.
+     * * __`hierarchy`__ - Information about point cloud hierarchy (first chunk size, step size, octree depth).
+     * * __`offset`__ - Position offset used to determine the global point position.
+     * * __`scale`__ - Point cloud scale.
      * * __`spacing`__ - The minimum distance between points at root level.
+     * * __`boundingBox`__ - Contains the minimum and maximum of the axis aligned bounding box. This bounding box is cubic and aligned to fit to the octree root.
+     * * __`encoding`__ - Encoding type: BROTLI or DEFAULT (uncompressed).
+     * * __`attributes`__ - Array of attributes (position,  intensity, return number, number of returns, classification, scan angle rank, user data, point source id, gps-time, rgb).
      * ```
      * {
      *     version: '2.0',
@@ -35,64 +43,111 @@ class Potree2Source extends Source {
      *         stepSize: 4,
      *         depth: 16
      *     },
-     *     offset: {
-     *         0: 1339072.07,
-     *         1: 7238866.339,
-     *         2: 85.281
-     *     },
-     *     scale: {
-     *         0: 0.001,
-     *         1: 0.001,
-     *         2: 0.002
-     *     },
+     *     offset: [1339072.07, 7238866.339, 85.281],
+     *     scale: [0.001, 0.001, 0.002],
      *     spacing: 24.476062500005355,
      *     boundingBox: {
-     *         min: {
-     *             0: 1339072.07,
-     *             1: 7238866.339,
-     *             2: 85.281
-     *         },
-     *         max: {
-     *             0: 1342205.0060000008,
-     *             1: 7241999.275,
-     *             2: 3218.2170000006854
-     *         }
+     *         min: [1339072.07, 7238866.339, 85.281],
+     *         max: [1342205.0060000008, 7241999.275, 3218.2170000006854]
      *     },
      *     tightBoundingBox: {
-     *         min: {
-     *             0: 1339072.07,
-     *             1: 7238866.339,
-     *             2: 85.281
-     *         },
-     *         max: {
-     *             0: 1342205.0060000008,
-     *             1: 7241999.275,
-     *             2: 3218.2170000006854
-     *         }
+     *         min: [1339072.07, 7238866.339, 85.281],
+     *         max: [1342205.0060000008, 7241999.275, 3218.2170000006854]
      *     },
      *     encoding: "BROTLI",
      *     attributes: [
-     *         0: {
-     *             name: "position",
-     *             ...
-     *         },
-     *         1: {
-     *             name: "intensity",
-     *             ...
-     *         },
-     *         2: {
-     *             name: "classification",
-     *             ...
-     *         },
-     *         3: {
-     *             name: "user data",
-     *             ...
-     *         },
-     *         4: {
-     *             name: "rgb",
-     *             ...
-     *         },
-     *         ...
+     *          {
+     *              name: "position",
+     *              description: "",
+     *              size: 12,
+     *              numElements: 3,
+     *              elementSize: 4,
+     *              type: "int32",
+     *              min: [-0.74821299314498901, -2.7804059982299805, 2.5478212833404541],
+     *              max: [2.4514148223438199, 1.4893437627414672, 7.1957106576508663]
+     *          },
+     *          {
+     *              name: "intensity",
+     *              description: "",
+     *              size: 2,
+     *              numElements: 1,
+     *              elementSize: 2,
+     *              type: "uint16",
+     *              min: [0],
+     *              max: [0]
+     *          },{
+     *              name: "return number",
+     *              description: "",
+     *              size: 1,
+     *              numElements: 1,
+     *              elementSize: 1,
+     *              type: "uint8",
+     *              min: [0],
+     *              max: [0]
+     *          },{
+     *              name: "number of returns",
+     *              description: "",
+     *              size: 1,
+     *              numElements: 1,
+     *              elementSize: 1,
+     *              type: "uint8",
+     *              min: [0],
+     *              max: [0]
+     *          },{
+     *              name: "classification",
+     *              description: "",
+     *              size: 1,
+     *              numElements: 1,
+     *              elementSize: 1,
+     *              type: "uint8",
+     *              min: [0],
+     *              max: [0]
+     *          },{
+     *              name: "scan angle rank",
+     *              description: "",
+     *              size: 1,
+     *              numElements: 1,
+     *              elementSize: 1,
+     *              type: "uint8",
+     *              min: [0],
+     *              max: [0]
+     *          },{
+     *              name: "user data",
+     *              description: "",
+     *              size: 1,
+     *              numElements: 1,
+     *              elementSize: 1,
+     *              type: "uint8",
+     *              min: [0],
+     *              max: [0]
+     *          },{
+     *              name: "point source id",
+     *              description: "",
+     *              size: 2,
+     *              numElements: 1,
+     *              elementSize: 2,
+     *              type: "uint16",
+     *              min: [0],
+     *              max: [0]
+     *          },{
+     *              name: "gps-time",
+     *              description: "",
+     *              size: 8,
+     *              numElements: 1,
+     *              elementSize: 8,
+     *              type: "double",
+     *              min: [0],
+     *              max: [0]
+     *          },{
+     *              name: "rgb",
+     *              description: "",
+     *              size: 6,
+     *              numElements: 3,
+     *              elementSize: 2,
+     *              type: "uint16",
+     *              min: [5632, 5376, 4864],
+     *              max: [65280, 65280, 65280]
+     *          }
      *     ]
      * }
      * ```

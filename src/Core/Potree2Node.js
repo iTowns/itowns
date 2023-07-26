@@ -131,7 +131,19 @@ class Potree2Node extends PointCloudNode {
         }
 
         return this.layer.source.fetcher(this.url, this.networkOptions(this.byteOffset, this.byteSize))
-            .then(file => this.layer.source.parser(file, { out: this.layer, in: this.layer.source, node: this }));
+            .then(file => this.layer.source.parser(file, {
+                in: {
+                    source: this.layer.source,
+                    bbox: this.bbox,
+                    numPoints: this.numPoints,
+                },
+                out: this.layer,
+            }))
+            .then((data) => {
+                this.loaded = true;
+                this.loading = false;
+                return data.geometry;
+            });
     }
 
     async loadOctree() {

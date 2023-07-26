@@ -330,18 +330,18 @@ async function processMessage(data) {
 class BrotliWorkerClass {
     onmessage = null;
 
-    async postMessage(message) {
+    async postMessage(data) {
         if (this.onmessage) {
             const {
-                resultingMessage,
-                resultingTransferables,
+                message,
+                transferables,
             } = await processMessage({
-                ...message,
+                ...data,
             });
             this.onmessage({
                 data: {
-                    ...resultingMessage,
-                    ...resultingTransferables,
+                    ...message,
+                    ...transferables,
                 },
             });
         }

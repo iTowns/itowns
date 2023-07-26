@@ -63,9 +63,8 @@ export default {
      */
     parse: function parse(buffer, options) {
         return new Promise((resolve) => {
+            const metadata = options.in.source.metadata;
             const layer = options.out;
-            const metadata = options.in.metadata;
-            const node = options.node;
 
             const type = metadata.encoding === 'BROTLI' ? WORKER_TYPE.DECODER_WORKER_BROTLI : WORKER_TYPE.DECODER_WORKER;
             const worker = getWorker(type);
@@ -97,27 +96,19 @@ export default {
 
                 geometry.computeBoundingBox();
 
-                // indices ??
-
-                node.density = data.density;
-                node.geometry = geometry;
-                node.loaded = true;
-                node.loading = false;
-
-                resolve(geometry);
+                resolve({ geometry, density: data.density });
             };
 
             const pointAttributes = layer.pointAttributes;
             const scale = metadata.scale;
-            const box = node.bbox;
+            const box = options.in.bbox;
             const min = layer.offset.clone().add(box.min);
             const size = box.max.clone().sub(box.min);
             const max = min.clone().add(size);
             const offset = metadata.offset;
-            const numPoints = node.numPoints;
+            const numPoints = options.in.numPoints;
 
             const message = {
-                id: node.id,
                 buffer,
                 pointAttributes,
                 scale,

@@ -238,15 +238,15 @@ function processMessage(data) {
 class DecoderWorkerClass {
     onmessage = null;
 
-    postMessage(message) {
+    postMessage(data) {
         if (this.onmessage) {
-            const { resultingMessage, resultingTransferables } = processMessage({
-                ...message,
+            const { message, transferables } = processMessage({
+                ...data,
             });
 
             this.onmessage({ data: {
-                ...resultingMessage,
-                ...resultingTransferables,
+                ...message,
+                ...transferables,
             } });
         }
     }
