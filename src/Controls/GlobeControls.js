@@ -35,7 +35,6 @@ const dollyStart = new THREE.Vector2();
 const dollyEnd = new THREE.Vector2();
 const dollyDelta = new THREE.Vector2();
 let dollyScale;
-let dollyOrigin;    // will store the picking position at the start
 
 // Globe move
 const moveAroundGlobe = new THREE.Quaternion();
@@ -267,7 +266,7 @@ class GlobeControls extends THREE.EventDispatcher {
         this.updateHelper = enableTargetHelper ? (position, helper) => {
             positionObject(position, helper);
             view.notifyChange(this.camera);
-        } : function empty() {};
+        } : function empty() { };
 
         this._onEndingMove = null;
         this._onTravel = this.travel.bind(this);
@@ -454,7 +453,8 @@ class GlobeControls extends THREE.EventDispatcher {
                 quaterPano.setFromAxisAngle(normal, sphericalDelta.theta).multiply(quaterAxis.setFromAxisAngle(axisX, sphericalDelta.phi));
                 cameraTarget.position.applyQuaternion(quaterPano);
                 this.camera.localToWorld(cameraTarget.position);
-                break; }
+                break;
+            }
             // ZOOM/ORBIT Move Camera around the target camera
             default: {
                 // get camera position in local space of target
@@ -594,11 +594,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
         // Initialize dolly movement.
         dollyStart.copy(event.viewCoords);
-
-        // Store first position of mouse when dolly
-        if (!dollyOrigin) {
-            dollyOrigin = this.view.getPickingPositionFromDepth(event.viewCoords);        // mouse position
-        }
+        this.view.getPickingPositionFromDepth(event.viewCoords, pickedPosition);        // mouse position
 
         // Initialize pan movement.
         panStart.copy(event.viewCoords);
@@ -637,10 +633,7 @@ class GlobeControls extends THREE.EventDispatcher {
         dollyDelta.subVectors(dollyEnd, dollyStart);
         dollyStart.copy(dollyEnd);
         const delta = dollyDelta.y;
-        if (delta === 0) { return; }
-
-
-        this.handleZoom({ delta }, dollyOrigin);
+        if (delta != 0) { this.handleZoom({ delta }, true); }
     }
 
     handlePan(event) {
@@ -673,7 +666,6 @@ class GlobeControls extends THREE.EventDispatcher {
 
     handleEndMovement(event = {}) {
         this.dispatchEvent(this.endEvent);
-        dollyOrigin = null;
 
 
         this.player.stop();
@@ -770,12 +762,11 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
-    handleZoom(event, dollyOrigin) {
+    handleZoom(event, dollyFlag = false) {
         this.player.stop();
         CameraUtils.stop(this.view, this.camera);
         const zoomScale = event.delta > 0 ? this.zoomInScale : this.zoomOutScale;
-
-        var point = dollyOrigin ?? this.view.getPickingPositionFromDepth(event.viewCoords);        // mouse position
+        var point = dollyFlag ? pickedPosition : this.view.getPickingPositionFromDepth(event.viewCoords);        // mouse position
         var range = this.camera.position.distanceTo(cameraTarget.position);
         range *= zoomScale;
 
@@ -798,7 +789,7 @@ class GlobeControls extends THREE.EventDispatcher {
                 coord: point,
                 range,
             },
-            false);
+                false);
         }
     }
 
@@ -823,7 +814,8 @@ class GlobeControls extends THREE.EventDispatcher {
                     } else {
                         this.state = this.states.NONE;
                     }
-                    break; }
+                    break;
+                }
                 case this.states.ORBIT:
                 case this.states.DOLLY: {
                     const x = event.touches[0].pageX;
@@ -833,7 +825,8 @@ class GlobeControls extends THREE.EventDispatcher {
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     dollyStart.set(0, distance);
                     rotateStart.set(x, y);
-                    break; }
+                    break;
+                }
                 case this.states.PAN:
                     panStart.set(event.touches[0].pageX, event.touches[0].pageY);
                     break;
@@ -870,7 +863,8 @@ class GlobeControls extends THREE.EventDispatcher {
                 } else {
                     this.onTouchEnd();
                 }
-                break; }
+                break;
+            }
             case this.states.ORBIT.finger:
             case this.states.DOLLY.finger: {
                 const gfx = this.view.mainLoop.gfxEngine;
@@ -894,7 +888,8 @@ class GlobeControls extends THREE.EventDispatcher {
 
                 dollyStart.copy(dollyEnd);
 
-                break; }
+                break;
+            }
             case this.states.PAN.finger:
                 panEnd.set(event.touches[0].pageX, event.touches[0].pageY);
                 panDelta.subVectors(panEnd, panStart);
