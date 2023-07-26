@@ -64,8 +64,8 @@
                         "EPSG:4326",
                         4.829501189714537,
                         45.78510982365657
-                    ).as("EPSG:4978");
-                    model.position.set(coord.x, coord.y, coord.z);
+                    ).as("EPSG:4978").toVector3();
+                    model.position.add(coord);
 
                     // Set his own position to work with Itowns referencement
                     object = model;
