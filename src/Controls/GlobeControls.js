@@ -632,8 +632,8 @@ class GlobeControls extends THREE.EventDispatcher {
         dollyEnd.copy(event.viewCoords);
         dollyDelta.subVectors(dollyEnd, dollyStart);
         dollyStart.copy(dollyEnd);
-        const delta = dollyDelta.y;
-        if (delta != 0) { this.handleZoom({ delta }, true); }
+        event.delta = dollyDelta.y;
+        if (event.delta != 0) { this.handleZoom(event); }
     }
 
     handlePan(event) {
@@ -762,12 +762,12 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
-    handleZoom(event, dollyFlag = false) {
+    handleZoom(event) {
         this.player.stop();
         CameraUtils.stop(this.view, this.camera);
         const zoomScale = event.delta > 0 ? this.zoomInScale : this.zoomOutScale;
-        var point = dollyFlag ? pickedPosition : this.view.getPickingPositionFromDepth(event.viewCoords);        // mouse position
-        var range = this.camera.position.distanceTo(cameraTarget.position);
+        let point = event.type === 'dolly' ? pickedPosition : this.view.getPickingPositionFromDepth(event.viewCoords);        // get cursor position
+        let range = this.camera.position.distanceTo(cameraTarget.position);
         range *= zoomScale;
 
         if (point && (range > this.minDistance && range < this.maxDistance)) {  // check if the zoom is in the allowed interval
@@ -789,7 +789,7 @@ class GlobeControls extends THREE.EventDispatcher {
                 coord: point,
                 range,
             },
-                false);
+            false);
         }
     }
 
