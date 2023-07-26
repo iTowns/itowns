@@ -132,11 +132,11 @@
             }
 
             lyonTclBusSource = new itowns.WFSSource({
-                url: 'https://download.data.grandlyon.com/wfs/rdata?',
+                url: "https://data.grandlyon.com/geoserver/sytral/ows?",
                 protocol: 'wfs',
                 version: '2.0.0',
                 id: 'tcl_bus',
-                typeName: 'tcl_sytral.tcllignebus',
+                typeName: "tcl_sytral.tcllignebus_2_0_0",
                 crs: 'EPSG:3946',
                 extent: {
                     west: 1822174.60,
@@ -144,7 +144,7 @@
                     south: 5138876.75,
                     north: 5205890.19,
                 },
-                format: 'geojson',
+                format: 'application/json',
             });
 
             var lyonTclBusLayer = new itowns.FeatureGeometryLayer('lyon_tcl_bus', {
