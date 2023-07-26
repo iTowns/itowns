@@ -36,7 +36,12 @@ export default {
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            if (!layer.isEntwinePointTileLayer) {
+            if (!layer.isEntwinePointTileLayer && !layer.isCopcLayer) {
+                // TODO: Harmonize properties of all PointCloudLayers
+                // Since both EPT and COPC Layer apply scaling at parsing, they
+                // should set a `layer.scale` at `THREE.Vector(1.0, 1.0, 1.0)`.
+                // For the `offset`, see if possible to move this property
+                // upward in Potree layer.
                 points.position.copy(node.bbox.min);
                 points.scale.copy(layer.scale);
             }
