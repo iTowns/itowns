@@ -90,7 +90,17 @@ export default {
                         bufferAttribute.normalized = true;
                         geometry.setAttribute('indices', bufferAttribute);
                     } else {
-                        geometry.setAttribute(property, new THREE.BufferAttribute(new Float32Array(buffer), 1));
+                        const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+
+                        const batchAttribute = buffers[property].attribute;
+                        bufferAttribute.potree = {
+                            offset: buffers[property].offset,
+                            scale: buffers[property].scale,
+                            preciseBuffer: buffers[property].preciseBuffer,
+                            range: batchAttribute.range,
+                        };
+
+                        geometry.setAttribute(property, bufferAttribute);
                     }
                 });
 

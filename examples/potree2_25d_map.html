@@ -118,8 +118,6 @@
                     view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, () => {
                         info.textContent = potreeLayer.displayedCount.toLocaleString() + ' points';
                     });
-
-                    // console.log(view.scene);
                 }
                 window.view = view;
                 view.addLayer(potreeLayer).then(onLayerReady);

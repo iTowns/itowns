@@ -50,10 +50,6 @@ class Potree2Source extends Source {
      *         min: [1339072.07, 7238866.339, 85.281],
      *         max: [1342205.0060000008, 7241999.275, 3218.2170000006854]
      *     },
-     *     tightBoundingBox: {
-     *         min: [1339072.07, 7238866.339, 85.281],
-     *         max: [1342205.0060000008, 7241999.275, 3218.2170000006854]
-     *     },
      *     encoding: "BROTLI",
      *     attributes: [
      *          {
@@ -165,7 +161,7 @@ class Potree2Source extends Source {
         this.file = source.file;
         this.fetcher = Fetcher.arrayBuffer;
 
-        this.whenReady = (source.cloud ? Promise.resolve(source.cloud) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
+        this.whenReady = (source.metadata ? Promise.resolve(source.metadata) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
             .then((metadata) => {
                 this.metadata = metadata;
                 this.pointAttributes = metadata.attributes;
