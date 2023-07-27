@@ -8,7 +8,7 @@ describe('itowns_GLB', function _() {
             this.fullTitle(),
         );
     });
-    
+
     it('should run', async () => {
         assert.ok(result);
     });
