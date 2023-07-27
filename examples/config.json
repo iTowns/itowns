@@ -82,7 +82,8 @@
         "misc_custom_controls": "Define custom controls",
         "misc_custom_label": "Custom label popup",
         "misc_camera_traveling": "Camera traveling",
-        "misc_instancing": "3D objects instancing"
+        "misc_instancing": "3D objects instancing",
+        "misc_gltf_model": "Load gltf/glb model"
     },
 
     "Widgets": {

@@ -14,20 +14,19 @@
         <div id="viewerDiv"></div>
         <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
-            var THREE = itowns.THREE
+            var THREE = itowns.THREE;
             // iTowns namespace defined here
             var viewerDiv = document.getElementById("viewerDiv");
 
             var placement = {
                 coord: new itowns.Coordinates(
                     "EPSG:4326",
-                    4.827361189714537,
-                    45.78537982365657,
-                    10
+                    4.829361189714537,
+                    45.78511422365657
                 ),
-                tilt: 22,
-                heading: 0,
-                range: 2840,
+                tilt: 30,
+                heading: 180,
+                range: 250,
             };
 
             var view = new itowns.GlobeView(viewerDiv, placement);
@@ -55,19 +54,22 @@
                 "https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/lampadaire/scene.gltf ",
                 (gltf) => {
                     var model = gltf.scene;
-                    model.scale.set(10,10,10)
-                    model.updateMatrixWorld();
-                    model.rotation.set(Math.PI / 2.1, 0, -Math.PI / 4.1);
+                    model.scale.set(10, 10, 10);
 
                     // Set coordinates of the GLB
                     coord = new itowns.Coordinates(
                         "EPSG:4326",
                         4.829501189714537,
-                        45.78510982365657
-                    ).as("EPSG:4978").toVector3();
-                    model.position.add(coord);
+                        45.78510982365657,
+                        12
+                    );
 
-                    // Set his own position to work with Itowns referencement
+                    // Set position and angle of the glb
+                    model.position.copy(coord.as(view.referenceCrs));
+                    model.lookAt(model.position.clone().add(coord.geodesicNormal));
+                    model.rotateX(Math.PI / 2);
+
+                    // // Set his own position to work with Itowns referencement
                     object = model;
                     const boundingBox = new THREE.Box3();
                     boundingBox.setFromObject(object);
@@ -77,7 +79,9 @@
                     object.position.y += object.position.y - center.y;
                     object.position.z += object.position.z - center.z;
 
+                    model.updateMatrixWorld();
                     view.scene.add(model);
+                    view.notifyChange();
                 },
                 () => {},
                 (error) => {
