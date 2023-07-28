@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import ElevationLayer from 'Layer/ElevationLayer';
 import WMTSSource from 'Source/WMTSSource';
-import HttpsProxyAgent from 'https-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
