@@ -1,3 +1,152 @@
+<a name="2.40.0"></a>
+# [2.40.0](https://github.com/iTowns/itowns/compare/v2.38.2...v2.40.0) (2023-07-28)
+
+
+### Features
+
+* **3dtiles:** add classification for rendering pointscloud ([b924cd7](https://github.com/iTowns/itowns/commit/b924cd7))
+* **3DTiles:** add style API + C3DTFeature ([864268a](https://github.com/iTowns/itowns/commit/864268a))
+* **3dtiles:** add support for 3d tiles from cesium ion server ([e9793a3](https://github.com/iTowns/itowns/commit/e9793a3))
+* **3DTiles:** add C3DTILES_LAYER_EVENTS.ON_TILE_REQUESTED ([ec837c7](https://github.com/iTowns/itowns/commit/ec837c7))
+* **Coordinates:** Add a setCrs method ([606b6b8](https://github.com/iTowns/itowns/commit/606b6b8))
+* **elevationLayers:** Add config.clampValues for clamping values of the elevation dataset ([1985078](https://github.com/iTowns/itowns/commit/1985078))
+* **instancing:** use instancing for large number of 3d objects ([619a611](https://github.com/iTowns/itowns/commit/619a611))
+* **LabelLayer:** add option to clamp labels to terrain. ([f46ca97](https://github.com/iTowns/itowns/commit/f46ca97))
+* **Parser:** detect if original source have elevation data. ([17aaa8b](https://github.com/iTowns/itowns/commit/17aaa8b))
+* **picking:** Add distance and point position to returned object by points picking ([97a5e6a](https://github.com/iTowns/itowns/commit/97a5e6a))
+* **planarcontrols:** add enabled attribute ([f13a060](https://github.com/iTowns/itowns/commit/f13a060))
+* **Style:** add icon.color and icon.opacity ([4fd5dc4](https://github.com/iTowns/itowns/commit/4fd5dc4))
+* **typescript:** Add devDeps on three's definitions ([2fbbcc3](https://github.com/iTowns/itowns/commit/2fbbcc3))
+* **typescript:** Add tsconfig.json configuration ([3c8c5f5](https://github.com/iTowns/itowns/commit/3c8c5f5))
+* **typescript:** Add typescript dependency ([71a2370](https://github.com/iTowns/itowns/commit/71a2370))
+* **view:** allow to pass an array of layers for picking ([9b6d59f](https://github.com/iTowns/itowns/commit/9b6d59f))
+* **Widget:** add C3DTilesStyle widget ([7862bc1](https://github.com/iTowns/itowns/commit/7862bc1))
+* **WMTS:** Support vendor specific parameters ([cff042c](https://github.com/iTowns/itowns/commit/cff042c))
+* **XbilParser:** gestion nodata in elevation layer (elevation set to 0) ([20075b8](https://github.com/iTowns/itowns/commit/20075b8))
+
+
+### Bug Fixes
+
+* **3dTiles:** addEventListener onTileContentLoaded constructor ([6f9a9d2](https://github.com/iTowns/itowns/commit/6f9a9d2))
+* **3dtiles:** fix batchtable reading ([b245301](https://github.com/iTowns/itowns/commit/b245301))
+* **3dtiles:** improve 3D Tiles cache cleaning ([284be24](https://github.com/iTowns/itowns/commit/284be24))
+* **3DTiles:** tileId == 0 can update style ([11582c9](https://github.com/iTowns/itowns/commit/11582c9))
+* **controls:** keyboard events are now on the domElement on the view instead of window ([d5c80f4](https://github.com/iTowns/itowns/commit/d5c80f4))
+* **CRS:** more robust parameter tests ([a2e0f5c](https://github.com/iTowns/itowns/commit/a2e0f5c))
+* **Debug:** fix 3dTiles bbox visibility ([cd8d106](https://github.com/iTowns/itowns/commit/cd8d106))
+* **example:** change config file linked with the clampValues config ([2a4e911](https://github.com/iTowns/itowns/commit/2a4e911))
+* **example:** invert order of the ElevationLayer addition when using 2 ([c6800c9](https://github.com/iTowns/itowns/commit/c6800c9))
+* **examples:** Fix  cesium ion token ([7f86d26](https://github.com/iTowns/itowns/commit/7f86d26))
+* **examples:** Replace Lyon's deprecated MNT sources ([7490590](https://github.com/iTowns/itowns/commit/7490590))
+* **examples:** Replace Lyon's deprecated Ortho2009 sources ([8dbb3d6](https://github.com/iTowns/itowns/commit/8dbb3d6))
+* **examples:** Update Lyon bus source options ([0881b2d](https://github.com/iTowns/itowns/commit/0881b2d))
+* **Feature2Texture:** prevent empty style ([ab5713a](https://github.com/iTowns/itowns/commit/ab5713a))
+* **GeoJsonParser:** fix firstCoordinates when empty ([e54f352](https://github.com/iTowns/itowns/commit/e54f352))
+* **GlobeLayer, PlanarLayer:** fix too much tiles subdivision due to wrong param name ([c726f25](https://github.com/iTowns/itowns/commit/c726f25))
+* **Label:** catch no data elevation. ([e1e3b1d](https://github.com/iTowns/itowns/commit/e1e3b1d))
+* **ObjectRemovalHelper:** linked objects are not removed. ([05a0768](https://github.com/iTowns/itowns/commit/05a0768))
+* **Parser:** detect if original source have elevation data with multi-features. ([9d509da](https://github.com/iTowns/itowns/commit/9d509da))
+* **Source:** Validate crs in Source constructor ([195bef3](https://github.com/iTowns/itowns/commit/195bef3))
+* **typescript:** Add annotation to unblock typechecking ([25619f3](https://github.com/iTowns/itowns/commit/25619f3))
+* **view:** improve resource disposal by removing textures and allow to remove cache ([2497d00](https://github.com/iTowns/itowns/commit/2497d00))
+* **view:** improve view disposal by removing resize listener ([6f4ec34](https://github.com/iTowns/itowns/commit/6f4ec34))
+
+
+### Performance Improvements
+
+* **LabelLayer:** add automatic label filtering to reduce rendering calls. ([e7dde10](https://github.com/iTowns/itowns/commit/e7dde10))
+
+
+### Examples
+
+* **3dtiles:** add an example to display OSM buildings from cesium ion server ([9e9acb0](https://github.com/iTowns/itowns/commit/9e9acb0))
+* **3dtiles:** rename some 3D tiles examples ([e032bf2](https://github.com/iTowns/itowns/commit/e032bf2))
+* **3dtiles:** update 3d tiles dataset on 3dtiles_25d example to a textured one ([15b438c](https://github.com/iTowns/itowns/commit/15b438c))
+* **Collada:** clean and update ([08dbd3d](https://github.com/iTowns/itowns/commit/08dbd3d))
+* **potree_25d_map:** declare map projection code ([604b6ac](https://github.com/iTowns/itowns/commit/604b6ac))
+* **SourceFileGeoJson:** geojson raster file -> add new example for planarView ([2d6abcd](https://github.com/iTowns/itowns/commit/2d6abcd))
+* **SourceFileKML:** add new kml raster file from official source ([58734ee](https://github.com/iTowns/itowns/commit/58734ee))
+
+
+### Code Refactoring
+
+* **c3DEngine:** deleting the unused method getUniqueThreejsLayer. ([9664006](https://github.com/iTowns/itowns/commit/9664006))
+* **Camera:** remove camera argument from CameraRig ([2af65b7](https://github.com/iTowns/itowns/commit/2af65b7))
+* **example:** update with new gestion of Style ([955722c](https://github.com/iTowns/itowns/commit/955722c))
+* **Extent:** move calculation of Extent intersection to static Extent.intersectsExtent(ExtentA,ExtentB) ([4ca93a9](https://github.com/iTowns/itowns/commit/4ca93a9))
+* **FeatureGeometryLayer:** cleanup -> remove extra line break ([4cef6ba](https://github.com/iTowns/itowns/commit/4cef6ba))
+* **FeatureToolTip:** update for official kml and geojson flux ([6e2a98c](https://github.com/iTowns/itowns/commit/6e2a98c))
+* **GlobeControls:** remove three layer for helpers. ([a1a8391](https://github.com/iTowns/itowns/commit/a1a8391))
+* **GlobeLayer:** pass in static the method horizonCulling. ([18af800](https://github.com/iTowns/itowns/commit/18af800))
+* **GlobeView:** move sun light, from tileLayer to main scene. ([68b78f0](https://github.com/iTowns/itowns/commit/68b78f0))
+* **LabeLayer:** change label node culling mechanism. ([b833744](https://github.com/iTowns/itowns/commit/b833744))
+* **LabelLayer:** apply architecture node and simplify process. ([aff7964](https://github.com/iTowns/itowns/commit/aff7964))
+* **Label:** optimize elevation update. ([7492c8e](https://github.com/iTowns/itowns/commit/7492c8e))
+* **Layer:** instanciate new Style at Layer instead of at examples ([d26f29e](https://github.com/iTowns/itowns/commit/d26f29e))
+* **LayerUpdateState:** add hasFinished method. ([3767b0a](https://github.com/iTowns/itowns/commit/3767b0a))
+* **OBB:** remove OBB from node's children. ([0440bb6](https://github.com/iTowns/itowns/commit/0440bb6))
+* **pickFeaturesAt:** avoid picking twice the same featureGeometry ([d5e5f7e](https://github.com/iTowns/itowns/commit/d5e5f7e))
+* **RasterTile:** emit event when raster elevation changed. ([ea52ee1](https://github.com/iTowns/itowns/commit/ea52ee1))
+* **Style:** instantiate canvas when no document ([b20916f](https://github.com/iTowns/itowns/commit/b20916f))
+* **test:** add a npm run test in develpment mode -> run test-dev ([9ca1d5f](https://github.com/iTowns/itowns/commit/9ca1d5f))
+* **test:** commenting failing test in test/unit/CameraUtils ([b39edf8](https://github.com/iTowns/itowns/commit/b39edf8))
+* **test:** handling assert fail messages in tests ([1131abe](https://github.com/iTowns/itowns/commit/1131abe))
+* **test:** handling fail messages in test with promise ([48b9750](https://github.com/iTowns/itowns/commit/48b9750))
+* **THREE:** Remove Three.js layers using. ([971f175](https://github.com/iTowns/itowns/commit/971f175))
+* **TileMesh:** add change visibility event. ([90ada88](https://github.com/iTowns/itowns/commit/90ada88))
+* **TileMesh:** new structuring of the data linked to the node. ([05eb368](https://github.com/iTowns/itowns/commit/05eb368))
+* **view:** rename pickCoordinates to pickTerrainCoordinates ([9c701db](https://github.com/iTowns/itowns/commit/9c701db))
+* **Widget:** expose Widget in API ([ca77fc8](https://github.com/iTowns/itowns/commit/ca77fc8))
+
+
+### Workflow and chores
+
+* release v2.40.0 ([20a80eb](https://github.com/iTowns/itowns/commit/20a80eb))
+* add coding rules ([1ec89f2](https://github.com/iTowns/itowns/commit/1ec89f2))
+* add name to contributors ([2f81334](https://github.com/iTowns/itowns/commit/2f81334))
+* **contributors:** update contributors and maintainers ([b5123f5](https://github.com/iTowns/itowns/commit/b5123f5))
+* **deployment:** prevent deploying potree bundle since it is not used yet ([8f7ae1a](https://github.com/iTowns/itowns/commit/8f7ae1a))
+* **deps-dev:** bump webpack from 5.72.1 to 5.76.0 ([0bf309b](https://github.com/iTowns/itowns/commit/0bf309b))
+* **deps-dev:** bump word-wrap from 1.2.3 to 1.2.5 ([64794b1](https://github.com/iTowns/itowns/commit/64794b1))
+* **deps:** bump dns-packet from 5.3.1 to 5.4.0 ([96987fd](https://github.com/iTowns/itowns/commit/96987fd))
+* don't watch git hash modification ([f19973e](https://github.com/iTowns/itowns/commit/f19973e))
+* **examples:** update draco to work with THREE r153 ([00b6db5](https://github.com/iTowns/itowns/commit/00b6db5))
+* **integration:** differentiate deployment for LTS and current version ([470e306](https://github.com/iTowns/itowns/commit/470e306))
+* **integration:** fix next version publication ([fdb4813](https://github.com/iTowns/itowns/commit/fdb4813))
+* **integration:** publish latest and next npm packages ([f8996b3](https://github.com/iTowns/itowns/commit/f8996b3))
+* **integration:** update actions in integration script ([c83bfcf](https://github.com/iTowns/itowns/commit/c83bfcf))
+* replace variable declaration by const or let ([36ce64d](https://github.com/iTowns/itowns/commit/36ce64d))
+* update packages ([a841343](https://github.com/iTowns/itowns/commit/a841343))
+* update three to 0.153.0 ([728f473](https://github.com/iTowns/itowns/commit/728f473))
+* update three to r154 ([85c9b78](https://github.com/iTowns/itowns/commit/85c9b78))
+
+
+### Documentation
+
+* **3dtiles:** add documentation for 3d tiles source ([eb7c8ca](https://github.com/iTowns/itowns/commit/eb7c8ca))
+* add coding conventions and other rules for PR. ([5001c8d](https://github.com/iTowns/itowns/commit/5001c8d))
+* **examples:** Add documentation on some test cases ([cba2146](https://github.com/iTowns/itowns/commit/cba2146))
+* **layers:** improve raster layers doc ([c53436a](https://github.com/iTowns/itowns/commit/c53436a))
+* **style:** JSDoc for StyleOptions ([3adbf39](https://github.com/iTowns/itowns/commit/3adbf39))
+* **tutorials:** fix tutorials source API keys ([0c10d82](https://github.com/iTowns/itowns/commit/0c10d82))
+* **tutorials:** update with new gestion of Style ([d76f92f](https://github.com/iTowns/itowns/commit/d76f92f))
+* **WMTSSource:** Change the link and the extend to TMSSource ([23c16d2](https://github.com/iTowns/itowns/commit/23c16d2))
+
+
+### Tests
+
+* **3dtiles:** test 3d tiles sources and 3d tiles ion example ([47db4c7](https://github.com/iTowns/itowns/commit/47db4c7))
+* **examples:** add new functional tests ([8e14fe8](https://github.com/iTowns/itowns/commit/8e14fe8))
+* **LabelLayer:** add and modify LabelLayer tests. ([a8dfb36](https://github.com/iTowns/itowns/commit/a8dfb36))
+* **style:** add tests for applyToHTML() and getImage() ([8e04cd8](https://github.com/iTowns/itowns/commit/8e04cd8))
+
+
+### BREAKING CHANGES
+
+* **view:** View.pickCoordinates has been renamed to View.pickTerrainCoordinates and returns the coordinates in the referenceCrs of the view instead of in the crs of the tiledLayer extent.
+
+
+
 <a name="2.39.0"></a>
 # [2.39.0](https://github.com/iTowns/itowns/compare/v2.38.2...v2.39.0) (2023-01-04)
 
