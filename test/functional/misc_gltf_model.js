@@ -1,10 +1,10 @@
 const assert = require('assert');
 
-describe('itowns_GLB', function _() {
+describe('misc_glft_model', function _() {
     let result;
     before(async () => {
         result = await loadExample(
-            'examples/itowns_GLB.html',
+            'examples/misc_gltf_model',
             this.fullTitle(),
         );
     });
