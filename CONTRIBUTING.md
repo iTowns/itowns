@@ -60,7 +60,7 @@ question or suggestion.
 
 We recommend the use of [iTowns discussions](https://github.com/iTowns/itowns/discussions)
 for suggestions and questions.
-However, there is another way of suggesting imrpovements or asking questions, which is
+However, there is another way of suggesting improvements or asking questions, which is
 through iTowns mailing lists. There is a user mailing list and a developer mailing list.
 
 You can subscribe to the mailing lists here:
