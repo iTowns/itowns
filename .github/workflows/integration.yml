@@ -12,9 +12,9 @@ on:
 
 jobs:
 
-  # Build bundle, doc and run tests (unit, functional and coverage)
-  tests:
-    name: Build and test validation
+  # Build bundle, doc and check linter
+  build:
+    name: Build bundle, check Linter and generate documentation
     runs-on: ubuntu-latest
     steps:
 
@@ -24,9 +24,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
+          cache: 'npm'
 
       # Install packages
-      # TODO: add cache npm to speed up installing
       - name: Install packages
         run: npm ci
 
@@ -43,22 +43,6 @@ jobs:
         if: ${{ success() }}
         run: npm run build
 
-      # Run unit tests
-      - name: Unit tests
-        run: npm run test-with-coverage_lcov
-
-      # Run functional tests
-      # TODO: functional tests don't stop if one fails
-      - name: Functional tests
-        if: ${{ success() }}
-        run: npm run test-functional
-
-      # Code coverage
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
-
       # Build documentation
       - name: Build documentation
         if: ${{ success() && github.ref == 'refs/heads/master' }}
@@ -66,7 +50,7 @@ jobs:
 
       # Prepare archive for deploying
       - name: Archive production artifacts
-        if: ${{ success() && github.ref == 'refs/heads/master' }}
+        if: ${{ success() }}
         uses: actions/upload-artifact@v3
         with:
             name: dist-itowns
@@ -92,11 +76,70 @@ jobs:
           accessToken: ${{ secrets.GITHUB_TOKEN }}
 
 
+  # Unit and coverage tests
+  unit-and-coverage-tests:
+    name: Unit and coverage tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+
+      # Use specific Node.js version
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'npm'
+
+      # Install packages
+      - name: Install packages
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test-with-coverage_lcov
+
+      # Code coverage
+      - name: Coveralls
+        if: ${{ success() }}
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  # Functional tests
+  functional-tests:
+    name: Functional tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+
+      # Use specific Node.js version
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'npm'
+
+      # Install packages
+      - name: Install packages
+        run: npm ci
+
+      # Download artifact from build
+      - name: Download itowns bundle
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-itowns
+
+      - name: Run functional tests
+        run: npm run test-functional
+
+
   # Publish NPM package
   publish:
     name: Publish NPM package
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [tests, check-commit-message]
+    needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
     runs-on: ubuntu-latest
     steps:
 
@@ -147,7 +190,7 @@ jobs:
   deploy:
     name: Deploy to itowns.github.io
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [tests, check-commit-message]
+    needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
     runs-on: ubuntu-latest
     steps:
 
@@ -208,7 +251,7 @@ jobs:
   release:
     name: Release GitHub
     if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
-    needs: [tests, check-commit-message]
+    needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
     runs-on: ubuntu-latest
     steps:
 
