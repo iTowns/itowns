@@ -1,5 +1,5 @@
-import * as THREE from 'three';
 import assert from 'assert';
+import * as THREE from 'three';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 import FeatureProcessing from 'Process/FeatureProcessing';
 import TileMesh from 'Core/TileMesh';

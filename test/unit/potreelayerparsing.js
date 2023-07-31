@@ -1,10 +1,10 @@
 import assert from 'assert';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import PotreeLayer from 'Layer/PotreeLayer';
 import PotreeSource from 'Source/PotreeSource';
 import Coordinates from 'Core/Geographic/Coordinates';
 import GlobeView from 'Core/Prefab/GlobeView';
 import View from 'Core/View';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Renderer from './bootstrap';
 
 describe('Potree Provider', function () {

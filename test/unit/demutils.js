@@ -1,8 +1,8 @@
+import assert from 'assert';
 import * as THREE from 'three';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import ElevationLayer from 'Layer/ElevationLayer';
 import WMTSSource from 'Source/WMTSSource';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';

@@ -1,9 +1,9 @@
 import assert from 'assert';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import PotreeLayer from 'Layer/PotreeLayer';
 import PotreeSource from 'Source/PotreeSource';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import PotreeNode from 'Core/PotreeNode';
 import PointsMaterial from 'Renderer/PointsMaterial';

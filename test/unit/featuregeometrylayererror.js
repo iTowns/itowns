@@ -1,9 +1,9 @@
-import * as THREE from 'three';
 import assert from 'assert';
+import * as THREE from 'three';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import GlobeView from 'Core/Prefab/GlobeView';
 import FeatureGeometryLayer from 'Layer/FeatureGeometryLayer';
 import FileSource from 'Source/FileSource';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import OBB from 'Renderer/OBB';

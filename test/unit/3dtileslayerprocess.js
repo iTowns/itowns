@@ -1,9 +1,9 @@
 import assert from 'assert';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import C3DTilesLayer from 'Layer/C3DTilesLayer';
 import C3DTilesSource from 'Source/C3DTilesSource';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Renderer from './bootstrap';
 

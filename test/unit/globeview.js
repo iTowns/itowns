@@ -1,5 +1,5 @@
-import * as THREE from 'three';
 import assert from 'assert';
+import * as THREE from 'three';
 import GlobeView from 'Core/Prefab/GlobeView';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import Coordinates from 'Core/Geographic/Coordinates';

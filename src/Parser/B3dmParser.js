@@ -7,7 +7,6 @@ import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import utf8Decoder from 'Utils/Utf8Decoder';
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
-import { MeshBasicMaterial } from 'three';
 import disposeThreeMaterial from 'Utils/ThreeUtils';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
@@ -195,7 +194,7 @@ export default {
                                 options.overrideMaterials.isMaterial) {
                                     mesh.material = options.overrideMaterials;
                                 } else {
-                                    mesh.material = new MeshBasicMaterial();
+                                    mesh.material = new THREE.MeshBasicMaterial();
                                 }
                                 disposeThreeMaterial(oldMat);
                             } else if (Capabilities.isLogDepthBufferSupported()

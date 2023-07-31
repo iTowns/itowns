@@ -1,8 +1,8 @@
+import * as mapbox from '@mapbox/mapbox-gl-style-spec';
+import { Color } from 'three';
 import { FEATURE_TYPES } from 'Core/Feature';
 import Cache from 'Core/Scheduler/Cache';
 import Fetcher from 'Provider/Fetcher';
-import * as mapbox from '@mapbox/mapbox-gl-style-spec';
-import { Color } from 'three';
 import { deltaE } from 'Renderer/Color';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
