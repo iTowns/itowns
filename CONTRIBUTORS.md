@@ -12,7 +12,6 @@ The following people have contributed to iTowns.
   * [Adrien Berthet](https://github.com/zarov)
   * [Madec Germerie-Guizouarn](https://github.com/mgermerie)
   * [Mathieu Brédif](https://github.com/mbredif)
-  * [François Toromanoff](https://github.com/ftoromanoff)
   * [Aymeric Dutremble](https://github.com/a-dutremble)
 
 * [CIRIL Group](https://www.cirilgroup.com/en/):
@@ -44,7 +43,7 @@ The following people have contributed to iTowns.
 * [Diginove](http://diginove.com/index.php/fr/diginove-lexpertise-en-traitement-dimages/):
   * [Michel Benet](https://github.com/mbenevole)
 
-* [Jamie Myose](https://github.com/jamesmyose)
+* [James Myose](https://github.com/jamesmyose)
 
 The following organizations are the current maintainers of iTowns:
 * IGN (http://www.ign.fr)
