@@ -76,11 +76,27 @@ jobs:
                 buildDocs
 
 
+  # Check commits messages
+  check-commit-message:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Commit Type
+        uses: gsactions/commit-message-checker@v2
+        with:
+          pattern: '^(feat|feature|features|fix|perf|revert|doc|docs|refactor|refacto|refactoring|test|tests|chore|rename|workflow|example|examples|others)(\([\w\-\.]+\))?: ([\w ])+([\s\S]*)'
+          error: 'One or several of the pushed commits do not match the conventional commit convention. Please read CONTRIBUTING.md.'
+          excludeDescription: true
+          excludeTitle: true
+          checkAllCommitMessages: true
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+
+
   # Publish NPM package
   publish:
     name: Publish NPM package
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: tests
+    needs: [tests, check-commit-message]
     runs-on: ubuntu-latest
     steps:
 
@@ -131,7 +147,7 @@ jobs:
   deploy:
     name: Deploy to itowns.github.io
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: tests
+    needs: [tests, check-commit-message]
     runs-on: ubuntu-latest
     steps:
 
@@ -192,7 +208,7 @@ jobs:
   release:
     name: Release GitHub
     if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
-    needs: tests
+    needs: [tests, check-commit-message]
     runs-on: ubuntu-latest
     steps:
 
