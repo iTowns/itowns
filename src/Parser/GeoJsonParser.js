@@ -42,7 +42,7 @@ const toFeature = {
         // or list of triplet [[x1, y1, z1], [x2, y2, z2], ..., [xn, yn, zn]]
         for (const triplet of coordinates) {
             coord.setFromValues(triplet[0], triplet[1], triplet[2]);
-            geometry.pushCoordinates(coord, feature);
+            geometry.pushCoordinates(feature, coord);
         }
         geometry.updateExtent();
     },
@@ -58,7 +58,7 @@ const toFeature = {
             coord.setFromValues(coordinates[i][0], coordinates[i][1], coordinates[i][2]);
             sum += (last.x - coord.x) * (last.y + coord.y);
             last.copy(coord);
-            geometry.pushCoordinates(coord, feature);
+            geometry.pushCoordinates(feature, coord);
         }
         sum += (last.x - first.x) * (last.y + first.y);
         geometry.getLastSubGeometry().ccw = sum < 0;
