@@ -132,7 +132,7 @@
         // add geometries to feature
         const geometry = feature.bindNewGeometry();
         geometry.startSubGeometry(1, feature);
-        geometry.pushCoordinates(coordinate, feature);
+        geometry.pushCoordinates(feature, coordinate);
         geometry.properties.position = coordinate;
 
         geometry.updateExtent();

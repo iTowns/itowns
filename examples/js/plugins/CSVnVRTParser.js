@@ -124,7 +124,7 @@ const CSVnVRTParser = (function _() {
                         geometry.startSubGeometry(1, feature);
                         coord.crs = (layer.GeometryField.SRS && layer.GeometryField.SRS.value) || _crs;
                         coord.setFromValues(Number(line[x]), Number(line[y]), Number(line[z]) || 0);
-                        geometry.pushCoordinates(coord, feature);
+                        geometry.pushCoordinates(feature, coord);
 
                         geometry.updateExtent();
                         feature.updateExtent(geometry);

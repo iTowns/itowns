@@ -55,9 +55,9 @@ describe('Feature', function () {
         const geometry = featureLine.bindNewGeometry();
 
         coord.setFromValues(-10, -10, 0);
-        geometry.pushCoordinates(coord, featureLine);
+        geometry.pushCoordinates(featureLine, coord);
         coord.setFromValues(10, 10, 0);
-        geometry.pushCoordinates(coord, featureLine);
+        geometry.pushCoordinates(featureLine, coord);
         geometry.closeSubGeometry(2, featureLine);
 
         featureLine.updateExtent(geometry);

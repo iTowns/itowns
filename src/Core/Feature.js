@@ -135,10 +135,15 @@ export class FeatureGeometry {
 
     /**
      * Push new coordinates in vertices buffer.
-     * @param {Coordinates} coordIn The coordinates to push.
      * @param {Feature} feature - the feature containing the geometry
+     * @param {Coordinates} coordIn The coordinates to push.
      */
-    pushCoordinates(coordIn, feature) {
+    pushCoordinates(feature, coordIn) {
+        if (feature.isCoordinates) {
+            console.warn('Deprecated: change in arguments order, use pushCoordinates(feature, coordIn) instead');
+            this.pushCoordinates(coordIn, feature);
+            return;
+        }
         coordIn.z = this.baseAltitude(feature, coordIn);
 
         coordIn.as(feature.crs, coordOut);
