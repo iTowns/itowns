@@ -136,7 +136,6 @@ function readPBF(file, options) {
                     feature.id = layer.id;
                     feature.order = layer.order;
                     feature.style = options.in.styles[feature.id];
-                    feature.hasRawElevationData = false;
                     vtFeatureToFeatureGeometry(vtFeature, feature);
                 } else if (!collection.features.find(f => f.id === layer.id)) {
                     feature = collection.newFeatureByReference(feature);
@@ -175,7 +174,7 @@ export default {
      * @param {InformationsData} options.in - Object containing all styles,
      * layers and informations data, see {@link InformationsData}.
      *
-     * @param {Object} options.in.Styles - Object containing subobject with
+     * @param {Object} options.in.styles - Object containing subobject with
      * informations on a specific style layer. Styles available is by `layer.id` and by zoom.
      *
      * @param {Object} options.in.layers - Object containing subobject with
