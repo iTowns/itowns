@@ -348,8 +348,9 @@ function featureToPolygon(feature, options) {
     const indices = [];
 
     const batchIds = options.batchId ? new Uint32Array(vertices.length / 3) : undefined;
-    const globals = { fill: true };
     let featureId = 0;
+
+    const globals = { fill: true };
 
     for (const geometry of feature.geometries) {
         const start = geometry.indices[0].offset;
@@ -410,34 +411,37 @@ function area(contour, offset, count) {
 const bottomColor = new THREE.Color();
 function featureToExtrudedPolygon(feature, options) {
     const ptsIn = feature.vertices;
-
     const normals = feature.normals;
+
+    const z = options.GlobalZTrans - feature.altitude.min;
     const vertices = new Float32Array(ptsIn.length * 2);
+    const totalVertices = ptsIn.length / 3;
+
     const colors = new Uint8Array(ptsIn.length * 2);
     const indices = [];
-    const totalVertices = ptsIn.length / 3;
 
     const batchIds = options.batchId ? new Uint32Array(vertices.length / 3) : undefined;
     let featureId = 0;
 
-    const z = options.GlobalZTrans - feature.altitude.min;
     const globals = { fill: true };
 
     for (const geometry of feature.geometries) {
+        const start = geometry.indices[0].offset;
+
         const context = { globals, properties: () => geometry.properties };
         const style = feature.style.drawingStylefromContext(context);
+
+
+        const lastIndice = geometry.indices.slice(-1)[0];
+        const end = lastIndice.offset + lastIndice.count;
+        const count = end - start;
+        const isClockWise = geometry.indices[0].ccw ?? (area(ptsIn, start, count) < 0);
 
         // topColor is assigned to the top of extruded polygon
         const topColor = toColor(style.fill.color);
         // bottomColor is assigned to the bottom of extruded polygon
         bottomColor.copy(topColor);
         bottomColor.multiplyScalar(0.5);
-
-        const start = geometry.indices[0].offset;
-        const lastIndice = geometry.indices.slice(-1)[0];
-        const end = lastIndice.offset + lastIndice.count;
-        const count = end - start;
-        const isClockWise = geometry.indices[0].ccw ?? (area(ptsIn, start, count) < 0);
 
         coordinatesToVertices(ptsIn, normals, vertices, z, start, count);
         fillColorArray(colors, count, bottomColor, start);
