@@ -10,5 +10,7 @@ export default {
         './capabilities/WebGL.js',
         './libs/ktx-parse.module.js',
         './libs/zstddec.module.js'
+        './libs/motion-controllers.module.js',
+        './webxr/XRControllerModelFactory.js',
     ],
 };
