@@ -104,3 +104,5 @@ export { default as C3DTExtensions } from './Core/3DTiles/C3DTExtensions';
 export { default as C3DTilesTypes } from './Core/3DTiles/C3DTilesTypes';
 export { default as C3DTBatchTableHierarchyExtension } from './Core/3DTiles/C3DTBatchTableHierarchyExtension';
 export { process3dTilesNode, $3dTilesCulling, $3dTilesSubdivisionControl } from 'Process/3dTilesProcessing';
+
+export { XRControllerModelFactory } from 'ThreeExtended/webxr/XRControllerModelFactory';

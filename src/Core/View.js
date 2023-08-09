@@ -153,6 +153,7 @@ class View extends THREE.EventDispatcher {
      * @param {boolean} [options.renderer.isWebGL2=true] - enable webgl 2.0 for THREE.js.
      * @param {boolean|Object} [options.webXR=false] - enable webxr button to switch on VR visualization.
      * @param {number} [options.webXR.scale=1.0] - apply webxr scale tranformation.
+     * @param {number} [options.webXR.callback] - rendering callback.
      * @param {?Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
      * @param {?Color} options.diffuse - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
