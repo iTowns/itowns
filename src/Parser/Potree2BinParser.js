@@ -1,10 +1,5 @@
 import * as THREE from 'three';
 
-import { BrotliWorkerClass } from 'Workers/potree2-brotli-decoder';
-import { DecoderWorkerClass } from 'Workers/potree2-decoder';
-import BrotliWorker from 'Workers/potree2-brotli-decoder.worker';
-import DecoderWorker from 'Workers/potree2-decoder.worker';
-
 // Create enums for different types of workers
 const WORKER_TYPE = {
     DECODER_WORKER_BROTLI: 'DECODER_WORKER_BROTLI',
@@ -13,21 +8,17 @@ const WORKER_TYPE = {
 
 const workers = {};
 
-const runningNodeJS = typeof process !== 'undefined' && process.release && process.release.name === 'node';
-
 function createWorker(type) {
     if (type === WORKER_TYPE.DECODER_WORKER_BROTLI) {
-        if (runningNodeJS) {
-            return new BrotliWorkerClass();
-        } else {
-            return new BrotliWorker();
-        }
+        return new Worker(
+            /* webpackChunkName: "potree2-brotli-decoder.worker" */ new URL('../Workers/potree2-brotli-decoder.worker.js', import.meta.url),
+            { type: 'module' },
+        );
     } else if (type === WORKER_TYPE.DECODER_WORKER) {
-        if (runningNodeJS) {
-            return new DecoderWorkerClass();
-        } else {
-            return new DecoderWorker();
-        }
+        return new Worker(
+            /* webpackChunkName: "potree2-decoder.worker" */ new URL('../Workers/potree2-decoder.worker.js', import.meta.url),
+            { type: 'module' },
+        );
     } else {
         throw new Error('Unknown worker type');
     }
