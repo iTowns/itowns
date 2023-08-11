@@ -37,6 +37,7 @@ import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import Potree2Node from 'Core/Potree2Node';
 import Extent from 'Core/Geographic/Extent';
+import JSBI from 'jsbi';
 
 import { PointAttribute, Potree2PointAttributes, PointAttributeTypes } from 'Core/Potree2PointAttributes';
 
@@ -181,7 +182,8 @@ class Potree2Layer extends PointCloudLayer {
             root.depth = 0;
             root.nodeType = 2;
             root.hierarchyByteOffset = 0n;
-            root.hierarchyByteSize = BigInt(metadata.hierarchy.firstChunkSize);
+            root.hierarchyByteSize = JSBI.BigInt(metadata.hierarchy.firstChunkSize);
+
             root.byteOffset = 0;
 
             this.root = root;
