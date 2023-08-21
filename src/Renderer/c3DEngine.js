@@ -61,9 +61,9 @@ class c3DEngine {
 
         this.renderView = function _(view) {
             this.renderer.clear();
-            this.renderer.render(view.scene, view.camera.camera3D);
+            this.renderer.render(view.scene, view.camera3D);
             if (view.tileLayer) {
-                this.label2dRenderer.render(view.tileLayer.object3d, view.camera.camera3D);
+                this.label2dRenderer.render(view.tileLayer.object3d, view.camera3D);
             }
         }.bind(this);
 

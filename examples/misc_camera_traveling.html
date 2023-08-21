@@ -89,7 +89,7 @@
                 // Retrieve current camera transform options
                 const cameraTransformOptions = itowns.CameraUtils.getTransformCameraLookingAtTarget(
                     view,
-                    view.camera.camera3D,
+                    view.camera3D,
                 );
                 // Change default easing parameter for animation speed
                 // (see https://sole.github.io/tween.js/examples/03_graphs.html)
@@ -101,7 +101,7 @@
                 // Create a CameraHelper (https://threejs.org/docs/index.html?q=Camera#api/en/helpers/CameraHelper) at
                 // the current position of the camera. The camera is copied, and the copy's `far` is lowered. This
                 // renders shorter axes on the displayed CameraHelper.
-                const copyCamera = view.camera.camera3D.clone();
+                const copyCamera = view.camera3D.clone();
                 copyCamera.far = 50;
                 const helper = new itowns.THREE.CameraHelper(copyCamera);
                 helper.updateWorldMatrix(true, false);
@@ -114,12 +114,12 @@
                     travelOn = true;
                     return itowns.CameraUtils.sequenceAnimationsToLookAtTarget(
                         view,
-                        view.camera.camera3D,
+                        view.camera3D,
                         travelSteps,
                     ).then(() => { travelOn = false; });
                 }
 
-                itowns.CameraUtils.stop(view, view.camera.camera3D);  // If travel is on, interrupt it
+                itowns.CameraUtils.stop(view, view.camera3D);  // If travel is on, interrupt it
             }
 
             // Listens for user input :

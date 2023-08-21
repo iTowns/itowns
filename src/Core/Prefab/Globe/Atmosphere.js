@@ -147,7 +147,7 @@ class Atmosphere extends GeometryLayer {
 
     // eslint-disable-next-line no-unused-vars
     preUpdate(context, srcs) {
-        const cameraPosition = context.view.camera.camera3D.position;
+        const cameraPosition = context.view.camera3D.position;
         if (this.fog.enable) {
             v.setFromMatrixPosition(context.view.tileLayer.object3d.matrixWorld);
             const len = v.distanceTo(cameraPosition);

@@ -15,7 +15,7 @@
             <ul>
               <li>Display your pointcloud</li>
               <li>Use classification to assign colour to each points</li>
-              <li>Switch between mode on the left panel</li>             
+              <li>Switch between mode on the left panel</li>
             </ul>
         </div>
         <div id="viewerDiv"></div>
@@ -27,7 +27,7 @@
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
 
-            
+
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 3.695885, 43.397379, 0),
 
@@ -39,7 +39,7 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             var view = new itowns.GlobeView(viewerDiv, placement);
-            view.camera.camera3D.near = 5;
+            view.camera3D.near = 5;
             setupLoadingScreen(viewerDiv, view);
 
             var menuGlobe = new GuiTools('menuDiv', view, 300);
@@ -76,14 +76,14 @@
             itowns.View.prototype.addLayer.call(view, $3dTilesLayerSetePC);
             function switchMode(){
                 let pntsLayer = view.getLayerById("3d-tiles-sete");
-                
+
                 if(pntsLayer){
                     pntsLayer = pntsLayer;
                     pntsLayer.pntsMode = pntsLayer.pntsMode == itowns.PNTS_MODE.COLOR ? itowns.PNTS_MODE.CLASSIFICATION : itowns.PNTS_MODE.COLOR;
-                    view.notifyChange(view.camera.camera3D);
+                    view.notifyChange(view.camera3D);
                 }
             }
-        
+
             // Add the UI Debug
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
@@ -94,9 +94,9 @@
             }
             menuGlobe.gui.add(d, 'switch').name('Mode Switch');
 
-            
 
-          
+
+
 
         </script>
     </body>

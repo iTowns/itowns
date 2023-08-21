@@ -99,8 +99,8 @@ class GlobeView extends View {
         super('EPSG:4978', viewerDiv, options);
         this.isGlobeView = true;
 
-        this.camera.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
-        this.camera.camera3D.far = ellipsoidSizes.x * 10;
+        this.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
+        this.camera3D.far = ellipsoidSizes.x * 10;
 
         const tileLayer = new GlobeLayer('globe', options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
@@ -121,7 +121,7 @@ class GlobeView extends View {
         }
 
         if (options.noControls) {
-            CameraUtils.transformCameraToLookAtTarget(this, this.camera.camera3D, placement);
+            CameraUtils.transformCameraToLookAtTarget(this, this.camera3D, placement);
         } else {
             this.controls = new GlobeControls(this, placement, options.controls);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;

@@ -111,7 +111,7 @@
 
                 view.render = function render() {
                     r.clear();
-                    effect.render(view.scene, view.camera.camera3D);
+                    effect.render(view.scene, view.camera3D);
                 };
 
                 view.notifyChange();
@@ -125,8 +125,7 @@
             function enableAnaglyph() {
                 var _eff;
                 if (effect instanceof THREE.AnaglyphEffect) return;
-                _eff = new THREE.AnaglyphEffect(view.mainLoop.gfxEngine.renderer,
-                    view.camera.camera3D);
+                _eff = new THREE.AnaglyphEffect(view.mainLoop.gfxEngine.renderer, view.camera3D);
                 enableEffect(_eff);
             }
 
@@ -139,8 +138,7 @@
             function enableParallax() {
                 var _eff;
                 if (effect instanceof THREE.ParallaxBarrierEffect) return;
-                _eff = new THREE.ParallaxBarrierEffect(view.mainLoop.gfxEngine.renderer,
-                    view.camera.camera3D);
+                _eff = new THREE.ParallaxBarrierEffect(view.mainLoop.gfxEngine.renderer, view.camera3D);
                 enableEffect(_eff);
             }
 
@@ -150,8 +148,7 @@
             function enableStereo() {
                 var _eff;
                 if (effect instanceof THREE.StereoEffect) return;
-                _eff = new THREE.StereoEffect(view.mainLoop.gfxEngine.renderer,
-                    view.camera.camera3D);
+                _eff = new THREE.StereoEffect(view.mainLoop.gfxEngine.renderer, view.camera3D);
                 enableEffect(_eff);
             }
 

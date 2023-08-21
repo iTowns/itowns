@@ -93,13 +93,12 @@ function setupViewCameraLookingAtObject(camera, coord, objectToLookAt) {
 // eslint-disable-next-line no-unused-vars
 function setupViewCameraDecomposing(view, camera) {
     let upWorld;
-    const viewCamera = view.camera.camera3D;
-    camera.matrixWorld.decompose(viewCamera.position, viewCamera.quaternion, viewCamera.scale);
+    camera.matrixWorld.decompose(view.camera3D.position, view.camera3D.quaternion, view.camera3D.scale);
 
     // setup up vector
     upWorld = camera.localToWorld(camera.up.clone());
-    upWorld = viewCamera.position.clone().sub(upWorld);
-    viewCamera.up.copy(upWorld);
+    upWorld = view.camera3D.position.clone().sub(upWorld);
+    view.camera3D.up.copy(upWorld);
 }
 
 // add a camera helper to debug camera position..

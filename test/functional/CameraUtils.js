@@ -28,12 +28,9 @@ describe('Camera utils with globe example', function _() {
 
     it('should set range like expected', async () => {
         const params = { range: 10000 };
-        const result = await page.evaluate((p) => {
-            const camera = view.camera.camera3D;
-            return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, p,
-            ).then(final => final.range);
-        }, params);
+        const result = await page.evaluate(p => itowns.CameraUtils.transformCameraToLookAtTarget(
+            view, view.camera3D, p,
+        ).then(final => final.range), params);
 
         assert.ok(Math.abs(result - params.range) / params.range < 0.05);
     });
@@ -41,9 +38,8 @@ describe('Camera utils with globe example', function _() {
         const params = { longitude: 60, latitude: 40 };
         const result = await page.evaluate((p) => {
             const coord = new itowns.Coordinates('EPSG:4326', p.longitude, p.latitude, 0);
-            const camera = view.camera.camera3D;
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, { coord },
+                view, view.camera3D, { coord },
             ).then(final => final.coord);
         }, params);
         assert.equal(Math.round(result.x), params.longitude);
@@ -52,29 +48,22 @@ describe('Camera utils with globe example', function _() {
 
     it('should tilt like expected', async () => {
         const params = { tilt: 50 };
-        const result = await page.evaluate((p) => {
-            const camera = view.camera.camera3D;
-            return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, p,
-            ).then(final => final.tilt);
-        }, params);
+        const result = await page.evaluate(p => itowns.CameraUtils.transformCameraToLookAtTarget(
+            view, view.camera3D, p,
+        ).then(final => final.tilt), params);
         assert.equal(Math.round(result), params.tilt);
     });
 
     it('should heading like expected', async () => {
         const params = { heading: 170 };
-        const result = await page.evaluate((p) => {
-            const camera = view.camera.camera3D;
-            return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, p,
-            ).then(final => final.heading);
-        }, params);
+        const result = await page.evaluate(p => itowns.CameraUtils.transformCameraToLookAtTarget(
+            view, view.camera3D, p,
+        ).then(final => final.heading), params);
         assert.equal(Math.round(result), params.heading);
     });
 
     it('should heading, tilt, range and coordinate like expected', async () => {
         const result = await page.evaluate(() => {
-            const camera = view.camera.camera3D;
             const params = {
                 heading: 17,
                 tilt: 44,
@@ -84,7 +73,7 @@ describe('Camera utils with globe example', function _() {
                 coord: new itowns.Coordinates('EPSG:4326', 3, 47, 0),
             };
             return itowns.CameraUtils.transformCameraToLookAtTarget(
-                view, camera, params,
+                view, view.camera3D, params,
             ).then(final => ({ params, final }));
         });
         assert.equal(Math.round(result.final.heading), result.params.heading);
@@ -105,9 +94,8 @@ describe('Camera utils with globe example', function _() {
                 coord: new itowns.Coordinates('EPSG:4326', 3, 47, 0),
                 time: 500,
             };
-            const camera = view.camera.camera3D;
             return itowns.CameraUtils
-                .animateCameraToLookAtTarget(view, camera, params)
+                .animateCameraToLookAtTarget(view, view.camera3D, params)
                 .then(final => ({ final, params }));
         });
         assert.equal(Math.round(result.final.heading), result.params.heading);

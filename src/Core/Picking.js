@@ -179,7 +179,7 @@ export default {
                         // Compute distance to the camera
                         pointPosCoord.setCrs(view.referenceCrs);
                         pointPosCoord.setFromVector3(pointPos);
-                        view.camera.camera3D.getWorldPosition(cameraPos);
+                        view.camera3D.getWorldPosition(cameraPos);
                         cameraPosCoord.setCrs(view.referenceCrs);
                         cameraPosCoord.setFromVector3(cameraPos);
                         const dist = pointPosCoord.spatialEuclideanDistanceTo(cameraPosCoord);
@@ -205,7 +205,7 @@ export default {
         // Raycaster use NDC coordinate
         view.viewToNormalizedCoords(viewCoords, normalized);
         if (radius < 0) {
-            raycaster.setFromCamera(normalized, view.camera.camera3D);
+            raycaster.setFromCamera(normalized, view.camera3D);
 
             const intersects = raycaster.intersectObject(object, true);
             for (const inter of intersects) {
@@ -260,7 +260,7 @@ export default {
                 .setY(normalized.y + y / view.camera.height);
             raycaster.setFromCamera(
                 tmp,
-                view.camera.camera3D);
+                view.camera3D);
 
             const intersects = raycaster.intersectObject(object, true);
             for (const inter of intersects) {

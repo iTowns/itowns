@@ -186,7 +186,7 @@ class GlobeControls extends THREE.EventDispatcher {
         super();
         this.player = new AnimationPlayer();
         this.view = view;
-        this.camera = view.camera.camera3D;
+        this.camera = view.camera3D;
 
         // State control
         this.states = new StateControl(this.view);

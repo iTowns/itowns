@@ -160,9 +160,7 @@
             // Controls and camera specific setting.
             itownsViewer.controls.minDistanceCollision = 0.01;
             itownsViewer.controls.minDistance = 20;
-            itownsViewer.camera.camera3D.near = 0.1;
-
-
+            view.camera3D.near = 0.1;
 
             // ---------- TWEAK ITOWNS VIEWER TO SUPPORT POTREE VISUALIZATION : ----------
 
@@ -179,9 +177,8 @@
             })
 
             // Set Potree viewer camera as iTowns viewer camera.
-            const camera = itownsViewer.camera.camera3D;
-            camera.zoomTo = () => {};
-            potreeViewer.scene.cameraP = camera;
+            view.camera3D.zoomTo = () => {};
+            potreeViewer.scene.cameraP = view.camera3D;
 
             // TODO : should be moved to Label2DRenderer constructor
             itownsViewer.mainLoop.gfxEngine.label2dRenderer.domElement.style.pointerEvents = 'none';

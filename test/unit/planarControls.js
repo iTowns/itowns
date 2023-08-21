@@ -17,8 +17,8 @@ describe('Planar Controls', function () {
     const controlsPerspective = viewPerspective.controls;
     const controlsOrtho = viewOrtho.controls;
 
-    const cameraPerspective = viewPerspective.camera.camera3D;
-    const cameraOrtho = viewOrtho.camera.camera3D;
+    const cameraPerspective = viewPerspective.camera3D;
+    const cameraOrtho = viewOrtho.camera3D;
 
     const touche = {
         clientX: 50,

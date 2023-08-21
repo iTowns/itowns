@@ -24,7 +24,7 @@ describe('3dtiles_ion', function _() {
     it('should pick a building from 3D', async () => {
         await page.evaluate(() => {
             const lyonExtent = new itowns.Extent('EPSG:4326', 4.85, 4.9, 45.75, 45.77);
-            itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, lyonExtent);
+            itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera3D, lyonExtent);
         });
         await waitUntilItownsIsIdle(this.fullTitle());
         const layers = await page.evaluate(

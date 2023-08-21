@@ -45,23 +45,21 @@
                         view.scene.add(points);
                         points.updateMatrixWorld(true);
 
-                        var camera = view.camera.camera3D;
-
                         var lookAt = new itowns.THREE.Vector3();
                         var size = new itowns.THREE.Vector3();
                         geometry.boundingBox.getSize(size);
                         geometry.boundingBox.getCenter(lookAt);
 
-                        camera.far = Math.max(2.0 * size.length(), camera.far);
+                        view.camera3D.far = Math.max(2.0 * size.length(), camera.far);
 
                         var position = geometry.boundingBox.min.clone().add(size.multiply({ x: 0, y: 0, z: size.x / size.z }));
 
-                        camera.position.copy(position);
-                        camera.lookAt(lookAt);
+                        view.camera3D.position.copy(position);
+                        view.camera3D.lookAt(lookAt);
 
                         controls.options.moveSpeed = size.length();
 
-                        view.notifyChange(camera);
+                        view.notifyChange(view.camera3D);
                         controls.reset();
                     });
                 };

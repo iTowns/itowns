@@ -129,17 +129,12 @@ class Minimap extends Widget {
             event.preventDefault();
         });
 
-        // Store minimap view camera3D in constant for code convenience.
-        const camera3D = this.view.camera.camera3D;
-
-
-
         // ---------- UPDATE MINIMAP VIEW WHEN UPDATING THE MAIN VIEW : ----------
 
         // The minimal and maximal value the minimap camera3D zoom can reach in order to stay in the scale limits.
         const initialScale = this.view.getScale(options.pitch);
-        const minZoom = camera3D.zoom * this.maxScale / initialScale;
-        const maxZoom = camera3D.zoom * this.minScale / initialScale;
+        const minZoom = this.view.camera3D.zoom * this.maxScale / initialScale;
+        const maxZoom = this.view.camera3D.zoom * this.minScale / initialScale;
 
         // Coordinates used to transform position vectors from the main view CRS to the minimap view CRS.
         const mainViewCoordinates = new Coordinates(view.referenceCrs);
@@ -149,21 +144,21 @@ class Minimap extends Widget {
 
         view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, () => {
             // Update minimap camera zoom
-            const distance = view.camera.camera3D.position.distanceTo(targetPosition);
+            const distance = view.camera3D.position.distanceTo(targetPosition);
             const scale = view.getScaleFromDistance(options.pitch, distance);
-            camera3D.zoom = this.zoomRatio * maxZoom * scale / this.minScale;
-            camera3D.zoom = Math.min(Math.max(camera3D.zoom, minZoom), maxZoom);
-            camera3D.updateProjectionMatrix();
+            this.view.camera3D.zoom = this.zoomRatio * maxZoom * scale / this.minScale;
+            this.view.camera3D.zoom = Math.min(Math.max(this.view.camera3D.zoom, minZoom), maxZoom);
+            this.view.camera3D.updateProjectionMatrix();
 
             // Update minimap camera position.
             mainViewCoordinates.setFromVector3(view.controls.getCameraTargetPosition());
             mainViewCoordinates.as(this.view.referenceCrs, viewCoordinates);
 
-            camera3D.position.x = viewCoordinates.x;
-            camera3D.position.y = viewCoordinates.y;
-            camera3D.updateMatrixWorld(true);
+            this.view.camera3D.position.x = viewCoordinates.x;
+            this.view.camera3D.position.y = viewCoordinates.y;
+            this.view.camera3D.updateMatrixWorld(true);
 
-            this.view.notifyChange(camera3D);
+            this.view.notifyChange(this.view.camera3D);
         });
     }
 }

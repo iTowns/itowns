@@ -83,13 +83,13 @@
                 view.domElement.addEventListener('dblclick', dblClickHandler);
 
                 function placeCamera(position, lookAt) {
-                    view.camera.camera3D.position.copy(position);
-                    view.camera.camera3D.lookAt(lookAt);
+                    view.camera3D.position.copy(position);
+                    view.camera3D.lookAt(lookAt);
                     // create controls
                     controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
                     debugGui.add(controls.options, 'moveSpeed', 1, 100).name('Movement speed');
 
-                    view.notifyChange(view.camera.camera3D);
+                    view.notifyChange(view.camera3D);
                 }
 
                 // add potreeLayer to scene
@@ -104,7 +104,7 @@
 
                     debug.PotreeDebug.initTools(view, potreeLayer, debugGui);
 
-                    view.camera.camera3D.far = 2.0 * size.length();
+                    view.camera3D.far = 2.0 * size.length();
 
                     ratio = size.x / size.z;
                     position = potreeLayer.root.bbox.min.clone().add(
