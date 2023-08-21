@@ -173,7 +173,7 @@ class PlanarControls extends THREE.EventDispatcher {
     constructor(view, options = {}) {
         super();
         this.view = view;
-        this.camera = view.camera.camera3D;
+        this.camera = view.camera3D;
 
         // Set to false to disable this control
         this.enabled = typeof options.enabled == 'boolean' ? options.enabled : defaultOptions.enabled;

@@ -39,7 +39,7 @@ const startQuaternion = new THREE.Quaternion();
 function pick(event, view, buildingsLayer, pickGround = () => {}, pickObject = () => {}, pickNothing = () => {}) {
     // get real distance to ground, with a specific method to pick on the elevation layer
     view.getPickingPositionFromDepth(view.eventToViewCoords(event), target);
-    const distanceToGround = view.camera.camera3D.position.distanceTo(target);
+    const distanceToGround = view.camera3D.position.distanceTo(target);
 
     // pick on building layer
     const buildings = buildingsLayer ? view.pickObjectsAt(event, -1, buildingsLayer) : [];
@@ -51,7 +51,7 @@ function pick(event, view, buildingsLayer, pickGround = () => {}, pickObject = (
         normal.copy(buildings[0].face.normal).applyNormalMatrix(normalMatrix);
         pickObject(buildings[0].point, normal);
     } else if (view.tileLayer) {
-        const far = view.camera.camera3D.far * 0.95;
+        const far = view.camera3D.far * 0.95;
         if (distanceToGround < far) {
             // compute normal
             if (view.tileLayer.isGlobeLayer) {
@@ -395,12 +395,12 @@ class StreetControls extends FirstPersonControls {
         // key to set to camera to current position looking at next position (default to A)
         if (e.keyCode == this.keySetCameraToCurrentPositionAndLookAtNext) {
             this.setCameraToCurrentPosition();
-            this.view.notifyChange(this.view.camera.camera3D);
+            this.view.notifyChange(this.view.camera3D);
         }
         // key to set to camera to current position looking at previous position (default to Q)
         if (e.keyCode == this.keySetCameraToCurrentPositionAndLookAtPrevious) {
             this.setCameraToCurrentPosition(true);
-            this.view.notifyChange(this.view.camera.camera3D);
+            this.view.notifyChange(this.view.camera3D);
         }
     }
 

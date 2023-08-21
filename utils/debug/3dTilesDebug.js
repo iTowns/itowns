@@ -105,13 +105,13 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
 
     View.prototype.addLayer.call(view, obbLayer, _3dTileslayer).then((l) => {
         gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
-            view.notifyChange(view.camera.camera3D);
+            view.notifyChange(view.camera3D);
         });
     });
 
     // The sse Threshold for each tile
     gui.add(_3dTileslayer, 'sseThreshold', 0, 100).name('sseThreshold').onChange(() => {
-        view.notifyChange(view.camera.camera3D);
+        view.notifyChange(view.camera3D);
     });
     gui.add(_3dTileslayer, 'pntsShape', PNTS_SHAPE).name('Points Shape').onChange(() => {
         view.notifyChange(view.camera.camera3D);

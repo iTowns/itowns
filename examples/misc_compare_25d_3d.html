@@ -99,8 +99,8 @@
                         // eslint-disable-next-line no-console
                         console.info('Globe initialized');
                         Promise.all(promises).then(function init() {
-                            var planarCamera = planarView.camera.camera3D;
-                            var globeCamera = view.camera.camera3D;
+                            var planarCamera = planarView.camera3D;
+                            var globeCamera = view.camera3D;
                             var params;
                             menuGlobe.addImageryLayersGUI(view.getLayers(function filterColor(l) { return l.isColorLayer; }));
                             menuGlobe.addElevationLayersGUI(view.getLayers(function filterElevation(l) { return l.isElevationLayer; }));

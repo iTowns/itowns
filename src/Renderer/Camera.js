@@ -76,7 +76,7 @@ function updatePreSse(camera, height, fov) {
  * Wrapper around Three.js camera to expose some geographic helpers.
  *
  * @property    {string}    crs             The camera's coordinate projection system.
- * @property    {object}    camera3D        The Three.js camera that is wrapped around.
+ * @property    {THREE.Camera}    camera3D        The Three.js camera that is wrapped around.
  * @property    {number}    width           The width of the camera.
  * @property    {number}    height          The height of the camera.
  * @property    {number}    _preSSE         The precomputed constant part of the screen space error.
@@ -91,7 +91,7 @@ class Camera {
         * camera is associated to.
      * @param   {number}                height                                  The height (in pixels) of the view the
         * camera is associated to.
-     * @param   {object}                [options]                               Options for the camera.
+     * @param   {Object}                [options]                               Options for the camera.
      * @param   {THREE.Camera}          [options.cameraThree]                   A custom Three.js camera object to wrap
         * around.
      * @param   {Camera~CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link
@@ -259,7 +259,7 @@ class Camera {
                 // We move the camera to avoid collision if too close to terrain
                 if (difElevation < 0) {
                     camLocation.altitude = elevationUnderCamera + minDistanceCollision;
-                    view.camera.camera3D.position.copy(camLocation.as(view.referenceCrs));
+                    view.camera3D.position.copy(camLocation.as(view.referenceCrs));
                     view.notifyChange(this.camera3D);
                 }
             }

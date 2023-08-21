@@ -43,23 +43,21 @@
             var eptLayer, eptSource;
 
             function onLayerReady() {
-                var camera = view.camera.camera3D;
-
                 var lookAt = new itowns.THREE.Vector3();
                 var size = new itowns.THREE.Vector3();
                 eptLayer.root.bbox.getSize(size);
                 eptLayer.root.bbox.getCenter(lookAt);
 
-                camera.far = 2.0 * size.length();
+                view.camera3D.far = 2.0 * size.length();
 
                 var position = eptLayer.root.bbox.min.clone().add(size.multiply({ x: 0, y: 0, z: size.x / size.z }));
 
-                camera.position.copy(position);
-                camera.lookAt(lookAt);
+                view.camera3D.position.copy(position);
+                view.camera3D.lookAt(lookAt);
 
                 controls.options.moveSpeed = size.length();
 
-                view.notifyChange(camera);
+                view.notifyChange(view.camera3D);
                 controls.reset();
             }
 

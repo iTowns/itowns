@@ -164,13 +164,13 @@
 
             // Since PlanarView doesn't create default controls, we manipulate directly three.js camera
             // Position the camera at south-west corner
-            view.camera.camera3D.position.set(3, 2, 3);
-            view.camera.camera3D.updateMatrixWorld(true);
-            view.camera.camera3D.lookAt(new itowns.THREE.Vector3(0, 0, 0));
+            view.camera3D.position.set(3, 2, 3);
+            view.camera3D.updateMatrixWorld(true);
+            view.camera3D.lookAt(new itowns.THREE.Vector3(0, 0, 0));
 
-            controls = new itowns.THREE.OrbitControls(view.camera.camera3D, viewerDiv);
+            controls = new itowns.THREE.OrbitControls(view.camera3D, viewerDiv);
             controls.minDistance = 1;
-            controls.addEventListener('change', function _() { view.notifyChange(view.camera.camera3D); });
+            controls.addEventListener('change', function _() { view.notifyChange(view.camera3D); });
 
             // Request redraw
             view.notifyChange();

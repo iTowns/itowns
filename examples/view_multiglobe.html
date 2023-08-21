@@ -44,6 +44,7 @@
             // Create the first globe
             object3d = new itowns.THREE.Object3D();
             var view = new itowns.GlobeView(viewerDiv, placement, { noControls: true, object3d });
+            var cameraThree = view.camera3D;
             setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
 
@@ -97,7 +98,7 @@
 
                 if (t < 1) {
                     // animation is not finished, schedule a new view update
-                    view.notifyChange(view.camera.camera3D);
+                    view.notifyChange(cameraThree);
                 } else {
                     // animation is finished, remove the frame requester
                     view.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
@@ -111,7 +112,7 @@
                     t = 0;
                     // schedule the animation
                     view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
-                    view.notifyChange(view.camera.camera3D);
+                    view.notifyChange(cameraThree);
                 }
             }
             viewerDiv.focus();
@@ -119,7 +120,7 @@
 
             // Zoom on mouse-wheel
             var onMouseWheel = function onMouseWheel(event) {
-                var geo = new itowns.Coordinates('EPSG:4978', view.camera.camera3D.position).as('EPSG:4326');
+                var geo = new itowns.Coordinates('EPSG:4978', cameraThree.position).as('EPSG:4326');
                 // WebKit / Opera / Explorer 9
                 if (event.wheelDelta !== undefined) {
                     delta = event.wheelDelta;
@@ -133,8 +134,8 @@
                 } else {
                     geo.altitude *= 1.1;
                 }
-                view.camera.camera3D.position.copy(geo.as('EPSG:4978'));
-                view.notifyChange(view.camera.camera3D);
+                cameraThree.position.copy(geo.as('EPSG:4978'));
+                view.notifyChange(cameraThree);
             };
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
             viewerDiv.addEventListener('mousewheel', onMouseWheel);

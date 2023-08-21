@@ -218,7 +218,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         if (selectNode) {
             circle.style.display = 'table-cell';
             centerNode.copy(selectNode.boundingSphere.center).applyMatrix4(selectNode.matrixWorld);
-            const project = centerNode.project(view.camera.camera3D);
+            const project = centerNode.project(view.camera3D);
             const coords = view.normalizedToViewCoords(project);
             const size = selectNode.screenSize;
 

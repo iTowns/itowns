@@ -148,7 +148,7 @@ describe('Viewer', function () {
             renderer,
             camera: { type: CAMERA_TYPE.ORTHOGRAPHIC },
         });
-        assert.ok(view.camera.camera3D.isOrthographicCamera);
+        assert.ok(view.camera3D.isOrthographicCamera);
     });
     it('should create the correct camera from specific camera', () => {
         const camera = new THREE.PerspectiveCamera(50, 0.5);
@@ -156,6 +156,6 @@ describe('Viewer', function () {
             renderer,
             camera: { cameraThree: camera },
         });
-        assert.equal(view.camera.camera3D, camera);
+        assert.equal(view.camera3D, camera);
     });
 });

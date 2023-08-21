@@ -14,8 +14,8 @@ describe('GlobeControls', function () {
     const controls = viewer.controls;
 
     viewer.getPickingPositionFromDepth = (coords, pickingPoint) => {
-        viewer.camera.camera3D.updateMatrixWorld();
-        const lookAt = getLookAtFromMath(viewer, viewer.camera.camera3D);
+        viewer.camera3D.updateMatrixWorld();
+        const lookAt = getLookAtFromMath(viewer, viewer.camera3D);
         if (lookAt) {
             if (pickingPoint) {
                 pickingPoint.copy(lookAt);
@@ -199,7 +199,7 @@ describe('GlobeControls', function () {
     });
 
     it('lookAtCoordinate with animation', function (done) {
-        const rig = getRig(viewer.camera.camera3D);
+        const rig = getRig(viewer.camera3D);
         let i;
         controls.lookAtCoordinate({ coord: placement.coord, time: 10 }, true)
             .then((e) => {

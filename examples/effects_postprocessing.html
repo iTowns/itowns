@@ -87,7 +87,7 @@
                 var r = g.renderer;
                 r.setRenderTarget(g.fullSizeRenderTarget);
                 r.clear();
-                r.render(view.scene, view.camera.camera3D);
+                r.render(view.scene, view.camera3D);
 
                 quad.material.uniforms.tDiffuse.value = g.fullSizeRenderTarget.texture;
                 quad.material.uniforms.tSize.value.set(

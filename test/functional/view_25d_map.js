@@ -33,18 +33,17 @@ describe('view_25d_map', function _() {
         // get range with depth buffer and altitude
         await page.evaluate((l) => {
             const lookat = extent.center().toVector3();
-
-            view.camera.camera3D.position.copy(lookat);
-            view.camera.camera3D.position.z = l;
-            view.camera.camera3D.lookAt(lookat);
-            view.notifyChange(view.camera.camera3D, true);
+            view.camera3D.position.copy(lookat);
+            view.camera3D.position.z = l;
+            view.camera3D.lookAt(lookat);
+            view.notifyChange(view.camera3D, true);
         }, length);
 
         await waitUntilItownsIsIdle(this.test.fullTitle());
 
         result = await page.evaluate(() => {
             const depthMethod = view
-                .getPickingPositionFromDepth().distanceTo(view.camera.camera3D.position);
+                .getPickingPositionFromDepth().distanceTo(view.camera3D.position);
 
             const altitude = itowns.DEMUtils
                 .getElevationValueAt(view.tileLayer, extent.center().clone());

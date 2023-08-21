@@ -42,10 +42,9 @@ class PlanarView extends View {
         // Configure camera
         const dim = extent.planarDimensions();
         const max = Math.max(dim.x, dim.y);
-        const camera3D = this.camera.camera3D;
-        camera3D.near = 0.1;
-        camera3D.far = camera3D.isOrthographicCamera ? 2000 : 2 * max;
-        camera3D.updateProjectionMatrix();
+        this.camera3D.near = 0.1;
+        this.camera3D.far = this.camera3D.isOrthographicCamera ? 2000 : 2 * max;
+        this.camera3D.updateProjectionMatrix();
 
         const tileLayer = new PlanarLayer('planar', extent, options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
@@ -60,7 +59,7 @@ class PlanarView extends View {
             placement.heading = placement.heading || 0;
             placement.range = placement.range || max;
         }
-        CameraUtils.transformCameraToLookAtTarget(this, camera3D, placement);
+        CameraUtils.transformCameraToLookAtTarget(this, this.camera3D, placement);
 
         if (!options.noControls) {
             this.controls = new PlanarControls(this, options.controls);

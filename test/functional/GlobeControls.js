@@ -21,7 +21,7 @@ describe('GlobeControls with globe example', function _() {
                     screen.y = Math.floor(screen.y);
                     screen.x = ((screen.x / dim.x) * 2) - 1;
                     screen.y = (-(screen.y / dim.y) * 2) + 1;
-                    raycaster.setFromCamera(screen, view.camera.camera3D);
+                    raycaster.setFromCamera(screen, view.camera3D);
                     target.copy(ellipsoid.intersection(raycaster.ray));
 
                     return target;

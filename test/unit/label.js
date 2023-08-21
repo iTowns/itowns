@@ -270,8 +270,8 @@ describe('Label2DRenderer', function () {
             labelLayer.update(context, labelLayer, tiles[0], tiles[0].parent);
             assert.equal(1, labelLayer.object3d.children.length);
             view.controls.lookAtCoordinate({ coord: labelLayer.object3d.children[0].children[0].coordinates, range: 1000 }, false).then(() => {
-                view.camera.camera3D.updateMatrixWorld(true);
-                label2dRenderer.render(view.scene, view.camera.camera3D);
+                view.camera3D.updateMatrixWorld(true);
+                label2dRenderer.render(view.scene, view.camera3D);
                 assert.equal(1, label2dRenderer.grid.visible.length);
                 const label = label2dRenderer.grid.visible[0];
                 assert.ok(label.visible);

@@ -18,7 +18,7 @@ function applyRotation(view, camera3D, state) {
     camera3D.rotateY(state.rotateY);
     camera3D.rotateX(state.rotateX);
 
-    view.notifyChange(view.camera.camera3D);
+    view.notifyChange(view.camera3D);
 }
 
 const MOVEMENTS = {
@@ -63,7 +63,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
     constructor(view, options = {}) {
         super();
         this.isFirstPersonControls = true;
-        this.camera = view.camera.camera3D;
+        this.camera = view.camera3D;
         this.view = view;
         this.moves = new Set();
         if (options.panoramaRatio) {
@@ -191,7 +191,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
         }
 
         if (this.moves.size) {
-            this.view.notifyChange(this.view.camera.camera3D);
+            this.view.notifyChange(this.camera);
         }
     }
 

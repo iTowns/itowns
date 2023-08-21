@@ -128,7 +128,7 @@ const DragNDrop = (function _() {
                     }
 
                     // Move the camera
-                    itowns.CameraUtils.transformCameraToLookAtTarget(_view, _view.camera.camera3D, extent);
+                    itowns.CameraUtils.transformCameraToLookAtTarget(_view, _view.camera3D, extent);
                 });
             };
 

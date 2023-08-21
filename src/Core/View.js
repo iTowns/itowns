@@ -114,6 +114,9 @@ const viewers = [];
 // Size of the camera frustrum, in meters
 let screenMeters;
 
+/**
+ *
+ */
 class View extends THREE.EventDispatcher {
     #layers = [];
     #pixelDepthBuffer = new Uint8Array(4);
@@ -129,7 +132,7 @@ class View extends THREE.EventDispatcher {
      * @example <caption><b>Create a view with an orthographic camera, and grant it with Three.js custom controls.</b></caption>
      * var viewerDiv = document.getElementById('viewerDiv');
      * var view = itowns.View('EPSG:4326', viewerDiv, { camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC } });
-     * var customControls = itowns.THREE.OrbitControls(view.camera.camera3D, viewerDiv);
+     * var customControls = itowns.THREE.OrbitControls(view.camera3D, viewerDiv);
      *
      * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
@@ -242,6 +245,22 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
+     * Get the Threejs renderer used to render this view.
+     * @returns {THREE.WebGLRenderer} the WebGLRenderer used to render this view.
+     */
+    get renderer() {
+        return this.mainLoop?.gfxEngine?.getRenderer();
+    }
+
+    /**
+     * Get the threejs Camera of this view
+     * @returns {THREE.Camera} the threejs camera of this view
+     */
+    get camera3D() {
+        return this.camera?.camera3D;
+    }
+
+    /**
      * Dispose viewer before delete it.
      *
      * Method dispose all viewer objects
@@ -325,7 +344,7 @@ class View extends THREE.EventDispatcher {
                     return layer._reject(new Error(`Cant add color layer ${layer.id}: the maximum layer is reached`));
                 }
             } else if (layer.isElevationLayer && layer.source.format == 'image/x-bil;bits=32') {
-                layer.source.networkOptions.isWebGL2 = this.mainLoop.gfxEngine.renderer.capabilities.isWebGL2;
+                layer.source.networkOptions.isWebGL2 = this.renderer?.capabilities?.isWebGL2;
                 parentLayer.attach(layer);
             } else {
                 parentLayer.attach(layer);
@@ -758,7 +777,7 @@ class View extends THREE.EventDispatcher {
      * @return {number} The zoom scale.
      */
     getScale(pitch = 0.28) {
-        if (this.camera.camera3D.isOrthographicCamera) {
+        if (this.camera3D.isOrthographicCamera) {
             return pitch * 1E-3 / this.getPixelsToMeters();
         }
         return this.getScaleFromDistance(pitch, this.getDistanceFromCamera());
@@ -766,7 +785,7 @@ class View extends THREE.EventDispatcher {
 
     getScaleFromDistance(pitch = 0.28, distance = 1) {
         pitch /= 1000;
-        const fov = THREE.MathUtils.degToRad(this.camera.camera3D.fov);
+        const fov = THREE.MathUtils.degToRad(this.camera3D.fov);
         const unit = this.camera.height / (2 * distance * Math.tan(fov * 0.5));
         return pitch * unit;
     }
@@ -782,7 +801,7 @@ class View extends THREE.EventDispatcher {
      */
     getDistanceFromCamera(screenCoord) {
         this.getPickingPositionFromDepth(screenCoord, positionVector);
-        return this.camera.camera3D.position.distanceTo(positionVector);
+        return this.camera3D.position.distanceTo(positionVector);
     }
 
     /**
@@ -796,8 +815,8 @@ class View extends THREE.EventDispatcher {
      * @return {number} The projected distance in meters.
      */
     getPixelsToMeters(pixels = 1, screenCoord) {
-        if (this.camera.camera3D.isOrthographicCamera) {
-            screenMeters = (this.camera.camera3D.right - this.camera.camera3D.left) / this.camera.camera3D.zoom;
+        if (this.camera3D.isOrthographicCamera) {
+            screenMeters = (this.camera3D.right - this.camera3D.left) / this.camera3D.zoom;
             return pixels * screenMeters / this.camera.width;
         }
         return this.getPixelsToMetersFromDistance(pixels, this.getDistanceFromCamera(screenCoord));
@@ -818,8 +837,8 @@ class View extends THREE.EventDispatcher {
      * @return {number} The projected distance in pixels.
      */
     getMetersToPixels(meters = 1, screenCoord) {
-        if (this.camera.camera3D.isOrthographicCamera) {
-            screenMeters = (this.camera.camera3D.right - this.camera.camera3D.left) / this.camera.camera3D.zoom;
+        if (this.camera3D.isOrthographicCamera) {
+            screenMeters = (this.camera3D.right - this.camera3D.left) / this.camera3D.zoom;
             return meters * this.camera.width / screenMeters;
         }
         return this.getMetersToPixelsFromDistance(meters, this.getDistanceFromCamera(screenCoord));
@@ -989,7 +1008,6 @@ class View extends THREE.EventDispatcher {
         const viewPaused = l.scheduler.commandsWaitingExecutionCount() == 0 && l.renderingState == RENDERING_PAUSED;
         const g = l.gfxEngine;
         const dim = g.getWindowSize();
-        const camera = this.camera.camera3D;
 
         mouse = mouse || dim.clone().multiplyScalar(0.5);
         mouse.x = Math.floor(mouse.x);
@@ -1011,15 +1029,15 @@ class View extends THREE.EventDispatcher {
         screen.x = (mouse.x / dim.x) * 2 - 1;
         screen.y = -(mouse.y / dim.y) * 2 + 1;
 
-        if (Capabilities.isLogDepthBufferSupported() && camera.type == 'PerspectiveCamera') {
+        if (Capabilities.isLogDepthBufferSupported() && this.camera3D.type == 'PerspectiveCamera') {
             // TODO: solve this part with gl_FragCoord_Z and unproject
             // Origin
-            ray.origin.copy(camera.position);
+            ray.origin.copy(this.camera3D.position);
 
             // Direction
             ray.direction.set(screen.x, screen.y, 0.5);
             // Unproject
-            matrix.multiplyMatrices(camera.matrixWorld, matrix.copy(camera.projectionMatrix).invert());
+            matrix.multiplyMatrices(this.camera3D.matrixWorld, matrix.copy(this.camera3D.projectionMatrix).invert());
             ray.direction.applyMatrix4(matrix);
             ray.direction.sub(ray.origin);
 
@@ -1028,14 +1046,14 @@ class View extends THREE.EventDispatcher {
             direction.sub(ray.origin);
 
             const angle = direction.angleTo(ray.direction);
-            const orthoZ = g.depthBufferRGBAValueToOrthoZ(buffer, camera);
+            const orthoZ = g.depthBufferRGBAValueToOrthoZ(buffer, this.camera3D);
             const length = orthoZ / Math.cos(angle);
-            target.addVectors(camera.position, ray.direction.setLength(length));
+            target.addVectors(this.camera3D.position, ray.direction.setLength(length));
         } else {
-            const gl_FragCoord_Z = g.depthBufferRGBAValueToOrthoZ(buffer, camera);
+            const gl_FragCoord_Z = g.depthBufferRGBAValueToOrthoZ(buffer, this.camera3D);
 
             target.set(screen.x, screen.y, gl_FragCoord_Z);
-            target.unproject(camera);
+            target.unproject(this.camera3D);
         }
 
         if (target.length() > 10000000) { return undefined; }
@@ -1121,7 +1139,7 @@ class View extends THREE.EventDispatcher {
         this.mainLoop.gfxEngine.onWindowResize(width, height);
         if (width !== 0 && height !== 0) {
             this.camera.resize(width, height);
-            this.notifyChange(this.camera.camera3D);
+            this.notifyChange(this.camera3D);
         }
     }
 }

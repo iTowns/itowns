@@ -50,12 +50,12 @@
             });
 
             // limit camera far, to increase performance
-            view.camera.camera3D.far = 10000;
-            view.camera.camera3D.near = 0.1;
+            view.camera3D.far = 10000;
+            view.camera3D.near = 0.1;
 
             // open camera fov
-            view.camera.camera3D.fov = 75;
-            view.camera.camera3D.updateProjectionMatrix();
+            view.camera3D.fov = 75;
+            view.camera3D.updateProjectionMatrix();
 
             // disable atmosphere
             view.getLayerById('atmosphere').visible = false;
@@ -175,7 +175,7 @@
 
                 // set camera to current panoramic
                 view.controls.setCameraToCurrentPosition();
-                view.notifyChange(view.camera.camera3D);
+                view.notifyChange(view.camera3D);
 
             });
 

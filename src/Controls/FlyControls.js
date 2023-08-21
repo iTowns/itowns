@@ -100,7 +100,7 @@ class FlyControls extends THREE.EventDispatcher {
         super();
         this.view = view;
         this.options = options;
-        this._camera3D = view.camera.camera3D;
+        this._camera3D = view.camera3D;
         this.moves = new Set();
         this.moveSpeed = 10; // backward or forward move speed in m/s
 

@@ -31,8 +31,7 @@ describe('misc_clamp_ground', function _() {
             const coneCenter = new itowns.THREE.Vector3(0, 0, 0)
                 .applyMatrix4(view.mesh.matrixWorld);
 
-            const camera3D = view.camera.camera3D;
-            const viewMatrix = new itowns.THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, camera3D.matrixWorldInverse);
+            const viewMatrix = new itowns.THREE.Matrix4().multiplyMatrices(view.camera3D.projectionMatrix, view.camera3D.matrixWorldInverse);
 
             coneCenter.applyMatrix4(viewMatrix);
             const mouse = view.normalizedToViewCoords(coneCenter);
@@ -67,7 +66,7 @@ describe('misc_clamp_ground', function _() {
 
         // get range with depth buffer
         const depthMethod = await page.evaluate(() => view
-            .getPickingPositionFromDepth().distanceTo(view.camera.camera3D.position));
+            .getPickingPositionFromDepth().distanceTo(view.camera3D.position));
 
         assert.ok(Math.abs(controlsMethod - destRange) / destRange < 0.002);
         assert.ok(Math.abs(depthMethod - destRange) / destRange < 0.002);

@@ -43,7 +43,7 @@ describe('3Dtiles layer', function () {
     });
     it('update 3dtiles layer', function () {
         const node = threedTilesLayer.root;
-        viewer.camera.camera3D.updateMatrixWorld();
+        viewer.camera3D.updateMatrixWorld();
         threedTilesLayer.update(context, threedTilesLayer, node);
         assert.ok(node.pendingSubdivision);
     });

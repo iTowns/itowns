@@ -417,7 +417,7 @@ export default {
      * Compute the CameraTransformOptions that allow a given camera to display a given extent in its entirety.
      *
      * @param   {View}    view    The camera view
-     * @param   {Camera}  camera  The camera to get the CameraTransformOptions from
+     * @param   {THREE.Camera}  camera  The camera to get the CameraTransformOptions from
      * @param   {Extent}  extent  The extent the camera must display
      *
      * @return  {CameraUtils~CameraTransformOptions}   The CameraTransformOptions allowing camera to display the extent.

@@ -126,7 +126,7 @@ const loadExample = async (url, screenshotName) => {
     } catch (e) {
         if (e instanceof Error && e.name === 'TimeoutError') {
             await page.evaluate(() => {
-                itowns.CameraUtils.stop(view, view.camera.camera3D);
+                itowns.CameraUtils.stop(view, view.camera3D);
             });
             await layersAreInitialized();
         }
@@ -145,7 +145,7 @@ const waitUntilItownsIsIdle = async (screenshotName) => {
         function resolveWhenReady() {
             if (view.mainLoop.renderingState === 0) {
                 view.mainLoop.removeEventListener('command-queue-empty', resolveWhenReady);
-                itowns.CameraUtils.stop(view, view.camera.camera3D);
+                itowns.CameraUtils.stop(view, view.camera3D);
                 resolve(true);
             }
         }
