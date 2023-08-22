@@ -171,10 +171,8 @@ class GeometryLayer extends Layer {
      * All layer's 3D objects are removed from the scene and disposed from the video device.
      * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
      */
-    delete(clearCache) {
-        if (clearCache) {
-            this.cache.clear();
-        }
+    dispose(clearCache) {
+        super.dispose(clearCache);
 
         // if Layer is attached
         if (this.parent) {

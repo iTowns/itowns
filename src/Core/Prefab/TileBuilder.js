@@ -63,7 +63,7 @@ export default function newTileGeometry(builder, params) {
                 geometry.index = null;
                 delete geometry.attributes.uv_0;
                 THREE.BufferGeometry.prototype.dispose.call(geometry);
-                cacheTile.delete(south, params.level, bufferKey);
+                cacheTile.remove(south, params.level, bufferKey);
             }
         };
         resolve(geometry);

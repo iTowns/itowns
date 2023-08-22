@@ -31,9 +31,9 @@ export const CACHE_POLICIES = {
  *
  * cache.get('foo');
  *
- * cache.delete('foo');
+ * cache.remove('foo');
  *
- * cache.clear();
+ * cache.dispose();
  *
  * cache.flush();
  */
@@ -161,7 +161,7 @@ class Cache {
      * @param {string|number} [key2]
      * @param {string|number} [key3]
      */
-    delete(key1, key2, key3) {
+    remove(key1, key2, key3) {
         const entry_1 = this.data.get(key1);
         if (entry_1 === undefined) { return; }
 
@@ -192,12 +192,22 @@ class Cache {
         }
     }
 
+    delete(key1, key2, key3) {
+        console.warn('`Cache.delete` method is deprecated. Please use `Cache.remove` instead.');
+        this.remove(key1, key2, key3);
+    }
+
     /**
      * Removes all entries of the cache.
      *
      */
-    clear() {
+    dispose() {
         this.data.clear();
+    }
+
+    clear() {
+        console.warn('`Cache.clear` method is deprecated. Please use `Cache.dispose` instead.');
+        this.dispose();
     }
 
     /**
@@ -205,7 +215,7 @@ class Cache {
      * last time they were used, are removed from the cache. By default, the
      * time is the current time, but the interval can be reduced by doing
      * something like `Cache.flush(Date.now() - reductionTime)`. If you want to
-     * clear the whole cache, use {@link Cache.clear} instead.
+     * clear the whole cache, use {@link Cache.dispose} instead.
      *
      * @param {number} [time=Date.now()]
      */
