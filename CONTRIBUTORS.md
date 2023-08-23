@@ -45,6 +45,10 @@ The following people have contributed to iTowns.
 * [Diginove](http://diginove.com/index.php/fr/diginove-lexpertise-en-traitement-dimages/):
   * [Michel Benet](https://github.com/mbenevole)
 
+* [Sogelink](https://www.sogelink.com/)
+  * [Kévin ETOURNEAU](https://github.com/ketourneau)
+  * [Alexis DELFORGES](https://github.com/pourfex)
+
 The following organizations are the current maintainers of iTowns:
 * IGN (http://www.ign.fr)
 * Ciril Group (https://www.cirilgroup.com/)

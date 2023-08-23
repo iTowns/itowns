@@ -26,6 +26,9 @@ export default {
         }
         styleUI.add(layer, 'opacity', 0, 1).name('Layer Opacity').onChange(update);
         styleUI.add(layer, 'pointSize', 0, 15).name('Point Size').onChange(update);
+        styleUI.add(layer.material, 'adaptiveScale', 0, 15).name('Adaptive scale').onChange(update);
+        styleUI.add(layer.material, 'minAdaptiveSize', 0, 15).name('Min adaptive size').onChange(update);
+        styleUI.add(layer.material, 'maxAdaptiveSize', 0, 15).name('Max adaptive size').onChange(update);
         if (layer.material.picking != undefined) {
             styleUI.add(layer.material, 'picking').name('Display picking id').onChange(update);
         }

@@ -53,12 +53,15 @@ class PointsMaterial extends THREE.RawShaderMaterial {
     /**
      * @class      PointsMaterial
      * @param      {object}  [options={}]  The options
-     * @param      {number}  [options.size=0]  size point
+     * @param      {number}  [options.size=0]  size point (adaptive size mode when size is 0)
      * @param      {number}  [options.mode=PNTS_MODE.COLOR]  display mode.
      * @param      {THREE.Vector4}  [options.overlayColor=new THREE.Vector4(0, 0, 0, 0)]  overlay color.
      * @param      {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(0, 1)]  intensity range.
      * @param      {boolean}  [options.applyOpacityClassication=false]  apply opacity classification on all display mode.
      * @param      {Classification}  [options.classification] -  define points classification.
+     * @param      {number}  [options.minAdaptiveSize=3]  min adaptive size point (used only when size is 0)
+     * @param      {number}  [options.maxAdaptiveSize=10]  max adaptive size point (used only when size is 0)
+     * @param      {number}  [options.adaptiveScale=1]  adaptive scale factor (used only when size is 0)
      * @property {Classification}  classification - points classification.
      *
      * @example
@@ -74,6 +77,9 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         const applyOpacityClassication = options.applyOpacityClassication == undefined ? false : options.applyOpacityClassication;
         const size = options.size || 0;
         const mode = options.mode || PNTS_MODE.COLOR;
+        const minAdaptiveSize = options.minAdaptiveSize || 3;
+        const maxAdaptiveSize = options.maxAdaptiveSize || 10;
+        const adaptiveScale = options.adaptiveScale || 1;
 
         delete options.orientedImageMaterial;
         delete options.intensityRange;
@@ -81,6 +87,9 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         delete options.applyOpacityClassication;
         delete options.size;
         delete options.mode;
+        delete options.minAdaptiveSize;
+        delete options.maxAdaptiveSize;
+        delete options.adaptiveScale;
 
         super(options);
 
@@ -97,6 +106,9 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new THREE.Vector4(0, 0, 0, 0));
         CommonMaterial.setUniformProperty(this, 'intensityRange', intensityRange);
         CommonMaterial.setUniformProperty(this, 'applyOpacityClassication', applyOpacityClassication);
+        CommonMaterial.setUniformProperty(this, 'minAdaptiveSize', minAdaptiveSize);
+        CommonMaterial.setUniformProperty(this, 'maxAdaptiveSize', maxAdaptiveSize);
+        CommonMaterial.setUniformProperty(this, 'adaptiveScale', adaptiveScale);
 
         // add classification texture to apply classification lut.
         const data = new Uint8Array(256 * 4);

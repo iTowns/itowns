@@ -20,6 +20,9 @@ attribute vec4 unique_id;
 attribute float intensity;
 attribute float classification;
 uniform sampler2D classificationLUT;
+uniform float minAdaptiveSize;
+uniform float maxAdaptiveSize;
+uniform float adaptiveScale;
 
 #if defined(NORMAL_OCT16)
 attribute vec2 oct16Normal;
@@ -102,7 +105,7 @@ void main() {
     if (size > 0.) {
         gl_PointSize = size;
     } else {
-        gl_PointSize = clamp(-size / gl_Position.w, 3.0, 10.0);
+        gl_PointSize = clamp(-size / gl_Position.w, minAdaptiveSize, maxAdaptiveSize) * adaptiveScale;
     }
 
 #if defined(USE_TEXTURES_PROJECTIVE)
