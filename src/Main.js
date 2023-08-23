@@ -91,7 +91,7 @@ export { default as LASParser } from 'Parser/LASParser';
 export { default as ISGParser } from 'Parser/ISGParser';
 export { default as GDFParser } from 'Parser/GDFParser';
 export { default as GTXParser } from 'Parser/GTXParser';
-export { enableDracoLoader, glTFLoader, legacyGLTFLoader } from 'Parser/B3dmParser';
+export { enableDracoLoader, enableKtx2Loader, glTFLoader, legacyGLTFLoader } from 'Parser/B3dmParser';
 
 // 3D Tiles classes and extensions
 // Exported to allow one to implement its own 3D Tiles extension which needs to
