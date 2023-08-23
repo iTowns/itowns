@@ -12,6 +12,11 @@ export const PNTS_MODE = {
     NORMAL: 3,
 };
 
+export const PNTS_SHAPE = {
+    CIRCLE: 0,
+    SQUARE: 1,
+};
+
 export const PNTS_SIZE_MODE = {
     VALUE: 0,
     ATTENUATED: 1,
@@ -60,6 +65,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
      * @param      {object}  [options={}]  The options
      * @param      {number}  [options.size=0]  size point
      * @param      {number}  [options.mode=PNTS_MODE.COLOR]  display mode.
+     * @param      {number}  [options.mode=PNTS_SHAPE.CIRCLE]  rendered points shape.
      * @param      {THREE.Vector4}  [options.overlayColor=new THREE.Vector4(0, 0, 0, 0)]  overlay color.
      * @param      {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(0, 1)]  intensity range.
      * @param      {boolean}  [options.applyOpacityClassication=false]  apply opacity classification on all display mode.
@@ -82,6 +88,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         const applyOpacityClassication = options.applyOpacityClassication == undefined ? false : options.applyOpacityClassication;
         const size = options.size || 0;
         const mode = options.mode || PNTS_MODE.COLOR;
+        const shape = options.shape || PNTS_SHAPE.CIRCLE;
         const sizeMode = size === 0 ? PNTS_SIZE_MODE.ATTENUATED : (options.sizeMode || PNTS_SIZE_MODE.VALUE);
         const minAttenuatedSize = options.minAttenuatedSize || 3;
         const maxAttenuatedSize = options.maxAttenuatedSize || 10;
@@ -92,6 +99,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         delete options.applyOpacityClassication;
         delete options.size;
         delete options.mode;
+        delete options.shape;
         delete options.sizeMode;
         delete options.minAttenuatedSize;
         delete options.maxAttenuatedSize;
@@ -103,10 +111,12 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         this.scale = options.scale || 0.05 * 0.5 / Math.tan(1.0 / 2.0); // autosizing scale
 
         CommonMaterial.setDefineMapping(this, 'PNTS_MODE', PNTS_MODE);
+        CommonMaterial.setDefineMapping(this, 'PNTS_SHAPE', PNTS_SHAPE);
         CommonMaterial.setDefineMapping(this, 'PNTS_SIZE_MODE', PNTS_SIZE_MODE);
 
         CommonMaterial.setUniformProperty(this, 'size', size);
         CommonMaterial.setUniformProperty(this, 'mode', mode);
+        CommonMaterial.setUniformProperty(this, 'shape', shape);
         CommonMaterial.setUniformProperty(this, 'picking', false);
         CommonMaterial.setUniformProperty(this, 'opacity', this.opacity);
         CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new THREE.Vector4(0, 0, 0, 0));

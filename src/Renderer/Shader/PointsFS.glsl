@@ -7,12 +7,18 @@
 
 varying vec4 vColor;
 uniform bool picking;
+uniform int shape;
+
 void main() {
     #include <logdepthbuf_fragment>
-    // circular point rendering
-    if((length(gl_PointCoord - 0.5) > 0.5) || (vColor.a == 0.0)) {
-        discard;
+    //square shape does not require any change.
+    if (shape == PNTS_SHAPE_CIRCLE) {
+        //circular rendering in glsl
+        if ((length(gl_PointCoord - 0.5) > 0.5) || (vColor.a == 0.0)) {
+            discard;
+        }
     }
+
 #if defined(USE_TEXTURES_PROJECTIVE)
     vec4 color = vColor;
     if (!picking) {
