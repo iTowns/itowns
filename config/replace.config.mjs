@@ -10,7 +10,7 @@ const patchBatchID = /JOINTS_0: +'skinIndex',/g;
 const patchGLTFLoader = 'JOINTS_0: \'skinIndex\',\n\t\t_BATCHID: \'_BATCHID\',';
 
 replace({
-    files: fileGLTFLoader,
+    files: fileGLTFLoader.replaceAll('\\','/'),
     from: patchBatchID,
     to: patchGLTFLoader,
 }).then((t) => {
