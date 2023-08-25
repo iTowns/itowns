@@ -243,6 +243,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         this.transparent = source.transparent;
         this.size = source.size;
         this.mode = source.mode;
+        this.pntsShape = source.pntsShape;
         this.sizeMode = source.sizeMode;
         this.minAttenuatedSize = source.minAttenuatedSize;
         this.maxAttenuatedSize = source.maxAttenuatedSize;

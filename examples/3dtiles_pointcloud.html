@@ -62,6 +62,7 @@
                 name: 'SetePC',
                 sseThreshold: 5,
                 pntsMode: itowns.PNTS_MODE.CLASSIFICATION,
+                pntsShape : itowns.PNTS_SHAPE.CIRCLE,
                 source: new itowns.C3DTilesSource({
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json',
                 }),
@@ -79,6 +80,7 @@
                 if(pntsLayer){
                     pntsLayer = pntsLayer;
                     pntsLayer.pntsMode = pntsLayer.pntsMode == itowns.PNTS_MODE.COLOR ? itowns.PNTS_MODE.CLASSIFICATION : itowns.PNTS_MODE.COLOR;
+                    pntsLayer.pntsShape = pntsLayer.pntsShape == itowns.PNTS_SHAPE.CIRCLE ? itowns.PNTS_SHAPE.CIRCLE : itowns.PNTS_SHAPE.SQUARE;
                     view.notifyChange(view.camera.camera3D);
                 }
             }

@@ -19,7 +19,7 @@ export { VIEW_EVENTS } from 'Core/View';
 export { default as FeatureProcessing } from 'Process/FeatureProcessing';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 export { default as OrientedImageCamera } from 'Renderer/OrientedImageCamera';
-export { default as PointsMaterial, PNTS_MODE, PNTS_SIZE_MODE, ClassificationScheme } from 'Renderer/PointsMaterial';
+export { default as PointsMaterial, PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE, ClassificationScheme } from 'Renderer/PointsMaterial';
 export { default as GlobeControls } from 'Controls/GlobeControls';
 export { default as FlyControls } from 'Controls/FlyControls';
 export { default as FirstPersonControls } from 'Controls/FirstPersonControls';
