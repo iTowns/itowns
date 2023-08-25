@@ -21,6 +21,26 @@ function ReferLayerProperties(material, layer) {
                 get: () => material.layer.pntsMode,
             });
         }
+        if (material.uniforms && material.uniforms.sizeMode != undefined) {
+            Object.defineProperty(material.uniforms.sizeMode, 'value', {
+                get: () => material.layer.pntsSize,
+            });
+        }
+        if (material.uniforms && material.uniforms.minAdaptiveSize != undefined) {
+            Object.defineProperty(material.uniforms.minAdaptiveSize, 'value', {
+                get: () => material.layer.pntsMinAdaptiveSize,
+            });
+        }
+        if (material.uniforms && material.uniforms.maxAdaptiveSize != undefined) {
+            Object.defineProperty(material.uniforms.maxAdaptiveSize, 'value', {
+                get: () => material.layer.pntsMaxAdaptiveSize,
+            });
+        }
+        if (material.uniforms && material.uniforms.adaptiveScale != undefined) {
+            Object.defineProperty(material.uniforms.adaptiveScale, 'value', {
+                get: () => material.layer.pntsAdaptiveScale,
+            });
+        }
 
         Object.defineProperty(material, 'wireframe', {
             get: () => material.layer.wireframe,

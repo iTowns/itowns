@@ -20,6 +20,7 @@ attribute vec4 unique_id;
 attribute float intensity;
 attribute float classification;
 uniform sampler2D classificationLUT;
+uniform int sizeMode;
 uniform float minAdaptiveSize;
 uniform float maxAdaptiveSize;
 uniform float adaptiveScale;
@@ -93,7 +94,7 @@ void main() {
             vColor.rgb = vec3(i, i, i);
         } else if (mode == PNTS_MODE_NORMAL) {
             vColor.rgb = abs(normal);
-        } else if (mode ==PNTS_MODE_COLOR) {
+        } else if (mode == PNTS_MODE_COLOR) {
             // default to color mode
             vColor.rgb = mix(color, overlayColor.rgb, overlayColor.a);
         }
@@ -102,9 +103,9 @@ void main() {
     #include <begin_vertex>
     #include <project_vertex>
 
-    if (size > 0.) {
+    if (sizeMode == PNTS_SIZE_VALUE) {
         gl_PointSize = size;
-    } else {
+    } else if (sizeMode == PNTS_SIZE_ADAPTIVE) {
         gl_PointSize = clamp(-size / gl_Position.w, minAdaptiveSize, maxAdaptiveSize) * adaptiveScale;
     }
 

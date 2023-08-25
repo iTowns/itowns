@@ -12,6 +12,11 @@ export const PNTS_MODE = {
     NORMAL: 3,
 };
 
+export const PNTS_SIZE = {
+    VALUE: 0,
+    ADAPTIVE: 1,
+};
+
 const white = new THREE.Color(1.0,  1.0,  1.0);
 
 /**
@@ -53,15 +58,16 @@ class PointsMaterial extends THREE.RawShaderMaterial {
     /**
      * @class      PointsMaterial
      * @param      {object}  [options={}]  The options
-     * @param      {number}  [options.size=0]  size point (adaptive size mode when size is 0)
+     * @param      {number}  [options.size=0]  size point
      * @param      {number}  [options.mode=PNTS_MODE.COLOR]  display mode.
      * @param      {THREE.Vector4}  [options.overlayColor=new THREE.Vector4(0, 0, 0, 0)]  overlay color.
      * @param      {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(0, 1)]  intensity range.
      * @param      {boolean}  [options.applyOpacityClassication=false]  apply opacity classification on all display mode.
      * @param      {Classification}  [options.classification] -  define points classification.
-     * @param      {number}  [options.minAdaptiveSize=3]  min adaptive size point (used only when size is 0)
-     * @param      {number}  [options.maxAdaptiveSize=10]  max adaptive size point (used only when size is 0)
-     * @param      {number}  [options.adaptiveScale=1]  adaptive scale factor (used only when size is 0)
+     * @param      {number}  [options.sizeMode=SIZE_MODE.VALUE]  point cloud size mode. Only 'VALUE' or 'ADAPTIVE' are possible. VALUE use constant size, ADAPTIVE compute size depending on distance from point to camera.
+     * @param      {number}  [options.adaptiveScale=1]  scale factor used by 'ADAPTIVE' size mode
+     * @param      {number}  [options.minAdaptiveSize=3]  minimum scale used by 'ADAPTIVE' size mode
+     * @param      {number}  [options.maxAdaptiveSize=10]  maximum scale used by 'ADAPTIVE' size mode
      * @property {Classification}  classification - points classification.
      *
      * @example
@@ -75,8 +81,12 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         const oiMaterial = options.orientedImageMaterial;
         const classification = options.classification || ClassificationScheme.DEFAULT;
         const applyOpacityClassication = options.applyOpacityClassication == undefined ? false : options.applyOpacityClassication;
-        const size = options.size || 0;
+        let size = options.size || 0;
         const mode = options.mode || PNTS_MODE.COLOR;
+        const sizeMode = size === 0 ? PNTS_SIZE.ADAPTIVE : (options.sizeMode || PNTS_SIZE.VALUE);
+        if ((sizeMode === PNTS_SIZE.ADAPTIVE) && (size !== 0)) {
+            size = 0;
+        }
         const minAdaptiveSize = options.minAdaptiveSize || 3;
         const maxAdaptiveSize = options.maxAdaptiveSize || 10;
         const adaptiveScale = options.adaptiveScale || 1;
@@ -87,6 +97,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         delete options.applyOpacityClassication;
         delete options.size;
         delete options.mode;
+        delete options.sizeMode;
         delete options.minAdaptiveSize;
         delete options.maxAdaptiveSize;
         delete options.adaptiveScale;
@@ -98,6 +109,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         this.scale = options.scale || 0.05 * 0.5 / Math.tan(1.0 / 2.0); // autosizing scale
 
         CommonMaterial.setDefineMapping(this, 'PNTS_MODE', PNTS_MODE);
+        CommonMaterial.setDefineMapping(this, 'PNTS_SIZE', PNTS_SIZE);
 
         CommonMaterial.setUniformProperty(this, 'size', size);
         CommonMaterial.setUniformProperty(this, 'mode', mode);
@@ -106,6 +118,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new THREE.Vector4(0, 0, 0, 0));
         CommonMaterial.setUniformProperty(this, 'intensityRange', intensityRange);
         CommonMaterial.setUniformProperty(this, 'applyOpacityClassication', applyOpacityClassication);
+        CommonMaterial.setUniformProperty(this, 'sizeMode', sizeMode);
         CommonMaterial.setUniformProperty(this, 'minAdaptiveSize', minAdaptiveSize);
         CommonMaterial.setUniformProperty(this, 'maxAdaptiveSize', maxAdaptiveSize);
         CommonMaterial.setUniformProperty(this, 'adaptiveScale', adaptiveScale);
@@ -226,6 +239,10 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         this.transparent = source.transparent;
         this.size = source.size;
         this.mode = source.mode;
+        this.sizeMode = source.sizeMode;
+        this.adaptiveScale = source.adaptiveScale;
+        this.minAdaptiveSize = source.minAdaptiveSize;
+        this.maxAdaptiveSize = source.maxAdaptiveSize;
         this.picking = source.picking;
         this.scale = source.scale;
         this.overlayColor.copy(source.overlayColor);

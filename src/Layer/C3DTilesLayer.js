@@ -3,7 +3,7 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import { init3dTilesLayer, pre3dTilesUpdate, process3dTilesNode } from 'Process/3dTilesProcessing';
 import C3DTileset from 'Core/3DTiles/C3DTileset';
 import C3DTExtensions from 'Core/3DTiles/C3DTExtensions';
-import { PNTS_MODE } from 'Renderer/PointsMaterial';
+import { PNTS_MODE, PNTS_SIZE } from 'Renderer/PointsMaterial';
 // eslint-disable-next-line no-unused-vars
 import Style from 'Core/Style';
 import C3DTFeature from 'Core/3DTiles/C3DTFeature';
@@ -70,6 +70,10 @@ class C3DTilesLayer extends GeometryLayer {
      * removed from the scene.
      * @param {C3DTExtensions} [config.registeredExtensions] 3D Tiles extensions managers registered for this tileset.
      * @param {String} [config.pntsMode= PNTS_MODE.COLOR] {@link PointsMaterials} Point cloud coloring mode. Only 'COLOR' or 'CLASSIFICATION' are possible. COLOR uses RGB colors of the points, CLASSIFICATION uses a classification property of the batch table to color points.
+     * @param {String} [config.pntsSize= PNTS_SIZE.VALUE] {@link PointsMaterials} Point cloud size mode. Only 'VALUE' or 'ADAPTIVE' are possible. VALUE use constant size, ADAPTIVE compute size depending on distance from point to camera.
+     * @param {Number} [config.pntsAdaptiveScale=1] Scale factor used by 'ADAPTIVE' size mode
+     * @param {Number} [config.pntsMinAdaptiveSize=3] Minimum scale used by 'ADAPTIVE' size mode
+     * @param {Number} [config.pntsMaxAdaptiveSize=10] Maximum scale used by 'ADAPTIVE' size mode
      * @param {Style} [config.style=null] - style used for this layer
      * @param  {View}  view  The view
      */
@@ -84,13 +88,20 @@ class C3DTilesLayer extends GeometryLayer {
 
         this.pntsMode = PNTS_MODE.COLOR;
         this.classification = config.classification;
-
+        this.pntsSize = PNTS_SIZE.VALUE;
+        this.pntsAdaptiveScale = config.pntsAdaptiveScale || 1;
+        this.pntsMinAdaptiveSize = config.pntsMinAdaptiveSize || 3;
+        this.pntsMaxAdaptiveSize = config.pntsMaxAdaptiveSize || 10;
 
         if (config.pntsMode) {
             const exists = Object.values(PNTS_MODE).includes(config.pntsMode);
             if (!exists) { console.warn("The points cloud mode doesn't exist. Use 'COLOR' or 'CLASSIFICATION' instead."); } else { this.pntsMode = config.pntsMode; }
         }
 
+        if (config.pntsSize) {
+            const exists = Object.values(PNTS_SIZE).includes(config.pntsSize);
+            if (!exists) { console.warn("The points cloud size doesn't exist. Use 'VALUE' or 'ADAPTIVE' instead."); } else { this.pntsSize = config.pntsSize; }
+        }
 
         /** @type {Style} */
         this._style = config.style || null;
