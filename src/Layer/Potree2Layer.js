@@ -159,7 +159,7 @@ class Potree2Layer extends PointCloudLayer {
             this.spacing = metadata.spacing;
 
             const normal = Array.isArray(this.pointAttributes.attributes) &&
-               this.pointAttributes.attributes.find(elem => elem.name.toLowerCase().startsWith('normal'));
+               this.pointAttributes.attributes.find(elem => elem.name.startsWith('NORMAL'));
             if (normal) {
                 this.material.defines[normal.name] = 1;
             }
