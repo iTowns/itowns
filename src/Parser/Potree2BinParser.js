@@ -103,9 +103,9 @@ export default {
             const pointAttributes = layer.pointAttributes;
             const scale = metadata.scale;
             const box = options.in.bbox;
-            const min = layer.offset.clone().add(box.min);
+            const min = box.min;
             const size = box.max.clone().sub(box.min);
-            const max = min.clone().add(size);
+            const max = box.max;
             const offset = metadata.offset;
             const numPoints = options.in.numPoints;
 

@@ -168,11 +168,6 @@ class Potree2Layer extends PointCloudLayer {
             const max = new THREE.Vector3(...metadata.boundingBox.max);
             const boundingBox = new THREE.Box3(min, max);
 
-            const offset = min.clone();
-            boundingBox.min.sub(offset);
-            boundingBox.max.sub(offset);
-            this.offset = offset;
-
             const root = new Potree2Node(0, 0, this);
 
             root.bbox = boundingBox;
