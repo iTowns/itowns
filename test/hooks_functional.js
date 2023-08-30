@@ -117,7 +117,7 @@ const loadExample = async (url, screenshotName) => {
 
     pageErrors.forEach((e) => { throw e; });
 
-    await page.waitForFunction(() => typeof (view) === 'object');
+    await page.waitForFunction(() => typeof view === 'object' && view instanceof itowns.View);
 
     await page.evaluate(() => {
         itowns.CameraUtils.defaultStopPlaceOnGroundAtEnd = true;
@@ -131,6 +131,8 @@ const loadExample = async (url, screenshotName) => {
                 itowns.CameraUtils.stop(view, view.camera3D);
             });
             await layersAreInitialized();
+        } else {
+            throw e;
         }
     }
 
@@ -206,7 +208,7 @@ export const mochaHooks = {
         });
 
         // the page all tests will be tested in
-        return browser.newPage().then((p) => { global.page = p; });
+        global.page = await browser.newPage();
     },
     // store initial position for restoration after the test
     afterAll(done) {
