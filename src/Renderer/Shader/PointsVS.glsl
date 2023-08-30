@@ -8,6 +8,7 @@
 #include <logdepthbuf_pars_vertex>
 
 uniform float size;
+uniform float preSSE;
 
 uniform bool picking;
 uniform int mode;
@@ -21,9 +22,8 @@ attribute float intensity;
 attribute float classification;
 uniform sampler2D classificationLUT;
 uniform int sizeMode;
-uniform float minAdaptiveSize;
-uniform float maxAdaptiveSize;
-uniform float adaptiveScale;
+uniform float minAttenuateSize;
+uniform float maxAttenuateSize;
 
 #if defined(NORMAL_OCT16)
 attribute vec2 oct16Normal;
@@ -105,8 +105,10 @@ void main() {
 
     if (sizeMode == PNTS_SIZE_VALUE) {
         gl_PointSize = size;
-    } else if (sizeMode == PNTS_SIZE_ADAPTIVE) {
-        gl_PointSize = clamp(-size / gl_Position.w, minAdaptiveSize, maxAdaptiveSize) * adaptiveScale;
+    } else if (sizeMode == PNTS_SIZE_ATTENUATE) {
+        gl_PointSize = size;
+        gl_PointSize *= (preSSE / -mvPosition.z);
+        gl_PointSize = clamp(gl_PointSize, minAttenuateSize, maxAttenuateSize);
     }
 
 #if defined(USE_TEXTURES_PROJECTIVE)

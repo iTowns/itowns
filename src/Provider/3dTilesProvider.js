@@ -34,9 +34,8 @@ function pntsParse(data, layer) {
                 mode: layer.pntsMode,
                 classification: layer.classification,
                 sizeMode: layer.pntsSize,
-                minAdaptiveSize: layer.pntsMinAdaptiveSize,
-                maxAdaptiveSize: layer.pntsMaxAdaptiveSize,
-                adaptiveScale: layer.adaptiveScale,
+                minAttenuateSize: layer.pntsMinAttenuateSize,
+                maxAttenuateSize: layer.pntsMaxAttenuateSize,
             });
 
         // refer material properties in the layer so when layers opacity and visibility is updated, the material is

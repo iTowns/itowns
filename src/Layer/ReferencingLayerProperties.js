@@ -26,19 +26,14 @@ function ReferLayerProperties(material, layer) {
                 get: () => material.layer.pntsSize,
             });
         }
-        if (material.uniforms && material.uniforms.minAdaptiveSize != undefined) {
-            Object.defineProperty(material.uniforms.minAdaptiveSize, 'value', {
-                get: () => material.layer.pntsMinAdaptiveSize,
+        if (material.uniforms && material.uniforms.minAttenuateSize != undefined) {
+            Object.defineProperty(material.uniforms.minAttenuateSize, 'value', {
+                get: () => material.layer.pntsMinAttenuateSize,
             });
         }
-        if (material.uniforms && material.uniforms.maxAdaptiveSize != undefined) {
-            Object.defineProperty(material.uniforms.maxAdaptiveSize, 'value', {
-                get: () => material.layer.pntsMaxAdaptiveSize,
-            });
-        }
-        if (material.uniforms && material.uniforms.adaptiveScale != undefined) {
-            Object.defineProperty(material.uniforms.adaptiveScale, 'value', {
-                get: () => material.layer.pntsAdaptiveScale,
+        if (material.uniforms && material.uniforms.maxAttenuateSize != undefined) {
+            Object.defineProperty(material.uniforms.maxAttenuateSize, 'value', {
+                get: () => material.layer.pntsMaxAttenuateSize,
             });
         }
 

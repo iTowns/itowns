@@ -118,15 +118,11 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
         view.notifyChange(view.camera.camera3D);
     });
 
-    gui.add(_3dTileslayer, 'pntsAdaptiveScale', 0, 15).name('Adptive scale').onChange(() => {
+    gui.add(_3dTileslayer, 'pntsMinAttenuateSize', 0, 15).name('Min attenuate size').onChange(() => {
         view.notifyChange(view.camera.camera3D);
     });
 
-    gui.add(_3dTileslayer, 'pntsMinAdaptiveSize', 0, 15).name('Min adptive size').onChange(() => {
-        view.notifyChange(view.camera.camera3D);
-    });
-
-    gui.add(_3dTileslayer, 'pntsMaxAdaptiveSize', 0, 15).name('Max adptive size').onChange(() => {
+    gui.add(_3dTileslayer, 'pntsMaxAttenuateSize', 0, 15).name('Max attenuate size').onChange(() => {
         view.notifyChange(view.camera.camera3D);
     });
 }

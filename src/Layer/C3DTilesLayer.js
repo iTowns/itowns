@@ -70,10 +70,9 @@ class C3DTilesLayer extends GeometryLayer {
      * removed from the scene.
      * @param {C3DTExtensions} [config.registeredExtensions] 3D Tiles extensions managers registered for this tileset.
      * @param {String} [config.pntsMode= PNTS_MODE.COLOR] {@link PointsMaterials} Point cloud coloring mode. Only 'COLOR' or 'CLASSIFICATION' are possible. COLOR uses RGB colors of the points, CLASSIFICATION uses a classification property of the batch table to color points.
-     * @param {String} [config.pntsSize= PNTS_SIZE.VALUE] {@link PointsMaterials} Point cloud size mode. Only 'VALUE' or 'ADAPTIVE' are possible. VALUE use constant size, ADAPTIVE compute size depending on distance from point to camera.
-     * @param {Number} [config.pntsAdaptiveScale=1] Scale factor used by 'ADAPTIVE' size mode
-     * @param {Number} [config.pntsMinAdaptiveSize=3] Minimum scale used by 'ADAPTIVE' size mode
-     * @param {Number} [config.pntsMaxAdaptiveSize=10] Maximum scale used by 'ADAPTIVE' size mode
+     * @param {String} [config.pntsSize= PNTS_SIZE.VALUE] {@link PointsMaterials} Point cloud size mode. Only 'VALUE' or 'ATTENUATE' are possible. VALUE use constant size, ATTENUATE compute size depending on distance from point to camera.
+     * @param {Number} [config.pntsMinAttenuateSize=3] Minimum scale used by 'ADAPTIVE' size mode
+     * @param {Number} [config.pntsMaxAttenuateSize=10] Maximum scale used by 'ADAPTIVE' size mode
      * @param {Style} [config.style=null] - style used for this layer
      * @param  {View}  view  The view
      */
@@ -89,9 +88,8 @@ class C3DTilesLayer extends GeometryLayer {
         this.pntsMode = PNTS_MODE.COLOR;
         this.classification = config.classification;
         this.pntsSize = PNTS_SIZE.VALUE;
-        this.pntsAdaptiveScale = config.pntsAdaptiveScale || 1;
-        this.pntsMinAdaptiveSize = config.pntsMinAdaptiveSize || 3;
-        this.pntsMaxAdaptiveSize = config.pntsMaxAdaptiveSize || 10;
+        this.pntsMinAttenuateSize = config.pntsMinAttenuateSize || 3;
+        this.pntsMaxAttenuateSize = config.pntsMaxAttenuateSize || 10;
 
         if (config.pntsMode) {
             const exists = Object.values(PNTS_MODE).includes(config.pntsMode);
@@ -100,7 +98,7 @@ class C3DTilesLayer extends GeometryLayer {
 
         if (config.pntsSize) {
             const exists = Object.values(PNTS_SIZE).includes(config.pntsSize);
-            if (!exists) { console.warn("The points cloud size doesn't exist. Use 'VALUE' or 'ADAPTIVE' instead."); } else { this.pntsSize = config.pntsSize; }
+            if (!exists) { console.warn("The points cloud size doesn't exist. Use 'VALUE' or 'ATTENUATE' instead."); } else { this.pntsSize = config.pntsSize; }
         }
 
         /** @type {Style} */
