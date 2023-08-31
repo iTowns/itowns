@@ -112,18 +112,32 @@ const waitNextRender = async page => page.evaluate(() => new Promise((resolve) =
     view.notifyChange();
 }));
 
+async function saveInitialPosition() {
+    global.initialPosition = await page.evaluate(() => {
+        let promise;
+        if (view.isGlobeView && view.controls) {
+            promise = Promise.resolve(itowns.CameraUtils.getTransformCameraLookingAtTarget(view, view.controls.camera));
+        } else if (view.isPlanarView) {
+            // TODO: make the controls accessible from PlanarView before doing
+            // anything more here
+            promise = Promise.resolve();
+        }
+        return promise;
+    });
+}
+
 // Helper function: returns true if there are no errors on the page
 // and when all layers are ready and rendering has been done
 const loadExample = async (url, screenshotName) => {
-    url = `http://localhost:${itownsPort}/${url}`;
+    localUrl = `http://localhost:${itownsPort}/${url}`;
 
     const pageErrors = [];
     page.on('pageerror', (e) => { pageErrors.push(e); });
 
     try {
-        await page.goto(url);
+        await page.goto(localUrl);
     } catch (e) {
-        throw new Error(`page ${url} couldn't load`, { cause: e });
+        throw new Error(`page ${localUrl} couldn't load`, { cause: e });
     }
 
     if (pageErrors.length > 0) {
@@ -161,18 +175,6 @@ const loadExample = async (url, screenshotName) => {
 
     return true;
 };
-
-async function saveInitialPosition() {
-    global.initialPosition = await page.evaluate(() => {
-        if (view.isGlobeView && view.controls) {
-            return Promise.resolve(itowns.CameraUtils.getTransformCameraLookingAtTarget(view, view.controls.camera));
-        } else if (view.isPlanarView) {
-            // TODO: make the controls accessible from PlanarView before doing
-            // anything more here
-            return Promise.resolve();
-        }
-    });
-}
 
 // Use waitUntilItownsIsIdle to wait until itowns has finished all its work (= layer updates)
 const waitUntilItownsIsIdle = async (screenshotName) => {
@@ -254,7 +256,7 @@ export const mochaHooks = {
     // reset browser state instead of closing it
     afterEach: async () => {
         await page.evaluate((init) => {
-            if (view?.isGlobeView && view.controls) {
+            if (view && view.isGlobeView && view.controls) {
                 // eslint-disable-next-line no-param-reassign
                 init.coord = new itowns.Coordinates(
                     init.coord.crs,
@@ -264,7 +266,7 @@ export const mochaHooks = {
                 );
                 view.controls.lookAtCoordinate(init, false);
                 view.notifyChange();
-            } else if (view?.isPlanarView) {
+            } else if (view && view.isPlanarView) {
                 // TODO: make the controls accessible from PlanarView before doing
                 // anything more here
             }
@@ -276,5 +278,3 @@ export const mochaHooks = {
 
 global.loadExample = loadExample;
 global.waitUntilItownsIsIdle = waitUntilItownsIsIdle;
-
-
