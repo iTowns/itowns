@@ -22,8 +22,8 @@ attribute float intensity;
 attribute float classification;
 uniform sampler2D classificationLUT;
 uniform int sizeMode;
-uniform float minAttenuateSize;
-uniform float maxAttenuateSize;
+uniform float minAttenuatedSize;
+uniform float maxAttenuatedSize;
 
 #if defined(NORMAL_OCT16)
 attribute vec2 oct16Normal;
@@ -103,12 +103,12 @@ void main() {
     #include <begin_vertex>
     #include <project_vertex>
 
-    if (sizeMode == PNTS_SIZE_VALUE) {
+    if (sizeMode == PNTS_SIZE_MODE_VALUE) {
         gl_PointSize = size;
-    } else if (sizeMode == PNTS_SIZE_ATTENUATE) {
+    } else if (sizeMode == PNTS_SIZE_MODE_ATTENUATED) {
         gl_PointSize = size;
         gl_PointSize *= (preSSE / -mvPosition.z);
-        gl_PointSize = clamp(gl_PointSize, minAttenuateSize, maxAttenuateSize);
+        gl_PointSize = clamp(gl_PointSize, minAttenuatedSize, maxAttenuatedSize);
     }
 
 #if defined(USE_TEXTURES_PROJECTIVE)

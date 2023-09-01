@@ -23,17 +23,17 @@ function ReferLayerProperties(material, layer) {
         }
         if (material.uniforms && material.uniforms.sizeMode != undefined) {
             Object.defineProperty(material.uniforms.sizeMode, 'value', {
-                get: () => material.layer.pntsSize,
+                get: () => material.layer.pntsSizeMode,
             });
         }
-        if (material.uniforms && material.uniforms.minAttenuateSize != undefined) {
-            Object.defineProperty(material.uniforms.minAttenuateSize, 'value', {
-                get: () => material.layer.pntsMinAttenuateSize,
+        if (material.uniforms && material.uniforms.minAttenuatedSize != undefined) {
+            Object.defineProperty(material.uniforms.minAttenuatedSize, 'value', {
+                get: () => material.layer.pntsMinAttenuatedSize,
             });
         }
-        if (material.uniforms && material.uniforms.maxAttenuateSize != undefined) {
-            Object.defineProperty(material.uniforms.maxAttenuateSize, 'value', {
-                get: () => material.layer.pntsMaxAttenuateSize,
+        if (material.uniforms && material.uniforms.maxAttenuatedSize != undefined) {
+            Object.defineProperty(material.uniforms.maxAttenuatedSize, 'value', {
+                get: () => material.layer.pntsMaxAttenuatedSize,
             });
         }
 
