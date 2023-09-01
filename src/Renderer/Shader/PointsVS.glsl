@@ -8,6 +8,7 @@
 #include <logdepthbuf_pars_vertex>
 
 uniform float size;
+uniform float preSSE;
 
 uniform bool picking;
 uniform int mode;
@@ -20,6 +21,9 @@ attribute vec4 unique_id;
 attribute float intensity;
 attribute float classification;
 uniform sampler2D classificationLUT;
+uniform int sizeMode;
+uniform float minAttenuatedSize;
+uniform float maxAttenuatedSize;
 
 #if defined(NORMAL_OCT16)
 attribute vec2 oct16Normal;
@@ -90,7 +94,7 @@ void main() {
             vColor.rgb = vec3(i, i, i);
         } else if (mode == PNTS_MODE_NORMAL) {
             vColor.rgb = abs(normal);
-        } else if (mode ==PNTS_MODE_COLOR) {
+        } else if (mode == PNTS_MODE_COLOR) {
             // default to color mode
             vColor.rgb = mix(color, overlayColor.rgb, overlayColor.a);
         }
@@ -99,10 +103,12 @@ void main() {
     #include <begin_vertex>
     #include <project_vertex>
 
-    if (size > 0.) {
+    if (sizeMode == PNTS_SIZE_MODE_VALUE) {
         gl_PointSize = size;
-    } else {
-        gl_PointSize = clamp(-size / gl_Position.w, 3.0, 10.0);
+    } else if (sizeMode == PNTS_SIZE_MODE_ATTENUATED) {
+        gl_PointSize = size;
+        gl_PointSize *= (preSSE / -mvPosition.z);
+        gl_PointSize = clamp(gl_PointSize, minAttenuatedSize, maxAttenuatedSize);
     }
 
 #if defined(USE_TEXTURES_PROJECTIVE)
