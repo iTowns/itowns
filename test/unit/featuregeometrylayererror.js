@@ -10,9 +10,9 @@ import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
 import Renderer from './bootstrap';
 
-const geojson_big = require('../data/geojson/map_big.geojson.json');
-const geojson_a = require('../data/geojson/map.geojson.json');
-const geojson_small = require('../data/geojson/map_small.geojson.json');
+import geojson_big from '../data/geojson/map_big.geojson.json';
+import geojson_a from '../data/geojson/map.geojson.json';
+import geojson_small from '../data/geojson/map_small.geojson.json';
 
 const files = [geojson_small, geojson_a, geojson_big];
 const errors = [3e-4, 5e-2, 35];

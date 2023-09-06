@@ -21,14 +21,14 @@ import Feature2Mesh from 'Converter/Feature2Mesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
 import { EMPTY_TEXTURE_ZOOM } from 'Renderer/RasterTile';
 
-const holes = require('../data/geojson/holesPoints.geojson.json');
+import holes from '../data/geojson/holesPoints.geojson.json';
 
 describe('Provide in Sources', function () {
     // /!\ Avoid to overload fetcher because could troubleshoot the other unit tests?
     // formatTag to avoid it
     const formatTag = 'dspUnitTest';
     supportedFetchers.set(`${formatTag}image/png`, () => Promise.resolve(new THREE.Texture()));
-    supportedFetchers.set(`${formatTag}application/json`, () => Promise.resolve(holes));
+    supportedFetchers.set(`${formatTag}application/json`, () => Promise.resolve(JSON.parse(holes)));
     supportedParsers.set(`${formatTag}image/png`, supportedParsers.get('image/png'));
     supportedParsers.set(`${formatTag}application/json`, supportedParsers.get('application/json'));
 
