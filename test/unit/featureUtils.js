@@ -4,7 +4,7 @@ import FeaturesUtils from 'Utils/FeaturesUtils';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { FEATURE_TYPES } from 'Core/Feature';
 
-const geojson = require('../data/geojson/simple.geojson.json');
+import geojson from '../data/geojson/simple.geojson.json';
 
 describe('FeaturesUtils', function () {
     const options = { out: { crs: 'EPSG:4326', buildExtent: true, mergeFeatures: false, structure: '3d' } };

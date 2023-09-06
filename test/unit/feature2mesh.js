@@ -4,9 +4,9 @@ import assert from 'assert';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 
-const geojson = require('../data/geojson/holes.geojson.json');
-const geojson2 = require('../data/geojson/simple.geojson.json');
-const geojson3 = require('../data/geojson/points.geojson.json');
+import geojson from '../data/geojson/holes.geojson.json';
+import geojson2 from '../data/geojson/simple.geojson.json';
+import geojson3 from '../data/geojson/points.geojson.json';
 
 proj4.defs('EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');

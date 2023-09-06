@@ -10,11 +10,10 @@ import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_befor
 
 export const cacheStyle = new Cache();
 
-const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-const matrix = svg.createSVGMatrix();
+const matrix = document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGMatrix();
+const canvas = document.createElement('canvas');
 
 const inv255 = 1 / 255;
-const canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
 
 function baseAltitudeDefault(properties, ctx) {
     return ctx?.coordinates?.z || 0;
@@ -1079,7 +1078,7 @@ const CustomStyle = {
     itowns_stroke_single_before,
 };
 
-const customStyleSheet = (typeof document !== 'undefined') ? document.createElement('style') : {};
+const customStyleSheet = document.createElement('style');
 customStyleSheet.type = 'text/css';
 
 Object.keys(CustomStyle).forEach((key) => {

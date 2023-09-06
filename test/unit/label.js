@@ -12,7 +12,7 @@ import FileSource from 'Source/FileSource';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import Renderer from './bootstrap';
 
-const geojson = require('../data/geojson/simple.geojson.json');
+import geojson from '../data/geojson/simple.geojson.json';
 
 describe('LabelLayer', function () {
     let layer;
