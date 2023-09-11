@@ -2,9 +2,6 @@
     "Fundamentals": {
         "title": "Fundamentals"
     },
-    "webgl": {
-        "title": "WebGL 1.0/2.0"
-    },
     "Raster-data-Lambert93": {
         "title": "Lambert conformal conic"
     },
