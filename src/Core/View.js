@@ -131,11 +131,6 @@ class View extends THREE.EventDispatcher {
      * var view = itowns.View('EPSG:4326', viewerDiv, { camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC } });
      * var customControls = itowns.THREE.OrbitControls(view.camera.camera3D, viewerDiv);
      *
-     * @example <caption><b>Enable WebGl 1.0 instead of WebGl 2.0.</b></caption>
-     * var viewerDiv = document.getElementById('viewerDiv');
-     * const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
-     * var view = new itowns.View('EPSG:4326', viewerDiv, {  renderer: { isWebGL2: false } });
-     *
      * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
      * @param {Object=} options - Optional properties.
@@ -145,7 +140,6 @@ class View extends THREE.EventDispatcher {
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
      * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
      * added to viewerDiv (mutually exclusive with mainLoop)
-     * @param {boolean} [options.renderer.isWebGL2=true] - enable webgl 2.0 for THREE.js.
      * @param {?Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
      * @param {?Color} options.diffuse - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
