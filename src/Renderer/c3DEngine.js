@@ -9,10 +9,13 @@ import Capabilities from 'Core/System/Capabilities';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 import WEBGL from 'ThreeExtended/capabilities/WebGL';
 import Label2DRenderer from 'Renderer/Label2DRenderer';
+import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
 
 const depthRGBA = new THREE.Vector4();
 class c3DEngine {
     constructor(rendererOrDiv, options = {}) {
+        deprecatedC3DEngineWebGLOptions(options);
+
         const NOIE = !Capabilities.isInternetExplorer();
         // pick sensible default options
         if (options.antialias === undefined) {
