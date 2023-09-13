@@ -1,7 +1,6 @@
-/* global page, itowns, view, TimeoutError, initialPosition */
+/* global page, itowns, view, initialPosition */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const puppeteer = require('puppeteer');
-// const { TimeoutError } = require('puppeteer/Errors');
 const net = require('net');
 const fs = require('fs');
 const http = require('http');
@@ -125,7 +124,7 @@ const loadExample = async (url, screenshotName) => {
     try {
         await layersAreInitialized();
     } catch (e) {
-        if (e instanceof TimeoutError) {
+        if (e instanceof Error && e.name === 'TimeoutError') {
             await page.evaluate(() => {
                 itowns.CameraUtils.stop(view, view.camera.camera3D);
             });

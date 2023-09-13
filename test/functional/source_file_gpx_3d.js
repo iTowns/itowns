@@ -6,7 +6,11 @@ describe('source_file_gpx_3d', function _() {
         result = await loadExample('examples/source_file_gpx_3d.html', this.fullTitle());
     });
 
-    it('should run', async () => {
+    it('view initialized', async () => {
         assert.ok(result);
+    });
+
+    it('should wait for the mesh to be added to the scene', async function _it() {
+        await page.waitForFunction(() => view.scene.children.length === 5, { timeout: 10000 });
     });
 });

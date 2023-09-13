@@ -72,18 +72,18 @@
                         out: {
                             crs: view.referenceCrs,
                             structure: '3d',
-                            style: {
-                                stroke : {
+                            style: new itowns.Style({
+                                stroke: {
                                     color: 'red',
                                     width: 2,
                                 },
-                                point : {
+                                point: {
                                     color: 'white',
                                 }
-                            }
+                            }),
                         }
                     }))
-                    .then(itowns.Feature2Mesh.convert({style}))
+                    .then(itowns.Feature2Mesh.convert())
                     .then(function (mesh) {
                         if (mesh) {
                             mesh.updateMatrixWorld();
