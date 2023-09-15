@@ -308,12 +308,16 @@ describe('Style', function () {
             const imgId = 'filler';
             const vectorTileLayer = {
                 type: 'fill',
-                paint: {
-                    'fill-pattern': imgId,
-                    'fill-outline-color': '#eba55f',
-                },
+                paint: { 'fill-outline-color': '#eba55f' },
             };
+            it('without fill-pattern (or sprites)', () => {
+                const style = Style.setFromVectorTileLayer(vectorTileLayer);
+                // fill-outline-color
+                assert.equal(style.stroke.color, '#eba55f');
+            });
+
             it('with fill-pattern (and sprites)', () => {
+                vectorTileLayer.paint['fill-pattern'] = imgId;
                 const sprites = {
                     filler: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
                     source: 'ImgUrl',
@@ -322,11 +326,6 @@ describe('Style', function () {
                 // fill-pattern
                 assert.equal(style.fill.pattern.id, imgId);
                 assert.equal(style.fill.pattern.cropValues, sprites[imgId]);
-            });
-            it('without fill-pattern (or sprites)', () => {
-                const style = Style.setFromVectorTileLayer(vectorTileLayer);
-                // fill-outline-color
-                assert.equal(style.stroke.color, '#eba55f');
             });
         });
         it("layer.type==='line'", () => {
