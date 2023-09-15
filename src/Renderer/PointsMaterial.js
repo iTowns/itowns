@@ -136,17 +136,26 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'maxAttenuatedSize', maxAttenuatedSize);
 
         // add classification texture to apply classification lut.
-        const data = new Uint8Array(256 * 4);
-        const texture = new THREE.DataTexture(data, 256, 1, THREE.RGBAFormat);
-        texture.needsUpdate = true;
-        texture.magFilter = THREE.NearestFilter;
-        CommonMaterial.setUniformProperty(this, 'classificationLUT', texture);
+        const classData = new Uint8Array(256 * 4);
+        const classTexture = new THREE.DataTexture(classData, 256, 1, THREE.RGBAFormat);
+        classTexture.needsUpdate = true;
+        classTexture.magFilter = THREE.NearestFilter;
+        CommonMaterial.setUniformProperty(this, 'classificationLUT', classTexture);
 
         // Classification scheme
         this.classification = classification;
 
         // Update classification
         this.recomputeClassification();
+
+        // TODO
+        const gradientCanvas = document.createElement('canvas');
+        gradientCanvas.width = 256;
+        gradientCanvas.height = 1;
+        const gradientTexture = new THREE.CanvasTexture(gradientCanvas);
+        CommonMaterial.setUniformProperty(this, 'gradient', gradientTexture);
+
+        this.recomputeGradient();
 
         if (oiMaterial) {
             this.uniforms.projectiveTextureAlphaBorder = oiMaterial.uniforms.projectiveTextureAlphaBorder;
@@ -210,6 +219,25 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         }
 
         this.classificationLUT.needsUpdate = true;
+
+        this.dispatchEvent({
+            type: 'material_property_changed',
+            target: this,
+        });
+    }
+
+    recomputeGradient() {
+        const width = this.gradient.source.data.width;
+        const context = this.gradient.source.data.getContext('2d');
+
+        context.rect(0, 0, width, 1);
+        const gradient = context.createLinearGradient(0, 0, width, 1);
+        gradient.addColorStop(0, '#000000');
+        gradient.addColorStop(1, '#ffffff');
+        context.fillStyle = gradient;
+        context.fill();
+
+        this.gradient.needsUpdate = true;
 
         this.dispatchEvent({
             type: 'material_property_changed',

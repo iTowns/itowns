@@ -25,6 +25,9 @@ uniform mat4 modelMatrix;
 uniform vec2 intensityRange;
 uniform vec2 elevationRange;
 
+uniform sampler2D classificationLUT;
+uniform sampler2D gradient;
+
 uniform float size;
 uniform float scale;
 
@@ -34,7 +37,6 @@ uniform float opacity;
 uniform vec4 overlayColor;
 uniform bool applyOpacityClassication;
 attribute vec4 unique_id;
-uniform sampler2D classificationLUT;
 uniform int sizeMode;
 uniform float minAttenuatedSize;
 uniform float maxAttenuatedSize;
@@ -104,9 +106,9 @@ void main() {
         }
 
         if (mode == PNTS_MODE_INTENSITY) {
-            // adapt the grayscale knowing the range
+            // adapt the gradient knowing the range
             float i = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
-            vColor.rgb = vec3(i, i, i);
+            vColor.rgb = texture2D(gradient, vec2(i, 0.5)).rgb;
         } else if (mode == PNTS_MODE_NORMAL) {
             vColor.rgb = abs(normal);
         } else if (mode == PNTS_MODE_COLOR) {
@@ -114,20 +116,20 @@ void main() {
             vColor.rgb = mix(color, overlayColor.rgb, overlayColor.a);
         } else if (mode == PNTS_MODE_RETURN_NUMBER) {
             float n = returnNumber / RETURN_NUMBER_MAX;
-            vColor.rgb = vec3(n, n, n);
+            vColor.rgb = texture2D(gradient, vec2(n, 0.5)).rgb;
         } else if (mode == PNTS_MODE_NUMBER_OF_RETURNS) {
             float n = numberOfReturns / RETURN_NUMBER_MAX;
-            vColor.rgb = vec3(n, n, n);
+            vColor.rgb = texture2D(gradient, vec2(n, 0.5)).rgb;
         } else if (mode == PNTS_MODE_POINT_SOURCE_ID) {
             // group ids by their 4 least significant bits
             float i = mod(pointSourceID, 16.) / 16.;
-            vColor.rgb = vec3(i, i, i);
+            vColor.rgb = texture2D(gradient, vec2(i, 0.5)).rgb;
         } else if (mode == PNTS_MODE_ELEVATION) {
             // apply scale and offset transform
             vec4 model = modelMatrix * vec4(position, 1.0);
             float z = (model.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
-            // adapt the grayscale knowing the range
-            vColor.rgb = vec3(z, z, z);
+            // adapt the gradient knowing the range
+            vColor.rgb = texture2D(gradient, vec2(z, 0.5)).rgb;
         }
     }
 
