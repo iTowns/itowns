@@ -5,6 +5,7 @@ import VectorTileParser from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
 import Extent from 'Core/Geographic/Extent';
 import urlParser from 'Parser/MapBoxUrlParser';
+import Style from 'Core/Style';
 
 describe('Vector tiles', function () {
     // this PBF file comes from https://github.com/mapbox/vector-tile-js
@@ -140,8 +141,8 @@ describe('Vector tiles', function () {
                 },
             });
             source.whenReady.then(() => {
-                const styleLand_zoom_3 = source.styles.land.applyContext({ globals: { zoom: 3 }, properties: () => {} });
-                const styleLand_zoom_5 = source.styles.land.applyContext({ globals: { zoom: 5 }, properties: () => {} });
+                const styleLand_zoom_3 = new Style(source.styles.land).applyContext({ globals: { zoom: 3 }, properties: () => {} });
+                const styleLand_zoom_5 = new Style(source.styles.land).applyContext({ globals: { zoom: 5 }, properties: () => {} });
                 assert.equal(styleLand_zoom_3.fill.color, 'rgb(255,0,0)');
                 assert.equal(styleLand_zoom_3.fill.opacity, 1);
                 assert.equal(styleLand_zoom_5.fill.color, 'rgb(255,0,0)');

@@ -56,15 +56,15 @@ describe('Label', function () {
     };
 
     before('init style', function () {
-        style = new Style();
-        style.setFromVectorTileLayer({
+        const layerVT = {
             type: 'symbol',
             paint: {},
             layout: {
                 'icon-image': 'icon',
                 'icon-size': 1,
             },
-        }, sprites);
+        };
+        style = new Style(Style.setFromVectorTileLayer(layerVT, sprites));
     });
 
     it('should throw errors for bad Label construction', function () {

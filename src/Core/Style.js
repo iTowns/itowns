@@ -755,19 +755,27 @@ class Style {
      *
      * @returns {StyleOptions} containing all properties for itowns.Style
      */
-    setFromVectorTileLayer(layer, sprites, order = 0, symbolToCircle = false) {
+    static setFromVectorTileLayer(layer, sprites, order = 0, symbolToCircle = false) {
+        const style = {
+            fill: {},
+            stroke: {},
+            point: {},
+            text: {},
+            icon: {},
+        };
+
         layer.layout = layer.layout || {};
         layer.paint = layer.paint || {};
 
-        this.order = order;
+        style.order = order;
 
-        if (layer.type === 'fill' && !this.fill.color) {
+        if (layer.type === 'fill') {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern'], { type: 'color' }));
-            this.fill.color = color;
-            this.fill.opacity = readVectorProperty(layer.paint['fill-opacity']) || opacity;
+            style.fill.color = color;
+            style.fill.opacity = readVectorProperty(layer.paint['fill-opacity']) || opacity;
             if (layer.paint['fill-pattern']) {
                 try {
-                    this.fill.pattern = {
+                    style.fill.pattern = {
                         id: layer.paint['fill-pattern'],
                         source: sprites.source,
                         cropValues: sprites[layer.paint['fill-pattern']],
@@ -780,82 +788,82 @@ class Style {
 
             if (layer.paint['fill-outline-color']) {
                 const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-outline-color'], { type: 'color' }));
-                this.stroke.color = color;
-                this.stroke.opacity = opacity;
-                this.stroke.width = 1.0;
-                this.stroke.dasharray = [];
+                style.stroke.color = color;
+                style.stroke.opacity = opacity;
+                style.stroke.width = 1.0;
+                style.stroke.dasharray = [];
             }
-        } else if (layer.type === 'line' && !this.stroke.color) {
+        } else if (layer.type === 'line') {
             const prepare = readVectorProperty(layer.paint['line-color'], { type: 'color' });
             const { color, opacity } = rgba2rgb(prepare);
-            this.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray']);
-            this.stroke.color = color;
-            this.stroke.lineCap = layer.layout['line-cap'];
-            this.stroke.width = readVectorProperty(layer.paint['line-width']);
-            this.stroke.opacity = readVectorProperty(layer.paint['line-opacity']) || opacity;
+            style.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray']);
+            style.stroke.color = color;
+            style.stroke.lineCap = layer.layout['line-cap'];
+            style.stroke.width = readVectorProperty(layer.paint['line-width']);
+            style.stroke.opacity = readVectorProperty(layer.paint['line-opacity']) || opacity;
         } else if (layer.type === 'circle' || symbolToCircle) {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['circle-color'], { type: 'color' }));
-            this.point.color = color;
-            this.point.opacity = opacity;
-            this.point.radius = readVectorProperty(layer.paint['circle-radius']);
+            style.point.color = color;
+            style.point.opacity = opacity;
+            style.point.radius = readVectorProperty(layer.paint['circle-radius']);
         } else if (layer.type === 'symbol') {
             // overlapping order
-            this.text.zOrder = readVectorProperty(layer.layout['symbol-z-order']);
-            if (this.text.zOrder == 'auto') {
-                this.text.zOrder = readVectorProperty(layer.layout['symbol-sort-key']) || 'Y';
-            } else if (this.text.zOrder == 'viewport-y') {
-                this.text.zOrder = 'Y';
-            } else if (this.text.zOrder == 'source') {
-                this.text.zOrder = 0;
+            style.text.zOrder = readVectorProperty(layer.layout['symbol-z-order']);
+            if (style.text.zOrder == 'auto') {
+                style.text.zOrder = readVectorProperty(layer.layout['symbol-sort-key']) || 'Y';
+            } else if (style.text.zOrder == 'viewport-y') {
+                style.text.zOrder = 'Y';
+            } else if (style.text.zOrder == 'source') {
+                style.text.zOrder = 0;
             }
 
             // position
-            this.text.anchor = readVectorProperty(layer.layout['text-anchor']);
-            this.text.offset = readVectorProperty(layer.layout['text-offset']);
-            this.text.padding = readVectorProperty(layer.layout['text-padding']);
-            this.text.size = readVectorProperty(layer.layout['text-size']);
-            this.text.placement = readVectorProperty(layer.layout['symbol-placement']);
-            this.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment']);
+            style.text.anchor = readVectorProperty(layer.layout['text-anchor']);
+            style.text.offset = readVectorProperty(layer.layout['text-offset']);
+            style.text.padding = readVectorProperty(layer.layout['text-padding']);
+            style.text.size = readVectorProperty(layer.layout['text-size']);
+            style.text.placement = readVectorProperty(layer.layout['symbol-placement']);
+            style.text.rotation = readVectorProperty(layer.layout['text-rotation-alignment']);
 
             // content
-            this.text.field = readVectorProperty(layer.layout['text-field']);
-            this.text.wrap = readVectorProperty(layer.layout['text-max-width']);
-            this.text.spacing = readVectorProperty(layer.layout['text-letter-spacing']);
-            this.text.transform = readVectorProperty(layer.layout['text-transform']);
-            this.text.justify = readVectorProperty(layer.layout['text-justify']);
+            style.text.field = readVectorProperty(layer.layout['text-field']);
+            style.text.wrap = readVectorProperty(layer.layout['text-max-width']);
+            style.text.spacing = readVectorProperty(layer.layout['text-letter-spacing']);
+            style.text.transform = readVectorProperty(layer.layout['text-transform']);
+            style.text.justify = readVectorProperty(layer.layout['text-justify']);
 
             // appearance
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['text-color'], { type: 'color' }));
-            this.text.color = color;
-            this.text.opacity = readVectorProperty(layer.paint['text-opacity']) || (opacity !== undefined && opacity);
+            style.text.color = color;
+            style.text.opacity = readVectorProperty(layer.paint['text-opacity']) || (opacity !== undefined && opacity);
 
-            this.text.font = readVectorProperty(layer.layout['text-font']);
+            style.text.font = readVectorProperty(layer.layout['text-font']);
             const haloColor = readVectorProperty(layer.paint['text-halo-color'], { type: 'color' });
             if (haloColor) {
-                this.text.haloColor = haloColor.color || haloColor;
-                this.text.haloWidth = readVectorProperty(layer.paint['text-halo-width']);
-                this.text.haloBlur = readVectorProperty(layer.paint['text-halo-blur']);
+                style.text.haloColor = haloColor.color || haloColor;
+                style.text.haloWidth = readVectorProperty(layer.paint['text-halo-width']);
+                style.text.haloBlur = readVectorProperty(layer.paint['text-halo-blur']);
             }
 
             // additional icon
             const iconImg = readVectorProperty(layer.layout['icon-image']);
             if (iconImg) {
                 try {
-                    this.icon.id = iconImg;
-                    this.icon.source = sprites.source;
-                    this.icon.cropValues = sprites[iconImg];
+                    style.icon.id = iconImg;
+                    style.icon.source = sprites.source;
+                    style.icon.cropValues = sprites[iconImg];
 
-                    this.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
+                    style.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
                     const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['icon-color'], { type: 'color' }));
-                    this.icon.color = color;
-                    this.icon.opacity = readVectorProperty(layer.paint['icon-opacity']) || (opacity !== undefined && opacity);
+                    style.icon.color = color;
+                    style.icon.opacity = readVectorProperty(layer.paint['icon-opacity']) || (opacity !== undefined && opacity);
                 } catch (err) {
                     err.message = `VTlayer '${layer.id}': argument sprites must not be null when using layer.layout['icon-image']`;
                     throw err;
                 }
             }
         }
-        return this;
+        return style;
     }
 
     /**
