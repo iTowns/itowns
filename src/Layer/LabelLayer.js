@@ -243,6 +243,7 @@ class LabelLayer extends GeometryLayer {
         // Converting the extent now is faster for further operation
         extent.as(data.crs, _extent);
         coord.crs = data.crs;
+
         context.globals = {
             icon: true,
             text: true,
@@ -259,7 +260,7 @@ class LabelLayer extends GeometryLayer {
 
             // determine if altitude style is specified by the user
             const altitudeStyle = f.style.point.base_altitude;
-            const isDefaultElevationStyle = altitudeStyle instanceof Function && altitudeStyle.name == 'base_altitudeDefault';
+            const isDefaultElevationStyle = altitudeStyle instanceof Function && altitudeStyle.name == 'baseAltitudeDefault';
 
             // determine if the altitude needs update with ElevationLayer
             labels.needsAltitude = labels.needsAltitude || this.forceClampToTerrain === true || (isDefaultElevationStyle && !f.hasRawElevationData);
