@@ -163,7 +163,9 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  *
  * @property {Object}           globals Style type (fill, stroke, point, text and or icon) to consider, it also
  *                                  contains the current zoom.
- * @property {Object}           collection The FeatureCollection to which the FeatureGeometry is attached
+ * @property {Object}           collection The FeatureCollection to which the FeatureGeometry is attached.
+ * @property {Object}           properties Properties of the FeatureGeometry.
+ * @property {string}           type Geometry type of the feature. Can be `point`, `line`, or `polygon`.
  * @property {Coordinates}      coordinates The coordinates (in world space) of the last vertex (x, y, z) set with
  *                                  setLocalCoordinatesFromArray().
  * private properties:
@@ -171,18 +173,24 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * @property {Coordinates}      localCoordinates @private Coordinates object to store coordinates in local space.
  * @property {boolean}          worldCoordsComputed @private Have the world coordinates already been computed
  *                                  from the local coordinates?
+ * @property {Feature}          feature  @private The itowns feature of interest.
  * @property {FeatureGeometry}  geometry  @private The FeatureGeometry to compute the style.
  */
 export class StyleContext {
     #worldCoord = new Coordinates('EPSG:4326', 0, 0, 0);
     #localCoordinates = new Coordinates('EPSG:4326', 0, 0, 0);
     #worldCoordsComputed = true;
+    #feature = {};
     #geometry = {};
     /**
      * @constructor
      */
     constructor() {
         this.globals = {};
+    }
+
+    setFeature(f) {
+        this.#feature = f;
     }
 
     setGeometry(g) {
@@ -201,6 +209,10 @@ export class StyleContext {
 
     get properties() {
         return this.#geometry.properties;
+    }
+
+    get type() {
+        return this.#feature.type;
     }
 
     get coordinates() {
@@ -646,7 +658,7 @@ class Style {
      * Map style object properties (fill, stroke, point, text and icon) from context to Style.
      * Only the necessary properties are mapped to object.
      * if a property is expression, the mapped value will be the expression result depending on context.
-     * @param  {Object}  context  The context of the FeatureGeometry that we want to get the Style.
+     * @param  {StyleContext}  context  The context of the FeatureGeometry that we want to get the Style.
      *
      * @return {Style}  mapped style depending on context.
      */
