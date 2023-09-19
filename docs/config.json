@@ -15,6 +15,7 @@
                 "FeatureBuildingOptions",
                 "Style",
                 "StyleOptions",
+                "StyleContext",
                 "Label"
             ],
 

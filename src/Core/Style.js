@@ -4,6 +4,7 @@ import Fetcher from 'Provider/Fetcher';
 import * as mapbox from '@mapbox/mapbox-gl-style-spec';
 import { Color } from 'three';
 import { deltaE } from 'Renderer/Color';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
 
@@ -158,6 +159,66 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
         });
 
     style[category][name] = value;
+}
+
+/**
+ * @class
+ * @classdesc StyleContext stores metadata of one FeatureGeometry that are needed for its style computation:
+ * type of feature and what is needed (fill, stroke or draw a point, etc.) as well as where to get its
+ * properties and its coordinates (for base_altitude).
+ *
+ * @property {Object}           globals Style type (fill, stroke, point, text and or icon) to consider, it also
+ *                                  contains the current zoom.
+ * @property {Object}           collection The FeatureCollection to which the FeatureGeometry is attached
+ * @property {Coordinates}      coordinates The coordinates (in world space) of the last vertex (x, y, z) set with
+ *                                  setLocalCoordinatesFromArray().
+ * private properties:
+ * @property {Coordinates}      worldCoord @private Coordinates object to store coordinates in world space.
+ * @property {Coordinates}      localCoordinates @private Coordinates object to store coordinates in local space.
+ * @property {boolean}          worldCoordsComputed @private Have the world coordinates already been computed
+ *                                  from the local coordinates?
+ * @property {FeatureGeometry}  geometry  @private The FeatureGeometry to compute the style.
+ */
+export class StyleContext {
+    #worldCoord = new Coordinates('EPSG:4326', 0, 0, 0);
+    #localCoordinates = new Coordinates('EPSG:4326', 0, 0, 0);
+    #worldCoordsComputed = true;
+    #geometry = {};
+    /**
+     * @constructor
+     */
+    constructor() {
+        this.globals = {};
+    }
+
+    setGeometry(g) {
+        this.#geometry = g;
+    }
+
+    setCollection(c) {
+        this.collection = c;
+        this.#localCoordinates.setCrs(c.crs);
+    }
+
+    setLocalCoordinatesFromArray(vertices, offset) {
+        this.#worldCoordsComputed = false;
+        return this.#localCoordinates.setFromArray(vertices, offset);
+    }
+
+    get properties() {
+        return this.#geometry.properties;
+    }
+
+    get coordinates() {
+        if (!this.#worldCoordsComputed) {
+            this.#worldCoordsComputed = true;
+            this.#worldCoord.copy(this.#localCoordinates).applyMatrix4(this.collection.matrixWorld);
+            if (this.#localCoordinates.crs == 'EPSG:4978') {
+                return this.#worldCoord.as('EPSG:4326', this.#worldCoord);
+            }
+        }
+        return this.#worldCoord;
+    }
 }
 
 /**
