@@ -7,63 +7,10 @@ import Extent from 'Core/Geographic/Extent';
 import Crs from 'Core/Geographic/Crs';
 import OrientationUtils from 'Utils/OrientationUtils';
 import Coordinates from 'Core/Geographic/Coordinates';
+import { StyleContext } from 'Core/Style';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-
-/**
- * @class
- * @classdesc FeatureContext is a class to store all informations
- * about context to generate the style of each FeatureGeometry.
- *
- * @property {Coordinates}      worldCoord @private Coordinates of the FeatureGeometry in world system.
- * @property {Coordinates}      localCoordinates @private Are the coordinates systeme origin local or global.
- * @property {boolean}          isProjected @private Are the coordinates already been projected.
- * @property {FeatureGeometry}  geometry  @private
- * @property {Object}           globals
- * @property {Object}           collection
- * @property {Coordinates}      coordinates
- */
-export class FeatureContext {
-    #worldCoord = new Coordinates('EPSG:4326', 0, 0, 0);
-    #localCoordinates = new Coordinates('EPSG:4326', 0, 0, 0);
-    #isProjected = true;
-    #geometry = {};
-
-    constructor() {
-        this.globals = {};
-    }
-
-    setGeometry(g) {
-        this.#geometry = g;
-    }
-
-    setCollection(c) {
-        this.collection = c;
-        this.#localCoordinates.setCrs(c.crs);
-    }
-
-    setLocalCoordinatesFromArray(vertices, offset) {
-        this.#isProjected = false;
-        return this.#localCoordinates.setFromArray(vertices, offset);
-    }
-
-    get properties() {
-        return this.#geometry.properties;
-    }
-
-    get coordinates() {
-        if (!this.#isProjected) {
-            this.#isProjected = true;
-            this.#worldCoord.copy(this.#localCoordinates).applyMatrix4(this.collection.matrixWorld);
-            if (this.#localCoordinates.crs == 'EPSG:4978') {
-                return this.#worldCoord.as('EPSG:4326', this.#worldCoord);
-            }
-        }
-        return this.#worldCoord;
-    }
-}
-
-const context = new FeatureContext();
+const context = new StyleContext();
 
 const dim_ref = new THREE.Vector2();
 const dim = new THREE.Vector2();

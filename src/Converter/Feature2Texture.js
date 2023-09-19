@@ -2,10 +2,9 @@ import * as THREE from 'three';
 import { FEATURE_TYPES } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
-import Style from 'Core/Style';
-import { FeatureContext } from 'Converter/Feature2Mesh';
+import Style, { StyleContext } from 'Core/Style';
 
-const context = new FeatureContext();
+const context = new StyleContext();
 
 /**
  * Draw polygon (contour, line edge and fill) based on feature vertices into canvas
@@ -77,12 +76,6 @@ const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 function drawFeature(ctx, feature, extent, style, invCtxScale) {
     const extentDim = extent.planarDimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
-    context.globals = {
-        fill: true,
-        stroke: true,
-        point: true,
-        zoom: extent.zoom,
-    };
 
     for (const geometry of feature.geometries) {
         if (Extent.intersectsExtent(geometry.extent, extent)) {
@@ -174,6 +167,13 @@ export default {
 
             // to scale line width and radius circle
             const invCtxScale = Math.abs(1 / scale.x);
+
+            context.globals = {
+                fill: true,
+                stroke: true,
+                point: true,
+                zoom: extent.zoom,
+            };
 
             // Draw the canvas
             for (const feature of collection.features) {

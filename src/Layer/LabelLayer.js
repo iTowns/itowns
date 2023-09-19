@@ -6,11 +6,10 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import Label from 'Core/Label';
 import { FEATURE_TYPES } from 'Core/Feature';
-import { readExpression } from 'Core/Style';
+import { readExpression, StyleContext } from 'Core/Style';
 import { ScreenGrid } from 'Renderer/Label2DRenderer';
-import { FeatureContext } from 'Converter/Feature2Mesh';
 
-const context = new FeatureContext();
+const context = new StyleContext();
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
