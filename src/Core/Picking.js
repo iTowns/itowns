@@ -185,7 +185,7 @@ export default {
                         const dist = pointPosCoord.spatialEuclideanDistanceTo(cameraPosCoord);
                         result.push({
                             object: o,
-                            point: pointPos, // the position of the point in the 3D view. Same name and value than what's returned by pickObjectsAt
+                            point: pointPos.clone(), // the position of the point in the 3D view. Same name and value than what's returned by pickObjectsAt
                             index: candidates[i].index,
                             distance: dist,
                             layer,
