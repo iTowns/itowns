@@ -68,7 +68,6 @@ class /* istanbul ignore next */ ParsingOptions {}
 
 function fetchSourceData(source, extent) {
     const url = source.urlFromExtent(extent);
-
     return source.fetcher(url, source.networkOptions).then((f) => {
         f.extent = extent;
         return f;
@@ -190,8 +189,9 @@ class Source extends InformationsData {
         let features = cache.getByArray(key);
         if (!features) {
             // otherwise fetch/parse the data
-            features = cache.setByArray(fetchSourceData(this, extent).then(file => this.parser(file, { out, in: this }),
-                err => this.handlingError(err)), key);
+            features = cache.setByArray(fetchSourceData(this, extent)
+                .then(file => this.parser(file, { out, in: this }),
+                    err => this.handlingError(err)), key);
             /* istanbul ignore next */
             if (this.onParsedFile) {
                 features.then((feat) => {

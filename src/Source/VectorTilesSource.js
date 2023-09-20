@@ -1,11 +1,28 @@
 import { featureFilter } from '@mapbox/mapbox-gl-style-spec';
 import Style from 'Core/Style';
 import TMSSource from 'Source/TMSSource';
+import URLBuilder from 'Provider/URLBuilder';
 import Fetcher from 'Provider/Fetcher';
 import urlParser from 'Parser/MapBoxUrlParser';
 
 function toTMSUrl(url) {
     return url.replace(/\{/g, '${');
+}
+
+function fetchSourceData(source, url) {
+    return source.fetcher(url, source.networkOptions)
+        .then(f => f, err => source.handlingError(err));
+}
+
+function mergeCollections(collections) {
+    const collection = collections[0];
+    collections.forEach((col, index) => {
+        if (index === 0) { return; }
+        col.features.forEach((feature) => {
+            collection.features.push(feature);
+        });
+    });
+    return collection;
 }
 
 /**
@@ -86,9 +103,6 @@ class VectorTilesSource extends TMSSource {
 
             return style;
         }).then((style) => {
-            const s = Object.keys(style.sources)[0];
-            const os = style.sources[s];
-
             style.layers.forEach((layer, order) => {
                 layer.sourceUid = this.uid;
                 if (layer.type === 'background') {
@@ -113,17 +127,34 @@ class VectorTilesSource extends TMSSource {
             });
 
             if (this.url == '.') {
-                if (os.url) {
-                    const urlSource = urlParser.normalizeSourceURL(os.url, this.accessToken);
-                    return Fetcher.json(urlSource, this.networkOptions).then((tileJSON) => {
-                        if (tileJSON.tiles[0]) {
-                            this.url = toTMSUrl(tileJSON.tiles[0]);
-                        }
-                    });
-                } else if (os.tiles[0]) {
-                    this.url = toTMSUrl(os.tiles[0]);
-                }
+                const TMSUrlList = Object.values(style.sources).map((source) => {
+                    if (source.url) {
+                        const urlSource = urlParser.normalizeSourceURL(source.url, this.accessToken);
+                        return Fetcher.json(urlSource, this.networkOptions).then((tileJSON) => {
+                            if (tileJSON.tiles[0]) {
+                                return toTMSUrl(tileJSON.tiles[0]);
+                            }
+                        });
+                    } else if (source.tiles) {
+                        return Promise.resolve(toTMSUrl(source.tiles[0]));
+                    }
+                    return Promise.reject();
+                });
+                return Promise.all(TMSUrlList);
             }
+            return (Promise.resolve([this.url]));
+        }).then((TMSUrlList) => {
+            this.url = new Set(TMSUrlList);
+        });
+    }
+
+    urlFromExtent(extent) {
+        return this.url.map((url) => {
+            const options = {
+                tileMatrixCallback: this.tileMatrixCallback,
+                url,
+            };
+            return URLBuilder.xyz(extent, options);
         });
     }
 
@@ -135,6 +166,35 @@ class VectorTilesSource extends TMSSource {
                 options.out.accurate = false;
             }
         }
+    }
+
+    loadData(extent, out) {
+        const cache = this._featuresCaches[out.crs];
+        const key = this.requestToKey(extent);
+        // try to get parsed data from cache
+        let features = cache.getByArray(key);
+        if (!features) {
+            // otherwise fetch/parse the data
+            features = cache.setByArray(
+                Promise.all(this.urlFromExtent(extent).map(url =>
+                    fetchSourceData(this, url)
+                        .then((file) => {
+                            file.extent = extent;
+                            return this.parser(file, { out, in: this });
+                        }),
+                )).then(collections => mergeCollections(collections),
+                    err => this.handlingError(err)), key);
+
+            /* istanbul ignore next */
+            if (this.onParsedFile) {
+                features.then((feat) => {
+                    this.onParsedFile(feat);
+                    console.warn('Source.onParsedFile was deprecated');
+                    return feat;
+                });
+            }
+        }
+        return features;
     }
 }
 
