@@ -3,6 +3,9 @@ import { FEATURE_TYPES } from 'Core/Feature';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Style from 'Core/Style';
+import { FeatureContext } from 'Converter/Feature2Mesh';
+
+const context = new FeatureContext();
 
 /**
  * Draw polygon (contour, line edge and fill) based on feature vertices into canvas
@@ -74,7 +77,7 @@ const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 function drawFeature(ctx, feature, extent, style, invCtxScale) {
     const extentDim = extent.planarDimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
-    const globals = {
+    context.globals = {
         fill: true,
         stroke: true,
         point: true,
@@ -83,7 +86,7 @@ function drawFeature(ctx, feature, extent, style, invCtxScale) {
 
     for (const geometry of feature.geometries) {
         if (Extent.intersectsExtent(geometry.extent, extent)) {
-            const context = { globals, properties: () => geometry.properties };
+            context.setGeometry(geometry);
             const contextStyle = (geometry.properties.style || style).applyContext(context);
 
             if (contextStyle) {
