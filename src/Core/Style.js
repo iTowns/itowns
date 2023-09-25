@@ -987,7 +987,7 @@ class Style {
         if (this.text.field.expression) {
             return readExpression(this.text.field, ctx);
         } else {
-            return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (ctx.properties()[b] || '')).trim();
+            return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (ctx.properties[b] || '')).trim();
         }
     }
 }

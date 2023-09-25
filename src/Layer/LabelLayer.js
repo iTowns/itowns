@@ -8,6 +8,9 @@ import Label from 'Core/Label';
 import { FEATURE_TYPES } from 'Core/Feature';
 import { readExpression } from 'Core/Style';
 import { ScreenGrid } from 'Renderer/Label2DRenderer';
+import { FeatureContext } from 'Converter/Feature2Mesh';
+
+const context = new FeatureContext();
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
@@ -241,7 +244,7 @@ class LabelLayer extends GeometryLayer {
         // Converting the extent now is faster for further operation
         extent.as(data.crs, _extent);
         coord.crs = data.crs;
-        const globals = {
+        context.globals = {
             icon: true,
             text: true,
             zoom: extent.zoom,
@@ -272,8 +275,9 @@ class LabelLayer extends GeometryLayer {
                 if (!_extent.isPointInside(coord)) { return; }
 
                 const geometryField = g.properties.style && g.properties.style.text.field;
+
+                context.setGeometry(g);
                 let content;
-                const context = { globals, properties: () => g.properties };
                 if (this.labelDomelement) {
                     content = readExpression(this.labelDomelement, context);
                 } else if (!geometryField && !featureField && !layerField) {

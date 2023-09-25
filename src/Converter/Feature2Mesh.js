@@ -10,7 +10,20 @@ import Coordinates from 'Core/Geographic/Coordinates';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
-class FeatureContext {
+/**
+ * @class
+ * @classdesc FeatureContext is a class to store all informations
+ * about context to generate the style of each FeatureGeometry.
+ *
+ * @property {Coordinates}      worldCoord @private Coordinates of the FeatureGeometry in world system.
+ * @property {Coordinates}      localCoordinates @private Are the coordinates systeme origin local or global.
+ * @property {boolean}          isProjected @private Are the coordinates already been projected.
+ * @property {FeatureGeometry}  geometry  @private
+ * @property {Object}           globals
+ * @property {Object}           collection
+ * @property {Coordinates}      coordinates
+ */
+export class FeatureContext {
     #worldCoord = new Coordinates('EPSG:4326', 0, 0, 0);
     #localCoordinates = new Coordinates('EPSG:4326', 0, 0, 0);
     #isProjected = true;
