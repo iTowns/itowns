@@ -83,7 +83,7 @@ class Label extends THREE.Object3D {
 
         if (typeof content === 'string') {
             this.content = document.createElement('div');
-            this.content.textContent = content;
+            this.content.textContent = style.text.field;
         } else {
             this.content = content.cloneNode(true);
         }
