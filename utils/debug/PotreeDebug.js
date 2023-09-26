@@ -39,6 +39,16 @@ export default {
         if (layer.material.picking != undefined) {
             styleUI.add(layer.material, 'picking').name('Display picking id').onChange(update);
         }
+        layer.whenReady.then(() => {
+            const minElevation = layer.minElevationRange;
+            const maxElevation = layer.maxElevationRange;
+            styleUI.add(layer, 'minElevationRange', minElevation, maxElevation)
+                .name('Min elevation')
+                .onChange(update);
+            styleUI.add(layer, 'maxElevationRange', minElevation, maxElevation)
+                .name('Max elevation')
+                .onChange(update);
+        });
 
         // UI
         const debugUI = layer.debugUI.addFolder('Debug');
