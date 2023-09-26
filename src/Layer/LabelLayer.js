@@ -288,12 +288,6 @@ class LabelLayer extends GeometryLayer {
                         && !(this.style && this.style.icon && (this.style.icon.source || this.style.icon.key))) {
                         return;
                     }
-                } else if (geometryField) {
-                    content = new Style(g.properties.style).getTextFromProperties(context);
-                } else if (featureField) {
-                    content = new Style(f.style).getTextFromProperties(context);
-                } else if (layerField) {
-                    content = new Style(this.style).getTextFromProperties(context);
                 }
 
                 const style = Style.applyContext(context);

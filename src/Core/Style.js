@@ -49,6 +49,8 @@ export function readExpression(property, ctx) {
             // In this proposal, metadata will be accessed in the callee by the
             // `context.properties` property.
             return property(ctx.properties, ctx);
+        } else if (typeof property === 'string' || property instanceof String) {
+            return property.replace(/\{(.+?)\}/g, (a, b) => (ctx.properties[b] || '')).trim();
         } else {
             return property;
         }
@@ -716,24 +718,6 @@ class Style {
         }
         style.order = styleConc.order;
         return new Style(style);
-    }
-
-    /**
-     * Returns a string, associating `style.text.field` and properties to use to
-     * replace the keys in `style.text.field`.
-     *
-     * @param {FeatureContext} context The context linked to the feature
-     *
-     * @return {string|undefined} The formatted string if `style.text.field` is defined, nothing otherwise.
-     */
-    getTextFromProperties(context) {
-        if (!this.text.field) { return; }
-
-        if (this.text.field.expression) {
-            return readExpression(this.text.field, context);
-        } else {
-            return this.text.field.replace(/\{(.+?)\}/g, (a, b) => (context.properties()[b] || '')).trim();
-        }
     }
 
     /**
