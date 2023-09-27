@@ -52,10 +52,12 @@
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             viewerDiv = document.getElementById('viewerDiv');
 
+            const centerMap = new itowns.Coordinates('EPSG:3946', 1840839, 5172718, 0);
+
             // Instanciate PlanarView*
             view = new itowns.PlanarView(viewerDiv, extent, {
                 placement: {
-                    coord: new itowns.Coordinates('EPSG:3946', 1840839, 5172718, 0),
+                    coord: centerMap,
                     heading: 45,
                     range: 1800,
                     tilt: 30,
@@ -104,13 +106,13 @@
             var tile;
             var linesBus = [];
 
-            function altitudeLine(properties, contour) {
+            function altitudeLine(properties, ctx) {
                 var result;
                 var z = 0;
-                if (contour) {
-                    result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0, tile);
+                if (ctx.coordinates) {
+                    result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, ctx.coordinates, 0, tile);
                     if (!result) {
-                        result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0);
+                        result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, ctx.coordinates, 0);
                     }
                     if (result) {
                         tile = [result.tile];
@@ -120,15 +122,16 @@
                 }
             }
 
+            const colorsLine = new Map();
+
             function acceptFeatureBus(properties) {
-                if (properties.sens == 'Aller') {
-                    var line = properties.ligne;
-                    if (linesBus.indexOf(line) === -1) {
-                        linesBus.push(line);
-                        return true;
-                    }
+                const line = properties.ligne;
+                if (colorsLine.get(line) == undefined && properties.sens == 'Aller') {
+                    colorsLine.set(line, new itowns.THREE.Color(0xffffff * Math.random()));
+                    return true;
+                } else {
+                    return false;
                 }
-                return false;
             }
 
             lyonTclBusSource = new itowns.WFSSource({
@@ -147,36 +150,83 @@
                 format: 'application/json',
             });
 
+
+
+            const colorLine = (p) => {
+                return colorsLine.get(p.ligne);
+            }
+
             var lyonTclBusLayer = new itowns.FeatureGeometryLayer('lyon_tcl_bus', {
                 filter: acceptFeatureBus,
                 source: lyonTclBusSource,
-                zoom: { min: 2 },
+                zoom: { min: 1 },
 
                 style: {
                     stroke: {
                         base_altitude: altitudeLine,
+                        color: colorLine,
                         width: 5,
                     }
                 }
             });
 
-            view.addLayer(lyonTclBusLayer);
+            const lyonBusStopSource = new itowns.WFSSource({
+                url: "https://data.grandlyon.com/geoserver/sytral/ows?",
+                protocol: 'wfs',
+                version: '2.0.0',
+                id: 'pool',
+                typeName: "sytral:tcl_sytral.tclarret",
+                crs: 'EPSG:3946',
+                extent,
+                format: 'application/json',
+            });
 
-            function colorBuildings(properties) {
+            var lyonBusStopLayer = new itowns.FeatureGeometryLayer('lyon_tcl_bus_stop', {
+                // filter: acceptFeatureBus,
+                source: lyonBusStopSource,
+                zoom: { min: 4 },
+                style: {
+                    point: {
+                        base_altitude: altitudeLine,
+                        color: 'DarkTurquoise',
+                        radius: 30,
+                    }
+                }
+            });
+
+            const orange = new itowns.THREE.Color(0xffa400);
+            const blue = new itowns.THREE.Color(0x47edff);
+            const black = new itowns.THREE.Color(0x000000);
+            const red = new itowns.THREE.Color(0xff0000);
+
+            function colorBuildings(properties, ctx) {
+                const distance = ctx.coordinates.planarDistanceTo(centerMap);
                 if (properties.usage_1 === 'Résidentiel') {
-                    return color.set(0xFDFDFF);
+                    color.set(0xFDFDFF);
                 } else if (properties.usage_1 === 'Annexe') {
-                    return color.set(0xC6C5B9);
+                    color.set(0xC6C5B9);
                 } else if (properties.usage_1 === 'Commercial et services') {
-                    return color.set(0x62929E);
+                    color.set(0x62929E);
                 } else if (properties.usage_1 === 'Religieux') {
-                    return color.set(0x393D3F);
+                    color.set(0x393D3F);
                 } else if (properties.usage_1 === 'Sportif') {
-                    return color.set(0x546A7B);
+                    color.set(0x546A7B);
+                } else {
+                    color.set(0x555555);
                 }
 
-                return color.set(0x555555);
+                if (distance < 300) {
+                    return blue;
+                } else if (distance < 350){
+                    return black;
+                } else if (distance < 1000){
+                    return color;
+                } else if (distance < 1050){
+                    return red;
+                }
+                return color.lerp(orange, Math.min(distance / 4000, 1.0));
             }
+
 
             function extrudeBuildings(properties) {
                 return properties.hauteur;
@@ -186,27 +236,9 @@
                 return properties.altitude_minimale_sol;
             }
 
-            meshes = [];
-            function scaler(/* dt */) {
-                var i;
-                var mesh;
-                if (meshes.length) {
-                    view.notifyChange();
-                }
-                for (i = 0; i < meshes.length; i++) {
-                    mesh = meshes[i];
-                    mesh.scale.z = Math.min(
-                        1.0, mesh.scale.z + 0.1);
-                    mesh.updateMatrixWorld(true);
-                }
-                meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
-            }
-
             function acceptFeature(properties) {
                 return !!properties.hauteur;
             }
-
-            view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
 
             var wfsBuildingSource = new itowns.WFSSource({
                 url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
@@ -224,12 +256,6 @@
             });
 
             var wfsBuildingLayer = new itowns.FeatureGeometryLayer('wfsBuilding', {
-                onMeshCreated: function scaleZ(mesh) {
-                    mesh.children.forEach(c => {
-                        c.scale.z = 0.01;
-                        meshes.push(c);
-                    })
-                },
                 batchId: function (property, featureId) { return featureId; },
                 filter: acceptFeature,
                 crs: 'EPSG:3946',
@@ -260,9 +286,29 @@
                 zoom: { min: 0, max: 20 },
                 text: {
                     field: '{toponyme}',
-                    color: 'white',
+                    color: (p) => {
+                        switch (p.importance) {
+                            case 'Quartier de ville':
+                                return 'Cornsilk';
+                            case 'Hameau':
+                                return 'WhiteSmoke';
+                            case 'Chef-lieu de commune':
+                            default:
+                                return 'white';
+                        }
+                    },
                     transform: 'uppercase',
-                    size: 15,
+                    size: (p) => {
+                        switch (p.importance) {
+                            case 'Quartier de ville':
+                                return 11;
+                            case 'Hameau':
+                                return 13;
+                            case 'Chef-lieu de commune':
+                            default:
+                                return 18;
+                        }
+                    },
                     haloColor: 'rgba(20,20,20, 0.8)',
                     haloWidth: 3,
                 },
@@ -299,6 +345,11 @@
                     return properties;
                 }
             }
+
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function m() {
+                view.addLayer(lyonTclBusLayer);
+                view.addLayer(lyonBusStopLayer);
+            });
 
             window.addEventListener('mousemove', picking, false);
         </script>

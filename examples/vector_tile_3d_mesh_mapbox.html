@@ -100,9 +100,9 @@
             });
 
             // Get buildings ground elevation
-            function altitudeBuildings(properties, coord) {
-                if (coord) {
-                    return itowns.DEMUtils.getElevationValueAt(view.tileLayer, coord);
+            function altitudeBuildings(properties, ctx) {
+                if (ctx.coordinates) {
+                    return itowns.DEMUtils.getElevationValueAt(view.tileLayer, ctx.coordinates);
                 }
             }
 
@@ -116,8 +116,8 @@
                 style: {
                     fill: {
                         // the building with type = roof doesn't have same properties as the others
-                        base_altitude: (p, c) => {
-                            return (altitudeBuildings(p, c) || 0) + (p.min_height || 0);
+                        base_altitude: (p, ctx) => {
+                            return (altitudeBuildings(p, ctx) || 0) + (p.min_height || 0);
                         },
                         extrusion_height: (p) => {
                             return p.height || 0;
