@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Itowns - 3d-tiles example</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="description">
+            <p><b>Feature Information:</b></p>
+            <div id="featureInfo"></div>
+        </div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/3dTilesHelper.js"></script>
+        <script type="text/javascript">
+            const placement = {
+                coord: new itowns.Coordinates("EPSG:4326", 4.83116, 45.756026),
+                range: 25000,
+            };
+
+            // iTowns namespace defined here
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            var view = new itowns.GlobeView(viewerDiv, placement);
+            view.camera.camera3D.near = 5;
+            setupLoadingScreen(viewerDiv, view);
+
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
+
+            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
+                config.source = new itowns.TMSSource(config.source);
+                var layer = new itowns.ColorLayer('Ortho', config);
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
+
+            // Create a new Layer Google 3d-tiles
+            // -------------------------------------------
+
+            const extensions = new itowns.C3DTExtensions();
+
+            extensions.registerExtension("3DTILES_content_gltf", {
+                [itowns.C3DTilesTypes.batchtable]: itowns.C3DTGLTFExtension,
+            });
+
+            itowns.enableDracoLoader("./libs/draco/");
+
+            var $3dTilesLayerDiscreteLOD = new itowns.C3DTilesLayer(
+                "3d-google-tiles-discrete-lod-a",
+                {
+                    name: "DiscreteGoogleLOD",
+                    sseThreshold: 16, // default value
+                    source: new itowns.C3DTilesGoogleSource({
+                        url: "https://tile.googleapis.com/v1/3dtiles/root.json",
+                        urlParameters: {
+                            key: "YOUR_API_KEY",
+                        },
+                    }),
+                    registeredExtensions: extensions,
+                    style : new itowns.Style({
+                        stroke :{ base_altitude : 100000},
+                        point :{base_altitude:100000},
+                        fill: { base_altitude:100000} // doesn't work
+                    })
+                },
+                view
+            );
+
+            itowns.View.prototype.addLayer.call(view, $3dTilesLayerDiscreteLOD);
+
+            // Create a new Layer 3d-tiles For Viewer Request Volume
+            // -----------------------------------------------------
+
+            var $3dTilesLayerRequestVolume = new itowns.C3DTilesLayer('3d-tiles-request-volume', {
+                name: 'RequestVolume',
+                source: new itowns.C3DTilesSource({
+                    url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithRequestVolume/tileset.json',
+                }),
+                sseThreshold: 1,
+            }, view);
+
+            // add an event for picking the 3D Tiles layer and displaying
+            // information about the picked feature in an html div
+            var pickingArgs = {};
+            pickingArgs.htmlDiv = document.getElementById('featureInfo');
+            pickingArgs.view = view;
+            pickingArgs.layer = $3dTilesLayerRequestVolume;
+            itowns.View.prototype.addLayer.call(view,
+                $3dTilesLayerRequestVolume).then(function _() {
+                    window.addEventListener('mousemove',
+                        (event) => fillHTMLWithPickingInfo(event, pickingArgs),false);
+                });
+
+            // Add the UI Debug
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
+            d.zoom = function() {
+                view.camera.camera3D.position.set(1215013.9, -4736315.5, 4081597.5);
+                view.camera.camera3D.quaternion.set(0.9108514448729665, 0.13456816437801225, 0.1107206134840362, 0.3741416847378546);
+                view.notifyChange(view.camera.camera3D);
+            }
+            menuGlobe.gui.add(d, 'zoom').name('Go to point cloud');
+
+        </script>
+    </body>
+</html>
