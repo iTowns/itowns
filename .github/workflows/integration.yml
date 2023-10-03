@@ -68,7 +68,7 @@ jobs:
       - name: Check Commit Type
         uses: gsactions/commit-message-checker@v2
         with:
-          pattern: '^(feat|feature|features|fix|perf|revert|doc|docs|refactor|refacto|refactoring|test|tests|chore|rename|workflow|example|examples|others)(\([\w\-\.]+\))?: ([\w ])+([\s\S]*)'
+          pattern: '^(feat|feature|features|fix|perf|revert|doc|docs|refactor|refacto|refactoring|test|tests|chore|rename|workflow|example|examples|others)(\([\w\-\.]+\))?: ([\w ])+([\s\S]*)|release v\d+.\d+.\d+'
           error: 'One or several of the pushed commits do not match the conventional commit convention. Please read CONTRIBUTING.md.'
           excludeDescription: true
           excludeTitle: true
