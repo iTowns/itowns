@@ -29,8 +29,8 @@
     "watch": "cross-env BABEL_DISABLE_CACHE=1 babel --watch src --out-dir lib",
     "changelog": "conventional-changelog -n ./config/conventionalChangelog/config.js -i changelog.md -s",
     "bump": "if [ -z $npm_config_level ]; then grunt bump:minor;  else grunt bump:$npm_config_level; fi && npm run changelog && git add -A && git commit --amend --no-edit",
-    "publish-next": "npm version prerelease --preid next && npm publish --access public --tag=next",
-    "publish-latest": "npm publish --access public --tag=latest"
+    "publish-next": "npm version prerelease --preid next && npm publish --access public --tag=next --provenance",
+    "publish-latest": "npm publish --access public --tag=latest --provenance"
   },
   "nyc": {
     "exclude": [
