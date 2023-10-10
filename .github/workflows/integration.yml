@@ -141,6 +141,8 @@ jobs:
     if: ${{ github.ref == 'refs/heads/master' }}
     needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
     runs-on: ubuntu-latest
+    permissions:
+        id-token: write
     steps:
 
       - uses: actions/checkout@v3
