@@ -115,7 +115,13 @@ const viewers = [];
 let screenMeters;
 
 /**
- *
+ * @property {HTMLElement} domElement - Thhe domElement holding the canvas where the view is displayed
+ * @property {String} referenceCrs - The coordinate reference system of the view
+ * @property {MainLoop} mainLoop - itowns mainloop scheduling the operations
+ * @property {THREE.Scene} scene - threejs scene of the view
+ * @property {Camera} camera - itowns camera (that holds a threejs camera that is directly accessible with View.camera3D)
+ * @property {THREE.Camera} camera3D - threejs camera that is stored in itowns camera
+ * @property {THREE.WebGLRenderer} renderer - threejs webglrenderer rendering this view
  */
 class View extends THREE.EventDispatcher {
     #layers = [];
