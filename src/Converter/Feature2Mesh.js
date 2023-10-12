@@ -79,14 +79,14 @@ class FeatureMesh extends THREE.Group {
         this.#collection.quaternion.copy(collection.quaternion);
         this.#collection.position.copy(collection.position);
 
-        if (collection.crs == 'EPSG:4978') {
-            normal.copy(collection.center.geodesicNormal);
-        } else {
-            normal.set(0, 0, 1);
-        }
+        // if (collection.crs == 'EPSG:4978') {
+        //     normal.copy(collection.center.geodesicNormal);
+        // } else {
+        //     normal.set(0, 0, 1);
+        // }
 
-        normal.multiplyScalar(collection.center.z);
-        this.#collection.position.sub(normal);
+        // normal.multiplyScalar(collection.center.z);
+        // this.#collection.position.sub(normal);
 
         this.#collection.scale.copy(collection.scale);
         this.#collection.updateMatrix();
@@ -250,7 +250,7 @@ function featureToPoint(feature, options) {
             coord.z = 0;
 
             // populate vertices
-            base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, v);
+            base.copy(normal).multiplyScalar(base_altitude - context.collection.center.z).add(coord).toArray(vertices, v);
             toColor(color).multiplyScalar(255).toArray(colors, v);
             batchIds[j] = id;
         }
@@ -324,7 +324,8 @@ function featureToLine(feature, options) {
             coord.z = 0;
 
             // populate geometry buffers
-            base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, v);
+            // base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, v);
+            base.copy(normal).multiplyScalar(base_altitude - context.collection.center.z).add(coord).toArray(vertices, v);
             toColor(color).multiplyScalar(255).toArray(colors, v);
             batchIds[j] = id;
         }
@@ -377,7 +378,7 @@ function featureToPolygon(feature, options) {
             coord.z = 0;
 
             // populate geometry buffers
-            base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, i);
+            base.copy(normal).multiplyScalar(base_altitude - context.collection.center.z).add(coord).toArray(vertices, i);
             batchIds[b] = id;
             toColor(color).multiplyScalar(255).toArray(colors, i);
         }
@@ -463,7 +464,7 @@ function featureToExtrudedPolygon(feature, options) {
             coord.z = 0;
 
             // populate base geometry buffers
-            base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, i);
+            base.copy(normal).multiplyScalar(base_altitude - context.collection.center.z).add(coord).toArray(vertices, i);
             batchIds[b] = id;
 
             // populate top geometry buffers
