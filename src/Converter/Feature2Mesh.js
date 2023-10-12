@@ -79,14 +79,14 @@ class FeatureMesh extends THREE.Group {
         this.#collection.quaternion.copy(collection.quaternion);
         this.#collection.position.copy(collection.position);
 
-        // if (collection.crs == 'EPSG:4978') {
-        //     normal.copy(collection.center.geodesicNormal);
-        // } else {
-        //     normal.set(0, 0, 1);
-        // }
+        if (collection.crs == 'EPSG:4978') {
+            normal.copy(collection.center.geodesicNormal);
+        } else {
+            normal.set(0, 0, 1);
+        }
 
-        // normal.multiplyScalar(collection.center.z);
-        // this.#collection.position.sub(normal);
+        normal.multiplyScalar(collection.center.z);
+        this.#collection.position.sub(normal);
 
         this.#collection.scale.copy(collection.scale);
         this.#collection.updateMatrix();
@@ -321,11 +321,11 @@ function featureToLine(feature, options) {
             coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, v));
             const style = feature.style.drawingStylefromContext(context);
             const { base_altitude, color } = style.stroke;
-            coord.z = 0;
+            console.log(coord.z, context.collection.center.z, base_altitude);
+            // coord.z = 0;
 
             // populate geometry buffers
-            // base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, v);
-            base.copy(normal).multiplyScalar(base_altitude - context.collection.center.z).add(coord).toArray(vertices, v);
+            base.copy(normal).multiplyScalar(context.collection.center.z).add(coord).toArray(vertices, v);
             toColor(color).multiplyScalar(255).toArray(colors, v);
             batchIds[j] = id;
         }

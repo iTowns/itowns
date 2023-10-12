@@ -83,6 +83,10 @@
                             }),
                         }
                     }))
+                    .then(res => {
+                        console.log(res);
+                        return res;
+                    })
                     .then(itowns.Feature2Mesh.convert())
                     .then(function (mesh) {
                         if (mesh) {
@@ -93,12 +97,15 @@
                                     for (var i = 0; i < vertices.length; i += 3) {
                                         var waypoint = new itowns.THREE.Mesh(waypointGeometry, waypointMaterial);
                                         waypoint.position.fromArray(vertices, i);
+                                        // console.log(waypoint.position.z);
                                         waypoint.lookAt(mesh.worldToLocal(new itowns.THREE.Vector3()));
                                         waypoint.onBeforeRender = updatePointScale;
                                         waypoint.updateMatrix();
-                                        mesh.add(waypoint);
+                                        // mesh.add(waypoint);
                                         waypoint.updateMatrixWorld();
                                     }
+                                    // console.log(mesh.position);
+                                    // console.log(mesh.children.filter(c => c.isMesh).map(c => c.position));
                                 }
                             });
                             view.scene.add(mesh);
