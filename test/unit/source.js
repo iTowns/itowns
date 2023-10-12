@@ -1,5 +1,6 @@
-import { Matrix4 } from 'three';
 import assert from 'assert';
+import { Matrix4 } from 'three';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import Source from 'Source/Source';
 import Layer from 'Layer/Layer';
 import WFSSource from 'Source/WFSSource';
@@ -11,7 +12,6 @@ import OrientedImageSource from 'Source/OrientedImageSource';
 import C3DTilesSource from 'Source/C3DTilesSource';
 import C3DTilesIonSource from 'Source/C3DTilesIonSource';
 import Extent from 'Core/Geographic/Extent';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 
 describe('Sources', function () {
     // geojson url to parse

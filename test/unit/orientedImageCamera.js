@@ -1,5 +1,5 @@
-import * as THREE from 'three';
 import assert from 'assert';
+import * as THREE from 'three';
 import OrientedImageCamera from 'Renderer/OrientedImageCamera';
 
 describe('oriented image camera', function () {

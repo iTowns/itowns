@@ -1,6 +1,6 @@
+import assert from 'assert';
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import assert from 'assert';
 import Extent from 'Core/Geographic/Extent';
 import PlanarTileBuilder from 'Core/Prefab/Planar/PlanarTileBuilder';
 import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';

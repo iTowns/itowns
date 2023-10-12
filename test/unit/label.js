@@ -1,5 +1,6 @@
 import assert from 'assert';
 import * as THREE from 'three';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import Label from 'Core/Label';
 import Style, { cacheStyle } from 'Core/Style';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
@@ -9,7 +10,6 @@ import LabelLayer from 'Layer/LabelLayer';
 import GlobeView from 'Core/Prefab/GlobeView';
 import ColorLayer from 'Layer/ColorLayer';
 import FileSource from 'Source/FileSource';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Renderer from './bootstrap';
 
 const geojson = require('../data/geojson/simple.geojson.json');

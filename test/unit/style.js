@@ -1,7 +1,7 @@
-import Style, { cacheStyle } from 'Core/Style';
 import assert from 'assert';
-import Fetcher from 'Provider/Fetcher';
 import { TextureLoader } from 'three';
+import Style, { cacheStyle } from 'Core/Style';
+import Fetcher from 'Provider/Fetcher';
 
 const textureLoader = new TextureLoader();
 Fetcher.texture = (url, options = {}) => {

@@ -1,6 +1,6 @@
+import assert from 'assert';
 import proj4 from 'proj4';
 import { Vector3, Matrix4, Quaternion } from 'three';
-import assert from 'assert';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)

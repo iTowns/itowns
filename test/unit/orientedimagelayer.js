@@ -1,8 +1,8 @@
-import proj4 from 'proj4';
 import assert from 'assert';
+import proj4 from 'proj4';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import OrientedImageLayer from 'Layer/OrientedImageLayer';
 import OrientedImageSource from 'Source/OrientedImageSource';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Renderer from './bootstrap';

@@ -1,11 +1,11 @@
 import assert from 'assert';
+import * as THREE from 'three';
 import ColorLayer from 'Layer/ColorLayer';
 import TMSSource from 'Source/TMSSource';
 import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import TileMesh from 'Core/TileMesh';
-import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
 import OBB from 'Renderer/OBB';
 import LayeredMaterial from 'Renderer/LayeredMaterial';

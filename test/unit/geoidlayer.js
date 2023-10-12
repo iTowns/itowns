@@ -1,10 +1,10 @@
-import * as THREE from 'three';
 import assert from 'assert';
+import * as THREE from 'three';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import GeoidLayer from 'Layer/GeoidLayer';
 import FileSource from 'Source/FileSource';
 import Coordinates from 'Core/Geographic/Coordinates';
 import GlobeView from 'Core/Prefab/GlobeView';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Extent from 'Core/Geographic/Extent';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';

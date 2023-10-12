@@ -1,5 +1,5 @@
-import { MOUSE } from 'three';
 import assert from 'assert';
+import { MOUSE } from 'three';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { getLookAtFromMath, getRig } from 'Utils/CameraUtils';

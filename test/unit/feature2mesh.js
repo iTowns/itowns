@@ -1,6 +1,6 @@
+import assert from 'assert';
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import assert from 'assert';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 import Style from 'Core/Style';

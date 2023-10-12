@@ -1,5 +1,5 @@
-import proj4 from 'proj4';
 import assert from 'assert';
+import proj4 from 'proj4';
 import { Matrix4, Object3D } from 'three';
 import Camera from 'Renderer/Camera';
 import Coordinates from 'Core/Geographic/Coordinates';

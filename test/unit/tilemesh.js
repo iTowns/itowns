@@ -1,5 +1,5 @@
-import * as THREE from 'three';
 import assert from 'assert';
+import * as THREE from 'three';
 import TileMesh from 'Core/TileMesh';
 // import PlanarView from 'Core/Prefab/PlanarView';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';

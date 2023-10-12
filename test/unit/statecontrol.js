@@ -1,5 +1,5 @@
-import { MOUSE } from 'three';
 import assert from 'assert';
+import { MOUSE } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Renderer from './bootstrap';

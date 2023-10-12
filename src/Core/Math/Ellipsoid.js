@@ -126,7 +126,7 @@ class Ellipsoid {
         // var back = (t1 <= EPSILON || t2 <= EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
         let t = 0;
         if (t1 <= EPSILON) { t = t2; } else
-        if (t2 <= EPSILON) { t = t1; } else { t = (t1 < t2) ? t1 : t2; }
+            if (t2 <= EPSILON) { t = t1; } else { t = (t1 < t2) ? t1 : t2; }
 
         if (t < EPSILON) { return false; } // Too close to intersection
 

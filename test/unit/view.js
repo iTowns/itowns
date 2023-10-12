@@ -1,7 +1,7 @@
+import assert from 'assert';
 import * as THREE from 'three';
 import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
-import assert from 'assert';
 import View from 'Core/View';
 import ColorLayer from 'Layer/ColorLayer';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';

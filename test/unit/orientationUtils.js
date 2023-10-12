@@ -1,5 +1,5 @@
-import * as THREE from 'three';
 import assert from 'assert';
+import * as THREE from 'three';
 import OrientationUtils from 'Utils/OrientationUtils';
 import Coordinates from 'Core/Geographic/Coordinates';
 

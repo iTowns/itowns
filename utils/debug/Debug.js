@@ -1,8 +1,8 @@
+import * as THREE from 'three';
 import { CameraHelper, Color, Vector3 } from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import OBB from 'Renderer/OBB';
-import * as THREE from 'three';
 import ThreeStatsChart from './charts/ThreeStatsChart';
 import { backgroundChartDiv, color_blue } from './charts/ChartConfig';
 import OBBHelper from './OBBHelper';
