@@ -142,7 +142,11 @@ jobs:
     needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
     runs-on: ubuntu-latest
     permissions:
+        # id-token: write permission is required for npm provenance:
+        # https://docs.npmjs.com/generating-provenance-statements#publishing-packages-with-provenance-via-github-actions
         id-token: write
+        # contents: write is required for git push
+        contents: write
     steps:
 
       - uses: actions/checkout@v3
