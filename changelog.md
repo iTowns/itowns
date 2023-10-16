@@ -1,3 +1,60 @@
+<a name="2.41.0"></a>
+# [2.41.0](https://github.com/iTowns/itowns/compare/v2.40.0...v2.41.0) (2023-10-16)
+
+
+### Features
+
+* **3dtiles:** add method to enable ktx2 loader for gltf ([a260109](https://github.com/iTowns/itowns/commit/a260109))
+* **points:** Add attenuated mode for points size rendering ([6db3c5e](https://github.com/iTowns/itowns/commit/6db3c5e))
+* **points:** Add option to render points in shape square or circle ([363f137](https://github.com/iTowns/itowns/commit/363f137))
+* **VectorTile:** add coordProj in pushCoordinatesValues() to get access to position when using style.base_altitude. ([451e5d6](https://github.com/iTowns/itowns/commit/451e5d6))
+
+
+### Bug Fixes
+
+* **example:** fix example Gpx 3d and functional test ([781a47d](https://github.com/iTowns/itowns/commit/781a47d))
+* fix Glob error when lauching npm install on windows ([e56bf65](https://github.com/iTowns/itowns/commit/e56bf65))
+* **picking:** Fix point reference of picking ([#2192](https://github.com/iTowns/itowns/issues/2192)) ([1cd4db9](https://github.com/iTowns/itowns/commit/1cd4db9))
+
+
+### Examples
+
+* **VectorTile:** new example using official mapbox flux, showing buildings placed at ground level. ([cefebce](https://github.com/iTowns/itowns/commit/cefebce))
+
+
+### Code Refactoring
+
+* **Feature:** Feature.pushCoordinates() change in arguments order ([44e9532](https://github.com/iTowns/itowns/commit/44e9532))
+* **VectorTile:** Code clean up ([284c46b](https://github.com/iTowns/itowns/commit/284c46b))
+* **View:** Deprecate WebGL 1.0 support ([1cf7075](https://github.com/iTowns/itowns/commit/1cf7075))
+
+
+### Workflow and chores
+
+* release v2.41.0 ([d47e36c](https://github.com/iTowns/itowns/commit/d47e36c))
+* add commit message checker ([9370312](https://github.com/iTowns/itowns/commit/9370312))
+* **integration:** add release commit to message check ([b88de83](https://github.com/iTowns/itowns/commit/b88de83))
+* **release:** add npm install to npm bump command ([cc6239d](https://github.com/iTowns/itowns/commit/cc6239d))
+* separate build and test jobs ([c3bc003](https://github.com/iTowns/itowns/commit/c3bc003))
+* **workflow:** add npm provenance to npm package ([cb29ab6](https://github.com/iTowns/itowns/commit/cb29ab6))
+* **workflow:** fix publish rights with npm provenance ([63f70be](https://github.com/iTowns/itowns/commit/63f70be))
+* **workflow:** update github actions to node 18 ([5143c25](https://github.com/iTowns/itowns/commit/5143c25))
+
+
+### Documentation
+
+* **CONTRIBUTING.md:** add commits type list ([b91404a](https://github.com/iTowns/itowns/commit/b91404a))
+* **CONTRIBUTING.md:** fix typo ([ac6c328](https://github.com/iTowns/itowns/commit/ac6c328))
+* **WebGL1:** Remove tutorial "Getting Started - WebGL 1.0/2.0" ([57f7b59](https://github.com/iTowns/itowns/commit/57f7b59))
+
+
+### BREAKING CHANGES
+
+* **VectorTile:** Feature.pushCoordinatesValues() signature change from pushCoordinatesValues(feature, long, lat, normal) to pushCoordinatesValues(feature, coordIn, coordProj)
+* **Feature:** Feature.pushCoordinates() change in arguments order from pushCoordinates(coordIn, feature) to pushCoordinates(feature, coordIn)
+
+
+
 <a name="2.40.0"></a>
 # [2.40.0](https://github.com/iTowns/itowns/compare/v2.38.2...v2.40.0) (2023-07-28)
 
