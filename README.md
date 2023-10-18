@@ -75,7 +75,7 @@ that exposes `itowns` in `window`:
 ### From a release bundle
 
 See our [release page](https://github.com/iTowns/itowns/releases). Note that
-there isn't a lot of support for older version of iTowns, we highly recommand to
+there isn't a lot of support for older version of iTowns, we highly recommend to
 use the last release everytime.
 
 ### Try modifications before they are released
