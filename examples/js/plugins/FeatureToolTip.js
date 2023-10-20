@@ -83,7 +83,7 @@ const FeatureToolTip = (function _() {
             geometry = feature.geometry;
             style = (geometry.properties && geometry.properties.style) || feature.style || layer.style;
             const context = { globals: {}, properties: getGeometryProperties(geometry) };
-            style = style.drawingStylefromContext(context);
+            style = style.applyContext(context);
 
             if (feature.type === itowns.FEATURE_TYPES.POLYGON) {
                 symb = '&#9724';

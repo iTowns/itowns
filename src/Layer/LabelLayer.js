@@ -240,7 +240,11 @@ class LabelLayer extends GeometryLayer {
         // Converting the extent now is faster for further operation
         extent.as(data.crs, _extent);
         coord.crs = data.crs;
-        const globals = { zoom: extent.zoom };
+        const globals = {
+            icon: true,
+            text: true,
+            zoom: extent.zoom,
+        };
 
         data.features.forEach((f) => {
             // TODO: add support for LINE and POLYGON
@@ -273,9 +277,9 @@ class LabelLayer extends GeometryLayer {
                     content = readExpression(this.labelDomelement, context);
                 } else if (!geometryField && !featureField && !layerField) {
                     // Check if there is an icon, with no text
-                    if (!(g.properties.style && (g.properties.style.icon.source || g.properties.style.icon.key))
-                        && !(f.style && (f.style.icon.source || f.style.icon.key))
-                        && !(this.style && (this.style.icon.source || this.style.icon.key))) {
+                    if (!(g.properties.style && (g.properties.style.icon.source || g.properties.style.icon.id))
+                        && !(f.style && (f.style.icon.source || f.style.icon.id))
+                        && !(this.style && (this.style.icon.source || this.style.icon.id))) {
                         return;
                     }
                 } else if (geometryField) {
@@ -286,7 +290,7 @@ class LabelLayer extends GeometryLayer {
                     content = this.style.getTextFromProperties(context);
                 }
 
-                const style = (g.properties.style || f.style || this.style).symbolStylefromContext(context);
+                const style = (g.properties.style || f.style || this.style).applyContext(context);
 
                 const label = new Label(content, coord.clone(), style);
                 label.layerId = this.id;

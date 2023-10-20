@@ -231,7 +231,7 @@ function featureToPoint(feature, options) {
     const globals = { point: true };
     for (const geometry of feature.geometries) {
         const context = { globals, properties: () => geometry.properties };
-        const style = feature.style.drawingStylefromContext(context);
+        const style = feature.style.applyContext(context);
 
         const start = geometry.indices[0].offset;
         const count = geometry.indices[0].count;
@@ -286,7 +286,7 @@ function featureToLine(feature, options) {
         // Multi line case
         for (const geometry of feature.geometries) {
             const context = { globals, properties: () => geometry.properties };
-            const style = feature.style.drawingStylefromContext(context);
+            const style = feature.style.applyContext(context);
 
             const start = geometry.indices[0].offset;
             // To avoid integer overflow with indice value (16 bits)
@@ -317,7 +317,7 @@ function featureToLine(feature, options) {
         lines = new THREE.LineSegments(geom, options.lineMaterial);
     } else {
         const context = { globals, properties: () => feature.geometries[0].properties };
-        const style = feature.style.drawingStylefromContext(context);
+        const style = feature.style.applyContext(context);
 
         fillColorArray(colors, count, toColor(style.stroke.color));
         geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
@@ -360,7 +360,7 @@ function featureToPolygon(feature, options) {
             break;
         }
         const context = { globals, properties: () => geometry.properties };
-        const style = feature.style.drawingStylefromContext(context);
+        const style = feature.style.applyContext(context);
 
         const lastIndice = geometry.indices.slice(-1)[0];
         const end = lastIndice.offset + lastIndice.count;
@@ -429,7 +429,7 @@ function featureToExtrudedPolygon(feature, options) {
         const start = geometry.indices[0].offset;
 
         const context = { globals, properties: () => geometry.properties };
-        const style = feature.style.drawingStylefromContext(context);
+        const style = feature.style.applyContext(context);
 
 
         const lastIndice = geometry.indices.slice(-1)[0];

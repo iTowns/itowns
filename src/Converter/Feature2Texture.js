@@ -74,12 +74,17 @@ const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 function drawFeature(ctx, feature, extent, style, invCtxScale) {
     const extentDim = extent.planarDimensions();
     const scaleRadius = extentDim.x / ctx.canvas.width;
-    const globals = { zoom: extent.zoom };
+    const globals = {
+        fill: true,
+        stroke: true,
+        point: true,
+        zoom: extent.zoom,
+    };
 
     for (const geometry of feature.geometries) {
         if (Extent.intersectsExtent(geometry.extent, extent)) {
             const context = { globals, properties: () => geometry.properties };
-            const contextStyle = (geometry.properties.style || style).drawingStylefromContext(context);
+            const contextStyle = (geometry.properties.style || style).applyContext(context);
 
             if (contextStyle) {
                 if (
