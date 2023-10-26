@@ -31,18 +31,27 @@
         <script src="js/XR/Utils.js"></script>
 
         <script type="module">
-
             import { VRButton } from 'three/addons/webxr/VRButton.js';
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+            const tile3DCoordinates = new itowns.Coordinates('EPSG:4978', 4412106.042879028, -26370.61912189091, 4590341.467693916);
+            const mountainsCoordinates = new itowns.Coordinates('EPSG:4326', 6.227, 45.167);
 
             // ---------- SETUP THE VR VIEW : ----------
 
             // Define camera initial position
             const placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 6.227, 45.167),
+                coord: tile3DCoordinates,
+                range: 3000,
+                tilt: 55,
+                heading: 180,
+                /**
                 range: 15000,
                 tilt: 5,
                 heading: 62,
-            }
+                */
+            };
+
+
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             const viewerDiv = document.getElementById('viewerDiv');
@@ -57,10 +66,7 @@
             const scale = 1;
 
             // Create a GlobeView
-                webXR: { scale: scale, 
-                    callback: render},
-                
-            const view = new itowns.GlobeView(viewerDiv, placement, { webXR: { scale: scale, callback: render } });
+            const view = new itowns.GlobeView(viewerDiv, placement, { webXR: { scale: scale, callback: render } }); 
 
             // Instantiate three's VR Button
             const vrButton = VRButton.createButton(view.renderer);
@@ -68,7 +74,7 @@
 
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
-            var debugMenu = new GuiTools('menuDiv', view);
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
             
             // ---------- DISPLAY ORTHO-IMAGES : ----------
 
@@ -79,19 +85,49 @@
                 config.source = new itowns.WMTSSource(config.source);
                 view.addLayer(
                     new itowns.ColorLayer('Ortho', config),
-                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+                ).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
 
-            // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
 
-            // Add two elevation layers, each with a different level of detail.
-            // Here again, each layer's properties are defined in a json file.
-            function addElevationLayerFromConfig(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                contextXR.elevationLayer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(contextXR.elevationLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
+
+            // Create a new Layer 3d-tiles For Pointcloud
+            // -------------------------------------------
+            var $3dTilesLayerSetePC = new itowns.C3DTilesLayer('3d-tiles-geredis', {
+                name: 'geredis',
+                sseThreshold: 5,
+                pntsMode: itowns.PNTS_MODE.CLASSIFICATION,
+                source: new itowns.C3DTilesSource({
+                    url: 'https://10.1.23.22/3dtiles/canupo_classified_pc/tileset.json',
+                }),
+            }, view);
+
+            $3dTilesLayerSetePC.addEventListener(
+                itowns.C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED,
+                updatePointCloudSize,
+            );
+
+            // view.addLayer($3dTilesLayerSetePC); doesn't work. Those little thing that takes time to figure out
+            itowns.View.prototype.addLayer.call(view, $3dTilesLayerSetePC);
+
+            //TODO bind this to a button
+            function switchMode(){
+                let pntsLayer = view.getLayerById("3d-tiles-geredis");
+                
+                if(pntsLayer){
+                    pntsLayer = pntsLayer;
+                    pntsLayer.pntsMode = pntsLayer.pntsMode == itowns.PNTS_MODE.COLOR ? itowns.PNTS_MODE.CLASSIFICATION : itowns.PNTS_MODE.COLOR;
+                    view.notifyChange(view.camera.camera3D);
+                }
             }
 
+            function updatePointCloudSize({tileContent}) {
+                tileContent.traverse(function (obj) {
+                    if (obj.isPoints) {
+                        obj.material.size = 2.0;
+                    }
+                });
+            }
+        
 
             // ------------- webxr interaction ----------------
             view.scene.matrixWorldAutoUpdate = true;
@@ -191,6 +227,10 @@
                 
                  contextXR.renderer.xr.addEventListener( 'sessionstart', function ()
                  {
+
+                    document.addEventListener('keydown', function listenDebug(evt) {
+                        console.log(evt, 'pressed');
+                    });
                     contextXR.baseReferenceSpace = contextXR.renderer.xr.getReferenceSpace();
                     view.scene.children.forEach((child) => {if(child.name === 'xrHeadset') { contextXR.xrHeadSet = child;} });
                     
@@ -266,19 +306,19 @@
             function render() {
                 if(!contextXR.controller2.userData.isSelecting) {
                     // if not selecting reset previous state
-                contextXR.INTERSECTION = undefined;
+                    contextXR.INTERSECTION = undefined;
                 }
                 if (!contextXR.controller2.userData.lockedTeleportPosition) {
                     contextXR.INTERSECTION = undefined;
-                const intersects = intersectInteractiveLayers(); 
+                    const intersects = intersectInteractiveLayers(); 
                     if (intersects && intersects.length > 0 ) {
                         XRUtils.updateBboxVisibility(intersects[0].object);
                         if (contextXR.controller2.userData.isSelecting === true) {
-                        contextXR.INTERSECTION = intersects[ 0 ].point;
-                    }
-                } else if (contextXR.visibleBbox) {
-                    contextXR.visibleBbox.visible = false;
-                    contextXR.visibleBbox = undefined;
+                            contextXR.INTERSECTION = intersects[ 0 ].point;
+                        }
+                    } else if (contextXR.visibleBbox) {
+                        contextXR.visibleBbox.visible = false;
+                        contextXR.visibleBbox = undefined;
                     }
                 }
 
@@ -368,6 +408,7 @@
             }
 
             // Listen for globe full initialisation event
+
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function globeInitialized() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
@@ -376,11 +417,31 @@
                addMeshToScene();
             });
 
-            var d = new debug.Debug(view, debugMenu.gui);
-            debug.createTileDebugUI(debugMenu.gui, view, view.tileLayer, d);
+            
+            
 
+            // Add the UI Debug
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerSetePC, d);
+
+            d.switch = function() {
+                switchMode();
+            }
+            menuGlobe.gui.add(d, 'switch').name('Mode Switch');
+
+            // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
+
+            // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
+            // defined in a json file.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var elevationLayer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(elevationLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addElevationLayerFromConfig);
 
         </script>
     </body>
