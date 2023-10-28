@@ -222,13 +222,18 @@ function addExtrudedPolygonSideFaces(indices, length, offset, count, isClockWise
 }
 
 function featureToPoint(feature, options) {
+    // TODO[QB]: SAME BEGIN
     const ptsIn = feature.vertices;
     const colors = new Uint8Array(ptsIn.length);
-    const batchIds = new Uint32Array(ptsIn.length);
-    const batchId = options.batchId || ((p, id) => id);
 
+    const count = ptsIn.length;
+    const batchIds = new Uint32Array(count);
+    const batchId = options.batchId || ((p, id) => id);
     let featureId = 0;
+    // TODO[QB]: SAME END
+
     const vertices = new Float32Array(ptsIn);
+
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     normal.set(0, 0, 1).multiply(inverseScale);
     context.globals = { point: true };
@@ -258,10 +263,12 @@ function featureToPoint(feature, options) {
         featureId++;
     }
 
+    // TODO[QB]: SAME BEGIN
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
+    // TODO[QB]: SAME END
 
     options.pointMaterial.size = feature.style.point.radius;
 
@@ -269,17 +276,17 @@ function featureToPoint(feature, options) {
 }
 
 function featureToLine(feature, options) {
+    // TODO[QB]: SAME BEGIN
     const ptsIn = feature.vertices;
     const colors = new Uint8Array(ptsIn.length);
-    const count = ptsIn.length / 3;
 
+    const count = ptsIn.length / 3;
     const batchIds = new Uint32Array(count);
     const batchId = options.batchId || ((p, id) => id);
     let featureId = 0;
+    // TODO[QB]: SAME END
 
     const vertices = new Float32Array(ptsIn.length);
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 
     // TODO CREATE material for each feature
     options.lineMaterial.linewidth = feature.style.stroke.width;
@@ -331,24 +338,38 @@ function featureToLine(feature, options) {
 
         featureId++;
     }
+
+    // TODO[QB]: SAME BEGIN
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
+    // TODO[QB]: SAME END
+
     geom.setIndex(new THREE.BufferAttribute(indices, 1));
+
     return new THREE.LineSegments(geom, options.lineMaterial);
 }
 
 function featureToPolygon(feature, options) {
-    const vertices = new Float32Array(feature.vertices);
-    const colors = new Uint8Array(feature.vertices.length);
-    const indices = [];
+    // TODO[QB]: SAME BEGIN
+    const ptsIn = feature.vertices;
+    const colors = new Uint8Array(ptsIn.length);
 
-    const batchIds = new Uint32Array(vertices.length / 3);
+    const count = ptsIn.length / 3;
+    const batchIds = new Uint32Array(count);
     const batchId = options.batchId || ((p, id) => id);
+    let featureId = 0;
+    // TODO[QB]: SAME END
+
+    const vertices = new Float32Array(ptsIn);
+
     context.globals = { fill: true };
+
+    const indices = [];
 
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     normal.set(0, 0, 1).multiply(inverseScale);
-    let featureId = 0;
 
     for (const geometry of feature.geometries) {
         const start = geometry.indices[0].offset;
@@ -420,17 +441,16 @@ function area(contour, offset, count) {
 
 function featureToExtrudedPolygon(feature, options) {
     const ptsIn = feature.vertices;
+    const colors = new Uint8Array(ptsIn.length * 2);
+
+    const batchIds = new Uint32Array(ptsIn.length * 2);
+    const batchId = options.batchId || ((p, id) => id);
+    let featureId = 0;
+
     const vertices = new Float32Array(ptsIn.length * 2);
     const totalVertices = ptsIn.length / 3;
 
-    const colors = new Uint8Array(ptsIn.length * 2);
-
     const indices = [];
-
-    const batchIds = new Uint32Array(vertices.length / 3);
-    const batchId = options.batchId || ((p, id) => id);
-
-    let featureId = 0;
 
     context.globals = { fill: true };
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
