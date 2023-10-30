@@ -88,7 +88,7 @@ describe('Feature2Mesh', function () {
         parsed2.then((collection) => {
             const mesh = Feature2Mesh.convert()(collection).meshes;
             assert.equal(mesh.children[0].type, 'Points');
-            assert.equal(mesh.children[1].type, 'Line');
+            assert.equal(mesh.children[1].type, 'LineSegments');
             assert.equal(mesh.children[2].type, 'Mesh');
             done();
         }).catch(done);

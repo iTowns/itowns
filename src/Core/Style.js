@@ -16,8 +16,8 @@ const inv255 = 1 / 255;
 const canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
 const style_properties = {};
 
-function base_altitudeDefault(properties, coordinates = { z: 0 }) {
-    return coordinates.z;
+function base_altitudeDefault(properties, ctx) {
+    return ctx?.coordinates?.z || ctx?.collection?.center?.z || 0;
 }
 
 function mapPropertiesFromContext(mainKey, from, to, context) {
@@ -44,7 +44,7 @@ export function readExpression(property, ctx) {
             }
             return property.stops[0][1];
         } else if (property instanceof Function) {
-            return property(ctx.properties());
+            return property(ctx.properties, ctx);
         } else {
             return property;
         }

@@ -217,6 +217,20 @@ class Coordinates {
     }
 
     /**
+     * Copy values coordinates to array
+     *
+     * @param  {number[]} array - array to store this vector to. If this is not
+     * provided a new array will be created.
+     * @param  {number} [offset=0] - optional offset into the array.
+     *
+     * @return {number[]} Returns an array [x, y, z], or copies x, y and z into
+     * the provided array.
+     */
+    toArray(array = [], offset = 0) {
+        return THREE.Vector3.prototype.toArray.call(this, array, offset);
+    }
+
+    /**
      * Calculate planar distance between this coordinates and `coord`.
      * Planar distance is the straight-line euclidean distance calculated in a 2D cartesian coordinate system.
      *

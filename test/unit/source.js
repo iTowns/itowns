@@ -303,6 +303,7 @@ describe('Sources', function () {
     describe('C3DTilesSource', function () {
         const params3DTiles = {
             url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/3DTiles/lyon_1_4978/tileset.json',
+            networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
         };
 
         it('should throw an error for having no required parameters', function () {
