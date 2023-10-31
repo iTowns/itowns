@@ -97,7 +97,7 @@
             
             initXR();
 
-            function addFakeRoom() {
+            function addXRObjects() {
                 contextXR.raycaster = new itowns.THREE.Raycaster();
 
                 var cameraTargetPosition = view.controls.getCameraCoordinate().clone();
@@ -186,7 +186,7 @@
                 contextXR.renderer = view.mainLoop.gfxEngine.renderer;
                 Controllers.addControllers(contextXR);
 
-                addFakeRoom();
+                addXRObjects();
                 
                  contextXR.renderer.xr.addEventListener( 'sessionstart', function ()
                  {
@@ -312,7 +312,7 @@
                     XRUtils.removeReference('positionJumpDebug')
                     XRUtils.removeReference('positionJump');
                     XRUtils.removeReference('findMeCamera');
-                    XRUtils.removeReference('findMe2');
+                    XRUtils.removeReference('verticalAxisJump');
                     contextXR.coordOnCamera = undefined;
                 }
                 contextXR.marker.visible = contextXR.INTERSECTION !== undefined;
