@@ -1,5 +1,5 @@
-import Style from 'Core/Style';
 import { FEATURE_TYPES } from 'Core/Feature';
+import Style from 'Core/Style';
 import assert from 'assert';
 import Fetcher from 'Provider/Fetcher';
 import { TextureLoader } from 'three';

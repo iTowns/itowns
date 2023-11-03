@@ -17,7 +17,7 @@ const inv255 = 1 / 255;
 const canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
 
 function baseAltitudeDefault(properties, ctx) {
-    return ctx?.coordinates?.z || ctx?.collection?.center?.z || 0;
+    return ctx?.coordinates?.z || 0;
 }
 
 export function readExpression(property, ctx) {
