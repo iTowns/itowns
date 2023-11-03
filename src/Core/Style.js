@@ -231,7 +231,8 @@ function defineStyleProperty(style, category, name, value, defaultValue) {
  * then the altitude value is set to 0.
  * @property {Object} [point.model] - 3D model to instantiate at each point position.
  *
- * @property {Object} [text] - All things {@link Label} related.
+ * @property {Object} [text] - All things {@link Label} related. (Supported for Points features, not yet
+ * for Lines and Polygons features.)
  * @property {String|Function} [text.field] - A string representing a property key of
  * a `FeatureGeometry` enclosed in brackets, that will be replaced by the value of the
  * property for each geometry. For example, if each geometry contains a `name` property,
