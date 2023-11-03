@@ -60,7 +60,6 @@ class GeometryLayer extends Layer {
         // Remove this part when Object.assign(this, config) will be removed from Layer Constructor
         const visible = config.visible;
         delete config.visible;
-
         super(id, config);
 
         this.isGeometryLayer = true;

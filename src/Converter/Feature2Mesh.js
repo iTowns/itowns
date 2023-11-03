@@ -17,8 +17,8 @@ let style;
 const dim_ref = new THREE.Vector2();
 const dim = new THREE.Vector2();
 const normal = new THREE.Vector3();
-const base = new THREE.Vector3();
-const extrusion = new THREE.Vector3();
+const baseCoord = new THREE.Vector3();
+const topCoord = new THREE.Vector3();
 const inverseScale = new THREE.Vector3();
 const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 
@@ -41,15 +41,6 @@ class FeatureMesh extends THREE.Group {
         this.#collection = new THREE.Group().add(this.meshes);
         this.#collection.quaternion.copy(collection.quaternion);
         this.#collection.position.copy(collection.position);
-
-        if (collection.crs == 'EPSG:4978') {
-            normal.copy(collection.center.geodesicNormal);
-        } else {
-            normal.set(0, 0, 1);
-        }
-
-        normal.multiplyScalar(collection.center.z);
-        this.#collection.position.sub(normal);
 
         this.#collection.scale.copy(collection.scale);
         this.#collection.updateMatrix();
@@ -209,18 +200,28 @@ function featureToPoint(feature, options) {
                 normal.fromArray(feature.normals, v).multiply(inverseScale);
             }
 
-            coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, v));
+            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
             style.setContext(context);
             const { base_altitude, color, radius } = style.point;
-            coord.z = 0;
+
+            coord.copy(localCoord)
+                .applyMatrix4(context.collection.matrixWorld);
+            if (coord.crs == 'EPSG:4978') {
+            // altitude convertion from geocentered to elevation (from ground)
+                coord.as('EPSG:4326', coord);
+            }
+
+            // Calculate the new coordinates using the elevation shift (baseCoord)
+            baseCoord.copy(normal)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
+            // and update the geometry buffer (vertices).
+                .toArray(vertices, v);
+
+            toColor(color).multiplyScalar(255).toArray(colors, v);
 
             if (!pointMaterialSize.includes(radius)) {
                 pointMaterialSize.push(radius);
             }
-
-            // populate vertices
-            base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, v);
-            toColor(color).multiplyScalar(255).toArray(colors, v);
             batchIds[j] = id;
         }
         featureId++;
@@ -251,7 +252,6 @@ function featureToLine(feature, options) {
 
     const vertices = new Float32Array(ptsIn.length);
     const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 
     const lineMaterialWidth = [];
     context.setFeature(feature);
@@ -289,18 +289,28 @@ function featureToLine(feature, options) {
                 normal.fromArray(feature.normals, v).multiply(inverseScale);
             }
 
-            coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, v));
+            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
             style.setContext(context);
             const { base_altitude, color, width } = style.stroke;
-            coord.z = 0;
+
+            coord.copy(localCoord)
+                .applyMatrix4(context.collection.matrixWorld);
+            if (coord.crs == 'EPSG:4978') {
+            // altitude convertion from geocentered to elevation (from ground)
+                coord.as('EPSG:4326', coord);
+            }
+
+            // Calculate the new coordinates using the elevation shift (baseCoord)
+            baseCoord.copy(normal)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
+            // and update the geometry buffer (vertices).
+                .toArray(vertices, v);
+
+            toColor(color).multiplyScalar(255).toArray(colors, v);
 
             if (!lineMaterialWidth.includes(width)) {
                 lineMaterialWidth.push(width);
             }
-
-            // populate geometry buffers
-            base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, v);
-            toColor(color).multiplyScalar(255).toArray(colors, v);
             batchIds[j] = id;
         }
         featureId++;
@@ -310,9 +320,11 @@ function featureToLine(feature, options) {
         // TODO CREATE material for each feature
         console.warn('Too many differents stroke.width, only the first one will be used');
     }
+    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
     geom.setIndex(new THREE.BufferAttribute(indices, 1));
+
     return new THREE.LineSegments(geom, options.lineMaterial);
 }
 
@@ -350,17 +362,26 @@ function featureToPolygon(feature, options) {
                 normal.fromArray(feature.normals, i).multiply(inverseScale);
             }
 
-            coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, i));
+            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, i);
             style.setContext(context);
             const { base_altitude, color } = style.fill;
-            coord.z = 0;
 
-            // populate geometry buffers
-            base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, i);
-            batchIds[b] = id;
+            coord.copy(localCoord)
+                .applyMatrix4(context.collection.matrixWorld);
+            if (coord.crs == 'EPSG:4978') {
+            // altitude convertion from geocentered to elevation (from ground)
+                coord.as('EPSG:4326', coord);
+            }
+
+            // Calculate the new coordinates using the elevation shift (baseCoord)
+            baseCoord.copy(normal)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
+            // and update the geometry buffer (vertices).
+                .toArray(vertices, i);
+
             toColor(color).multiplyScalar(255).toArray(colors, i);
+            batchIds[b] = id;
         }
-
         featureId++;
 
         const geomVertices = vertices.slice(start * 3, end * 3);
@@ -379,7 +400,6 @@ function featureToPolygon(feature, options) {
     geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
-
     geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
 
     return new THREE.Mesh(geom, options.polygonMaterial);
@@ -435,18 +455,28 @@ function featureToExtrudedPolygon(feature, options) {
                 normal.fromArray(feature.normals, i).multiply(inverseScale);
             }
 
-            coord.copy(context.setLocalCoordinatesFromArray(ptsIn, i));
-
+            const localCoord = context.setLocalCoordinatesFromArray(ptsIn, i);
             style.setContext(context);
             const { base_altitude, extrusion_height, color } = style.fill;
-            coord.z = 0;
 
-            // populate base geometry buffers
-            base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, i);
+            coord.copy(localCoord)
+                .applyMatrix4(context.collection.matrixWorld);
+            if (coord.crs == 'EPSG:4978') {
+            // altitude convertion from geocentered to elevation (from ground)
+                coord.as('EPSG:4326', coord);
+            }
+
+            // Calculate the new base coordinates using the elevation shift (baseCoord)
+            baseCoord.copy(normal)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
+            // and update the geometry buffer (vertices).
+                .toArray(vertices, i);
             batchIds[b] = id;
 
             // populate top geometry buffers
-            extrusion.copy(normal).multiplyScalar(extrusion_height).add(base).toArray(vertices, t);
+            topCoord.copy(normal)
+                .multiplyScalar(extrusion_height).add(baseCoord)
+                .toArray(vertices, t);
             batchIds[b + totalVertices] = id;
 
             // coloring base and top mesh

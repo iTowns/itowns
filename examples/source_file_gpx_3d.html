@@ -59,8 +59,6 @@
                 this.updateMatrixWorld();
             }
 
-            var waypointGeometry = new itowns.THREE.BoxGeometry(1, 1, 80);
-            var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
             const style = {
                 stroke: {
                     color: 'red',
@@ -70,6 +68,8 @@
                     color: 'white',
                 }
             };
+            var waypointGeometry = new itowns.THREE.BoxGeometry(1, 1, 80);
+            var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
