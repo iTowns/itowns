@@ -138,7 +138,8 @@ class LabelsNode extends THREE.Group {
 /**
  * A layer to handle a bunch of `Label`. This layer can be created on its own,
  * but it is better to use the option `addLabelLayer` on another `Layer` to let
- * it work with it (see the `vector_tile_raster_2d` example).
+ * it work with it (see the `vector_tile_raster_2d` example). Supported for Points features, not yet
+ * for Lines and Polygons features.
  *
  * @property {boolean} isLabelLayer - Used to checkout whether this layer is a
  * LabelLayer.  Default is true. You should not change this, as it is used
