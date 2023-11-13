@@ -108,11 +108,11 @@
             const material = new itowns.THREE.MeshBasicMaterial( {color: 0x00ff00, opacity: 0.5, transparent: true} );
             const cube = new itowns.THREE.Mesh( geometry, material );
             view.domElement.onclick = (event) => {
-                const intersects = view.pickObjectsAt(event, 0, [$3dTilesLayer]);
+                const intersects = view.pickObjectsAt(event, 5, [$3dTilesLayer]);
                 const c3DTileFeatureClicked = $3dTilesLayer.getC3DTileFeatureFromIntersectsArray(intersects);
 
                 if (c3DTileFeatureClicked) {
-                    const worldBox3 = $3dTilesLayer.computeWorldBox3(c3DTileFeatureClicked);
+                    const worldBox3 = c3DTileFeatureClicked.computeWorldBox3();
                     cube.scale.copy(worldBox3.max.clone().sub(worldBox3.min));
                     worldBox3.getCenter(cube.position);
                     cube.updateMatrixWorld();

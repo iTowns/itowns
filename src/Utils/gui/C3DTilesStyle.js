@@ -67,10 +67,8 @@ class C3DTilesStyle extends Widget {
 
                 /** @type {Map<string,Array>} */
                 const buffer = new Map(); // record what are the possible values for a key in batchTable
-                // eslint-disable-next-line no-unused-vars
-                for (const [tileId, tileC3DTileFeatures] of c3DTilesLayer.tilesC3DTileFeatures) {
-                    // eslint-disable-next-line no-unused-vars
-                    for (const [batchId, c3DTileFeature] of tileC3DTileFeatures) {
+                for (const [, tileC3DTileFeatures] of c3DTilesLayer.tilesC3DTileFeatures) {
+                    for (const [, c3DTileFeature] of tileC3DTileFeatures) {
                         // eslint-disable-next-line guard-for-in
                         for (const key in c3DTileFeature.getInfo().batchTable) {
                             if (!buffer.has(key)) {
@@ -91,8 +89,7 @@ class C3DTilesStyle extends Widget {
 
                 const fillColorFunction = (c3DTileFeature) => {
                     let result = null;
-                    // eslint-disable-next-line no-unused-vars
-                    for (const [keyValue, colorFunction] of colorFunctions) {
+                    for (const [, colorFunction] of colorFunctions) {
                         result = colorFunction(c3DTileFeature) || result;
                     }
                     return result;
@@ -103,8 +100,7 @@ class C3DTilesStyle extends Widget {
 
                 const fillOpacityFunction = (c3DTileFeature) => {
                     let result = 1;
-                    // eslint-disable-next-line no-unused-vars
-                    for (const [keyValue, opacityFunction] of opacityFunctions) {
+                    for (const [, opacityFunction] of opacityFunctions) {
                         result = opacityFunction(c3DTileFeature) || result;
                     }
                     return result;
