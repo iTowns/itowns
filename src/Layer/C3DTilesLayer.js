@@ -28,6 +28,33 @@ export const C3DTILES_LAYER_EVENTS = {
 
 const update = process3dTilesNode();
 
+/**
+ * Find tileId of object
+ *
+ * @param {THREE.Object3D} object - object
+ * @returns {number} tileId
+ */
+function findTileID(object) {
+    let currentObject = object;
+    let result = currentObject.tileId;
+    while (isNaN(result) && currentObject.parent) {
+        currentObject = currentObject.parent;
+        result = currentObject.tileId;
+    }
+
+    return result;
+}
+
+/**
+ * Check if object3d has feature
+ *
+ * @param {THREE.Object3D} object3d - object3d to check
+ * @returns {boolean} - true if object3d has feature
+ */
+function object3DHasFeature(object3d) {
+    return object3d.geometry && object3d.geometry.attributes._BATCHID;
+}
+
 class C3DTilesLayer extends GeometryLayer {
     #fillColorMaterialsBuffer;
     /**
@@ -244,18 +271,6 @@ class C3DTilesLayer extends GeometryLayer {
             return null;
         }
 
-        // function find the tile id from an object
-        function findTileID(object) {
-            let currentObject = object;
-            let result = currentObject.tileId;
-            while (isNaN(result) && currentObject.parent) {
-                currentObject = currentObject.parent;
-                result = currentObject.tileId;
-            }
-
-            return result;
-        }
-
         const tileId = findTileID(closestIntersect.object);
         // face is a Face3 object of THREE which is a
         // triangular face. face.a is its first vertex
@@ -274,6 +289,9 @@ class C3DTilesLayer extends GeometryLayer {
 
         // notify observer
         this.dispatchEvent({ type: C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED, tileContent });
+
+        // only update style of tile features
+        this.updateStyle([tileContent.tileId]);
     }
 
     /**
@@ -282,9 +300,9 @@ class C3DTilesLayer extends GeometryLayer {
      * @param {THREE.Object3D} tileContent - tile as THREE.Object3D
      */
     initC3DTileFeatures(tileContent) {
+        this.tilesC3DTileFeatures.set(tileContent.tileId, new Map()); // initialize
         tileContent.traverse((child) => {
-            if (child.geometry && child.geometry.attributes._BATCHID) {
-                this.tilesC3DTileFeatures.set(tileContent.tileId, new Map());// initialize
+            if (object3DHasFeature(child)) {
                 const batchTable = this.findBatchTable(child);
                 if (!batchTable) {
                     throw new Error('no batchTable');
@@ -311,6 +329,8 @@ class C3DTilesLayer extends GeometryLayer {
                             currentBatchId,
                             [{ start, count }], // initialize with current group
                             batchTable.getInfoById(currentBatchId),
+                            {},
+                            child,
                         );
                         this.tilesC3DTileFeatures.get(tileContent.tileId).set(currentBatchId, c3DTileFeature);
                     }
@@ -340,53 +360,6 @@ class C3DTilesLayer extends GeometryLayer {
                 }
             }
         });
-
-        this.updateStyle([tileContent.tileId]);// only update tile batchelement
-    }
-
-    /**
-     * Compute world box 3 of a c3DTFeature
-     *
-     * @param {C3DTFeature} c3DTFeature - feature to compute world box3
-     * @param {THREE.Box3} [target] - result instance
-     * @returns {THREE.Box3}
-     */
-    computeWorldBox3(c3DTFeature, target = new THREE.Box3()) {
-        // reset
-        target.max.x = -Infinity;
-        target.max.y = -Infinity;
-        target.max.z = -Infinity;
-        target.min.x = Infinity;
-        target.min.y = Infinity;
-        target.min.z = Infinity;
-
-        const tileContent = this.object3d.getObjectByProperty('tileId', c3DTFeature.tileId);
-        tileContent.traverse((child) => {
-            if (child.geometry && child.geometry.attributes._BATCHID) {
-                c3DTFeature.groups.forEach((group) => {
-                    const positionIndexStart = group.start * 3;
-                    const positionIndexCount = (group.start + group.count) * 3;
-
-                    for (let index = positionIndexStart; index < positionIndexCount; index += 3) {
-                        const x = child.geometry.attributes.position.array[index];
-                        const y = child.geometry.attributes.position.array[index + 1];
-                        const z = child.geometry.attributes.position.array[index + 2];
-
-                        target.max.x = Math.max(x, target.max.x);
-                        target.max.y = Math.max(y, target.max.y);
-                        target.max.z = Math.max(z, target.max.z);
-
-                        target.min.x = Math.min(x, target.min.x);
-                        target.min.y = Math.min(y, target.min.y);
-                        target.min.z = Math.min(z, target.min.z);
-                    }
-                });
-
-                target.applyMatrix4(child.matrixWorld);
-            }
-        });
-
-        return target;
     }
 
     /**
@@ -402,84 +375,96 @@ class C3DTilesLayer extends GeometryLayer {
         }
 
         const currentMaterials = [];// list materials used for this update
-        this.object3d.traverse((object) => {
-            if (this.tilesC3DTileFeatures.has(object.tileId)) {
-                // object is a tile content
-                const c3DTileFeatures = this.tilesC3DTileFeatures.get(object.tileId);
-                object.traverse((child) => {
-                    if (child.geometry && child.geometry.attributes._BATCHID) {
-                        // check if tile feature should be updated
-                        if (!(allowTileIdList && !allowTileIdList.includes(object.tileId))) {
-                            // clear
-                            child.geometry.clearGroups();
-                            child.material = [];
 
-                            // eslint-disable-next-line no-unused-vars
-                            for (const [batchId, c3DTileFeature] of c3DTileFeatures) {
-                                /** @type {THREE.Color} */
-                                let color = null;
-                                if (typeof this._style.fill.color === 'function') {
-                                    color = new THREE.Color(this._style.fill.color(c3DTileFeature));
-                                } else {
-                                    color = new THREE.Color(this._style.fill.color);
-                                }
+        const mapObjects3d = new Map();
+        this.object3d.traverse((child) => {
+            if (object3DHasFeature(child)) {
+                const tileId = findTileID(child);
 
-                                /** @type {number} */
-                                let opacity = null;
-                                if (typeof this._style.fill.opacity === 'function') {
-                                    opacity = this._style.fill.opacity(c3DTileFeature);
-                                } else {
-                                    opacity = this._style.fill.opacity;
-                                }
+                if (allowTileIdList && !allowTileIdList.includes(tileId)) {
+                    return; // this tileId is not updated
+                }
 
-                                const materialId = color.getHexString() + opacity;
-
-                                let material = null;
-                                if (this.#fillColorMaterialsBuffer.has(materialId)) {
-                                    material = this.#fillColorMaterialsBuffer.get(materialId);
-                                } else {
-                                    material = new THREE.MeshStandardMaterial({ color, opacity, transparent: opacity < 1, alphaTest: 0.09 });
-                                    this.#fillColorMaterialsBuffer.set(materialId, material);// bufferize
-                                }
-
-                                // compute materialIndex
-                                let materialIndex = -1;
-                                for (let index = 0; index < child.material.length; index++) {
-                                    const childMaterial = child.material[index];
-                                    if (material.uuid === childMaterial.uuid) {
-                                        materialIndex = index;
-                                        break;
-                                    }
-                                }
-                                if (materialIndex < 0) {
-                                    // not in child.material add it
-                                    child.material.push(material);
-                                    materialIndex = child.material.length - 1;
-                                }
-
-                                // materialIndex groups is computed
-                                c3DTileFeature.groups.forEach((group) => {
-                                    child.geometry.addGroup(group.start, group.count, materialIndex);
-                                });
-                            }
-
-                            optimizeGeometryGroups(child);
-                        }
-
-                        // record material(s) used in child
-                        if (child.material instanceof Array) {
-                            child.material.forEach((material) => {
-                                if (!currentMaterials.includes(material)) {
-                                    currentMaterials.push(material);
-                                }
-                            });
-                        } else if (!currentMaterials.includes(child.material)) {
-                            currentMaterials.push(child.material);
-                        }
-                    }
-                });
+                // push for update style
+                if (!mapObjects3d.has(tileId)) {
+                    mapObjects3d.set(tileId, []);
+                }
+                mapObjects3d.get(tileId).push(child);
             }
         });
+
+        for (const [tileId, objects3d] of mapObjects3d) {
+            const c3DTileFeatures = this.tilesC3DTileFeatures.get(tileId); // features of this tile
+            objects3d.forEach((object3d) => {
+                // clear
+                object3d.geometry.clearGroups();
+                object3d.material = [];
+
+                for (const [, c3DTileFeature] of c3DTileFeatures) {
+                    if (c3DTileFeature.object3d != object3d) {
+                        continue;// this feature do not belong to object3d
+                    }
+                    /** @type {THREE.Color} */
+                    let color = null;
+                    if (typeof this._style.fill.color === 'function') {
+                        color = new THREE.Color(this._style.fill.color(c3DTileFeature));
+                    } else {
+                        color = new THREE.Color(this._style.fill.color);
+                    }
+
+                    /** @type {number} */
+                    let opacity = null;
+                    if (typeof this._style.fill.opacity === 'function') {
+                        opacity = this._style.fill.opacity(c3DTileFeature);
+                    } else {
+                        opacity = this._style.fill.opacity;
+                    }
+
+                    const materialId = color.getHexString() + opacity;
+
+                    let material = null;
+                    if (this.#fillColorMaterialsBuffer.has(materialId)) {
+                        material = this.#fillColorMaterialsBuffer.get(materialId);
+                    } else {
+                        material = new THREE.MeshStandardMaterial({ color, opacity, transparent: opacity < 1, alphaTest: 0.09 });
+                        this.#fillColorMaterialsBuffer.set(materialId, material);// bufferize
+                    }
+
+                    // compute materialIndex
+                    let materialIndex = -1;
+                    for (let index = 0; index < object3d.material.length; index++) {
+                        const childMaterial = object3d.material[index];
+                        if (material.uuid === childMaterial.uuid) {
+                            materialIndex = index;
+                            break;
+                        }
+                    }
+                    if (materialIndex < 0) {
+                        // not in object3d.material add it
+                        object3d.material.push(material);
+                        materialIndex = object3d.material.length - 1;
+                    }
+
+                    // materialIndex groups is computed
+                    c3DTileFeature.groups.forEach((group) => {
+                        object3d.geometry.addGroup(group.start, group.count, materialIndex);
+                    });
+                }
+
+                optimizeGeometryGroups(object3d);
+
+                // record material(s) used in object3d
+                if (object3d.material instanceof Array) {
+                    object3d.material.forEach((material) => {
+                        if (!currentMaterials.includes(material)) {
+                            currentMaterials.push(material);
+                        }
+                    });
+                } else if (!currentMaterials.includes(object3d.material)) {
+                    currentMaterials.push(object3d.material);
+                }
+            });
+        }
 
         // remove buffered materials not in currentMaterials
         for (const [id, fillMaterial] of this.#fillColorMaterialsBuffer) {

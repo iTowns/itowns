@@ -92,10 +92,8 @@ describe('3DTilesLayer Style', () => {
     });
 
     it('Set c3DTileFeatures user data', function () {
-        // eslint-disable-next-line no-unused-vars
-        for (const [tileId, tileC3DTileFeatures] of $3dTilesLayer.tilesC3DTileFeatures) {
-            // eslint-disable-next-line no-unused-vars
-            for (const [batchId, c3DTileFeature] of tileC3DTileFeatures) {
+        for (const [, tileC3DTileFeatures] of $3dTilesLayer.tilesC3DTileFeatures) {
+            for (const [, c3DTileFeature] of tileC3DTileFeatures) {
                 // eslint-disable-next-line guard-for-in
                 if (Math.random() > 0.5) {
                     c3DTileFeature.userData.something = 'random';
