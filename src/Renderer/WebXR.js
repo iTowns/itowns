@@ -43,15 +43,12 @@ const initializeWebXR = (view, options) => {
 
         view.scene.scale.multiplyScalar(scale);
         view.scene.updateMatrixWorld();
-        
-        const xrControllers = initControllers(webXRManager, vrHeadSet);
-        
+
+        const xrControllers = initControllers(xr, vrHeadSet);
+
         const position = view.controls.getCameraCoordinate().as(view.referenceCrs);
         // To avoid controllers precision issues, headset should handle camera position and camera should be reset to origin
         view.scene.add(vrHeadSet);
-
-
-
 
         xr.enabled = true;
         xr.getReferenceSpace('local');
@@ -69,9 +66,9 @@ const initializeWebXR = (view, options) => {
 
         // Must delay replacement to allow user listening to sessionstart to get original ReferenceSpace
         setTimeout(() => {
-             xr.setReferenceSpace(teleportSpaceOffset);
-             // does a regression over controller matrixWorld update...
-         });
+            xr.setReferenceSpace(teleportSpaceOffset);
+            // does a regression over controller matrixWorld update...
+        });
         view.notifyChange();
 
         view.camera.camera3D = xr.getCamera();
@@ -135,7 +132,7 @@ const initializeWebXR = (view, options) => {
     }
 
     function updateFarDistance() {
-        view.camera.camera3D.far =  Math.min(Math.max(view.camera.elevationToGround * 1000, 10000), 100000);
+        view.camera.camera3D.far = Math.min(Math.max(view.camera.elevationToGround * 1000, 10000), 100000);
         view.camera.camera3D.updateProjectionMatrix();
     }
 
@@ -209,7 +206,6 @@ const initializeWebXR = (view, options) => {
             this.add(buildController(event.data));
             // {XRInputSource} event.data
             controller.gamepad = event.data.gamepad;
-            // controller.inputSource = event.data;
         });
         controller.addEventListener('itowns-xr-button-released', (event) => {
             const ctrl = event.message.controller;
@@ -229,10 +225,6 @@ const initializeWebXR = (view, options) => {
 
     function buildController(data) {
         const params = { geometry: {}, material: {} };
-        // let cameraTargetPosition = view.controls.getCameraCoordinate();
-        // let meshCoord = cameraTargetPosition;
-        // let projectedCoords = meshCoord.as(view.referenceCrs);
-
         switch (data.targetRayMode) {
             case 'tracked-pointer':
                 params.geometry = new THREE.BufferGeometry();
@@ -246,8 +238,6 @@ const initializeWebXR = (view, options) => {
             case 'gaze':
                 params.geometry = new THREE.RingGeometry(0.02, 0.04, 32).translate(0, 0, -1);
                 params.material = new THREE.MeshBasicMaterial({ opacity: 0.5, transparent: true });
-
-                // geometry.position.copy(meshCoord.as(view.referenceCrs));
                 return new THREE.Mesh(params.geometry, params.material);
             default:
                 break;
