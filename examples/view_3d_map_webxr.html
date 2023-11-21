@@ -96,16 +96,6 @@
             );
         });
 
-        // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
-
-        // Add two elevation layers, each with a different level of detail.
-        // Here again, each layer's properties are defined in a json file.
-        function addElevationLayerFromConfig(config) {
-            config.source = new itowns.WMTSSource(config.source);
-            contextXR.elevationLayer = new itowns.ElevationLayer(config.id, config);
-            view.addLayer(contextXR.elevationLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
-        }
-
 
         // ------------- webxr interaction ----------------
         view.scene.matrixWorldAutoUpdate = true;
@@ -310,12 +300,27 @@
             addMeshToScene();
         });
 
+        // Add the UI Debug
         var d = new debug.Debug(view, debugMenu.gui);
         debug.createTileDebugUI(debugMenu.gui, view, view.tileLayer, d);
-        itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json')
-            .then(addElevationLayerFromConfig);
-        itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json')
-            .then(addElevationLayerFromConfig);
+
+        d.switch = function () {
+            Controllers.change3DTileRepresentation();
+        }
+        debugMenu.gui.add(d, 'switch').name('Mode Switch');
+
+        // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
+
+        // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
+        // defined in a json file.
+        function addElevationLayerFromConfig(config) {
+            config.source = new itowns.WMTSSource(config.source);
+            var elevationLayer = new itowns.ElevationLayer(config.id, config);
+            view.addLayer(elevationLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
+        }
+        itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+        // must keep it, Failed to execute 'updateRenderState' on 'XRSession': Failed to read the 'depthFar' property from 'XRRenderStateInit': The provided double value is non-finite.
+        itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
     </script>
 </body>
 
