@@ -191,6 +191,8 @@ function featureToPoint(feature, options) {
     const vertices = new Float32Array(ptsIn);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     normal.set(0, 0, 1).multiply(inverseScale);
+
+    const pointMaterialSize = [];
     context.globals = { point: true };
 
     for (const geometry of feature.geometries) {
@@ -207,8 +209,12 @@ function featureToPoint(feature, options) {
 
             coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, v));
             const style = feature.style.applyContext(context);
-            const { base_altitude, color } = style.point;
+            const { base_altitude, color, radius } = style.point;
             coord.z = 0;
+
+            if (!pointMaterialSize.includes(radius)) {
+                pointMaterialSize.push(radius);
+            }
 
             // populate vertices
             base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, v);
@@ -223,7 +229,11 @@ function featureToPoint(feature, options) {
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
 
-    options.pointMaterial.size = feature.style.point.radius;
+    options.pointMaterial.size = pointMaterialSize[0];
+    if (pointMaterialSize.length > 1) {
+        // TODO CREATE material for each feature
+        console.warn('Too many differents point.radius, only the first one will be used');
+    }
 
     return new THREE.Points(geom, options.pointMaterial);
 }
@@ -241,8 +251,7 @@ function featureToLine(feature, options) {
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 
-    // TODO CREATE material for each feature
-    options.lineMaterial.linewidth = feature.style.stroke.width;
+    const lineMaterialWidth = [];
     context.globals = { stroke: true };
 
     const countIndices = (count - feature.geometries.length) * 2;
@@ -280,16 +289,24 @@ function featureToLine(feature, options) {
 
             coord.copy(context.setLocalCoordinatesFromArray(feature.vertices, v));
             const style = feature.style.applyContext(context);
-            const { base_altitude, color } = style.stroke;
+            const { base_altitude, color, width } = style.stroke;
             coord.z = 0;
+
+            if (!lineMaterialWidth.includes(width)) {
+                lineMaterialWidth.push(width);
+            }
 
             // populate geometry buffers
             base.copy(normal).multiplyScalar(base_altitude).add(coord).toArray(vertices, v);
             toColor(color).multiplyScalar(255).toArray(colors, v);
             batchIds[j] = id;
         }
-
         featureId++;
+    }
+    options.lineMaterial.linewidth = lineMaterialWidth[0];
+    if (lineMaterialWidth.length > 1) {
+        // TODO CREATE material for each feature
+        console.warn('Too many differents stroke.width, only the first one will be used');
     }
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
@@ -634,7 +651,6 @@ export default {
             context.setCollection(collection);
 
             const features = collection.features;
-
             if (!features || features.length == 0) { return; }
 
             const meshes = features.map(feature => featureToMesh(feature, options));
