@@ -38,20 +38,9 @@
 
         <script type="module">
 
-            import { VRButton } from 'three/addons/webxr/VRButton.js';
+        import { VRButton } from 'three/addons/webxr/VRButton.js';
 
-            // ---------- SETUP THE VR VIEW : ----------
-
-            // Define camera initial position
-            const placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 6.227, 45.167),
-                range: 15000,
-                tilt: 5,
-                heading: 62,
-            }
-
-    <script type="text/javascript">
-        // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+        // ---------- SETUP THE VR VIEW : ----------
 
         // Define camera initial position
         const placement = {
@@ -80,6 +69,11 @@
                 callback: render
             },
         });
+
+        
+        // Instantiate three's VR Button
+        const vrButton = VRButton.createButton(view.renderer);
+        viewerDiv.appendChild(vrButton);
 
         // Setup loading screen and debug menu
         setupLoadingScreen(viewerDiv, view);
@@ -126,7 +120,7 @@
 
         function initXR() {
             contextXR.renderer = view.mainLoop.gfxEngine.renderer;
-            Controllers.addControllers(contextXR);
+            Controllers.addControllers(view, contextXR);
 
             addXRObjects();
 

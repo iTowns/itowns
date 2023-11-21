@@ -19,6 +19,9 @@ var leftCtrChangeNavMode = false;
 var alreadySwitched = false;
 var navigationMode = [];
 var currentNavigationModeIndex = 0;
+
+var view = null;
+var contextXR= null;
 // TODO cache geodesicQuat
 
 /**
@@ -28,7 +31,9 @@ var currentNavigationModeIndex = 0;
  * }
  * requires a contextXR variable.
  */
-Controllers.addControllers = function () {
+Controllers.addControllers = function (_view, _contextXR) {
+    view = _view;
+    contextXR = _contextXR;
     navigationMode.push(Mode1, Mode2);
     renderer = view.mainLoop.gfxEngine.renderer;
     var controller1 = bindListeners(0);
