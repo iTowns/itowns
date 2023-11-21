@@ -1,27 +1,27 @@
 const Controllers = {};
 
-var renderer;
+let renderer;
 
 // move clipped to a fixed altitude
-var clipToground = false;
+let clipToground = false;
 
 Controllers.MIN_DELTA_ALTITUDE = 1.8;
 
-var deltaRotation = 0;
+let deltaRotation = 0;
 
-var startedPressButton = undefined;
+let startedPressButton;
 
-var actionElevationPerformed = false;
+let actionElevationPerformed = false;
 
 // hack mode switch between navigation Mode
-var rightCtrChangeNavMode = false;
-var leftCtrChangeNavMode = false;
-var alreadySwitched = false;
-var navigationMode = [];
-var currentNavigationModeIndex = 0;
+let rightCtrChangeNavMode = false;
+let leftCtrChangeNavMode = false;
+let alreadySwitched = false;
+const navigationMode = [];
+let currentNavigationModeIndex = 0;
 
-var view = null;
-var contextXR= null;
+let view;
+let contextXR;
 // TODO cache geodesicQuat
 
 /**
@@ -30,14 +30,17 @@ var contextXR= null;
  *  lockedTeleportPosition
  * }
  * requires a contextXR variable.
+ * @param {*} _view itowns view object
+ * @param {*} _contextXR itowns WebXR context object
  */
-Controllers.addControllers = function (_view, _contextXR) {
+Controllers.addControllers = (_view, _contextXR) => {
     view = _view;
     contextXR = _contextXR;
+    // eslint-disable-next-line no-use-before-define
     navigationMode.push(Mode1, Mode2);
     renderer = view.mainLoop.gfxEngine.renderer;
-    var controller1 = bindListeners(0);
-    var controller2 = bindListeners(1);
+    const controller1 = bindListeners(0);
+    const controller2 = bindListeners(1);
     controller1.addEventListener('itowns-xr-axes-changed', onLeftAxisChanged);
     controller2.addEventListener('itowns-xr-axes-changed', onRightAxisChanged);
     controller2.addEventListener('itowns-xr-axes-stop', onRightAxisStop);
@@ -51,9 +54,9 @@ Controllers.addControllers = function (_view, _contextXR) {
     controller2.addEventListener('selectstart', onSelectRightStart);
     controller2.addEventListener('selectend', onSelectRightEnd);
 
-    var cameraRightCtrl = new itowns.THREE.PerspectiveCamera(view.camera.camera3D.fov);
+    const cameraRightCtrl = new itowns.THREE.PerspectiveCamera(view.camera.camera3D.fov);
     cameraRightCtrl.position.copy(view.camera.camera3D.position);
-    var cameraRighthelper = new itowns.THREE.CameraHelper(cameraRightCtrl);
+    const cameraRighthelper = new itowns.THREE.CameraHelper(cameraRightCtrl);
 
     XRUtils.addToScene(cameraRighthelper, true);
 
@@ -62,14 +65,14 @@ Controllers.addControllers = function (_view, _contextXR) {
 
     contextXR.controller1 = controller1;
     contextXR.controller2 = controller2;
-}
+};
 
-Controllers.getGeodesicalQuaternion = function () {
-    //TODO can be optimized with better cache
+Controllers.getGeodesicalQuaternion = () => {
+    // TODO can be optimized with better cache
     const position = view.controls.getCameraCoordinate().clone().as(view.referenceCrs);
     const geodesicNormal = new itowns.THREE.Quaternion().setFromUnitVectors(new itowns.THREE.Vector3(0, 0, 1), position.geodesicNormal).invert();
     return new itowns.THREE.Quaternion(-1, 0, 0, 1).normalize().multiply(geodesicNormal);
-}
+};
 
 function bindListeners(index) {
     return renderer.xr.getController(index);
@@ -90,7 +93,7 @@ function applyTransformationToXR(trans, offsetRotation) {
         console.error('missing translation vector');
         return;
     }
-    var finalTransformation = trans.multiplyScalar(-1).applyQuaternion(offsetRotation);
+    const finalTransformation = trans.multiplyScalar(-1).applyQuaternion(offsetRotation);
     const transform = new XRRigidTransform(finalTransformation, offsetRotation);
     const teleportSpaceOffset = contextXR.baseReferenceSpace.getOffsetReferenceSpace(transform);
     renderer.xr.setReferenceSpace(teleportSpaceOffset);
@@ -98,8 +101,8 @@ function applyTransformationToXR(trans, offsetRotation) {
 
 /**
  * Clamp camera to ground if option {clipToground} is active
- * @param {Vector3} trans 
- * @returns coordinates clamped to ground
+ * @param {Vector3} trans
+ * @returns {Vector3} coordinates clamped to ground
  */
 function clampToGround(trans) {
     const transCoordinate = new itowns.Coordinates(view.referenceCrs, trans.x, trans.y, trans.z);
@@ -246,21 +249,21 @@ function applyTeleportation(ctrl) {
 }
 
 function getSpeedFactor() {
-    var speedFactor = Math.min(Math.max(view.camera.elevationToGround / 10, 5), 2000);
+    const speedFactor = Math.min(Math.max(view.camera.elevationToGround / 10, 5), 2000);
     return speedFactor;
 }
 
 function getTranslationZ(axisValue, speedFactor) {
     // flying following the locked camera look at
-    var speed = axisValue * speedFactor;
-    var matrixHeadset = new itowns.THREE.Matrix4();
+    const speed = axisValue * speedFactor;
+    const matrixHeadset = new itowns.THREE.Matrix4();
     matrixHeadset.identity().extractRotation(view.camera.camera3D.matrixWorld);
-    directionY = new itowns.THREE.Vector3(0, 0, 1).applyMatrix4(matrixHeadset).multiplyScalar(speed);
+    const directionY = new itowns.THREE.Vector3(0, 0, 1).applyMatrix4(matrixHeadset).multiplyScalar(speed);
     return directionY;
 }
 
 
-//////////////////////////////////// MODE 1
+// ////////////////////////////////// MODE 1
 
 function getRotationYaw(axisValue) {
     if (axisValue === 0) {
@@ -268,23 +271,23 @@ function getRotationYaw(axisValue) {
     }
     deltaRotation += Math.PI / (160 * axisValue);
     const offsetRotation = Controllers.getGeodesicalQuaternion();
-    var thetaRotMatrix = new itowns.THREE.Matrix4().identity().makeRotationY(deltaRotation);
-    var rotationQuartenion = new itowns.THREE.Quaternion().setFromRotationMatrix(thetaRotMatrix).normalize();
+    const thetaRotMatrix = new itowns.THREE.Matrix4().identity().makeRotationY(deltaRotation);
+    const rotationQuartenion = new itowns.THREE.Quaternion().setFromRotationMatrix(thetaRotMatrix).normalize();
     offsetRotation.premultiply(rotationQuartenion);
     return offsetRotation;
 }
 
 function getTranslationElevation(axisValue, speedFactor) {
-    var speed = axisValue * speedFactor;
-    var direction = view.controls.getCameraCoordinate().geodesicNormal.clone();
+    const speed = axisValue * speedFactor;
+    const direction = view.controls.getCameraCoordinate().geodesicNormal.clone();
     direction.multiplyScalar(-speed);
     return direction;
 }
 
 /**
  * FIXME flying back and forth cause a permanent shift to up.
- * @param {*} ctrl 
- * @returns 
+ * @param {*} ctrl
+ * @returns
  */
 function cameraOnFly(ctrl) {
     if (!ctrl.flyDirectionQuat) {
@@ -295,17 +298,17 @@ function cameraOnFly(ctrl) {
     if (ctrl.gamepad.axes[2] === 0 && ctrl.gamepad.axes[3] === 0) {
         return;
     }
-    var directionX = new itowns.THREE.Vector3();
-    var directionY = new itowns.THREE.Vector3();
-    var speedFactor = getSpeedFactor();
+    let directionX = new itowns.THREE.Vector3();
+    let directionY = new itowns.THREE.Vector3();
+    const speedFactor = getSpeedFactor();
     if (ctrl.gamepad.axes[3] !== 0) {
         // flying following the locked camera look at
-        var speed = ctrl.gamepad.axes[3] * speedFactor;
-        directionY = new itowns.THREE.Vector3(0,0,1).applyQuaternion(ctrl.flyDirectionQuat).multiplyScalar(speed);
-    } 
+        const speed = ctrl.gamepad.axes[3] * speedFactor;
+        directionY = new itowns.THREE.Vector3(0, 0, 1).applyQuaternion(ctrl.flyDirectionQuat).multiplyScalar(speed);
+    }
     if (ctrl.gamepad.axes[2] !== 0) {
-        var speed = ctrl.gamepad.axes[2] * speedFactor;
-        directionX = new itowns.THREE.Vector3(1,0,0).applyQuaternion(ctrl.flyDirectionQuat).multiplyScalar(speed);
+        const speed = ctrl.gamepad.axes[2] * speedFactor;
+        directionX = new itowns.THREE.Vector3(1, 0, 0).applyQuaternion(ctrl.flyDirectionQuat).multiplyScalar(speed);
     }
 
     const offsetRotation = Controllers.getGeodesicalQuaternion();
@@ -314,20 +317,18 @@ function cameraOnFly(ctrl) {
 }
 
 const Mode1 = {
-    onSelectRightEnd: function (ctrl) {
+    onSelectRightEnd: (ctrl) => {
         applyTeleportation(ctrl);
     },
-    onSelectRightStart: function (ctrl) {
+    onSelectRightStart: (ctrl) => {
         ctrl.userData.isSelecting = true;
     },
-    onSelectLeftStart: function (ctrl) {
+    onSelectLeftStart: (ctrl) => {
         // nothing yet needed
     },
-    /**
-     * first left click while right selecting locks the teleportation target
-     * Second left click cancels teleportation target.
-     */
-    onSelectLeftEnd: function (ctrl) {
+    onSelectLeftEnd: (ctrl) => {
+        // first left click while right selecting locks the teleportation target
+        // Second left click cancels teleportation target.
         if (contextXR.controller2.userData.lockedTeleportPosition) {
             contextXR.controller2.userData.isSelecting = false;
         }
@@ -335,8 +336,8 @@ const Mode1 = {
             contextXR.controller2.userData.lockedTeleportPosition = true;
         }
     },
-    onRightButtonPressed: function (data) {
-        var ctrl = data.message.controller;
+    onRightButtonPressed: (data) => {
+        const ctrl = data.message.controller;
         if (data.message.buttonIndex === 1) {
             // activate vertical adjustment
             if (ctrl.gamepad.axes[3] === 0) {
@@ -345,75 +346,75 @@ const Mode1 = {
             // disable clip to ground
             clipToground = false;
             const offsetRotation = Controllers.getGeodesicalQuaternion();
-            var speedFactor = getSpeedFactor();
+            const speedFactor = getSpeedFactor();
             const deltaTransl = getTranslationElevation(ctrl.gamepad.axes[3], speedFactor);
             const trans = view.camera.camera3D.position.clone().add(deltaTransl);
             clampAndApplyTransformationToXR(trans, offsetRotation);
         }
     },
-    onLeftButtonPressed: function (data) {
-        var ctrl = data.message.controller;
+    onLeftButtonPressed: (data) => {
         if (data.message.buttonIndex === 1) {
             // activate vertical adjustment
-            //   setCameraTocontroller();
+            // setCameraTocontroller();
         }
     },
-    onRightAxisChanged: function (data) {
+    onRightAxisChanged: (data) => {
+        const ctrl = data.message.controller;
         // translation controls
-        var ctrl = data.message.controller;
         if (ctrl.lockButtonIndex) {
             return;
         }
         if (contextXR.INTERSECTION) {
-            //updating elevation at intersection destination
+            // updating elevation at intersection destination
             contextXR.deltaAltitude -= ctrl.gamepad.axes[3] * 100;
         } else {
             cameraOnFly(ctrl);
         }
     },
-    onLeftAxisChanged: function (data) {
+    onLeftAxisChanged: (data) => {
+        const ctrl = data.message.controller;
         // rotation controls
-        var ctrl = data.message.controller;
         if (contextXR.INTERSECTION) {
-
+            // inop
         } else {
             const trans = view.camera.camera3D.position.clone();
-            var quat = getRotationYaw(ctrl.gamepad.axes[2]);
+            const quat = getRotationYaw(ctrl.gamepad.axes[2]);
             applyTransformationToXR(trans, quat);
         }
     },
-    onRightAxisStop(data) {
+    onRightAxisStop: (data) => {
         // inop
     },
-    onLeftAxisStop(data) {
+    onLeftAxisStop: (data) => {
         // inop
     },
-    onRightButtonReleased: function (data) {
+    onRightButtonReleased: (data) => {
         // inop
     },
-    onLeftButtonReleased: function (data) {
+    onLeftButtonReleased: (data) => {
         // inop
-    }
+    },
 };
 
 
-//////////////////////////////////// MODE 2
+// ////////////////////////////////// MODE 2
 
 const Mode2 = {
-    onSelectRightEnd: function (ctrl) {
+    onSelectRightEnd: (ctrl) => {
         applyTeleportation(ctrl);
     },
-    onSelectRightStart: function (ctrl) {
+    onSelectRightStart: (ctrl) => {
         ctrl.userData.isSelecting = true;
     },
-    onSelectLeftStart: function (ctrl) {
+    onSelectLeftStart: (ctrl) => {
         // nothing yet needed
     },
     /**
      * first left click while right selecting locks the teleportation target
      * Second left click cancels teleportation target.
+     * @param {*} ctrl 
      */
-    onSelectLeftEnd: function (ctrl) {
+    onSelectLeftEnd: (ctrl) => {
         if (contextXR.controller2.userData.lockedTeleportPosition) {
             contextXR.controller2.userData.isSelecting = false;
         }
@@ -421,7 +422,7 @@ const Mode2 = {
             contextXR.controller2.userData.lockedTeleportPosition = true;
         }
     },
-    onRightButtonPressed: function (data) {
+    onRightButtonPressed: (data) => {
         if (data.message.buttonIndex === 4 || data.message.buttonIndex === 5) {
             if (!startedPressButton) {
                 startedPressButton = Date.now();
@@ -430,16 +431,15 @@ const Mode2 = {
             clipToground = false;
         }
 
-        var deltaTimePressed = Date.now() - startedPressButton;
+        const deltaTimePressed = Date.now() - startedPressButton;
         if (deltaTimePressed > 2000 && !actionElevationPerformed) {
             const offsetRotation = Controllers.getGeodesicalQuaternion();
-            var deltaTransl;
-            var speedFactor = 1;
+            let deltaTransl;
+            const speedFactor = 1;
             if (data.message.buttonIndex === 4) {
                 // activate vertical adjustment down : clamp to ground
                 deltaTransl = getTranslationElevation(1000000, speedFactor);
-            }
-            else if (data.message.buttonIndex === 5) {
+            } else if (data.message.buttonIndex === 5) {
                 // activate vertical adjustment up : bird view
                 deltaTransl = getTranslationElevation(-10000, speedFactor);
             }
@@ -448,23 +448,23 @@ const Mode2 = {
             actionElevationPerformed = true;
         }
     },
-    onLeftButtonPressed: function (data) {
+    onLeftButtonPressed: (data) => {
         // inop
     },
-    onRightAxisChanged: function (data) {
+    onRightAxisChanged: (data) => {
         // translation controls
-        var ctrl = data.message.controller;
+        const ctrl = data.message.controller;
         if (ctrl.lockButtonIndex) {
             return;
         }
         if (contextXR.INTERSECTION) {
-            //updating elevation at intersection destination
+            // updating elevation at intersection destination
             contextXR.deltaAltitude -= ctrl.gamepad.axes[3] * 100;
         } else {
-            var trans = view.camera.camera3D.position.clone();
-            var quat = Controllers.getGeodesicalQuaternion();
+            const trans = view.camera.camera3D.position.clone();
+            let quat = Controllers.getGeodesicalQuaternion();
             if (ctrl.gamepad.axes[3] !== 0) {
-                var deltaZ = getTranslationZ(ctrl.gamepad.axes[3], getSpeedFactor());
+                const deltaZ = getTranslationZ(ctrl.gamepad.axes[3], getSpeedFactor());
                 trans.add(deltaZ);
             }
             if (ctrl.gamepad.axes[2] !== 0) {
@@ -473,23 +473,23 @@ const Mode2 = {
             clampAndApplyTransformationToXR(trans, quat);
         }
     },
-    onLeftAxisChanged: function (data) {
+    onLeftAxisChanged: (data) => {
         // inop
     },
-    onRightAxisStop(data) {
+    onRightAxisStop: (data) => {
         // inop
     },
-    onLeftAxisStop(data) {
+    onLeftAxisStop: (data) => {
         // inop
     },
-    onRightButtonReleased: function (data) {
-        var deltaTransl = new itowns.THREE.Vector3();
+    onRightButtonReleased: (data) => {
+        let deltaTransl = new itowns.THREE.Vector3();
         startedPressButton = undefined;
 
         const offsetRotation = Controllers.getGeodesicalQuaternion();
 
         if (!actionElevationPerformed) {
-            var speedFactor = getSpeedFactor();
+            const speedFactor = getSpeedFactor();
             // lower button
             if (data.message.buttonIndex === 4) {
                 // activate vertical adjustment down
@@ -502,13 +502,12 @@ const Mode2 = {
             }
             const trans = view.camera.camera3D.position.clone().add(deltaTransl);
             clampAndApplyTransformationToXR(trans, offsetRotation);
-        }
-        else {
+        } else {
             actionElevationPerformed = false;
         }
 
     },
-    onLeftButtonReleased: function (data) {
+    onLeftButtonReleased: (data) => {
         // inop
-    }
+    },
 };
