@@ -741,7 +741,7 @@ class View extends THREE.EventDispatcher {
     pickObjectsAt(mouseOrEvt, radius = 0, where) {
         const sources = [];
 
-        if (!where || where.length === 0) {
+        if (!where) {
             where = this.getLayers(l => l.isGeometryLayer);
         }
         if (!Array.isArray(where)) {
