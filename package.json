@@ -70,7 +70,7 @@
   },
   "peerDependencies": {
     "proj4": "^2.8.0",
-    "three": "^0.154.0"
+    "three": "^0.159.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.5",
@@ -78,7 +78,7 @@
     "@babel/plugin-transform-runtime": "^7.22.5",
     "@babel/preset-env": "^7.22.5",
     "@babel/register": "^7.22.5",
-    "@types/three": "^0.154.0",
+    "@types/three": "^0.159.0",
     "babel-inline-import-loader": "^1.0.1",
     "babel-loader": "^9.1.2",
     "babel-plugin-inline-import": "^3.0.0",
@@ -110,7 +110,7 @@
     "puppeteer": "^19.4.0",
     "q": "^1.5.1",
     "replace-in-file": "^7.0.1",
-    "three": "^0.154.0",
+    "three": "^0.159.0",
     "typescript": "^5.1.6",
     "url-polyfill": "^1.1.12",
     "webpack": "^5.87.0",
