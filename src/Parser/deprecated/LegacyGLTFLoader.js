@@ -1907,8 +1907,8 @@ threeExamples.LegacyGLTFLoader = ( function () {
 							// be reused by other tracks, make copies here.
 							tracks.push( new TypedKeyframeTrack(
 								targetName + '.' + PATH_PROPERTIES[ target.path ],
-								THREE.AnimationUtils.arraySlice( inputAccessor.array, 0 ),
-								THREE.AnimationUtils.arraySlice( outputAccessor.array, 0 ),
+								inputAccessor.array.slice(),
+								outputAccessor.array.slice(),
 								interpolation
 							) );
 
