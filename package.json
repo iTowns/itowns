@@ -64,7 +64,7 @@
     "earcut": "^2.2.4",
     "js-priority-queue": "^0.1.5",
     "pbf": "^3.2.1",
-    "regenerator-runtime": "^0.13.11",
+    "regenerator-runtime": "^0.14.0",
     "shpjs": "^4.0.4",
     "text-encoding-utf-8": "^1.0.2"
   },
