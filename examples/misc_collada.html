@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Itowns - collada</title>
@@ -21,13 +22,20 @@
         <script src="js/GUI/GuiTools.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
 
-        <!-- Import ThreeLoader plugin to get ColladaLoader from three.js -->
-        <script src="js/ThreeLoader.js"></script>
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://unpkg.com/three@0.154.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/"
+                }
+            }
+        </script>
 
-        <script type="text/javascript">
-
-
-
+        <script type="module">
+            // Warning: For now, three is imported twice: in the itowns bundle
+            // and from the unpkg CDN.
+            import * as THREE from 'three';
+            import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 
             // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
 
@@ -79,15 +87,10 @@
 
             // ---------- DISPLAY COLLADA DATA : ----------
 
-            // ThreeLoader can load each format proposed in ThreeJs examples loaders : 
-            // https://github.com/mrdoob/three.js/tree/dev/examples/js/loaders
-            // Note : As this previous folder has been removed in three r148,
-            // TheeLoader will only use loaders from three r147 version. This
-            // is a temporary solution and shall be updated.
-            const promiseCollada = ThreeLoader.load(
-                'Collada', 
-                'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae',
-            ).then(collada => {
+            const url = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae';
+
+            const loader = new ColladaLoader();
+            loader.load(url, function (collada) {
                 const model = collada.scene;
 
                 // building coordinate
@@ -108,6 +111,11 @@
                 view.scene.add(model);
                 view.notifyChange();
             });
+
+
+            // Warning: the following code is not part of this example, those
+            // variables are only exposed for internal functional test uses.
+            window.view = view;
 
         </script>
     </body>
