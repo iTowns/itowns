@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Itowns - 6 planes on a cube</title>
@@ -12,30 +13,29 @@
         <div id="viewerDiv"></div>
         <script src="../dist/itowns.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
-        <script type="text/javascript">
-            window.THREE = itowns.THREE;
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://unpkg.com/three@0.154.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/"
+                }
+            }
         </script>
-        <script src="https://unpkg.com/three@0.124.0/examples/js/controls/OrbitControls.js"></script>
-        <script type="text/javascript">
+
+        <script type="module">
+            // Warning: For now, three is imported twice: in the itowns bundle
+            // and from the unpkg CDN.
+            import * as THREE from 'three';
+            import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+            var view;
+
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
             // # Planar (EPSG:3946) viewer
 
-            var extent;
-            var viewerDiv;
-            var view;
-            var controls;
-            var scale;
-            var parent;
-            var index;
-            var wms;
-            var wmsUrl;
-            var obj;
-            var offset;
-            var tileLayer;
-            var config;
-
-            var wmsSources = [
+            const wmsSources = [
                 {
                     name: 'fpc_fond_plan_communaut.fpcilot',
                     url: 'https://download.data.grandlyon.com/wms/grandlyon',
@@ -62,45 +62,45 @@
                 },
             ];
 
-            var cubeTransformations = [
+            const cubeTransformations = [
                 {
-                    position: new itowns.THREE.Vector3(0, 0, 0.5),
-                    rotation: new itowns.THREE.Euler(),
+                    position: new THREE.Vector3(0, 0, 0.5),
+                    rotation: new THREE.Euler(),
                 },
                 {
-                    position: new itowns.THREE.Vector3(0, 0, -0.5),
-                    rotation: new itowns.THREE.Euler().set(Math.PI, 0, 0),
+                    position: new THREE.Vector3(0, 0, -0.5),
+                    rotation: new THREE.Euler().set(Math.PI, 0, 0),
                 },
                 {
-                    position: new itowns.THREE.Vector3(0, 0.5, 0),
-                    rotation: new itowns.THREE.Euler().set(-Math.PI * 0.5, 0, 0),
+                    position: new THREE.Vector3(0, 0.5, 0),
+                    rotation: new THREE.Euler().set(-Math.PI * 0.5, 0, 0),
                 },
                 {
-                    position: new itowns.THREE.Vector3(0, -0.5, 0),
-                    rotation: new itowns.THREE.Euler().set(Math.PI * 0.5, 0, 0),
+                    position: new THREE.Vector3(0, -0.5, 0),
+                    rotation: new THREE.Euler().set(Math.PI * 0.5, 0, 0),
                 },
                 {
-                    position: new itowns.THREE.Vector3(0.5, 0, 0),
-                    rotation: new itowns.THREE.Euler().set(0, Math.PI * 0.5, 0),
+                    position: new THREE.Vector3(0.5, 0, 0),
+                    rotation: new THREE.Euler().set(0, Math.PI * 0.5, 0),
                 },
                 {
-                    position: new itowns.THREE.Vector3(-0.5, 0, 0),
-                    rotation: new itowns.THREE.Euler().set(0, -Math.PI * 0.5, 0),
+                    position: new THREE.Vector3(-0.5, 0, 0),
+                    rotation: new THREE.Euler().set(0, -Math.PI * 0.5, 0),
                 },
             ];
 
             // Define geographic extent: CRS, min/max X, min/max Y
-            extent = new itowns.Extent(
+            const extent = new itowns.Extent(
                 'EPSG:3946',
                 1837900, 1837900 + 8000,
                 5170100, 5170100 + 8000);
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
-            viewerDiv = document.getElementById('viewerDiv');
+            const viewerDiv = document.getElementById('viewerDiv');
 
-            itowns.THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
+            THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 
-            scale = new itowns.THREE.Vector3(1, 1, 1).divideScalar(extent.planarDimensions().x);
+            const scale = new THREE.Vector3(1, 1, 1).divideScalar(extent.planarDimensions().x);
 
             // Instanciate View
             view = new itowns.View(extent.crs, viewerDiv);
@@ -108,14 +108,14 @@
 
             view.mainLoop.gfxEngine.renderer.setClearColor(0x999999);
 
-            parent = new itowns.THREE.Mesh(
-                new itowns.THREE.BoxGeometry(8000, 8000, 8000),
-                new itowns.THREE.MeshBasicMaterial({ color: 0xdddddd }));
+            const parent = new THREE.Mesh(
+                new THREE.BoxGeometry(8000, 8000, 8000),
+                new THREE.MeshBasicMaterial({ color: 0xdddddd }));
             parent.scale.copy(scale);
             parent.updateMatrixWorld(true);
 
             view.scene.add(parent);
-            var elevationSource = new itowns.WMSSource({
+            const elevationSource = new itowns.WMSSource({
                 extent,
                 version: '1.3.0',
                 name: 'MNT2018_Altitude_2m',
@@ -125,22 +125,22 @@
                 url: 'https://imagerie.data.grandlyon.com/wms/grandlyon',
             });
 
-            for (index = 0; index < wmsSources.length; index++) {
-                wms = wmsSources[index];
-                obj = new itowns.THREE.Object3D();
-                offset = extent.center().toVector3().negate().applyEuler(cubeTransformations[index].rotation);
+            for (let index = 0; index < wmsSources.length; index++) {
+                const wms = wmsSources[index];
+                const obj = new THREE.Object3D();
+                const offset = extent.center().toVector3().negate().applyEuler(cubeTransformations[index].rotation);
                 offset.add(cubeTransformations[index].position.divide(scale));
                 obj.position.copy(offset);
                 obj.rotation.copy(cubeTransformations[index].rotation);
                 parent.add(obj);
                 obj.updateMatrixWorld(true);
 
-                tileLayer = new itowns.PlanarLayer('planar' + wms.name + index,
+                const tileLayer = new itowns.PlanarLayer('planar' + wms.name + index,
                     extent, obj, { disableSkirt: true });
 
                 view.addLayer(tileLayer);
 
-                var colorSource = new itowns.WMSSource({
+                const colorSource = new itowns.WMSSource({
                     url: wms.url,
                     version: '1.3.0',
                     name: wms.name,
@@ -148,11 +148,11 @@
                     format: 'image/jpeg',
                     extent,
                 });
-                var colorLayer = new itowns.ColorLayer('wms_imagery' + wms.name + index, {
+                const colorLayer = new itowns.ColorLayer('wms_imagery' + wms.name + index, {
                     source: colorSource,
                 });
                 view.addLayer(colorLayer, tileLayer);
-                var elevationLayer = new itowns.ElevationLayer('wms_elevation' + wms.name + index, {
+                const elevationLayer = new itowns.ElevationLayer('wms_elevation' + wms.name + index, {
                     source: elevationSource,
                     useColorTextureElevation: true,
                     colorTextureElevationMinZ: 144,
@@ -166,14 +166,20 @@
             // Position the camera at south-west corner
             view.camera3D.position.set(3, 2, 3);
             view.camera3D.updateMatrixWorld(true);
-            view.camera3D.lookAt(new itowns.THREE.Vector3(0, 0, 0));
+            view.camera3D.lookAt(new THREE.Vector3(0, 0, 0));
 
-            controls = new itowns.THREE.OrbitControls(view.camera3D, viewerDiv);
+            const controls = new OrbitControls(view.camera3D, viewerDiv);
             controls.minDistance = 1;
             controls.addEventListener('change', function _() { view.notifyChange(view.camera3D); });
 
             // Request redraw
             view.notifyChange();
+
+
+            // Warning: the following code is not part of this example, those
+            // variables are only exposed for internal functional test uses.
+            window.view = view;
+
         </script>
     </body>
 </html>
