@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Itowns - Stereo</title>
@@ -18,36 +19,47 @@
         <script src="../dist/itowns.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
         <script src="../dist/debug.js"></script>
-        <script type="text/javascript">
-            var THREE = itowns.THREE;
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://unpkg.com/three@0.154.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/"
+                }
+            }
         </script>
-        <script src="https://cdn.rawgit.com/mrdoob/three.js/dev/examples/js/effects/AnaglyphEffect.js"></script>
-        <script src="https://cdn.rawgit.com/mrdoob/three.js/dev/examples/js/effects/ParallaxBarrierEffect.js"></script>
-        <script src="https://cdn.rawgit.com/mrdoob/three.js/dev/examples/js/effects/StereoEffect.js"></script>
-        <script type="text/javascript">
+
+        <script type="module">
+            // Warning: For now, three is imported twice: in the itowns bundle
+            // and from the unpkg CDN.
+            import * as THREE from 'three';
+            import { AnaglyphEffect } from 'three/addons/effects/AnaglyphEffect.js';
+            import { ParallaxBarrierEffect } from 'three/addons/effects/ParallaxBarrierEffect.js';
+            import { StereoEffect } from 'three/addons/effects/StereoEffect.js';
+
             // Define initial camera position
-            var placement = {
+            const placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
                 range: 25000000,
             }
-            var promises = [];
-            var effect;
+            const promises = [];
+            let effect;
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
-            var viewerDiv = document.getElementById('viewerDiv');
+            const viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, placement);
+            const view = new itowns.GlobeView(viewerDiv, placement);
 
             // Eye separation value
-            var eyeSep = 0.064;
+            let eyeSep = 0.064;
 
             // Save StereoCamera update function
-            var fnUpdateStereoCamera = itowns.THREE.StereoCamera.prototype.update;
+            const fnUpdateStereoCamera = THREE.StereoCamera.prototype.update;
 
             setupLoadingScreen(viewerDiv, view);
 
-            itowns.THREE.StereoCamera.prototype.update = function _update(camera) {
+            THREE.StereoCamera.prototype.update = function _update(camera) {
                 this.cameraL.far = camera.far;
                 this.cameraR.far = camera.far;
                 this.cameraL.layers = camera.layers;
@@ -61,15 +73,15 @@
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                var source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer(config.id, { source });
+                const source = new itowns.WMTSSource(config.source);
+                const layer = new itowns.ColorLayer(config.id, { source });
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             });
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ElevationLayer(config.id, config);
+                const layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
@@ -88,8 +100,8 @@
                 if (effect && effect.dispose) {
                     effect.dispose();
                 }
-                var g = view.mainLoop.gfxEngine;
-                var size = g.getWindowSize();
+                const g = view.mainLoop.gfxEngine;
+                const size = g.getWindowSize();
                 effect = null;
                 view.render = null;
                 g.renderer.setViewport(0, 0, size.x, size.y);
@@ -97,9 +109,9 @@
             }
 
             function enableEffect(_eff) {
-                var size;
-                var g = view.mainLoop.gfxEngine;
-                var r = g.renderer;
+                let size;
+                const g = view.mainLoop.gfxEngine;
+                const r = g.renderer;
 
                 if (effect) {
                     disableEffect();
@@ -123,9 +135,9 @@
              * for more information about this effect.
              */
             function enableAnaglyph() {
-                var _eff;
-                if (effect instanceof THREE.AnaglyphEffect) return;
-                _eff = new THREE.AnaglyphEffect(view.mainLoop.gfxEngine.renderer, view.camera3D);
+                let _eff;
+                if (effect instanceof AnaglyphEffect) return;
+                _eff = new AnaglyphEffect(view.mainLoop.gfxEngine.renderer, view.camera3D);
                 enableEffect(_eff);
             }
 
@@ -136,9 +148,9 @@
              * about this effect.
              */
             function enableParallax() {
-                var _eff;
-                if (effect instanceof THREE.ParallaxBarrierEffect) return;
-                _eff = new THREE.ParallaxBarrierEffect(view.mainLoop.gfxEngine.renderer, view.camera3D);
+                let _eff;
+                if (effect instanceof ParallaxBarrierEffect) return;
+                _eff = new ParallaxBarrierEffect(view.mainLoop.gfxEngine.renderer, view.camera3D);
                 enableEffect(_eff);
             }
 
@@ -146,16 +158,16 @@
              * Activate a stereo effect to the view.
              */
             function enableStereo() {
-                var _eff;
-                if (effect instanceof THREE.StereoEffect) return;
-                _eff = new THREE.StereoEffect(view.mainLoop.gfxEngine.renderer, view.camera3D);
+                let _eff;
+                if (effect instanceof StereoEffect) return;
+                _eff = new StereoEffect(view.mainLoop.gfxEngine.renderer, view.camera3D);
                 enableEffect(_eff);
             }
 
-            var menuGlobe = new GuiTools('menuDiv', view);
-            var divScaleWidget = document.getElementById('divScaleWidget');
+            const menuGlobe = new GuiTools('menuDiv', view);
+            const divScaleWidget = document.getElementById('divScaleWidget');
 
-            var d = new debug.Debug(view, menuGlobe.gui);
+            const d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
             const stereoeffect = {
@@ -177,12 +189,12 @@
             guiEyeSep.onChange(updateEyeSep);
 
             function updateScaleWidget() {
-                var value = view.getPixelsToMeters(200);
+                let value = view.getPixelsToMeters(200);
                 value = Math.floor(value);
-                var digit = Math.pow(10, value.toString().length - 1);
+                const digit = Math.pow(10, value.toString().length - 1);
                 value = Math.round(value / digit) * digit;
-                var pix = view.getMetersToPixels(value);
-                var unit = 'm';
+                const pix = view.getMetersToPixels(value);
+                let unit = 'm';
                 if (value >= 1000) {
                     value /= 1000;
                     unit = 'km';
@@ -200,6 +212,12 @@
             view.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
                 updateScaleWidget();
             });
+
+
+            // Warning: the following code is not part of this example, those
+            // variables are only exposed for internal functional test uses.
+            window.view = view;
+
         </script>
     </body>
 </html>
