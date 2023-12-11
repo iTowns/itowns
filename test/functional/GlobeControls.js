@@ -130,7 +130,7 @@ describe('GlobeControls with globe example', function _() {
         await mouse.move(middleWidth, middleHeight, { steps: 20 });
         await mouse.down({ button: 'middle' });
         await mouse.move(middleWidth, (middleHeight) - 200, { steps: 50 });
-        await mouse.up();
+        await mouse.up({ button: 'middle' });
         const endRange = await page.evaluate(() => Promise.resolve(view.controls.getRange()));
         assert.ok((initialPosition.range - endRange) > 20000000);
     });

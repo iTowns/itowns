@@ -192,9 +192,11 @@ exports.mochaHooks = {
             args.push(`--remote-debugging-port=${process.env.REMOTE_DEBUGGING}`);
         }
 
+        // https://developer.chrome.com/articles/new-headless/
+        const headless = !process.env.DEBUG && 'new';
         browser = await puppeteer.launch({
             executablePath: process.env.CHROME,
-            headless: !process.env.DEBUG,
+            headless,
             devtools: !!process.env.DEBUG,
             defaultViewport: { width: 400, height: 300 },
             args,
