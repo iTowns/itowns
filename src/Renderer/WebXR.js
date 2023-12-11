@@ -1,5 +1,3 @@
-/* global XRRigidTransform */
-
 import * as THREE from 'three';
 
 async function shutdownXR(session) {
