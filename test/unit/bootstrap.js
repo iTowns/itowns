@@ -17,7 +17,10 @@ global.URL = function URL(url) {
     };
 };
 
-global.Event = () => {};
+// https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#sec-instanceofoperator
+// ES standard requires that left-hand side shall have a prototype method, this
+// is not the case for lambdas.
+global.Event = function () {};
 global.requestAnimationFrame = () => {};
 global.fetch = fetch;
 global.fetch.Promise = Promise;
@@ -184,7 +187,7 @@ global.document.emitEvent = (event, params) => {
 global.document.documentElement = global.document.createElement();
 global.document.body = new DOMElement();
 
-global.XRRigidTransform = () => {};
+global.XRRigidTransform = class {};
 
 class Path2D {
     moveTo() {}
