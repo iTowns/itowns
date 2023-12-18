@@ -8,7 +8,7 @@
 #include <logdepthbuf_pars_vertex>
 
 uniform float size;
-uniform float preSSE;
+uniform float scale;
 
 uniform bool picking;
 uniform int mode;
@@ -109,7 +109,7 @@ void main() {
         bool isPerspective = isPerspectiveMatrix(projectionMatrix);
 
         if (isPerspective) {
-            gl_PointSize *= preSSE / -mvPosition.z;
+            gl_PointSize *= scale / -mvPosition.z;
             gl_PointSize = clamp(gl_PointSize, minAttenuatedSize, maxAttenuatedSize);
         }
     }
