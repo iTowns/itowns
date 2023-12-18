@@ -108,7 +108,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
 
         this.vertexShader = PointsVS;
 
-        this.scale = options.scale || 0.05 * 0.5 / Math.tan(1.0 / 2.0); // autosizing scale
+        const scale = options.scale || 0.05 * 0.5 / Math.tan(1.0 / 2.0); // autosizing scale
 
         CommonMaterial.setDefineMapping(this, 'PNTS_MODE', PNTS_MODE);
         CommonMaterial.setDefineMapping(this, 'PNTS_SHAPE', PNTS_SHAPE);
@@ -123,7 +123,7 @@ class PointsMaterial extends THREE.RawShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'intensityRange', intensityRange);
         CommonMaterial.setUniformProperty(this, 'applyOpacityClassication', applyOpacityClassication);
         CommonMaterial.setUniformProperty(this, 'sizeMode', sizeMode);
-        CommonMaterial.setUniformProperty(this, 'preSSE', 1.0);
+        CommonMaterial.setUniformProperty(this, 'scale', scale);
         CommonMaterial.setUniformProperty(this, 'minAttenuatedSize', minAttenuatedSize);
         CommonMaterial.setUniformProperty(this, 'maxAttenuatedSize', maxAttenuatedSize);
 
