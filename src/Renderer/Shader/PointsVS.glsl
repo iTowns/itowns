@@ -103,12 +103,15 @@ void main() {
     #include <begin_vertex>
     #include <project_vertex>
 
-    if (sizeMode == PNTS_SIZE_MODE_VALUE) {
-        gl_PointSize = size;
-    } else if (sizeMode == PNTS_SIZE_MODE_ATTENUATED) {
-        gl_PointSize = size;
-        gl_PointSize *= (preSSE / -mvPosition.z);
-        gl_PointSize = clamp(gl_PointSize, minAttenuatedSize, maxAttenuatedSize);
+    gl_PointSize = size;
+
+    if (sizeMode == PNTS_SIZE_MODE_ATTENUATED) {
+        bool isPerspective = isPerspectiveMatrix(projectionMatrix);
+
+        if (isPerspective) {
+            gl_PointSize *= preSSE / -mvPosition.z;
+            gl_PointSize = clamp(gl_PointSize, minAttenuatedSize, maxAttenuatedSize);
+        }
     }
 
 #if defined(USE_TEXTURES_PROJECTIVE)
