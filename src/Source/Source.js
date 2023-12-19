@@ -104,6 +104,7 @@ let uid = 0;
  * @property {string} crs - The crs projection of the resources.
  * @property {string} attribution - The intellectual property rights for the
  * resources.
+ * @property {string} bboxUrlPrecision - The bbox decimal precision used in URL
  * @property {Extent} extent - The extent of the resources.
  * @property {function} parser - The method used to parse the resources attached
  * to the layer. iTowns provides some parsers, visible in the `Parser/` folder.
@@ -145,6 +146,7 @@ class Source extends InformationsData {
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.attribution = source.attribution;
+        this.bboxUrlPrecision = source.bboxUrlPrecision === undefined ? 2 : source.bboxUrlPrecision;
         this.whenReady = Promise.resolve();
         this._featuresCaches = {};
         if (source.extent && !(source.extent.isExtent)) {

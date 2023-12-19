@@ -94,7 +94,7 @@ export default {
      * @return {string} the formed url
      */
     bbox: function bbox(bbox, source) {
-        const precision = source.crs == 'EPSG:4326' ? 9 : 2;
+        const precision = ((source.bboxUrlPrecision === undefined) && (source.crs == 'EPSG:4326')) ? 9 : source.bboxUrlPrecision;
         bbox.as(source.crs, extent);
         const w = extent.west.toFixed(precision);
         const s = extent.south.toFixed(precision);

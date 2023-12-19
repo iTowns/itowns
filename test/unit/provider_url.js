@@ -29,6 +29,16 @@ describe('URL creations', function () {
         assert.equal(result, 'http://server.geo/wms/BBOX=12.000000000,14.000000000,35.000000000,46.000000000&FORMAT=jpg&SERVICE=WMS');
     });
 
+    it('should correctly replace %bbox by 12.1235,14.9876,35.4589,46.9877', function () {
+        const extent = new Extent('EPSG:4326', 12.123466, 14.98764, 35.45898, 46.987674);
+        layer.crs = 'EPSG:4326';
+        layer.axisOrder = 'wesn';
+        layer.url = 'http://server.geo/wms/BBOX=%bbox&FORMAT=jpg&SERVICE=WMS';
+        layer.bboxUrlPrecision = 4;
+        const result = URLBuilder.bbox(extent, layer);
+        assert.equal(result, 'http://server.geo/wms/BBOX=12.1235,14.9876,35.4590,46.9877&FORMAT=jpg&SERVICE=WMS');
+    });
+
     it('shouldn\'t use the scientific notation', function () {
         const extent = new Extent('EPSG:4326', 1 / 9999999999, 14, 35, 46);
         layer.crs = 'EPSG:4326';
