@@ -27,13 +27,23 @@ import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
  * @property {number} opacity - property to adjust transparency, opacity is between 0. and 1.
  * @property {boolean} transparent - specify if the layer could be transparent.
  * @property {boolean} noTextureParentOutsideLimit - don't parent texture if it's outside limit.
- * @property {number} effect_type - type effect to apply on raster color.
- * if `effect_type` equals:
- * * `0`: no special effect.
- * * `1`: light color to invisible effect.
- * * `2`: white color to invisible effect.
- * * `3`: custom shader effect (defined `ShaderChunk.customBodyColorLayer` and `ShaderChunk.customHeaderColorLayer`).
- * @property {number} effect_parameter - amount value used with effect applied on raster color.
+ * @property {number} effect_type - type effect to apply on the raster color.
+ * If `effect_type` equals:
+ * * `0`: no effect.
+ * * `1`: light color to invisible effect: transparency effect is stronger for
+ *   light colors (whose distance is closer to white). This effect can be
+ *   amplified by `effect_parameter`.
+ * * `2`: white color to invisible effect: white color is considered as
+ *   transparent.
+ * * `3`: custom shader effect: set `ShaderChunk.customBodyColorLayer` and
+ *   `ShaderChunk.customHeaderColorLayer` to add your own glsl code in
+ *   respectively the color layer function body and at top-level.
+ * @property {number} effect_parameter - value used as parameter of certain type
+ * of effects. If `effect_type` equals:
+ * * `0`: unused.
+ * * `1`: used to amplify the transparency effect.
+ * * `2`: unused.
+ * * `3`: could be used by your own glsl code.
  */
 class ColorLayer extends RasterLayer {
     /**
