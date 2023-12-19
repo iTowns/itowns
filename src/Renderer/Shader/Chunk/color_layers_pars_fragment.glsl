@@ -23,10 +23,10 @@ float getBorderDistance(vec2 uv) {
 
 float tolerance = 0.99;
 
-vec4 applyWhiteToInvisibleEffect(vec4 color, float intensity) {
+vec4 applyWhiteToInvisibleEffect(vec4 color) {
     float a = dot(color.rgb, vec3(0.333333333));
     if (a >= tolerance) {
-        color.a *= 1.0 - pow(abs(a), intensity);
+        color.a = 0.0;
     }
     return color;
 }
@@ -72,7 +72,7 @@ vec4 getLayerColor(int textureOffset, sampler2D tex, vec4 offsetScale, Layer lay
         if (layer.effect_type == 1) {
             color = applyLightColorToInvisibleEffect(color, layer.effect_parameter);
         } else if (layer.effect_type == 2) {
-            color = applyWhiteToInvisibleEffect(color, layer.effect_parameter);
+            color = applyWhiteToInvisibleEffect(color);
         }
     }
     color.a *= layer.opacity;
