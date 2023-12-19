@@ -90,6 +90,9 @@ class ColorLayer extends RasterLayer {
         this.transparent = config.transparent || (this.opacity < 1.0);
         this.noTextureParentOutsideLimit = config.source ? config.source.isFileSource : false;
 
+        this.effect_type = config.effect_type ?? 0;
+        this.effect_parameter = config.effect_parameter ?? 1.0;
+
         // Feature options
         this.buildExtent = true;
         this.structure = '2d';
