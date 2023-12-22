@@ -5,7 +5,6 @@ import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
 import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
 import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
-import utf8Decoder from 'Utils/Utf8Decoder';
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { MeshBasicMaterial } from 'three';
@@ -14,6 +13,8 @@ import disposeThreeMaterial from 'Utils/ThreeUtils';
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 // For gltf rotation
 const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
+
+const utf8Decoder = new TextDecoder();
 
 export const glTFLoader = new GLTFLoader();
 

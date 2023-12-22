@@ -3,8 +3,9 @@ import B3dmParser from 'Parser/B3dmParser';
 import PntsParser from 'Parser/PntsParser';
 import Fetcher from 'Provider/Fetcher';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
-import utf8Decoder from 'Utils/Utf8Decoder';
 import PointsMaterial from 'Renderer/PointsMaterial';
+
+const utf8Decoder = new TextDecoder();
 
 function b3dmToMesh(data, layer, url) {
     const urlBase = THREE.LoaderUtils.extractUrlBase(url);
