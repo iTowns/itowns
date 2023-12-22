@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import utf8Decoder from 'Utils/Utf8Decoder';
 
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
+
+const utf8Decoder = new TextDecoder();
 
 export default {
     /** @module PntsParser */
