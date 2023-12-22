@@ -33,6 +33,7 @@ import URLBuilder from 'Provider/URLBuilder';
  * is 0.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 21.
+ * @property {string} bboxDigits - The bbox digits precision used in URL
  * @property {Object} vendorSpecific - An object containing vendor specific
  * parameters. See for example a [list of these parameters for GeoServer]{@link
  * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html}. This
@@ -99,6 +100,7 @@ class WMSSource extends Source {
         this.height = source.height || source.width || 256;
         this.version = source.version || '1.3.0';
         this.transparent = source.transparent || false;
+        this.bboxDigits = source.bboxDigits;
 
         if (!source.axisOrder) {
         // 4326 (lat/long) axis order depends on the WMS version used
