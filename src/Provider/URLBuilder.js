@@ -89,12 +89,19 @@ export default {
      * // http://server.geo/wms/BBOX=12,35,14,46&FORMAT=jpg&SERVICE=WMS
      *
      * @param {Extent} bbox - the bounding box
-     * @param {Source} source
+     * @param {Object} source
+     * @param {string} source.crs
+     * @param {number} source.bboxDigits
+     * @param {string} source.url
+     * @param {string} source.axisOrder
      *
      * @return {string} the formed url
      */
     bbox: function bbox(bbox, source) {
-        const precision = ((source.bboxUrlPrecision === undefined) && (source.crs == 'EPSG:4326')) ? 9 : source.bboxUrlPrecision;
+        let precision = source.crs == 'EPSG:4326' ? 9 : 2;
+        if (source.bboxDigits !== undefined) {
+            precision = source.bboxDigits;
+        }
         bbox.as(source.crs, extent);
         const w = extent.west.toFixed(precision);
         const s = extent.south.toFixed(precision);

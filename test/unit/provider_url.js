@@ -34,7 +34,7 @@ describe('URL creations', function () {
         layer.crs = 'EPSG:4326';
         layer.axisOrder = 'wesn';
         layer.url = 'http://server.geo/wms/BBOX=%bbox&FORMAT=jpg&SERVICE=WMS';
-        layer.bboxUrlPrecision = 4;
+        layer.bboxDigits = 4;
         const result = URLBuilder.bbox(extent, layer);
         assert.equal(result, 'http://server.geo/wms/BBOX=12.1235,14.9876,35.4590,46.9877&FORMAT=jpg&SERVICE=WMS');
     });

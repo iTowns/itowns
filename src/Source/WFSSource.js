@@ -23,6 +23,7 @@ import CRS from 'Core/Geographic/Crs';
  * is 0.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 21.
+ * @property {string} bboxDigits - The bbox digits precision used in URL
  * @property {Object} vendorSpecific - An object containing vendor specific
  * parameters. See for example a [list of these parameters for GeoServer]{@link
  * https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html}. This
@@ -123,6 +124,7 @@ class WFSSource extends Source {
         this.isWFSSource = true;
         this.typeName = source.typeName;
         this.version = source.version || '2.0.2';
+        this.bboxDigits = source.bboxDigits;
 
         // Add ? at the end of the url if it is not already in the given URL
         if (!this.url.endsWith('?')) {
