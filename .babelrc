@@ -1,5 +1,12 @@
 {
-    "presets": [["@babel/preset-env", { "modules": "auto" }]],
+    "presets": [
+        ["@babel/preset-env", {
+            "targets": {
+                "browsers": "defaults and supports webgl2"
+            },
+            "modules": "auto"
+        }]
+    ],
     "plugins": [
         ["module-resolver",  { "root": ["./src"] } ],
         ["babel-plugin-inline-import", {
