@@ -246,7 +246,7 @@ function fillBuffer(source, buffers, options, opaqueValue, pixelData) {
  * method that takes a COG in and gives a `THREE.DataTexture` that can be
  * displayed in the view.
  *
- * It needs the [geotiff](https://www.npmjs.com/package/geotiff) library to parse the
+ * It needs the [geotiff](https://github.com/geotiffjs/geotiff.js/) library to parse the
  * COG.
  *
  * @example
