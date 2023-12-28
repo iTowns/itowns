@@ -56,7 +56,8 @@
         "source_file_kml_raster": "KML to raster",
         "source_file_kml_raster_usgs": "USGS KML flux to raster",
         "source_file_gpx_raster": "GPX to raster",
-        "source_file_gpx_3d": "GPX to 3D objects"
+        "source_file_gpx_3d": "GPX to 3D objects",
+        "source_file_cog": "Cloud Optimized GeoTIFF (COG)"
     },
 
     "Customize FileSource": {
