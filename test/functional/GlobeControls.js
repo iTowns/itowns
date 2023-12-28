@@ -28,11 +28,8 @@ describe('GlobeControls with globe example', function _() {
                 };
 
             // Hide GUI :
-            debugMenu.gui.remove(cRL);
-            minimap.hide();
-            navigation.hide();
-            searchbar.hide();
-            scale.hide();
+            debugMenu.gui.close();
+            // Hide GUI :
         });
 
         middleWidth = await page.evaluate(() => window.innerWidth / 2);

@@ -34,6 +34,7 @@ export default {
 
     createGeometryDebugUI(datDebugTool, view, layer) {
         const gui = datDebugTool.addFolder(`Layer ${layer.id}`);
+        gui.close();
         gui.add(layer, 'visible').name('Visible').onChange(() => view.notifyChange(layer));
         gui.add(layer, 'opacity', 0, 1).name('Opacity').onChange(() => view.notifyChange(layer));
         return gui;
