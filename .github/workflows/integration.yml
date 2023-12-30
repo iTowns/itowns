@@ -1,323 +1,309 @@
 name: integration
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-  workflow_dispatch: {}
-
+    push:
+        branches:
+            - master
+    pull_request:
+        branches:
+            - master
+    workflow_dispatch: {}
 
 jobs:
+    # Build bundle, doc and check linter
+    build:
+        name: Build bundle, check Linter and generate documentation
+        runs-on: ubuntu-latest
+        steps:
+            # Use specific Node.js version
+            - uses: actions/checkout@v3
+            - name: Use Node.js 18.x
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18.x
+                  cache: "npm"
 
-  # Build bundle, doc and check linter
-  build:
-    name: Build bundle, check Linter and generate documentation
-    runs-on: ubuntu-latest
-    steps:
+            # Install packages
+            - name: Install packages
+              run: npm ci
 
-      # Use specific Node.js version
-      - uses: actions/checkout@v3
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: 'npm'
+            # Prepare before build
+            - name: Prepare
+              run: npm run prepare
 
-      # Install packages
-      - name: Install packages
-        run: npm ci
+            # Check linter
+            - name: Linter
+              run: npm run lint -- --max-warnings=0
 
-      # Prepare before build
-      - name: Prepare
-        run: npm run prepare
+            # Build bundle
+            - name: Build bundle
+              if: ${{ success() }}
+              run: npm run build
 
-      # Check linter
-      - name: Linter
-        run: npm run lint -- --max-warnings=0
+            # Build documentation
+            - name: Build documentation
+              if: ${{ success() && github.ref == 'refs/heads/master' }}
+              run: npm run doc -- -d buildDocs
 
-      # Build bundle
-      - name: Build bundle
-        if: ${{ success() }}
-        run: npm run build
+            # Prepare archive for deploying
+            - name: Archive production artifacts
+              if: ${{ success() }}
+              uses: actions/upload-artifact@v3
+              with:
+                  name: dist-itowns
+                  path: |
+                      dist/**/*.js
+                      examples
+                      buildDocs
 
-      # Build documentation
-      - name: Build documentation
-        if: ${{ success() && github.ref == 'refs/heads/master' }}
-        run: npm run doc -- -d buildDocs
+    # Check commits messages
+    check-commit-message:
+        name: Check Commit Message
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check Commit Type
+              uses: gsactions/commit-message-checker@v2
+              with:
+                  pattern: '^(feat|feature|features|fix|perf|revert|doc|docs|refactor|refacto|refactoring|test|tests|chore|rename|workflow|example|examples|others)(\([\w\-\.]+\))?: ([\w ])+([\s\S]*)|release v\d+.\d+.\d+'
+                  error: "One or several of the pushed commits do not match the conventional commit convention. Please read CONTRIBUTING.md."
+                  excludeDescription: true
+                  excludeTitle: true
+                  checkAllCommitMessages: true
+                  accessToken: ${{ secrets.GITHUB_TOKEN }}
 
-      # Prepare archive for deploying
-      - name: Archive production artifacts
-        if: ${{ success() }}
-        uses: actions/upload-artifact@v3
-        with:
-            name: dist-itowns
-            path: |
-                dist/**/*.js
-                examples
-                buildDocs
+    # Unit and coverage tests
+    unit-and-coverage-tests:
+        name: Unit and coverage tests
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            # Use specific Node.js version
+            - uses: actions/checkout@v3
+            - name: Use Node.js 18.x
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18.x
+                  cache: "npm"
 
+            # Install packages
+            - name: Install packages
+              run: npm ci
 
-  # Check commits messages
-  check-commit-message:
-    name: Check Commit Message
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check Commit Type
-        uses: gsactions/commit-message-checker@v2
-        with:
-          pattern: '^(feat|feature|features|fix|perf|revert|doc|docs|refactor|refacto|refactoring|test|tests|chore|rename|workflow|example|examples|others)(\([\w\-\.]+\))?: ([\w ])+([\s\S]*)|release v\d+.\d+.\d+'
-          error: 'One or several of the pushed commits do not match the conventional commit convention. Please read CONTRIBUTING.md.'
-          excludeDescription: true
-          excludeTitle: true
-          checkAllCommitMessages: true
-          accessToken: ${{ secrets.GITHUB_TOKEN }}
+            - name: Run unit tests
+              run: npm run test-with-coverage_lcov
 
+            # Code coverage
+            - name: Coveralls
+              if: ${{ success() }}
+              uses: coverallsapp/github-action@master
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Unit and coverage tests
-  unit-and-coverage-tests:
-    name: Unit and coverage tests
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
+    # Functional tests
+    functional-tests:
+        name: Functional tests
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            # Use specific Node.js version
+            - uses: actions/checkout@v3
+            - name: Use Node.js 18.x
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18.x
+                  cache: "npm"
 
-      # Use specific Node.js version
-      - uses: actions/checkout@v3
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: 'npm'
+            # Install packages
+            - name: Install packages
+              run: npm ci
 
-      # Install packages
-      - name: Install packages
-        run: npm ci
+            # Download artifact from build
+            - name: Download itowns bundle
+              uses: actions/download-artifact@v3
+              with:
+                  name: dist-itowns
 
-      - name: Run unit tests
-        run: npm run test-with-coverage_lcov
+            - name: Run functional tests
+              run: npm run test-functional
 
-      # Code coverage
-      - name: Coveralls
-        if: ${{ success() }}
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+    # Publish NPM package
+    publish:
+        name: Publish NPM package
+        if: ${{ github.ref == 'refs/heads/master' }}
+        needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
+        runs-on: ubuntu-latest
+        permissions:
+            # id-token: write permission is required for npm provenance:
+            # https://docs.npmjs.com/generating-provenance-statements#publishing-packages-with-provenance-via-github-actions
+            id-token: write
+            # contents: write is required for git push
+            contents: write
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  # fetch all branches
+                  fetch-depth: 0
 
+            # Configure git user for later command induced commits
+            - uses: fregante/setup-git-user@v1
 
-  # Functional tests
-  functional-tests:
-    name: Functional tests
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+                  registry-url: https://registry.npmjs.org/
 
-      # Use specific Node.js version
-      - uses: actions/checkout@v3
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: 'npm'
+            - run: npm ci
+            - run: npm run prepare
 
-      # Install packages
-      - name: Install packages
-        run: npm ci
+            - name: publish itowns@latest npm package
+              if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+              run: npm run publish-latest
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Download artifact from build
-      - name: Download itowns bundle
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-itowns
+            - name: publish itowns@next npm package (following a release)
+              if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+              run: |
+                  git checkout next
+                  git reset --hard master
+                  npm run publish-next
+                  git push -f
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Run functional tests
-        run: npm run test-functional
+            - name: publish itowns@next npm package
+              if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
+              run: |
+                  git checkout next
+                  git merge master
+                  npm run publish-next
+                  git push
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+    # Deploy on itowns.github.io website
+    deploy:
+        name: Deploy to itowns.github.io
+        if: ${{ github.ref == 'refs/heads/master' }}
+        needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
+        runs-on: ubuntu-latest
+        steps:
+            # Download artifact from build
+            - name: Download itowns bundle
+              uses: actions/download-artifact@v3
+              with:
+                  name: dist-itowns
 
-  # Publish NPM package
-  publish:
-    name: Publish NPM package
-    if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
-    runs-on: ubuntu-latest
-    permissions:
-        # id-token: write permission is required for npm provenance:
-        # https://docs.npmjs.com/generating-provenance-statements#publishing-packages-with-provenance-via-github-actions
-        id-token: write
-        # contents: write is required for git push
-        contents: write
-    steps:
+            # Copy files for deployment
+            - name: build site
+              run: |
+                  mkdir -p itowns/dist
+                  mkdir -p itowns/potree/build
+                  mkdir -p itowns/potree/libs
+                  cp -R dist/*.js itowns/dist/
+                  cp -R examples itowns/
+                  cp -R buildDocs itowns/docs
 
-      - uses: actions/checkout@v3
-        with:
-          # fetch all branches
-          fetch-depth: 0
+            # When deploying a release, we copy itowns bundles in dev folder to be published on
+            # iTowns/itowns.github.io. This is because we can't publish both a release version
+            # (in itowns/ folder) and a @next version (in itowns/dev folder) at the same time.
+            - name: add dev bundle if release
+              if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+              run: |
+                  cp -R itowns dev
+                  mv dev itowns/
 
-      # Configure git user for later command induced commits
-      - uses: fregante/setup-git-user@v1
+            # Deploy to itowns.github.io LTS
+            - name: Deploy LTS to itowns.github.io
+              if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                  deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+                  external_repository: iTowns/itowns.github.io
+                  publish_dir: ./itowns
+                  destination_dir: ./itowns
+                  publish_branch: master
+                  enable_jekyll: true
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org/
+            # Deploy to itowns.github.io Dev
+            - name: Deploy Dev to itowns.github.io
+              # Prevent deploying @next version when a release is done. Doing so would cause an issue,
+              # since it is not possible to use the same deploy key to simultaneously deploy two different
+              # folders on iTowns/itowns.github.io (the release bundle on previous step and this one.
+              if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                  deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+                  external_repository: iTowns/itowns.github.io
+                  publish_dir: ./itowns
+                  destination_dir: ./itowns/dev
+                  publish_branch: master
+                  enable_jekyll: true
 
-      - run: npm ci
-      - run: npm run prepare
+    # Create GitHub release
+    release:
+        name: Release GitHub
+        if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
+        needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
 
-      - name: publish itowns@latest npm package
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
-        run: npm run publish-latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - name: Use Node.js 18.x
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18.x
 
-      - name: publish itowns@next npm package (following a release)
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
-        run: |
-          git checkout next
-          git reset --hard master
-          npm run publish-next
-          git push -f
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - name: Message commit
+              run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
 
-      - name: publish itowns@next npm package
-        if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
-        run: |
-          git checkout next
-          git merge master
-          npm run publish-next
-          git push
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - name: Get release version
+              run: echo "VERSION=$(node -e "console.log(require('./package.json').version);")" >> $GITHUB_OUTPUT
+              id: npm_pack
 
+            - name: itowns Version
+              run: echo "The iTowns release version is ${{ steps.npm_pack.outputs.VERSION }}"
 
-  # Deploy on itowns.github.io website
-  deploy:
-    name: Deploy to itowns.github.io
-    if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
-    runs-on: ubuntu-latest
-    steps:
+            # Add tag
+            - name: Tag branch
+              run: |
+                  git config user.name github-actions
+                  git config user.email github-actions@github.com
+                  git tag -a v${{ steps.npm_pack.outputs.VERSION }} -m "release v${{ steps.npm_pack.outputs.VERSION }}."
+                  git push --follow-tags
 
-      # Download artifact from build
-      - name: Download itowns bundle
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-itowns
+            # Download artifact from build
+            - name: Download itowns bundle
+              uses: actions/download-artifact@v3
+              with:
+                  name: dist-itowns
 
-      # Copy files for deployment
-      - name: build site
-        run: |
-          mkdir -p itowns/dist
-          mkdir -p itowns/potree/build
-          mkdir -p itowns/potree/libs
-          cp -R dist/*.js itowns/dist/
-          cp -R examples itowns/
-          cp -R buildDocs itowns/docs
+            # Create release
+            - name: Create release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: v${{ steps.npm_pack.outputs.VERSION }}
+                  release_name: Release ${{ steps.npm_pack.outputs.VERSION }}
+                  body_path: ./changelog.md
+                  draft: false
+                  prerelease: false
 
-      # When deploying a release, we copy itowns bundles in dev folder to be published on
-      # iTowns/itowns.github.io. This is because we can't publish both a release version
-      # (in itowns/ folder) and a @next version (in itowns/dev folder) at the same time.
-      - name: add dev bundle if release
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
-        run: |
-          cp -R itowns dev
-          mv dev itowns/
+            # Zip assets into bundle
+            - name: Zip assets
+              run: |
+                  zip --junk-paths bundles ./dist/*.js ./dist/*.map
 
-      # Deploy to itowns.github.io LTS
-      - name: Deploy LTS to itowns.github.io
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          external_repository: iTowns/itowns.github.io
-          publish_dir: ./itowns
-          destination_dir: ./itowns
-          publish_branch: master
-          enable_jekyll: true
-
-      # Deploy to itowns.github.io Dev
-      - name: Deploy Dev to itowns.github.io
-        # Prevent deploying @next version when a release is done. Doing so would cause an issue,
-        # since it is not possible to use the same deploy key to simultaneously deploy two different
-        # folders on iTowns/itowns.github.io (the release bundle on previous step and this one.
-        if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          external_repository: iTowns/itowns.github.io
-          publish_dir: ./itowns
-          destination_dir: ./itowns/dev
-          publish_branch: master
-          enable_jekyll: true
-
-
-  # Create GitHub release
-  release:
-    name: Release GitHub
-    if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
-    needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
-    runs-on: ubuntu-latest
-    steps:
-
-      - uses: actions/checkout@v3
-
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-
-      - name: Message commit
-        run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
-
-      - name: Get release version
-        run: echo ::set-output name=VERSION::$(node -e "console.log(require('./package.json').version);")
-        id: npm_pack
-
-      - name: itowns Version
-        run: echo "The iTowns release version is ${{ steps.npm_pack.outputs.VERSION }}"
-
-      # Add tag
-      - name: Tag branch
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git tag -a v${{ steps.npm_pack.outputs.VERSION }} -m "release v${{ steps.npm_pack.outputs.VERSION }}."
-          git push --follow-tags
-
-      # Download artifact from build
-      - name: Download itowns bundle
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-itowns
-
-      # Create release
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.npm_pack.outputs.VERSION }}
-          release_name: Release ${{ steps.npm_pack.outputs.VERSION }}
-          body_path: ./changelog.md
-          draft: false
-          prerelease: false
-
-      # Zip assets into bundle
-      - name: Zip assets
-        run: |
-          zip --junk-paths bundles ./dist/*.js ./dist/*.map
-
-      # Upload release asset
-      - name: upload release asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bundles.zip
-          asset_name: bundles.zip
-          asset_content_type: application/zip
+            # Upload release asset
+            - name: upload release asset
+              id: upload-release-asset
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./bundles.zip
+                  asset_name: bundles.zip
+                  asset_content_type: application/zip
