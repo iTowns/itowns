@@ -1,9 +1,12 @@
 /* eslint-disable max-classes-per-file */
+import fetch from 'node-fetch';
 import { Camera } from 'three';
+import { DOMParser } from '@xmldom/xmldom';
 
 global.window = {
     addEventListener: () => {},
     removeEventListener: () => {},
+    DOMParser,
     setTimeout,
 };
 
@@ -21,6 +24,8 @@ global.URL = function URL(url) {
 // is not the case for lambdas.
 global.Event = function () {};
 global.requestAnimationFrame = () => {};
+global.fetch = fetch;
+global.fetch.Promise = Promise;
 
 // this could be replaced by jsdom.Navigator in https://github.com/iTowns/itowns/pull/1412
 // Checking if global.navigator exists targets node versions <21.1.0. Since node
