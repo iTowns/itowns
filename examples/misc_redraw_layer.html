@@ -13,8 +13,8 @@
         <div id="viewerDiv"></div>
         <div id="description" style="border-radius: 5%;">
             <select id="styleBox" onChange="selectStyle()" style="font-size: 15px; background-color: rgba(0,0,0,0.3); border-radius: 5%; width: 100px; height: 25px; color: white; text-align: center;">
-                <option>Style 1</option>
-                <option>Style 2</option>
+                <option value='0'>Style 1</option>
+                <option value='1'>Style 2</option>
             </select> 
         </div>
         <script src="js/GUI/GuiTools.js"></script>
@@ -81,7 +81,6 @@
                 format: 'application/json',
             });
 
-
             // Define the functions that sets the color according to the properties
             function color1(properties) {
                 if (properties.code_cultu == '28') { return '#FD8A8A'; }
@@ -105,33 +104,29 @@
                 else { return '#E0E0E0'; }
             }
 
-            // Set the two different styles
-            const style1 = {
+            const color = function (p) {
+                const styleBox = document.getElementById('styleBox');
+                if (styleBox.value === '0') {
+                    return color1(p);
+                } else if (styleBox.value === '1') {
+                    return color2(p);
+                }
+            }
+            const style = {
                 fill: {
-                    color: color1,
+                    color,
                     opacity: 0.8
                 },
                 stroke: {
                     color: 'black',
                     width: 1.0,
                 },
-            };
-
-            const style2 = {
-                fill: {
-                    color: color2,
-                    opacity: 0.8
-                },
-                stroke: {
-                    color: 'black',
-                    width: 1.0,
-                },
-            };
+            }
 
             // Create the layer where you specified the starting style
             var wfsAgriLayer = new itowns.ColorLayer('wfsAgri', {
                 transparent: true,
-                style: style1,
+                style,
                 source: wfsAgriLayer,
                 zoom: { min: 11 },
             });
@@ -139,13 +134,6 @@
 
             // Function that calls the onChange event in the combobox
             function selectStyle() {
-                const styleBox = document.getElementById('styleBox');
-                const layer = view.getLayerById('wfsAgri');
-                if (styleBox.value === 'Style 1') {
-                    layer.setStyle(style1);
-                } else if (styleBox.value === 'Style 2') {
-                    layer.setStyle(style2);
-                }
                 view.redrawLayer('wfsAgri');
             }
 
