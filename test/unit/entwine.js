@@ -1,17 +1,46 @@
 import assert from 'assert';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import EntwinePointTileLayer from 'Layer/EntwinePointTileLayer';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
+import sinon from 'sinon';
+import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 
+import ept from '../data/entwine/ept.json';
+import eptHierarchy from '../data/entwine/ept-hierarchy/0-0-0-0.json';
+
+const baseurl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds';
+const urlEpt = `${baseurl}/entwine/ept.json`;
+const urlEptHierarchy = `${baseurl}/entwine/ept-hierarchy/0-0-0-0.json`;
+
+const resources = {
+    [urlEpt]: ept,
+    [urlEptHierarchy]: eptHierarchy,
+};
+
 describe('Entwine Point Tile', function () {
-    const source = new EntwinePointTileSource({
-        url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine',
-        networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
+    let source;
+    let stubFetcherJson;
+    let stubFetcherArrayBuf;
+
+    before(function () {
+        stubFetcherJson = sinon.stub(Fetcher, 'json')
+            .callsFake(url => Promise.resolve(JSON.parse(resources[url])));
+        stubFetcherArrayBuf = sinon.stub(Fetcher, 'arrayBuffer')
+            .callsFake(() => Promise.resolve(new ArrayBuffer()));
+        // currently no test on data fetched...
+
+        source = new EntwinePointTileSource({
+            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine',
+        });
+    });
+
+    after(function () {
+        stubFetcherJson.restore();
+        stubFetcherArrayBuf.restore();
     });
 
     it('loads the EPT structure', (done) => {
@@ -79,25 +108,28 @@ describe('Entwine Point Tile', function () {
     });
 
     describe('Node', function () {
-        const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
-        const root = new EntwinePointTileNode(0, 0, 0, 0, layer, 4000);
-        root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+        let root;
+        before(function () {
+            const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
+            root = new EntwinePointTileNode(0, 0, 0, 0, layer, 4000);
+            root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
-        root.add(new EntwinePointTileNode(1, 0, 0, 0, layer, 3000));
-        root.add(new EntwinePointTileNode(1, 0, 0, 1, layer, 3000));
-        root.add(new EntwinePointTileNode(1, 0, 1, 1, layer, 3000));
+            root.add(new EntwinePointTileNode(1, 0, 0, 0, layer, 3000));
+            root.add(new EntwinePointTileNode(1, 0, 0, 1, layer, 3000));
+            root.add(new EntwinePointTileNode(1, 0, 1, 1, layer, 3000));
 
-        root.children[0].add(new EntwinePointTileNode(2, 0, 0, 0, layer, 2000));
-        root.children[0].add(new EntwinePointTileNode(2, 0, 1, 0, layer, 2000));
-        root.children[1].add(new EntwinePointTileNode(2, 0, 1, 3, layer, 2000));
-        root.children[2].add(new EntwinePointTileNode(2, 0, 2, 2, layer, 2000));
-        root.children[2].add(new EntwinePointTileNode(2, 0, 3, 3, layer, 2000));
+            root.children[0].add(new EntwinePointTileNode(2, 0, 0, 0, layer, 2000));
+            root.children[0].add(new EntwinePointTileNode(2, 0, 1, 0, layer, 2000));
+            root.children[1].add(new EntwinePointTileNode(2, 0, 1, 3, layer, 2000));
+            root.children[2].add(new EntwinePointTileNode(2, 0, 2, 2, layer, 2000));
+            root.children[2].add(new EntwinePointTileNode(2, 0, 3, 3, layer, 2000));
 
-        root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 0, 0, layer, 1000));
-        root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 1, 0, layer, 1000));
-        root.children[1].children[0].add(new EntwinePointTileNode(3, 0, 2, 7, layer, 1000));
-        root.children[2].children[0].add(new EntwinePointTileNode(3, 0, 5, 4, layer, 1000));
-        root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, layer));
+            root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 0, 0, layer, 1000));
+            root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 1, 0, layer, 1000));
+            root.children[1].children[0].add(new EntwinePointTileNode(3, 0, 2, 7, layer, 1000));
+            root.children[2].children[0].add(new EntwinePointTileNode(3, 0, 5, 4, layer, 1000));
+            root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, layer));
+        });
 
         it('finds the common ancestor of two nodes', () => {
             let ancestor = root.children[2].children[1].children[0].findCommonAncestor(root.children[2].children[0].children[0]);

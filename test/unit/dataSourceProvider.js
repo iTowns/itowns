@@ -6,7 +6,7 @@ import TileMesh from 'Core/TileMesh';
 import Extent, { globalExtentTMS } from 'Core/Geographic/Extent';
 import OBB from 'Renderer/OBB';
 import DataSourceProvider from 'Provider/DataSourceProvider';
-import { supportedFetchers, supportedParsers } from 'Source/Source';
+import { supportedFetchers } from 'Source/Source';
 import TileProvider from 'Provider/TileProvider';
 import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
@@ -20,27 +20,36 @@ import Style from 'Core/Style';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
 import { EMPTY_TEXTURE_ZOOM } from 'Renderer/RasterTile';
+import sinon from 'sinon';
 
-import holes from '../data/geojson/holesPoints.geojson.json';
+import holes from '../data/geojson/holesPoints.geojson';
+
+const stubSupportedFetchers = new Map([
+    ['application/json', () => Promise.resolve(JSON.parse(holes))],
+    ['image/png', () => Promise.resolve(new THREE.Texture())],
+]);
 
 describe('Provide in Sources', function () {
-    // /!\ Avoid to overload fetcher because could troubleshoot the other unit tests?
-    // formatTag to avoid it
-    const formatTag = 'dspUnitTest';
-    supportedFetchers.set(`${formatTag}image/png`, () => Promise.resolve(new THREE.Texture()));
-    supportedFetchers.set(`${formatTag}application/json`, () => Promise.resolve(JSON.parse(holes)));
-    supportedParsers.set(`${formatTag}image/png`, supportedParsers.get('image/png'));
-    supportedParsers.set(`${formatTag}application/json`, supportedParsers.get('application/json'));
+    // TODO We should mock the creation of all layers creation.
 
     // Misc var to initialize a TileMesh instance
     const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const globalExtent = globalExtentTMS.get('EPSG:3857');
+    const material = new LayeredMaterial();
     const zoom = 10;
     const sizeTile = globalExtent.planarDimensions().x / 2 ** zoom;
     const extent = new Extent('EPSG:3857', 0, sizeTile, 0, sizeTile);
-    // const zoom = 4;
-    const material = new LayeredMaterial();
+
+    let stub;
+    let planarlayer;
+    let elevationlayer;
+    let colorlayer;
+    let nodeLayer;
+    let nodeLayerElevation;
+    let featureLayer;
+
+    let featureCountByCb = 0;
 
     // Mock scheduler
     const context = {
@@ -56,52 +65,61 @@ describe('Provide in Sources', function () {
         },
     };
 
-    const planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
-    const colorlayer = new ColorLayer('color', { crs: 'EPSG:3857', source: false });
-    const elevationlayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: false });
+    before(function () {
+        stub = sinon.stub(supportedFetchers, 'get')
+            .callsFake(format => stubSupportedFetchers.get(format));
 
-    planarlayer.attach(colorlayer);
-    planarlayer.attach(elevationlayer);
+        planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
+        colorlayer = new ColorLayer('color', { crs: 'EPSG:3857', source: false });
+        elevationlayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: false });
 
-    const fakeNode = { material,  setBBoxZ: () => {},  addEventListener: () => {} };
-    colorlayer.setupRasterNode(fakeNode);
-    elevationlayer.setupRasterNode(fakeNode);
+        planarlayer.attach(colorlayer);
+        planarlayer.attach(elevationlayer);
 
-    const nodeLayer = material.getLayer(colorlayer.id);
-    const nodeLayerElevation = material.getLayer(elevationlayer.id);
+        const fakeNode = { material,  setBBoxZ: () => {},  addEventListener: () => {} };
+        colorlayer.setupRasterNode(fakeNode);
+        elevationlayer.setupRasterNode(fakeNode);
 
-    const featureLayer = new GeometryLayer('geom', new THREE.Group(), {
-        update: FeatureProcessing.update,
-        convert: Feature2Mesh.convert(),
-        crs: 'EPSG:4978',
-        mergeFeatures: false,
-        zoom: { min: 10 },
-        source: false,
-        style: new Style({
-            fill: {
-                extrusion_height: 5000,
-                color: new THREE.Color(0xffcc00),
-            },
-        }),
+        nodeLayer = material.getLayer(colorlayer.id);
+        nodeLayerElevation = material.getLayer(elevationlayer.id);
+
+        featureLayer = new GeometryLayer('geom', new THREE.Group(), {
+            update: FeatureProcessing.update,
+            convert: Feature2Mesh.convert(),
+            crs: 'EPSG:4978',
+            mergeFeatures: false,
+            zoom: { min: 10 },
+            source: false,
+            style: new Style({
+                fill: {
+                    extrusion_height: 5000,
+                    color: new THREE.Color(0xffcc00),
+                },
+            }),
+        });
+
+        featureLayer.source = new WFSSource({
+            url: 'http://',
+            typeName: 'name',
+            format: 'application/json',
+            extent: globalExtent,
+            crs: 'EPSG:3857',
+        });
+
+        featureLayer.source.onParsedFile = (fc) => {
+            featureCountByCb = fc.features.length;
+        };
+
+        planarlayer.attach(featureLayer);
+
+        context.elevationLayers = [elevationlayer];
+        context.colorLayers = [colorlayer];
     });
 
-    featureLayer.source = new WFSSource({
-        url: 'http://',
-        typeName: 'name',
-        format: `${formatTag}application/json`,
-        extent: globalExtent,
-        crs: 'EPSG:3857',
+    after(function () {
+        stub.restore();
     });
 
-    let featureCountByCb = 0;
-    featureLayer.source.onParsedFile = (fc) => {
-        featureCountByCb = fc.features.length;
-    };
-
-    planarlayer.attach(featureLayer);
-
-    context.elevationLayers = [elevationlayer];
-    context.colorLayers = [colorlayer];
 
     beforeEach('reset state', function () {
         // clear commands array
@@ -112,7 +130,7 @@ describe('Provide in Sources', function () {
         colorlayer.source = new WMTSSource({
             url: 'http://',
             name: 'name',
-            format: `${formatTag}image/png`,
+            format: 'image/png',
             tileMatrixSet: 'PM',
             crs: 'EPSG:3857',
             extent: globalExtent,
@@ -144,7 +162,7 @@ describe('Provide in Sources', function () {
         elevationlayer.source = new WMTSSource({
             url: 'http://',
             name: 'name',
-            format: `${formatTag}image/png`,
+            format: 'image/png',
             tileMatrixSet: 'PM',
             crs: 'EPSG:3857',
             zoom: {
@@ -173,7 +191,7 @@ describe('Provide in Sources', function () {
         colorlayer.source = new WMSSource({
             url: 'http://',
             name: 'name',
-            format: `${formatTag}image/png`,
+            format: 'image/png',
             extent: globalExtent,
             crs: 'EPSG:3857',
             zoom: {
@@ -306,7 +324,7 @@ describe('Provide in Sources', function () {
         colorlayer.source = new WMTSSource({
             url: 'http://',
             name: 'name',
-            format: `${formatTag}image/png`,
+            format: 'image/png',
             tileMatrixSet: 'PM',
             crs: 'EPSG:3857',
             extent: globalExtent,

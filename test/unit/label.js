@@ -9,10 +9,9 @@ import LabelLayer from 'Layer/LabelLayer';
 import GlobeView from 'Core/Prefab/GlobeView';
 import ColorLayer from 'Layer/ColorLayer';
 import FileSource from 'Source/FileSource';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Renderer from './bootstrap';
 
-import geojson from '../data/geojson/simple.geojson.json';
+import geojson from '../data/geojson/simple.geojson';
 
 describe('LabelLayer', function () {
     let layer;
@@ -146,8 +145,6 @@ describe('Label2DRenderer', function () {
         fetchedData: geojson,
         crs: 'EPSG:4326',
         format: 'application/json',
-        // TODO : is it necessary since we use fetchedData property ?
-        networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
     });
 
     const gpxStyle = new Style({ text: { field: '{name}' } });

@@ -272,7 +272,6 @@ export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTes
             return undefined;
         }
 
-
         // do proper culling
         const isVisible = cullingTest ? (!cullingTest(layer, context.camera, node, node.matrixWorld)) : true;
         node.visible = isVisible;

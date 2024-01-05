@@ -9,26 +9,45 @@ import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
 import OBB from 'Renderer/OBB';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
+import sinon from 'sinon';
+import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 
 describe('material state vs layer state', function () {
     const renderer = new Renderer();
     const p = { coord: new Coordinates('EPSG:4326', -75.6114, 40.03428, 0), heading: 180, range: 4000, tilt: 22 };
-
     const view = new GlobeView(renderer.domElement, p, { renderer, noControls: true });
-    const layer = new ColorLayer('color', { crs: 'EPSG:4326', source: new TMSSource({ crs: 'EPSG:4326', url: 'url' }) });
-    view.tileLayer.colorLayersOrder = [layer.id];
-    view.addLayer(layer);
 
+    let layer;
+    let material;
+    let node;
+    let context;
+    let stubFetcherTexture;
 
-    const extent = new Extent('TMS:4326', 3, 0, 0).as('EPSG:4326');
-    const material = new LayeredMaterial();
-    const geom = new THREE.BufferGeometry();
-    geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
-    const node = new TileMesh(geom, material, view.tileLayer, extent);
-    node.parent = { };
+    before(function () {
+        stubFetcherTexture = sinon.stub(Fetcher, 'texture')
+            .callsFake(() => Promise.resolve(null));
+        const source = new TMSSource({ crs: 'EPSG:4326', url: 'nullUrl' });
+        layer = new ColorLayer('color', {
+            source,
+            crs: 'EPSG:4326',
+        });
+        view.tileLayer.colorLayersOrder = [layer.id];
+        view.addLayer(layer);
 
-    const context = { view, scheduler: view.mainLoop.scheduler };
+        const extent = new Extent('TMS:4326', 3, 0, 0).as('EPSG:4326');
+        material = new LayeredMaterial();
+        const geom = new THREE.BufferGeometry();
+        geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
+        node = new TileMesh(geom, material, view.tileLayer, extent);
+        node.parent = { };
+
+        context = { view, scheduler: view.mainLoop.scheduler };
+    });
+
+    after(function () {
+        stubFetcherTexture.restore();
+    });
 
     it('should correctly initialize opacity & visibility', () => {
         updateLayeredMaterialNodeImagery(context, layer, node, node.parent);
@@ -37,6 +56,7 @@ describe('material state vs layer state', function () {
         assert.equal(nodeLayer.opacity, layer.opacity);
         assert.equal(nodeLayer.visible, layer.visible);
     });
+
     it('should update material opacity & visibility', () => {
         layer.opacity = 0.5;
         layer.visible = false;
@@ -44,6 +64,7 @@ describe('material state vs layer state', function () {
         assert.equal(nodeLayer.opacity, layer.opacity);
         assert.equal(nodeLayer.visible, layer.visible);
     });
+
     it('should update material uniforms', () => {
         layer.visible = false;
         node.onBeforeRender();

@@ -3,9 +3,9 @@ import assert from 'assert';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import Extent from 'Core/Geographic/Extent';
 
-import holes from '../data/geojson/holes.geojson.json';
-import gpx from '../data/geojson/gpx.geojson.json';
-import points from '../data/geojson/points.geojson.json';
+import holes from '../data/geojson/holes.geojson';
+import gpx from '../data/geojson/gpx.geojson';
+import points from '../data/geojson/points.geojson';
 
 proj4.defs('EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');

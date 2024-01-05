@@ -1,28 +1,51 @@
 import fs from 'fs';
 import assert from 'assert';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import VectorTileParser from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
 import Extent from 'Core/Geographic/Extent';
 import urlParser from 'Parser/MapBoxUrlParser';
+import Fetcher from 'Provider/Fetcher';
+import sinon from 'sinon';
+
+import style from '../data/vectortiles/style.json';
+import tilejson from '../data/vectortiles/tilejson.json';
+import sprite from '../data/vectortiles/sprite.json';
+
+const resources = {
+    'test/data/vectortiles/style.json': style,
+    'https://test/tilejson.json': tilejson,
+    'https://test/sprite.json': sprite,
+};
+
+function parse(pbf, layers) {
+    return VectorTileParser.parse(pbf, {
+        in: {
+            layers,
+            styles: [[]],
+        },
+        out: {
+            crs: 'EPSG:3857',
+        },
+    });
+}
 
 describe('Vector tiles', function () {
-    // this PBF file comes from https://github.com/mapbox/vector-tile-js
-    // it contains two square polygons
-    const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
-    multipolygon.extent = new Extent('TMS', 1, 1, 1);
+    let stub;
+    let multipolygon;
 
-    function parse(pbf, layers) {
-        return VectorTileParser.parse(pbf, {
-            in: {
-                layers,
-                styles: [[]],
-            },
-            out: {
-                crs: 'EPSG:3857',
-            },
-        });
-    }
+    before(function () {
+        // this PBF file comes from https://github.com/mapbox/vector-tile-js
+        // it contains two square polygons
+        multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
+        multipolygon.extent = new Extent('TMS', 1, 1, 1);
+
+        stub = sinon.stub(Fetcher, 'json')
+            .callsFake(url => Promise.resolve(JSON.parse(resources[url])));
+    });
+
+    after(function () {
+        stub.restore();
+    });
 
     it('returns two squares', (done) => {
         parse(multipolygon, {
@@ -78,7 +101,7 @@ describe('Vector tiles', function () {
         it('reads tiles URL from the style', (done) => {
             const source = new VectorTilesSource({
                 style: {
-                    sources: { geojson: { tiles: ['http://server.geo/{z}/{x}/{y}.pbf'] } },
+                    sources: { tilesurl: { tiles: ['http://server.geo/{z}/{x}/{y}.pbf'] } },
                     layers: [],
                 },
             });
@@ -93,7 +116,7 @@ describe('Vector tiles', function () {
             const source = new VectorTilesSource({
                 url: 'fakeurl',
                 style: {
-                    sources: { geojson: {} },
+                    sources: { tilejson: {} },
                     layers: [{ type: 'background' }],
                 },
             });
@@ -107,7 +130,7 @@ describe('Vector tiles', function () {
             const source = new VectorTilesSource({
                 url: 'fakeurl',
                 style: {
-                    sources: { geojson: {} },
+                    sources: { tilejson: {} },
                     layers: [{
                         id: 'land',
                         type: 'fill',
@@ -124,25 +147,25 @@ describe('Vector tiles', function () {
             }).catch(done);
         });
 
-        it('loads the style from a file', function _(done) {
+        it('loads the style from a file', function _it(done) {
             const source = new VectorTilesSource({
-                style: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/vectortiles/style.json',
-                networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
+                style: 'test/data/vectortiles/style.json',
             });
-            source.whenReady.then(() => {
-                assert.equal(source.styles.land.fill.color, 'rgb(255,0,0)');
-                assert.equal(source.styles.land.fill.opacity, 1);
-                assert.equal(source.styles.land.zoom.min, 5);
-                assert.equal(source.styles.land.zoom.max, 13);
-                done();
-            }).catch(done);
+            source.whenReady
+                .then(() => {
+                    assert.equal(source.styles.land.fill.color, 'rgb(255,0,0)');
+                    assert.equal(source.styles.land.fill.opacity, 1);
+                    assert.equal(source.styles.land.zoom.min, 5);
+                    assert.equal(source.styles.land.zoom.max, 13);
+                    done();
+                }).catch(done);
         });
 
         it('sets the correct Style#zoom.min', (done) => {
             const source = new VectorTilesSource({
                 url: 'fakeurl',
                 style: {
-                    sources: { geojson: {} },
+                    sources: { tilejson: {} },
                     layers: [{
                         // minzoom is 0 (default value)
                         id: 'first',
