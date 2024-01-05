@@ -12,9 +12,9 @@
     <body>
         <div id="viewerDiv"></div>
         <div id="description" style="border-radius: 5%;">
-            <select id="styleBox" onChange="selectStyle()" style="font-size: 15px; background-color: rgba(0,0,0,0.3); border-radius: 5%; width: 100px; height: 25px; color: white; text-align: center;">
-                <option value='0'>Style 1</option>
-                <option value='1'>Style 2</option>
+            <select id="styleBox" onChange="selectStyle()" style="font-size: 15px; background-color: rgba(0,0,0,0.3); border-radius: 5%; width: 175px; height: 25px; color: white; text-align: center;">
+                <option value='Type'>Stylized by Type</option>
+                <option value='Surface'>Stylized by Surface</option>
             </select> 
         </div>
         <script src="js/GUI/GuiTools.js"></script>
@@ -81,35 +81,27 @@
                 format: 'application/json',
             });
 
-            // Define the functions that sets the color according to the properties
-            function color1(properties) {
-                if (properties.code_cultu == '28') { return '#FD8A8A'; }
-                else if (properties.code_cultu == '01') { return '#F1F7B5'; }
-                else if (properties.code_cultu == '02') { return '#A8D1D1'; }
-                else if (properties.code_cultu == '03') { return '#9EA1D4'; }
-                else if (properties.code_cultu == '04') { return '#3CA59D'; }
-                else if (properties.code_cultu == '05') { return '#5A3D55'; }
-                else if (properties.code_cultu == '18') { return '#A2DE96'; }
-                else if (properties.code_cultu == '19') { return '#E79C2A'; }
-                else { return '#E0E0E0'; }
-            }
-
-            function color2(properties) {
-                let surf = parseFloat(properties.surf_cultu);
-                if (surf >=0 && surf < 2.84) { return '#f4cdd7'; }
-                else if (surf >= 2.84 && surf < 6.19) { return '#e5a4b0'; }
-                else if (surf >= 6.19 && surf < 10.43) { return '#d47c86'; }
-                else if (surf >= 10.43 && surf < 15.2) { return '#bf545b'; }
-                else if (surf > 15.2) { return '#a6292f'; }
-                else { return '#E0E0E0'; }
-            }
-
-            const color = function (p) {
+            // Define the function that sets the color according to the properties and the choosen style.
+            const color = function (properties) {
                 const styleBox = document.getElementById('styleBox');
-                if (styleBox.value === '0') {
-                    return color1(p);
-                } else if (styleBox.value === '1') {
-                    return color2(p);
+                if (styleBox.value === 'Type') {
+                    if (properties.code_cultu == '28') { return '#FD8A8A'; }
+                    else if (properties.code_cultu == '01') { return '#F1F7B5'; }
+                    else if (properties.code_cultu == '02') { return '#A8D1D1'; }
+                    else if (properties.code_cultu == '03') { return '#9EA1D4'; }
+                    else if (properties.code_cultu == '04') { return '#3CA59D'; }
+                    else if (properties.code_cultu == '05') { return '#5A3D55'; }
+                    else if (properties.code_cultu == '18') { return '#A2DE96'; }
+                    else if (properties.code_cultu == '19') { return '#E79C2A'; }
+                    else { return '#E0E0E0'; }
+                } else if (styleBox.value === 'Surface') {
+                    let surf = parseFloat(properties.surf_cultu);
+                    if (surf >=0 && surf < 2.84) { return '#f4cdd7'; }
+                    else if (surf >= 2.84 && surf < 6.19) { return '#e5a4b0'; }
+                    else if (surf >= 6.19 && surf < 10.43) { return '#d47c86'; }
+                    else if (surf >= 10.43 && surf < 15.2) { return '#bf545b'; }
+                    else if (surf > 15.2) { return '#a6292f'; }
+                    else { return '#E0E0E0'; }
                 }
             }
             const style = {
