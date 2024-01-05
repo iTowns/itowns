@@ -270,14 +270,6 @@ class Layer extends THREE.EventDispatcher {
     invalidateCache() {
         throw new Error('invalidateCache is not supported yet in this type of layer');
     }
-
-    /**
-     * Set the style of the layer.
-     * @param {StyleOptions} style Object containing style parameters. {@link StyleOptions}
-     */
-    setStyle(style) {
-        this.style = new Style(style);
-    }
 }
 
 export default Layer;
