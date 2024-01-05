@@ -1,113 +1,144 @@
 import assert from 'assert';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import PotreeLayer from 'Layer/PotreeLayer';
 import PotreeSource from 'Source/PotreeSource';
 import Coordinates from 'Core/Geographic/Coordinates';
 import GlobeView from 'Core/Prefab/GlobeView';
 import View from 'Core/View';
-import { HttpsProxyAgent } from 'https-proxy-agent';
+import sinon from 'sinon';
+import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 
+const baseurl = 'https://raw.githubusercontent.com/potree/potree/develop/pointclouds/lion_takanawa/';
+const fileName = 'cloud.js';
+
 describe('Potree Provider', function () {
-    const renderer = new Renderer();
-    const placement = { coord: new Coordinates('EPSG:4326', 1.5, 43), range: 300000 };
-    const view = new GlobeView(renderer.domElement, placement, { renderer });
+    let potreeRRhrc;
+    it('fetch test data from https://github.com/potree', async function () {
+        const networkOptions = process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {};
+        potreeRRhrc = await Fetcher.arrayBuffer(`${baseurl}/data/r/r.hrc`, networkOptions);
+    });
+    describe('unit tests', function () {
+        const placement = { coord: new Coordinates('EPSG:4326', 1.5, 43), range: 300000 };
 
-    it('should correctly parse normal information in cloud', function (done) {
-        // No normals
-        const cloud = {
-            boundingBox: { lx: 0, ly: 1, ux: 2, uy: 3 },
-            scale: 1.0,
-            pointAttributes: ['POSITION', 'RGB'],
-            octreeDir: 'eglise_saint_blaise_arles',
-        };
+        let renderer;
+        let view;
+        let stubFetcherArrayBuf;
 
-        const layers = [];
-        let source = new PotreeSource({
-            file: 'eglise_saint_blaise_arles.js',
-            url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
-            networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
-            cloud,
+        before(function () {
+            stubFetcherArrayBuf = sinon.stub(Fetcher, 'arrayBuffer')
+                .callsFake(() => Promise.resolve(potreeRRhrc));
+
+            if (!potreeRRhrc) { this.skip(); }
+
+            renderer = new Renderer();
+            view = new GlobeView(renderer.domElement, placement, { renderer });
+        });
+        after(function () {
+            stubFetcherArrayBuf.restore();
         });
 
-        const layer1 = new PotreeLayer('pointsCloud1', { source, crs: view.referenceCrs });
-        layers.push(layer1);
-        const p1 = layer1.whenReady.then((l) => {
-            const normalDefined = l.material.defines.NORMAL || l.material.defines.NORMAL_SPHEREMAPPED || l.material.defines.NORMAL_OCT16;
-            assert.ok(!normalDefined);
-        });
+        describe('cloud information parsing', function _() {
+            it('cloud with no normal information', function _it(done) {
+            // No normals
+                const cloud = {
+                    boundingBox: { lx: 0, ly: 1, ux: 2, uy: 3 },
+                    scale: 1.0,
+                    pointAttributes: ['POSITION', 'RGB'],
+                    octreeDir: 'data',
+                };
 
-        // // // normals as vector
-        source = new PotreeSource({
-            file: 'eglise_saint_blaise_arles.js',
-            url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
-            networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
-            cloud: {
-                boundingBox: { lx: 0, ly: 1, ux: 2, uy: 3 },
-                scale: 1.0,
-                pointAttributes: ['POSITION', 'NORMAL', 'CLASSIFICATION'],
-                octreeDir: 'eglise_saint_blaise_arles',
-            },
-        });
+                const source = new PotreeSource({
+                    file: fileName,
+                    url: baseurl,
+                    cloud,
+                });
 
-        const layer2 = new PotreeLayer('pointsCloud2', { source, crs: view.referenceCrs });
-        layers.push(layer2);
-        const p2 = layer2.whenReady.then((l) => {
-            assert.ok(l.material.defines.NORMAL);
-            assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
-            assert.ok(!l.material.defines.NORMAL_OCT16);
-        });
-
-        // // spheremapped normals
-        source = new PotreeSource({
-            file: 'eglise_saint_blaise_arles.js',
-            url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
-            networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
-            cloud: {
-                boundingBox: { lx: 0, ly: 1, ux: 2, uy: 3 },
-                scale: 1.0,
-                pointAttributes: ['POSITION', 'COLOR_PACKED', 'NORMAL_SPHEREMAPPED'],
-                octreeDir: 'eglise_saint_blaise_arles',
-            },
-        });
-        const layer3 = new PotreeLayer('pointsCloud3', { source, crs: view.referenceCrs });
-
-        layers.push(layer3);
-        const p3 = layer3.whenReady.then((l) => {
-            assert.ok(!l.material.defines.NORMAL);
-            assert.ok(l.material.defines.NORMAL_SPHEREMAPPED);
-            assert.ok(!l.material.defines.NORMAL_OCT16);
-        });
-
-        // // oct16 normals
-        source = new PotreeSource({
-            file: 'eglise_saint_blaise_arles.js',
-            url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
-            networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
-            cloud: {
-                boundingBox: { lx: 0, ly: 1, ux: 2, uy: 3 },
-                scale: 1.0,
-                pointAttributes: ['POSITION', 'COLOR_PACKED', 'CLASSIFICATION', 'NORMAL_OCT16'],
-                octreeDir: 'eglise_saint_blaise_arles',
-            },
-        });
-        const layer4 = new PotreeLayer('pointsCloud4', { source, crs: view.referenceCrs });
-
-        layers.push(layer4);
-        const p4 = layer4.whenReady
-            .then((l) => {
-                assert.ok(!l.material.defines.NORMAL);
-                assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
-                assert.ok(l.material.defines.NORMAL_OCT16);
+                const layer = new PotreeLayer('pointsCloudNoNormal', { source, crs: view.referenceCrs });
+                View.prototype.addLayer.call(view, layer);
+                layer.whenReady.then((l) => {
+                    const normalDefined = l.material.defines.NORMAL || l.material.defines.NORMAL_SPHEREMAPPED || l.material.defines.NORMAL_OCT16;
+                    assert.ok(!normalDefined);
+                    done();
+                }).catch(done);
             });
 
-        layers.forEach(p => View.prototype.addLayer.call(view, p));
+            it('cloud with normals as vector', function _it(done) {
+            // // // // normals as vector
+                const cloud = {
+                    boundingBox: { lx: 0, ly: 1, ux: 2, uy: 3 },
+                    scale: 1.0,
+                    pointAttributes: ['POSITION', 'NORMAL', 'CLASSIFICATION'],
+                    octreeDir: 'data',
+                };
 
-        Promise.all([p1, p2, p3, p4])
-            .then(() => done())
-            .catch(done);
+                const source = new PotreeSource({
+                    file: fileName,
+                    url: baseurl,
+                    cloud,
+                });
+
+                const layer = new PotreeLayer('pointsCloud2', { source, crs: view.referenceCrs });
+                View.prototype.addLayer.call(view, layer);
+                layer.whenReady.then((l) => {
+                    assert.ok(l.material.defines.NORMAL);
+                    assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
+                    assert.ok(!l.material.defines.NORMAL_OCT16);
+                    done();
+                }).catch(done);
+            });
+
+            it('cloud with spheremapped normals', function _it(done) {
+            // // spheremapped normals
+                const cloud = {
+                    boundingBox: { lx: 0, ly: 1, ux: 2, uy: 3 },
+                    scale: 1.0,
+                    pointAttributes: ['POSITION', 'COLOR_PACKED', 'NORMAL_SPHEREMAPPED'],
+                    octreeDir: 'data',
+                };
+                const source = new PotreeSource({
+                    file: fileName,
+                    url: baseurl,
+                    cloud,
+                });
+                const layer = new PotreeLayer('pointsCloud3', { source, crs: view.referenceCrs });
+                View.prototype.addLayer.call(view, layer);
+
+                layer.whenReady.then((l) => {
+                    assert.ok(!l.material.defines.NORMAL);
+                    assert.ok(l.material.defines.NORMAL_SPHEREMAPPED);
+                    assert.ok(!l.material.defines.NORMAL_OCT16);
+                    done();
+                }).catch(done);
+            });
+
+            it('cloud with oct16 normals', function _it(done) {
+            // // // oct16 normals
+                const cloud = {
+                    boundingBox: { lx: 0, ly: 1, ux: 2, uy: 3 },
+                    scale: 1.0,
+                    pointAttributes: ['POSITION', 'COLOR_PACKED', 'CLASSIFICATION', 'NORMAL_OCT16'],
+                    octreeDir: 'data',
+                };
+                const source = new PotreeSource({
+                    file: fileName,
+                    url: baseurl,
+                    cloud,
+                });
+                const layer = new PotreeLayer('pointsCloud4', { source, crs: view.referenceCrs });
+                View.prototype.addLayer.call(view, layer);
+
+                layer.whenReady
+                    .then((l) => {
+                        assert.ok(!l.material.defines.NORMAL);
+                        assert.ok(!l.material.defines.NORMAL_SPHEREMAPPED);
+                        assert.ok(l.material.defines.NORMAL_OCT16);
+                        done();
+                    }).catch(done);
+            });
+        });
     });
 });
-
 
 describe('getObjectToUpdateForAttachedLayers', function () {
     it('should correctly no-parent for the root', function () {

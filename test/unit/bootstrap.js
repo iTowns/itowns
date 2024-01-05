@@ -1,5 +1,4 @@
 /* eslint-disable max-classes-per-file */
-import fetch from 'node-fetch';
 import { Camera } from 'three';
 
 global.window = {
@@ -22,8 +21,6 @@ global.URL = function URL(url) {
 // is not the case for lambdas.
 global.Event = function () {};
 global.requestAnimationFrame = () => {};
-global.fetch = fetch;
-global.fetch.Promise = Promise;
 
 // this could be replaced by jsdom.Navigator in https://github.com/iTowns/itowns/pull/1412
 // Checking if global.navigator exists targets node versions <21.1.0. Since node
@@ -33,6 +30,31 @@ if (!global.navigator) {
         userAgent: 'firefox',
     };
 }
+
+const HEADER_SIZE = 40;
+const GTX_ROWS = 381;
+const GTX_COLS = 421;
+
+global.createGtxBuffer = function (elevation = 1) {
+    const buffer = new ArrayBuffer(
+        HEADER_SIZE + GTX_COLS * GTX_ROWS * Float32Array.BYTES_PER_ELEMENT,
+    );
+
+    const header = new DataView(buffer, 0, HEADER_SIZE);
+    header.setFloat64(0, 42);
+    header.setFloat64(8, -5.5);
+    header.setFloat64(16, 0.025);
+    header.setFloat64(24, 0.0333333333333);
+    header.setInt32(32, GTX_ROWS);
+    header.setInt32(36, GTX_COLS);
+
+    const data = new DataView(buffer, 40);
+    for (let i = 0; i < data.byteLength; i += Float32Array.BYTES_PER_ELEMENT) {
+        data.setFloat32(i, elevation);
+    }
+
+    return buffer;
+};
 
 class DOMElement {
     constructor() {

@@ -3,16 +3,15 @@ import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import FeatureGeometryLayer from 'Layer/FeatureGeometryLayer';
 import FileSource from 'Source/FileSource';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
 import Renderer from './bootstrap';
 
-import geojson_big from '../data/geojson/map_big.geojson.json';
-import geojson_a from '../data/geojson/map.geojson.json';
-import geojson_small from '../data/geojson/map_small.geojson.json';
+import geojson_big from '../data/geojson/map_big.geojson';
+import geojson_a from '../data/geojson/map.geojson';
+import geojson_small from '../data/geojson/map_small.geojson';
 
 const files = [geojson_small, geojson_a, geojson_big];
 const errors = [3e-4, 5e-2, 35];
@@ -30,7 +29,6 @@ files.forEach((geojson, i) => {
             fetchedData: geojson,
             crs: 'EPSG:4326',
             format: 'application/json',
-            networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
         });
 
         const source2 = new FileSource(source);
