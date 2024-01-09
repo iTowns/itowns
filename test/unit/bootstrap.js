@@ -23,9 +23,13 @@ global.fetch = fetch;
 global.fetch.Promise = Promise;
 
 // this could be replaced by jsdom.Navigator in https://github.com/iTowns/itowns/pull/1412
-global.navigator = {
-    userAgent: 'firefox',
-};
+// Checking if global.navigator exists targets node versions <21.1.0. Since node
+// <21.1.0, global.navigator is read-only.
+if (!global.navigator) {
+    global.navigator = {
+        userAgent: 'firefox',
+    };
+}
 
 class DOMElement {
     constructor() {
