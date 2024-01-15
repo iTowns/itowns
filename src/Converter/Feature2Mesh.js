@@ -587,6 +587,7 @@ function setColorOfExtrudedPolygon(mesh) {
 function setColor(meshes) {
     if (!Array.isArray(meshes)) { meshes = [meshes]; }
     meshes.forEach((mesh) => {
+        if (mesh.isInstancedMesh) { return; }
         switch (mesh.feature.type) {
             case FEATURE_TYPES.POINT:
                 setColorofPoint(mesh);
