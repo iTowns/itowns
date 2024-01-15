@@ -631,8 +631,8 @@ function createInstancedMesh(mesh, count, ptsIn) {
 
 /**
  * Convert a [Feature]{@link Feature} of type POINT to a Instanced meshes
- *
  * @param {Object} feature
+ *
  * @returns {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
  */
 function pointsToInstancedMeshes(feature) {
@@ -702,78 +702,80 @@ function featureToMesh(feature, options) {
 }
 
 /**
+ * Return a function that converts [Features]{@link module:GeoJsonParser} to Meshes. Feature collection will be converted to a
+ * a THREE.Group.
+ *
+ * @param {Object} options - options controlling the conversion
+ * @param {function} [options.batchId] - optional function to create batchId attribute.
+ * It is passed the feature property and the feature index. As the batchId is using an unsigned int structure on 32 bits,
+ * the batchId could be between 0 and 4,294,967,295.
+ * @param {StyleOptions} [options.style] - optional style properties. Only needed if the convert is used without instancing
+ * a layer beforehand.
+ * @return {function}
+ * @example <caption>Example usage of batchId with featureId.</caption>
+ * view.addLayer({
+ *     id: 'WFS Buildings',
+ *     type: 'geometry',
+ *     update: itowns.FeatureProcessing.update,
+ *     convert: itowns.Feature2Mesh.convert({
+ *         batchId: (property, featureId) => featureId,
+ *     }),
+ *     filter: acceptFeature,
+ *     source,
+ * });
+ *
+ * @example <caption>Example usage of batchId with property.</caption>
+ * view.addLayer({
+ *     id: 'WFS Buildings',
+ *     type: 'geometry',
+ *     update: itowns.FeatureProcessing.update,
+ *     convert: itowns.Feature2Mesh.convert({
+ *         batchId: (property, featureId) => property.house ? 10 : featureId,
+ *         }),
+ *     filter: acceptFeature,
+ *     source,
+ * });
+ */
+function convert(options = {}) {
+    deprecatedFeature2MeshOptions(options);
+    return function _convert(collection) {
+        if (!collection) { return; }
+
+        if (!options.pointMaterial) {
+            // Opacity and wireframe refered with layer properties
+            // TODO: next step is move these properties to Style
+            options.pointMaterial = ReferLayerProperties(new THREE.PointsMaterial(), this);
+            options.lineMaterial = ReferLayerProperties(new THREE.LineBasicMaterial(), this);
+            options.polygonMaterial = ReferLayerProperties(new THREE.MeshBasicMaterial(), this);
+        }
+
+        // In the case we didn't instanciate the layer (this) before the convert, we can pass
+        // style properties (@link StyleOptions) using options.style.
+        // This is usually done in some tests and if you want to use Feature2Mesh.convert()
+        // as in examples/source_file_gpx_3d.html.
+        style = this?.style || (options.style ? new Style(options.style) :  defaultStyle);
+
+        context.setCollection(collection);
+
+        const features = collection.features;
+        if (!features || features.length == 0) { return; }
+
+        const meshes = features.map((feature) => {
+            const mesh = featureToMesh(feature, options);
+            mesh.layer = this;
+            return mesh;
+        });
+        setColor(meshes);
+        const featureNode = new FeatureMesh(meshes, collection);
+
+        return featureNode;
+    };
+}
+
+/**
  * @module Feature2Mesh
  */
 export default {
     setColor,
-    /**
-     * Return a function that converts [Features]{@link module:GeoJsonParser} to Meshes. Feature collection will be converted to a
-     * a THREE.Group.
-     *
-     * @param {Object} options - options controlling the conversion
-     * @param {function} [options.batchId] - optional function to create batchId attribute.
-     * It is passed the feature property and the feature index. As the batchId is using an unsigned int structure on 32 bits,
-     * the batchId could be between 0 and 4,294,967,295.
-     * @param {StyleOptions} [options.style] - optional style properties. Only needed if the convert is used without instancing
-     * a layer beforehand.
-     * @return {function}
-     * @example <caption>Example usage of batchId with featureId.</caption>
-     * view.addLayer({
-     *     id: 'WFS Buildings',
-     *     type: 'geometry',
-     *     update: itowns.FeatureProcessing.update,
-     *     convert: itowns.Feature2Mesh.convert({
-     *         batchId: (property, featureId) => featureId,
-     *     }),
-     *     filter: acceptFeature,
-     *     source,
-     * });
-     *
-     * @example <caption>Example usage of batchId with property.</caption>
-     * view.addLayer({
-     *     id: 'WFS Buildings',
-     *     type: 'geometry',
-     *     update: itowns.FeatureProcessing.update,
-     *     convert: itowns.Feature2Mesh.convert({
-     *         batchId: (property, featureId) => property.house ? 10 : featureId,
-     *         }),
-     *     filter: acceptFeature,
-     *     source,
-     * });
-     */
-    convert(options = {}) {
-        deprecatedFeature2MeshOptions(options);
-        return function _convert(collection) {
-            if (!collection) { return; }
-
-            if (!options.pointMaterial) {
-                // Opacity and wireframe refered with layer properties
-                // TODO: next step is move these properties to Style
-                options.pointMaterial = ReferLayerProperties(new THREE.PointsMaterial(), this);
-                options.lineMaterial = ReferLayerProperties(new THREE.LineBasicMaterial(), this);
-                options.polygonMaterial = ReferLayerProperties(new THREE.MeshBasicMaterial(), this);
-            }
-
-            // In the case we didn't instanciate the layer (this) before the convert, we can pass
-            // style properties (@link StyleOptions) using options.style.
-            // This is usually done in some tests and if you want to use Feature2Mesh.convert()
-            // as in examples/source_file_gpx_3d.html.
-            style = this?.style || (options.style ? new Style(options.style) :  defaultStyle);
-
-            context.setCollection(collection);
-
-            const features = collection.features;
-            if (!features || features.length == 0) { return; }
-
-            const meshes = features.map((feature) => {
-                const mesh = featureToMesh(feature, options);
-                mesh.layer = this;
-                return mesh;
-            });
-            setColor(meshes);
-            const featureNode = new FeatureMesh(meshes, collection);
-
-            return featureNode;
-        };
-    },
+    convert,
 };
