@@ -8,6 +8,17 @@
  *
  * @extends Source
  *
+ * @property {Object} zoom - Object containing the minimum and maximum values of
+ * the level, to zoom in the source.
+ * @property {number} zoom.min - The minimum level of the source. Default value is 0.
+ * @property {number} zoom.max - The maximum level of the source. Default value is Infinity.
+ * @property {string} url - The URL of the COG.
+ * @property {GeoTIFF.Pool} pool - Pool use to decode GeoTiff.
+ * @property {number} noData - Byte used to determine if it is a byte data or not. Default value is 255.
+ * @property {number} defaultNoColor - Color byte value to apply if it's match {@link noData}. Default value is 255.
+ * @property {number} defaultNoAlpha - Alpha byte value to apply if it's match {@link noData}. Default value is 0.
+ * @property {number} defaultAlpha - Alpha byte value used if no alpha is present in COG. Default value is 255.
+ *
  * @example
  * // Create the source
  * const cogSource = new itowns.COGSource({
@@ -26,7 +37,6 @@ class COGSource extends itowns.Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * COGSource and {@link Source}. Only `url` is mandatory.
-     *
      * @constructor
      */
     constructor(source) {
@@ -44,23 +54,17 @@ class COGSource extends itowns.Source {
         this.fetcher = () => Promise.resolve({});
         this.parser = COGParser.parse;
 
-        this.defaultNoData = source.defaultNoData || 255;
-        this.defaultTransparent = source.defaultTransparent || 0;
-        this.opaqueByte = source.opaqueByte || 255;
-        this.opaqueFloat = source.opaqueFloat || 1;
+        this.defaultNoDataColor = source.defaultNoDataColor || 255;
+        this.defaultNoDataAlpha = source.defaultNoDataAlpha || 0;
+        this.defaultAlpha = source.defaultAlpha || 255;
 
         this.whenReady = GeoTIFF.fromUrl(this.url)
             .then(async (geotiff) => {
                 this.geotiff = geotiff;
                 this.firstImage = await geotiff.getImage();
                 this.origin = this.firstImage.getOrigin();
-                this.noData = (source.noData !== undefined) ? source.noData : this.firstImage.getGDALNoData();
+                this.noData = source.noData ?? this.firstImage.getGDALNoData();
                 this.dataType = this.selectDataType(this.firstImage.getSampleFormat(), this.firstImage.getBitsPerSample());
-
-                this.channels = [];
-                for (let i = 0; i < this.firstImage.getSamplesPerPixel(); i += 1) {
-                    this.channels.push(i);
-                }
 
                 this.tileWidth = this.firstImage.getTileWidth();
                 this.tileHeight = this.firstImage.getTileHeight();
@@ -76,16 +80,23 @@ class COGSource extends itowns.Source {
                 // Number of images (original + overviews)
                 const imageCount = await this.geotiff.getImageCount();
 
-                // We want to preserve the order of the overviews so we await them inside
-                // the loop not to have the smallest overviews coming before the biggest
+                const promises = [];
                 for (let index = 1; index < imageCount; index++) {
-                    // eslint-disable-next-line no-await-in-loop
-                    const image = await this.geotiff.getImage(index);
-                    this.levels.push(this.makeLevel(image, image.getResolution(this.firstImage)));
+                    const promise = this.geotiff.getImage(index)
+                        .then(image => this.makeLevel(image, image.getResolution(this.firstImage)));
+                    promises.push(promise);
                 }
+                this.levels.push(await Promise.all(promises));
             });
     }
 
+    /**
+     * @param {number} format - Format to interpret each data sample in a pixel
+     * https://www.awaresystems.be/imaging/tiff/tifftags/sampleformat.html
+     * @param {number} bitsPerSample - Number of bits per component.
+     * https://www.awaresystems.be/imaging/tiff/tifftags/bitspersample.html
+     * @return {THREE.AttributeGPUType}
+     */
     selectDataType(format, bitsPerSample) {
         switch (format) {
             case 1: // unsigned integer data

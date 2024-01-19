@@ -1,41 +1,82 @@
 <html>
-<head>
-    <title>Cloud Optimized GeoTiff</title>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="css/example.css">
-    <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+    <head>
+        <title>Cloud Optimized GeoTiff</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
-</head>
-<body>
-<div id="viewerDiv"></div>
-<script src="js/GUI/GuiTools.js"></script>
-<script src="../dist/itowns.js"></script>
-<script src="../dist/debug.js"></script>
-<script src="js/GUI/LoadingScreen.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
-<script src="js/plugins/COGParser.js"></script>
-<script src="js/plugins/COGSource.js"></script>
-<script type="text/javascript">
-    itowns.proj4.defs('EPSG:3947', '+proj=lcc +lat_0=47 +lon_0=3 +lat_1=46.25 +lat_2=47.75 +x_0=1700000 +y_0=6200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
-    var viewerDiv = document.getElementById('viewerDiv');
+        <style type="text/css">
+            #description {
+                z-index: 2;
+                left: 10px;
+            }
+        </style>
 
-    // create a source from a Cloud Optimized GeoTiff
-    var cogSource = new COGSource({
-        url: 'https://cdn.jsdelivr.net/gh/bloc-in-bloc/iTowns2-sample-data@add-cog-sample/cog/orvault.tif',
-        crs: 'EPSG:3947'
-    });
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="description">
+            <div>Specify the URL of a COG to load:
+                <input type="text" id="cog_url" />
+            </div>
+            <div>Specify the CRS of the COG:
+                <input type="text" id="cog_crs" />
+            </div>
+            <button onclick="readCOGURL()">Load</button>
+            <button onclick="loadSample()">Load sample</button>
+        </div>
+        <div id="viewerDiv"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
+        <script src="js/plugins/COGParser.js"></script>
+        <script src="js/plugins/COGSource.js"></script>
+        <script type="text/javascript">
+            itowns.proj4.defs('EPSG:3947', '+proj=lcc +lat_0=47 +lon_0=3 +lat_1=46.25 +lat_2=47.75 +x_0=1700000 +y_0=6200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
+            itowns.proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
+            itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
-    cogSource.whenReady.then(() => {
-        var view = new itowns.PlanarView(viewerDiv, cogSource.extent, { disableSkirt: true, placement: { tilt: 90 } });
-        setupLoadingScreen(viewerDiv, view);
-        new itowns.PlanarControls(view, {});
-        var cogLayer = new itowns.ColorLayer('cog', {
-            source: cogSource,
-        });
-        view.addLayer(cogLayer);
-    });
-</script>
-</body>
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            function readCOGURL() {
+                var url = document.getElementById('cog_url').value || new URLSearchParams(window.location.search).get('geotiff');
+                var crs = document.getElementById('cog_crs').value || new URLSearchParams(window.location.search).get('crs');
+
+                if (url && crs) {
+                    loadCOG(url, crs);
+                    document.getElementById('cog_url').value = url;
+                    document.getElementById('cog_crs').value = crs;
+                }
+            }
+
+            function loadSample() {
+                document.getElementById('cog_url').value = 'https://cdn.jsdelivr.net/gh/bloc-in-bloc/iTowns2-sample-data@add-cog-sample/cog/orvault.tif';
+                document.getElementById('cog_crs').value = 'EPSG:3947';
+                readCOGURL();
+            }
+
+            function loadCOG(url, crs) {
+                // create a source from a Cloud Optimized GeoTiff
+                var cogSource = new COGSource({
+                    url: url,
+                    crs: crs
+                });
+
+                cogSource.whenReady.then(() => {
+                    var view = new itowns.PlanarView(viewerDiv, cogSource.extent, { disableSkirt: true, placement: { tilt: 90 } });
+                    setupLoadingScreen(viewerDiv, view);
+                    new itowns.PlanarControls(view, {});
+                    var cogLayer = new itowns.ColorLayer('cog', {
+                        source: cogSource,
+                    });
+                    view.addLayer(cogLayer);
+                });
+            }
+
+            readCOGURL();
+        </script>
+    </body>
 </html>
