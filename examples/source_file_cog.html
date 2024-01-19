@@ -19,12 +19,10 @@
         <div id="description">
             <div>Specify the URL of a COG to load:
                 <input type="text" id="cog_url" />
+                <button onclick="readCOGURL()">Load</button>
             </div>
-            <div>Specify the CRS of the COG:
-                <input type="text" id="cog_crs" />
-            </div>
-            <button onclick="readCOGURL()">Load</button>
-            <button onclick="loadSample()">Load sample</button>
+            <button onclick="loadRGBSample()">Load RGB sample</button>
+            <button onclick="load1BandSample()">Load 1 band sample</button>
         </div>
         <div id="viewerDiv"></div>
         <script src="js/GUI/GuiTools.js"></script>
@@ -35,26 +33,26 @@
         <script src="js/plugins/COGParser.js"></script>
         <script src="js/plugins/COGSource.js"></script>
         <script type="text/javascript">
-            itowns.proj4.defs('EPSG:3947', '+proj=lcc +lat_0=47 +lon_0=3 +lat_1=46.25 +lat_2=47.75 +x_0=1700000 +y_0=6200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
-            itowns.proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs +type=crs');
             itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
             var viewerDiv = document.getElementById('viewerDiv');
 
             function readCOGURL() {
                 var url = document.getElementById('cog_url').value || new URLSearchParams(window.location.search).get('geotiff');
-                var crs = document.getElementById('cog_crs').value || new URLSearchParams(window.location.search).get('crs');
 
-                if (url && crs) {
-                    loadCOG(url, crs);
+                if (url) {
+                    loadCOG(url);
                     document.getElementById('cog_url').value = url;
-                    document.getElementById('cog_crs').value = crs;
                 }
             }
 
-            function loadSample() {
+            function loadRGBSample() {
                 document.getElementById('cog_url').value = 'https://cdn.jsdelivr.net/gh/bloc-in-bloc/iTowns2-sample-data@add-cog-sample/cog/orvault.tif';
-                document.getElementById('cog_crs').value = 'EPSG:3947';
+                readCOGURL();
+            }
+
+            function load1BandSample() {
+                document.getElementById('cog_url').value = 'https://oin-hotosm.s3.amazonaws.com/60fbca155a90f10006fd2fc3/0/60fbca155a90f10006fd2fc4.tif';
                 readCOGURL();
             }
 
@@ -62,7 +60,7 @@
                 // create a source from a Cloud Optimized GeoTiff
                 var cogSource = new COGSource({
                     url: url,
-                    crs: crs
+                    crs: "EPSG:2154"
                 });
 
                 cogSource.whenReady.then(() => {

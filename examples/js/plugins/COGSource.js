@@ -14,9 +14,6 @@
  * @property {number} zoom.max - The maximum level of the source. Default value is Infinity.
  * @property {string} url - The URL of the COG.
  * @property {GeoTIFF.Pool} pool - Pool use to decode GeoTiff.
- * @property {number} noData - Byte used to determine if it is a byte data or not. Default value is 255.
- * @property {number} defaultNoColor - Color byte value to apply if it's match {@link noData}. Default value is 255.
- * @property {number} defaultNoAlpha - Alpha byte value to apply if it's match {@link noData}. Default value is 0.
  * @property {number} defaultAlpha - Alpha byte value used if no alpha is present in COG. Default value is 255.
  *
  * @example
@@ -54,8 +51,6 @@ class COGSource extends itowns.Source {
         this.fetcher = () => Promise.resolve({});
         this.parser = COGParser.parse;
 
-        this.defaultNoDataColor = source.defaultNoDataColor || 255;
-        this.defaultNoDataAlpha = source.defaultNoDataAlpha || 0;
         this.defaultAlpha = source.defaultAlpha || 255;
 
         this.whenReady = GeoTIFF.fromUrl(this.url)
@@ -63,7 +58,6 @@ class COGSource extends itowns.Source {
                 this.geotiff = geotiff;
                 this.firstImage = await geotiff.getImage();
                 this.origin = this.firstImage.getOrigin();
-                this.noData = source.noData ?? this.firstImage.getGDALNoData();
                 this.dataType = this.selectDataType(this.firstImage.getSampleFormat(), this.firstImage.getBitsPerSample());
 
                 this.tileWidth = this.firstImage.getTileWidth();

@@ -93,29 +93,39 @@ function makeWindowFromExtent(source, extent, resolution) {
  * @param {THREE.TypedArray | THREE.TypedArray[]} buffers The buffers (one buffer per band)
  * @param {number} buffers.width
  * @param {number} buffers.height
+ * @param {number} buffers.byteLength
  * @returns {THREE.DataTexture} The generated texture.
  */
 function createTexture(source, buffers) {
-    const { width, height } = buffers;
+    const { width, height, byteLength } = buffers;
     const pixelCount = width * height;
     const targetDataType = source.dataType;
-
-    // There is no dedicated code in fragment shader to interpret red and green pairs
-    // So we consider there are 4 channel
     const format = THREE.RGBAFormat;
     const channelCount = 4;
-
     let texture;
+    let data;
+
+    // Check if it's a RGBA buffer
+    if (pixelCount * channelCount === byteLength) {
+        data = buffers;
+    }
+
     switch (targetDataType) {
         case THREE.UnsignedByteType: {
-            const buf = new Uint8ClampedArray(pixelCount * channelCount);
-            const data = fillBuffer(buffers, buf, source, source.defaultAlpha);
+            if (!data) {
+                // We convert RGB buffer to RGBA
+                const newBuffers = new Uint8ClampedArray(pixelCount * channelCount);
+                data = convertToRGBA(buffers, newBuffers, source.defaultAlpha);
+            }
             texture = new THREE.DataTexture(data, width, height, format, THREE.UnsignedByteType);
             break;
         }
         case THREE.FloatType: {
-            const buf = new Float32Array(pixelCount * channelCount);
-            const data = fillBuffer(buffers, buf, source, source.defaultAlpha / 255);
+            if (!data) {
+                // We convert RGB buffer to RGBA
+                const newBuffers = new Float32Array(pixelCount * channelCount);
+                data = convertToRGBA(buffers, newBuffers, source.defaultAlpha / 255);
+            }
             texture = new THREE.DataTexture(data, width, height, format, THREE.FloatType);
             break;
         }
@@ -126,113 +136,21 @@ function createTexture(source, buffers) {
     return texture;
 }
 
-// Important note : a lot of code is duplicated to avoid putting
-// conditional branches inside loops, as this can severely reduce performance.
-// Note: we don't use Number.isNan(x) in the loops as it slows down the loop due to function
-// invocation. Instead, we use x !== x, as a NaN is never equal to itself.
-/* eslint no-self-compare: 0 */
-function fillBuffer(pixelData, buffers, source, alphaValue) {
-    // 1 color band
-    if (pixelData.length === 1) {
-        const v = pixelData[0];
-        const length = v.length;
-        for (let i = 0; i < length; i++) {
-            const idx = i * 4;
-            let value;
-            let a;
-            const raw = v[i];
-            if (raw !== raw || raw === source.noData) {
-                value = source.defaultNoColor;
-                a = source.defaultNoAlpha;
-            } else {
-                value = raw;
-                a = alphaValue;
-            }
-            buffers[idx + 0] = value;
-            buffers[idx + 1] = value;
-            buffers[idx + 2] = value;
-            buffers[idx + 3] = a;
-        }
+function convertToRGBA(buffers, newBuffers, defaultAlpha) {
+    const { width, height } = buffers;
+
+    for (let i = 0; i < width * height; i++) {
+        const oldIndex = i * 3;
+        const index = i * 4;
+        // Copy RGB from original buffer
+        newBuffers[index + 0] = buffers[oldIndex + 0]; // R
+        newBuffers[index + 1] = buffers[oldIndex + 1]; // G
+        newBuffers[index + 2] = buffers[oldIndex + 2]; // B
+        // Add alpha to new buffer
+        newBuffers[index + 3] = defaultAlpha; // A
     }
-    // 2 band => color + alpha
-    if (pixelData.length === 2) {
-        const v = pixelData[0];
-        const a = pixelData[1];
-        const length = v.length;
-        for (let i = 0; i < length; i++) {
-            const idx = i * 4;
-            let value;
-            const raw = v[i];
-            if (raw !== raw || raw === source.noData) {
-                value = source.defaultNoColor;
-            } else {
-                value = raw;
-            }
-            buffers[idx + 0] = value;
-            buffers[idx + 1] = value;
-            buffers[idx + 2] = value;
-            buffers[idx + 3] = a;
-        }
-    }
-    // 3 band => RGB
-    if (pixelData.length === 3) {
-        const rChannel = pixelData[0];
-        const gChannel = pixelData[1];
-        const bChannel = pixelData[2];
-        const length = rChannel.length;
-        for (let i = 0; i < length; i++) {
-            const idx = i * 4;
 
-            let r = rChannel[i];
-            let g = gChannel[i];
-            let b = bChannel[i];
-            let a = alphaValue;
-
-            if ((r !== r || r === source.noData)
-                && (g !== g || g === source.noData)
-                && (b !== b || b === source.noData)) {
-                r = source.defaultNoColor;
-                g = source.defaultNoColor;
-                b = source.defaultNoColor;
-                a = source.defaultNoColor;
-            }
-
-            buffers[idx + 0] = r;
-            buffers[idx + 1] = g;
-            buffers[idx + 2] = b;
-            buffers[idx + 3] = a;
-        }
-    }
-    // 4 band => RGBA
-    if (pixelData.length === 4) {
-        const rChannel = pixelData[0];
-        const gChannel = pixelData[1];
-        const bChannel = pixelData[2];
-        const aChannel = pixelData[3];
-        const length = rChannel.length;
-        for (let i = 0; i < length; i++) {
-            const idx = i * 4;
-            let r = rChannel[i];
-            let g = gChannel[i];
-            let b = bChannel[i];
-            let a = aChannel[i];
-
-            if ((r !== r || r === source.noData)
-                && (g !== g || g === source.noData)
-                && (b !== b || b === source.noData)) {
-                r = source.defaultNoColor;
-                g = source.defaultNoColor;
-                b = source.defaultNoColor;
-                a = source.defaultNoAlpha;
-            }
-
-            buffers[idx + 0] = r;
-            buffers[idx + 1] = g;
-            buffers[idx + 2] = b;
-            buffers[idx + 3] = a;
-        }
-    }
-    return buffers;
+    return newBuffers;
 }
 
 /**
@@ -285,7 +203,7 @@ const COGParser = (function _() {
                 window: viewport,
                 pool: source.pool,
                 enableAlpha: true,
-                interleave: false,
+                interleave: true,
             });
 
             const texture = createTexture(source, buffers);
