@@ -258,7 +258,7 @@ jobs:
               run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
 
             - name: Get release version
-              run: echo "VERSION=$(node -e "console.log(require('./package.json').version);")" >> $GITHUB_OUTPUT
+              run: echo "VERSION=$(node -e "console.log(require('./package.json').version);")" >> "$GITHUB_OUTPUT"
               id: npm_pack
 
             - name: itowns Version
