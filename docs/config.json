@@ -127,7 +127,9 @@
             "Plugins": [
                 "DragNDrop",
                 "FeatureToolTip",
-                "TIFFParser"
+                "TIFFParser",
+                "COGSource",
+                "COGParser"
             ],
 
             "Widgets": [
