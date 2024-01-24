@@ -50,7 +50,6 @@ module.exports = () => {
         entry: {
             itowns: [
                 'core-js',
-                'url-polyfill',
                 'whatwg-fetch',
                 './src/MainBundle.js',
             ],
