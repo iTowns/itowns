@@ -15,6 +15,10 @@ different data formats (3dTiles, GeoJSON, Vector Tiles, GPX and much more). A
 complete list of features and supported data formats is [available on the
 wiki](https://github.com/iTowns/itowns/wiki/Supported-Features).
 
+It officially targets the last two major versions of both Firefox, Safari and
+Chromium-based browsers (Chrome, Edge, ...) at the date of each release. Older
+browsers supporting WebGL 2.0 may work but we do not offer support.
+
 ![iTowns screenshot](https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itownsReleaseXS.jpg)
 
 ## Documentation and examples
