@@ -99,7 +99,7 @@ module.exports = () => {
             static: {
                 directory: path.resolve(__dirname, './'),
                 watch: {
-                    ignored: path.resolve(__dirname, '.git'),
+                    ignored: [path.resolve(__dirname, '.git'), path.resolve(__dirname, 'node_modules')],
                 },
             },
             client: {
