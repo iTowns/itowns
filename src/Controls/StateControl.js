@@ -8,6 +8,7 @@ const CONTROL_KEYS = {
     SPACE: 32,
     SHIFT: 16,
     CTRL: 17,
+    META: 91,
     S: 83,
 };
 
@@ -332,6 +333,8 @@ class StateControl extends THREE.EventDispatcher {
                         this._currentKeyPressed = CONTROL_KEYS.CTRL;
                     } else if (event.shiftKey) {
                         this._currentKeyPressed = CONTROL_KEYS.SHIFT;
+                    } else if (event.metaKey) {
+                        this._currentKeyPressed = CONTROL_KEYS.META;
                     }
                 }
                 this.currentState = this.inputToState(
