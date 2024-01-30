@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import B3dmParser from 'Parser/B3dmParser';
 import PntsParser from 'Parser/PntsParser';
+import GLTFParser from 'Parser/GLTFParser';
 import Fetcher from 'Provider/Fetcher';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import utf8Decoder from 'Utils/Utf8Decoder';
@@ -23,6 +24,20 @@ function b3dmToMesh(data, layer, url) {
         const object3d = result.gltf.scene;
         return { batchTable, object3d };
     });
+}
+
+function gltfToMesh(data, layer, url) {
+    const urlBase = THREE.LoaderUtils.extractUrlBase(url);
+    const options = {
+        gltfUpAxis: layer.tileset.asset.gltfUpAxis,
+        urlBase,
+        overrideMaterials: layer.overrideMaterials,
+        doNotPatchMaterial: layer.doNotPatchMaterial,
+        opacity: layer.opacity,
+        registeredExtensions: layer.registeredExtensions,
+        layer,
+    };
+    return GLTFParser.parse(data, options).then(result => ({ object3d: result.scene }));
 }
 
 function pntsParse(data, layer) {
@@ -83,6 +98,7 @@ function executeCommand(command) {
     configureTile(tile, layer, metadata, command.requester);
     // Patch for supporting 3D Tiles pre 1.0 (metadata.content.url) and 1.0
     // (metadata.content.uri)
+
     const path = metadata.content && (metadata.content.url || metadata.content.uri);
 
     const setLayer = (obj) => {
@@ -95,8 +111,9 @@ function executeCommand(command) {
         const supportedFormats = {
             b3dm: b3dmToMesh,
             pnts: pntsParse,
+            gltf: gltfToMesh,
         };
-        return Fetcher.arrayBuffer(url, layer.source.networkOptions).then((result) => {
+        return Fetcher.arrayBuffer(url, layer.source.networkOptions, layer.source.urlParameters).then((result) => {
             if (result !== undefined) {
                 let func;
                 const magic = utf8Decoder.decode(new Uint8Array(result, 0, 4));
@@ -108,6 +125,8 @@ function executeCommand(command) {
                     func = supportedFormats.b3dm;
                 } else if (magic == 'pnts') {
                     func = supportedFormats.pnts;
+                } else if (magic == 'glTF') {
+                    func =  supportedFormats.gltf;
                 } else {
                     return Promise.reject(`Unsupported magic code ${magic}`);
                 }

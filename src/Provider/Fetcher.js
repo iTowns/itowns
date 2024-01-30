@@ -10,10 +10,21 @@ function checkResponse(response) {
     }
 }
 
-const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) => {
-    checkResponse(response);
-    return response.arrayBuffer();
-});
+function arrayBuffer(url, options = {}, urlParameters = {}) {
+    return fetch(formatUrlWithParameters(url, urlParameters), options).then((response) => {
+        checkResponse(response);
+        return response.arrayBuffer();
+    });
+}
+
+function formatUrlWithParameters(url, urlParameters = {}) {
+    if (Object.keys(urlParameters).length === 0) {
+        return url;
+    } else {
+        const extraParameters = new URLSearchParams(urlParameters).toString();
+        return /\?/.test(url) ? `${url}&${extraParameters}` : `${url}?${extraParameters}`;
+    }
+}
 
 function getTextureFloat(buffer, isWebGL2 = true) {
     if (isWebGL2) {
@@ -41,11 +52,12 @@ export default {
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
      * see [the syntax for more information]{@link
      * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * @param {Object} urlParameters - extra url parameter to concat with url.
      *
      * @return {Promise<string>} Promise containing the text.
      */
-    text(url, options = {}) {
-        return fetch(url, options).then((response) => {
+    text(url, options = {}, urlParameters = {}) {
+        return fetch(formatUrlWithParameters(url, urlParameters), options).then((response) => {
             checkResponse(response);
             return response.text();
         });
@@ -58,11 +70,12 @@ export default {
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
      * see [the syntax for more information]{@link
      * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * @param {Object} urlParameters - extra url parameter to concat with url.
      *
      * @return {Promise<Object>} Promise containing the JSON object.
      */
-    json(url, options = {}) {
-        return fetch(url, options).then((response) => {
+    json(url, options = {}, urlParameters = {}) {
+        return fetch(formatUrlWithParameters(url, urlParameters), options).then((response) => {
             checkResponse(response);
             return response.json();
         });
@@ -75,11 +88,12 @@ export default {
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
      * see [the syntax for more information]{@link
      * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * @param {Object} urlParameters - extra url parameter to concat with url.
      *
      * @return {Promise<Document>} Promise containing the XML Document.
      */
-    xml(url, options = {}) {
-        return fetch(url, options).then((response) => {
+    xml(url, options = {}, urlParameters = {}) {
+        return fetch(formatUrlWithParameters(url, urlParameters), options).then((response) => {
             checkResponse(response);
             return response.text();
         }).then(text => new window.DOMParser().parseFromString(text, 'text/xml'));

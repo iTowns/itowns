@@ -26,7 +26,7 @@ class C3DTilesSource extends Source {
         super(source);
         this.isC3DTilesSource = true;
         this.baseUrl = this.url.slice(0, this.url.lastIndexOf('/') + 1);
-        this.whenReady = Fetcher.json(this.url, this.networkOptions);
+        this.whenReady = Fetcher.json(this.url, this.networkOptions, this.urlParameters);
     }
 }
 

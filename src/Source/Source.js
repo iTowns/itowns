@@ -101,6 +101,7 @@ let uid = 0;
  * `fetch()`), see [the syntax for more information]{@link
  * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
  * By default, set to `{ crossOrigin: 'anonymous' }`.
+ * @property {Object} urlParameters - extra url parameters to concat with url.
  * @property {string} crs - The crs projection of the resources.
  * @property {string} attribution - The intellectual property rights for the
  * resources.
@@ -144,6 +145,7 @@ class Source extends InformationsData {
         this.parser = source.parser || supportedParsers.get(source.format) || (d => d);
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
+        this.urlParameters = source.urlParameters || {};
         this.attribution = source.attribution;
         this.whenReady = Promise.resolve();
         this._featuresCaches = {};
