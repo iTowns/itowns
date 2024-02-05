@@ -1,3 +1,112 @@
+<a name="2.42.0"></a>
+# [2.42.0](https://github.com/iTowns/itowns/compare/v2.41.0...v2.42.0) (2024-02-05)
+
+
+### Features
+
+* Add bboxUrlPrecision parameter ([09a037d](https://github.com/iTowns/itowns/commit/09a037d))
+* Add Cloud Optimized GeoTIFF (COG) sample ([#2250](https://github.com/iTowns/itowns/issues/2250)) ([f707e26](https://github.com/iTowns/itowns/commit/f707e26))
+* **controls:** add meta key support in state controls ([74f8b50](https://github.com/iTowns/itowns/commit/74f8b50))
+* **Coordinates:** add toArray method. ([ebadc9c](https://github.com/iTowns/itowns/commit/ebadc9c))
+* **deps:** Update proj4 from 2.9.0 to 2.9.2 ([24eac28](https://github.com/iTowns/itowns/commit/24eac28))
+* **deps:** Update three from 0.154.0 to 0.159.0 ([a2f9105](https://github.com/iTowns/itowns/commit/a2f9105))
+* drop support of old browsers ([e81e117](https://github.com/iTowns/itowns/commit/e81e117))
+* **Feature2Mesh:** Stylize points mesh. ([b7538b0](https://github.com/iTowns/itowns/commit/b7538b0))
+* **LASParser:** change lasparser package from loaders.gl to copc ([aa9d97e](https://github.com/iTowns/itowns/commit/aa9d97e))
+* **View:** add getters for threejs renderer and camera ([57ed8d3](https://github.com/iTowns/itowns/commit/57ed8d3))
+* **view:** add WebXR support. ([1d10290](https://github.com/iTowns/itowns/commit/1d10290))
+
+
+### Bug Fixes
+
+* **C3DTilesLayer:** handle tileContent with several child containing C3DTFeature. ([219e015](https://github.com/iTowns/itowns/commit/219e015))
+* **ColorLayer:** Fix rendering issue on white to invisible effect ([04cad6c](https://github.com/iTowns/itowns/commit/04cad6c)), closes [#2236](https://github.com/iTowns/itowns/issues/2236)
+* **examples:** change watercolor tile url ([1bfd639](https://github.com/iTowns/itowns/commit/1bfd639))
+* **examples:** Fix stereo effects example ([3919b72](https://github.com/iTowns/itowns/commit/3919b72)), closes [/github.com/mrdoob/three.js/wiki/Migration-Guide#147--148](https://github.com//github.com/mrdoob/three.js/wiki/Migration-Guide/issues/147--148)
+* **package-lock.json:** Restore resolved and integrity properties ([6737c93](https://github.com/iTowns/itowns/commit/6737c93)), closes [npm/cli#4263](https://github.com/npm/cli/issues/4263)
+* **pointcloud:** Add SSE calculation for orthographic projections ([cae9463](https://github.com/iTowns/itowns/commit/cae9463))
+* **points:** Correct orthographic vertex projection ([e6e1d80](https://github.com/iTowns/itowns/commit/e6e1d80))
+* **StateControl:** use uncaught key event ([7fae54c](https://github.com/iTowns/itowns/commit/7fae54c))
+* **tests:** prevent overwriting `navigator.userAgent` ([f146262](https://github.com/iTowns/itowns/commit/f146262))
+* **VectorTile:** loading texture on VectorTile when node.pendingSubdivision  !need improvement! ([e464bdc](https://github.com/iTowns/itowns/commit/e464bdc))
+
+
+### Performance Improvements
+
+* **3dtiles:** Transform 3d tiles region bounding volumes to spheres ([f0eaf96](https://github.com/iTowns/itowns/commit/f0eaf96))
+
+
+### Code Refactoring
+
+* **bboxDigits:** Apply code review ([b118942](https://github.com/iTowns/itowns/commit/b118942))
+* **Feature2Mesh:** add gestion feature with variable size ([4d44cd3](https://github.com/iTowns/itowns/commit/4d44cd3))
+* **FeatureContext:** use Context on LabelLayer and Feature2Texture ([4abab9b](https://github.com/iTowns/itowns/commit/4abab9b))
+* **FeatureCtx:** move class FeatureContext to Style and rename ([2428d56](https://github.com/iTowns/itowns/commit/2428d56))
+* **Feature:** remove geometry.properties.style -> use style fct at Feature level ([b736f72](https://github.com/iTowns/itowns/commit/b736f72))
+* **FeatureToolTip:** update with new gestion of Style ([356e695](https://github.com/iTowns/itowns/commit/356e695))
+* **points:** Uniformize naming with three's points shader ([d46cd44](https://github.com/iTowns/itowns/commit/d46cd44))
+* **Style:** change setFromGeojsonProperties() to static ([8cf99b6](https://github.com/iTowns/itowns/commit/8cf99b6))
+* **style:** change Style.drawingFromContext(ctx) to Style.getFromContext(ctx) for hierarchization of style properties ([17bbe88](https://github.com/iTowns/itowns/commit/17bbe88))
+* **Style:** change Style.setFromVectorTileLayer to static ([5f22009](https://github.com/iTowns/itowns/commit/5f22009))
+* **StyleContext:** add setFeature to access feature.type ([6b44ef9](https://github.com/iTowns/itowns/commit/6b44ef9))
+* **Style:** fuse drawStylefromContext() and symbolStylefromContext() into applyContext() ([db3e455](https://github.com/iTowns/itowns/commit/db3e455))
+* **Style:** homogenize gestion fill.pattern between all existing ([396edfb](https://github.com/iTowns/itowns/commit/396edfb))
+* **Style:** Style hierachisation in Layer.Style instanciation ([55849f6](https://github.com/iTowns/itowns/commit/55849f6))
+* **Style:** supp collection.style and delete notion of style.parent ([40f83b3](https://github.com/iTowns/itowns/commit/40f83b3))
+* **Style:** supp getTextFromProperties() ad it's done with getContext() ([565dd63](https://github.com/iTowns/itowns/commit/565dd63))
+
+
+### Workflow and chores
+
+* release v2.42.0 ([ec812b4](https://github.com/iTowns/itowns/commit/ec812b4))
+* **babel:** remove nullish coalescing operator transform ([691a859](https://github.com/iTowns/itowns/commit/691a859))
+* **deps-dev:** bump [@babel](https://github.com/babel)/traverse from 7.22.5 to 7.23.2 ([66171c7](https://github.com/iTowns/itowns/commit/66171c7))
+* **deps-dev:** bump follow-redirects from 1.15.2 to 1.15.4 ([9761d58](https://github.com/iTowns/itowns/commit/9761d58))
+* **deps-dev:** Update conventional-changelog from 3.0.0 to 4.1.0 ([5f084bf](https://github.com/iTowns/itowns/commit/5f084bf))
+* **deps-dev:** Update eslint and its plugins ([1e9371e](https://github.com/iTowns/itowns/commit/1e9371e))
+* **deps-dev:** Update some developer dependencies ([4d74d4a](https://github.com/iTowns/itowns/commit/4d74d4a))
+* **deps-dev:** Update webpack and its loaders ([cdaf12f](https://github.com/iTowns/itowns/commit/cdaf12f))
+* **deps:** add copc.js dependency ([f89df8c](https://github.com/iTowns/itowns/commit/f89df8c))
+* **deps:** supp package loaders.gl/las ([14884f3](https://github.com/iTowns/itowns/commit/14884f3))
+* **deps:** Update [@loaders](https://github.com/loaders).gl/las from 3.4.4 to 4.0.4 ([30ded56](https://github.com/iTowns/itowns/commit/30ded56))
+* **deps:** Update [@tmcw](https://github.com/tmcw)/togeojson from 5.6.2 to 5.8.1 ([e52fba6](https://github.com/iTowns/itowns/commit/e52fba6))
+* **deps:** Update regenerator-runtime from 0.13.11 to 0.14.0 ([878a256](https://github.com/iTowns/itowns/commit/878a256))
+* **dev-deps:** Update puppeteer from 19.4.0 to 21.6.0 ([a681103](https://github.com/iTowns/itowns/commit/a681103))
+* **dev-deps:** Update semver due to moderate vulnerability ([5a6c7e3](https://github.com/iTowns/itowns/commit/5a6c7e3))
+* **examples:** ESMify collada example ([b82622d](https://github.com/iTowns/itowns/commit/b82622d))
+* **examples:** ESMify multiple 2.5D maps ([ac9cea4](https://github.com/iTowns/itowns/commit/ac9cea4))
+* **Feature:** rename base_altitudeDefault to camelCase ([658992d](https://github.com/iTowns/itowns/commit/658992d))
+* **polyfills:** remove polyfill for async/await ([abc6bbb](https://github.com/iTowns/itowns/commit/abc6bbb))
+* **polyfills:** remove polyfill for TextDecoder ([356811e](https://github.com/iTowns/itowns/commit/356811e))
+* **README:** add browser support notice ([f31fec9](https://github.com/iTowns/itowns/commit/f31fec9))
+* **test:** fix bootstrap to follow ES semantics ([4d4e28f](https://github.com/iTowns/itowns/commit/4d4e28f))
+* **webpack:** remove fetch polyfill on bundle ([96b870a](https://github.com/iTowns/itowns/commit/96b870a))
+* **webpack:** remove URL polyfill on bundle ([1928986](https://github.com/iTowns/itowns/commit/1928986))
+* **webpack:** stop watching node modules in dev mode ([47d0c7c](https://github.com/iTowns/itowns/commit/47d0c7c))
+
+
+### Documentation
+
+* **ColorLayer:** Update doc on effect_type and effect_parameter ([d508831](https://github.com/iTowns/itowns/commit/d508831))
+* **README:** remove typo ([6329129](https://github.com/iTowns/itowns/commit/6329129))
+* **style:** specify features supported with labels ([de88737](https://github.com/iTowns/itowns/commit/de88737))
+* **View:** document View properties ([ef8d3f4](https://github.com/iTowns/itowns/commit/ef8d3f4))
+
+
+### BREAKING CHANGES
+
+* iTowns now officially supports only the two last
+versions + versions with >0.5% market share of popular browsers as
+well as the lastest version of Firefox ESR. WebGL2.0 support is also
+mandatory.
+* **3dtiles:** Remove region, box and sphere properties of C3DTBoundingVolume.
+They have been replaced by volume property which contains a THREE.Box3 (for
+box) or a THREE.Sphere (for sphere or region). Initial bounding volume type
+can be retrieved with the initialVolumeType property.
+* **C3DTilesLayer:** C3DTFeature constructor changed from (tileId, batchId, groups, info, userData) to (tileId, batchId, groups, info, userData, object3d)
+
+
+
 <a name="2.41.0"></a>
 # [2.41.0](https://github.com/iTowns/itowns/compare/v2.40.0...v2.41.0) (2023-10-16)
 
