@@ -64,10 +64,17 @@
             }
 
             function readEPTURL() {
-                var url = document.getElementById('ept_url').value || new URL(location.href).searchParams.get('ept');
+                const urlParams = new URL(location.href).searchParams
+                var url = document.getElementById('ept_url').value || urlParams.get('ept');
 
                 if (url) {
-                    loadEPT(url);
+                    const options = {};
+                    urlParams.keys().forEach(key => {
+                        if (key !== 'ept') {
+                            options[key] = parseInt(urlParams.get(key), 10);
+                        }
+                    });
+                    loadEPT(url, options);
 
                     document.getElementById('share').innerHTML = '<a href="' +
                         location.href.replace(location.search, '') +
@@ -77,7 +84,7 @@
                 }
             }
 
-            function loadEPT(url) {
+            function loadEPT(url, options) {
                 eptSource = new itowns.EntwinePointTileSource({ url });
 
                 if (eptLayer) {
@@ -87,10 +94,12 @@
                     eptLayer.delete();
                 }
 
-                eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', {
+                const config = {
                     source: eptSource,
                     crs: view.referenceCrs,
-                });
+                    ...options,
+                }
+                eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', config);
 
                 view.addLayer(eptLayer).then(onLayerReady);
 
