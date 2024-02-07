@@ -4,6 +4,7 @@ import VectorTileParser from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
 import Extent from 'Core/Geographic/Extent';
 import urlParser from 'Parser/MapBoxUrlParser';
+import { supportedFetchers } from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
 import sinon from 'sinon';
 
@@ -94,15 +95,23 @@ describe('Vector tiles', function () {
 });
 
 describe('VectorTilesSource', function () {
+    let stubFetcherjson;
     let stub;
     before(function () {
-        stub = sinon.stub(Fetcher, 'json')
+        stubFetcherjson = sinon.stub(Fetcher, 'json')
             .callsFake((url) => {
                 url = url.split('?')[0];
                 return Promise.resolve(JSON.parse(resources[url]));
             });
+        const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
+        const stubSupportedFetchers = new Map([
+            ['application/x-protobuf;type=mapbox-vector', () => Promise.resolve(multipolygon)],
+        ]);
+        stub = sinon.stub(supportedFetchers, 'get')
+            .callsFake(format => stubSupportedFetchers.get(format));
     });
     after(function () {
+        stubFetcherjson.restore();
         stub.restore();
     });
 
@@ -121,9 +130,9 @@ describe('VectorTilesSource', function () {
             },
         });
         source.whenReady.then(() => {
-            assert.equal(source.url.size, 1);
+            assert.equal(source.urls.length, 1);
             // eslint-disable-next-line no-template-curly-in-string
-            assert.ok(source.url.has('http://server.geo/${z}/${x}/${y}.pbf'));
+            assert.ok(source.urls.includes('http://server.geo/${z}/${x}/${y}.pbf'));
             done();
         })
             .catch(done);
@@ -148,7 +157,7 @@ describe('VectorTilesSource', function () {
         source.whenReady
             .then(() => {
                 assert.equal(source.url, '.');
-                assert.equal(source.urls.size, 1);
+                assert.equal(source.urls.length, 1);
                 done();
             })
             .catch(done);
@@ -194,7 +203,6 @@ describe('VectorTilesSource', function () {
     it('loads the style from a file', function _it(done) {
         const source = new VectorTilesSource({
             style: 'test/data/vectortiles/style.json',
-            networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
         });
         source.whenReady
             .then(() => {
@@ -301,7 +309,7 @@ describe('VectorTilesSource', function () {
                         },
                         source2: {
                             type: 'vector',
-                            tiles: ['http://server.geo2/{z}/{x}/{y}.pbf'],
+                            tiles: ['http://server2.geo/{z}/{x}/{y}.pbf'],
                         },
                     },
                     layers: [],
@@ -309,11 +317,11 @@ describe('VectorTilesSource', function () {
             });
             source.whenReady
                 .then(() => {
-                    assert.equal(source.url.size, 2);
+                    assert.equal(source.urls.length, 2);
                     // eslint-disable-next-line no-template-curly-in-string
-                    assert.ok(source.url.has('http://server.geo/${z}/${x}/${y}.pbf'));
+                    assert.ok(source.urls.includes('http://server.geo/${z}/${x}/${y}.pbf'));
                     // eslint-disable-next-line no-template-curly-in-string
-                    assert.ok(source.url.has('http://server.geo2/${z}/${x}/${y}.pbf'));
+                    assert.ok(source.urls.includes('http://server2.geo/${z}/${x}/${y}.pbf'));
                     done();
                 })
                 .catch(done);
@@ -336,10 +344,53 @@ describe('VectorTilesSource', function () {
             });
             source.whenReady
                 .then(() => {
-                    assert.equal(source.url.size, 1);
+                    assert.equal(source.urls.length, 1);
                     // eslint-disable-next-line no-template-curly-in-string
-                    assert.ok(source.url.has('http://server.geo/${z}/${x}/${y}.pbf'));
+                    assert.ok(source.urls.includes('http://server.geo/${z}/${x}/${y}.pbf'));
                     done();
+                })
+                .catch(done);
+        });
+    });
+
+    describe('loadData', function () {
+        it('with multisource', (done) => {
+            const source = new VectorTilesSource({
+                style: {
+                    sources: {
+                        source1: {
+                            type: 'vector',
+                            tiles: ['http://server.geo/{z}/{x}/{y}.pbf'],
+                        },
+                        source2: {
+                            type: 'vector',
+                            tiles: ['http://server2.geo/{z}/{x}/{y}.pbf'],
+                        },
+                    },
+                    layers: [{
+                        id: 'geojson',
+                        source: 'source1',
+                        'source-layer': 'geojson',
+                        type: 'fill',
+                        paint: {
+                            'fill-color': 'red',
+                        },
+                    }],
+                },
+            });
+
+            source.whenReady
+                .then(() => {
+                    source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
+                    const extent = new Extent('TMS', 1, 1, 1);
+                    source.loadData(extent, { crs: 'EPSG:4326' })
+                        .then((featureCollection) => {
+                            assert.equal(featureCollection.features[0].vertices.length, 20);
+                            done();
+                        })
+                        .catch((err) => {
+                            done(err);
+                        });
                 })
                 .catch(done);
         });
