@@ -1,16 +1,8 @@
 import assert from 'assert';
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
+import { obj2ArrayBuff } from './utils';
 
 describe('3D Tiles batch table', function () {
-    // encode a javascript object into an arraybuffer (based on the 3D Tiles batch table encoding)
-    function obj2ArrayBuff(obj) {
-        const objJSON = JSON.stringify(obj);
-        const encoder = new TextEncoder();
-        const objUtf8 = encoder.encode(objJSON);
-        const objUint8 = new Uint8Array(objUtf8);
-        return objUint8.buffer;
-    }
-
     it('Should parse JSON batch table from buffer', function () {
         const batchTable = {
             a1: ['bah', 'tah', 'ratata', 'lo'],
@@ -53,5 +45,23 @@ describe('3D Tiles batch table', function () {
         const batchTableObj = new C3DTBatchTable(batchTableBuffer, jsonPartBuffer.byteLength, binPartBuffer.byteLength, 3, {});
 
         assert.deepStrictEqual(expectedBatchTable, batchTableObj.content);
+    });
+
+    it('Should get batch table info for a given id', function () {
+        const batchTableJSON = {
+            name: ['Ferme', 'Mas des Tourelles', 'Mairie'],
+            height: [10, 12, 6],
+        };
+        const batchTableBuffer = obj2ArrayBuff(batchTableJSON);
+        const batchTable = new C3DTBatchTable(batchTableBuffer, batchTableBuffer.byteLength, 0, 4, {});
+
+        const batchInfo = batchTable.getInfoById(0);
+        const expectedBatchInfo = {
+            batchTable: {
+                name: 'Ferme',
+                height: 10,
+            },
+        };
+        assert.deepStrictEqual(batchInfo, expectedBatchInfo);
     });
 });
