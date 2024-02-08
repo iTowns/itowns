@@ -4,33 +4,30 @@
  * Description: Classe pour créer un menu.
  */
 
-/* global dat, itowns */
+/* global lil, itowns */
 
-dat.GUI.prototype.removeFolder = function removeFolder(name) {
-    const folder = this.__folders[name];
-    if (!folder) {
-        return;
-    }
-    folder.close();
-    this.__ul.removeChild(folder.domElement.parentNode);
-    delete this.__folders[name];
-    this.onResize();
+lil.GUI.prototype.findFolderByTitle = function findFolderByTitle(name) {
+    return this.folders.find(f => f.$title.innerText === name);
 };
 
-dat.GUI.prototype.colorLayerFolder = function colorLayerFolder(name, value) {
-    const folder = this.__folders[name];
+lil.GUI.prototype.removeFolder = function removeFolder(name) {
+    const folder = this.findFolderByTitle(name);
     if (!folder) {
         return;
     }
-    const title = folder.__ul.getElementsByClassName('title')[0];
+    folder.destroy();
+};
+
+lil.GUI.prototype.colorLayerFolder = function colorLayerFolder(name, value) {
+    const folder = this.findFolderByTitle(name);
+    if (!folder) {
+        return;
+    }
+    const title = folder.$title;
 
     if (title.style) {
         title.style.background = value;
     }
-};
-
-dat.GUI.prototype.hasFolder = function hasFolder(name) {
-    return this.__folders[name];
 };
 
 function GuiTools(domId, view, w) {
@@ -38,12 +35,16 @@ function GuiTools(domId, view, w) {
         const width = w || 245;
         const element = document.createElement('div');
         element.id = 'menuDiv';
-        this.gui = new dat.GUI({ autoPlace: false, width: width });
+        this.gui = new lil.GUI({ autoPlace: false, width: width });
+        this.gui.close();
         element.appendChild(this.gui.domElement);
         document.body.appendChild(element);
         this.colorGui = this.gui.addFolder('Color Layers');
         this.elevationGui = this.gui.addFolder('Elevation Layers');
         this.geoidGui = this.gui.addFolder('Geoid Layers');
+        this.elevationGui.close();
+        this.colorGui.close();
+        this.geoidGui.close();
         this.elevationGui.hide();
         this.colorGui.hide();
         this.geoidGui.hide();
@@ -80,9 +81,9 @@ GuiTools.prototype.addLayersGUI = function fnAddLayersGUI() {
 };
 
 GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
-    if (this.colorGui.hasFolder(layer.id)) { return; }
     this.colorGui.show();
     const folder = this.colorGui.addFolder(layer.id);
+    folder.close();
     folder.add({ visible: layer.visible }, 'visible').onChange((function updateVisibility(value) {
         layer.visible = value;
         this.view.notifyChange(layer);
@@ -98,9 +99,9 @@ GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
 };
 
 GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
-    if (this.elevationGui.hasFolder(layer.id)) { return; }
     this.elevationGui.show();
     const folder = this.elevationGui.addFolder(layer.id);
+    folder.close();
     folder.add({ frozen: layer.frozen }, 'frozen').onChange(function refreshFrozenGui(value) {
         layer.frozen = value;
     });
@@ -111,9 +112,9 @@ GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
 };
 
 GuiTools.prototype.addGeoidLayerGUI = function addGeoidLayerGUI(layer) {
-    if (this.geoidGui.hasFolder(layer.id)) { return; }
     this.geoidGui.show();
     const folder = this.geoidGui.addFolder(layer.id);
+    folder.close();
     folder.add({ frozen: layer.frozen }, 'frozen').onChange(function refreshFrozenGui(value) {
         layer.frozen = value;
     });

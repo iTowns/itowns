@@ -4,6 +4,7 @@ export default {
     initTools(view, layer, datUi) {
         const update = () => view.notifyChange(layer, true);
         layer.debugUI = datUi.addFolder(`${layer.id}`);
+        layer.debugUI.close();
 
         layer.debugUI.add(layer, 'visible').name('Visible').onChange(update);
         layer.debugUI.add(layer, 'sseThreshold').name('SSE threshold').onChange(update);
@@ -20,6 +21,7 @@ export default {
         layer.dbgDisplayParents = true;
 
         const styleUI = layer.debugUI.addFolder('Styling');
+        styleUI.close();
         if (layer.material.mode != undefined) {
             styleUI.add(layer.material, 'mode', PNTS_MODE).name('Display mode').onChange(update);
             styleUI.add(layer, 'maxIntensityRange', 0, 1).name('Intensity max').onChange(update);
@@ -42,6 +44,7 @@ export default {
 
         // UI
         const debugUI = layer.debugUI.addFolder('Debug');
+        debugUI.close();
         debugUI.add(layer.bboxes, 'visible').name('Display Bounding Boxes').onChange(update);
         debugUI.add(layer, 'dbgStickyNode').name('Sticky node name').onChange(update);
         debugUI.add(layer, 'dbgDisplaySticky').name('Display sticky node').onChange(update);

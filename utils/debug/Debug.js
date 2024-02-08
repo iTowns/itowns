@@ -47,6 +47,7 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
     // DEBUG CONTROLS
     const gui = datDebugTool.addFolder('Debug Tools');
+    gui.close();
 
     const state = {
         displayCharts: false,
