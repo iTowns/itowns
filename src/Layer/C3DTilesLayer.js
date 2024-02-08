@@ -308,8 +308,8 @@ class C3DTilesLayer extends GeometryLayer {
                     throw new Error('no batchTable');
                 }
 
-                const geometryAttributes = child.geometry.attributes;
-                let currentBatchId = geometryAttributes._BATCHID.array[0];
+                const batchIdAttribute = child.geometry.getAttribute('_BATCHID');
+                let currentBatchId = batchIdAttribute.getX(0);
                 let start = 0;
                 let count = 0;
 
@@ -336,9 +336,11 @@ class C3DTilesLayer extends GeometryLayer {
                     }
                 };
 
-                for (let index = 0; index < geometryAttributes.position.array.length; index += geometryAttributes.position.itemSize) {
-                    const batchIndex = index / geometryAttributes.position.itemSize;
-                    const batchId = geometryAttributes._BATCHID.array[batchIndex];
+                const positionAttribute = child.geometry.getAttribute('position');
+                const positionAttributeSize = positionAttribute.count * positionAttribute.itemSize;
+                for (let index = 0; index < positionAttributeSize; index += positionAttribute.itemSize) {
+                    const batchIndex = index / positionAttribute.itemSize;
+                    const batchId = batchIdAttribute.getX(batchIndex);
 
                     // check if batchId is currentBatchId
                     if (currentBatchId !== batchId) {
@@ -354,7 +356,7 @@ class C3DTilesLayer extends GeometryLayer {
                     count++;
 
                     // check if end of the array
-                    if (index + geometryAttributes.position.itemSize >= geometryAttributes.position.array.length) {
+                    if (index + positionAttribute.itemSize >= positionAttributeSize) {
                         registerBatchIdGroup();
                     }
                 }
