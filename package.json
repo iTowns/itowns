@@ -76,6 +76,7 @@
     "@babel/preset-env": "^7.22.5",
     "@babel/register": "^7.22.5",
     "@types/three": "^0.159.0",
+    "@xmldom/xmldom": "^0.8.10",
     "babel-inline-import-loader": "^1.0.1",
     "babel-loader": "^9.1.3",
     "babel-plugin-inline-import": "^3.0.0",
