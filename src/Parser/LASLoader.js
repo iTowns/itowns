@@ -15,6 +15,10 @@ import { Las } from 'copc';
  * xOffset, zOffset]`) added to the scaled X, Y, Z point record values.
  */
 
+function defaultColorEncoding(header) {
+    return (header.majorVersion === 1 && header.minorVersion <= 2) ? 8 : 16;
+}
+
 /**
  * @classdesc
  * Loader for LAS and LAZ (LASZip) point clouds. It uses the copc.js library and
@@ -132,6 +136,38 @@ class LASLoader {
     }
 
     /**
+     * Parses a LAS or LAZ (LASZip) chunk. Note that this function is
+     * **CPU-bound** and shall be parallelised in a dedicated worker.
+     * @param {Uint8Array} data - File chunk data.
+     * @param {Object} options - Parsing options.
+     * @param {Header} options.header - Partial LAS header.
+     * @param {number} options.pointCount - Number of points encoded in this
+     * data chunk.
+     * @param {Las.ExtraBytes[]} [options.eb] - Extra bytes LAS VLRs
+     * headers.
+     * @param {8 | 16} [options.colorDepth] - Color depth encoding (in bits).
+     * Either 8 or 16 bits. Defaults to 8 bits for LAS 1.2 and 16 bits for later
+     * versions (as mandatory by the specification).
+     */
+    async parseChunk(data, options) {
+        const { header, eb, pointCount } = options;
+        const { pointDataRecordFormat, pointDataRecordLength } = header;
+
+        const colorDepth = options.colorDepth ?? defaultColorEncoding(header);
+
+        const bytes = new Uint8Array(data);
+        const pointData = await Las.PointData.decompressChunk(bytes, {
+            pointCount,
+            pointDataRecordFormat,
+            pointDataRecordLength,
+        }, this._initDecoder());
+
+        const view = Las.View.create(pointData, header, eb);
+        const attributes = this._parseView(view, { colorDepth });
+        return { attributes };
+    }
+
+    /**
      * Parses a LAS or LAZ (LASZip) file. Note that this function is
      * **CPU-bound** and shall be parallelised in a dedicated worker.
      * @param {ArrayBuffer} data - Binary data to parse.
@@ -146,8 +182,7 @@ class LASLoader {
         const pointData = await Las.PointData.decompressFile(bytes, this._initDecoder());
 
         const header = Las.Header.parse(bytes);
-        const colorDepth = options.colorDepth ??
-            ((header.majorVersion === 1 && header.minorVersion <= 2) ? 8 : 16);
+        const colorDepth = options.colorDepth ?? defaultColorEncoding(header);
 
         const getter = async (begin, end) => bytes.slice(begin, end);
         const vlrs = await Las.Vlr.walk(getter, header);
