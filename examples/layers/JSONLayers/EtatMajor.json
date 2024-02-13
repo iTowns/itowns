@@ -1,10 +1,10 @@
 {
-    "id":         "Etat major (1850)",
+    "id": "Etat major (1850)",
     "opacity": 1,
     "transparent": true,
     "source": {
         "crs": "EPSG:3857",
-        "url":        "http://wxs.ign.fr/cartes/geoportail/wmts",
+        "url": "https://data.geopf.fr/wmts?",
         "networkOptions": {
             "crossOrigin": "anonymous"
         },

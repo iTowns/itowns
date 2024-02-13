@@ -64,16 +64,16 @@
 
             var color = new itowns.THREE.Color();
             var tile;
-            function altitudeLine(properties, contour) {
+            function altitudeLine(properties, ctx) {
                 var result;
                 var z = 0;
-                if (contour) {
-                    result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0, tile);
+                if (ctx.coordinates) {
+                    result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, ctx.coordinates, 0, tile);
                     if (!result) {
-                        result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, contour, 0);
+                        result = itowns.DEMUtils.getTerrainObjectAt(view.tileLayer, ctx.coordinates, 0);
                     }
-                    tile = [result.tile];
                     if (result) {
+                        tile = [result.tile];
                         z = result.coord.z;
                     }
                     return z + 5;
@@ -95,11 +95,12 @@
                 return false;
             }
 
-            var lyonTclBusSource = new itowns.WFSSource({
+            lyonTclBusSource = new itowns.WFSSource({
+                url: "https://data.grandlyon.com/geoserver/sytral/ows?",
                 protocol: 'wfs',
-                url: 'https://download.data.grandlyon.com/wfs/rdata?',
                 version: '2.0.0',
-                typeName: 'tcl_sytral.tcllignebus',
+                id: 'tcl_bus',
+                typeName: "tcl_sytral.tcllignebus_2_0_0",
                 crs: 'EPSG:3946',
                 extent: {
                     west: 1822174.60,
@@ -107,7 +108,7 @@
                     south: 5138876.75,
                     north: 5205890.19,
                 },
-                format: 'geojson',
+                format: 'application/json',
             });
 
             var lyonTclBusLayer = new itowns.FeatureGeometryLayer('WFS Bus lines',{
