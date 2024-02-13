@@ -19,11 +19,11 @@ jobs:
     steps:
 
       # Use specific Node.js version
-      - uses: actions/checkout@v3
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
           cache: 'npm'
 
       # Install packages
@@ -51,7 +51,7 @@ jobs:
       # Prepare archive for deploying
       - name: Archive production artifacts
         if: ${{ success() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: dist-itowns
             path: |
@@ -84,11 +84,11 @@ jobs:
     steps:
 
       # Use specific Node.js version
-      - uses: actions/checkout@v3
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
           cache: 'npm'
 
       # Install packages
@@ -114,11 +114,11 @@ jobs:
     steps:
 
       # Use specific Node.js version
-      - uses: actions/checkout@v3
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
           cache: 'npm'
 
       # Install packages
@@ -127,7 +127,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist-itowns
 
@@ -149,17 +149,17 @@ jobs:
         contents: write
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # fetch all branches
           fetch-depth: 0
 
       # Configure git user for later command induced commits
-      - uses: fregante/setup-git-user@v1
+      - uses: fregante/setup-git-user@v2
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20.x
           registry-url: https://registry.npmjs.org/
 
       - run: npm ci
@@ -202,7 +202,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist-itowns
 
@@ -261,12 +261,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
 
       - name: Message commit
         run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
@@ -288,7 +288,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist-itowns
 
