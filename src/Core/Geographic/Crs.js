@@ -50,6 +50,8 @@ function _unitFromProj4Unit(projunit) {
         return UNIT.DEGREE;
     } else if (projunit === 'm') {
         return UNIT.METER;
+    } else if (projunit === 'meter') {
+        return UNIT.METER;
     } else {
         return undefined;
     }

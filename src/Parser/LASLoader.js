@@ -159,6 +159,7 @@ class LASLoader {
         return {
             header,
             attributes,
+            pointCount: view.pointCount,
         };
     }
 }

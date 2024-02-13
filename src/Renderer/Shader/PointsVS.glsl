@@ -36,6 +36,7 @@ attribute vec4 unique_id;
 attribute float intensity;
 attribute float classification;
 attribute float pointSourceID;
+attribute float elevation;
 
 attribute float returnNumber;
 attribute float numberOfReturns;
@@ -150,7 +151,7 @@ void main() {
             vec2 uv = vec2(i, (1. - i));
             vColor = texture2D(gradientTexture, uv);
         } else if (mode == PNTS_MODE_ELEVATION) {
-            float i = (position.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
+            float i = (elevation - elevationRange.x) / (elevationRange.y - elevationRange.x);
             vec2 uv = vec2(i, (1. - i));
             vColor = texture2D(gradientTexture, uv);
         }

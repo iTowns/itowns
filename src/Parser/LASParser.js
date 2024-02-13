@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import LASLoader from 'Parser/LASLoader';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 const lasLoader = new LASLoader();
 
@@ -47,8 +48,29 @@ export default {
             const attributes = parsedData.attributes;
             geometry.userData = parsedData.header;
 
-            const positionBuffer = new THREE.BufferAttribute(attributes.position, 3);
+            const coord = new Coordinates(options.in.crs, 0, 0, 0);
+            const coordOut = new Coordinates(options.out.crs, 0, 0, 0);
+            const positionsProj = new Float32Array(parsedData.pointCount * 3);
+            const elevations = new Float32Array(parsedData.pointCount);
+
+            for (let i = 0; i < parsedData.pointCount; i++) {
+                coord.setFromValues(
+                    attributes.position[i * 3],
+                    attributes.position[i * 3 + 1],
+                    attributes.position[i * 3 + 2],
+                );
+                coord.as(options.out.crs, coordOut);
+                positionsProj[i * 3] = coordOut.x;
+                positionsProj[i * 3 + 1] = coordOut.y;
+                positionsProj[i * 3 + 2] = coordOut.z;
+                elevations[i] = coordOut.z;
+                if (options.out.crs === 'EPSG:4978') { elevations[i] = attributes.position[i * 3 + 2]; }
+            }
+
+            const positionBuffer = new THREE.BufferAttribute(positionsProj, 3);
             geometry.setAttribute('position', positionBuffer);
+            const elevationBuffer = new THREE.BufferAttribute(elevations, 1);
+            geometry.setAttribute('elevation', elevationBuffer);
 
             const intensityBuffer = new THREE.BufferAttribute(attributes.intensity, 1);
             geometry.setAttribute('intensity', intensityBuffer);
