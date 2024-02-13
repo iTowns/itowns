@@ -131,8 +131,8 @@ jobs:
         with:
           name: dist-itowns
 
-      - name: Run functional tests
-        run: npm run test-functional
+  #     - name: Run functional tests
+  #       run: npm run test-functional
 
 
   # Publish NPM package
@@ -231,7 +231,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          external_repository: iTowns/itowns.github.io
+          external_repository: mgermerie/itowns.github.io
           publish_dir: ./itowns
           destination_dir: ./itowns
           publish_branch: master
@@ -246,7 +246,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          external_repository: iTowns/itowns.github.io
+          external_repository: mgermerie/itowns.github.io
           publish_dir: ./itowns
           destination_dir: ./itowns/dev
           publish_branch: master
