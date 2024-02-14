@@ -51,10 +51,14 @@
 
                 view.camera3D.far = 2.0 * size.length();
 
-                var position = eptLayer.root.bbox.min.clone().add(size.multiply({ x: 0, y: 0, z: size.x / size.z }));
+                controls.groundLevel = eptLayer.root.bbox.min.z;
+                var position = eptLayer.root.bbox.min.clone().add(
+                    size.multiply({ x: 0, y: 0, z: size.x / size.z })
+                );
 
                 view.camera3D.position.copy(position);
                 view.camera3D.lookAt(lookAt);
+                view.camera3D.updateProjectionMatrix();
 
                 view.notifyChange(view.camera3D);
             }
@@ -77,8 +81,10 @@
                 eptSource = new itowns.EntwinePointTileSource({ url });
 
                 if (eptLayer) {
-                    view.removeLayer('ept');
+                    debugGUI.removeFolder(eptLayer.debugUI);
+                    view.removeLayer('Entwine Point Tile');
                     view.notifyChange();
+                    eptLayer.delete();
                 }
 
                 eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', {
