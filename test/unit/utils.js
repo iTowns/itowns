@@ -13,3 +13,12 @@ export function compareArrayWithEpsilon(arr1, arr2, epsilon) {
     }
     return true;
 }
+
+// encode a javascript object into an arraybuffer (based on the 3D Tiles batch table encoding)
+export function obj2ArrayBuff(obj) {
+    const objJSON = JSON.stringify(obj);
+    const encoder = new TextEncoder();
+    const objUtf8 = encoder.encode(objJSON);
+    const objUint8 = new Uint8Array(objUtf8);
+    return objUint8.buffer;
+}

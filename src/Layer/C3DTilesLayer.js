@@ -226,25 +226,6 @@ class C3DTilesLayer extends GeometryLayer {
     }
 
     /**
-     * Finds the batch table of an object in a 3D Tiles layer. This is
-     * for instance needed when picking because we pick the geometric
-     * object which is not at the same level in the layer structure as
-     * the batch table. More details here on itowns internal
-     * organization of 3DTiles:
-     *  https://github.com/MEPP-team/RICT/blob/master/Doc/iTowns/Doc.md#itowns-internal-organisation-of-3d-tiles-data
-     * @param {THREE.Object3D} object - a 3D geometric object
-     * @returns {C3DTBatchTable} - the batch table of the object
-     */
-    findBatchTable(object) {
-        if (object.batchTable) {
-            return object.batchTable;
-        }
-        if (object.parent) {
-            return this.findBatchTable(object.parent);
-        }
-    }
-
-    /**
      * Get the closest c3DTileFeature of an intersects array.
      * @param {Array} intersects - @return An array containing all
      * targets picked under specified coordinates. Intersects can be
@@ -303,13 +284,8 @@ class C3DTilesLayer extends GeometryLayer {
         this.tilesC3DTileFeatures.set(tileContent.tileId, new Map()); // initialize
         tileContent.traverse((child) => {
             if (object3DHasFeature(child)) {
-                const batchTable = this.findBatchTable(child);
-                if (!batchTable) {
-                    throw new Error('no batchTable');
-                }
-
-                const geometryAttributes = child.geometry.attributes;
-                let currentBatchId = geometryAttributes._BATCHID.array[0];
+                const batchIdAttribute = child.geometry.getAttribute('_BATCHID');
+                let currentBatchId = batchIdAttribute.getX(0);
                 let start = 0;
                 let count = 0;
 
@@ -328,7 +304,6 @@ class C3DTilesLayer extends GeometryLayer {
                             tileContent.tileId,
                             currentBatchId,
                             [{ start, count }], // initialize with current group
-                            batchTable.getInfoById(currentBatchId),
                             {},
                             child,
                         );
@@ -336,9 +311,13 @@ class C3DTilesLayer extends GeometryLayer {
                     }
                 };
 
-                for (let index = 0; index < geometryAttributes.position.array.length; index += geometryAttributes.position.itemSize) {
-                    const batchIndex = index / geometryAttributes.position.itemSize;
-                    const batchId = geometryAttributes._BATCHID.array[batchIndex];
+                // TODO: Could be simplified by incrementing of 1 and stopping the iteration at positionAttributeSize.count
+                // See https://github.com/iTowns/itowns/pull/2266#discussion_r1483285122
+                const positionAttribute = child.geometry.getAttribute('position');
+                const positionAttributeSize = positionAttribute.count * positionAttribute.itemSize;
+                for (let index = 0; index < positionAttributeSize; index += positionAttribute.itemSize) {
+                    const batchIndex = index / positionAttribute.itemSize;
+                    const batchId = batchIdAttribute.getX(batchIndex);
 
                     // check if batchId is currentBatchId
                     if (currentBatchId !== batchId) {
@@ -354,7 +333,7 @@ class C3DTilesLayer extends GeometryLayer {
                     count++;
 
                     // check if end of the array
-                    if (index + geometryAttributes.position.itemSize >= geometryAttributes.position.array.length) {
+                    if (index + positionAttribute.itemSize >= positionAttributeSize) {
                         registerBatchIdGroup();
                     }
                 }
