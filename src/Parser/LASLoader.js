@@ -1,5 +1,6 @@
 import { LazPerf } from 'laz-perf';
 import { Las } from 'copc';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 /**
  * @typedef {Object} Header - Partial LAS header.
@@ -56,6 +57,9 @@ class LASLoader {
         const getScanAngle = view.getter('ScanAngle');
 
         const positions = new Float32Array(view.pointCount * 3);
+        const positionsProj = new Float32Array(view.pointCount * 3);
+        const elevations = new Float32Array(view.pointCount);
+
         const intensities = new Uint16Array(view.pointCount);
         const returnNumbers = new Uint8Array(view.pointCount);
         const numberOfReturns = new Uint8Array(view.pointCount);
@@ -73,6 +77,8 @@ class LASLoader {
 
         // For precision we take the first point that will be use as origin for a local referentiel.
         const origin = getPosition.map(f => f(0)).map(val => Math.floor(val));
+        const coord = new Coordinates(options.crsIn, 0, 0, 0);
+        const coordProj = new Coordinates(options.crsOut, 0, 0, 0);
 
         for (let i = 0; i < view.pointCount; i++) {
             // `getPosition` apply scale and offset transform to the X, Y, Z
@@ -81,6 +87,20 @@ class LASLoader {
             positions[i * 3] = x - origin[0];
             positions[i * 3 + 1] = y - origin[1];
             positions[i * 3 + 2] = z - origin[2];
+
+            // Calculate positions on view.crs
+            coord.setFromValues(
+                positions[i * 3],
+                positions[i * 3 + 1],
+                positions[i * 3 + 2],
+            );
+            coord.as(options.crsOut, coordProj);
+            positionsProj[i * 3] = coordProj.x;
+            positionsProj[i * 3 + 1] = coordProj.y;
+            positionsProj[i * 3 + 2] = coordProj.z;
+            elevations[i] = coordProj.z;
+            // geocentric height to elevation
+            if (options.crsOut === 'EPSG:4978') { elevations[i] = positions[i * 3 + 2]; }
 
             intensities[i] = getIntensity(i);
             returnNumbers[i] = getReturnNumber(i);
@@ -111,6 +131,8 @@ class LASLoader {
 
         return {
             position: positions,
+            elevation: elevations,
+            positionProj: positionsProj,
             intensity: intensities,
             returnNumber: returnNumbers,
             numberOfReturns,
@@ -155,11 +177,10 @@ class LASLoader {
         const eb = ebVlr && Las.ExtraBytes.parse(await Las.Vlr.fetch(getter, ebVlr));
 
         const view = Las.View.create(pointData, header, eb);
-        const attributes = this._parseView(view, { colorDepth });
+        const attributes = this._parseView(view, { colorDepth, crsIn: options.crsIn, crsOut: options.crsOut });
         return {
             header,
             attributes,
-            pointCount: view.pointCount,
         };
     }
 }
