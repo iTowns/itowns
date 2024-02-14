@@ -5,7 +5,7 @@
   "opacity": 1,
   "transparent": true,
   "source": {
-    "url": "https://wxs.ign.fr/parcellaire/geoportail/wmts",
+    "url": "https://data.geopf.fr/wmts?",
     "crs": "EPSG:3857",
     "networkOptions": {
       "crossOrigin": "omit"

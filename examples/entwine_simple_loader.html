@@ -31,14 +31,15 @@
         <script src="js/GUI/LoadingScreen.js"></script>
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
+            itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_0=46 +lon_0=3 +lat_1=45.25 +lat_2=46.75 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
+
             var debugGui = new dat.GUI();
             var viewerDiv = document.getElementById('viewerDiv');
             viewerDiv.style.display = 'block';
             var view = new itowns.View('EPSG:3946', viewerDiv);
             view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
-            var controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
-            debugGui.add(controls.options, 'moveSpeed', 1, 10000).name('Movement speed');
+            const controls = new itowns.PlanarControls(view);
 
             var eptLayer, eptSource;
 
@@ -55,10 +56,7 @@
                 view.camera3D.position.copy(position);
                 view.camera3D.lookAt(lookAt);
 
-                controls.options.moveSpeed = size.length();
-
                 view.notifyChange(view.camera3D);
-                controls.reset();
             }
 
             function readEPTURL() {

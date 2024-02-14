@@ -35,7 +35,7 @@ import CRS from 'Core/Geographic/Crs';
  * // Add color layer with WFS source
  * // Create the source
  * const wfsSource = new itowns.WFSSource({
- *     url: 'http://wxs.fr/wfs',
+ *     url: 'https://data.geopf.fr/wfs/ows?',
  *     version: '2.0.0',
  *     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable',
  *     crs: 'EPSG:4326',
@@ -66,7 +66,7 @@ import CRS from 'Core/Geographic/Crs';
  * // Add geometry layer with WFS source
  * // Create the source
  * const wfsSource = new itowns.WFSSource({
- *     url: 'http://wxs.fr/wfs',
+ *     url: 'https://data.geopf.fr/wfs/ows?',
  *     version: '2.0.0',
  *     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable',
  *     crs: 'EPSG:4326',

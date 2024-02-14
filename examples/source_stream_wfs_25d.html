@@ -238,7 +238,7 @@
             }
 
             var wfsBuildingSource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+                url: 'https://data.geopf.fr/wfs/ows?',
                 version: '2.0.0',
                 typeName: 'BDTOPO_V3:batiment',
                 crs: 'EPSG:4326',
@@ -271,7 +271,7 @@
             view.addLayer(wfsBuildingLayer);
 
             var wfsCartoSource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/cartovecto/geoportail/wfs?',
+                url: 'https://data.geopf.fr/wfs/ows?',
                 version: '2.0.0',
                 typeName: 'BDCARTO_BDD_WLD_WGS84G:zone_habitat_mairie',
                 crs: 'EPSG:3946',
