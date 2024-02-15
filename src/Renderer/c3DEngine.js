@@ -61,6 +61,11 @@ class c3DEngine {
 
         this.renderView = function _(view) {
             this.renderer.clear();
+            // TODO: dirty
+            if (this.tilesRenderer) {
+                view.camera.camera3D.updateMatrixWorld();
+                this.tilesRenderer.update();
+            }
             this.renderer.render(view.scene, view.camera3D);
             if (view.tileLayer) {
                 this.label2dRenderer.render(view.tileLayer.object3d, view.camera3D);

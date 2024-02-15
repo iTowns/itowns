@@ -45,7 +45,7 @@
 
             // Create a new Layer 3d-tiles For DiscreteLOD
             // -------------------------------------------
-            var $3dTilesLayerDiscreteLOD = new itowns.C3DTilesLayer('3d-tiles-discrete-lod', {
+            var $3dTilesLayerDiscreteLOD = new itowns.ThreeDTilesLayer('3d-tiles-discrete-lod', {
                 name: 'DiscreteLOD',
                 sseThreshold: 0.05,
                 source: new itowns.C3DTilesSource({
@@ -81,7 +81,7 @@
             // Add the UI Debug
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
-            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
+            // debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
             d.zoom = function() {
                 view.camera3D.position.set(1215013.9, -4736315.5, 4081597.5);
