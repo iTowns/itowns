@@ -5,7 +5,7 @@ import { MeshBasicMaterial } from 'three';
 import disposeThreeMaterial from 'Utils/ThreeUtils';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
-import iGLTFLoader from './GLTFParser';
+import iGLTFLoader from './iGLTFLoader';
 
 const matrixChangeUpVectorYtoZInv = (new THREE.Matrix4()).makeRotationX(-Math.PI / 2);
 const matrixChangeUpVectorXtoZ = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
@@ -49,7 +49,7 @@ function filterUnsupportedSemantics(obj) {
  */
 function applyDeprecatedGltfUpAxis(gltfScene, gltfUpAxis) {
     if (gltfUpAxis === 'Z') {
-        // If gltf up was already z-up, apply the inverse transform matrix that was applied in the glTFParser
+        // If gltf up was already z-up, apply the inverse transform matrix that was applied in the glTFParser // TODO
         gltfScene.applyMatrix4(matrixChangeUpVectorYtoZInv);
     } else if (gltfUpAxis === 'X') {
         gltfScene.applyMatrix4(matrixChangeUpVectorYtoZInv);

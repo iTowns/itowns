@@ -1,5 +1,5 @@
 import assert from 'assert';
-import iGLTFLoader from 'Parser/GLTFParser';
+import iGLTFLoader from 'src/Parser/iGLTFLoader';
 import gltf from '../data/gltf/Box.gltf';
 
 if (typeof atob === 'undefined') {

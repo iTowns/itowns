@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import B3dmParser from 'Parser/B3dmParser';
 import PntsParser from 'Parser/PntsParser';
-import iGLTFLoader from 'Parser/GLTFParser';
+import iGLTFLoader from 'Parser/iGLTFLoader';
 import Fetcher from 'Provider/Fetcher';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import PointsMaterial from 'Renderer/PointsMaterial';

@@ -49,7 +49,7 @@
                 name: 'DiscreteLOD',
                 sseThreshold: 0.05,
                 source: new itowns.C3DTilesSource({
-                    url: 'http://data-query-files-http.dev.ciril.lan/Lille/3dtilesv1/tileset.json',
+                    url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithDiscreteLOD/tileset.json',
                 }),
             });
 
@@ -64,7 +64,9 @@
                     url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithRequestVolume/tileset.json',
                 }),
                 sseThreshold: 1,
-            }, view);
+            });
+
+            itowns.View.prototype.addLayer.call(view, $3dTilesLayerRequestVolume);
 
             // add an event for picking the 3D Tiles layer and displaying
             // information about the picked feature in an html div

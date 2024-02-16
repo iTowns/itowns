@@ -152,7 +152,7 @@ class iGLTFLoader extends Loader {
      */
     parse(buffer, path, onLoad, onError) {
         if (!buffer || !path) {
-            console.error('[GLTFParser]: Buffer and path are mandatory to parse a glTF.');
+            console.error('[iGLTFLoader]: Buffer and path are mandatory to parse a glTF.');
         }
 
         const headerView = new DataView(buffer, 0, 20);
