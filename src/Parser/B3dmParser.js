@@ -5,7 +5,7 @@ import { MeshBasicMaterial } from 'three';
 import disposeThreeMaterial from 'Utils/ThreeUtils';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
-import GLTFParser from './GLTFParser';
+import iGLTFLoader from './GLTFParser';
 
 const matrixChangeUpVectorYtoZInv = (new THREE.Matrix4()).makeRotationX(-Math.PI / 2);
 const matrixChangeUpVectorXtoZ = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
@@ -174,7 +174,7 @@ export default {
                 }
             };
 
-            promises.push(GLTFParser.parse(gltfBuffer, options).then((gltf) => {
+            promises.push(iGLTFLoader.parse(gltfBuffer, options).then((gltf) => {
                 for (const scene of gltf.scenes) {
                     scene.traverse(filterUnsupportedSemantics);
                 }

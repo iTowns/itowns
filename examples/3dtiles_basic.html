@@ -49,7 +49,7 @@
                 name: 'DiscreteLOD',
                 sseThreshold: 0.05,
                 source: new itowns.C3DTilesSource({
-                    url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithDiscreteLOD/tileset.json',
+                    url: 'http://data-query-files-http.dev.ciril.lan/Lille/3dtilesv1/tileset.json',
                 }),
             });
 
@@ -68,27 +68,27 @@
 
             // add an event for picking the 3D Tiles layer and displaying
             // information about the picked feature in an html div
-            var pickingArgs = {};
-            pickingArgs.htmlDiv = document.getElementById('featureInfo');
-            pickingArgs.view = view;
-            pickingArgs.layer = $3dTilesLayerRequestVolume;
-            itowns.View.prototype.addLayer.call(view,
-                $3dTilesLayerRequestVolume).then(function _() {
-                    window.addEventListener('mousemove',
-                        (event) => fillHTMLWithPickingInfo(event, pickingArgs),false);
-                });
+            // var pickingArgs = {};
+            // pickingArgs.htmlDiv = document.getElementById('featureInfo');
+            // pickingArgs.view = view;
+            // pickingArgs.layer = $3dTilesLayerRequestVolume;
+            // itowns.View.prototype.addLayer.call(view,
+            //     $3dTilesLayerRequestVolume).then(function _() {
+            //         window.addEventListener('mousemove',
+            //             (event) => fillHTMLWithPickingInfo(event, pickingArgs),false);
+            //     });
 
             // Add the UI Debug
-            var d = new debug.Debug(view, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
-            // debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
-            // debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
-            d.zoom = function() {
-                view.camera3D.position.set(1215013.9, -4736315.5, 4081597.5);
-                view.camera3D.quaternion.set(0.9108514448729665, 0.13456816437801225, 0.1107206134840362, 0.3741416847378546);
-                view.notifyChange(view.camera3D);
-            }
-            menuGlobe.gui.add(d, 'zoom').name('Go to point cloud');
+            // var d = new debug.Debug(view, menuGlobe.gui);
+            // debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+            // // debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
+            // // debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
+            // d.zoom = function() {
+            //     view.camera3D.position.set(1215013.9, -4736315.5, 4081597.5);
+            //     view.camera3D.quaternion.set(0.9108514448729665, 0.13456816437801225, 0.1107206134840362, 0.3741416847378546);
+            //     view.notifyChange(view.camera3D);
+            // }
+            // menuGlobe.gui.add(d, 'zoom').name('Go to point cloud');
         </script>
     </body>
 </html>
