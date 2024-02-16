@@ -52,30 +52,32 @@ class EntwinePointTileLayer extends PointCloudLayer {
 
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then(() => {
+            const crs = this.crs || 'EPSG:4326';
+            if (this.crs !== config.crs) { console.warn('layer.crs is different from View.crs'); }
             this.root = new EntwinePointTileNode(0, 0, 0, 0, this, -1);
 
             const coord = new Coordinates(this.source.crs, 0, 0, 0);
-            const coordBoundsMin = new Coordinates(config.crs, 0, 0, 0);
-            const coordBoundsMax = new Coordinates(config.crs, 0, 0, 0);
+            const coordBoundsMin = new Coordinates(crs, 0, 0, 0);
+            const coordBoundsMax = new Coordinates(crs, 0, 0, 0);
             coord.setFromValues(
                 this.source.boundsConforming[0],
                 this.source.boundsConforming[1],
                 this.source.boundsConforming[2],
             );
-            coord.as(config.crs, coordBoundsMin);
+            coord.as(crs, coordBoundsMin);
             coord.setFromValues(
                 this.source.boundsConforming[3],
                 this.source.boundsConforming[4],
                 this.source.boundsConforming[5],
             );
-            coord.as(config.crs, coordBoundsMax);
+            coord.as(crs, coordBoundsMax);
 
             this.root.bbox.setFromPoints([coordBoundsMin.toVector3(), coordBoundsMax.toVector3()]);
 
             this.minElevationRange = this.source.boundsConforming[2];
             this.maxElevationRange = this.source.boundsConforming[5];
 
-            this.extent = Extent.fromBox3(config.crs || 'EPSG:4326', this.root.bbox);
+            this.extent = Extent.fromBox3(crs, this.root.bbox);
 
             // NOTE: this spacing is kinda arbitrary here, we take the width and
             // length (height can be ignored), and we divide by the specified

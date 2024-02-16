@@ -32,6 +32,8 @@ export default {
      * @param { 8 | 16 } [options.in.colorDepth] - Color depth (in bits).
      * Defaults to 8 bits for LAS 1.2 and 16 bits for later versions
      * (as mandatory by the specification)
+     * @param {String} [options.in.crs = 'EPSG:3857'] - Crs of the source if any.
+     * @param {String} [options.out.crs = options.in.crs] - Crs of the view if any.
      *
      * @return {Promise} A promise resolving with a `THREE.BufferGeometry`. The
      * header of the file is contained in `userData`.
@@ -40,10 +42,12 @@ export default {
         if (options.out?.skip) {
             console.warn("Warning: options 'skip' not supported anymore");
         }
+        const crsIn = options.in?.crs || 'EPSG:3857';
+        const crsOut = options.out?.crs || crsIn;
         return lasLoader.parseFile(data, {
             colorDepth: options.in?.colorDepth,
-            crsIn: options.in.crs,
-            crsOut: options.out.crs,
+            crsIn,
+            crsOut,
         }).then((parsedData) => {
             const geometry = new THREE.BufferGeometry();
             const attributes = parsedData.attributes;
