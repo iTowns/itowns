@@ -54,6 +54,7 @@ import { GLTFLoader } from 'ThreeExtended/loaders/GLTFLoader';
 // TODO: export the class or one instance or both ?
 // TODO document me and my methods
 // TODO: renname the file to iGLTFLoader and consider moving it from here ?
+// TODO: doc example to set Draco and KTX2
 class iGLTFLoader extends Loader {
     constructor(manager) {
         super(manager);
