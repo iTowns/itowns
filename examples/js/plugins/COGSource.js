@@ -80,7 +80,7 @@ class COGSource extends itowns.Source {
                         .then(image => this.makeLevel(image, image.getResolution(this.firstImage)));
                     promises.push(promise);
                 }
-                this.levels.push(await Promise.all(promises));
+                this.levels = this.levels.concat(await Promise.all(promises));
             });
     }
 
