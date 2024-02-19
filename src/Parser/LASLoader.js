@@ -1,6 +1,6 @@
 import { LazPerf } from 'laz-perf';
 import { Las } from 'copc';
-import Coordinates from 'Core/Geographic/Coordinates';
+import proj4 from 'proj4';
 
 /**
  * @typedef {Object} Header - Partial LAS header.
@@ -77,9 +77,11 @@ class LASLoader {
 
         // For precision we take the first point that will be use as origin for a local referentiel.
         const origin = getPosition.map(f => f(0)).map(val => Math.floor(val));
-        const coord = new Coordinates(options.crsIn, 0, 0, 0);
-        const coordProj = new Coordinates(options.crsOut, 0, 0, 0);
-
+        let originProj = origin;
+        const projection = proj4.defs(options.crsOut);
+        if (projection) {
+            originProj = proj4(options.crsIn, options.crsOut).forward(origin);
+        }
         for (let i = 0; i < view.pointCount; i++) {
             // `getPosition` apply scale and offset transform to the X, Y, Z
             // values. See https://github.com/connormanning/copc.js/blob/master/src/las/extractor.ts.
@@ -87,20 +89,17 @@ class LASLoader {
             positions[i * 3] = x - origin[0];
             positions[i * 3 + 1] = y - origin[1];
             positions[i * 3 + 2] = z - origin[2];
+            elevations[i] = z;
 
+            if (projection) {
             // Calculate positions on view.crs
-            coord.setFromValues(
-                positions[i * 3],
-                positions[i * 3 + 1],
-                positions[i * 3 + 2],
-            );
-            coord.as(options.crsOut, coordProj);
-            positionsProj[i * 3] = coordProj.x;
-            positionsProj[i * 3 + 1] = coordProj.y;
-            positionsProj[i * 3 + 2] = coordProj.z;
-            elevations[i] = coordProj.z;
-            // geocentric height to elevation
-            if (options.crsOut === 'EPSG:4978') { elevations[i] = positions[i * 3 + 2]; }
+                const [xProj, yProj, zProj] = proj4(options.crsIn, options.crsOut).forward([x, y, z]);
+                positionsProj[i * 3] = xProj - originProj[0];
+                positionsProj[i * 3 + 1] = yProj - originProj[1];
+                positionsProj[i * 3 + 2] = zProj - originProj[2];
+                // geocentric height to elevation
+                if (projection.projName !== 'geocent') { elevations[i] = zProj; }
+            }
 
             intensities[i] = getIntensity(i);
             returnNumbers[i] = getReturnNumber(i);
@@ -140,7 +139,8 @@ class LASLoader {
             pointSourceID: pointSourceIDs,
             color: colors,
             scanAngle: scanAngles,
-            origin,
+            // origin,
+            origin: projection ? originProj : origin,
         };
     }
 
