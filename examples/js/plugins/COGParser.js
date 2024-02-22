@@ -107,8 +107,8 @@ async function readRGB(source, level, viewport) {
         return await level.image.readRGB({
             window: viewport,
             pool: source.pool,
-            width: level.width,
-            height: level.height,
+            width: source.tileWidth,
+            height: source.tileHeight,
             enableAlpha: true,
             interleave: true,
         });
@@ -134,67 +134,64 @@ async function readRGB(source, level, viewport) {
  * Creates a texture from the pixel buffer
  *
  * @param {Object} source The COGSource
- * @param {THREE.TypedArray | THREE.TypedArray[]} buffers The buffers (one buffer per band)
- * @param {number} buffers.width
- * @param {number} buffers.height
- * @param {number} buffers.byteLength
+ * @param {THREE.TypedArray[]} buffer The pixel buffer
+ * @param {number} buffer.width
+ * @param {number} buffer.height
+ * @param {number} buffer.byteLength
  * @returns {THREE.DataTexture} The generated texture.
  */
-function createTexture(source, buffers) {
-    const { width, height, byteLength } = buffers;
+function createTexture(source, buffer) {
+    const { byteLength } = buffer;
+    const width = source.tileWidth;
+    const height = source.tileHeight;
     const pixelCount = width * height;
     const targetDataType = source.dataType;
     const format = THREE.RGBAFormat;
     const channelCount = 4;
-    let texture;
-    let data;
-
-    // Check if it's a RGBA buffer
-    if (pixelCount * channelCount === byteLength) {
-        data = buffers;
-    }
+    const isRGBA = pixelCount * channelCount === byteLength;
+    let tmpBuffer = buffer;
 
     switch (targetDataType) {
         case THREE.UnsignedByteType: {
-            if (!data) {
-                // We convert RGB buffer to RGBA
-                const newBuffers = new Uint8ClampedArray(pixelCount * channelCount);
-                data = convertToRGBA(buffers, newBuffers, source.defaultAlpha);
+            if (!isRGBA) {
+                tmpBuffer = convertToRGBA(tmpBuffer, new Uint8ClampedArray(pixelCount * channelCount), source.defaultAlpha);
             }
-            texture = new THREE.DataTexture(data, width, height, format, THREE.UnsignedByteType);
-            break;
+            return new THREE.DataTexture(tmpBuffer, width, height, format, THREE.UnsignedByteType);
         }
         case THREE.FloatType: {
-            if (!data) {
-                // We convert RGB buffer to RGBA
-                const newBuffers = new Float32Array(pixelCount * channelCount);
-                data = convertToRGBA(buffers, newBuffers, source.defaultAlpha / 255);
+            if (!isRGBA) {
+                tmpBuffer = convertToRGBA(tmpBuffer, new Float32Array(pixelCount * channelCount), source.defaultAlpha / 255);
             }
-            texture = new THREE.DataTexture(data, width, height, format, THREE.FloatType);
-            break;
+            return new THREE.DataTexture(tmpBuffer, width, height, format, THREE.FloatType);
         }
         default:
             throw new Error('unsupported data type');
     }
-
-    return texture;
 }
 
-function convertToRGBA(buffers, newBuffers, defaultAlpha) {
-    const { width, height } = buffers;
+/**
+ * Convert RGB pixel buffer to RGBA pixel buffer
+ *
+ * @param {THREE.TypedArray[]} buffer The RGB pixel buffer
+ * @param {THREE.TypedArray[]} newBuffer The empty RGBA pixel buffer
+ * @param {number} defaultAlpha Default alpha value
+ * @returns {THREE.DataTexture} The generated texture.
+ */
+function convertToRGBA(buffer, newBuffer, defaultAlpha) {
+    const { width, height } = buffer;
 
     for (let i = 0; i < width * height; i++) {
         const oldIndex = i * 3;
         const index = i * 4;
         // Copy RGB from original buffer
-        newBuffers[index + 0] = buffers[oldIndex + 0]; // R
-        newBuffers[index + 1] = buffers[oldIndex + 1]; // G
-        newBuffers[index + 2] = buffers[oldIndex + 2]; // B
+        newBuffer[index + 0] = buffer[oldIndex + 0]; // R
+        newBuffer[index + 1] = buffer[oldIndex + 1]; // G
+        newBuffer[index + 2] = buffer[oldIndex + 2]; // B
         // Add alpha to new buffer
-        newBuffers[index + 3] = defaultAlpha; // A
+        newBuffer[index + 3] = defaultAlpha; // A
     }
 
-    return newBuffers;
+    return newBuffer;
 }
 
 /**
