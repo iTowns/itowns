@@ -15,6 +15,9 @@
  * @property {string} url - The URL of the COG.
  * @property {GeoTIFF.Pool} pool - Pool use to decode GeoTiff.
  * @property {number} defaultAlpha - Alpha byte value used if no alpha is present in COG. Default value is 255.
+ * @property {number} tileWidth - Tile width in pixels. Default value use 'geotiff.getTileWidth()'.
+ * @property {number} tileHeight - Tile height in pixels. Default value use 'geotiff.getTileHeight()'.
+ * @property {number} resampleMethod - The desired resampling method. Default is 'nearest'.
  *
  * @example
  * // Create the source
@@ -59,9 +62,9 @@ class COGSource extends itowns.Source {
                 this.firstImage = await geotiff.getImage();
                 this.origin = this.firstImage.getOrigin();
                 this.dataType = this.selectDataType(this.firstImage.getSampleFormat(), this.firstImage.getBitsPerSample());
-
-                this.tileWidth = this.firstImage.getTileWidth();
-                this.tileHeight = this.firstImage.getTileHeight();
+                this.tileWidth = source.tileWidth || this.firstImage.getTileWidth();
+                this.tileHeight = source.tileHeight || this.firstImage.getTileHeight();
+                this.resampleMethod = source.resampleMethod || 'nearest';
 
                 // Compute extent
                 const [minX, minY, maxX, maxY] = this.firstImage.getBoundingBox();

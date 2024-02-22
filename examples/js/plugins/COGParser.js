@@ -107,6 +107,7 @@ async function readRGB(source, level, viewport) {
             pool: source.pool,
             width: source.tileWidth,
             height: source.tileHeight,
+            resampleMethod: source.resampleMethod,
             enableAlpha: true,
             interleave: true,
         });
