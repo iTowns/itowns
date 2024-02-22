@@ -107,11 +107,11 @@ class OBB extends THREE.Object3D {
         if (extent.crs == 'EPSG:4326') {
             const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
             // Compute the minimum count of segment to build tile
-            const segment = Math.max(Math.floor(sharableExtent.planarDimensions(dimension).x / 90 + 1), 2);
+            const segments = Math.max(Math.floor(sharableExtent.planarDimensions(dimension).x / 90 + 1), 2);
             const paramsGeometry = {
                 extent: sharableExtent,
                 level: 0,
-                segment,
+                segments,
                 disableSkirt: true,
                 builder,
             };

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import computeBuffers from 'Core/Prefab/computeBufferTileGeometry';
+import computeBuffers, { getBufferIndexSize } from 'Core/Prefab/computeBufferTileGeometry';
 
 function defaultBuffers(params) {
     params.buildIndexAndUv_0 = true;
@@ -20,7 +20,7 @@ class TileGeometry extends THREE.BufferGeometry {
         super();
         this.center = params.center;
         this.extent = params.extent;
-
+        this.segments = params.segments;
         this.setIndex(buffers.index);
         this.setAttribute('position', buffers.position);
         this.setAttribute('normal', buffers.normal);
@@ -31,6 +31,12 @@ class TileGeometry extends THREE.BufferGeometry {
 
         this.computeBoundingBox();
         this.OBB = {};
+        if (params.hideSkirt) {
+            this.hideSkirt = params.hideSkirt;
+        }
+    }
+    set hideSkirt(value) {
+        this.setDrawRange(0, getBufferIndexSize(this.segments, value));
     }
 }
 

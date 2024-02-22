@@ -51,7 +51,7 @@ function assertVerticesAreInOBB(builder, extent) {
         extent,
         disableSkirt: true,
         level: 0,
-        segment: 1,
+        segments: 1,
     };
 
     return newTileGeometry(builder, params)
