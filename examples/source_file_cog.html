@@ -56,15 +56,22 @@
                 readCOGURL();
             }
 
-            function loadCOG(url, crs) {
+            function loadCOG(url) {
                 // create a source from a Cloud Optimized GeoTiff
                 var cogSource = new COGSource({
                     url: url,
-                    crs: "EPSG:2154"
+                    crs: "EPSG:2154",
+                    // Default resample method is 'nearest', 'bilinear' looks better when zoomed
+                    resampleMethod: 'bilinear'
                 });
 
                 cogSource.whenReady.then(() => {
-                    var view = new itowns.PlanarView(viewerDiv, cogSource.extent, { disableSkirt: true, placement: { tilt: 90 } });
+                    var view = new itowns.PlanarView(viewerDiv, cogSource.extent, {
+                        // Default maxSubdivisionLevel is 5, so with huge geotiff it's not enough to see details when zoomed
+                        maxSubdivisionLevel: 10,
+                        disableSkirt: true,
+                        placement: { tilt: 90 }
+                    });
                     setupLoadingScreen(viewerDiv, view);
                     new itowns.PlanarControls(view, {});
                     var cogLayer = new itowns.ColorLayer('cog', {
