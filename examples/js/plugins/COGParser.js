@@ -87,7 +87,51 @@ function makeWindowFromExtent(source, extent, resolution) {
 }
 
 /**
- * Creates a texture from the pixel buffer(s).
+ * Reads raster data from the image as RGB.
+ * The result is always an interleaved typed array.
+ * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
+ *
+ * @param {Source} source The COGSource.
+ * @param {GeoTIFFLevel} level The GeoTIFF level to read
+ * @param {number[]} viewport The image region to read.
+ * @returns {Promise<TypedArray[]>} The raster data
+ */
+async function readRGB(source, level, viewport) {
+    try {
+        // TODO possible optimization: instead of letting geotiff.js crop and resample
+        // the tiles into the desired region, we could use image.getTileOrStrip() to
+        // read individual tiles (aka blocks) and make a texture per block. This way,
+        // there would not be multiple concurrent reads for the same block, and we would not
+        // waste time resampling the blocks since resampling is already done in the composer.
+        // We would create more textures, but it could be worth it.
+        return await level.image.readRGB({
+            window: viewport,
+            pool: source.pool,
+            width: level.width,
+            height: level.height,
+            enableAlpha: true,
+            interleave: true,
+        });
+    } catch (error) {
+        if (error.toString() === 'AggregateError: Request failed') {
+            // Problem with the source that is blocked by another fetch
+            // (request failed in readRasters). See the conversations in
+            // https://github.com/geotiffjs/geotiff.js/issues/218
+            // https://github.com/geotiffjs/geotiff.js/issues/221
+            // https://github.com/geotiffjs/geotiff.js/pull/224
+            // Retry until it is not blocked.
+            // TODO retry counter
+            await new Promise((resolve) => {
+                setTimeout(resolve, 100);
+            });
+            return readRGB(level, viewport, source);
+        }
+        throw error;
+    }
+}
+
+/**
+ * Creates a texture from the pixel buffer
  *
  * @param {Object} source The COGSource
  * @param {THREE.TypedArray | THREE.TypedArray[]} buffers The buffers (one buffer per band)
@@ -195,18 +239,12 @@ const COGParser = (function _() {
          */
         parse: async function _(data, options) {
             const source = options.in;
-            const nodeExtent = data.extent.as(source.crs);
-            const level = selectLevel(source, nodeExtent, source.tileWidth, source.tileHeight);
-            const viewport = makeWindowFromExtent(source, nodeExtent, level.resolution);
+            const tileExtent = data.extent.as(source.crs);
 
-            const buffers = await level.image.readRGB({
-                window: viewport,
-                pool: source.pool,
-                enableAlpha: true,
-                interleave: true,
-            });
-
-            const texture = createTexture(source, buffers);
+            const level = selectLevel(source, tileExtent, source.tileWidth, source.tileHeight);
+            const viewport = makeWindowFromExtent(source, tileExtent, level.resolution);
+            const rgbBuffer = await readRGB(source, level, viewport);
+            const texture = createTexture(source, rgbBuffer);
             texture.flipY = true;
             texture.extent = data.extent;
             texture.needsUpdate = true;
