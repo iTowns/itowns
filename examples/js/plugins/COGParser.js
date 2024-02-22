@@ -22,10 +22,8 @@
  * @returns {GeoTIFFLevel} The selected zoom level.
  */
 function selectLevel(source, requestExtent, requestWidth, requestHeight) {
-    // Number of images  = original + overviews if any
-    const cropped = requestExtent.clone().intersect(source.extent);
     // Dimensions of the requested extent
-    const extentDimension = cropped.planarDimensions();
+    const extentDimension = requestExtent.clone().planarDimensions();
 
     const targetResolution = Math.min(
         extentDimension.x / requestWidth,
