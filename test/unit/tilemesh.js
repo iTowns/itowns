@@ -79,7 +79,7 @@ describe('TileMesh', function () {
         const paramsGeometry = {
             extent: planarlayer.object3d.children[0].extent,
             level: 0,
-            segment: 260,
+            segments: 260,
             disableSkirt: true,
         };
 
@@ -91,7 +91,7 @@ describe('TileMesh', function () {
         const paramsGeometry2 = {
             extent: planarlayer.object3d.children[0].extent,
             level: 0,
-            segment: (2 ** 16),
+            segments: (2 ** 16),
             disableSkirt: true,
         };
 
@@ -130,7 +130,7 @@ describe('TileMesh', function () {
         const paramsGeometry = {
             extent: planarlayer.object3d.children[0].extent,
             level: 0,
-            segment: 4,
+            segments: 4,
             disableSkirt: true,
         };
 
@@ -147,7 +147,7 @@ describe('TileMesh', function () {
         const paramsGeometry = {
             extent: planarlayer.object3d.children[0].extent,
             level: 0,
-            segment: 2,
+            segments: 2,
             disableSkirt: true,
         };
 
