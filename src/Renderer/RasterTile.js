@@ -79,7 +79,7 @@ class RasterTile extends THREE.EventDispatcher {
         }
     }
 
-    dispose(removeEvent) {
+    dispose(removeEvent = true) {
         if (removeEvent) {
             this.layer.removeEventListener('visible-property-changed', this._handlerCBEvent);
             this.layer.removeEventListener('opacity-property-changed', this._handlerCBEvent);
