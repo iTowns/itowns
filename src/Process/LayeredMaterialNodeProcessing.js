@@ -236,12 +236,15 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
 }
 
 export function removeLayeredMaterialNodeLayer(layerId) {
+    /**
+     * @param {TileMesh} node - The node to udpate.
+     */
     return function removeLayeredMaterialNodeLayer(node) {
         if (node.material?.removeLayer) {
-            node.material.removeLayer(layerId);
-            if (node.material.elevationLayerIds[0] == layerId) {
+            if (node.material.elevationLayerIds.indexOf(layerId) > -1) {
                 node.setBBoxZ({ min: 0, max: 0 });
             }
+            node.material.removeLayer(layerId);
         }
         if (node.layerUpdateState && node.layerUpdateState[layerId]) {
             delete node.layerUpdateState[layerId];
