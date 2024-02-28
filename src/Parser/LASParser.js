@@ -50,7 +50,7 @@ export default {
             const positionBuffer = new THREE.BufferAttribute(attributes.position, 3);
             geometry.setAttribute('position', positionBuffer);
 
-            const intensityBuffer = new THREE.BufferAttribute(attributes.intensity, 1, true);
+            const intensityBuffer = new THREE.BufferAttribute(attributes.intensity, 1);
             geometry.setAttribute('intensity', intensityBuffer);
 
             const returnNumber = new THREE.BufferAttribute(attributes.returnNumber, 1);
@@ -59,7 +59,7 @@ export default {
             const numberOfReturns = new THREE.BufferAttribute(attributes.numberOfReturns, 1);
             geometry.setAttribute('numberOfReturns', numberOfReturns);
 
-            const classBuffer = new THREE.BufferAttribute(attributes.classification, 1, true);
+            const classBuffer = new THREE.BufferAttribute(attributes.classification, 1);
             geometry.setAttribute('classification', classBuffer);
 
             const pointSourceID = new THREE.BufferAttribute(attributes.pointSourceID, 1);
@@ -69,6 +69,8 @@ export default {
                 const colorBuffer = new THREE.BufferAttribute(attributes.color, 4, true);
                 geometry.setAttribute('color', colorBuffer);
             }
+            const scanAngle = new THREE.BufferAttribute(attributes.scanAngle, 1);
+            geometry.setAttribute('scanAngle', scanAngle);
 
             geometry.computeBoundingBox();
             return geometry;
