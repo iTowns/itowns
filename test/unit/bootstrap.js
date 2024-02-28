@@ -99,13 +99,14 @@ class HTMLImageElement extends DOMElement {
 }
 
 class CanvasPattern {
-    // eslint-disable-next-line no-unused-vars
-    setTransform(matrix) { return undefined; }
+    setTransform(/* matrix */) { return undefined; }
+}
+class CanvasGradient {
+    addColorStop(/* offset, color */) { return undefined; }
 }
 
 class DOMMatrix {
-    // eslint-disable-next-line no-unused-vars
-    scale(matrix) { return [1, 1, 1, 1]; }
+    scale(/* matrix */) { return [1, 1, 1, 1]; }
 }
 
 // Mock document object for Mocha.
@@ -116,6 +117,7 @@ global.document = {
 
             canvas.getContext = () => ({
                 fillRect: () => { },
+                rect: () => { },
                 moveTo: () => { },
                 lineTo: () => { },
                 beginPath: () => { },
@@ -142,17 +144,19 @@ global.document = {
                     };
                     return imageData;
                 },
-                // eslint-disable-next-line no-unused-vars
-                putImageData: (imageData, dx, dy) => {
+                putImageData: (imageData) => {
                     const image = global.document.createElement('img');
                     image.width = imageData.sw;
                     image.height = imageData.sh;
                     return image;
                 },
-                // eslint-disable-next-line no-unused-vars
-                createPattern: (image, repetition) => {
+                createPattern: (/* image, repetition */) => {
                     const canvasPattern = new CanvasPattern();
                     return canvasPattern;
+                },
+                createLinearGradient: (/* x0, y0, x1, y1 */) => {
+                    const canvasGradient = new CanvasGradient();
+                    return canvasGradient;
                 },
                 canvas,
             });

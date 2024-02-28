@@ -85,9 +85,15 @@ function markForDeletion(elt) {
 }
 
 function changeIntensityRange(layer) {
-    if (layer.material.intensityRange) {
-        layer.material.intensityRange.set(layer.minIntensityRange, layer.maxIntensityRange);
-    }
+    layer.material.intensityRange?.set(layer.minIntensityRange, layer.maxIntensityRange);
+}
+
+function changeElevationRange(layer) {
+    layer.material.elevationRange?.set(layer.minElevationRange, layer.maxElevationRange);
+}
+
+function changeAngleRange(layer) {
+    layer.material.angleRange?.set(layer.minAngleRange, layer.maxAngleRange);
 }
 
 /**
@@ -158,13 +164,19 @@ class PointCloudLayer extends GeometryLayer {
         this.pointSize = config.pointSize === 0 || !isNaN(config.pointSize) ? config.pointSize : 4;
         this.sseThreshold = config.sseThreshold || 2;
 
-        this.defineLayerProperty('minIntensityRange', config.minIntensityRange || 0, changeIntensityRange);
-        this.defineLayerProperty('maxIntensityRange', config.maxIntensityRange || 1, changeIntensityRange);
+        this.defineLayerProperty('minIntensityRange', config.minIntensityRange || 1, changeIntensityRange);
+        this.defineLayerProperty('maxIntensityRange', config.maxIntensityRange || 65536, changeIntensityRange);
+        this.defineLayerProperty('minElevationRange', config.minElevationRange || 0, changeElevationRange);
+        this.defineLayerProperty('maxElevationRange', config.maxElevationRange || 1000, changeElevationRange);
+        this.defineLayerProperty('minAngleRange', config.minAngleRange || -90, changeAngleRange);
+        this.defineLayerProperty('maxAngleRange', config.maxAngleRange || 90, changeAngleRange);
 
         this.material = config.material || {};
         if (!this.material.isMaterial) {
             config.material = config.material || {};
             config.material.intensityRange = new THREE.Vector2(this.minIntensityRange, this.maxIntensityRange);
+            config.material.elevationRange = new THREE.Vector2(this.minElevationRange, this.maxElevationRange);
+            config.material.angleRange = new THREE.Vector2(this.minAngleRange, this.maxAngleRange);
             this.material = new PointsMaterial(config.material);
         }
         this.material.defines = this.material.defines || {};

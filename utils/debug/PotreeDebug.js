@@ -1,9 +1,63 @@
 import { PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
 
+function getController(gui, name) {
+    let controller = null;
+    const controllers = gui.__folders.Styling.__controllers;
+    for (let i = 0; i < controllers.length; i += 1) {
+        const c = controllers[i];
+        if (c.property === name || c.name === name) {
+            controller = c;
+            break;
+        }
+    }
+    return controller;
+}
+
+function hideController(gui, name) {
+    getController(gui, name).__li.style.display = 'none';
+}
+
+function showController(gui, name) {
+    getController(gui, name).__li.style.display = '';
+}
+
+function setupControllerVisibily(gui, mode) {
+    if ([PNTS_MODE.INTENSITY, PNTS_MODE.ELEVATION, PNTS_MODE.SCAN_ANGLE].includes(parseInt(mode, 10))) {
+        showController(gui, 'gradient');
+    } else {
+        hideController(gui, 'gradient');
+    }
+    if (PNTS_MODE.INTENSITY === parseInt(mode, 10)) {
+        showController(gui, 'minIntensityRange');
+        showController(gui, 'maxIntensityRange');
+    } else {
+        hideController(gui, 'minIntensityRange');
+        hideController(gui, 'maxIntensityRange');
+    }
+    if (PNTS_MODE.ELEVATION === parseInt(mode, 10)) {
+        showController(gui, 'minElevationRange');
+        showController(gui, 'maxElevationRange');
+    } else {
+        hideController(gui, 'minElevationRange');
+        hideController(gui, 'maxElevationRange');
+    }
+    if (PNTS_MODE.SCAN_ANGLE === parseInt(mode, 10)) {
+        showController(gui, 'minAngleRange');
+        showController(gui, 'maxAngleRange');
+    } else {
+        hideController(gui, 'minAngleRange');
+        hideController(gui, 'maxAngleRange');
+    }
+}
+
 export default {
     initTools(view, layer, datUi) {
-        const update = () => view.notifyChange(layer, true);
         layer.debugUI = datUi.addFolder(`${layer.id}`);
+
+        const update = () => {
+            setupControllerVisibily(layer.debugUI, layer.material.mode);
+            view.notifyChange(layer, true);
+        };
 
         layer.debugUI.add(layer, 'visible').name('Visible').onChange(update);
         layer.debugUI.add(layer, 'sseThreshold').name('SSE threshold').onChange(update);
@@ -22,7 +76,67 @@ export default {
         const styleUI = layer.debugUI.addFolder('Styling');
         if (layer.material.mode != undefined) {
             styleUI.add(layer.material, 'mode', PNTS_MODE).name('Display mode').onChange(update);
-            styleUI.add(layer, 'maxIntensityRange', 0, 1).name('Intensity max').onChange(update);
+            const gradiantsName = Object.keys(layer.material.gradients);
+            styleUI.add({ gradient: gradiantsName[0] }, 'gradient', gradiantsName).name('gradient')
+                .onChange((value) => {
+                    layer.material.gradient = layer.material.gradients[value];
+                    setupControllerVisibily(datUi, layer.material.mode);
+                    view.notifyChange(layer, true);
+                });
+            styleUI.add(layer, 'minIntensityRange', layer.minIntensityRange, layer.maxIntensityRange - 1).name('Intensity min')
+                .onChange((value) => {
+                    if (value >= layer.maxIntensityRange) {
+                        layer.maxIntensityRange = value + 1;
+                        getController(layer.debugUI, 'maxIntensityRange').updateDisplay();
+                    }
+                    setupControllerVisibily(layer.debugUI, layer.material.mode);
+                    view.notifyChange(layer, true);
+                });
+            styleUI.add(layer, 'maxIntensityRange', layer.minIntensityRange + 1, layer.maxIntensityRange).name('Intensity max')
+                .onChange((value) => {
+                    if (value <= layer.minIntensityRange) {
+                        layer.minIntensityRange = value - 1;
+                        getController(layer.debugUI, 'minIntensityRange').updateDisplay();
+                    }
+                    setupControllerVisibily(layer.debugUI, layer.material.mode);
+                    view.notifyChange(layer, true);
+                });
+            styleUI.add(layer, 'minElevationRange', layer.minElevationRange, layer.maxElevationRange).name('Elevation min')
+                .onChange((value) => {
+                    if (value >= layer.maxElevationRange) {
+                        layer.maxElevationRange = value + 1;
+                        getController(layer.debugUI, 'maxElevationRange').updateDisplay();
+                    }
+                    setupControllerVisibily(layer.debugUI, layer.material.mode);
+                    view.notifyChange(layer, true);
+                });
+            styleUI.add(layer, 'maxElevationRange', layer.minElevationRange, layer.maxElevationRange).name('Elevation max')
+                .onChange((value) => {
+                    if (value <= layer.minElevationRange) {
+                        layer.minElevationRange = value - 1;
+                        getController(layer.debugUI, 'minElevationRange').updateDisplay();
+                    }
+                    setupControllerVisibily(layer.debugUI, layer.material.mode);
+                    view.notifyChange(layer, true);
+                });
+            styleUI.add(layer, 'minAngleRange', layer.minAngleRange, layer.maxAngleRange).name('Angle min')
+                .onChange((value) => {
+                    if (value >= layer.maxAngleRange) {
+                        layer.maxAngleRange = value + 1;
+                        getController(layer.debugUI, 'maxAngleRange').updateDisplay();
+                    }
+                    setupControllerVisibily(layer.debugUI, layer.material.mode);
+                    view.notifyChange(layer, true);
+                });
+            styleUI.add(layer, 'maxAngleRange', layer.minAngleRange, layer.maxAngleRange).name('Angle max')
+                .onChange((value) => {
+                    if (value <= layer.minAngleRange) {
+                        layer.minAngleRange = value - 1;
+                        getController(layer.debugUI, 'minAngleRange').updateDisplay();
+                    }
+                    setupControllerVisibily(layer.debugUI, layer.material.mode);
+                    view.notifyChange(layer, true);
+                });
         }
         if (layer.material.shape != undefined) {
             styleUI.add(layer.material, 'shape', PNTS_SHAPE).name('Shape mode').onChange(update);
@@ -47,6 +161,8 @@ export default {
         debugUI.add(layer, 'dbgDisplaySticky').name('Display sticky node').onChange(update);
         debugUI.add(layer, 'dbgDisplayChildren').name('Display children of sticky node').onChange(update);
         debugUI.add(layer, 'dbgDisplayParents').name('Display parents of sticky node').onChange(update);
+
+        setupControllerVisibily(layer.debugUI, layer.material.mode);
 
         const isInHierarchy = function isInHierarchy(name1, name2) {
             return (layer.dbgDisplaySticky && name1 === name2)

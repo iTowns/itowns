@@ -53,6 +53,7 @@ class LASLoader {
         const getPointSourceID = view.getter('PointSourceId');
         const getColor = view.dimensions.Red ?
             ['Red', 'Green', 'Blue'].map(view.getter) : undefined;
+        const getScanAngle = view.getter('ScanAngle');
 
         const positions = new Float32Array(view.pointCount * 3);
         const intensities = new Uint16Array(view.pointCount);
@@ -61,6 +62,14 @@ class LASLoader {
         const classifications = new Uint8Array(view.pointCount);
         const pointSourceIDs = new Uint16Array(view.pointCount);
         const colors = getColor ? new Uint8Array(view.pointCount * 4) : undefined;
+        /*
+        As described by the LAS spec, Scan Angle is encoded:
+        - as signed char in a valid range from -90 to +90 (degrees) prior to the LAS 1.4 Point Data Record Formats (PDRF) 6
+        - as a signed short in a valid range from -30 000 to +30 000. Those values represents scan angles from -180 to +180
+          degrees with an increment of 0.006 for PDRF >= 6.
+        The copc.js library does the degree convertion and stores it as a `Float32`.
+        */
+        const scanAngles = new Float32Array(view.pointCount);
 
         for (let i = 0; i < view.pointCount; i++) {
             // `getPosition` apply scale and offset transform to the X, Y, Z
@@ -94,6 +103,7 @@ class LASLoader {
 
             classifications[i] = getClassification(i);
             pointSourceIDs[i] = getPointSourceID(i);
+            scanAngles[i] = getScanAngle(i);
         }
 
         return {
@@ -104,6 +114,7 @@ class LASLoader {
             classification: classifications,
             pointSourceID: pointSourceIDs,
             color: colors,
+            scanAngle: scanAngles,
         };
     }
 
