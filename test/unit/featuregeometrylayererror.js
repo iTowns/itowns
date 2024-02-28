@@ -68,11 +68,11 @@ files.forEach((geojson, i) => {
             layerProj4.whenReady
                 .then(() => {
                     tile.visible = true;
-                    return layerProj4.update(context, layerProj4, tile)
-                        .then(() => {
-                            assert.equal(layerProj4.object3d.children.length, 1);
-                            done();
-                        });
+                    return layerProj4.update(context, layerProj4, tile);
+                })
+                .then(() => {
+                    assert.equal(layerProj4.object3d.children.length, 1);
+                    done();
                 }).catch(done);
         });
 
@@ -80,12 +80,11 @@ files.forEach((geojson, i) => {
             layerNoProj4.whenReady
                 .then(() => {
                     tile.visible = true;
-                    context.layer = layerNoProj4;
-                    return layerNoProj4.update(context, layerNoProj4, tile)
-                        .then(() => {
-                            assert.equal(layerNoProj4.object3d.children.length, 1);
-                            done();
-                        });
+                    return layerNoProj4.update(context, layerNoProj4, tile);
+                })
+                .then(() => {
+                    assert.equal(layerNoProj4.object3d.children.length, 1);
+                    done();
                 }).catch(done);
         });
 
@@ -116,7 +115,7 @@ files.forEach((geojson, i) => {
 
                     error /= (array.length / 3);
 
-                    assert.ok(error < max_error);
+                    assert.ok(error < max_error, `error (${error}) sup. to ${max_error}`);
                     done();
                 }).catch(done);
         });

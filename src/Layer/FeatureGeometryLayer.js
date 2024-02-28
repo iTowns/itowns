@@ -51,6 +51,7 @@ class FeatureGeometryLayer extends GeometryLayer {
             batchId: options.batchId,
         });
         super(id, options.object3d || new Group(), options);
+
         this.isFeatureGeometryLayer = true;
         this.accurate = options.accurate ?? true;
         this.buildExtent = !this.accurate;
