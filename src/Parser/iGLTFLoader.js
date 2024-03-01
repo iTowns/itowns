@@ -1,61 +1,16 @@
-import { FileLoader, Loader, LoaderUtils } from 'three';
+import * as THREE from 'three';
+import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
+import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
 import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader'; // TODO Consider moving it out from deprecated folder
 import { GLTFLoader } from 'ThreeExtended/loaders/GLTFLoader';
 
-// const matrixChangeUpVectorYtoZ = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
+// const matrixChangeUpVectorYtoZ = (new THREE.Matrix4()).makeRotationX(Math.PI / 2); // TODO
 
-/**
- * @module iGLTFLoader
- * @description Parses [glTF](https://www.khronos.org/gltf/) 1.0 and 2.0 files.
- *
- * Under the hood, glTF 2.0 files are parsed with THREE.GltfLoader() and GLTF 1.0 are parsed with the previous THREE
- * GltfLoader (for 1.0 glTF) that has been kept and maintained in iTowns.
- */
-
-/**
- * Enable loading gltf files with [Draco](https://google.github.io/draco/) geometry extension.
- *
- * @param {String} path path to draco library folder containing the JS and WASM decoder libraries. They can be found in
- * [itowns examples](https://github.com/iTowns/itowns/tree/master/examples/libs/draco).
- * @param {Object} [config] optional configuration for Draco decoder (see threejs'
- * [setDecoderConfig](https://threejs.org/docs/index.html?q=draco#examples/en/loaders/DRACOLoader.setDecoderConfig) that
- * is called under the hood with this configuration for details.
- */
-// export function enableDracoLoader(path, config) {
-//     if (!path) {
-//         throw new Error('Path to draco folder is mandatory');
-//     }
-//     const dracoLoader = new THREE.DRACOLoader();
-//     dracoLoader.setDecoderPath(path);
-//     if (config) {
-//         dracoLoader.setDecoderConfig(config);
-//     }
-//     glTFLoader.setDRACOLoader(dracoLoader);
-// }
-//
-// /**
-//  * Enable loading gltf files with [KTX2](https://www.khronos.org/ktx/) texture extension.
-//  *
-//  * @param {String} path path to ktx2 library folder containing the JS and WASM decoder libraries. They can be found in
-//  * [itowns examples](https://github.com/iTowns/itowns/tree/master/examples/libs/basis).
-//  * @param {THREE.WebGLRenderer} renderer the threejs renderer
-//  */
-// export function enableKtx2Loader(path, renderer) {
-//     if (!path || !renderer) {
-//         throw new Error('Path to ktx2 folder and renderer are mandatory');
-//     }
-//     const ktx2Loader = new THREE.KTX2Loader();
-//     ktx2Loader.setTranscoderPath(path);
-//     ktx2Loader.detectSupport(renderer);
-//     glTFLoader.setKTX2Loader(ktx2Loader);
-// }
-
-// TODO: rename to iGLTFLoader (for itownsGLTFLoader) ?
 // TODO: export the class or one instance or both ?
 // TODO document me and my methods
-// TODO: renname the file to iGLTFLoader and consider moving it from here ?
+// TODO: should we leave the file in parsers?
 // TODO: doc example to set Draco and KTX2
-class iGLTFLoader extends Loader {
+class iGLTFLoader extends THREE.Loader {
     constructor(manager) {
         super(manager);
         this.legacyGLTFLoader = new LegacyGLTFLoader();
@@ -76,10 +31,10 @@ class iGLTFLoader extends Loader {
             // resourcePath = 'https://my-cnd-server.com/assets/models/'
             // referenced resource 'model.bin' will be loaded from 'https://my-cnd-server.com/assets/models/model.bin'
             // referenced resource '../textures/texture.png' will be loaded from 'https://my-cnd-server.com/assets/textures/texture.png'
-            const relativeUrl = LoaderUtils.extractUrlBase(url);
-            resourcePath = LoaderUtils.resolveURL(relativeUrl, this.path);
+            const relativeUrl = THREE.LoaderUtils.extractUrlBase(url);
+            resourcePath = THREE.LoaderUtils.resolveURL(relativeUrl, this.path);
         } else {
-            resourcePath = LoaderUtils.extractUrlBase(url);
+            resourcePath = THREE.LoaderUtils.extractUrlBase(url);
         }
 
         // Tells the LoadingManager to track an extra item, which resolves after
@@ -98,7 +53,7 @@ class iGLTFLoader extends Loader {
             scope.manager.itemEnd(url);
         };
 
-        const loader = new FileLoader(this.manager);
+        const loader = new THREE.FileLoader(this.manager);
 
         loader.setPath(this.path);
         loader.setResponseType('arraybuffer');
@@ -119,27 +74,22 @@ class iGLTFLoader extends Loader {
     }
 
     setDRACOLoader(dracoLoader) {
-        this.legacyGLTFLoader.setDRACOLoader(dracoLoader);
         this.glTFLoader.setDRACOLoader(dracoLoader);
     }
 
     setKTX2Loader(ktx2Loader) {
-        this.legacyGLTFLoader.setKTX2Loader(ktx2Loader);
         this.glTFLoader.setKTX2Loader(ktx2Loader);
     }
 
     setMeshoptDecoder(meshoptDecoder) {
-        this.legacyGLTFLoader.setMeshoptDecoder(meshoptDecoder);
         this.glTFLoader.setMeshoptDecoder(meshoptDecoder);
     }
 
     register(callback) {
-        this.legacyGLTFLoader.register(callback);
         this.glTFLoader.register(callback);
     }
 
     unregister(callback) {
-        this.legacyGLTFLoader.unregister(callback);
         this.glTFLoader.unregister(callback);
     }
 
@@ -184,6 +134,55 @@ class iGLTFLoader extends Loader {
             scope.parse(data, path, resolve, reject);
         });
     }
+}
+
+// Internal instance of the GLTFLoader, mainly used to load gltfs in 3DTiles
+export const itownsGLTFLoader = new iGLTFLoader();
+
+/**
+ * @module iGLTFLoader
+ * @description Parses [glTF](https://www.khronos.org/gltf/) 1.0 and 2.0 files.
+ *
+ * Under the hood, glTF 2.0 files are parsed with THREE.GltfLoader() and GLTF 1.0 are parsed with the previous THREE
+ * GltfLoader (for 1.0 glTF) that has been kept and maintained in iTowns.
+ */
+
+/**
+ * Enable loading gltf files with [Draco](https://google.github.io/draco/) geometry extension.
+ *
+ * @param {String} path path to draco library folder containing the JS and WASM decoder libraries. They can be found in
+ * [itowns examples](https://github.com/iTowns/itowns/tree/master/examples/libs/draco).
+ * @param {Object} [config] optional configuration for Draco decoder (see threejs'
+ * [setDecoderConfig](https://threejs.org/docs/index.html?q=draco#examples/en/loaders/DRACOLoader.setDecoderConfig) that
+ * is called under the hood with this configuration for details.
+ */
+export function enableDracoLoader(path, config) {
+    if (!path) {
+        throw new Error('Path to draco folder is mandatory');
+    }
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(path);
+    if (config) {
+        dracoLoader.setDecoderConfig(config);
+    }
+    itownsGLTFLoader.setDRACOLoader(dracoLoader);
+}
+
+/**
+ * Enable loading gltf files with [KTX2](https://www.khronos.org/ktx/) texture extension.
+ *
+ * @param {String} path path to ktx2 library folder containing the JS and WASM decoder libraries. They can be found in
+ * [itowns examples](https://github.com/iTowns/itowns/tree/master/examples/libs/basis).
+ * @param {THREE.WebGLRenderer} renderer the threejs renderer
+ */
+export function enableKtx2Loader(path, renderer) {
+    if (!path || !renderer) {
+        throw new Error('Path to ktx2 folder and renderer are mandatory');
+    }
+    const ktx2Loader = new KTX2Loader();
+    ktx2Loader.setTranscoderPath(path);
+    ktx2Loader.detectSupport(renderer);
+    itownsGLTFLoader.setKTX2Loader(ktx2Loader);
 }
 
 export default iGLTFLoader;
