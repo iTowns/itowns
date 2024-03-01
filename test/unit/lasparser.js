@@ -26,12 +26,12 @@ describe('LASParser', function () {
         assert.strictEqual(bufferGeometry.attributes.classification.count, bufferGeometry.userData.pointCount);
         assert.strictEqual(bufferGeometry.attributes.color, undefined);
 
-        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x, bufferGeometry.userData.min[0], 0.1));
-        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y, bufferGeometry.userData.min[1], 0.1));
-        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z, bufferGeometry.userData.min[2], 0.1));
-        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x, bufferGeometry.userData.max[0], 0.1));
-        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y, bufferGeometry.userData.max[1], 0.1));
-        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z, bufferGeometry.userData.max[2], 0.1));
+        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x + bufferGeometry.userData.origin.x, bufferGeometry.userData.min[0], 0.1));
+        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y + bufferGeometry.userData.origin.y, bufferGeometry.userData.min[1], 0.1));
+        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z + bufferGeometry.userData.origin.z, bufferGeometry.userData.min[2], 0.1));
+        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x + bufferGeometry.userData.origin.x, bufferGeometry.userData.max[0], 0.1));
+        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y + bufferGeometry.userData.origin.y, bufferGeometry.userData.max[1], 0.1));
+        assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z + bufferGeometry.userData.origin.z, bufferGeometry.userData.max[2], 0.1));
     });
 
     describe('parses a laz file to a THREE.BufferGeometry', function () {
@@ -43,12 +43,12 @@ describe('LASParser', function () {
             assert.strictEqual(bufferGeometry.attributes.classification.count, bufferGeometry.userData.pointCount);
             assert.strictEqual(bufferGeometry.attributes.color, undefined);
 
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x, bufferGeometry.userData.min[0], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y, bufferGeometry.userData.min[1], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z, bufferGeometry.userData.min[2], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x, bufferGeometry.userData.max[0], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y, bufferGeometry.userData.max[1], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z, bufferGeometry.userData.max[2], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x + bufferGeometry.userData.origin.x, bufferGeometry.userData.min[0], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y + bufferGeometry.userData.origin.y, bufferGeometry.userData.min[1], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z + bufferGeometry.userData.origin.z, bufferGeometry.userData.min[2], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x + bufferGeometry.userData.origin.x, bufferGeometry.userData.max[0], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y + bufferGeometry.userData.origin.y, bufferGeometry.userData.max[1], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z + bufferGeometry.userData.origin.z, bufferGeometry.userData.max[2], 0.1));
         });
 
         it('laz v1.4', async () => {
@@ -59,12 +59,12 @@ describe('LASParser', function () {
             assert.strictEqual(bufferGeometry.attributes.classification.count, bufferGeometry.userData.pointCount);
             assert.strictEqual(bufferGeometry.attributes.color.count, bufferGeometry.userData.pointCount);
 
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x, bufferGeometry.userData.min[0], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y, bufferGeometry.userData.min[1], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z, bufferGeometry.userData.min[2], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x, bufferGeometry.userData.max[0], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y, bufferGeometry.userData.max[1], 0.1));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z, bufferGeometry.userData.max[2], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x + bufferGeometry.userData.origin.x, bufferGeometry.userData.min[0], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y + bufferGeometry.userData.origin.y, bufferGeometry.userData.min[1], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z + bufferGeometry.userData.origin.z, bufferGeometry.userData.min[2], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x + bufferGeometry.userData.origin.x, bufferGeometry.userData.max[0], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y + bufferGeometry.userData.origin.y, bufferGeometry.userData.max[1], 0.1));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z + bufferGeometry.userData.origin.z, bufferGeometry.userData.max[2], 0.1));
         });
     });
 });
