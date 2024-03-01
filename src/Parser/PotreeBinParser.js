@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 // See the different constants holding ordinal, name, numElements, byteSize in PointAttributes.cpp in PotreeConverter
 // elementByteSize is byteSize / numElements
-const POINT_ATTTRIBUTES = {
+const POINT_ATTRIBUTES = {
     POSITION_CARTESIAN: {
         numElements: 3,
         arrayType: Float32Array,
@@ -49,8 +49,8 @@ const POINT_ATTTRIBUTES = {
     },
 };
 
-for (const potreeName of Object.keys(POINT_ATTTRIBUTES)) {
-    const attr = POINT_ATTTRIBUTES[potreeName];
+for (const potreeName of Object.keys(POINT_ATTRIBUTES)) {
+    const attr = POINT_ATTRIBUTES[potreeName];
     attr.potreeName = potreeName;
     attr.numByte = attr.numByte || attr.arrayType.BYTES_PER_ELEMENT;
     attr.byteSize = attr.numElements * attr.numByte;
@@ -81,7 +81,7 @@ export default {
         // Format: X1,Y1,Z1,R1,G1,B1,A1,[...],XN,YN,ZN,RN,GN,BN,AN
         let pointByteSize = 0;
         for (const potreeName of options.in.pointAttributes) {
-            pointByteSize += POINT_ATTTRIBUTES[potreeName].byteSize;
+            pointByteSize += POINT_ATTRIBUTES[potreeName].byteSize;
         }
         const numPoints = Math.floor(buffer.byteLength / pointByteSize);
 
@@ -89,7 +89,7 @@ export default {
         let elemOffset = 0;
         let attrOffset = 0;
         for (const potreeName of options.in.pointAttributes) {
-            const attr = POINT_ATTTRIBUTES[potreeName];
+            const attr = POINT_ATTRIBUTES[potreeName];
             const arrayLength = attr.numElements * numPoints;
             const array = new attr.arrayType(arrayLength);
             for (let arrayOffset = 0; arrayOffset < arrayLength; arrayOffset += attr.numElements) {
