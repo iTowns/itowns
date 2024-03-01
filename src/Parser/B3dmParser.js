@@ -189,15 +189,6 @@ export default {
                 // Apply relative center from Feature table.
                 gltf.scene.position.copy(FT_RTC);
 
-                // Apply relative center from gltf json.
-                const contentArray = new Uint8Array(gltfBuffer, 20, headerView.getUint32(12, true));
-                const content = utf8Decoder.decode(new Uint8Array(contentArray));
-                const json = JSON.parse(content);
-                if (json.extensions && json.extensions.CESIUM_RTC) {
-                    gltf.scene.position.fromArray(json.extensions.CESIUM_RTC.center);
-                    gltf.scene.updateMatrixWorld(true);
-                }
-
                 return gltf;
             }).catch((e) => { throw new Error(e); }));
             return Promise.all(promises).then(values => ({ gltf: values[1], batchTable: values[0] })).catch((e) => { throw new Error(e); });

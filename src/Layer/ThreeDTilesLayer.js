@@ -1,9 +1,7 @@
 import * as THREE from 'three';
-import { CesiumIonTilesRenderer, GoogleTilesRenderer, LRUCache, PriorityQueue, TilesRenderer } from '3d-tiles-renderer';
+import { CesiumIonTilesRenderer, GoogleTilesRenderer, LRUCache, PriorityQueue, TilesRenderer, DebugTilesRenderer } from '3d-tiles-renderer';
 import GeometryLayer from 'Layer/GeometryLayer';
-import iGLTFLoader from 'Parser/iGLTFLoader';
-
-export const itownsGLTFLoader = new iGLTFLoader();
+import { itownsGLTFLoader } from 'Parser/iGLTFLoader';
 
 // TODO: find a way to configure max LRUCache and PriorityQueue
 // TODO: syntax not possible with current API -> open a PR on its side
@@ -35,11 +33,17 @@ class ThreeDTilesLayer extends GeometryLayer {
         // this.tilesRenderer.downloadQueue = downloadQueue;
         // this.tilesRenderer.parseQueue = parseQueue;
 
+        // TODO: does this have an impact?
+        // this.object3d.frustumCulled = false;
+        // this.tilesRenderer.group.frustumCulled = false;
+
         this.object3d.add(this.tilesRenderer.group);
     }
 
     preUpdate() {
         this.tilesRenderer.update();
+        // const str = `Downloading: ${this.tilesRenderer.stats.downloading} Parsing: ${this.tilesRenderer.stats.parsing} Visible: ${this.tilesRenderer.visibleTiles.size}`;
+        // console.log(str);
         return null; // don't return any element because 3d-tiles-renderer updates them
     }
 
@@ -58,7 +62,6 @@ class ThreeDTilesLayer extends GeometryLayer {
             view.notifyChange(this);
         };
         this.tilesRenderer.onLoadModel = (model) => {
-            // TODO: need to store model?
             view.notifyChange(this); // TODO: specify this layer?
         };
     }
