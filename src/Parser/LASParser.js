@@ -73,6 +73,7 @@ export default {
             geometry.setAttribute('scanAngle', scanAngle);
 
             geometry.computeBoundingBox();
+            geometry.userData.origin = new THREE.Vector3().fromArray(attributes.origin);
             return geometry;
         });
     },

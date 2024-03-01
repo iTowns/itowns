@@ -47,6 +47,7 @@ class EntwinePointTileLayer extends PointCloudLayer {
     constructor(id, config) {
         super(id, config);
         this.isEntwinePointTileLayer = true;
+        this.scale = new THREE.Vector3(1, 1, 1);
 
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then(() => {
