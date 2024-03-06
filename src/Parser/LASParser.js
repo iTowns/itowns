@@ -53,7 +53,7 @@ export default {
             const attributes = parsedData.attributes;
             geometry.userData = parsedData.header;
 
-            const positionBuffer = new THREE.BufferAttribute(attributes.positionProj, 3);
+            const positionBuffer = new THREE.BufferAttribute(attributes.position, 3);
             geometry.setAttribute('position', positionBuffer);
             const elevationBuffer = new THREE.BufferAttribute(attributes.elevation, 1);
             geometry.setAttribute('elevation', elevationBuffer);

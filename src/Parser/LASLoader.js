@@ -46,6 +46,11 @@ class LASLoader {
     _parseView(view, options) {
         const colorDepth = options.colorDepth ?? 16;
 
+        const forward = (options.crsIn !== options.crsOut) ?
+            proj4(options.crsIn, options.crsOut).forward :
+            (x => x);
+        const isGeocentric = proj4.defs(options.crsOut).projName === 'geocent';
+
         const getPosition = ['X', 'Y', 'Z'].map(view.getter);
         const getIntensity = view.getter('Intensity');
         const getReturnNumber = view.getter('ReturnNumber');
@@ -57,9 +62,7 @@ class LASLoader {
         const getScanAngle = view.getter('ScanAngle');
 
         const positions = new Float32Array(view.pointCount * 3);
-        const positionsProj = new Float32Array(view.pointCount * 3);
         const elevations = new Float32Array(view.pointCount);
-
         const intensities = new Uint16Array(view.pointCount);
         const returnNumbers = new Uint8Array(view.pointCount);
         const numberOfReturns = new Uint8Array(view.pointCount);
@@ -75,32 +78,23 @@ class LASLoader {
         */
         const scanAngles = new Float32Array(view.pointCount);
 
-        // For precision we take the first point that will be use as origin for a local referentiel.
-        const origin = getPosition.map(f => f(0)).map(val => Math.floor(val));
-        let originProj = origin;
-        const projection = proj4.defs(options.crsOut);
-        if (projection) {
-            originProj = proj4(options.crsIn, options.crsOut).forward(origin);
-        }
+        // For precision we use the first point to define the origin for a local referentiel.
+        // After projection transformation and only the integer part for simplification.
+        const origin = forward(getPosition.map(f => f(0))).map(val => Math.floor(val));
+
         for (let i = 0; i < view.pointCount; i++) {
             // `getPosition` apply scale and offset transform to the X, Y, Z
             // values. See https://github.com/connormanning/copc.js/blob/master/src/las/extractor.ts.
-            const [x, y, z] = getPosition.map(f => f(i));
+            // we thus apply the projection to get values in the Crs of the view.
+            const point = getPosition.map(f => f(i));
+            const [x, y, z] = forward(point);
             positions[i * 3] = x - origin[0];
             positions[i * 3 + 1] = y - origin[1];
             positions[i * 3 + 2] = z - origin[2];
+
             elevations[i] = z;
-
-            if (projection) {
-            // Calculate positions on view.crs
-                const [xProj, yProj, zProj] = proj4(options.crsIn, options.crsOut).forward([x, y, z]);
-                positionsProj[i * 3] = xProj - originProj[0];
-                positionsProj[i * 3 + 1] = yProj - originProj[1];
-                positionsProj[i * 3 + 2] = zProj - originProj[2];
-                // geocentric height to elevation
-                if (projection.projName !== 'geocent') { elevations[i] = zProj; }
-            }
-
+            // geocentric height to elevation
+            if (isGeocentric) { elevations[i] = point[2]; }
             intensities[i] = getIntensity(i);
             returnNumbers[i] = getReturnNumber(i);
             numberOfReturns[i] = getNumberOfReturns(i);
@@ -131,7 +125,6 @@ class LASLoader {
         return {
             position: positions,
             elevation: elevations,
-            positionProj: positionsProj,
             intensity: intensities,
             returnNumber: returnNumbers,
             numberOfReturns,
@@ -139,8 +132,7 @@ class LASLoader {
             pointSourceID: pointSourceIDs,
             color: colors,
             scanAngle: scanAngles,
-            // origin,
-            origin: projection ? originProj : origin,
+            origin,
         };
     }
 
