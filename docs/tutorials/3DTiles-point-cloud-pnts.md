@@ -148,12 +148,12 @@ In the next part, we will see how we can improve that.
 ## Updating 3D Tiles style
 
 3D Tiles style can be changed on the fly when loading the 3D Tiles data in itowns. It can be done with
-the `onTileContentLoaded` callback of `{@link C3DTilesLayer}` that is called for each tile when the content of a tile has been loaded. The tile content is a Threejs `Object3D` or `Group`, so we can access its material and make any style changes that we want. In our case, we will modify the size of the points.
+the `C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED` event of `{@link C3DTilesLayer}` that is called for each tile when the content of a tile has been loaded. The tile content is a Threejs `Object3D` or `Group`, so we can access its material and make any style changes that we want. In our case, we will modify the size of the points.
 First, we create a function to update the size of the point:
 
 ```js
-function updatePointCloudSize(tileContent) {
-    tileContent.traverse(function (obj) {
+function updatePointCloudSize(event) {
+    event.tileContent.traverse(obj => {
         if (obj.isPoints) {
             obj.material.size = 3.0;
         }
@@ -164,19 +164,10 @@ function updatePointCloudSize(tileContent) {
 In this function, we traverse the `tileContent` hierarchy until we find the threejs `Points` object with `obj.isPoints`. Then, we change the size of the threejs `PointMaterial` material. You can refer
 to threejs documentation for more information on `Object3D`, `Group`, `Points` and `PointsMaterial` objects.
 
-Then, we just need to pass this callback to the `{@link C3DTilesLayer}` constructor:
+Then, we just need to assign this callback as a listener to the `C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED` event:
 
 ```js
-onTileContentLoaded: updatePointCloudSize
-```
-
-The constructor of the `{@link C3DTilesLayer}` therefore becomes:
-
-```js
-const pointCloudLayer = new itowns.C3DTilesLayer('gorges', {
-    source: pointCloudSource,
-    onTileContentLoaded: updatePointCloudSize
-}, view);
+pointCloudLayer.addEventListener(itowns.C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED, updatePointCloudSize);
 ```
 
 If you zoom in to the points, you can now see that they are bigger:
@@ -279,8 +270,8 @@ The full code to achieve this result is:
                 'master/3DTiles/lidar-hd-gorges-saint-chely-tarn/tileset.json',
             });
 
-            function updatePointCloudSize(tileContent) {
-                tileContent.traverse(function (obj) {
+            function updatePointCloudSize(event) {
+                event.tileContent.traverse(obj => {
                     if (obj.isPoints) {
                         obj.material.size = 3.0;
                     }
@@ -289,8 +280,9 @@ The full code to achieve this result is:
 
             const pointCloudLayer = new itowns.C3DTilesLayer('gorges', {
                 source: pointCloudSource,
-                onTileContentLoaded: updatePointCloudSize
             }, view);
+            pointCloudLayer.addEventListener(itowns.C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED, updatePointCloudSize);
+
             itowns.View.prototype.addLayer.call(view, pointCloudLayer);
         </script>
     </body>
