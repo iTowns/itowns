@@ -88,7 +88,7 @@
             // Create a ColorLayer that shall be displayed on the minimap.
             const minimapColorLayer = new itowns.ColorLayer('minimap', {
                 source: new itowns.VectorTilesSource({
-                    style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                    style: "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
                     // We don't display mountains and plot related data to ease visualisation
                     filter: (layer) => !layer['source-layer'].includes('oro_')
                         && !layer['source-layer'].includes('parcellaire'),
