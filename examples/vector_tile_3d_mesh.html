@@ -75,7 +75,7 @@
 
             // Define the source of the ColorLayer data : a vector tiled map from the geoportail.
             const mapSource = new itowns.VectorTilesSource({
-                style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                style: "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
                 // We don't display mountains and parcels related data to ease visualisation. Also, we don't display
                 // buildings related data as it will be displayed in another Layer.
                 filter: (layer) => {
@@ -110,7 +110,7 @@
 
             // Define the source of the building data : those are vector tiled data from the geoportail.
             const buildingsSource = new itowns.VectorTilesSource({
-                style: 'https://wxs.ign.fr/essentiels/static/vectorTiles/styles/PLAN.IGN/standard.json',
+                style: "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
                 // We only want to display buildings related data.
                 filter: (layer) => {
                     return layer['source-layer'].includes('bati_surf')
