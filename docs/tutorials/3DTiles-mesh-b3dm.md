@@ -40,65 +40,65 @@ The 3D Tiles dataset we are using is in the `EPSG:3946` CRS, so we will use a `{
 We won't go into the details of creating the view, adding the ortho images and the DEM. For more information on this part, see the [Raster visualization in Lambert Conformical conic projection]{@tutorial Raster-data-Lambert93} in which we do the same but in the `EPSG:2154` projection. You can use the following code that prepared the field with such data:
 
 ```js
-    // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
-    itowns.proj4.defs('EPSG:3946', 
-    '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80' + 
-    '+towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+// Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
+itowns.proj4.defs('EPSG:3946', 
+'+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80' + 
+'+towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
-    // Define geographic extent: CRS, min/max X, min/max Y
-    var extent = new itowns.Extent( 'EPSG:3946',
-        1837816.94334, 1847692.32501,
-        5170036.4587, 5178412.82698);
+// Define geographic extent: CRS, min/max X, min/max Y
+var extent = new itowns.Extent( 'EPSG:3946',
+    1837816.94334, 1847692.32501,
+    5170036.4587, 5178412.82698);
 
-    // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
-    var viewerDiv = document.getElementById('viewerDiv');
+// `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+var viewerDiv = document.getElementById('viewerDiv');
 
-    // Instanciate PlanarView*
-    var cameraCoord = new itowns.Coordinates('EPSG:3946', 1841980,
-        5175682, 3000)
-    var view = new itowns.PlanarView(viewerDiv, extent, { placement: {
-        coord: cameraCoord, heading: 30, range: 4000, tilt: 30 } });
+// Instanciate PlanarView*
+var cameraCoord = new itowns.Coordinates('EPSG:3946', 1841980,
+    5175682, 3000)
+var view = new itowns.PlanarView(viewerDiv, extent, { placement: {
+    coord: cameraCoord, heading: 30, range: 4000, tilt: 30 } });
 
-    // Add a WMS imagery source
-    var wmsImagerySource = new itowns.WMSSource({
-        extent: extent,
-        name: 'Ortho2009_vue_ensemble_16cm_CC46',
-        url: 'https://download.data.grandlyon.com/wms/grandlyon',
-        version: '1.3.0',
-        crs: 'EPSG:3946',
-        format: 'image/jpeg',
-    });
+// Add a WMS imagery source
+var wmsImagerySource = new itowns.WMSSource({
+    extent: extent,
+    name: 'Ortho2009_vue_ensemble_16cm_CC46',
+    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+    version: '1.3.0',
+    crs: 'EPSG:3946',
+    format: 'image/jpeg',
+});
 
-    // Add a WMS imagery layer
-    var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
-        updateStrategy: {
-            type: itowns.STRATEGY_DICHOTOMY,
-            options: {},
-        },
-        source: wmsImagerySource,
-    });
+// Add a WMS imagery layer
+var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
+    updateStrategy: {
+        type: itowns.STRATEGY_DICHOTOMY,
+        options: {},
+    },
+    source: wmsImagerySource,
+});
 
-    view.addLayer(wmsImageryLayer);
+view.addLayer(wmsImageryLayer);
 
-    // Add a WMS elevation source
-    var wmsElevationSource = new itowns.WMSSource({
-        extent: extent,
-        url: 'https://download.data.grandlyon.com/wms/grandlyon',
-        name: 'MNT2012_Altitude_10m_CC46',
-        crs: 'EPSG:3946',
-        width: 256,
-        format: 'image/jpeg',
-    });
+// Add a WMS elevation source
+var wmsElevationSource = new itowns.WMSSource({
+    extent: extent,
+    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+    name: 'MNT2012_Altitude_10m_CC46',
+    crs: 'EPSG:3946',
+    width: 256,
+    format: 'image/jpeg',
+});
 
-    // Add a WMS elevation layer
-    var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
-        useColorTextureElevation: true,
-        colorTextureElevationMinZ: 144,
-        colorTextureElevationMaxZ: 622,
-        source: wmsElevationSource,
-    });
+// Add a WMS elevation layer
+var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
+    useColorTextureElevation: true,
+    colorTextureElevationMinZ: 144,
+    colorTextureElevationMaxZ: 622,
+    source: wmsElevationSource,
+});
 
-    view.addLayer(wmsElevationLayer);
+view.addLayer(wmsElevationLayer);
 ```
 
 ## Adding the 3D Tiles Layer

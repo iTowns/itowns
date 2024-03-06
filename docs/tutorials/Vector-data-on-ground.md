@@ -49,7 +49,8 @@ We need to change the starting position to something more appropriate.
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
                 format: 'image/jpeg',
-            })
+            });
+
             // Create the ortho-images ColorLayer and add it to the view
             var orthoLayer = new itowns.ColorLayer('Ortho', {
                 source: orthoSource,
@@ -234,7 +235,8 @@ By reaching here, you are now able to display simple vector data projected on th
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
                 format: 'image/jpeg',
-            })
+            });
+
             // Create the ortho-images ColorLayer and add it to the view
             var orthoLayer = new itowns.ColorLayer('Ortho', {
                 source: orthoSource,
