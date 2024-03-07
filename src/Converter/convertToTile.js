@@ -45,8 +45,9 @@ export default {
         const paramsGeometry = {
             extent,
             level,
-            segment: layer.segments || 16,
+            segments: layer.segments || 16,
             disableSkirt: layer.disableSkirt,
+            hideSkirt: layer.hideSkirt,
         };
 
         return newTileGeometry(builder, paramsGeometry).then((result) => {

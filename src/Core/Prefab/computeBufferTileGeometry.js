@@ -1,5 +1,10 @@
 import * as THREE from 'three';
 
+export function getBufferIndexSize(segments, noSkirt) {
+    const triangles = (segments) * (segments) * 2 + (noSkirt ? 0 : 4 * segments * 2);
+    return triangles * 3;
+}
+
 export default function computeBuffers(params) {
     // Create output buffers.
     const outBuffers = {
@@ -26,7 +31,7 @@ export default function computeBuffers(params) {
     const computeUvs = [];
 
     const builder = params.builder;
-    const nSeg = params.segment || 8;
+    const nSeg = params.segments;
     // segments count :
     // Tile : (nSeg + 1) * (nSeg + 1)
     // Skirt : 8 * (nSeg - 1)
@@ -34,8 +39,6 @@ export default function computeBuffers(params) {
     if (nVertex > 2 ** 32) {
         throw new Error('Tile segments count is too big');
     }
-
-    const triangles = (nSeg) * (nSeg) * 2 + (params.disableSkirt ? 0 : 4 * nSeg * 2);
 
     outBuffers.position = new Float32Array(nVertex * 3);
     outBuffers.normal = new Float32Array(nVertex * 3);
@@ -46,13 +49,14 @@ export default function computeBuffers(params) {
     }
 
     computeUvs[0] = () => {};
+    const bufferIndexSize = getBufferIndexSize(nSeg, params.disableSkirt);
     if (params.buildIndexAndUv_0) {
         if (nVertex < 2 ** 8) {
-            outBuffers.index = new Uint8Array(triangles * 3);
+            outBuffers.index = new Uint8Array(bufferIndexSize);
         } else if (nVertex < 2 ** 16) {
-            outBuffers.index = new Uint16Array(triangles * 3);
+            outBuffers.index = new Uint16Array(bufferIndexSize);
         } else if (nVertex < 2 ** 32) {
-            outBuffers.index = new Uint32Array(triangles * 3);
+            outBuffers.index = new Uint32Array(bufferIndexSize);
         }
         outBuffers.uvs[0] = new Float32Array(nVertex * 2);
         computeUvs[0] = (id, u, v) => {

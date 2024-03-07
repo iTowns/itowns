@@ -16,7 +16,8 @@ const boundingSphereCenter = new THREE.Vector3();
  * @property {boolean} isTiledGeometryLayer - Used to checkout whether this
  * layer is a TiledGeometryLayer. Default is true. You should not change this,
  * as it is used internally for optimisation.
- *
+ * @property {boolean} hideSkirt (default false) - Used to hide the skirt (tile borders).
+ * Useful when the layer opacity < 1
  */
 class TiledGeometryLayer extends GeometryLayer {
     /**
@@ -70,6 +71,7 @@ class TiledGeometryLayer extends GeometryLayer {
         this.object3d.geoidHeight = 0;
 
         this.protocol = 'tile';
+        this._hideSkirt = false;
 
         this.sseSubdivisionThreshold = this.sseSubdivisionThreshold || 1.0;
 
@@ -101,6 +103,19 @@ class TiledGeometryLayer extends GeometryLayer {
         this.maxScreenSizeNode = this.sseSubdivisionThreshold * (SIZE_DIAGONAL_TEXTURE * 2);
     }
 
+    get hideSkirt() {
+        return this._hideSkirt;
+    }
+    set hideSkirt(value) {
+        this._hideSkirt = value;
+        for (const node of this.level0Nodes) {
+            node.traverse((obj) => {
+                if (obj.isTileMesh) {
+                    obj.geometry.hideSkirt = value;
+                }
+            });
+        }
+    }
     /**
      * Picking method for this layer. It uses the {@link Picking#pickTilesAt}
      * method.
