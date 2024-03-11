@@ -273,7 +273,7 @@
             var wfsCartoSource = new itowns.WFSSource({
                 url: 'https://data.geopf.fr/wfs/ows?',
                 version: '2.0.0',
-                typeName: 'BDCARTO_BDD_WLD_WGS84G:zone_habitat_mairie',
+                typeName: 'BDCARTO_V5:zone_d_habitation',
                 crs: 'EPSG:3946',
                 ipr: 'IGN',
                 format: 'application/json',
@@ -284,24 +284,24 @@
                 text: {
                     field: '{toponyme}',
                     color: (p) => {
-                        switch (p.importance) {
-                            case 'Quartier de ville':
-                                return 'Cornsilk';
-                            case 'Hameau':
+                        switch (p.nature) {
+                            case 'Quartier':
                                 return 'WhiteSmoke';
-                            case 'Chef-lieu de commune':
+                            case 'Château':
+                                return 'Cornsilk';
+                            case 'Lieu-dit habité':
                             default:
                                 return 'white';
                         }
                     },
                     transform: 'uppercase',
                     size: (p) => {
-                        switch (p.importance) {
-                            case 'Quartier de ville':
-                                return 11;
-                            case 'Hameau':
+                        switch (p.nature) {
+                            case 'Quartier':
                                 return 13;
-                            case 'Chef-lieu de commune':
+                            case 'Château':
+                                return 11;
+                            case 'Lieu-dit habité':
                             default:
                                 return 18;
                         }

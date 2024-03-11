@@ -88,8 +88,8 @@
             // Define options for geocoding service that should be used by the searchbar.
             const geocodingOptions = {
                 url: new URL(
-                    'https://wxs.ign.fr/ayxvok72rcocdyn8xyvy32og/ols/apis/completion?text=&type=StreetAddress,' +
-                    'PositionOfInterest',
+                    'https://data.geopf.fr/geocodage/completion?' +
+                    'text=&type=StreetAddress,PositionOfInterest',
                 ),
                 // As precised in the doc (http://www.itowns-project.org/itowns/docs/#api/Widgets/Searchbar), the parser
                 // method must parse the geocoding service response into a Map object. For each item of this Map, the
