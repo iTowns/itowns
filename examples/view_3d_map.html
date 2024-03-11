@@ -110,8 +110,8 @@
             // Define options for geocoding service that should be used by the searchbar.
             const geocodingOptions = {
                 url: new URL(
-                    'https://wxs.ign.fr/ayxvok72rcocdyn8xyvy32og/ols/apis/completion?text=&type=StreetAddress,' +
-                    'PositionOfInterest',
+                    'https://data.geopf.fr/geocodage/completion?' +
+                    'text=&type=StreetAddress,PositionOfInterest',
                 ),
                 parser: (response) => {
                     const map = new Map();
