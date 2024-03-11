@@ -21,6 +21,7 @@ let browser;
 // but it's slow to start (so tests might fail on timeouts).
 // Since the 'test-examples' target depends on the 'run' target,
 // we instead run the simplest http server.
+
 function startStaticFileServer() {
     return new Promise((resolve) => {
         const ext2mime = new Map();
@@ -77,10 +78,11 @@ function waitServerReady(port) {
     });
 }
 
-const layersAreInitialized = async () => {
-    await page.waitForFunction(() => view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0
-        && view.mainLoop.renderingState === 0
-        && view.getLayers().every(layer => layer.ready), { timeout: 60000 });
+const layersInitialization = async (forceTimeOut = false) => {
+    await page.waitForFunction(timingOut => (view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0
+            && view.mainLoop.renderingState === 0
+            && view.getLayers().every(layer => layer.ready)
+            && !timingOut), { timeout: 50000 }, forceTimeOut);
 };
 
 const waitNextRender = async page => page.evaluate(() => new Promise((resolve) => {
@@ -103,38 +105,71 @@ const waitNextRender = async page => page.evaluate(() => new Promise((resolve) =
     view.notifyChange();
 }));
 
+async function saveInitialPosition() {
+    global.initialPosition = await page.evaluate(() => {
+        let promise;
+        if (view.isGlobeView && view.controls) {
+            promise = Promise.resolve(itowns.CameraUtils.getTransformCameraLookingAtTarget(view, view.controls.camera));
+        } else if (view.isPlanarView) {
+            // TODO: make the controls accessible from PlanarView before doing
+            // anything more here
+            promise = Promise.resolve();
+        }
+        return promise;
+    });
+}
+
 // Helper function: returns true if there are no errors on the page
 // and when all layers are ready and rendering has been done
 const loadExample = async (url, screenshotName) => {
-    url = `http://localhost:${itownsPort}/${url}`;
+    localUrl = `http://localhost:${itownsPort}/${url}`;
 
     const pageErrors = [];
     page.on('pageerror', (e) => { pageErrors.push(e); });
 
-    await page.goto(url);
+    try {
+        await page.goto(localUrl);
+    } catch (e) {
+        throw new Error(`page ${localUrl} couldn't load`, { cause: e });
+    }
 
-    pageErrors.forEach((e) => { throw e; });
+    if (pageErrors.length > 0) {
+        const err = new Error(`page ${url} encoutered ${pageErrors.length} error(s). [${pageErrors.map(e => e.message)}]`, { errors: pageErrors });
+        throw err;
+    }
 
-    await page.waitForFunction(() => typeof (view) === 'object');
+    await page.waitForFunction(() => typeof view === 'object' && view instanceof itowns.View);
 
     await page.evaluate(() => {
         itowns.CameraUtils.defaultStopPlaceOnGroundAtEnd = true;
     });
 
     try {
-        await layersAreInitialized();
-    } catch (e) {
-        if (e instanceof Error && e.name === 'TimeoutError') {
+        await layersInitialization();
+    } catch (err) {
+        if (err instanceof Error && err.name === 'TimeoutError') {
+            console.warn('      *** Warning: layersInitialization timed out -> it got stopped ***');
             await page.evaluate(() => {
                 itowns.CameraUtils.stop(view, view.camera3D);
             });
-            await layersAreInitialized();
+            try {
+                await layersInitialization();
+            } catch (e) {
+                console.warn(e);
+                throw e;
+            }
+        } else {
+            console.warn(e);
+            throw e;
         }
     }
 
     await waitNextRender(page);
 
     await saveScreenshot(page, screenshotName);
+
+    // store initial position for restoration after each tests
+    await saveInitialPosition();
 
     return true;
 };
@@ -203,9 +238,9 @@ exports.mochaHooks = {
         });
 
         // the page all tests will be tested in
-        return browser.newPage().then((p) => { global.page = p; });
+        global.page = await browser.newPage();
     },
-    // store initial position for restoration after the test
+
     afterAll(done) {
         browser.close();
         if (itownsServer) {
@@ -215,21 +250,10 @@ exports.mochaHooks = {
             done();
         }
     },
-    beforeEach: async () => {
-        global.initialPosition = await page.evaluate(() => {
-            if (view.isGlobeView && view.controls) {
-                return Promise.resolve(itowns.CameraUtils.getTransformCameraLookingAtTarget(view, view.controls.camera));
-            } else if (view.isPlanarView) {
-                // TODO: make the controls accessible from PlanarView before doing
-                // anything more here
-                return Promise.resolve();
-            }
-        });
-    },
     // reset browser state instead of closing it
     afterEach: async () => {
         await page.evaluate((init) => {
-            if (view.isGlobeView && view.controls) {
+            if (view && view.isGlobeView && view.controls) {
                 // eslint-disable-next-line no-param-reassign
                 init.coord = new itowns.Coordinates(
                     init.coord.crs,
@@ -239,7 +263,7 @@ exports.mochaHooks = {
                 );
                 view.controls.lookAtCoordinate(init, false);
                 view.notifyChange();
-            } else if (view.isPlanarView) {
+            } else if (view && view.isPlanarView) {
                 // TODO: make the controls accessible from PlanarView before doing
                 // anything more here
             }
@@ -251,5 +275,3 @@ exports.mochaHooks = {
 
 global.loadExample = loadExample;
 global.waitUntilItownsIsIdle = waitUntilItownsIsIdle;
-
-
