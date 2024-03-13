@@ -9,8 +9,6 @@ import { itownsGLTFLoader } from 'Parser/iGLTFLoader';
 // const downloadQueue = new PriorityQueue();
 // const parseQueue = new PriorityQueue();
 
-// TODO: Check GeometryLayer methods that should be overriden
-// TODO: tests
 class ThreeDTilesLayer extends GeometryLayer {
     constructor(id, config) {
         super(id, new THREE.Group(), { source: config.source });
@@ -40,20 +38,9 @@ class ThreeDTilesLayer extends GeometryLayer {
         this.object3d.add(this.tilesRenderer.group);
     }
 
-    preUpdate() {
-        this.tilesRenderer.update();
-        // const str = `Downloading: ${this.tilesRenderer.stats.downloading} Parsing: ${this.tilesRenderer.stats.parsing} Visible: ${this.tilesRenderer.visibleTiles.size}`;
-        // console.log(str);
-        return null; // don't return any element because 3d-tiles-renderer updates them
-    }
-
-    update() {
-        // empty, elements are updated by 3d-tiles-renderer
-    }
-
     // TODO: what happens if the layer is added to multiple views? Should we store multiple tilesRenderer?
     // How does it work for other layer types?
-    setup(view) {
+    __setup(view) {
         this.tilesRenderer.setCamera(view.camera3D);
         this.tilesRenderer.setResolutionFromRenderer(view.camera3D, view.renderer);
         // Set this in the method called by view.addLayer
@@ -65,6 +52,24 @@ class ThreeDTilesLayer extends GeometryLayer {
             view.notifyChange(this); // TODO: specify this layer?
         };
     }
+
+    preUpdate() {
+        this.tilesRenderer.update();
+        // const str = `Downloading: ${this.tilesRenderer.stats.downloading} Parsing: ${this.tilesRenderer.stats.parsing} Visible: ${this.tilesRenderer.visibleTiles.size}`;
+        // console.log(str);
+        return null; // don't return any element because 3d-tiles-renderer updates them
+    }
+
+    update() {
+        // empty, elements are updated by 3d-tiles-renderer
+    }
+
+    // TODO test it + verify the cache is effectively cleared
+    delete(clearCache) {
+        this.tilesRenderer.dispose();
+    }
+
+    // Methods TODOS: attach; detach; getObjectToUpdateForAttachedLayers; getC3DTileFeatureFromIntersectsArray?
 }
 
 export default ThreeDTilesLayer;

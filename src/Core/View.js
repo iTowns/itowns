@@ -103,7 +103,7 @@ function _preprocessLayer(view, layer, parentLayer) {
     }
 
     if (layer.isThreeDTilesLayer) {
-        layer.setup(view);
+        layer.__setup(view);
     }
 
     return layer;
