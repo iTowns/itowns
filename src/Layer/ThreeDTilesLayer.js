@@ -1,7 +1,50 @@
 import * as THREE from 'three';
 import { CesiumIonTilesRenderer, GoogleTilesRenderer, LRUCache, PriorityQueue, TilesRenderer, DebugTilesRenderer } from '3d-tiles-renderer';
 import GeometryLayer from 'Layer/GeometryLayer';
-import { itownsGLTFLoader } from 'Parser/iGLTFLoader';
+import iGLTFLoader from 'Parser/iGLTFLoader';
+import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
+import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
+
+// Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
+const itownsGLTFLoader = new iGLTFLoader();
+
+/**
+ * Enable loading 3D Tiles with [Draco](https://google.github.io/draco/) geometry extension.
+ *
+ * @param {String} path path to draco library folder containing the JS and WASM decoder libraries. They can be found in
+ * [itowns examples](https://github.com/iTowns/itowns/tree/master/examples/libs/draco).
+ * @param {Object} [config] optional configuration for Draco decoder (see threejs'
+ * [setDecoderConfig](https://threejs.org/docs/index.html?q=draco#examples/en/loaders/DRACOLoader.setDecoderConfig) that
+ * is called under the hood with this configuration for details.
+ */
+export function enableDracoLoader(path, config) {
+    if (!path) {
+        throw new Error('Path to draco folder is mandatory');
+    }
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(path);
+    if (config) {
+        dracoLoader.setDecoderConfig(config);
+    }
+    itownsGLTFLoader.setDRACOLoader(dracoLoader);
+}
+
+/**
+ * Enable loading 3D Tiles with [KTX2](https://www.khronos.org/ktx/) texture extension.
+ *
+ * @param {String} path path to ktx2 library folder containing the JS and WASM decoder libraries. They can be found in
+ * [itowns examples](https://github.com/iTowns/itowns/tree/master/examples/libs/basis).
+ * @param {THREE.WebGLRenderer} renderer the threejs renderer
+ */
+export function enableKtx2Loader(path, renderer) {
+    if (!path || !renderer) {
+        throw new Error('Path to ktx2 folder and renderer are mandatory');
+    }
+    const ktx2Loader = new KTX2Loader();
+    ktx2Loader.setTranscoderPath(path);
+    ktx2Loader.detectSupport(renderer);
+    itownsGLTFLoader.setKTX2Loader(ktx2Loader);
+}
 
 // TODO: find a way to configure max LRUCache and PriorityQueue
 // TODO: syntax not possible with current API -> open a PR on its side
@@ -14,8 +57,6 @@ class ThreeDTilesLayer extends GeometryLayer {
         super(id, new THREE.Group(), { source: config.source });
         this.isThreeDTilesLayer = true;
 
-        // Note: C3DTilesIonSource and C3DTilesGoogleSource are no longer very useful but we should keep them
-        // with their logic until we have C3DTilesLayer and without after to keep itowns source/layer logic
         if (config.source.isC3DTilesIonSource) {
             this.tilesRenderer = new CesiumIonTilesRenderer(config.source.assetId, config.source.accessToken);
         } else if (config.source.isC3DTilesGoogleSource) {
@@ -31,10 +72,6 @@ class ThreeDTilesLayer extends GeometryLayer {
         // this.tilesRenderer.downloadQueue = downloadQueue;
         // this.tilesRenderer.parseQueue = parseQueue;
 
-        // TODO: does this have an impact?
-        // this.object3d.frustumCulled = false;
-        // this.tilesRenderer.group.frustumCulled = false;
-
         this.object3d.add(this.tilesRenderer.group);
     }
 
@@ -43,13 +80,12 @@ class ThreeDTilesLayer extends GeometryLayer {
     __setup(view) {
         this.tilesRenderer.setCamera(view.camera3D);
         this.tilesRenderer.setResolutionFromRenderer(view.camera3D, view.renderer);
-        // Set this in the method called by view.addLayer
-        this.tilesRenderer.onLoadTileSet = (tileSet) => {
-            this.tileSet = tileSet; // TODO: needed? + what if multiple tilesets?
+        // TODO: should we store the tileset and our own list of models? or at least provide an API to access them
+        this.tilesRenderer.onLoadTileSet = () => {
             view.notifyChange(this);
         };
-        this.tilesRenderer.onLoadModel = (model) => {
-            view.notifyChange(this); // TODO: specify this layer?
+        this.tilesRenderer.onLoadModel = () => {
+            view.notifyChange(this);
         };
     }
 
@@ -64,12 +100,11 @@ class ThreeDTilesLayer extends GeometryLayer {
         // empty, elements are updated by 3d-tiles-renderer
     }
 
-    // TODO test it + verify the cache is effectively cleared
-    delete(clearCache) {
+    delete() {
         this.tilesRenderer.dispose();
     }
 
-    // Methods TODOS: attach; detach; getObjectToUpdateForAttachedLayers; getC3DTileFeatureFromIntersectsArray?
+    // TODO Methods: attach; detach; getObjectToUpdateForAttachedLayers; getC3DTileFeatureFromIntersectsArray?
 }
 
 export default ThreeDTilesLayer;
