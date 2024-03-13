@@ -6,7 +6,8 @@ import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
 import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
 
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
-const itownsGLTFLoader = new iGLTFLoader();
+// Temporary exported to be used in deprecated B3dmParser
+export const itownsGLTFLoader = new iGLTFLoader();
 
 /**
  * Enable loading 3D Tiles with [Draco](https://google.github.io/draco/) geometry extension.
