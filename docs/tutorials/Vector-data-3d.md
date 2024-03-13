@@ -32,23 +32,23 @@ layer to a more precise one.
                 tilt: 20,
             };
             var view = new itowns.GlobeView(viewerDiv, placement);
-            
+
             var colorSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/decouverte/geoportail/wmts',
+                url: 'https://data.geopf.fr/wmts?',
                 crs: 'EPSG:3857',
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
                 format: 'image/jpeg'
             });
-            
+
             var colorLayer = new itowns.ColorLayer('Ortho', {
                 source: colorSource,
             });
-            
+
             view.addLayer(colorLayer);
-            
+
             var elevationSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/altimetrie/geoportail/wmts',
+                url: 'https://data.geopf.fr/wmts?',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
                 tileMatrixSet: 'WGS84G',
@@ -80,11 +80,11 @@ layer to a more precise one.
                     }
                 }
             });
-            
+
             var elevationLayer = new itowns.ElevationLayer('MNT_WORLD', {
                 source: elevationSource,
             });
-            
+
             view.addLayer(elevationLayer);
         </script>
      </body>
@@ -101,7 +101,7 @@ Before creating this layer, let's instantiate the data source:
 ```js
 
 var geometrySource = new itowns.WFSSource({
-    url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+    url: 'https://data.geopf.fr/wfs/ows?',
     version: '2.0.0',
     typeName: 'BDTOPO_V3:batiment',
     crs: 'EPSG:4326',
@@ -147,7 +147,7 @@ function setAltitude(properties) {
 }
 
 var geometrySource = new itowns.WFSSource({
-    url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+    url: 'https://data.geopf.fr/wfs/ows?',
     version: '2.0.0',
     typeName: 'BDTOPO_V3:batiment',
     crs: 'EPSG:4326',
@@ -185,7 +185,7 @@ z_min: 83.7
 ```
 
 Reading the documentation of the database we are querying ([section 7.2, page
-66](https://geoservices.ign.fr/sites/default/files/2023-01/DC_BDTOPO_3-3.pdf), in French), we have an
+66](https://geoservices.ign.fr/sites/default/files/2024-02/DC_BDTOPO_3-3_0.pdf), in French), we have an
 explanation on each property. To help us place the data correctly, let's use the
 `altitude_minimale_sol` property. 
 It corresponds to the minimal altitude of the building floor.
@@ -211,7 +211,7 @@ function setExtrusion(properties) {
 }
 
 var geometrySource = new itowns.WFSSource({
-    url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+    url: 'https://data.geopf.fr/wfs/ows?',
     version: '2.0.0',
     typeName: 'BDTOPO_V3:batiment',
     crs: 'EPSG:4326',
@@ -252,7 +252,7 @@ function setColor(properties) {
 }
 
 var geometrySource = new itowns.WFSSource({
-    url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+    url: 'https://data.geopf.fr/wfs/ows?',
     version: '2.0.0',
     typeName: 'BDTOPO_V3:batiment',
     crs: 'EPSG:4326',
@@ -311,7 +311,7 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
             var view = new itowns.GlobeView(viewerDiv, placement);
 
             var colorSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/decouverte/geoportail/wmts',
+                url: 'https://data.geopf.fr/wmts?',
                 crs: 'EPSG:3857',
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
@@ -325,7 +325,7 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
             view.addLayer(colorLayer);
 
             var elevationSource = new itowns.WMTSSource({
-                url: 'http://wxs.ign.fr/altimetrie/geoportail/wmts',
+                url: 'https://data.geopf.fr/wmts?',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
                 tileMatrixSet: 'WGS84G',
@@ -376,9 +376,9 @@ on a `GlobeView`, and change the appearance and positioning of this layer. Here 
                 return new itowns.THREE.Color(0xaaaaaa);
             }
 
-          
+
             var geometrySource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/topographie/geoportail/wfs?',
+                url: 'https://data.geopf.fr/wfs/ows?',
                 version: '2.0.0',
                 typeName: 'BDTOPO_V3:batiment',
                 crs: 'EPSG:4326',

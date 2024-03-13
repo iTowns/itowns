@@ -38,13 +38,13 @@ We need to change the starting position to something more appropriate.
                 coord: new itowns.Coordinates('EPSG:4326', 3.05, 48.97),
                 range: 15000,
             };
-            
+
             // Create the view
             var view = new itowns.GlobeView(viewerDiv, placement);
-            
+
             // Define the source of the ortho-images
             var orthoSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/decouverte/geoportail/wmts',
+                url: 'https://data.geopf.fr/wmts?',
                 crs: "EPSG:3857",
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
@@ -56,10 +56,10 @@ We need to change the starting position to something more appropriate.
                 source: orthoSource,
             });
             view.addLayer(orthoLayer);
-            
+
             // Define the source of the dem data
             var elevationSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/altimetrie/geoportail/wmts',
+                url: 'https://data.geopf.fr/wmts?',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
                 tileMatrixSet: 'WGS84G',
@@ -230,7 +230,7 @@ By reaching here, you are now able to display simple vector data projected on th
 
             // Define the source of the ortho-images
             var orthoSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/decouverte/geoportail/wmts',
+                url: 'https://data.geopf.fr/wmts?',
                 crs: "EPSG:3857",
                 name: 'ORTHOIMAGERY.ORTHOPHOTOS',
                 tileMatrixSet: 'PM',
@@ -245,7 +245,7 @@ By reaching here, you are now able to display simple vector data projected on th
 
             // Define the source of the dem data
             var elevationSource = new itowns.WMTSSource({
-                url: 'https://wxs.ign.fr/altimetrie/geoportail/wmts',
+                url: 'https://data.geopf.fr/wmts?',
                 crs: 'EPSG:4326',
                 name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3',
                 tileMatrixSet: 'WGS84G',

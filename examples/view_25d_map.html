@@ -98,9 +98,9 @@
             view.addLayer(wmsElevationLayer);
 
             var wfsCartoSource = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/cartovecto/geoportail/wfs?',
+                url: 'https://data.geopf.fr/wfs/ows?',
                 version: '2.0.0',
-                typeName: 'BDCARTO_BDD_WLD_WGS84G:zone_habitat_mairie',
+                typeName: 'BDCARTO_V5:zone_d_habitation',
                 crs: 'EPSG:3946',
                 ipr: 'IGN',
                 format: 'application/json',
