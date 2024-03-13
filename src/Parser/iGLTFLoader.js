@@ -2,9 +2,6 @@ import * as THREE from 'three';
 import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader'; // TODO Consider moving it out from deprecated folder
 import { GLTFLoader } from 'ThreeExtended/loaders/GLTFLoader';
 
-// const matrixChangeUpVectorYtoZ = (new THREE.Matrix4()).makeRotationX(Math.PI / 2); // TODO
-
-// TODO document me and my methods
 // TODO: should we leave this file in parsers/?
 /**
  * @class iGLTFLoader
@@ -12,6 +9,10 @@ import { GLTFLoader } from 'ThreeExtended/loaders/GLTFLoader';
  *
  * Under the hood, glTF 2.0 files are parsed with THREE.GltfLoader() and GLTF 1.0 are parsed with the previous THREE
  * GltfLoader (for 1.0 glTF) that has been kept and maintained in iTowns.
+ *
+ * Beware that gltf convention is y-up while itowns is z-up. You can apply a PI/2 rotation around the X axis to the
+ * loaded model to transform from y-up to z-up. Note that you can also use Coordinates.geodesicNormal to get the normal
+ * to a position on the globe (i.e. in GlobeView) to correctly orient a model on a GlobeView.
  */
 class iGLTFLoader extends THREE.Loader {
     constructor(manager) {
@@ -20,7 +21,15 @@ class iGLTFLoader extends THREE.Loader {
         this.glTFLoader = new GLTFLoader();
     }
 
-    // adapted from three
+    /**
+     * Loads a gltf model from url and call the callback function with the parsed response content.
+     * Adapted from threejs.
+     * @param {String} url - the path/URL of the .gltf or .glb file.
+     * @param {Function} onLoad - A function to be called after the loading is successfully completed. The function
+     * receives the loaded JSON response returned from {@link parse}.
+     * @param {Function} onProgress
+     * @param {Function} onError
+     */
     load(url, onLoad, onProgress, onError) {
         const scope = this;
 
@@ -76,32 +85,65 @@ class iGLTFLoader extends THREE.Loader {
         }, onProgress, _onError);
     }
 
+    /**
+     * Sets the draco loader instance for this gltf parser. Enable loading files with
+     * [Draco](https://google.github.io/draco/) geometry extension. See Threejs
+     * [DracoLoader](@link https://threejs.org/docs/index.html#examples/en/loaders/DRACOLoader} for more information.
+     * Only works for GLTF 2.0 files.
+     * @param {THREE.DracoLoader} dracoLoader - the threejs DracoLoader instance.
+     */
     setDRACOLoader(dracoLoader) {
         this.glTFLoader.setDRACOLoader(dracoLoader);
     }
 
+    /**
+     * Sets the KTX2 loader instance for this gltf parser. Enable loading files with
+     * [KTX2](https://www.khronos.org/ktx/) texture extension. See Threejs
+     * [KTX2Loader](@link https://threejs.org/docs/index.html?q=KTX2#examples/en/loaders/KTX2Loader} for more information.
+     * Only works for GLTF 2.0 files.
+     * @param {THREE.KTX2Loader} ktx2Loader - the threejs KTX2Loader instance.
+     */
     setKTX2Loader(ktx2Loader) {
         this.glTFLoader.setKTX2Loader(ktx2Loader);
     }
 
+    /**
+     * Sets the Mesh Optimizer decoder instance for this gltf parser. Enable loading files with
+     * [MeshOptimizer](https://meshoptimizer.org/) geometry extension.
+     * Only works for GLTF 2.0 files.
+     * @param {Object} meshoptDecoder - the threejs meshopt decoder instance.
+     */
     setMeshoptDecoder(meshoptDecoder) {
         this.glTFLoader.setMeshoptDecoder(meshoptDecoder);
     }
 
+    /**
+     * Registers a callback to load specific unknown or not standard GLTF extensions.
+     * See Threejs [GltfLoader](@link https://threejs.org/docs/?q=gltflo#examples/en/loaders/GLTFLoader) for more
+     * information.
+     * @param {Function} callback - the callback function
+     */
     register(callback) {
         this.glTFLoader.register(callback);
     }
 
+    /**
+     * Unregisters a load callback.
+     * See Threejs [GltfLoader](@link https://threejs.org/docs/?q=gltflo#examples/en/loaders/GLTFLoader) for more
+     * information.
+     * @param {Function} callback - the callback function
+     */
     unregister(callback) {
         this.glTFLoader.unregister(callback);
     }
 
-    /** Parses a gltf buffer to an object with threejs structures and applies a y-up to z-up conversion to align with
-     * itowns convention. Essentially calls THREE.GltfLoader.parse() for glTF 2.0 files and the legacy threejs parser
-     * for gtTF 1.0 files.
-     * @param {ArrayBuffer} buffer - the glTF asset to parse, as an ArrayBuffer, JSON string or object.
+    /** Parse a glTF-based ArrayBuffer, JSON string or object and fire onLoad callback when complete.
+     * Calls Threejs [GLTFLoader.parse](@link https://threejs.org/docs/?q=gltflo#examples/en/loaders/GLTFLoader.parse) for
+     * glTF 2.0 files and {@link LegacyGltfLoader} for gtTF 1.0 files.
+     * @param {ArrayBuffer|String|Object} buffer - the glTF asset to parse, as an ArrayBuffer, JSON string or object.
      * @param {String} path - the base path from which to find subsequent glTF resources such as textures and .bin data files.
-     * @param {Function} onLoad — A function to be called when parse completes.
+     * @param {Function} onLoad — A function to be called when parse completes. The argument to the onLoad function will
+     * be an Object that contains loaded parts: .scene, .scenes, .cameras, .animations, and .asset.
      * @param {Function} [onError] — A function to be called if an error occurs during parsing. The function receives error as an argument.
      */
     parse(buffer, path, onLoad, onError) {
@@ -112,17 +154,6 @@ class iGLTFLoader extends THREE.Loader {
         const headerView = new DataView(buffer, 0, 20);
         const version = headerView.getUint32(4, true);
 
-        // TODO we may need to not apply it for 3d-tiles-renderer-js (or make it optional) + change B3DMPArser accordingly
-        // and make it use parseAsync
-        // Apply y-up (gltf convention) to z-up (itowns convention) conversion
-        // const onload = (gltf) => {
-        //     gltf.scene.applyMatrix4(matrixChangeUpVectorYtoZ);
-        //     resolve(gltf);
-        // };
-        // const onError = (e) => {
-        //     reject(new Error(`[GLTFParser]: Failed to parse gltf with error: ${e}`));
-        // };
-
         if (version === 1) {
             this.legacyGLTFLoader.parse(buffer, path, onLoad, onError);
         } else {
@@ -130,6 +161,13 @@ class iGLTFLoader extends THREE.Loader {
         }
     }
 
+    /**
+     * Async promise-based parsing of a glTF-based ArrayBuffer, JSON string or object.
+     * @param {ArrayBuffer|String|Object} data - the glTF asset to parse, as an ArrayBuffer, JSON string or object.
+     * @param {String} path - the base path from which to find subsequent glTF resources such as textures and .bin data files.
+     * @returns {Promise<Object>} A promise that resolves an Object that contains loaded parts:
+     * .scene, .scenes, .cameras, .animations, and .asset, when parsing is done.
+     */
     parseAsync(data, path) {
         const scope = this;
 
