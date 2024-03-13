@@ -70,7 +70,7 @@ To do so, we need to pass five argument to `Extent` constructor, which are :
     Not all CRS are defined by default within iTowns, which is why we need to define our CRS using [proj4](https://proj.org/) prior to instantiating the `Extent` ;
   - The westernmost, easternmost, southernmost and northernmost coordinates of the extent.
 - Finally, we create a `{@link PlanarView}` giving it the required `DomElement` and `Extent` parameters.
-    
+
 At this stage, our webpage should look like this : 
 
 ![Simple PlanarView](images/Raster-data-Lambert93-1.png)
@@ -115,7 +115,7 @@ We can start displaying ortho-images provided by the [Geoportail](https://www.ge
 
 ```js
 const sourceOrtho = new itowns.WMSSource({
-    url: "https://wxs.ign.fr/inspire/inspire/r/wms",
+    url: "https://data.geopf.fr/wms-r/wms?",
     name: "OI.OrthoimageCoverage.HR",
     format: 'image/png',
     crs: 'EPSG:2154',
@@ -147,7 +147,7 @@ Then we can simply create the `ElevationLayer`, giving it a unique `id` and the 
 
 ```js
 const sourceDEM = new itowns.WMSSource({
-    url: "https://wxs.ign.fr/altimetrie/geoportail/r/wms",
+    url: "https://data.geopf.fr/wms-r/wms?",
     name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
     format: "image/x-bil;bits=32",
     crs: 'EPSG:2154',
@@ -184,10 +184,10 @@ The code that is shown bellow sums up all the steps it took to do so.
         <div id="viewerDiv"></div>
         <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
-    
+
             // Retrieve the view container
             const viewerDiv = document.getElementById('viewerDiv');
-    
+
             // Define the view geographic extent
             itowns.proj4.defs(
                 'EPSG:2154',
@@ -198,7 +198,7 @@ The code that is shown bellow sums up all the steps it took to do so.
                 644500.0, 659499.99,
                 6857500.0, 6867499.99,
             );
-    
+
             // Define the camera initial placement
             const placement = {
                 coord: viewExtent.center(),
@@ -206,15 +206,15 @@ The code that is shown bellow sums up all the steps it took to do so.
                 heading: 40,
                 range: 16000,
             };
-    
+
             // Create the planar view
             const view = new itowns.PlanarView(viewerDiv, viewExtent, {
                 placement: placement,
             });
-            
+
             // Define the source of the ortho-images
             const sourceOrtho = new itowns.WMSSource({
-                url: "https://wxs.ign.fr/inspire/inspire/r/wms",
+                url: "https://data.geopf.fr/wms-r/wms?",
                 name: "OI.OrthoimageCoverage.HR",
                 format: "image/png",
                 crs: 'EPSG:2154',
@@ -223,10 +223,10 @@ The code that is shown bellow sums up all the steps it took to do so.
             // Create the ortho-images ColorLayer and add it to the view
             const layerOrtho = new itowns.ColorLayer('Ortho', { source: sourceOrtho });
             view.addLayer(layerOrtho);
-            
+
             // Define the source of the dem data
             const sourceDEM = new itowns.WMSSource({
-                url: "https://wxs.ign.fr/altimetrie/geoportail/r/wms",
+                url: "https://data.geopf.fr/wms-r/wms?",
                 name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
                 format: "image/x-bil;bits=32",
                 crs: 'EPSG:2154',
