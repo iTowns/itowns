@@ -4,7 +4,8 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
 import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
 import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
-import PointsMaterial from 'Renderer/PointsMaterial';
+import PointsMaterial, { PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
+import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
@@ -48,14 +49,6 @@ export function enableKtx2Loader(path, renderer) {
     itownsGLTFLoader.setKTX2Loader(ktx2Loader);
 }
 
-// TODO: first implementation, need to copy all values from the oldPointsMaterial
-function replacePointsMaterial(model) {
-    if (!model || !model.isPoints) { return; }
-    const oldMat = model.material;
-    model.material = new PointsMaterial();
-    oldMat.dispose();
-}
-
 // TODO: find a way to configure max LRUCache and PriorityQueue
 // TODO: syntax not possible with current API -> open a PR on its side
 // const lruCache = new LRUCache();
@@ -66,6 +59,10 @@ class ThreeDTilesLayer extends GeometryLayer {
     constructor(id, config) {
         super(id, new THREE.Group(), { source: config.source });
         this.isThreeDTilesLayer = true;
+
+        // TODO: should this really be done here and like this (i.e. each option is passed in individually?)
+        //  Maybe we should use the Style API instead :)
+        this._handlePointsMaterialConfig(config);
 
         if (config.source.isC3DTilesIonSource) {
             this.tilesRenderer = new CesiumIonTilesRenderer(config.source.assetId, config.source.accessToken);
@@ -96,10 +93,52 @@ class ThreeDTilesLayer extends GeometryLayer {
         };
         this.tilesRenderer.onLoadModel = (model) => {
             if (model.isPoints) {
-                replacePointsMaterial(model);
+                this._replacePointsMaterial(model);
             }
             view.notifyChange(this);
         };
+    }
+
+    // TODO: first implementation, open an issue to 3d-tiles-renderer-js to provide the ability to provide a PointsMaterial
+    _replacePointsMaterial(model) {
+        if (!model || !model.isPoints) { return; }
+        const oldMat = model.material;
+        model.material = new PointsMaterial();
+        // Copy values from the material that are modified in 3DtilesRendererJS PntsLoader depending on the source data
+        model.material.vertexColors = oldMat.vertexColors;
+        model.material.transparent = oldMat.transparent;
+        model.material.opacity = oldMat.opacity;
+        model.material.depthWrite = oldMat.depthWrite;
+        model.material.color = oldMat.color;
+        oldMat.dispose();
+        ReferLayerProperties(model.material, this);
+    }
+
+    _handlePointsMaterialConfig(config) {
+        this.pntsMode = PNTS_MODE.COLOR;
+        this.pntsShape = PNTS_SHAPE.CIRCLE;
+        this.classification = config.classification;
+        this.pntsSizeMode = PNTS_SIZE_MODE.VALUE;
+        this.pntsMinAttenuatedSize = config.pntsMinAttenuatedSize || 3;
+        this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 10;
+
+        if (config.pntsMode) {
+            const exists = Object.values(PNTS_MODE).includes(config.pntsMode);
+            if (!exists) {
+                console.warn("The points cloud mode doesn't exist. Use 'COLOR' or 'CLASSIFICATION' instead.");
+            } else {
+                this.pntsMode = config.pntsMode;
+            }
+        }
+
+        if (config.pntsShape) {
+            const exists = Object.values(PNTS_SHAPE).includes(config.pntsShape);
+            if (!exists) {
+                console.warn("The points cloud point shape doesn't exist. Use 'CIRCLE' or 'SQUARE' instead.");
+            } else {
+                this.pntsShape = config.pntsShape;
+            }
+        }
     }
 
     preUpdate() {
