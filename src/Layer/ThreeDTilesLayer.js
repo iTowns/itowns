@@ -4,6 +4,7 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
 import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
 import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
+import PointsMaterial from 'Renderer/PointsMaterial';
 
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
@@ -47,6 +48,14 @@ export function enableKtx2Loader(path, renderer) {
     itownsGLTFLoader.setKTX2Loader(ktx2Loader);
 }
 
+// TODO: first implementation, need to copy all values from the oldPointsMaterial
+function replacePointsMaterial(model) {
+    if (!model || !model.isPoints) { return; }
+    const oldMat = model.material;
+    model.material = new PointsMaterial();
+    oldMat.dispose();
+}
+
 // TODO: find a way to configure max LRUCache and PriorityQueue
 // TODO: syntax not possible with current API -> open a PR on its side
 // const lruCache = new LRUCache();
@@ -78,14 +87,17 @@ class ThreeDTilesLayer extends GeometryLayer {
 
     // TODO: what happens if the layer is added to multiple views? Should we store multiple tilesRenderer?
     // How does it work for other layer types?
-    __setup(view) {
+    _setup(view) {
         this.tilesRenderer.setCamera(view.camera3D);
         this.tilesRenderer.setResolutionFromRenderer(view.camera3D, view.renderer);
         // TODO: should we store the tileset and our own list of models? or at least provide an API to access them
         this.tilesRenderer.onLoadTileSet = () => {
             view.notifyChange(this);
         };
-        this.tilesRenderer.onLoadModel = () => {
+        this.tilesRenderer.onLoadModel = (model) => {
+            if (model.isPoints) {
+                replacePointsMaterial(model);
+            }
             view.notifyChange(this);
         };
     }
