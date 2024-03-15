@@ -83,7 +83,7 @@
             // ---------- ADD 3D TILES MODEL FROM CESIUM ION SERVER : ----------
 
             // Enable draco compression (used by this tileset)
-            // itowns.enableDracoLoader('./libs/draco/');
+            itowns.enableDracoLoader('./libs/draco/');
 
             // Create a new 3D Tiles batch table hierarchy extension manager and add it to the tileset since this tileset
             // uses this extension
@@ -102,7 +102,7 @@
             var threeDTilesIonLayer = new itowns.ThreeDTilesLayer('3d-tiles-cesium-ion', {
                 name: '3D Tiles from Cesium Ion',
                 source: threeDTilesIonSource,
-                registeredExtensions: extensions,
+                // registeredExtensions: extensions,
             });
 
             itowns.View.prototype.addLayer.call(view, threeDTilesIonLayer);

@@ -49,8 +49,8 @@ export function enableKtx2Loader(path, renderer) {
     itownsGLTFLoader.setKTX2Loader(ktx2Loader);
 }
 
-// TODO: find a way to configure max LRUCache and PriorityQueue
-// TODO: syntax not possible with current API -> open a PR on its side
+// TODO: This syntax is currently not possible with the current 3d-tiles-renderer-js API -> open a PR
+// It will allow to share cache and download/parse queue between tilesets
 // const lruCache = new LRUCache();
 // const downloadQueue = new PriorityQueue();
 // const parseQueue = new PriorityQueue();
@@ -61,7 +61,7 @@ class ThreeDTilesLayer extends GeometryLayer {
         this.isThreeDTilesLayer = true;
 
         // TODO: should this really be done here and like this (i.e. each option is passed in individually?)
-        //  Maybe we should use the Style API instead :)
+        //  I think we should use the Style API instead :)
         this._handlePointsMaterialConfig(config);
 
         if (config.source.isC3DTilesIonSource) {
@@ -74,7 +74,7 @@ class ThreeDTilesLayer extends GeometryLayer {
 
         this.tilesRenderer.manager.addHandler(/\.gltf$/, itownsGLTFLoader);
 
-        // Set cache, download and parse queues to be shared amongst 3D tiles layers
+        // Set cache, download and parse queues to be shared amongst 3D tiles layers (waiting for 3d-tiles-renderer-js api change)
         // this.tilesRenderer.lruCache = lruCache;
         // this.tilesRenderer.downloadQueue = downloadQueue;
         // this.tilesRenderer.parseQueue = parseQueue;
@@ -99,7 +99,8 @@ class ThreeDTilesLayer extends GeometryLayer {
         };
     }
 
-    // TODO: first implementation, open an issue to 3d-tiles-renderer-js to provide the ability to provide a PointsMaterial
+    // TODO: Not fond of this implementation, I would rather add the possibility to pass a PointsMaterial to
+    //  3d-tiles-renderer-js TilesRenderer instead
     _replacePointsMaterial(model) {
         if (!model || !model.isPoints) { return; }
         const oldMat = model.material;
