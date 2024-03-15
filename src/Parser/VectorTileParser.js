@@ -123,12 +123,12 @@ function readPBF(file, options) {
     }
 
     // x,y,z tile coordinates
-    const x = file.extent.col;
-    const z = file.extent.zoom;
+    const x = options.extent.col;
+    const z = options.extent.zoom;
     // We need to move from TMS to Google/Bing/OSM coordinates
     // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
     // Only if the layer.origin is top
-    const y = options.in.isInverted ? file.extent.row : (1 << z) - file.extent.row - 1;
+    const y = options.in.isInverted ? options.extent.row : (1 << z) - options.extent.row - 1;
 
     const collection = new FeatureCollection(options.out);
 
@@ -148,7 +148,7 @@ function readPBF(file, options) {
 
         for (let i = sourceLayer.length - 1; i >= 0; i--) {
             const vtFeature = sourceLayer.feature(i);
-            vtFeature.tileNumbers = { x, y: file.extent.row, z };
+            vtFeature.tileNumbers = { x, y: options.extent.row, z };
             const layers = options.in.layers[layer_id].filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.zoom.min && z < l.zoom.max);
             let feature;
 
@@ -174,7 +174,7 @@ function readPBF(file, options) {
     collection.features.sort((a, b) => a.order - b.order);
     // TODO verify if is needed to updateExtent for previous features.
     collection.updateExtent();
-    collection.extent = file.extent;
+    collection.extent = options.extent;
     collection.isInverted = options.in.isInverted;
     return Promise.resolve(collection);
 }

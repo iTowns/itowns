@@ -96,7 +96,6 @@ class TMSSource extends Source {
         this.zoom = source.zoom;
 
         this.isInverted = source.isInverted || false;
-        this.url = source.url;
         this.crs = CRS.formatToTms(source.crs);
         this.tileMatrixSetLimits = source.tileMatrixSetLimits;
         this.extentSetlimits = {};

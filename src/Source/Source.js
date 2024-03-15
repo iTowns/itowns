@@ -11,7 +11,6 @@ import Cache from 'Core/Scheduler/Cache';
 import CRS from 'Core/Geographic/Crs';
 
 export const supportedFetchers = new Map([
-    ['image/x-bil;bits=32', Fetcher.textureFloat],
     ['geojson', Fetcher.json],
     ['application/json', Fetcher.json],
     ['application/kml', Fetcher.xml],
@@ -20,6 +19,10 @@ export const supportedFetchers = new Map([
     ['application/gtx', Fetcher.arrayBuffer],
     ['application/isg', Fetcher.text],
     ['application/gdf', Fetcher.text],
+    ['image/x-bil;bits=32', Fetcher.textureFloat],
+    ['image/jpeg', Fetcher.texture],
+    ['image/png', Fetcher.texture],
+    [undefined, Fetcher.texture],
 ]);
 
 export const supportedParsers = new Map([
@@ -65,14 +68,6 @@ class InformationsData {
  */
 // eslint-disable-next-line
 class /* istanbul ignore next */ ParsingOptions {}
-
-function fetchSourceData(source, extent) {
-    const url = source.urlFromExtent(extent);
-    return source.fetcher(url, source.networkOptions).then((f) => {
-        f.extent = extent;
-        return f;
-    }, err => source.handlingError(err));
-}
 
 let uid = 0;
 
@@ -139,8 +134,8 @@ class Source extends InformationsData {
 
         this.url = source.url;
         this.format = source.format;
-        this.fetcher = source.fetcher || supportedFetchers.get(source.format) || Fetcher.texture;
-        this.parser = source.parser || supportedParsers.get(source.format) || (d => d);
+        this.fetcher = source.fetcher || supportedFetchers.get(source.format);
+        this.parser = source.parser || supportedParsers.get(source.format) || ((d, opt) => { d.extent = opt.extent; return d; });
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.attribution = source.attribution;
@@ -189,9 +184,12 @@ class Source extends InformationsData {
         let features = cache.getByArray(key);
         if (!features) {
             // otherwise fetch/parse the data
-            features = cache.setByArray(fetchSourceData(this, extent)
-                .then(file => this.parser(file, { out, in: this }),
-                    err => this.handlingError(err)), key);
+            features = cache.setByArray(
+                this.fetcher(this.urlFromExtent(extent), this.networkOptions)
+                    .then(file => this.parser(file, { out, in: this, extent }))
+                    .catch(err => this.handlingError(err)),
+                key);
+
             /* istanbul ignore next */
             if (this.onParsedFile) {
                 features.then((feat) => {

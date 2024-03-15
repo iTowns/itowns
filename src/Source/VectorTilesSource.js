@@ -9,11 +9,6 @@ function toTMSUrl(url) {
     return url.replace(/\{/g, '${');
 }
 
-function fetchSourceData(source, url) {
-    return source.fetcher(url, source.networkOptions)
-        .then(f => f, err => source.handlingError(err));
-}
-
 function mergeCollections(collections) {
     const collection = collections[0];
     collections.forEach((col, index) => {
@@ -70,6 +65,7 @@ class VectorTilesSource extends TMSSource {
         source.url = source.url || '.';
         super(source);
         const ffilter = source.filter || (() => true);
+        this.urls = [];
         this.layers = {};
         this.styles = {};
         let promise;
@@ -127,16 +123,16 @@ class VectorTilesSource extends TMSSource {
             });
 
             if (this.url == '.') {
-                const TMSUrlList = Object.values(style.sources).map((source) => {
-                    if (source.url) {
-                        const urlSource = urlParser.normalizeSourceURL(source.url, this.accessToken);
+                const TMSUrlList = Object.values(style.sources).map((sourceVT) => {
+                    if (sourceVT.url) {
+                        const urlSource = urlParser.normalizeSourceURL(sourceVT.url, this.accessToken);
                         return Fetcher.json(urlSource, this.networkOptions).then((tileJSON) => {
                             if (tileJSON.tiles[0]) {
                                 return toTMSUrl(tileJSON.tiles[0]);
                             }
                         });
-                    } else if (source.tiles) {
-                        return Promise.resolve(toTMSUrl(source.tiles[0]));
+                    } else if (sourceVT.tiles) {
+                        return Promise.resolve(toTMSUrl(sourceVT.tiles[0]));
                     }
                     return Promise.reject();
                 });
@@ -148,14 +144,8 @@ class VectorTilesSource extends TMSSource {
         });
     }
 
-    urlFromExtent(extent) {
-        return this.url.map((url) => {
-            const options = {
-                tileMatrixCallback: this.tileMatrixCallback,
-                url,
-            };
-            return URLBuilder.xyz(extent, options);
-        });
+    urlFromExtent(extent, url) {
+        return URLBuilder.xyz(extent, { tileMatrixCallback: this.tileMatrixCallback, url });
     }
 
     onLayerAdded(options) {
@@ -176,14 +166,12 @@ class VectorTilesSource extends TMSSource {
         if (!features) {
             // otherwise fetch/parse the data
             features = cache.setByArray(
-                Promise.all(this.urlFromExtent(extent).map(url =>
-                    fetchSourceData(this, url)
-                        .then((file) => {
-                            file.extent = extent;
-                            return this.parser(file, { out, in: this });
-                        }),
-                )).then(collections => mergeCollections(collections),
-                    err => this.handlingError(err)), key);
+                Promise.all(this.urls.map(url =>
+                    this.fetcher(this.urlFromExtent(extent, url), this.networkOptions)
+                        .then(file => this.parser(file, { out, in: this, extent }))))
+                    .then(collections => mergeCollections(collections))
+                    .catch(err => this.handlingError(err)),
+                key);
 
             /* istanbul ignore next */
             if (this.onParsedFile) {
