@@ -235,14 +235,14 @@ const COGParser = (function _() {
          */
         parse: async function _(data, options) {
             const source = options.in;
-            const tileExtent = data.extent.as(source.crs);
+            const tileExtent = options.extent.as(source.crs);
 
             const level = selectLevel(source, tileExtent, source.tileWidth, source.tileHeight);
             const viewport = makeWindowFromExtent(source, tileExtent, level.resolution);
             const rgbBuffer = await readRGB(source, level, viewport);
             const texture = createTexture(source, rgbBuffer);
             texture.flipY = true;
-            texture.extent = data.extent;
+            texture.extent = options.extent;
             texture.needsUpdate = true;
             texture.magFilter = THREE.LinearFilter;
             texture.minFilter = THREE.LinearFilter;
