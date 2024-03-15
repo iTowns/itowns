@@ -2,9 +2,6 @@ import { chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import handlingError from 'Process/handlerNodeError';
 
-export const SIZE_TEXTURE_TILE = 256;
-export const SIZE_DIAGONAL_TEXTURE = (2 * (SIZE_TEXTURE_TILE * SIZE_TEXTURE_TILE)) ** 0.5;
-
 function materialCommandQueuePriorityFunction(material) {
     // We know that 'node' is visible because commands can only be
     // issued for visible nodes.
