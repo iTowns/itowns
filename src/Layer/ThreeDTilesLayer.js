@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CesiumIonTilesRenderer, GoogleTilesRenderer, LRUCache, PriorityQueue, TilesRenderer, DebugTilesRenderer } from '3d-tiles-renderer';
+import { CesiumIonTilesRenderer, GoogleTilesRenderer, TilesRenderer } from '3d-tiles-renderer';
 import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
 import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';

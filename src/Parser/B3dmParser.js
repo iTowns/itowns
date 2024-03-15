@@ -148,7 +148,6 @@ export default {
                 b3dmHeader.BTJSONLength + b3dmHeader.BTBinaryLength;
 
             const gltfBuffer = buffer.slice(posGltf);
-            const headerView = new DataView(gltfBuffer, 0, 20);
 
             const init_mesh = function f_init(mesh) {
                 mesh.frustumCulled = frustumCulled;
