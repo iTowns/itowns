@@ -30,8 +30,8 @@ const update = process3dTilesNode();
 
 /**
  * Find tileId of object
- *
  * @param {THREE.Object3D} object - object
+ *
  * @returns {number} tileId
  */
 function findTileID(object) {
@@ -41,14 +41,13 @@ function findTileID(object) {
         currentObject = currentObject.parent;
         result = currentObject.tileId;
     }
-
     return result;
 }
 
 /**
  * Check if object3d has feature
- *
  * @param {THREE.Object3D} object3d - object3d to check
+ *
  * @returns {boolean} - true if object3d has feature
  */
 function object3DHasFeature(object3d) {
@@ -231,11 +230,13 @@ class C3DTilesLayer extends GeometryLayer {
      * targets picked under specified coordinates. Intersects can be
      * computed with view.pickObjectsAt(..). See fillHTMLWithPickingInfo()
      * in 3dTilesHelper.js for an example.
+     *
      * @returns {C3DTileFeature} - the closest C3DTileFeature of the intersects array
      */
     getC3DTileFeatureFromIntersectsArray(intersects) {
         // find closest intersect with an attributes _BATCHID + face != undefined
         let closestIntersect = null;
+
         for (let index = 0; index < intersects.length; index++) {
             const i = intersects[index];
             if (i.object.geometry &&
@@ -277,7 +278,6 @@ class C3DTilesLayer extends GeometryLayer {
 
     /**
      * Initialize C3DTileFeatures from tileContent
-     *
      * @param {THREE.Object3D} tileContent - tile as THREE.Object3D
      */
     initC3DTileFeatures(tileContent) {
@@ -344,8 +344,8 @@ class C3DTilesLayer extends GeometryLayer {
     /**
      * Update style of the C3DTFeatures, an allowList of tile id can be passed to only update certain tile.
      * Note that this function only update THREE.Object3D materials, in order to see style changes you should call view.notifyChange()
-     *
      * @param {Array<number>|null} [allowTileIdList] - tile ids to allow in updateStyle computation if null all tiles are updated
+     *
      * @returns {boolean} true if style updated false otherwise
      */
     updateStyle(allowTileIdList = null) {

@@ -1,20 +1,9 @@
+/* global createGtxBuffer */
 import assert from 'assert';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import GTXParser from 'Parser/GTXParser';
-import Fetcher from 'Provider/Fetcher';
-
 
 describe('GTXParser', function () {
-    let buffer;
-
-    before(async () => {
-        const networkOptions = process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {};
-        buffer = await Fetcher.arrayBuffer(
-            'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/altitude-conversion-grids/' +
-                'RAF20_float.gtx',
-            networkOptions,
-        );
-    });
+    const buffer = createGtxBuffer();
 
     it('should throw error if dataType parameter is wrongly specified', async function () {
         assert.throws(

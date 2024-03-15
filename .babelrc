@@ -12,8 +12,8 @@
         ["babel-plugin-inline-import", {
             "extensions": [
                 ".json",
+                ".geojson",
                 ".glsl",
-                ".gltf",
                 ".css"
             ]
         }],

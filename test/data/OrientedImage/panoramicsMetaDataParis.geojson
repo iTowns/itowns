@@ -1,0 +1,32 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    651187.76,
+                    6861379.05,
+                    41.39
+                ]
+            },
+            "properties": {
+                "id": 482,
+                "easting": 651187.76,
+                "northing": 6861379.05,
+                "altitude": 41.39,
+                "heading": 176.117188,
+                "roll": 0.126007,
+                "pitch": 1.280821,
+                "date": "2014-06-16T12:31:34.841Z"
+            }
+        }
+    ],
+    "crs": {
+        "type": "EPSG",
+        "properties": {
+            "code": 2154
+        }
+    }
+}

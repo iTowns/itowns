@@ -1,0 +1,34 @@
+{
+    "bounds": [634962.0, 848881.0, -1818.0, 639620.0, 853539.0, 2840.0],
+    "boundsConforming": [635577.0, 848882.0, 406.0, 639004.0, 853538.0, 616.0],
+    "dataType": "laszip",
+    "hierarchyType": "json",
+    "points": 10653336,
+    "schema": [
+        { "name": "X", "type": "signed", "size": 4, "scale": 0.01, "offset": 637291.0 },
+        { "name": "Y", "type": "signed", "size": 4, "scale": 0.01, "offset": 851210.0 },
+        { "name": "Z", "type": "signed", "size": 4, "scale": 0.01, "offset": 511.0 },
+        { "name": "Intensity", "type": "unsigned", "size": 2 },
+        { "name": "ReturnNumber", "type": "unsigned", "size": 1 },
+        { "name": "NumberOfReturns", "type": "unsigned", "size": 1 },
+        { "name": "ScanDirectionFlag", "type": "unsigned", "size": 1 },
+        { "name": "EdgeOfFlightLine", "type": "unsigned", "size": 1 },
+        { "name": "Classification", "type": "unsigned", "size": 1 },
+        { "name": "ScanAngleRank", "type": "float", "size": 4 },
+        { "name": "UserData", "type": "unsigned", "size": 1 },
+        { "name": "PointSourceId", "type": "unsigned", "size": 2 },
+        { "name": "GpsTime", "type": "float", "size": 8 },
+        { "name": "Red", "type": "unsigned", "size": 2 },
+        { "name": "Green", "type": "unsigned", "size": 2 },
+        { "name": "Blue", "type": "unsigned", "size": 2 },
+        { "name": "OriginId", "type": "unsigned", "size": 4 }
+    ],
+    "span" : 256,
+    "srs": {
+        "authority": "EPSG",
+        "horizontal": "3857",
+        "vertical": "5703",
+        "wkt": "PROJCS[\"WGS 84 / Pseudo-Mercator\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Mercator_1SP\"],PARAMETER[\"central_meridian\",0],PARAMETER[\"scale_factor\",1],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"X\",EAST],AXIS[\"Y\",NORTH],EXTENSION[\"PROJ4\",\"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs\"],AUTHORITY[\"EPSG\",\"3857\"]]"
+    },
+    "version" : "1.0.0"
+}

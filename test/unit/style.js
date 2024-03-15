@@ -1,29 +1,38 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 import Style from 'Core/Style';
 import assert from 'assert';
-import Fetcher from 'Provider/Fetcher';
 import { TextureLoader } from 'three';
-
-const textureLoader = new TextureLoader();
-Fetcher.texture = (url, options = {}) => {
-    let res;
-    let rej;
-
-    textureLoader.crossOrigin = options.crossOrigin;
-
-    const promise = new Promise((resolve, reject) => {
-        res = resolve;
-        rej = reject;
-    });
-
-    textureLoader.load(url, (x) => {
-        x.image = document.createElement('img');
-        return res(x);
-    }, () => {}, rej);
-    return promise;
-};
+import Fetcher from 'Provider/Fetcher';
+import sinon from 'sinon';
 
 describe('Style', function () {
+    const textureLoader = new TextureLoader();
+    let stubFetcherTexture;
+    before(function () {
+        stubFetcherTexture = sinon.stub(Fetcher, 'texture')
+            .callsFake((url, options = {}) => {
+                let res;
+                let rej;
+
+                textureLoader.crossOrigin = options.crossOrigin;
+
+                const promise = new Promise((resolve, reject) => {
+                    res = resolve;
+                    rej = reject;
+                });
+
+                textureLoader.load(url, (x) => {
+                    x.image = document.createElement('img');
+                    return res(x);
+                }, () => {}, rej);
+                return promise;
+            });
+    });
+
+    after(function () {
+        stubFetcherTexture.restore();
+    });
+
     const style = new Style();
     style.point.color = 'red';
     style.fill.color = 'blue';

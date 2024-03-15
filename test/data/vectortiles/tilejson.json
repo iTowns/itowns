@@ -1,0 +1,5 @@
+{
+    "tiles": [
+        "http://server.geo/vectortiles/{z}/{x}/{y}"
+    ]
+}

@@ -1,20 +1,11 @@
 import assert from 'assert';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import Fetcher from 'Provider/Fetcher';
+import fs from 'fs';
 import GDFParser from 'Parser/GDFParser';
 
+const gdfFile = fs.readFileSync('./test/data/EGM2008_simplified.gdf', { encoding: 'utf8' });
 
 describe('GDFParser', function () {
-    let text;
-
-    before(async () => {
-        const networkOptions = process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {};
-        text = await Fetcher.text(
-            'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/altitude-conversion-grids/' +
-                'EGM2008.gdf',
-            networkOptions,
-        );
-    });
+    const text = gdfFile;
 
     it('should default `options.in.crs` parameter to `EPSG:4326`', async function () {
         const geoidGrid = await GDFParser.parse(text);
@@ -27,12 +18,12 @@ describe('GDFParser', function () {
         assert.strictEqual(geoidGrid.extent.east, 180);
         assert.strictEqual(geoidGrid.extent.south, -90);
         assert.strictEqual(geoidGrid.extent.north, 90);
-        assert.strictEqual(geoidGrid.step.x, 1);
-        assert.strictEqual(geoidGrid.step.y, 1);
+        assert.strictEqual(geoidGrid.step.x, 45);
+        assert.strictEqual(geoidGrid.step.y, 45);
     });
 
     it('should set a correct data reading method for `GeoidGrid`', async function () {
         const geoidGrid = await GDFParser.parse(text, { in: { crs: 'EPSG:4326' } });
-        assert.strictEqual(geoidGrid.getData(geoidGrid.dataSize.y - 2, 1), 13.813008707225);
+        assert.strictEqual(geoidGrid.getData(geoidGrid.dataSize.y - 2, 1), -26.975163013039);
     });
 });
