@@ -1,14 +1,14 @@
 import assert from 'assert';
-import { glTFLoader } from 'Parser/B3dmParser';
+import iGLTFLoader from 'src/Parser/iGLTFLoader';
 import gltf from '../data/gltf/Box.gltf';
 
 if (typeof atob === 'undefined') {
     global.atob = b64Encoded => Buffer.from(b64Encoded, 'base64').toString('binary');
 }
 
-describe('gltfLoader', function () {
+describe('iGLTFLoader', function () {
     it('should load gltf', function () {
-        glTFLoader.parse(gltf, '../data/gltf/Box.gltf', (result) => {
+        iGLTFLoader.parse(gltf, '../data/gltf/', (result) => {
             assert.ok(result.scene);
         });
     });
