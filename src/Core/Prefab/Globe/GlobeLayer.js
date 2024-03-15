@@ -145,7 +145,7 @@ class GlobeLayer extends TiledGeometryLayer {
 
     computeTileZoomFromDistanceCamera(distance, camera) {
         const preSinus =
-            SIZE_DIAGONAL_TEXTURE * (this.sseSubdivisionThreshold * 0.5) / camera._preSSE / ellipsoidSizes.x;
+            this.SIZE_DIAGONAL_TEXTURE * (this.sseSubdivisionThreshold * 0.5) / camera._preSSE / ellipsoidSizes.x;
 
         let sinus = distance * preSinus;
         let zoom = Math.log(Math.PI / (2.0 * Math.asin(sinus))) / Math.log(2);
@@ -165,7 +165,7 @@ class GlobeLayer extends TiledGeometryLayer {
         const delta = Math.PI / 2 ** zoom;
         const circleChord = 2.0 * ellipsoidSizes.x * Math.sin(delta * 0.5);
         const radius = circleChord * 0.5;
-        const error = radius / SIZE_DIAGONAL_TEXTURE;
+        const error = radius / this.SIZE_DIAGONAL_TEXTURE;
 
         return camera._preSSE * error / (this.sseSubdivisionThreshold * 0.5) + radius;
     }

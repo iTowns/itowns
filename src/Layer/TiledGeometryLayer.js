@@ -100,7 +100,7 @@ class TiledGeometryLayer extends GeometryLayer {
             this.object3d.updateMatrixWorld();
         }));
 
-        this.maxScreenSizeNode = this.sseSubdivisionThreshold * (SIZE_DIAGONAL_TEXTURE * 2);
+        this.maxScreenSizeNode = this.sseSubdivisionThreshold * (this.SIZE_DIAGONAL_TEXTURE * 2);
     }
 
     get hideSkirt() {
@@ -447,7 +447,7 @@ class TiledGeometryLayer extends GeometryLayer {
 
         // The screen space error is calculated to have a correct texture display.
         // For the projection of a texture's texel to be less than or equal to one pixel
-        const sse = node.screenSize / (SIZE_DIAGONAL_TEXTURE * 2);
+        const sse = node.screenSize / (this.SIZE_DIAGONAL_TEXTURE * 2);
 
         return this.sseSubdivisionThreshold < sse;
     }
