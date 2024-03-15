@@ -20,35 +20,24 @@ const resources = {
     'https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7.json': mapboxStyle,
 };
 
-function parse(pbf, layers) {
-    return VectorTileParser.parse(pbf, {
-        in: {
-            layers,
-            styles: [[]],
-        },
-        out: {
-            crs: 'EPSG:3857',
-        },
-    });
-};
-
 describe('Vector tiles', function () {
-    let stub;
-    let multipolygon;
+    // this PBF file comes from https://github.com/mapbox/vector-tile-js
+    // it contains two square polygons
+    const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
+    const extent = new Extent('TMS', 1, 1, 1);
 
-    before(function () {
-        // this PBF file comes from https://github.com/mapbox/vector-tile-js
-        // it contains two square polygons
-        multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
-        multipolygon.extent = new Extent('TMS', 1, 1, 1);
-
-        stub = sinon.stub(Fetcher, 'json')
-            .callsFake(url => Promise.resolve(JSON.parse(resources[url])));
-    });
-
-    after(function () {
-        stub.restore();
-    });
+    function parse(pbf, layers) {
+        return VectorTileParser.parse(pbf, {
+            in: {
+                layers,
+                styles: [[]],
+            },
+            out: {
+                crs: 'EPSG:3857',
+            },
+            extent,
+        });
+    }
 
     it('returns two squares', (done) => {
         parse(multipolygon, {
