@@ -4,7 +4,6 @@ import { InfoTiledGeometryLayer } from 'Layer/InfoLayer';
 import Picking from 'Core/Picking';
 import convertToTile from 'Converter/convertToTile';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
-import { SIZE_DIAGONAL_TEXTURE } from 'Process/LayeredMaterialNodeProcessing';
 import { ImageryLayers } from 'Layer/Layer';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
@@ -100,7 +99,7 @@ class TiledGeometryLayer extends GeometryLayer {
             this.object3d.updateMatrixWorld();
         }));
 
-        this.maxScreenSizeNode = this.sseSubdivisionThreshold * (SIZE_DIAGONAL_TEXTURE * 2);
+        this.maxScreenSizeNode = this.sseSubdivisionThreshold * (this.sizeDiagonalTexture * 2);
     }
 
     get hideSkirt() {
@@ -447,7 +446,7 @@ class TiledGeometryLayer extends GeometryLayer {
 
         // The screen space error is calculated to have a correct texture display.
         // For the projection of a texture's texel to be less than or equal to one pixel
-        const sse = node.screenSize / (SIZE_DIAGONAL_TEXTURE * 2);
+        const sse = node.screenSize / (this.sizeDiagonalTexture * 2);
 
         return this.sseSubdivisionThreshold < sse;
     }
