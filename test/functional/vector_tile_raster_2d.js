@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('vector_tile_raster_2d', function _() {
     let result;

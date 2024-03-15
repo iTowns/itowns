@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('3dtiles_pointcloud', function _() {
     let result;

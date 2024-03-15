@@ -4,7 +4,7 @@
             "targets": {
                 "browsers": "defaults and supports webgl2"
             },
-            "modules": "auto"
+            "modules": false
         }]
     ],
     "plugins": [
@@ -17,6 +17,7 @@
                 ".css"
             ]
         }],
+        ["module-extension-resolver"],
         ["@babel/plugin-transform-runtime", {
             "regenerator": false
         }],

@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('vector_tile_3d_mesh_mapbox', function _describe() {
     let result;
