@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('source_stream_wfs_raster', function _() {
     let result;

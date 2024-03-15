@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('source_file_gpx_3d', function _() {
     let result;

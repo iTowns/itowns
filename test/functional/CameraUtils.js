@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('Camera utils with globe example', function _() {
     before(async () => {

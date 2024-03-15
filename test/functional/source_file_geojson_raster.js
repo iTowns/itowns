@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('source_file_geojson_raster', function _() {
     let result;
