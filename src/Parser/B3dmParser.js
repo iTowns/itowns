@@ -1,25 +1,22 @@
 import * as THREE from 'three';
-import Capabilities from 'Core/System/Capabilities';
-import { GLTFLoader } from 'ThreeExtended/loaders/GLTFLoader';
-import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
-import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
-import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
-import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
-import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
+import Capabilities from 'Core/System/Capabilities';
 import { MeshBasicMaterial } from 'three';
 import disposeThreeMaterial from 'Utils/ThreeUtils';
+import shaderUtils from 'Renderer/Shader/ShaderUtils';
+import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
+import GLTFParser from './GLTFParser';
 
-const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
-// For gltf rotation
-const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
+const matrixChangeUpVectorYtoZInv = (new THREE.Matrix4()).makeRotationX(-Math.PI / 2);
+const matrixChangeUpVectorXtoZ = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
 
 const utf8Decoder = new TextDecoder();
 
-export const glTFLoader = new GLTFLoader();
-
-export const legacyGLTFLoader = new LegacyGLTFLoader();
-
+/**
+ * 3D Tiles pre-1.0 contain not standardized and specific uniforms that we filter out to avoid shader compilation errors
+ * This method is passed to scene.traverse and applied to all 3D objects of the loaded gltf.
+ * @param {THREE.Object3D} obj - 3D object of the gltf hierarchy
+ */
 function filterUnsupportedSemantics(obj) {
     // see GLTFLoader GLTFShader.prototype.update function
     const supported = [
@@ -44,58 +41,25 @@ function filterUnsupportedSemantics(obj) {
 }
 
 /**
- * @module B3dmParser
+ * 3D Tiles pre-1.0 had a gltfUpAxis parameter that defined the up vector of the gltf file that might be different from
+ * the standard y-up for gltf. Manage the case when this gltfUpAxis is defined (i.e. apply the correct rotation to the
+ * gltf file to have it z-up in the end).
+ * @param {THREE.Object3D} gltfScene - the parsed glTF scene
+ * @param {String} gltfUpAxis - the gltfUpAxis parameter
  */
-/**
- * Enable Draco decoding for gltf.
- *
- * The Draco library files are in folder itowns/examples/libs/draco/.
- * You must indicate this path when you want to enable Draco Decoding.
- * For more information on Draco, read /itowns/examples/libs/draco/README.md.
- *
- * @example <caption>Enable draco decoder</caption>
- * // if you copied /itowns/examples/libs/draco/ to the root folder of your project,you can set the path to './'.
- * itowns.enableDracoLoader('./');
- *
- *  @param {string} path path to draco library folder.
- * This library is mandatory to load b3dm and gltf with Draco compression.
- * @param {object} config optional configuration for Draco compression.
- */
-export function enableDracoLoader(path, config) {
-    if (!path) {
-        throw new Error('Path to draco folder is mandatory');
+function applyDeprecatedGltfUpAxis(gltfScene, gltfUpAxis) {
+    if (gltfUpAxis === 'Z') {
+        // If gltf up was already z-up, apply the inverse transform matrix that was applied in the glTFParser
+        gltfScene.applyMatrix4(matrixChangeUpVectorYtoZInv);
+    } else if (gltfUpAxis === 'X') {
+        gltfScene.applyMatrix4(matrixChangeUpVectorYtoZInv);
+        gltfScene.applyMatrix4(matrixChangeUpVectorXtoZ);
     }
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath(path);
-    if (config) {
-        dracoLoader.setDecoderConfig(config);
-    }
-    glTFLoader.setDRACOLoader(dracoLoader);
 }
 
 /**
- * Enable KTX2 decoding for gltf. This library is mandatory to load b3dm and gltf with KTX2 compression.
- *
- * The KTX2 library files are in folder itowns/examples/libs/basis/.
- * You must indicate this path when you want to enable KTX2 decoding.
- * For more information about KTX2, read /itowns/examples/libs/basis/README.md.
- *
- * @example <caption>Enable ktx2 decoder</caption>
- * // if you copied /itowns/examples/libs/draco/ to the root folder of your project,you can set the path to './'.
- * itowns.enableKtx2Loader('./', view.mainLoop.gfxEngine.renderer);
- *
- * @param {string} path path to KTX2 library folder.
- * @param {THREE.WebGLRenderer} renderer the threejs renderer
+ * @module B3dmParser
  */
-export function enableKtx2Loader(path, renderer) {
-    if (!path || !renderer) {
-        throw new Error('Path to ktx2 folder and renderer are mandatory');
-    }
-    const ktx2Loader = new KTX2Loader();
-    ktx2Loader.setTranscoderPath(path);
-    ktx2Loader.detectSupport(renderer);
-    glTFLoader.setKTX2Loader(ktx2Loader);
-}
 
 export default {
     /** Parse b3dm buffer and extract THREE.Scene and batch table
@@ -103,9 +67,10 @@ export default {
      * @param {Object} options - additional properties.
      * @param {string=} [options.gltfUpAxis='Y'] - embedded glTF model up axis.
      * @param {string} options.urlBase - the base url of the b3dm file (used to fetch textures for the embedded glTF model).
-     * @param {boolean=} [options.doNotPatchMaterial='false'] - disable patching material with logarithmic depth buffer support.
+     * @param {boolean=} [options.doNotPatchMaterial=false] - disable patching material with logarithmic depth buffer support.
      * @param {float} [options.opacity=1.0] - the b3dm opacity.
-     * @param {boolean|Material=} [options.overrideMaterials='false'] - override b3dm's embedded glTF materials. If
+     * @param {boolean=} [options.frustumCulled=false] - enable frustum culling.
+     * @param {boolean|Material=} [options.overrideMaterials=false] - override b3dm's embedded glTF materials. If
      * true, a threejs [MeshBasicMaterial](https://threejs.org/docs/index.html?q=meshbasic#api/en/materials/MeshBasicMaterial)
      * is set up. config.overrideMaterials can also be a threejs [Material](https://threejs.org/docs/index.html?q=material#api/en/materials/Material)
      * in which case it will be the material used to override.
@@ -113,8 +78,8 @@ export default {
      *
      */
     parse(buffer, options) {
-        const gltfUpAxis = options.gltfUpAxis;
-        const urlBase = options.urlBase;
+        const frustumCulled = options.frustumCulled === true;
+
         if (!buffer) {
             throw new Error('No array buffer provided.');
         }
@@ -186,66 +151,56 @@ export default {
             const gltfBuffer = buffer.slice(posGltf);
             const headerView = new DataView(gltfBuffer, 0, 20);
 
-            promises.push(new Promise((resolve/* , reject */) => {
-                const onload = (gltf) => {
-                    for (const scene of gltf.scenes) {
-                        scene.traverse(filterUnsupportedSemantics);
-                    }
-                    // Rotation managed
-                    if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
-                        gltf.scene.applyMatrix4(matrixChangeUpVectorZtoY);
-                    } else if (gltfUpAxis === 'X') {
-                        gltf.scene.applyMatrix4(matrixChangeUpVectorZtoX);
-                    }
-
-                    // Apply relative center from Feature table.
-                    gltf.scene.position.copy(FT_RTC);
-
-                    // Apply relative center from gltf json.
-                    const contentArray = new Uint8Array(gltfBuffer, 20, headerView.getUint32(12, true));
-                    const content = utf8Decoder.decode(new Uint8Array(contentArray));
-                    const json = JSON.parse(content);
-                    if (json.extensions && json.extensions.CESIUM_RTC) {
-                        gltf.scene.position.fromArray(json.extensions.CESIUM_RTC.center);
-                        gltf.scene.updateMatrixWorld(true);
-                    }
-
-                    const init_mesh = function f_init(mesh) {
-                        mesh.frustumCulled = false;
-                        if (mesh.material) {
-                            if (options.overrideMaterials) {
-                                const oldMat = mesh.material;
-                                // Set up new material
-                                if (typeof (options.overrideMaterials) === 'object' &&
-                                options.overrideMaterials.isMaterial) {
-                                    mesh.material = options.overrideMaterials;
-                                } else {
-                                    mesh.material = new MeshBasicMaterial();
-                                }
-                                disposeThreeMaterial(oldMat);
-                            } else if (Capabilities.isLogDepthBufferSupported()
-                                        && mesh.material.isRawShaderMaterial
-                                        && !options.doNotPatchMaterial) {
-                                shaderUtils.patchMaterialForLogDepthSupport(mesh.material);
-                                console.warn('b3dm shader has been patched to add log depth buffer support');
-                            }
-                            ReferLayerProperties(mesh.material, options.layer);
+            const init_mesh = function f_init(mesh) {
+                mesh.frustumCulled = frustumCulled;
+                if (mesh.material) {
+                    if (options.overrideMaterials) {
+                        const oldMat = mesh.material;
+                        // Set up new material
+                        if (typeof (options.overrideMaterials) === 'object' &&
+                            options.overrideMaterials.isMaterial) {
+                            mesh.material = options.overrideMaterials;
+                        } else {
+                            mesh.material = new MeshBasicMaterial();
                         }
-                    };
-                    gltf.scene.traverse(init_mesh);
-
-                    resolve(gltf);
-                };
-
-                const version = headerView.getUint32(4, true);
-
-                if (version === 1) {
-                    legacyGLTFLoader.parse(gltfBuffer, urlBase, onload);
-                } else {
-                    glTFLoader.parse(gltfBuffer, urlBase, onload);
+                        disposeThreeMaterial(oldMat);
+                    } else if (Capabilities.isLogDepthBufferSupported()
+                        && mesh.material.isRawShaderMaterial
+                        && !options.doNotPatchMaterial) {
+                        shaderUtils.patchMaterialForLogDepthSupport(mesh.material);
+                        console.warn('glTF shader has been patched to add log depth buffer support');
+                    }
+                    ReferLayerProperties(mesh.material, options.layer);
                 }
-            }));
-            return Promise.all(promises).then(values => ({ gltf: values[1], batchTable: values[0] }));
+            };
+
+            promises.push(GLTFParser.parse(gltfBuffer, options).then((gltf) => {
+                for (const scene of gltf.scenes) {
+                    scene.traverse(filterUnsupportedSemantics);
+                }
+
+                applyDeprecatedGltfUpAxis(gltf.scene, options.gltfUpAxis);
+
+                const shouldBePatchedForLogDepthSupport = Capabilities.isLogDepthBufferSupported() && !options.doNotPatchMaterial;
+                if (options.frustumCulling === false || options.overrideMaterials || shouldBePatchedForLogDepthSupport || options.layer) {
+                    gltf.scene.traverse(init_mesh);
+                }
+
+                // Apply relative center from Feature table.
+                gltf.scene.position.copy(FT_RTC);
+
+                // Apply relative center from gltf json.
+                const contentArray = new Uint8Array(gltfBuffer, 20, headerView.getUint32(12, true));
+                const content = utf8Decoder.decode(new Uint8Array(contentArray));
+                const json = JSON.parse(content);
+                if (json.extensions && json.extensions.CESIUM_RTC) {
+                    gltf.scene.position.fromArray(json.extensions.CESIUM_RTC.center);
+                    gltf.scene.updateMatrixWorld(true);
+                }
+
+                return gltf;
+            }).catch((e) => { throw new Error(e); }));
+            return Promise.all(promises).then(values => ({ gltf: values[1], batchTable: values[0] })).catch((e) => { throw new Error(e); });
         } else {
             throw new Error('Invalid b3dm file.');
         }
