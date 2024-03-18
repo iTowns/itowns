@@ -783,6 +783,11 @@ class View extends THREE.EventDispatcher {
         return results;
     }
 
+    pickGeometryAt(mouseOrEvt, radius = 0, where) {
+        const layer = this.getLayerById(where);
+        return layer.selectGeometry(mouseOrEvt, radius, this);
+    }
+
     /**
      * Return the current zoom scale at the central point of the view. This
      * function compute the scale of a map.
