@@ -108,8 +108,8 @@ class Layer extends THREE.EventDispatcher {
             config.style = new Style(config.style);
         }
         this.style = config.style || new Style();
-        this.SIZE_TEXTURE_TILE = config.SIZE_TEXTURE_TILE || 256;
-        this.SIZE_DIAGONAL_TEXTURE =  (2 * (this.SIZE_TEXTURE_TILE * this.SIZE_TEXTURE_TILE)) ** 0.5;
+        this.sizeTextureTile = config.sizeTextureTile || 256;
+        this.sizeDiagonalTexture =  (2 * (this.sizeTextureTile * this.sizeTextureTile)) ** 0.5;
         Object.assign(this, config);
 
         Object.defineProperty(this, 'id', {
