@@ -4,7 +4,6 @@ import VectorTileParser from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
 import Extent from 'Core/Geographic/Extent';
 import urlParser from 'Parser/MapBoxUrlParser';
-import { supportedFetchers } from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
 import sinon from 'sinon';
 
@@ -84,24 +83,21 @@ describe('Vector tiles', function () {
 });
 
 describe('VectorTilesSource', function () {
-    let stubFetcherjson;
-    let stub;
+    let stubFetcherJson;
+    let stubFetcherArrayBuf;
     before(function () {
-        stubFetcherjson = sinon.stub(Fetcher, 'json')
+        stubFetcherJson = sinon.stub(Fetcher, 'json')
             .callsFake((url) => {
                 url = url.split('?')[0];
                 return Promise.resolve(JSON.parse(resources[url]));
             });
         const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
-        const stubSupportedFetchers = new Map([
-            ['application/x-protobuf;type=mapbox-vector', () => Promise.resolve(multipolygon)],
-        ]);
-        stub = sinon.stub(supportedFetchers, 'get')
-            .callsFake(format => stubSupportedFetchers.get(format));
+        stubFetcherArrayBuf = sinon.stub(Fetcher, 'arrayBuffer')
+            .callsFake(() => Promise.resolve(multipolygon));
     });
     after(function () {
-        stubFetcherjson.restore();
-        stub.restore();
+        stubFetcherJson.restore();
+        stubFetcherArrayBuf.restore();
     });
 
     it('throws an error because no style was provided', () => {

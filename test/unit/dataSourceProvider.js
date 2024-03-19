@@ -6,7 +6,7 @@ import TileMesh from 'Core/TileMesh';
 import Extent, { globalExtentTMS } from 'Core/Geographic/Extent';
 import OBB from 'Renderer/OBB';
 import DataSourceProvider from 'Provider/DataSourceProvider';
-import { supportedFetchers } from 'Source/Source';
+import Fetcher from 'Provider/Fetcher';
 import TileProvider from 'Provider/TileProvider';
 import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
@@ -24,11 +24,6 @@ import sinon from 'sinon';
 
 import holes from '../data/geojson/holesPoints.geojson';
 
-const stubSupportedFetchers = new Map([
-    ['application/json', () => Promise.resolve(JSON.parse(holes))],
-    ['image/png', () => Promise.resolve(new THREE.Texture())],
-]);
-
 describe('Provide in Sources', function () {
     // TODO We should mock the creation of all layers creation.
 
@@ -41,7 +36,8 @@ describe('Provide in Sources', function () {
     const sizeTile = globalExtent.planarDimensions().x / 2 ** zoom;
     const extent = new Extent('EPSG:3857', 0, sizeTile, 0, sizeTile);
 
-    let stub;
+    let stubFetcherJson;
+    let stubFetcherTexture;
     let planarlayer;
     let elevationlayer;
     let colorlayer;
@@ -66,8 +62,10 @@ describe('Provide in Sources', function () {
     };
 
     before(function () {
-        stub = sinon.stub(supportedFetchers, 'get')
-            .callsFake(format => stubSupportedFetchers.get(format));
+        stubFetcherJson = sinon.stub(Fetcher, 'json')
+            .callsFake(() => Promise.resolve(JSON.parse(holes)));
+        stubFetcherTexture = sinon.stub(Fetcher, 'texture')
+            .callsFake(() => Promise.resolve(new THREE.Texture()));
 
         planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
         colorlayer = new ColorLayer('color', { crs: 'EPSG:3857', source: false });
@@ -117,7 +115,8 @@ describe('Provide in Sources', function () {
     });
 
     after(function () {
-        stub.restore();
+        stubFetcherJson.restore();
+        stubFetcherTexture.restore();
     });
 
 

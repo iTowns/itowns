@@ -10,23 +10,8 @@ import Fetcher from 'Provider/Fetcher';
 import Cache from 'Core/Scheduler/Cache';
 import CRS from 'Core/Geographic/Crs';
 
-export const supportedFetchers = new Map([
-    ['geojson', Fetcher.json],
-    ['application/json', Fetcher.json],
-    ['application/kml', Fetcher.xml],
-    ['application/gpx', Fetcher.xml],
-    ['application/x-protobuf;type=mapbox-vector', Fetcher.arrayBuffer],
-    ['application/gtx', Fetcher.arrayBuffer],
-    ['application/isg', Fetcher.text],
-    ['application/gdf', Fetcher.text],
-    ['image/x-bil;bits=32', Fetcher.textureFloat],
-    ['image/jpeg', Fetcher.texture],
-    ['image/png', Fetcher.texture],
-    [undefined, Fetcher.texture],
-]);
-
 export const supportedParsers = new Map([
-    ['geojson', GeoJsonParser.parse],
+    ['application/geo+json', GeoJsonParser.parse],
     ['application/json', GeoJsonParser.parse],
     ['application/kml', KMLParser.parse],
     ['application/gpx', GpxParser.parse],
@@ -134,7 +119,7 @@ class Source extends InformationsData {
 
         this.url = source.url;
         this.format = source.format;
-        this.fetcher = source.fetcher || supportedFetchers.get(source.format);
+        this.fetcher = source.fetcher || Fetcher.get(source.format);
         this.parser = source.parser || supportedParsers.get(source.format) || ((d, opt) => { d.extent = opt.extent; return d; });
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };

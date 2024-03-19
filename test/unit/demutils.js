@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import ElevationLayer from 'Layer/ElevationLayer';
 import WMTSSource from 'Source/WMTSSource';
-import { supportedFetchers } from 'Source/Source';
+import Fetcher from 'Provider/Fetcher';
 import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
@@ -28,19 +28,17 @@ describe('DemUtils', function () {
 
     let elevationlayer;
     let context;
-    let stubSuppFetcher;
+    let stubFetcherTextFloat;
     const ELEVATION = 300;
 
     before(function () {
-        stubSuppFetcher = sinon.stub(supportedFetchers, 'get');
-        stubSuppFetcher.withArgs('image/x-bil;bits=32')
+        stubFetcherTextFloat = sinon.stub(Fetcher, 'textureFloat')
             .callsFake(() => {
                 const floatArray = createBilData(ELEVATION);
-
                 const texture = new THREE.DataTexture(floatArray, 256, 256, THREE.RedFormat, THREE.FloatType);
                 texture.internalFormat = 'R32F';
                 texture.needsUpdate = false;
-                return () => Promise.resolve(texture);
+                return Promise.resolve(texture);
             });
 
         const source = new WMTSSource({
@@ -67,7 +65,7 @@ describe('DemUtils', function () {
     });
 
     after(() => {
-        stubSuppFetcher.restore();
+        stubFetcherTextFloat.restore();
     });
 
     it('add elevation layer', (done) => {
