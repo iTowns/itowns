@@ -205,4 +205,35 @@ export default {
             return Promise.resolve(all);
         });
     },
+
+    get(format = '') {
+        const [type, subtype] = format.split('/');
+        switch (type) {
+            case 'application':
+                switch (subtype) {
+                    case 'geo+json':
+                    case 'json':
+                        return this.json;
+                    case 'kml':
+                    case 'gpx':
+                        return this.xml;
+                    case 'x-protobuf;type=mapbox-vector':
+                    case 'gtx':
+                        return this.arrayBuffer;
+                    case 'isg':
+                    case 'gdf':
+                    default:
+                        return this.text;
+                }
+            case 'image':
+                switch (subtype) {
+                    case 'x-bil;bits=32':
+                        return this.textureFloat;
+                    default:
+                        return this.texture;
+                }
+            default:
+                return this.texture;
+        }
+    },
 };

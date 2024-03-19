@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import assert from 'assert';
 import GeoidLayer from 'Layer/GeoidLayer';
 import FileSource from 'Source/FileSource';
-import { supportedFetchers } from 'Source/Source';
+import Fetcher from 'Provider/Fetcher';
 import Coordinates from 'Core/Geographic/Coordinates';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Extent from 'Core/Geographic/Extent';
@@ -22,13 +22,12 @@ describe('GlobeView', function () {
     let geoidLayer;
     let context;
     let tile;
-    let stubSuppFetcher;
+    let stubFetcherArrayBuf;
 
     before(function () {
         const buffer = createGtxBuffer(ELEVATION);
-        stubSuppFetcher = sinon.stub(supportedFetchers, 'get');
-        stubSuppFetcher.withArgs('application/gtx')
-            .callsFake(() => () => Promise.resolve(buffer));
+        stubFetcherArrayBuf = sinon.stub(Fetcher, 'arrayBuffer')
+            .callsFake(() => Promise.resolve(buffer));
 
         const url = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/' +
             'altitude-conversion-grids/RAF20_float.gtx';
@@ -57,7 +56,7 @@ describe('GlobeView', function () {
     });
 
     after(function () {
-        stubSuppFetcher.restore();
+        stubFetcherArrayBuf.restore();
     });
 
     it('add geoid layer', function (done) {
