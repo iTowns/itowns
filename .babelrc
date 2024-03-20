@@ -20,6 +20,8 @@
         ["@babel/plugin-transform-runtime", {
             "regenerator": false
         }],
+        ["@babel/plugin-proposal-nullish-coalescing-operator"],
+        ["transform-jsbi-to-bigint"],
         ["minify-replace", {
             "replacements": [{
                 "identifierName": "__DEBUG__",
