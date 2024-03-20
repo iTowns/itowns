@@ -13,6 +13,7 @@ The following people have contributed to iTowns.
   * [Madec Germerie-Guizouarn](https://github.com/mgermerie)
   * [Mathieu Brédif](https://github.com/mbredif)
   * [Aymeric Dutremble](https://github.com/a-dutremble)
+  * [Raphaël Duhen](https://github.com/HoloTheDrunk)
 
 * [CIRIL Group](https://www.cirilgroup.com/en/):
   * [Vincent Jaillot](https://github.com/jailln)
