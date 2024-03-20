@@ -3,7 +3,7 @@ import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import FeatureGeometryLayer from 'Layer/FeatureGeometryLayer';
 import FileSource from 'Source/FileSource';
-import { supportedFetchers } from 'Source/Source';
+import Fetcher from 'Provider/Fetcher';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import OBB from 'Renderer/OBB';
@@ -22,12 +22,11 @@ describe('Layer with Feature process', function () {
     let ariegeNoProj4;
     let tile;
     let context;
-    let stubSuppFetcher;
+    let stubFetcherJson;
 
     before(function () {
-        stubSuppFetcher = sinon.stub(supportedFetchers, 'get');
-        stubSuppFetcher.withArgs('application/json')
-            .callsFake(() => () => Promise.resolve(JSON.parse(feature)));
+        stubFetcherJson = sinon.stub(Fetcher, 'json')
+            .callsFake(() => Promise.resolve(JSON.parse(feature)));
 
         const source = new FileSource({
             url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
@@ -75,7 +74,7 @@ describe('Layer with Feature process', function () {
     });
 
     after(function () {
-        stubSuppFetcher.restore();
+        stubFetcherJson.restore();
     });
 
     it('add layer', function (done) {

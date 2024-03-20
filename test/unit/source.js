@@ -1,6 +1,6 @@
 import { Matrix4 } from 'three';
 import assert from 'assert';
-import Source, { supportedFetchers } from 'Source/Source';
+import Source from 'Source/Source';
 import Layer from 'Layer/Layer';
 import WFSSource from 'Source/WFSSource';
 import WMTSSource from 'Source/WMTSSource';
@@ -213,15 +213,14 @@ describe('Sources', function () {
     let fetchedData;
 
     describe('FileSource', function () {
-        let stubSuppFetcher;
+        let stubFetcherJson;
         before(function () {
-            stubSuppFetcher = sinon.stub(supportedFetchers, 'get');
-            stubSuppFetcher.withArgs('application/json')
-                .callsFake(() => () => Promise.resolve(JSON.parse(fileSource)));
+            stubFetcherJson = sinon.stub(Fetcher, 'json')
+                .callsFake(() => Promise.resolve(JSON.parse(fileSource)));
         });
 
         after(function () {
-            stubSuppFetcher.restore();
+            stubFetcherJson.restore();
         });
 
         it('should instance FileSource with no source.fetchedData', function _it(done) {

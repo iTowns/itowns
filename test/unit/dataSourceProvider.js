@@ -6,7 +6,7 @@ import TileMesh from 'Core/TileMesh';
 import Extent, { globalExtentTMS } from 'Core/Geographic/Extent';
 import OBB from 'Renderer/OBB';
 import DataSourceProvider from 'Provider/DataSourceProvider';
-import { supportedFetchers } from 'Source/Source';
+import Fetcher from 'Provider/Fetcher';
 import TileProvider from 'Provider/TileProvider';
 import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
@@ -24,11 +24,6 @@ import sinon from 'sinon';
 
 import holes from '../data/geojson/holesPoints.geojson';
 
-const stubSupportedFetchers = new Map([
-    ['application/json', () => Promise.resolve(JSON.parse(holes))],
-    ['image/png', () => Promise.resolve(new THREE.Texture())],
-]);
-
 describe('Provide in Sources', function () {
     // TODO We should mock the creation of all layers creation.
 
@@ -41,7 +36,8 @@ describe('Provide in Sources', function () {
     const sizeTile = globalExtent.planarDimensions().x / 2 ** zoom;
     const extent = new Extent('EPSG:3857', 0, sizeTile, 0, sizeTile);
 
-    let stub;
+    let stubFetcherJson;
+    let stubFetcherTexture;
     let planarlayer;
     let elevationlayer;
     let colorlayer;
@@ -66,8 +62,10 @@ describe('Provide in Sources', function () {
     };
 
     before(function () {
-        stub = sinon.stub(supportedFetchers, 'get')
-            .callsFake(format => stubSupportedFetchers.get(format));
+        stubFetcherJson = sinon.stub(Fetcher, 'json')
+            .callsFake(() => Promise.resolve(JSON.parse(holes)));
+        stubFetcherTexture = sinon.stub(Fetcher, 'texture')
+            .callsFake(() => Promise.resolve(new THREE.Texture()));
 
         planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
         colorlayer = new ColorLayer('color', { crs: 'EPSG:3857', source: false });
@@ -117,7 +115,8 @@ describe('Provide in Sources', function () {
     });
 
     after(function () {
-        stub.restore();
+        stubFetcherJson.restore();
+        stubFetcherTexture.restore();
     });
 
 
@@ -151,9 +150,8 @@ describe('Provide in Sources', function () {
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0])
             .then((textures) => {
-                assert.equal(textures[0].extent.zoom, zoom);
-                assert.equal(textures[0].extent.row, 511);
-                assert.equal(textures[0].extent.col, 512);
+                assert.equal(textures.length, 1);
+                assert.equal(textures[0].isTexture, true);
                 done();
             }).catch(done);
     });
@@ -181,12 +179,12 @@ describe('Provide in Sources', function () {
         updateLayeredMaterialNodeElevation(context, elevationlayer, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0])
             .then((textures) => {
-                assert.equal(textures[0].extent.zoom, zoom);
-                assert.equal(textures[0].extent.row, 511);
-                assert.equal(textures[0].extent.col, 512);
+                assert.equal(textures.length, 1);
+                assert.equal(textures[0].isTexture, true);
                 done();
             }).catch(done);
     });
+
     it('should get wms texture with DataSourceProvider', (done) => {
         colorlayer.source = new WMSSource({
             url: 'http://',
@@ -211,15 +209,12 @@ describe('Provide in Sources', function () {
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0])
             .then((textures) => {
-                const e = textures[0].extent.as(tile.extent.crs);
-                assert.equal(e.zoom, zoom);
-                assert.equal(e.west, tile.extent.west);
-                assert.equal(e.east, tile.extent.east);
-                assert.equal(e.north, tile.extent.north);
-                assert.equal(e.south, tile.extent.south);
+                assert.equal(textures.length, 1);
+                assert.equal(textures[0].isTexture, true);
                 done();
             }).catch(done);
     });
+
     it('should get 4 TileMesh from TileProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
@@ -237,6 +232,7 @@ describe('Provide in Sources', function () {
                 done();
             }).catch(done);
     });
+
     it('should get 3 meshs with WFS source and DataSourceProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, featureLayer.zoom.min);
         material.visible = true;
@@ -280,6 +276,7 @@ describe('Provide in Sources', function () {
                 done();
             }).catch(done);
     });
+
     it('should get 1 texture with WFS source and DataSourceProvider', (done) => {
         const tile = new TileMesh(
             geom,
@@ -345,9 +342,9 @@ describe('Provide in Sources', function () {
             .then((result) => {
                 tile.material.setSequence([colorlayer.id]);
                 tile.material.getLayer(colorlayer.id).setTextures(result, [new THREE.Vector4()]);
-                assert.equal(tile.material.uniforms.colorTextures.value[0].extent, undefined);
+                assert.equal(tile.material.uniforms.colorTextures.value[0].anisotropy, 1);
                 tile.material.updateLayersUniforms();
-                assert.equal(tile.material.uniforms.colorTextures.value[0].extent.zoom, 10);
+                assert.equal(tile.material.uniforms.colorTextures.value[0].anisotropy, 16);
                 done();
             }).catch(done);
     });

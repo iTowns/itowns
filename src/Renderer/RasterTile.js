@@ -99,7 +99,7 @@ class RasterTile extends THREE.EventDispatcher {
     }
 
     setTexture(index, texture, offsetScale) {
-        this.level = (texture && (index == 0)) ? texture.extent.zoom : this.level;
+        this.level = (texture && texture.extent && (index == 0)) ? texture.extent.zoom : this.level;
         this.textures[index] = texture || null;
         this.offsetScales[index] = offsetScale;
         this.material.layersNeedUpdate = true;

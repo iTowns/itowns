@@ -1,11 +1,23 @@
 import { featureFilter } from '@mapbox/mapbox-gl-style-spec';
 import Style from 'Core/Style';
 import TMSSource from 'Source/TMSSource';
+import URLBuilder from 'Provider/URLBuilder';
 import Fetcher from 'Provider/Fetcher';
 import urlParser from 'Parser/MapBoxUrlParser';
 
 function toTMSUrl(url) {
     return url.replace(/\{/g, '${');
+}
+
+function mergeCollections(collections) {
+    const collection = collections[0];
+    collections.forEach((col, index) => {
+        if (index === 0) { return; }
+        col.features.forEach((feature) => {
+            collection.features.push(feature);
+        });
+    });
+    return collection;
 }
 
 /**
@@ -53,6 +65,7 @@ class VectorTilesSource extends TMSSource {
         source.url = source.url || '.';
         super(source);
         const ffilter = source.filter || (() => true);
+        this.urls = [];
         this.layers = {};
         this.styles = {};
         let promise;
@@ -86,9 +99,6 @@ class VectorTilesSource extends TMSSource {
 
             return style;
         }).then((style) => {
-            const s = Object.keys(style.sources)[0];
-            const os = style.sources[s];
-
             style.layers.forEach((layer, order) => {
                 layer.sourceUid = this.uid;
                 if (layer.type === 'background') {
@@ -113,18 +123,29 @@ class VectorTilesSource extends TMSSource {
             });
 
             if (this.url == '.') {
-                if (os.url) {
-                    const urlSource = urlParser.normalizeSourceURL(os.url, this.accessToken);
-                    return Fetcher.json(urlSource, this.networkOptions).then((tileJSON) => {
-                        if (tileJSON.tiles[0]) {
-                            this.url = toTMSUrl(tileJSON.tiles[0]);
-                        }
-                    });
-                } else if (os.tiles[0]) {
-                    this.url = toTMSUrl(os.tiles[0]);
-                }
+                const TMSUrlList = Object.values(style.sources).map((sourceVT) => {
+                    if (sourceVT.url) {
+                        const urlSource = urlParser.normalizeSourceURL(sourceVT.url, this.accessToken);
+                        return Fetcher.json(urlSource, this.networkOptions).then((tileJSON) => {
+                            if (tileJSON.tiles[0]) {
+                                return toTMSUrl(tileJSON.tiles[0]);
+                            }
+                        });
+                    } else if (sourceVT.tiles) {
+                        return Promise.resolve(toTMSUrl(sourceVT.tiles[0]));
+                    }
+                    return Promise.reject();
+                });
+                return Promise.all(TMSUrlList);
             }
+            return (Promise.resolve([this.url]));
+        }).then((TMSUrlList) => {
+            this.urls = Array.from(new Set(TMSUrlList));
         });
+    }
+
+    urlFromExtent(extent, url) {
+        return URLBuilder.xyz(extent, { tileMatrixCallback: this.tileMatrixCallback, url });
     }
 
     onLayerAdded(options) {
@@ -135,6 +156,33 @@ class VectorTilesSource extends TMSSource {
                 options.out.accurate = false;
             }
         }
+    }
+
+    loadData(extent, out) {
+        const cache = this._featuresCaches[out.crs];
+        const key = this.requestToKey(extent);
+        // try to get parsed data from cache
+        let features = cache.getByArray(key);
+        if (!features) {
+            // otherwise fetch/parse the data
+            features = cache.setByArray(
+                Promise.all(this.urls.map(url =>
+                    this.fetcher(this.urlFromExtent(extent, url), this.networkOptions)
+                        .then(file => this.parser(file, { out, in: this, extent }))))
+                    .then(collections => mergeCollections(collections))
+                    .catch(err => this.handlingError(err)),
+                key);
+
+            /* istanbul ignore next */
+            if (this.onParsedFile) {
+                features.then((feat) => {
+                    this.onParsedFile(feat);
+                    console.warn('Source.onParsedFile was deprecated');
+                    return feat;
+                });
+            }
+        }
+        return features;
     }
 }
 
