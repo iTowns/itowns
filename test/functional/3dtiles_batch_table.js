@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('3dtiles_batch_table', function _() {
     let result;

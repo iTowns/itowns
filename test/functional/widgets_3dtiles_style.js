@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('Widget C3dTilesStyle', function _() {
     let result;

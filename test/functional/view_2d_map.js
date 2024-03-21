@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('view_2d_map', function _() {
     let result;

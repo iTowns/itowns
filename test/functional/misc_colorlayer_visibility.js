@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('misc_colorlayer_visibility', function _() {
     let result;

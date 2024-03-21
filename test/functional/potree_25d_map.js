@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('potree_25d_map', function _() {
     let result;
