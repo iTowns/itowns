@@ -15,8 +15,8 @@
     "test-dev": "npm run lint -- --max-warnings=0 && npm run build-dev && npm run test-with-coverage && npm run test-functional",
     "test-unit": "npm run base-test-unit test/unit",
     "test-functional": "mocha -t 100000 --require test/hooks_functional.js --recursive test/functional",
-    "test-with-coverage": "nyc -n src -r html cross-env npm run test-unit",
-    "test-with-coverage_lcov": "nyc -n src --reporter=lcov cross-env npm run test-unit",
+    "test-with-coverage": "c8 -n src -r html cross-env npm run test-unit",
+    "test-with-coverage_lcov": "c8 -n src --reporter=lcov cross-env npm run test-unit",
     "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --require @babel/register --file test/unit/bootstrap.js",
     "build": "cross-env NODE_ENV=production webpack",
     "build-dev": "cross-env NODE_ENV=development webpack",
@@ -32,7 +32,7 @@
     "publish-next": "npm version prerelease --preid next && npm publish --access public --tag=next --provenance",
     "publish-latest": "npm publish --access public --tag=latest --provenance"
   },
-  "nyc": {
+  "c8": {
     "exclude": [
       "**/*ThreeExtended",
       "**/*src/Utils/placeObjectOnGround.js",
@@ -83,6 +83,7 @@
     "babel-plugin-minify-dead-code-elimination": "^0.5.2",
     "babel-plugin-minify-replace": "^0.5.0",
     "babel-plugin-module-resolver": "^5.0.0",
+    "c8": "^9.1.0",
     "chalk": "^5.3.0",
     "chart.js": "^4.4.1",
     "compare-func": "^2.0.0",
@@ -103,7 +104,6 @@
     "marked": "^11.0.1",
     "mocha": "^10.2.0",
     "node-fetch": "^2.7.0",
-    "nyc": "^15.1.0",
     "proj4": "^2.9.2",
     "puppeteer": "^21.6.0",
     "q": "^1.5.1",
