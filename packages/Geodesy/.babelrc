@@ -1,0 +1,36 @@
+{
+    "presets": [
+        ["@babel/preset-env", {
+            "targets": {
+                "browsers": "defaults and supports webgl2"
+            },
+            "modules": false
+        }]
+    ],
+    "plugins": [
+        ["module-resolver",  { "root": ["./src"] } ],
+        ["babel-plugin-inline-import", {
+            "extensions": [
+                ".json",
+                ".geojson",
+                ".glsl",
+                ".gltf",
+                ".css"
+            ]
+        }],
+        ["module-extension-resolver"],
+        ["@babel/plugin-transform-runtime", {
+            "regenerator": false
+        }],
+        ["minify-replace", {
+            "replacements": [{
+                "identifierName": "__DEBUG__",
+                "replacement": {
+                    "type": "booleanLiteral",
+                    "value": false
+                }
+            }]
+        }],
+        ["minify-dead-code-elimination"]
+    ]
+}

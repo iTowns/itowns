@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import DEMUtils from 'Utils/DEMUtils';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 
 const coord = new Coordinates('EPSG:4326');
 let rect;

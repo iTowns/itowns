@@ -1,6 +1,6 @@
 import assert from 'assert';
 import proj4 from 'proj4';
-import CRS from 'Core/Geographic/Crs';
+import CRS from 'Crs';
 
 proj4.defs('EPSG:7133', '+proj=longlat +ellps=GRS80 +no_defs +units=degrees');
 proj4.defs('EPSG:INVALID', '+no_defs');

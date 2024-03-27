@@ -1,15 +1,12 @@
 const conf = {
     version: '2.42.0',
 };
+
 export const REVISION = conf.version;
 
 // Geographic tools
-export { default as Extent } from 'Core/Geographic/Extent';
-export { default as Coordinates } from 'Core/Geographic/Coordinates';
-export { default as GeoidGrid } from 'Core/Geographic/GeoidGrid';
-export { default as CRS } from 'Core/Geographic/Crs';
+export { Coordinates, Extent, GeoidGrid, CRS, Ellipsoid, ellipsoidSizes } from '@itowns/geodesy';
 
-export { default as Ellipsoid, ellipsoidSizes } from 'Core/Math/Ellipsoid';
 export { default as GlobeView, GLOBE_VIEW_EVENTS } from 'Core/Prefab/GlobeView';
 export { default as PlanarView } from 'Core/Prefab/PlanarView';
 export { default as Fetcher } from 'Provider/Fetcher';

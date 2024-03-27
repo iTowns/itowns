@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import Coordinates from 'Core/Geographic/Coordinates';
-import Extent from 'Core/Geographic/Extent';
+import { Coordinates, Extent } from '@itowns/geodesy';
 
 const quaternion = new THREE.Quaternion();
 const center = new THREE.Vector3();

@@ -1,4 +1,4 @@
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import PlanarView from 'Core/Prefab/PlanarView';
 import { CAMERA_TYPE } from 'Renderer/Camera';

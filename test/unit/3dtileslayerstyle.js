@@ -1,7 +1,7 @@
 import assert from 'assert';
 import proj4 from 'proj4';
 import * as THREE from 'three';
-import Extent from 'Core/Geographic/Extent';
+import { Extent } from '@itowns/geodesy';
 import PlanarView from 'Core/Prefab/PlanarView';
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 import C3DTilesSource from 'Source/C3DTilesSource';

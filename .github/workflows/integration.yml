@@ -34,6 +34,10 @@ jobs:
       - name: Prepare
         run: npm run prepare
 
+      # Build packages
+      - name: packages
+        run: npm run build --workspaces
+
       # Check linter
       - name: Linter
         run: npm run lint -- --max-warnings=0
@@ -94,6 +98,10 @@ jobs:
       # Install packages
       - name: Install packages
         run: npm ci
+
+      # Build packages
+      - name: Transpile packages
+        run: npm run transpile --workspaces
 
       - name: Run unit tests
         run: npm run test-with-coverage_lcov

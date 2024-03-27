@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 import placeObjectOnGround from 'Utils/placeObjectOnGround';
 
 const FAST_READ_Z = 0;

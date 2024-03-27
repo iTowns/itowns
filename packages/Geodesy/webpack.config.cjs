@@ -28,7 +28,6 @@ replacementPluginConf[1].replacements.find(decl => decl.identifierName === '__DE
 const include = [
     path.resolve(__dirname, 'src'),
     path.resolve(__dirname, 'test'),
-    path.resolve(__dirname, 'utils'),
 ];
 
 module.exports = () => {
@@ -45,22 +44,13 @@ module.exports = () => {
         mode,
         context: path.resolve(__dirname),
         resolve: {
-            exportsFields: ['itowns_exports', 'exports'],
-            modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, './packages/Geodesy/src'), 'node_modules'],
+            modules: [path.resolve(__dirname, 'src'), 'node_modules'],
         },
         entry: {
-            itowns: [
+            itowns_geodesy: [
                 'core-js',
-                './src/MainBundle.js',
+                './src/Main.js',
             ],
-            debug: {
-                import: './utils/debug/Main.js',
-                dependOn: 'itowns',
-            },
-            itowns_widgets: {
-                import: './src/Utils/gui/Main.js',
-                dependOn: 'itowns',
-            },
         },
         devtool: 'source-map',
         output: {
@@ -91,23 +81,5 @@ module.exports = () => {
                 contextRegExp: /copc/,
             }),
         ],
-        devServer: {
-            devMiddleware: {
-                publicPath: '/dist/',
-            },
-            static: {
-                directory: path.resolve(__dirname, './'),
-                watch: {
-                    ignored: [path.resolve(__dirname, '.git'), path.resolve(__dirname, 'node_modules')                    ],
-                },
-            },
-            client: {
-                overlay: {
-                    errors: true,
-                    runtimeErrors: false,
-                    warnings: false,
-                },
-            },
-        },
     };
 };

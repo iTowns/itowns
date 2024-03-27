@@ -2,14 +2,11 @@ import * as THREE from 'three';
 
 import View, { VIEW_EVENTS } from 'Core/View';
 import GlobeControls from 'Controls/GlobeControls';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates, CRS, ellipsoidSizes } from '@itowns/geodesy';
 
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
 import CameraUtils from 'Utils/CameraUtils';
-
-import CRS from 'Core/Geographic/Crs';
-import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
