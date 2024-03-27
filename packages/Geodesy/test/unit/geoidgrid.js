@@ -1,8 +1,7 @@
 import assert from 'assert';
-import Extent from 'Core/Geographic/Extent';
-import GeoidGrid from 'Core/Geographic/GeoidGrid';
-import Coordinates from 'Core/Geographic/Coordinates';
-
+import Coordinates from 'Coordinates';
+import Extent from 'Extent';
+import GeoidGrid from 'GeoidGrid';
 
 describe('GeoidGrid', function () {
     let geoidGrid;

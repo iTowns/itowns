@@ -1,0 +1,41 @@
+{
+  "name": "@itowns/geodesy",
+  "version": "2.42.0",
+  "description": "Geodesy",
+  "type": "module",
+  "main": "lib/Main.js",
+  "itowns_exports": {
+    ".": "./src/Main.js"
+  },
+  "exports": {
+    ".": "./lib/Main.js"
+  },
+  "scripts": {
+    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
+    "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
+    "build": "cross-env NODE_ENV=production webpack",
+    "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --loader=babel-register-esm",
+    "test": "npm run lint -- --max-warnings=0 && npm run build && npm run test-with-coverage",
+    "test-dev": "npm run lint -- --max-warnings=0 && npm run build-dev && npm run test-with-coverage && npm run test-functional",
+    "test-unit": "npm run base-test-unit test/unit",
+    "test-functional": "mocha -t 100000 --require test/hooks_functional.js --recursive test/functional",
+    "test-with-coverage": "c8 -n src -r html cross-env npm run test-unit",
+    "test-with-coverage_lcov": "c8 -n src --reporter=lcov cross-env npm run test-unit"
+  },
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itowns"
+  },
+  "license": "(LGPL-2.1)",
+  "bugs": {
+    "url": "https://github.com/itowns/itowns/issues"
+  },
+  "homepage": "https://itowns project",
+  "peerDependencies": {
+    "proj4": "^2.9.2",
+    "three": "^0.159.0"
+  }
+}

@@ -1,5 +1,5 @@
 import assert from 'assert';
-import Extent from 'Core/Geographic/Extent';
+import { Extent } from '@itowns/geodesy';
 import PlanarView from 'Core/Prefab/PlanarView';
 import Renderer from './bootstrap';
 

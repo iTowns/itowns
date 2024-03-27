@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import Coordinates from '../Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 const matrix = new THREE.Matrix4();

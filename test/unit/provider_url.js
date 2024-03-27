@@ -1,7 +1,7 @@
 /* eslint-disable no-template-curly-in-string */
 import assert from 'assert';
 import URLBuilder from 'Provider/URLBuilder';
-import Extent from 'Core/Geographic/Extent';
+import { Extent } from '@itowns/geodesy';
 
 describe('URL creations', function () {
     const layer = { tileMatrixCallback: (zoomLevel => zoomLevel) };

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import Coordinates from 'Core/Geographic/Coordinates';
+import Coordinates from 'Coordinates';
 
 export const ellipsoidSizes = new THREE.Vector3(
     proj4.WGS84.a,

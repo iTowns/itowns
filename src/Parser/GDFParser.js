@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import GeoidGrid from 'Core/Geographic/GeoidGrid';
-import Extent from 'Core/Geographic/Extent';
+import { Extent, GeoidGrid } from '@itowns/geodesy';
 import { BYTES_PER_DOUBLE } from 'Parser/GTXParser';
 
 

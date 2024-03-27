@@ -1,6 +1,6 @@
 import * as THREE from 'three';
+import { Coordinates } from '@itowns/geodesy';
 import DEMUtils from 'Utils/DEMUtils';
-import Coordinates from 'Core/Geographic/Coordinates';
 
 const temp = {
     v: new THREE.Vector3(),

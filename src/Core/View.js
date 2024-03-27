@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CRS, Coordinates } from '@itowns/geodesy';
 import Camera from 'Renderer/Camera';
 import initializeWebXR from 'Renderer/WebXR';
 import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from 'Core/MainLoop';
@@ -6,8 +7,6 @@ import Capabilities from 'Core/System/Capabilities';
 import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
 import c3DEngine from 'Renderer/c3DEngine';
 import RenderMode from 'Renderer/RenderMode';
-import CRS from 'Core/Geographic/Crs';
-import Coordinates from 'Core/Geographic/Coordinates';
 import FeaturesUtils from 'Utils/FeaturesUtils';
 import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 import Scheduler from 'Core/Scheduler/Scheduler';

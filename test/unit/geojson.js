@@ -1,7 +1,7 @@
 import proj4 from 'proj4';
 import assert from 'assert';
 import GeoJsonParser from 'Parser/GeoJsonParser';
-import Extent from 'Core/Geographic/Extent';
+import { Extent } from '@itowns/geodesy';
 
 import holes from '../data/geojson/holes.geojson';
 import gpx from '../data/geojson/gpx.geojson';

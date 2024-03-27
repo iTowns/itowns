@@ -3,7 +3,7 @@
  * Class: CoordStars
  * Description: get coord of stars like earth...
  */
-import Coordinates from 'Core/Geographic/Coordinates';
+import Coordinates from 'Coordinates';
 
 const CoordStars = {
 

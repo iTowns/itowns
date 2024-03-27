@@ -1,6 +1,6 @@
 import assert from 'assert';
-import Coordinates from 'Core/Geographic/Coordinates';
-import Ellipsoid from 'Core/Math/Ellipsoid';
+import Coordinates from 'Coordinates';
+import Ellipsoid from 'Ellipsoid';
 
 describe('Ellipsoid', function () {
     const c1 = new Coordinates('EPSG:4326', 0, 0, 0);
