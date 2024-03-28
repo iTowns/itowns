@@ -22,10 +22,8 @@
  * @returns {GeoTIFFLevel} The selected zoom level.
  */
 function selectLevel(source, requestExtent, requestWidth, requestHeight) {
-    // Number of images  = original + overviews if any
-    const cropped = requestExtent.clone().intersect(source.extent);
     // Dimensions of the requested extent
-    const extentDimension = cropped.planarDimensions();
+    const extentDimension = requestExtent.clone().planarDimensions();
 
     const targetResolution = Math.min(
         extentDimension.x / requestWidth,
@@ -87,70 +85,112 @@ function makeWindowFromExtent(source, extent, resolution) {
 }
 
 /**
- * Creates a texture from the pixel buffer(s).
+ * Reads raster data from the image as RGB.
+ * The result is always an interleaved typed array.
+ * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
+ *
+ * @param {Source} source The COGSource.
+ * @param {GeoTIFFLevel} level The GeoTIFF level to read
+ * @param {number[]} viewport The image region to read.
+ * @returns {Promise<TypedArray[]>} The raster data
+ */
+async function readRGB(source, level, viewport) {
+    try {
+        // TODO possible optimization: instead of letting geotiff.js crop and resample
+        // the tiles into the desired region, we could use image.getTileOrStrip() to
+        // read individual tiles (aka blocks) and make a texture per block. This way,
+        // there would not be multiple concurrent reads for the same block, and we would not
+        // waste time resampling the blocks since resampling is already done in the composer.
+        // We would create more textures, but it could be worth it.
+        return await level.image.readRGB({
+            window: viewport,
+            pool: source.pool,
+            width: source.tileWidth,
+            height: source.tileHeight,
+            resampleMethod: source.resampleMethod,
+            enableAlpha: true,
+            interleave: true,
+        });
+    } catch (error) {
+        if (error.toString() === 'AggregateError: Request failed') {
+            // Problem with the source that is blocked by another fetch
+            // (request failed in readRasters). See the conversations in
+            // https://github.com/geotiffjs/geotiff.js/issues/218
+            // https://github.com/geotiffjs/geotiff.js/issues/221
+            // https://github.com/geotiffjs/geotiff.js/pull/224
+            // Retry until it is not blocked.
+            // TODO retry counter
+            await new Promise((resolve) => {
+                setTimeout(resolve, 100);
+            });
+            return readRGB(level, viewport, source);
+        }
+        throw error;
+    }
+}
+
+/**
+ * Creates a texture from the pixel buffer
  *
  * @param {Object} source The COGSource
- * @param {THREE.TypedArray | THREE.TypedArray[]} buffers The buffers (one buffer per band)
- * @param {number} buffers.width
- * @param {number} buffers.height
- * @param {number} buffers.byteLength
+ * @param {THREE.TypedArray[]} buffer The pixel buffer
+ * @param {number} buffer.width
+ * @param {number} buffer.height
+ * @param {number} buffer.byteLength
  * @returns {THREE.DataTexture} The generated texture.
  */
-function createTexture(source, buffers) {
-    const { width, height, byteLength } = buffers;
+function createTexture(source, buffer) {
+    const { byteLength } = buffer;
+    const width = source.tileWidth;
+    const height = source.tileHeight;
     const pixelCount = width * height;
     const targetDataType = source.dataType;
     const format = THREE.RGBAFormat;
     const channelCount = 4;
-    let texture;
-    let data;
-
-    // Check if it's a RGBA buffer
-    if (pixelCount * channelCount === byteLength) {
-        data = buffers;
-    }
+    const isRGBA = pixelCount * channelCount === byteLength;
+    let tmpBuffer = buffer;
 
     switch (targetDataType) {
         case THREE.UnsignedByteType: {
-            if (!data) {
-                // We convert RGB buffer to RGBA
-                const newBuffers = new Uint8ClampedArray(pixelCount * channelCount);
-                data = convertToRGBA(buffers, newBuffers, source.defaultAlpha);
+            if (!isRGBA) {
+                tmpBuffer = convertToRGBA(tmpBuffer, new Uint8ClampedArray(pixelCount * channelCount), source.defaultAlpha);
             }
-            texture = new THREE.DataTexture(data, width, height, format, THREE.UnsignedByteType);
-            break;
+            return new THREE.DataTexture(tmpBuffer, width, height, format, THREE.UnsignedByteType);
         }
         case THREE.FloatType: {
-            if (!data) {
-                // We convert RGB buffer to RGBA
-                const newBuffers = new Float32Array(pixelCount * channelCount);
-                data = convertToRGBA(buffers, newBuffers, source.defaultAlpha / 255);
+            if (!isRGBA) {
+                tmpBuffer = convertToRGBA(tmpBuffer, new Float32Array(pixelCount * channelCount), source.defaultAlpha / 255);
             }
-            texture = new THREE.DataTexture(data, width, height, format, THREE.FloatType);
-            break;
+            return new THREE.DataTexture(tmpBuffer, width, height, format, THREE.FloatType);
         }
         default:
             throw new Error('unsupported data type');
     }
-
-    return texture;
 }
 
-function convertToRGBA(buffers, newBuffers, defaultAlpha) {
-    const { width, height } = buffers;
+/**
+ * Convert RGB pixel buffer to RGBA pixel buffer
+ *
+ * @param {THREE.TypedArray[]} buffer The RGB pixel buffer
+ * @param {THREE.TypedArray[]} newBuffer The empty RGBA pixel buffer
+ * @param {number} defaultAlpha Default alpha value
+ * @returns {THREE.DataTexture} The generated texture.
+ */
+function convertToRGBA(buffer, newBuffer, defaultAlpha) {
+    const { width, height } = buffer;
 
     for (let i = 0; i < width * height; i++) {
         const oldIndex = i * 3;
         const index = i * 4;
         // Copy RGB from original buffer
-        newBuffers[index + 0] = buffers[oldIndex + 0]; // R
-        newBuffers[index + 1] = buffers[oldIndex + 1]; // G
-        newBuffers[index + 2] = buffers[oldIndex + 2]; // B
+        newBuffer[index + 0] = buffer[oldIndex + 0]; // R
+        newBuffer[index + 1] = buffer[oldIndex + 1]; // G
+        newBuffer[index + 2] = buffer[oldIndex + 2]; // B
         // Add alpha to new buffer
-        newBuffers[index + 3] = defaultAlpha; // A
+        newBuffer[index + 3] = defaultAlpha; // A
     }
 
-    return newBuffers;
+    return newBuffer;
 }
 
 /**
@@ -195,18 +235,12 @@ const COGParser = (function _() {
          */
         parse: async function _(data, options) {
             const source = options.in;
-            const nodeExtent = data.extent.as(source.crs);
-            const level = selectLevel(source, nodeExtent, source.tileWidth, source.tileHeight);
-            const viewport = makeWindowFromExtent(source, nodeExtent, level.resolution);
+            const tileExtent = data.extent.as(source.crs);
 
-            const buffers = await level.image.readRGB({
-                window: viewport,
-                pool: source.pool,
-                enableAlpha: true,
-                interleave: true,
-            });
-
-            const texture = createTexture(source, buffers);
+            const level = selectLevel(source, tileExtent, source.tileWidth, source.tileHeight);
+            const viewport = makeWindowFromExtent(source, tileExtent, level.resolution);
+            const rgbBuffer = await readRGB(source, level, viewport);
+            const texture = createTexture(source, rgbBuffer);
             texture.flipY = true;
             texture.extent = data.extent;
             texture.needsUpdate = true;
