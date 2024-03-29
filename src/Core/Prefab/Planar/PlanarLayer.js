@@ -32,8 +32,6 @@ class PlanarLayer extends TiledGeometryLayer {
      * name.
      * @param {number} [config.maxSubdivisionLevel=5] - Maximum subdivision
      * level for this tiled layer.
-     * @param {number} [config.maxDeltaElevationLevel=4] - Maximum delta between
-     * two elevations tile.
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
@@ -50,7 +48,6 @@ class PlanarLayer extends TiledGeometryLayer {
         this.extent = extent;
         this.minSubdivisionLevel = this.minSubdivisionLevel == undefined ? 0 : this.minSubdivisionLevel;
         this.maxSubdivisionLevel = this.maxSubdivisionLevel == undefined ? 5 : this.maxSubdivisionLevel;
-        this.maxDeltaElevationLevel = this.maxDeltaElevationLevel || 4.0;
     }
 }
 
