@@ -150,7 +150,6 @@ class View extends THREE.EventDispatcher {
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
      * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
      * added to viewerDiv (mutually exclusive with mainLoop)
-     * @param {boolean} [options.renderer.isWebGL2=true] - enable webgl 2.0 for THREE.js.
      * @param {boolean|Object} [options.webXR=false] - enable webxr button to switch on VR visualization.
      * @param {number} [options.webXR.scale=1.0] - apply webxr scale tranformation.
      * @param {?Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
@@ -357,9 +356,6 @@ class View extends THREE.EventDispatcher {
                 } else {
                     return layer._reject(new Error(`Cant add color layer ${layer.id}: the maximum layer is reached`));
                 }
-            } else if (layer.isElevationLayer && layer.source.format == 'image/x-bil;bits=32') {
-                layer.source.networkOptions.isWebGL2 = this.renderer?.capabilities?.isWebGL2;
-                parentLayer.attach(layer);
             } else {
                 parentLayer.attach(layer);
             }

@@ -14,7 +14,7 @@ const noMask = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1,
 noMask.needsUpdate = true;
 const noTexture = new THREE.Texture();
 
-const rawShaderMaterial = new THREE.RawShaderMaterial();
+const shaderMaterial = new THREE.ShaderMaterial();
 /**
  * @classdesc OrientedImageMaterial is a custom shader material used to do projective texture mapping.<br/>
  *
@@ -33,7 +33,7 @@ const rawShaderMaterial = new THREE.RawShaderMaterial();
  * <br/>
  * To get a more comprehensive support of camera Micmac models, you can consider using [three-photogrammetric-camera]{@link https://github.com/mbredif/three-photogrammetric-camera} instead.
  */
-class OrientedImageMaterial extends THREE.RawShaderMaterial {
+class OrientedImageMaterial extends THREE.ShaderMaterial {
     /**
      * @constructor
      * @param { OrientedImageCamera[]} cameras - Array of {@link OrientedImageCamera}. Each camera will project a texture.
@@ -57,17 +57,17 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
         options.transparent = options.transparent ?? true;
         options.opacity = options.opacity ?? 1;
 
-        // Filter the rawShaderMaterial options
-        const rawShaderMaterialOptions = {};
+        // Filter out non-ShaderMaterial options
+        const shaderMaterialOptions = {};
         for (const key in options) {
             if (Object.prototype.hasOwnProperty.call(options, key)) {
-                const currentValue = rawShaderMaterial[key];
+                const currentValue = shaderMaterial[key];
                 if (currentValue !== undefined) {
-                    rawShaderMaterialOptions[key] = options[key];
+                    shaderMaterialOptions[key] = options[key];
                 }
             }
         }
-        super(rawShaderMaterialOptions);
+        super(shaderMaterialOptions);
 
         this.defines.ORIENTED_IMAGES_COUNT = options.OrientedImagesCount ?? cameras.length;
 
@@ -118,20 +118,10 @@ class OrientedImageMaterial extends THREE.RawShaderMaterial {
             opacity: 0.75,
         });
 
-        if (Capabilities.isLogDepthBufferSupported()) {
-            this.defines.USE_LOGDEPTHBUF = 1;
-            this.defines.USE_LOGDEPTHBUF_EXT = 1;
-        }
-
         this.vertexShader = textureVS;
+        // three loop unrolling of ShaderMaterial only supports integer bounds,
+        // see https://github.com/mrdoob/three.js/issues/28020
         this.fragmentShader = ShaderUtils.unrollLoops(textureFS, this.defines);
-    }
-
-    onBeforeCompile(shader, renderer) {
-        if (renderer.capabilities.isWebGL2) {
-            this.defines.WEBGL2 = true;
-            shader.glslVersion = '300 es';
-        }
     }
 
     /**

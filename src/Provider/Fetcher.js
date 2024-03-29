@@ -1,4 +1,4 @@
-import { TextureLoader, DataTexture, RedFormat, FloatType, AlphaFormat } from 'three';
+import { TextureLoader, DataTexture, RedFormat, FloatType } from 'three';
 
 const textureLoader = new TextureLoader();
 const SIZE_TEXTURE_TILE = 256;
@@ -15,16 +15,11 @@ const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) =
     return response.arrayBuffer();
 });
 
-function getTextureFloat(buffer, isWebGL2 = true) {
-    if (isWebGL2) {
-        const texture = new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, RedFormat, FloatType);
-        texture.internalFormat = 'R32F';
-        texture.needsUpdate = true;
-        return texture;
-    } else {
-        const texture = new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, AlphaFormat, FloatType);
-        return texture;
-    }
+function getTextureFloat(buffer) {
+    const texture = new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, RedFormat, FloatType);
+    texture.internalFormat = 'R32F';
+    texture.needsUpdate = true;
+    return texture;
 }
 
 /**
@@ -138,7 +133,7 @@ export default {
     textureFloat(url, options = {}) {
         return arrayBuffer(url, options).then((buffer) => {
             const floatArray = new Float32Array(buffer);
-            const texture = getTextureFloat(floatArray, options.isWebGL2);
+            const texture = getTextureFloat(floatArray);
             return texture;
         });
     },

@@ -14,12 +14,9 @@ import overlay_fragment from './Chunk/overlay_fragment.glsl';
 import overlay_pars_fragment from './Chunk/overlay_pars_fragment.glsl';
 import pitUV from './Chunk/pitUV.glsl';
 import precision_qualifier from './Chunk/precision_qualifier.glsl';
-import project_pars_vertex from './Chunk/project_pars_vertex.glsl';
 import projective_texturing_vertex from './Chunk/projective_texturing_vertex.glsl';
 import projective_texturing_pars_vertex from './Chunk/projective_texturing_pars_vertex.glsl';
 import projective_texturing_pars_fragment from './Chunk/projective_texturing_pars_fragment.glsl';
-import WebGL2_pars_vertex from './Chunk/WebGL2_pars_vertex.glsl';
-import WebGL2_pars_fragment from './Chunk/WebGL2_pars_fragment.glsl';
 
 const custom_header_colorLayer = '// no custom header';
 const custom_body_colorLayer = '// no custom body';
@@ -45,9 +42,6 @@ const itownsShaderChunk = {
     projective_texturing_vertex,
     projective_texturing_pars_vertex,
     projective_texturing_pars_fragment,
-    project_pars_vertex,
-    WebGL2_pars_vertex,
-    WebGL2_pars_fragment,
 };
 
 /**

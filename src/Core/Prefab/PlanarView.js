@@ -11,11 +11,6 @@ class PlanarView extends View {
      * @constructor
      * @extends View
      *
-     * @example <caption><b>Enable WebGl 1.0 instead of WebGl 2.0.</b></caption>
-     * var viewerDiv = document.getElementById('viewerDiv');
-     * const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
-     * var view = new itowns.PlanarView(viewerDiv, extent, {  renderer: { isWebGL2: false } });
-     *
      * @example <caption><b>Instance with placement on the ground.</b></caption>
      * var viewerDiv = document.getElementById('viewerDiv');
      * const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);

@@ -1,13 +1,7 @@
 #ifdef USE_LOGDEPTHBUF
 
     uniform float logDepthBufFC;
-
-    #ifdef USE_LOGDEPTHBUF_EXT
-
-        //#extension GL_EXT_frag_depth : enable
-        varying float vFragDepth;
-
-    #endif
+    varying float vFragDepth;
 
 #endif
 
@@ -24,11 +18,9 @@ float noiseScale = 0.005;
 
 void main()
 {
-     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
-
-	gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
-
-    #endif
+#if defined(USE_LOGDEPTHBUF)
+    gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
+#endif
 
     // Correct Y knowing image is -85 85
     vec2 vUv2 = vec2(vUv.x, clamp(vUv.y + (vUv.y - 0.5) * - 0.45, 0., 1.));

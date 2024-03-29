@@ -95,7 +95,7 @@ export const ELEVATION_MODES = {
 
 let nbSamplers;
 const fragmentShader = [];
-class LayeredMaterial extends THREE.RawShaderMaterial {
+class LayeredMaterial extends THREE.ShaderMaterial {
     #_visible = true;
     constructor(options = {}, crsCount) {
         super(options);
@@ -104,6 +104,8 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
 
         this.defines.NUM_VS_TEXTURES = nbSamplers[0];
         this.defines.NUM_FS_TEXTURES = nbSamplers[1];
+        // TODO: We do not use the fog from the scene, is this a desired
+        // behavior?
         this.defines.USE_FOG = 1;
         this.defines.NUM_CRS = crsCount;
 
@@ -122,12 +124,9 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
             CommonMaterial.setUniformProperty(this, 'outlineColors', outlineColors);
         }
 
-        if (Capabilities.isLogDepthBufferSupported()) {
-            this.defines.USE_LOGDEPTHBUF = 1;
-            this.defines.USE_LOGDEPTHBUF_EXT = 1;
-        }
-
         this.vertexShader = TileVS;
+        // three loop unrolling of ShaderMaterial only supports integer bounds,
+        // see https://github.com/mrdoob/three.js/issues/28020
         fragmentShader[crsCount] = fragmentShader[crsCount] || ShaderUtils.unrollLoops(TileFS, this.defines);
         this.fragmentShader = fragmentShader[crsCount];
 
@@ -190,13 +189,6 @@ class LayeredMaterial extends THREE.RawShaderMaterial {
                 }
             },
         });
-    }
-
-    onBeforeCompile(shader, renderer) {
-        if (renderer.capabilities.isWebGL2) {
-            this.defines.WEBGL2 = true;
-            shader.glslVersion = '300 es';
-        }
     }
 
     getUniformByType(type) {

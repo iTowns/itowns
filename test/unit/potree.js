@@ -155,11 +155,6 @@ describe('Potree', function () {
             it('instance', () => {
                 assert.ok(pMaterial);
             });
-            it('Define isWebGL2 on before compile', () => {
-                const shader = {};
-                pMaterial.onBeforeCompile(shader, renderer);
-                assert.equal(shader.glslVersion, '300 es');
-            });
             it('copy', () => {
                 pMaterial2.copy(pMaterial);
                 assert.equal(pMaterial2.uniforms.projectiveTextureAlphaBorder.value, 20);
