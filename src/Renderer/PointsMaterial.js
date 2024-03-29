@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import PointsVS from 'Renderer/Shader/PointsVS.glsl';
 import PointsFS from 'Renderer/Shader/PointsFS.glsl';
-import Capabilities from 'Core/System/Capabilities';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import CommonMaterial from 'Renderer/CommonMaterial';
 import Gradients from 'Utils/Gradients';
@@ -153,7 +152,7 @@ function recomputeTexture(scheme, texture, nbClass) {
     texture.needsUpdate = true;
 }
 
-class PointsMaterial extends THREE.RawShaderMaterial {
+class PointsMaterial extends THREE.ShaderMaterial {
     /**
      * @class      PointsMaterial
      * @param      {object}  [options={}]  The options
@@ -287,14 +286,11 @@ class PointsMaterial extends THREE.RawShaderMaterial {
             this.defines.DEBUG_ALPHA_BORDER = oiMaterial.defines.DEBUG_ALPHA_BORDER;
             this.defines.USE_TEXTURES_PROJECTIVE = true;
             this.defines.USE_BASE_MATERIAL = true;
+            // three loop unrolling of ShaderMaterial only supports integer
+            // bounds, see https://github.com/mrdoob/three.js/issues/28020
             this.fragmentShader = ShaderUtils.unrollLoops(PointsFS, this.defines);
         } else {
             this.fragmentShader = PointsFS;
-        }
-
-        if (Capabilities.isLogDepthBufferSupported()) {
-            this.defines.USE_LOGDEPTHBUF = 1;
-            this.defines.USE_LOGDEPTHBUF_EXT = 1;
         }
 
         if (__DEBUG__) {
@@ -316,13 +312,6 @@ class PointsMaterial extends THREE.RawShaderMaterial {
             type: 'material_property_changed',
             target: this.uniforms,
         });
-    }
-
-    onBeforeCompile(shader, renderer) {
-        if (renderer.capabilities.isWebGL2) {
-            this.defines.WEBGL2 = true;
-            shader.glslVersion = '300 es';
-        }
     }
 
     copy(source) {

@@ -1,4 +1,3 @@
-#include <itowns/WebGL2_pars_fragment>
 #include <itowns/precision_qualifier>
 #include <logdepthbuf_pars_fragment>
 #if defined(USE_TEXTURES_PROJECTIVE)

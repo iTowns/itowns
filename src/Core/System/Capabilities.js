@@ -24,10 +24,6 @@ export default {
         return logDepthBufferSupported;
     },
     isFirefox,
-    isInternetExplorer() {
-        const internetExplorer = false || !!document.documentMode;
-        return internetExplorer;
-    },
     getMaxTextureUnitsCount() {
         return maxTexturesUnits;
     },

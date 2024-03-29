@@ -25,15 +25,13 @@
         if (mode == ELEVATION_RGBA)
             return decode32(texture2D( tex, uv ).abgr * 255.0);
         if (mode == ELEVATION_DATA || mode == ELEVATION_COLOR)
-        #if defined(WEBGL2)
             return texture2D( tex, uv ).r;
-        #else
-            return texture2D( tex, uv ).w;
-        #endif
         return 0.;
     }
 
     float getElevation(vec2 uv, sampler2D tex, vec4 offsetScale, Layer layer) {
+        // Elevation textures are inverted along the y-axis
+        uv = vec2(uv.x, 1.0 - uv.y);
         uv = uv * offsetScale.zw + offsetScale.xy;
         float d = clamp(getElevationMode(uv, tex, layer.mode), layer.zmin, layer.zmax);
         return d * layer.scale + layer.bias;

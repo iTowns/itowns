@@ -1,6 +1,4 @@
-#include <itowns/WebGL2_pars_vertex>
 #include <itowns/precision_qualifier>
-#include <itowns/project_pars_vertex>
 #if defined(USE_TEXTURES_PROJECTIVE)
 #include <itowns/projective_texturing_pars_vertex>
 #endif
@@ -45,8 +43,6 @@ attribute float scanAngle;
 attribute vec2 oct16Normal;
 #elif defined(NORMAL_SPHEREMAPPED)
 attribute vec2 sphereMappedNormal;
-#else
-attribute vec3 normal;
 #endif
 
 varying vec4 vColor;

@@ -56,12 +56,12 @@ export default function newTileGeometry(builder, params) {
         geometry.dispose = () => {
             geometry._count--;
             if (geometry._count <= 0) {
-                // To avoid remove index buffer and attribute buffer uv_0
+                // To avoid remove index buffer and attribute buffer uv
                 //  error un-bound buffer in webgl with VAO rendering.
                 // Could be removed if the attribute buffer deleting is
                 //  taken into account in the buffer binding state (in THREE.WebGLBindingStates code).
                 geometry.index = null;
-                delete geometry.attributes.uv_0;
+                delete geometry.attributes.uv;
                 THREE.BufferGeometry.prototype.dispose.call(geometry);
                 cacheTile.delete(south, params.level, bufferKey);
             }

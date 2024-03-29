@@ -11,7 +11,7 @@ export default function computeBuffers(params) {
         index: null,
         position: null,
         normal: null,
-        // 2 UV set per tile: wgs84 (uv_0) and pm (uv_1)
+        // 2 UV set per tile: wgs84 (uv[0]) and pm (uv[1])
         //    - wgs84: 1 texture per tile because tiles are using wgs84 projection
         //    - pm: use multiple textures per tile.
         //      +-------------------------+

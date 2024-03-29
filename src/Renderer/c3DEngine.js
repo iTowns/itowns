@@ -16,7 +16,6 @@ class c3DEngine {
     constructor(rendererOrDiv, options = {}) {
         deprecatedC3DEngineWebGLOptions(options);
 
-        const NOIE = !Capabilities.isInternetExplorer();
         // pick sensible default options
         if (options.antialias === undefined) {
             options.antialias = true;
@@ -25,11 +24,7 @@ class c3DEngine {
             options.alpha = true;
         }
         if (options.logarithmicDepthBuffer === undefined) {
-            options.logarithmicDepthBuffer = this.gLDebug || NOIE;
-        }
-
-        if (options.isWebGL2 === undefined) {
-            options.isWebGL2 = true;
+            options.logarithmicDepthBuffer = true;
         }
 
         // If rendererOrDiv parameter is a domElement, we use it as support to display data.
@@ -86,7 +81,7 @@ class c3DEngine {
             this.label2dRenderer.setSize(this.width, this.height);
             viewerDiv.appendChild(this.label2dRenderer.domElement);
 
-            this.renderer = renderer || new (options.isWebGL2 ? THREE.WebGLRenderer : THREE.WebGL1Renderer)({
+            this.renderer = renderer || new THREE.WebGLRenderer({
                 canvas: document.createElement('canvas'),
                 antialias: options.antialias,
                 alpha: options.alpha,
@@ -96,33 +91,10 @@ class c3DEngine {
             this.renderer.domElement.style.zIndex = 0;
             this.renderer.domElement.style.top = 0;
         } catch (ex) {
-            const versionWebGL = options.isWebGL2 ? '2' : '1';
-            console.error(`Failed to create WebGLRenderer webGL ${versionWebGL}.`);
-            this.renderer = null;
-        }
-
-        if (!this.renderer) {
-            if (!WEBGL.isWebGLAvailable()) {
-                viewerDiv.appendChild(WEBGL.getErrorMessage(1));
-            } else if (!WEBGL.isWebGL2Available()) {
+            if (!WEBGL.isWebGL2Available()) {
                 viewerDiv.appendChild(WEBGL.getErrorMessage(2));
             }
-
-            throw new Error('WebGL unsupported');
-        }
-
-        if (!renderer && options.logarithmicDepthBuffer) {
-            // We don't support logarithmicDepthBuffer when EXT_frag_depth is missing.
-            // So recreated a renderer if needed.
-            if (!this.renderer.capabilities.isWebGL2 && !this.renderer.extensions.get('EXT_frag_depth')) {
-                this.renderer.dispose();
-                this.renderer = new (options.isWebGL2 ? THREE.WebGLRenderer : THREE.WebGL1Renderer)({
-                    canvas: document.createElement('canvas'),
-                    antialias: options.antialias,
-                    alpha: options.alpha,
-                    logarithmicDepthBuffer: false,
-                });
-            }
+            throw ex;
         }
 
         // Let's allow our canvas to take focus
@@ -154,7 +126,7 @@ class c3DEngine {
 
     /**
      * return renderer THREE.js
-     * @returns {undefined|THREE.WebGLRenderer}
+     * @returns {THREE.WebGLRenderer}
      */
     getRenderer() {
         return this.renderer;

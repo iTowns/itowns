@@ -111,15 +111,6 @@ describe('Fetcher', function () {
                 })
                 .catch(done);
         }).timeout(8000);
-        it('should get a texture float (without WebGL2)', (done) => {
-            Fetcher.textureFloat(url, { ...networkOptions, isWebGL2: false })
-                .then((texture) => {
-                    assert.ok(texture instanceof DataTexture);
-                    assert.equal(texture.internalFormat, null);
-                    done();
-                })
-                .catch(done);
-        });
     });
 
     describe('multiple', function () {

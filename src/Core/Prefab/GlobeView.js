@@ -79,14 +79,6 @@ class GlobeView extends View {
      * }
      * var view = new itowns.GlobeView(viewerDiv, placement);
      *
-     * @example <caption><b>Enable WebGl 1.0 instead of WebGl 2.0.</b></caption>
-     * var viewerDiv = document.getElementById('viewerDiv');
-     * const placement = {
-     *     coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
-     *     range: 25000000,
-     * }
-     * var view = new itowns.GlobeView(viewerDiv, placement, {  renderer: { isWebGL2: false } });
-     *
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
      * @param {CameraTransformOptions|Extent} placement - An object to place view
