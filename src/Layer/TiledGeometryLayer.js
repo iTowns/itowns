@@ -412,23 +412,6 @@ class TiledGeometryLayer extends GeometryLayer {
         if (this.maxSubdivisionLevel <= node.level) {
             return false;
         }
-
-        // Prevent to subdivise the node if the current elevation level
-        // we must avoid a tile, with level 20, inherits a level 3 elevation texture.
-        // The induced geometric error is much too large and distorts the SSE
-        const nodeLayer = node.material.getElevationLayer();
-        if (nodeLayer) {
-            const currentTexture = nodeLayer.textures[0];
-            if (currentTexture && currentTexture.extent) {
-                const offsetScale = nodeLayer.offsetScales[0];
-                const ratio = offsetScale.z;
-                // ratio is node size / texture size
-                if (ratio < 1 / 2 ** this.maxDeltaElevationLevel) {
-                    return false;
-                }
-            }
-        }
-
         subdivisionVector.setFromMatrixScale(node.matrixWorld);
         boundingSphereCenter.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
         const distance = Math.max(
