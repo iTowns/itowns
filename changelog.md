@@ -1,3 +1,93 @@
+<a name="2.43.0"></a>
+# [2.43.0](https://github.com/iTowns/itowns/compare/v2.42.0...v2.43.0) (2024-04-02)
+
+
+### Features
+
+* ESM distribution ([ab36885](https://github.com/iTowns/itowns/commit/ab36885))
+* **gltf:** add a GLTFParser to parse gltf 1.0 and 2.0 files ([e6eb4cf](https://github.com/iTowns/itowns/commit/e6eb4cf))
+* Remove WebGL1 support ([5bd5c32](https://github.com/iTowns/itowns/commit/5bd5c32))
+* **TiledGeometryLayer:** layer can now hide skirt ([06c7181](https://github.com/iTowns/itowns/commit/06c7181))
+* **VectorTileSource:** add support for multiple source ([c51e64a](https://github.com/iTowns/itowns/commit/c51e64a))
+
+
+### Bug Fixes
+
+* **3dtiles:** fix tiles disappearing when zooming in and out ([c04e784](https://github.com/iTowns/itowns/commit/c04e784))
+* **elevation:** Fix elevation layer removal from view ([4f361c3](https://github.com/iTowns/itowns/commit/4f361c3))
+* **example:** migrate sources to IGN geoplateforme ([f6baf69](https://github.com/iTowns/itowns/commit/f6baf69))
+* **examples:** fix new IGN VT style url ([17124ec](https://github.com/iTowns/itowns/commit/17124ec))
+* **examples:** fix some issues with entwine planar example ([7d05a0f](https://github.com/iTowns/itowns/commit/7d05a0f))
+* **examples:** migrate ign and grandlyon urls ([3f3ed82](https://github.com/iTowns/itowns/commit/3f3ed82))
+* **Feature2Mesh:** fix proj on base alti ([49e48b5](https://github.com/iTowns/itowns/commit/49e48b5))
+* **PointCloud:** fix precision error for entwinePointTileLayer ([bf38a72](https://github.com/iTowns/itowns/commit/bf38a72))
+* **PotreeDebug:** fix oversight ([e5810d7](https://github.com/iTowns/itowns/commit/e5810d7))
+* **RasterTile:** Fix RasterTile removeEvent when view.dispose is called ([33d0e8d](https://github.com/iTowns/itowns/commit/33d0e8d))
+* **tutorials:** migrate urls to IGN geoplateforme ([5d324ca](https://github.com/iTowns/itowns/commit/5d324ca))
+
+
+### Performance Improvements
+
+* **3dtiles:** fix loading time overhead due to internal structures pre-filling ([5d2f384](https://github.com/iTowns/itowns/commit/5d2f384))
+
+
+### Examples
+
+* **ept:** Allow navigation on the pointcloud ([ec7ae6c](https://github.com/iTowns/itowns/commit/ec7ae6c))
+
+
+### Code Refactoring
+
+* **babelrc:** add geojson and remove gltf from import extension ([dd3f80d](https://github.com/iTowns/itowns/commit/dd3f80d))
+* **example:** entwine_simple_loader add use of param in url ([89d6fbd](https://github.com/iTowns/itowns/commit/89d6fbd))
+* **Fetcher:** supp extent in parsed file ([1240db6](https://github.com/iTowns/itowns/commit/1240db6))
+* **PointCloudLayer:** add new scheme and gradients to generate texture for use in the shader ([a557914](https://github.com/iTowns/itowns/commit/a557914))
+* **source:** supp supportedFetchers and add Fetcher.get(format) ([9fa4cde](https://github.com/iTowns/itowns/commit/9fa4cde))
+* **test:** add CanvasGradient in bootstrap.js ([99be96e](https://github.com/iTowns/itowns/commit/99be96e))
+* **test:** add tests for Fetcher.js ([2fb3298](https://github.com/iTowns/itowns/commit/2fb3298))
+* **test:** unit test clean up ([f6b6bf4](https://github.com/iTowns/itowns/commit/f6b6bf4))
+* **test:** use sinon for multisource ([3b0709b](https://github.com/iTowns/itowns/commit/3b0709b))
+* **unitTests:** use sinon to mock hidden itowns.Fetcher and add json file localy ([9dcfed3](https://github.com/iTowns/itowns/commit/9dcfed3))
+
+
+### Workflow and chores
+
+* release v2.43.0 ([066e4e5](https://github.com/iTowns/itowns/commit/066e4e5))
+* **coverage:** replace nyc by c8 ([f55ee06](https://github.com/iTowns/itowns/commit/f55ee06))
+* **deps-dev:** bump express from 4.18.2 to 4.19.2 ([9be39b7](https://github.com/iTowns/itowns/commit/9be39b7))
+* **deps-dev:** bump follow-redirects from 1.15.4 to 1.15.6 ([3163f5f](https://github.com/iTowns/itowns/commit/3163f5f))
+* **deps-dev:** bump ip from 1.1.8 to 1.1.9 ([5d84b37](https://github.com/iTowns/itowns/commit/5d84b37))
+* **deps-dev:** bump webpack-dev-middleware from 5.3.3 to 5.3.4 ([d53c1a5](https://github.com/iTowns/itowns/commit/d53c1a5))
+* **deps:** bump copc and remove unecessary ignore of fs ([d4779cc](https://github.com/iTowns/itowns/commit/d4779cc))
+* npm install [@xmldom](https://github.com/xmldom)/xmldom --save-dev ([1c8256c](https://github.com/iTowns/itowns/commit/1c8256c))
+* npm install sinon --save-dev ([4d21c1e](https://github.com/iTowns/itowns/commit/4d21c1e))
+* replace the CDN from unpkg to jsdelivr ([c7ff763](https://github.com/iTowns/itowns/commit/c7ff763))
+* **scripts:** mark cjs scripts explicitely ([c6bae49](https://github.com/iTowns/itowns/commit/c6bae49))
+
+
+### Documentation
+
+* **tutorials:** minor typo and syntax fixes ([7680ccf](https://github.com/iTowns/itowns/commit/7680ccf))
+* **tutorials:** replace deprecated callback ([c6ba5fb](https://github.com/iTowns/itowns/commit/c6ba5fb))
+
+
+### Tests
+
+* **wfs:** fix wfs to 25d example test ([1cb36a7](https://github.com/iTowns/itowns/commit/1cb36a7))
+
+
+### BREAKING CHANGES
+
+* - WebGL1 context is no longer supported.
+* The itowns library drops the CommonJS distribution in favor of
+a standard ECMAScript module (ESM) distribution.
+* **3dtiles:** * C3DTFeature constructor parameters changed from
+(tileId, batchId, groups, info, userData, object3d) to
+(tileId, batchId, groups, userData, object3d)
+* C3DTilesLayer.findBatchTable() is not exposed in the API anymore
+
+
+
 <a name="2.42.0"></a>
 # [2.42.0](https://github.com/iTowns/itowns/compare/v2.41.0...v2.42.0) (2024-02-05)
 
