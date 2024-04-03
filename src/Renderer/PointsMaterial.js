@@ -210,7 +210,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
         delete options.elevationRange;
         delete options.angleRange;
         delete options.orientedImageMaterial;
-        delete options.classificationScheme;
+        delete options.classification;
         delete options.discreteScheme;
         delete options.applyOpacityClassication;
         delete options.size;

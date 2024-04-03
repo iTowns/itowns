@@ -76,10 +76,8 @@
             itowns.View.prototype.addLayer.call(view, $3dTilesLayerSetePC);
             function switchMode(){
                 let pntsLayer = view.getLayerById("3d-tiles-sete");
-
                 if(pntsLayer){
-                    pntsLayer = pntsLayer;
-                    pntsLayer.pntsMode = pntsLayer.pntsMode == itowns.PNTS_MODE.COLOR ? itowns.PNTS_MODE.CLASSIFICATION : itowns.PNTS_MODE.COLOR;
+                    pntsLayer.pntsMode = pntsLayer.pntsMode === itowns.PNTS_MODE.COLOR ? itowns.PNTS_MODE.CLASSIFICATION : itowns.PNTS_MODE.COLOR;
                     view.notifyChange(view.camera3D);
                 }
             }
