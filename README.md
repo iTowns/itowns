@@ -125,5 +125,7 @@ iTowns is currently maintained by [IGN](http://www.ign.fr) and
 
 Contributions in any forms and new contributors and maintainers are welcome. Get in touch with us if you are interested :)
 
+The governance of the project is open and explicited [here](https://github.com/iTowns/itowns-governance).
+
 [![IGN](./img/logo_ign.png)](https://www.ign.fr)
 [![CIRIL Group](./img/CIRIL_Group_logo.png)](https://www.cirilgroup.com/en/)
