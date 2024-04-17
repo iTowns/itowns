@@ -5,6 +5,7 @@
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "type": "module",
   "workspaces": [
+    "packages/Geodesy",
     "packages/itowns"
   ],
   "scripts": {

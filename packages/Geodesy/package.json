@@ -1,0 +1,39 @@
+{
+  "name": "@itowns/geodesy",
+  "version": "2.43.1",
+  "description": "Geodesy",
+  "type": "module",
+  "main": "lib/Main.js",
+  "exports": {
+    ".": "./lib/Main.js"
+  },
+  "scripts": {
+    "build": "",
+    "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
+    "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --loader=babel-register-esm",
+    "test": "npm run build && npm run test-with-coverage",
+    "test-dev": "npm run lint -- --max-warnings=0 && npm run build-dev && npm run test-with-coverage",
+    "test-unit": "npm run base-test-unit test/unit",
+    "test-with-coverage": "c8 -n src -r html cross-env npm run test-unit",
+    "test-with-coverage_lcov": "c8 --clean false --temp-directory ../../coverage/tmp  --report-dir ../../coverage/geodesy -n src --reporter=lcov cross-env npm run test-unit",
+    "bump": "if [ -z $npm_config_level ]; then grunt bump:minor;  else grunt bump:$npm_config_level; fi"
+  },
+  "files": [
+    "*.md",
+    "src",
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iTowns/itowns.git"
+  },
+  "license": "(CECILL-B OR MIT)",
+  "bugs": {
+    "url": "https://github.com/itowns/itowns/issues"
+  },
+  "homepage": "https://itowns.github.io/",
+  "peerDependencies": {
+    "proj4": "^2.9.2",
+    "three": "^0.159.0"
+  }
+}

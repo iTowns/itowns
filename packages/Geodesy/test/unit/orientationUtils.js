@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import assert from 'assert';
-import OrientationUtils from 'Utils/OrientationUtils';
-import Coordinates from 'Core/Geographic/Coordinates';
+import Coordinates from 'Coordinates';
+import OrientationUtils from 'OrientationUtils';
 
 // Asster two float number are equals, with 5 digits precision.
 function assertFloatEqual(float1, float2, msg, precision = 15) {

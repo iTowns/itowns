@@ -1,5 +1,5 @@
 import { CameraHelper, Color, Vector3 } from 'three';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import OBB from 'Renderer/OBB';
 import * as THREE from 'three';

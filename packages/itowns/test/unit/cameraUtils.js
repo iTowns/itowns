@@ -1,11 +1,9 @@
 import * as THREE from 'three';
 import assert from 'assert';
-import Coordinates from 'Core/Geographic/Coordinates';
-import Ellipsoid from 'Core/Math/Ellipsoid';
+import { Coordinates, Ellipsoid, Extent } from '@itowns/geodesy';
 import CameraUtils from 'Utils/CameraUtils';
 import DEMUtils from 'Utils/DEMUtils';
 import Camera, { CAMERA_TYPE } from 'Renderer/Camera';
-import Extent from 'Core/Geographic/Extent';
 import proj4 from 'proj4';
 
 proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');

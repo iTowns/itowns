@@ -7,7 +7,7 @@
 /packages/itowns/dist/
 /potree/
 potree
-/packages/itowns/lib/
+/packages/**/lib/
 /docs/out/
 coverage
 .nyc_output/

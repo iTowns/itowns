@@ -2,7 +2,7 @@ import proj4 from 'proj4';
 import assert from 'assert';
 import { Matrix4, Object3D, Sphere } from 'three';
 import Camera from 'Renderer/Camera';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 import { computeNodeSSE } from 'Process/3dTilesProcessing';
 import { configureTile } from 'Provider/3dTilesProvider';
 import C3DTileset from '../../src/Core/3DTiles/C3DTileset';

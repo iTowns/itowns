@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import RenderMode from 'Renderer/RenderMode';
 import { unpack1K } from 'Renderer/LayeredMaterial';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 
 const depthRGBA = new THREE.Vector4();
 // TileMesh picking support function

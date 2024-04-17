@@ -1,15 +1,12 @@
 const conf = {
     version: '2.43.1',
 };
+
 export const REVISION = conf.version;
 
 // Geographic tools
-export { default as Extent } from 'Core/Geographic/Extent';
-export { default as Coordinates } from 'Core/Geographic/Coordinates';
-export { default as GeoidGrid } from 'Core/Geographic/GeoidGrid';
-export { default as CRS } from 'Core/Geographic/Crs';
+export { Coordinates, Extent, GeoidGrid, CRS, Ellipsoid, ellipsoidSizes, OrientationUtils } from '@itowns/geodesy';
 
-export { default as Ellipsoid, ellipsoidSizes } from 'Core/Math/Ellipsoid';
 export { default as GlobeView, GLOBE_VIEW_EVENTS } from 'Core/Prefab/GlobeView';
 export { default as PlanarView } from 'Core/Prefab/PlanarView';
 export { default as Fetcher } from 'Provider/Fetcher';
@@ -31,7 +28,6 @@ export { default as Feature2Mesh } from 'Converter/Feature2Mesh';
 export { default as FeaturesUtils } from 'Utils/FeaturesUtils';
 export { default as DEMUtils } from 'Utils/DEMUtils';
 export { default as CameraUtils } from 'Utils/CameraUtils';
-export { default as OrientationUtils } from 'Utils/OrientationUtils';
 export { default as ShaderChunk } from 'Renderer/Shader/ShaderChunk';
 export { getMaxColorSamplerUnitsCount, colorLayerEffects } from 'Renderer/LayeredMaterial';
 export { default as Capabilities } from 'Core/System/Capabilities';

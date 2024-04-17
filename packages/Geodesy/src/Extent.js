@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import Coordinates from 'Core/Geographic/Coordinates';
-import CRS from 'Core/Geographic/Crs';
+import Coordinates from 'Coordinates';
+import CRS from 'Crs';
 
 /**
  * Extent is a SIG-area (so 2D)

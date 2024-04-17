@@ -189,6 +189,7 @@
     "source": {
         "include": [
             "packages/itowns/src",
+            "packages/Geodesy/src",
             "examples/js/plugins"
         ],
         "exclude": [ "src/ThreeExtended" ]

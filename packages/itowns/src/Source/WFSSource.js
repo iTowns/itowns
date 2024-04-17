@@ -1,6 +1,6 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
-import CRS from 'Core/Geographic/Crs';
+import { CRS } from '@itowns/geodesy';
 
 /**
  * @classdesc
