@@ -7,9 +7,7 @@
 
 import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
-import Coordinates from 'Core/Geographic/Coordinates';
-import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
-import CoordStars from 'Core/Geographic/CoordStars';
+import { Coordinates, ellipsoidSizes, CoordStars } from '@itowns/geodesy';
 import Sky from './SkyShader';
 import skyFS from './Shaders/skyFS.glsl';
 import skyVS from './Shaders/skyVS.glsl';

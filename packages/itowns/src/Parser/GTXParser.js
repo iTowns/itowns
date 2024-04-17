@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import GeoidGrid from 'Core/Geographic/GeoidGrid';
-import Extent from 'Core/Geographic/Extent';
+import { Extent, GeoidGrid } from '@itowns/geodesy';
 
 
 export const BYTES_PER_DOUBLE = 8;

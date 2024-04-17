@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Extent from 'Core/Geographic/Extent';
+import { Extent } from '@itowns/geodesy';
 
 let nextuuid = 1;
 function addPickingAttribute(points) {

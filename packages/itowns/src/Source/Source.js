@@ -1,4 +1,4 @@
-import Extent from 'Core/Geographic/Extent';
+import { Extent, CRS } from '@itowns/geodesy';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import KMLParser from 'Parser/KMLParser';
 import GDFParser from 'Parser/GDFParser';
@@ -8,7 +8,6 @@ import ISGParser from 'Parser/ISGParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
 import Cache from 'Core/Scheduler/Cache';
-import CRS from 'Core/Geographic/Crs';
 
 export const supportedParsers = new Map([
     ['application/geo+json', GeoJsonParser.parse],

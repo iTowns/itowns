@@ -7,7 +7,7 @@ import C3DTExtensions from 'Core/3DTiles/C3DTExtensions';
 import { C3DTilesTypes } from 'Core/3DTiles/C3DTilesEnums';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 import Fetcher from 'Provider/Fetcher';
 import sinon from 'sinon';
 import Renderer from './bootstrap';

@@ -4,7 +4,7 @@ import PotreeLayer from 'Layer/PotreeLayer';
 import PotreeSource from 'Source/PotreeSource';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 import PotreeNode from 'Core/PotreeNode';
 import PointsMaterial from 'Renderer/PointsMaterial';
 import OrientedImageMaterial from 'Renderer/OrientedImageMaterial';

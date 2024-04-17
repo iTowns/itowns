@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import Coordinates from 'Core/Geographic/Coordinates';
-import Extent from 'Core/Geographic/Extent';
+import { Coordinates, Extent } from '@itowns/geodesy';
 
 const PI_OV_FOUR = Math.PI / 4;
 const INV_TWO_PI = 1.0 / (Math.PI * 2);

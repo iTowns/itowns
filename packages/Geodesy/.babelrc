@@ -1,0 +1,17 @@
+{
+    "presets": [
+        ["@babel/preset-env", {
+            "targets": {
+                "browsers": "defaults and supports webgl2"
+            },
+            "modules": false
+        }]
+    ],
+    "plugins": [
+        ["module-resolver", {
+            "cwd": "packagejson",
+            "root": ["./src"]
+        }],
+        ["module-extension-resolver"]
+    ]
+}

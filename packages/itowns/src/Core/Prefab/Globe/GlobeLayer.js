@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
-import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
-import { globalExtentTMS, schemeTiles } from 'Core/Geographic/Extent';
+import { ellipsoidSizes, globalExtentTMS, schemeTiles, CRS } from '@itowns/geodesy';
 import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
-import CRS from 'Core/Geographic/Crs';
 
 // matrix to convert sphere to ellipsoid
 const worldToScaledEllipsoid = new THREE.Matrix4();

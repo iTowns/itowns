@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import Ellipsoid from 'Core/Math/Ellipsoid';
-import Coordinates from '../Geographic/Coordinates';
+import { Ellipsoid, Coordinates } from '@itowns/geodesy';
 import { C3DTilesTypes, C3DTilesBoundingVolumeTypes } from './C3DTilesEnums';
 
 const ellipsoid = new Ellipsoid();

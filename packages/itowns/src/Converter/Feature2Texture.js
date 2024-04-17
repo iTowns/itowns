@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { FEATURE_TYPES } from 'Core/Feature';
-import Extent from 'Core/Geographic/Extent';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Extent, Coordinates } from '@itowns/geodesy';
 import Style, { StyleContext } from 'Core/Style';
 
 const defaultStyle = new Style();

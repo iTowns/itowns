@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import CRS from 'Core/Geographic/Crs';
+import { CRS } from '@itowns/geodesy';
 import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 
 /**

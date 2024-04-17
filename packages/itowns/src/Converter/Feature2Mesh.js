@@ -3,10 +3,7 @@ import Earcut from 'earcut';
 import { FEATURE_TYPES } from 'Core/Feature';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { deprecatedFeature2MeshOptions } from 'Core/Deprecated/Undeprecator';
-import Extent from 'Core/Geographic/Extent';
-import Crs from 'Core/Geographic/Crs';
-import OrientationUtils from 'Utils/OrientationUtils';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Extent, CRS, Coordinates, OrientationUtils } from '@itowns/geodesy';
 import Style, { StyleContext } from 'Core/Style';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
@@ -64,7 +61,7 @@ class FeatureMesh extends THREE.Group {
             } else {
                 // calculate the scale transformation to transform the feature.extent
                 // to feature.extent.as(crs)
-                coord.crs = Crs.formatToEPSG(this.#originalCrs);
+                coord.crs = CRS.formatToEPSG(this.#originalCrs);
                 extent.copy(this.extent).applyMatrix4(this.#collection.matrix);
                 extent.as(coord.crs, extent);
                 extent.spatialEuclideanDimensions(dim_ref);

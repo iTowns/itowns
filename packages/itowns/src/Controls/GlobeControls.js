@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import AnimationPlayer from 'Core/AnimationPlayer';
-import Coordinates from 'Core/Geographic/Coordinates';
-import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
+import { Coordinates, ellipsoidSizes } from '@itowns/geodesy';
 import CameraUtils from 'Utils/CameraUtils';
 import StateControl from 'Controls/StateControl';
 import { VIEW_EVENTS } from 'Core/View';

@@ -25,12 +25,17 @@ const babelConf = {
 const include = [
     path.resolve(__dirname, 'packages/itowns/src'),
     path.resolve(__dirname, 'utils'),
+    path.resolve(__dirname, 'packages/Geodesy/src'),
 ];
 
 const exclude = [
     path.resolve(__dirname, '.git'),
     path.resolve(__dirname, 'node_modules'),
 ];
+
+const alias = {
+    '@itowns/geodesy': path.resolve(__dirname, 'packages/Geodesy/src/Main.js'),
+};
 
 module.exports = () => {
     const babelLoaderOptions = [];
@@ -45,6 +50,7 @@ module.exports = () => {
     return {
         mode,
         context: path.resolve(__dirname),
+        resolve: { alias },
         entry: {
             itowns: [
                 'core-js',

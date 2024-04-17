@@ -1,10 +1,9 @@
 import { Vector2, Vector3 } from 'three';
 import Protobuf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
-import { globalExtentTMS } from 'Core/Geographic/Extent';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates, globalExtentTMS } from '@itowns/geodesy';
 
 const worldDimension3857 = globalExtentTMS.get('EPSG:3857').planarDimensions();
 const globalExtent = new Vector3(worldDimension3857.x, worldDimension3857.y, 1);

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
-import Extent from 'Core/Geographic/Extent';
+import { Extent } from '@itowns/geodesy';
 
 const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();

@@ -2,7 +2,7 @@ import proj4 from 'proj4';
 import assert from 'assert';
 import OrientedImageLayer from 'Layer/OrientedImageLayer';
 import OrientedImageSource from 'Source/OrientedImageSource';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geodesy';
 import GlobeView from 'Core/Prefab/GlobeView';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import assert from 'assert';
 import TileMesh from 'Core/TileMesh';
-import Extent from 'Core/Geographic/Extent';
+import { Extent } from '@itowns/geodesy';
 import OBB from 'Renderer/OBB';
 import Layer from 'Layer/Layer';
 import Source from 'Source/Source';

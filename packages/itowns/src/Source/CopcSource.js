@@ -1,5 +1,5 @@
 import { Binary, Info, Las } from 'copc';
-import Extent from 'Core/Geographic/Extent';
+import { Extent } from '@itowns/geodesy';
 import Fetcher from 'Provider/Fetcher';
 import LASParser from 'Parser/LASParser';
 import Source from 'Source/Source';

@@ -2,7 +2,7 @@ import fs from 'fs';
 import assert from 'assert';
 import VectorTileParser from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
-import Extent from 'Core/Geographic/Extent';
+import { Extent } from '@itowns/geodesy';
 import urlParser from 'Parser/MapBoxUrlParser';
 import Fetcher from 'Provider/Fetcher';
 import sinon from 'sinon';
