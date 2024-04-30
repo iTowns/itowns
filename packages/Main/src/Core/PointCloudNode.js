@@ -13,6 +13,9 @@ class PointCloudNode extends THREE.EventDispatcher {
 
         this.children = [];
         this.bbox = new THREE.Box3();
+        this._bbox = new THREE.Box3();
+        this._position = new THREE.Vector3();
+        this._quaternion = new THREE.Quaternion();
         this.sse = -1;
     }
 
@@ -22,30 +25,44 @@ class PointCloudNode extends THREE.EventDispatcher {
         this.createChildAABB(node, indexChild);
     }
 
-    createChildAABB(node) {
+    /**
+     * Create an (A)xis (A)ligned (B)ounding (B)ox for the given node given
+     * `this` is its parent.
+     * @param {CopcNode} childNode - The child node
+     */
+    createChildAABB(childNode) {
         // factor to apply, based on the depth difference (can be > 1)
-        const f = 2 ** (node.depth - this.depth);
+        const f = 2 ** (childNode.depth - this.depth);
 
         // size of the child node bbox (Vector3), based on the size of the
         // parent node, and divided by the factor
-        this.bbox.getSize(size).divideScalar(f);
+        this._bbox.getSize(size).divideScalar(f);
 
         // initialize the child node bbox at the location of the parent node bbox
-        node.bbox.min.copy(this.bbox.min);
+        childNode._bbox.min.copy(this._bbox.min);
 
-        // position of the parent node, if it was at the same depth than the
+        // position of the parent node, if it was at the same depth as the
         // child, found by multiplying the tree position by the factor
         position.copy(this).multiplyScalar(f);
 
         // difference in position between the two nodes, at child depth, and
         // scale it using the size
-        translation.subVectors(node, position).multiply(size);
+        translation.subVectors(childNode, position).multiply(size);
 
         // apply the translation to the child node bbox
-        node.bbox.min.add(translation);
+        childNode._bbox.min.add(translation);
 
         // use the size computed above to set the max
-        node.bbox.max.copy(node.bbox.min).add(size);
+        childNode._bbox.max.copy(childNode._bbox.min).add(size);
+    }
+
+    getCenter() {
+        // get center of the bbox in the world referentiel
+        const centerBbox = new THREE.Vector3();
+        this._bbox.getCenter(centerBbox);
+        const rotInv = this._quaternion.clone().invert();
+        const origVector = this._position;
+        this.center = centerBbox.clone().applyQuaternion(rotInv).add(origVector);
     }
 
     load() {
@@ -54,8 +71,10 @@ class PointCloudNode extends THREE.EventDispatcher {
             this.loadOctree();
         }
 
+        this.getCenter();
+
         return this.layer.source.fetcher(this.url, this.layer.source.networkOptions)
-            .then(file => this.layer.source.parse(file, { out: this.layer, in: this.layer.source }));
+            .then(file => this.layer.source.parse(file, { out: { ...this.layer, center: this.center }, in: this.layer.source }));
     }
 
     findCommonAncestor(node) {
