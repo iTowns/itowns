@@ -39,8 +39,10 @@ class CopcLayer extends PointCloudLayer {
 
         const resolve = () => this;
         this.whenReady = this.source.whenReady.then((/** @type {CopcSource} */ source) => {
-            const { cube, rootHierarchyPage } = source.info;
-            const { pageOffset, pageLength } = rootHierarchyPage;
+            const { cube } = source.info;
+            const { pageOffset, pageLength } = source.info.rootHierarchyPage;
+
+            this.spacing = source.info.spacing;
 
             this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1);
             this.root.bbox.min.fromArray(cube, 0);
@@ -54,10 +56,6 @@ class CopcLayer extends PointCloudLayer {
 
             return this.root.loadOctree().then(resolve);
         });
-    }
-
-    get spacing() {
-        return this.source.info.spacing;
     }
 }
 
