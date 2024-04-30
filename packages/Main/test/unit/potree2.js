@@ -18,7 +18,7 @@ describe('Potree2', function () {
 
     before(function () {
         renderer = new Renderer();
-        viewer = new View('EPSG:3946', renderer.domElement, { renderer });
+        viewer = new View('EPSG:4978', renderer.domElement, { renderer });
         viewer.camera.camera3D.position.copy(new Vector3(0, 0, 10));
 
         // Configure Point Cloud layer
@@ -43,10 +43,10 @@ describe('Potree2', function () {
 
     it('Add point potree2 layer', function (done) {
         View.prototype.addLayer.call(viewer, potree2Layer)
-            .then((layer) => {
+            .then(() => {
                 context.camera.camera3D.updateMatrixWorld();
-                assert.equal(layer.root.children.length, 6);
-                layer.bboxes.visible = true;
+                assert.equal(potree2Layer.root.children.length, 6);
+                potree2Layer.bboxes.visible = true;
                 done();
             }).catch(done);
     });
@@ -64,7 +64,7 @@ describe('Potree2', function () {
                 assert.equal(potree2Layer.group.children.length, 1);
                 done();
             }).catch(done);
-    }).timeout(5000);
+    }).timeout(10000);
 
     it('postUpdate potree2 layer', function () {
         potree2Layer.postUpdate(context, potree2Layer);

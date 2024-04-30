@@ -1,13 +1,14 @@
 import assert from 'assert';
+import { Vector3 } from 'three';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates } from '@itowns/geographic';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import EntwinePointTileLayer from 'Layer/EntwinePointTileLayer';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
-import LASParser from 'Parser/LASParser';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
+import LASParser from 'Parser/LASParser';
 import Renderer from './bootstrap';
 
 import eptFile from '../data/entwine/ept.json';
@@ -78,17 +79,15 @@ describe('Entwine Point Tile', function () {
         });
     });
 
-    describe('Layer', function () {
+    describe('Entwine Point Tile Layer', function () {
         let renderer;
-        let placement;
         let view;
         let layer;
         let context;
 
         before(function (done) {
             renderer = new Renderer();
-            placement = { coord: new Coordinates('EPSG:4326', 0, 0), range: 250 };
-            view = new GlobeView(renderer.domElement, placement, { renderer });
+            view = new GlobeView(renderer.domElement, {}, { renderer });
             layer = new EntwinePointTileLayer('testEptLayer', { source });
 
             context = {
@@ -117,8 +116,11 @@ describe('Entwine Point Tile', function () {
         });
 
         it('tries to update on the root and succeeds', function (done) {
+            const lookAt = new Vector3();
+            const coord = new Coordinates(view.referenceCrs).setFromVector3(layer.root.voxelOBB.box3D.getCenter(lookAt));
             view.controls.lookAtCoordinate({
-                range: -250,
+                coord,
+                range: 250,
             }, false)
                 .then(() => {
                     layer.update(context, layer, layer.root);
@@ -134,12 +136,12 @@ describe('Entwine Point Tile', function () {
         });
     });
 
-    describe('Node', function () {
+    describe('Entwine Point Tile Node', function () {
         let root;
         before(function () {
             const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
             root = new EntwinePointTileNode(0, 0, 0, 0, layer, 4000);
-            root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+            root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
             root.add(new EntwinePointTileNode(1, 0, 0, 0, layer, 3000));
             root.add(new EntwinePointTileNode(1, 0, 0, 1, layer, 3000));

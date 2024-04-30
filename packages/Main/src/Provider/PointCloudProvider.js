@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { Extent } from '@itowns/geographic';
 
 let nextuuid = 1;
 function addPickingAttribute(points) {
@@ -36,12 +35,16 @@ export default {
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            points.position.copy(geometry.userData.origin || node.bbox.min);
-            points.scale.copy(layer.scale);
+            points.position.copy(geometry.userData.origin);
+
+            const quaternion = geometry.userData.rotation.clone().invert();
+            points.quaternion.copy(quaternion);
             points.updateMatrix();
-            points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
+            points.updateMatrixWorld(true);
+
+            points.matrixWorldInverse = points.matrixWorld.clone().invert();
+
             points.layer = layer;
-            points.extent = Extent.fromBox3(command.view.referenceCrs, node.bbox);
             points.userData.node = node;
             return points;
         });

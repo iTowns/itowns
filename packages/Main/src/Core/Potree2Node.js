@@ -42,15 +42,15 @@ const NODE_TYPE = {
 };
 
 class Potree2Node extends PotreeNode {
-    constructor(numPoints = 0, childrenBitField = 0, source) {
-        super(numPoints, childrenBitField, source);
+    constructor(numPoints = 0, childrenBitField = 0, source, crs) {
+        super(numPoints, childrenBitField, source, crs);
     }
 
     get url() {
         return `${this.baseurl}/octree.bin`;
     }
 
-    networkOptions(byteOffset, byteSize) {
+    networkOptions(byteOffset = this.byteOffset, byteSize = this.byteSize) {
         const first = byteOffset;
         const last = first + byteSize - 1n;
 
@@ -70,19 +70,7 @@ class Potree2Node extends PotreeNode {
     }
 
     async load() {
-        // Query octree if we don't have children potreeNode yet.
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
-        }
-
-        return this.source.fetcher(this.url, this.networkOptions(this.byteOffset, this.byteSize))
-            .then(file => this.source.parser(file, {
-                in: {
-                    source: this.source,
-                    bbox: this.bbox,
-                    numPoints: this.numPoints,
-                },
-            }))
+        return super.load()
             .then((data) => {
                 this.loaded = true;
                 this.loading = false;
@@ -90,9 +78,9 @@ class Potree2Node extends PotreeNode {
             });
     }
 
-    async loadOctree() {
+    loadOctree() {
         if (this.loaded || this.loading) {
-            return;
+            return Promise.resolve();
         }
         this.loading = true;
         return (this.nodeType === NODE_TYPE.PROXY) ? this.loadHierarchy() : Promise.resolve();
@@ -160,7 +148,7 @@ class Potree2Node extends PotreeNode {
                     continue;
                 }
 
-                const child = new Potree2Node(numPoints, childMask, this.source);
+                const child = new Potree2Node(numPoints, childMask, this.source, this.crs);
 
                 current.add(child, childIndex);
                 stack.push(child);

@@ -61,6 +61,7 @@ describe('Potree', function () {
             potreeSource = new PotreeSource({
                 file: fileName,
                 url: baseurl,
+                crs: 'EPSG:4978',
             });
 
             // Configure Point Cloud layer
@@ -86,10 +87,10 @@ describe('Potree', function () {
         describe('potree Layer', function () {
             it('Add point potree layer', function (done) {
                 View.prototype.addLayer.call(viewer, potreeLayer)
-                    .then((layer) => {
+                    .then(() => {
                         context.camera.camera3D.updateMatrixWorld();
-                        assert.equal(layer.root.children.length, 6);
-                        layer.bboxes.visible = true;
+                        assert.equal(potreeLayer.root.children.length, 6);
+                        potreeLayer.bboxes.visible = true;
                         done();
                     }).catch(done);
             });
