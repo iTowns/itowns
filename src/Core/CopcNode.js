@@ -60,7 +60,7 @@ class CopcNode extends PointCloudNode {
     }
 
     /**
-     * Create an (A)xis (A)ligned (B)ounding (B)ox for the given node given
+     * Create an (A)xis (A)ligned (B)ounding (B)ox for the node given
      * `this` is its parent.
      * @param {CopcNode} node - The child node
      */
@@ -88,6 +88,16 @@ class CopcNode extends PointCloudNode {
 
         // use the size computed above to set the max
         node.bbox.max.copy(node.bbox.min).add(size);
+    }
+
+    /**
+     * Create an (O)riented (B)ounding (B)ox for the node given
+     * `this` is its parent.
+     * @param {CopcNode} node - The child node
+     */
+    createChildOBB(node) {
+        // to improve
+        node.obb.fromBox3(node.bbox);
     }
 
     /**

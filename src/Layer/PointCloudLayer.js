@@ -281,7 +281,7 @@ class PointCloudLayer extends GeometryLayer {
             obb = elt.tightobb;
         } else {
             obb = elt.obb.clone();
-            obb.position = elt.obb.position;
+            obb.position = elt.obb.position || new THREE.Vector3();
             // clamp the initial OBB
             const zmin = clamp(obb.center.z - obb.halfSize.z, layer.minElevationRange, layer.maxElevationRange);
             const zmax = clamp(obb.center.z + obb.halfSize.z, layer.minElevationRange, layer.maxElevationRange);
