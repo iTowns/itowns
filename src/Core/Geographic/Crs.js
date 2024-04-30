@@ -48,7 +48,7 @@ function isGeocentric(crs) {
 function _unitFromProj4Unit(projunit) {
     if (projunit === 'degrees') {
         return UNIT.DEGREE;
-    } else if (projunit === 'm') {
+    } else if (projunit === 'm' || projunit === 'meter') {
         return UNIT.METER;
     } else {
         return undefined;
