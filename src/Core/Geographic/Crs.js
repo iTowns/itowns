@@ -33,6 +33,7 @@ function formatToEPSG(crs) {
 const UNIT = {
     DEGREE: 1,
     METER: 2,
+    FOOT: 3,
 };
 
 function is4326(crs) {
@@ -48,8 +49,10 @@ function isGeocentric(crs) {
 function _unitFromProj4Unit(projunit) {
     if (projunit === 'degrees') {
         return UNIT.DEGREE;
-    } else if (projunit === 'm') {
+    } else if (projunit === 'm' || projunit === 'meter') {
         return UNIT.METER;
+    } else if (projunit === 'foot') {
+        return UNIT.FOOT;
     } else {
         return undefined;
     }
@@ -129,7 +132,7 @@ export default {
      * Get the unit to use with the CRS.
      *
      * @param {string} crs - The CRS to get the unit from.
-     * @return {number} Either `UNIT.METER`, `UNIT.DEGREE` or `undefined`.
+     * @return {number} Either `UNIT.METER`, `UNIT.DEGREE`, `UNIT.FOOT` or `undefined`.
      */
     toUnit,
 
