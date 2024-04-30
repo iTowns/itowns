@@ -57,19 +57,23 @@ class EntwinePointTileLayer extends PointCloudLayer {
 
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then(() => {
+            // NOTE: this spacing is kinda arbitrary here, we take the width and
+            // length (height can be ignored), and we divide by the specified
+            // span in ept.json. This needs improvements.
+            this.spacing = (Math.abs(this.source.bounds[3] - this.source.bounds[0])
+                + Math.abs(this.source.bounds[4] - this.source.bounds[1])) / (2 * this.source.span);
+
             this.root = new EntwinePointTileNode(0, 0, 0, 0, this, -1);
+
             this.root.bbox.min.fromArray(this.source.boundsConforming, 0);
             this.root.bbox.max.fromArray(this.source.boundsConforming, 3);
             this.minElevationRange = this.minElevationRange ?? this.source.boundsConforming[2];
             this.maxElevationRange = this.maxElevationRange ?? this.source.boundsConforming[5];
 
             this.extent = Extent.fromBox3(config.crs || 'EPSG:4326', this.root.bbox);
+
             return this.root.loadOctree().then(resolve);
         });
-    }
-
-    get spacing() {
-        return this.source.spacing;
     }
 }
 
