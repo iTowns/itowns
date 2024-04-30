@@ -35,6 +35,10 @@ export const UNIT = {
      * Distance unit in meter.
      */
     METER: 2,
+    /**
+     * Distance unit in foot.
+     */
+    FOOT: 3,
 } as const;
 
 /**
@@ -50,8 +54,10 @@ export function is4326(crs: ProjectionLike) {
 function unitFromProj4Unit(proj: ProjectionDefinition) {
     if (proj.units === 'degrees') {
         return UNIT.DEGREE;
-    } else if (proj.units === 'm') {
+    } else if (proj.units === 'm' || proj.units === 'meter') {
         return UNIT.METER;
+    } else if (proj.units === 'foot') {
+        return UNIT.FOOT;
     } else if (proj.units === undefined && proj.to_meter === undefined) {
         // See https://proj.org/en/9.4/usage/projections.html [17/10/2024]
         // > The default unit for projected coordinates is the meter.
@@ -65,7 +71,7 @@ function unitFromProj4Unit(proj: ProjectionDefinition) {
  * Returns the horizontal coordinates system units associated with this CRS.
  *
  * @param crs - The CRS to extract the unit from.
- * @returns Either `UNIT.METER`, `UNIT.DEGREE` or `undefined`.
+ * @returns Either `UNIT.METER`, `UNIT.DEGREE`, `UNIT.FOOT` or `undefined`.
  */
 export function getUnit(crs: ProjectionLike) {
     mustBeString(crs);
