@@ -36,6 +36,7 @@ of the authors and should not be interpreted as representing official policies,
 import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import Potree2Node from 'Core/Potree2Node';
+import proj4 from 'proj4';
 import Extent from 'Core/Geographic/Extent';
 
 import { PointAttribute, Potree2PointAttributes, PointAttributeTypes } from 'Core/Potree2PointAttributes';
@@ -167,14 +168,26 @@ class Potree2Layer extends PointCloudLayer {
                 this.material.defines[normal.name] = 1;
             }
 
-            const min = new THREE.Vector3(...metadata.boundingBox.min);
-            const max = new THREE.Vector3(...metadata.boundingBox.max);
-            const boundingBox = new THREE.Box3(min, max);
-
             const root = new Potree2Node(0, 0, this);
 
-            root.bbox = boundingBox;
-            root.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
+            let forward = (x => x);
+            if (this.source.crs !== this.crs) {
+                try {
+                    forward = proj4(this.source.crs, this.crs).forward;
+                } catch (err) {
+                    throw new Error(`${err} is not defined in proj4`);
+                }
+            }
+
+            this.minElevationRange = metadata.boundingBox.min[2];
+            this.maxElevationRange = metadata.boundingBox.max[2];
+
+            const bounds = [
+                ...forward(metadata.boundingBox.min),
+                ...forward(metadata.boundingBox.max),
+            ];
+
+            root.bbox.setFromArray(bounds);
 
             this.minElevationRange = this.minElevationRange ?? metadata.boundingBox.min[2];
             this.maxElevationRange = this.maxElevationRange ?? metadata.boundingBox.max[2];
@@ -189,7 +202,7 @@ class Potree2Layer extends PointCloudLayer {
 
             this.root = root;
 
-            this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', boundingBox);
+            this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', this.root.bbox);
             return this.root.loadOctree().then(resolve);
         });
     }

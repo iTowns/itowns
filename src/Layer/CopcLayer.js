@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import CopcNode from 'Core/CopcNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
+import proj4 from 'proj4';
 
 /**
  * A layer for [Cloud Optimised Point Cloud](https://copc.io) (COPC) datasets.
@@ -45,14 +46,28 @@ class CopcLayer extends PointCloudLayer {
             this.spacing = source.info.spacing;
 
             this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1);
-            this.root.bbox.min.fromArray(cube, 0);
-            this.root.bbox.max.fromArray(cube, 3);
+
+            let forward = (x => x);
+            if (this.source.crs !== this.crs) {
+                try {
+                    forward = proj4(this.source.crs, this.crs).forward;
+                } catch (err) {
+                    throw new Error(`${err} is not defined in proj4`);
+                }
+            }
 
             this.minElevationRange = this.minElevationRange ?? source.header.min[2];
             this.maxElevationRange = this.maxElevationRange ?? source.header.max[2];
 
             this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
             this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
+
+            const bounds = [
+                ...forward(cube.slice(0, 3)),
+                ...forward(cube.slice(3, 6)),
+            ];
+
+            this.root.bbox.setFromArray(bounds);
 
             return this.root.loadOctree().then(resolve);
         });

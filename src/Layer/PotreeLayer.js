@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import PotreeNode from 'Core/PotreeNode';
+import proj4 from 'proj4';
 import Extent from 'Core/Geographic/Extent';
 
 const bboxMesh = new THREE.Mesh();
@@ -67,8 +68,25 @@ class PotreeLayer extends PointCloudLayer {
             this.supportsProgressiveDisplay = (this.source.extension === 'cin');
 
             this.root = new PotreeNode(0, 0, this);
-            this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
-            this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
+
+            let forward = (x => x);
+            if (this.source.crs !== this.crs) {
+                try {
+                    forward = proj4(this.source.crs, this.crs).forward;
+                } catch (err) {
+                    throw new Error(`${err} is not defined in proj4`);
+                }
+            }
+
+            this.minElevationRange = cloud.tightBoundingBox.lz;
+            this.maxElevationRange = cloud.tightBoundingBox.uz;
+
+            const bounds = [
+                ...forward([cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz]),
+                ...forward([cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz]),
+            ];
+
+            this.root.bbox.setFromArray(bounds);
 
             this.minElevationRange = this.minElevationRange ?? cloud.boundingBox.lz;
             this.maxElevationRange = this.maxElevationRange ?? cloud.boundingBox.uz;

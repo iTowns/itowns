@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import Extent from 'Core/Geographic/Extent';
+import proj4 from 'proj4';
 
 const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
@@ -37,9 +38,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name. See the list of properties to know which one can be specified.
-     * @param {string} [config.crs='ESPG:4326'] - The CRS of the {@link View} this
-     * layer will be attached to. This is used to determine the extent of this
-     * layer. Default to `EPSG:4326`.
      */
     constructor(id, config) {
         super(id, config);
@@ -65,12 +63,26 @@ class EntwinePointTileLayer extends PointCloudLayer {
 
             this.root = new EntwinePointTileNode(0, 0, 0, 0, this, -1);
 
-            this.root.bbox.min.fromArray(this.source.boundsConforming, 0);
-            this.root.bbox.max.fromArray(this.source.boundsConforming, 3);
+            let forward = (x => x);
+            if (this.source.crs !== this.crs) {
+                try {
+                    forward = proj4(this.source.crs, this.crs).forward;
+                } catch (err) {
+                    throw new Error(`${err} is not defined in proj4`);
+                }
+            }
+
             this.minElevationRange = this.minElevationRange ?? this.source.boundsConforming[2];
             this.maxElevationRange = this.maxElevationRange ?? this.source.boundsConforming[5];
 
-            this.extent = Extent.fromBox3(config.crs || 'EPSG:4326', this.root.bbox);
+            const bounds = [
+                ...forward(this.source.bounds.slice(0, 3)),
+                ...forward(this.source.bounds.slice(3, 6)),
+            ];
+
+            this.root.bbox.setFromArray(bounds);
+
+            this.extent = Extent.fromBox3(this.crs, this.root.bbox);
 
             return this.root.loadOctree().then(resolve);
         });
