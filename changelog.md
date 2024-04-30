@@ -1,3 +1,19 @@
+<a name="2.43.1"></a>
+## [2.43.1](https://github.com/iTowns/itowns/compare/v2.43.0...v2.43.1) (2024-04-30)
+
+
+### Bug Fixes
+
+* **LASLoader:** fix default CDN URL ([4d029ef](https://github.com/iTowns/itowns/commit/4d029ef))
+* **PointCloud:** correct some issues after refacto ([65c4008](https://github.com/iTowns/itowns/commit/65c4008))
+
+
+### Workflow and chores
+
+* release v2.43.1 ([719d9e3](https://github.com/iTowns/itowns/commit/719d9e3))
+
+
+
 <a name="2.43.0"></a>
 # [2.43.0](https://github.com/iTowns/itowns/compare/v2.42.0...v2.43.0) (2024-04-02)
 
