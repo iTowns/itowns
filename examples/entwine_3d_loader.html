@@ -71,7 +71,8 @@
             }
 
             function readEPTURL() {
-                var url = document.getElementById('ept_url').value || new URL(location.href).searchParams.get('ept');
+                const urlParams = new URL(location.href).searchParams
+                var url = document.getElementById('ept_url').value || urlParams.get('ept');
 
                 if (url) {
                     loadEPT(url);
@@ -98,7 +99,8 @@
 
                 itowns.View.prototype.addLayer.call(view, eptLayer).then(onLayerReady);
 
-                debug.PointCloudDebug.initTools(view, eptLayer, debugGui);
+                eptLayer.whenReady
+                    .then(() => debug.PointCloudDebug.initTools(view, eptLayer, debugGui));
             }
 
             readEPTURL();
