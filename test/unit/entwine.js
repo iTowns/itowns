@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { Vector3 } from 'three';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
@@ -53,18 +54,16 @@ describe('Entwine Point Tile', function () {
             }).catch(done);
     });
 
-    describe('Layer', function () {
+    describe('Entwine Point Tile Layer', function () {
         let renderer;
-        let placement;
         let view;
         let layer;
         let context;
 
         before(function (done) {
             renderer = new Renderer();
-            placement = { coord: new Coordinates('EPSG:4326', 0, 0), range: 250 };
-            view = new GlobeView(renderer.domElement, placement, { renderer });
-            layer = new EntwinePointTileLayer('test', { source }, view);
+            view = new GlobeView(renderer.domElement, {}, { renderer });
+            layer = new EntwinePointTileLayer('test', { source });
 
             context = {
                 camera: view.camera,
@@ -92,8 +91,10 @@ describe('Entwine Point Tile', function () {
         });
 
         it('tries to update on the root and succeeds', function (done) {
+            const lookAt = new Vector3();
+            const coord = new Coordinates(view.referenceCrs, layer.root.bbox.getCenter(lookAt));
             view.controls.lookAtCoordinate({
-                coord: source.center,
+                coord,
                 range: 250,
             }, false)
                 .then(() => {
@@ -110,7 +111,7 @@ describe('Entwine Point Tile', function () {
         });
     });
 
-    describe('Node', function () {
+    describe('Entwine Point Tile Node', function () {
         let root;
         before(function () {
             const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
