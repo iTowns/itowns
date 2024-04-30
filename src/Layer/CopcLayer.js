@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import CopcNode from 'Core/CopcNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
+import Coordinates from 'Core/Geographic/Coordinates';
 import proj4 from 'proj4';
 
 /**
@@ -45,6 +46,8 @@ class CopcLayer extends PointCloudLayer {
 
             this.spacing = source.info.spacing;
 
+            if (this.crs !== config.crs) { console.warn('layer.crs is different from View.crs'); }
+
             this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1);
 
             let forward = (x => x);
@@ -55,6 +58,17 @@ class CopcLayer extends PointCloudLayer {
                     throw new Error(`${err} is not defined in proj4`);
                 }
             }
+
+            // for BBOX
+            const boundsConforming = [
+                ...forward(source.header.min),
+                ...forward(source.header.max),
+            ];
+
+            this.clamp = {
+                zmin: boundsConforming[2],
+                zmax: boundsConforming[5],
+            };
 
             this.minElevationRange = this.minElevationRange ?? source.header.min[2];
             this.maxElevationRange = this.maxElevationRange ?? source.header.max[2];
@@ -68,6 +82,53 @@ class CopcLayer extends PointCloudLayer {
             ];
 
             this.root.bbox.setFromArray(bounds);
+
+            const centerZ0 = source.header.min.slice(0, 2)
+                .map((val, i) =>  Math.floor((val + source.header.max[i]) * 0.5));
+            centerZ0.push(0);
+
+            const geometry = new THREE.BufferGeometry();
+            const points = new THREE.Points(geometry);
+
+            const matrixWorld = new THREE.Matrix4();
+            const matrixWorldInverse = new THREE.Matrix4();
+
+            let origin = new Coordinates(this.crs);
+            if (this.crs === 'EPSG:4978') {
+                const axisZ = new THREE.Vector3(0, 0, 1);
+                const alignYtoEast = new THREE.Quaternion();
+                const center = new Coordinates(this.source.crs, ...centerZ0);
+                origin = center.as('EPSG:4978');
+                const origin4326 = origin.as('EPSG:4326');
+
+                // align Z axe to geodesic normal.
+                points.quaternion.setFromUnitVectors(axisZ, origin.geodesicNormal);
+                // align Y axe to East
+                alignYtoEast.setFromAxisAngle(axisZ, THREE.MathUtils.degToRad(90 + origin4326.longitude));
+                points.quaternion.multiply(alignYtoEast);
+            }
+            points.updateMatrixWorld();
+
+            matrixWorld.copy(points.matrixWorld);
+            matrixWorldInverse.copy(matrixWorld).invert();
+
+            // proj in repere local (apply rotation) to get obb from bbox
+            const boundsLocal = [];
+            for (let i = 0; i < bounds.length; i += 3) {
+                const coord = new THREE.Vector3(...bounds.slice(i, i + 3)).sub(origin.toVector3());
+                const coordlocal = coord.applyMatrix4(matrixWorldInverse);
+                boundsLocal.push(...coordlocal);
+            }
+
+            const positionsArray = new Float32Array(boundsLocal);
+            const positionBuffer = new THREE.BufferAttribute(positionsArray, 3);
+            geometry.setAttribute('position', positionBuffer);
+
+            geometry.computeBoundingBox();
+
+            this.root.obb.fromBox3(geometry.boundingBox);
+            this.root.obb.applyMatrix4(matrixWorld);
+            this.root.obb.position = origin.toVector3();
 
             return this.root.loadOctree().then(resolve);
         });
