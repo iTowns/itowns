@@ -39,6 +39,19 @@ describe('COPC', function () {
                     }).catch(done);
             }).timeout(5000);
         });
+
+        describe('Copc Layer', function () {
+            it('instanciates a layer', (done) => {
+                const layer = new CopcLayer('copc', { source, crs: 'EPSG:4978' });
+                layer.whenReady
+                    .then(() => {
+                        assert.equal(layer.zmin, source.header.min[2]);
+                        assert.ok(layer.root.isCopcNode);
+                        assert.ok(layer.root.children.length > 0);
+                        done();
+                    }).catch(done);
+            });
+        });
     });
 
     describe('Layer', function () {

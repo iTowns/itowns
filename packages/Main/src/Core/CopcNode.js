@@ -34,8 +34,9 @@ class CopcNode extends PointCloudNode {
      * @param {number} entryLength - Size of the node entry.
      * @param {CopcSource} source - Data source (COPC) of the node.
      * @param {number} [numPoints=0] - Number of points given by this entry.
+     * @param {string} crs - The crs of the node.
      */
-    constructor(depth, x, y, z, entryOffset, entryLength, source, numPoints = 0) {
+    constructor(depth, x, y, z, entryOffset, entryLength, source, numPoints = 0, crs) {
         super(numPoints, source);
         this.isCopcNode = true;
 
@@ -48,6 +49,8 @@ class CopcNode extends PointCloudNode {
         this.z = z;
 
         this.voxelKey = buildVoxelKey(depth, x, y, z);
+
+        this.crs = crs;
     }
 
     get octreeIsLoaded() {
@@ -146,6 +149,7 @@ class CopcNode extends PointCloudNode {
             byteSize,
             this.source,
             pointCount,
+            this.crs,
         );
         this.add(child);
         stack.push(child);
@@ -162,10 +166,7 @@ class CopcNode extends PointCloudNode {
 
         const buffer = await this._fetch(this.entryOffset, this.entryLength);
         const geometry = await this.source.parser(buffer, {
-            in: {
-                ...this.source,
-                pointCount: this.numPoints,
-            },
+            in: this,
         });
 
         return geometry;

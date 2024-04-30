@@ -63,6 +63,10 @@ class PotreeSource extends Source {
         if (!source.file) {
             throw new Error('New PotreeSource: file is required');
         }
+        if (!source.crs) {
+            // with better data and the spec this might be removed
+            throw new Error('New PotreeSource: crs is required');
+        }
 
         super(source);
         this.file = source.file;
@@ -73,10 +77,22 @@ class PotreeSource extends Source {
         // https://github.com/PropellerAero/potree-propeller-private/blob/master/docs/file_format.md#cloudjs
         this.whenReady = (source.cloud ? Promise.resolve(source.cloud) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
             .then((cloud) => {
+                this.boundsConforming = [
+                    cloud.tightBoundingBox.lx,
+                    cloud.tightBoundingBox.ly,
+                    cloud.tightBoundingBox.lz,
+                    cloud.tightBoundingBox.ux,
+                    cloud.tightBoundingBox.uy,
+                    cloud.tightBoundingBox.uz,
+                ];
                 this.pointAttributes = cloud.pointAttributes;
                 this.baseurl = `${this.url}/${cloud.octreeDir}/r`;
                 this.extension = cloud.pointAttributes === 'CIN' ? 'cin' : 'bin';
-                this.parse = this.extension === 'cin' ? PotreeCinParser.parse : PotreeBinParser.parse;
+                this.parser = this.extension === 'cin' ? PotreeCinParser.parse : PotreeBinParser.parse;
+                this.scale = cloud.scale;
+
+                this.zmin = cloud.tightBoundingBox.lz;
+                this.zmax = cloud.tightBoundingBox.uz;
 
                 this.spacing = cloud.spacing;
                 this.hierarchyStepSize = cloud.hierarchyStepSize;
