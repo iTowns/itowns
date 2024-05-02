@@ -62,6 +62,7 @@ class PotreeLayer extends PointCloudLayer {
             this.root = new PotreeNode(0, 0, this);
             this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
             this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
+            this.root.obb.position = new THREE.Vector3();
 
             this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', this.root.bbox);
             return this.root.loadOctree().then(resolve);
