@@ -120,7 +120,6 @@ class C3DTilesLayer extends GeometryLayer {
         this.pntsSizeMode = PNTS_SIZE_MODE.VALUE;
         this.pntsMinAttenuatedSize = config.pntsMinAttenuatedSize || 3;
         this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 10;
-
         if (config.pntsMode) {
             const exists = Object.values(PNTS_MODE).includes(config.pntsMode);
             if (!exists) {
@@ -196,7 +195,8 @@ class C3DTilesLayer extends GeometryLayer {
         });
     }
 
-    preUpdate() {
+    preUpdate(context) {
+        this.scale = context.camera._preSSE;
         return pre3dTilesUpdate.bind(this)();
     }
 
