@@ -6,13 +6,16 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import EntwinePointTileLayer from 'Layer/EntwinePointTileLayer';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
-import LASParser from 'Parser/LASParser';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
+import LASParser from 'Parser/LASParser';
 import Renderer from './bootstrap';
 
 import ept from '../data/entwine/ept.json';
 import eptHierarchy from '../data/entwine/ept-hierarchy/0-0-0-0.json';
+
+// LASParser need o be mocked instead of calling it
+LASParser.enableLazPerf('./examples/libs/laz-perf');
 
 const baseurl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds';
 const urlEpt = `${baseurl}/entwine/ept.json`;
@@ -85,9 +88,13 @@ describe('Entwine Point Tile', function () {
             assert.deepStrictEqual(element[0], layer.root);
         });
 
-        it('tries to update on the root and fails', function () {
+        it('tries to update on the root and fails', function (done) {
             layer.update(context, layer, layer.root);
-            assert.strictEqual(layer.root.promise, undefined);
+            layer.root.promise
+                .then((res) => {
+                    assert.ok(res instanceof Error);
+                    done();
+                }).catch(done);
         });
 
         it('tries to update on the root and succeeds', function (done) {
@@ -117,6 +124,8 @@ describe('Entwine Point Tile', function () {
             const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
             root = new EntwinePointTileNode(0, 0, 0, 0, layer, 4000);
             root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+            root.obb.fromBox3(root.bbox);
+            root.obb.position = root.obb.center;
 
             root.add(new EntwinePointTileNode(1, 0, 0, 0, layer, 3000));
             root.add(new EntwinePointTileNode(1, 0, 0, 1, layer, 3000));
