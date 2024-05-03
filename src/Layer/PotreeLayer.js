@@ -3,10 +3,6 @@ import PointCloudLayer from 'Layer/PointCloudLayer';
 import PotreeNode from 'Core/PotreeNode';
 import Extent from 'Core/Geographic/Extent';
 
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
-
 /**
  * @property {boolean} isPotreeLayer - Used to checkout whether this layer
  * is a PotreeLayer. Default is `true`. You should not change this, as it is

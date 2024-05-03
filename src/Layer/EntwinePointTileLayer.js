@@ -5,10 +5,6 @@ import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import proj4 from 'proj4';
 
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
-
 /**
  * @property {boolean} isEntwinePointTileLayer - Used to checkout whether this
  * layer is a EntwinePointTileLayer. Default is `true`. You should not change

@@ -6,10 +6,7 @@ import OBBHelper from 'Utils/OBBHelper';
 
 const _vector = /* @__PURE__ */ new THREE.Vector3();
 
-const point = new THREE.Vector3();
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
+const _point = new THREE.Vector3();
 
 function clamp(number, min, max) {
     return Math.max(min, Math.min(number, max));
@@ -297,7 +294,7 @@ class PointCloudLayer extends GeometryLayer {
         }
 
         elt.notVisibleSince = undefined;
-        point.copy(context.camera.camera3D.position).sub(this.object3d.position);
+        _point.copy(context.camera.camera3D.position).sub(this.object3d.position);
 
         // only load geometry if this elements has points
         if (elt.numPoints !== 0) {
@@ -335,7 +332,7 @@ class PointCloudLayer extends GeometryLayer {
             } else if (!elt.promise) {
                 const obbWorld = obb.clone();
                 obbWorld.center = obb.center.clone().applyMatrix3(obb.rotation).add(obb.position);
-                const obbDistance = Math.max(0.001, obbWorld.clampPoint(point, _vector).distanceTo(point));
+                const obbDistance = Math.max(0.001, obbWorld.clampPoint(_point, _vector).distanceTo(_point));
 
                 const distance = obbDistance;
                 // Increase priority of nearest node
@@ -374,7 +371,7 @@ class PointCloudLayer extends GeometryLayer {
         if (elt.children && elt.children.length) {
             const obbWorld = obb.clone();
             obbWorld.center = obb.center.clone().applyMatrix3(obb.rotation).add(obb.position);
-            const obbDistance = Math.max(0.001, obbWorld.clampPoint(point, _vector).distanceTo(point));
+            const obbDistance = Math.max(0.001, obbWorld.clampPoint(_point, _vector).distanceTo(_point));
 
             const distance = obbDistance;
             // const sse = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / this.sseThreshold;
