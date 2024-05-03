@@ -118,7 +118,6 @@ export default {
         }).then((parsedData) => {
             const geometry = buildBufferGeometry(parsedData.attributes);
             geometry.userData.header = parsedData.header;
-            geometry.computeBoundingBox();
             return geometry;
         });
     },
