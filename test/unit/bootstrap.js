@@ -2,6 +2,43 @@
 import fetch from 'node-fetch';
 import { Camera } from 'three';
 import { DOMParser } from '@xmldom/xmldom';
+import threads from 'worker_threads';
+
+const WORKER = Symbol('worker');
+
+class Worker extends EventTarget {
+    constructor(url) {
+        super();
+
+        const worker = new threads.Worker(url);
+        this[WORKER] = worker;
+
+        worker.on('message', (data) => {
+            const event = new Event('message');
+            event.data = data;
+            this.dispatchEvent(event);
+        });
+
+        worker.on('error', () => {
+            const event = new Event('error');
+            this.dispatchEvent(event);
+        });
+
+        worker.on('messageerror', (data) => {
+            const event = new Event('messageError');
+            event.data = data;
+            this.dispatchEvent(event);
+        });
+    }
+
+    postMessage(data, transferList) {
+        this[WORKER].postMessage(data, transferList);
+    }
+
+    terminate() {
+        this[WORKER].terminate();
+    }
+}
 
 global.window = {
     addEventListener: () => {},
@@ -9,6 +46,8 @@ global.window = {
     DOMParser,
     setTimeout,
 };
+
+global.Worker = Worker;
 
 global.requestAnimationFrame = () => {};
 global.fetch = fetch;
