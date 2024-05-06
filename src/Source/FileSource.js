@@ -131,7 +131,7 @@ class FileSource extends Source {
         }
 
         // the fake url is for when we use the fetchedData or features mode
-        source.url = source.url || 'fake-file-url';
+        source.url = source.url || 'none';
         super(source);
 
         this.isFileSource = true;

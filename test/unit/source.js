@@ -174,7 +174,7 @@ describe('Sources', function () {
 
     describe('OrientedImageSource', function () {
         it('instance OrientedImageSource', function (done) {
-            const source = new OrientedImageSource({ url: 'none' });
+            const source = new OrientedImageSource({ url: 'http://source.test' });
             source.whenReady
                 .then((a) => {
                     assert.equal(Object.keys(a).length, 2);
@@ -183,7 +183,7 @@ describe('Sources', function () {
         });
 
         it('should return keys OrientedImageSource from request', function () {
-            const source = new OrientedImageSource({ url: 'none' });
+            const source = new OrientedImageSource({ url: 'http://source.test' });
             const image = { cameraId: 5, panoId: 10 };
             const keys = source.requestToKey(image);
             assert.equal(image.cameraId, keys[0]);
@@ -260,7 +260,7 @@ describe('Sources', function () {
             });
 
             assert.ok(!source.features);
-            assert.equal(source.urlFromExtent(), 'fake-file-url');
+            assert.equal(source.urlFromExtent(), 'none');
             assert.ok(source.fetchedData);
             assert.ok(source.isFileSource);
 
@@ -289,7 +289,7 @@ describe('Sources', function () {
                 format: 'application/json',
             });
             source.onLayerAdded({ out: { crs: source.crs } });
-            assert.ok(source.urlFromExtent(extent).startsWith('fake-file-url'));
+            assert.ok(source.urlFromExtent(extent).startsWith('none'));
             assert.ok(!source.fetchedData);
 
             assert.ok(source.isFileSource);
