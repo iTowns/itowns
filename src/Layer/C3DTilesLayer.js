@@ -257,7 +257,7 @@ class C3DTilesLayer extends GeometryLayer {
         // face is a Face3 object of THREE which is a
         // triangular face. face.a is its first vertex
         const vertex = closestIntersect.face.a;
-        const batchID = closestIntersect.object.geometry.attributes._BATCHID.array[vertex];
+        const batchID = closestIntersect.object.geometry.attributes._BATCHID.getX(vertex);
 
         return this.tilesC3DTileFeatures.get(tileId).get(batchID);
     }
