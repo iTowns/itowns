@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import LASLoader from 'Loader/LASLoader';
+import LASWorkerLoader from 'Loader/LASWorkerLoader';
 
 const lasLoader = new LASLoader();
+const lasWorkerLoader = new LASWorkerLoader();
 
 function buildBufferGeometry(attributes) {
     const geometry = new THREE.BufferGeometry();
@@ -54,8 +56,8 @@ export default {
             throw new Error('Path to laz-perf is mandatory');
         }
         lasLoader.lazPerf = path;
+        lasWorkerLoader.lazPerf = path;
     },
-
 
     /**
      * Parses a chunk of a LAS or LAZ (LASZip) and returns the corresponding
@@ -64,6 +66,8 @@ export default {
      * @param {ArrayBuffer} data - The file content to parse.
      * @param {Object} options
      * @param {Object} options.in - Options to give to the parser.
+     * @param {boolean} [options.in.worker=false] - Use workers for parsing in
+     * the background and thus not blocking the main thread.
      * @param {number} options.in.pointCount - Number of points encoded in this
      * data chunk.
      * @param {Object} options.in.header - Partial LAS file header.
@@ -80,7 +84,15 @@ export default {
      * `THREE.BufferGeometry`.
      */
     parseChunk(data, options = {}) {
-        return lasLoader.parseChunk(data, options.in).then((parsedData) => {
+        const useWorker = options.in.worker ?? false;
+        const loader = useWorker ? lasWorkerLoader : lasLoader;
+
+        return loader.parseChunk(data, {
+            pointCount: options.in.pointCount,
+            header: options.in.header,
+            eb: options.eb,
+            colorDepth: options.in.colorDepth,
+        }).then((parsedData) => {
             const geometry = buildBufferGeometry(parsedData.attributes);
             geometry.computeBoundingBox();
             return geometry;
@@ -94,6 +106,8 @@ export default {
      * @param {ArrayBuffer} data - The file content to parse.
      * @param {Object} [options]
      * @param {Object} [options.in] - Options to give to the parser.
+     * @param {boolean} [options.in.worker=false] - Use workers for parsing in
+     * the background and thus not blocking the main thread.
      * @param { 8 | 16 } [options.in.colorDepth] - Color depth (in bits).
      * Defaults to 8 bits for LAS 1.2 and 16 bits for later versions
      * (as mandatory by the specification)
@@ -105,8 +119,13 @@ export default {
         if (options.out?.skip) {
             console.warn("Warning: options 'skip' not supported anymore");
         }
-        return lasLoader.parseFile(data, {
-            colorDepth: options.in?.colorDepth,
+
+        const input = options.in;
+        const useWorker = input?.worker ?? false;
+        const loader = useWorker ? lasWorkerLoader : lasLoader;
+
+        return loader.parseFile(data, {
+            colorDepth: input?.colorDepth,
         }).then((parsedData) => {
             const geometry = buildBufferGeometry(parsedData.attributes);
             geometry.userData.header = parsedData.header;
