@@ -60,5 +60,9 @@ describe('LASParser', function () {
             assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y + origin.y, header.max[1], epsilon));
             assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z + origin.z, header.max[2], epsilon));
         });
+
+        afterEach(async function () {
+            await LASParser.terminate();
+        });
     });
 });
