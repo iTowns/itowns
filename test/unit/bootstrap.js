@@ -10,19 +10,6 @@ global.window = {
     setTimeout,
 };
 
-global.URL = function URL(url) {
-    return {
-        host: url.split('://')[1]?.split('/')[0],
-        hostname: url.split('://')[1]?.split(':')[0],
-        port: url.split('://')[1]?.split(':')[1],
-        protocol: url.split('://')[0],
-    };
-};
-
-// https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#sec-instanceofoperator
-// ES standard requires that left-hand side shall have a prototype method, this
-// is not the case for lambdas.
-global.Event = function () {};
 global.requestAnimationFrame = () => {};
 global.fetch = fetch;
 global.fetch.Promise = Promise;
