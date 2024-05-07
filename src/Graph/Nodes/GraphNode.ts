@@ -48,11 +48,17 @@ export default abstract class GraphNode {
             .map(([k, v]) => `${k}=${v}`)
             .join(' ');
 
-        return `[label="${label(name)}" ${formattedAttrs}]`;
+        const lName = label(name).trim();
+        const lHtml = `<<table border="0">
+                            <tr><td><b>${this._node_type}</b></td></tr>
+                            ${lName.length == 0 ? "" : `<tr><td>${lName}</td></tr>`}
+                       </table>>`;
+
+        return `[label=${lHtml} ${formattedAttrs} margin=.05]`;
     }
 
     /**
-     * Get the DOT attribute string for the edge between this node and its inputs.
+     * Get the DOT attribute string for the outgoing edges.
      */
     public dumpDotEdgeAttr(): string {
         return `[label=" ${this.outputType}"]`;

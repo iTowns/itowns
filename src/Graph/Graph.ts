@@ -1,8 +1,6 @@
 import GraphNode from './Nodes/GraphNode.ts';
 import { DumpDotGlobalStyle, Type } from './Common.ts';
 
-console.log("coucou");
-
 /** Represents a directed graph that guarantees the absence of cycles on use. */
 export default class Graph {
     public nodes: Map<string, GraphNode>;
@@ -50,8 +48,8 @@ export default class Graph {
      * @throws If the node is orphaned and the graph has at least one node already.
      * @returns True if the node was added or updated, false otherwise.
      */
-    public set(name: string, node: GraphNode): boolean {
-        if (this.nodes.size > 0 && node.inputs.size === 0) {
+    public set(name: string, node: GraphNode, isInput: boolean = false): boolean {
+        if (!isInput && this.nodes.size > 0 && node.inputs.size === 0) {
             throw new Error('Orphaned node');
         }
 
@@ -71,12 +69,12 @@ export default class Graph {
      * @throws If any of the nodes are orphaned and the graph has at least one node already.
      * @returns A map of the results of the set operation.
      */
-    public set_grouped(nodes: {
+    public setGrouped(nodes: {
         [name: string]: GraphNode;
-    }): Map<string, boolean> {
+    }, isInput: boolean = false): Map<string, boolean> {
         const results = new Map();
         for (const [name, node] of Object.entries(nodes)) {
-            results.set(name, this.set(name, node));
+            results.set(name, this.set(name, node, isInput));
         }
         return results;
     }
@@ -97,7 +95,7 @@ export default class Graph {
                 continue;
             }
 
-            this._validation_dfs(node, new Set(), visited);
+            this._validationDfs(node, new Set(), visited);
         }
 
         this._valid = true;
@@ -107,7 +105,7 @@ export default class Graph {
      * Depth-first search for cycles and dangling dependencies.
      * @throws If a cycle is detected or a dangling dependency is found.
      */
-    private _validation_dfs(
+    private _validationDfs(
         node: GraphNode,
         path: Set<string>,
         visited: Set<string>,
@@ -133,7 +131,7 @@ export default class Graph {
             }
 
             path.add(name);
-            this._validation_dfs(dep, path, visited);
+            this._validationDfs(dep, path, visited);
             path.delete(name);
         }
     }
@@ -204,7 +202,7 @@ export default class Graph {
             // Declare nodes
             dump.push('\t{');
             for (const [name, node] of this.nodes) {
-                dump.push(`\t\t'${name}' ${node.dumpDotAttr(name)};`);
+                dump.push(`\t\t"${name}" ${node.dumpDotAttr(name)};`);
             }
             dump.push('\t}');
 
@@ -217,17 +215,17 @@ export default class Graph {
                     // PERF: Inefficient but the alternative is duplicating the names
                     // inside the nodes and that makes the API much heavier so we'll
                     // live with it, this will likely never be an issue.
-                    const inputName = entries.find(
+                    const [inputName, oNode] = entries.find(
                         ([_, oNode]) => oNode == dep,
-                    )?.[0];
+                    ) ?? [undefined, undefined];
                     if (inputName == undefined) {
                         throw new Error(
                             `An input of node ${name} is not part of the graph`,
                         );
                     }
-                    const attrs = node.dumpDotEdgeAttr();
+                    const attrs = oNode.dumpDotEdgeAttr();
 
-                    dump.push(`\t'${inputName}' -> '${name}' ${attrs};`);
+                    dump.push(`\t"${inputName}" -> "${name}" ${attrs};`);
                 }
             }
         }

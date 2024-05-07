@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Itowns - postprocessing</title>
 
-        <meta charset="UTF-8">
-        <link rel="stylesheet" type="text/css" href="css/example.css">
-        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+<head>
+    <title>Itowns - postprocessing</title>
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <div id="viewerDiv"></div>
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <!-- from https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/DotScreenShader.js -->
-        <script type="x-shader/x-vertex" id="vertexshader">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="css/example.css">
+    <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <div id="viewerDiv"></div>
+    <script src="../dist/itowns.js"></script>
+    <script src="js/GUI/LoadingScreen.js"></script>
+    <!-- from https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/DotScreenShader.js -->
+    <script type="x-shader/x-vertex" id="vertexshader">
             varying vec2 vUv;
 
             void main() {
@@ -23,7 +25,7 @@
             }
         </script>
 
-        <script type="x-shader/x-fragment" id="fragmentshader">
+    <script type="x-shader/x-fragment" id="fragmentshader">
             uniform vec2 center;
             uniform float angle;
             uniform float scale;
@@ -49,65 +51,69 @@
             }
         </script>
 
-        <script type="text/javascript">
-            var placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
-                range: 25000000,
-            }
+    <script type="text/javascript">
+        var placement = {
+            coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+            range: 25000000,
+        }
+        // iTowns namespace defined here
+        var viewerDiv = document.getElementById('viewerDiv');
+        var view = new itowns.GlobeView(viewerDiv, placement);
+
+        setupLoadingScreen(viewerDiv, view);
+
+        // Simple postprocessing setup
+        const g = new itowns.Graph();
+
+        const inputView = new itowns.InputNode(view, itowns.BuiltinType.View);
+        const renderer = new itowns.InputNode(
+            view.mainLoop.gfxEngine.renderer,
+            itowns.BuiltinType.Renderer
+        );
+        const render = new itowns.RenderViewNode(inputView);
+        const greyscale = new itowns.ScreenShaderNode(render, renderer, {
+            fragmentShader:
+                `void main() {
+                    vec4 color = texture2D(uTexture, vUv);
+                    float average = (color.r + color.g + color.b) / 3.0;
+                    gl_FragColor = vec4(average, average, average, 1.0);
+                }`,
+            toScreen: true,
+        });
+
+        g.setGrouped({inputView, renderer}, true);
+        g.setGrouped({render, greyscale});
+
+        let frame = 0;
+        view.render = function render() {
+            g.getOutput(frame++, greyscale);
+        };
+
+        const dumpDot = g.dumpDot();
+        const dumpDotLink = (dot => {
+            const escaped = dot
+                .replaceAll(/\s+/g, ' ')
+                .replaceAll(':', '%3A')
+                .replaceAll(';', '%3B')
+                .replaceAll('=', '%3D');
+            return `https://dreampuf.github.io/GraphvizOnline/#${escaped}`;
+        })(dumpDot);
+
+        console.log(dumpDot);
+        window.open(dumpDotLink, '_blank');
 
 
-            // iTowns namespace defined here
-            var viewerDiv = document.getElementById('viewerDiv');
-            var view = new itowns.GlobeView(viewerDiv, placement);
+        itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+            config.source = new itowns.WMTSSource(config.source);
+            var layer = new itowns.ColorLayer('Ortho', config);
+            view.addLayer(layer);
+        });
+        itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(function _(config) {
+            config.source = new itowns.WMTSSource(config.source);
+            var layer = new itowns.ElevationLayer(config.id, config);
+            view.addLayer(layer);
+        });
+    </script>
+</body>
 
-            // Simple postprocessing setup
-            //
-            var postprocessScene = new itowns.THREE.Scene();
-            var quad = new itowns.THREE.Mesh(new itowns.THREE.PlaneGeometry(2, 2), null);
-            var cam = new itowns.THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
-
-            setupLoadingScreen(viewerDiv, view);
-
-            quad.frustumCulled = false;
-            quad.material = new itowns.THREE.ShaderMaterial({
-                uniforms: {
-                    tDiffuse: { value: null },
-                    tSize: { value: new itowns.THREE.Vector2(256, 256) },
-                    center: { value: new itowns.THREE.Vector2(0.5, 0.5) },
-                    angle: { value: 1.57 },
-                    scale: { value: 1.0 },
-                },
-                vertexShader: document.getElementById('vertexshader').textContent,
-                fragmentShader: document.getElementById('fragmentshader').textContent,
-            });
-            postprocessScene.add(quad);
-
-            view.render = function render() {
-                var g = view.mainLoop.gfxEngine;
-                var r = g.renderer;
-                r.setRenderTarget(g.fullSizeRenderTarget);
-                r.clear();
-                r.render(view.scene, view.camera3D);
-
-                quad.material.uniforms.tDiffuse.value = g.fullSizeRenderTarget.texture;
-                quad.material.uniforms.tSize.value.set(
-                    g.fullSizeRenderTarget.width, g.fullSizeRenderTarget.height);
-
-                r.setRenderTarget(null);
-                r.clear();
-                r.render(postprocessScene, cam);
-            };
-
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer);
-            });
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer);
-            });
-        </script>
-    </body>
 </html>

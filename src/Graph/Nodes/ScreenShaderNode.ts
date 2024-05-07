@@ -14,6 +14,15 @@ export default class ScreenShaderNode extends ProcessorNode {
         `
     };
 
+    private static get defaultFragmentShader() {
+        return `
+        void main() {
+            vec4 color = texture2D(uTexture, vUv);
+            gl_FragColor = color;
+        }
+        `;
+    };
+
     // WARN: This is a temporary hack. Essentially a scuffed singleton pack.
     // PERF: Evaluate the cost of having a scene per shader node instead.
     private static _scene: THREE.Scene;
@@ -29,7 +38,7 @@ export default class ScreenShaderNode extends ProcessorNode {
             ScreenShaderNode._scene = new THREE.Scene();
 
             // Setup the quad used to render the effects
-            ScreenShaderNode._quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1));
+            ScreenShaderNode._quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2));
             ScreenShaderNode._quad.frustumCulled = false;
 
             ScreenShaderNode._scene.add(ScreenShaderNode._quad);
@@ -46,22 +55,27 @@ export default class ScreenShaderNode extends ProcessorNode {
     public constructor(
         input: Dependency,
         renderer: Dependency,
-        uniforms?: { [name: string]: Dependency },
-        fragmentShader?: string
+        { uniforms, fragmentShader, toScreen = false }: {
+            uniforms?: { [name: string]: Dependency },
+            fragmentShader?: string,
+            toScreen?: boolean
+        }
     ) {
         ScreenShaderNode._init();
 
         // Unpacking the uniforms object first allows us to ignore potential "input" and "renderer" fields.
-        super({ ...(uniforms ?? {}), input, renderer }, BuiltinType.Texture, (_frame, args) => {
-            const input = args.input as THREE.Texture;
+        super({ ...(uniforms ?? {}), input, renderer }, BuiltinType.RenderTarget, (_frame, args) => {
+            const input = args.input as THREE.WebGLRenderTarget;
             const renderer = args.renderer as THREE.WebGLRenderer;
 
-            const target: THREE.WebGLRenderTarget = this._out[1] ?? new THREE.WebGLRenderTarget(
-                input.image.width,
-                input.image.height
-            );
+            const target: THREE.WebGLRenderTarget | null = toScreen
+                ? null
+                : (this._out[1] ?? new THREE.WebGLRenderTarget(
+                    input.width,
+                    input.height
+                ));
 
-            this._material.uniforms.uTexture.value = input;
+            this._material.uniforms['uTexture'] = { value: input.texture };
             for (const [name, value] of Object.entries(args)) {
                 if (name === "input" || name === "renderer") {
                     continue;
@@ -74,6 +88,8 @@ export default class ScreenShaderNode extends ProcessorNode {
             renderer.setRenderTarget(target);
             renderer.clear();
             renderer.render(ScreenShaderNode._scene, ScreenShaderNode._camera);
+
+            return target;
         });
 
         this._fragmentShader = `
@@ -92,6 +108,10 @@ export default class ScreenShaderNode extends ProcessorNode {
             fragmentShader: this._fragmentShader,
             vertexShader: ScreenShaderNode.vertexShader,
         });
+    }
+
+    protected get _node_type(): string {
+        return 'ScreenShader';
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {
