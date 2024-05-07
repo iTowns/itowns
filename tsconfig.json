@@ -19,6 +19,7 @@
         "checkJs": false, // set to true for type checking of js files
         /* Interop Constraints */
         "allowSyntheticDefaultImports": true,
+        "allowImportingTsExtensions": true,
         "esModuleInterop": true,
         "isolatedModules": true,
         /* Language and Environment */

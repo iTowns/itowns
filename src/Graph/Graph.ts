@@ -1,6 +1,8 @@
 import GraphNode from './Nodes/GraphNode.ts';
 import { DumpDotGlobalStyle, Type } from './Common.ts';
 
+console.log("coucou");
+
 /** Represents a directed graph that guarantees the absence of cycles on use. */
 export default class Graph {
     public nodes: Map<string, GraphNode>;

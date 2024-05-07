@@ -94,7 +94,7 @@ export { default as LASParser } from 'Parser/LASParser';
 export { default as ISGParser } from 'Parser/ISGParser';
 export { default as GDFParser } from 'Parser/GDFParser';
 export { default as GTXParser } from 'Parser/GTXParser';
-export { default as GLTFParser,  enableDracoLoader, enableKtx2Loader, glTFLoader, legacyGLTFLoader } from 'Parser/GLTFParser';
+export { default as GLTFParser, enableDracoLoader, enableKtx2Loader, glTFLoader, legacyGLTFLoader } from 'Parser/GLTFParser';
 
 // 3D Tiles classes and extensions
 // Exported to allow one to implement its own 3D Tiles extension which needs to
@@ -107,3 +107,5 @@ export { default as C3DTExtensions } from './Core/3DTiles/C3DTExtensions';
 export { C3DTilesTypes, C3DTilesBoundingVolumeTypes } from './Core/3DTiles/C3DTilesEnums';
 export { default as C3DTBatchTableHierarchyExtension } from './Core/3DTiles/C3DTBatchTableHierarchyExtension';
 export { process3dTilesNode, $3dTilesCulling, $3dTilesSubdivisionControl } from 'Process/3dTilesProcessing';
+
+export { default as Graph } from 'Graph/Graph.ts';

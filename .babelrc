@@ -1,11 +1,6 @@
 {
     "presets": [
-        ["@babel/preset-env", {
-            "targets": {
-                "browsers": "defaults and supports webgl2"
-            },
-            "modules": false
-        }]
+        ["@babel/preset-typescript"]
     ],
     "plugins": [
         ["module-resolver",  { "root": ["./src"] } ],
@@ -18,9 +13,6 @@
             ]
         }],
         ["module-extension-resolver"],
-        ["@babel/plugin-transform-runtime", {
-            "regenerator": false
-        }],
         ["minify-replace", {
             "replacements": [{
                 "identifierName": "__DEBUG__",
