@@ -1,8 +1,13 @@
 module.exports = {
     root: true,
+    plugins: [
+        '@typescript-eslint',
+    ],
+    parser: '@typescript-eslint/parser',
     extends: [
         'eslint-config-airbnb-base',
         'eslint-config-airbnb-base/rules/strict',
+        'plugin:@typescript-eslint/recommended',
     ],
     parserOptions: {
         ecmaVersion: 2023,
@@ -25,9 +30,22 @@ module.exports = {
         commonjs: true,
     },
     rules: {
+        'import/extensions': [
+            'off',
+        ],
         'no-trailing-spaces': 'warn',
         'padded-blocks': 'warn',
-        'no-unused-vars': 'warn',
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': [
+            'warn',
+            {
+                argsIgnorePattern: '^_',
+                varsIgnorePattern: '^_',
+                caughtErrorsIgnorePattern: '^_',
+            },
+        ],
+        '@typescript-eslint/no-this-alias': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
         'no-plusplus': 'off',
         // this option sets a specific tab width for your code
         // http://eslint.org/docs/rules/indent
@@ -108,6 +126,14 @@ module.exports = {
         // change default-param-last to on, but there are several breaking changes or default params to add.
         'default-param-last': 'off',
     },
+    overrides: [
+        {
+            files: ['*.ts'],
+            rules: {
+                'valid-jsdoc': 'off',
+            },
+        },
+    ],
     globals: {
         __DEBUG__: false,
     },

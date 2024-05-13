@@ -15,12 +15,12 @@ export default class InputNode extends GraphNode {
     }
 
     protected get _node_type(): string {
-        return 'Input';
+        return InputNode.name.replace('Node', '');
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {
         return {
-            label: (name) => `${name}: ${this.value}`,
+            label: name => `${name}: ${this.value}`,
             attrs: {
                 shape: 'invtrapezium',
                 color: 'goldenrod',

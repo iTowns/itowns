@@ -26,7 +26,7 @@ export default class ProcessorNode extends GraphNode {
     }
 
     protected get _node_type(): string {
-        return 'Processor';
+        return ProcessorNode.name.replace('Node', '');
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {

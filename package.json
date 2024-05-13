@@ -78,6 +78,8 @@
     "@babel/preset-typescript": "^7.24.1",
     "@babel/register": "^7.22.5",
     "@types/three": "^0.159.0",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
     "@xmldom/xmldom": "^0.8.10",
     "babel-inline-import-loader": "^1.0.1",
     "babel-loader": "^9.1.3",

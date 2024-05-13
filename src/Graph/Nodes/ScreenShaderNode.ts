@@ -11,8 +11,8 @@ export default class ScreenShaderNode extends ProcessorNode {
             vUv = uv;
             gl_Position = vec4(position, 1.0);
         }
-        `
-    };
+        `;
+    }
 
     private static get defaultFragmentShader() {
         return `
@@ -21,7 +21,7 @@ export default class ScreenShaderNode extends ProcessorNode {
             gl_FragColor = color;
         }
         `;
-    };
+    }
 
     // WARN: This is a temporary hack. Essentially a scuffed singleton pack.
     // PERF: Evaluate the cost of having a scene per shader node instead.
@@ -59,11 +59,11 @@ export default class ScreenShaderNode extends ProcessorNode {
             uniforms?: { [name: string]: Dependency },
             fragmentShader?: string,
             toScreen?: boolean
-        }
+        },
     ) {
         ScreenShaderNode._init();
 
-        // Unpacking the uniforms object first allows us to ignore potential "input" and "renderer" fields.
+        // Unpacking the uniforms object first allows us to ignore potential 'input' and 'renderer' fields.
         super({ ...(uniforms ?? {}), input, renderer }, BuiltinType.RenderTarget, (_frame, args) => {
             const input = args.input as THREE.WebGLRenderTarget;
             const renderer = args.renderer as THREE.WebGLRenderer;
@@ -72,12 +72,12 @@ export default class ScreenShaderNode extends ProcessorNode {
                 ? null
                 : (this._out[1] ?? new THREE.WebGLRenderTarget(
                     input.width,
-                    input.height
+                    input.height,
                 ));
 
-            this._material.uniforms['uTexture'] = { value: input.texture };
+            this._material.uniforms.uTexture = { value: input.texture };
             for (const [name, value] of Object.entries(args)) {
-                if (name === "input" || name === "renderer") {
+                if (name === 'input' || name === 'renderer') {
                     continue;
                 }
 
@@ -101,8 +101,7 @@ export default class ScreenShaderNode extends ProcessorNode {
             `void main() {
                 vec4 color = texture2D(uTexture, vUv);
                 gl_FragColor = color;
-            }`
-            }`;
+            }`}`;
 
         this._material = new THREE.ShaderMaterial({
             fragmentShader: this._fragmentShader,
@@ -110,8 +109,8 @@ export default class ScreenShaderNode extends ProcessorNode {
         });
     }
 
-    protected get _node_type(): string {
-        return 'ScreenShader';
+    protected get _nodeType(): string {
+        return ScreenShaderNode.name.replace('Node', '');
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {
@@ -120,8 +119,8 @@ export default class ScreenShaderNode extends ProcessorNode {
             label,
             attrs: {
                 ...attrs,
-                fillcolor: "lightcoral",
-            }
+                fillcolor: 'lightcoral',
+            },
         };
     }
 }

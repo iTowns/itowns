@@ -1,11 +1,11 @@
-import { BuiltinType, Dependency, DumpDotNodeStyle } from "../Common.ts";
-import ProcessorNode from "./ProcessorNode.ts";
+import * as THREE from 'three';
 
-import View from "../../Core/View.js";
-import MainLoop from "../../Core/MainLoop.js";
-import c3DEngine from "../../Renderer/c3DEngine.js";
+import { BuiltinType, Dependency, DumpDotNodeStyle } from '../Common.ts';
+import ProcessorNode from './ProcessorNode.ts';
 
-import * as THREE from "three";
+import View from '../../Core/View.js';
+import MainLoop from '../../Core/MainLoop.js';
+import c3DEngine from '../../Renderer/c3DEngine.js';
 
 export default class RenderViewNode extends ProcessorNode {
     private _target: THREE.WebGLRenderTarget | null = null;
@@ -31,8 +31,6 @@ export default class RenderViewNode extends ProcessorNode {
                 }
             }
 
-            console.log(`Rendering view`);
-
             renderer.setRenderTarget(this._target);
             renderer.clear();
             renderer.render(view.scene, view.camera3D);
@@ -41,8 +39,8 @@ export default class RenderViewNode extends ProcessorNode {
         });
     }
 
-    protected get _node_type(): string {
-        return 'RenderView';
+    protected get _nodeType(): string {
+        return RenderViewNode.name.replace('Node', '');
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {

@@ -145,7 +145,7 @@ class Atmosphere extends GeometryLayer {
         node.material.lightPosition = this.realisticLightingPosition;
     }
 
-    // eslint-disable-next-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     preUpdate(context, srcs) {
         const cameraPosition = context.view.camera3D.position;
         if (this.fog.enable) {

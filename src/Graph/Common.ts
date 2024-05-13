@@ -6,7 +6,7 @@ import ScreenShaderNode from './Nodes/ScreenShaderNode.ts';
 import RenderViewNode from './Nodes/RenderViewNode.ts';
 
 enum BuiltinType {
-    Number = 'Number', // TODO: remove, just here for testing
+    Number = 'Number',
     GeoData = 'GeoData', // TODO: split into different data formats
     Renderer = 'Renderer',
     RenderTarget = 'RenderTarget',

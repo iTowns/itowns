@@ -51,7 +51,7 @@ export default abstract class GraphNode {
         const lName = label(name).trim();
         const lHtml = `<<table border="0">
                             <tr><td><b>${this._node_type}</b></td></tr>
-                            ${lName.length == 0 ? "" : `<tr><td>${lName}</td></tr>`}
+                            ${lName.length == 0 ? '' : `<tr><td>${lName}</td></tr>`}
                        </table>>`;
 
         return `[label=${lHtml} ${formattedAttrs} margin=.05]`;

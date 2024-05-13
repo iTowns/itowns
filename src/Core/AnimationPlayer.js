@@ -55,7 +55,7 @@ class AnimationPlayer extends THREE.EventDispatcher {
         this.duration = 0;
         this.state = PLAYER_STATE.STOP;
         this.waitTimer = null;
-        this.callback = () => {};
+        this.callback = () => { };
     }
 
     isPlaying() {
