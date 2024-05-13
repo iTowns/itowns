@@ -6,7 +6,7 @@ export default class ProcessorNode extends GraphNode {
     public callback: (frame: number, args: any) => any;
 
     public constructor(
-        inputs: { [name: string]: Dependency },
+        inputs: { [name: string]: [Dependency, Type] },
         outputType: Type,
         callback: (frame: number, args: any) => any,
     ) {
@@ -18,14 +18,14 @@ export default class ProcessorNode extends GraphNode {
         const inputs = Array.from(this.inputs);
         const args: [string, any][] = inputs.map(([name, dependency]) => [
             name,
-            dependency?.getOutput(frame) ?? null,
+            dependency[0]?.getOutput(frame) ?? null,
         ]);
         const argObj = Object.fromEntries(args);
 
         return this.callback(frame, argObj);
     }
 
-    protected get _node_type(): string {
+    protected get _nodeType(): string {
         return ProcessorNode.name.replace('Node', '');
     }
 

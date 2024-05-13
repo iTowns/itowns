@@ -12,6 +12,7 @@ enum BuiltinType {
     RenderTarget = 'RenderTarget',
     View = 'View',
     Texture = 'Texture',
+    Vector2 = 'Vector2',
     CRS = 'CRS', // Coordinate Reference System
 }
 
@@ -24,6 +25,7 @@ export interface DumpDotNodeStyle {
 }
 
 export interface DumpDotGlobalStyle {
+    rankdir: string;
     node: { [key: string]: string };
     edge: { [key: string]: string };
 }

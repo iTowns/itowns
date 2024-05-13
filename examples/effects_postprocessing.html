@@ -15,41 +15,30 @@
     <div id="viewerDiv"></div>
     <script src="../dist/itowns.js"></script>
     <script src="js/GUI/LoadingScreen.js"></script>
-    <!-- from https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/DotScreenShader.js -->
-    <script type="x-shader/x-vertex" id="vertexshader">
-            varying vec2 vUv;
-
-            void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-            }
-        </script>
 
     <script type="x-shader/x-fragment" id="fragmentshader">
-            uniform vec2 center;
-            uniform float angle;
-            uniform float scale;
-            uniform vec2 tSize;
+        uniform float uWeight;
+        uniform vec2 uOffset;
 
-            uniform sampler2D tDiffuse;
+        float getAvg(vec2 uv) {
+            vec4 color = texture2D(uTexture, uv);
+            return (color.r + color.g + color.b) / 3.0;
+        }
 
-            varying vec2 vUv;
+        void main() {
+            vec4 color = texture2D( uTexture, vUv );
 
-            float pattern() {
+            float mid = getAvg(vUv);
+            float left = getAvg(vUv - uOffset);
 
-                float s = sin( angle ), c = cos( angle );
+            float diff = uWeight * (mid - left);
+            float avg = (mid + left) / 2.0;
 
-                vec2 tex = vUv * tSize - center;
-                vec2 point = vec2( c * tex.x - s * tex.y, s * tex.x + c * tex.y ) * scale;
+            float coasts = max(0., diff - avg);
 
-                return ( sin( point.x ) * sin( point.y ) ) * 4.0;
-            }
-            void main() {
-                vec4 color = texture2D( tDiffuse, vUv );
-                float average = ( color.r + color.g + color.b ) / 3.0;
-                gl_FragColor = vec4( vec3( average * 10.0 - 5.0 + pattern() ), color.a );
-            }
-        </script>
+            gl_FragColor = color + vec4(coasts, coasts, coasts, 1.0);
+        }
+    </script>
 
     <script type="text/javascript">
         var placement = {
@@ -70,23 +59,28 @@
             view.mainLoop.gfxEngine.renderer,
             itowns.BuiltinType.Renderer
         );
-        const render = new itowns.RenderViewNode(inputView);
-        const greyscale = new itowns.ScreenShaderNode(render, renderer, {
-            fragmentShader:
-                `void main() {
-                    vec4 color = texture2D(uTexture, vUv);
-                    float average = (color.r + color.g + color.b) / 3.0;
-                    gl_FragColor = vec4(average, average, average, 1.0);
-                }`,
-            toScreen: true,
-        });
-
         g.setGrouped({inputView, renderer}, true);
-        g.setGrouped({render, greyscale});
+
+        const render = new itowns.RenderViewNode(inputView);
+        g.setGrouped({render});
+
+
+        // Sobel sharpen
+        // Uniforms
+        const sharpenWeight = new itowns.InputNode(5, itowns.BuiltinType.Number);
+        const sharpenOffset = new itowns.InputNode(new itowns.THREE.Vector2(0.0025, 0.), itowns.BuiltinType.Number);
+        g.setGrouped({sharpenWeight, sharpenOffset}, true);
+        // Filter
+        const coastSharpen = new itowns.ScreenShaderNode(render, renderer, {
+            fragmentShader: document.getElementById('fragmentshader').textContent,
+            toScreen: true,
+            uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
+        });
+        g.setGrouped({coastSharpen});
 
         let frame = 0;
         view.render = function render() {
-            g.getOutput(frame++, greyscale);
+            g.getOutput(frame++, coastSharpen);
         };
 
         const dumpDot = g.dumpDot();
@@ -100,8 +94,7 @@
         })(dumpDot);
 
         console.log(dumpDot);
-        window.open(dumpDotLink, '_blank');
-
+        // window.open(dumpDotLink, '_blank');
 
         itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
             config.source = new itowns.WMTSSource(config.source);

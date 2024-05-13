@@ -11,7 +11,7 @@ export default class RenderViewNode extends ProcessorNode {
     private _target: THREE.WebGLRenderTarget | null = null;
 
     public constructor(view: Dependency, toScreen: boolean = false) {
-        super({ view }, BuiltinType.RenderTarget, (_frame, args) => {
+        super({ view: [view, BuiltinType.View] }, BuiltinType.RenderTarget, (_frame, args) => {
             const view = args.view as View;
             const engine = (view.mainLoop as MainLoop).gfxEngine as c3DEngine;
             const renderer = engine.renderer as THREE.WebGLRenderer;

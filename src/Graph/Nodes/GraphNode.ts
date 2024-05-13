@@ -5,12 +5,12 @@ import { Type, Dependency, DumpDotNodeStyle } from '../Common.ts';
  * Base class for all other types of nodes.
  */
 export default abstract class GraphNode {
-    public inputs: Map<string, Dependency>;
+    public inputs: Map<string, [Dependency, Type]>;
     public outputType: Type;
 
     protected _out: [number, any | undefined];
 
-    public constructor(inputs: Map<string, Dependency>, outputType: Type) {
+    public constructor(inputs: Map<string, [Dependency, Type]>, outputType: Type) {
         this.inputs = inputs;
         this.outputType = outputType;
         this._out = [-1, undefined];
@@ -18,7 +18,7 @@ export default abstract class GraphNode {
 
     protected abstract _apply(_frame: number): any;
 
-    protected abstract get _node_type(): string;
+    protected abstract get _nodeType(): string;
 
     /**
      * Get the output of the node at a given frame.
@@ -50,7 +50,7 @@ export default abstract class GraphNode {
 
         const lName = label(name).trim();
         const lHtml = `<<table border="0">
-                            <tr><td><b>${this._node_type}</b></td></tr>
+                            <tr><td><b>${this._nodeType}</b></td></tr>
                             ${lName.length == 0 ? '' : `<tr><td>${lName}</td></tr>`}
                        </table>>`;
 

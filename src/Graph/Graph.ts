@@ -1,6 +1,19 @@
 import GraphNode from './Nodes/GraphNode.ts';
 import { DumpDotGlobalStyle, Type } from './Common.ts';
 
+type NodeCallback = (node: GraphNode) => void;
+type StringCallback = (string: string) => void;
+interface DfsCallbacks {
+    /** Run before the dependencies. */
+    prefix?: NodeCallback;
+    /** Run between every dependency or once if less than 2 dependencies. */
+    infix?: NodeCallback;
+    /** Run after the dependencies. */
+    postfix?: NodeCallback;
+    /** Run when an undefined dependency is found. */
+    undef?: StringCallback;
+}
+
 /** Represents a directed graph that guarantees the absence of cycles on use. */
 export default class Graph {
     public nodes: Map<string, GraphNode>;
@@ -103,6 +116,7 @@ export default class Graph {
 
     /**
      * Depth-first search for cycles and dangling dependencies.
+     * Node argument is assumed to exist within the graph.
      * @throws If a cycle is detected or a dangling dependency is found.
      */
     private _validationDfs(
@@ -110,30 +124,48 @@ export default class Graph {
         path: Set<string>,
         visited: Set<string>,
     ) {
+        const nodeName = this.findNodeEntry(node)!.name;
+
+        if (visited.has(nodeName)) {
+            return;
+        }
+
         // Cycle detection
-        for (const [name, _dep] of node.inputs ?? []) {
-            if (path.has(name)) {
-                throw new Error(
-                    `Cycle detected: ${Array.from(path).join(' -> ')} -> ${name}`,
-                );
+        if (path.has(nodeName)) {
+            throw new Error(
+                `Cycle detected: ${Array.from(path).join(' -> ')} -> ${nodeName}`,
+            );
+        }
+
+        // Type checking
+        for (const [name, [input, type]] of node.inputs ?? []) {
+            if (input != undefined && input.outputType != type) {
+                throw new Error(`Invalid type for dependency ${nodeName}.${name}`
+                    + `, got '${input.outputType}' expected '${type}'`);
             }
         }
 
         // DFS
-        for (const [name, dep] of node.inputs ?? []) {
-            // Dangling dependency check
-            if (dep == undefined) {
-                throw new Error(`Dangling dependency: ${name}`);
+        path.add(nodeName);
+        for (const [_name, [dep, _type]] of node.inputs ?? []) {
+            if (dep != undefined) {
+                this._validationDfs(dep, path, visited);
             }
-
-            if (visited.has(name)) {
-                continue;
-            }
-
-            path.add(name);
-            this._validationDfs(dep, path, visited);
-            path.delete(name);
         }
+        path.delete(nodeName);
+    }
+
+    /**
+     * Find a node's entry in the graph. O(n) time complexity.
+     * Returns the whole entry to be easier to expand later on if needed.
+     */
+    public findNodeEntry(node: GraphNode): { name: string, node: GraphNode } | null {
+        for (const [name, oNode] of this.nodes.entries()) {
+            if (node == oNode) {
+                return { name, node: oNode };
+            }
+        }
+        return null;
     }
 
     /** Depth-first traversal of the graph. */
@@ -146,7 +178,7 @@ export default class Graph {
         const inputs = node.inputs;
 
         let index = 0;
-        for (const [name, input] of inputs.entries()) {
+        for (const [name, [input, _]] of inputs.entries()) {
             if (input != undefined) {
                 this.dfs(input, { prefix, infix, postfix, undef });
             } else {
@@ -173,6 +205,7 @@ export default class Graph {
 
     public get dumpDotStyle(): DumpDotGlobalStyle {
         return {
+            rankdir: 'LR',
             node: {
                 fontname: 'Arial',
             },
@@ -192,11 +225,15 @@ export default class Graph {
 
         if (this.nodes.size > 0) {
             // Global style defaults
-            Object.entries(this.dumpDotStyle).forEach(([type, attrs]) => {
-                const formattedAttrs = Object.entries(attrs)
-                    .map(([k, v]) => `${k}=${v}`)
-                    .join(' ');
-                dump.push(`\t${type} [${formattedAttrs}]`);
+            Object.entries(this.dumpDotStyle).forEach(([attr, value]) => {
+                if (typeof value == 'object') {
+                    const formattedAttrs = Object.entries(value)
+                        .map(([k, v]) => `${k}=${v}`)
+                        .join(' ');
+                    dump.push(`\t${attr} [${formattedAttrs}]`);
+                } else {
+                    dump.push(`\t${attr} = ${value}`);
+                }
             });
 
             // Declare nodes
@@ -207,25 +244,23 @@ export default class Graph {
             dump.push('\t}');
 
             // Declare edges
-            const entries = Array.from(this.nodes.entries());
             for (const [name, node] of this.nodes) {
-                for (const [_, dep] of node.inputs) {
-                    if (dep == null) continue;
+                for (const [_, [dep, _ty]] of node.inputs) {
+                    if (dep == null) { continue; }
 
                     // PERF: Inefficient but the alternative is duplicating the names
                     // inside the nodes and that makes the API much heavier so we'll
-                    // live with it, this will likely never be an issue.
-                    const [inputName, oNode] = entries.find(
-                        ([_, oNode]) => oNode == dep,
-                    ) ?? [undefined, undefined];
-                    if (inputName == undefined) {
+                    // have to live with it as it will likely never be an issue.
+                    const nodeEntry = this.findNodeEntry(dep);
+                    if (nodeEntry == undefined) {
                         throw new Error(
                             `An input of node ${name} is not part of the graph`,
                         );
                     }
-                    const attrs = oNode.dumpDotEdgeAttr();
 
-                    dump.push(`\t"${inputName}" -> "${name}" ${attrs};`);
+                    const attrs = nodeEntry.node.dumpDotEdgeAttr();
+
+                    dump.push(`\t"${nodeEntry.name}" -> "${name}" ${attrs};`);
                 }
             }
         }
@@ -234,17 +269,4 @@ export default class Graph {
 
         return dump.join('\n');
     }
-}
-
-type NodeCallback = (node: GraphNode) => void;
-type StringCallback = (string: string) => void;
-interface DfsCallbacks {
-    /** Run before the dependencies. */
-    prefix?: NodeCallback;
-    /** Run between every dependency or once if less than 2 dependencies. */
-    infix?: NodeCallback;
-    /** Run after the dependencies. */
-    postfix?: NodeCallback;
-    /** Run when an undefined dependency is found. */
-    undef?: StringCallback;
 }

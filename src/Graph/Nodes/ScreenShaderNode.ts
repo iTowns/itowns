@@ -1,6 +1,12 @@
 import * as THREE from 'three';
-import { BuiltinType, Dependency, DumpDotNodeStyle } from '../Common.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type } from '../Common.ts';
 import ProcessorNode from './ProcessorNode.ts';
+
+interface CallbackArgs extends Record<string, any> {
+    input: THREE.WebGLRenderTarget;
+    renderer: THREE.WebGLRenderer;
+    uniforms: any[];
+}
 
 export default class ScreenShaderNode extends ProcessorNode {
     private static get vertexShader() {
@@ -22,6 +28,7 @@ export default class ScreenShaderNode extends ProcessorNode {
         }
         `;
     }
+
 
     // WARN: This is a temporary hack. Essentially a scuffed singleton pack.
     // PERF: Evaluate the cost of having a scene per shader node instead.
@@ -56,52 +63,68 @@ export default class ScreenShaderNode extends ProcessorNode {
         input: Dependency,
         renderer: Dependency,
         { uniforms, fragmentShader, toScreen = false }: {
-            uniforms?: { [name: string]: Dependency },
+            uniforms?: { [name: string]: GraphNode | Type },
             fragmentShader?: string,
             toScreen?: boolean
         },
     ) {
         ScreenShaderNode._init();
 
-        // Unpacking the uniforms object first allows us to ignore potential 'input' and 'renderer' fields.
-        super({ ...(uniforms ?? {}), input, renderer }, BuiltinType.RenderTarget, (_frame, args) => {
-            const input = args.input as THREE.WebGLRenderTarget;
-            const renderer = args.renderer as THREE.WebGLRenderer;
+        const fullUniforms = Object.fromEntries(
+            Object.entries(uniforms ?? {})
+                .map(([name, uniform]): [string, [Dependency, string]] => {
+                    if (uniform instanceof GraphNode) {
+                        return [name, [uniform, uniform.outputType]];
+                    } else {
+                        return [name, [null, uniform]];
+                    }
+                }),
+        );
 
-            const target: THREE.WebGLRenderTarget | null = toScreen
-                ? null
-                : (this._out[1] ?? new THREE.WebGLRenderTarget(
-                    input.width,
-                    input.height,
-                ));
+        console.log('== FullUniforms ==', fullUniforms);
 
-            this._material.uniforms.uTexture = { value: input.texture };
-            for (const [name, value] of Object.entries(args)) {
-                if (name === 'input' || name === 'renderer') {
-                    continue;
+        super(
+            {
+                // Unpacking the uniforms object first allows us to ignore
+                // potential 'input' and 'renderer' fields.
+                ...fullUniforms,
+                input: [input, BuiltinType.RenderTarget],
+                renderer: [renderer, BuiltinType.Renderer],
+            },
+            BuiltinType.RenderTarget,
+            (_frame, args: CallbackArgs) => {
+                const { input, renderer, ...uniforms } = args;
+
+                const target: THREE.WebGLRenderTarget | null = toScreen
+                    ? null
+                    : (this._out[1] ?? new THREE.WebGLRenderTarget(
+                        input.width,
+                        input.height,
+                    ));
+
+                this._material.uniforms.uTexture = { value: input.texture };
+
+                // Set user-provided uniforms
+                for (const [name, value] of Object.entries(uniforms ?? {})) {
+                    this._material.uniforms[name] = { value };
                 }
 
-                this._material.uniforms[name] = { value };
-            }
-            ScreenShaderNode._quad.material = this._material;
+                ScreenShaderNode._quad.material = this._material;
 
-            renderer.setRenderTarget(target);
-            renderer.clear();
-            renderer.render(ScreenShaderNode._scene, ScreenShaderNode._camera);
+                renderer.setRenderTarget(target);
+                renderer.clear();
+                renderer.render(ScreenShaderNode._scene, ScreenShaderNode._camera);
 
-            return target;
-        });
+                return target;
+            });
 
         this._fragmentShader = `
             precision highp float;
+
             varying vec2 vUv;
             uniform sampler2D uTexture;
 
-            ${fragmentShader ??
-            `void main() {
-                vec4 color = texture2D(uTexture, vUv);
-                gl_FragColor = color;
-            }`}`;
+            ${fragmentShader ?? ScreenShaderNode.defaultFragmentShader}`;
 
         this._material = new THREE.ShaderMaterial({
             fragmentShader: this._fragmentShader,
