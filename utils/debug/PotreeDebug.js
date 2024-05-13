@@ -75,13 +75,18 @@ export default {
 
         const styleUI = layer.debugUI.addFolder('Styling');
         if (layer.material.mode != undefined) {
-            styleUI.add(layer.material, 'mode', PNTS_MODE).name('Display mode').onChange(update);
-            const gradiantsName = Object.keys(layer.material.gradients);
-            styleUI.add({ gradient: gradiantsName[0] }, 'gradient', gradiantsName).name('gradient')
+            const modeNames = Object.keys(PNTS_MODE);
+            const mode = modeNames.filter(v => PNTS_MODE[v] === layer.material.mode)[0];
+            styleUI.add({ mode }, 'mode', modeNames).name('Display mode')
+                .onChange((value) => {
+                    layer.material.mode = PNTS_MODE[value];
+                    update();
+                });
+            const gradiantsNames = Object.keys(layer.material.gradients);
+            styleUI.add({ gradient: gradiantsNames[0] }, 'gradient', gradiantsNames).name('gradient')
                 .onChange((value) => {
                     layer.material.gradient = layer.material.gradients[value];
-                    setupControllerVisibily(layer.debugUI, layer.material.mode);
-                    view.notifyChange(layer, true);
+                    update();
                 });
             styleUI.add(layer, 'minIntensityRange', layer.minIntensityRange, layer.maxIntensityRange - 1).name('Intensity min')
                 .onChange((value) => {
@@ -89,8 +94,7 @@ export default {
                         layer.maxIntensityRange = value + 1;
                         getController(layer.debugUI, 'maxIntensityRange').updateDisplay();
                     }
-                    setupControllerVisibily(layer.debugUI, layer.material.mode);
-                    view.notifyChange(layer, true);
+                    update();
                 });
             styleUI.add(layer, 'maxIntensityRange', layer.minIntensityRange + 1, layer.maxIntensityRange).name('Intensity max')
                 .onChange((value) => {
@@ -98,8 +102,7 @@ export default {
                         layer.minIntensityRange = value - 1;
                         getController(layer.debugUI, 'minIntensityRange').updateDisplay();
                     }
-                    setupControllerVisibily(layer.debugUI, layer.material.mode);
-                    view.notifyChange(layer, true);
+                    update();
                 });
             styleUI.add(layer, 'minElevationRange', layer.minElevationRange, layer.maxElevationRange).name('Elevation min')
                 .onChange((value) => {
@@ -107,8 +110,7 @@ export default {
                         layer.maxElevationRange = value + 1;
                         getController(layer.debugUI, 'maxElevationRange').updateDisplay();
                     }
-                    setupControllerVisibily(layer.debugUI, layer.material.mode);
-                    view.notifyChange(layer, true);
+                    update();
                 });
             styleUI.add(layer, 'maxElevationRange', layer.minElevationRange, layer.maxElevationRange).name('Elevation max')
                 .onChange((value) => {
@@ -116,8 +118,7 @@ export default {
                         layer.minElevationRange = value - 1;
                         getController(layer.debugUI, 'minElevationRange').updateDisplay();
                     }
-                    setupControllerVisibily(layer.debugUI, layer.material.mode);
-                    view.notifyChange(layer, true);
+                    update();
                 });
             styleUI.add(layer, 'minAngleRange', layer.minAngleRange, layer.maxAngleRange).name('Angle min')
                 .onChange((value) => {
@@ -125,8 +126,7 @@ export default {
                         layer.maxAngleRange = value + 1;
                         getController(layer.debugUI, 'maxAngleRange').updateDisplay();
                     }
-                    setupControllerVisibily(layer.debugUI, layer.material.mode);
-                    view.notifyChange(layer, true);
+                    update();
                 });
             styleUI.add(layer, 'maxAngleRange', layer.minAngleRange, layer.maxAngleRange).name('Angle max')
                 .onChange((value) => {
@@ -134,8 +134,7 @@ export default {
                         layer.minAngleRange = value - 1;
                         getController(layer.debugUI, 'minAngleRange').updateDisplay();
                     }
-                    setupControllerVisibily(layer.debugUI, layer.material.mode);
-                    view.notifyChange(layer, true);
+                    update();
                 });
         }
         if (layer.material.shape != undefined) {

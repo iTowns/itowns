@@ -61,7 +61,7 @@ export const ClassificationScheme = {
         10: { visible: true, name: 'rail', color: new THREE.Color(0.8,  0.8,  1.0), opacity: 1.0 },
         11: { visible: true, name: 'road Surface', color: new THREE.Color(0.4,  0.4,  0.7), opacity: 1.0 },
         12: { visible: true, name: 'overlap', color: new THREE.Color(1.0,  1.0,  0.0), opacity: 1.0 },
-        DEFAULT: { visible: true, name: 'default', color: new THREE.Color(0.3, 0.6, 0.6), opacity: 0.5 },
+        DEFAULT: { visible: true, name: 'default', color: new THREE.Color(0.3, 0.6, 0.6), opacity: 1.0 },
     },
 };
 
@@ -75,7 +75,7 @@ const DiscreteScheme = {
         5: { visible: true, name: '5', color: new THREE.Color('rgb(230, 25, 75)'), opacity: 1.0 },
         6: { visible: true, name: '6', color: new THREE.Color('rgb(66, 212, 244)'), opacity: 1.0 },
         7: { visible: true, name: '7', color: new THREE.Color('rgb(240, 50, 230)'), opacity: 1.0 },
-        DEFAULT: { visible: true, name: 'default', color: white, opacity: 0.5 },
+        DEFAULT: { visible: true, name: 'default', color: white, opacity: 1.0 },
     },
 };
 
@@ -116,6 +116,7 @@ function generateGradientTexture(gradient) {
 }
 
 function recomputeTexture(scheme, texture, nbClass) {
+    let needTransparency;
     const data = texture.image.data;
     const width = texture.image.width;
     if (!nbClass) { nbClass = Object.keys(scheme).length; }
@@ -147,9 +148,11 @@ function recomputeTexture(scheme, texture, nbClass) {
         data[j + 1] = parseInt(255 * color.g, 10);
         data[j + 2] = parseInt(255 * color.b, 10);
         data[j + 3] = visible ? parseInt(255 * opacity, 10) : 0;
-    }
 
+        needTransparency = needTransparency || opacity < 1;
+    }
     texture.needsUpdate = true;
+    return needTransparency;
 }
 
 class PointsMaterial extends THREE.ShaderMaterial {
@@ -163,7 +166,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @param      {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(1, 65536)]  intensity range.
      * @param      {THREE.Vector2}  [options.elevationRange=new THREE.Vector2(0, 1000)]  elevation range.
      * @param      {THREE.Vector2}  [options.angleRange=new THREE.Vector2(-90, 90)]  scan angle range.
-     * @param      {boolean}  [options.applyOpacityClassication=false]  apply opacity classification on all display mode.
      * @param      {Scheme}  [options.classification]  LUT for point classification colorization.
      * @param      {Scheme}  [options.discreteScheme]  LUT for other discret point values colorization.
      * @param      {string}  [options.gradient]  Descrition of the gradient to use for continuous point values.
@@ -191,7 +193,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
         const oiMaterial = options.orientedImageMaterial;
         const classificationScheme = options.classification || ClassificationScheme.DEFAULT;
         const discreteScheme = options.discreteScheme || DiscreteScheme.DEFAULT;
-        const applyOpacityClassication = options.applyOpacityClassication == undefined ? false : options.applyOpacityClassication;
         const size = options.size || 0;
         const mode = options.mode || PNTS_MODE.COLOR;
         const shape = options.shape || PNTS_SHAPE.CIRCLE;
@@ -212,7 +213,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
         delete options.orientedImageMaterial;
         delete options.classification;
         delete options.discreteScheme;
-        delete options.applyOpacityClassication;
         delete options.size;
         delete options.mode;
         delete options.shape;
@@ -222,6 +222,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
         delete options.gradient;
 
         super(options);
+        this.userData.needTransparency = {};
         this.gradients = gradients;
         this.gradientTexture = new THREE.CanvasTexture();
 
@@ -242,7 +243,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'intensityRange', intensityRange);
         CommonMaterial.setUniformProperty(this, 'elevationRange', elevationRange);
         CommonMaterial.setUniformProperty(this, 'angleRange', angleRange);
-        CommonMaterial.setUniformProperty(this, 'applyOpacityClassication', applyOpacityClassication);
         CommonMaterial.setUniformProperty(this, 'sizeMode', sizeMode);
         CommonMaterial.setUniformProperty(this, 'scale', scale);
         CommonMaterial.setUniformProperty(this, 'minAttenuatedSize', minAttenuatedSize);
@@ -299,7 +299,8 @@ class PointsMaterial extends THREE.ShaderMaterial {
     }
 
     recomputeClassification() {
-        recomputeTexture(this.classificationScheme, this.classificationTexture, 32);
+        const needTransparency = recomputeTexture(this.classificationScheme, this.classificationTexture, 32);
+        this.userData.needTransparency[PNTS_MODE.CLASSIFICATION] = needTransparency;
         this.dispatchEvent({
             type: 'material_property_changed',
             target: this.uniforms,
@@ -307,7 +308,11 @@ class PointsMaterial extends THREE.ShaderMaterial {
     }
 
     recomputeDiscreteTexture() {
-        recomputeTexture(this.discreteScheme, this.discreteTexture);
+        const needTransparency = recomputeTexture(this.discreteScheme, this.discreteTexture);
+        this.userData.needTransparency[PNTS_MODE.RETURN_NUMBER] = needTransparency;
+        this.userData.needTransparency[PNTS_MODE.RETURN_TYPE] = needTransparency;
+        this.userData.needTransparency[PNTS_MODE.RETURN_COUNT] = needTransparency;
+        this.userData.needTransparency[PNTS_MODE.POINT_SOURCE_ID] = needTransparency;
         this.dispatchEvent({
             type: 'material_property_changed',
             target: this.uniforms,
