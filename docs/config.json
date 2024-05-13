@@ -187,7 +187,10 @@
         }
     },
     "source": {
-        "include": [ "src", "examples/js/plugins" ],
+        "include": [
+            "packages/itowns/src",
+            "examples/js/plugins"
+        ],
         "exclude": [ "src/ThreeExtended" ]
     },
     "plugins": ["plugins/markdown"]
