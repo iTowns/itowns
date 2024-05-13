@@ -4,11 +4,11 @@
 # See https://github.com/github/gitignore/tree/master/Global for a list of global ignore rules.
 
 /node_modules/
-/dist/
+/packages/itowns/dist/
 /potree/
 potree
-/lib/
+/packages/itowns/lib/
 /docs/out/
 coverage
 .nyc_output/
-/src/ThreeExtended/
+/packages/itowns/src/ThreeExtended/

@@ -21,7 +21,7 @@ describe('LASParser', function () {
 
     describe('unit tests', function () {
         const epsilon = 0.1;
-        LASParser.enableLazPerf('./examples/libs/laz-perf');
+        LASParser.enableLazPerf('../../examples/libs/laz-perf');
 
         it('parses a las file to a THREE.BufferGeometry', async function () {
             if (!lasData) { this.skip(); }

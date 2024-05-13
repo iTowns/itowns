@@ -1,6 +1,6 @@
 examples/libs/
 examples/layers/
-packages/itowns/src/ThreeExtended/
+src/ThreeExtended/
 test/hooks.js
 dist/
 node_modules/

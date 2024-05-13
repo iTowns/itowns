@@ -10,7 +10,7 @@
     "plugins": [
         ["module-resolver", {
             "cwd": "packagejson",
-            "root": ["./packages/itowns/src"]
+            "root": ["./src"]
         }],
         ["babel-plugin-inline-import", {
             "extensions": [
