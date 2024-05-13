@@ -19,8 +19,6 @@ uniform vec2 elevationRange;
 uniform vec2 intensityRange;
 uniform vec2 angleRange;
 
-uniform bool applyOpacityClassication;
-
 uniform sampler2D classificationTexture;
 uniform sampler2D discreteTexture;
 uniform sampler2D gradientTexture;
@@ -93,14 +91,11 @@ void main() {
     if (picking) {
         vColor = unique_id;
     } else {
-        vColor.a = opacity;
-        if (applyOpacityClassication || mode == PNTS_MODE_CLASSIFICATION) {
+        vColor.a = 1.0;
+        if (mode == PNTS_MODE_CLASSIFICATION) {
             vec2 uv = vec2(classification/255., 0.5);
             vColor = texture2D(classificationTexture, uv);
-            vColor.a *= opacity;
-        }
-
-        if (mode == PNTS_MODE_NORMAL) {
+        } else if (mode == PNTS_MODE_NORMAL) {
             vColor.rgb = abs(normal);
         } else if (mode == PNTS_MODE_COLOR) {
             // default to color mode
@@ -150,6 +145,8 @@ void main() {
             vec2 uv = vec2(i, (1. - i));
             vColor = texture2D(gradientTexture, uv);
         }
+
+        vColor.a *= opacity;
     }
 
     #include <begin_vertex>
