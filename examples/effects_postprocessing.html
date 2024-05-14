@@ -34,9 +34,9 @@
             float diff = uWeight * (mid - left);
             float avg = (mid + left) / 2.0;
 
-            float coasts = max(0., diff - avg);
+            float smoothed = max(0., diff - avg);
 
-            gl_FragColor = color + vec4(coasts, coasts, coasts, 1.0);
+            gl_FragColor = color + vec4(smoothed, smoothed, smoothed, 1.0);
         }
     </script>
 
@@ -54,21 +54,17 @@
         // Simple postprocessing setup
         const g = new itowns.Graph();
 
-        const inputView = new itowns.InputNode(view, itowns.BuiltinType.View);
-        const renderer = new itowns.InputNode(
-            view.mainLoop.gfxEngine.renderer,
-            itowns.BuiltinType.Renderer
-        );
+        const inputView = new itowns.InputNode(view);
+        const renderer = new itowns.InputNode(view.mainLoop.gfxEngine.renderer);
         g.setGrouped({inputView, renderer}, true);
 
         const render = new itowns.RenderViewNode(inputView);
         g.setGrouped({render});
 
-
         // Sobel sharpen
         // Uniforms
-        const sharpenWeight = new itowns.InputNode(5, itowns.BuiltinType.Number);
-        const sharpenOffset = new itowns.InputNode(new itowns.THREE.Vector2(0.0025, 0.), itowns.BuiltinType.Number);
+        const sharpenWeight = new itowns.InputNode(5);
+        const sharpenOffset = new itowns.InputNode(new itowns.THREE.Vector2(0.0025, 0.));
         g.setGrouped({sharpenWeight, sharpenOffset}, true);
         // Filter
         const coastSharpen = new itowns.ScreenShaderNode(render, renderer, {

@@ -1,12 +1,12 @@
 import GraphNode from './GraphNode.ts';
-import { Type, DumpDotNodeStyle } from '../Common.ts';
+import { Type, DumpDotNodeStyle, getBuiltinType } from '../Common.ts';
 
 /** Represents a node that outputs a constant value. */
 export default class InputNode extends GraphNode {
     public value: any;
 
-    public constructor(value: any, type: Type) {
-        super(new Map(), type);
+    public constructor(value: any, type?: Type) {
+        super(new Map(), type ?? getBuiltinType(value));
         this.value = value;
     }
 
