@@ -49,9 +49,14 @@ export default abstract class GraphNode {
             .join(' ');
 
         const lName = label(name).trim();
+        const lPorts = Array.from(this.inputs)
+            .map(([name, [dep, _ty]]) =>
+                `<tr><td align="left" port="${name}" ${dep != undefined ? '' : 'color:"red"'}>${name}</td></tr>`)
+            .join('\n');
         const lHtml = `<<table border="0">
                             <tr><td><b>${this._nodeType}</b></td></tr>
-                            ${lName.length == 0 ? '' : `<tr><td>${lName}</td></tr>`}
+                            ${lName.length == 0 ? '' : `<hr/><tr><td><i>${lName}</i></td></tr>`}
+                            ${lPorts}
                        </table>>`;
 
         return `[label=${lHtml} ${formattedAttrs} margin=.05]`;
@@ -60,7 +65,11 @@ export default abstract class GraphNode {
     /**
      * Get the DOT attribute string for the outgoing edges.
      */
-    public dumpDotEdgeAttr(): string {
-        return `[label=" ${this.outputType}"]`;
+    public dumpDotEdgeAttr(extra?: { [attr: string]: string }): string {
+        const attrs = Object.entries(extra ?? {})
+            .map(([name, value]) => `${name}="${value}"`)
+            .join(' ');
+
+        return `[label=" ${this.outputType}" ${attrs}]`;
     }
 }

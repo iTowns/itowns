@@ -90,7 +90,7 @@
         })(dumpDot);
 
         console.log(dumpDot);
-        // window.open(dumpDotLink, '_blank');
+        window.open(dumpDotLink, '_blank');
 
         itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
             config.source = new itowns.WMTSSource(config.source);

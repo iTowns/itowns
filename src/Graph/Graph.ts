@@ -1,5 +1,5 @@
 import GraphNode from './Nodes/GraphNode.ts';
-import { DumpDotGlobalStyle, Type } from './Common.ts';
+import { DumpDotGlobalStyle, Type, getColor } from './Common.ts';
 
 type NodeCallback = (node: GraphNode) => void;
 type StringCallback = (string: string) => void;
@@ -82,9 +82,10 @@ export default class Graph {
      * @throws If any of the nodes are orphaned and the graph has at least one node already.
      * @returns A map of the results of the set operation.
      */
-    public setGrouped(nodes: {
-        [name: string]: GraphNode;
-    }, isInput: boolean = false): Map<string, boolean> {
+    public setGrouped(
+        nodes: { [name: string]: GraphNode; },
+        isInput: boolean = false,
+    ): Map<string, boolean> {
         const results = new Map();
         for (const [name, node] of Object.entries(nodes)) {
             results.set(name, this.set(name, node, isInput));
@@ -208,9 +209,12 @@ export default class Graph {
             rankdir: 'LR',
             node: {
                 fontname: 'Arial',
+                style: 'filled',
+                fillcolor: 'whitesmoke',
             },
             edge: {
                 fontname: 'Arial',
+                arrowhead: 'dot',
             },
         };
     }
@@ -245,7 +249,7 @@ export default class Graph {
 
             // Declare edges
             for (const [name, node] of this.nodes) {
-                for (const [_, [dep, _ty]] of node.inputs) {
+                for (const [depName, [dep, _ty]] of node.inputs) {
                     if (dep == null) { continue; }
 
                     // PERF: Inefficient but the alternative is duplicating the names
@@ -258,9 +262,9 @@ export default class Graph {
                         );
                     }
 
-                    const attrs = nodeEntry.node.dumpDotEdgeAttr();
+                    const attrs = nodeEntry.node.dumpDotEdgeAttr({ ...getColor(null, dep.outputType) });
 
-                    dump.push(`\t"${nodeEntry.name}" -> "${name}" ${attrs};`);
+                    dump.push(`\t"${nodeEntry.name}" -> "${name}":${depName} ${attrs};`);
                 }
             }
         }

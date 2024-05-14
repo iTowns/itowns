@@ -29,7 +29,6 @@ export default class ScreenShaderNode extends ProcessorNode {
         `;
     }
 
-
     // WARN: This is a temporary hack. Essentially a scuffed singleton pack.
     // PERF: Evaluate the cost of having a scene per shader node instead.
     private static _scene: THREE.Scene;
@@ -80,8 +79,6 @@ export default class ScreenShaderNode extends ProcessorNode {
                     }
                 }),
         );
-
-        console.log('== FullUniforms ==', fullUniforms);
 
         super(
             {
@@ -140,10 +137,7 @@ export default class ScreenShaderNode extends ProcessorNode {
         const { label, attrs } = super.dumpDotStyle;
         return {
             label,
-            attrs: {
-                ...attrs,
-                fillcolor: 'lightcoral',
-            },
+            attrs,
         };
     }
 }

@@ -46,11 +46,8 @@ export default class RenderViewNode extends ProcessorNode {
     public get dumpDotStyle(): DumpDotNodeStyle {
         const { label: _, attrs } = super.dumpDotStyle;
         return {
-            label: (_name: string) => '',
-            attrs: {
-                ...attrs,
-                shape: 'Mcircle',
-            },
+            label: (name: string) => name,
+            attrs,
         };
     }
 }
