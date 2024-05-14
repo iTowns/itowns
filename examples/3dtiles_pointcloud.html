@@ -58,14 +58,15 @@
             }
             // Create a new Layer 3d-tiles For Pointcloud
             // -------------------------------------------
+            var $3dTilesSource = new itowns.C3DTilesSource({
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json',
+                });
             var $3dTilesLayerSetePC = new itowns.C3DTilesLayer('3d-tiles-sete', {
                 name: 'SetePC',
                 sseThreshold: 5,
                 pntsMode: itowns.PNTS_MODE.CLASSIFICATION,
                 pntsShape : itowns.PNTS_SHAPE.CIRCLE,
-                source: new itowns.C3DTilesSource({
-                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json',
-                }),
+                source: $3dTilesSource,
             }, view);
 
             $3dTilesLayerSetePC.addEventListener(
