@@ -104,7 +104,7 @@
                 view.addLayer(eptLayer).then(onLayerReady);
 
                 eptLayer.whenReady
-                    .then(() => debug.PotreeDebug.initTools(view, eptLayer, debugGui));
+                    .then(() => debug.PointCloudDebug.initTools(view, eptLayer, debugGui));
 
                 function dblClickHandler(event) {
                     var pick = view.pickObjectsAt(event, 5, eptLayer);
