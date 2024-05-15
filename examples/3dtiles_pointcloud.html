@@ -85,18 +85,11 @@
 
             // Add the UI Debug
             var d = new debug.Debug(view, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
-            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerSetePC, d);
-
-            d.switch = function() {
-                switchMode();
-            }
-            menuGlobe.gui.add(d, 'switch').name('Mode Switch');
-
-
-
-
-
+            $3dTilesLayerSetePC.whenReady
+                .then(() => {
+                    debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+                    debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerSetePC, d);
+                });
         </script>
     </body>
 </html>

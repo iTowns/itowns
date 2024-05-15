@@ -119,6 +119,7 @@ function executeCommand(command) {
                 } else if (magic == 'b3dm') {
                     func = supportedFormats.b3dm;
                 } else if (magic == 'pnts') {
+                    layer.hasPnts = true;
                     func = supportedFormats.pnts;
                 } else if (magic == 'glTF') {
                     func = supportedFormats.gltf;

@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import View from 'Core/View';
 import GeometryLayer from 'Layer/GeometryLayer';
 import { C3DTilesBoundingVolumeTypes } from 'Core/3DTiles/C3DTilesEnums';
-import { PNTS_SHAPE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
+import { PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
 import GeometryDebug from './GeometryDebug';
 
 const bboxMesh = new THREE.Mesh();
 
-export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) {
+export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer, debugInstance) {
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, _3dTileslayer);
 
     // add wireframe
@@ -83,18 +83,28 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
         _3dTileslayer.frozen = value;
         view.notifyChange(_3dTileslayer);
     }));
-    gui.add(_3dTileslayer, 'pntsShape', PNTS_SHAPE).name('Points Shape').onChange(() => {
-        view.notifyChange(view.camera.camera3D);
-    });
-    gui.add(_3dTileslayer, 'pntsSizeMode', PNTS_SIZE_MODE).name('Pnts size mode').onChange(() => {
-        view.notifyChange(view.camera.camera3D);
-    });
 
-    gui.add(_3dTileslayer, 'pntsMinAttenuatedSize', 0, 15).name('Min attenuated size').onChange(() => {
-        view.notifyChange(view.camera.camera3D);
-    });
+    if (_3dTileslayer.hasPnts) {
+        const _3DTILES_PNTS_MODE = {
+            CLASSIFICATION: PNTS_MODE.CLASSIFICATION,
+            COLOR: PNTS_MODE.COLOR,
+        };
+        gui.add(_3dTileslayer, 'pntsMode', _3DTILES_PNTS_MODE).name('Display mode').onChange(() => {
+            _3dTileslayer.pntsMode = +_3dTileslayer.pntsMode;
+            view.notifyChange(view.camera.camera3D);
+        });
+        gui.add(_3dTileslayer, 'pntsShape', PNTS_SHAPE).name('Points Shape').onChange(() => {
+            view.notifyChange(view.camera.camera3D);
+        });
+        gui.add(_3dTileslayer, 'pntsSizeMode', PNTS_SIZE_MODE).name('Pnts size mode').onChange(() => {
+            view.notifyChange(view.camera.camera3D);
+        });
 
-    gui.add(_3dTileslayer, 'pntsMaxAttenuatedSize', 0, 15).name('Max attenuated size').onChange(() => {
-        view.notifyChange(view.camera.camera3D);
-    });
+        gui.add(_3dTileslayer, 'pntsMinAttenuatedSize', 0, 15).name('Min attenuated size').onChange(() => {
+            view.notifyChange(view.camera.camera3D);
+        });
+        gui.add(_3dTileslayer, 'pntsMaxAttenuatedSize', 0, 15).name('Max attenuated size').onChange(() => {
+            view.notifyChange(view.camera.camera3D);
+        });
+    }
 }
