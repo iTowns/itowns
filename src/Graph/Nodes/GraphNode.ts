@@ -1,4 +1,4 @@
-import { Type, Dependency, DumpDotNodeStyle } from '../Common.ts';
+import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Common.ts';
 
 /**
  * Represents a node in a directed graph.
@@ -16,7 +16,7 @@ export default abstract class GraphNode {
         this._out = [-1, undefined];
     }
 
-    protected abstract _apply(_frame: number): any;
+    protected abstract _apply(graph: Graph, frame: number): any;
 
     protected abstract get _nodeType(): string;
 
@@ -25,10 +25,10 @@ export default abstract class GraphNode {
      * @param frame The frame to get the output for.
      * @returns The output of the node at the given frame.
      */
-    public getOutput(frame: number): any {
+    public getOutput(graph: Graph, frame: number): any {
         const [oFrane, oValue] = this._out;
         if (oValue == undefined || oFrane !== frame) {
-            this._out = [frame, this._apply(frame)];
+            this._out = [frame, this._apply(graph, frame)];
         }
         return this._out[1];
     }

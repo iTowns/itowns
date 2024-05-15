@@ -29,7 +29,7 @@ export default class ScreenShaderNode extends ProcessorNode {
         `;
     }
 
-    // WARN: This is a temporary hack. Essentially a scuffed singleton pack.
+    // HACK: Essentially a scuffed singleton pack.
     // PERF: Evaluate the cost of having a scene per shader node instead.
     private static _scene: THREE.Scene;
     private static _quad: THREE.Mesh;

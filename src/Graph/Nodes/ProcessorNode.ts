@@ -1,5 +1,5 @@
 import GraphNode from './GraphNode.ts';
-import { Type, Dependency, DumpDotNodeStyle } from '../Common.ts';
+import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Common.ts';
 
 /** Represents a mapping from a set of inputs to an output. */
 export default class ProcessorNode extends GraphNode {
@@ -14,11 +14,11 @@ export default class ProcessorNode extends GraphNode {
         this.callback = callback;
     }
 
-    protected _apply(frame: number): any {
+    protected _apply(graph: Graph, frame: number): any {
         const inputs = Array.from(this.inputs);
         const args: [string, any][] = inputs.map(([name, dependency]) => [
             name,
-            dependency[0]?.getOutput(frame) ?? null,
+            dependency[0]?.getOutput(graph, frame) ?? null,
         ]);
         const argObj = Object.fromEntries(args);
 

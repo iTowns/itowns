@@ -1,5 +1,5 @@
 import GraphNode from './GraphNode.ts';
-import { Type, DumpDotNodeStyle, getBuiltinType, stringify } from '../Common.ts';
+import { Type, DumpDotNodeStyle, getBuiltinType, stringify, Graph } from '../Common.ts';
 
 /** Represents a node that outputs a constant value. */
 export default class InputNode extends GraphNode {
@@ -15,7 +15,7 @@ export default class InputNode extends GraphNode {
         this.value = value;
     }
 
-    protected _apply(_frame: number): any {
+    protected _apply(_graph: Graph, _frame: number): any {
         return this.value;
     }
 

@@ -108,4 +108,4 @@ export { C3DTilesTypes, C3DTilesBoundingVolumeTypes } from './Core/3DTiles/C3DTi
 export { default as C3DTBatchTableHierarchyExtension } from './Core/3DTiles/C3DTBatchTableHierarchyExtension';
 export { process3dTilesNode, $3dTilesCulling, $3dTilesSubdivisionControl } from 'Process/3dTilesProcessing';
 
-export { Graph, GraphNode, InputNode, RenderViewNode, ProcessorNode, ScreenShaderNode, BuiltinType, JunctionNode } from 'Graph/Common.ts';
+export { Graph, GraphNode, InputNode, RenderViewNode, ProcessorNode, ScreenShaderNode, BuiltinType, JunctionNode, GraphInputNode, SubGraphNode } from 'Graph/Common.ts';

@@ -16,7 +16,7 @@
     <script src="../dist/itowns.js"></script>
     <script src="js/GUI/LoadingScreen.js"></script>
 
-    <script type="x-shader/x-fragment" id="fragmentshader">
+    <script type="x-shader/x-fragment" id="coastSharpenFragmentShader">
         uniform float uWeight;
         uniform vec2 uOffset;
 
@@ -39,6 +39,13 @@
             gl_FragColor = color + vec4(smoothed, smoothed, smoothed, 1.0);
         }
     </script>
+    <script type="x-shader/x-fragment" id="greyscaleFragmentShader">
+        void main() {
+            vec4 color = texture2D( uTexture, vUv );
+            float avg = (color.r + color.g + color.b) / 3.;
+            gl_FragColor = vec4(avg.xxx, 1.0);
+        }
+    </script>
 
     <script type="text/javascript">
         var placement = {
@@ -52,36 +59,42 @@
         setupLoadingScreen(viewerDiv, view);
 
         // Graph showcase
-        const g = new itowns.Graph();
+        const outerGraph = new itowns.Graph();
 
         const inputView = new itowns.InputNode(view);
         const viewJunction = new itowns.JunctionNode(inputView)
         const renderer = new itowns.InputNode(view.mainLoop.gfxEngine.renderer);
-        g.setGrouped({inputView, viewJunction, renderer}, true);
+        outerGraph.setGrouped({inputView, viewJunction, renderer});
 
         const render = new itowns.RenderViewNode(viewJunction);
-        g.setGrouped({render});
+        outerGraph.setGrouped({render});
 
+        // Subgraphs
+        const postProcessingGraph = new itowns.Graph();
         // Sobel sharpen
         // Uniforms
         const sharpenWeight = new itowns.InputNode(5);
         const sharpenOffset = new itowns.InputNode(new itowns.THREE.Vector2(0.0025, 0.));
-        g.setGrouped({sharpenWeight, sharpenOffset}, true);
+        postProcessingGraph.setGrouped({sharpenWeight, sharpenOffset});
         // Filter
         const coastSharpen = new itowns.ScreenShaderNode(render, renderer, {
-            fragmentShader: document.getElementById('fragmentshader').textContent,
+            fragmentShader: document.getElementById('coastSharpenFragmentShader').textContent,
             toScreen: true,
             uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
         });
-        g.setGrouped({coastSharpen});
+        postProcessingGraph.setGrouped({coastSharpen});
+
+        const postProcessingGraphNode = new itowns.SubGraphNode(outerGraph, postProcessingGraph, coastSharpen, 'PostProcessing');
+        outerGraph.setGrouped({postProcessingGraphNode});
 
         let frame = 0;
         view.render = function render() {
-            g.getOutput(frame++, coastSharpen);
+            outerGraph.getOutput(frame++, postProcessingGraphNode);
         };
 
-        console.log(g.dumpDot());
-        window.open(g.dumpDotGraphvizLink(), '_blank');
+        console.dir(outerGraph);
+        console.log(outerGraph.dumpDot());
+        window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
         itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
             config.source = new itowns.WMTSSource(config.source);

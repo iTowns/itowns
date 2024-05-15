@@ -1,20 +1,26 @@
-import { Dependency, DumpDotNodeStyle, Type, getColor } from '../Common.ts';
+import { Dependency, DumpDotNodeStyle, Graph, Type, getColor } from '../Common.ts';
 import GraphNode from './GraphNode.ts';
 
 export default class JunctionNode extends GraphNode {
-    private static inputName = 'value';
+    protected static inputName = 'value';
 
+    /**
+     * @argument input The name of the input node in its graph and itself or the expected type.
+     */
     public constructor(input: GraphNode | Type) {
-        if (input instanceof GraphNode) {
+        if (typeof input != 'string') {
             super(new Map([[JunctionNode.inputName, [input, input.outputType]]]), input.outputType);
         } else {
             super(new Map([[JunctionNode.inputName, [undefined, input]]]), input);
         }
     }
 
-    protected _apply(frame: number): any {
-        const node = this.inputs.entries().next().value[1][0] as Dependency;
-        return node?.getOutput(frame) ?? null;
+    protected _apply(graph: Graph, frame: number): any {
+        return this.inputs.get(JunctionNode.inputName)![0]?.getOutput(graph, frame) ?? null;
+    }
+
+    public get input(): [Dependency, Type] {
+        return this.inputs.get(JunctionNode.inputName)!;
     }
 
     public set input(node: Dependency) {
@@ -50,6 +56,11 @@ export default class JunctionNode extends GraphNode {
         const attrs = Object.entries(extra ?? {})
             .map(([name, value]) => `${name}="${value}"`)
             .join(' ');
+
+        const input = this.inputs.get(JunctionNode.inputName)![0];
+        if (input != undefined) {
+            return input.dumpDotEdgeAttr(extra);
+        }
 
         return `[${attrs}]`;
     }
