@@ -7,7 +7,7 @@ import GeometryDebug from './GeometryDebug';
 
 const bboxMesh = new THREE.Mesh();
 
-export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer, debugInstance) {
+export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) {
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, _3dTileslayer);
 
     // add wireframe
