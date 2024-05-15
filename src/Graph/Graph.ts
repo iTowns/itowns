@@ -273,4 +273,20 @@ export default class Graph {
 
         return dump.join('\n');
     }
+
+    /**
+     * Dump the graph in the DOT format and convert it to a graphviz link.
+     * @throws If a node input is not part of the graph.
+     * @returns The GraphvizOnline URL to view the graph.
+     */
+    public dumpDotGraphvizLink(): string {
+        const dot = this.dumpDot();
+        const escaped = dot
+            .replaceAll('\n', '%0A')
+            .replaceAll('\t', '%20%20')
+            .replaceAll(':', '%3A')
+            .replaceAll(';', '%3B')
+            .replaceAll('=', '%3D');
+        return `https://dreampuf.github.io/GraphvizOnline/#${escaped}`;
+    }
 }

@@ -79,18 +79,8 @@
             g.getOutput(frame++, coastSharpen);
         };
 
-        const dumpDot = g.dumpDot();
-        const dumpDotLink = (dot => {
-            const escaped = dot
-                .replaceAll(/\s+/g, ' ')
-                .replaceAll(':', '%3A')
-                .replaceAll(';', '%3B')
-                .replaceAll('=', '%3D');
-            return `https://dreampuf.github.io/GraphvizOnline/#${escaped}`;
-        })(dumpDot);
-
-        console.log(dumpDot);
-        window.open(dumpDotLink, '_blank');
+        console.log(g.dumpDot());
+        window.open(g.dumpDotGraphvizLink(), '_blank');
 
         itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
             config.source = new itowns.WMTSSource(config.source);

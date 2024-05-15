@@ -48,16 +48,16 @@ export default abstract class GraphNode {
             .map(([k, v]) => `${k}=${v}`)
             .join(' ');
 
+        const lType = `<tr><td><b>${this._nodeType}</b></td></tr>`;
+
         const lName = label(name).trim();
+        const lNameFormatted = lName.length == 0 ? [] : [`<hr/><tr><td><i>${lName}</i></td></tr>`];
+
         const lPorts = Array.from(this.inputs)
             .map(([name, [dep, _ty]]) =>
-                `<tr><td align="left" port="${name}" ${dep != undefined ? '' : 'color:"red"'}>${name}</td></tr>`)
-            .join('\n');
-        const lHtml = `<<table border="0">
-                            <tr><td><b>${this._nodeType}</b></td></tr>
-                            ${lName.length == 0 ? '' : `<hr/><tr><td><i>${lName}</i></td></tr>`}
-                            ${lPorts}
-                       </table>>`;
+                `<tr><td align="left" port="${name}" ${dep == undefined ? 'color:"red"' : ''}>${name}</td></tr>`);
+
+        const lHtml = ['<<table border="0">', lType, ...lNameFormatted, ...lPorts, '</table>>'].join('\n');
 
         return `[label=${lHtml} ${formattedAttrs} margin=.05]`;
     }
