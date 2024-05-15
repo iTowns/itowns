@@ -1,5 +1,4 @@
-import GraphNode from './Nodes/GraphNode.ts';
-import { DumpDotGlobalStyle, Type, getColor } from './Common.ts';
+import { GraphNode, DumpDotGlobalStyle, Type, getColor, JunctionNode } from './Common.ts';
 
 type NodeCallback = (node: GraphNode) => void;
 type StringCallback = (string: string) => void;
@@ -225,7 +224,8 @@ export default class Graph {
      * @returns The graph in the DOT format.
      */
     public dumpDot(): string {
-        const dump: string[] = ['digraph G {'];
+        const dump: string[] = [];
+        dump.push('digraph G {');
 
         if (this.nodes.size > 0) {
             // Global style defaults
@@ -243,7 +243,7 @@ export default class Graph {
             // Declare nodes
             dump.push('\t{');
             for (const [name, node] of this.nodes) {
-                dump.push(`\t\t"${name}" ${node.dumpDotAttr(name)};`);
+                dump.push(`\t\t${node.dumpDot(name)}`);
             }
             dump.push('\t}');
 
@@ -258,13 +258,15 @@ export default class Graph {
                     const nodeEntry = this.findNodeEntry(dep);
                     if (nodeEntry == undefined) {
                         throw new Error(
-                            `An input of node ${name} is not part of the graph`,
+                            `Input "${depName}" of node "${name}" is not part of the graph`,
                         );
                     }
 
-                    const attrs = nodeEntry.node.dumpDotEdgeAttr({ ...getColor(null, dep.outputType) });
+                    const colorStyle = getColor(null, dep.outputType);
+                    const attrs = nodeEntry.node.dumpDotEdgeAttr({ ...(node instanceof JunctionNode ? { arrowhead: 'none' } : {}), ...colorStyle });
+                    const port = node instanceof JunctionNode ? '' : `:${depName}`;
 
-                    dump.push(`\t"${nodeEntry.name}" -> "${name}":${depName} ${attrs};`);
+                    dump.push(`\t"${nodeEntry.name}" -> "${name}"${port} ${attrs};`);
                 }
             }
         }

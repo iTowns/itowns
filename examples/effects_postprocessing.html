@@ -51,14 +51,15 @@
 
         setupLoadingScreen(viewerDiv, view);
 
-        // Simple postprocessing setup
+        // Graph showcase
         const g = new itowns.Graph();
 
         const inputView = new itowns.InputNode(view);
+        const viewJunction = new itowns.JunctionNode(inputView)
         const renderer = new itowns.InputNode(view.mainLoop.gfxEngine.renderer);
-        g.setGrouped({inputView, renderer}, true);
+        g.setGrouped({inputView, viewJunction, renderer}, true);
 
-        const render = new itowns.RenderViewNode(inputView);
+        const render = new itowns.RenderViewNode(viewJunction);
         g.setGrouped({render});
 
         // Sobel sharpen

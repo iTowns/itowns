@@ -42,7 +42,7 @@ export default abstract class GraphNode {
      * Get the DOT attribute string for the node.
      * @param name The name of the node.
      */
-    public dumpDotAttr(name: string): string {
+    public dumpDot(name: string): string {
         const { label, attrs } = this.dumpDotStyle;
         const formattedAttrs = Object.entries(attrs)
             .map(([k, v]) => `${k}=${v}`)
@@ -59,11 +59,13 @@ export default abstract class GraphNode {
 
         const lHtml = ['<<table border="0">', lType, ...lNameFormatted, ...lPorts, '</table>>'].join('\n');
 
-        return `[label=${lHtml} ${formattedAttrs} margin=.05]`;
+        return `"${name}" [label=${lHtml} ${formattedAttrs} margin=.05]`;
     }
 
     /**
      * Get the DOT attribute string for the outgoing edges.
+     *
+     * Example output: [label="Node" shape="box"]
      */
     public dumpDotEdgeAttr(extra?: { [attr: string]: string }): string {
         const attrs = Object.entries(extra ?? {})

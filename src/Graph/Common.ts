@@ -6,6 +6,7 @@ import InputNode from './Nodes/InputNode.ts';
 import ProcessorNode from './Nodes/ProcessorNode.ts';
 import ScreenShaderNode from './Nodes/ScreenShaderNode.ts';
 import RenderViewNode from './Nodes/RenderViewNode.ts';
+import JunctionNode from './Nodes/JunctionNode.ts';
 
 export type Type = string;
 export type Dependency = GraphNode | undefined | null;
@@ -109,6 +110,7 @@ export {
     ProcessorNode,
     ScreenShaderNode,
     RenderViewNode,
+    JunctionNode,
 
     // Utils
     BuiltinType,
