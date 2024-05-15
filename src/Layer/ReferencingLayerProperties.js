@@ -1,7 +1,6 @@
 
 // next step is move these properties to Style class
 // and hide transparent mechanism
-
 function ReferLayerProperties(material, layer) {
     if (layer && layer.isGeometryLayer) {
         let transparent = material.transparent;
@@ -16,26 +15,31 @@ function ReferLayerProperties(material, layer) {
                 get: () => material.layer.opacity,
             });
         }
+
         if (material.uniforms && material.uniforms.mode != undefined) {
             Object.defineProperty(material.uniforms.mode, 'value', {
                 get: () => material.layer.pntsMode,
             });
         }
+
         if (material.uniforms && material.uniforms.shape != undefined) {
             Object.defineProperty(material.uniforms.shape, 'value', {
                 get: () => material.layer.pntsShape,
             });
         }
+
         if (material.uniforms && material.uniforms.sizeMode != undefined) {
             Object.defineProperty(material.uniforms.sizeMode, 'value', {
                 get: () => material.layer.pntsSizeMode,
             });
         }
+
         if (material.uniforms && material.uniforms.minAttenuatedSize != undefined) {
             Object.defineProperty(material.uniforms.minAttenuatedSize, 'value', {
                 get: () => material.layer.pntsMinAttenuatedSize,
             });
         }
+
         if (material.uniforms && material.uniforms.maxAttenuatedSize != undefined) {
             Object.defineProperty(material.uniforms.maxAttenuatedSize, 'value', {
                 get: () => material.layer.pntsMaxAttenuatedSize,
@@ -45,11 +49,13 @@ function ReferLayerProperties(material, layer) {
         Object.defineProperty(material, 'wireframe', {
             get: () => material.layer.wireframe,
         });
+
         Object.defineProperty(material, 'transparent', {
             get: () => {
-                if (transparent != material.layer.opacity < 1.0) {
+                const needTransparency = material.userData.needTransparency?.[material.mode] || material.layer.opacity < 1.0;
+                if (transparent != needTransparency) {
                     material.needsUpdate = true;
-                    transparent = material.layer.opacity < 1.0;
+                    transparent = needTransparency;
                 }
                 return transparent;
             },
