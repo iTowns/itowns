@@ -76,7 +76,6 @@
         // Screen shaders
         const coastSharpen = new itowns.ScreenShaderNode(render, renderer, {
             fragmentShader: document.getElementById('coastSharpenFragmentShader').textContent,
-            toScreen: true,
             uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
         });
         const greyscale = new itowns.ScreenShaderNode(coastSharpen, renderer, {
@@ -85,14 +84,14 @@
         });
         postProcessingGraph.setGrouped({coastSharpen, greyscale});
 
-        const postProcessingGraphNode = new itowns.SubGraphNode(outerGraph, postProcessingGraph, greyscale, 'PostProcessing');
+        const postProcessingGraphNode = new itowns.SubGraphNode(outerGraph, postProcessingGraph, greyscale, 'Post-processing');
         outerGraph.setGrouped({postProcessingGraphNode});
 
         console.log(coastSharpen.inputs.get('input'))
 
         console.dir(outerGraph);
         console.log(outerGraph.dumpDot());
-        window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
+        // window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
         let frame = 0;
         view.render = function render() {
