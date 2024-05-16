@@ -22,4 +22,8 @@ export default class GraphInputNode extends JunctionNode {
         this.inputs.set(JunctionNode.inputName, [node, type]);
         this.inputNodeName = name;
     }
+
+    public dumpDot(name: string): string {
+        return super.dumpDot(`${name}`);
+    }
 }

@@ -244,7 +244,7 @@ export default class Graph {
      * @throws If a node input is not part of the graph.
      * @returns The graph in the DOT format.
      */
-    public dumpDot(isSubgraph: boolean = false): string {
+    public dumpDot([isSubgraph, subgraphName]: [boolean, string] = [false, '']): string {
         const dump: string[] = [];
         if (!isSubgraph) {
             dump.push('digraph G {');
@@ -268,6 +268,11 @@ export default class Graph {
             for (const [name, node] of this.nodes) {
                 dump.push(`\t\t${node.dumpDot(name)}`);
             }
+            if (isSubgraph) {
+                for (const [name, input] of this.inputs) {
+                    dump.push(`\t\t${input.dumpDot(`${subgraphName}:${name}`)}`);
+                }
+            }
             dump.push('\t}');
 
             // Delicious spaghetti :(
@@ -285,18 +290,27 @@ export default class Graph {
                             `Input "${depName}" of node "${nodeName}" is not part of the graph`,
                         );
                     }
-                    const { name, node: entryNode } = nodeEntry;
 
-                    const entryName = entryNode instanceof GraphInputNode ? entryNode.graphInput[0] : name;
-                    if (entryName == undefined) {
-                        throw new Error(`Failed to fetch name for subgraph dependency "${depName}".`);
-                    }
-
+                    const { name: entryName, node: entryNode } = nodeEntry;
                     const colorStyle = getColor(null, dep.outputType);
-                    const attrs = nodeEntry.node.dumpDotEdgeAttr({ ...(node instanceof JunctionNode ? { arrowhead: 'none' } : {}), ...colorStyle });
+                    const attrs = nodeEntry.node.dumpDotEdgeAttr({
+                        ...(node instanceof JunctionNode || entryNode instanceof GraphInputNode ? { arrowhead: 'none' } : {}),
+                        ...colorStyle,
+                    });
                     const port = node instanceof JunctionNode ? '' : `:${depName}`;
 
-                    dump.push(`\t"${entryName}" -> "${nodeName}"${port} ${attrs};`);
+                    if (entryNode instanceof GraphInputNode) {
+                        dump.push(`\t"${subgraphName}:${entryName}" -> "${nodeName}"${port} ${attrs};`);
+
+                        const name = entryNode.graphInput[0];
+                        if (name == undefined) {
+                            continue;
+                        }
+
+                        dump.push(`\t"${name}" -> "${subgraphName}:${entryName}" ${attrs};`);
+                    } else {
+                        dump.push(`\t"${entryName}" -> "${nodeName}"${port} ${attrs};`);
+                    }
                 }
             }
         }

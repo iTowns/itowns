@@ -1,4 +1,4 @@
-import { BuiltinType, DumpDotNodeStyle, Graph, GraphInputNode, JunctionNode } from '../Common.ts';
+import { BuiltinType, DumpDotNodeStyle, Graph, GraphInputNode } from '../Common.ts';
 import GraphNode from './GraphNode.ts';
 
 export default class SubGraphNode extends GraphNode {
@@ -27,7 +27,8 @@ export default class SubGraphNode extends GraphNode {
         for (const [_nodeName, node] of this.graph.nodes) {
             for (const [depName, [dep, depType]] of node.inputs) {
                 if (dep != undefined && Array.from(this.graph.nodes.values()).find(oNode => oNode == dep) == undefined) {
-                    // FIXME: only works for one level of nesting, need a resolve function
+                    // TODO: only works for one level of nesting, we might need a resolve function but
+                    // I'm not sure the case where it'd be needed will ever occur.
                     const newInput = new GraphInputNode(Object.fromEntries([[outerGraph.findNodeEntry(dep)!.name, dep]]));
                     this.graph.inputs.set(depName, newInput);
                     node.inputs.set(depName, [newInput, depType]);
@@ -61,7 +62,7 @@ export default class SubGraphNode extends GraphNode {
             `subgraph "${label(name)}" {`,
             ...graphLabel,
             ...formattedAttrs,
-            this.graph.dumpDot(true),
+            this.graph.dumpDot([true, name]),
             '}',
         ].join('\n');
     }

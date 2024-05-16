@@ -37,7 +37,9 @@ export default class JunctionNode extends GraphNode {
         return {
             label: name => `${name}`,
             attrs: {
-                shape: 'insulator',
+                shape: 'doublecircle',
+                width: '.1',
+                height: '.1',
                 ...getColor(null, this.outputType),
             },
         };
