@@ -95,7 +95,7 @@ function getColor(value: any, type?: Type): ColorStyle {
 
 export interface DumpDotNodeStyle {
     label: (name: string) => string;
-    attrs: { [key: string]: string };
+    attrs: { [key: string]: string | { [key: string]: string } };
 }
 
 export interface DumpDotGlobalStyle {

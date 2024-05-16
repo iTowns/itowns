@@ -3,24 +3,24 @@ import GraphNode from './GraphNode.ts';
 
 export default class SubGraphNode extends GraphNode {
     public graph: Graph;
-    private out: GraphNode;
-    private label?: string;
+    private _outNode: GraphNode;
+    private _label?: string;
 
     public constructor(outerGraph: Graph, graph: Graph, out: GraphNode | string, label?: string) {
         super(new Map(), BuiltinType.Number);
 
         this.graph = graph;
-        this.label = label;
+        this._label = label;
 
         if (out instanceof GraphNode) {
-            this.out = out;
+            this._outNode = out;
         } else {
             const node = graph.get(out);
             if (node == undefined) {
                 throw new Error(`Node "${out}" selected as output does not exist within the subgraph`);
             }
 
-            this.out = node;
+            this._outNode = node;
         }
 
         // Replace dependencies outside the graph with graph inputs
@@ -38,7 +38,11 @@ export default class SubGraphNode extends GraphNode {
     }
 
     protected _apply(graph: Graph, frame: number) {
-        return this.out.getOutput(graph, frame);
+        return this._outNode.getOutput(graph, frame);
+    }
+
+    public get label(): string | undefined {
+        return this._label;
     }
 
     protected get _nodeType(): string {
@@ -50,16 +54,24 @@ export default class SubGraphNode extends GraphNode {
             label: name => `${name}`,
             attrs: {
                 style: 'filled',
+                fillcolor: 'whitesmoke',
+                color: 'lightgrey',
             },
         };
     }
 
     public dumpDot(name: string): string {
         const { label, attrs } = this.dumpDotStyle;
-        const formattedAttrs = Object.entries(attrs).map(([name, value]) => `${name}=${value}`);
-        const graphLabel = this.label != undefined ? [`\t\tlabel="${label(this.label)}"`] : [];
+        const formattedAttrs = Object.entries(attrs).map(([name, value]: [string, string | object]) => {
+            if (typeof value == 'string') {
+                return `${name}=${value}`;
+            } else {
+                return `${name} [${Object.entries(value).map(([name, value]) => `${name}=${value}`).join(' ')}]`;
+            }
+        });
+        const graphLabel = this._label != undefined ? [`\t\tlabel="${label(this._label)}"`] : [];
         return [
-            `subgraph "${label(name)}" {`,
+            `subgraph "cluster_${label(name)}" {`,
             ...graphLabel,
             ...formattedAttrs,
             this.graph.dumpDot([true, name]),

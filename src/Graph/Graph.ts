@@ -252,16 +252,18 @@ export default class Graph {
 
         if (this.nodes.size > 0) {
             // Global style defaults
-            Object.entries(this.dumpDotStyle).forEach(([attr, value]) => {
-                if (typeof value == 'object') {
-                    const formattedAttrs = Object.entries(value)
-                        .map(([k, v]) => `${k}=${v}`)
-                        .join(' ');
-                    dump.push(`\t${attr} [${formattedAttrs}]`);
-                } else {
-                    dump.push(`\t${attr} = ${value}`);
-                }
-            });
+            if (!isSubgraph) {
+                Object.entries(this.dumpDotStyle).forEach(([attr, value]) => {
+                    if (typeof value == 'object') {
+                        const formattedAttrs = Object.entries(value)
+                            .map(([k, v]) => `${k}=${v}`)
+                            .join(' ');
+                        dump.push(`\t${attr} [${formattedAttrs}]`);
+                    } else {
+                        dump.push(`\t${attr} = ${value}`);
+                    }
+                });
+            }
 
             // Declare nodes
             dump.push('\t{');
@@ -299,17 +301,29 @@ export default class Graph {
                     });
                     const port = node instanceof JunctionNode ? '' : `:${depName}`;
 
-                    if (entryNode instanceof GraphInputNode) {
-                        dump.push(`\t"${subgraphName}:${entryName}" -> "${nodeName}"${port} ${attrs};`);
+                    const sourceName = entryNode instanceof GraphInputNode ? `${subgraphName}:${entryName}` : entryName;
+                    dump.push(`\t"${sourceName}" -> "${nodeName}"${port} ${attrs};`);
 
-                        const name = entryNode.graphInput[0];
-                        if (name == undefined) {
-                            continue;
+                }
+
+                if (node instanceof SubGraphNode) {
+                    for (const [iName, iNode] of node.graph.inputs) {
+                        const [dep, _ty] = iNode.input;
+                        if (dep != undefined) {
+                            const nodeEntry = this.findNodeEntry(dep);
+                            if (nodeEntry == undefined) {
+                                throw new Error(
+                                    `Input "${iName}" of subgraph "${node.label}" is not part of the graph`,
+                                );
+                            }
+                            const { name: entryName, node: _entryNode } = nodeEntry;
+                            const colorStyle = getColor(null, dep.outputType);
+                            const attrs = nodeEntry.node.dumpDotEdgeAttr({
+                                arrowhead: 'none',
+                                ...colorStyle,
+                            });
+                            dump.push(`\t"${entryName}" -> "${nodeName}:${iName}" ${attrs}`);
                         }
-
-                        dump.push(`\t"${name}" -> "${subgraphName}:${entryName}" ${attrs};`);
-                    } else {
-                        dump.push(`\t"${entryName}" -> "${nodeName}"${port} ${attrs};`);
                     }
                 }
             }
