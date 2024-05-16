@@ -19,7 +19,7 @@ export default class InputNode extends GraphNode {
         return this.value;
     }
 
-    protected get _nodeType(): string {
+    public get nodeType(): string {
         return InputNode.name.replace('Node', '');
     }
 
@@ -27,7 +27,6 @@ export default class InputNode extends GraphNode {
         return {
             label: name => `${name}: ${stringify(this.value)}`,
             attrs: {
-                shape: 'rectangle',
                 color: 'goldenrod',
             },
         };

@@ -43,7 +43,7 @@
         void main() {
             vec4 color = texture2D( uTexture, vUv );
             float avg = (color.r + color.g + color.b) / 3.;
-            gl_FragColor = vec4(avg.xxx, 1.0);
+            gl_FragColor = vec4(avg, avg, avg, 1.0);
         }
     </script>
 
@@ -62,12 +62,9 @@
         const outerGraph = new itowns.Graph();
 
         const inputView = new itowns.InputNode(view);
-        const viewJunction = new itowns.JunctionNode(inputView)
         const renderer = new itowns.InputNode(view.mainLoop.gfxEngine.renderer);
-        outerGraph.setGrouped({inputView, viewJunction, renderer});
-
-        const render = new itowns.RenderViewNode(viewJunction);
-        outerGraph.setGrouped({render});
+        const render = new itowns.RenderViewNode(inputView);
+        outerGraph.setGrouped({inputView, renderer, render});
 
         // Subgraphs
         const postProcessingGraph = new itowns.Graph();
@@ -76,25 +73,31 @@
         const sharpenWeight = new itowns.InputNode(5);
         const sharpenOffset = new itowns.InputNode(new itowns.THREE.Vector2(0.0025, 0.));
         postProcessingGraph.setGrouped({sharpenWeight, sharpenOffset});
-        // Filter
+        // Screen shaders
         const coastSharpen = new itowns.ScreenShaderNode(render, renderer, {
             fragmentShader: document.getElementById('coastSharpenFragmentShader').textContent,
             toScreen: true,
             uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
         });
-        postProcessingGraph.setGrouped({coastSharpen});
+        const greyscale = new itowns.ScreenShaderNode(coastSharpen, renderer, {
+            fragmentShader: document.getElementById('greyscaleFragmentShader').textContent,
+            toScreen: true,
+        });
+        postProcessingGraph.setGrouped({coastSharpen, greyscale});
 
-        const postProcessingGraphNode = new itowns.SubGraphNode(outerGraph, postProcessingGraph, coastSharpen, 'PostProcessing');
+        const postProcessingGraphNode = new itowns.SubGraphNode(outerGraph, postProcessingGraph, greyscale, 'PostProcessing');
         outerGraph.setGrouped({postProcessingGraphNode});
+
+        console.log(coastSharpen.inputs.get('input'))
+
+        console.dir(outerGraph);
+        console.log(outerGraph.dumpDot());
+        window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
         let frame = 0;
         view.render = function render() {
             outerGraph.getOutput(frame++, postProcessingGraphNode);
         };
-
-        console.dir(outerGraph);
-        console.log(outerGraph.dumpDot());
-        window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
         itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
             config.source = new itowns.WMTSSource(config.source);

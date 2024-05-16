@@ -28,7 +28,7 @@ export default class JunctionNode extends GraphNode {
         this.inputs.set(JunctionNode.inputName, [node, type]);
     }
 
-    protected get _nodeType(): string {
+    public get nodeType(): string {
         const name = JunctionNode.name;
         return name.slice(0, name.length - 4);
     }

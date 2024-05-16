@@ -39,7 +39,7 @@ export default class RenderViewNode extends ProcessorNode {
         });
     }
 
-    protected get _nodeType(): string {
+    public get nodeType(): string {
         return RenderViewNode.name.replace('Node', '');
     }
 

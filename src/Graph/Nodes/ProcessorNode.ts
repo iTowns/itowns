@@ -25,7 +25,7 @@ export default class ProcessorNode extends GraphNode {
         return this.callback(frame, argObj);
     }
 
-    protected get _nodeType(): string {
+    public get nodeType(): string {
         return ProcessorNode.name.replace('Node', '');
     }
 
@@ -33,7 +33,6 @@ export default class ProcessorNode extends GraphNode {
         return {
             label: name => `${name}`,
             attrs: {
-                shape: 'box',
                 color: 'lightskyblue',
             },
         };

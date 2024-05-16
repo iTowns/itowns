@@ -27,11 +27,19 @@ export default class SubGraphNode extends GraphNode {
         for (const [_nodeName, node] of this.graph.nodes) {
             for (const [depName, [dep, depType]] of node.inputs) {
                 if (dep != undefined && Array.from(this.graph.nodes.values()).find(oNode => oNode == dep) == undefined) {
+                    // Try to find an already created graph input for this dependency
+                    const findInput = Array.from(this.graph.inputs).find(([name, _input]) => name == depName);
+                    if (findInput != undefined) {
+                        const [_name, input] = findInput;
+                        node.inputs.set(depName, [input, depType]);
+                        continue;
+                    }
+
                     // TODO: only works for one level of nesting, we might need a resolve function but
                     // I'm not sure the case where it'd be needed will ever occur.
                     const newInput = new GraphInputNode(Object.fromEntries([[outerGraph.findNodeEntry(dep)!.name, dep]]));
-                    this.graph.inputs.set(depName, newInput);
-                    node.inputs.set(depName, [newInput, depType]);
+                    const addedInput = this.graph.inputs.set(depName, newInput).get(depName)!;
+                    node.inputs.set(depName, [addedInput, depType]);
                 }
             }
         }
@@ -45,7 +53,7 @@ export default class SubGraphNode extends GraphNode {
         return this._label;
     }
 
-    protected get _nodeType(): string {
+    public get nodeType(): string {
         return SubGraphNode.name.replace('Node', '');
     }
 

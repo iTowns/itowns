@@ -1,3 +1,4 @@
+import { diff as objectDiff } from 'deep-object-diff';
 import { GraphNode, DumpDotGlobalStyle, Type, getColor, JunctionNode, SubGraphNode, InputNode, GraphInputNode } from './Common.ts';
 
 type NodeCallback = (node: GraphNode) => void;
@@ -28,7 +29,7 @@ export default class Graph {
         this._valid = false;
     }
 
-    public get valid(): boolean {
+    public get isValid(): boolean {
         return this._valid;
     }
 
@@ -131,7 +132,7 @@ export default class Graph {
         const nodeName = this.findNodeEntry(node)?.name ?? this.findInputEntry(node)?.name ?? undefined;
         if (nodeName == undefined) {
             console.error(node);
-            throw new Error('AAAAAAA');
+            throw new Error(`Node not found in nodes or inputs after following this path: ${path}`);
         }
 
         if (visited.has(nodeName)) {
@@ -163,10 +164,7 @@ export default class Graph {
         path.delete(nodeName);
     }
 
-    /**
-     * Find a node's entry in the graph. O(n) time complexity.
-     * Returns the whole entry to be easier to expand later on if needed.
-     */
+    /** Find a node's entry in the graph. O(n) time complexity. */
     public findNodeEntry(node: GraphNode): { name: string, node: GraphNode } | null {
         for (const [name, oNode] of this.nodes.entries()) {
             if (node == oNode) {
@@ -176,10 +174,7 @@ export default class Graph {
         return null;
     }
 
-    /**
-     * Find a node's entry in the graph. O(n) time complexity.
-     * Returns the whole entry to be easier to expand later on if needed.
-     */
+    /** Find a node's entry in the inputs. O(n) time complexity. */
     public findInputEntry(node: GraphNode): { name: string, node: GraphInputNode } | null {
         for (const [name, oNode] of this.inputs.entries()) {
             if (node == oNode) {
@@ -228,6 +223,7 @@ export default class Graph {
         return {
             rankdir: 'LR',
             node: {
+                shape: 'mbox',
                 fontname: 'Arial',
                 style: 'filled',
                 fillcolor: 'whitesmoke',
@@ -283,20 +279,21 @@ export default class Graph {
                 for (const [depName, [dep, _ty]] of node.inputs) {
                     if (dep == null) { continue; }
 
+                    // Lookup the node in the graph nodes and inputs
                     // PERF: Inefficient but the alternative is duplicating the names
                     // inside the nodes and that makes the API much heavier so we'll
                     // have to live with it as it will likely never be an issue.
                     const nodeEntry = this.findNodeEntry(dep) ?? (isSubgraph ? this.findInputEntry(dep) : undefined);
                     if (nodeEntry == undefined) {
                         throw new Error(
-                            `Input "${depName}" of node "${nodeName}" is not part of the graph`,
+                            `Input "${depName}" of node "${nodeName}" is not part of the ${isSubgraph ? `subgraph "${subgraphName}"` : 'graph'}`,
                         );
                     }
 
                     const { name: entryName, node: entryNode } = nodeEntry;
                     const colorStyle = getColor(null, dep.outputType);
                     const attrs = nodeEntry.node.dumpDotEdgeAttr({
-                        ...(node instanceof JunctionNode || entryNode instanceof GraphInputNode ? { arrowhead: 'none' } : {}),
+                        ...(node instanceof JunctionNode ? { arrowhead: 'none' } : {}),
                         ...colorStyle,
                     });
                     const port = node instanceof JunctionNode ? '' : `:${depName}`;

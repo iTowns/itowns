@@ -129,7 +129,7 @@ export default class ScreenShaderNode extends ProcessorNode {
         });
     }
 
-    protected get _nodeType(): string {
+    public get nodeType(): string {
         return ScreenShaderNode.name.replace('Node', '');
     }
 

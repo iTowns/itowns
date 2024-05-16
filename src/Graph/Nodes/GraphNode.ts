@@ -18,7 +18,7 @@ export default abstract class GraphNode {
 
     protected abstract _apply(graph: Graph, frame: number): any;
 
-    protected abstract get _nodeType(): string;
+    public abstract get nodeType(): string;
 
     /**
      * Get the output of the node at a given frame.
@@ -48,7 +48,7 @@ export default abstract class GraphNode {
             .map(([k, v]) => `${k}=${v}`)
             .join(' ');
 
-        const lType = `<tr><td><b>${this._nodeType}</b></td></tr>`;
+        const lType = `<tr><td><b>${this.nodeType}</b></td></tr>`;
 
         const lName = label(name).trim();
         const lNameFormatted = lName.length == 0 ? [] : [`<hr/><tr><td><i>${lName}</i></td></tr>`];
