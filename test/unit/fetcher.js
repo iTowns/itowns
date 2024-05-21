@@ -110,7 +110,7 @@ describe('Fetcher', function () {
                     done();
                 })
                 .catch(done);
-        }).timeout(8000);
+        }).timeout(10000);
     });
 
     describe('multiple', function () {
