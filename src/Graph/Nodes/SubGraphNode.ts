@@ -45,7 +45,7 @@ export default class SubGraphNode extends GraphNode {
         }
     }
 
-    protected _apply(graph: Graph, frame: number) {
+    protected _apply(graph?: Graph, frame: number = 0) {
         return this._outNode.getOutput(graph, frame);
     }
 

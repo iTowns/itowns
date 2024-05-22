@@ -15,7 +15,7 @@ export default class JunctionNode extends GraphNode {
         }
     }
 
-    protected _apply(graph: Graph, frame: number): any {
+    protected _apply(graph?: Graph, frame: number = 0): any {
         return this.inputs.get(JunctionNode.inputName)![0]?.getOutput(graph, frame) ?? null;
     }
 

@@ -1,5 +1,7 @@
 import * as THREE from 'three';
+
 import View from 'Core/View.js';
+
 import Graph from './Graph.ts';
 import GraphNode from './Nodes/GraphNode.ts';
 import InputNode from './Nodes/InputNode.ts';
@@ -8,24 +10,36 @@ import ScreenShaderNode from './Nodes/ScreenShaderNode.ts';
 import RenderViewNode from './Nodes/RenderViewNode.ts';
 import SubGraphNode from './Nodes/SubGraphNode.ts';
 import JunctionNode from './Nodes/JunctionNode.ts';
+import ViewNode from './Nodes/ViewNode.ts';
 import GraphInputNode from './Nodes/GraphInputNode.ts';
+import GlobeViewNode from './Nodes/GlobeViewNode.ts';
+import FieldGetterNode from './Nodes/FieldGetterNode.ts';
+// import PlanarViewNode from './Nodes/PlanarViewNode.ts';
 
 export type Type = string;
 export type Dependency = GraphNode | undefined | null;
 
 enum BuiltinType {
+    Any = 'Any',
+
     // Primitives
     Number = 'Number',
 
     // iTowns types
     View = 'View',
+    Placement = 'Placement',
 
-    // Three.js types
+    // Three.js
+    /// Types
     Renderer = 'Renderer',
     RenderTarget = 'RenderTarget',
+    /// Primitives
     Vector2 = 'Vector2',
     Vector3 = 'Vector3',
     Vector4 = 'Vector4',
+
+    // DOM
+    HtmlDivElement = 'HtmlDivElement',
 }
 
 // HACK: all of these mappings and functions should go into a style state object.
@@ -40,6 +54,8 @@ const typeMapping: [(v: any) => boolean, BuiltinType][] = [
     [v => v instanceof THREE.Vector2, BuiltinType.Vector2],
     [v => v instanceof THREE.Vector3, BuiltinType.Vector3],
     [v => v instanceof THREE.Vector4, BuiltinType.Vector4],
+    // DOM
+    [v => v instanceof HTMLDivElement, BuiltinType.HtmlDivElement],
 ];
 
 function getBuiltinType(value: any): BuiltinType | undefined {
@@ -57,8 +73,8 @@ const stringMapping = new Map<Type, (v: any) => string>([
 ]);
 
 function stringify(value: any, type?: Type): string {
-    const auto = value.toString();
-    if (auto !== '[object Object]') {
+    const auto: string = value.toString();
+    if (!auto.startsWith('[object ')) {
         return auto;
     }
 
@@ -78,11 +94,13 @@ type ColorStyle = {
 const typeColor = new Map<Type, ColorStyle>([
     [BuiltinType.Number, { color: 'chocolate', fillcolor: 'orange' }],
     [BuiltinType.View, { color: 'cornflowerblue', fillcolor: 'deepskyblue' }],
+    [BuiltinType.Placement, { color: 'cornflowerblue', fillcolor: 'deepskyblue' }],
     [BuiltinType.Vector2, { color: 'indigo', fillcolor: 'violet' }],
     [BuiltinType.Vector3, { color: 'indigo', fillcolor: 'violet' }],
     [BuiltinType.Vector4, { color: 'indigo', fillcolor: 'violet' }],
     [BuiltinType.RenderTarget, { color: 'darkolivegreen', fillcolor: 'limegreen' }],
     [BuiltinType.Renderer, { color: 'darkolivegreen', fillcolor: 'limegreen' }],
+    [BuiltinType.HtmlDivElement, { color: 'indianred', fillcolor: 'lightcoral' }],
 ]);
 
 function getColor(value: any, type?: Type): ColorStyle {
@@ -105,16 +123,25 @@ export interface DumpDotGlobalStyle {
 }
 
 export {
-    // Classes
     Graph,
+
+    // Graph
     GraphNode,
     InputNode,
-    ProcessorNode,
-    ScreenShaderNode,
-    RenderViewNode,
     SubGraphNode,
     JunctionNode,
     GraphInputNode,
+    FieldGetterNode,
+
+    // View
+    ViewNode,
+    GlobeViewNode,
+    // PlanarViewNode,
+
+    // Processors
+    ProcessorNode,
+    ScreenShaderNode,
+    RenderViewNode,
 
     // Utils
     BuiltinType,

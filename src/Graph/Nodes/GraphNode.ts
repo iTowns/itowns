@@ -5,27 +5,26 @@ import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Common.ts';
  * Base class for all other types of nodes.
  */
 export default abstract class GraphNode {
-    public inputs: Map<string, [Dependency, Type]>;
-    public outputType: Type;
-
     protected _out: [number, any | undefined];
 
-    public constructor(inputs: Map<string, [Dependency, Type]>, outputType: Type) {
-        this.inputs = inputs;
-        this.outputType = outputType;
+    public constructor(
+        public inputs: Map<string, [Dependency, Type]>,
+        public outputType: Type,
+    ) {
         this._out = [-1, undefined];
     }
 
-    protected abstract _apply(graph: Graph, frame: number): any;
+    protected abstract _apply(graph?: Graph, frame?: number): any;
 
     public abstract get nodeType(): string;
 
     /**
      * Get the output of the node at a given frame.
+     * @param graph The graph the node is a part of.
      * @param frame The frame to get the output for.
      * @returns The output of the node at the given frame.
      */
-    public getOutput(graph: Graph, frame: number): any {
+    public getOutput(graph?: Graph, frame: number = 0): any {
         const [oFrane, oValue] = this._out;
         if (oValue == undefined || oFrane !== frame) {
             this._out = [frame, this._apply(graph, frame)];

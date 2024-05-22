@@ -3,18 +3,15 @@ import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Common.ts';
 
 /** Represents a mapping from a set of inputs to an output. */
 export default class ProcessorNode extends GraphNode {
-    public callback: (frame: number, args: any) => any;
-
     public constructor(
         inputs: { [name: string]: [Dependency, Type] },
         outputType: Type,
-        callback: (frame: number, args: any) => any,
+        public callback: (frame: number, args: any) => any,
     ) {
         super(new Map(Object.entries(inputs)), outputType);
-        this.callback = callback;
     }
 
-    protected _apply(graph: Graph, frame: number): any {
+    protected _apply(graph?: Graph, frame: number = 0): any {
         const inputs = Array.from(this.inputs);
         const args: [string, any][] = inputs.map(([name, dependency]) => [
             name,

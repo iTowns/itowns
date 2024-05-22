@@ -1,5 +1,5 @@
 import { diff as objectDiff } from 'deep-object-diff';
-import { GraphNode, DumpDotGlobalStyle, Type, getColor, JunctionNode, SubGraphNode, InputNode, GraphInputNode } from './Common.ts';
+import { GraphNode, DumpDotGlobalStyle, Type, getColor, JunctionNode, SubGraphNode, InputNode, GraphInputNode, BuiltinType } from './Common.ts';
 
 type NodeCallback = (node: GraphNode) => void;
 type StringCallback = (string: string) => void;
@@ -148,7 +148,7 @@ export default class Graph {
 
         // Type checking
         for (const [name, [input, type]] of node.inputs ?? []) {
-            if (input != undefined && input.outputType != type) {
+            if (input != undefined && input.outputType != type && type != BuiltinType.Any) {
                 throw new Error(`Invalid type for dependency ${nodeName}.${name}`
                     + `, got '${input.outputType}' expected '${type}'`);
             }
