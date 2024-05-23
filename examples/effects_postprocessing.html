@@ -17,15 +17,12 @@
     <script src="js/GUI/LoadingScreen.js"></script>
 
     <script type="x-shader/x-fragment" id="coastSharpenFragmentShader">
-        uniform float uWeight;
-        uniform vec2 uOffset;
-
         float getAvg(vec2 uv) {
             vec4 color = texture2D(uTexture, uv);
             return (color.r + color.g + color.b) / 3.0;
         }
 
-        void main() {
+        void coastSharpen() {
             vec4 color = texture2D( uTexture, vUv );
 
             float mid = getAvg(vUv);
@@ -40,7 +37,7 @@
         }
     </script>
     <script type="x-shader/x-fragment" id="greyscaleFragmentShader">
-        void main() {
+        void greyscale() {
             vec4 color = texture2D( uTexture, vUv );
             float avg = (color.r + color.g + color.b) / 3.;
             gl_FragColor = vec4(avg, avg, avg, 1.0);
@@ -64,7 +61,7 @@
 
         const view = viewNode.getOutput();
 
-        // setupLoadingScreen(viewerDiv.getOutput(), view);
+        setupLoadingScreen(viewerDiv.getOutput(), view);
 
         // const renderer = new graph.InputNode(view.mainLoop.gfxEngine.renderer);
         const renderer = new graph.FieldGetterNode(viewNode, 'mainLoop.gfxEngine.renderer', graph.BuiltinType.Renderer)
@@ -80,11 +77,17 @@
         postProcessingGraph.setGrouped({sharpenWeight, sharpenOffset});
         // Screen shaders
         const coastSharpen = new graph.ScreenShaderNode(render, renderer, {
-            fragmentShader: document.getElementById('coastSharpenFragmentShader').textContent,
-            uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
+            fragmentShader: {
+                uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
+                code: document.getElementById('coastSharpenFragmentShader').textContent,
+                entry: 'coastSharpen'
+            },
         });
         const greyscale = new graph.ScreenShaderNode(coastSharpen, renderer, {
-            fragmentShader: document.getElementById('greyscaleFragmentShader').textContent,
+            fragmentShader: {
+                code: document.getElementById('greyscaleFragmentShader').textContent,
+                entry: 'greyscale'
+            },
             toScreen: true,
         });
         postProcessingGraph.setGrouped({coastSharpen, greyscale});
@@ -92,7 +95,7 @@
         const postProcessingGraphNode = new graph.SubGraphNode(outerGraph, postProcessingGraph, greyscale, 'Post-processing');
         outerGraph.setGrouped({postProcessingGraphNode});
 
-        window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
+        // window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
         let frame = 0;
         view.render = function render() {

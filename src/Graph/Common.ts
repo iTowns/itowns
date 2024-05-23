@@ -111,6 +111,22 @@ function getColor(value: any, type?: Type): ColorStyle {
     return {};
 }
 
+const typeToOpenGL = new Map<Type, string>([
+    [BuiltinType.Number, 'float'],
+    [BuiltinType.Vector2, 'vec2'],
+    [BuiltinType.Vector3, 'vec3'],
+    [BuiltinType.Vector4, 'vec4'],
+    [BuiltinType.RenderTarget, 'sampler2D'],
+]);
+
+function toOpenGL(type: Type): string {
+    const glTy = typeToOpenGL.get(type);
+    if (glTy == undefined) {
+        throw new Error(`Type ${type} does not have a known OpenGL equivalent`);
+    }
+    return glTy;
+}
+
 export interface DumpDotNodeStyle {
     label: (name: string) => string;
     attrs: { [key: string]: string | { [key: string]: string } };
@@ -148,4 +164,5 @@ export {
     getBuiltinType,
     stringify,
     getColor,
+    toOpenGL,
 };

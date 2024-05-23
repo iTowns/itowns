@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type } from '../Common.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, toOpenGL } from '../Common.ts';
 import ProcessorNode from './ProcessorNode.ts';
 
 interface CallbackArgs extends Record<string, any> {
@@ -21,12 +21,15 @@ export default class ScreenShaderNode extends ProcessorNode {
     }
 
     private static get defaultFragmentShader() {
-        return `
-        void main() {
-            vec4 color = texture2D(uTexture, vUv);
-            gl_FragColor = color;
-        }
-        `;
+        return {
+            code: `
+            void identity() {
+                vec4 color = texture2D(uTexture, vUv);
+                gl_FragColor = color;
+            }
+            `,
+            entry: 'identity',
+        };
     }
 
     // HACK: Essentially a scuffed singleton pack.
@@ -36,6 +39,7 @@ export default class ScreenShaderNode extends ProcessorNode {
     private static _camera: THREE.Camera;
 
     // Kept for debug purposes
+    private _uniformDeclarations: string;
     private _fragmentShader: string;
     private _material: THREE.ShaderMaterial;
 
@@ -53,31 +57,30 @@ export default class ScreenShaderNode extends ProcessorNode {
         }
     }
 
-    /**
-     * Create a new screen shader node.
-     * @param input The input {@link THREE.Texture}.
-     * @param renderer The {@link THREE.WebGLRenderer} to render with.
-     */
     public constructor(
         input: Dependency,
         renderer: Dependency,
-        { uniforms, fragmentShader, toScreen = false }: {
-            uniforms?: { [name: string]: GraphNode | Type },
-            fragmentShader?: string,
+        { fragmentShader: { uniforms, ...fragmentShader } = ScreenShaderNode.defaultFragmentShader, toScreen = false }: {
+            fragmentShader?: {
+                uniforms?: { [name: string]: GraphNode | Type },
+                code: string,
+                entry: string,
+            },
             toScreen?: boolean
         },
     ) {
         ScreenShaderNode._init();
 
+        uniforms ??= {};
+
         const fullUniforms = Object.fromEntries(
-            Object.entries(uniforms ?? {})
-                .map(([name, uniform]): [string, [Dependency, string]] => {
-                    if (uniform instanceof GraphNode) {
-                        return [name, [uniform, uniform.outputType]];
-                    } else {
-                        return [name, [null, uniform]];
-                    }
-                }),
+            Object.entries(uniforms)
+                .map(([name, uniform]): [string, [Dependency, string]] => [
+                    name,
+                    uniform instanceof GraphNode
+                        ? [uniform, uniform.outputType]
+                        : [null, uniform],
+                ]),
         );
 
         super(
@@ -115,13 +118,24 @@ export default class ScreenShaderNode extends ProcessorNode {
                 return target;
             });
 
+        this._uniformDeclarations = Object.entries(fullUniforms).map(
+            ([name, [_node, type]]) => `uniform ${toOpenGL(type)} ${name};`,
+        ).join('\n');
+
         this._fragmentShader = `
             precision highp float;
 
             varying vec2 vUv;
             uniform sampler2D uTexture;
 
-            ${fragmentShader ?? ScreenShaderNode.defaultFragmentShader}`;
+            ${this._uniformDeclarations}
+
+            ${fragmentShader.code}
+
+            void main() {
+                ${fragmentShader.entry}();
+            }
+            `;
 
         this._material = new THREE.ShaderMaterial({
             fragmentShader: this._fragmentShader,
