@@ -62,7 +62,7 @@ export default class ScreenShaderNode extends ProcessorNode {
         renderer: Dependency,
         { fragmentShader: { uniforms, ...fragmentShader } = ScreenShaderNode.defaultFragmentShader, toScreen = false }: {
             fragmentShader?: {
-                uniforms?: { [name: string]: GraphNode | Type },
+                uniforms?: { [name: string]: Dependency | GraphNode | Type },
                 code: string,
                 entry: string,
             },
@@ -75,12 +75,18 @@ export default class ScreenShaderNode extends ProcessorNode {
 
         const fullUniforms = Object.fromEntries(
             Object.entries(uniforms)
-                .map(([name, uniform]): [string, [Dependency, string]] => [
-                    name,
-                    uniform instanceof GraphNode
-                        ? [uniform, uniform.outputType]
-                        : [null, uniform],
-                ]),
+                .map(([name, uniform]): [string, [Dependency | null, Type]] => {
+                    let val: [Dependency | null, Type];
+                    if (typeof uniform == 'string') {
+                        val = [null, uniform];
+                    } else if (uniform instanceof GraphNode) {
+                        val = [{ node: uniform, output: GraphNode.defaultIOName }, uniform.outputs.get(GraphNode.defaultIOName)![1]];
+                    } else {
+                        val = [uniform, uniform.node.outputs.get(uniform.output)![1]];
+                    }
+
+                    return [name, val];
+                }),
         );
 
         super(
@@ -97,7 +103,7 @@ export default class ScreenShaderNode extends ProcessorNode {
 
                 const target: THREE.WebGLRenderTarget | null = toScreen
                     ? null
-                    : (this._out[1] ?? new THREE.WebGLRenderTarget(
+                    : (this.outputs.get(GraphNode.defaultIOName)![0] ?? new THREE.WebGLRenderTarget(
                         input.width,
                         input.height,
                     ));

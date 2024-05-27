@@ -1,4 +1,3 @@
-import { diff as objectDiff } from 'deep-object-diff';
 import { GraphNode, DumpDotGlobalStyle, Type, getColor, JunctionNode, SubGraphNode, InputNode, GraphInputNode, BuiltinType } from './Common.ts';
 
 type NodeCallback = (node: GraphNode) => void;
@@ -39,7 +38,7 @@ export default class Graph {
      * @throws If the node does not exist.
      * @returns The output of the node at the given frame.
      */
-    public getOutput(frame: number, node: string | GraphNode): any {
+    public getOutput(frame: number, node: string | GraphNode, output: string): any {
         this.validate();
 
         const out = typeof node === 'string' ? this.nodes.get(node) : node;
@@ -48,7 +47,7 @@ export default class Graph {
             throw new Error(`Node ${node} does not exist`);
         }
 
-        return out.getOutput(this, frame);
+        return out.getOutput(output, this, frame);
     }
 
     /**
@@ -74,7 +73,12 @@ export default class Graph {
         this._valid = false;
 
         this.nodes.set(name, node);
-        this.types.add(node.outputType);
+        for (const [_name, [_, ty]] of node.inputs) {
+            this.types.add(ty);
+        }
+        for (const [_name, [_, ty]] of node.outputs) {
+            this.types.add(ty);
+        }
 
         return true;
     }
@@ -147,18 +151,27 @@ export default class Graph {
         }
 
         // Type checking
-        for (const [name, [input, type]] of node.inputs ?? []) {
-            if (input != undefined && input.outputType != type && type != BuiltinType.Any) {
-                throw new Error(`Invalid type for dependency ${nodeName}.${name}`
-                    + `, got '${input.outputType}' expected '${type}'`);
+        for (const [name, [dep, type]] of node.inputs ?? []) {
+            if (dep != null) {
+                const output = dep.node.outputs.get(dep.output);
+                if (output == undefined) {
+                    throw new Error(`Dangling dependency: '${nodeName}.${name}'; `
+                        + `${dep.node.nodeType} dependency does not have an output named '${dep.output}'`);
+                }
+                const [_outputValue, outputType] = output;
+
+                if (outputType != type && type != BuiltinType.Any) {
+                    throw new Error(`Invalid type for dependency ${nodeName}.${name}`
+                        + `, got '${outputType}' expected '${type}'`);
+                }
             }
         }
 
         // DFS
         path.add(nodeName);
         for (const [_name, [dep, _type]] of node.inputs ?? []) {
-            if (dep != undefined) {
-                this._validationDfs(dep, path, visited);
+            if (dep != null) {
+                this._validationDfs(dep.node, path, visited);
             }
         }
         path.delete(nodeName);
@@ -196,7 +209,7 @@ export default class Graph {
         let index = 0;
         for (const [name, [input, _]] of inputs.entries()) {
             if (input != undefined) {
-                this.dfs(input, { prefix, infix, postfix, undef });
+                this.dfs(input.node, { prefix, infix, postfix, undef });
             } else {
                 undef?.(name);
                 index++;
@@ -231,6 +244,8 @@ export default class Graph {
             edge: {
                 fontname: 'Arial',
                 arrowhead: 'dot',
+                arrowtail: 'dot',
+                dir: 'both',
             },
         };
     }
@@ -276,14 +291,14 @@ export default class Graph {
             // Delicious spaghetti :(
             // Declare edges
             for (const [nodeName, node] of this.nodes) {
-                for (const [depName, [dep, _ty]] of node.inputs) {
+                for (const [depName, [dep, depTy]] of node.inputs) {
                     if (dep == null) { continue; }
 
                     // Lookup the node in the graph nodes and inputs
                     // PERF: Inefficient but the alternative is duplicating the names
                     // inside the nodes and that makes the API much heavier so we'll
                     // have to live with it as it will likely never be an issue.
-                    const nodeEntry = this.findNodeEntry(dep) ?? (isSubgraph ? this.findInputEntry(dep) : undefined);
+                    const nodeEntry = this.findNodeEntry(dep.node) ?? (isSubgraph ? this.findInputEntry(dep.node) : undefined);
                     if (nodeEntry == undefined) {
                         throw new Error(
                             `Input "${depName}" of node "${nodeName}" is not part of the ${isSubgraph ? `subgraph "${subgraphName}"` : 'graph'}`,
@@ -291,31 +306,31 @@ export default class Graph {
                     }
 
                     const { name: entryName, node: entryNode } = nodeEntry;
-                    const colorStyle = getColor(null, dep.outputType);
-                    const attrs = nodeEntry.node.dumpDotEdgeAttr({
+                    const colorStyle = getColor(null, depTy);
+                    const attrs = nodeEntry.node.dumpDotEdgeAttr(depTy, {
                         ...(node instanceof JunctionNode ? { arrowhead: 'none' } : {}),
                         ...colorStyle,
                     });
                     const port = node instanceof JunctionNode ? '' : `:${depName}`;
 
                     const sourceName = entryNode instanceof GraphInputNode ? `${subgraphName}:${entryName}` : entryName;
-                    dump.push(`\t"${sourceName}" -> "${nodeName}"${port} ${attrs};`);
-
+                    const sourcePort = entryNode instanceof GraphInputNode ? null : `:"${dep.output}"`;
+                    dump.push(`\t"${sourceName}"${sourcePort} -> "${nodeName}"${port} ${attrs};`);
                 }
 
                 if (node instanceof SubGraphNode) {
                     for (const [iName, iNode] of node.graph.inputs) {
-                        const [dep, _ty] = iNode.input;
+                        const [dep, depTy] = iNode.input;
                         if (dep != undefined) {
-                            const nodeEntry = this.findNodeEntry(dep);
+                            const nodeEntry = this.findNodeEntry(dep.node);
                             if (nodeEntry == undefined) {
                                 throw new Error(
                                     `Input "${iName}" of subgraph "${node.label}" is not part of the graph`,
                                 );
                             }
                             const { name: entryName, node: _entryNode } = nodeEntry;
-                            const colorStyle = getColor(null, dep.outputType);
-                            const attrs = nodeEntry.node.dumpDotEdgeAttr({
+                            const colorStyle = getColor(null, depTy);
+                            const attrs = nodeEntry.node.dumpDotEdgeAttr(depTy, {
                                 arrowhead: 'none',
                                 ...colorStyle,
                             });

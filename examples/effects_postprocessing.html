@@ -59,9 +59,11 @@
         const viewNode = new graph.GlobeViewNode(viewerDiv, placement);
         outerGraph.setGrouped({placement, viewerDiv, viewNode});
 
-        const view = viewNode.getOutput();
+        // window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
-        setupLoadingScreen(viewerDiv.getOutput(), view);
+        const div = viewerDiv.getOutput();
+        const view = viewNode.getOutput();
+        setupLoadingScreen(div, view);
 
         // const renderer = new graph.InputNode(view.mainLoop.gfxEngine.renderer);
         const renderer = new graph.FieldGetterNode(viewNode, 'mainLoop.gfxEngine.renderer', graph.BuiltinType.Renderer)

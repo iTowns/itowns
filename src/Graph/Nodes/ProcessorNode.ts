@@ -13,9 +13,9 @@ export default class ProcessorNode extends GraphNode {
 
     protected _apply(graph?: Graph, frame: number = 0): any {
         const inputs = Array.from(this.inputs);
-        const args: [string, any][] = inputs.map(([name, dependency]) => [
+        const args: [string, any][] = inputs.map(([name, [dep, _ty]]) => [
             name,
-            dependency[0]?.getOutput(graph, frame) ?? null,
+            dep?.node.getOutput(dep.output, graph, frame) ?? null,
         ]);
         const argObj = Object.fromEntries(args);
 

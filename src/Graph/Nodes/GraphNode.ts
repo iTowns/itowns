@@ -5,18 +5,51 @@ import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Common.ts';
  * Base class for all other types of nodes.
  */
 export default abstract class GraphNode {
-    protected _out: [number, any | undefined];
+    protected static defaultIOName = 'value';
+    // protected _out: [number, any | undefined];
+    protected _out: {
+        frame: number,
+        outputs: Map<string, [any, Type]>,
+    };
+
+    public inputs: Map<string, [Dependency | null, Type]>;
 
     public constructor(
-        public inputs: Map<string, [Dependency, Type]>,
-        public outputType: Type,
+        inputs: Map<string, [Dependency | GraphNode | null, Type]>,
+        // Optional to allow for clean side-effect-only nodes
+        outputs?: Map<string, Type> | Type,
     ) {
-        this._out = [-1, undefined];
+        this.inputs = new Map(Array.from(inputs.entries())
+            .map(([name, [dep, ty]]) => [
+                name,
+                [
+                    dep instanceof GraphNode
+                        ? { node: dep, output: GraphNode.defaultIOName }
+                        : dep,
+                    ty,
+                ],
+            ]));
+
+        let normalizedOutputs = null;
+
+        if (outputs == undefined) {
+            normalizedOutputs = new Map();
+        } else if (outputs instanceof Map) {
+            normalizedOutputs = new Map(Array.from(outputs.entries()).map(([name, ty]) => [name, [undefined, ty]]));
+        } else {
+            normalizedOutputs = new Map([[GraphNode.defaultIOName, [undefined, outputs]]]);
+        }
+
+        this._out = { frame: -1, outputs: normalizedOutputs };
     }
 
     protected abstract _apply(graph?: Graph, frame?: number): any;
 
     public abstract get nodeType(): string;
+
+    public get outputs(): Map<string, [any, Type]> {
+        return this._out.outputs;
+    }
 
     /**
      * Get the output of the node at a given frame.
@@ -24,12 +57,22 @@ export default abstract class GraphNode {
      * @param frame The frame to get the output for.
      * @returns The output of the node at the given frame.
      */
-    public getOutput(graph?: Graph, frame: number = 0): any {
-        const [oFrane, oValue] = this._out;
-        if (oValue == undefined || oFrane !== frame) {
-            this._out = [frame, this._apply(graph, frame)];
+    public getOutput(name: string = GraphNode.defaultIOName, graph?: Graph, frame: number = 0): [any, Type] {
+        const { frame: oFrane, outputs } = this._out;
+
+        if (!outputs.has(name)) {
+            throw new Error(`Provided ${this.nodeType} node does not have an output named '${name}'`);
         }
-        return this._out[1];
+
+        const [oValue, oType] = outputs.get(name)!;
+
+        if (oValue == undefined || oFrane !== frame) {
+            this._out.frame = frame;
+            const res = this._apply(graph, frame);
+            this._out.outputs.set(name, [res, oType]);
+        }
+
+        return this._out.outputs.get(name)![0];
     }
 
     /**
@@ -44,7 +87,7 @@ export default abstract class GraphNode {
     public dumpDot(name: string): string {
         const { label, attrs } = this.dumpDotStyle;
         const formattedAttrs = Object.entries(attrs)
-            .map(([k, v]) => `${k}=${v}`)
+            .map(([k, v]) => `${k} = ${v}`)
             .join(' ');
 
         const lType = `<tr><td><b>${this.nodeType}</b></td></tr>`;
@@ -55,8 +98,12 @@ export default abstract class GraphNode {
         const lPorts = Array.from(this.inputs)
             .map(([name, [dep, _ty]]) =>
                 `<tr><td align="left" port="${name}" ${dep == undefined ? 'color:"red"' : ''}>${name}</td></tr>`);
+        const lOutputs = Array.from(this.outputs)
+            .map(([name, _dep]) =>
+                `<tr><td align="right" port="${name}">${name}</td></tr>`,
+            );
 
-        const lHtml = ['<<table border="0">', lType, ...lNameFormatted, ...lPorts, '</table>>'].join('\n');
+        const lHtml = ['<<table border="0">', lType, ...lNameFormatted, ...lPorts, ...lOutputs, '</table>>'].join('\n');
 
         return `"${name}" [label=${lHtml} ${formattedAttrs} margin=.05]`;
     }
@@ -64,13 +111,13 @@ export default abstract class GraphNode {
     /**
      * Get the DOT attribute string for the outgoing edges.
      *
-     * Example output: [label="Node" shape="box"]
+     * Example expected output: [label=" Renderer"]
      */
-    public dumpDotEdgeAttr(extra?: { [attr: string]: string }): string {
+    public dumpDotEdgeAttr(ty: Type, extra?: { [attr: string]: string }): string {
         const attrs = Object.entries(extra ?? {})
             .map(([name, value]) => `${name}="${value}"`)
             .join(' ');
 
-        return `[label=" ${this.outputType}" ${attrs}]`;
+        return `[label=" ${ty}" ${attrs}]`;
     }
 }

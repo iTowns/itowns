@@ -17,7 +17,10 @@ import FieldGetterNode from './Nodes/FieldGetterNode.ts';
 // import PlanarViewNode from './Nodes/PlanarViewNode.ts';
 
 export type Type = string;
-export type Dependency = GraphNode | undefined | null;
+export type Dependency = {
+    node: GraphNode,
+    output: string
+};
 
 enum BuiltinType {
     Any = 'Any',
