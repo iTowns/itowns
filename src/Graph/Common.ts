@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import View from 'Core/View.js';
 
 import Graph from './Graph.ts';
+import SubGraph from './SubGraph.ts';
 import GraphNode from './Nodes/GraphNode.ts';
 import InputNode from './Nodes/InputNode.ts';
 import ProcessorNode from './Nodes/ProcessorNode.ts';
@@ -12,6 +13,7 @@ import SubGraphNode from './Nodes/SubGraphNode.ts';
 import JunctionNode from './Nodes/JunctionNode.ts';
 import ViewNode from './Nodes/ViewNode.ts';
 import GraphInputNode from './Nodes/GraphInputNode.ts';
+import GraphOutputNode from './Nodes/GraphOutputNode.ts';
 import GlobeViewNode from './Nodes/GlobeViewNode.ts';
 import FieldGetterNode from './Nodes/FieldGetterNode.ts';
 // import PlanarViewNode from './Nodes/PlanarViewNode.ts';
@@ -143,6 +145,7 @@ export interface DumpDotGlobalStyle {
 
 export {
     Graph,
+    SubGraph,
 
     // Graph
     GraphNode,
@@ -150,6 +153,7 @@ export {
     SubGraphNode,
     JunctionNode,
     GraphInputNode,
+    GraphOutputNode,
     FieldGetterNode,
 
     // View

@@ -1,58 +1,79 @@
-import { BuiltinType, Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphNode } from '../Common.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphNode, GraphOutputNode, SubGraph, Type } from '../Common.ts';
 
 export default class SubGraphNode extends GraphNode {
-    public graph: Graph;
-    private _outNode: Dependency;
-    private _label?: string;
+    public graph: SubGraph;
+    private graphOutputs: Map<string, [Dependency, Type]>;
 
-    public constructor(outerGraph: Graph, graph: Graph, out: Dependency | GraphNode | [string, string], label?: string) {
-        super(new Map(), BuiltinType.Number);
+    // We replace every outside dependency by a junction (graph input) and create output junctions for every single
+    // node output, pruning them when optimising the graph if they're unused.
+    // TODO: Allow for multiple outputs
+    public constructor(
+        outerGraph: Graph,
+        graph: SubGraph,
+        out: { [name: string]: Dependency | [GraphNode, string] | [string, string] | GraphNode | string },
+    ) {
+        const outputs = Object.entries(out)
+            .map(([name, dep]): [string, Dependency] => {
+                if (Array.isArray(dep)) {
+                    const [nodeName, output] = dep;
+                    const node = nodeName instanceof GraphNode ? nodeName : graph.get(nodeName);
+                    if (node == undefined) {
+                        throw new Error(`Node "${nodeName}" selected as output does not exist within the subgraph`);
+                    }
+
+                    return [name, { node, output }];
+                } else if (dep instanceof GraphNode) {
+                    return [name, { node: dep, output: GraphNode.defaultIoName }];
+                } else if (typeof dep == 'string') {
+                    const node = graph.get(dep);
+                    if (node == undefined) {
+                        throw new Error(`Node "${dep}" selected as output does not exist within the subgraph`);
+                    }
+                    return [name, { node, output: GraphNode.defaultIoName }];
+                } else {
+                    return [name, dep];
+                }
+            })
+            .map(([name, dep]): [string, [Dependency, Type]] => [name, [dep, dep.node.outputs.get(dep.output)![1]]]);
+
+        super(new Map(), new Map(outputs.map(([name, [_, ty]]) => [name, ty])));
 
         this.graph = graph;
-        this._label = label;
+        this.graphOutputs = new Map(outputs.map(([name, [dep, ty]]) =>
+            [name, [{ node: new GraphOutputNode(dep), output: SubGraphNode.defaultIoName }, ty]]));
 
-        if (Array.isArray(out)) {
-            const [nodeName, output] = out;
-            const node = graph.get(nodeName);
-            if (node == undefined) {
-                throw new Error(`Node "${out}" selected as output does not exist within the subgraph`);
-            }
-
-            this._outNode = { node, output };
-        } else if (out instanceof GraphNode) {
-            this._outNode = { node: out, output: GraphNode.defaultIOName };
-        } else {
-            this._outNode = out;
-        }
-
-        // Replace dependencies outside the graph with graph inputs
         for (const [_nodeName, node] of this.graph.nodes) {
+            // Replace dependencies outside the graph with graph inputs
             for (const [depName, [dep, depType]] of node.inputs) {
                 if (dep != undefined && Array.from(this.graph.nodes.values()).find(oNode => oNode == dep.node) == undefined) {
                     // Try to find an already created graph input for this dependency
-                    const findInput = Array.from(this.graph.inputs).find(([name, _input]) => name == depName);
+                    const inputs = Array.from(this.graph.inputs);
+                    const findInput = inputs.find(([name, _input]) => name == depName);
                     if (findInput != undefined) {
                         const [_name, input] = findInput;
-                        node.inputs.set(depName, [{ node: input, output: GraphNode.defaultIOName }, depType]);
+                        node.inputs.set(depName, [{ node: input, output: GraphNode.defaultIoName }, depType]);
                         continue;
                     }
 
-                    // TODO: only works for one level of nesting, we might need a resolve function but
+                    // NOTE: only works for one level of nesting, we might need a resolve function but
                     // I'm not sure the case where it'd be needed will ever occur.
-                    const newInput = new GraphInputNode(Object.fromEntries([[outerGraph.findNodeEntry(dep.node)!.name, [dep.node, dep.output]]]));
+                    const newInput = new GraphInputNode(Object.fromEntries([[outerGraph.findGraphNode(dep.node)!.name, [dep.node, dep.output]]]));
                     const addedInput = this.graph.inputs.set(depName, newInput).get(depName)!;
-                    node.inputs.set(depName, [{ node: addedInput, output: GraphNode.defaultIOName }, depType]);
+                    node.inputs.set(depName, [{ node: addedInput, output: GraphNode.defaultIoName }, depType]);
                 }
             }
         }
     }
 
-    protected _apply(graph?: Graph, frame: number = 0) {
-        return this._outNode.node.getOutput(this._outNode.output, graph, frame);
+    protected _apply(graph?: Graph, frame: number = 0): void {
+        for (const [name, [dep, _ty]] of this.graphOutputs) {
+            this.outputs.set(name, dep.node.getOutput(dep.output, graph, frame));
+        }
+        // this._out.outputs.set(GraphNode.defaultIoName, this._outNode.node.getOutput(this._outNode.output, graph, frame));
     }
 
     public get label(): string | undefined {
-        return this._label;
+        return this.graph.name;
     }
 
     public get nodeType(): string {
@@ -79,12 +100,12 @@ export default class SubGraphNode extends GraphNode {
                 return `${name} [${Object.entries(value).map(([name, value]) => `${name}=${value}`).join(' ')}]`;
             }
         });
-        const graphLabel = this._label != undefined ? [`\t\tlabel="${label(this._label)}"`] : [];
+        const graphLabel = `\t\tlabel="${label(this.graph.name)}"`;
         return [
             `subgraph "cluster_${label(name)}" {`,
-            ...graphLabel,
+            graphLabel,
             ...formattedAttrs,
-            this.graph.dumpDot([true, name]),
+            this.graph.dumpDot(name),
             '}',
         ].join('\n');
     }

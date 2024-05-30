@@ -46,6 +46,10 @@ module.exports = {
         ],
         '@typescript-eslint/no-this-alias': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/explicit-function-return-type': [
+            'error',
+            { allowExpressions: true },
+        ],
         'no-plusplus': 'off',
         // this option sets a specific tab width for your code
         // http://eslint.org/docs/rules/indent

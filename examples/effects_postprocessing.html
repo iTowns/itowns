@@ -61,14 +61,15 @@
 
         // window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
+        console.log(viewNode);
         const div = viewerDiv.getOutput();
-        const view = viewNode.getOutput();
+        const view = viewNode.getOutput('view', outerGraph);
         setupLoadingScreen(div, view);
 
         // const renderer = new graph.InputNode(view.mainLoop.gfxEngine.renderer);
-        const renderer = new graph.FieldGetterNode(viewNode, 'mainLoop.gfxEngine.renderer', graph.BuiltinType.Renderer)
-        const render = new graph.RenderViewNode(viewNode);
-        outerGraph.setGrouped({renderer, render});
+        const renderer = {node: viewNode, output: 'renderer'};
+        const render = new graph.RenderViewNode({node: viewNode, output: 'view'});
+        outerGraph.setGrouped({render});
 
         // Subgraph
         const postProcessingGraph = new graph.Graph();
@@ -94,14 +95,19 @@
         });
         postProcessingGraph.setGrouped({coastSharpen, greyscale});
 
-        const postProcessingGraphNode = new graph.SubGraphNode(outerGraph, postProcessingGraph, greyscale, 'Post-processing');
+        const postProcessingGraphNode = new graph.SubGraphNode(outerGraph, graph.SubGraph.from(postProcessingGraph, 'Post-processing'), {
+            greyscale: {
+                node: greyscale,
+                output: 'value',
+            }
+        });
         outerGraph.setGrouped({postProcessingGraphNode});
 
         // window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
         let frame = 0;
         view.render = function render() {
-            outerGraph.getOutput(frame++, postProcessingGraphNode);
+            outerGraph.getOutput(frame++, {node: postProcessingGraphNode, output: 'greyscale'});
         };
 
         itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {

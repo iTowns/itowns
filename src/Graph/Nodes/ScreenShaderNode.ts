@@ -9,7 +9,7 @@ interface CallbackArgs extends Record<string, any> {
 }
 
 export default class ScreenShaderNode extends ProcessorNode {
-    private static get vertexShader() {
+    private static get vertexShader(): string {
         return `
         varying vec2 vUv;
 
@@ -20,7 +20,7 @@ export default class ScreenShaderNode extends ProcessorNode {
         `;
     }
 
-    private static get defaultFragmentShader() {
+    private static get defaultFragmentShader(): { code: string, entry: string } {
         return {
             code: `
             void identity() {
@@ -43,7 +43,7 @@ export default class ScreenShaderNode extends ProcessorNode {
     private _fragmentShader: string;
     private _material: THREE.ShaderMaterial;
 
-    private static _init() {
+    private static _init(): void {
         if (ScreenShaderNode._scene == undefined) {
             ScreenShaderNode._scene = new THREE.Scene();
 
@@ -80,7 +80,7 @@ export default class ScreenShaderNode extends ProcessorNode {
                     if (typeof uniform == 'string') {
                         val = [null, uniform];
                     } else if (uniform instanceof GraphNode) {
-                        val = [{ node: uniform, output: GraphNode.defaultIOName }, uniform.outputs.get(GraphNode.defaultIOName)![1]];
+                        val = [{ node: uniform, output: GraphNode.defaultIoName }, uniform.outputs.get(GraphNode.defaultIoName)![1]];
                     } else {
                         val = [uniform, uniform.node.outputs.get(uniform.output)![1]];
                     }
@@ -103,7 +103,7 @@ export default class ScreenShaderNode extends ProcessorNode {
 
                 const target: THREE.WebGLRenderTarget | null = toScreen
                     ? null
-                    : (this.outputs.get(GraphNode.defaultIOName)![0] ?? new THREE.WebGLRenderTarget(
+                    : (this.outputs.get(GraphNode.defaultIoName)![0] ?? new THREE.WebGLRenderTarget(
                         input.width,
                         input.height,
                     ));
@@ -121,7 +121,7 @@ export default class ScreenShaderNode extends ProcessorNode {
                 renderer.clear();
                 renderer.render(ScreenShaderNode._scene, ScreenShaderNode._camera);
 
-                return target;
+                this._out.outputs.set(ScreenShaderNode.defaultIoName, [target, BuiltinType.RenderTarget]);
             });
 
         this._uniformDeclarations = Object.entries(fullUniforms).map(

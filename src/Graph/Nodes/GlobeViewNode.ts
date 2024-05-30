@@ -10,7 +10,9 @@ export default class GlobeViewNode extends ViewNode {
                     throw new Error('Missing view dependencies');
                 }
 
-                return new GlobeView(args.viewerDiv as HTMLDivElement, args.placement as Extent);
+                const view = new GlobeView(args.viewerDiv as HTMLDivElement, args.placement as Extent);
+                this.outputs.set('view', [view, BuiltinType.View]);
+                this.outputs.set('renderer', [view.mainLoop.gfxEngine.renderer, BuiltinType.Renderer]);
             },
             { placement: [placement, BuiltinType.Placement] },
         );

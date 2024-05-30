@@ -3,6 +3,8 @@ import { Type, DumpDotNodeStyle, getBuiltinType, stringify, Graph } from '../Com
 
 /** Represents a node that outputs a constant value. */
 export default class InputNode extends GraphNode {
+    private _type: Type;
+
     public constructor(public value: any, type?: Type) {
         const ty = type ?? getBuiltinType(value);
         if (ty == undefined) {
@@ -10,10 +12,15 @@ export default class InputNode extends GraphNode {
         }
 
         super(new Map(), ty);
+        this._type = ty;
     }
 
-    protected _apply(_graph?: Graph, _frame?: number): any {
-        return this.value;
+    public get outputType(): Type {
+        return this._type;
+    }
+
+    protected _apply(_graph?: Graph, _frame?: number): void {
+        this.outputs.set(GraphNode.defaultIoName, [this.value, this._type]);
     }
 
     public get nodeType(): string {

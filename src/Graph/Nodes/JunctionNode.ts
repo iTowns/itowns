@@ -2,11 +2,6 @@ import { Dependency, DumpDotNodeStyle, Graph, Type, getColor } from '../Common.t
 import GraphNode from './GraphNode.ts';
 
 export default class JunctionNode extends GraphNode {
-    protected static ioName = 'value';
-
-    /**
-     * @argument input The name of the input node in its graph and itself or the expected type.
-     */
     public constructor(input: Dependency | Type) {
         if (typeof input != 'string') {
             const { node, output } = input;
@@ -16,29 +11,32 @@ export default class JunctionNode extends GraphNode {
             }
             const ty = nodeOutput[1];
 
-            super(new Map([[JunctionNode.ioName, [input, ty]]]), ty);
+            super(new Map([[GraphNode.defaultIoName, [input, ty]]]), ty);
         } else {
-            super(new Map([[JunctionNode.ioName, [null, input]]]), input);
+            super(new Map([[GraphNode.defaultIoName, [null, input]]]), input);
         }
     }
 
-    protected _apply(graph?: Graph, frame: number = 0): any {
-        const dep = this.inputs.get(JunctionNode.ioName)![0];
+    protected _apply(graph?: Graph, frame: number = 0): void {
+        const dep = this.inputs.get(GraphNode.defaultIoName)![0];
+        const [_oValue, oType] = this.outputs.get(GraphNode.defaultIoName)!;
+
         if (dep == null) {
-            return null;
+            this.outputs.set(GraphNode.defaultIoName, [null, oType]);
+            return;
         }
 
         const { node, output } = dep;
-        return node.getOutput(output, graph, frame) ?? null;
+        this.outputs.set(GraphNode.defaultIoName, [node.getOutput(output, graph, frame) ?? null, oType]);
     }
 
     public get input(): [Dependency | null, Type] {
-        return this.inputs.get(JunctionNode.ioName)!;
+        return this.inputs.get(GraphNode.defaultIoName)!;
     }
 
     public set input(node: Dependency) {
-        const [_oldValue, type] = this.inputs.get(JunctionNode.ioName)!;
-        this.inputs.set(JunctionNode.ioName, [node, type]);
+        const [_oldValue, type] = this.inputs.get(GraphNode.defaultIoName)!;
+        this.inputs.set(GraphNode.defaultIoName, [node, type]);
     }
 
     public get nodeType(): string {
@@ -52,7 +50,7 @@ export default class JunctionNode extends GraphNode {
                 shape: 'doublecircle',
                 width: '.1',
                 height: '.1',
-                ...getColor(null, this.outputs.get(JunctionNode.ioName)![1]),
+                ...getColor(null, this.outputs.get(GraphNode.defaultIoName)![1]),
             },
         };
     }
@@ -71,7 +69,7 @@ export default class JunctionNode extends GraphNode {
             .map(([name, value]) => `${name}="${value}"`)
             .join(' ');
 
-        const input = this.inputs.get(JunctionNode.ioName)![0];
+        const input = this.inputs.get(GraphNode.defaultIoName)![0];
         if (input != undefined) {
             return input.node.dumpDotEdgeAttr(ty, extra);
         }

@@ -1,19 +1,15 @@
-import { DumpDotNodeStyle, Graph, GraphNode, ProcessorNode } from '../Common.ts';
+import { DumpDotNodeStyle, Graph, ProcessorNode } from '../Common.ts';
 
 /**
  * A lazy static node only gets re-evaluated when the frame is less than the frame it was first evaluated at.
  */
 export default class LazyStaticNode extends ProcessorNode {
-    protected _apply(graph?: Graph, frame: number = 0): any {
-        const output = this._out.outputs.get(GraphNode.defaultIOName)!;
-        const [oValue, oType] = output;
-
-        if (oValue == undefined || frame < this._out.frame) {
-            this._out.frame = frame;
-            this._out.outputs.set(GraphNode.defaultIOName, [super._apply(graph, frame), oType]);
+    protected _apply(graph?: Graph, frame: number = 0): void {
+        if (this._out.frame == -1 || frame < this._out.frame) {
+            // console.log(`[${this.nodeType}][LazyStatic] _applying`);
+            // this._out.outputs.set(GraphNode.defaultIoName, [super._apply(graph, frame), oType]);
+            super._apply(graph, frame);
         }
-
-        return this._out.outputs.get(GraphNode.defaultIOName)![0];
     }
 
     public get nodeType(): string {

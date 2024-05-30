@@ -1,30 +1,14 @@
-import { GraphNode, DumpDotGlobalStyle, Type, getColor, JunctionNode, SubGraphNode, InputNode, GraphInputNode, BuiltinType } from './Common.ts';
-
-type NodeCallback = (node: GraphNode) => void;
-type StringCallback = (string: string) => void;
-interface DfsCallbacks {
-    /** Run before the dependencies. */
-    prefix?: NodeCallback;
-    /** Run between every dependency or once if less than 2 dependencies. */
-    infix?: NodeCallback;
-    /** Run after the dependencies. */
-    postfix?: NodeCallback;
-    /** Run when an undefined dependency is found. */
-    undef?: StringCallback;
-}
+import { GraphNode, DumpDotGlobalStyle, Type, getColor, JunctionNode, SubGraphNode, InputNode, BuiltinType, Dependency } from './Common.ts';
 
 /** Represents a directed graph that guarantees the absence of cycles on use. */
 export default class Graph {
     public nodes: Map<string, GraphNode>;
     public types: Set<Type>;
-    // Inputs to the graph itself, necessary to enable subgraphs.
-    public inputs: Map<string, GraphInputNode>;
     private _valid: boolean;
 
     public constructor() {
         this.nodes = new Map();
         this.types = new Set();
-        this.inputs = new Map();
         this._valid = false;
     }
 
@@ -38,16 +22,10 @@ export default class Graph {
      * @throws If the node does not exist.
      * @returns The output of the node at the given frame.
      */
-    public getOutput(frame: number, node: string | GraphNode, output: string): any {
+    public getOutput(frame: number, out: Dependency): any {
         this.validate();
 
-        const out = typeof node === 'string' ? this.nodes.get(node) : node;
-
-        if (out == undefined) {
-            throw new Error(`Node ${node} does not exist`);
-        }
-
-        return out.getOutput(output, this, frame);
+        return out.node.getOutput(out.output, this, frame);
     }
 
     /**
@@ -106,7 +84,7 @@ export default class Graph {
      * not contain cycles nor dangling dependencies.
      * @throws If the graph is invalid.
      */
-    public validate() {
+    public validate(): void {
         if (this._valid) {
             return;
         }
@@ -132,8 +110,8 @@ export default class Graph {
         node: GraphNode,
         path: Set<string>,
         visited: Set<string>,
-    ) {
-        const nodeName = this.findNodeEntry(node)?.name ?? this.findInputEntry(node)?.name ?? undefined;
+    ): void {
+        const nodeName = this.findNode(node)?.name;
         if (nodeName == undefined) {
             console.error(node);
             throw new Error(`Node not found in nodes or inputs after following this path: ${path}`);
@@ -178,7 +156,7 @@ export default class Graph {
     }
 
     /** Find a node's entry in the graph. O(n) time complexity. */
-    public findNodeEntry(node: GraphNode): { name: string, node: GraphNode } | null {
+    public findGraphNode(node: GraphNode): { name: string, node: GraphNode } | null {
         for (const [name, oNode] of this.nodes.entries()) {
             if (node == oNode) {
                 return { name, node: oNode };
@@ -187,49 +165,9 @@ export default class Graph {
         return null;
     }
 
-    /** Find a node's entry in the inputs. O(n) time complexity. */
-    public findInputEntry(node: GraphNode): { name: string, node: GraphInputNode } | null {
-        for (const [name, oNode] of this.inputs.entries()) {
-            if (node == oNode) {
-                return { name, node: oNode };
-            }
-        }
-        return null;
-    }
-
-    /** Depth-first traversal of the graph. */
-    public dfs(
-        node: GraphNode,
-        { prefix, infix, postfix, undef }: DfsCallbacks,
-    ) {
-        prefix?.(node);
-
-        const inputs = node.inputs;
-
-        let index = 0;
-        for (const [name, [input, _]] of inputs.entries()) {
-            if (input != undefined) {
-                this.dfs(input.node, { prefix, infix, postfix, undef });
-            } else {
-                undef?.(name);
-                index++;
-                continue;
-            }
-
-            // Run the infix between every dependency
-            if (index < inputs.size - 1) {
-                infix?.(node);
-            }
-
-            index++;
-        }
-
-        // Run the infix at least once per node even without dependencies
-        if (inputs.size <= 1) {
-            infix?.(node);
-        }
-
-        postfix?.(node);
+    /** Find a node in all available node storages. */
+    public findNode(node: GraphNode): { name: string, node: GraphNode } | null {
+        return this.findGraphNode(node);
     }
 
     public get dumpDotStyle(): DumpDotGlobalStyle {
@@ -255,36 +193,27 @@ export default class Graph {
      * @throws If a node input is not part of the graph.
      * @returns The graph in the DOT format.
      */
-    public dumpDot([isSubgraph, subgraphName]: [boolean, string] = [false, '']): string {
+    public dumpDot(graphName: string = 'G'): string {
         const dump: string[] = [];
-        if (!isSubgraph) {
-            dump.push('digraph G {');
-        }
+        dump.push(`digraph ${graphName} {`);
 
         if (this.nodes.size > 0) {
             // Global style defaults
-            if (!isSubgraph) {
-                Object.entries(this.dumpDotStyle).forEach(([attr, value]) => {
-                    if (typeof value == 'object') {
-                        const formattedAttrs = Object.entries(value)
-                            .map(([k, v]) => `${k}=${v}`)
-                            .join(' ');
-                        dump.push(`\t${attr} [${formattedAttrs}]`);
-                    } else {
-                        dump.push(`\t${attr} = ${value}`);
-                    }
-                });
-            }
+            Object.entries(this.dumpDotStyle).forEach(([attr, value]) => {
+                if (typeof value == 'object') {
+                    const formattedAttrs = Object.entries(value)
+                        .map(([k, v]) => `${k}=${v}`)
+                        .join(' ');
+                    dump.push(`\t${attr} [${formattedAttrs}]`);
+                } else {
+                    dump.push(`\t${attr} = ${value}`);
+                }
+            });
 
             // Declare nodes
             dump.push('\t{');
             for (const [name, node] of this.nodes) {
                 dump.push(`\t\t${node.dumpDot(name)}`);
-            }
-            if (isSubgraph) {
-                for (const [name, input] of this.inputs) {
-                    dump.push(`\t\t${input.dumpDot(`${subgraphName}:${name}`)}`);
-                }
             }
             dump.push('\t}');
 
@@ -298,14 +227,14 @@ export default class Graph {
                     // PERF: Inefficient but the alternative is duplicating the names
                     // inside the nodes and that makes the API much heavier so we'll
                     // have to live with it as it will likely never be an issue.
-                    const nodeEntry = this.findNodeEntry(dep.node) ?? (isSubgraph ? this.findInputEntry(dep.node) : undefined);
+                    const nodeEntry = this.findNode(dep.node);
                     if (nodeEntry == undefined) {
                         throw new Error(
-                            `Input "${depName}" of node "${nodeName}" is not part of the ${isSubgraph ? `subgraph "${subgraphName}"` : 'graph'}`,
+                            `Input "${depName}" of node "${nodeName}" is not part of the graph`,
                         );
                     }
 
-                    const { name: entryName, node: entryNode } = nodeEntry;
+                    const { name: entryName, node: _ } = nodeEntry;
                     const colorStyle = getColor(null, depTy);
                     const attrs = nodeEntry.node.dumpDotEdgeAttr(depTy, {
                         ...(node instanceof JunctionNode ? { arrowhead: 'none' } : {}),
@@ -313,16 +242,15 @@ export default class Graph {
                     });
                     const port = node instanceof JunctionNode ? '' : `:${depName}`;
 
-                    const sourceName = entryNode instanceof GraphInputNode ? `${subgraphName}:${entryName}` : entryName;
-                    const sourcePort = entryNode instanceof GraphInputNode ? null : `:"${dep.output}"`;
-                    dump.push(`\t"${sourceName}"${sourcePort} -> "${nodeName}"${port} ${attrs};`);
+                    const sourcePort = `:"${dep.output}"`;
+                    dump.push(`\t"${entryName}"${sourcePort} -> "${nodeName}"${port} ${attrs};`);
                 }
 
                 if (node instanceof SubGraphNode) {
                     for (const [iName, iNode] of node.graph.inputs) {
                         const [dep, depTy] = iNode.input;
                         if (dep != undefined) {
-                            const nodeEntry = this.findNodeEntry(dep.node);
+                            const nodeEntry = this.findGraphNode(dep.node);
                             if (nodeEntry == undefined) {
                                 throw new Error(
                                     `Input "${iName}" of subgraph "${node.label}" is not part of the graph`,
@@ -334,16 +262,14 @@ export default class Graph {
                                 arrowhead: 'none',
                                 ...colorStyle,
                             });
-                            dump.push(`\t"${entryName}" -> "${nodeName}:${iName}" ${attrs}`);
+                            dump.push(`\t"${entryName}":"${dep.output}" -> "${nodeName}.${iName}" ${attrs}`);
                         }
                     }
                 }
             }
         }
 
-        if (!isSubgraph) {
-            dump.push('}');
-        }
+        dump.push('}');
 
         return dump.join('\n');
     }

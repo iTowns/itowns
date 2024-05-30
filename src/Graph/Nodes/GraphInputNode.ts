@@ -14,16 +14,12 @@ export default class GraphInputNode extends JunctionNode {
     }
 
     public get graphInput(): [string | undefined, [Dependency | null, Type]] {
-        return [this.inputNodeName, this.inputs.get(JunctionNode.ioName)!];
+        return [this.inputNodeName, this.inputs.get(GraphNode.defaultIoName)!];
     }
 
     public set graphInput([name, node]: [string, Dependency]) {
-        const [_oldValue, type] = this.inputs.get(JunctionNode.ioName)!;
-        this.inputs.set(JunctionNode.ioName, [node, type]);
+        const [_oldValue, type] = this.inputs.get(GraphNode.defaultIoName)!;
+        this.inputs.set(GraphNode.defaultIoName, [node, type]);
         this.inputNodeName = name;
-    }
-
-    public dumpDot(name: string): string {
-        return super.dumpDot(`${name}`);
     }
 }

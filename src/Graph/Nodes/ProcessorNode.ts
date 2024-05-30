@@ -5,13 +5,13 @@ import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Common.ts';
 export default class ProcessorNode extends GraphNode {
     public constructor(
         inputs: { [name: string]: [Dependency, Type] },
-        outputType: Type,
-        public callback: (frame: number, args: any) => any,
+        outputs: Map<string, Type> | Type,
+        public callback: (frame: number, args: any) => void,
     ) {
-        super(new Map(Object.entries(inputs)), outputType);
+        super(new Map(Object.entries(inputs)), outputs);
     }
 
-    protected _apply(graph?: Graph, frame: number = 0): any {
+    protected _apply(graph?: Graph, frame: number = 0): void {
         const inputs = Array.from(this.inputs);
         const args: [string, any][] = inputs.map(([name, [dep, _ty]]) => [
             name,
@@ -19,7 +19,9 @@ export default class ProcessorNode extends GraphNode {
         ]);
         const argObj = Object.fromEntries(args);
 
-        return this.callback(frame, argObj);
+        this._out.frame = frame;
+
+        this.callback(frame, argObj);
     }
 
     public get nodeType(): string {
