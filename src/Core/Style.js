@@ -24,14 +24,16 @@ export function readExpression(property, ctx) {
         if (property.expression) {
             return property.expression.evaluate(ctx);
         } else if (property.stops) {
-            for (let i = property.stops.length - 1; i >= 0; i--) {
-                const stop = property.stops[i];
+            const stops = property.stops;
+            property = property.stops[0][1];
+            for (let i = stops.length - 1; i >= 0; i--) {
+                const stop = stops[i];
 
                 if (ctx.zoom >= stop[0]) {
-                    return stop[1];
+                    property = stop[1];
+                    break;
                 }
             }
-            return property.stops[0][1];
         }
         if (typeof property === 'string' || property instanceof String) {
             property = property.replace(/\{(.+?)\}/g, (a, b) => (ctx.properties[b] || '')).trim();
@@ -896,9 +898,33 @@ class Style {
             if (iconImg) {
                 try {
                     style.icon.id = iconImg;
+                    if (iconImg.stops) {
+                        const iconCropValue = {
+                            ...(iconImg.base !== undefined && { base: iconImg.base }),
+                            stops: iconImg.stops.map((stop) => {
+                                let cropValues = sprites[stop[1]];
+                                if (stop[1].includes('{')) {
+                                    cropValues = function _(p) {
+                                        const id = stop[1].replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
+                                        cropValues = sprites[id];
+                                        return sprites[id];
+                                    };
+                                }
+                                return [stop[0], cropValues];
+                            }),
+                        };
+                        style.icon.cropValues = iconCropValue;
+                    } else {
+                        style.icon.cropValues = sprites[iconImg];
+                        if (iconImg[0].includes('{')) {
+                            style.icon.cropValues = function _(p) {
+                                const id = iconImg.replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
+                                style.icon.cropValues = sprites[id];
+                                return sprites[id];
+                            };
+                        }
+                    }
                     style.icon.source = sprites.source;
-                    style.icon.cropValues = sprites[iconImg];
-
                     style.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
                     const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['icon-color'], { type: 'color' }));
                     style.icon.color = color;
