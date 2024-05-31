@@ -317,12 +317,17 @@ describe('Style', function () {
             const imgId = 'filler';
             const vectorTileLayer = {
                 type: 'fill',
-                paint: { 'fill-outline-color': '#eba55f' },
             };
             it('without fill-pattern (or sprites)', () => {
+                vectorTileLayer.paint = {
+                    'fill-outline-color': '#eba55f',
+                    'fill-opacity': 0.5,
+                };
                 const style = Style.setFromVectorTileLayer(vectorTileLayer);
                 // fill-outline-color
                 assert.equal(style.stroke.color, '#eba55f');
+                // fill-opacity
+                assert.equal(style.fill.opacity, vectorTileLayer.paint['fill-opacity']);
             });
 
             it('with fill-pattern (and sprites)', () => {
@@ -337,6 +342,7 @@ describe('Style', function () {
                 assert.equal(style.fill.pattern.cropValues, sprites[imgId]);
             });
         });
+
         it("layer.type==='line'", () => {
             const vectorTileLayer = {
                 type: 'line',
@@ -347,6 +353,7 @@ describe('Style', function () {
             const style = Style.setFromVectorTileLayer(vectorTileLayer);
             assert.equal(style.stroke.color, '#eba55f');
         });
+
         it("layer.type==='circle'", () => {
             const vectorTileLayer = {
                 type: 'circle',
@@ -357,15 +364,86 @@ describe('Style', function () {
             const style = Style.setFromVectorTileLayer(vectorTileLayer);
             assert.equal(style.point.color, '#eba55f');
         });
-        it("layer.type==='symbol'", () => {
+
+        describe("layer.type==='symbol'", () => {
             const vectorTileLayer = {
                 type: 'symbol',
-                layout: {
-                    'symbol-z-order': 'auto',
-                },
             };
-            const style = Style.setFromVectorTileLayer(vectorTileLayer);
-            assert.equal(style.text.zOrder, 'Y');
+            it('without icon-image', () => {
+                vectorTileLayer.layout = {
+                    'symbol-z-order': 'auto',
+                    'text-justify': 'center',
+                };
+                const style = Style.setFromVectorTileLayer(vectorTileLayer);
+                // symbol-z-order
+                assert.equal(style.text.zOrder, 'Y');
+                // text-justify
+                assert.equal(style.text.justify, vectorTileLayer.layout['text-justify']);
+            });
+
+            describe('with icon-image (and sprites)', () => {
+                it("with icon-image = 'icon-13'", () => {
+                    const imgId = 'icon-13';
+                    vectorTileLayer.layout = {
+                        'icon-image': imgId,
+                    };
+                    const sprites = {
+                        [imgId]: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
+                        source: 'ImgUrl',
+                    };
+                    const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                    assert.equal(style.icon.id, vectorTileLayer.layout['icon-image']);
+                    assert.equal(style.icon.cropValues, sprites[vectorTileLayer.layout['icon-image']]);
+                });
+
+                it("with icon-image = '{name}'", () => {
+                    const imgId = '{name}';
+                    vectorTileLayer.layout = {
+                        'icon-image': imgId,
+                    };
+                    const sprites = {
+                        [imgId]: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
+                        source: 'ImgUrl',
+                    };
+                    const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                    assert.equal(style.icon.id, vectorTileLayer.layout['icon-image']);
+                    assert.equal(typeof style.icon.cropValues, 'function');
+                });
+
+                it("with icon-image = {stops: [$zoom, 'icon-13']", () => {
+                    const imgId = 'icon-13';
+                    vectorTileLayer.layout = {
+                        'icon-image': {
+                            base: 1,
+                            stops: [[13, imgId]],
+                        },
+                    };
+                    const sprites = {
+                        [imgId]: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
+                        source: 'ImgUrl',
+                    };
+                    const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                    assert.equal(style.icon.id, vectorTileLayer.layout['icon-image']);
+                    assert.equal(style.icon.cropValues.stops[0][1], sprites[vectorTileLayer.layout['icon-image'].stops[0][1]]);
+                });
+
+                it("with icon-image = {stops: [$zoom, '{name}']", () => {
+                    const imgId = '{name}';
+                    vectorTileLayer.layout = {
+                        'icon-image': {
+                            base: 1,
+                            stops: [[13, imgId]],
+                        },
+                    };
+                    const sprites = {
+                        [imgId]: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
+                        source: 'ImgUrl',
+                    };
+                    const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                    assert.equal(style.icon.id, vectorTileLayer.layout['icon-image']);
+                    assert.equal(typeof style.icon.cropValues.stops[0][1], 'function');
+                });
+            });
         });
     });
 });
