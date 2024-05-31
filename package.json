@@ -72,10 +72,11 @@
     "three": "^0.159.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.22.5",
-    "@babel/plugin-transform-runtime": "^7.22.5",
-    "@babel/preset-env": "^7.22.5",
-    "@babel/register": "^7.22.5",
+    "@babel/cli": "^7.24.6",
+    "@babel/core": "^7.24.6",
+    "@babel/plugin-transform-runtime": "^7.24.6",
+    "@babel/preset-env": "^7.24.6",
+    "@babel/register": "^7.24.6",
     "@types/three": "^0.159.0",
     "@xmldom/xmldom": "^0.8.10",
     "babel-inline-import-loader": "^1.0.1",
