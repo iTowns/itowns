@@ -1,4 +1,4 @@
-import { GraphNode, DumpDotGlobalStyle, Type, getColor, JunctionNode, SubGraphNode, InputNode, BuiltinType, Dependency } from './Common.ts';
+import { GraphNode, DumpDotGlobalStyle, Type, Mappings, JunctionNode, SubGraphNode, InputNode, BuiltinType, Dependency } from './Common.ts';
 
 /** Represents a directed graph that guarantees the absence of cycles on use. */
 export default class Graph {
@@ -252,7 +252,7 @@ export default class Graph {
                     }
 
                     const { name: entryName, node: entryNode } = nodeEntry;
-                    const colorStyle = getColor(null, depTy);
+                    const colorStyle = Mappings.colorize(null, depTy);
                     const attrs = nodeEntry.node.dumpDotEdgeAttr(depTy, {
                         ...(entryNode instanceof SubGraphNode ? { arrowtail: 'none' } : {}),
                         ...(node instanceof JunctionNode ? { arrowhead: 'none' } : {}),
@@ -279,7 +279,7 @@ export default class Graph {
                                 );
                             }
                             const { name: entryName, node: _entryNode } = nodeEntry;
-                            const colorStyle = getColor(null, depTy);
+                            const colorStyle = Mappings.colorize(null, depTy);
                             const attrs = nodeEntry.node.dumpDotEdgeAttr(depTy, {
                                 arrowhead: 'none',
                                 ...colorStyle,

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, toOpenGL } from '../Common.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, Mappings } from '../Common.ts';
 import ProcessorNode from './ProcessorNode.ts';
 
 interface CallbackArgs extends Record<string, any> {
@@ -125,7 +125,7 @@ export default class ScreenShaderNode extends ProcessorNode {
             });
 
         this._uniformDeclarations = Object.entries(fullUniforms).map(
-            ([name, [_node, type]]) => `uniform ${toOpenGL(type)} ${name};`,
+            ([name, [_node, type]]) => `uniform ${Mappings.toOpenGL(type)} ${name};`,
         ).join('\n');
 
         this._fragmentShader = `

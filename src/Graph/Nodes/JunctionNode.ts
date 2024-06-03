@@ -1,4 +1,4 @@
-import { Dependency, DumpDotNodeStyle, Graph, Type, getColor } from '../Common.ts';
+import { Dependency, DumpDotNodeStyle, Graph, Type, Mappings } from '../Common.ts';
 import GraphNode from './GraphNode.ts';
 
 export default class JunctionNode extends GraphNode {
@@ -50,7 +50,7 @@ export default class JunctionNode extends GraphNode {
                 shape: 'doublecircle',
                 width: '.1',
                 height: '.1',
-                ...getColor(null, this.outputs.get(GraphNode.defaultIoName)![1]),
+                ...Mappings.colorize(null, this.outputs.get(GraphNode.defaultIoName)![1]),
             },
         };
     }

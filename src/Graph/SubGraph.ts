@@ -1,4 +1,4 @@
-import { Graph, GraphInputNode, GraphNode, GraphOutputNode, JunctionNode, SubGraphNode, getColor } from './Common.ts';
+import { Graph, GraphInputNode, GraphNode, GraphOutputNode, JunctionNode, SubGraphNode, Mappings } from './Common.ts';
 
 export default class SubGraph extends Graph {
     public inputs: Map<string, GraphInputNode> = new Map();
@@ -69,7 +69,7 @@ export default class SubGraph extends Graph {
                     }
 
                     const { name: srcName, node: srcNode } = nodeEntry;
-                    const colorStyle = getColor(null, depTy);
+                    const colorStyle = Mappings.colorize(null, depTy);
                     const attrs = nodeEntry.node.dumpDotEdgeAttr(depTy, {
                         ...(srcNode instanceof JunctionNode ? { arrowtail: 'none' } : {}),
                         ...(destNode instanceof JunctionNode ? { arrowhead: 'none' } : {}),
@@ -98,7 +98,7 @@ export default class SubGraph extends Graph {
                                 );
                             }
                             const { name: entryName, node: _entryNode } = nodeEntry;
-                            const colorStyle = getColor(null, depTy);
+                            const colorStyle = Mappings.colorize(null, depTy);
                             const attrs = nodeEntry.node.dumpDotEdgeAttr(depTy, {
                                 arrowhead: 'none',
                                 ...colorStyle,
@@ -114,7 +114,7 @@ export default class SubGraph extends Graph {
                 const { name: gName, node: gNode } = this.findGraphNode(dep.node)!;
                 const ty = gNode.outputs.get(dep.output)![1];
 
-                const colorStyle = getColor(null, ty);
+                const colorStyle = Mappings.colorize(null, ty);
                 const attrs = gNode.dumpDotEdgeAttr(ty, {
                     arrowhead: 'none',
                     ...colorStyle,

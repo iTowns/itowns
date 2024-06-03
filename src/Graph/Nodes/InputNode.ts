@@ -1,12 +1,12 @@
 import GraphNode from './GraphNode.ts';
-import { Type, DumpDotNodeStyle, getBuiltinType, stringify, Graph } from '../Common.ts';
+import { Type, DumpDotNodeStyle, Mappings, Graph } from '../Common.ts';
 
 /** Represents a node that outputs a constant value. */
 export default class InputNode extends GraphNode {
     private _type: Type;
 
     public constructor(public value: any, type?: Type) {
-        const ty = type ?? getBuiltinType(value);
+        const ty = type ?? Mappings.typeOf(value);
         if (ty == undefined) {
             throw new Error('Input node type could not be inferred');
         }
@@ -29,7 +29,7 @@ export default class InputNode extends GraphNode {
 
     public get dumpDotStyle(): DumpDotNodeStyle {
         return {
-            label: name => `${name}: ${stringify(this.value)}`,
+            label: name => `${name}: ${Mappings.stringify(this.value)}`,
             attrs: {
                 color: 'goldenrod',
             },
