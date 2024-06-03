@@ -57,19 +57,17 @@
         }, graph.BuiltinType.Placement);
         const viewerDiv = new graph.InputNode(document.getElementById('viewerDiv'));
         const viewNode = new graph.GlobeViewNode(viewerDiv, placement);
-        outerGraph.setGrouped({placement, viewerDiv, viewNode});
+        outerGraph.set({placement, viewerDiv, viewNode});
 
         // window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
-        console.log(viewNode);
         const div = viewerDiv.getOutput();
         const view = viewNode.getOutput('view', outerGraph);
         setupLoadingScreen(div, view);
 
-        // const renderer = new graph.InputNode(view.mainLoop.gfxEngine.renderer);
         const renderer = {node: viewNode, output: 'renderer'};
         const render = new graph.RenderViewNode({node: viewNode, output: 'view'});
-        outerGraph.setGrouped({render});
+        outerGraph.set({render});
 
         // Subgraph
         const postProcessingGraph = new graph.Graph();
@@ -77,7 +75,7 @@
         // Uniforms
         const sharpenWeight = new graph.InputNode(5);
         const sharpenOffset = new graph.InputNode(new itowns.THREE.Vector2(0.0025, 0.));
-        postProcessingGraph.setGrouped({sharpenWeight, sharpenOffset});
+        postProcessingGraph.set({sharpenWeight, sharpenOffset});
         // Screen shaders
         const coastSharpen = new graph.ScreenShaderNode(render, renderer, {
             fragmentShader: {
@@ -92,7 +90,7 @@
                 entry: 'greyscale'
             },
         });
-        postProcessingGraph.setGrouped({coastSharpen, greyscale});
+        postProcessingGraph.set({coastSharpen, greyscale});
 
         const postProcessingGraphNode = new graph.SubGraphNode(outerGraph, graph.SubGraph.from(postProcessingGraph, 'Post-processing'), {
             greyscale: {
@@ -101,7 +99,7 @@
             }
         });
         const renderFBO = new graph.ScreenShaderNode({node: postProcessingGraphNode, output: 'greyscale'}, renderer, {toScreen: true});
-        outerGraph.setGrouped({postProcessingGraphNode, renderFBO});
+        outerGraph.set({postProcessingGraphNode, renderFBO});
 
         window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 

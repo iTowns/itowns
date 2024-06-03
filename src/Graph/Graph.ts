@@ -58,7 +58,7 @@ export default class Graph {
      * @throws If the node is orphaned and the graph has at least one node already.
      * @returns True if the node was added or updated, false otherwise.
      */
-    public set(name: string, node: GraphNode): boolean {
+    private setSingle(name: string, node: GraphNode): boolean {
         if (!(node instanceof InputNode) && this.nodes.size > 0
             && (node instanceof SubGraphNode ? node.graph.inputs.size == 0 : node.inputs.size == 0)
         ) {
@@ -86,12 +86,12 @@ export default class Graph {
      * @throws If any of the nodes are orphaned and the graph has at least one node already.
      * @returns A map of the results of the set operation.
      */
-    public setGrouped(
+    public set(
         nodes: { [name: string]: GraphNode; },
     ): Map<string, boolean> {
         const results = new Map();
         for (const [name, node] of Object.entries(nodes)) {
-            results.set(name, this.set(name, node));
+            results.set(name, this.setSingle(name, node));
         }
         return results;
     }

@@ -73,8 +73,8 @@ export default abstract class GraphNode {
         }
         const [oValue, _oType] = getOutput;
 
-        const thisName = graph?.findNode(this)?.name;
-        const debugName = `${thisName == undefined ? '' : `${thisName}: `}${this.nodeType}`;
+        // const thisName = graph?.findNode(this)?.name;
+        // const debugName = `${thisName == undefined ? '' : `${thisName}: `}${this.nodeType}`;
 
         // GraphNode.depth++;
         // const tab = '| '.repeat(GraphNode.depth - 1);
