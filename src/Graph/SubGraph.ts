@@ -1,4 +1,4 @@
-import { Graph, GraphInputNode, GraphNode, GraphOutputNode, JunctionNode, SubGraphNode, Mappings } from './Common.ts';
+import { Graph, GraphInputNode, GraphNode, GraphOutputNode, JunctionNode, SubGraphNode, Mappings } from './Prelude.ts';
 
 export default class SubGraph extends Graph {
     public inputs: Map<string, GraphInputNode> = new Map();

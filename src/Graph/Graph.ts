@@ -1,4 +1,4 @@
-import { GraphNode, DumpDotGlobalStyle, Type, Mappings, JunctionNode, SubGraphNode, InputNode, BuiltinType, Dependency } from './Common.ts';
+import { GraphNode, DumpDotGlobalStyle, Type, Mappings, JunctionNode, SubGraphNode, InputNode, BuiltinType, Dependency } from './Prelude.ts';
 
 /** Represents a directed graph that guarantees the absence of cycles on use. */
 export default class Graph {

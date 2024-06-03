@@ -1,5 +1,5 @@
 import GraphNode from './GraphNode.ts';
-import { Type, DumpDotNodeStyle, Mappings, Graph } from '../Common.ts';
+import { Type, DumpDotNodeStyle, Mappings, Graph } from '../Prelude.ts';
 
 /** Represents a node that outputs a constant value. */
 export default class InputNode extends GraphNode {

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, Mappings } from '../Common.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, Mappings } from '../Prelude.ts';
 import ProcessorNode from './ProcessorNode.ts';
 
 interface CallbackArgs extends Record<string, any> {

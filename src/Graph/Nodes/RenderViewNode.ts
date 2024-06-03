@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { BuiltinType, Dependency, DumpDotNodeStyle } from '../Common.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle } from '../Prelude.ts';
 import ProcessorNode from './ProcessorNode.ts';
 
 import View from '../../Core/View.js';

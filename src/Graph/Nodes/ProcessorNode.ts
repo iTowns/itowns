@@ -1,5 +1,5 @@
 import GraphNode from './GraphNode.ts';
-import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Common.ts';
+import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Prelude.ts';
 
 /** Represents a mapping from a set of inputs to an output. */
 export default class ProcessorNode extends GraphNode {

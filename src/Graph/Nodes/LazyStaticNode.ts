@@ -1,4 +1,4 @@
-import { DumpDotNodeStyle, Graph, ProcessorNode } from '../Common.ts';
+import { DumpDotNodeStyle, Graph, ProcessorNode } from '../Prelude.ts';
 
 /**
  * A lazy static node only gets re-evaluated when the frame is less than the frame it was first evaluated at.

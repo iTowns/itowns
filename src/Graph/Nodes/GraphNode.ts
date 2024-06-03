@@ -1,4 +1,4 @@
-import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Common.ts';
+import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Prelude.ts';
 
 /**
  * Represents a node in a directed graph.
@@ -30,7 +30,7 @@ export default abstract class GraphNode {
                 ],
             ]));
 
-        let normalizedOutputs = null;
+        let normalizedOutputs: Map<string, [any, Type]>;
 
         if (outputs == undefined) {
             normalizedOutputs = new Map();

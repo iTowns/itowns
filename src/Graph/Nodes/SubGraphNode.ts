@@ -1,4 +1,4 @@
-import { Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphNode, GraphOutputNode, SubGraph, Type } from '../Common.ts';
+import { Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphNode, GraphOutputNode, SubGraph, Type } from '../Prelude.ts';
 
 export default class SubGraphNode extends GraphNode {
     public graph: SubGraph;

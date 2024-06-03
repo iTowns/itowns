@@ -1,4 +1,4 @@
-import { Dependency, DumpDotNodeStyle, Graph, Type, Mappings } from '../Common.ts';
+import { Dependency, DumpDotNodeStyle, Graph, Type, Mappings } from '../Prelude.ts';
 import GraphNode from './GraphNode.ts';
 
 export default class JunctionNode extends GraphNode {

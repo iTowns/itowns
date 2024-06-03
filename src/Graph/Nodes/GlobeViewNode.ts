@@ -1,5 +1,5 @@
-import { Extent, GlobeView } from 'Main.js';
-import { BuiltinType, Dependency, DumpDotNodeStyle, ViewNode } from '../Common.ts';
+import { Extent, GlobeView } from '../../Main.js';
+import { BuiltinType, Dependency, DumpDotNodeStyle, ViewNode } from '../Prelude.ts';
 
 export default class GlobeViewNode extends ViewNode {
     public constructor(viewerDiv: Dependency, placement: Dependency) {

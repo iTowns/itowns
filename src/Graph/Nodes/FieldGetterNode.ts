@@ -1,4 +1,4 @@
-import { BuiltinType, Dependency, DumpDotNodeStyle, Type } from 'Graph/Common.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle, Type } from '../Prelude.ts';
 import ProcessorNode from './ProcessorNode.ts';
 
 export default class FieldGetterNode extends ProcessorNode {

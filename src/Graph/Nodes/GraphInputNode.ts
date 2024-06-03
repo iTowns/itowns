@@ -1,4 +1,4 @@
-import { Dependency, GraphNode, JunctionNode, Type } from '../Common.ts';
+import { Dependency, GraphNode, JunctionNode, Type } from '../Prelude.ts';
 
 export default class GraphInputNode extends JunctionNode {
     private inputNodeName: string | undefined;
