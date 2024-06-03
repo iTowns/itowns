@@ -79,7 +79,12 @@ export default class SubGraph extends Graph {
 
                     const sourceName = srcNode instanceof GraphInputNode ? `${subGraphName}.${srcName}` : srcName;
                     const sourcePort = srcNode instanceof GraphInputNode ? '' : `:"${dep.output}"`;
-                    dump.push(`\t"${sourceName}"${sourcePort} -> "${nodeName}"${port} ${attrs};`);
+
+                    if (dep.node instanceof SubGraphNode) {
+                        dump.push(`\t"${sourceName}->${dep.output}" -> "${nodeName}"${port} ${attrs};`);
+                    } else {
+                        dump.push(`\t"${sourceName}"${sourcePort} -> "${nodeName}"${port} ${attrs};`);
+                    }
                 }
 
                 if (destNode instanceof SubGraphNode) {
@@ -102,6 +107,20 @@ export default class SubGraph extends Graph {
                         }
                     }
                 }
+            }
+
+            for (const [name, node] of this.outputs) {
+                const dep = node.input[0]!;
+                const { name: gName, node: gNode } = this.findGraphNode(dep.node)!;
+                const ty = gNode.outputs.get(dep.output)![1];
+
+                const colorStyle = getColor(null, ty);
+                const attrs = gNode.dumpDotEdgeAttr(ty, {
+                    arrowhead: 'none',
+                    ...colorStyle,
+                });
+
+                dump.push(`\t"${gName}":"${dep.output}" -> "${subGraphName}->${name}" ${attrs};`);
             }
         }
 

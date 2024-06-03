@@ -251,16 +251,21 @@ export default class Graph {
                         );
                     }
 
-                    const { name: entryName, node: _ } = nodeEntry;
+                    const { name: entryName, node: entryNode } = nodeEntry;
                     const colorStyle = getColor(null, depTy);
                     const attrs = nodeEntry.node.dumpDotEdgeAttr(depTy, {
+                        ...(entryNode instanceof SubGraphNode ? { arrowtail: 'none' } : {}),
                         ...(node instanceof JunctionNode ? { arrowhead: 'none' } : {}),
                         ...colorStyle,
                     });
                     const port = node instanceof JunctionNode ? '' : `:${depName}`;
 
                     const sourcePort = `:"${dep.output}"`;
-                    dump.push(`\t"${entryName}"${sourcePort} -> "${nodeName}"${port} ${attrs};`);
+                    if (dep.node instanceof SubGraphNode) {
+                        dump.push(`\t"${entryName}->${dep.output}" -> "${nodeName}"${port} ${attrs};`);
+                    } else {
+                        dump.push(`\t"${entryName}"${sourcePort} -> "${nodeName}"${port} ${attrs};`);
+                    }
                 }
 
                 if (node instanceof SubGraphNode) {

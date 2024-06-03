@@ -1,4 +1,4 @@
-import { Type, Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphOutputNode } from '../Common.ts';
+import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Common.ts';
 
 /**
  * Represents a node in a directed graph.

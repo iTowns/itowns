@@ -1,10 +1,9 @@
-import { BuiltinType, Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphNode, GraphOutputNode, SubGraph, Type } from '../Common.ts';
+import { Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphNode, GraphOutputNode, SubGraph, Type } from '../Common.ts';
 
 export default class SubGraphNode extends GraphNode {
     public graph: SubGraph;
     private graphOutputs: Map<string, [Dependency, Type]>;
 
-    // TODO: Allow for multiple outputs
     public constructor(
         outerGraph: Graph,
         graph: SubGraph,
@@ -42,11 +41,15 @@ export default class SubGraphNode extends GraphNode {
             throw new Error(missingOutputDeps.join('\n'));
         }
 
-        super(new Map(), new Map(outputs.map(([name, [_, ty]]) => [name, ty])));
+        const outputTypeMap = new Map(outputs.map(([name, [_, ty]]) => [name, ty]));
+        super(new Map(), outputTypeMap);
 
         this.graph = graph;
-        this.graphOutputs = new Map(outputs.map(([name, [dep, ty]]) =>
-            [name, [{ node: new GraphOutputNode(dep), output: SubGraphNode.defaultIoName }, ty]]));
+        this.graphOutputs = new Map(outputs.map(([name, [dep, ty]]) => {
+            const node = new GraphOutputNode(dep);
+            this.graph.outputs.set(name, node);
+            return [name, [{ node, output: SubGraphNode.defaultIoName }, ty]];
+        }));
 
         for (const [_nodeName, node] of this.graph.nodes) {
             // Replace dependencies outside the graph with graph inputs

@@ -32,8 +32,9 @@
             float avg = (mid + left) / 2.0;
 
             float smoothed = max(0., diff - avg);
+            float blueness = color.b / (color.r + color.g + color.b);
 
-            gl_FragColor = color + vec4(smoothed, smoothed, smoothed, 1.0);
+            gl_FragColor = color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
         }
     </script>
     <script type="x-shader/x-fragment" id="greyscaleFragmentShader">
@@ -98,10 +99,13 @@
                 output: 'value',
             }
         });
+
+        //console.log(postProcessingGraphNode.graph.outputs);
+
         const renderFBO = new graph.ScreenShaderNode({node: postProcessingGraphNode, output: 'greyscale'}, renderer, {toScreen: true});
         outerGraph.set({postProcessingGraphNode, renderFBO});
 
-        window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
+        //window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
         let frame = 0;
         view.render = function render() {

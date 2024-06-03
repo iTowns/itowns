@@ -58,7 +58,7 @@ export default class ScreenShaderNode extends ProcessorNode {
     }
 
     public constructor(
-        input: Dependency,
+        target: Dependency,
         renderer: Dependency,
         { fragmentShader: { uniforms, ...fragmentShader } = ScreenShaderNode.defaultFragmentShader, toScreen = false }: {
             fragmentShader?: {
@@ -94,12 +94,12 @@ export default class ScreenShaderNode extends ProcessorNode {
                 // Unpacking the uniforms object first allows us to ignore
                 // potential 'input' and 'renderer' fields.
                 ...fullUniforms,
-                input: [input, BuiltinType.RenderTarget],
+                target: [target, BuiltinType.RenderTarget],
                 renderer: [renderer, BuiltinType.Renderer],
             },
             BuiltinType.RenderTarget,
             (_frame, args: CallbackArgs) => {
-                const { input, renderer, ...uniforms } = args;
+                const { target: input, renderer, ...uniforms } = args;
 
                 const target: THREE.WebGLRenderTarget | null = toScreen
                     ? null
