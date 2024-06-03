@@ -4,8 +4,6 @@ export default class SubGraphNode extends GraphNode {
     public graph: SubGraph;
     private graphOutputs: Map<string, [Dependency, Type]>;
 
-    // We replace every outside dependency by a junction (graph input) and create output junctions for every single
-    // node output, pruning them when optimising the graph if they're unused.
     // TODO: Allow for multiple outputs
     public constructor(
         outerGraph: Graph,
@@ -36,6 +34,14 @@ export default class SubGraphNode extends GraphNode {
             })
             .map(([name, dep]): [string, [Dependency, Type]] => [name, [dep, dep.node.outputs.get(dep.output)![1]]]);
 
+        const missingOutputDeps = outputs
+            .filter(([_name, [dep, _ty]]) => graph.findGraphNode(dep.node) == undefined)
+            .map(([name, [_dep, ty]]) => `Output "${name}" (type: ${ty}) points to a node not within the subgraph`);
+
+        if (missingOutputDeps.length > 0) {
+            throw new Error(missingOutputDeps.join('\n'));
+        }
+
         super(new Map(), new Map(outputs.map(([name, [_, ty]]) => [name, ty])));
 
         this.graph = graph;
@@ -65,11 +71,10 @@ export default class SubGraphNode extends GraphNode {
         }
     }
 
-    protected _apply(graph?: Graph, frame: number = 0): void {
-        for (const [name, [dep, _ty]] of this.graphOutputs) {
-            this.outputs.set(name, dep.node.getOutput(dep.output, graph, frame));
+    protected _apply(_graph?: Graph, frame: number = 0): void {
+        for (const [name, [dep, ty]] of this.graphOutputs) {
+            this.outputs.set(name, [dep.node.getOutput(dep.output, this.graph, frame), ty]);
         }
-        // this._out.outputs.set(GraphNode.defaultIoName, this._outNode.node.getOutput(this._outNode.output, graph, frame));
     }
 
     public get label(): string | undefined {

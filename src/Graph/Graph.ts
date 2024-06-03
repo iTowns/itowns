@@ -22,8 +22,25 @@ export default class Graph {
      * @throws If the node does not exist.
      * @returns The output of the node at the given frame.
      */
-    public getOutput(frame: number, out: Dependency): any {
+    public getOutput(frame: number, out: Dependency | [GraphNode, string] | [string, string] | GraphNode | string): any {
         this.validate();
+
+        if (out instanceof GraphNode) {
+            out = { node: out, output: GraphNode.defaultIoName };
+        } else if (typeof out == 'string') {
+            const node = this.nodes.get(out);
+            if (node == undefined) {
+                throw new Error(`Node "${out}" does not exist in the graph`);
+            }
+            out = { node, output: GraphNode.defaultIoName };
+        } else if (Array.isArray(out)) {
+            const [nodeName, output] = out;
+            const node = nodeName instanceof GraphNode ? nodeName : this.nodes.get(nodeName);
+            if (node == undefined) {
+                throw new Error(`Node "${nodeName}" does not exist in the graph`);
+            }
+            out = { node, output };
+        }
 
         return out.node.getOutput(out.output, this, frame);
     }

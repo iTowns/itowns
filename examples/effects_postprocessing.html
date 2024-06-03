@@ -91,7 +91,6 @@
                 code: document.getElementById('greyscaleFragmentShader').textContent,
                 entry: 'greyscale'
             },
-            toScreen: true,
         });
         postProcessingGraph.setGrouped({coastSharpen, greyscale});
 
@@ -101,13 +100,14 @@
                 output: 'value',
             }
         });
-        outerGraph.setGrouped({postProcessingGraphNode});
+        const renderFBO = new graph.ScreenShaderNode({node: postProcessingGraphNode, output: 'greyscale'}, renderer, {toScreen: true});
+        outerGraph.setGrouped({postProcessingGraphNode, renderFBO});
 
-        // window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
+        window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
         let frame = 0;
         view.render = function render() {
-            outerGraph.getOutput(frame++, {node: postProcessingGraphNode, output: 'greyscale'});
+            outerGraph.getOutput(frame++, renderFBO);
         };
 
         itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {

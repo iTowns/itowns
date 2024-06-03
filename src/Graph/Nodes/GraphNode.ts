@@ -5,7 +5,7 @@ import { Type, Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphOutputN
  * Base class for all other types of nodes.
  */
 export default abstract class GraphNode {
-    protected static defaultIoName = 'value';
+    public static defaultIoName = 'value';
     // protected _out: [number, any | undefined];
     protected _out: {
         frame: number,
@@ -55,6 +55,7 @@ export default abstract class GraphNode {
 
     /**
      * Get the output of the node at a given frame.
+     * @param name The name of the output to get.
      * @param graph The graph the node is a part of.
      * @param frame The frame to get the output for.
      * @returns The output of the node at the given frame.
@@ -75,14 +76,19 @@ export default abstract class GraphNode {
         const thisName = graph?.findNode(this)?.name;
         const debugName = `${thisName == undefined ? '' : `${thisName}: `}${this.nodeType}`;
 
+        // GraphNode.depth++;
+        // const tab = '| '.repeat(GraphNode.depth - 1);
+
         if (oValue == undefined || oFrane !== frame) {
-            console.log(`[${debugName}] calling _apply`);
+            // console.log(`${tab}[${debugName}] calling _apply`);
             this._apply(graph, frame);
             this._out.frame = frame;
         }
 
         const output = this._out.outputs.get(name);
-        console.log(`[${debugName}] getOutput(${name}): `, output);
+        // console.log(`${tab}[${debugName}] getOutput(${name}): `, output);
+        // GraphNode.depth--;
+
         return output![0];
     }
 
