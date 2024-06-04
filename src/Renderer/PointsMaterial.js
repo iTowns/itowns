@@ -299,7 +299,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
     }
 
     recomputeClassification() {
-        const needTransparency = recomputeTexture(this.classificationScheme, this.classificationTexture, 32);
+        const needTransparency = recomputeTexture(this.classificationScheme, this.classificationTexture, 256);
         this.userData.needTransparency[PNTS_MODE.CLASSIFICATION] = needTransparency;
         this.dispatchEvent({
             type: 'material_property_changed',
