@@ -40,7 +40,7 @@ export default class JunctionNode extends GraphNode {
     }
 
     public get nodeType(): string {
-        return JunctionNode.name.replace('Node', '');
+        return JunctionNode.name;
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {

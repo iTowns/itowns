@@ -40,7 +40,7 @@ export default class RenderViewNode extends ProcessorNode {
     }
 
     public get nodeType(): string {
-        return RenderViewNode.name.replace('Node', '');
+        return RenderViewNode.name;
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {

@@ -13,7 +13,7 @@ export default class LazyStaticNode extends ProcessorNode {
     }
 
     public get nodeType(): string {
-        return LazyStaticNode.name.replace('Node', '');
+        return LazyStaticNode.name;
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {

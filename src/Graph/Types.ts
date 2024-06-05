@@ -1,5 +1,6 @@
 // Stored in a separate file to avoid circular dependencies
 
+import Graph from './Graph.ts';
 import GraphNode from './Nodes/GraphNode.ts';
 
 export type Type = string;
@@ -46,3 +47,8 @@ export interface DumpDotGlobalStyle {
     node: { [key: string]: string };
     edge: { [key: string]: string };
 }
+
+export type GraphOptimization = {
+    pattern: string[],
+    operation: (nodes: GraphNode[], graph: Graph) => GraphNode
+};

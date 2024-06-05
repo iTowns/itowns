@@ -1,4 +1,4 @@
-import { GraphNode, DumpDotGlobalStyle, Type, Mappings, JunctionNode, SubGraphNode, InputNode, BuiltinType, Dependency, SubGraph, ScreenShaderNode, GraphOptimizer, GraphInputNode } from './Prelude.ts';
+import { GraphNode, DumpDotGlobalStyle, Type, Mappings, JunctionNode, SubGraphNode, InputNode, BuiltinType, Dependency, GraphOptimizer, GraphInputNode } from './Prelude.ts';
 
 /** Represents a directed graph that guarantees the absence of cycles on use. */
 export default class Graph {
@@ -189,8 +189,8 @@ export default class Graph {
         return dependants;
     }
 
-    public optimize(start: GraphNode | string): void {
-        GraphOptimizer.optimize(this, start);
+    public optimize(start: GraphNode | string, debug: boolean = false): void {
+        GraphOptimizer.optimize(this, start, debug);
     }
 
     /** Find a node's entry in the graph. O(n) time complexity. */

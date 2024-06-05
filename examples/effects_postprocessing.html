@@ -101,8 +101,8 @@ void greyscale() {
         const renderFBO = new graph.ScreenShaderNode({node: postProcessingGraphNode, output: 'greyscale'}, renderer, {toScreen: true});
         outerGraph.set({postProcessingGraphNode, renderFBO});
 
-        postProcessingGraph.optimize(greyscale);
-        window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
+        postProcessingGraph.optimize(greyscale, true);
+        //window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
 
         let frame = 0;
         view.render = function render() {

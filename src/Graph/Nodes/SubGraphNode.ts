@@ -85,7 +85,7 @@ export default class SubGraphNode extends GraphNode {
     }
 
     public get nodeType(): string {
-        return SubGraphNode.name.replace('Node', '');
+        return SubGraphNode.name;
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {

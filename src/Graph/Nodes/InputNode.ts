@@ -24,7 +24,7 @@ export default class InputNode extends GraphNode {
     }
 
     public get nodeType(): string {
-        return InputNode.name.replace('Node', '');
+        return InputNode.name;
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {

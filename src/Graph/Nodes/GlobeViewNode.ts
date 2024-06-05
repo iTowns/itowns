@@ -19,7 +19,7 @@ export default class GlobeViewNode extends ViewNode {
     }
 
     public get nodeType(): string {
-        return GlobeViewNode.name.replace('Node', '');
+        return GlobeViewNode.name;
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {

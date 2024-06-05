@@ -15,7 +15,8 @@ import GraphOutputNode from './Nodes/GraphOutputNode.ts';
 import GlobeViewNode from './Nodes/GlobeViewNode.ts';
 import FieldGetterNode from './Nodes/FieldGetterNode.ts';
 
-import { BuiltinType, Type, Dependency, ColorStyle, DumpDotNodeStyle, DumpDotGlobalStyle } from './Types.ts';
+import { BuiltinType, Type, Dependency, ColorStyle, DumpDotNodeStyle, DumpDotGlobalStyle, GraphOptimization } from './Types.ts';
+import opti from './Optimizations/Prelude.ts';
 
 import GraphOptimizer from './GraphOptimizer.ts';
 
@@ -45,6 +46,7 @@ export {
     Mappings,
     BuiltinType,
     GraphOptimizer,
+    opti,
 };
 
 export type {
@@ -53,4 +55,5 @@ export type {
     ColorStyle,
     DumpDotNodeStyle,
     DumpDotGlobalStyle,
+    GraphOptimization,
 };

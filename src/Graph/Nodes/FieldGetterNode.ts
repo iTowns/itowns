@@ -12,7 +12,7 @@ export default class FieldGetterNode extends ProcessorNode {
     }
 
     public get nodeType(): string {
-        return FieldGetterNode.name.replace('Node', '');
+        return FieldGetterNode.name;
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {

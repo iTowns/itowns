@@ -165,7 +165,7 @@ void main() {
     }
 
     public get nodeType(): string {
-        return ScreenShaderNode.name.replace('Node', '');
+        return ScreenShaderNode.name;
     }
 
     public get dumpDotStyle(): DumpDotNodeStyle {
