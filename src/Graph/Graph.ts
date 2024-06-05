@@ -1,4 +1,4 @@
-import { GraphNode, DumpDotGlobalStyle, Type, Mappings, JunctionNode, SubGraphNode, InputNode, BuiltinType, Dependency } from './Prelude.ts';
+import { GraphNode, DumpDotGlobalStyle, Type, Mappings, JunctionNode, SubGraphNode, InputNode, BuiltinType, Dependency, SubGraph, ScreenShaderNode, GraphOptimizer, GraphInputNode } from './Prelude.ts';
 
 /** Represents a directed graph that guarantees the absence of cycles on use. */
 export default class Graph {
@@ -128,10 +128,15 @@ export default class Graph {
         path: Set<string>,
         visited: Set<string>,
     ): void {
+        // GraphInputNodes are only used as entry points to subgraphs
+        if (node instanceof GraphInputNode) {
+            return;
+        }
+
         const nodeName = this.findNode(node)?.name;
         if (nodeName == undefined) {
             console.error(node);
-            throw new Error(`Node not found in nodes or inputs after following this path: ${path}`);
+            throw new Error(`Node not found in graph after following this path: ${Array.from(path)}`);
         }
 
         if (visited.has(nodeName)) {
@@ -170,6 +175,22 @@ export default class Graph {
             }
         }
         path.delete(nodeName);
+    }
+
+    public findDependants(node: GraphNode): GraphNode[] {
+        const dependants: GraphNode[] = [];
+        for (const [_name, n] of this.nodes) {
+            for (const [_name, [dep, _ty]] of n.inputs) {
+                if (dep?.node == node) {
+                    dependants.push(n);
+                }
+            }
+        }
+        return dependants;
+    }
+
+    public optimize(start: GraphNode | string): void {
+        GraphOptimizer.optimize(this, start);
     }
 
     /** Find a node's entry in the graph. O(n) time complexity. */

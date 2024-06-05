@@ -17,6 +17,8 @@ import FieldGetterNode from './Nodes/FieldGetterNode.ts';
 
 import { BuiltinType, Type, Dependency, ColorStyle, DumpDotNodeStyle, DumpDotGlobalStyle } from './Types.ts';
 
+import GraphOptimizer from './GraphOptimizer.ts';
+
 export {
     Graph,
     SubGraph,
@@ -33,7 +35,6 @@ export {
     // View
     ViewNode,
     GlobeViewNode,
-    // PlanarViewNode,
 
     // Processors
     ProcessorNode,
@@ -43,6 +44,7 @@ export {
     // Utils
     Mappings,
     BuiltinType,
+    GraphOptimizer,
 };
 
 export type {

@@ -17,32 +17,32 @@
     <script src="js/GUI/LoadingScreen.js"></script>
 
     <script type="x-shader/x-fragment" id="coastSharpenFragmentShader">
-        float getAvg(vec2 uv) {
-            vec4 color = texture2D(uTexture, uv);
-            return (color.r + color.g + color.b) / 3.0;
-        }
+float getAvg(vec2 uv) {
+    vec4 color = texture2D(uTexture, uv);
+    return (color.r + color.g + color.b) / 3.0;
+}
 
-        void coastSharpen() {
-            vec4 color = texture2D( uTexture, vUv );
+void coastSharpen() {
+    vec4 color = texture2D( uTexture, vUv );
 
-            float mid = getAvg(vUv);
-            float left = getAvg(vUv - uOffset);
+    float mid = getAvg(vUv);
+    float left = getAvg(vUv - uOffset);
 
-            float diff = uWeight * (mid - left);
-            float avg = (mid + left) / 2.0;
+    float diff = uWeight * (mid - left);
+    float avg = (mid + left) / 2.0;
 
-            float smoothed = max(0., diff - avg);
-            float blueness = color.b / (color.r + color.g + color.b);
+    float smoothed = max(0., diff - avg);
+    float blueness = color.b / (color.r + color.g + color.b);
 
-            gl_FragColor = color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
-        }
+    gl_FragColor = color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
+}
     </script>
     <script type="x-shader/x-fragment" id="greyscaleFragmentShader">
-        void greyscale() {
-            vec4 color = texture2D( uTexture, vUv );
-            float avg = (color.r + color.g + color.b) / 3.;
-            gl_FragColor = vec4(avg, avg, avg, 1.0);
-        }
+void greyscale() {
+    vec4 color = texture2D( uTexture, vUv );
+    float avg = (color.r + color.g + color.b) / 3.;
+    gl_FragColor = vec4(avg, avg, avg, 1.0);
+}
     </script>
 
     <script type="text/javascript">
@@ -59,8 +59,6 @@
         const viewerDiv = new graph.InputNode(document.getElementById('viewerDiv'));
         const viewNode = new graph.GlobeViewNode(viewerDiv, placement);
         outerGraph.set({placement, viewerDiv, viewNode});
-
-        // window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
 
         const div = viewerDiv.getOutput();
         const view = viewNode.getOutput('view', outerGraph);
@@ -79,16 +77,16 @@
         postProcessingGraph.set({sharpenWeight, sharpenOffset});
         // Screen shaders
         const coastSharpen = new graph.ScreenShaderNode(render, renderer, {
-            fragmentShader: {
+            fragmentShaderParts: {
                 uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
-                code: document.getElementById('coastSharpenFragmentShader').textContent,
-                entry: 'coastSharpen'
+                auxCode: document.getElementById('coastSharpenFragmentShader').textContent,
+                main: 'coastSharpen();'
             },
         });
         const greyscale = new graph.ScreenShaderNode(coastSharpen, renderer, {
-            fragmentShader: {
-                code: document.getElementById('greyscaleFragmentShader').textContent,
-                entry: 'greyscale'
+            fragmentShaderParts: {
+                auxCode: document.getElementById('greyscaleFragmentShader').textContent,
+                main: 'greyscale();'
             },
         });
         postProcessingGraph.set({coastSharpen, greyscale});
@@ -100,12 +98,11 @@
             }
         });
 
-        //console.log(postProcessingGraphNode.graph.outputs);
-
         const renderFBO = new graph.ScreenShaderNode({node: postProcessingGraphNode, output: 'greyscale'}, renderer, {toScreen: true});
         outerGraph.set({postProcessingGraphNode, renderFBO});
 
-        //window.open(outerGraph.dumpDotGraphvizLink(), '_blank');
+        postProcessingGraph.optimize(greyscale);
+        window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
 
         let frame = 0;
         view.render = function render() {

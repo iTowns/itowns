@@ -8,27 +8,27 @@ interface CallbackArgs extends Record<string, any> {
     uniforms: any[];
 }
 
+type FragmentShaderParts = {
+    uniforms?: { [name: string]: Dependency | GraphNode | Type };
+    auxCode?: string;
+    main: string;
+};
+
 export default class ScreenShaderNode extends ProcessorNode {
     private static get vertexShader(): string {
         return `
-        varying vec2 vUv;
+varying vec2 vUv;
 
-        void main() {
-            vUv = uv;
-            gl_Position = vec4(position, 1.0);
-        }
-        `;
+void main() {
+    vUv = uv;
+    gl_Position = vec4(position, 1.0);
+}
+`;
     }
 
-    private static get defaultFragmentShader(): { code: string, entry: string } {
+    private static get defaultFragmentShader(): FragmentShaderParts {
         return {
-            code: `
-            void identity() {
-                vec4 color = texture2D(uTexture, vUv);
-                gl_FragColor = color;
-            }
-            `,
-            entry: 'identity',
+            main: 'gl_FragColor = texture2D(uTexture, vUv);',
         };
     }
 
@@ -39,9 +39,9 @@ export default class ScreenShaderNode extends ProcessorNode {
     private static _camera: THREE.Camera;
 
     // Kept for debug purposes
-    private _uniformDeclarations: string;
-    private _fragmentShader: string;
     private _material: THREE.ShaderMaterial;
+
+    private _fragmentShaderParts: FragmentShaderParts;
 
     private static _init(): void {
         if (ScreenShaderNode._scene == undefined) {
@@ -60,18 +60,14 @@ export default class ScreenShaderNode extends ProcessorNode {
     public constructor(
         target: Dependency,
         renderer: Dependency,
-        { fragmentShader: { uniforms, ...fragmentShader } = ScreenShaderNode.defaultFragmentShader, toScreen = false }: {
-            fragmentShader?: {
-                uniforms?: { [name: string]: Dependency | GraphNode | Type },
-                code: string,
-                entry: string,
-            },
+        { fragmentShaderParts = ScreenShaderNode.defaultFragmentShader, toScreen = false }: {
+            fragmentShaderParts?: FragmentShaderParts,
             toScreen?: boolean
         },
     ) {
         ScreenShaderNode._init();
 
-        uniforms ??= {};
+        const uniforms = fragmentShaderParts.uniforms ?? {};
 
         const fullUniforms = Object.fromEntries(
             Object.entries(uniforms)
@@ -124,27 +120,46 @@ export default class ScreenShaderNode extends ProcessorNode {
                 this._out.outputs.set(ScreenShaderNode.defaultIoName, [target, BuiltinType.RenderTarget]);
             });
 
-        this._uniformDeclarations = Object.entries(fullUniforms).map(
-            ([name, [_node, type]]) => `uniform ${Mappings.toOpenGL(type)} ${name};`,
-        ).join('\n');
+        this._fragmentShaderParts = fragmentShaderParts;
+        const frag = ScreenShaderNode.buildFragmentShader(this._fragmentShaderParts);
+        this._material = ScreenShaderNode.buildMaterial(frag);
+    }
 
-        this._fragmentShader = `
-            precision highp float;
+    public get fragmentShaderParts(): FragmentShaderParts {
+        return this._fragmentShaderParts;
+    }
 
-            varying vec2 vUv;
-            uniform sampler2D uTexture;
+    private static buildFragmentShader({ uniforms, auxCode, main }: FragmentShaderParts): string {
+        const uniformDeclarations = Object.entries(uniforms ?? {})
+            .map(([name, uniform]): string => {
+                let ty: Type;
 
-            ${this._uniformDeclarations}
+                if (typeof uniform == 'string') {
+                    ty = uniform;
+                } else if (uniform instanceof GraphNode) {
+                    ty = uniform.outputs.get(GraphNode.defaultIoName)![1];
+                } else {
+                    ty = uniform.node.outputs.get(uniform.output)![1];
+                }
 
-            ${fragmentShader.code}
+                return `uniform ${Mappings.toOpenGL(ty)} ${name};`;
+            });
 
-            void main() {
-                ${fragmentShader.entry}();
-            }
-            `;
+        return [
+            'precision highp float;\n',
+            'varying vec2 vUv;',
+            'uniform sampler2D uTexture;',
+            ...(uniformDeclarations.length > 0 ? [uniformDeclarations.join('\n')] : []),
+            ...(auxCode != undefined ? [auxCode] : []),
+            'void main() {',
+            `    ${main.split('\n').join('\n    ')}`,
+            '}',
+        ].join('\n');
+    }
 
-        this._material = new THREE.ShaderMaterial({
-            fragmentShader: this._fragmentShader,
+    public static buildMaterial(fragmentShader: string): THREE.ShaderMaterial {
+        return new THREE.ShaderMaterial({
+            fragmentShader,
             vertexShader: ScreenShaderNode.vertexShader,
         });
     }
