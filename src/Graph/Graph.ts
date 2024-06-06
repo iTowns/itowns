@@ -189,6 +189,24 @@ export default class Graph {
         return dependants;
     }
 
+    public findBacklinks(dependency: Dependency): [string, [GraphNode, string]][] {
+        const backlinks: [string, [GraphNode, string]][] = [];
+        for (const [name, node] of this.nodes) {
+            const inputs = node instanceof SubGraphNode ? new Map(Array.from(node.graph.inputs.entries()).map(([name, input]) => [name, input.input])) : node.inputs;
+
+            for (const [depName, [dep, _depTy]] of inputs.entries()) {
+                if (dep == null) {
+                    continue;
+                }
+
+                if (dep.node == dependency.node && dep.output == dependency.output) {
+                    backlinks.push([name, [node, depName]]);
+                }
+            }
+        }
+        return backlinks;
+    }
+
     public optimize(start: GraphNode | string, debug: boolean = false): void {
         GraphOptimizer.optimize(this, start, debug);
     }
@@ -261,10 +279,7 @@ export default class Graph {
                 for (const [depName, [dep, depTy]] of node.inputs) {
                     if (dep == null) { continue; }
 
-                    // Lookup the node in the graph nodes and inputs
-                    // PERF: Inefficient but the alternative is duplicating the names
-                    // inside the nodes and that makes the API much heavier so we'll
-                    // have to live with it as it will likely never be an issue.
+                    // Lookup the dependency node's name
                     const nodeEntry = this.findNode(dep.node);
                     if (nodeEntry == undefined) {
                         throw new Error(
@@ -279,16 +294,17 @@ export default class Graph {
                         ...(node instanceof JunctionNode ? { arrowhead: 'none' } : {}),
                         ...colorStyle,
                     });
-                    const port = node instanceof JunctionNode ? '' : `:${depName}`;
+                    const port = node instanceof JunctionNode ? '' : `:"${depName}"`;
 
                     const sourcePort = `:"${dep.output}"`;
                     if (dep.node instanceof SubGraphNode) {
-                        dump.push(`\t"${entryName}->${dep.output}" -> "${nodeName}"${port} ${attrs};`);
+                        dump.push(`\t"${entryName}->${dep.output}":e -> "${nodeName}"${port}:w ${attrs};`);
                     } else {
-                        dump.push(`\t"${entryName}"${sourcePort} -> "${nodeName}"${port} ${attrs};`);
+                        dump.push(`\t"${entryName}"${sourcePort}:e -> "${nodeName}"${port}:w ${attrs};`);
                     }
                 }
 
+                // Link the subgraph inputs while outside of it to force proper positioning of nodes with dot.
                 if (node instanceof SubGraphNode) {
                     for (const [iName, iNode] of node.graph.inputs) {
                         const [dep, depTy] = iNode.input;
@@ -305,7 +321,7 @@ export default class Graph {
                                 arrowhead: 'none',
                                 ...colorStyle,
                             });
-                            dump.push(`\t"${entryName}":"${dep.output}" -> "${nodeName}.${iName}" ${attrs}`);
+                            dump.push(`\t"${entryName}":"${dep.output}":e -> "${nodeName}.${iName}":w ${attrs}`);
                         }
                     }
                 }

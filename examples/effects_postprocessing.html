@@ -102,7 +102,7 @@ void greyscale() {
         outerGraph.set({postProcessingGraphNode, renderFBO});
 
         postProcessingGraph.optimize(greyscale, true);
-        //window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
+        window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
 
         let frame = 0;
         view.render = function render() {

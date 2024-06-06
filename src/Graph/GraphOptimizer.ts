@@ -8,7 +8,7 @@ export default class GraphOptimizer {
 
         const node = start instanceof GraphNode ? start : graph.nodes.get(start);
         if (node == undefined) {
-            throw new Error(`Node "${start}" does not exist in the graph`);
+            throw new Error(`Node "${start as string}" does not exist in the graph`);
         }
 
         const path: GraphNode[] = [];

@@ -22,7 +22,7 @@ export default {
         const [cParts, pParts] = [child.fragmentShaderParts, parent.fragmentShaderParts];
 
         const detectedOffsetSampling = /texture2D\((?!uTexture,vUv)[^)]*\)/.exec(
-            ((cParts.auxCode ?? '') + cParts.main).replaceAll(/\s/g, ''),
+            ((cParts.auxCode ?? '') + cParts.main).replaceAll(/\s/gm, ''),
         );
 
         if (detectedOffsetSampling != null) {
@@ -67,7 +67,9 @@ export default {
             `// ${cName}`, cParts.main,
         ].join('\n');
 
-        for (const [inputName, [dep, ty]] of Array.from(parent.inputs.entries()).slice().reverse()) {
+        child.inputs.delete('renderer');
+        child.inputs.delete('target');
+        for (const [inputName, [dep, ty]] of parent.inputs.entries()) {
             child.inputs.set(inputName, [dep, ty]);
         }
 

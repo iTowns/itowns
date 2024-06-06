@@ -81,9 +81,9 @@ export default class SubGraph extends Graph {
                     const sourcePort = srcNode instanceof GraphInputNode ? '' : `:"${dep.output}"`;
 
                     if (dep.node instanceof SubGraphNode) {
-                        dump.push(`\t"${sourceName}->${dep.output}" -> "${nodeName}"${port} ${attrs};`);
+                        dump.push(`\t"${sourceName}->${dep.output}":e -> "${nodeName}"${port}:w ${attrs};`);
                     } else {
-                        dump.push(`\t"${sourceName}"${sourcePort} -> "${nodeName}"${port} ${attrs};`);
+                        dump.push(`\t"${sourceName}"${sourcePort}:e -> "${nodeName}"${port}:w ${attrs};`);
                     }
                 }
 
@@ -103,7 +103,7 @@ export default class SubGraph extends Graph {
                                 arrowhead: 'none',
                                 ...colorStyle,
                             });
-                            dump.push(`\t"${entryName}" -> "${nodeName}.${iName}" ${attrs}`);
+                            dump.push(`\t"${entryName}":e -> "${nodeName}.${iName}":w ${attrs}`);
                         }
                     }
                 }
@@ -120,7 +120,7 @@ export default class SubGraph extends Graph {
                     ...colorStyle,
                 });
 
-                dump.push(`\t"${gName}":"${dep.output}" -> "${subGraphName}->${name}" ${attrs};`);
+                dump.push(`\t"${gName}":"${dep.output}":e -> "${subGraphName}->${name}":w ${attrs};`);
             }
         }
 
