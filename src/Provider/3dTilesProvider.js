@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import B3dmParser from 'Parser/B3dmParser';
 import PntsParser from 'Parser/PntsParser';
-import GLTFParser from 'Parser/GLTFParser';
+import iGLTFLoader from 'Parser/iGLTFLoader';
 import Fetcher from 'Provider/Fetcher';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import PointsMaterial from 'Renderer/PointsMaterial';
@@ -28,7 +28,7 @@ function b3dmToMesh(data, layer, url) {
 
 function gltfToMesh(data, layer, url) {
     const urlBase = THREE.LoaderUtils.extractUrlBase(url);
-    return GLTFParser.parse(data, urlBase).then(result => ({ object3d: result.scene }));
+    return iGLTFLoader.parse(data, urlBase).then(result => ({ object3d: result.scene }));
 }
 
 function pntsParse(data, layer) {

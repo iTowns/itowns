@@ -5,9 +5,11 @@ import { MeshBasicMaterial } from 'three';
 import disposeThreeMaterial from 'Utils/ThreeUtils';
 import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
-import GLTFParser from './GLTFParser';
+// A bit weird but temporary until we remove this deprecated parser. Mainly to benefit from the enableDracoLoader and enableKtx2Loader
+// methods.
+import { itownsGLTFLoader } from 'Layer/ThreeDTilesLayer';
 
-const matrixChangeUpVectorYtoZInv = (new THREE.Matrix4()).makeRotationX(-Math.PI / 2);
+const matrixChangeUpVectorYtoZ = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 const matrixChangeUpVectorXtoZ = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
 
 const utf8Decoder = new TextDecoder();
@@ -41,18 +43,15 @@ function filterUnsupportedSemantics(obj) {
 }
 
 /**
- * 3D Tiles pre-1.0 had a gltfUpAxis parameter that defined the up vector of the gltf file that might be different from
- * the standard y-up for gltf. Manage the case when this gltfUpAxis is defined (i.e. apply the correct rotation to the
- * gltf file to have it z-up in the end).
+ * Transforms loaded gltf model to z-up (either from y-up or from the up axis defined in gltfUpAxis). Note that
+ * gltfUpAxis was an attribut of pre-1.0 3D Tiles and is now deprecated.
  * @param {THREE.Object3D} gltfScene - the parsed glTF scene
  * @param {String} gltfUpAxis - the gltfUpAxis parameter
  */
-function applyDeprecatedGltfUpAxis(gltfScene, gltfUpAxis) {
-    if (gltfUpAxis === 'Z') {
-        // If gltf up was already z-up, apply the inverse transform matrix that was applied in the glTFParser
-        gltfScene.applyMatrix4(matrixChangeUpVectorYtoZInv);
+function transformToZUp(gltfScene, gltfUpAxis) {
+    if (!gltfUpAxis  || gltfUpAxis === 'Y') {
+        gltfScene.applyMatrix4(matrixChangeUpVectorYtoZ);
     } else if (gltfUpAxis === 'X') {
-        gltfScene.applyMatrix4(matrixChangeUpVectorYtoZInv);
         gltfScene.applyMatrix4(matrixChangeUpVectorXtoZ);
     }
 }
@@ -149,7 +148,6 @@ export default {
                 b3dmHeader.BTJSONLength + b3dmHeader.BTBinaryLength;
 
             const gltfBuffer = buffer.slice(posGltf);
-            const headerView = new DataView(gltfBuffer, 0, 20);
 
             const init_mesh = function f_init(mesh) {
                 mesh.frustumCulled = frustumCulled;
@@ -174,12 +172,12 @@ export default {
                 }
             };
 
-            promises.push(GLTFParser.parse(gltfBuffer, options).then((gltf) => {
+            promises.push(itownsGLTFLoader.parseAsync(gltfBuffer, options).then((gltf) => {
                 for (const scene of gltf.scenes) {
                     scene.traverse(filterUnsupportedSemantics);
                 }
 
-                applyDeprecatedGltfUpAxis(gltf.scene, options.gltfUpAxis);
+                transformToZUp(gltf.scene, options.gltfUpAxis);
 
                 const shouldBePatchedForLogDepthSupport = Capabilities.isLogDepthBufferSupported() && !options.doNotPatchMaterial;
                 if (options.frustumCulling === false || options.overrideMaterials || shouldBePatchedForLogDepthSupport || options.layer) {
@@ -188,15 +186,6 @@ export default {
 
                 // Apply relative center from Feature table.
                 gltf.scene.position.copy(FT_RTC);
-
-                // Apply relative center from gltf json.
-                const contentArray = new Uint8Array(gltfBuffer, 20, headerView.getUint32(12, true));
-                const content = utf8Decoder.decode(new Uint8Array(contentArray));
-                const json = JSON.parse(content);
-                if (json.extensions && json.extensions.CESIUM_RTC) {
-                    gltf.scene.position.fromArray(json.extensions.CESIUM_RTC.center);
-                    gltf.scene.updateMatrixWorld(true);
-                }
 
                 return gltf;
             }).catch((e) => { throw new Error(e); }));
