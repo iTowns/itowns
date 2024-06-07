@@ -22,6 +22,10 @@
         "3dtiles_pointcloud": "Pointcloud classification"
     },
 
+    "3D Tiles (new)": {
+        "3dtiles_loader": "3D Tiles tileset loader"
+    },
+
     "Pointcloud": {
         "potree_25d_map": "Potree 2.5D map",
         "potree2_25d_map": "Potree 2.5D map 2.0 format",

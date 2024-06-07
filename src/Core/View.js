@@ -102,6 +102,10 @@ function _preprocessLayer(view, layer, parentLayer) {
         });
     }
 
+    if (layer.isOGC3DTilesLayer) {
+        layer._setup(view);
+    }
+
     return layer;
 }
 const _eventCoords = new THREE.Vector2();
