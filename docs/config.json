@@ -51,6 +51,7 @@
                 "CopcLayer",
                 "Potree2Layer",
                 "C3DTilesLayer",
+                "OGC3DTilesLayer",
                 "LabelLayer",
                 "GlobeLayer",
                 "PlanarLayer",
@@ -76,7 +77,10 @@
                 "Potree2Source",
                 "VectorTilesSource",
                 "EntwinePointTileSource",
-                "CopcSource"
+                "CopcSource",
+                "OGC3DTilesSource",
+                "OGC3DTilesIonSource",
+                "OGC3DTilesGoogleSource"
             ],
 
             "Provider": [
@@ -86,7 +90,7 @@
 
             "Parser": [
                 "GeoJsonParser",
-                "GLTFParser",
+                "iGLTFLoader",
                 "GpxParser",
                 "VectorTileParser",
                 "CameraCalibrationParser",
