@@ -1,0 +1,150 @@
+<html>
+    <head>
+        <title>Itowns - 3D Tiles loader</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <style type="text/css">
+            #description {
+                z-index: 2;
+                right: 10px;
+            }
+        </style>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="description">Specify the URL of a tileset to load:
+            <input type="text" id="url" />
+            <button onclick="setURL(document.getElementById('url').value)">
+                Load
+            </button>
+            <hr />
+            <p><b>Feature Information:</b></p>
+            <div id="featureInfo"></div>
+        </div>
+
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+                    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+                }
+            }
+		</script>
+
+        <script type="module">
+            import { AmbientLight } from 'three';
+            import {
+                zoomToLayer,
+                fillHTMLWithPickingInfo,
+            } from './jsm/OGC3DTilesHelper.js';
+
+            const {
+                TMSSource, WMTSSource, OGC3DTilesSource,
+                ColorLayer, ElevationLayer, OGC3DTilesLayer,
+                GlobeView, Coordinates, Fetcher,
+            } = itowns;
+
+            const uri = new URL(location);
+            const state = {
+                // URL to tileset JSON
+                tileset: uri.searchParams.get('tileset'),
+                // Cesium ION /
+                assetId: uri.searchParams.get('assetId'),
+            };
+
+            function setURL(url) {
+                if (!url) return;
+
+                uri.searchParams.set('tileset', url);
+                history.pushState(null, '', `?${uri.searchParams.toString()}`);
+
+                location.reload();
+            }
+
+            // ---- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION ----
+
+            // Define camera initial position
+            const placement = {
+                coord: new Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 12500000,
+            };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            const view = new GlobeView(viewerDiv, placement, {});
+
+            // Add ambient light to globally illuminates all objects
+            const light = new AmbientLight(0x404040, 15);
+            view.scene.add(light);
+
+            // Setup loading screen
+            setupLoadingScreen(viewerDiv, view);
+
+            // Setup debug menu
+            const menuGlobe = new GuiTools('menuDiv', view, 300);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer);
+
+
+            // ---- ADD A BASEMAP ----
+
+            // Add one imagery layer to the scene. This layer's properties are
+            // defined in a json file, but it cou   ld be defined as a plain js
+            // object. See `Layer` documentation for more info.
+            Fetcher.json('./layers/JSONLayers/OPENSM.json').then((config) => {
+                const layer = new ColorLayer('Ortho', {
+                    ...config,
+                    source: new TMSSource(config.source),
+                });
+                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            });
+
+            // ---- ADD 3D TILES TILESET ----
+
+            // Enable various compression support for 3D Tiles tileset:
+            // - `KHR_draco_mesh_compression` mesh compression extension
+            // - `KHR_texture_basisu` texture compresion extension
+            itowns.enableDracoLoader('./libs/draco/');
+            itowns.enableKtx2Loader('./lib/basis/', view.renderer);
+
+            if (state.tileset) {
+                const source = new OGC3DTilesSource({ url: state.tileset });
+                const layer = new OGC3DTilesLayer('3DTiles', {
+                    source,
+                });
+
+                // Add an event for picking the 3D Tiles layer and displaying
+                // information about the picked feature in an html div
+                const pickingArgs = {
+                    htmlDiv: document.getElementById('featureInfo'),
+                    view,
+                    layer,
+                };
+
+                // Add the layer to our view
+                view.addLayer(layer).then((layer) => {
+                    zoomToLayer(view, layer);
+                    window.addEventListener('click',
+                        (event) => fillHTMLWithPickingInfo(event, pickingArgs), false);
+                });
+
+                debug.createOGC3DTilesDebugUI(menuGlobe.gui, view, layer);
+            }
+
+            window.setURL = setURL;
+        </script>
+    </body>
+</html>

@@ -160,7 +160,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @param      {object}  [options={}]  The options
      * @param      {number}  [options.size=0]  size point
      * @param      {number}  [options.mode=PNTS_MODE.COLOR]  display mode.
-     * @param      {number}  [options.mode=PNTS_SHAPE.CIRCLE]  rendered points shape.
+     * @param      {number}  [options.shape=PNTS_SHAPE.CIRCLE]  rendered points shape.
      * @param      {THREE.Vector4}  [options.overlayColor=new THREE.Vector4(0, 0, 0, 0)]  overlay color.
      * @param      {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(1, 65536)]  intensity range.
      * @param      {THREE.Vector2}  [options.elevationRange=new THREE.Vector2(0, 1000)]  elevation range.
@@ -282,6 +282,11 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @returns {this}
      */
     copy(source) {
+        // Manually copy this needTransparency if source doesn't have one. Prevents losing it when copying a three
+        // PointsMaterial into this PointsMaterial
+        const needTransparency = source.userData.needTransparency !== undefined ? source.userData.needTransparency
+            : this.userData.needTransparency;
+
         if (source.isShaderMaterial) {
             super.copy(source);
         } else {
@@ -295,6 +300,8 @@ class PointsMaterial extends THREE.ShaderMaterial {
         this.size = source.size;
         this.sizeAttenuation = source.sizeAttenuation;
         this.fog = source.fog;
+
+        this.userData.needTransparency = needTransparency;
 
         return this;
     }

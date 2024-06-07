@@ -31,7 +31,7 @@ describe('3Dtiles batch table', function () {
         let stubFetcherArrayBuf;
         let stubFetcherJson;
         let viewer;
-        let threedTilesLayerBTHierarchy;
+        let ogc3DTilesLayerBTHierarchy;
 
         before(function () {
             stubFetcherJson = sinon.stub(Fetcher, 'json')
@@ -60,7 +60,7 @@ describe('3Dtiles batch table', function () {
             const source = new C3DTilesSource({
                 url: 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/cesium/master/Apps/SampleData/Cesium3DTiles/Hierarchy/BatchTableHierarchy/tileset.json',
             });
-            threedTilesLayerBTHierarchy = new C3DTilesLayer('3d-tiles-bt-hierarchy', {
+            ogc3DTilesLayerBTHierarchy = new C3DTilesLayer('3d-tiles-bt-hierarchy', {
                 name: 'BTHierarchy',
                 source,
                 registeredExtensions: extensions,
@@ -73,7 +73,7 @@ describe('3Dtiles batch table', function () {
         });
 
         it('Add 3dtiles layer with batch table', function (done) {
-            View.prototype.addLayer.call(viewer, threedTilesLayerBTHierarchy)
+            View.prototype.addLayer.call(viewer, ogc3DTilesLayerBTHierarchy)
                 .then((layer) => {
                     assert.equal(layer.root.children.length, 1);
                     const batchLength = viewer.getLayerById('3d-tiles-bt-hierarchy').root.batchTable.batchLength;
