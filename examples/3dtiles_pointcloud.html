@@ -67,7 +67,7 @@
                 pntsMode: itowns.PNTS_MODE.CLASSIFICATION,
                 pntsShape : itowns.PNTS_SHAPE.CIRCLE,
                 source: $3dTilesSource,
-            }, view);
+            });
 
             $3dTilesLayerSetePC.addEventListener(
                 itowns.C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED,
@@ -75,13 +75,6 @@
             );
 
             itowns.View.prototype.addLayer.call(view, $3dTilesLayerSetePC);
-            function switchMode(){
-                let pntsLayer = view.getLayerById("3d-tiles-sete");
-                if(pntsLayer){
-                    pntsLayer.pntsMode = pntsLayer.pntsMode === itowns.PNTS_MODE.COLOR ? itowns.PNTS_MODE.CLASSIFICATION : itowns.PNTS_MODE.COLOR;
-                    view.notifyChange(view.camera3D);
-                }
-            }
 
             // Add the UI Debug
             var d = new debug.Debug(view, menuGlobe.gui);
