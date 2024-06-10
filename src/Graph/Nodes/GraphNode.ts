@@ -12,6 +12,9 @@ export default abstract class GraphNode {
         outputs: Map<string, [any, Type]>,
     };
 
+    private static idCounter = 0;
+    private _id: number;
+
     public inputs: Map<string, [Dependency | null, Type]>;
 
     public constructor(
@@ -43,11 +46,15 @@ export default abstract class GraphNode {
         }
 
         this._out = { frame: -1, outputs: normalizedOutputs };
+        this._id = GraphNode.idCounter++;
     }
 
     protected abstract _apply(graph?: Graph, frame?: number): void;
 
     public abstract get nodeType(): string;
+    public get id(): number {
+        return this._id;
+    }
 
     public get outputs(): Map<string, [any, Type]> {
         return this._out.outputs;

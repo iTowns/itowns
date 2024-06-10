@@ -17,32 +17,8 @@
     <script src="js/GUI/LoadingScreen.js"></script>
 
     <script type="x-shader/x-fragment" id="coastSharpenFragmentShader">
-float getAvg(vec2 uv) {
-    vec4 color = texture2D(uTexture, uv);
-    return (color.r + color.g + color.b) / 3.0;
-}
-
-void coastSharpen() {
-    vec4 color = texture2D( uTexture, vUv );
-
-    float mid = getAvg(vUv);
-    float left = getAvg(vUv - uOffset);
-
-    float diff = uWeight * (mid - left);
-    float avg = (mid + left) / 2.0;
-
-    float smoothed = max(0., diff - avg);
-    float blueness = color.b / (color.r + color.g + color.b);
-
-    gl_FragColor = color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
-}
     </script>
     <script type="x-shader/x-fragment" id="greyscaleFragmentShader">
-void greyscale() {
-    vec4 color = texture2D( uTexture, vUv );
-    float avg = (color.r + color.g + color.b) / 3.;
-    gl_FragColor = vec4(avg, avg, avg, 1.0);
-}
     </script>
 
     <script type="text/javascript">
@@ -79,14 +55,34 @@ void greyscale() {
         const coastSharpen = new graph.ScreenShaderNode(render, renderer, {
             fragmentShaderParts: {
                 uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
-                auxCode: document.getElementById('coastSharpenFragmentShader').textContent,
-                main: 'coastSharpen();'
+                auxCode: /*glsl*/`
+                    float getAvg(vec4 color) {
+                        return (color.r + color.g + color.b) / 3.0;
+                    }
+
+                    vec4 coastSharpen(vec4 color) {
+                        float mid = getAvg(color);
+                        float left = getAvg(texture2D(uTexture, vUv - uOffset));
+
+                        float diff = uWeight * (mid - left);
+                        float avg = (mid + left) / 2.0;
+
+                        float smoothed = max(0., diff - avg);
+                        float blueness = color.b / (color.r + color.g + color.b);
+
+                        return color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
+                    }`,
+                main: 'return coastSharpen(tex);'
             },
         });
         const greyscale = new graph.ScreenShaderNode(coastSharpen, renderer, {
             fragmentShaderParts: {
-                auxCode: document.getElementById('greyscaleFragmentShader').textContent,
-                main: 'greyscale();'
+                auxCode: /*glsl*/`
+                    vec4 greyscale(vec4 color) {
+                        float avg = (color.r + color.g + color.b) / 3.;
+                        return vec4(avg, avg, avg, 1.0);
+                    }`,
+                main: 'return greyscale(tex);'
             },
         });
         postProcessingGraph.set({coastSharpen, greyscale});
@@ -102,7 +98,7 @@ void greyscale() {
         outerGraph.set({postProcessingGraphNode, renderFBO});
 
         postProcessingGraph.optimize(greyscale, true);
-        window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
+        // window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
 
         let frame = 0;
         view.render = function render() {

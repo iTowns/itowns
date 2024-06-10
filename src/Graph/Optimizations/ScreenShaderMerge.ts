@@ -32,7 +32,7 @@ export default {
             );
         }
 
-        // Find and replace duplicate uniform names
+        // Find and mangle duplicate uniform names
         const replacements = [];
 
         pParts.uniforms ??= {};
@@ -49,10 +49,10 @@ export default {
 
         cParts.uniforms = { ...cParts.uniforms, ...pParts.uniforms };
 
-        // Replace duplicate uniform names in parent code
         cParts.auxCode ??= '';
         pParts.auxCode ??= '';
 
+        // Replace duplicate uniform names in parent code
         for (const [name, replacement] of replacements) {
             const match = new RegExp(`\\b${name}\\b`);
             pParts.auxCode = pParts.auxCode.replaceAll(match, replacement);
@@ -60,12 +60,21 @@ export default {
 
         cParts.auxCode = [
             `// ${pName}`, pParts.auxCode,
+            `vec4 _${parent.id}_shader(vec4 tex) {`,
+            `\t${pParts.main.replace('\n', '\n\t')}`,
+            '}',
             `// ${cName}`, cParts.auxCode,
+            `vec4 _${child.id}_shader(vec4 tex) {`,
+            `\t${cParts.main.replace('\n', '\n\t')}`,
+            '}',
         ].join('\n');
         cParts.main = [
-            `// ${pName}`, pParts.main,
-            `// ${cName}`, cParts.main,
+            `return _${child.id}_shader(_${parent.id}_shader(tex));`,
         ].join('\n');
+
+        const fragmentShader = ScreenShaderNode.buildFragmentShader(cParts);
+
+        child.material = ScreenShaderNode.buildMaterial(fragmentShader);
 
         child.inputs.delete('renderer');
         child.inputs.delete('target');
@@ -76,7 +85,7 @@ export default {
         graph.nodes.delete(pName);
         graph.nodes.delete(cName);
 
-        graph.nodes.set(`__${pName}_${cName}`, child);
+        graph.nodes.set(`_${parent.id}_${pName}_${child.id}_${cName}`, child);
 
         return child;
     },

@@ -28,7 +28,7 @@ void main() {
 
     private static get defaultFragmentShader(): FragmentShaderParts {
         return {
-            main: 'gl_FragColor = texture2D(uTexture, vUv);',
+            main: 'return tex;',
         };
     }
 
@@ -39,7 +39,7 @@ void main() {
     private static _camera: THREE.Camera;
 
     // Kept for debug purposes
-    private _material: THREE.ShaderMaterial;
+    public material: THREE.ShaderMaterial;
 
     private _fragmentShaderParts: FragmentShaderParts;
 
@@ -104,14 +104,14 @@ void main() {
                         input.height,
                     ));
 
-                this._material.uniforms.uTexture = { value: input.texture };
+                this.material.uniforms.uTexture = { value: input.texture };
 
                 // Set user-provided uniforms
                 for (const [name, value] of Object.entries(uniforms ?? {})) {
-                    this._material.uniforms[name] = { value };
+                    this.material.uniforms[name] = { value };
                 }
 
-                ScreenShaderNode._quad.material = this._material;
+                ScreenShaderNode._quad.material = this.material;
 
                 renderer.setRenderTarget(target);
                 renderer.clear();
@@ -122,14 +122,15 @@ void main() {
 
         this._fragmentShaderParts = fragmentShaderParts;
         const frag = ScreenShaderNode.buildFragmentShader(this._fragmentShaderParts);
-        this._material = ScreenShaderNode.buildMaterial(frag);
+        this.material = ScreenShaderNode.buildMaterial(frag);
     }
 
     public get fragmentShaderParts(): FragmentShaderParts {
         return this._fragmentShaderParts;
     }
 
-    private static buildFragmentShader({ uniforms, auxCode, main }: FragmentShaderParts): string {
+    // TODO: group this and similar operations in their own class
+    public static buildFragmentShader({ uniforms, auxCode, main }: FragmentShaderParts): string {
         const uniformDeclarations = Object.entries(uniforms ?? {})
             .map(([name, uniform]): string => {
                 let ty: Type;
@@ -151,8 +152,11 @@ void main() {
             'uniform sampler2D uTexture;',
             ...(uniformDeclarations.length > 0 ? [uniformDeclarations.join('\n')] : []),
             ...(auxCode != undefined ? [auxCode] : []),
+            'vec4 shader(in vec4 tex) {',
+            `    ${main.split('\n').join('\n\t')}`,
+            '}',
             'void main() {',
-            `    ${main.split('\n').join('\n    ')}`,
+            '    gl_FragColor = shader(texture2D(uTexture, vUv));',
             '}',
         ].join('\n');
     }
