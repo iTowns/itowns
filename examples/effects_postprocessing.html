@@ -50,7 +50,7 @@
         const coastSharpen = new graph.ScreenShaderNode(render, renderer, {
             fragmentShaderParts: {
                 uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
-                auxCode: /*glsl*/`
+                auxCode: /* glsl */`
                     float getAvg(vec4 color) {
                         return (color.r + color.g + color.b) / 3.0;
                     }
@@ -72,7 +72,7 @@
         });
         const greyscale = new graph.ScreenShaderNode(coastSharpen, renderer, {
             fragmentShaderParts: {
-                auxCode: /*glsl*/`
+                auxCode: /* glsl */`
                     vec4 greyscale(vec4 color) {
                         float avg = (color.r + color.g + color.b) / 3.;
                         return vec4(avg, avg, avg, 1.0);

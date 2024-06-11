@@ -16,7 +16,7 @@ type FragmentShaderParts = {
 
 export default class ScreenShaderNode extends ProcessorNode {
     private static get vertexShader(): string {
-        return `
+        return /* glsl */`
 varying vec2 vUv;
 
 void main() {
