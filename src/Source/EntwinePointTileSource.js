@@ -24,6 +24,8 @@ class EntwinePointTileSource extends Source {
      *
      * @param {Object} config - The configuration, see {@link Source} for
      * available values.
+     * @param {boolean} [config.worker=true] - Use worker to speed-up
+     * performance.
      * @param {number|string} [config.colorDepth='auto'] - Does the color
      * encoding is known ? Is it `8` or `16` bits ? By default it is to
      * `'auto'`, but it will be more performant if a specific value is set.
@@ -32,6 +34,8 @@ class EntwinePointTileSource extends Source {
         super(config);
 
         this.isEntwinePointTileSource = true;
+
+        this.worker = config.worker ?? true;
         this.colorDepth = config.colorDepth;
 
         // Necessary because we use the url without the ept.json part as a base

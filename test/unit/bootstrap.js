@@ -2,6 +2,43 @@
 import fetch from 'node-fetch';
 import { Camera } from 'three';
 import { DOMParser } from '@xmldom/xmldom';
+import threads from 'worker_threads';
+
+const WORKER = Symbol('worker');
+
+class Worker extends EventTarget {
+    constructor(url) {
+        super();
+
+        const worker = new threads.Worker(url);
+        this[WORKER] = worker;
+
+        worker.on('message', (data) => {
+            const event = new Event('message');
+            event.data = data;
+            this.dispatchEvent(event);
+        });
+
+        worker.on('error', () => {
+            const event = new Event('error');
+            this.dispatchEvent(event);
+        });
+
+        worker.on('messageerror', (data) => {
+            const event = new Event('messageError');
+            event.data = data;
+            this.dispatchEvent(event);
+        });
+    }
+
+    postMessage(data, transferList) {
+        this[WORKER].postMessage(data, transferList);
+    }
+
+    terminate() {
+        this[WORKER].terminate();
+    }
+}
 
 global.window = {
     addEventListener: () => {},
@@ -10,19 +47,8 @@ global.window = {
     setTimeout,
 };
 
-global.URL = function URL(url) {
-    return {
-        host: url.split('://')[1]?.split('/')[0],
-        hostname: url.split('://')[1]?.split(':')[0],
-        port: url.split('://')[1]?.split(':')[1],
-        protocol: url.split('://')[0],
-    };
-};
+global.Worker = Worker;
 
-// https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#sec-instanceofoperator
-// ES standard requires that left-hand side shall have a prototype method, this
-// is not the case for lambdas.
-global.Event = function () {};
 global.requestAnimationFrame = () => {};
 global.fetch = fetch;
 global.fetch.Promise = Promise;

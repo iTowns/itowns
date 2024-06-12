@@ -70,6 +70,8 @@ class CopcSource extends Source {
     /**
      * @param {Object} config - Source configuration
      * @param {string} config.url - URL of the COPC resource.
+     * @param {boolean} [config.worker=true] - Use worker to speed-up
+     * performance.
      * @param {8 | 16} [config.colorDepth=16] - Encoding of the `color`
      * attribute. Either `8` or `16` bits.
      * @param {string} [config._lazPerfBaseUrl] - (experimental) Overrides base
@@ -91,6 +93,7 @@ class CopcSource extends Source {
         this.parser = LASParser.parseChunk;
         this.fetcher = Fetcher.arrayBuffer;
 
+        this.worker = config.worker ?? true;
         this.colorDepth = config.colorDepth ?? 16;
 
         const get = (/** @type {number} */ begin, /** @type {number} */ end) =>

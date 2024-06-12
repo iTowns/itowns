@@ -27,7 +27,7 @@ describe('material state vs layer state', function () {
     before(function () {
         stubFetcherTexture = sinon.stub(Fetcher, 'texture')
             .callsFake(() => Promise.resolve(null));
-        const source = new TMSSource({ crs: 'EPSG:4326', url: 'nullUrl' });
+        const source = new TMSSource({ crs: 'EPSG:4326', url: 'http://tms.test' });
         layer = new ColorLayer('color', {
             source,
             crs: 'EPSG:4326',
