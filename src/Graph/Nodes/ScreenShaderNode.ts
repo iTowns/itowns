@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, Mappings } from '../Prelude.ts';
-import ProcessorNode from './ProcessorNode.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, Mappings } from '../Prelude';
+import ProcessorNode from './ProcessorNode';
 
 interface CallbackArgs extends Record<string, any> {
     input: THREE.WebGLRenderTarget;
@@ -168,11 +168,11 @@ void main() {
         });
     }
 
-    public get nodeType(): string {
+    public override get nodeType(): string {
         return ScreenShaderNode.name;
     }
 
-    public get dumpDotStyle(): DumpDotNodeStyle {
+    public override get dumpDotStyle(): DumpDotNodeStyle {
         const { label, attrs } = super.dumpDotStyle;
         return {
             label,

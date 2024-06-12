@@ -10,7 +10,7 @@ import {
     Dependency,
     GraphOptimizer,
     GraphInputNode,
-} from './Prelude.ts';
+} from './Prelude';
 
 /** Represents a directed graph that guarantees the absence of cycles on use. */
 export default class Graph {

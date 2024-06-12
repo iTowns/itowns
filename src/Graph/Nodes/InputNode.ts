@@ -1,5 +1,5 @@
-import GraphNode from './GraphNode.ts';
-import { Type, DumpDotNodeStyle, Mappings, Graph } from '../Prelude.ts';
+import GraphNode from './GraphNode';
+import { Type, DumpDotNodeStyle, Mappings, Graph } from '../Prelude';
 
 /** Represents a node that outputs a constant value. */
 export default class InputNode extends GraphNode {
@@ -19,15 +19,15 @@ export default class InputNode extends GraphNode {
         return this._type;
     }
 
-    protected _apply(_graph?: Graph, _frame?: number): void {
+    protected override _apply(_graph?: Graph, _frame?: number): void {
         this.outputs.set(GraphNode.defaultIoName, [this.value, this._type]);
     }
 
-    public get nodeType(): string {
+    public override get nodeType(): string {
         return InputNode.name;
     }
 
-    public get dumpDotStyle(): DumpDotNodeStyle {
+    public override get dumpDotStyle(): DumpDotNodeStyle {
         return {
             label: name => `${name}: ${Mappings.stringify(this.value)}`,
             attrs: {

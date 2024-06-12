@@ -1,4 +1,4 @@
-import { Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphNode, GraphOutputNode, SubGraph, Type } from '../Prelude.ts';
+import { Dependency, DumpDotNodeStyle, Graph, GraphInputNode, GraphNode, GraphOutputNode, SubGraph, Type } from '../Prelude';
 
 export default class SubGraphNode extends GraphNode {
     public graph: SubGraph;
@@ -74,7 +74,7 @@ export default class SubGraphNode extends GraphNode {
         }
     }
 
-    protected _apply(_graph?: Graph, frame: number = 0): void {
+    protected override _apply(_graph?: Graph, frame: number = 0): void {
         for (const [name, [dep, ty]] of this.graphOutputs) {
             this.outputs.set(name, [dep.node.getOutput(dep.output, this.graph, frame), ty]);
         }
@@ -84,11 +84,11 @@ export default class SubGraphNode extends GraphNode {
         return this.graph.name;
     }
 
-    public get nodeType(): string {
+    public override get nodeType(): string {
         return SubGraphNode.name;
     }
 
-    public get dumpDotStyle(): DumpDotNodeStyle {
+    public override get dumpDotStyle(): DumpDotNodeStyle {
         return {
             label: name => `${name}`,
             attrs: {
@@ -99,7 +99,7 @@ export default class SubGraphNode extends GraphNode {
         };
     }
 
-    public dumpDot(name: string): string {
+    public override dumpDot(name: string): string {
         const { label, attrs } = this.dumpDotStyle;
         const formattedAttrs = Object.entries(attrs).map(([name, value]: [string, string | object]) => {
             if (typeof value == 'string') {

@@ -9,7 +9,7 @@
         "paths": {
             "*": [ "src/*" ]
         },
-        "moduleResolution": "nodenext",
+        "moduleResolution": "Node",
         /* Emit */
         "declaration": true,
         "emitDeclarationOnly": true,

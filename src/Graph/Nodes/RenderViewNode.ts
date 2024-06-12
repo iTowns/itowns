@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 
-import { BuiltinType, Dependency, DumpDotNodeStyle } from '../Prelude.ts';
-import ProcessorNode from './ProcessorNode.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle } from '../Prelude';
+import ProcessorNode from './ProcessorNode';
 
-import View from '../../Core/View.js';
-import MainLoop from '../../Core/MainLoop.js';
-import c3DEngine from '../../Renderer/c3DEngine.js';
+import View from '../../Core/View';
+import MainLoop from '../../Core/MainLoop';
+import c3DEngine from '../../Renderer/c3DEngine';
 
 export default class RenderViewNode extends ProcessorNode {
     private _target: THREE.WebGLRenderTarget | null = null;
@@ -39,11 +39,11 @@ export default class RenderViewNode extends ProcessorNode {
         });
     }
 
-    public get nodeType(): string {
+    public override get nodeType(): string {
         return RenderViewNode.name;
     }
 
-    public get dumpDotStyle(): DumpDotNodeStyle {
+    public override get dumpDotStyle(): DumpDotNodeStyle {
         const { label: _, attrs } = super.dumpDotStyle;
         return {
             label: (name: string) => name,

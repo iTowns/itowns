@@ -1,7 +1,7 @@
 // Stored in a separate file to avoid circular dependencies
 
-import Graph from './Graph.ts';
-import GraphNode from './Nodes/GraphNode.ts';
+import Graph from './Graph';
+import GraphNode from './Nodes/GraphNode';
 
 export type Type = string;
 export type Dependency = {

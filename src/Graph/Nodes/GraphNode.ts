@@ -1,4 +1,4 @@
-import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Prelude.ts';
+import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Prelude';
 
 /**
  * Represents a node in a directed graph.

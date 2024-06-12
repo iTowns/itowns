@@ -1,5 +1,5 @@
-import { BuiltinType, Dependency, DumpDotNodeStyle, Type } from '../Prelude.ts';
-import ProcessorNode from './ProcessorNode.ts';
+import { BuiltinType, Dependency, DumpDotNodeStyle, Type } from '../Prelude';
+import ProcessorNode from './ProcessorNode';
 
 export default class FieldGetterNode extends ProcessorNode {
     public constructor(input: Dependency, path: string, outputType: Type) {
@@ -11,11 +11,11 @@ export default class FieldGetterNode extends ProcessorNode {
         );
     }
 
-    public get nodeType(): string {
+    public override get nodeType(): string {
         return FieldGetterNode.name;
     }
 
-    public get dumpDotStyle(): DumpDotNodeStyle {
+    public override get dumpDotStyle(): DumpDotNodeStyle {
         const { label: _, attrs } = super.dumpDotStyle;
         return {
             label: name => name,

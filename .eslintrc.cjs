@@ -18,8 +18,8 @@ module.exports = {
     },
     settings: {
         'import/resolver': {
-            webpack: {
-                config: './webpack.config.cjs',
+            'babel-module': {
+                extensions: ['.js', '.ts'],
             },
         },
     },

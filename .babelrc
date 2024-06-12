@@ -12,7 +12,12 @@
                 ".css"
             ]
         }],
-        ["module-extension-resolver"],
+        ["module-extension-resolver", {
+            "srcExtensions": [
+                ".ts",
+                ".js"
+            ]
+        }],
         ["minify-replace", {
             "replacements": [{
                 "identifierName": "__DEBUG__",

@@ -1,5 +1,5 @@
-import GraphNode from './GraphNode.ts';
-import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Prelude.ts';
+import GraphNode from './GraphNode';
+import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Prelude';
 
 /** Represents a mapping from a set of inputs to an output. */
 export default class ProcessorNode extends GraphNode {
@@ -11,7 +11,7 @@ export default class ProcessorNode extends GraphNode {
         super(new Map(Object.entries(inputs)), outputs);
     }
 
-    protected _apply(graph?: Graph, frame: number = 0): void {
+    protected override _apply(graph?: Graph, frame: number = 0): void {
         const inputs = Array.from(this.inputs);
         const args: [string, any][] = inputs.map(([name, [dep, _ty]]) => [
             name,
@@ -24,11 +24,11 @@ export default class ProcessorNode extends GraphNode {
         this.callback(frame, argObj);
     }
 
-    public get nodeType(): string {
+    public override get nodeType(): string {
         return ProcessorNode.name;
     }
 
-    public get dumpDotStyle(): DumpDotNodeStyle {
+    public override get dumpDotStyle(): DumpDotNodeStyle {
         return {
             label: name => `${name}`,
             attrs: {

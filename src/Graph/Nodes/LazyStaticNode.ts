@@ -1,10 +1,10 @@
-import { DumpDotNodeStyle, Graph, ProcessorNode } from '../Prelude.ts';
+import { DumpDotNodeStyle, Graph, ProcessorNode } from '../Prelude';
 
 /**
  * A lazy static node only gets re-evaluated when the frame is less than the frame it was first evaluated at.
  */
 export default class LazyStaticNode extends ProcessorNode {
-    protected _apply(graph?: Graph, frame: number = 0): void {
+    protected override _apply(graph?: Graph, frame: number = 0): void {
         if (this._out.frame == -1 || frame < this._out.frame) {
             // console.log(`[${this.nodeType}][LazyStatic] _applying`);
             // this._out.outputs.set(GraphNode.defaultIoName, [super._apply(graph, frame), oType]);
@@ -12,11 +12,11 @@ export default class LazyStaticNode extends ProcessorNode {
         }
     }
 
-    public get nodeType(): string {
+    public override get nodeType(): string {
         return LazyStaticNode.name;
     }
 
-    public get dumpDotStyle(): DumpDotNodeStyle {
+    public override get dumpDotStyle(): DumpDotNodeStyle {
         return {
             label: name => `${name}`,
             attrs: {

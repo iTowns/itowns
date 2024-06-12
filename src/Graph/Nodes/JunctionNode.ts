@@ -1,5 +1,5 @@
-import { Dependency, DumpDotNodeStyle, Graph, Type, Mappings } from '../Prelude.ts';
-import GraphNode from './GraphNode.ts';
+import { Dependency, DumpDotNodeStyle, Graph, Type, Mappings } from '../Prelude';
+import GraphNode from './GraphNode';
 
 export default class JunctionNode extends GraphNode {
     public constructor(input: Dependency | Type) {
@@ -17,7 +17,7 @@ export default class JunctionNode extends GraphNode {
         }
     }
 
-    protected _apply(graph?: Graph, frame: number = 0): void {
+    protected override _apply(graph?: Graph, frame: number = 0): void {
         const dep = this.inputs.get(GraphNode.defaultIoName)![0];
         const [_oValue, oType] = this.outputs.get(GraphNode.defaultIoName)!;
 
@@ -39,11 +39,11 @@ export default class JunctionNode extends GraphNode {
         this.inputs.set(GraphNode.defaultIoName, [node, type]);
     }
 
-    public get nodeType(): string {
+    public override get nodeType(): string {
         return JunctionNode.name;
     }
 
-    public get dumpDotStyle(): DumpDotNodeStyle {
+    public override get dumpDotStyle(): DumpDotNodeStyle {
         return {
             label: name => `${name}`,
             attrs: {
@@ -55,7 +55,7 @@ export default class JunctionNode extends GraphNode {
         };
     }
 
-    public dumpDot(name: string): string {
+    public override dumpDot(name: string): string {
         const { label: _, attrs } = this.dumpDotStyle;
         const formattedAttrs = Object.entries(attrs)
             .map(([k, v]) => `${k}=${v}`)
@@ -64,7 +64,7 @@ export default class JunctionNode extends GraphNode {
         return `"${name}" [label="" ${formattedAttrs} margin=.05]`;
     }
 
-    public dumpDotEdgeAttr(ty: Type, extra?: { [attr: string]: string; } | undefined): string {
+    public override dumpDotEdgeAttr(ty: Type, extra?: { [attr: string]: string; } | undefined): string {
         const attrs = Object.entries(extra ?? {})
             .map(([name, value]) => `${name}="${value}"`)
             .join(' ');

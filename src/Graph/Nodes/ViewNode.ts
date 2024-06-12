@@ -1,5 +1,5 @@
-import { BuiltinType, Dependency, Type } from '../Prelude.ts';
-import LazyStaticNode from './LazyStaticNode.ts';
+import { BuiltinType, Dependency, Type } from '../Prelude';
+import LazyStaticNode from './LazyStaticNode';
 
 export default abstract class ViewNode extends LazyStaticNode {
     public constructor(

@@ -1,4 +1,4 @@
-import screenShaderMerge from './ScreenShaderMerge.ts';
+import screenShaderMerge from './ScreenShaderMerge';
 
 export default {
     screenShaderMerge,

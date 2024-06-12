@@ -1,4 +1,4 @@
-import { Graph, GraphInputNode, GraphNode, GraphOptimization, opti } from './Prelude.ts';
+import { Graph, GraphInputNode, GraphNode, GraphOptimization, opti } from './Prelude';
 
 export default class GraphOptimizer {
     public static patterns: Map<string, GraphOptimization> = new Map(Object.entries(opti));

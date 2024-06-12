@@ -1,4 +1,4 @@
-import { Graph, GraphNode, ScreenShaderNode } from 'Graph/Prelude.ts';
+import { Graph, GraphNode, ScreenShaderNode } from '../Prelude';
 
 export default {
     pattern: Array(2).fill(ScreenShaderNode.name),
@@ -33,7 +33,7 @@ export default {
         }
 
         // Find and mangle duplicate uniform names
-        const replacements = [];
+        const replacements: [string, string][] = [];
 
         pParts.uniforms ??= {};
 

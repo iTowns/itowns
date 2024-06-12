@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
-import View from 'Core/View.js';
+import View from '../Core/View';
 
-import { BuiltinType, Type, ColorStyle } from './Types.ts';
+import { BuiltinType, Type, ColorStyle } from './Types';
 
 export default class Mappings {
     public static typeMapping: [(v: any) => boolean, BuiltinType][] = [

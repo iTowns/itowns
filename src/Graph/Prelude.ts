@@ -1,24 +1,24 @@
-import Mappings from './Mappings.ts';
+import Mappings from './Mappings';
 
-import Graph from './Graph.ts';
-import SubGraph from './SubGraph.ts';
-import GraphNode from './Nodes/GraphNode.ts';
-import InputNode from './Nodes/InputNode.ts';
-import ProcessorNode from './Nodes/ProcessorNode.ts';
-import ScreenShaderNode from './Nodes/ScreenShaderNode.ts';
-import RenderViewNode from './Nodes/RenderViewNode.ts';
-import SubGraphNode from './Nodes/SubGraphNode.ts';
-import JunctionNode from './Nodes/JunctionNode.ts';
-import ViewNode from './Nodes/ViewNode.ts';
-import GraphInputNode from './Nodes/GraphInputNode.ts';
-import GraphOutputNode from './Nodes/GraphOutputNode.ts';
-import GlobeViewNode from './Nodes/GlobeViewNode.ts';
-import FieldGetterNode from './Nodes/FieldGetterNode.ts';
+import Graph from './Graph';
+import SubGraph from './SubGraph';
+import GraphNode from './Nodes/GraphNode';
+import InputNode from './Nodes/InputNode';
+import ProcessorNode from './Nodes/ProcessorNode';
+import ScreenShaderNode from './Nodes/ScreenShaderNode';
+import RenderViewNode from './Nodes/RenderViewNode';
+import SubGraphNode from './Nodes/SubGraphNode';
+import JunctionNode from './Nodes/JunctionNode';
+import ViewNode from './Nodes/ViewNode';
+import GraphInputNode from './Nodes/GraphInputNode';
+import GraphOutputNode from './Nodes/GraphOutputNode';
+import GlobeViewNode from './Nodes/GlobeViewNode';
+import FieldGetterNode from './Nodes/FieldGetterNode';
 
-import { BuiltinType, Type, Dependency, ColorStyle, DumpDotNodeStyle, DumpDotGlobalStyle, GraphOptimization } from './Types.ts';
-import opti from './Optimizations/Prelude.ts';
+import { BuiltinType, Type, Dependency, ColorStyle, DumpDotNodeStyle, DumpDotGlobalStyle, GraphOptimization } from './Types';
+import opti from './Optimizations/Prelude';
 
-import GraphOptimizer from './GraphOptimizer.ts';
+import GraphOptimizer from './GraphOptimizer';
 
 export {
     Graph,

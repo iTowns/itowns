@@ -1,4 +1,4 @@
-import { Graph, GraphInputNode, GraphNode, GraphOutputNode, JunctionNode, SubGraphNode, Mappings } from './Prelude.ts';
+import { Graph, GraphInputNode, GraphNode, GraphOutputNode, JunctionNode, SubGraphNode, Mappings } from './Prelude';
 
 export default class SubGraph extends Graph {
     public inputs: Map<string, GraphInputNode> = new Map();
@@ -34,11 +34,11 @@ export default class SubGraph extends Graph {
         return null;
     }
 
-    public findNode(node: GraphNode): { name: string, node: GraphNode } | null {
+    public override findNode(node: GraphNode): { name: string, node: GraphNode } | null {
         return super.findNode(node) ?? this.findInputNode(node);
     }
 
-    public dumpDot(subGraphName: string): string {
+    public override dumpDot(subGraphName: string): string {
         const dump: string[] = [];
 
         if (this.nodes.size > 0) {

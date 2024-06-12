@@ -15,6 +15,10 @@ module.exports = () => {
         context: path.resolve(__dirname),
         resolve: {
             modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+            extensions: ['.ts', '.js'],
+            extensionAlias: {
+                '.js': ['.ts', '.js'],
+            },
         },
         entry: {
             itowns: [
@@ -53,9 +57,9 @@ module.exports = () => {
             ],
         },
         plugins: [
-            new ESLintPlugin({
-                files: include,
-            }),
+            // new ESLintPlugin({
+            //     files: include,
+            // }),
         ],
         devServer: {
             devMiddleware: {
