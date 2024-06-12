@@ -3,9 +3,9 @@ import PointCloudLayer from 'Layer/PointCloudLayer';
 import PotreeNode from 'Core/PotreeNode';
 import Extent from 'Core/Geographic/Extent';
 
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
+// const bboxMesh = new THREE.Mesh();
+// const box3 = new THREE.Box3();
+// bboxMesh.geometry.boundingBox = box3;
 
 /**
  * @property {boolean} isPotreeLayer - Used to checkout whether this layer
@@ -39,9 +39,6 @@ class PotreeLayer extends PointCloudLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name. See the list of properties to know which one can be specified.
-     * @param {string} [config.crs=ESPG:4326] - The CRS of the {@link View} this
-     * layer will be attached to. This is used to determine the extent of this
-     * layer.  Default to `EPSG:4326`.
      */
     constructor(id, config) {
         super(id, config);
@@ -65,6 +62,7 @@ class PotreeLayer extends PointCloudLayer {
             this.root = new PotreeNode(0, 0, this);
             this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
             this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
+            this.root.obb.position = new THREE.Vector3();
 
             this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', this.root.bbox);
             return this.root.loadOctree().then(resolve);
