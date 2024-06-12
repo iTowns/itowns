@@ -33,71 +33,127 @@ describe('Style', function () {
         stubFetcherTexture.restore();
     });
 
-    const style = new Style();
+    const styleOpt = {
+        fill: {
+            color: 'blue',
+            opacity: {
+                stops: [[10, '{opacity}']], // Mapbox vectorTile
+            },
+            pattern: {
+                // Mock MapBox StyleExpression() instance
+                expression: { evaluate: () => 'pattern' },
+            },
+            extrusion_height: {
+                stops: [[10, (p, ctx) => 10 + ctx.coordinates.z]],
+            },
+        },
+    };
+    const ctx = {
+        coordinates: { z: -2 },
+        properties: {
+            opacity: -3,
+        },
+    };
+
+    const style = new Style(styleOpt);
     style.point.color = 'red';
-    style.fill.color = 'blue';
-    style.stroke.color = 'black';
-    style.text.haloWidth = 1;
+    style.setContext(ctx);
+    // mock StyleContext() instance
+    style.context.featureStyle = { stroke: { color: 'pink' } };
 
-    it('Copy style', () => {
-        const styleCopy = new Style().copy(style);
-        assert.equal(style.point.color, styleCopy.point.color);
-        assert.equal(style.fill.color, styleCopy.fill.color);
-        assert.equal(style.stroke.color, styleCopy.stroke.color);
+    it('Instanciate style from styleOpt and context', function _it() {
+        // no default value
+        assert.equal(style.point.line, undefined);
+        // defaultValue is value
+        assert.equal(style.point.radius, 2.0);
+        // defaultValue is fonction
+        assert.equal(style.point.base_altitude, ctx.coordinates.z);
+        // userValue
+        assert.equal(style.fill.color, styleOpt.fill.color);
+        // userValue with stops & {}
+        assert.equal(style.fill.opacity, ctx.properties.opacity);
+        // userValue as MapBox expression
+        assert.equal(style.fill.pattern, styleOpt.fill.pattern.expression.evaluate());
+        // userValue with stops & function
+        assert.equal(style.fill.extrusion_height, styleOpt.fill.extrusion_height.stops[0][1](ctx.properties, ctx));
+        // value set after instanciation
+        assert.equal(style.point.color, 'red');
+        // value from Feature.style
+        assert.equal(style.stroke.color, style.context.featureStyle.stroke.color);
+        assert.equal(style.stroke.color, 'pink');
     });
 
-    it('Clone style', () => {
-        const styleClone = style.clone();
-        assert.equal(style.point.color, styleClone.point.color);
-        assert.equal(style.fill.color, styleClone.fill.color);
-        assert.equal(style.stroke.color, styleClone.stroke.color);
-    });
+    describe('applyToCanvasPolygon()', () => {
+        const styleOpt = {
+            point: {},
+            fill: {},
+            stroke: {},
+            text: {},
+        };
+        styleOpt.point.color = 'red';
+        styleOpt.fill.color = 'blue';
+        styleOpt.stroke.color = 'black';
+        styleOpt.text.haloWidth = 1;
 
-    describe('applyToCanvasPolygon', () => {
         const c = document.createElement('canvas');
         const txtrCtx = c.getContext('2d');
         describe('_applyStrokeToPolygon()', () => {
-            const invCtxScale = 0.75;
-            style.clone()._applyStrokeToPolygon(txtrCtx, invCtxScale);
-            assert.equal(txtrCtx.strokeStyle, style.stroke.color);
-            assert.equal(txtrCtx.lineWidth, style.stroke.width * invCtxScale);
-            assert.equal(txtrCtx.lineCap, style.stroke.lineCap);
-            assert.equal(txtrCtx.globalAlpha, style.stroke.opacity);
+            it('with invCtxScale = 0.75', () => {
+                const invCtxScale = 0.75;
+                const style = new Style(styleOpt);
+                style._applyStrokeToPolygon(txtrCtx, invCtxScale);
+                assert.equal(txtrCtx.strokeStyle, style.stroke.color);
+                assert.equal(txtrCtx.lineWidth, style.stroke.width * invCtxScale);
+                assert.equal(txtrCtx.lineCap, style.stroke.lineCap);
+                assert.equal(txtrCtx.globalAlpha, style.stroke.opacity);
+            });
         });
         describe('_applyFillToPolygon()', () => {
             it('with fill.pattern = img', function (done) {
                 const invCtxScale = 1;
                 const polygon = new Path2D();
                 const img = document.createElement('img');
-                const style1 = style.clone();
-                style1.fill.pattern = img;
-                style1.fill.opacity = 0.1;
-                style1._applyFillToPolygon(txtrCtx, invCtxScale, polygon)
+                const style = new Style(styleOpt);
+                style.fill.pattern = img;
+                style.fill.opacity = 0.1;
+                style._applyFillToPolygon(txtrCtx, invCtxScale, polygon)
                     .then(() => {
                         assert.equal(txtrCtx.fillStyle.constructor.name, 'CanvasPattern');
-                        assert.equal(txtrCtx.globalAlpha, style1.fill.opacity);
+                        assert.equal(txtrCtx.globalAlpha, style.fill.opacity);
                         done();
                     }).catch(done);
             });
             it('with fill.color = #0500fd', function (done) {
                 const invCtxScale = 1;
                 const polygon = new Path2D();
-                const style1 = style.clone();
-                style1.fill.color = '#0500fd';
-                style1.fill.opacity = 0.2;
-                style1._applyFillToPolygon(txtrCtx, invCtxScale, polygon)
+                const style = new Style(styleOpt);
+                style.fill.color = '#0500fd';
+                style.fill.opacity = 0.2;
+                style._applyFillToPolygon(txtrCtx, invCtxScale, polygon)
                     .then(() => {
                         assert.equal(txtrCtx.fillStyle, '#0500fd');
-                        assert.equal(txtrCtx.globalAlpha, style1.fill.opacity);
+                        assert.equal(txtrCtx.globalAlpha, style.fill.opacity);
                         done();
                     }).catch(done);
             });
         });
     });
 
-    describe('applyToHTML', () => {
+    describe('applyToHTML()', () => {
+        const styleOpt = {
+            point: {},
+            fill: {},
+            stroke: {},
+            text: {},
+        };
+        styleOpt.point.color = 'red';
+        styleOpt.fill.color = 'blue';
+        styleOpt.stroke.color = 'black';
+        styleOpt.text.haloWidth = 1;
+
         it('with no icon.source', () => {
             const dom = document.createElement('canvas');
+            const style = new Style(styleOpt);
             style.applyToHTML(dom);
             assert.equal(dom.style.padding, '2px');
             assert.equal(dom.style.maxWidth, '10em');
@@ -115,9 +171,9 @@ describe('Style', function () {
             it('with icon.source as img', function (done) {
                 const dom = document.createElement('div');
                 const img = document.createElement('img');
-                const style1 = style.clone();
-                style1.icon.source = img;
-                style1.applyToHTML(dom)
+                const style = new Style(styleOpt);
+                style.icon.source = img;
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].class, 'itowns-icon');
@@ -127,9 +183,9 @@ describe('Style', function () {
             });
             it('with icon.source as string', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = sourceString;
-                style1.applyToHTML(dom)
+                const style = new Style(styleOpt);
+                style.icon.source = sourceString;
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].class, 'itowns-icon');
@@ -139,10 +195,10 @@ describe('Style', function () {
             });
             it('icon.source as string and icon.color=#0400fd', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = sourceString;
-                style1.icon.color = '#0400fd';
-                style1.applyToHTML(dom)
+                const style = new Style(styleOpt);
+                style.icon.source = sourceString;
+                style.icon.color = '#0400fd';
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children.length, 1);
@@ -153,12 +209,12 @@ describe('Style', function () {
             });
             it('icon.source and cropValues', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.id = 'fill-pattern';
-                style1.icon.source = 'icon';
-                style1.icon.cropValues = { x: 0, y: 0, width: 10, height: 10 };
+                const style = new Style(styleOpt);
+                style.icon.id = 'fill-pattern';
+                style.icon.source = 'icon';
+                style.icon.cropValues = { x: 0, y: 0, width: 10, height: 10 };
 
-                style1.applyToHTML(dom)
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].class, 'itowns-icon');
@@ -167,12 +223,13 @@ describe('Style', function () {
                     }).catch(done);
             });
         });
+
         describe('icon anchor position (test addIcon())', () => {
-            it('icon.anchor is center', function (done) {
+            const style = new Style(styleOpt);
+            style.icon.source = 'icon';
+            it('icon.anchor is center (default)', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = 'icon';
-                style1.applyToHTML(dom)
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].style.top, `${-0.5 * icon.height}px`);
@@ -182,11 +239,9 @@ describe('Style', function () {
             });
             it('icon.anchor is left', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = 'icon';
-                style1.icon.anchor = 'left';
+                style.icon.anchor = 'left';
 
-                style1.applyToHTML(dom)
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].style.top, `${-0.5 * icon.height}px`);
@@ -196,10 +251,8 @@ describe('Style', function () {
             });
             it('icon.anchor is right', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = 'icon';
-                style1.icon.anchor = 'right';
-                style1.applyToHTML(dom)
+                style.icon.anchor = 'right';
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].style.top, `${-0.5 * icon.height}px`);
@@ -209,10 +262,8 @@ describe('Style', function () {
             });
             it('icon.anchor is top', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = 'icon';
-                style1.icon.anchor = 'top';
-                style1.applyToHTML(dom)
+                style.icon.anchor = 'top';
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].style.top, 0);
@@ -222,10 +273,8 @@ describe('Style', function () {
             });
             it('icon.anchor is bottom', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = 'icon';
-                style1.icon.anchor = 'bottom';
-                style1.applyToHTML(dom)
+                style.icon.anchor = 'bottom';
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].style.top, `${-icon.height}px`);
@@ -235,10 +284,8 @@ describe('Style', function () {
             });
             it('icon.anchor is bottom-left', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = 'icon';
-                style1.icon.anchor = 'bottom-left';
-                style1.applyToHTML(dom)
+                style.icon.anchor = 'bottom-left';
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].style.top, `${-icon.height}px`);
@@ -249,10 +296,8 @@ describe('Style', function () {
             });
             it('icon.anchor is bottom-right', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = 'icon';
-                style1.icon.anchor = 'bottom-right';
-                style1.applyToHTML(dom)
+                style.icon.anchor = 'bottom-right';
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].style.top, `${-icon.height}px`);
@@ -262,10 +307,8 @@ describe('Style', function () {
             });
             it('icon.anchor is top-left', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = 'icon';
-                style1.icon.anchor = 'top-left';
-                style1.applyToHTML(dom)
+                style.icon.anchor = 'top-left';
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].style.top, 0);
@@ -275,10 +318,8 @@ describe('Style', function () {
             });
             it('icon.anchor is top-right', function (done) {
                 const dom = document.createElement('div');
-                const style1 = style.clone();
-                style1.icon.source = 'icon';
-                style1.icon.anchor = 'top-right';
-                style1.applyToHTML(dom)
+                style.icon.anchor = 'top-right';
+                style.applyToHTML(dom)
                     .then((icon) => {
                         icon.emitEvent('load');
                         assert.equal(dom.children[0].style.top, 0);
@@ -313,6 +354,48 @@ describe('Style', function () {
     });
 
     describe('setFromVectorTileLayer', () => {
+        describe('test sub-function', () => {
+            it('rgba2rgb(color)', () => {
+                const vectorTileLayer = {
+                    type: 'fill',
+                };
+                let style = Style.setFromVectorTileLayer(vectorTileLayer);
+                // origin is undefined
+                assert.equal(style.fill.color, undefined);
+                // origin has stops or expression
+                vectorTileLayer.paint = {
+                    'fill-color': {
+                        stops: [[10, '#eba55f']],
+                    },
+                    'fill-outline-color': ['string', 'blue'],
+                };
+                style = Style.setFromVectorTileLayer(vectorTileLayer);
+                assert.equal(style.fill.color, vectorTileLayer.paint['fill-color']);
+                assert.equal(style.stroke.color.constructor.name, 'StyleExpression');
+                assert.equal(style.stroke.color.evaluate().constructor.name, 'Color');
+                // origin is string (named or hex)
+                vectorTileLayer.paint = {
+                    'fill-color': 'red',
+                    'fill-outline-color': '#aabbccdd',
+                };
+                style = Style.setFromVectorTileLayer(vectorTileLayer);
+                assert.equal(style.fill.color, vectorTileLayer.paint['fill-color']);
+                assert.equal(style.fill.opacity, 1);
+                assert.equal(style.stroke.color, '#aabbcc');
+                assert.equal(style.stroke.opacity, 221 / 255);
+                // origin is string (rgba or hsl)
+                vectorTileLayer.paint = {
+                    'fill-color': 'rgba(120, 130, 140, 12)',
+                    'fill-outline-color': 'hsl(220, 230, 240)',
+                };
+                style = Style.setFromVectorTileLayer(vectorTileLayer);
+                assert.equal(style.fill.color, 'rgb(120,130,140)');
+                assert.equal(style.fill.opacity, 12);
+                assert.equal(style.stroke.color, 'hsl(220,230,240)');
+                assert.equal(style.stroke.opacity, 1);
+            });
+        });
+
         describe("layer.type==='fill'", () => {
             const imgId = 'filler';
             const vectorTileLayer = {
