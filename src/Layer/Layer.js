@@ -66,6 +66,7 @@ class Layer extends THREE.EventDispatcher {
      * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
      * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
      * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.
+     * @param {number} [config.subdivisionThreshold=256] - set the texture size and, if applied to the globe, affects the tile subdivision.
      *
      * @example
      * // Add and create a new Layer
@@ -108,6 +109,8 @@ class Layer extends THREE.EventDispatcher {
             config.style = new Style(config.style);
         }
         this.style = config.style || new Style();
+        this.subdivisionThreshold = config.subdivisionThreshold || 256;
+        this.sizeDiagonalTexture =  (2 * (this.subdivisionThreshold * this.subdivisionThreshold)) ** 0.5;
         Object.assign(this, config);
 
         Object.defineProperty(this, 'id', {
