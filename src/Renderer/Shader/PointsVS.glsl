@@ -26,7 +26,6 @@ uniform int sizeMode;
 uniform float minAttenuatedSize;
 uniform float maxAttenuatedSize;
 
-attribute vec3 color;
 attribute vec2 range;
 attribute vec4 unique_id;
 attribute float intensity;
@@ -84,22 +83,23 @@ void main() {
 #elif defined(NORMAL)
     // nothing to do
 #else
-    // default to color
-    vec3 normal = color;
+    // default to (0,0,0)
+    vec3 normal = vec3(0,0,0);
 #endif
 
     if (picking) {
         vColor = unique_id;
     } else {
-        vColor.a = 1.0;
+        vColor = vec4(1.0);
         if (mode == PNTS_MODE_CLASSIFICATION) {
             vec2 uv = vec2(classification/255., 0.5);
             vColor = texture2D(classificationTexture, uv);
         } else if (mode == PNTS_MODE_NORMAL) {
             vColor.rgb = abs(normal);
         } else if (mode == PNTS_MODE_COLOR) {
-            // default to color mode
-            vColor.rgb = mix(color, overlayColor.rgb, overlayColor.a);
+            #if defined(USE_COLOR)
+                vColor.rgb = mix(color.rgb, overlayColor.rgb, overlayColor.a);
+            #endif
         } else if (mode == PNTS_MODE_RETURN_NUMBER) {
             vec2 uv = vec2(returnNumber/255., 0.5);
             vColor = texture2D(discreteTexture, uv);
