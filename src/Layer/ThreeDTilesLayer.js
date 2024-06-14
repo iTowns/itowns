@@ -4,7 +4,7 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
 import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
 import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
-import PointsMaterial, { PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
+import PointsMaterial from 'Renderer/PointsMaterial';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
@@ -104,7 +104,14 @@ class ThreeDTilesLayer extends GeometryLayer {
     _replacePointsMaterial(model) {
         if (!model || !model.isPoints) { return; }
         const oldMat = model.material;
-        model.material = new PointsMaterial();
+        model.material = new PointsMaterial({
+            mode: this.pntsMode,
+            shape: this.pntsShape,
+            classificationScheme: this.classification,
+            sizeMode: this.pntsSizeMode,
+            minAttenuatedSize: this.pntsMinAttenuatedSize,
+            maxAttenuatedSize: this.pntsMaxAttenuatedSize,
+        });
         // Copy values from the material that are modified in 3DtilesRendererJS PntsLoader depending on the source data
         model.material.vertexColors = oldMat.vertexColors;
         model.material.transparent = oldMat.transparent;
@@ -116,30 +123,12 @@ class ThreeDTilesLayer extends GeometryLayer {
     }
 
     _handlePointsMaterialConfig(config) {
-        this.pntsMode = PNTS_MODE.COLOR;
-        this.pntsShape = PNTS_SHAPE.CIRCLE;
+        this.pntsMode = config.pntsMode;
+        this.pntsShape = config.pntsShape;
         this.classification = config.classification;
-        this.pntsSizeMode = PNTS_SIZE_MODE.VALUE;
+        this.pntsSizeMode = config.pntsSizeMode;
         this.pntsMinAttenuatedSize = config.pntsMinAttenuatedSize || 3;
         this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 10;
-
-        if (config.pntsMode) {
-            const exists = Object.values(PNTS_MODE).includes(config.pntsMode);
-            if (!exists) {
-                console.warn("The points cloud mode doesn't exist. Use 'COLOR' or 'CLASSIFICATION' instead.");
-            } else {
-                this.pntsMode = config.pntsMode;
-            }
-        }
-
-        if (config.pntsShape) {
-            const exists = Object.values(PNTS_SHAPE).includes(config.pntsShape);
-            if (!exists) {
-                console.warn("The points cloud point shape doesn't exist. Use 'CIRCLE' or 'SQUARE' instead.");
-            } else {
-                this.pntsShape = config.pntsShape;
-            }
-        }
     }
 
     preUpdate() {
