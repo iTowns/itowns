@@ -128,6 +128,16 @@ class ColorLayer extends RasterLayer {
     update(context, layer, node, parent) {
         return updateLayeredMaterialNodeImagery(context, this, node, parent);
     }
+
+    invalidateCache() {
+        this.cache.clear();
+        this.parent.level0Nodes.forEach((node0) => {
+            node0.traverse((tile) => {
+                tile.layerUpdateState[this.id] = undefined;
+                tile.redraw = true;
+            });
+        });
+    }
 }
 
 export default ColorLayer;
