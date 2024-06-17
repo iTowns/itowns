@@ -24,7 +24,6 @@ const babelConf = {
 
 const include = [
     path.resolve(__dirname, 'src'),
-    path.resolve(__dirname, 'test'),
     path.resolve(__dirname, 'utils'),
 ];
 
@@ -46,9 +45,6 @@ module.exports = () => {
     return {
         mode,
         context: path.resolve(__dirname),
-        resolve: {
-            modules: [path.resolve(__dirname, 'src'), 'node_modules'],
-        },
         entry: {
             itowns: [
                 'core-js',
