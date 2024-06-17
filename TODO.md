@@ -1,0 +1,3 @@
+- Change dist directory or do not distribute bundle
+- Check npm distribution
+- Rework CI ?
