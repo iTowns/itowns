@@ -31,7 +31,7 @@
     "changelog": "conventional-changelog -n ./config/conventionalChangelog/config.cjs -i changelog.md -s",
     "bump": "npm version ${npm_config_level:-minor} --no-git-tag-version && npm run changelog && npm install && git add -A && git commit --amend --no-edit",
     "version": "node ./config/bump-version.js",
-    "postversion": "git add -A && git commit -m "release v$npm_package_version",
+    "postversion": "git add -A && git commit -m \"release v$npm_package_version\"",
     "publish-next": "npm version prerelease --no-git-tag-version --preid next && npm publish --access public --tag=next --provenance",
     "publish-latest": "npm publish --access public --tag=latest --provenance"
   },
