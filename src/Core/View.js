@@ -152,6 +152,7 @@ class View extends THREE.EventDispatcher {
      * added to viewerDiv (mutually exclusive with mainLoop)
      * @param {boolean|Object} [options.webXR=false] - enable webxr button to switch on VR visualization.
      * @param {number} [options.webXR.scale=1.0] - apply webxr scale tranformation.
+     * @param {number} [options.webXR.callback] - rendering callback.
      * @param {?Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
      * @param {?Color} options.diffuse - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
@@ -1061,7 +1062,8 @@ class View extends THREE.EventDispatcher {
             const length = orthoZ / Math.cos(angle);
             target.addVectors(this.camera3D.position, ray.direction.setLength(length));
         } else {
-            const gl_FragCoord_Z = g.depthBufferRGBAValueToOrthoZ(buffer, this.camera3D);
+            // FIXME picking doesn't work with arrayCamera
+            const gl_FragCoord_Z = g.depthBufferRGBAValueToOrthoZ(buffer, this.camera.camera3D);
 
             target.set(screen.x, screen.y, gl_FragCoord_Z);
             target.unproject(this.camera3D);
