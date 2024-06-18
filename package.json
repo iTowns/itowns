@@ -29,8 +29,10 @@
     "prepare": "cross-env NO_UPDATE_NOTIFIER=true node ./config/prepare.mjs && node ./config/replace.config.mjs",
     "watch": "cross-env BABEL_DISABLE_CACHE=1 babel --watch src --out-dir lib",
     "changelog": "conventional-changelog -n ./config/conventionalChangelog/config.cjs -i changelog.md -s",
-    "bump": "if [ -z $npm_config_level ]; then grunt bump:minor;  else grunt bump:$npm_config_level; fi && npm run changelog && npm install && git add -A && git commit --amend --no-edit",
-    "publish-next": "npm version prerelease --preid next && npm publish --access public --tag=next --provenance",
+    "bump": "npm version ${npm_config_level:-minor} --no-git-tag-version && npm run changelog && npm install && git add -A && git commit --amend --no-edit",
+    "version": "node ./config/bump-version.js",
+    "postversion": "git add -A && git commit -mv$npm_package_version",
+    "publish-next": "npm version prerelease --no-git-tag-version --preid next && npm publish --access public --tag=next --provenance",
     "publish-latest": "npm publish --access public --tag=latest --provenance"
   },
   "c8": {
@@ -101,8 +103,6 @@
     "eslint-plugin-import": "^2.29.0",
     "eslint-webpack-plugin": "^4.0.1",
     "github-url-from-git": "^1.5.0",
-    "grunt": "^1.6.1",
-    "grunt-bump": "^0.8.0",
     "https-proxy-agent": "^7.0.2",
     "jsdoc": "^4.0.2",
     "marked": "^11.0.1",
