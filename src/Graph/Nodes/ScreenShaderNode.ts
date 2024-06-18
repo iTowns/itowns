@@ -3,11 +3,10 @@ import { Vector2 } from 'three';
 import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, Mappings, ProcessorNode } from '../Prelude';
 import { CameraLike } from '../Types';
 
-interface CallbackArgs {
+type CallbackArgs = {
     target: THREE.WebGLRenderTarget;
     renderer: THREE.WebGLRenderer;
-    uniforms: { [name: string]: any };
-}
+} & { [name: string]: any };
 
 type FragmentShaderParts = {
     includes?: string[],
@@ -116,9 +115,6 @@ void main() {
                 // Set user-provided uniforms
                 for (const [name, value] of Object.entries(uniforms ?? {})) {
                     this.material.uniforms[name] = { value };
-                }
-                if (_frame == 3) {
-                    console.log(args, uniforms, this.material.uniforms);
                 }
 
                 ScreenShaderNode._quad.material = this.material;
