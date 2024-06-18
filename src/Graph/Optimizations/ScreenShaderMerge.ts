@@ -1,4 +1,4 @@
-import { Graph, GraphNode, ScreenShaderNode } from '../Prelude';
+import { Graph, GraphNode, ScreenShaderNode, SubGraph } from '../Prelude';
 
 export default {
     pattern: Array(2).fill(ScreenShaderNode.name),
@@ -30,6 +30,36 @@ export default {
                 `Child ${cName} samples input with an offset`
                 + `(only allowed for parent shaders when merging): ${detectedOffsetSampling[0]}`,
             );
+        }
+
+        // Fail if parent is linked to a subgraph output
+        if (graph instanceof SubGraph) {
+            console.log(`Checking ${pName} for subgraph outputs`);
+            for (const [outputName, output] of graph.outputs.entries()) {
+                if (output.input[0]?.node == parent as GraphNode ?? false) {
+                    throw new Error(`Parent ${pName} is linked to subgraph output ${outputName}`);
+                }
+            }
+        }
+
+        const includes = new Set<string>();
+        for (const include of [...cParts.includes ?? [], ...pParts.includes ?? []]) {
+            includes.add(include);
+        }
+        cParts.includes = [...includes.values()];
+
+        const defines = new Map<string, string | number>();
+        for (const [key, value] of Object.entries(cParts.defines ?? {})) {
+            const pValue = pParts.defines?.[key];
+            if (pValue != undefined && pValue != value) {
+                throw new Error(`Child ${cName} and parent ${pName} both define ${key}`);
+            }
+            defines.set(key, value);
+        }
+        for (const [key, value] of Object.entries(pParts.defines ?? {})) {
+            if (!defines.has(key)) {
+                defines.set(key, value);
+            }
         }
 
         // Find and mangle duplicate uniform names
@@ -73,6 +103,7 @@ export default {
         ].join('\n');
 
         const fragmentShader = ScreenShaderNode.buildFragmentShader(cParts);
+        console.log(fragmentShader);
 
         child.material = ScreenShaderNode.buildMaterial(fragmentShader);
 

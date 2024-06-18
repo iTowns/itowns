@@ -44,45 +44,48 @@
         // Sobel sharpen
         // Uniforms
         const sharpenWeight = new graph.InputNode(5);
-        const sharpenOffset = new graph.InputNode(new itowns.THREE.Vector2(0.0025, 0.));
+        const sharpenOffset = new graph.InputNode(new itowns.THREE.Vector2(3., 0.));
         postProcessingGraph.set({sharpenWeight, sharpenOffset});
         // Screen shaders
-        const coastSharpen = new graph.ScreenShaderNode(render, renderer, {
+        const coastHighlight = new graph.ScreenShaderNode(render, renderer, {
             fragmentShaderParts: {
                 uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
                 auxCode: /* glsl */`
-                    float getAvg(vec4 color) {
-                        return (color.r + color.g + color.b) / 3.0;
-                    }
+float getAvg(vec4 color) {
+    return (color.r + color.g + color.b) / 3.0;
+}
 
-                    vec4 coastSharpen(vec4 color) {
-                        float mid = getAvg(color);
-                        float left = getAvg(texture2D(uTexture, vUv - uOffset));
+vec4 coastHighlight(vec4 color) {
+    float mid = getAvg(color);
+    float left = getAvg(texture2D(tDiffuse, vUv - uOffset / resolution));
 
-                        float diff = uWeight * (mid - left);
-                        float avg = (mid + left) / 2.0;
+    float diff = uWeight * (mid - left);
+    float avg = (mid + left) / 2.0;
 
-                        float smoothed = max(0., diff - avg);
-                        float blueness = color.b / (color.r + color.g + color.b);
+    float smoothed = max(0., diff - avg);
+    float blueness = color.b / (color.r + color.g + color.b);
 
-                        return color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
-                    }`,
-                main: 'return coastSharpen(tex);'
+    return color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
+}
+`,
+                main: 'return coastHighlight(tex);'
             },
         });
-        const greyscale = new graph.ScreenShaderNode(coastSharpen, renderer, {
+        const greyscale = new graph.ScreenShaderNode(coastHighlight, renderer, {
             fragmentShaderParts: {
                 auxCode: /* glsl */`
-                    vec4 greyscale(vec4 color) {
-                        float avg = (color.r + color.g + color.b) / 3.;
-                        return vec4(avg, avg, avg, 1.0);
-                    }`,
+vec4 greyscale(vec4 color) {
+    float avg = (color.r + color.g + color.b) / 3.;
+    return vec4(avg, avg, avg, 1.0);
+}
+`,
                 main: 'return greyscale(tex);'
             },
         });
-        postProcessingGraph.set({coastSharpen, greyscale});
+        postProcessingGraph.set({coastHighlight, greyscale});
 
-        const postProcessingGraphNode = new graph.SubGraphNode(outerGraph, graph.SubGraph.from(postProcessingGraph, 'Post-processing'), {
+        const postProcessingSubGraph = graph.SubGraph.from(postProcessingGraph, 'Post-processing');
+        const postProcessingGraphNode = new graph.SubGraphNode(outerGraph, postProcessingSubGraph, {
             greyscale: {
                 node: greyscale,
                 output: 'value',
@@ -92,12 +95,15 @@
         const renderFBO = new graph.ScreenShaderNode({node: postProcessingGraphNode, output: 'greyscale'}, renderer, {toScreen: true});
         outerGraph.set({postProcessingGraphNode, renderFBO});
 
-        postProcessingGraph.optimize(greyscale, true);
-        // window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
+        postProcessingSubGraph.optimize(greyscale, true);
 
         let frame = 0;
         view.render = function render() {
             outerGraph.getOutput(frame++, renderFBO);
+            // Reach cruising speed before dumping so timing information is accurate
+            if (frame == 10) {
+                window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
+            }
         };
 
         itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {

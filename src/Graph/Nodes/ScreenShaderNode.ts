@@ -1,21 +1,28 @@
 import * as THREE from 'three';
-import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, Mappings } from '../Prelude';
-import ProcessorNode from './ProcessorNode';
+import { Vector2 } from 'three';
+import { BuiltinType, Dependency, DumpDotNodeStyle, GraphNode, Type, Mappings, ProcessorNode } from '../Prelude';
+import { CameraLike } from '../Types';
 
-interface CallbackArgs extends Record<string, any> {
-    input: THREE.WebGLRenderTarget;
+interface CallbackArgs {
+    target: THREE.WebGLRenderTarget;
     renderer: THREE.WebGLRenderer;
-    uniforms: any[];
+    uniforms: { [name: string]: any };
 }
 
 type FragmentShaderParts = {
+    includes?: string[],
+    defines?: { [name: string]: number | string },
     uniforms?: { [name: string]: Dependency | GraphNode | Type };
     auxCode?: string;
     main: string;
 };
 
+/**
+ * A node that applies a shader to a render target.
+ *
+ */
 export default class ScreenShaderNode extends ProcessorNode {
-    private static get vertexShader(): string {
+    protected static get vertexShader(): string {
         return /* glsl */`
 varying vec2 vUv;
 
@@ -26,22 +33,22 @@ void main() {
 `;
     }
 
-    private static get defaultFragmentShader(): FragmentShaderParts {
+    protected static get defaultFragmentShader(): FragmentShaderParts {
         return {
-            main: 'return tex;',
+            main: /* glsl */'return tex;',
         };
     }
 
     // HACK: Essentially a scuffed singleton pack.
     // PERF: Evaluate the cost of having a scene per shader node instead.
-    private static _scene: THREE.Scene;
-    private static _quad: THREE.Mesh;
-    private static _camera: THREE.Camera;
+    protected static _scene: THREE.Scene;
+    protected static _quad: THREE.Mesh;
+    protected static _camera: CameraLike;
 
     // Kept for debug purposes
     public material: THREE.ShaderMaterial;
 
-    private _fragmentShaderParts: FragmentShaderParts;
+    protected _fragmentShaderParts: FragmentShaderParts;
 
     private static _init(): void {
         if (ScreenShaderNode._scene == undefined) {
@@ -88,14 +95,33 @@ void main() {
         super(
             {
                 // Unpacking the uniforms object first allows us to ignore
-                // potential 'input' and 'renderer' fields.
+                // potential 'target' and 'renderer' fields.
                 ...fullUniforms,
                 target: [target, BuiltinType.RenderTarget],
                 renderer: [renderer, BuiltinType.Renderer],
             },
             BuiltinType.RenderTarget,
-            (_frame, args: CallbackArgs) => {
-                const { target: input, renderer, ...uniforms } = args;
+            (_frame, args) => {
+                const { target: input, renderer, ...uniforms } = args as CallbackArgs;
+
+                uniforms.tDiffuse = input.texture;
+                uniforms.tDepth = input.depthTexture;
+
+                uniforms.resolution ??= new Vector2(input.width, input.height);
+
+                const camera = ScreenShaderNode._camera as CameraLike;
+                uniforms.cameraNear ??= camera.near;
+                uniforms.cameraFar ??= camera.far;
+
+                // Set user-provided uniforms
+                for (const [name, value] of Object.entries(uniforms ?? {})) {
+                    this.material.uniforms[name] = { value };
+                }
+                if (_frame == 3) {
+                    console.log(args, uniforms, this.material.uniforms);
+                }
+
+                ScreenShaderNode._quad.material = this.material;
 
                 const target: THREE.WebGLRenderTarget | null = toScreen
                     ? null
@@ -103,15 +129,6 @@ void main() {
                         input.width,
                         input.height,
                     ));
-
-                this.material.uniforms.uTexture = { value: input.texture };
-
-                // Set user-provided uniforms
-                for (const [name, value] of Object.entries(uniforms ?? {})) {
-                    this.material.uniforms[name] = { value };
-                }
-
-                ScreenShaderNode._quad.material = this.material;
 
                 renderer.setRenderTarget(target);
                 renderer.clear();
@@ -130,7 +147,7 @@ void main() {
     }
 
     // TODO: group this and similar operations in their own class
-    public static buildFragmentShader({ uniforms, auxCode, main }: FragmentShaderParts): string {
+    public static buildFragmentShader({ includes, defines, uniforms, auxCode, main }: FragmentShaderParts): string {
         const uniformDeclarations = Object.entries(uniforms ?? {})
             .map(([name, uniform]): string => {
                 let ty: Type;
@@ -147,16 +164,26 @@ void main() {
             });
 
         return [
+            // highp by default for simplicity, will change if complaints arise
             'precision highp float;\n',
+            // Pre-processor statements
+            ...includes?.map(inc => `#include <${inc}>`) ?? [],
+            ...Object.entries(defines ?? {}).map(([name, value]) => `#define ${name} ${value}`),
+            // UVs
             'varying vec2 vUv;',
-            'uniform sampler2D uTexture;',
+            // Uniforms
+            'uniform sampler2D tDiffuse;',
+            'uniform sampler2D tDepth;',
+            'uniform vec2 resolution;',
+            'uniform float cameraNear;',
+            'uniform float cameraFar;',
             ...(uniformDeclarations.length > 0 ? [uniformDeclarations.join('\n')] : []),
             ...(auxCode != undefined ? [auxCode] : []),
             'vec4 shader(in vec4 tex) {',
             `    ${main.split('\n').join('\n\t')}`,
             '}',
             'void main() {',
-            '    gl_FragColor = shader(texture2D(uTexture, vUv));',
+            '    gl_FragColor = shader(texture2D(tDiffuse, vUv));',
             '}',
         ].join('\n');
     }

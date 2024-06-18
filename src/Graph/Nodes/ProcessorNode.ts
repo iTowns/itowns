@@ -6,14 +6,14 @@ export default class ProcessorNode extends GraphNode {
     public constructor(
         inputs: { [name: string]: [Dependency, Type] },
         outputs: Map<string, Type> | Type,
-        public callback: (frame: number, args: any) => void,
+        public callback: (frame: number, args: { [arg: string]: unknown }) => void,
     ) {
         super(new Map(Object.entries(inputs)), outputs);
     }
 
     protected override _apply(graph?: Graph, frame: number = 0): void {
         const inputs = Array.from(this.inputs);
-        const args: [string, any][] = inputs.map(([name, [dep, _ty]]) => [
+        const args = inputs.map(([name, [dep, _ty]]): [string, unknown] => [
             name,
             dep?.node.getOutput(dep.output, graph, frame) ?? null,
         ]);
@@ -21,7 +21,9 @@ export default class ProcessorNode extends GraphNode {
 
         this._out.frame = frame;
 
+        const start = Date.now();
         this.callback(frame, argObj);
+        this._out.timeTaken = Date.now() - start;
     }
 
     public override get nodeType(): string {

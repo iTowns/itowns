@@ -1,4 +1,5 @@
-import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Prelude';
+import { lerp } from 'three/src/math/MathUtils';
+import { Type, Dependency, DumpDotNodeStyle, Graph, LazyStaticNode } from '../Prelude';
 
 /**
  * Represents a node in a directed graph.
@@ -10,6 +11,8 @@ export default abstract class GraphNode {
     protected _out: {
         frame: number,
         outputs: Map<string, [any, Type]>,
+        /** Stored in ms. */
+        timeTaken?: number,
     };
 
     private static idCounter = 0;
@@ -108,6 +111,8 @@ export default abstract class GraphNode {
      * Get the DOT attribute string for the node.
      * @param name The name of the node.
      */
+    // TODO: refactor this into a sort of component pattern
+    // use library: https://github.com/prantlf/graphviz-builder (also removes the need for dreampuf's viewer)
     public dumpDot(name: string): string {
         const { label, attrs } = this.dumpDotStyle;
         const formattedAttrs = Object.entries(attrs)
@@ -115,10 +120,33 @@ export default abstract class GraphNode {
             .join(' ');
 
         const colspan = Math.max(1, (this.inputs.size > 0 ? 1 : 0) + (this.outputs.size > 0 ? 1 : 0));
-        const lType = `<tr><td align="text" colspan="${colspan}"><b>${this.nodeType}</b></td></tr>`;
 
-        const lName = label(name).trim();
-        const lNameFormatted = lName.length == 0 ? [] : [`<hr/><tr><td colspan="${colspan}"><i>${lName}</i></td></tr>`];
+        const hasTiming = this._out.timeTaken != undefined;
+        const generateTiming = (): string => {
+            const lerpChannel = (): number => Math.floor(lerp(0, 255, Math.min(1, this._out.timeTaken! / 20)));
+            const mapChannel = (op: (x: number) => number): string => op(lerpChannel()).toString(16).padStart(2, '0');
+            const timingColor = this instanceof LazyStaticNode
+                ? '#000000'
+                : `#${mapChannel(x => x)}${mapChannel(x => 255 - x)}00`;
+
+            return `<td><font color="${timingColor}">${this._out.timeTaken!}ms</font></td>`;
+        };
+
+        const header = [
+            '<tr>',
+            `\t<td align="text" cellpadding="${hasTiming ? 4 : 2}" colspan="${colspan - (hasTiming ? 1 : 0)}"><b>${this.nodeType}</b></td>`,
+            ...(hasTiming ? [`\t${generateTiming()}`] : []),
+            '</tr>',
+        ];
+
+        const labelName = label(name).trim();
+        const formattedName = labelName.length == 0
+            ? []
+            : [
+                '<hr/><tr>',
+                `\t<td colspan="${colspan}"><i>${labelName}</i></td>`,
+                '</tr>',
+            ];
 
         const zip = (a: any[], b: any[]): any[] => Array.from(Array(Math.max(b.length, a.length)), (_, i) => [a[i], b[i]]);
         const iPort = (name: string, dep?: GraphNode): string =>
@@ -132,7 +160,7 @@ export default abstract class GraphNode {
                 return ['<tr>', input, output, '</tr>'].join('');
             });
 
-        const lHtml = ['<<table border="0">', lType, ...lNameFormatted, ...ports, '</table>>'].join('\n');
+        const lHtml = ['<<table border="0">', ...header, ...formattedName, ...ports, '</table>>'].join('\n');
 
         return `"${name}" [label=${lHtml} ${formattedAttrs} margin=.05]`;
     }
