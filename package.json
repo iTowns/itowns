@@ -109,7 +109,7 @@
     "mocha": "^10.2.0",
     "node-fetch": "^2.7.0",
     "proj4": "^2.9.2",
-    "puppeteer": "^21.6.0",
+    "puppeteer": "^22.11.2",
     "q": "^1.5.1",
     "replace-in-file": "^7.0.2",
     "sinon": "^17.0.1",
