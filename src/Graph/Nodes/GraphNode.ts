@@ -63,6 +63,10 @@ export default abstract class GraphNode {
         return this._out.outputs;
     }
 
+    public toDep(output?: string): Dependency {
+        return { node: this, output: output ?? GraphNode.defaultIoName };
+    }
+
     /**
      * Get the output of the node at a given frame.
      * @param name The name of the output to get.

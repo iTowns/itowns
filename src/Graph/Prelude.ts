@@ -14,6 +14,7 @@ import ViewNode from './Nodes/ViewNode';
 import GraphInputNode from './Nodes/GraphInputNode';
 import GraphOutputNode from './Nodes/GraphOutputNode';
 import GlobeViewNode from './Nodes/GlobeViewNode';
+import PlanarViewNode from './Nodes/PlanarViewNode';
 import FieldGetterNode from './Nodes/FieldGetterNode';
 import DepthGetterNode from './Nodes/DepthGetterNode';
 import CameraDataNode from './Nodes/CameraDataNode';
@@ -49,6 +50,7 @@ export {
     // View
     ViewNode,
     GlobeViewNode,
+    PlanarViewNode,
 
     // Processors
     ProcessorNode,

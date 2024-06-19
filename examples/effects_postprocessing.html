@@ -41,16 +41,32 @@
 
         // Subgraph
         const postProcessingGraph = new graph.Graph();
-        // Sobel sharpen
-        // Uniforms
+
+        // Coast highlight uniforms
         const sharpenWeight = new graph.InputNode(5);
         const sharpenOffset = new graph.InputNode(new itowns.THREE.Vector2(3., 0.));
         postProcessingGraph.set({sharpenWeight, sharpenOffset});
+
         // Screen shaders
-        const coastHighlight = new graph.ScreenShaderNode(render, renderer, {
+        const warp = new graph.ScreenShaderNode(render, renderer, {
+            fragmentShaderParts: {
+                auxCode: /* glsl */`
+uniform vec2 resolution;
+
+vec4 warp(vec4 color) {
+    return texture2D(tDiffuse, vUv + vec2(sin(floor(100. * vUv.x * vUv.x)), cos(floor(100. * vUv.y * vUv.y))) * vec2(5., 5.) / resolution);
+}
+`,
+                main: /* glsl */'return warp(tex);'
+            },
+        });
+
+        const coastHighlight = new graph.ScreenShaderNode(warp, renderer, {
             fragmentShaderParts: {
                 uniforms: {uWeight: sharpenWeight, uOffset: sharpenOffset},
                 auxCode: /* glsl */`
+uniform vec2 resolution;
+
 float getAvg(vec4 color) {
     return (color.r + color.g + color.b) / 3.0;
 }
@@ -68,9 +84,10 @@ vec4 coastHighlight(vec4 color) {
     return color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
 }
 `,
-                main: 'return coastHighlight(tex);'
+                main:  /* glsl */'return coastHighlight(tex);'
             },
         });
+
         const greyscale = new graph.ScreenShaderNode(coastHighlight, renderer, {
             fragmentShaderParts: {
                 auxCode: /* glsl */`
@@ -79,30 +96,46 @@ vec4 greyscale(vec4 color) {
     return vec4(avg, avg, avg, 1.0);
 }
 `,
-                main: 'return greyscale(tex);'
+                main: /* glsl */'return greyscale(tex);'
             },
         });
-        postProcessingGraph.set({coastHighlight, greyscale});
+
+        const uvcolor = new graph.ScreenShaderNode(greyscale, renderer, {
+            fragmentShaderParts: {
+                auxCode: /* glsl */`
+vec4 uvcolor(vec4 color) {
+    float r = min(color.r * vUv.x, 1.);
+    float g = min(color.g * vUv.y, 1.);
+    return vec4(r, g, color.b, 1.0);
+}
+`,
+                main: /* glsl */'return uvcolor(tex);',
+            },
+        });
+
+        postProcessingGraph.set({warp, coastHighlight, greyscale, uvcolor});
 
         const postProcessingSubGraph = graph.SubGraph.from(postProcessingGraph, 'Post-processing');
         const postProcessingGraphNode = new graph.SubGraphNode(outerGraph, postProcessingSubGraph, {
-            greyscale: {
-                node: greyscale,
+            uvcolor: {
+                node: uvcolor,
                 output: 'value',
-            }
+            },
         });
 
-        const renderFBO = new graph.ScreenShaderNode({node: postProcessingGraphNode, output: 'greyscale'}, renderer, {toScreen: true});
+        const renderFBO = new graph.ScreenShaderNode({node: postProcessingGraphNode, output: 'uvcolor'}, renderer, {toScreen: true});
         outerGraph.set({postProcessingGraphNode, renderFBO});
 
-        postProcessingSubGraph.optimize(greyscale, true);
+        // We expect coastHighlight, greyscale and uvcolor to be merged
+        // warp will not be merged as it violates the no-offset access invariant
+        postProcessingSubGraph.optimize(uvcolor, true);
 
         let frame = 0;
         view.render = function render() {
             outerGraph.getOutput(frame++, renderFBO);
             // Reach cruising speed before dumping so timing information is accurate
             if (frame == 10) {
-                window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
+                // window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
             }
         };
 

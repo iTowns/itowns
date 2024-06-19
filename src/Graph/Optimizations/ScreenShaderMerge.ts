@@ -1,5 +1,8 @@
 import { Graph, GraphNode, ScreenShaderNode, SubGraph } from '../Prelude';
 
+const merged: Map<number, number[]> = new Map();
+
+// TODO: refactor into multiple functions for maintainability
 export default {
     pattern: Array(2).fill(ScreenShaderNode.name),
     operation: (nodes: GraphNode[], graph: Graph) => {
@@ -34,7 +37,6 @@ export default {
 
         // Fail if parent is linked to a subgraph output
         if (graph instanceof SubGraph) {
-            console.log(`Checking ${pName} for subgraph outputs`);
             for (const [outputName, output] of graph.outputs.entries()) {
                 if (output.input[0]?.node == parent as GraphNode ?? false) {
                     throw new Error(`Parent ${pName} is linked to subgraph output ${outputName}`);
@@ -88,21 +90,30 @@ export default {
             pParts.auxCode = pParts.auxCode.replaceAll(match, replacement);
         }
 
+        const mergedIds = merged.get(child.id);
+        const childMergedId = mergedIds != undefined ? `_${child.id}_${mergedIds.join('_')}` : `_${child.id}`;
+        if (mergedIds == undefined) {
+            merged.set(child.id, [parent.id]);
+        } else {
+            mergedIds.push(parent.id);
+        }
+
         cParts.auxCode = [
             `// ${pName}`, pParts.auxCode,
             `vec4 _${parent.id}_shader(vec4 tex) {`,
             `\t${pParts.main.replace('\n', '\n\t')}`,
             '}',
             `// ${cName}`, cParts.auxCode,
-            `vec4 _${child.id}_shader(vec4 tex) {`,
+            `vec4 ${childMergedId}_shader(vec4 tex) {`,
             `\t${cParts.main.replace('\n', '\n\t')}`,
             '}',
         ].join('\n');
         cParts.main = [
-            `return _${child.id}_shader(_${parent.id}_shader(tex));`,
+            `return ${childMergedId}_shader(_${parent.id}_shader(tex));`,
         ].join('\n');
 
         const fragmentShader = ScreenShaderNode.buildFragmentShader(cParts);
+
         console.log(fragmentShader);
 
         child.material = ScreenShaderNode.buildMaterial(fragmentShader);
@@ -116,7 +127,11 @@ export default {
         graph.nodes.delete(pName);
         graph.nodes.delete(cName);
 
-        graph.nodes.set(`_${parent.id}_${pName}_${child.id}_${cName}`, child);
+        if (mergedIds != undefined) {
+            graph.nodes.set(`_${parent.id}_${pName}${cName}`, child);
+        } else {
+            graph.nodes.set(`_${parent.id}_${pName}_${child.id}_${cName}`, child);
+        }
 
         return child;
     },

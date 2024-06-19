@@ -17,8 +17,16 @@ type FragmentShaderParts = {
 };
 
 /**
- * A node that applies a shader to a render target.
+ * Applies a shader to a render target.
+ * Some default bindings are provided (without need to redefine them in your shader):
+ *  - `vUv`............(varying vec2): The UV coordinates of the current fragment in the input texture.
+ *  - `tDiffuse`..(uniform sampler2D): The color texture of the render target.
  *
+ * Other uniforms are available but need to be explicitly declared in your code:
+ *  - `tDepth`............(sampler2D): The depth texture of the render target.
+ *  - `resolution`.............(vec2): The width and height of the render target.
+ *  - `cameraNear`............(float): The near plane of the camera.
+ *  - `cameraFar`.............(float): The far plane of the camera.
  */
 export default class ScreenShaderNode extends ProcessorNode {
     protected static get vertexShader(): string {
@@ -101,18 +109,20 @@ void main() {
             },
             BuiltinType.RenderTarget,
             (_frame, args) => {
-                const { target: input, renderer, ...uniforms } = args as CallbackArgs;
+                const { target: input, renderer, ...rest } = args as CallbackArgs;
 
-                uniforms.tDiffuse = input.texture;
-                uniforms.tDepth = input.depthTexture;
+                const camera = ScreenShaderNode._camera;
 
-                uniforms.resolution ??= new Vector2(input.width, input.height);
+                const uniforms = {
+                    tDiffuse: input.texture,
+                    tDepth: input.depthTexture,
+                    resolution: new Vector2(input.width, input.height),
+                    cameraNear: camera.near,
+                    cameraFar: camera.far,
+                    ...rest,
+                };
 
-                const camera = ScreenShaderNode._camera as CameraLike;
-                uniforms.cameraNear ??= camera.near;
-                uniforms.cameraFar ??= camera.far;
-
-                // Set user-provided uniforms
+                // Set uniforms
                 for (const [name, value] of Object.entries(uniforms ?? {})) {
                     this.material.uniforms[name] = { value };
                 }
@@ -156,8 +166,15 @@ void main() {
                     ty = uniform.node.outputs.get(uniform.output)![1];
                 }
 
+                // TODO: Create a way to mark types as non-automatic uniforms
+                // Maybe completely remove automatic uniform creation and leave it up to the user
+                if (ty == BuiltinType.Float32Array) {
+                    return '';
+                }
+
                 return `uniform ${Mappings.toOpenGL(ty)} ${name};`;
-            });
+            })
+            .filter(s => s.length > 0);
 
         return [
             // highp by default for simplicity, will change if complaints arise
@@ -169,10 +186,6 @@ void main() {
             'varying vec2 vUv;',
             // Uniforms
             'uniform sampler2D tDiffuse;',
-            'uniform sampler2D tDepth;',
-            'uniform vec2 resolution;',
-            'uniform float cameraNear;',
-            'uniform float cameraFar;',
             ...(uniformDeclarations.length > 0 ? [uniformDeclarations.join('\n')] : []),
             ...(auxCode != undefined ? [auxCode] : []),
             'vec4 shader(in vec4 tex) {',
