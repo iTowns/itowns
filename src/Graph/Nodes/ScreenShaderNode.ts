@@ -131,10 +131,7 @@ void main() {
 
                 const target: THREE.WebGLRenderTarget | null = toScreen
                     ? null
-                    : (this.outputs.get(GraphNode.defaultIoName)![0] ?? new THREE.WebGLRenderTarget(
-                        input.width,
-                        input.height,
-                    ));
+                    : (this.outputs.get(GraphNode.defaultIoName)![0] ?? createRenderTarget(input));
 
                 renderer.setRenderTarget(target);
                 renderer.clear();
@@ -181,16 +178,20 @@ void main() {
             'precision highp float;\n',
             // Pre-processor statements
             ...includes?.map(inc => `#include <${inc}>`) ?? [],
+            '',
             ...Object.entries(defines ?? {}).map(([name, value]) => `#define ${name} ${value}`),
+            '',
             // UVs
             'varying vec2 vUv;',
             // Uniforms
             'uniform sampler2D tDiffuse;',
             ...(uniformDeclarations.length > 0 ? [uniformDeclarations.join('\n')] : []),
+            // User code
             ...(auxCode != undefined ? [auxCode] : []),
             'vec4 shader(in vec4 tex) {',
-            `    ${main.split('\n').join('\n\t')}`,
+            ...main.split('\n').map(s => `    ${s}`),
             '}',
+            '',
             'void main() {',
             '    gl_FragColor = shader(texture2D(tDiffuse, vUv));',
             '}',
@@ -216,3 +217,12 @@ void main() {
         };
     }
 }
+
+function createRenderTarget(input: THREE.WebGLRenderTarget<THREE.Texture>): THREE.WebGLRenderTarget<THREE.Texture> | null {
+    const target = new THREE.WebGLRenderTarget(input.width, input.height);
+    target.depthBuffer = true;
+    target.depthTexture = new THREE.DepthTexture(input.width, input.height);
+    target.depthTexture.type = THREE.UnsignedShortType;
+    return target;
+}
+

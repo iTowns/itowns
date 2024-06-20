@@ -1,5 +1,8 @@
-import { lerp } from 'three/src/math/MathUtils';
 import { Type, Dependency, DumpDotNodeStyle, Graph, LazyStaticNode } from '../Prelude';
+
+function lerp(a: number, b: number, t: number): number {
+    return a + (b - a) * t;
+}
 
 /**
  * Represents a node in a directed graph.
@@ -159,8 +162,22 @@ export default abstract class GraphNode {
 
         const ports = zip(Array.from(this.inputs), Array.from(this.outputs))
             .map(([i, o]) => {
-                const input = i == undefined ? '' : iPort(i[0], i[1][0]);
-                const output = o == undefined ? '' : oPort(o[0]);
+                const input = (() => {
+                    if (i == undefined) {
+                        if (this.inputs.size > 0) {
+                            return '<td></td>';
+                        } return '';
+                    } return iPort(i[0], i[1][0]);
+                })();
+
+                const output = (() => {
+                    if (o == undefined) {
+                        if (this.outputs.size > 0) {
+                            return '<td></td>';
+                        } return '';
+                    } return oPort(o[0]);
+                })();
+
                 return ['<tr>', input, output, '</tr>'].join('');
             });
 

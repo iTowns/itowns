@@ -54,7 +54,19 @@
 uniform vec2 resolution;
 
 vec4 warp(vec4 color) {
-    return texture2D(tDiffuse, vUv + vec2(sin(floor(100. * vUv.x * vUv.x)), cos(floor(100. * vUv.y * vUv.y))) * vec2(5., 5.) / resolution);
+    float frequency = 50.;
+    float strength = 5.;
+
+    vec2 uv = sqrt(2. * abs(vUv - 0.5));
+    if (resolution.x > resolution.y) {
+        uv.x *= resolution.x / resolution.y;
+    }
+    vec2 squv = uv * uv;
+    vec2 uvOffset = vec2(
+        sin(floor(frequency * squv.x)),
+        cos(floor(frequency * squv.y))
+    );
+    return texture2D(tDiffuse, vUv + uvOffset * vec2(strength, strength) / resolution);
 }
 `,
                 main: /* glsl */'return warp(tex);'

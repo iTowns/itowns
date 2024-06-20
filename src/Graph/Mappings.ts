@@ -76,6 +76,7 @@ export default class Mappings {
         [BuiltinType.Vector3, 'vec3'],
         [BuiltinType.Vector4, 'vec4'],
         [BuiltinType.RenderTarget, 'sampler2D'],
+        [BuiltinType.Texture, 'sampler2D'],
     ]);
 
     public static toOpenGL(type: Type): string {

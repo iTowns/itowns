@@ -24,10 +24,13 @@ export default class RenderViewNode extends ProcessorNode {
 
                     this._target = new THREE.WebGLRenderTarget(fsrt.width, fsrt.height, {
                         minFilter: THREE.LinearFilter,
-                        magFilter: THREE.LinearFilter,
+                        magFilter: THREE.NearestFilter,
                         format: THREE.RGBAFormat,
                         type: THREE.FloatType,
                     });
+                    this._target.depthBuffer = true;
+                    this._target.depthTexture = new THREE.DepthTexture(fsrt.width, fsrt.height);
+                    this._target.depthTexture.type = THREE.UnsignedShortType;
                 }
             }
 

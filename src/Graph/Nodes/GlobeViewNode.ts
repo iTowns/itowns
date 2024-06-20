@@ -13,6 +13,7 @@ export default class GlobeViewNode extends ViewNode {
                 const view = new GlobeView(args.viewerDiv as HTMLDivElement, args.placement as Extent);
                 this.outputs.set('view', [view, BuiltinType.View]);
                 this.outputs.set('renderer', [view.mainLoop.gfxEngine.renderer, BuiltinType.Renderer]);
+                this.outputs.set('camera', [view.camera, BuiltinType.Camera]);
             },
             { placement: [placement, BuiltinType.Placement] },
         );
