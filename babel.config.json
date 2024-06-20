@@ -1,5 +1,7 @@
 {
     "babelrcRoots": [
-        "."
+        ".",
+        "./packages/Geodesy",
+        "./packages/itowns"
     ]
 }
