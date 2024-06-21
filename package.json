@@ -70,7 +70,7 @@
     "threads": "^1.7.0"
   },
   "peerDependencies": {
-    "proj4": "^2.9.2",
+    "proj4": "^2.11.0",
     "three": "^0.159.0"
   },
   "devDependencies": {
@@ -109,7 +109,7 @@
     "jsdoc": "^4.0.3",
     "mocha": "^10.2.0",
     "node-fetch": "^2.7.0",
-    "proj4": "^2.9.2",
+    "proj4": "^2.11.0",
     "puppeteer": "^22.13.1",
     "q": "^1.5.1",
     "replace-in-file": "^7.2.0",
