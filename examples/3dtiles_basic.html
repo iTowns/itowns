@@ -48,7 +48,7 @@
             var $3dTilesLayerDiscreteLOD = new itowns.OGC3DTilesLayer('3d-tiles-discrete-lod', {
                 name: 'DiscreteLOD',
                 sseThreshold: 0.05,
-                source: new itowns.C3DTilesSource({
+                source: new itowns.OGC3DTilesSource({
                     url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithDiscreteLOD/tileset.json',
                 }),
             });
@@ -60,7 +60,7 @@
 
             var $3dTilesLayerRequestVolume = new itowns.OGC3DTilesLayer('3d-tiles-request-volume', {
                 name: 'RequestVolume',
-                source: new itowns.C3DTilesSource({
+                source: new itowns.OGC3DTilesSource({
                     url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithRequestVolume/tileset.json',
                 }),
                 sseThreshold: 1,
