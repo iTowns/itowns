@@ -120,6 +120,14 @@ class OGC3DTilesLayer extends GeometryLayer {
         model.material.color = oldMat.color;
         oldMat.dispose();
         ReferLayerProperties(model.material, this);
+        // Setup classification bufferAttribute
+        // TODO: add the possibility to configure the classification attribute name
+        if (model.batchTable) {
+            const classificationData =  model.batchTable.getData('Classification');
+            if (classificationData) {
+                model.geometry.setAttribute('classification', new THREE.BufferAttribute(classificationData, 1));
+            }
+        }
     }
 
     _handlePointsMaterialConfig(config) {
