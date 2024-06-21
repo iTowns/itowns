@@ -66,7 +66,7 @@
     "earcut": "^2.2.4",
     "js-priority-queue": "^0.1.5",
     "pbf": "^3.2.1",
-    "shpjs": "^4.0.4",
+    "shpjs": "^6.0.1",
     "threads": "^1.7.0"
   },
   "peerDependencies": {
