@@ -55,7 +55,7 @@
             var $3dTilesSource = new itowns.C3DTilesSource({
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json',
                 });
-            var $3dTilesLayerSetePC = new itowns.ThreeDTilesLayer('3d-tiles-sete', {
+            var $3dTilesLayerSetePC = new itowns.OGC3DTilesLayer('3d-tiles-sete', {
                 name: 'SetePC',
                 pntsMode: itowns.PNTS_MODE.CLASSIFICATION,
                 pntsShape : itowns.PNTS_SHAPE.CIRCLE,

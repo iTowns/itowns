@@ -102,7 +102,7 @@ function _preprocessLayer(view, layer, parentLayer) {
         });
     }
 
-    if (layer.isThreeDTilesLayer) {
+    if (layer.isOGC3DTilesLayer) {
         layer._setup(view);
     }
 

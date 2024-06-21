@@ -7,7 +7,7 @@ import shaderUtils from 'Renderer/Shader/ShaderUtils';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 // A bit weird but temporary until we remove this deprecated parser. Mainly to benefit from the enableDracoLoader and enableKtx2Loader
 // methods.
-import { itownsGLTFLoader } from 'Layer/ThreeDTilesLayer';
+import { itownsGLTFLoader } from 'Layer/OGC3DTilesLayer';
 
 const matrixChangeUpVectorYtoZ = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 const matrixChangeUpVectorXtoZ = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
