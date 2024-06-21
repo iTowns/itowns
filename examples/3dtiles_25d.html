@@ -81,7 +81,7 @@
             // extension of gltf. We need to enable it.
             itowns.enableDracoLoader('./libs/draco/');
 
-            var $3dTilesLayer = new itowns.ThreeDTilesLayer(
+            var $3dTilesLayer = new itowns.OGC3DTilesLayer(
                 '3d-tiles-layer-building', {
                     name: 'Lyon-2015-building',
                     source: new itowns.C3DTilesSource({
