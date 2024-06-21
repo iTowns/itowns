@@ -9,7 +9,7 @@
         "paths": {
             "*": [ "src/*" ]
         },
-        "moduleResolution": "nodenext",
+        "module": "ESNext",
         /* Emit */
         "declaration": true,
         "emitDeclarationOnly": true,
@@ -22,7 +22,7 @@
         "esModuleInterop": true,
         "isolatedModules": true,
         /* Language and Environment */
-        "target": "esnext",
+        "target": "ESNext",
         /* Completeness */
         "skipLibCheck": true
     }
