@@ -99,7 +99,7 @@
                 assetId: 96188
             });
             threeDTilesIonSource.whenReady.then(displayAttributions); // Add attributions returned by cesium ion server
-            var threeDTilesIonLayer = new itowns.ThreeDTilesLayer('3d-tiles-cesium-ion', {
+            var threeDTilesIonLayer = new itowns.OGC3DTilesLayer('3d-tiles-cesium-ion', {
                 name: '3D Tiles from Cesium Ion',
                 source: threeDTilesIonSource,
                 // registeredExtensions: extensions,
