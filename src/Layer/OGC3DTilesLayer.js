@@ -55,10 +55,10 @@ export function enableKtx2Loader(path, renderer) {
 // const downloadQueue = new PriorityQueue();
 // const parseQueue = new PriorityQueue();
 
-class ThreeDTilesLayer extends GeometryLayer {
+class OGC3DTilesLayer extends GeometryLayer {
     constructor(id, config) {
         super(id, new THREE.Group(), { source: config.source });
-        this.isThreeDTilesLayer = true;
+        this.isOGC3DTilesLayer = true;
 
         // TODO: should this really be done here and like this (i.e. each option is passed in individually?)
         //  I think we should use the Style API instead :)
@@ -149,4 +149,4 @@ class ThreeDTilesLayer extends GeometryLayer {
     // TODO Methods: attach; detach; getObjectToUpdateForAttachedLayers; getC3DTileFeatureFromIntersectsArray?
 }
 
-export default ThreeDTilesLayer;
+export default OGC3DTilesLayer;
