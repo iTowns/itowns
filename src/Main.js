@@ -80,6 +80,9 @@ export { default as PotreeSource } from 'Source/PotreeSource';
 export { default as C3DTilesSource } from 'Source/C3DTilesSource';
 export { default as C3DTilesIonSource } from 'Source/C3DTilesIonSource';
 export { default as C3DTilesGoogleSource } from 'Source/C3DTilesGoogleSource';
+export { default as OGC3DTilesSource } from 'Source/OGC3DTilesSource';
+export { default as OGC3DTilesIonSource } from 'Source/OGC3DTilesIonSource';
+export { default as OGC3DTilesGoogleSource } from 'Source/OGC3DTilesGoogleSource';
 export { default as EntwinePointTileSource } from 'Source/EntwinePointTileSource';
 export { default as CopcSource } from 'Source/CopcSource';
 

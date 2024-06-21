@@ -52,7 +52,7 @@
 
             // Create a new Layer 3d-tiles For Pointcloud
             // -------------------------------------------
-            var $3dTilesSource = new itowns.C3DTilesSource({
+            var $3dTilesSource = new itowns.OGC3DTilesSource({
                     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json',
                 });
             var $3dTilesLayerSetePC = new itowns.OGC3DTilesLayer('3d-tiles-sete', {

@@ -64,12 +64,14 @@ class OGC3DTilesLayer extends GeometryLayer {
         //  I think we should use the Style API instead :)
         this._handlePointsMaterialConfig(config);
 
-        if (config.source.isC3DTilesIonSource) {
+        if (config.source.isOGC3DTilesIonSource) {
             this.tilesRenderer = new CesiumIonTilesRenderer(config.source.assetId, config.source.accessToken);
-        } else if (config.source.isC3DTilesGoogleSource) {
+        } else if (config.source.isOGC3DTilesGoogleSource) {
             this.tilesRenderer = new GoogleTilesRenderer(config.source.key);
-        } else {
+        } else if (config.source.isOGC3DTilesSource) {
             this.tilesRenderer = new TilesRenderer(this.source.url);
+        } else {
+            console.error('[OGC3DTilesLayer]: Unsupported source, cannot create OGC3DTilesLayer.');
         }
 
         this.tilesRenderer.manager.addHandler(/\.gltf$/, itownsGLTFLoader);
