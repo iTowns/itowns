@@ -141,7 +141,8 @@ void main() {
             vec2 uv = vec2(i, (1. - i));
             vColor = texture2D(gradientTexture, uv);
         } else if (mode == PNTS_MODE_ELEVATION) {
-            float i = (position.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
+            float z = (modelMatrix * vec4(position, 1.0)).z;
+            float i = (z - elevationRange.x) / (elevationRange.y - elevationRange.x);
             vec2 uv = vec2(i, (1. - i));
             vColor = texture2D(gradientTexture, uv);
         }
