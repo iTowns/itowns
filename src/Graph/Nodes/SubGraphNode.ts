@@ -31,7 +31,7 @@ export default class SubGraphNode extends GraphNode {
                     return [name, dep];
                 }
             })
-            .map(([name, dep]): [string, [Dependency, Type]] => [name, [dep, dep.node.outputs.get(dep.output)![1]]]);
+            .map(([name, dep]): [string, [Dependency, Type]] => [name, [dep, dep.node.outputs.get(dep.output)!.type]]);
 
         const missingOutputDeps = outputs
             .filter(([_name, [dep, _ty]]) => graph.findGraphNode(dep.node) == undefined)

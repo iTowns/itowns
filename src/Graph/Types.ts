@@ -9,6 +9,10 @@ export type Dependency = {
     node: GraphNode,
     output: string
 };
+export type Dependant = {
+    node: GraphNode,
+    input: string,
+};
 
 // TODO: Refactor type enum variants into separate types and discriminated union types
 // can still have a `Custom<string>`-like variant

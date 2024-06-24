@@ -90,9 +90,9 @@ void main() {
                     if (typeof uniform == 'string') {
                         val = [null, uniform];
                     } else if (uniform instanceof GraphNode) {
-                        val = [{ node: uniform, output: GraphNode.defaultIoName }, uniform.outputs.get(GraphNode.defaultIoName)![1]];
+                        val = [{ node: uniform, output: GraphNode.defaultIoName }, uniform.outputs.get(GraphNode.defaultIoName)!.type];
                     } else {
-                        val = [uniform, uniform.node.outputs.get(uniform.output)![1]];
+                        val = [uniform, uniform.node.outputs.get(uniform.output)!.type];
                     }
 
                     return [name, val];
@@ -131,7 +131,7 @@ void main() {
 
                 const target: THREE.WebGLRenderTarget | null = toScreen
                     ? null
-                    : (this.outputs.get(GraphNode.defaultIoName)![0] ?? createRenderTarget(input));
+                    : ((this.outputs.get(GraphNode.defaultIoName)!.value as THREE.WebGLRenderTarget | null) ?? createRenderTarget(input));
 
                 renderer.setRenderTarget(target);
                 renderer.clear();
@@ -158,9 +158,9 @@ void main() {
                 if (typeof uniform == 'string') {
                     ty = uniform;
                 } else if (uniform instanceof GraphNode) {
-                    ty = uniform.outputs.get(GraphNode.defaultIoName)![1];
+                    ty = uniform.outputs.get(GraphNode.defaultIoName)!.type;
                 } else {
-                    ty = uniform.node.outputs.get(uniform.output)![1];
+                    ty = uniform.node.outputs.get(uniform.output)!.type;
                 }
 
                 // TODO: Create a way to mark types as non-automatic uniforms

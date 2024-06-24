@@ -24,6 +24,7 @@ import {
     BuiltinType,
     Type,
     Dependency,
+    Dependant,
     ColorStyle,
     DumpDotNodeStyle,
     DumpDotGlobalStyle,
@@ -70,6 +71,7 @@ export {
 export type {
     Type,
     Dependency,
+    Dependant,
     ColorStyle,
     DumpDotNodeStyle,
     DumpDotGlobalStyle,

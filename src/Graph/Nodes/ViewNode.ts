@@ -9,11 +9,11 @@ export default abstract class ViewNode extends LazyStaticNode {
     ) {
         super(
             { viewerDiv: [viewerDiv, BuiltinType.HtmlDivElement], ...extraDependencies },
-            new Map([
-                ['view', BuiltinType.View],
-                ['renderer', BuiltinType.Renderer],
-                ['camera', BuiltinType.Camera],
-            ]),
+            new Map(Object.entries({
+                view: BuiltinType.View,
+                renderer: BuiltinType.Renderer,
+                camera: BuiltinType.Camera,
+            })),
             generator,
         );
     }

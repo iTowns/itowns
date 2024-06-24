@@ -9,7 +9,7 @@ export default class JunctionNode extends GraphNode {
             if (nodeOutput == undefined) {
                 throw new Error(`Provided ${node.nodeType} node does not have an output named '${output}'`);
             }
-            const ty = nodeOutput[1];
+            const ty = nodeOutput.type;
 
             super(new Map([[GraphNode.defaultIoName, [input, ty]]]), ty);
         } else {
@@ -49,7 +49,7 @@ export default class JunctionNode extends GraphNode {
                 shape: 'doublecircle',
                 width: '.1',
                 height: '.1',
-                ...Mappings.colorize(null, this.outputs.get(GraphNode.defaultIoName)![1]),
+                ...Mappings.colorize(null, this.outputs.get(GraphNode.defaultIoName)!.type),
             },
         };
     }

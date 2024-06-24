@@ -83,8 +83,8 @@ export default class Graph {
         for (const [_name, [_, ty]] of node.inputs) {
             this.types.add(ty);
         }
-        for (const [_name, [_, ty]] of node.outputs) {
-            this.types.add(ty);
+        for (const [_name, output] of node.outputs) {
+            this.types.add(output.type);
         }
 
         return true;
@@ -170,7 +170,7 @@ export default class Graph {
                     throw new Error(`Dangling dependency: '${nodeName}.${name}'; `
                         + `${dep.node.nodeType} dependency does not have an output named '${dep.output}'`);
                 }
-                const [_outputValue, outputType] = output;
+                const outputType = output.type;
 
                 if (outputType != type && type != BuiltinType.Any) {
                     throw new Error(`Invalid type for dependency ${nodeName}.${name}`

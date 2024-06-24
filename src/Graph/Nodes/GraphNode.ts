@@ -1,7 +1,13 @@
-import { Type, Dependency, DumpDotNodeStyle, Graph, LazyStaticNode } from '../Prelude';
+import { Type, Dependency, Dependant, DumpDotNodeStyle, Graph, LazyStaticNode } from '../Prelude';
 
 function lerp(a: number, b: number, t: number): number {
     return a + (b - a) * t;
+}
+
+export interface Output {
+    value: unknown,
+    type: Type,
+    dependants: Set<Dependant>,
 }
 
 /**
@@ -13,7 +19,7 @@ export default abstract class GraphNode {
     // protected _out: [number, any | undefined];
     protected _out: {
         frame: number,
-        outputs: Map<string, [unknown, Type]>,
+        outputs: Map<string, Output>,
         /** Stored in ms. */
         timeTaken?: number,
     };
@@ -39,17 +45,18 @@ export default abstract class GraphNode {
                 ],
             ]));
 
-        let normalizedOutputs: Map<string, [any, Type]>;
-
-        if (outputs == undefined) {
-            normalizedOutputs = new Map();
-        } else if (outputs instanceof Map) {
-            normalizedOutputs = new Map(Array.from(outputs.entries()).map(([name, ty]) => [name, [undefined, ty]]));
-        } else if (typeof outputs == 'string') {
-            normalizedOutputs = new Map([[GraphNode.defaultIoName, [undefined, outputs]]]);
-        } else {
-            throw new Error('Unrecognized type when constructing node outputs');
-        }
+        const normalizedOutputs: Map<string, Output> = new Map((() => {
+            if (outputs == undefined) {
+                return [];
+            } else if (outputs instanceof Map) {
+                return Array.from(outputs.entries())
+                    .map(([name, ty]) => [name, { value: undefined, type: ty, dependants: new Set() }]);
+            } else if (typeof outputs == 'string') {
+                return [[GraphNode.defaultIoName, { value: undefined, type: outputs, dependants: new Set() }]];
+            } else {
+                throw new Error('Unrecognized type when constructing node outputs');
+            }
+        })());
 
         this._out = { frame: -1, outputs: normalizedOutputs };
         this._id = GraphNode.idCounter++;
@@ -62,7 +69,7 @@ export default abstract class GraphNode {
         return this._id;
     }
 
-    public get outputs(): Map<string, [any, Type]> {
+    public get outputs(): Map<string, Output> {
         return this._out.outputs;
     }
 
@@ -79,7 +86,7 @@ export default abstract class GraphNode {
                 errors.push(`Provided ${this.nodeType} node does not have an output named '${name}' to update`);
                 continue;
             }
-            this._out.outputs.set(name, [value, output[1]]);
+            output.value = value;
         }
 
         if (errors.length > 0) {
@@ -97,21 +104,11 @@ export default abstract class GraphNode {
     public getOutput(name: string = GraphNode.defaultIoName, graph?: Graph, frame: number = 0): unknown {
         const { frame: oFrane, outputs } = this._out;
 
-        if (!outputs.has(name)) {
-            throw new Error(`Provided ${this.nodeType} node does not have an output named '${name}'`);
-        }
-
         const getOutput = outputs.get(name);
         if (getOutput == undefined) {
             throw new Error(`Provided ${this.nodeType} node does not have an output named '${name}'`);
         }
-        const [oValue, _oType] = getOutput;
-
-        // const thisName = graph?.findNode(this)?.name;
-        // const debugName = `${thisName == undefined ? '' : `${thisName}: `}${this.nodeType}`;
-
-        // GraphNode.depth++;
-        // const tab = '| '.repeat(GraphNode.depth - 1);
+        const oValue = getOutput.value;
 
         if (oValue == undefined || oFrane !== frame) {
             // console.log(`${tab}[${debugName}] calling _apply`);
@@ -119,11 +116,7 @@ export default abstract class GraphNode {
             this._out.frame = frame;
         }
 
-        const output = this._out.outputs.get(name);
-        // console.log(`${tab}[${debugName}] getOutput(${name}): `, output);
-        // GraphNode.depth--;
-
-        return output![0];
+        return getOutput.value;
     }
 
     /**

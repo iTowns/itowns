@@ -21,7 +21,7 @@ export default class GraphOutputNode extends JunctionNode {
         if (socket == undefined) {
             throw new Error(`Provided ${node.nodeType} node does not have an output named '${output}'`);
         }
-        this.inputs.set(GraphNode.defaultIoName, [{ node, output }, socket[1]]);
+        this.inputs.set(GraphNode.defaultIoName, [{ node, output }, socket.type]);
     }
 
     public dumpDot(name: string): string {
