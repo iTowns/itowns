@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import LASLoader from 'Parser/LASLoader';
+import LASLoader from 'Loader/LASLoader';
 
 const lasLoader = new LASLoader();
 

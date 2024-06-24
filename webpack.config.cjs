@@ -58,6 +58,9 @@ module.exports = () => {
                 import: './src/Utils/gui/Main.js',
                 dependOn: 'itowns',
             },
+            itowns_potree2worker: {
+                import: './src/Worker/Potree2Worker.js',
+            },
         },
         devtool: 'source-map',
         output: {
