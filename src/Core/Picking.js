@@ -148,11 +148,11 @@ export default {
 
         traversePickingCircle(radius, (x, y) => {
             const idx = (y * 2 * radius + x) * 4;
-            const data = buffer.slice(idx, idx + 4);
+            const data = buffer.slice(idx, idx + 3);
 
             // see PotreeProvider and the construction of unique_id
-            const objId = (data[0] << 8) | data[1];
-            const index = (data[2] << 8) | data[3];
+            const objId = data[0];
+            const index = (data[1] << 16) | data[2];
 
             const r = { objId, index };
 

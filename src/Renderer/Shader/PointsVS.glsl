@@ -28,7 +28,7 @@ uniform float maxAttenuatedSize;
 
 attribute vec3 color;
 attribute vec2 range;
-attribute vec4 unique_id;
+attribute vec3 unique_id;
 attribute float intensity;
 attribute float classification;
 attribute float pointSourceID;
@@ -89,7 +89,7 @@ void main() {
 #endif
 
     if (picking) {
-        vColor = unique_id;
+        vColor = vec4(unique_id, 1.0);
     } else {
         vColor.a = 1.0;
         if (mode == PNTS_MODE_CLASSIFICATION) {
