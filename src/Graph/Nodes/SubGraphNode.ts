@@ -75,9 +75,9 @@ export default class SubGraphNode extends GraphNode {
     }
 
     protected override _apply(_graph?: Graph, frame: number = 0): void {
-        for (const [name, [dep, ty]] of this.graphOutputs) {
-            this.outputs.set(name, [dep.node.getOutput(dep.output, this.graph, frame), ty]);
-        }
+        const updates = Array.from(this.graphOutputs.entries())
+            .map(([name, [dep, _ty]]) => [name, dep.node.getOutput(dep.output, this.graph, frame)]);
+        this.updateOutputs(Object.fromEntries(updates));
     }
 
     public get label(): string | undefined {

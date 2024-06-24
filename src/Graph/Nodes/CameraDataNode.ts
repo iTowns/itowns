@@ -14,8 +14,7 @@ export default class CameraDataNode extends ProcessorNode {
             })),
             (_frame, args) => {
                 const camera = args.camera as CameraLike;
-                this._out.outputs.set('cameraNear', [camera.near, BuiltinType.Number]);
-                this._out.outputs.set('cameraFar', [camera.far, BuiltinType.Number]);
+                this.updateOutputs({ cameraNear: camera.near, cameraFar: camera.far });
             },
         );
     }

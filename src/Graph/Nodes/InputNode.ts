@@ -20,7 +20,7 @@ export default class InputNode extends GraphNode {
     }
 
     protected override _apply(_graph?: Graph, _frame?: number): void {
-        this.outputs.set(GraphNode.defaultIoName, [this.value, this._type]);
+        this.updateOutputs({ [GraphNode.defaultIoName]: this.value });
     }
 
     public override get nodeType(): string {

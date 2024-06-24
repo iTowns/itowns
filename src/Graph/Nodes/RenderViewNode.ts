@@ -38,7 +38,7 @@ export default class RenderViewNode extends ProcessorNode {
             renderer.clear();
             renderer.render(view.scene, view.camera3D);
 
-            this._out.outputs.set(RenderViewNode.defaultIoName, [this._target, BuiltinType.RenderTarget]);
+            this.updateOutputs({ [RenderViewNode.defaultIoName]: this._target });
         });
     }
 

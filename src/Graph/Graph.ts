@@ -34,7 +34,7 @@ export default class Graph {
      * @throws If the node does not exist.
      * @returns The output of the node at the given frame.
      */
-    public getOutput(frame: number, out: Dependency | [GraphNode, string] | [string, string] | GraphNode | string): any {
+    public getOutput(frame: number, out: Dependency | [GraphNode, string] | [string, string] | GraphNode | string): unknown {
         this.validate();
 
         if (out instanceof GraphNode) {

@@ -137,7 +137,7 @@ void main() {
                 renderer.clear();
                 renderer.render(ScreenShaderNode._scene, ScreenShaderNode._camera);
 
-                this._out.outputs.set(ScreenShaderNode.defaultIoName, [target, BuiltinType.RenderTarget]);
+                this.updateOutputs({ [ScreenShaderNode.defaultIoName]: target });
             });
 
         this._fragmentShaderParts = fragmentShaderParts;

@@ -13,7 +13,7 @@ export default abstract class GraphNode {
     // protected _out: [number, any | undefined];
     protected _out: {
         frame: number,
-        outputs: Map<string, [any, Type]>,
+        outputs: Map<string, [unknown, Type]>,
         /** Stored in ms. */
         timeTaken?: number,
     };
@@ -70,6 +70,23 @@ export default abstract class GraphNode {
         return { node: this, output: output ?? GraphNode.defaultIoName };
     }
 
+    protected updateOutputs(updates: { [name: string]: unknown }): void {
+        const errors = [];
+
+        for (const [name, value] of Object.entries(updates)) {
+            const output = this._out.outputs.get(name);
+            if (output == undefined) {
+                errors.push(`Provided ${this.nodeType} node does not have an output named '${name}' to update`);
+                continue;
+            }
+            this._out.outputs.set(name, [value, output[1]]);
+        }
+
+        if (errors.length > 0) {
+            throw new Error(errors.join('\n'));
+        }
+    }
+
     /**
      * Get the output of the node at a given frame.
      * @param name The name of the output to get.
@@ -77,7 +94,7 @@ export default abstract class GraphNode {
      * @param frame The frame to get the output for.
      * @returns The output of the node at the given frame.
      */
-    public getOutput(name: string = GraphNode.defaultIoName, graph?: Graph, frame: number = 0): [any, Type] {
+    public getOutput(name: string = GraphNode.defaultIoName, graph?: Graph, frame: number = 0): unknown {
         const { frame: oFrane, outputs } = this._out;
 
         if (!outputs.has(name)) {

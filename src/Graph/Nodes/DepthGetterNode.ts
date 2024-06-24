@@ -7,10 +7,7 @@ export default class DepthGetterNode extends ProcessorNode {
             { target: [target, BuiltinType.RenderTarget] },
             BuiltinType.Texture,
             (_frame, args) =>
-                this._out.outputs.set(DepthGetterNode.defaultIoName, [
-                    (args.target as WebGLRenderTarget).depthTexture,
-                    BuiltinType.Texture,
-                ]),
+                this.updateOutputs({ [DepthGetterNode.defaultIoName]: (args.target as WebGLRenderTarget).depthTexture }),
         );
     }
 }

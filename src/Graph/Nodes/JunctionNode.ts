@@ -19,15 +19,14 @@ export default class JunctionNode extends GraphNode {
 
     protected override _apply(graph?: Graph, frame: number = 0): void {
         const dep = this.inputs.get(GraphNode.defaultIoName)![0];
-        const [_oValue, oType] = this.outputs.get(GraphNode.defaultIoName)!;
 
         if (dep == null) {
-            this.outputs.set(GraphNode.defaultIoName, [null, oType]);
+            this.updateOutputs({ [GraphNode.defaultIoName]: null });
             return;
         }
 
         const { node, output } = dep;
-        this.outputs.set(GraphNode.defaultIoName, [node.getOutput(output, graph, frame) ?? null, oType]);
+        this.updateOutputs({ [GraphNode.defaultIoName]: node.getOutput(output, graph, frame) ?? null });
     }
 
     public get input(): [Dependency | null, Type] {
