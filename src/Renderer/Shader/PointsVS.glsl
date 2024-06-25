@@ -1,6 +1,14 @@
-#include <itowns/precision_qualifier>
 #include <common>
+#include <fog_pars_vertex>
+#include <morphtarget_pars_vertex>
 #include <logdepthbuf_pars_vertex>
+#include <clipping_planes_pars_vertex>
+varying vec4 vColor; // color_pars_vertex
+
+#ifdef USE_POINTS_UV
+    varying vec2 vUv;
+    uniform mat3 uvTransform;
+#endif
 
 #define NB_CLASS 8.
 
@@ -9,8 +17,6 @@ uniform float scale;
 
 uniform bool picking;
 uniform int mode;
-uniform float opacity;
-uniform vec4 overlayColor;
 
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
@@ -23,8 +29,6 @@ uniform int sizeMode;
 uniform float minAttenuatedSize;
 uniform float maxAttenuatedSize;
 
-attribute vec3 color;
-attribute vec2 range;
 attribute vec4 unique_id;
 attribute float intensity;
 attribute float classification;
@@ -34,22 +38,22 @@ attribute float returnNumber;
 attribute float numberOfReturns;
 attribute float scanAngle;
 
-varying vec4 vColor;
-
 void main() {
-
+    vColor = vec4(1.0);
     if (picking) {
         vColor = unique_id;
     } else {
-        vColor.a = 1.0;
         if (mode == PNTS_MODE_CLASSIFICATION) {
             vec2 uv = vec2(classification/255., 0.5);
             vColor = texture2D(classificationTexture, uv);
         } else if (mode == PNTS_MODE_NORMAL) {
             vColor.rgb = abs(normal);
         } else if (mode == PNTS_MODE_COLOR) {
-            // default to color mode
-            vColor.rgb = mix(color, overlayColor.rgb, overlayColor.a);
+#if defined(USE_COLOR)
+            vColor.rgb = color.rgb;
+#elif defined(USE_COLOR_ALPHA)
+            vColor = color;
+#endif
         } else if (mode == PNTS_MODE_RETURN_NUMBER) {
             vec2 uv = vec2(returnNumber/255., 0.5);
             vColor = texture2D(discreteTexture, uv);
@@ -96,12 +100,13 @@ void main() {
             vec2 uv = vec2(i, (1. - i));
             vColor = texture2D(gradientTexture, uv);
         }
-
-        vColor.a *= opacity;
     }
 
-    #include <begin_vertex>
-    #include <project_vertex>
+#define USE_COLOR_ALPHA
+#include <morphcolor_vertex>
+#include <begin_vertex>
+#include <morphtarget_vertex>
+#include <project_vertex>
 
     gl_PointSize = size;
 
@@ -114,5 +119,8 @@ void main() {
         }
     }
 
-    #include <logdepthbuf_vertex>
+#include <logdepthbuf_vertex>
+#include <clipping_planes_vertex>
+#include <worldpos_vertex>
+#include <fog_vertex>
 }

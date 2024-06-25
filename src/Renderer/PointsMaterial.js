@@ -186,57 +186,56 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * pointMaterial.recomputeClassification();
      */
     constructor(options = {}) {
-        const intensityRange = options.intensityRange || new THREE.Vector2(1, 65536);
-        const elevationRange = options.elevationRange || new THREE.Vector2(0, 1000);
-        const angleRange = options.angleRange || new THREE.Vector2(-90, 90);
-        const classificationScheme = options.classification || ClassificationScheme.DEFAULT;
-        const discreteScheme = options.discreteScheme || DiscreteScheme.DEFAULT;
-        const size = options.size || 0;
-        const mode = options.mode || PNTS_MODE.COLOR;
-        const shape = options.shape || PNTS_SHAPE.CIRCLE;
-        const sizeMode = size === 0 ? PNTS_SIZE_MODE.ATTENUATED : (options.sizeMode || PNTS_SIZE_MODE.VALUE);
-        const minAttenuatedSize = options.minAttenuatedSize || 3;
-        const maxAttenuatedSize = options.maxAttenuatedSize || 10;
-        let gradients = Gradients;
-        if (options.gradient) {
-            gradients = {
-                ...options.gradient,
-                ...Gradients,
-            };
-        }
+        const gradients = {
+            ...options.gradient,
+            ...Gradients,
+        };
+        options.gradient = Object.values(gradients)[0];
 
-        delete options.intensityRange;
-        delete options.elevationRange;
-        delete options.angleRange;
-        delete options.classification;
-        delete options.discreteScheme;
-        delete options.size;
-        delete options.mode;
-        delete options.shape;
-        delete options.sizeMode;
-        delete options.minAttenuatedSize;
-        delete options.maxAttenuatedSize;
-        delete options.gradient;
+        const {
+            intensityRange = new THREE.Vector2(1, 65536),
+            elevationRange = new THREE.Vector2(0, 1000),
+            angleRange = new THREE.Vector2(-90, 90),
+            classificationScheme = ClassificationScheme.DEFAULT,
+            discreteScheme = DiscreteScheme.DEFAULT,
+            size = 1,
+            mode = PNTS_MODE.COLOR,
+            shape = PNTS_SHAPE.CIRCLE,
+            sizeMode = PNTS_SIZE_MODE.ATTENUATED,
+            minAttenuatedSize = 3,
+            maxAttenuatedSize = 10,
+            gradient,
+            scale = 0.05 * 0.5 / Math.tan(1.0 / 2.0),
+            ...materialOptions
+        } = options;
 
-        super(options);
+        super({
+            ...materialOptions,
+            fog: true,
+            precision: 'highp',
+            vertexColors: true,
+        });
+        this.uniforms = THREE.UniformsUtils.merge([
+            // THREE.PointsMaterial uniforms
+            THREE.UniformsLib.points,
+            THREE.UniformsLib.fog,
+        ]);
+        this.vertexShader = PointsVS;
+        this.fragmentShader = PointsFS;
+
         this.userData.needTransparency = {};
         this.gradients = gradients;
         this.gradientTexture = new THREE.CanvasTexture();
-
-        this.vertexShader = PointsVS;
-
-        const scale = options.scale || 0.05 * 0.5 / Math.tan(1.0 / 2.0); // autosizing scale
 
         CommonMaterial.setDefineMapping(this, 'PNTS_MODE', PNTS_MODE);
         CommonMaterial.setDefineMapping(this, 'PNTS_SHAPE', PNTS_SHAPE);
         CommonMaterial.setDefineMapping(this, 'PNTS_SIZE_MODE', PNTS_SIZE_MODE);
 
-        CommonMaterial.setUniformProperty(this, 'size', size);
+        this.size = size;
         CommonMaterial.setUniformProperty(this, 'mode', mode);
         CommonMaterial.setUniformProperty(this, 'shape', shape);
         CommonMaterial.setUniformProperty(this, 'picking', false);
         CommonMaterial.setUniformProperty(this, 'opacity', this.opacity);
-        CommonMaterial.setUniformProperty(this, 'overlayColor', options.overlayColor || new THREE.Vector4(0, 0, 0, 0));
         CommonMaterial.setUniformProperty(this, 'intensityRange', intensityRange);
         CommonMaterial.setUniformProperty(this, 'elevationRange', elevationRange);
         CommonMaterial.setUniformProperty(this, 'angleRange', angleRange);
@@ -268,14 +267,102 @@ class PointsMaterial extends THREE.ShaderMaterial {
         this.recomputeDiscreteTexture();
 
         // Gradient texture for continuous values
-        this.gradient = Object.values(gradients)[0];
+        this.gradient = gradient;
         CommonMaterial.setUniformProperty(this, 'gradientTexture', this.gradientTexture);
-
-        this.fragmentShader = PointsFS;
 
         if (__DEBUG__) {
             this.defines.DEBUG = 1;
         }
+    }
+
+    /**
+     * Copy the parameters from the passed material into this material.
+     * @override
+     * @param {THREE.PointsMaterial} source
+     * @returns {this}
+     */
+    copy(source) {
+        if (source.isShaderMaterial) {
+            super.copy(source);
+        } else {
+            THREE.Material.prototype.copy.call(this, source);
+        }
+
+        // Parameters of THREE.PointsMaterial
+        this.color.copy(source.color);
+        this.map = source.map;
+        this.alphaMap = source.alphaMap;
+        this.size = source.size;
+        this.sizeAttenuation = source.sizeAttenuation;
+        this.fog = source.fog;
+
+        return this;
+    }
+
+    /** @returns {THREE.Color} */
+    get color() {
+        return this.uniforms.diffuse.value;
+    }
+
+    /** @param {THREE.Color} color */
+    set color(color) {
+        this.uniforms.diffuse.value.copy(color);
+    }
+
+    /** @returns {THREE.Texture | null} */
+    get map() {
+        return this.uniforms.map.value;
+    }
+
+    /** @param {THREE.Texture | null} map */
+    set map(map) {
+        this.uniforms.map.value = map;
+        if (!map) { return; }
+
+        if (map.matrixAutoUpdate) {
+            map.updateMatrix();
+        }
+
+        this.uniforms.uvTransform.value.copy(map.matrix);
+    }
+
+    /** @returns {THREE.Texture | null} */
+    get alphaMap() {
+        return this.uniforms.alphaMap.value;
+    }
+
+    /** @param {THREE.Texture | null} map */
+    set alphaMap(map) {
+        this.uniforms.alphaMap.value = map;
+        if (!map) { return; }
+
+        if (map.matrixAutoUpdate) {
+            map.updateMatrix();
+        }
+
+        this.uniforms.alphaMapTransform.value.copy(map.matrix);
+    }
+
+    /** @returns {number} */
+    get size() {
+        return this.uniforms.size.value;
+    }
+
+    /** @param {number} size */
+    set size(size) {
+        this.uniforms.size.value = size;
+    }
+
+    /** @returns {boolean} */
+    get sizeAttenuation() {
+        return this.sizeMode !== PNTS_SIZE_MODE.VALUE;
+    }
+
+    /** @param {boolean} value */
+    set sizeAttenuation(value) {
+        this.sizeMode = value ?
+            PNTS_SIZE_MODE.ATTENUATED :
+            PNTS_SIZE_MODE.VALUE;
     }
 
     recomputeClassification() {
@@ -299,34 +386,9 @@ class PointsMaterial extends THREE.ShaderMaterial {
         });
     }
 
-    copy(source) {
-        super.copy(source);
-        return this;
-    }
-
     enablePicking(picking) {
         this.picking = picking;
         this.blending = picking ? THREE.NoBlending : THREE.NormalBlending;
-    }
-
-    update(source) {
-        this.visible = source.visible;
-        this.opacity = source.opacity;
-        this.transparent = source.transparent;
-        this.size = source.size;
-        this.mode = source.mode;
-        this.shape = source.shape;
-        this.sizeMode = source.sizeMode;
-        this.minAttenuatedSize = source.minAttenuatedSize;
-        this.maxAttenuatedSize = source.maxAttenuatedSize;
-        this.picking = source.picking;
-        this.scale = source.scale;
-        this.overlayColor.copy(source.overlayColor);
-        this.intensityRange.copy(source.intensityRange);
-        this.elevationRange.copy(source.elevationRange);
-        this.angleRange.copy(source.angleRange);
-        Object.assign(this.defines, source.defines);
-        return this;
     }
 
     set gradient(value) {
