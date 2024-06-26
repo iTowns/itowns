@@ -52,24 +52,22 @@
             fragmentShaderParts: {
                 auxCode: /* glsl */`
 uniform vec2 resolution;
-
-vec4 warp(vec4 color) {
-    float frequency = 50.;
-    float strength = 5.;
-
-    vec2 uv = sqrt(2. * abs(vUv - 0.5));
-    if (resolution.x > resolution.y) {
-        uv.x *= resolution.x / resolution.y;
-    }
-    vec2 squv = uv * uv;
-    vec2 uvOffset = vec2(
-        sin(floor(frequency * squv.x)),
-        cos(floor(frequency * squv.y))
-    );
-    return texture2D(tDiffuse, vUv + uvOffset * vec2(strength, strength) / resolution);
-}
 `,
-                main: /* glsl */'return warp(tex);'
+                main: /* glsl */`
+float frequency = 50.;
+float strength = 5.;
+
+vec2 uv = sqrt(2. * abs(vUv - 0.5));
+if (resolution.x > resolution.y) {
+    uv.x *= resolution.x / resolution.y;
+}
+vec2 squv = uv * uv;
+vec2 uvOffset = vec2(
+    sin(floor(frequency * squv.x)),
+    cos(floor(frequency * squv.y))
+);
+return texture2D(tDiffuse, vUv + uvOffset * vec2(strength, strength) / resolution);
+`
             },
         });
 
@@ -82,46 +80,37 @@ uniform vec2 resolution;
 float getAvg(vec4 color) {
     return (color.r + color.g + color.b) / 3.0;
 }
-
-vec4 coastHighlight(vec4 color) {
-    float mid = getAvg(color);
-    float left = getAvg(texture2D(tDiffuse, vUv - uOffset / resolution));
-
-    float diff = uWeight * (mid - left);
-    float avg = (mid + left) / 2.0;
-
-    float smoothed = max(0., diff - avg);
-    float blueness = color.b / (color.r + color.g + color.b);
-
-    return color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
-}
 `,
-                main:  /* glsl */'return coastHighlight(tex);'
+                main: /* glsl */`
+float mid = getAvg(color);
+float left = getAvg(texture2D(tDiffuse, vUv - uOffset / resolution));
+
+float diff = uWeight * (mid - left);
+float avg = (mid + left) / 2.0;
+
+float smoothed = max(0., diff - avg);
+float blueness = color.b / (color.r + color.g + color.b);
+
+return color + blueness * vec4(smoothed, smoothed, smoothed, 1.0);
+`
             },
         });
 
         const greyscale = new graph.ScreenShaderNode(coastHighlight, renderer, {
             fragmentShaderParts: {
-                auxCode: /* glsl */`
-vec4 greyscale(vec4 color) {
-    float avg = (color.r + color.g + color.b) / 3.;
-    return vec4(avg, avg, avg, 1.0);
-}
-`,
-                main: /* glsl */'return greyscale(tex);'
+                main: /* glsl */`
+float avg = (color.r + color.g + color.b) / 3.;
+return vec4(avg, avg, avg, 1.0);`
             },
         });
 
         const uvcolor = new graph.ScreenShaderNode(greyscale, renderer, {
             fragmentShaderParts: {
-                auxCode: /* glsl */`
-vec4 uvcolor(vec4 color) {
-    float r = min(color.r * vUv.x, 1.);
-    float g = min(color.g * vUv.y, 1.);
-    return vec4(r, g, color.b, 1.0);
-}
-`,
-                main: /* glsl */'return uvcolor(tex);',
+                main: /* glsl */`
+float r = min(color.r * vUv.x, 1.);
+float g = min(color.g * vUv.y, 1.);
+return vec4(r, g, color.b, 1.0);
+                `,
             },
         });
 
@@ -137,17 +126,29 @@ vec4 uvcolor(vec4 color) {
 
         const renderFBO = new graph.ScreenShaderNode({node: postProcessingGraphNode, output: 'uvcolor'}, renderer, {toScreen: true});
         outerGraph.set({postProcessingGraphNode, renderFBO});
+        // window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
 
         // We expect coastHighlight, greyscale and uvcolor to be merged
-        // warp will not be merged as it violates the no-offset access invariant
-        postProcessingSubGraph.optimize(uvcolor, true);
+        // warp will not be merged as the merged node from the previous merges violates the no-offset access invariant
+        // console.log(postProcessingGraphNode);
+        postProcessingSubGraph.optimize(uvcolor);
+
+        console.log(viewNode.outputs.get('renderer'));
+        // console.log(postProcessingGraphNode);
+
+        const graphNodeIds = graph => Array.from(graph.nodes.entries()).map(([name, n]) => `${name}: ${n.id}`).join('\n');
+
+        // console.log(graphNodeIds(outerGraph));
+        // console.log(graphNodeIds(postProcessingSubGraph));
+
+        console.log(outerGraph.dumpAdjacencyMatrix());
 
         let frame = 0;
         view.render = function render() {
             outerGraph.getOutput(frame++, renderFBO);
             // Reach cruising speed before dumping so timing information is accurate
             if (frame == 10) {
-                // window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
+                window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
             }
         };
 

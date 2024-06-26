@@ -112,7 +112,7 @@ export default class SubGraph extends Graph {
             for (const [name, node] of this.outputs) {
                 const dep = node.input[0]!;
                 const { name: gName, node: gNode } = this.findGraphNode(dep.node)!;
-                const ty = gNode.outputs.get(dep.output)![1];
+                const ty = gNode.outputs.get(dep.output)!.type;
 
                 const colorStyle = Mappings.colorize(null, ty);
                 const attrs = gNode.dumpDotEdgeAttr(ty, {
@@ -122,6 +122,23 @@ export default class SubGraph extends Graph {
 
                 dump.push(`\t"${gName}":"${dep.output}":e -> "${subGraphName}->${name}":w ${attrs};`);
             }
+        }
+
+        return dump.join('\n');
+    }
+
+    override dumpAdjacencyMatrix(): string {
+        const dump = [super.dumpAdjacencyMatrix()];
+
+        const nodeCount = GraphNode.totalNodesCreated;
+        const padding = nodeCount > 0 ? Math.floor(Math.log10(nodeCount)) + 1 : 1;
+
+        for (const [name, node] of this.inputs.entries()) {
+            dump.push(`${node.id.toString().padStart(padding)}:  (in) ${name}`);
+        }
+
+        for (const [name, node] of this.outputs.entries()) {
+            dump.push(`${node.id.toString().padStart(padding)}: (out) ${name}`);
         }
 
         return dump.join('\n');

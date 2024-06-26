@@ -54,21 +54,24 @@ export default class SubGraphNode extends GraphNode {
         for (const [_nodeName, node] of this.graph.nodes) {
             // Replace dependencies outside the graph with graph inputs
             for (const [depName, [dep, depType]] of node.inputs) {
-                if (dep != undefined && Array.from(this.graph.nodes.values()).find(oNode => oNode == dep.node) == undefined) {
-                    // Try to find an already created graph input for this dependency
-                    const inputs = Array.from(this.graph.inputs);
-                    const findInput = inputs.find(([name, _input]) => name == depName);
-                    if (findInput != undefined) {
-                        const [_name, input] = findInput;
-                        node.inputs.set(depName, [{ node: input, output: GraphNode.defaultIoName }, depType]);
-                        continue;
-                    }
+                if (dep != undefined) {
+                    dep.node.outputs.get(dep.output)!.dependants.delete({ node, input: depName });
+                    if (Array.from(this.graph.nodes.values()).find(oNode => oNode == dep.node) == undefined) {
+                        // Try to find an already created graph input for this dependency
+                        const inputs = Array.from(this.graph.inputs);
+                        const findInput = inputs.find(([name, _input]) => name == depName);
+                        if (findInput != undefined) {
+                            const [_name, input] = findInput;
+                            node.inputs.set(depName, [{ node: input, output: GraphNode.defaultIoName }, depType]);
+                            continue;
+                        }
 
-                    // NOTE: only works for one level of nesting, we might need a resolve function but
-                    // I'm not sure the case where it'd be needed will ever occur.
-                    const newInput = new GraphInputNode(Object.fromEntries([[outerGraph.findGraphNode(dep.node)!.name, [dep.node, dep.output]]]));
-                    const addedInput = this.graph.inputs.set(depName, newInput).get(depName)!;
-                    node.inputs.set(depName, [{ node: addedInput, output: GraphNode.defaultIoName }, depType]);
+                        // NOTE: only works for one level of nesting, we might need a resolve function but
+                        // I'm not sure the case where it'd be needed will ever occur.
+                        const newInput = new GraphInputNode([outerGraph.findGraphNode(dep.node)!.name, dep]);
+                        const addedInput = this.graph.inputs.set(depName, newInput).get(depName)!;
+                        node.inputs.set(depName, [{ node: addedInput, output: GraphNode.defaultIoName }, depType]);
+                    }
                 }
             }
         }

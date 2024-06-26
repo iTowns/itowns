@@ -10,6 +10,7 @@ import {
     Dependency,
     GraphOptimizer,
     GraphInputNode,
+    SubGraph,
 } from './Prelude';
 
 /** Represents a directed graph that guarantees the absence of cycles on use. */
@@ -189,6 +190,33 @@ export default class Graph {
         path.delete(nodeName);
     }
 
+    /**
+     * Remove a node from the graph.
+     * @throws If the node does not exist.
+     * @returns true if the node was removed, false otherwise.
+     */
+    public remove(name: string): void {
+        console.log(`Removing node '${name}' from ${this instanceof SubGraph ? `${this.name} graph` : 'graph'}`);
+
+        const node = this.nodes.get(name);
+        if (node == undefined) {
+            throw new Error(`Node "${name}" does not exist in the graph`);
+        }
+
+        this._valid = false;
+
+        Array.from(node.inputs).filter(([_input, [dep, _ty]]) => dep != null).forEach(([input, [dependency, _ty]]) => {
+            const { node, output } = dependency!;
+            const out = node.outputs.get(output);
+            if (out == undefined) {
+                throw new Error(`Dependency ${node.nodeType} (id: ${node.id}) does not have an output named '${output}'`);
+            }
+            out.dependants.delete({ node, input });
+        });
+
+        this.nodes.delete(name);
+    }
+
     public findDependants(node: GraphNode): GraphNode[] {
         const dependants: GraphNode[] = [];
         for (const [_name, n] of this.nodes) {
@@ -359,5 +387,59 @@ export default class Graph {
             .replaceAll(';', '%3B')
             .replaceAll('=', '%3D');
         return `https://dreampuf.github.io/GraphvizOnline/#${escaped}`;
+    }
+
+    public dumpAdjacencyMatrix(dependants: boolean = false): string {
+        const nodeCount = GraphNode.totalNodesCreated;
+
+        type Cell = { dependencies: number, dependants: number };
+
+        const matrix: Cell[][] = Array.from({ length: nodeCount }, () => Array.from({ length: nodeCount }, () => ({ dependencies: 0, dependants: 0 })));
+        for (const node of this.nodes.values()) {
+            const nodeIndex = node.id;
+
+            // Dependencies
+            for (const [dep, _ty] of node.inputs.values()) {
+                if (dep != null) {
+                    const depIndex = dep.node.id;
+                    matrix[nodeIndex][depIndex].dependencies += 1;
+                }
+            }
+
+            // Dependants
+            for (const output of node.outputs.values()) {
+                for (const dep of output.dependants) {
+                    const depIndex = dep.node.id;
+                    matrix[nodeIndex][depIndex].dependants += 1;
+                }
+            }
+        }
+
+        const dump: string[] = [];
+        const padding = nodeCount > 0 ? Math.floor(Math.log10(nodeCount)) + 1 : 1;
+        const cellPadding = nodeCount > 0 ? Math.floor(Math.log10(Math.max(nodeCount, ...matrix.map((row): number =>
+            Math.max(...row.map((v): number =>
+                Math.max(v.dependencies, v.dependants))))))) + 1 : 1;
+
+        // Header
+        dump.push(`${' '.repeat(padding + 2)}${Array.from({ length: nodeCount }, (_, i) => i.toString().padStart(cellPadding)).join(' ')}`);
+        dump.push(`${' '.repeat(padding + 1)}┌${'─'.repeat((cellPadding + 1) * nodeCount - 1)}`);
+
+        // Rows
+        for (const [index, row] of matrix.entries()) {
+            const provider = (v: Cell): number => (dependants ? v.dependants : v.dependencies);
+            const strRow = row.map(provider).map(v => (v > 0 ? v.toString() : ' ').padStart(padding)).join(' ');
+
+            dump.push(`${index.toString().padStart(padding)} │${strRow}`);
+        }
+
+        for (const [name, node] of this.nodes.entries()) {
+            dump.push(`${node.id.toString().padStart(padding)}: ${name}`);
+            if (node instanceof SubGraphNode) {
+                dump.push(node.graph.dumpAdjacencyMatrix());
+            }
+        }
+
+        return dump.join('\n');
     }
 }

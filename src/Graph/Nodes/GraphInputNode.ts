@@ -3,10 +3,9 @@ import { Dependency, GraphNode, JunctionNode, Type } from '../Prelude';
 export default class GraphInputNode extends JunctionNode {
     private inputNodeName: string | undefined;
 
-    public constructor(input: { [name: string]: [GraphNode, string] } | Type) {
+    public constructor([name, input]: [string, Dependency | Type]) {
         if (typeof input != 'string') {
-            const [name, [node, output]] = Object.entries(input)[0]!;
-            super({ node, output });
+            super(input);
             this.inputNodeName = name;
         } else {
             super(input);
@@ -18,8 +17,8 @@ export default class GraphInputNode extends JunctionNode {
     }
 
     public set graphInput([name, node]: [string, Dependency]) {
-        const [_oldValue, type] = this.inputs.get(GraphNode.defaultIoName)!;
-        this.inputs.set(GraphNode.defaultIoName, [node, type]);
+        const input = this.inputs.get(GraphNode.defaultIoName)!;
+        input[0] = node;
         this.inputNodeName = name;
     }
 }

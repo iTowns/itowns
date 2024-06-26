@@ -42,7 +42,7 @@ void main() {
 
     protected static get defaultFragmentShader(): FragmentShaderParts {
         return {
-            main: /* glsl */'return tex;',
+            main: /* glsl */'return color;',
         };
     }
 
@@ -142,6 +142,7 @@ void main() {
 
         this._fragmentShaderParts = fragmentShaderParts;
         const frag = ScreenShaderNode.buildFragmentShader(this._fragmentShaderParts);
+        console.log(frag);
         this.material = ScreenShaderNode.buildMaterial(frag);
     }
 
@@ -188,7 +189,7 @@ void main() {
             ...(uniformDeclarations.length > 0 ? [uniformDeclarations.join('\n')] : []),
             // User code
             ...(auxCode != undefined ? [auxCode] : []),
-            'vec4 shader(in vec4 tex) {',
+            'vec4 shader(in vec4 color) {',
             ...main.split('\n').map(s => `    ${s}`),
             '}',
             '',

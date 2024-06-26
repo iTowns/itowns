@@ -34,8 +34,7 @@ export default class JunctionNode extends GraphNode {
     }
 
     public set input(node: Dependency) {
-        const [_oldValue, type] = this.inputs.get(GraphNode.defaultIoName)!;
-        this.inputs.set(GraphNode.defaultIoName, [node, type]);
+        this.updateInputs({ [GraphNode.defaultIoName]: node });
     }
 
     public override get nodeType(): string {

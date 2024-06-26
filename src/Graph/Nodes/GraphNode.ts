@@ -1,13 +1,20 @@
 import { Type, Dependency, Dependant, DumpDotNodeStyle, Graph, LazyStaticNode } from '../Prelude';
+import LinearSet from '../LinearSet';
 
 function lerp(a: number, b: number, t: number): number {
     return a + (b - a) * t;
 }
 
-export interface Output {
-    value: unknown,
-    type: Type,
-    dependants: Set<Dependant>,
+export class Output {
+    public value: unknown;
+    public type: Type;
+    public dependants: LinearSet<Dependant>;
+
+    constructor(value: unknown, type: Type) {
+        this.value = value;
+        this.type = type;
+        this.dependants = new LinearSet<Dependant>([], (a, b) => a.node == b.node && a.input == b.input);
+    }
 }
 
 /**
@@ -34,32 +41,43 @@ export default abstract class GraphNode {
         // Optional to allow for clean side-effect-only nodes
         outputs?: Map<string, Type> | Type,
     ) {
-        this.inputs = new Map(Array.from(inputs.entries())
-            .map(([name, [dep, ty]]) => [
+        this._id = GraphNode.idCounter++;
+
+        this.inputs = new Map();
+        const inputDependencies = Object.fromEntries(Array.from(inputs.entries())
+            .filter(([_name, [dep, _ty]]) => dep != null)
+            .map(([name, [dep, ty]]): [string, Dependency | Type] => [
                 name,
-                [
-                    dep instanceof GraphNode
-                        ? { node: dep, output: GraphNode.defaultIoName }
-                        : dep,
-                    ty,
-                ],
+                dep instanceof GraphNode
+                    ? { node: dep, output: GraphNode.defaultIoName }
+                    : dep ?? ty,
             ]));
+        this.updateInputs(inputDependencies, true);
+
+        for (const input of this.inputs) {
+            const [name, [dep, ty]] = input;
+            if (dep != null && dep instanceof GraphNode) {
+                const has = dep.outputs.get(GraphNode.defaultIoName)!.dependants.has({ node: this, input: name });
+                if (!has) {
+                    throw new Error(`Dependency ${dep.nodeType} (id: ${dep.id}) does not have GraphNode (id: ${this.id}) as a dependant`);
+                }
+            }
+        }
 
         const normalizedOutputs: Map<string, Output> = new Map((() => {
             if (outputs == undefined) {
                 return [];
             } else if (outputs instanceof Map) {
                 return Array.from(outputs.entries())
-                    .map(([name, ty]) => [name, { value: undefined, type: ty, dependants: new Set() }]);
+                    .map(([name, ty]) => [name, new Output(undefined, ty)]);
             } else if (typeof outputs == 'string') {
-                return [[GraphNode.defaultIoName, { value: undefined, type: outputs, dependants: new Set() }]];
+                return [[GraphNode.defaultIoName, new Output(undefined, outputs)]];
             } else {
                 throw new Error('Unrecognized type when constructing node outputs');
             }
         })());
 
         this._out = { frame: -1, outputs: normalizedOutputs };
-        this._id = GraphNode.idCounter++;
     }
 
     protected abstract _apply(graph?: Graph, frame?: number): void;
@@ -67,6 +85,77 @@ export default abstract class GraphNode {
     public abstract get nodeType(): string;
     public get id(): number {
         return this._id;
+    }
+    public static get totalNodesCreated(): number {
+        return GraphNode.idCounter;
+    }
+
+    private addAsDependantTo(target: Dependency, input: string): void {
+        const { node, output: outputName } = target;
+        const output = node.outputs.get(outputName);
+        if (output == undefined) {
+            throw new Error(`Provided dependency does not exist: ${node.nodeType} (id: ${node.id}) node does not have an output named '${outputName}'`);
+        }
+        console.log(`${node.nodeType}(${node.id}):${outputName} -> ${this.nodeType}(${this.id}):${input}`);
+        output.dependants.add({ node: this, input });
+    }
+
+    public deleteInput(name: string): void {
+        const input = this.inputs.get(name);
+        if (input == undefined) {
+            throw new Error(`Provided ${this.nodeType} (id: ${this.id}) node does not have an input named '${name}' to delete`);
+        }
+
+        const dep = input[0];
+        if (dep != null) {
+            dep.node.outputs.get(dep.output)!.dependants.delete({ node: this, input: name });
+        }
+
+        this.inputs.delete(name);
+    }
+
+    private updateInput(name: string, dep: Dependency | Type): void {
+        const input = this.inputs.get(name);
+        if (input == undefined) {
+            throw new Error(`Provided ${this.nodeType} (id: ${this.id}) node does not have an input named '${name}' to update`);
+        }
+
+        if (typeof dep != 'string') {
+            // Removing a link
+            if (input[0] != null) {
+                const oDep = input[0];
+                oDep.node.outputs.get(oDep.output)!.dependants.delete({ node: this, input: name });
+            } else { // Adding a link
+                this.addAsDependantTo(dep, name);
+            }
+            input[0] = dep;
+        } else {
+            input[0] = null;
+            input[1] = dep;
+        }
+    }
+
+    private addInput(name: string, dep: Dependency | Type): void {
+        if (this.inputs.has(name)) {
+            throw new Error(`Provided ${this.nodeType} node already has an input named '${name}'`);
+        }
+
+        if (typeof dep != 'string') {
+            this.addAsDependantTo(dep!, name);
+            this.inputs.set(name, [dep, dep.node.outputs.get(dep.output)!.type]);
+        } else {
+            this.inputs.set(name, [null, dep]);
+        }
+    }
+
+    public updateInputs(updates: { [name: string]: Dependency | Type }, adding: boolean = false): void {
+        for (const [name, dep] of Object.entries(updates)) {
+            if (adding) {
+                this.addInput(name, dep);
+            } else {
+                this.updateInput(name, dep);
+            }
+        }
     }
 
     public get outputs(): Map<string, Output> {
@@ -77,7 +166,7 @@ export default abstract class GraphNode {
         return { node: this, output: output ?? GraphNode.defaultIoName };
     }
 
-    protected updateOutputs(updates: { [name: string]: unknown }): void {
+    public updateOutputs(updates: { [name: string]: unknown }): void {
         const errors = [];
 
         for (const [name, value] of Object.entries(updates)) {

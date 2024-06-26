@@ -100,32 +100,44 @@ export default {
 
         cParts.auxCode = [
             `// ${pName}`, pParts.auxCode,
-            `vec4 _${parent.id}_shader(vec4 tex) {`,
+            `vec4 _${parent.id}_shader(vec4 color) {`,
             `\t${pParts.main.replace('\n', '\n\t')}`,
             '}',
             `// ${cName}`, cParts.auxCode,
-            `vec4 ${childMergedId}_shader(vec4 tex) {`,
+            `vec4 ${childMergedId}_shader(vec4 color) {`,
             `\t${cParts.main.replace('\n', '\n\t')}`,
             '}',
         ].join('\n');
         cParts.main = [
-            `return ${childMergedId}_shader(_${parent.id}_shader(tex));`,
+            `return ${childMergedId}_shader(_${parent.id}_shader(color));`,
         ].join('\n');
 
         const fragmentShader = ScreenShaderNode.buildFragmentShader(cParts);
-
-        console.log(fragmentShader);
+        console.log('Merge\n', fragmentShader);
 
         child.material = ScreenShaderNode.buildMaterial(fragmentShader);
 
-        child.inputs.delete('renderer');
-        child.inputs.delete('target');
-        for (const [inputName, [dep, ty]] of parent.inputs.entries()) {
-            child.inputs.set(inputName, [dep, ty]);
+        child.deleteInput('renderer');
+        child.deleteInput('target');
+        const newInputs = Object.fromEntries(Array.from(parent.inputs.entries()).map(([name, [dep, ty]]) => [name, dep ?? ty]));
+        child.updateInputs(newInputs, true);
+
+        // Delete dependant entries for parent's inputs
+        for (const [name, [dep, _ty]] of parent.inputs.entries()) {
+            if (dep == null) { continue; }
+
+            const output = dep.node.outputs.get(dep.output);
+            if (output == undefined) {
+                throw new Error(`Output ${dep.output} of ${dep.node.nodeType}(${dep.node.id}) does not exist`);
+            }
+
+            output.dependants.delete({ node: parent, input: name });
         }
 
-        graph.nodes.delete(pName);
-        graph.nodes.delete(cName);
+        graph.remove(pName);
+        graph.remove(cName);
+        // graph.nodes.delete(pName);
+        // graph.nodes.delete(cName);
 
         if (mergedIds != undefined) {
             graph.nodes.set(`_${parent.id}_${pName}${cName}`, child);
