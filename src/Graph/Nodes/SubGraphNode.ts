@@ -80,7 +80,7 @@ export default class SubGraphNode extends GraphNode {
     protected override _apply(_graph?: Graph, frame: number = 0): void {
         const updates = Array.from(this.graphOutputs.entries())
             .map(([name, [dep, _ty]]) => [name, dep.node.getOutput(dep.output, this.graph, frame)]);
-        this.updateOutputs(Object.fromEntries(updates));
+        this.updateOutputs(Object.fromEntries(updates), frame);
     }
 
     public get label(): string | undefined {

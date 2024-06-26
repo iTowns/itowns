@@ -7,8 +7,9 @@ export default class ProcessorNode extends GraphNode {
         inputs: { [name: string]: [Dependency, Type] },
         outputs: Map<string, Type> | Type,
         public callback: (frame: number, args: { [arg: string]: unknown }) => void,
+        isStatic: boolean = false,
     ) {
-        super(new Map(Object.entries(inputs)), outputs);
+        super(new Map(Object.entries(inputs)), outputs, isStatic);
     }
 
     protected override _apply(graph?: Graph, frame: number = 0): void {

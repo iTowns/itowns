@@ -1,4 +1,4 @@
-import { Type, Dependency, Dependant, DumpDotNodeStyle, Graph, LazyStaticNode } from '../Prelude';
+import { Type, Dependency, Dependant, DumpDotNodeStyle, Graph } from '../Prelude';
 import LinearSet from '../LinearSet';
 
 function lerp(a: number, b: number, t: number): number {
@@ -36,10 +36,14 @@ export default abstract class GraphNode {
 
     public inputs: Map<string, [Dependency | null, Type]>;
 
+    private _isStatic: boolean;
+    private _needsUpdate: boolean;
+
     public constructor(
         inputs: Map<string, [Dependency | GraphNode | null, Type]>,
         // Optional to allow for clean side-effect-only nodes
         outputs?: Map<string, Type> | Type,
+        isStatic: boolean = false,
     ) {
         this._id = GraphNode.idCounter++;
 
@@ -78,6 +82,8 @@ export default abstract class GraphNode {
         })());
 
         this._out = { frame: -1, outputs: normalizedOutputs };
+        this._isStatic = isStatic;
+        this._needsUpdate = this._isStatic;
     }
 
     protected abstract _apply(graph?: Graph, frame?: number): void;
@@ -165,7 +171,7 @@ export default abstract class GraphNode {
         return { node: this, output: output ?? GraphNode.defaultIoName };
     }
 
-    public updateOutputs(updates: { [name: string]: unknown }): void {
+    public updateOutputs(updates: { [name: string]: unknown }, frame?: number): void {
         const errors = [];
 
         for (const [name, value] of Object.entries(updates)) {
@@ -177,8 +183,22 @@ export default abstract class GraphNode {
             output.value = value;
         }
 
+        if (frame != undefined) {
+            this._out.frame = frame;
+        }
+
         if (errors.length > 0) {
             throw new Error(errors.join('\n'));
+        }
+    }
+
+    public needsUpdate(): void {
+        this._needsUpdate = true;
+
+        for (const output of this.outputs.values()) {
+            for (const dep of output.dependants) {
+                dep.node._needsUpdate = true;
+            }
         }
     }
 
@@ -190,7 +210,7 @@ export default abstract class GraphNode {
      * @returns The output of the node at the given frame.
      */
     public getOutput(name: string = GraphNode.defaultIoName, graph?: Graph, frame: number = 0): unknown {
-        const { frame: oFrane, outputs } = this._out;
+        const { frame: oFrame, outputs } = this._out;
 
         const getOutput = outputs.get(name);
         if (getOutput == undefined) {
@@ -198,11 +218,16 @@ export default abstract class GraphNode {
         }
         const oValue = getOutput.value;
 
-        if (oValue == undefined || oFrane !== frame) {
-            // console.log(`${tab}[${debugName}] calling _apply`);
+        if (!this._isStatic && (oValue == undefined || oFrame !== frame) || this._needsUpdate) {
             this._apply(graph, frame);
             this._out.frame = frame;
+
+            if (this._needsUpdate) {
+                this.needsUpdate();
+            }
         }
+
+        this._needsUpdate = false;
 
         return getOutput.value;
     }
@@ -230,7 +255,7 @@ export default abstract class GraphNode {
         const generateTiming = (): string => {
             const lerpChannel = (): number => Math.floor(lerp(0, 255, Math.min(1, this._out.timeTaken! / 20)));
             const mapChannel = (op: (x: number) => number): string => op(lerpChannel()).toString(16).padStart(2, '0');
-            const timingColor = this instanceof LazyStaticNode
+            const timingColor = this._isStatic
                 ? '#000000'
                 : `#${mapChannel(x => x)}${mapChannel(x => 255 - x)}00`;
 
@@ -248,7 +273,7 @@ export default abstract class GraphNode {
         const formattedName = labelName.length == 0
             ? []
             : [
-                '<hr/><tr>',
+                `<hr/>${this._isStatic ? '<tr><td></td></tr><hr/>' : ''}<tr>`,
                 `\t<td colspan="${colspan}">[${this.id}] <i>${labelName}</i></td>`,
                 '</tr>',
             ];

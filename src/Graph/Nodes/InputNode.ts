@@ -11,7 +11,7 @@ export default class InputNode extends GraphNode {
             throw new Error('Input node type could not be inferred');
         }
 
-        super(new Map(), ty);
+        super(new Map(), ty, true);
         this._type = ty;
     }
 
@@ -19,8 +19,8 @@ export default class InputNode extends GraphNode {
         return this._type;
     }
 
-    protected override _apply(_graph?: Graph, _frame?: number): void {
-        this.updateOutputs({ [GraphNode.defaultIoName]: this.value });
+    protected override _apply(_graph?: Graph, frame: number = 0): void {
+        this.updateOutputs({ [GraphNode.defaultIoName]: this.value }, frame);
     }
 
     public override get nodeType(): string {

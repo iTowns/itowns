@@ -21,12 +21,12 @@ export default class JunctionNode extends GraphNode {
         const dep = this.inputs.get(GraphNode.defaultIoName)![0];
 
         if (dep == null) {
-            this.updateOutputs({ [GraphNode.defaultIoName]: null });
+            this.updateOutputs({ [GraphNode.defaultIoName]: null }, frame);
             return;
         }
 
         const { node, output } = dep;
-        this.updateOutputs({ [GraphNode.defaultIoName]: node.getOutput(output, graph, frame) ?? null });
+        this.updateOutputs({ [GraphNode.defaultIoName]: node.getOutput(output, graph, frame) ?? null }, frame);
     }
 
     public get input(): [Dependency | null, Type] {

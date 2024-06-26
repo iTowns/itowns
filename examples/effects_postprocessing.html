@@ -27,6 +27,7 @@
             coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
             range: 25_000_000,
         }, graph.BuiltinType.Placement);
+
         const viewerDiv = new graph.InputNode(document.getElementById('viewerDiv'));
         const viewNode = new graph.GlobeViewNode(viewerDiv, placement);
         outerGraph.set({placement, viewerDiv, viewNode});

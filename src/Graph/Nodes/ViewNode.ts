@@ -1,7 +1,6 @@
-import { BuiltinType, Dependency, Type } from '../Prelude';
-import LazyStaticNode from './LazyStaticNode';
+import { BuiltinType, Dependency, ProcessorNode, Type } from '../Prelude';
 
-export default abstract class ViewNode extends LazyStaticNode {
+export default abstract class ViewNode extends ProcessorNode {
     public constructor(
         viewerDiv: Dependency,
         generator: (frame: number, args: any) => void,
@@ -15,6 +14,7 @@ export default abstract class ViewNode extends LazyStaticNode {
                 camera: BuiltinType.Camera,
             })),
             generator,
+            true,
         );
     }
 }

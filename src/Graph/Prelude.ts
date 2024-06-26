@@ -8,7 +8,6 @@ import ProcessorNode from './Nodes/ProcessorNode';
 import ScreenShaderNode from './Nodes/ScreenShaderNode';
 import RenderViewNode from './Nodes/RenderViewNode';
 import SubGraphNode from './Nodes/SubGraphNode';
-import LazyStaticNode from './Nodes/LazyStaticNode';
 import JunctionNode from './Nodes/JunctionNode';
 import ViewNode from './Nodes/ViewNode';
 import GraphInputNode from './Nodes/GraphInputNode';
@@ -46,7 +45,6 @@ export {
     GraphInputNode,
     GraphOutputNode,
     FieldGetterNode,
-    LazyStaticNode,
 
     // View
     ViewNode,
