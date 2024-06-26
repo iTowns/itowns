@@ -10,7 +10,6 @@ import {
     Dependency,
     GraphOptimizer,
     GraphInputNode,
-    SubGraph,
 } from './Prelude';
 
 /** Represents a directed graph that guarantees the absence of cycles on use. */
@@ -196,8 +195,6 @@ export default class Graph {
      * @returns true if the node was removed, false otherwise.
      */
     public remove(name: string): void {
-        console.log(`Removing node '${name}' from ${this instanceof SubGraph ? `${this.name} graph` : 'graph'}`);
-
         const node = this.nodes.get(name);
         if (node == undefined) {
             throw new Error(`Node "${name}" does not exist in the graph`);

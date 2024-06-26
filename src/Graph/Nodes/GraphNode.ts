@@ -55,7 +55,7 @@ export default abstract class GraphNode {
         this.updateInputs(inputDependencies, true);
 
         for (const input of this.inputs) {
-            const [name, [dep, ty]] = input;
+            const [name, [dep, _ty]] = input;
             if (dep != null && dep instanceof GraphNode) {
                 const has = dep.outputs.get(GraphNode.defaultIoName)!.dependants.has({ node: this, input: name });
                 if (!has) {
@@ -96,7 +96,6 @@ export default abstract class GraphNode {
         if (output == undefined) {
             throw new Error(`Provided dependency does not exist: ${node.nodeType} (id: ${node.id}) node does not have an output named '${outputName}'`);
         }
-        console.log(`${node.nodeType}(${node.id}):${outputName} -> ${this.nodeType}(${this.id}):${input}`);
         output.dependants.add({ node: this, input });
     }
 
@@ -250,7 +249,7 @@ export default abstract class GraphNode {
             ? []
             : [
                 '<hr/><tr>',
-                `\t<td colspan="${colspan}"><i>${labelName}</i></td>`,
+                `\t<td colspan="${colspan}">[${this.id}] <i>${labelName}</i></td>`,
                 '</tr>',
             ];
 

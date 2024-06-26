@@ -113,7 +113,6 @@ export default {
         ].join('\n');
 
         const fragmentShader = ScreenShaderNode.buildFragmentShader(cParts);
-        console.log('Merge\n', fragmentShader);
 
         child.material = ScreenShaderNode.buildMaterial(fragmentShader);
 

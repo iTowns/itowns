@@ -142,7 +142,6 @@ void main() {
 
         this._fragmentShaderParts = fragmentShaderParts;
         const frag = ScreenShaderNode.buildFragmentShader(this._fragmentShaderParts);
-        console.log(frag);
         this.material = ScreenShaderNode.buildMaterial(frag);
     }
 
