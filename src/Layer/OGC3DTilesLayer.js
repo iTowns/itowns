@@ -82,6 +82,9 @@ class OGC3DTilesLayer extends GeometryLayer {
         // this.tilesRenderer.parseQueue = parseQueue;
 
         this.object3d.add(this.tilesRenderer.group);
+
+        // Add an initialization step that is resolved when the root tileset is loaded (see this._setup below)
+        this._res = this.addInitializationStep();
     }
 
     // TODO: what happens if the layer is added to multiple views? Should we store multiple tilesRenderer?
@@ -90,8 +93,14 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.tilesRenderer.setCamera(view.camera3D);
         this.tilesRenderer.setResolutionFromRenderer(view.camera3D, view.renderer);
         // TODO: should we store the tileset and our own list of models? or at least provide an API to access them
+        // Setup whenReady to be fullfiled when the root tileset has been loaded
+        let rootTilesetLoaded = false;
         this.tilesRenderer.onLoadTileSet = () => {
             view.notifyChange(this);
+            if (!rootTilesetLoaded) {
+                rootTilesetLoaded = true;
+                this._res();
+            }
         };
         this.tilesRenderer.onLoadModel = (model) => {
             if (model.isPoints) {
@@ -99,6 +108,8 @@ class OGC3DTilesLayer extends GeometryLayer {
             }
             view.notifyChange(this);
         };
+        // Start loading tileset and tiles
+        this.tilesRenderer.update();
     }
 
     // TODO: Not fond of this implementation, I would rather add the possibility to pass a PointsMaterial to
