@@ -1,5 +1,5 @@
 {
-    "include": [ "src/Main.js" ],
+    "include": [ "packages/Main/src/Main.js" ],
     "exclude": [ "node_modules", "lib", "dist" ],
     "compilerOptions": {
         /* Type Checking */
@@ -7,7 +7,7 @@
         /* Modules */
         "baseUrl": ".",
         "paths": {
-            "*": [ "src/*" ]
+            "*": [ "packages/Main/src/*" ]
         },
         "moduleResolution": "nodenext",
         /* Emit */
