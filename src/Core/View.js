@@ -40,7 +40,7 @@ export const VIEW_EVENTS = {
  * @event View#dblclick-right
  * @property {string} type  dblclick-right
  */
-
+// TODO: This logic should be moved to each layer
 function _preprocessLayer(view, layer, parentLayer) {
     const source = layer.source;
     if (parentLayer && !layer.extent) {
