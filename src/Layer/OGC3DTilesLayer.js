@@ -7,6 +7,22 @@ import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
 import PointsMaterial from 'Renderer/PointsMaterial';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 
+
+/*
+ * A callback to execute for a given tile of a tileset associated with an
+ * {@link OGC3DTilesLayer}.
+ *
+ * @callback OGC3DTilesLayer~forEachTile
+ *
+ * @param {Object} tile An object containing tile data as strored in the JSON
+ * tileset associated with the layer.
+ * @param {THREE.Object3D} scene An Object3D parsed from the data. It contains a
+ * `batchTable` property which grants access to the BatchTable of the
+ * tile. This parameter can be null if the tile was not yet loaded by the
+ * renderer (if it does not meet conditions to be visible for instance).
+*/
+
+
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
 export const itownsGLTFLoader = new iGLTFLoader();
@@ -279,6 +295,19 @@ class OGC3DTilesLayer extends GeometryLayer {
     // eslint-disable-next-line no-unused-vars
     getObjectToUpdateForAttachedLayers(obj) {
         return null;
+    }
+
+    /*
+     * Iterate through each tile of the tileset associated with this layer and
+     * execute a callback.
+     *
+     * @param {OGC3DTilesLayer~forEachTile} callback The callback to execute for
+     * each tile.
+    */
+    forEachTile(callback) {
+        this.tilesRenderer.traverse((tile) => {
+            callback(tile, tile.cached.scene);
+        });
     }
 }
 
