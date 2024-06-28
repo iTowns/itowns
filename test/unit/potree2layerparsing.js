@@ -4,7 +4,7 @@ import Potree2Source from 'Source/Potree2Source';
 import Coordinates from 'Core/Geographic/Coordinates';
 import GlobeView from 'Core/Prefab/GlobeView';
 import View from 'Core/View';
-import HttpsProxyAgent from 'https-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import Renderer from './bootstrap';
 
 describe('Potree2 Provider', function () {
