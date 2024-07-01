@@ -3,7 +3,7 @@ import Potree2Layer from 'Layer/Potree2Layer';
 import Potree2Source from 'Source/Potree2Source';
 import Potree2BinParser from 'Parser/Potree2BinParser';
 import View from 'Core/View';
-import HttpsProxyAgent from 'https-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import Potree2Node from 'Core/Potree2Node';
 import PointsMaterial from 'Renderer/PointsMaterial';
 import OrientedImageMaterial from 'Renderer/OrientedImageMaterial';
