@@ -1,9 +1,14 @@
-#include <itowns/precision_qualifier>
-#if defined(USE_TEXTURES_PROJECTIVE)
-#include <itowns/projective_texturing_pars_vertex>
-#endif
 #include <common>
+#include <fog_pars_vertex>
+#include <morphtarget_pars_vertex>
 #include <logdepthbuf_pars_vertex>
+#include <clipping_planes_pars_vertex>
+varying vec4 vColor; // color_pars_vertex
+
+#ifdef USE_POINTS_UV
+    varying vec2 vUv;
+    uniform mat3 uvTransform;
+#endif
 
 #define NB_CLASS 8.
 
@@ -12,8 +17,6 @@ uniform float scale;
 
 uniform bool picking;
 uniform int mode;
-uniform float opacity;
-uniform vec4 overlayColor;
 
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
@@ -26,8 +29,6 @@ uniform int sizeMode;
 uniform float minAttenuatedSize;
 uniform float maxAttenuatedSize;
 
-attribute vec3 color;
-attribute vec2 range;
 attribute vec4 unique_id;
 attribute float intensity;
 attribute float classification;
@@ -37,69 +38,22 @@ attribute float returnNumber;
 attribute float numberOfReturns;
 attribute float scanAngle;
 
-#if defined(NORMAL_OCT16)
-attribute vec2 oct16Normal;
-#elif defined(NORMAL_SPHEREMAPPED)
-attribute vec2 sphereMappedNormal;
-#endif
-
-varying vec4 vColor;
-
-// see https://web.archive.org/web/20150303053317/http://lgdv.cs.fau.de/get/1602
-// and implementation in PotreeConverter (BINPointReader.cpp) and potree (BinaryDecoderWorker.js)
-#if defined(NORMAL_OCT16)
-vec3 decodeOct16Normal(vec2 encodedNormal) {
-    vec2 nNorm = 2. * (encodedNormal / 255.) - 1.;
-    vec3 n;
-    n.z = 1. - abs(nNorm.x) - abs(nNorm.y);
-    if (n.z >= 0.) {
-        n.x = nNorm.x;
-        n.y = nNorm.y;
-    } else {
-        n.x = sign(nNorm.x) - sign(nNorm.x) * sign(nNorm.y) * nNorm.y;
-        n.y = sign(nNorm.y) - sign(nNorm.y) * sign(nNorm.x) * nNorm.x;
-    }
-    return normalize(n);
-}
-#elif defined(NORMAL_SPHEREMAPPED)
-// see http://aras-p.info/texts/CompactNormalStorage.html method #4
-// or see potree's implementation in BINPointReader.cpp
-vec3 decodeSphereMappedNormal(vec2 encodedNormal) {
-    vec2 fenc = 2. * encodedNormal / 255. - 1.;
-    float f = dot(fenc,fenc);
-    float g = 2. * sqrt(1. - f);
-    vec3 n;
-    n.xy = fenc * g;
-    n.z = 1. - 2. * f;
-    return n;
-}
-#endif
-
 void main() {
-
-#if defined(NORMAL_OCT16)
-    vec3  normal = decodeOct16Normal(oct16Normal);
-#elif defined(NORMAL_SPHEREMAPPED)
-    vec3 normal = decodeSphereMappedNormal(sphereMappedNormal);
-#elif defined(NORMAL)
-    // nothing to do
-#else
-    // default to color
-    vec3 normal = color;
-#endif
-
+    vColor = vec4(1.0);
     if (picking) {
         vColor = unique_id;
     } else {
-        vColor.a = 1.0;
         if (mode == PNTS_MODE_CLASSIFICATION) {
             vec2 uv = vec2(classification/255., 0.5);
             vColor = texture2D(classificationTexture, uv);
         } else if (mode == PNTS_MODE_NORMAL) {
             vColor.rgb = abs(normal);
         } else if (mode == PNTS_MODE_COLOR) {
-            // default to color mode
-            vColor.rgb = mix(color, overlayColor.rgb, overlayColor.a);
+#if defined(USE_COLOR)
+            vColor.rgb = color.rgb;
+#elif defined(USE_COLOR_ALPHA)
+            vColor = color;
+#endif
         } else if (mode == PNTS_MODE_RETURN_NUMBER) {
             vec2 uv = vec2(returnNumber/255., 0.5);
             vColor = texture2D(discreteTexture, uv);
@@ -146,12 +100,13 @@ void main() {
             vec2 uv = vec2(i, (1. - i));
             vColor = texture2D(gradientTexture, uv);
         }
-
-        vColor.a *= opacity;
     }
 
-    #include <begin_vertex>
-    #include <project_vertex>
+#define USE_COLOR_ALPHA
+#include <morphcolor_vertex>
+#include <begin_vertex>
+#include <morphtarget_vertex>
+#include <project_vertex>
 
     gl_PointSize = size;
 
@@ -164,8 +119,8 @@ void main() {
         }
     }
 
-#if defined(USE_TEXTURES_PROJECTIVE)
-    #include <itowns/projective_texturing_vertex>
-#endif
-    #include <logdepthbuf_vertex>
+#include <logdepthbuf_vertex>
+#include <clipping_planes_vertex>
+#include <worldpos_vertex>
+#include <fog_vertex>
 }
