@@ -148,7 +148,7 @@ class Potree2Node extends PointCloudNode {
 
     async loadOctree() {
         if (this.loaded || this.loading) {
-            return;
+            return Promise.resolve();
         }
         this.loading = true;
         return (this.nodeType === NODE_TYPE.PROXY) ? this.loadHierarchy() : Promise.resolve();
@@ -158,6 +158,8 @@ class Potree2Node extends PointCloudNode {
         const hierarchyPath = `${this.baseurl}/hierarchy.bin`;
         const buffer = await this.layer.source.fetcher(hierarchyPath, this.networkOptions(this.hierarchyByteOffset, this.hierarchyByteSize));
         this.parseHierarchy(buffer);
+
+        return Promise.resolve();
     }
 
     parseHierarchy(buffer) {
