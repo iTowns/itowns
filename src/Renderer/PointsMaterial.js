@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import PointsVS from 'Renderer/Shader/PointsVS.glsl';
 import PointsFS from 'Renderer/Shader/PointsFS.glsl';
-import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import CommonMaterial from 'Renderer/CommonMaterial';
 import Gradients from 'Utils/Gradients';
 
@@ -190,7 +189,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
         const intensityRange = options.intensityRange || new THREE.Vector2(1, 65536);
         const elevationRange = options.elevationRange || new THREE.Vector2(0, 1000);
         const angleRange = options.angleRange || new THREE.Vector2(-90, 90);
-        const oiMaterial = options.orientedImageMaterial;
         const classificationScheme = options.classification || ClassificationScheme.DEFAULT;
         const discreteScheme = options.discreteScheme || DiscreteScheme.DEFAULT;
         const size = options.size || 0;
@@ -210,7 +208,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
         delete options.intensityRange;
         delete options.elevationRange;
         delete options.angleRange;
-        delete options.orientedImageMaterial;
         delete options.classification;
         delete options.discreteScheme;
         delete options.size;
@@ -274,24 +271,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
         this.gradient = Object.values(gradients)[0];
         CommonMaterial.setUniformProperty(this, 'gradientTexture', this.gradientTexture);
 
-        if (oiMaterial) {
-            this.uniforms.projectiveTextureAlphaBorder = oiMaterial.uniforms.projectiveTextureAlphaBorder;
-            this.uniforms.projectiveTextureDistortion = oiMaterial.uniforms.projectiveTextureDistortion;
-            this.uniforms.projectiveTextureMatrix = oiMaterial.uniforms.projectiveTextureMatrix;
-            this.uniforms.projectiveTexture = oiMaterial.uniforms.projectiveTexture;
-            this.uniforms.mask = oiMaterial.uniforms.mask;
-            this.uniforms.boostLight = oiMaterial.uniforms.boostLight;
-            this.defines.ORIENTED_IMAGES_COUNT = oiMaterial.defines.ORIENTED_IMAGES_COUNT;
-            this.defines.USE_DISTORTION = oiMaterial.defines.USE_DISTORTION;
-            this.defines.DEBUG_ALPHA_BORDER = oiMaterial.defines.DEBUG_ALPHA_BORDER;
-            this.defines.USE_TEXTURES_PROJECTIVE = true;
-            this.defines.USE_BASE_MATERIAL = true;
-            // three loop unrolling of ShaderMaterial only supports integer
-            // bounds, see https://github.com/mrdoob/three.js/issues/28020
-            this.fragmentShader = ShaderUtils.unrollLoops(PointsFS, this.defines);
-        } else {
-            this.fragmentShader = PointsFS;
-        }
+        this.fragmentShader = PointsFS;
 
         if (__DEBUG__) {
             this.defines.DEBUG = 1;
@@ -321,16 +301,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
 
     copy(source) {
         super.copy(source);
-        if (source.uniforms.projectiveTextureAlphaBorder) {
-            // Don't copy oriented image because, it's a link to oriented image material.
-            // It needs a reference to oriented image material.
-            this.uniforms.projectiveTextureAlphaBorder = source.uniforms.projectiveTextureAlphaBorder;
-            this.uniforms.projectiveTextureDistortion = source.uniforms.projectiveTextureDistortion;
-            this.uniforms.projectiveTextureMatrix = source.uniforms.projectiveTextureMatrix;
-            this.uniforms.projectiveTexture = source.uniforms.projectiveTexture;
-            this.uniforms.mask = source.uniforms.mask;
-            this.uniforms.boostLight = source.uniforms.boostLight;
-        }
         return this;
     }
 
