@@ -5,8 +5,6 @@ import Potree2BinParser from 'Parser/Potree2BinParser';
 import View from 'Core/View';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import Potree2Node from 'Core/Potree2Node';
-import PointsMaterial from 'Renderer/PointsMaterial';
-import OrientedImageMaterial from 'Renderer/OrientedImageMaterial';
 import { Vector3 } from 'three';
 import Renderer from './bootstrap';
 
@@ -107,24 +105,6 @@ describe('Potree2', function () {
                         done();
                     }),
                 ).catch(done);
-        });
-    });
-
-    describe('Point Material and oriented images', () => {
-        const orientedImageMaterial = new OrientedImageMaterial([]);
-        const pMaterial = new PointsMaterial({ orientedImageMaterial });
-        const pMaterial2 = new PointsMaterial();
-        it('instance', () => {
-            assert.ok(pMaterial);
-        });
-        it('copy', () => {
-            pMaterial2.copy(pMaterial);
-            assert.equal(pMaterial2.uniforms.projectiveTextureAlphaBorder.value, 20);
-        });
-        it('update', () => {
-            pMaterial.visible = false;
-            pMaterial2.update(pMaterial);
-            assert.equal(pMaterial2.visible, false);
         });
     });
 

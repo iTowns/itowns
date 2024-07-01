@@ -6,8 +6,6 @@ import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import PotreeNode from 'Core/PotreeNode';
-import PointsMaterial from 'Renderer/PointsMaterial';
-import OrientedImageMaterial from 'Renderer/OrientedImageMaterial';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
@@ -145,24 +143,6 @@ describe('Potree', function () {
                             done();
                         }),
                     ).catch(done);
-            });
-        });
-
-        describe('Point Material and oriented images', () => {
-            const orientedImageMaterial = new OrientedImageMaterial([]);
-            const pMaterial = new PointsMaterial({ orientedImageMaterial });
-            const pMaterial2 = new PointsMaterial();
-            it('instance', () => {
-                assert.ok(pMaterial);
-            });
-            it('copy', () => {
-                pMaterial2.copy(pMaterial);
-                assert.equal(pMaterial2.uniforms.projectiveTextureAlphaBorder.value, 20);
-            });
-            it('update', () => {
-                pMaterial.visible = false;
-                pMaterial2.update(pMaterial);
-                assert.equal(pMaterial2.visible, false);
             });
         });
     });

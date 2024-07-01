@@ -1,7 +1,4 @@
 #include <itowns/precision_qualifier>
-#if defined(USE_TEXTURES_PROJECTIVE)
-#include <itowns/projective_texturing_pars_vertex>
-#endif
 #include <common>
 #include <logdepthbuf_pars_vertex>
 
@@ -117,8 +114,5 @@ void main() {
         }
     }
 
-#if defined(USE_TEXTURES_PROJECTIVE)
-    #include <itowns/projective_texturing_vertex>
-#endif
     #include <logdepthbuf_vertex>
 }
