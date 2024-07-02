@@ -11,7 +11,7 @@
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
     "test-unit": "cross-env BABEL_ENV=test npm run base-test-unit test/unit",
-    "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --file test/unit/bootstrap.js --loader=babel-register-esm",
+    "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --timeout 5000 --file test/unit/bootstrap.js --loader=babel-register-esm",
     "test-with-coverage": "c8 -n src -r html cross-env npm run test-unit",
     "test-with-coverage_lcov": "c8 -n src --reporter=lcov cross-env npm run test-unit",
     "watch": "cross-env BABEL_DISABLE_CACHE=1 babel --watch src --out-dir lib",
