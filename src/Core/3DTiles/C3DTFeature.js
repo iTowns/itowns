@@ -72,13 +72,13 @@ class C3DTFeature {
         target.min.z = Infinity;
 
         this.groups.forEach((group) => {
-            const positionIndexStart = group.start * 3;
-            const positionIndexCount = (group.start + group.count) * 3;
+            const positionIndexStart = group.start * this.object3d.geometry.attributes.position.itemSize;
+            const positionIndexCount = (group.start + group.count) * this.object3d.geometry.attributes.position.itemSize;
 
-            for (let index = positionIndexStart; index < positionIndexCount; index += 3) {
-                const x = this.object3d.geometry.attributes.position.array[index];
-                const y = this.object3d.geometry.attributes.position.array[index + 1];
-                const z = this.object3d.geometry.attributes.position.array[index + 2];
+            for (let index = positionIndexStart; index < positionIndexCount; index++) {
+                const x = this.object3d.geometry.attributes.position.getX(index);
+                const y = this.object3d.geometry.attributes.position.getY(index);
+                const z = this.object3d.geometry.attributes.position.getZ(index);
 
                 target.max.x = Math.max(x, target.max.x);
                 target.max.y = Math.max(y, target.max.y);
