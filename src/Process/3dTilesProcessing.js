@@ -171,10 +171,11 @@ function cleanup3dTileset(layer, n, depth = 0) {
 }
 
 // this is a layer
-export function pre3dTilesUpdate() {
+export function pre3dTilesUpdate(context) {
     if (!this.visible) {
         return [];
     }
+    this.scale = context.camera._preSSE;
 
     // Elements removed are added in the layer._cleanableTiles list.
     // Since we simply push in this array, the first item is always

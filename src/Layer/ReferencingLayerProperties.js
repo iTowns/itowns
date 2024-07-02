@@ -46,6 +46,12 @@ function ReferLayerProperties(material, layer) {
             });
         }
 
+        if (material.uniforms && material.uniforms.scale != undefined) {
+            Object.defineProperty(material.uniforms.scale, 'value', {
+                get: () => material.layer.scale,
+            });
+        }
+
         Object.defineProperty(material, 'wireframe', {
             get: () => material.layer.wireframe,
         });
