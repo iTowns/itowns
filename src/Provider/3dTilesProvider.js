@@ -36,7 +36,7 @@ function pntsParse(data, layer) {
         const material = layer.material ?
             layer.material.clone() :
             new PointsMaterial({
-                size: 0.05,
+                size: 1,
                 mode: layer.pntsMode,
                 shape: layer.pntsShape,
                 classification: layer.classification,
