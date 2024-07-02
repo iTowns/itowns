@@ -116,8 +116,8 @@ class C3DTilesLayer extends GeometryLayer {
         this.pntsShape = PNTS_SHAPE.CIRCLE;
         this.classification = config.classification;
         this.pntsSizeMode = PNTS_SIZE_MODE.VALUE;
-        this.pntsMinAttenuatedSize = config.pntsMinAttenuatedSize || 3;
-        this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 10;
+        this.pntsMinAttenuatedSize = config.pntsMinAttenuatedSize || 1;
+        this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 7;
         if (config.pntsMode) {
             const exists = Object.values(PNTS_MODE).includes(config.pntsMode);
             if (!exists) {
@@ -194,8 +194,7 @@ class C3DTilesLayer extends GeometryLayer {
     }
 
     preUpdate(context) {
-        this.scale = context.camera._preSSE;
-        return pre3dTilesUpdate.bind(this)();
+        return pre3dTilesUpdate.bind(this)(context);
     }
 
     update(context, layer, node) {
