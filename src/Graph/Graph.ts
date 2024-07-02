@@ -8,7 +8,7 @@ import {
     InputNode,
     BuiltinType,
     Dependency,
-    GraphOptimizer,
+    Optimizer,
     GraphInputNode,
 } from './Prelude';
 
@@ -16,16 +16,23 @@ import {
 export default class Graph {
     public nodes: Map<string, GraphNode>;
     public types: Set<Type>;
-    private _valid: boolean;
+    protected _state: unknown;
+    protected _valid: boolean;
 
-    public constructor() {
+    public constructor(state: unknown) {
         this.nodes = new Map();
         this.types = new Set();
         this._valid = false;
+        this._state = state;
     }
 
     public get isValid(): boolean {
         return this._valid;
+    }
+
+    // Encapsulated to prevent setting the state to a new reference
+    public get state(): unknown {
+        return this._state;
     }
 
     /**
@@ -245,7 +252,7 @@ export default class Graph {
     }
 
     public optimize(start: GraphNode | string, debug: boolean = false): void {
-        GraphOptimizer.optimize(this, start, debug);
+        Optimizer.optimize(this, start, debug);
     }
 
     /** Find a node's entry in the graph. O(n) time complexity. */

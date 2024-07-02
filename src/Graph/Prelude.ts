@@ -31,7 +31,7 @@ import {
 } from './Types';
 import opti from './Optimizations/Prelude';
 
-import GraphOptimizer from './GraphOptimizer';
+import Optimizer from './Optimizer';
 
 export {
     Graph,
@@ -62,7 +62,7 @@ export {
     Mappings,
     KernelType,
     BuiltinType,
-    GraphOptimizer,
+    Optimizer,
     opti,
 };
 

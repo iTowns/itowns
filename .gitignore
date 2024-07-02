@@ -12,3 +12,4 @@ potree
 coverage
 .nyc_output/
 /src/ThreeExtended/
+types/

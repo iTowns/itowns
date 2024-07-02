@@ -1,6 +1,6 @@
 import { Graph, GraphInputNode, GraphNode, GraphOptimization, opti } from './Prelude';
 
-export default class GraphOptimizer {
+export default class Optimizer {
     public static patterns: Map<string, GraphOptimization> = new Map(Object.entries(opti));
 
     public static optimize(graph: Graph, start: GraphNode | string, debug: boolean = false): Graph {
@@ -18,10 +18,10 @@ export default class GraphOptimizer {
 
             if (debug) {
                 // eslint-disable-next-line no-console
-                console.info(`[${GraphOptimizer.name}] path:`, path.map(n => graph.findNode(n)?.name ?? n.nodeType));
+                console.info(`[${Optimizer.name}] path:`, path.map(n => graph.findNode(n)?.name ?? n.nodeType));
             }
 
-            for (const [name, { pattern, operation }] of GraphOptimizer.patterns) {
+            for (const [name, { pattern, operation }] of Optimizer.patterns) {
                 // Compare the last n nodes in the path to the pattern
                 const isDifferent = path.length < pattern.length || path.slice(-pattern.length)
                     .map((v, i) => v.nodeType == pattern[i])
@@ -30,7 +30,7 @@ export default class GraphOptimizer {
                     try {
                         if (debug) {
                             // eslint-disable-next-line no-console
-                            console.info(`[${GraphOptimizer.name}] Trying optimization ${name}`);
+                            console.info(`[${Optimizer.name}] Trying optimization ${name}`);
                         }
                         const newStart = operation(path.slice(-pattern.length), graph);
                         path.splice(-pattern.length);
@@ -39,7 +39,7 @@ export default class GraphOptimizer {
                     } catch (e) {
                         if (debug) {
                             // eslint-disable-next-line no-console
-                            console.info(`[${GraphOptimizer.name}] ${name}:`, e);
+                            console.info(`[${Optimizer.name}] ${name}:`, e);
                         }
                     }
                 }

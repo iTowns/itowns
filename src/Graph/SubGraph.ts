@@ -3,13 +3,16 @@ import { Graph, GraphInputNode, GraphNode, GraphOutputNode, JunctionNode, SubGra
 export default class SubGraph extends Graph {
     public inputs: Map<string, GraphInputNode> = new Map();
     public outputs: Map<string, GraphOutputNode> = new Map();
+    public name: string;
 
-    constructor(public name: string) {
-        super();
+    private constructor(name: string, state: unknown) {
+        super(state);
+        this.name = name;
     }
 
     public static from(graph: Graph, name: string): SubGraph {
-        const subGraph = new SubGraph(name);
+        // State is shared between subgraphs and parent graphs
+        const subGraph = new SubGraph(name, graph.state);
         subGraph.nodes = graph.nodes;
         subGraph.types = graph.types;
         return subGraph;
