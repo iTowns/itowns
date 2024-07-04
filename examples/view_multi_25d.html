@@ -136,7 +136,7 @@
                 obj.updateMatrixWorld(true);
 
                 const tileLayer = new itowns.PlanarLayer('planar' + wms.name + index,
-                    extent, obj, { disableSkirt: true });
+                    obj, { disableSkirt: true, extent });
 
                 view.addLayer(tileLayer);
 

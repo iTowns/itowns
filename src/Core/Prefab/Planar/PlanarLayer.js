@@ -21,7 +21,6 @@ class PlanarLayer extends TiledGeometryLayer {
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
-     * @param {Extent} extent - The extent to define the layer within.
      * @param {THREE.Object3d} [object3d=THREE.Group] - The object3d used to
      * contain the geometry of the TiledGeometryLayer. It is usually a
      * `THREE.Group`, but it can be anything inheriting from a `THREE.Object3d`.
@@ -30,6 +29,7 @@ class PlanarLayer extends TiledGeometryLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
+     * @param {Extent} config.extent - The extent to define the layer within.
      * @param {number} [config.maxSubdivisionLevel=5] - Maximum subdivision
      * level for this tiled layer.
      * @param {number} [config.maxDeltaElevationLevel=4] - Maximum delta between
@@ -37,7 +37,15 @@ class PlanarLayer extends TiledGeometryLayer {
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
-    constructor(id, extent, object3d, config = {}) {
+    constructor(id, object3d, config = {}) {
+        if (arguments.length > 3 || object3d?.isExtent) {
+            console.warn("Deprecated: change in arguments, 'extent' should be set in config");
+            // eslint-disable-next-line prefer-rest-params
+            const [, ext,, conf = {}] = arguments;
+            conf.extent = ext;
+            config = conf;
+        }
+        const extent = config.extent;
         const tms = CRS.formatToTms(extent.crs);
 
         const scheme = schemeTiles.get(tms);
