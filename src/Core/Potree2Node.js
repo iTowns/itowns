@@ -116,7 +116,6 @@ class Potree2Node extends PointCloudNode {
             ...this.layer.source.networkOptions,
             headers: {
                 ...this.layer.source.networkOptions.headers,
-                'content-type': 'multipart/byteranges',
                 Range: `bytes=${first}-${last}`,
             },
         };
