@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
-import { globalExtentTMS } from 'Core/Geographic/Extent';
+import { globalExtentTMS, schemeTiles } from 'Core/Geographic/Extent';
 import CRS from 'Core/Geographic/Crs';
 import PlanarTileBuilder from './PlanarTileBuilder';
 
@@ -39,18 +39,46 @@ class PlanarLayer extends TiledGeometryLayer {
      */
     constructor(id, extent, object3d, config = {}) {
         const tms = CRS.formatToTms(extent.crs);
-        const tileMatrixSets = [tms];
+
+        const scheme = schemeTiles.get(tms);
+        let schemeTile;
+        let clipPlanes = [];
+        if (scheme) {
+            schemeTile = globalExtentTMS.get(extent.crs).subdivisionByScheme(scheme);
+            clipPlanes = [
+                new THREE.Plane(new THREE.Vector3(1, 0, 0), -extent.west),
+                new THREE.Plane(new THREE.Vector3(-1, 0, 0), extent.east),
+                new THREE.Plane(new THREE.Vector3(0, -1, 0), extent.north),
+                new THREE.Plane(new THREE.Vector3(0, 1, 0), -extent.south),
+            ];
+            config.materialOptions = { clippingPlanes: clipPlanes };
+        } else {
+            schemeTile = [extent];
+        }
+
         if (!globalExtentTMS.get(extent.crs)) {
             // Add new global extent for this new crs projection.
             globalExtentTMS.set(extent.crs, extent);
         }
-        config.tileMatrixSets = tileMatrixSets;
-        super(id, object3d || new THREE.Group(), [extent], new PlanarTileBuilder({ crs: extent.crs }), config);
+
+        config.tileMatrixSets = [tms];
+
+        const builder = new PlanarTileBuilder({ crs: extent.crs });
+
+        super(id, object3d || new THREE.Group(), schemeTile, builder, config);
+
         this.isPlanarLayer = true;
         this.extent = extent;
         this.minSubdivisionLevel = this.minSubdivisionLevel == undefined ? 0 : this.minSubdivisionLevel;
-        this.maxSubdivisionLevel = this.maxSubdivisionLevel == undefined ? 5 : this.maxSubdivisionLevel;
+        this.maxSubdivisionLevel = this.maxSubdivisionLevel == undefined ? 19 : this.maxSubdivisionLevel;
         this.maxDeltaElevationLevel = this.maxDeltaElevationLevel || 4.0;
+    }
+
+    culling(node, camera) {
+        if (super.culling(node, camera)) {
+            return true;
+        }
+        return !node.extent.intersectsExtent(this.extent);
     }
 }
 
