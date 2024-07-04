@@ -112,10 +112,14 @@ class Potree2Node extends PointCloudNode {
         const first = byteOffset;
         const last = first + byteSize - 1n;
 
+        // When we specify 'multipart/byteranges' on headers request it trigger a preflight request
+        // Actually github doesn't support it https://github.com/orgs/community/discussions/24659
+        // But if we omit header parameter, github seems to know it's a 'multipart/byteranges' request (thanks to 'Range' parameter)
         const networkOptions = {
             ...this.layer.source.networkOptions,
             headers: {
                 ...this.layer.source.networkOptions.headers,
+                ...(this.url.startsWith('https://raw.githubusercontent.com') ? {} : { 'content-type': 'multipart/byteranges' }),
                 Range: `bytes=${first}-${last}`,
             },
         };
