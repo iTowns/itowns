@@ -248,7 +248,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         }
     }
 
-    gui.add(state, 'sseHelper').name('Sse helper').onChange((v) => {
+    gui.add(state, 'sseHelper').name('SSE helper').onChange((v) => {
         if (v) {
             window.addEventListener('mousemove', picking, false);
         } else {
