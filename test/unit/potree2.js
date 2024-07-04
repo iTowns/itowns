@@ -26,7 +26,7 @@ describe('Potree2', function () {
         potreeLayer = new Potree2Layer('lion', {
             source: new Potree2Source({
                 file: 'metadata.json',
-                url: 'https://blocinbloc-public-test.s3.fr-par.scw.cloud/lion-potree2',
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
                 networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             }),
             onPointsCreated: () => {},
