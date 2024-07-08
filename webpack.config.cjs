@@ -61,6 +61,9 @@ module.exports = () => {
             itowns_potree2worker: {
                 import: './src/Worker/Potree2Worker.js',
             },
+            itowns_lasworker: {
+                import: './src/Worker/LASLoaderWorker.js',
+            },
         },
         devtool: 'source-map',
         output: {

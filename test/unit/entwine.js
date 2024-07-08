@@ -5,6 +5,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import EntwinePointTileLayer from 'Layer/EntwinePointTileLayer';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
+import LASParser from 'Parser/LASParser';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
@@ -33,14 +34,16 @@ describe('Entwine Point Tile', function () {
             .callsFake(() => Promise.resolve(new ArrayBuffer()));
         // currently no test on data fetched...
 
+        LASParser.enableLazPerf('./examples/libs/laz-perf');
         source = new EntwinePointTileSource({
             url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine',
         });
     });
 
-    after(function () {
+    after(async function () {
         stubFetcherJson.restore();
         stubFetcherArrayBuf.restore();
+        await LASParser.terminate();
     });
 
     it('loads the EPT structure', (done) => {

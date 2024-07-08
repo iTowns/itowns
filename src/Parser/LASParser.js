@@ -1,7 +1,23 @@
 import * as THREE from 'three';
-import LASLoader from 'Loader/LASLoader';
+import { spawn, Thread, Transfer } from 'threads';
 
-const lasLoader = new LASLoader();
+let _lazPerf;
+let _thread;
+
+function workerInstance() {
+    return new Worker(
+        /* webpackChunkName: "itowns_lasparser" */
+        new URL('../Worker/LASLoaderWorker.js', import.meta.url),
+        { type: 'module' },
+    );
+}
+
+async function loader() {
+    if (_thread) { return _thread; }
+    _thread = await spawn(workerInstance());
+    if (_lazPerf) { _thread.lazPerf(_lazPerf); }
+    return _thread;
+}
 
 function buildBufferGeometry(attributes) {
     const geometry = new THREE.BufferGeometry();
@@ -53,9 +69,18 @@ export default {
         if (!path) {
             throw new Error('Path to laz-perf is mandatory');
         }
-        lasLoader.lazPerf = path;
+        _lazPerf = path;
     },
 
+    /**
+     * Terminate all worker instances.
+     * @returns {Promise<void>}
+     */
+    terminate() {
+        const currentThread = _thread;
+        _thread = undefined;
+        return Thread.terminate(currentThread);
+    },
 
     /**
      * Parses a chunk of a LAS or LAZ (LASZip) and returns the corresponding
@@ -79,12 +104,18 @@ export default {
      * @return {Promise<THREE.BufferGeometry>} A promise resolving with a
      * `THREE.BufferGeometry`.
      */
-    parseChunk(data, options = {}) {
-        return lasLoader.parseChunk(data, options.in).then((parsedData) => {
-            const geometry = buildBufferGeometry(parsedData.attributes);
-            geometry.computeBoundingBox();
-            return geometry;
+    async parseChunk(data, options = {}) {
+        const lasLoader = await loader();
+        const parsedData = await lasLoader.parseChunk(Transfer(data), {
+            pointCount: options.in.pointCount,
+            header: options.in.header,
+            eb: options.eb,
+            colorDepth: options.in.colorDepth,
         });
+
+        const geometry = buildBufferGeometry(parsedData.attributes);
+        geometry.computeBoundingBox();
+        return geometry;
     },
 
     /**
@@ -101,17 +132,21 @@ export default {
      * @return {Promise} A promise resolving with a `THREE.BufferGeometry`. The
      * header of the file is contained in `userData`.
      */
-    parse(data, options = {}) {
+    async parse(data, options = {}) {
         if (options.out?.skip) {
             console.warn("Warning: options 'skip' not supported anymore");
         }
-        return lasLoader.parseFile(data, {
-            colorDepth: options.in?.colorDepth,
-        }).then((parsedData) => {
-            const geometry = buildBufferGeometry(parsedData.attributes);
-            geometry.userData.header = parsedData.header;
-            geometry.computeBoundingBox();
-            return geometry;
+
+        const input = options.in;
+
+        const lasLoader = await loader();
+        const parsedData = await lasLoader.parseFile(Transfer(data), {
+            colorDepth: input?.colorDepth,
         });
+
+        const geometry = buildBufferGeometry(parsedData.attributes);
+        geometry.userData.header = parsedData.header;
+        geometry.computeBoundingBox();
+        return geometry;
     },
 };
