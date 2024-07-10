@@ -165,7 +165,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @param      {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(1, 65536)]  intensity range.
      * @param      {THREE.Vector2}  [options.elevationRange=new THREE.Vector2(0, 1000)]  elevation range.
      * @param      {THREE.Vector2}  [options.angleRange=new THREE.Vector2(-90, 90)]  scan angle range.
-     * @param      {Scheme}  [options.classification]  LUT for point classification colorization.
+     * @param      {Scheme}  [options.classificationScheme]  LUT for point classification colorization.
      * @param      {Scheme}  [options.discreteScheme]  LUT for other discret point values colorization.
      * @param      {string}  [options.gradient]  Descrition of the gradient to use for continuous point values.
      *                          (Default value will be the 'SPECTRAL' gradient from Utils/Gradients)

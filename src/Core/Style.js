@@ -20,30 +20,31 @@ function baseAltitudeDefault(properties, ctx) {
 }
 
 export function readExpression(property, ctx) {
-    if (property != undefined) {
-        if (property.expression) {
-            return property.expression.evaluate(ctx);
-        } else if (property.stops) {
-            for (let i = property.stops.length - 1; i >= 0; i--) {
-                const stop = property.stops[i];
-
-                if (ctx.zoom >= stop[0]) {
-                    return stop[1];
-                }
-            }
-            return property.stops[0][1];
-        }
-        if (typeof property === 'string' || property instanceof String) {
-            property = property.replace(/\{(.+?)\}/g, (a, b) => (ctx.properties[b] || '')).trim();
-        }
-        if (property instanceof Function) {
-            // TOBREAK: Pass the current `context` as a unique parameter.
-            // In this proposal, metadata will be accessed in the callee by the
-            // `context.properties` property.
-            return property(ctx.properties, ctx);
-        }
-        return property;
+    if (property.expression) {
+        return property.expression.evaluate(ctx);
     }
+    if (property.stops) {
+        const stops = property.stops;
+        property = property.stops[0][1];
+        for (let i = stops.length - 1; i >= 0; i--) {
+            const stop = stops[i];
+
+            if (ctx.zoom >= stop[0]) {
+                property = stop[1];
+                break;
+            }
+        }
+    }
+    if (typeof property === 'string' || property instanceof String) {
+        return property.replace(/\{(.+?)\}/g, (a, b) => (ctx.properties[b] || '')).trim();
+    }
+    if (property instanceof Function) {
+        // TOBREAK: Pass the current `context` as a unique parameter.
+        // In this proposal, metadata will be accessed in the callee by the
+        // `context.properties` property.
+        return property(ctx.properties, ctx);
+    }
+    return property;
 }
 
 function rgba2rgb(orig) {
@@ -53,7 +54,7 @@ function rgba2rgb(orig) {
         return { color: orig };
     } else if (typeof orig == 'string') {
         const result = orig.match(/(?:((hsl|rgb)a? *\(([\d.%]+(?:deg|g?rad|turn)?)[ ,]*([\d.%]+)[ ,]*([\d.%]+)[ ,/]*([\d.%]*)\))|(#((?:[\d\w]{3}){1,2})([\d\w]{1,2})?))/i);
-        if (!result) {
+        if (result === null) {
             return { color: orig, opacity: 1.0 };
         } else if (result[7]) {
             let opacity = 1.0;
@@ -61,8 +62,8 @@ function rgba2rgb(orig) {
                 opacity = parseInt(result[9].length == 1 ? `${result[9]}${result[9]}` : result[9], 16) * inv255;
             }
             return { color: `#${result[8]}`, opacity };
-        } else if (result[0]) {
-            return { color: `${result[2]}(${result[3]},${result[4]},${result[5]})`, opacity: (Number(result[6]) || 1.0) };
+        } else if (result[1]) {
+            return { color: `${result[2]}(${result[3]},${result[4]},${result[5]})`, opacity: (result[6] ? Number(result[6]) : 1.0) };
         }
     }
 }
@@ -704,31 +705,6 @@ class Style {
         defineStyleProperty(this, 'icon', 'opacity', params.icon.opacity, 1.0);
     }
 
-    /**
-     * Copies the content of the target style into this style.
-     * @param {Style} style - The style to copy.
-     *
-     * @return {Style} This style.
-     */
-    copy(style) {
-        Object.assign(this.fill, style.fill);
-        Object.assign(this.stroke, style.stroke);
-        Object.assign(this.point, style.point);
-        Object.assign(this.text, style.text);
-        Object.assign(this.icon, style.icon);
-        return this;
-    }
-
-    /**
-         * Clones this style.
-         *
-         * @return {Style} The new style, cloned from this one.
-         */
-    clone() {
-        const clone = new Style();
-        return clone.copy(this);
-    }
-
     setContext(ctx) {
         this.context = ctx;
     }
@@ -896,9 +872,33 @@ class Style {
             if (iconImg) {
                 try {
                     style.icon.id = iconImg;
+                    if (iconImg.stops) {
+                        const iconCropValue = {
+                            ...(iconImg.base !== undefined && { base: iconImg.base }),
+                            stops: iconImg.stops.map((stop) => {
+                                let cropValues = sprites[stop[1]];
+                                if (stop[1].includes('{')) {
+                                    cropValues = function _(p) {
+                                        const id = stop[1].replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
+                                        cropValues = sprites[id];
+                                        return sprites[id];
+                                    };
+                                }
+                                return [stop[0], cropValues];
+                            }),
+                        };
+                        style.icon.cropValues = iconCropValue;
+                    } else {
+                        style.icon.cropValues = sprites[iconImg];
+                        if (iconImg[0].includes('{')) {
+                            style.icon.cropValues = function _(p) {
+                                const id = iconImg.replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
+                                style.icon.cropValues = sprites[id];
+                                return sprites[id];
+                            };
+                        }
+                    }
                     style.icon.source = sprites.source;
-                    style.icon.cropValues = sprites[iconImg];
-
                     style.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
                     const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['icon-color'], { type: 'color' }));
                     style.icon.color = color;
