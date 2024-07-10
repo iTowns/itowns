@@ -39,7 +39,7 @@ function pntsParse(data, layer) {
                 size: 1,
                 mode: layer.pntsMode,
                 shape: layer.pntsShape,
-                classification: layer.classification,
+                classificationScheme: layer.classification,
                 sizeMode: layer.pntsSizeMode,
                 minAttenuatedSize: layer.pntsMinAttenuatedSize,
                 maxAttenuatedSize: layer.pntsMaxAttenuatedSize,
