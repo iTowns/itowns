@@ -47,7 +47,7 @@ npm install
 npm start
 ```
 
-Try out the examples at http://localhost:8080/examples
+Try out the examples at http://localhost:8081/examples
 
 ## How to use it in your project?
 
