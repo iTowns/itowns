@@ -125,7 +125,6 @@ export default {
         });
 
         const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.computeBoundingBox();
         return geometry;
     },
 
@@ -164,7 +163,6 @@ export default {
         });
 
         const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.computeBoundingBox();
         geometry.userData.header = parsedData.header;
         return geometry;
     },
