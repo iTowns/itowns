@@ -147,7 +147,7 @@ class PointCloudLayer extends GeometryLayer {
      * name. See the list of properties to know which one can be specified.
      */
     constructor(id, config = {}) {
-        super(id, new THREE.Group(), config);
+        super(id, config.object3d || new THREE.Group(), config);
         this.isPointCloudLayer = true;
         this.protocol = 'pointcloud';
 
