@@ -93,11 +93,22 @@ class CopcNode extends PointCloudNode {
     /**
      * Create an (O)riented (B)ounding (B)ox for the node given
      * `this` is its parent.
-     * @param {CopcNode} node - The child node
+     * @param {CopcNode} childNode - The child node
      */
-    createChildOBB(node) {
-        // to improve
-        node.obb.fromBox3(node.bbox);
+    createChildOBB(childNode) {
+        const f = 2 ** (childNode.depth - this.depth);
+
+        this.obb.getSize(size).divideScalar(f);
+
+        position.copy(this).multiplyScalar(f);
+
+        translation.subVectors(childNode, position).multiply(size);
+
+        childNode.obb = this.obb.clone();
+        childNode.obb.halfSize.divideScalar(f);
+
+        childNode.obb.center = this.obb.center.clone().add(this.obb.halfSize.clone().multiplyScalar(-0.5)).add(translation);
+        childNode.obb.position = this.obb.position.clone();
     }
 
     /**
