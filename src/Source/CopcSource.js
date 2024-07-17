@@ -1,9 +1,7 @@
 import { Binary, Info, Las } from 'copc';
-import Extent from 'Core/Geographic/Extent';
 import Fetcher from 'Provider/Fetcher';
 import LASParser from 'Parser/LASParser';
 import Source from 'Source/Source';
-import * as THREE from 'three';
 
 /**
  * @param {function(number, number):Promise<Uint8Array>} fetcher
@@ -107,11 +105,6 @@ class CopcSource extends Source {
             this.eb = metadata.eb;
             // TODO: use wkt definition in `metadata.wkt` to infer/define crs
             this.crs = config.crs || 'EPSG:4326';
-
-            const bbox = new THREE.Box3();
-            bbox.min.fromArray(this.info.cube, 0);
-            bbox.max.fromArray(this.info.cube, 3);
-            this.extent = Extent.fromBox3(this.crs, bbox);
 
             return this;
         });

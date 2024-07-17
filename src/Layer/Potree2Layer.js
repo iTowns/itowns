@@ -36,7 +36,6 @@ of the authors and should not be interpreted as representing official policies,
 import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import Potree2Node from 'Core/Potree2Node';
-import Extent from 'Core/Geographic/Extent';
 
 import { PointAttribute, Potree2PointAttributes, PointAttributeTypes } from 'Core/Potree2PointAttributes';
 
@@ -182,7 +181,6 @@ class Potree2Layer extends PointCloudLayer {
 
             this.root = root;
 
-            this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', boundingBox);
             return this.root.loadOctree().then(resolve);
         });
     }

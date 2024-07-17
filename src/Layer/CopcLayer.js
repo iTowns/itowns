@@ -40,7 +40,6 @@ class CopcLayer extends PointCloudLayer {
             const { cube, rootHierarchyPage } = source.info;
             const { pageOffset, pageLength } = rootHierarchyPage;
 
-            // const crs = this.crs || 'EPSG:4326';
             if (this.crs !== config.crs) { console.warn('layer.crs is different from View.crs'); }
 
             this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1);
@@ -77,7 +76,6 @@ class CopcLayer extends PointCloudLayer {
             ];
 
             this.root.bbox.setFromArray(bounds);
-            // this.extent = Extent.fromBox3(crs, this.root.bbox);
 
             const centerZ0 = source.header.min.slice(0, 2)
                 .map((val, i) =>  Math.floor((val + source.header.max[i]) * 0.5));
