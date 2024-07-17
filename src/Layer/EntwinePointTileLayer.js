@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
-import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import proj4 from 'proj4';
 
@@ -55,7 +54,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
 
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then(() => {
-            const crs = this.crs || 'EPSG:4326';
             if (this.crs !== config.crs) { console.warn('layer.crs is different from View.crs'); }
 
             // NOTE: this spacing is kinda arbitrary here, we take the width and
@@ -94,7 +92,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
             ];
 
             this.root.bbox.setFromArray(bounds);
-            this.extent = Extent.fromBox3(crs, this.root.bbox);
 
             // for OBB
             // Get the transformation between the data coordinate syteme and the view's.
