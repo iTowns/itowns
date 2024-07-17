@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import PotreeNode from 'Core/PotreeNode';
 import proj4 from 'proj4';
-import Extent from 'Core/Geographic/Extent';
 
 /**
  * @property {boolean} isPotreeLayer - Used to checkout whether this layer
@@ -71,8 +70,8 @@ class PotreeLayer extends PointCloudLayer {
                 }
             }
 
-            this.minElevationRange = cloud.tightBoundingBox.lz;
-            this.maxElevationRange = cloud.tightBoundingBox.uz;
+            this.minElevationRange = this.minElevationRange ?? cloud.tightBoundingBox.lz; // cloud.boundingBox.lz;
+            this.maxElevationRange = this.maxElevationRange ?? cloud.tightBoundingBox.uz;
 
             const bounds = [
                 ...forward([cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz]),
@@ -81,10 +80,6 @@ class PotreeLayer extends PointCloudLayer {
 
             this.root.bbox.setFromArray(bounds);
 
-            this.minElevationRange = this.minElevationRange ?? cloud.boundingBox.lz;
-            this.maxElevationRange = this.maxElevationRange ?? cloud.boundingBox.uz;
-
-            this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', this.root.bbox);
             return this.root.loadOctree().then(resolve);
         });
     }

@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
-import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 import proj4 from 'proj4';
 
@@ -88,8 +87,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
             ];
 
             this.root.bbox.setFromArray(bounds);
-
-            this.extent = Extent.fromBox3(this.crs, this.root.bbox);
 
             // for OBB
             // Get the transformation between the data coordinate syteme and the view's.
