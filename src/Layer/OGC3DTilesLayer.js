@@ -192,42 +192,59 @@ class OGC3DTilesLayer extends GeometryLayer {
                 this._res();
             }
         });
-        this.tilesRenderer.addEventListener('load-model', (e) => {
-            const model = e.scene;
-            if (model.isPoints) {
-                this._replacePointsMaterial(model);
-            }
+        this.tilesRenderer.addEventListener('load-model', ({ scene }) => {
+            this._assignFinalMaterial(scene);
+            this._assignFinalAttributes(scene);
             view.notifyChange(this);
         });
         // Start loading tileset and tiles
         this.tilesRenderer.update();
     }
 
-    // Replaces points tiles material with our own PointsMaterial
-    _replacePointsMaterial(model) {
-        if (!model || !model.isPoints) { return; }
-        const oldMat = model.material;
-        model.material = new PointsMaterial({
-            mode: this.pntsMode,
-            shape: this.pntsShape,
-            classificationScheme: this.classification,
-            sizeMode: this.pntsSizeMode,
-            minAttenuatedSize: this.pntsMinAttenuatedSize,
-            maxAttenuatedSize: this.pntsMaxAttenuatedSize,
-        });
-        // Copy values from the material that are modified in 3DtilesRendererJS PntsLoader depending on the source data
-        model.material.vertexColors = oldMat.vertexColors;
-        model.material.transparent = oldMat.transparent;
-        model.material.opacity = oldMat.opacity;
-        model.material.depthWrite = oldMat.depthWrite;
-        model.material.color = oldMat.color;
-        oldMat.dispose();
-        ReferLayerProperties(model.material, this);
+    /**
+     * Replace materials from GLTFLoader by our own custom materials. Note that
+     * the replaced materials are not compiled yet and will be disposed by the
+     * GC.
+     * @param {Object3D} model
+     * @private
+     */
+    _assignFinalMaterial(model) {
+        let material = model.material;
+
+        if (model.isPoints) {
+            const pointsMaterial = new PointsMaterial({
+                mode: this.pntsMode,
+                shape: this.pntsShape,
+                classificationScheme: this.classification,
+                sizeMode: this.pntsSizeMode,
+                minAttenuatedSize: this.pntsMinAttenuatedSize,
+                maxAttenuatedSize: this.pntsMaxAttenuatedSize,
+            });
+            pointsMaterial.copy(material);
+
+            ReferLayerProperties(model.material, this);
+
+            material = pointsMaterial;
+        }
+
+        model.material = material;
+    }
+
+    /**
+     * @param {Object3D} model
+     * @private
+     */
+    _assignFinalAttributes(model) {
+        const geometry = model.geometry;
+        const batchTable = model.batchTable;
+
         // Setup classification bufferAttribute
-        if (model.batchTable) {
-            const classificationData =  model.batchTable.getData('Classification');
+        if (model.isPoints) {
+            const classificationData = batchTable?.getData('Classification');
             if (classificationData) {
-                model.geometry.setAttribute('classification', new THREE.BufferAttribute(classificationData, 1));
+                geometry.setAttribute('classification',
+                    new THREE.BufferAttribute(classificationData, 1),
+                );
             }
         }
     }
