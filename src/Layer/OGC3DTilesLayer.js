@@ -14,7 +14,6 @@ import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
 import PointsMaterial from 'Renderer/PointsMaterial';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 
-
 /*
  * A callback to execute for a given tile of a tileset associated with an
  * {@link OGC3DTilesLayer}.
@@ -29,6 +28,7 @@ import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
  * renderer (if it does not meet conditions to be visible for instance).
 */
 
+const _raycaster = new THREE.Raycaster();
 
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
@@ -288,6 +288,56 @@ class OGC3DTilesLayer extends GeometryLayer {
      */
     delete() {
         this.tilesRenderer.dispose();
+    }
+
+    /**
+     * Get the attributes for the closest intersection from a list of
+     * intersects.
+     * @param {THREE.Intersection<THREE.Mesh | THREE.Points>[]} intersects
+     * @returns {Record<string, any> | null}
+     */
+    getC3DTileFeatureFromIntersectsArray(intersects) {
+        if (!intersects.length) { return null; }
+
+        const { face, index, object } = intersects[0];
+
+        /** @type{number|null} */
+        let batchId;
+        if (object.isPoints && index) {
+            batchId = index;
+        } else if (object.isMesh && face) {
+            batchId = object.geometry.getAttribute('_BATCHID').getX(face.a);
+        } else {
+            return null;
+        }
+
+        let tileObject = object;
+        while (!tileObject.batchTable) {
+            tileObject = tileObject.parent;
+        }
+
+        return tileObject.batchTable.getDataFromId(batchId);
+    }
+
+    /**
+     * Get all 3D objects (mesh and points primitives) as intersects at the
+     * given non-normalized screen coordinates.
+     * @param {View} view
+     * @param {THREE.Vector2} coords
+     * @param {number} radius
+     * @param {THREE.Intersection<THREE.Mesh | THREE.Points>[]} [target=[]]
+     * @returns {THREE.Intersection<THREE.Mesh | THREE.Points>[]}
+     */
+    pickObjectsAt(view, coords, radius, target = []) {
+        const camera = view.camera.camera3D;
+        _raycaster.setFromCamera(view.viewToNormalizedCoords(coords), camera);
+        _raycaster.near = camera.near;
+        _raycaster.far = camera.far;
+
+        _raycaster.firstHitOnly = true;
+        _raycaster.intersectObject(this.tilesRenderer.group, true, target);
+
+        return target;
     }
 
     // eslint-disable-next-line no-unused-vars

@@ -47,7 +47,6 @@
             // -------------------------------------------
             var $3dTilesLayerDiscreteLOD = new itowns.OGC3DTilesLayer('3d-tiles-discrete-lod', {
                 name: 'DiscreteLOD',
-                sseThreshold: 0.05,
                 source: new itowns.OGC3DTilesSource({
                     url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithDiscreteLOD/tileset.json',
                 }),
@@ -63,22 +62,20 @@
                 source: new itowns.OGC3DTilesSource({
                     url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithRequestVolume/tileset.json',
                 }),
-                sseThreshold: 1,
             });
-
-            itowns.View.prototype.addLayer.call(view, $3dTilesLayerRequestVolume);
 
             // add an event for picking the 3D Tiles layer and displaying
             // information about the picked feature in an html div
-            // var pickingArgs = {};
-            // pickingArgs.htmlDiv = document.getElementById('featureInfo');
-            // pickingArgs.view = view;
-            // pickingArgs.layer = $3dTilesLayerRequestVolume;
-            // itowns.View.prototype.addLayer.call(view,
-            //     $3dTilesLayerRequestVolume).then(function _() {
-            //         window.addEventListener('mousemove',
-            //             (event) => fillHTMLWithPickingInfo(event, pickingArgs),false);
-            //     });
+            const pickingArgs = {
+                htmlDiv: document.getElementById('featureInfo'),
+                view,
+                layer: $3dTilesLayerRequestVolume,
+            };
+            itowns.View.prototype.addLayer.call(view,
+                $3dTilesLayerRequestVolume).then(function _() {
+                    window.addEventListener('mousemove',
+                        (event) => fillHTMLWithPickingInfo(event, pickingArgs),false);
+                });
 
             // Add the UI Debug
             var d = new debug.Debug(view, menuGlobe.gui);
