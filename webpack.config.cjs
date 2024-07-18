@@ -45,6 +45,9 @@ module.exports = () => {
     return {
         mode,
         context: path.resolve(__dirname),
+        externals: {
+            proj4: 'proj4',
+        },
         entry: {
             itowns: [
                 'core-js',

@@ -5,6 +5,7 @@ export default {
         './loaders/DRACOLoader.js',
         './loaders/KTX2Loader.js',
         './loaders/DDSLoader.js',
+        './renderers/CSS2DRenderer.js',
         './utils/BufferGeometryUtils.js',
         './utils/WorkerPool.js',
         './capabilities/WebGL.js',
