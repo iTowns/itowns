@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CesiumIonTilesRenderer, GoogleTilesRenderer, TilesRenderer } from '3d-tiles-renderer';
+import { CesiumIonTilesRenderer, GoogleTilesRenderer, TilesRenderer, GLTFMeshFeaturesExtension, GLTFStructuralMetadataExtension, GLTFCesiumRTCExtension } from '3d-tiles-renderer';
 import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
 import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
@@ -10,6 +10,10 @@ import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
 export const itownsGLTFLoader = new iGLTFLoader();
+// TODO: waiting for https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/626 to be merged to enable this extension
+// itownsGLTFLoader.register(() => new GLTFMeshFeaturesExtension());
+itownsGLTFLoader.register(() => new GLTFStructuralMetadataExtension());
+itownsGLTFLoader.register(() => new GLTFCesiumRTCExtension());
 
 // Instantiated by the first tileset. Used to share cache and download and parse queues between tilesets
 let lruCache = null;
@@ -54,7 +58,24 @@ export function enableKtx2Loader(path, renderer) {
     itownsGLTFLoader.setKTX2Loader(ktx2Loader);
 }
 
+/**
+ * Layer for [3D Tiles](https://www.ogc.org/standard/3dtiles/) datasets.
+ */
 class OGC3DTilesLayer extends GeometryLayer {
+    /**
+     * Constructs a new OGC3DTilesLayer.
+     * @param {String} id - unique layer id.
+     * @param {String} config - layer specific configuration
+     * @param {OGC3DTilesSource} config.source - data source configuration
+     * @param {String} [config.pntsMode= PNTS_MODE.COLOR] {@link PointsMaterials} Point cloud coloring mode.
+     *      Only 'COLOR' or 'CLASSIFICATION' are possible. COLOR uses RGB colors of the points,
+     *      CLASSIFICATION uses a classification property of the batch table to color points.
+     * @param {ClassificationScheme}  [config.classificationScheme]  {@link PointsMaterials} classification scheme
+     * @param {String} [config.pntsShape= PNTS_SHAPE.CIRCLE] Point cloud point shape. Only 'CIRCLE' or 'SQUARE' are possible.
+     * @param {String} [config.pntsSizeMode= PNTS_SIZE_MODE.VALUE] {@link PointsMaterials} Point cloud size mode. Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance from point to camera.
+     * @param {Number} [config.pntsMinAttenuatedSize=3] Minimum scale used by 'ATTENUATED' size mode
+     * @param {Number} [config.pntsMaxAttenuatedSize=10] Maximum scale used by 'ATTENUATED' size mode
+     */
     constructor(id, config) {
         super(id, new THREE.Group(), { source: config.source });
         this.isOGC3DTilesLayer = true;
@@ -167,13 +188,16 @@ class OGC3DTilesLayer extends GeometryLayer {
 
     preUpdate() {
         this.tilesRenderer.update();
-        return null; // don't return any element because 3d-tiles-renderer updates them
+        return null; // don't return any element because 3d-tiles-renderer already updates them
     }
 
     update() {
         // empty, elements are updated by 3d-tiles-renderer
     }
 
+    /**
+     * Deletes the layer and frees associated memory
+     */
     delete() {
         this.tilesRenderer.dispose();
     }
