@@ -17,6 +17,9 @@
               <li>Use classification to assign colour to each points</li>
               <li>Switch between mode on the left panel</li>
             </ul>
+            <br/>
+            <p><b>Point Information:</b></p>
+            <div id="featureInfo"></div>
         </div>
         <div id="viewerDiv"></div>
         <script src="js/GUI/GuiTools.js"></script>
@@ -63,7 +66,18 @@
                 source: $3dTilesSource,
             });
 
-            itowns.View.prototype.addLayer.call(view, $3dTilesLayerSetePC);
+            const pickingArgs = {
+                htmlDiv: document.getElementById('featureInfo'),
+                view,
+                layer: $3dTilesLayerSetePC,
+            };
+
+            itowns.View.prototype.addLayer.call(view,$3dTilesLayerSetePC)
+                .then(() => {
+                    window.addEventListener('mousemove',
+                        (event) => fillHTMLWithPickingInfo(event, pickingArgs),
+                    false);
+                });
 
             // Add the UI Debug
             // var d = new debug.Debug(view, menuGlobe.gui);
