@@ -20,6 +20,41 @@ let lruCache = null;
 let downloadQueue = null;
 let parseQueue = null;
 
+export const OGC3DTILES_LAYER_EVENTS = {
+    /**
+     * Fired when a new root or child tile set is loaded
+     * @event OGC3DTilesLayer#load-tile-set
+     * @type {Object}
+     * @property {Object} tileset - the tileset json parsed in an Object
+     * @property {String} url - tileset url
+     */
+    LOAD_TILE_SET: 'load-tile-set',
+    /**
+     * Fired when a tile model is loaded
+     * @event OGC3DTilesLayer#load-model
+     * @type {Object}
+     * @property {THREE.Group} scene - the model (tile content) parsed in a THREE.GROUP
+     * @property {Object} tile - the tile metadata from the tileset
+     */
+    LOAD_MODEL: 'load-model',
+    /**
+     * Fired when a tile model is disposed
+     * @event OGC3DTilesLayer#dispose-model
+     * @type {Object}
+     * @property {THREE.Group} scene - the model (tile content) that is disposed
+     * @property {Object} tile - the tile metadata from the tileset
+     */
+    DISPOSE_MODEL: 'dispose-model',
+    /**
+     * Fired when a tiles visibility changes
+     * @event OGC3DTilesLayer#tile-visibility-change
+     * @type {Object}
+     * @property {THREE.Group} scene - the model (tile content) parsed in a THREE.GROUP
+     * @property {Object} tile - the tile metadata from the tileset
+     */
+    TILE_VISIBILITY_CHANGE: 'tile-visibility-change',
+};
+
 /**
  * Enable loading 3D Tiles with [Draco](https://google.github.io/draco/) geometry extension.
  *
@@ -95,6 +130,7 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.tilesRenderer.manager.addHandler(/\.gltf$/, itownsGLTFLoader);
 
         this._setupCacheAndQueues();
+        this._setupEvents();
 
         this.object3d.add(this.tilesRenderer.group);
 
@@ -130,6 +166,14 @@ class OGC3DTilesLayer extends GeometryLayer {
             parseQueue = this.tilesRenderer.parseQueue;
         } else {
             this.tilesRenderer.parseQueue = parseQueue;
+        }
+    }
+
+    _setupEvents() {
+        for (const ev of Object.values(OGC3DTILES_LAYER_EVENTS)) {
+            this.tilesRenderer.addEventListener(ev, (e) => {
+                this.dispatchEvent(e);
+            });
         }
     }
 
