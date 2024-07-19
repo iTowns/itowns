@@ -140,19 +140,20 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.tilesRenderer.setResolutionFromRenderer(view.camera3D, view.renderer);
         // Setup whenReady to be fullfiled when the root tileset has been loaded
         let rootTilesetLoaded = false;
-        this.tilesRenderer.onLoadTileSet = () => {
+        this.tilesRenderer.addEventListener('load-tile-set', () => {
             view.notifyChange(this);
             if (!rootTilesetLoaded) {
                 rootTilesetLoaded = true;
                 this._res();
             }
-        };
-        this.tilesRenderer.onLoadModel = (model) => {
+        });
+        this.tilesRenderer.addEventListener('load-model', (e) => {
+            const model = e.scene;
             if (model.isPoints) {
                 this._replacePointsMaterial(model);
             }
             view.notifyChange(this);
-        };
+        });
         // Start loading tileset and tiles
         this.tilesRenderer.update();
     }
