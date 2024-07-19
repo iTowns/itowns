@@ -70,7 +70,7 @@ class TiledGeometryLayer extends GeometryLayer {
         this.object3d.geoidHeight = 0;
 
         this.protocol = 'tile';
-        this._hideSkirt = false;
+        this._hideSkirt = !!config.hideSkirt;
 
         this.sseSubdivisionThreshold = this.sseSubdivisionThreshold || 1.0;
 
@@ -106,6 +106,9 @@ class TiledGeometryLayer extends GeometryLayer {
         return this._hideSkirt;
     }
     set hideSkirt(value) {
+        if (!this.level0Nodes) {
+            return;
+        }
         this._hideSkirt = value;
         for (const node of this.level0Nodes) {
             node.traverse((obj) => {
