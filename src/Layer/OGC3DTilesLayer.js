@@ -10,7 +10,7 @@ import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
 export const itownsGLTFLoader = new iGLTFLoader();
-// TODO: waiting for https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/626 to be merged to enable this extension
+// TODO: waiting for https://github.com/NASA-AMMOS/3DTilesRendererJS/pull/626 to be released
 // itownsGLTFLoader.register(() => new GLTFMeshFeaturesExtension());
 itownsGLTFLoader.register(() => new GLTFStructuralMetadataExtension());
 itownsGLTFLoader.register(() => new GLTFCesiumRTCExtension());
@@ -51,6 +51,7 @@ export const OGC3DTILES_LAYER_EVENTS = {
      * @type {Object}
      * @property {THREE.Group} scene - the model (tile content) parsed in a THREE.GROUP
      * @property {Object} tile - the tile metadata from the tileset
+     * @property {boolean} visible - the tile visible state
      */
     TILE_VISIBILITY_CHANGE: 'tile-visibility-change',
 };
