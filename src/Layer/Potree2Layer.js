@@ -113,13 +113,14 @@ function parseAttributes(jsonAttributes) {
  * @property {boolean} isPotreeLayer - Used to checkout whether this layer
  * is a Potree2Layer. Default is `true`. You should not change this, as it is
  * used internally for optimisation.
+ *
+ * @extends PointCloudLayer
  */
 class Potree2Layer extends PointCloudLayer {
     /**
      * Constructs a new instance of Potree2 layer.
      *
      * @constructor
-     * @extends PointCloudLayer
      *
      * @example
      * // Create a new point cloud layer
@@ -147,6 +148,11 @@ class Potree2Layer extends PointCloudLayer {
      */
     constructor(id, config) {
         super(id, config);
+
+        /**
+         * @type {boolean}
+         * @readonly
+         */
         this.isPotreeLayer = true;
 
         const resolve = this.addInitializationStep();

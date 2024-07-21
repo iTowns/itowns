@@ -5,8 +5,18 @@ import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 class RasterLayer extends Layer {
     constructor(id, config) {
-        config.cacheLifeTime = config.cacheLifeTime ?? CACHE_POLICIES.TEXTURE;
-        super(id, config);
+        const {
+            cacheLifeTime = CACHE_POLICIES.TEXTURE,
+            ...layerConfig
+        } = config;
+
+        super(id, {
+            ...layerConfig,
+            cacheLifeTime,
+        });
+
+        // TODO: crs?
+        // TODO: move up subdivisionThreshold
     }
 
     convert(data, extentDestination) {

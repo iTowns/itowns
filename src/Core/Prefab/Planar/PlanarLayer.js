@@ -9,6 +9,7 @@ import PlanarTileBuilder from './PlanarTileBuilder';
  * @property {boolean} isPlanarLayer - Used to checkout whether this layer is a
  * PlanarLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @extends TiledGeometryLayer
  */
 class PlanarLayer extends TiledGeometryLayer {
     /**
@@ -16,7 +17,6 @@ class PlanarLayer extends TiledGeometryLayer {
      * specific method for updating and subdivising its grid.
      *
      * @constructor
-     * @extends TiledGeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -38,19 +38,30 @@ class PlanarLayer extends TiledGeometryLayer {
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
     constructor(id, extent, object3d, config = {}) {
+        const {
+            minSubdivisionLevel = 0,
+            maxSubdivisionLevel = 5,
+            maxDeltaElevationLevel = 4.0,
+            ...tiledConfig
+        } = config;
+
         const tms = CRS.formatToTms(extent.crs);
         const tileMatrixSets = [tms];
         if (!globalExtentTMS.get(extent.crs)) {
             // Add new global extent for this new crs projection.
             globalExtentTMS.set(extent.crs, extent);
         }
-        config.tileMatrixSets = tileMatrixSets;
-        super(id, object3d || new THREE.Group(), [extent], new PlanarTileBuilder({ crs: extent.crs }), config);
+
+        const builder = new PlanarTileBuilder({ crs: extent.crs });
+        super(id, object3d || new THREE.Group(), [extent], builder, {
+            tileMatrixSets,
+            ...tiledConfig,
+        });
         this.isPlanarLayer = true;
         this.extent = extent;
-        this.minSubdivisionLevel = this.minSubdivisionLevel == undefined ? 0 : this.minSubdivisionLevel;
-        this.maxSubdivisionLevel = this.maxSubdivisionLevel == undefined ? 5 : this.maxSubdivisionLevel;
-        this.maxDeltaElevationLevel = this.maxDeltaElevationLevel || 4.0;
+        this.minSubdivisionLevel = minSubdivisionLevel;
+        this.maxSubdivisionLevel = maxSubdivisionLevel;
+        this.maxDeltaElevationLevel = maxDeltaElevationLevel;
     }
 }
 

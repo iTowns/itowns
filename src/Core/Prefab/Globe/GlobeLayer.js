@@ -18,6 +18,8 @@ const scaledHorizonCullingPoint = new THREE.Vector3();
  * @property {boolean} isGlobeLayer - Used to checkout whether this layer is a
  * GlobeLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
+ *
+ * @extends TiledGeometryLayer
  */
 class GlobeLayer extends TiledGeometryLayer {
     /**
@@ -25,12 +27,11 @@ class GlobeLayer extends TiledGeometryLayer {
      * specific method for updating and subdivising its grid.
      *
      * @constructor
-     * @extends TiledGeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
-     * @param {THREE.Object3d} [object3d=THREE.Group] - The object3d used to
+     * @param {THREE.Object3D} [object3d=THREE.Group] - The object3d used to
      * contain the geometry of the TiledGeometryLayer. It is usually a
      * `THREE.Group`, but it can be anything inheriting from a `THREE.Object3d`.
      * @param {Object} [config] - Optional configuration, all elements in it
@@ -50,25 +51,35 @@ class GlobeLayer extends TiledGeometryLayer {
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
     constructor(id, object3d, config = {}) {
+        const {
+            minSubdivisionLevel = 2,
+            maxSubdivisionLevel = 19,
+            maxDeltaElevationLevel = 4.0,
+            ...tiledConfig
+        } = config;
+
         // Configure tiles
         const scheme = schemeTiles.get(CRS.tms_4326);
         const schemeTile = globalExtentTMS.get('EPSG:4326').subdivisionByScheme(scheme);
 
         // Supported tile matrix set for color/elevation layer
-        config.tileMatrixSets = [
+        const tileMatrixSets = [
             CRS.tms_4326,
             CRS.tms_3857,
         ];
-        const uvCount = config.tileMatrixSets.length;
+        const uvCount = tileMatrixSets.length;
         const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount });
 
-        super(id, object3d || new THREE.Group(), schemeTile, builder, config);
+        super(id, object3d || new THREE.Group(), schemeTile, builder, {
+            tileMatrixSets,
+            ...tiledConfig,
+        });
 
         this.isGlobeLayer = true;
         this.options.defaultPickingRadius = 5;
-        this.minSubdivisionLevel = this.minSubdivisionLevel == undefined ? 2 : this.minSubdivisionLevel;
-        this.maxSubdivisionLevel = this.maxSubdivisionLevel == undefined ? 19 : this.maxSubdivisionLevel;
-        this.maxDeltaElevationLevel = this.maxDeltaElevationLevel || 4.0;
+        this.minSubdivisionLevel = minSubdivisionLevel;
+        this.maxSubdivisionLevel = maxSubdivisionLevel;
+        this.maxDeltaElevationLevel = maxDeltaElevationLevel;
 
         this.extent = this.schemeTile[0].clone();
 

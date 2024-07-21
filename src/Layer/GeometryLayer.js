@@ -17,6 +17,8 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
  * This property is used only if the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
  * @property {number} [zoom.min=0] - this is the minimum zoom from which it'll be visible.
  * This property is used only if the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
+ *
+ * @extends Layer
  */
 class GeometryLayer extends Layer {
     /**
@@ -24,7 +26,6 @@ class GeometryLayer extends Layer {
      * can be a layer of buildings extruded from a a WFS stream.
      *
      * @constructor
-     * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -37,7 +38,10 @@ class GeometryLayer extends Layer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
-     * @param {Source} [config.source] - Description and options of the source.
+     * @param {Source} config.source - Description and options of the source.
+     * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
+     * This value is used for [Cache]{@link Cache} expiration mechanism.
+     * @param {boolean} [config.visible]
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      *
@@ -55,13 +59,21 @@ class GeometryLayer extends Layer {
      * view.addLayer(geometry);
      */
     constructor(id, object3d, config = {}) {
-        config.cacheLifeTime = config.cacheLifeTime ?? CACHE_POLICIES.GEOMETRY;
+        const {
+            cacheLifeTime = CACHE_POLICIES.GEOMETRY,
+            visible = true,
+            ...layerConfig
+        } = config;
 
-        // Remove this part when Object.assign(this, config) will be removed from Layer Constructor
-        const visible = config.visible;
-        delete config.visible;
-        super(id, config);
+        super(id, {
+            ...layerConfig,
+            cacheLifeTime,
+        });
 
+        /**
+         * @type {boolean}
+         * @readonly
+         */
         this.isGeometryLayer = true;
 
         if (!object3d || !object3d.isObject3D) {
@@ -73,17 +85,35 @@ class GeometryLayer extends Layer {
             object3d.name = id;
         }
 
+        /**
+         * @type {THREE.Object3D}
+         * @readonly
+         */
+        this.object3d = object3d;
         Object.defineProperty(this, 'object3d', {
-            value: object3d,
             writable: false,
             configurable: true,
         });
 
+        /**
+         * @type {number}
+         */
         this.opacity = 1.0;
+
+        /**
+         * @type {boolean}
+         */
         this.wireframe = false;
 
+        /**
+         * @type {Layer[]}
+         */
         this.attachedLayers = [];
-        this.visible = visible ?? true;
+
+        /**
+         * @type {boolean}
+         */
+        this.visible = visible;
         Object.defineProperty(this.zoom, 'max', {
             value: Infinity,
             writable: false,

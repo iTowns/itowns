@@ -63,11 +63,11 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
     }
 
     const boundingVolumeLayer = new GeometryLayer(boundingVolumeID, new THREE.Object3D(), {
-        update: debugIdUpdate,
         visible: false,
         cacheLifeTime: Infinity,
         source: false,
     });
+    boundingVolumeLayer.update = debugIdUpdate;
 
     View.prototype.addLayer.call(view, boundingVolumeLayer, _3dTileslayer).then((l) => {
         gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
