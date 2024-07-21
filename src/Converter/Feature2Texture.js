@@ -122,7 +122,7 @@ export default {
 
             c.width = sizeTexture;
             c.height = sizeTexture;
-            const ctx = c.getContext('2d');
+            const ctx = c.getContext('2d', { willReadFrequently: true });
             if (backgroundColor) {
                 ctx.fillStyle = backgroundColor.getStyle();
                 ctx.fillRect(0, 0, sizeTexture, sizeTexture);

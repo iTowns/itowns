@@ -176,9 +176,14 @@ class LabelLayer extends GeometryLayer {
      * except for the `Style.text.anchor` parameter which can help place the label.
      */
     constructor(id, config = {}) {
-        const domElement = config.domElement;
-        delete config.domElement;
-        super(id, config.object3d || new THREE.Group(), config);
+        const {
+            domElement,
+            performance = true,
+            forceClampToTerrain = false,
+            margin,
+            ...geometryConfig
+        } = config;
+        super(id, config.object3d || new THREE.Group(), geometryConfig);
 
         this.isLabelLayer = true;
         this.domElement = new DomNode();
@@ -186,8 +191,9 @@ class LabelLayer extends GeometryLayer {
         this.domElement.dom.id = `itowns-label-${this.id}`;
         this.buildExtent = true;
         this.crs = config.source.crs;
-        this.performance = config.performance || true;
-        this.forceClampToTerrain = config.forceClampToTerrain || false;
+        this.performance = performance;
+        this.forceClampToTerrain = forceClampToTerrain;
+        this.margin = margin;
 
         this.toHide = new THREE.Group();
 

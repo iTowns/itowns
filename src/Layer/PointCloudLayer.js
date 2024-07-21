@@ -127,14 +127,14 @@ function changeAngleRange(layer) {
  * @property {number} [maxIntensityRange=1] - The maximal intensity of the
  * layer. Changing this value will affect the material, if it has the
  * corresponding uniform. The value is normalized between 0 and 1.
+ *
+ * @extends GeometryLayer
  */
 class PointCloudLayer extends GeometryLayer {
     /**
      * Constructs a new instance of point cloud layer.
      * Constructs a new instance of a Point Cloud Layer. This should not be used
      * directly, but rather implemented using `extends`.
-     *
-     * @extends GeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -144,43 +144,89 @@ class PointCloudLayer extends GeometryLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name. See the list of properties to know which one can be specified.
+     * @param {Source} config.source - Description and options of the source.
      */
     constructor(id, config = {}) {
-        super(id, config.object3d || new THREE.Group(), config);
+        const {
+            object3d = new THREE.Group(),
+            group = new THREE.Group(),
+            bboxes = new THREE.Group(),
+            octreeDepthLimit = -1,
+            pointBudget = 2000000,
+            pointSize = 2,
+            sseThreshold = 2,
+            minIntensityRange = 1,
+            maxIntensityRange = 65536,
+            minElevationRange = 0,
+            maxElevationRange = 1000,
+            minAngleRange = -90,
+            maxAngleRange = 90,
+            material = {},
+            mode = PNTS_MODE.COLOR,
+            ...geometryLayerConfig
+        } = config;
+
+        super(id, object3d, geometryLayerConfig);
+
+        /**
+         * @type {boolean}
+         * @readonly
+         */
         this.isPointCloudLayer = true;
         this.protocol = 'pointcloud';
 
-        this.group = config.group || new THREE.Group();
+        this.group = group;
         this.object3d.add(this.group);
-        this.bboxes = config.bboxes || new THREE.Group();
+        this.bboxes = bboxes || new THREE.Group();
         this.bboxes.visible = false;
         this.object3d.add(this.bboxes);
         this.group.updateMatrixWorld();
 
         // default config
-        this.octreeDepthLimit = config.octreeDepthLimit || -1;
-        this.pointBudget = config.pointBudget || 2000000;
-        this.pointSize = config.pointSize === 0 || !isNaN(config.pointSize) ? config.pointSize : 4;
-        this.sseThreshold = config.sseThreshold || 2;
+        /**
+         * @type {number}
+         */
+        this.octreeDepthLimit = octreeDepthLimit;
 
-        this.defineLayerProperty('minIntensityRange', config.minIntensityRange || 1, changeIntensityRange);
-        this.defineLayerProperty('maxIntensityRange', config.maxIntensityRange || 65536, changeIntensityRange);
-        this.defineLayerProperty('minElevationRange', config.minElevationRange || 0, changeElevationRange);
-        this.defineLayerProperty('maxElevationRange', config.maxElevationRange || 1000, changeElevationRange);
-        this.defineLayerProperty('minAngleRange', config.minAngleRange || -90, changeAngleRange);
-        this.defineLayerProperty('maxAngleRange', config.maxAngleRange || 90, changeAngleRange);
+        /**
+         * @type {number}
+         */
+        this.pointBudget = pointBudget;
 
-        this.material = config.material || {};
+        /**
+         * @type {number}
+         */
+        this.pointSize = pointSize;
+
+        /**
+         * @type {number}
+         */
+        this.sseThreshold = sseThreshold;
+
+        this.defineLayerProperty('minIntensityRange', minIntensityRange, changeIntensityRange);
+        this.defineLayerProperty('maxIntensityRange', maxIntensityRange, changeIntensityRange);
+        this.defineLayerProperty('minElevationRange', minElevationRange, changeElevationRange);
+        this.defineLayerProperty('maxElevationRange', maxElevationRange, changeElevationRange);
+        this.defineLayerProperty('minAngleRange', minAngleRange, changeAngleRange);
+        this.defineLayerProperty('maxAngleRange', maxAngleRange, changeAngleRange);
+
+        /**
+         * @type {THREE.Material}
+         */
+        this.material = material;
         if (!this.material.isMaterial) {
-            config.material = config.material || {};
-            config.material.intensityRange = new THREE.Vector2(this.minIntensityRange, this.maxIntensityRange);
-            config.material.elevationRange = new THREE.Vector2(this.minElevationRange, this.maxElevationRange);
-            config.material.angleRange = new THREE.Vector2(this.minAngleRange, this.maxAngleRange);
-            this.material = new PointsMaterial(config.material);
+            this.material.intensityRange = new THREE.Vector2(this.minIntensityRange, this.maxIntensityRange);
+            this.material.elevationRange = new THREE.Vector2(this.minElevationRange, this.maxElevationRange);
+            this.material.angleRange = new THREE.Vector2(this.minAngleRange, this.maxAngleRange);
+            this.material = new PointsMaterial(this.material);
         }
-        this.material.defines = this.material.defines || {};
 
-        this.mode = config.mode || PNTS_MODE.COLOR;
+        this.mode = mode || PNTS_MODE.COLOR;
+
+        /**
+         * @type {PointCloudNode | undefined}
+         */
+        this.root = undefined;
     }
 
     preUpdate(context, changeSources) {

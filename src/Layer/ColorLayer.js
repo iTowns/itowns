@@ -44,14 +44,14 @@ import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
  * * `1`: used to amplify the transparency effect.
  * * `2`: unused.
  * * `3`: could be used by your own glsl code.
+ *
+ * @extends RasterLayer
  */
 class ColorLayer extends RasterLayer {
     /**
      * A simple layer, usually managing a texture to display on a view. For example,
      * it can be an aerial view of the ground or a simple transparent layer with the
      * roads displayed.
-     *
-     * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -91,16 +91,45 @@ class ColorLayer extends RasterLayer {
      */
     constructor(id, config = {}) {
         deprecatedColorLayerOptions(config);
-        super(id, config);
+
+        const {
+            effect_type = 0,
+            effect_parameter = 1.0,
+            transparent,
+            ...rasterConfig
+        } = config;
+
+        super(id, rasterConfig);
+
+        /**
+         * @type {boolean}
+         * @readonly
+         */
         this.isColorLayer = true;
-        this.defineLayerProperty('visible', true);
-        this.defineLayerProperty('opacity', 1.0);
-        this.defineLayerProperty('sequence', 0);
-        this.transparent = config.transparent || (this.opacity < 1.0);
+
+        /**
+         * @type {boolean}
+         */
+        this.visible = true;
+        this.defineLayerProperty('visible', this.visible);
+
+        /**
+         * @type {number}
+         */
+        this.opacity = 1.0;
+        this.defineLayerProperty('opacity', this.opacity);
+
+        /**
+         * @type {number}
+         */
+        this.sequence = 0;
+        this.defineLayerProperty('sequence', this.sequence);
+
+        this.transparent = transparent || (this.opacity < 1.0);
         this.noTextureParentOutsideLimit = config.source ? config.source.isFileSource : false;
 
-        this.effect_type = config.effect_type ?? 0;
-        this.effect_parameter = config.effect_parameter ?? 1.0;
+        this.effect_type = effect_type;
+        this.effect_parameter = effect_parameter;
 
         // Feature options
         this.buildExtent = true;

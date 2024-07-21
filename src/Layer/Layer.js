@@ -89,63 +89,101 @@ class Layer extends THREE.EventDispatcher {
      * layerToListen.addEventListener('opacity-property-changed', (event) => console.log(event));
      */
     constructor(id, config = {}) {
-        /* istanbul ignore next */
-        if (config.projection) {
-            console.warn('Layer projection parameter is deprecated, use crs instead.');
-            config.crs = config.crs || config.projection;
-        }
+        const {
+            source,
+            name,
+            style = {},
+            subdivisionThreshold = 256,
+            addLabelLayer = false,
+            cacheLifeTime,
+            options = {},
+            updateStrategy,
+            zoom,
+            mergeFeatures = true,
+            crs,
+        } = config;
 
-        if (config.source === undefined || config.source === true) {
-            throw new Error(`Layer ${id} needs Source`);
-        }
         super();
+
+        /**
+         * @type {boolean}
+         * @readonly
+         */
         this.isLayer = true;
 
-        if (config.style && !(config.style instanceof Style)) {
-            if (typeof config.style.fill?.pattern === 'string') {
-                console.warn('Using style.fill.pattern = { source: Img|url } is adviced');
-                config.style.fill.pattern = { source: config.style.fill.pattern };
-            }
-            config.style = new Style(config.style);
-        }
-        this.style = config.style || new Style();
-        this.subdivisionThreshold = config.subdivisionThreshold || 256;
-        this.sizeDiagonalTexture =  (2 * (this.subdivisionThreshold * this.subdivisionThreshold)) ** 0.5;
-        Object.assign(this, config);
-
+        /**
+         * @type {string}
+         * @readonly
+         */
+        this.id = id;
         Object.defineProperty(this, 'id', {
-            value: id,
             writable: false,
         });
-        // Default properties
-        this.options = config.options || {};
 
-        if (!this.updateStrategy) {
-            this.updateStrategy = {
-                type: STRATEGY_MIN_NETWORK_TRAFFIC,
-                options: {},
-            };
+        /**
+         * @type {string}
+         */
+        this.name = name;
+
+        if (source === undefined || source === true) {
+            throw new Error(`Layer ${id} needs Source`);
         }
+        /**
+         * @type {Source}
+         */
+        this.source = source || new Source({ url: 'none' });
+
+        this.crs = crs;
+
+        if (style && !(style instanceof Style)) {
+            if (typeof style.fill?.pattern === 'string') {
+                console.warn('Using style.fill.pattern = { source: Img|url } is adviced');
+                style.fill.pattern = { source: style.fill.pattern };
+            }
+            this.style = new Style(style);
+        } else {
+            this.style = style || new Style();
+        }
+
+        /**
+         * @type {number}
+         */
+        this.subdivisionThreshold = subdivisionThreshold;
+        this.sizeDiagonalTexture =  (2 * (this.subdivisionThreshold * this.subdivisionThreshold)) ** 0.5;
+
+        this.addLabelLayer = addLabelLayer;
+
+        // Default properties
+        this.options = options;
+
+        this.updateStrategy = updateStrategy ?? {
+            type: STRATEGY_MIN_NETWORK_TRAFFIC,
+            options: {},
+        };
 
         this.defineLayerProperty('frozen', false);
 
-        if (config.zoom) {
-            this.zoom = { max: config.zoom.max, min: config.zoom.min || 0 };
-            if (this.zoom.max == undefined) {
-                this.zoom.max = Infinity;
-            }
-        } else {
-            this.zoom = { max: Infinity, min: 0 };
-        }
+        this.zoom = {
+            min: zoom?.min ?? 0,
+            max: zoom?.max ?? Infinity,
+        };
 
         this.info = new InfoLayer(this);
 
-        this.source = this.source || new Source({ url: 'none' });
-
+        /**
+         * @type {boolean}
+         */
         this.ready = false;
 
+        /**
+         * @type {Promise<any>[]}
+         * @protected
+         */
         this._promises = [];
 
+        /**
+         * @type {Promise<this>}
+         */
         this.whenReady = new Promise((re, rj) => {
             this._resolve = re;
             this._reject = rj;
@@ -157,12 +195,12 @@ class Layer extends THREE.EventDispatcher {
 
         this._promises.push(this.source.whenReady);
 
-        this.cache = new Cache(config.cacheLifeTime);
+        /**
+         * @type {Cache}
+         */
+        this.cache = new Cache(cacheLifeTime);
 
-        this.mergeFeatures = this.mergeFeatures === undefined ? true : config.mergeFeatures;
-
-        // TODO: verify but this.source.filter seems be always undefined.
-        this.filter = this.filter || this.source.filter;
+        this.mergeFeatures = mergeFeatures;
     }
 
     addInitializationStep() {
@@ -244,15 +282,6 @@ class Layer extends THREE.EventDispatcher {
         }
         return data;
     }
-
-    /**
-     * Determines whether the specified feature is valid data.
-     *
-     * @param      {Feature}  feature  The feature
-     * @returns {Feature} the feature is returned if it's valided
-     */
-    // eslint-disable-next-line
-    isValidData(feature) {}
 
     /**
      * Remove and dispose all objects from layer.

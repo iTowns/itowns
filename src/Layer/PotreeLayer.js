@@ -11,12 +11,12 @@ bboxMesh.geometry.boundingBox = box3;
  * @property {boolean} isPotreeLayer - Used to checkout whether this layer
  * is a PotreeLayer. Default is `true`. You should not change this, as it is
  * used internally for optimisation.
+ *
+ * @extends PointCloudLayer
  */
 class PotreeLayer extends PointCloudLayer {
     /**
      * Constructs a new instance of Potree layer.
-     *
-     * @extends PointCloudLayer
      *
      * @example
      * // Create a new point cloud layer
@@ -38,12 +38,17 @@ class PotreeLayer extends PointCloudLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name. See the list of properties to know which one can be specified.
-     * @param {string} [config.crs=ESPG:4326] - The CRS of the {@link View} this
+     * @param {string} [config.crs='ESPG:4326'] - The CRS of the {@link View} this
      * layer will be attached to. This is used to determine the extent of this
      * layer.  Default to `EPSG:4326`.
      */
     constructor(id, config) {
         super(id, config);
+
+        /**
+         * @type {boolean}
+         * @readonly
+         */
         this.isPotreeLayer = true;
 
         const resolve = this.addInitializationStep();

@@ -30,6 +30,11 @@ class CopcLayer extends PointCloudLayer {
      */
     constructor(id, config) {
         super(id, config);
+
+        /**
+         * @type {boolean}
+         * @readonly
+         */
         this.isCopcLayer = true;
 
         const resolve = () => this;
