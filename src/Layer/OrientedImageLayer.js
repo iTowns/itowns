@@ -100,16 +100,24 @@ class OrientedImageLayer extends GeometryLayer {
      * a tecture is need for each camera, for each panoramic.
      */
     constructor(id, config = {}) {
+        const {
+            backgroundDistance,
+            background = createBackground(backgroundDistance),
+            onPanoChanged = () => {},
+            getCamerasNameFromFeature = () => {},
+            ...geometryOptions
+        } = config;
+
         /* istanbul ignore next */
         if (config.projection) {
             console.warn('OrientedImageLayer projection parameter is deprecated, use crs instead.');
             config.crs = config.crs || config.projection;
         }
-        super(id, new THREE.Group(), config);
+        super(id, new THREE.Group(), geometryOptions);
 
         this.isOrientedImageLayer = true;
 
-        this.background = config.background || createBackground(config.backgroundDistance);
+        this.background = background;
 
         if (this.background) {
             // Add layer id to easily identify the objects later on (e.g. to delete the geometries when deleting the layer)
@@ -122,10 +130,10 @@ class OrientedImageLayer extends GeometryLayer {
         this.currentPano = undefined;
 
         // store a callback to fire event when current panoramic change
-        this.onPanoChanged = config.onPanoChanged || (() => {});
+        this.onPanoChanged = onPanoChanged;
 
         // function to get cameras name from panoramic feature
-        this.getCamerasNameFromFeature = config.getCamerasNameFromFeature || (() => {});
+        this.getCamerasNameFromFeature = getCamerasNameFromFeature;
 
         const resolve = this.addInitializationStep();
 

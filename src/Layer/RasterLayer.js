@@ -5,8 +5,20 @@ import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 class RasterLayer extends Layer {
     constructor(id, config) {
-        config.cacheLifeTime = config.cacheLifeTime ?? CACHE_POLICIES.TEXTURE;
-        super(id, config);
+        const {
+            cacheLifeTime = CACHE_POLICIES.TEXTURE,
+            minFilter,
+            magFilter,
+            ...layerConfig
+        } = config;
+
+        super(id, {
+            ...layerConfig,
+            cacheLifeTime,
+        });
+
+        this.minFilter = minFilter;
+        this.magFilter = magFilter;
     }
 
     convert(data, extentDestination) {

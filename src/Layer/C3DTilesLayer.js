@@ -54,11 +54,13 @@ function object3DHasFeature(object3d) {
     return object3d.geometry && object3d.geometry.attributes._BATCHID;
 }
 
+/**
+ * @extends GeometryLayer
+ */
 class C3DTilesLayer extends GeometryLayer {
     #fillColorMaterialsBuffer;
     /**
      * @deprecated Deprecated 3D Tiles layer. Use {@link OGC3DTilesLayer} instead.
-     * @extends GeometryLayer
      *
      * @example
      * // Create a new 3d-tiles layer from a web server
@@ -86,7 +88,7 @@ class C3DTilesLayer extends GeometryLayer {
      * {@link View} that already has a layer going by that id.
      * @param      {object}  config   configuration, all elements in it
      * will be merged as is in the layer.
-     * @param {C3TilesSource} config.source The source of 3d Tiles.
+     * @param {C3DTilesSource} config.source The source of 3d Tiles.
      *
      * name.
      * @param {Number} [config.sseThreshold=16] The [Screen Space Error](https://github.com/CesiumGS/3d-tiles/blob/main/specification/README.md#geometric-error)
@@ -143,8 +145,8 @@ class C3DTilesLayer extends GeometryLayer {
             if (!exists) { console.warn("The points cloud size mode doesn't exist. Use 'VALUE' or 'ATTENUATED' instead."); } else { this.pntsSizeMode = config.pntsSizeMode; }
         }
 
-        /** @type {Style} */
-        this.style = config.style || null;
+        /** @type {Style | null} */
+        this._style = config.style || null;
 
         /** @type {Map<string, THREE.MeshStandardMaterial>} */
         this.#fillColorMaterialsBuffer = new Map();

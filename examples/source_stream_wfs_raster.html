@@ -53,12 +53,6 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
-            function isValidData(data) {
-                if(data.features[0].geometries.length < 1000) {
-                    return data;
-                }
-            }
-
             var wfsBuildingSource = new itowns.WFSSource({
                 url: 'https://data.geopf.fr/wfs/ows?',
                 version: '2.0.0',
@@ -102,7 +96,6 @@
                         width: 2.0,
                     },
                 },
-                isValidData: isValidData,
                 source: wfsBuildingSource,
                 zoom: { max: 20, min: 13 },
             });
