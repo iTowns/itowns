@@ -1,9 +1,8 @@
 import assert from 'assert';
-import { Extent } from '@itowns/geodesy';
+import { Extent, Coordinates } from '@itowns/geodesy';
 import PlanarView from 'Core/Prefab/PlanarView';
 import { CAMERA_TYPE } from 'Renderer/Camera';
 import GlobeView from 'Core/Prefab/GlobeView';
-import Coordinates from 'Core/Geographic/Coordinates';
 import Renderer from './bootstrap';
 
 
