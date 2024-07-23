@@ -1,6 +1,7 @@
 // Stored in a separate file to avoid circular dependencies
 
 import { OrthographicCamera, PerspectiveCamera } from 'three';
+import { Extent } from 'Main';
 import Graph from './Graph';
 import GraphNode from './Nodes/GraphNode';
 
@@ -29,11 +30,14 @@ export enum BuiltinType {
 
     // Primitives
     Number = 'Number',
+    String = 'String',
     Float32Array = 'Float32Array',
 
     // iTowns types
+    Source = 'Source',
     View = 'View',
     Placement = 'Placement',
+    CRS = 'CRS',
 
     // Three.js
     /// Types
@@ -76,3 +80,7 @@ export type GraphOptimization = {
     pattern: string[],
     operation: (nodes: GraphNode[], graph: Graph) => GraphNode
 };
+
+export interface Source<Input, Data> {
+    loadData(extent: Extent, input: Input): Promise<Data>;
+}

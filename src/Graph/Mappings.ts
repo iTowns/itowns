@@ -52,6 +52,7 @@ export default class Mappings {
 
     public static colorMapping = new Map<Type, ColorStyle>([
         [BuiltinType.Number, { color: 'chocolate', fillcolor: 'orange' }],
+        [BuiltinType.Source, { color: 'cornflowerblue', fillcolor: 'deepskyblue' }],
         [BuiltinType.View, { color: 'cornflowerblue', fillcolor: 'deepskyblue' }],
         [BuiltinType.Placement, { color: 'cornflowerblue', fillcolor: 'deepskyblue' }],
         [BuiltinType.Vector2, { color: 'indigo', fillcolor: 'violet' }],

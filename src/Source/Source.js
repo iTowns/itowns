@@ -21,7 +21,7 @@ export const supportedParsers = new Map([
     ['application/gdf', GDFParser.parse],
 ]);
 
-const noCache = { getByArray: () => {}, setByArray: a => a, clear: () => {} };
+const noCache = { getByArray: () => { }, setByArray: a => a, clear: () => { } };
 
 /**
  * @property {string} crs - data crs projection.
@@ -52,7 +52,7 @@ class InformationsData {
  * @property {FeatureBuildingOptions|Layer} out - options indicates how the features should be built.
  */
 // eslint-disable-next-line
-class /* istanbul ignore next */ ParsingOptions {}
+class /* istanbul ignore next */ ParsingOptions { }
 
 let uid = 0;
 

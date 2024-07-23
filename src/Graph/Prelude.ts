@@ -17,6 +17,8 @@ import PlanarViewNode from './Nodes/PlanarViewNode';
 import FieldGetterNode from './Nodes/FieldGetterNode';
 import DepthGetterNode from './Nodes/DepthGetterNode';
 import CameraDataNode from './Nodes/CameraDataNode';
+import SourceNode from './Nodes/Source/SourceNode';
+import sources from './Nodes/Source/Prelude';
 
 import {
     KernelType,
@@ -28,6 +30,7 @@ import {
     DumpDotNodeStyle,
     DumpDotGlobalStyle,
     GraphOptimization,
+    Source,
 } from './Types';
 import opti from './Optimizations/Prelude';
 
@@ -50,6 +53,9 @@ export {
     ViewNode,
     GlobeViewNode,
     PlanarViewNode,
+
+    // Sources
+    sources,
 
     // Processors
     ProcessorNode,
@@ -74,4 +80,5 @@ export type {
     DumpDotNodeStyle,
     DumpDotGlobalStyle,
     GraphOptimization,
+    Source,
 };
