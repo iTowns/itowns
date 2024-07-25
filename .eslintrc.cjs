@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
     root: true,
     extends: [
@@ -13,7 +15,15 @@ module.exports = {
     },
     settings: {
         'import/resolver': {
-            'babel-module': {},
+            'babel-module': {
+                alias: {
+                    '@itowns/geodesy': 'packages/Geodesy/src/Main.js',
+                    itowns: 'packages/Main/src/Main.js',
+                },
+                plugins: [
+                    ['module-extension-resolver'],
+                ],
+            },
         },
     },
     env: {
