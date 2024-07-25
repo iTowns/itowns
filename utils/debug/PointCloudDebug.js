@@ -14,39 +14,55 @@ function getController(gui, name) {
 }
 
 function hideController(gui, name) {
-    getController(gui, name).__li.style.display = 'none';
+    const controller = getController(gui, name);
+    if (controller) {
+        controller.__li.style.display = 'none';
+    }
 }
 
 function showController(gui, name) {
-    getController(gui, name).__li.style.display = '';
+    const controller = getController(gui, name);
+    if (controller) {
+        controller.__li.style.display = '';
+    }
 }
 
-function setupControllerVisibily(gui, mode) {
-    if ([PNTS_MODE.INTENSITY, PNTS_MODE.ELEVATION, PNTS_MODE.SCAN_ANGLE].includes(parseInt(mode, 10))) {
+function setupControllerVisibily(gui, displayMode, sizeMode) {
+    displayMode =  parseInt(displayMode, 10);
+    if ([PNTS_MODE.INTENSITY, PNTS_MODE.ELEVATION, PNTS_MODE.SCAN_ANGLE].includes(displayMode)) {
         showController(gui, 'gradient');
     } else {
         hideController(gui, 'gradient');
     }
-    if (PNTS_MODE.INTENSITY === parseInt(mode, 10)) {
+    if (PNTS_MODE.INTENSITY === displayMode) {
         showController(gui, 'minIntensityRange');
         showController(gui, 'maxIntensityRange');
     } else {
         hideController(gui, 'minIntensityRange');
         hideController(gui, 'maxIntensityRange');
     }
-    if (PNTS_MODE.ELEVATION === parseInt(mode, 10)) {
+    if (PNTS_MODE.ELEVATION === displayMode) {
         showController(gui, 'minElevationRange');
         showController(gui, 'maxElevationRange');
     } else {
         hideController(gui, 'minElevationRange');
         hideController(gui, 'maxElevationRange');
     }
-    if (PNTS_MODE.SCAN_ANGLE === parseInt(mode, 10)) {
+    if (PNTS_MODE.SCAN_ANGLE === displayMode) {
         showController(gui, 'minAngleRange');
         showController(gui, 'maxAngleRange');
     } else {
         hideController(gui, 'minAngleRange');
         hideController(gui, 'maxAngleRange');
+    }
+
+    sizeMode =  parseInt(sizeMode, 10);
+    if (sizeMode === PNTS_SIZE_MODE.VALUE) {
+        hideController(gui, 'minAttenuatedSize');
+        hideController(gui, 'maxAttenuatedSize');
+    } else {
+        showController(gui, 'minAttenuatedSize');
+        showController(gui, 'maxAttenuatedSize');
     }
 }
 
@@ -55,7 +71,7 @@ export default {
         layer.debugUI = datUi.addFolder(`${layer.id}`);
 
         const update = () => {
-            setupControllerVisibily(layer.debugUI, layer.material.mode);
+            setupControllerVisibily(layer.debugUI, layer.material.mode, layer.material.sizeMode);
             view.notifyChange(layer, true);
         };
 
@@ -140,15 +156,29 @@ export default {
         if (layer.material.shape != undefined) {
             styleUI.add(layer.material, 'shape', PNTS_SHAPE).name('Shape mode').onChange(update);
         }
-        styleUI.add(layer, 'opacity', 0, 1).name('Layer Opacity').onChange(update);
-        styleUI.add(layer, 'pointSize', 0, 15).name('Point Size').onChange(update);
-        if (layer.material.sizeMode != undefined) {
-            styleUI.add(layer.material, 'sizeMode', PNTS_SIZE_MODE).name('Point size mode').onChange(() => {
-                update();
-            });
+        styleUI.add(layer, 'opacity', 0, 1).name('Layer opacity').onChange(update);
+        styleUI.add(layer, 'pointSize', 0, 15).name('Point size').onChange(update);
+        if (layer.material.sizeMode != undefined && view.camera.camera3D.isPerspectiveCamera) {
+            styleUI.add(layer.material, 'sizeAttenuation').name('Size attenuation')
+                .onChange(update);
+            styleUI.add(layer.material, 'minAttenuatedSize', 0, 15).name('Min size')
+                .onChange((value) => {
+                    if (value > layer.material.maxAttenuatedSize) {
+                        layer.material.maxAttenuatedSize = value;
+                        getController(layer.debugUI, 'maxAttenuatedSize').updateDisplay();
+                    }
+                    update();
+                });
+            styleUI.add(layer.material, 'maxAttenuatedSize', 0, 15).name('Max size')
+                .onChange((value) => {
+                    if (value < layer.material.minAttenuatedSize) {
+                        layer.material.minAttenuatedSize = value;
+                        getController(layer.debugUI, 'minAttenuatedSize').updateDisplay();
+                    }
+                    update();
+                });
         }
-        styleUI.add(layer.material, 'minAttenuatedSize', 0, 15).name('Min attenuated size').onChange(update);
-        styleUI.add(layer.material, 'maxAttenuatedSize', 0, 15).name('Max attenuated size').onChange(update);
+
         if (layer.material.picking != undefined) {
             styleUI.add(layer.material, 'picking').name('Display picking id').onChange(update);
         }
@@ -161,7 +191,7 @@ export default {
         debugUI.add(layer, 'dbgDisplayChildren').name('Display children of sticky node').onChange(update);
         debugUI.add(layer, 'dbgDisplayParents').name('Display parents of sticky node').onChange(update);
 
-        setupControllerVisibily(layer.debugUI, layer.material.mode);
+        setupControllerVisibily(layer.debugUI, layer.material.mode, layer.material.sizeMode);
 
         const isInHierarchy = function isInHierarchy(name1, name2) {
             return (layer.dbgDisplaySticky && name1 === name2)
