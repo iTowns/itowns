@@ -18,6 +18,7 @@ The following people have contributed to iTowns.
   * [Vincent Jaillot](https://github.com/jailln)
   * [Anthony Gullient](https://github.com/AnthonyGlt)
   * [Jonathan Garnier](https://github.com/jogarnier)
+  * [Irénée Dubourg](https://github.com/airnez)
 
 * [Oslandia](http://www.oslandia.com)
   * [Vincent Picavet](https://github.com/vpicavet)

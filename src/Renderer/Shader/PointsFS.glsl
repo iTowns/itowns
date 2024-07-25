@@ -20,7 +20,7 @@ void main() {
 #include <clipping_planes_pars_fragment>
     if (shape == PNTS_SHAPE_CIRCLE) {
         //circular rendering in glsl
-        if ((length(gl_PointCoord - 0.5) > 0.5) || (vColor.a == 0.0)) {
+        if ((length(gl_PointCoord - 0.5) > 0.5)) {
             discard;
         }
     }

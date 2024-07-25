@@ -148,7 +148,7 @@ function recomputeTexture(scheme, texture, nbClass) {
         data[j + 2] = parseInt(255 * color.b, 10);
         data[j + 3] = visible ? parseInt(255 * opacity, 10) : 0;
 
-        needTransparency = needTransparency || opacity < 1;
+        needTransparency = needTransparency || opacity < 1 || !visible;
     }
     texture.needsUpdate = true;
     return needTransparency;
