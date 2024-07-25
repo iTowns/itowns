@@ -1,9 +1,7 @@
 
 // next step is move these properties to Style class
-// and hide transparent mechanism
 function ReferLayerProperties(material, layer) {
     if (layer && layer.isGeometryLayer) {
-        let transparent = material.transparent;
         material.layer = layer;
 
         if (material.uniforms && material.uniforms.opacity != undefined) {
@@ -54,17 +52,6 @@ function ReferLayerProperties(material, layer) {
 
         Object.defineProperty(material, 'wireframe', {
             get: () => material.layer.wireframe,
-        });
-
-        Object.defineProperty(material, 'transparent', {
-            get: () => {
-                const needTransparency = material.userData.needTransparency?.[material.mode] || material.layer.opacity < 1.0;
-                if (transparent != needTransparency) {
-                    material.needsUpdate = true;
-                    transparent = needTransparency;
-                }
-                return transparent;
-            },
         });
     }
 
