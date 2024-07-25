@@ -67,12 +67,9 @@ export default {
 
         // If a zip is present, don't read anything else
         if (data.zip) {
-            result = shp.parseZip(data.zip);
+            result = shp(data.zip);
         } else if (data.shp && data.shx && data.dbf) {
-            result = Promise.all([
-                shp.parseShp(data.shp, data.prj),
-                shp.parseDbf(data.dbf),
-            ]).then(shp.combine);
+            result = shp(data);
         }
 
         options.in = options.in || {};
