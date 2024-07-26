@@ -1,5 +1,9 @@
 {
     "babelrcRoots": [
-        "."
+        ".",
+        "./packages/Geodesy",
+        "./packages/Main",
+        "./packages/Debug",
+        "./packages/Widget"
     ]
 }
