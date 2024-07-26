@@ -8,6 +8,7 @@
 #include <itowns/lighting_pars_fragment>
 #endif
 #include <itowns/mode_pars_fragment>
+#include <clipping_planes_pars_fragment>
 
 uniform vec3        diffuse;
 uniform float       opacity;
@@ -15,6 +16,7 @@ varying vec3        vUv; // uv.x/uv_1.x, uv.y, uv_1.y
 varying vec2        vHighPrecisionZW;
 
 void main() {
+    #include <clipping_planes_fragment>
     #include <logdepthbuf_fragment>
 
 #if MODE == MODE_ID

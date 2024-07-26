@@ -2,6 +2,7 @@
 #include <common>
 #include <itowns/elevation_pars_vertex>
 #include <logdepthbuf_pars_vertex>
+#include <clipping_planes_pars_vertex>
 #if NUM_CRS > 1
 attribute float     uv_1;
 #endif
@@ -15,10 +16,12 @@ varying vec3        vUv;
 varying vec3        vNormal;
 #endif
 void main() {
+
         #include <begin_vertex>
         #include <itowns/elevation_vertex>
         #include <itowns/geoid_vertex>
-        #include <project_vertex>
+        #include <project_vertex> // mvPosition
+        #include <clipping_planes_vertex>
         #include <logdepthbuf_vertex>
         vHighPrecisionZW = gl_Position.zw;
 #if MODE == MODE_FINAL

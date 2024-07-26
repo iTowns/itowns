@@ -43,7 +43,7 @@ describe('TileMesh', function () {
     const globalExtent = globalExtentTMS.get('EPSG:3857');
     // const view = new PlanarView(viewerDiv, globalExtent, { maxSubdivisionLevel: 20 });
 
-    const planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
+    const planarlayer = new PlanarLayer('globe', new THREE.Group(), { extent: globalExtent });
 
     // Mock scheduler
     const context = {

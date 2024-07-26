@@ -98,6 +98,7 @@ const fragmentShader = [];
 class LayeredMaterial extends THREE.ShaderMaterial {
     #_visible = true;
     constructor(options = {}, crsCount) {
+        options.clipping = options.clipping || options.clippingPlanes !== undefined;
         super(options);
 
         nbSamplers = nbSamplers || [samplersElevationCount, getMaxColorSamplerUnitsCount()];

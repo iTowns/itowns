@@ -87,6 +87,7 @@ class c3DEngine {
                 alpha: options.alpha,
                 logarithmicDepthBuffer: options.logarithmicDepthBuffer,
             });
+            this.renderer.localClippingEnabled = true;
             this.renderer.domElement.style.position = 'relative';
             this.renderer.domElement.style.zIndex = 0;
             this.renderer.domElement.style.top = 0;
