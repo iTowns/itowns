@@ -40,16 +40,17 @@ describe('updateLayeredMaterialNodeImagery', function () {
         source,
         crs: 'EPSG:4326',
         info: { update: () => {} },
+    });
+    layer.tileMatrixSets = [
+        'TMS:4326',
+        'TMS:3857',
+    ];
+    layer.parent = {
         tileMatrixSets: [
             'TMS:4326',
             'TMS:3857',
         ],
-        parent: { tileMatrixSets: [
-            'TMS:4326',
-            'TMS:3857',
-        ],
-        },
-    });
+    };
 
     const nodeLayer = new RasterColorTile(material, layer);
     material.getLayer = () => nodeLayer;
