@@ -1,5 +1,12 @@
 import * as THREE from 'three';
-import { CesiumIonTilesRenderer, GoogleTilesRenderer, TilesRenderer, GLTFStructuralMetadataExtension, GLTFCesiumRTCExtension } from '3d-tiles-renderer';
+import {
+    TilesRenderer,
+    GLTFStructuralMetadataExtension,
+    GLTFCesiumRTCExtension,
+    CesiumIonAuthPlugin,
+    GoogleCloudAuthPlugin,
+} from '3d-tiles-renderer';
+
 import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
 import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
@@ -134,14 +141,16 @@ class OGC3DTilesLayer extends GeometryLayer {
 
         this._handlePointsMaterialConfig(config);
 
+        this.tilesRenderer = new TilesRenderer(this.source.url);
         if (config.source.isOGC3DTilesIonSource) {
-            this.tilesRenderer = new CesiumIonTilesRenderer(config.source.assetId, config.source.accessToken);
+            this.tilesRenderer.registerPlugin(new CesiumIonAuthPlugin({
+                apiToken: config.source.accessToken,
+                assetId: config.source.assetId,
+            }));
         } else if (config.source.isOGC3DTilesGoogleSource) {
-            this.tilesRenderer = new GoogleTilesRenderer(config.source.key);
-        } else if (config.source.isOGC3DTilesSource) {
-            this.tilesRenderer = new TilesRenderer(this.source.url);
-        } else {
-            console.error('[OGC3DTilesLayer]: Unsupported source, cannot create OGC3DTilesLayer.');
+            this.tilesRenderer.registerPlugin(new GoogleCloudAuthPlugin({
+                apiToken: config.source.key,
+            }));
         }
 
         this.tilesRenderer.manager.addHandler(/\.gltf$/, itownsGLTFLoader);
