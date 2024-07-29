@@ -80,12 +80,12 @@
                 });
 
             // Add the UI Debug
-            // var d = new debug.Debug(view, menuGlobe.gui);
-            // $3dTilesLayerSetePC.whenReady
-            //     .then(() => {
-            //         debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
-            //         debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerSetePC);
-            //     });
+            var d = new debug.Debug(view, menuGlobe.gui);
+            $3dTilesLayerSetePC.whenReady
+                .then(() => {
+                    debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+                    debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerSetePC);
+                });
         </script>
     </body>
 </html>

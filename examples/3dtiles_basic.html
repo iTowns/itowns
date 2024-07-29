@@ -50,6 +50,7 @@
                 source: new itowns.OGC3DTilesSource({
                     url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithDiscreteLOD/tileset.json',
                 }),
+                sseThreshold: 0.05,
             });
 
             itowns.View.prototype.addLayer.call(view, $3dTilesLayerDiscreteLOD);
@@ -62,6 +63,7 @@
                 source: new itowns.OGC3DTilesSource({
                     url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithRequestVolume/tileset.json',
                 }),
+                sseThreshold: 1,
             });
 
             // add an event for picking the 3D Tiles layer and displaying
@@ -80,8 +82,8 @@
             // Add the UI Debug
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
-            // debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
-            // debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
             d.zoom = function() {
                 view.camera3D.position.set(1215013.9, -4736315.5, 4081597.5);
                 view.camera3D.quaternion.set(0.9108514448729665, 0.13456816437801225, 0.1107206134840362, 0.3741416847378546);
