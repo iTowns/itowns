@@ -49,12 +49,6 @@
                         .then(menuGlobe.addLayerGUI.bind(menuGlobe));
                 });
 
-	        // Create a new 3D tiles layer with batch table hierarchy extension
-            const extensions = new itowns.C3DTExtensions();
-            extensions.registerExtension("3DTILES_batch_table_hierarchy",
-                { [itowns.C3DTilesTypes.batchtable]:
-                    itowns.C3DTBatchTableHierarchyExtension });
-
             // Create the 3D Tiles layer
             var $3dTilesLayerBTHierarchy = new itowns.OGC3DTilesLayer(
                 '3d-tiles-bt-hierarchy', {
@@ -62,7 +56,6 @@
                     source: new itowns.OGC3DTilesSource({
                         url: 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/cesium/master/Apps/SampleData/Cesium3DTiles/Hierarchy/BatchTableHierarchy/tileset.json',
                     }),
-                    registeredExtensions: extensions,
                 });
 
             // add an event for picking the 3D Tiles layer and displaying

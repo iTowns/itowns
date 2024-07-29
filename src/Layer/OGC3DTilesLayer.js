@@ -11,8 +11,13 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
 import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
 import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
-import PointsMaterial from 'Renderer/PointsMaterial';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
+import PointsMaterial, {
+    PNTS_MODE,
+    PNTS_SHAPE,
+    PNTS_SIZE_MODE,
+    ClassificationScheme,
+} from 'Renderer/PointsMaterial';
 
 /*
  * A callback to execute for a given tile of a tileset associated with an
@@ -124,7 +129,7 @@ class OGC3DTilesLayer extends GeometryLayer {
     /**
      * Constructs a new OGC3DTilesLayer.
      * @param {String} id - unique layer id.
-     * @param {String} config - layer specific configuration
+     * @param {Object} config - layer specific configuration
      * @param {OGC3DTilesSource} config.source - data source configuration
      * @param {String} [config.pntsMode= PNTS_MODE.COLOR] {@link PointsMaterials} Point cloud coloring mode.
      *      Only 'COLOR' or 'CLASSIFICATION' are possible. COLOR uses RGB colors of the points,
@@ -163,15 +168,28 @@ class OGC3DTilesLayer extends GeometryLayer {
         // Add an initialization step that is resolved when the root tileset is loaded (see this._setup below), meaning
         // that the layer will be marked ready when the tileset has been loaded.
         this._res = this.addInitializationStep();
+
+        /**
+         * @type {number}
+         */
+        this.sseThreshold = this.tilesRenderer.errorTarget;
+        Object.defineProperty(this, 'sseThreshold', {
+            get() { return this.tilesRenderer.errorTarget; },
+            set(value) { this.tilesRenderer.errorTarget = value; },
+        });
+
+        if (config.sseThreshold) {
+            this.sseThreshold = config.sseThreshold;
+        }
     }
 
     // Store points material config so they can be used later to substitute points tiles material by our own PointsMaterial
     // These properties should eventually be managed through the Style API (see https://github.com/iTowns/itowns/issues/2336)
     _handlePointsMaterialConfig(config) {
-        this.pntsMode = config.pntsMode;
-        this.pntsShape = config.pntsShape;
-        this.classification = config.classification;
-        this.pntsSizeMode = config.pntsSizeMode;
+        this.pntsMode = config.pntsMode ?? PNTS_MODE.COLOR;
+        this.pntsShape = config.pntsShape ?? PNTS_SHAPE.CIRCLE;
+        this.classification = config.classification ?? ClassificationScheme.DEFAULT;
+        this.pntsSizeMode = config.pntsSizeMode ?? PNTS_SIZE_MODE.VALUE;
         this.pntsMinAttenuatedSize = config.pntsMinAttenuatedSize || 3;
         this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 10;
     }
@@ -218,8 +236,10 @@ class OGC3DTilesLayer extends GeometryLayer {
             }
         });
         this.tilesRenderer.addEventListener('load-model', ({ scene }) => {
-            this._assignFinalMaterial(scene);
-            this._assignFinalAttributes(scene);
+            scene.traverse((obj) => {
+                this._assignFinalMaterial(obj);
+                this._assignFinalAttributes(obj);
+            });
             view.notifyChange(this);
         });
         // Start loading tileset and tiles
@@ -247,9 +267,11 @@ class OGC3DTilesLayer extends GeometryLayer {
             });
             pointsMaterial.copy(material);
 
-            ReferLayerProperties(model.material, this);
-
             material = pointsMaterial;
+        }
+
+        if (material) {
+            ReferLayerProperties(material, this);
         }
 
         model.material = material;
