@@ -18,10 +18,9 @@
     </head>
     <body>
         <div id="description">Specify the URL of a Entwine Point Tree to load:
-            <input type="text" id="ept_url" />
-            <button onclick="readEPTURL()">Load</button>
-            <button onclick="loadGrandLyon()">Load the Grand Lyon
-                dataset</button>
+            <input type="text" id="copc_url" />
+            <button onclick="readCopcURL()">Load</button>
+            <button onclick="loadLidarHD()">Load LiDAR HD dataset</button>
             <div id="share"></div>
         </div>
         <div id="viewerDiv">
@@ -54,15 +53,15 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
-            var eptLayer, eptSource;
+            var layer;
 
             function onLayerReady() {
                 var lookAt = new itowns.THREE.Vector3();
-                eptLayer.root.bbox.getCenter(lookAt);
+                layer.root.bbox.getCenter(lookAt);
                 var coordLookAt = new itowns.Coordinates(view.referenceCrs, lookAt);
 
                 var size = new itowns.THREE.Vector3();
-                eptLayer.root.bbox.getSize(size);
+                layer.root.bbox.getSize(size);
 
                 view.controls.lookAtCoordinate({
                     coord: coordLookAt,
@@ -70,47 +69,76 @@
                 }, false);
             }
 
-            function readEPTURL() {
+            function readCopcURL() {
                 const urlParams = new URL(location.href).searchParams
-                var url = document.getElementById('ept_url').value || urlParams.get('ept');
+                var url = document.getElementById('copc_url').value || urlParams.get('copc');
 
                 if (url) {
-                    loadEPT(url);
+                    const options = {};
+                    urlParams.keys().forEach(key => {
+                        if (key !== 'copc') {
+                            if (key.includes('.')) {
+                                params = key.split('.');
+                                let object = options;
+                                params.forEach((subKey, index) => {
+                                    if (!object[subKey]) { object[subKey] = {}; }
+                                    if (index === params.length - 1) {
+                                        object[subKey] = parseFloat(urlParams.get(key));
+                                    }
+                                    object = object[subKey];
+                                })
+                            } else {
+                                options[key] = parseFloat(urlParams.get(key));
+                            }
+                            
+                        }
+                    });
+                    loadCopc(url, options);
 
                     document.getElementById('share').innerHTML = '<a href="' +
-                        location.href.replace(location.search, '?ept=' + url) +
+                        location.href.replace(location.search, '?copc=' + url) +
                         '" target="_blank">Link to share this view</a>';
-                    document.getElementById('ept_url').value = url;
+                    document.getElementById('copc_url').value = url;
                 }
             }
 
-            function loadEPT(url) {
-                eptSource = new itowns.EntwinePointTileSource({ url });
+            function loadCopc(url, options) {
+                const source = new itowns.CopcSource({ url });
 
-                if (eptLayer) {
-                    debugGui.removeFolder(eptLayer.debugUI);
-                    view.removeLayer('Entwine Point Tile');
+                if (layer) {
+                    debugGui.removeFolder(layer.debugUI);
+                    view.removeLayer('COPC');
                     view.notifyChange();
-                    eptLayer.delete();
+                    layer.delete();
                 }
 
-                eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', {
-                    source: eptSource,
+                const config = {
+                    source,
                     crs: view.referenceCrs,
-                });
+                    sseThreshold: 2,
+                    pointBudget: 3000000,
+                    ...options,
+                }
 
-                itowns.View.prototype.addLayer.call(view, eptLayer).then(onLayerReady);
+                layer = new itowns.CopcLayer('COPC', config);
 
-                eptLayer.whenReady
-                    .then(() => debug.PointCloudDebug.initTools(view, eptLayer, debugGui));
+                itowns.View.prototype.addLayer.call(view, layer).then(onLayerReady);
+
+                layer.whenReady
+                    .then(() => debug.PointCloudDebug.initTools(view, layer, debugGui));
             }
 
-            function loadGrandLyon() {
-                document.getElementById('ept_url').value = 'https://download.data.grandlyon.com/files/grandlyon/imagerie/mnt2018/lidar/ept/';
-                readEPTURL();
+            function loadLidarHD() {
+                // const url ="https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/ML/LHD_FXX_0746_6509_PTS_C_LAMB93_IGN69.copc.laz"
+                const url ="https://dl-lidar.ign.fr/ppk-lidar/ML/LHD_FXX_0746_6509_PTS_C_LAMB93_IGN69.copc.laz" //fixed with proxy
+                const options = {
+                    material: {mode: 2},
+                    opacity: 0.5,
+                }
+                loadCopc(url, options);
             }
 
-            readEPTURL();
+            readCopcURL();
         </script>
     </body>
 </html>
