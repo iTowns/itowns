@@ -45,34 +45,33 @@
 
             // Create a new Layer 3d-tiles For DiscreteLOD
             // -------------------------------------------
-            var $3dTilesLayerDiscreteLOD = new itowns.OGC3DTilesLayer('3d-tiles-discrete-lod', {
+            var $3dTilesLayerDiscreteLOD = new itowns.C3DTilesLayer('3d-tiles-discrete-lod', {
                 name: 'DiscreteLOD',
-                source: new itowns.OGC3DTilesSource({
+                sseThreshold: 0.05,
+                source: new itowns.C3DTilesSource({
                     url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithDiscreteLOD/tileset.json',
                 }),
-                sseThreshold: 0.05,
-            });
+            }, view);
 
             itowns.View.prototype.addLayer.call(view, $3dTilesLayerDiscreteLOD);
 
             // Create a new Layer 3d-tiles For Viewer Request Volume
             // -----------------------------------------------------
 
-            var $3dTilesLayerRequestVolume = new itowns.OGC3DTilesLayer('3d-tiles-request-volume', {
+            var $3dTilesLayerRequestVolume = new itowns.C3DTilesLayer('3d-tiles-request-volume', {
                 name: 'RequestVolume',
-                source: new itowns.OGC3DTilesSource({
+                source: new itowns.C3DTilesSource({
                     url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithRequestVolume/tileset.json',
                 }),
                 sseThreshold: 1,
-            });
+            }, view);
 
             // add an event for picking the 3D Tiles layer and displaying
             // information about the picked feature in an html div
-            const pickingArgs = {
-                htmlDiv: document.getElementById('featureInfo'),
-                view,
-                layer: $3dTilesLayerRequestVolume,
-            };
+            var pickingArgs = {};
+            pickingArgs.htmlDiv = document.getElementById('featureInfo');
+            pickingArgs.view = view;
+            pickingArgs.layer = $3dTilesLayerRequestVolume;
             itowns.View.prototype.addLayer.call(view,
                 $3dTilesLayerRequestVolume).then(function _() {
                     window.addEventListener('mousemove',
@@ -82,8 +81,8 @@
             // Add the UI Debug
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
-            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
-            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume);
             d.zoom = function() {
                 view.camera3D.position.set(1215013.9, -4736315.5, 4081597.5);
                 view.camera3D.quaternion.set(0.9108514448729665, 0.13456816437801225, 0.1107206134840362, 0.3741416847378546);

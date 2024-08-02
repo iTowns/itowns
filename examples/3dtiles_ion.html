@@ -22,9 +22,9 @@
     </head>
     <body>
         <div id="description">
-            <p><b>This example displays a dataset representing extruded OSM buildings from Cesium ion
+            <p><b>This example displays a dataset representing extruded OSM buildings from Cesium ion 
                 with Cesium default access token. Zoom to any place in the world to see the buildings. <br>
-                Buildings may appear to "fly" above the ground in some places, this is due to the combination
+                Buildings may appear to "fly" above the ground in some places, this is due to the combination 
                 of precision errors of this dataset and of the 3D terrain we use in this example. </b>
             </p>
         </div>
@@ -53,7 +53,7 @@
                 diffuse: new itowns.THREE.Color(0xa0d5fc)
             };
             var view = new itowns.GlobeView(viewerDiv, placement, viewOptions);
-
+            
             // Setup loading screen
             setupLoadingScreen(viewerDiv, view);
 
@@ -91,19 +91,19 @@
             extensions.registerExtension("3DTILES_batch_table_hierarchy",
                 { [itowns.C3DTilesTypes.batchtable]:
                     itowns.C3DTBatchTableHierarchyExtension });
-
-            // Create a 3D Tiles layer from Cesium ion server with Cesium default access token and assetId of the
+            
+            // Create a 3D Tiles layer from Cesium ion server with Cesium default access token and assetId of the 
             // OSM buildings dataset.
-            var threeDTilesIonSource = new itowns.OGC3DTilesIonSource({
+            var threeDTilesIonSource = new itowns.C3DTilesIonSource({
                 accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzOTkxZjY3NS0yNDU4LTQ3MTAtOGQ2NC1lOGI4YmY5ODhhYjQiLCJpZCI6Mzg4OTQsImlhdCI6MTYwNjkyMDkwOH0.aVrPA4xnpbSUlqfJ9RkSWmZtms_hnSRz7m596h1R7ew',
                 assetId: 96188
             });
             threeDTilesIonSource.whenReady.then(displayAttributions); // Add attributions returned by cesium ion server
-            var threeDTilesIonLayer = new itowns.OGC3DTilesLayer('3d-tiles-cesium-ion', {
+            var threeDTilesIonLayer = new itowns.C3DTilesLayer('3d-tiles-cesium-ion', {
                 name: '3D Tiles from Cesium Ion',
                 source: threeDTilesIonSource,
-                // registeredExtensions: extensions,
-            });
+                registeredExtensions: extensions,
+            }, view);
 
             itowns.View.prototype.addLayer.call(view, threeDTilesIonLayer);
 
