@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import { Camera } from 'three';
 import { DOMParser } from '@xmldom/xmldom';
 import threads from 'worker_threads';
+import 'webgl-mock';
 
 const WORKER = Symbol('worker');
 
@@ -168,51 +169,64 @@ global.document = {
         if (type == 'canvas') {
             const canvas = new DOMElement();
 
-            canvas.getContext = () => ({
-                fillRect: () => { },
-                rect: () => { },
-                moveTo: () => { },
-                lineTo: () => { },
-                beginPath: () => { },
-                stroke: () => { },
-                fill: () => { },
-                arc: () => { },
-                setTransform: () => { },
-                setLineDash: () => { },
-                drawImage: (img, sx, sy, sw, sh, dx, dy, dw, dh) => {
-                    canvas.width = dw;
-                    canvas.height = dh;
+            canvas.getContext = (contextType) => {
+                if (contextType === '2d') {
+                    return {
+                        fillRect: () => { },
+                        rect: () => { },
+                        moveTo: () => { },
+                        lineTo: () => { },
+                        beginPath: () => { },
+                        stroke: () => { },
+                        fill: () => { },
+                        arc: () => { },
+                        setTransform: () => { },
+                        setLineDash: () => { },
+                        drawImage: (img, sx, sy, sw, sh, dx, dy, dw, dh) => {
+                            canvas.width = dw;
+                            canvas.height = dh;
 
-                    const image = global.document.createElement('img');
-                    image.width = dw;
-                    image.height = dh;
-                    return image;
-                },
-                getImageData: (sx, sy, sw, sh) => {
-                    const imageData = {
-                        data: new Uint8ClampedArray(sw * sh * 4),
-                        colorSpace: 'srgb',
-                        height: sh,
-                        width: sw,
+                            const image = global.document.createElement('img');
+                            image.width = dw;
+                            image.height = dh;
+                            return image;
+                        },
+                        getImageData: (sx, sy, sw, sh) => {
+                            const imageData = {
+                                data: new Uint8ClampedArray(sw * sh * 4),
+                                colorSpace: 'srgb',
+                                height: sh,
+                                width: sw,
+                            };
+                            return imageData;
+                        },
+                        putImageData: (imageData) => {
+                            const image = global.document.createElement('img');
+                            image.width = imageData.sw;
+                            image.height = imageData.sh;
+                            return image;
+                        },
+                        createPattern: (/* image, repetition */) => {
+                            const canvasPattern = new CanvasPattern();
+                            return canvasPattern;
+                        },
+                        createLinearGradient: (/* x0, y0, x1, y1 */) => {
+                            const canvasGradient = new CanvasGradient();
+                            return canvasGradient;
+                        },
+                        canvas,
                     };
-                    return imageData;
-                },
-                putImageData: (imageData) => {
-                    const image = global.document.createElement('img');
-                    image.width = imageData.sw;
-                    image.height = imageData.sh;
-                    return image;
-                },
-                createPattern: (/* image, repetition */) => {
-                    const canvasPattern = new CanvasPattern();
-                    return canvasPattern;
-                },
-                createLinearGradient: (/* x0, y0, x1, y1 */) => {
-                    const canvasGradient = new CanvasGradient();
-                    return canvasGradient;
-                },
-                canvas,
-            });
+                } else if (contextType === 'webgl' || contextType === 'webgl2') {
+                    const gl = new WebGLRenderingContext(canvas);
+                    // Force to WebGL 2.0 as this is used by THREE. Note that we should return different values depending
+                    // on the parameter to retrieved but this has not been implemented yet as it is sufficient for the
+                    // tests to run. See https://github.com/iTowns/itowns/pull/2376 for more information.
+                    gl.getParameter = () => 'WebGL 2';
+                    // Mock WebGL 2.0 methods
+                    gl.texImage3D = () => {};
+                    return gl;
+                }
+            };
 
             canvas.toDataURL = () => ({ width: canvas.width, height: canvas.height });
 
