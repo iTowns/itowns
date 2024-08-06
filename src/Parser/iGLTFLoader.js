@@ -15,6 +15,10 @@ import { GLTFLoader } from 'ThreeExtended/loaders/GLTFLoader';
  * to a position on the globe (i.e. in GlobeView) to correctly orient a model on a GlobeView.
  */
 class iGLTFLoader extends THREE.Loader {
+    /**
+     * Constructs a new instance of the iGLTFLoader.
+     * @param {THREE.LoadingManager} [manager] - The loadingManager for the loader to use. Default is THREE.DefaultLoadingManager.
+     */
     constructor(manager) {
         super(manager);
         this.legacyGLTFLoader = new LegacyGLTFLoader();
