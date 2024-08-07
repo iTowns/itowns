@@ -3,7 +3,6 @@ import fs from 'fs';
 import iGLTFLoader from 'Parser/iGLTFLoader';
 
 describe('iGLTFLoader', function () {
-
     const gltfLoader = new iGLTFLoader();
 
     const glb = fs.readFileSync('./test/data/gltf/box.glb');
