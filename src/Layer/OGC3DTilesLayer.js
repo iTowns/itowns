@@ -326,10 +326,12 @@ class OGC3DTilesLayer extends GeometryLayer {
         /** @type{number|null} */
         let batchId;
         if (object.isPoints && index) {
-            batchId = index;
+            batchId = object.geometry.getAttribute('_BATCHID')?.getX(index) ?? index;
         } else if (object.isMesh && face) {
-            batchId = object.geometry.getAttribute('_BATCHID').getX(face.a);
-        } else {
+            batchId = object.geometry.getAttribute('_BATCHID')?.getX(face.a);
+        }
+
+        if (batchId === undefined) {
             return null;
         }
 
