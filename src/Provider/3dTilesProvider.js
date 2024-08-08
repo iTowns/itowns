@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import B3dmParser from 'Parser/B3dmParser';
 import PntsParser from 'Parser/PntsParser';
-import iGLTFLoader from 'Parser/iGLTFLoader';
 import Fetcher from 'Provider/Fetcher';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import PointsMaterial from 'Renderer/PointsMaterial';
+// A bit weird but temporary until we remove this deprecated provider. Mainly to benefit from the enableDracoLoader and enableKtx2Loader
+// methods.
+import { itownsGLTFLoader } from 'Layer/OGC3DTilesLayer';
 
 const utf8Decoder = new TextDecoder();
 
@@ -28,7 +30,7 @@ function b3dmToMesh(data, layer, url) {
 
 function gltfToMesh(data, layer, url) {
     const urlBase = THREE.LoaderUtils.extractUrlBase(url);
-    return iGLTFLoader.parse(data, urlBase).then(result => ({ object3d: result.scene }));
+    return itownsGLTFLoader.parseAsync(data, urlBase).then(result => ({ object3d: result.scene }));
 }
 
 function pntsParse(data, layer) {
