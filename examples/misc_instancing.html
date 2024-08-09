@@ -145,7 +145,8 @@
             });
 
             // Load a glTF resource
-            itowns.glTFLoader.load(
+            var gltfLoader = new itowns.iGLTFLoader();
+            gltfLoader.load(
                 // resource URL
                 "https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/lampadaire/scene.gltf",
 

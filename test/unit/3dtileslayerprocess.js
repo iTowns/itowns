@@ -29,7 +29,7 @@ describe('3Dtiles layer', function () {
         let stubFetcherJson;
         let context;
         let viewer;
-        let threedTilesLayer;
+        let ogc3DTilesLayer;
 
         before(function () {
             stubFetcherJson = sinon.stub(Fetcher, 'json')
@@ -47,7 +47,7 @@ describe('3Dtiles layer', function () {
             const source = new C3DTilesSource({
                 url: 'https://raw.githubusercontent.com/CesiumGS/3d-tiles-samples/master/1.0/TilesetWithDiscreteLOD/tileset.json',
             });
-            threedTilesLayer = new C3DTilesLayer('3d-tiles-discrete-lod', {
+            ogc3DTilesLayer = new C3DTilesLayer('3d-tiles-discrete-lod', {
                 source,
                 sseThreshold: 0.05,
             }, viewer);
@@ -56,7 +56,7 @@ describe('3Dtiles layer', function () {
                 camera: viewer.camera,
                 engine: viewer.mainLoop.gfxEngine,
                 scheduler: viewer.mainLoop.scheduler,
-                geometryLayer: threedTilesLayer,
+                geometryLayer: ogc3DTilesLayer,
                 view: viewer,
             };
         });
@@ -67,7 +67,7 @@ describe('3Dtiles layer', function () {
         });
 
         it('Add 3dtiles layer', function (done) {
-            View.prototype.addLayer.call(viewer, threedTilesLayer)
+            View.prototype.addLayer.call(viewer, ogc3DTilesLayer)
                 .then((layer) => {
                     assert.equal(layer.root.children.length, 1);
                     done();
@@ -75,14 +75,14 @@ describe('3Dtiles layer', function () {
         });
 
         it('preUpdate 3dtiles layer', function () {
-            const elements = threedTilesLayer.preUpdate(context, new Set([threedTilesLayer]));
+            const elements = ogc3DTilesLayer.preUpdate(context, new Set([ogc3DTilesLayer]));
             assert.equal(elements.length, 1);
         });
 
         it('update 3dtiles layer', function () {
-            const node = threedTilesLayer.root;
+            const node = ogc3DTilesLayer.root;
             viewer.camera3D.updateMatrixWorld();
-            threedTilesLayer.update(context, threedTilesLayer, node);
+            ogc3DTilesLayer.update(context, ogc3DTilesLayer, node);
             assert.ok(node.pendingSubdivision);
         });
     });

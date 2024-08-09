@@ -54,6 +54,7 @@ export { default as PointCloudLayer } from 'Layer/PointCloudLayer';
 export { default as PotreeLayer } from 'Layer/PotreeLayer';
 export { default as Potree2Layer } from 'Layer/Potree2Layer';
 export { default as C3DTilesLayer, C3DTILES_LAYER_EVENTS } from 'Layer/C3DTilesLayer';
+export { default as OGC3DTilesLayer, OGC3DTILES_LAYER_EVENTS, enableDracoLoader, enableKtx2Loader } from 'Layer/OGC3DTilesLayer';
 export { default as TiledGeometryLayer } from 'Layer/TiledGeometryLayer';
 export { default as OrientedImageLayer } from 'Layer/OrientedImageLayer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from 'Layer/LayerUpdateStrategy';
@@ -81,6 +82,9 @@ export { default as Potree2Source } from 'Source/Potree2Source';
 export { default as C3DTilesSource } from 'Source/C3DTilesSource';
 export { default as C3DTilesIonSource } from 'Source/C3DTilesIonSource';
 export { default as C3DTilesGoogleSource } from 'Source/C3DTilesGoogleSource';
+export { default as OGC3DTilesSource } from 'Source/OGC3DTilesSource';
+export { default as OGC3DTilesIonSource } from 'Source/OGC3DTilesIonSource';
+export { default as OGC3DTilesGoogleSource } from 'Source/OGC3DTilesGoogleSource';
 export { default as EntwinePointTileSource } from 'Source/EntwinePointTileSource';
 export { default as CopcSource } from 'Source/CopcSource';
 
@@ -96,7 +100,8 @@ export { default as LASParser } from 'Parser/LASParser';
 export { default as ISGParser } from 'Parser/ISGParser';
 export { default as GDFParser } from 'Parser/GDFParser';
 export { default as GTXParser } from 'Parser/GTXParser';
-export { default as GLTFParser,  enableDracoLoader, enableKtx2Loader, glTFLoader, legacyGLTFLoader } from 'Parser/GLTFParser';
+export { default as B3dmParser } from 'Parser/B3dmParser';
+export { default as iGLTFLoader } from 'Parser/iGLTFLoader';
 
 // 3D Tiles classes and extensions
 // Exported to allow one to implement its own 3D Tiles extension which needs to

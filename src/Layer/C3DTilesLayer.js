@@ -57,7 +57,7 @@ function object3DHasFeature(object3d) {
 class C3DTilesLayer extends GeometryLayer {
     #fillColorMaterialsBuffer;
     /**
-     * Constructs a new instance of 3d tiles layer.
+     * @deprecated Deprecated 3D Tiles layer. Use {@link OGC3DTilesLayer} instead.
      * @constructor
      * @extends GeometryLayer
      *
