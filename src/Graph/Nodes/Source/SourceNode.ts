@@ -1,23 +1,30 @@
-import { BuiltinType, Dependency, ProcessorNode, Source, Type } from 'Graph/Prelude';
+import { BuiltinType, Dependency, Graph, GraphNode, ProcessorNode, Source, Type } from 'Graph/Prelude';
 
-export type ConstructorArgs = { url: string, crs: string } & { [name: string]: unknown };
+export type BaseConstructorArgs = { url: string, crs: string };
 
-export default abstract class SourceNode extends ProcessorNode {
+export default abstract class SourceNode<ConstructorArgs extends BaseConstructorArgs, Input, Output> extends GraphNode {
+    private _constructor: (args: ConstructorArgs) => Source<Input, Output>;
+    private _config: ConstructorArgs;
+
     public constructor(
-        constructor: (args: ConstructorArgs) => Source<unknown>,
-        url: Dependency,
-        crs: Dependency,
-        extraDependencies?: { [name: string]: [Dependency, Type] },
+        constructor: (args: ConstructorArgs) => Source<Input, Output>,
+        constructorArgs: ConstructorArgs,
     ) {
         super(
-            {
-                url: [url, BuiltinType.String],
-                crs: [crs, BuiltinType.CRS],
-                ...extraDependencies,
-            },
+            new Map(),
             BuiltinType.Source,
-            (_frame, args) => constructor(args as ConstructorArgs),
             true,
         );
+
+        this._constructor = constructor;
+        this._config = constructorArgs;
+    }
+
+    protected _apply(_graph?: Graph, frame: number = 0): void {
+        this._out.frame = frame;
+
+        const start = Date.now();
+        this.updateOutputs({ [SourceNode.defaultIoName]: this._constructor(this._config) })
+        this._out.timeTaken = Date.now() - start;
     }
 }

@@ -81,6 +81,6 @@ export type GraphOptimization = {
     operation: (nodes: GraphNode[], graph: Graph) => GraphNode
 };
 
-export interface Source<Input, Data> {
-    loadData(extent: Extent, input: Input): Promise<Data>;
+export interface Source<Input, Output> {
+    loadData(extent: Extent, input: Input): Promise<Output>;
 }

@@ -163,14 +163,26 @@ export default abstract class GraphNode {
         }
     }
 
+    /**
+     * Returns the map of all of the node's outputs.
+     */
     public get outputs(): Map<string, Output> {
         return this._out.outputs;
     }
 
+    /**
+     * Returns a dependency object for the desired output.
+     */
     public toDep(output?: string): Dependency {
+
         return { node: this, output: output ?? GraphNode.defaultIoName };
     }
 
+    /**
+     * Updates desire node outputs with the new values, updating the frame if it is provided.
+     *
+     * @throws If an output does not exist.
+     */
     public updateOutputs(updates: { [name: string]: unknown }, frame?: number): void {
         const errors = [];
 
@@ -192,18 +204,25 @@ export default abstract class GraphNode {
         }
     }
 
+    /**
+     * Marks the node as needing to be updated on the next frame and propagates the update to its dependant nodes
+     * recursively (depth-first).
+     */
     public needsUpdate(): void {
         this._needsUpdate = true;
 
         for (const output of this.outputs.values()) {
             for (const dep of output.dependants) {
-                dep.node._needsUpdate = true;
+                if (!dep.node._needsUpdate) {
+                    dep.node.needsUpdate();
+                }
             }
         }
     }
 
     /**
-     * Get the output of the node at a given frame.
+     * Get the output of the node for a given frame.
+     *
      * @param name The name of the output to get.
      * @param graph The graph the node is a part of.
      * @param frame The frame to get the output for.

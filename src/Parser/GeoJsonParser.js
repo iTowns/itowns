@@ -206,6 +206,8 @@ export default {
         options = deprecatedParsingOptionsToNewOne(options);
         options.in = options.in || {};
 
+        console.log(options)
+
         const out = options.out;
         const _in = options.in;
 
