@@ -109,7 +109,8 @@
                     pointBudget: 3000000,
                 });
                 view.addLayer(layer).then(onLayerReady);
-                debug.PointCloudDebug.initTools(view, layer, gui);
+                layer.whenReady
+                    .then(() => debug.PointCloudDebug.initTools(view, layer, gui));
             }
 
             function loadAutzen() {
