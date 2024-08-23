@@ -17,7 +17,7 @@ uniform int shape;
 void main() {
 
 // Early discard (clipping planes and shape)
-#include <clipping_planes_pars_fragment>
+#include <clipping_planes_fragment>
     if (shape == PNTS_SHAPE_CIRCLE) {
         //circular rendering in glsl
         if ((length(gl_PointCoord - 0.5) > 0.5)) {
