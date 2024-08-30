@@ -156,8 +156,8 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
 
     class DebugLayer extends GeometryLayer {
         constructor(id, options = {}) {
-            options.update = debugIdUpdate;
             super(id, options.object3d || new THREE.Group(), options);
+            this.update = debugIdUpdate;
             this.isDebugLayer = true;
         }
 

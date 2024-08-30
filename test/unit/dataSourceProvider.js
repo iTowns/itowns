@@ -82,8 +82,6 @@ describe('Provide in Sources', function () {
         nodeLayerElevation = material.getLayer(elevationlayer.id);
 
         featureLayer = new GeometryLayer('geom', new THREE.Group(), {
-            update: FeatureProcessing.update,
-            convert: Feature2Mesh.convert(),
             crs: 'EPSG:4978',
             mergeFeatures: false,
             zoom: { min: 10 },
@@ -95,6 +93,8 @@ describe('Provide in Sources', function () {
                 },
             }),
         });
+        featureLayer.update = FeatureProcessing.update;
+        featureLayer.convert = Feature2Mesh.convert();
 
         featureLayer.source = new WFSSource({
             url: 'http://',

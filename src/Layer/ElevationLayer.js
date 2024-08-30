@@ -22,6 +22,8 @@ import { RasterElevationTile } from 'Renderer/RasterTile';
  * ```
  * @property {number} colorTextureElevationMinZ - elevation minimum in `useColorTextureElevation` mode.
  * @property {number} colorTextureElevationMaxZ - elevation maximum in `useColorTextureElevation` mode.
+ *
+ * @extends RasterLayer
  */
 class ElevationLayer extends RasterLayer {
     /**
@@ -29,7 +31,6 @@ class ElevationLayer extends RasterLayer {
      * plane or globe view for example.
      *
      * @constructor
-     * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -60,14 +61,52 @@ class ElevationLayer extends RasterLayer {
      * view.addLayer(elevation);
      */
     constructor(id, config = {}) {
-        super(id, config);
+        const {
+            scale = 1.0,
+            noDataValue,
+            clampValues,
+            useRgbaTextureElevation,
+            useColorTextureElevation,
+            colorTextureElevationMinZ,
+            colorTextureElevationMaxZ,
+            bias,
+            mode,
+            ...rasterConfig
+        } = config;
+
+        super(id, rasterConfig);
+
+        /**
+         * @type {boolean}
+         * @readonly
+         */
+        this.isElevationLayer = true;
+
+        this.noDataValue = noDataValue;
+
         if (config.zmin || config.zmax) {
             console.warn('Config using zmin and zmax are deprecated, use {clampValues: {min, max}} structure.');
         }
-        this.zmin = config.clampValues?.min ?? config.zmin;
-        this.zmax = config.clampValues?.max ?? config.zmax;
-        this.isElevationLayer = true;
-        this.defineLayerProperty('scale', this.scale || 1.0);
+
+        /**
+         * @type {number | undefined}
+         */
+        this.zmin = clampValues?.min ?? config.zmin;
+
+        /**
+         * @type {number | undefined}
+         */
+        this.zmax = clampValues?.max ?? config.zmax;
+
+        this.defineLayerProperty('scale', scale);
+
+        this.useRgbaTextureElevation = useRgbaTextureElevation;
+        this.useColorTextureElevation = useColorTextureElevation;
+        this.colorTextureElevationMinZ = colorTextureElevationMinZ;
+        this.colorTextureElevationMaxZ = colorTextureElevationMaxZ;
+
+        this.bias = bias;
+        this.mode = mode;
     }
 
     /**
