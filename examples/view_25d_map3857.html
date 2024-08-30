@@ -1,0 +1,290 @@
+<html>
+    <head>
+        <title>Itowns - Planar example</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <link rel="stylesheet" type="text/css" href="css/widgets.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="description">
+            Key bindings
+            <ul>
+              <li>Left-Click: camera translation (drag)</li>
+              <li>Right-Click: camera translation (pan)</li>
+              <li>Ctrl + Left-Click: camera rotation (orbit)</li>
+              <li>Spacebar / Wheel-Click: smart travel</li>
+              <li>Mouse Wheel: zoom in/out</li>
+              <li>T: orient camera to a top view</li>
+              <li>Y: move camera to start position</li>
+            </ul>
+        </div>
+        <div id="viewerDiv" class="viewer"></div>
+
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="../dist/itowns_widgets.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script type="text/javascript">
+
+            function xml2json(xml) {
+                try {
+                    var obj = {};
+                    if (xml.children.length > 0) {
+                        for (var i = 0; i < xml.children.length; i++) {
+                            var item = xml.children.item(i);
+                            var nodeName = item.nodeName;
+                            if (item.attributes.length > 1) {
+                                for (var j = 0; j < item.attributes.length; j++) {
+                                    const attribute = item.attributes.item(j);
+                                    const newEl = document.createElement(attribute.name);
+                                    const newText = document.createTextNode(attribute.value);
+                                    newEl.appendChild(newText);
+                                    item.appendChild(newEl)
+                                }
+                            }
+
+                            if (typeof (obj[nodeName]) == "undefined") {
+                                obj[nodeName] = xml2json(item);
+                            } else {
+                                if (typeof (obj[nodeName].push) == "undefined") {
+                                    var old = obj[nodeName];
+
+                                    obj[nodeName] = [];
+                                    obj[nodeName].push(old);
+                                }
+                            obj[nodeName].push(xml2json(item));
+                            }
+                        }
+                    } else {
+                        obj = xml.textContent;
+                    }
+                    return obj;
+                } catch (e) {
+                    console.log(e.message);
+                }
+            }
+
+            // const urlTMS = 'https://www.opengis.net/def/crs/EPSG/0/3857';
+            // const getTMS = itowns.Fetcher.xml('./layers/TMS_EPSG-3857.xml')
+            //     .then(xml => {
+            //         return xml2json(xml);
+            //     });
+
+            // // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
+            itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+            /* global itowns, setupLoadingScreen, GuiTools, debug */
+
+            // const urlWMS = 'https://imagerie.data.grandlyon.com/wms/grandlyon?';
+            // const getCapabilities = itowns.Fetcher.xml(`${urlWMS}SERVICE=WMS&REQUEST=GetCapabilities`)
+            //     .then(xml => {
+            //         return xml2json(xml);
+            //     });
+
+
+        async function main() {
+
+            let viewCRS;
+            viewCRS = 'EPSG:3857';
+
+            // const TMS = await getTMS;
+            // console.log(TMS);
+            // console.log(capabilities.WMS_Capabilities.Capability.Layer);
+
+            // const capabilities = await getCapabilities;
+            // console.log(capabilities);
+            // console.log(capabilities.WMS_Capabilities.Capability.Layer);
+
+            // const ortho_latest_Capa = capabilities.WMS_Capabilities.Capability.Layer.Layer.filter(l => l.Name === 'ortho_latest')[0];
+            // console.log('Ortho_latest crs', ortho_latest_Capa.CRS);
+            // const boundingBox = ortho_latest_Capa.BoundingBox.filter(bb => bb.crs === viewCRS)[0];
+            // const extentOrthoLatest = new itowns.Extent(
+            //     viewCRS,
+            //     +boundingBox.minx, +boundingBox.maxx,
+            //     +boundingBox.miny, +boundingBox.maxy,
+            // );
+
+            var extent0;
+            var viewerDiv;
+            var view;
+            var p;
+            var menuGlobe;
+            var d;
+
+            // origin extent (the data to display)
+            extent0 = new itowns.Extent(
+                'EPSG:3946',
+                1837816.94334, 1847692.32501,
+                5170036.4587, 5178412.82698);
+
+            // EPSG:3946 global extent
+            extent = new itowns.Extent(
+                'EPSG:3946',
+                621509.63, 4660562.44,
+                2320724.18, 5891430.09,
+            );
+
+            extent3857 = new itowns.Extent('EPSG:3857', -20037508.3427892, 20037508.3427892, -20037508.3427892, 20037508.3427892)
+            // var extent3857 = new itowns.Extent(
+            //     'EPSG:3857',
+            //     -20026376.39, 20026376.39,
+            //     -20048966.10, 20048966.10);
+
+            // console.log(extent, extent0, extentOrthoLatest);
+
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            viewerDiv = document.getElementById('viewerDiv');
+            // console.log(extent0.center(), extent0.center().as(viewCRS), extent0.as(viewCRS))
+
+            const placement = { coord: extent0.center().as(viewCRS), heading: 49.6, range: 6200, tilt: 17 };
+            // Instanciate PlanarView*
+            view = new itowns.PlanarView(viewerDiv, extent0.as(viewCRS), { placement });
+            // view = new itowns.PlanarView(viewerDiv, extent3857, { placement });
+            setupLoadingScreen(viewerDiv, view);
+
+
+    // -> WMTS Layer
+            itowns.Fetcher.json("./layers/JSONLayers/Ortho.json").then(
+                function _(config) {
+                    config.source = new itowns.WMTSSource(config.source);// crs: 'EPSG:3857',
+                    var layer = new itowns.ColorLayer("Ortho", config);
+                    view.addLayer(layer);
+                }
+            );
+
+
+    // -> TMS imagery source and layer
+            var opensmSource = new itowns.TMSSource({
+                isInverted: true,
+                url: 'https://tile.openstreetmap.org/${z}/${x}/${y}.png',
+                networkOptions: { crossOrigin: 'anonymous' },
+                extent: extent3857,
+                crs: 'EPSG:3857',
+                attribution: {
+                    name: 'OpenStreetMap',
+                    url: 'http://www.openstreetmap.org/',
+                },
+            });
+            var opensmLayer = new itowns.ColorLayer('OPENSM', {
+                updateStrategy: {
+                    type: itowns.STRATEGY_DICHOTOMY,
+                },
+                source: opensmSource,
+            });
+            view.addLayer(opensmLayer);
+
+
+    // -> WMS imagery layer
+            var wmsImagerySource = new itowns.WMSSource({
+                extent: extent3857,
+                name: 'ortho_latest',
+                url: 'https://imagerie.data.grandlyon.com/wms/grandlyon',
+                version: '1.3.0',
+                crs: viewCRS,
+                format: 'image/jpeg',
+            });
+
+            var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
+                updateStrategy: {
+                    type: itowns.STRATEGY_DICHOTOMY,
+                    options: {},
+                },
+                source: wmsImagerySource,
+            });
+
+            view.addLayer(wmsImageryLayer);
+
+    // -> WMS elevation layer
+            var wmsElevationSource = new itowns.WMSSource({
+                extent: extent3857,
+                url: 'https://imagerie.data.grandlyon.com/wms/grandlyon',
+                name: 'MNT2018_Altitude_2m',
+                crs: viewCRS,
+                width: 256,
+                format: 'image/jpeg',
+            });
+
+            var wmsElevationLayer = new itowns.ElevationLayer('wms_elevation', {
+                useColorTextureElevation: true,
+                colorTextureElevationMinZ: 144,
+                colorTextureElevationMaxZ: 622,
+                source: wmsElevationSource,
+            });
+
+            view.addLayer(wmsElevationLayer);
+
+    // -> WFS layer for label (Not working)
+            var wfsCartoSource = new itowns.WFSSource({
+                url: 'https://data.geopf.fr/wfs/ows?',
+                version: '2.0.0',
+                typeName: 'BDCARTO_V5:zone_d_habitation',
+                crs: viewCRS,
+                ipr: 'IGN',
+                format: 'application/json',
+            });
+
+            var wfsCartoStyle = {
+                zoom: { min: 0, max: 20 },
+                text: {
+                    field: '{toponyme}',
+                    color: 'white',
+                    transform: 'uppercase',
+                    size: 15,
+                    haloColor: 'rgba(20,20,20, 0.8)',
+                    haloWidth: 3,
+                },
+            };
+
+            var wfsCartoLayer = new itowns.LabelLayer('wfsCarto', {
+                source: wfsCartoSource,
+                style: wfsCartoStyle,
+            });
+
+            // view.addLayer(wfsCartoLayer);
+
+            // Add a scale :
+            const scale = new itowns_widgets.Scale(view, {
+                position: 'bottom-right',
+                translate: { x: -70 },
+            });
+
+            // Request redraw
+            view.notifyChange();
+
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                if (view.isDebugMode) {
+                    menuGlobe = new GuiTools('menuDiv', view);
+                    menuGlobe.addImageryLayersGUI(view.getLayers(function gui(l) { return l.isColorLayer; }));
+                    menuGlobe.addElevationLayerGUI(wmsElevationLayer);
+                    debug.createTileDebugUI(menuGlobe.gui, view);
+                }
+
+                const extent3 = extent0.as(viewCRS)
+
+                clipPlanes = [
+                    new itowns.THREE.Plane(new itowns.THREE.Vector3(1, 0, 0), -extent3.west),
+                    new itowns.THREE.Plane(new itowns.THREE.Vector3(-1, 0, 0), extent3.east),
+                    new itowns.THREE.Plane(new itowns.THREE.Vector3(0, -1, 0), extent3.north),
+                    new itowns.THREE.Plane(new itowns.THREE.Vector3(0, 1, 0), -extent3.south),
+                ];
+                const helpers = new itowns.THREE.Group();
+				helpers.add( new itowns.THREE.PlaneHelper( clipPlanes[0], 2000000, 0xff0000 ) );
+				helpers.add( new itowns.THREE.PlaneHelper( clipPlanes[1], 2000000, 0xff0000 ) );
+				helpers.add( new itowns.THREE.PlaneHelper( clipPlanes[ 2 ], 2000000, 0x0000ff ) );
+                helpers.add( new itowns.THREE.PlaneHelper( clipPlanes[ 3 ], 2000000, 0xff00ff ) );
+				helpers.visible = true;
+                view.tileLayer.object3d.add( helpers );
+
+            });
+        };
+
+        main();
+        </script>
+    </body>
+</html>

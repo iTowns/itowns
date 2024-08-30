@@ -67,7 +67,7 @@ describe('Provide in Sources', function () {
         stubFetcherTexture = sinon.stub(Fetcher, 'texture')
             .callsFake(() => Promise.resolve(new THREE.Texture()));
 
-        planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
+        planarlayer = new PlanarLayer('globe', new THREE.Group(), { extent: globalExtent });
         colorlayer = new ColorLayer('color', { crs: 'EPSG:3857', source: false });
         elevationlayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: false });
 
