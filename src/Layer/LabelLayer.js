@@ -230,18 +230,22 @@ class LabelLayer extends GeometryLayer {
      *
      * @param {FeatureCollection} data - The FeatureCollection to read the
      * labels from.
-     * @param {Extent} extent
+     * @param {Extent|Tile} extentOrTile
      *
      * @return {Label[]} An array containing all the created labels.
      */
-    convert(data, extent) {
+    convert(data, extentOrTile) {
         const labels = [];
 
         // Converting the extent now is faster for further operation
-        extent.as(data.crs, _extent);
+        if (extentOrTile.isExtent) {
+            extentOrTile.as(data.crs, _extent);
+        } else {
+            extentOrTile.toExtent(data.crs, _extent);
+        }
         coord.crs = data.crs;
 
-        context.setZoom(extent.zoom);
+        context.setZoom(extentOrTile.zoom);
 
         data.features.forEach((f) => {
             // TODO: add support for LINE and POLYGON

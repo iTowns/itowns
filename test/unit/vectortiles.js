@@ -2,7 +2,7 @@ import fs from 'fs';
 import assert from 'assert';
 import VectorTileParser from 'Parser/VectorTileParser';
 import VectorTilesSource from 'Source/VectorTilesSource';
-import Extent from 'Core/Geographic/Extent';
+import Tile from 'Core/Tile/Tile';
 import urlParser from 'Parser/MapBoxUrlParser';
 import Fetcher from 'Provider/Fetcher';
 import sinon from 'sinon';
@@ -23,7 +23,7 @@ describe('Vector tiles', function () {
     // this PBF file comes from https://github.com/mapbox/vector-tile-js
     // it contains two square polygons
     const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
-    const extent = new Extent('TMS', 1, 1, 1);
+    const tile = new Tile('TMS', 1, 1, 1);
 
     function parse(pbf, layers) {
         return VectorTileParser.parse(pbf, {
@@ -34,7 +34,7 @@ describe('Vector tiles', function () {
             out: {
                 crs: 'EPSG:3857',
             },
-            extent,
+            extent: tile,
         });
     }
 
@@ -367,8 +367,8 @@ describe('VectorTilesSource', function () {
             source.whenReady
                 .then(() => {
                     source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
-                    const extent = new Extent('TMS', 1, 1, 1);
-                    source.loadData(extent, { crs: 'EPSG:4326' })
+                    const tile = new Tile('TMS', 1, 1, 1);
+                    source.loadData(tile, { crs: 'EPSG:4326' })
                         .then((featureCollection) => {
                             assert.equal(featureCollection.features[0].vertices.length, 20);
                             done();

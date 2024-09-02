@@ -19,7 +19,7 @@ function textureColorLayer(texture, layer) {
 }
 
 export default {
-    convert(data, extentDestination, layer) {
+    convert(data, destinationTile, layer) {
         let texture;
         if (data.isFeatureCollection) {
             const backgroundLayer = layer.source.backgroundLayer;
@@ -27,10 +27,10 @@ export default {
                 new THREE.Color(backgroundLayer.paint['background-color']) :
                 undefined;
 
-            extentDestination.as(CRS.formatToEPSG(layer.crs), extentTexture);
+            destinationTile.toExtent(CRS.formatToEPSG(layer.crs), extentTexture);
             texture = Feature2Texture.createTextureFromFeature(data, extentTexture, layer.subdivisionThreshold, layer.style, backgroundColor);
             texture.features = data;
-            texture.extent = extentDestination;
+            texture.extent = destinationTile;
         } else if (data.isTexture) {
             texture = data;
         } else {
