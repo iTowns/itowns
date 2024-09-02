@@ -1,3 +1,110 @@
+<a name="2.44.0"></a>
+# [2.44.0](https://github.com/iTowns/itowns/compare/v2.43.1...v2.44.0) (2024-09-02)
+
+
+### Features
+
+* **3dtiles:** add new OGC3DTilesLayer using 3d-tiles-renderer-js ([a2fedd8](https://github.com/iTowns/itowns/commit/a2fedd8))
+* Add support for Cloud Optimized Point Clouds (COPC) ([f1e014f](https://github.com/iTowns/itowns/commit/f1e014f))
+* **COG:** Allow tileWidth, tileHeight & resampleMethod parameter ([24ab82f](https://github.com/iTowns/itowns/commit/24ab82f))
+* **deps:** bump proj4 from 2.9.2 to 2.11.0 ([7962fdc](https://github.com/iTowns/itowns/commit/7962fdc))
+* **deps:** bump three from 0.159.0 to 0.165.0 ([258adc6](https://github.com/iTowns/itowns/commit/258adc6))
+* **examples:** add COPC url loader ([6b4a5f2](https://github.com/iTowns/itowns/commit/6b4a5f2))
+* introducing workers for LAS parser ([0505297](https://github.com/iTowns/itowns/commit/0505297))
+* **LasParser:** add parsing of chunks of LAS files ([eec3197](https://github.com/iTowns/itowns/commit/eec3197))
+* **potree2:** Add potree 2.0 loader ([ee56ec7](https://github.com/iTowns/itowns/commit/ee56ec7))
+
+
+### Bug Fixes
+
+* **3dTilesLayer:** fix transparency for 3dTilesLayer ([af4d061](https://github.com/iTowns/itowns/commit/af4d061))
+* **C3DTFeature:** use correct interleaved buffer getter ([#2326](https://github.com/iTowns/itowns/issues/2326)) ([6e20fcb](https://github.com/iTowns/itowns/commit/6e20fcb))
+* **COG:** Fix AggregateError (retry if error occur) ([038dedd](https://github.com/iTowns/itowns/commit/038dedd))
+* **COG:** Fix COG example ([aaa9691](https://github.com/iTowns/itowns/commit/aaa9691))
+* **COG:** Fix COG levels parsing ([921bc03](https://github.com/iTowns/itowns/commit/921bc03))
+* **COG:** Fix selectLevel (incorrect level selection when source extent is huge) ([809a4ad](https://github.com/iTowns/itowns/commit/809a4ad))
+* **COG:** Fix texture width & height (use source.tileWidth & source.tileHeight) ([e03caf5](https://github.com/iTowns/itowns/commit/e03caf5))
+* **deps:** update babel and add [@babel](https://github.com/babel)/core dependency ([77fd215](https://github.com/iTowns/itowns/commit/77fd215))
+* **entwine:** change transparency settings ([47f859d](https://github.com/iTowns/itowns/commit/47f859d))
+* **example:** change klokantech url in 3dtile_ion.html ([14891fd](https://github.com/iTowns/itowns/commit/14891fd))
+* **MVT:** add texture and subdivision size parameter ([f286b40](https://github.com/iTowns/itowns/commit/f286b40))
+* **parser:** wrong shpjs 6.0.1 using ([755ae17](https://github.com/iTowns/itowns/commit/755ae17))
+* **PointCloud:** Allow using custom object3d on PointCloudLayer ([2b81710](https://github.com/iTowns/itowns/commit/2b81710))
+* **PointCloud:** fix after pr feedback ([19c0e65](https://github.com/iTowns/itowns/commit/19c0e65))
+* **pointcloud:** fix non-world projected elevation ([58fc8bb](https://github.com/iTowns/itowns/commit/58fc8bb))
+* **PointCloud:** use preSSE for C3DTilesLayer ([8654ccb](https://github.com/iTowns/itowns/commit/8654ccb))
+* **PointsMaterial.js:** Allow transparency when any class is invisible ([d091207](https://github.com/iTowns/itowns/commit/d091207))
+* **points:** support point classification up to 256 classes ([170f220](https://github.com/iTowns/itowns/commit/170f220))
+* **points:** use param classificationScheme in 3DTiles ([eeef84d](https://github.com/iTowns/itowns/commit/eeef84d))
+* **potree2:** Fix options request issue with raw.githubusercontent.com data source ([9abdeed](https://github.com/iTowns/itowns/commit/9abdeed))
+* **potree2:** Fix sample data url ([d5ee112](https://github.com/iTowns/itowns/commit/d5ee112))
+* **scheduler:** ignore invalid URLs ([c3a67a3](https://github.com/iTowns/itowns/commit/c3a67a3))
+* **shader:** Remove early discard based on vcolor ([16cbbbf](https://github.com/iTowns/itowns/commit/16cbbbf))
+* **test-functional:** fixes on hooks_functional.js ([bc41708](https://github.com/iTowns/itowns/commit/bc41708))
+* **test:** fetcher.js augment timeout limit ([5668334](https://github.com/iTowns/itowns/commit/5668334))
+* **test:** fix change on id for test functional ([3780c56](https://github.com/iTowns/itowns/commit/3780c56))
+* **test:** import HttpsProxyAgent ([624880d](https://github.com/iTowns/itowns/commit/624880d))
+* **TiledGeometryLayer:** add hideSkirt unit test ([3738a06](https://github.com/iTowns/itowns/commit/3738a06))
+* **TiledGeometryLayer:** handle hideSkirt at creation ([0fa08cd](https://github.com/iTowns/itowns/commit/0fa08cd))
+* **VectorTile:** fix Style.setFromVectorTileLayer() when icon.id with {xx} or/and .stops ([85e49a1](https://github.com/iTowns/itowns/commit/85e49a1))
+
+
+### Examples
+
+* **COG:** Set maxSubdivisionLevel to 10 (default is 5) ([1de7124](https://github.com/iTowns/itowns/commit/1de7124))
+
+
+### Code Refactoring
+
+* **3dTilesDebug:** add properties hasPnts for pnts fields in GUI ([ff0ff3d](https://github.com/iTowns/itowns/commit/ff0ff3d))
+* **3dTiles:** supp unused parameter in debug set up ([5bf62f2](https://github.com/iTowns/itowns/commit/5bf62f2))
+* move loaders with little to no dependency to own directory ([1bca2e3](https://github.com/iTowns/itowns/commit/1bca2e3))
+* **PointCloudDebug:** fix SizeMode gui ([bf87dd6](https://github.com/iTowns/itowns/commit/bf87dd6))
+* **points:** material as superset of three PointsMaterial ([63af9e2](https://github.com/iTowns/itowns/commit/63af9e2))
+* **points:** remove compressed normal support in material ([24b3641](https://github.com/iTowns/itowns/commit/24b3641))
+* **points:** remove support of oriented images ([c93a2cd](https://github.com/iTowns/itowns/commit/c93a2cd))
+* **PotreeDebug:** rename PotreeDebug to PointCloudDebug ([d1eb374](https://github.com/iTowns/itowns/commit/d1eb374))
+* **style:** clean up style and test/style.js ([982b908](https://github.com/iTowns/itowns/commit/982b908))
+* **test-functional:** reworks on hooks-functional.js: better gestion of errors and save initial camera position only once ([488d6a1](https://github.com/iTowns/itowns/commit/488d6a1))
+* **test:** setFromVectorTileLayer() with icon ([565472b](https://github.com/iTowns/itowns/commit/565472b))
+
+
+### Workflow and chores
+
+* release v2.44.0 ([d667129](https://github.com/iTowns/itowns/commit/d667129))
+* add threads dependency for web workers ([1976481](https://github.com/iTowns/itowns/commit/1976481))
+* **babel:** modernize config and clean webpack ([048eaec](https://github.com/iTowns/itowns/commit/048eaec))
+* **CONTRIBUTORS.md:** add name ([ad67a6b](https://github.com/iTowns/itowns/commit/ad67a6b))
+* **deps-dev:** bump braces from 3.0.2 to 3.0.3 ([936bc22](https://github.com/iTowns/itowns/commit/936bc22))
+* **deps-dev:** bump webpack from 5.93.0 to 5.94.0 ([9b59bd3](https://github.com/iTowns/itowns/commit/9b59bd3))
+* **deps:** bump [@mapbox](https://github.com/mapbox)/vector-tile from 1.3.1 to 2.0.3 ([de9d16c](https://github.com/iTowns/itowns/commit/de9d16c))
+* **deps:** bump [@tweenjs](https://github.com/tweenjs)/tween.js from 18.6.4 to 23.1.2 ([52c0b6c](https://github.com/iTowns/itowns/commit/52c0b6c))
+* **deps:** bump developer dependencies ([ff70c47](https://github.com/iTowns/itowns/commit/ff70c47))
+* **deps:** bump earcut from 2.2.4 to 3.0.0 ([620e91c](https://github.com/iTowns/itowns/commit/620e91c))
+* **deps:** bump pbf from 3.2.1 to 4.0.1 ([544b4a7](https://github.com/iTowns/itowns/commit/544b4a7))
+* **deps:** bump shpjs from 4.0.4 to 6.0.1 ([7c904ff](https://github.com/iTowns/itowns/commit/7c904ff))
+* **deps:** bump ws and puppeteer ([02d141f](https://github.com/iTowns/itowns/commit/02d141f))
+* **deps:** remove unused marked devDependencies ([0c4d101](https://github.com/iTowns/itowns/commit/0c4d101))
+* **devDeps:** remove unused babel-register-esm ([43a3c14](https://github.com/iTowns/itowns/commit/43a3c14))
+* **eslint:** use babel resolver instead of webpack ([4c98e9e](https://github.com/iTowns/itowns/commit/4c98e9e))
+* **issues:** update issue templates ([e6bc462](https://github.com/iTowns/itowns/commit/e6bc462))
+* **test:** add web worker polyfill ([cec42ad](https://github.com/iTowns/itowns/commit/cec42ad))
+* use node hooks to fix coverage issues ([50e785c](https://github.com/iTowns/itowns/commit/50e785c))
+
+
+### Documentation
+
+* Add link to governance repo in the README ([d3a317b](https://github.com/iTowns/itowns/commit/d3a317b))
+* **COPC:** expose doc for COPCLayer and COPCSource ([48fb9df](https://github.com/iTowns/itowns/commit/48fb9df))
+
+
+### BREAKING CHANGES
+
+* **points:** * Remove overlayColor property (replaced by the standard diffuse property)
+* **points:** * Remove non-tested and non-documented orientedImageMaterial property
+
+
+
 <a name="2.43.1"></a>
 ## [2.43.1](https://github.com/iTowns/itowns/compare/v2.43.0...v2.43.1) (2024-04-30)
 
