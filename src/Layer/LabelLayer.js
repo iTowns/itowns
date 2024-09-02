@@ -239,7 +239,11 @@ class LabelLayer extends GeometryLayer {
         const labels = [];
 
         // Converting the extent now is faster for further operation
-        extent.as(data.crs, _extent);
+        if (extent.isExtent) {
+            extent.as(data.crs, _extent);
+        } else {
+            extent.toExtent(data.crs, _extent);
+        }
         coord.crs = data.crs;
 
         context.setZoom(extent.zoom);

@@ -217,7 +217,9 @@ export default {
 
         if (out.filteringExtent) {
             if (typeof out.filteringExtent == 'boolean') {
-                out.filterExtent = options.extent.as(_in.crs);
+                out.filterExtent = options.extent.isExtent ?
+                    options.extent.as(_in.crs) :
+                    options.extent.toExtent(_in.crs);
             } else if (out.filteringExtent.isExtent) {
                 out.filterExtent = out.filteringExtent;
             }

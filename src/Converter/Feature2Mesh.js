@@ -65,7 +65,7 @@ class FeatureMesh extends THREE.Group {
                 // calculate the scale transformation to transform the feature.extent
                 // to feature.extent.as(crs)
                 coord.crs = Crs.formatToEPSG(this.#originalCrs);
-                this.extent.as(coord.crs, extent);
+                this.extent.toExtent(coord.crs, extent);
                 extent.spatialEuclideanDimensions(dim_ref);
                 extent.planarDimensions(dim);
                 if (dim.x && dim.y) {

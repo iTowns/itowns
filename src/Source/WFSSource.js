@@ -172,9 +172,11 @@ class WFSSource extends Source {
         }
     }
 
-    urlFromExtent(extent) {
-        extent.as(this.crs, _extent);
-        return URLBuilder.bbox(_extent, this);
+    urlFromExtent(extentOrTile) {
+        const extent = extentOrTile.isExtent ?
+            extentOrTile.as(this.crs, _extent) :
+            extentOrTile.toExtent(this.crs, _extent);
+        return URLBuilder.bbox(extent, this);
     }
 
     extentInsideLimit(extent) {

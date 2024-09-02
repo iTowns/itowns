@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
 import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
-import { globalExtentTMS, schemeTiles } from 'Core/Geographic/Extent';
+import { globalExtentTMS, schemeTiles } from 'Core/Geographic/Tile';
 import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
 import CRS from 'Core/Geographic/Crs';
 
