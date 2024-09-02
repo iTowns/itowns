@@ -1,6 +1,9 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
 import CRS from 'Core/Geographic/Crs';
+import Extent from 'Core/Geographic/Extent';
+
+const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
 /**
  * @classdesc
@@ -170,7 +173,8 @@ class WFSSource extends Source {
     }
 
     urlFromExtent(extent) {
-        return URLBuilder.bbox(extent, this);
+        extent.as(this.crs, _extent);
+        return URLBuilder.bbox(_extent, this);
     }
 
     extentInsideLimit(extent) {
