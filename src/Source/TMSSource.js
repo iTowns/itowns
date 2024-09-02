@@ -1,9 +1,11 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
-import Extent, { globalExtentTMS } from 'Core/Geographic/Extent';
+import Extent from 'Core/Geographic/Extent';
+import Tile from 'Core/Tile/Tile';
+import { globalExtentTMS } from 'Core/Tile/TileGrid';
 import CRS from 'Core/Geographic/Crs';
 
-const extent = new Extent(CRS.tms_4326, 0, 0, 0);
+const _tile = new Tile(CRS.tms_4326, 0, 0, 0);
 
 /**
  * An object defining the source of resources to get from a
@@ -115,8 +117,8 @@ class TMSSource extends Source {
         }
     }
 
-    urlFromExtent(extent) {
-        return URLBuilder.xyz(extent, this);
+    urlFromExtent(tile) {
+        return URLBuilder.xyz(tile, this);
     }
 
     onLayerAdded(options) {
@@ -127,11 +129,11 @@ class TMSSource extends Source {
         const crs = parent ? parent.extent.crs : options.out.crs;
         if (this.tileMatrixSetLimits && !this.extentSetlimits[crs]) {
             this.extentSetlimits[crs] = {};
-            extent.crs = this.crs;
+            _tile.crs = this.crs;
             for (let i = this.zoom.max; i >= this.zoom.min; i--) {
                 const tmsl = this.tileMatrixSetLimits[i];
-                const { west, north } = extent.set(i, tmsl.minTileRow, tmsl.minTileCol).as(crs);
-                const { east, south } = extent.set(i, tmsl.maxTileRow, tmsl.maxTileCol).as(crs);
+                const { west, north } = _tile.set(i, tmsl.minTileRow, tmsl.minTileCol).toExtent(crs);
+                const { east, south } = _tile.set(i, tmsl.maxTileRow, tmsl.maxTileCol).toExtent(crs);
                 this.extentSetlimits[crs][i] = new Extent(crs, west, east, south, north);
             }
         }

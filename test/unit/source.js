@@ -11,6 +11,7 @@ import OrientedImageSource from 'Source/OrientedImageSource';
 import C3DTilesSource from 'Source/C3DTilesSource';
 import C3DTilesIonSource from 'Source/C3DTilesIonSource';
 import Extent from 'Core/Geographic/Extent';
+import Tile from 'Core/Tile/Tile';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 
@@ -78,14 +79,13 @@ describe('Sources', function () {
 
         it('should return keys from request', function () {
             const source = new WFSSource(paramsWFS);
-            const extent = new Extent('TMS:4326', 5, 10, 15);
-            const keys = source.requestToKey(extent);
-            assert.equal(extent.zoom, keys[0]);
-            assert.equal(extent.row, keys[1]);
-            assert.equal(extent.col, keys[2]);
+            const tile = new Tile('TMS:4326', 5, 10, 15);
+            const keys = source.requestToKey(tile);
+            assert.equal(tile.zoom, keys[0]);
+            assert.equal(tile.row, keys[1]);
+            assert.equal(tile.col, keys[2]);
             const extentepsg = new Extent('EPSG:4326', 5.5, 10, 22.3, 89.34);
             const keysepsg = source.requestToKey(extentepsg);
-            assert.equal(extentepsg.zoom, 0);
             assert.equal(extentepsg.south, keysepsg[1]);
             assert.equal(extentepsg.west, keysepsg[2]);
         });
@@ -105,7 +105,7 @@ describe('Sources', function () {
 
         it('should instance and use WMTSSource', function () {
             const source = new WMTSSource(paramsWMTS);
-            const extent = new Extent('TMS:3857', 5, 0, 0);
+            const extent = new Tile('TMS:3857', 5, 0, 0);
             assert.ok(source.isWMTSSource);
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent, 5));
@@ -122,7 +122,7 @@ describe('Sources', function () {
                 5: { minTileRow: 0, maxTileRow: 32, minTileCol: 0, maxTileCol: 32 },
             };
             const source = new WMTSSource(paramsWMTS);
-            const extent = new Extent('TMS:3857', 5, 0, 0).as('EPSG:4326');
+            const extent = new Tile('TMS:3857', 5, 0, 0);
             source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
             assert.ok(source.isWMTSSource);
             assert.ok(source.urlFromExtent(extent));
@@ -132,8 +132,8 @@ describe('Sources', function () {
         it('should use vendor specific parameters for the creation of the WMTS url', function () {
             paramsWMTS.vendorSpecific = vendorSpecific;
             const source = new WMTSSource(paramsWMTS);
-            const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
-            const url = source.urlFromExtent(extent);
+            const tile = new Tile('TMS:4326', 0, 10, 0);
+            const url = source.urlFromExtent(tile);
             const end = '&buffer=4096&format_options=dpi:300;quantizer:octree&tiled=true';
             assert.ok(url.endsWith(end));
         });
@@ -203,7 +203,7 @@ describe('Sources', function () {
         it('should instance and use TMSSource', function () {
             const source = new TMSSource(paramsTMS);
             source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
-            const extent = new Extent('TMS:3857', 5, 0, 0);
+            const extent = new Tile('TMS:3857', 5, 0, 0);
             assert.ok(source.isTMSSource);
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent, extent.zoom));
