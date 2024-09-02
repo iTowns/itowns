@@ -1,8 +1,9 @@
-import Extent from 'Core/Geographic/Extent';
-
-const extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
-
 let subDomainsCount = 0;
+
+/**
+ * @param {string} url
+ * @returns {string}
+ */
 function subDomains(url) {
     const subDomainsPtrn = /\$\{u:([\w-_.|]+)\}/.exec(url);
 
@@ -57,8 +58,13 @@ export default {
      * // The resulting url is:
      * // http://server.geo/tms/15/2142/3412.jpg;
      *
-     * @param {Extent} coords - the coordinates
-     * @param {Source} source
+     * @param {Object} coords - tile coordinates
+     * @param {number} coords.row - tile row
+     * @param {number} coords.col - tile column
+     * @param {number} coords.zoom - tile zoom
+     * @param {Object} source
+     * @param {string} source.url
+     * @param {Function} source.tileMatrixCallback
      *
      * @return {string} the formed url
      */
@@ -88,8 +94,12 @@ export default {
      * // The resulting url is:
      * // http://server.geo/wms/BBOX=12,35,14,46&FORMAT=jpg&SERVICE=WMS
      *
-     * @param {Extent} bbox - the bounding box
-     * @param {Object} source
+     * @param {Object} bbox - the bounding box
+     * @param {number} bbox.west
+     * @param {number} bbox.south
+     * @param {number} bbox.east
+     * @param {number} bbox.north
+     * @param {Object} source - the source of data
      * @param {string} source.crs
      * @param {number} source.bboxDigits
      * @param {string} source.url
@@ -102,11 +112,10 @@ export default {
         if (source.bboxDigits !== undefined) {
             precision = source.bboxDigits;
         }
-        bbox.as(source.crs, extent);
-        const w = extent.west.toFixed(precision);
-        const s = extent.south.toFixed(precision);
-        const e = extent.east.toFixed(precision);
-        const n = extent.north.toFixed(precision);
+        const w = bbox.west.toFixed(precision);
+        const s = bbox.south.toFixed(precision);
+        const e = bbox.east.toFixed(precision);
+        const n = bbox.north.toFixed(precision);
 
         let bboxInUnit = source.axisOrder || 'wsen';
         bboxInUnit = bboxInUnit.replace('w', `${w},`)
