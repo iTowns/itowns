@@ -51,7 +51,7 @@ jobs:
       # Prepare archive for deploying
       - name: Archive production artifacts
         if: ${{ success() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: dist-itowns
             path: |
@@ -127,7 +127,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist-itowns
 
@@ -202,7 +202,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist-itowns
 
@@ -288,7 +288,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist-itowns
 
