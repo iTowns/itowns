@@ -76,7 +76,8 @@
                 "Potree2Source",
                 "VectorTilesSource",
                 "EntwinePointTileSource",
-                "CopcSource"
+                "CopcSource",
+                "MultiSource"
             ],
 
             "Provider": [

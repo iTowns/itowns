@@ -151,7 +151,12 @@ class Layer extends THREE.EventDispatcher {
             this._reject = rj;
         }).then(() => {
             this.ready = true;
-            this.source.onLayerAdded({ out: this });
+            if (this.source.whenReady.constructor === Array) {
+                console.log('layer', this.source.whenReady[0].onLayerAdded);
+                this.source.whenReady[0].onLayerAdded({ out: this });
+            } else {
+                this.source.onLayerAdded({ out: this });
+            }
             return this;
         });
 

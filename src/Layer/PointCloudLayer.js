@@ -237,7 +237,7 @@ class PointCloudLayer extends GeometryLayer {
                 // if the change is caused by a camera move, no need to bother
                 // to find common ancestor: we need to update the whole tree:
                 // some invisible tiles may now be visible
-                return [this.root];
+                return this.root;
             }
             if (source.obj === undefined) {
                 continue;
@@ -250,7 +250,7 @@ class PointCloudLayer extends GeometryLayer {
                     commonAncestor = source.findCommonAncestor(commonAncestor);
 
                     if (!commonAncestor) {
-                        return [this.root];
+                        return this.root;
                     }
                 }
             }
@@ -261,7 +261,7 @@ class PointCloudLayer extends GeometryLayer {
         }
 
         // Start updating from hierarchy root
-        return [this.root];
+        return this.root;
     }
 
     update(context, layer, elt) {

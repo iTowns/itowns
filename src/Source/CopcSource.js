@@ -87,8 +87,8 @@ class CopcSource extends Source {
 
         this.isCopcSource = true;
 
-        this.parser = LASParser.parseChunk;
         this.fetcher = Fetcher.arrayBuffer;
+        this.parser = LASParser.parseChunk;
 
         this.colorDepth = config.colorDepth ?? 16;
 
@@ -100,6 +100,7 @@ class CopcSource extends Source {
                     range: `bytes=${begin}-${end - 1}`,
                 },
             }).then(buffer => new Uint8Array(buffer));
+
         this.whenReady = getHeaders(get).then((metadata) => {
             this.header = metadata.header;
             this.info = metadata.info;

@@ -83,6 +83,7 @@ export { default as C3DTilesIonSource } from 'Source/C3DTilesIonSource';
 export { default as C3DTilesGoogleSource } from 'Source/C3DTilesGoogleSource';
 export { default as EntwinePointTileSource } from 'Source/EntwinePointTileSource';
 export { default as CopcSource } from 'Source/CopcSource';
+export { default as MultiSource } from 'Source/MultiSource';
 
 // Parsers provided by default in iTowns
 // Custom parser can be implemented as wanted, as long as the main function
