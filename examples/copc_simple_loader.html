@@ -55,13 +55,19 @@
 
                 const lookAt = new itowns.THREE.Vector3();
                 const size = new itowns.THREE.Vector3();
-                layer.root.bbox.getSize(size);
-                layer.root.bbox.getCenter(lookAt);
+
+                const bboxes = layer.root.map(root => root.bbox);
+                let bbox = bboxes[0];
+                for (let i = 1; i < bboxes.length; i++) {
+                    bbox = bbox.union(bboxes[i]);
+                }
+                bbox.getSize(size);
+                bbox.getCenter(lookAt);
 
                 camera.far = 2.0 * size.length();
 
-                controls.groundLevel = layer.root.bbox.min.z;
-                const position = layer.root.bbox.min.clone().add(
+                controls.groundLevel = bbox.min.z;
+                const position = bbox.min.clone().add(
                     size.multiply({ x: 1, y: 1, z: size.x / size.z }),
                 );
 

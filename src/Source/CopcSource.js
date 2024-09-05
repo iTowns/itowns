@@ -84,6 +84,7 @@ class CopcSource extends Source {
      */
     constructor(config) {
         super(config);
+        if (this.isMultiple) { return; }
 
         this.isCopcSource = true;
 

@@ -203,7 +203,6 @@ class CopcNode extends PointCloudNode {
         }
 
         const buffer = await this._fetch(this.entryOffset, this.entryLength);
-        console.log('load', this.layer);
         const geometry = await this.source.parser(buffer, {
             in: {
                 ...this.source,
