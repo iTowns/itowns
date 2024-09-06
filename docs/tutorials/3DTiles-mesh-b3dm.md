@@ -62,8 +62,8 @@ var view = new itowns.PlanarView(viewerDiv, extent, { placement: {
 // Add a WMS imagery source
 var wmsImagerySource = new itowns.WMSSource({
     extent: extent,
-    name: 'Ortho2009_vue_ensemble_16cm_CC46',
-    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+    name: 'ortho_latest',
+    url: 'https://imagerie.data.grandlyon.com/wms/grandlyon',
     version: '1.3.0',
     crs: 'EPSG:3946',
     format: 'image/jpeg',
@@ -112,10 +112,10 @@ itowns.enableDracoLoader('./libs/draco/');
 ```
 
 As for every data displayed in iTowns, we first need to define a data `Source`.
-Our data is in the 3d-tiles format, so we can use iTowns `{@link C3DTilesSource}` : 
+Our data is in the 3d-tiles format, so we can use iTowns `{@link OGC3DTilesSource}` : 
 
 ```js
-const buildingsSource = new itowns.C3DTilesSource({
+const buildingsSource = new itowns.OGC3DTilesSource({
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/' +
     '3DTiles/lyon_1_3946_textured_draco/tileset.json',
 });
@@ -124,23 +124,17 @@ const buildingsSource = new itowns.C3DTilesSource({
 It is worth noting that the 3d-tiles data we want to display on a given `{@link View}` must be in the same Coordinates 
 Reference System (CRS) as the `{@link View}`.
 Here, our 3d-tiles data are in [RGF93 / CC46](https://epsg.io/3946) projection, just like our `{@link PlanarView}`.
-This is the reason why we do not need to specify a `crs` parameter when instantiating our `{@link C3DTilesSource}`.
+This is the reason why we do not need to specify a `crs` parameter when instantiating our `{@link OGC3DTilesSource}`.
 
 Now that the source of our data is set, we need to create a `{@link Layer}` which will contain the data.
-To display 3d-tiles data, iTowns comes with a `{@link C3DTilesLayer}`, which we can use as such :
+To display 3d-tiles data, iTowns comes with a `{@link OGC3DTilesLayer}`, which we can use as such :
 
 ```js
-const buildingsLayer = new itowns.C3DTilesLayer('buildings', {
+const buildingsLayer = new itowns.OGC3DTilesLayer('buildings', {
     source: buildingsSource,
-}, view);
-itowns.View.prototype.addLayer.call(view, buildingsLayer);
+});
+view.addLayer(buildingsLayer);
 ```
-
-When instantiating a `{@link C3DTilesLayer}`, we need to specify which `{@link View}` it is added to.
-We also need to call the generic `addLayer` method from `{@link View}`, and not the specific one from 
-`{@link PlanarView}`. 
-This is because both 3d-tiles data and `{@link PlanarView}` have their own spatial subdivision. 
-Therefore, 3d-tiles data must not use specific `{@link PlanarView}` spatial subdivision (which is by default the case when using the `addLayer` method of `PlanarView` or `GlobeView`).
 
 The code above results in the following :
 
@@ -213,8 +207,8 @@ The final code to do so is the following :
             // Add a WMS imagery source
             var wmsImagerySource = new itowns.WMSSource({
                 extent: extent,
-                name: 'Ortho2009_vue_ensemble_16cm_CC46',
-                url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                name: 'ortho_latest',
+                url: 'https://imagerie.data.grandlyon.com/wms/grandlyon',
                 version: '1.3.0',
                 crs: 'EPSG:3946',
                 format: 'image/jpeg',
@@ -256,15 +250,15 @@ The final code to do so is the following :
             // extension of gltf. We need to enable it.
             itowns.enableDracoLoader('./libs/draco/');
 
-            const buildingsSource = new itowns.C3DTilesSource({
+            const buildingsSource = new itowns.OGC3DTilesSource({
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/' +
                 'master/3DTiles/lyon_1_3946_textured_draco/tileset.json',
             });
 
-            const buildingsLayer = new itowns.C3DTilesLayer('buildings', {
+            const buildingsLayer = new itowns.OGC3DTilesLayer('buildings', {
                 source: buildingsSource,
-            }, view);
-            itowns.View.prototype.addLayer.call(view, buildingsLayer);
+            });
+            view.addLayer(buildingsLayer);
 
             const directionalLight = new itowns.THREE.DirectionalLight(0xffffff, 1);
             directionalLight.position.set(-0.9, 0.3, 1);

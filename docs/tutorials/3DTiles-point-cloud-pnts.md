@@ -53,7 +53,7 @@ var orthoSource = new itowns.TMSSource({
     crs: "EPSG:3857",
     isInverted: true,
     format: "image/png",
-    url: "http://osm.oslandia.io/styles/klokantech-basic/${z}/${x}/${y}.png",
+    url: "https://maps.pole-emploi.fr/styles/klokantech-basic/${z}/${x}/${y}.png",
     attribution: {
         name:"OpenStreetMap",
         url: "http://www.openstreetmap.org/"
@@ -115,24 +115,23 @@ a basemap and a 3D terrain:
 
 ## Adding the 3D Tiles Layer
 
-As usual, we first configure a source. Here, we will use a `{@link C3DTilesSource}` for which it is as simple as giving the url of the dataset to display.
+As usual, we first configure a source. Here, we will use a `{@link OGC3DTilesSource}` for which it is as simple as giving the url of the dataset to display.
 
 ```js
-const pointCloudSource = new itowns.C3DTilesSource({
+const pointCloudSource = new itowns.OGC3DTilesSource({
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/' +
     'master/3DTiles/lidar-hd-gorges-saint-chely-tarn/tileset.json',
 });
 ```
 
-Then, we create the `{@link C3DTilesLayer}` by giving it and `id`, the `source` and the `view`.
-And finally we add it to the `{@link GlobeView}` by using the generic method of `{@link View}` to not
-use the `GlobeView` subdivision (see [the 3D Tiles textured buildings tutorial]{@tutorial 3DTiles-mesh-b3dm} for more information). 
+Then, we create the `{@link OGC3DTilesLayer}` by giving it and `id` and the `source`.
+And finally we add it to the `{@link GlobeView}`.
 
 ```js
-const pointCloudLayer = new itowns.C3DTilesLayer('gorges', {
+const pointCloudLayer = new itowns.OGC3DTilesLayer('gorges', {
     source: pointCloudSource,
-}, view);
-itowns.View.prototype.addLayer.call(view, pointCloudLayer);
+});
+view.addLayer(pointCloudLayer);
 ```
 
 At this point, you should see the point cloud displayed:
@@ -148,12 +147,12 @@ In the next part, we will see how we can improve that.
 ## Updating 3D Tiles style
 
 3D Tiles style can be changed on the fly when loading the 3D Tiles data in itowns. It can be done with
-the `C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED` event of `{@link C3DTilesLayer}` that is called for each tile when the content of a tile has been loaded. The tile content is a Threejs `Object3D` or `Group`, so we can access its material and make any style changes that we want. In our case, we will modify the size of the points.
+the `OGC3DTILES_LAYER_EVENTS.LOAD_MODEL` event of `{@link OGC3DTilesLayer}` that is called for each tile when the content of a tile has been loaded. The tile content is a Threejs `Object3D` or `Group`, so we can access its material and make any style changes that we want. In our case, we will modify the size of the points.
 First, we create a function to update the size of the point:
 
 ```js
 function updatePointCloudSize(event) {
-    event.tileContent.traverse(obj => {
+    event.scene.traverse(obj => {
         if (obj.isPoints) {
             obj.material.size = 3.0;
         }
@@ -161,13 +160,13 @@ function updatePointCloudSize(event) {
 }
 ```
 
-In this function, we traverse the `tileContent` hierarchy until we find the threejs `Points` object with `obj.isPoints`. Then, we change the size of the threejs `PointMaterial` material. You can refer
+In this function, we traverse the `scene` hierarchy until we find the threejs `Points` object with `obj.isPoints`. Then, we change the size of the threejs `PointMaterial` material. You can refer
 to threejs documentation for more information on `Object3D`, `Group`, `Points` and `PointsMaterial` objects.
 
-Then, we just need to assign this callback as a listener to the `C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED` event:
+Then, we just need to assign this callback as a listener to the `OGC3DTILES_LAYER_EVENTS.LOAD_MODEL` event:
 
 ```js
-pointCloudLayer.addEventListener(itowns.C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED, updatePointCloudSize);
+pointCloudLayer.addEventListener(itowns.OGC3DTILES_LAYER_EVENTS.LOAD_MODEL, updatePointCloudSize);
 ```
 
 If you zoom in to the points, you can now see that they are bigger:
@@ -211,7 +210,7 @@ The full code to achieve this result is:
                 crs: "EPSG:3857",
                 isInverted: true,
                 format: "image/png",
-                url: "http://osm.oslandia.io/styles/klokantech-basic/${z}/${x}/${y}.png",
+                url: "https://maps.pole-emploi.fr/styles/klokantech-basic/${z}/${x}/${y}.png",
                 attribution: {
                     name:"OpenStreetMap",
                     url: "http://www.openstreetmap.org/"
@@ -265,25 +264,25 @@ The full code to achieve this result is:
 
             view.addLayer(elevationLayer);
 
-            const pointCloudSource = new itowns.C3DTilesSource({
+            const pointCloudSource = new itowns.OGC3DTilesSource({
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/' +
                 'master/3DTiles/lidar-hd-gorges-saint-chely-tarn/tileset.json',
             });
 
+            const pointCloudLayer = new itowns.OGC3DTilesLayer('gorges', {
+                source: pointCloudSource,
+            });
+            view.addLayer(pointCloudLayer);
+
             function updatePointCloudSize(event) {
-                event.tileContent.traverse(obj => {
+                event.scene.traverse(obj => {
                     if (obj.isPoints) {
                         obj.material.size = 3.0;
                     }
                 });
             }
 
-            const pointCloudLayer = new itowns.C3DTilesLayer('gorges', {
-                source: pointCloudSource,
-            }, view);
-            pointCloudLayer.addEventListener(itowns.C3DTILES_LAYER_EVENTS.ON_TILE_CONTENT_LOADED, updatePointCloudSize);
-
-            itowns.View.prototype.addLayer.call(view, pointCloudLayer);
+            pointCloudLayer.addEventListener(itowns.OGC3DTILES_LAYER_EVENTS.LOAD_MODEL, updatePointCloudSize);
         </script>
     </body>
 </html>
