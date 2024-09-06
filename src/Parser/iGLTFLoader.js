@@ -13,7 +13,6 @@ class iGLTFLoader extends THREE.Loader {
      * loaded model to transform from y-up to z-up. Note that you can also use Coordinates.geodesicNormal to get the normal
      * to a position on the globe (i.e. in GlobeView) to correctly orient a model on a GlobeView.
      *
-     * @constructor
      * @param {THREE.LoadingManager} [manager] - The loadingManager for the loader to use. Default is THREE.DefaultLoadingManager.
      */
     constructor(manager) {

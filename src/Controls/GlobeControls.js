@@ -1137,11 +1137,11 @@ class GlobeControls extends THREE.EventDispatcher {
      * Zoom parameter is ignored if range is set
      * The tilt's interval is between 4 and 89.5 degree
      *
-     * @param      {CameraUtils~CameraTransformOptions|Extent}   params camera transformation to apply
-     * @param      {number}   [params.zoom]   zoom
-     * @param      {number}   [params.scale]   scale
-     * @param      {boolean}  isAnimated  Indicates if animated
-     * @return     {Promise}  A promise that resolves when transformation is complete
+     * @param {CameraUtils~CameraTransformOptions|Extent} [params] - camera transformation to apply
+     * @param {number} [params.zoom] - zoom
+     * @param {number} [params.scale] - scale
+     * @param {boolean} [isAnimated] - Indicates if animated
+     * @return {Promise} A promise that resolves when transformation is complete
      */
     lookAtCoordinate(params = {}, isAnimated = this.isAnimationEnabled()) {
         this.player.stop();

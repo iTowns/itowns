@@ -31,12 +31,11 @@ class Distortion {
 const zoom = new THREE.Vector3();
 
 /**
- * @classdesc OrientedImageCamera is a ThreeJs camera adapted to photogrammetric description.
+ * OrientedImageCamera is a ThreeJs camera adapted to photogrammetric description.
  * So we can build a ThreeJs perspective camera from size and focal information.
  */
 class OrientedImageCamera extends THREE.PerspectiveCamera {
     /**
-     * @constructor
      * @param {number|Vector2} size - image size in pixels (default: x=1024, y=x)
      * @param {number|Vector2} focal - focal length in pixels (default: x=1024, y=x)
      * @param {Vector2} center - principal point in pixels (default: size/2)

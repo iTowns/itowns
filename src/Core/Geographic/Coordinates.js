@@ -27,10 +27,22 @@ function proj4cache(crsIn, crsOut) {
 }
 
 /**
- * A Coordinates object, defined by a [crs]{@link http://inspire.ec.europa.eu/theme/rs}
+ * A Coordinates object, defined by a [crs](http://inspire.ec.europa.eu/theme/rs)
  * and three values. These values are accessible through `x`, `y` and `z`,
  * although it can also be accessible through `latitude`, `longitude` and
  * `altitude`. To change a value, prefer the `set()` method below.
+ *
+ * `EPSG:4978` and `EPSG:4326` are supported by default. To use another CRS,
+ * you have to declare it with `proj4`. You can find most projections and their
+ * proj4 code at [epsg.io](https://epsg.io/).
+ *
+ * @example
+ * new Coordinates('EPSG:4978', 20885167, 849862, 23385912); //Geocentric coordinates
+ * new Coordinates('EPSG:4326', 2.33, 48.24, 24999549); //Geographic coordinates
+ *
+ * @example
+ * // Declare EPSG:3946 with proj4
+ * itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
  *
  * @property {boolean} isCoordinates - Used to checkout whether this coordinates
  * is a Coordinates. Default is true. You should not change this, as it is used
@@ -47,22 +59,10 @@ function proj4cache(crsIn, crsOut) {
  * @property {number} altitude - The third value of the coordinate.
  * @property {THREE.Vector3} geodesicNormal - The geodesic normal of the
  * coordinate.
- *
- * @example
- * new Coordinates('EPSG:4978', 20885167, 849862, 23385912); //Geocentric coordinates
- *
- * @example
- * new Coordinates('EPSG:4326', 2.33, 48.24, 24999549); //Geographic coordinates
  */
 class Coordinates {
     /**
-     * @constructor
-     *
-     * @param {string} crs - A supported Coordinate Reference System. 'EPSG:4978' and 'EPSG:4326' are
-     * supported by default. To use another CRS, you have to declare it with proj4. For instance:
-     * @example
-     * itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-     * You can find most projections and their proj4 code at [epsg.io]{@link https://epsg.io/}
+     * @param {string} crs - A supported Coordinate Reference System.
      * @param {number|Array<number>|Coordinates|THREE.Vector3} [v0=0] -
      * x or longitude value, or a more complex one: it can be an array of three
      * numbers, being x/lon, y/lat, z/alt, or it can be `THREE.Vector3`. It can
@@ -285,7 +285,7 @@ class Coordinates {
     }
 
     /**
-     * Returns coordinates in the wanted [CRS]{@link http://inspire.ec.europa.eu/theme/rs}.
+     * Returns coordinates in the wanted [CRS](http://inspire.ec.europa.eu/theme/rs).
      *
      * @param {string} crs - The CRS to convert the Coordinates into.
      * @param {Coordinates} [target] - The target to put the converted

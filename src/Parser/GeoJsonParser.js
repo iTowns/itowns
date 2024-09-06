@@ -195,12 +195,12 @@ function jsonFeaturesToFeatures(crsIn, jsonFeatures, options) {
  */
 export default {
     /**
-     * Parse a GeoJSON file content and return a [FeatureCollection]{@link FeatureCollection}.
+     * Parse a GeoJSON file content and return a {@link FeatureCollection}.
      *
      * @param {string} json - The GeoJSON file content to parse.
      * @param {ParsingOptions} options - Options controlling the parsing.
 
-     * @return {Promise} A promise resolving with a [FeatureCollection]{@link FeatureCollection}.
+     * @return {Promise} A promise resolving with a {@link FeatureCollection}.
      */
     parse(json, options = {}) {
         options = deprecatedParsingOptionsToNewOne(options);

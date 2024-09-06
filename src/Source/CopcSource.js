@@ -33,7 +33,6 @@ async function getHeaders(fetcher) {
 }
 
 /**
- * @classdesc
  * A source for [Cloud Optimised Point Cloud](https://copc.io/) (COPC) data.
  * Such data consists of a [LAZ 1.4](https://www.ogc.org/standard/las/) file
  * that stores compressed points data organized in a clustered octree.
@@ -77,11 +76,9 @@ class CopcSource extends Source {
      * @param {string} [config.crs='EPSG:4326'] - Native CRS of the COPC
      * ressource. Note that this is not for now inferred from the COPC header.
      * @param {RequestInit} [config.networkOptions] - Fetch options (passed
-     * directly to `fetch()`), see [the syntax for more information]{@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * directly to `fetch()`), see [the syntax for more information](
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      * @param {Object} [config.attribution] - Attribution of the data.
-     *
-     * @constructor
      */
     constructor(config) {
         super(config);

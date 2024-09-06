@@ -5,7 +5,6 @@ import Fetcher from 'Provider/Fetcher';
 import Source from 'Source/Source';
 
 /**
- * @classdesc
  * An object defining the source of Entwine Point Tile data. It fetches and
  * parses the main configuration file of Entwine Point Tile format,
  * [`ept.json`](https://entwine.io/entwine-point-tile.html#ept-json).
@@ -20,8 +19,6 @@ import Source from 'Source/Source';
  */
 class EntwinePointTileSource extends Source {
     /**
-     * @constructor
-     *
      * @param {Object} config - The configuration, see {@link Source} for
      * available values.
      * @param {number|string} [config.colorDepth='auto'] - Does the color

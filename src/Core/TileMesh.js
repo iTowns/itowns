@@ -5,7 +5,6 @@ import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 /**
  * A TileMesh is a THREE.Mesh with a geometricError and an OBB
  * The objectId property of the material is the with the id of the TileMesh
- * @constructor
  * @param {TileGeometry} geometry - the tile geometry
  * @param {THREE.Material} material - a THREE.Material compatible with THREE.Mesh
  * @param {Layer} layer - the layer the tile is added to

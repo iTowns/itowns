@@ -147,21 +147,19 @@ class View extends THREE.EventDispatcher {
      *
      * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
-     * @param {Object=} options - Optional properties.
+     * @param {Object} [options] - Optional properties.
      * @param {object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
-     * @param {?MainLoop} options.mainLoop - {@link MainLoop} instance to use, otherwise a default one will be constructed
-     * @param {?(WebGLRenderer|object)} options.renderer - {@link WebGLRenderer} instance to use, otherwise
+     * @param {MainLoop} [options.mainLoop] - {@link MainLoop} instance to use, otherwise a default one will be constructed
+     * @param {WebGLRenderer|Object} [options.renderer] - {@link WebGLRenderer} instance to use, otherwise
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
      * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
      * added to viewerDiv (mutually exclusive with mainLoop)
-     * @param {boolean|Object} [options.webXR=false] - enable webxr button to switch on VR visualization.
+     * @param {Object} [options.webXR] - enable webxr button to switch on VR visualization.
      * @param {number} [options.webXR.scale=1.0] - apply webxr scale tranformation.
-     * @param {?Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
-     * @param {?Color} options.diffuse - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
+     * @param {Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
+     * @param {Color} [options.diffuse] - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
      * @param {boolean} [options.enableFocusOnStart=true] - enable focus on dom element on start.
-     *
-     * @constructor
      */
     constructor(crs, viewerDiv, options = {}) {
         if (!viewerDiv) {

@@ -24,13 +24,13 @@ function biLinearInterpolation(indexes, getData) {
 
 /**
  * An instance of `GeoidGrid` allows accessing some geoid height grid data from geographic instances (like some
- * `{@link Coordinates}`). The geoid height grid data must contain geoid height values for a set of geographic points
+ * {@link Coordinates}). The geoid height grid data must contain geoid height values for a set of geographic points
  * regularly dispatched on a planar surface.
  *
  * @property    {Extent}        extent      The geographic extent of the geoid height grid data.
  * @property    {THREE.Vector2} step        The distance between two consecutive points of the geoid height grid. The
-                                            * `x` value stands for the distance along the West-East direction, and the
-                                            * `y` value stands for the distance along the South-North direction.
+ * `x` value stands for the distance along the West-East direction, and the
+ * `y` value stands for the distance along the South-North direction.
  * @property    {THREE.Vector2} dimensions  The planar dimensions of the geoid height grid data extent.
  * @property    {THREE.Vector2} dataSize    The number of values in the gridded data along the West-East direction (`x`
                                             * axis) and the South-North direction (`y` axis).
@@ -72,21 +72,21 @@ class GeoidGrid {
     /**
      * @param   {Extent}        extent      The geographic extent of the geoid height grid data.
      * @param   {THREE.Vector2} step        The distance between two consecutive points of the geoid height grid. The
-                                            * `x` value stands for the distance along the West-East direction, and the
-                                            * `y` value stands for the distance along the South-North direction.
+     * `x` value stands for the distance along the West-East direction, and the
+     * `y` value stands for the distance along the South-North direction.
      * @param   {function}      getData     A method that allows reading a value in the geoid height grid from its
-                                            * vertical and horizontal indexes. The lower an index, the lower the
-                                            * coordinate on the corresponding axis - 0 being the index of the minimal
-                                            * coordinate of the gridded data on a given axis. In other words :
-                                            * - `getData(0, 0)` must return the geoid height value at the SOUTH-WEST
-                                            *   corner of your data extent.
-                                            * - `getData(0, j)` must return a geoid height on the southern limit of your
-                                            *   data extent.
-                                            * - `getData(i, 0)` must return a geoid height on the western limit of your
-                                            *   data extent.
-                                            * - if your gridded data has dimensions (rowNumber, colNumber),
-                                            *   `getData(rowNumber - 1, colNumber - 1)` must return the geoid height at
-                                            *   the NORTH-EAST corner of your data extent.
+     * vertical and horizontal indexes. The lower an index, the lower the
+     * coordinate on the corresponding axis - 0 being the index of the minimal
+     * coordinate of the gridded data on a given axis. In other words :
+     * - `getData(0, 0)` must return the geoid height value at the SOUTH-WEST
+     *   corner of your data extent.
+     * - `getData(0, j)` must return a geoid height on the southern limit of your
+     *   data extent.
+     * - `getData(i, 0)` must return a geoid height on the western limit of your
+     *   data extent.
+     * - if your gridded data has dimensions (rowNumber, colNumber),
+     *   `getData(rowNumber - 1, colNumber - 1)` must return the geoid height at
+     *   the NORTH-EAST corner of your data extent.
      */
     constructor(
         extent,
@@ -105,12 +105,12 @@ class GeoidGrid {
     }
 
     /**
-     * Get the value of the geoid height at given geographic `{@link Coordinates}`. The geoid height value is
+     * Get the value of the geoid height at given geographic {@link Coordinates}. The geoid height value is
      * bi-linearly interpolated from the gridded data accessed by the `GeoidGrid` instance.
      *
      * @param   {Coordinates}   coordinates     Geographic coordinates to get the geoid height value at.
      *
-     * @returns {number}    The geoid height value at the given `{@link Coordinates}`, bi-interpolated from the gridded
+     * @returns {number}    The geoid height value at the given {@link Coordinates}, bi-interpolated from the gridded
                             * data accessed by the `GeoidGrid` instance.
      */
     getHeightAtCoordinates(coordinates) {

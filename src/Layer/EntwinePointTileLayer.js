@@ -16,7 +16,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
     /**
      * Constructs a new instance of Entwine Point Tile layer.
      *
-     * @constructor
      * @extends PointCloudLayer
      *
      * @example

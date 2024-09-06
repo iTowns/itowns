@@ -2,7 +2,6 @@ import Fetcher from 'Provider/Fetcher';
 import C3DTilesSource from './C3DTilesSource';
 
 /**
- * @classdesc
  * An object defining the source connection to a 3DTiles asset of a [Cesium ion server](https://cesium.com/learn/ion/).
  *
  * @extends Source
@@ -18,7 +17,6 @@ class C3DTilesIonSource extends C3DTilesSource {
     /**
      * Create a new Source for 3D Tiles data from Cesium ion.
      *
-     * @constructor
      * @extends Source
      *
      * @param {Object} source An object that can contain all properties of a C3DTilesIonSource and {@link Source}.

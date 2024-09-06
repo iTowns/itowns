@@ -77,7 +77,7 @@ function computeTime(distance) {
 }
 
 /**
- * @classdesc Camera controls that can follow a path.
+ * Camera controls that can follow a path.
  * It is used to simulate a street view.
  * It stores a currentPosition and nextPosition, and do a camera traveling to go to next position.
  * It also manages picking on the ground and on other object, like building.
@@ -111,7 +111,6 @@ function computeTime(distance) {
  */
 class StreetControls extends FirstPersonControls {
     /**
-     * @constructor
      * @param { View } view - View where this control will be used
      * @param { Object } options - Configuration of this controls
      * @param { number } [options.wallMaxDistance=1000] - Maximum distance to click on a wall, in meter.

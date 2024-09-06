@@ -3,7 +3,6 @@ import Cache from 'Core/Scheduler/Cache';
 import CRS from 'Core/Geographic/Crs';
 
 /**
- * @classdesc
  * An object defining the source of a single resource to get from a direct
  * access. It inherits from {@link Source}. There is multiple ways of adding a
  * resource here:
@@ -103,8 +102,6 @@ class FileSource extends Source {
      * @param {Object} source - An object that can contain all properties of a
      * FileSource and {@link Source}. Only `crs` is mandatory, but if it
      * presents in `features` under the property `crs`, it is fine.
-     *
-     * @constructor
      */
     constructor(source) {
         /* istanbul ignore next */

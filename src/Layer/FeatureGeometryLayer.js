@@ -16,7 +16,6 @@ import Feature2Mesh from 'Converter/Feature2Mesh';
  */
 class FeatureGeometryLayer extends GeometryLayer {
     /**
-     * @constructor
      * @extends GeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is

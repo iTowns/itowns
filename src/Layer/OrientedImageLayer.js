@@ -77,7 +77,7 @@ function createBackground(radius) {
 }
 
 /**
- * @classdesc OrientedImageLayer loads oriented images, and project these textures on the scene.
+ * OrientedImageLayer loads oriented images, and project these textures on the scene.
  * It is design to create an immersive view. </br>
  * It loads a set of panoramic position and orientation,
  * a set of camera calibration file (it's the same set of camera for each panoramic),
@@ -87,7 +87,6 @@ function createBackground(radius) {
  */
 class OrientedImageLayer extends GeometryLayer {
     /**
-     * @constructor
      * @param { string } id - The id of the layer, a unique name.
      * @param { Object } config - configuration of the layer
      * @param { number } config.backgroundDistance - Radius in meter of the sphere used as a background
@@ -95,7 +94,8 @@ class OrientedImageLayer extends GeometryLayer {
      * @param { string } config.crs - crs projection of the view
      * @param { string } config.orientation - Json object, using GeoJSon format to represent points,
      * it's a set of panoramic position and orientation.
-     * @param { string } config.calibrations - Json object, representing a set of camera. see [CameraCalibrationParser]{@link module:CameraCalibrationParser}
+     * @param { string } config.calibrations - Json object, representing a set of camera.
+     * see {@link CameraCalibrationParser}
      * @param { OrientedImageSource } config.source - Source used to build url of texture for each oriented image,
      * a tecture is need for each camera, for each panoramic.
      */

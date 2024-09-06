@@ -13,11 +13,12 @@ const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 let obb;
 
 // it could be considered to remove THREE.Object3D extend.
+/**
+ * Oriented bounding box
+ * @extends THREE.Object3D
+ */
 class OBB extends THREE.Object3D {
     /**
-     * Oriented bounding box
-     * @constructor
-     * @extends THREE.Object3D
      * @param {THREE.Vector3}  min representing the lower (x, y, z) boundary of the box. Default is ( + Infinity, + Infinity, + Infinity ).
      * @param {THREE.Vector3}  max representing the lower upper (x, y, z) boundary of the box. Default is ( - Infinity, - Infinity, - Infinity ).
      */

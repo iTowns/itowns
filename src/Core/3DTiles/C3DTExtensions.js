@@ -1,11 +1,11 @@
-/** @classdesc
+/**
  * Class for managing
  * [3D Tiles extensions](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions).
  * Extensions used in a 3D Tiles tileset must be registered in the iTowns' layer
  * holding the tileset by the user with the {@link registerExtension}
  * method. The extension must be registered together with a class holding the
  * code to interpret the extension.
- * An example of extension class is {@link $3DTBatchTableHierarchyExtension}.
+ * An example of extension class is {@link C3DTBatchTableHierarchyExtension}.
  * This extension has only one part situated in the batch table (but other
  * extensions can have multiple parts, stored in different 3D Tiles classes
  * such as tileset or bounding volume).
@@ -40,7 +40,7 @@ class C3DTExtensions {
      * corresponding to this class. These extension managers should be able
      * to parse the extension fragment (done in the constructor) and should
      * have a getInfoById method if they are related to the batch table class.
-     * See {@link $3DTBatchTableHierarchyExtension} for an example of
+     * See {@link C3DTBatchTableHierarchyExtension} for an example of
      * extension class.
      */
     registerExtension(extensionName, extensionManagers) {

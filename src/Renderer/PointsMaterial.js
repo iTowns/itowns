@@ -37,11 +37,10 @@ const white = new THREE.Color(1.0,  1.0,  1.0);
  * integer codes in the files.
  *
  * @typedef {Object} Classification
- * @property {object} category - category classification,
- * @property {boolean} category.visible - category visibility,
- * @property {string} category.name - category name,
- * @property {THREE.Color} category.color - category color,
- * @property {number} category.opacity - category opacity,
+ * @property {boolean} visible - category visibility,
+ * @property {string} name - category name,
+ * @property {THREE.Color} color - category color,
+ * @property {number} opacity - category opacity,
  */
 
 export const ClassificationScheme = {

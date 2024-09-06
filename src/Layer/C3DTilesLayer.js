@@ -58,7 +58,6 @@ class C3DTilesLayer extends GeometryLayer {
     #fillColorMaterialsBuffer;
     /**
      * @deprecated Deprecated 3D Tiles layer. Use {@link OGC3DTilesLayer} instead.
-     * @constructor
      * @extends GeometryLayer
      *
      * @example
@@ -95,11 +94,11 @@ class C3DTilesLayer extends GeometryLayer {
      * @param {Number} [config.cleanupDelay=1000] The time (in ms) after which a tile content (and its children) are
      * removed from the scene.
      * @param {C3DTExtensions} [config.registeredExtensions] 3D Tiles extensions managers registered for this tileset.
-     * @param {String} [config.pntsMode= PNTS_MODE.COLOR] {@link PointsMaterials} Point cloud coloring mode.
+     * @param {String} [config.pntsMode= PNTS_MODE.COLOR] {@link PointsMaterial} Point cloud coloring mode.
      *      Only 'COLOR' or 'CLASSIFICATION' are possible. COLOR uses RGB colors of the points,
      *      CLASSIFICATION uses a classification property of the batch table to color points.
      * @param {String} [config.pntsShape= PNTS_SHAPE.CIRCLE] Point cloud point shape. Only 'CIRCLE' or 'SQUARE' are possible.
-     * @param {String} [config.pntsSizeMode= PNTS_SIZE_MODE.VALUE] {@link PointsMaterials} Point cloud size mode. Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance from point to camera.
+     * @param {String} [config.pntsSizeMode= PNTS_SIZE_MODE.VALUE] {@link PointsMaterial} Point cloud size mode. Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance from point to camera.
      * @param {Number} [config.pntsMinAttenuatedSize=3] Minimum scale used by 'ATTENUATED' size mode
      * @param {Number} [config.pntsMaxAttenuatedSize=10] Maximum scale used by 'ATTENUATED' size mode
      * @param {Style} [config.style=null] - style used for this layer
@@ -264,7 +263,7 @@ class C3DTilesLayer extends GeometryLayer {
     }
 
     /**
-     * Call by {@link 3dTilesProcessing} which handle load and unload of 3DTiles
+     * Called when a tile content is loaded
      * @param {THREE.Object3D} tileContent - tile as THREE.Object3D
      */
     onTileContentLoaded(tileContent) {

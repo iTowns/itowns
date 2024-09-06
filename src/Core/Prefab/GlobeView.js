@@ -68,7 +68,6 @@ class GlobeView extends View {
     /**
      * Creates a view of a globe.
      *
-     * @constructor
      * @extends View
      *
      * @example <caption><b>Instance GlobeView.</b></caption>
@@ -82,8 +81,8 @@ class GlobeView extends View {
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
      * @param {CameraTransformOptions|Extent} placement - An object to place view
-     * @param {object=} options - See options of {@link View}.
-     * @param {Object} options.controls - See options of {@link GlobeControls}
+     * @param {object} [options] - See options of {@link View}.
+     * @param {Object} [options.controls] - See options of {@link GlobeControls}
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);

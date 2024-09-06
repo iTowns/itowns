@@ -4,10 +4,7 @@ import PotreeBinParser from 'Parser/PotreeBinParser';
 import PotreeCinParser from 'Parser/PotreeCinParser';
 
 /**
- * @classdesc
  * PotreeSource are object containing informations on how to fetch points cloud resources.
- *
- *
  */
 
 class PotreeSource extends Source {
@@ -61,8 +58,6 @@ class PotreeSource extends Source {
      * ```
      *
      * @extends Source
-     *
-     * @constructor
      */
     constructor(source) {
         if (!source.file) {

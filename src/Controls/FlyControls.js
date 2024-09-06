@@ -90,7 +90,6 @@ function onDocumentMouseWheel(event) {
  */
 class FlyControls extends THREE.EventDispatcher {
     /**
-     * @Constructor
      * @param {View} view
      * @param {object} options
      * @param {boolean} options.focusOnClick - whether or not to focus the renderer domElement on click

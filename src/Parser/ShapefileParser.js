@@ -9,7 +9,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  * a shapefile in and gives an object formateted for iTowns, containing all
  * necessary informations to display this shapefile.
  *
- * It uses the [shpjs]{@link https://www.npmjs.com/package/shpjs} library to
+ * It uses the [shpjs](https://www.npmjs.com/package/shpjs) library to
  * parse all the files.
  *
  * @example
@@ -45,8 +45,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  */
 export default {
     /**
-     * Parse a bunch of Shapefile files and return a [FeatureCollection]{@link
-     * module:GeoJsonParser~FeatureCollection}.
+     * Parse a bunch of Shapefile files and return a {@link FeatureCollection}.
      *
      * @param {Object} data - All the data that can be specified in a shapefile.
      * @param {ArrayBuffer} data.shp - Data from the shapefile itself,
@@ -54,7 +53,7 @@ export default {
      * @param {ArrayBuffer} data.shx - A positional index of the feature
      * geometry.
      * @param {ArrayBuffer} data.dbf - Columnar attributes for each shape, in
-     * [dBase]{@link https://en.wikipedia.org/wiki/DBase} IV format.
+     * [dBase](https://en.wikipedia.org/wiki/DBase) IV format.
      * @param {string} [data.prj] - The coordinate system and crs projection
      * information.
      * @param {ParsingOptions} [options]

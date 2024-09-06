@@ -114,8 +114,6 @@ class OGC3DTilesLayer extends GeometryLayer {
      * Layer for [3D Tiles](https://www.ogc.org/standard/3dtiles/) datasets.
      * @extends Layer
      *
-     * @constructor
-     *
      * @param {String} id - unique layer id.
      * @param {Object} config - layer specific configuration
      * @param {OGC3DTilesSource} config.source - data source configuration

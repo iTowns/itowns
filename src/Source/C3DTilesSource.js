@@ -2,7 +2,6 @@ import Source from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
 
 /**
- * @classdesc
  * An object defining the source connection to a 3DTiles dataset from a web server.
  *
  * @extends Source
@@ -16,7 +15,6 @@ class C3DTilesSource extends Source {
     /**
      * Create a new Source for 3D Tiles data from a web server.
      *
-     * @constructor
      * @extends Source
      *
      * @param {Object} source An object that can contain all properties of {@link Source}.

@@ -150,7 +150,6 @@ class LabelsNode extends THREE.Group {
 class LabelLayer extends GeometryLayer {
     #filterGrid = new ScreenGrid();
     /**
-     * @constructor
      * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is

@@ -18,7 +18,7 @@ function getIndiceWithPitch(i, pitch, w) {
 }
 
 /**
- * A `RasterTile` is part of raster [`Layer`]{@link Layer} data.
+ * A `RasterTile` is part of raster {@link Layer} data.
  * This part is a spatial subdivision of the extent of a layer.
  * In the `RasterTile`, The data are converted on three.js textures.
  * This `RasterTile` textures are assigned to a `LayeredMaterial`.

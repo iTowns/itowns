@@ -85,7 +85,6 @@ function initFromSphere(sphere) {
 }
 
 /**
- * @classdesc 3D Tiles
  * [bounding volume](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/boundingVolume.schema.json)
  * Used to represent bounding volumes and viewer request volumes. The input bounding volume (from the dataset) can be a
  * box, a sphere or a region. Regions are transformed to spheres internally for simplification of parsing and to speed
@@ -143,7 +142,7 @@ class C3DTBoundingVolume {
     }
 
     /**
-     * Checks if the camera is inside the [viewer request volumes](@link https://github.com/CesiumGS/3d-tiles/tree/main/specification#viewer-request-volume).
+     * Checks if the camera is inside the [viewer request volumes](https://github.com/CesiumGS/3d-tiles/tree/main/specification#viewer-request-volume).
      * @param {Camera} camera - the camera to perform culling for
      * @param {THREE.Matrix4} tileMatrixWorld - the world matrix of the tile
      * @returns {boolean} true if the camera is outside the viewer request volume, false otherwise.
