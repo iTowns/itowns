@@ -554,7 +554,7 @@ function createInstancedMesh(mesh, count, ptsIn) {
 }
 
 /**
- * Convert a [Feature]{@link Feature} of type POINT to a Instanced meshes
+ * Convert a {@link Feature} of type POINT to a Instanced meshes
  *
  * @param {Object} feature
  * @returns {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
@@ -578,7 +578,7 @@ function pointsToInstancedMeshes(feature) {
 }
 
 /**
- * Convert a [Feature]{@link Feature} to a Mesh
+ * Convert a {@link Feature} to a Mesh
  * @param {Feature} feature - the feature to convert
  * @param {Object} options - options controlling the conversion
  *

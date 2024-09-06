@@ -134,7 +134,6 @@ class PointCloudLayer extends GeometryLayer {
      * Constructs a new instance of a Point Cloud Layer. This should not be used
      * directly, but rather implemented using `extends`.
      *
-     * @constructor
      * @extends GeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is

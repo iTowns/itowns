@@ -39,7 +39,6 @@ class TiledGeometryLayer extends GeometryLayer {
      * It corresponds at meters by pixel. If the projection tile exceeds a certain pixel size (on screen)
      * then it is subdivided into 4 tiles with a zoom greater than 1.
      *
-     * @constructor
      * @extends GeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is

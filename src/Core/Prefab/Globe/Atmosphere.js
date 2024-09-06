@@ -37,9 +37,8 @@ class Atmosphere extends GeometryLayer {
      *
     * The atmospheric-scattering it is taken from :
     * * [Atmosphere Shader From Space (Atmospheric scattering)](http://stainlessbeer.weebly.com/planets-9-atmospheric-scattering.html)
-    * * [Accurate Atmospheric Scattering (NVIDIA GPU Gems 2)]{@link https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering}.
+    * * [Accurate Atmospheric Scattering (NVIDIA GPU Gems 2)](https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering).
     *
-    * @constructor
     * @extends GeometryLayer
     *
     * @param {string} id - The id of the layer Atmosphere.

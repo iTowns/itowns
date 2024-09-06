@@ -51,7 +51,6 @@ class ColorLayer extends RasterLayer {
      * it can be an aerial view of the ground or a simple transparent layer with the
      * roads displayed.
      *
-     * @constructor
      * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
@@ -65,13 +64,13 @@ class ColorLayer extends RasterLayer {
      * @param {Source} [config.source] - Description and options of the source.
      * @param {number} [config.magFilter] - How the texture is sampled when a texel covers more than one pixel. [see](https://threejs.org/docs/?q=texture#api/en/textures/Texture.magFilter)
      * @param {number} [config.minFilter] - How the texture is sampled when a texel covers less than one pixel. [see](https://threejs.org/docs/?q=texture#api/en/textures/Texture.minFilter)
-     * @param {number} [effect_type=0] - type effect to apply on raster color.
+     * @param {number} [config.effect_type=0] - type effect to apply on raster color.
      * if `effect_type` equals:
      * * `0`: no special effect.
      * * `1`: light color to invisible effect.
      * * `2`: white color to invisible effect.
      * * `3`: custom shader effect (defined `ShaderChunk.customBodyColorLayer` and `ShaderChunk.customHeaderColorLayer`).
-     * @param {number} [effect_parameter=1.0] - amount value used with effect applied on raster color.
+     * @param {number} [config.effect_parameter=1.0] - amount value used with effect applied on raster color.
      *
      * @example
      * // Create a ColorLayer

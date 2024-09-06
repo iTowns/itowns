@@ -3,9 +3,8 @@ import URLBuilder from 'Provider/URLBuilder';
 import CRS from 'Core/Geographic/Crs';
 
 /**
- * @classdesc
  * An object defining the source of resources to get from a
- * [WFS]{@link http://www.opengeospatial.org/standards/wfs} server. It inherits
+ * [WFS](http://www.opengeospatial.org/standards/wfs) server. It inherits
  * from {@link Source}.
  *
  * @extends Source
@@ -101,8 +100,6 @@ class WFSSource extends Source {
      * @param {Object} source - An object that can contain all properties of a
      * WFSSource and {@link Source}. `url`, `typeName` and `crs` are
      * mandatory.
-     *
-     * @constructor
      */
     constructor(source) {
         if (source.projection) {

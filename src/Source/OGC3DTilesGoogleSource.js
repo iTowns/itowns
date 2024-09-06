@@ -2,7 +2,6 @@ import OGC3DTilesSource from './OGC3DTilesSource';
 
 class OGC3DTilesGoogleSource extends OGC3DTilesSource {
     /**
-     * @classdesc
      * An object defining the source connection to a 3D Tiles asset from [Google Tiles API](https://tile.googleapis.com).
      *
      * @extends OGC3DTilesSource
@@ -11,8 +10,6 @@ class OGC3DTilesGoogleSource extends OGC3DTilesSource {
      * You should not change this, as it is used internally for optimisation.
      * @property {string} url - The URL to the tileset json.
      * @property {string} baseUrl - The base URL to access tiles.
-     *
-     * @constructor
      *
      * @property {boolean} isOGC3DTilesGoogleSource - Used to check if this source is an OGC3DTilesGoogleSource. Set to
      * true. You should not change this, as it is used internally for optimisation.

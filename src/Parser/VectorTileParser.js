@@ -187,13 +187,13 @@ export default {
      * Parse a vector tile file and return a [Feature]{@link module:GeoJsonParser.Feature}
      * or an array of Features. While multiple formats of vector tile are
      * available, the only one supported for the moment is the
-     * [Mapbox Vector Tile]{@link https://www.mapbox.com/vector-tiles/specification/}.
+     * [Mapbox Vector Tile](https://www.mapbox.com/vector-tiles/specification/).
      *
      * @param {ArrayBuffer} file - The vector tile file to parse.
      *
-     * @param {ParsingOptions} options - Options controlling the parsing {@link ParsingOptions}.
+     * @param {Object} options - Options controlling the parsing {@link ParsingOptions}.
      *
-     * @param {InformationsData} options.in - Object containing all styles,
+     * @param {Object} options.in - Object containing all styles,
      * layers and informations data, see {@link InformationsData}.
      *
      * @param {Object} options.in.styles - Object containing subobject with

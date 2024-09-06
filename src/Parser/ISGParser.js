@@ -14,7 +14,7 @@ import { BYTES_PER_DOUBLE } from 'Parser/GTXParser';
  */
 export default {
     /**
-     * Parses an ISG file content and returns a corresponding `{@link GeoidGrid}`.
+     * Parses an ISG file content and returns a corresponding {@link GeoidGrid}.
      *
      * @param   {string}    isg                             The content of the ISG file to parse.
      * @param   {Object}    options                         An object gathering the optional parameters to pass to
@@ -24,7 +24,7 @@ export default {
                                                             * It must be a geographic CRS, and must be given as an EPSG
                                                             * code.
      *
-     * @returns {Promise<GeoidGrid>}    A promise resolving with a `{@link GeoidGrid}`, which contains all the necessary
+     * @returns {Promise<GeoidGrid>}    A promise resolving with a {@link GeoidGrid}, which contains all the necessary
                                         * attributes and methods to access ISG file data.
      */
     parse(isg, options = { in: {} }) {

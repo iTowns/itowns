@@ -28,7 +28,6 @@ class ElevationLayer extends RasterLayer {
      * A simple layer, managing an elevation texture to add some reliefs on the
      * plane or globe view for example.
      *
-     * @constructor
      * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is

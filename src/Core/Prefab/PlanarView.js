@@ -8,7 +8,6 @@ import PlanarLayer from './Planar/PlanarLayer';
 
 class PlanarView extends View {
     /**
-     * @constructor
      * @extends View
      *
      * @example <caption><b>Instance with placement on the ground.</b></caption>
@@ -19,9 +18,9 @@ class PlanarView extends View {
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
      * @param {Extent} extent - The ground extent.
-     * @param {object=} options - See options of {@link View}.
+     * @param {Object} [options] - See options of {@link View}.
      * @param {boolean} [options.noControls=false] - If true, no controls are associated to the view.
-     * @param {object=} [options.controls] - options for the {@link PlanarControls} associated to the view, if
+     * @param {Object} [options.controls] - options for the {@link PlanarControls} associated to the view, if
      * `options.noControls` is false.
      * @param {CameraUtils~CameraTransformOptions|Extent} [options.placement] - The
      * {@link CameraUtils~CameraTransformOptions} to apply to view's camera or the extent it must display at

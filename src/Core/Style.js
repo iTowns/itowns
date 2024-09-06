@@ -8,7 +8,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
 
-export const cacheStyle = new Cache();
+const cacheStyle = new Cache();
 
 const matrix = document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGMatrix();
 const canvas = document.createElement('canvas');
@@ -169,8 +169,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
 }
 
 /**
- * @class
- * @classdesc StyleContext stores metadata of one FeatureGeometry that are needed for its style computation:
+ * StyleContext stores metadata of one FeatureGeometry that are needed for its style computation:
  * type of feature and what is needed (fill, stroke or draw a point, etc.) as well as where to get its
  * properties and its coordinates (for base_altitude).
  *
@@ -320,12 +319,12 @@ function _addIcon(icon, domElement, opt) {
  * @property {Image|Canvas|String|Object|Function} [fill.pattern] - Defines a pattern to fill the
  * surface with. It can be an `Image` to use directly, an url to fetch the pattern or an object containing
  * the url of the image to fetch and the transformation to apply.
- * from. See [this example] (http://www.itowns-project.org/itowns/examples/#source_file_geojson_raster)
+ * from. See [this example](http://www.itowns-project.org/itowns/examples/#source_file_geojson_raster)
  * for how to use.
  * @property {Image|String} [fill.pattern.source] - The image or the url to fetch the pattern image
  * @property {Object} [fill.pattern.cropValues] - The x, y, width and height (in pixel) of the sub image to use.
- * @property {THREE.Color} [fill.pattern.color] - Can be any [valid color string]
- * (https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
+ * @property {THREE.Color} [fill.pattern.color] - Can be any
+ * [valid color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * It will change the color of the white pixels of the source image.
  * @property {Number|Function} [fill.opacity] - The opacity of the color or of the
  * pattern. Can be between `0.0` and `1.0`. Default is `1.0`.
@@ -446,8 +445,7 @@ function _addIcon(icon, domElement, opt) {
 */
 
 /**
- * @class
- * @classdesc A Style is a class that defines the visual appearance of {@link
+ * A Style is a class that defines the visual appearance of {@link
  * FeatureCollection} and {@link Feature}. It is taken into account when drawing
  * them in textures that will be placed onto tiles.
  *
@@ -618,8 +616,7 @@ class Style {
     /**
      * @param {StyleOptions} [params={}] An object that contain any properties
      * (order, zoom, fill, stroke, point, text or/and icon)
-     * and sub properties of a Style (@see {@link StyleOptions}).
-     * @constructor
+     * and sub properties of a Style ({@link StyleOptions}).
      */
     constructor(params = {}) {
         this.isStyle = true;

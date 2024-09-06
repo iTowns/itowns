@@ -43,7 +43,9 @@ for (let i = cardinals.length - 1; i >= 0; i--) {
 
 const _c = new Coordinates('EPSG:4326', 0, 0);
 
+/** @private */
 export const globalExtentTMS = new Map();
+/** @private */
 export const schemeTiles = new Map();
 
 function getInfoTms(crs) {

@@ -3,7 +3,6 @@ import CopcNode from 'Core/CopcNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 
 /**
- * @classdesc
  * A layer for [Cloud Optimised Point Cloud](https://copc.io) (COPC) datasets.
  * See {@link PointCloudLayer} class for documentation on base properties.
  *

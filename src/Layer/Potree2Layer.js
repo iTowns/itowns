@@ -118,7 +118,6 @@ class Potree2Layer extends PointCloudLayer {
     /**
      * Constructs a new instance of Potree2 layer.
      *
-     * @constructor
      * @extends PointCloudLayer
      *
      * @example

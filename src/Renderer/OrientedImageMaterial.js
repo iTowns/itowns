@@ -16,7 +16,7 @@ const noTexture = new THREE.Texture();
 
 const shaderMaterial = new THREE.ShaderMaterial();
 /**
- * @classdesc OrientedImageMaterial is a custom shader material used to do projective texture mapping.<br/>
+ * OrientedImageMaterial is a custom shader material used to do projective texture mapping.<br/>
  *
  * This Material is designed to project many textures simultaneously.
  * Each projected texture setting is stored as an {@link OrientedImageCamera}.<br/>
@@ -27,15 +27,14 @@ const shaderMaterial = new THREE.ShaderMaterial();
  * <br/>
  * The current implementation supports the following distortion models : <br/>
  *  - no distortion (polynom==vec3(0),l1l2==vec2(0))<br/>
- *  - radial distortion (polynom!=vec3(0),l1l2==vec2(0)) (see <b>15.2.2 Radial Model</b> in [MicMac doc]{@link https://github.com/micmacIGN/Documentation/blob/master/DocMicMac.pdf}) </br>
- *  - equilinear fish eye distortion (polynom!=vec3(0),l1l2 != vec2(0)) (see <b>15.3.4 Fish eye models</b> in [MicMac doc]{@link https://github.com/micmacIGN/Documentation/blob/master/DocMicMac.pdf}) </br>
+ *  - radial distortion (polynom!=vec3(0),l1l2==vec2(0)) (see <b>15.2.2 Radial Model</b> in [MicMac doc](https://github.com/micmacIGN/Documentation/blob/master/DocMicMac.pdf)) </br>
+ *  - equilinear fish eye distortion (polynom!=vec3(0),l1l2 != vec2(0)) (see <b>15.3.4 Fish eye models</b> in [MicMac doc](https://github.com/micmacIGN/Documentation/blob/master/DocMicMac.pdf)) </br>
  * (Note: radial decentric parameters P1 are P2 not supported and assumed to be 0).<br/>
  * <br/>
  * To get a more comprehensive support of camera Micmac models, you can consider using [three-photogrammetric-camera]{@link https://github.com/mbredif/three-photogrammetric-camera} instead.
  */
 class OrientedImageMaterial extends THREE.ShaderMaterial {
     /**
-     * @constructor
      * @param { OrientedImageCamera[]} cameras - Array of {@link OrientedImageCamera}. Each camera will project a texture.
      * [CameraCalibrationParser]{@link module:CameraCalibrationParser.parse} can used to create this array of camera from a configuration file.
      * @param {Object} [options={}] - Object with one or more properties defining the material's appearance.
@@ -128,9 +127,9 @@ class OrientedImageMaterial extends THREE.ShaderMaterial {
      * Set new textures and new position/orientation of the camera set.
      * @param {THREE.Texture} textures - Array of [THREE.Texture]{@link https://threejs.org/docs/#api/en/textures/Texture}.
      * @param {Object} feature - New position / orientation of the set of cameras
-     * @param {Array} camerasNames - camera names of panoramic feature
      * @param {THREE.Vector3} feature.position - New position.
      * @param {THREE.Quaternion} feature.quaternion - New orientation.
+     * @param {Array} camerasNames - camera names of panoramic feature
      */
     setTextures(textures, feature, camerasNames) {
         if (!textures) { return; }

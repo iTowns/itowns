@@ -2,17 +2,17 @@ import Source from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
 
 /**
- * @classdesc OrientedImageSource is a specific source used to load oriented images.
+ * OrientedImageSource is a specific source used to load oriented images.
  * @extends Source
  */
 class OrientedImageSource extends Source {
     /**
-     * @constructor
      * @param { Object } source - Configuration object
      * @param { string } source.url - Url for all the textures.
      * @param { string } source.orientationsUrl - Json Url, using GeoJSon format to represent points,
      * it's a set of panoramic position and orientation.
-     * @param { string } source.calibrationUrl - Json url, representing a set of camera. see [CameraCalibrationParser]{@link module:CameraCalibrationParser}
+     * @param { string } source.calibrationUrl - Json url, representing a set of camera.
+     * see {@link CameraCalibrationParser}
      * This Url must contains {sensorId} and {cameraId}, and these pattern will be replaced to build the Url,
      * to find the good texture for each camera for each panoramic.
      */

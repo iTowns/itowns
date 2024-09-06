@@ -9,14 +9,14 @@ export const BYTES_PER_FLOAT = 4;
 
 /**
  * The `GTXParser` module provides a `[parse]{@link module:GTXParser.parse}` method. This method takes the content of a
- * GTX file in, and returns a `{@link GeoidGrid}`. The `{@link GeoidGrid}` contains all the necessary attributes and
+ * GTX file in, and returns a {@link GeoidGrid}. The {@link GeoidGrid} contains all the necessary attributes and
  * methods to access the GTX data in iTowns.
  *
  * @module GTXParser
  */
 export default {
     /**
-     * Parses a GTX file content and returns a corresponding `{@link GeoidGrid}`.
+     * Parses a GTX file content and returns a corresponding {@link GeoidGrid}.
      *
      * @param   {ArrayBuffer}   gtx                             The content of the GTX file to parse.
      * @param   {Object}        options                         An object gathering the optional parameters to pass to
@@ -28,7 +28,7 @@ export default {
      * @param   {string}        [options.in.dataType='float']   The encoding of geoid height data within the GTX file.
                                                                 * Must be `'float'` or `'double'`.
      *
-     * @returns {Promise<GeoidGrid>}    A promise resolving with a `{@link GeoidGrid}`, which contains all the necessary
+     * @returns {Promise<GeoidGrid>}    A promise resolving with a {@link GeoidGrid}, which contains all the necessary
                                         * attributes and methods to access GTX file data.
      */
     parse(gtx, options = { in: {} }) {

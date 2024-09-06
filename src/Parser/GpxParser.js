@@ -11,14 +11,12 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  */
 export default {
     /**
-     * Parse a GPX file content and return a [FeatureCollection]{@link
-     * module:GeoJsonParser~FeatureCollection}.
+     * Parse a GPX file content and return a {@link FeatureCollection}.
      *
      * @param {XMLDocument} gpxFile - The GPX file content to parse.
      * @param {ParsingOptions} options - Options controlling the parsing.
      *
-     * @return {Promise} A promise resolving with a [FeatureCollection]{@link
-     * module:GeoJsonParser~FeatureCollection}.
+     * @return {Promise} A promise resolving with a {@link FeatureCollection}.
      */
     parse(gpxFile, options) {
         options = deprecatedParsingOptionsToNewOne(options);

@@ -1,9 +1,8 @@
 import TMSSource from 'Source/TMSSource';
 
 /**
- * @classdesc
  * An object defining the source of resources to get from a
- * [WMTS]{@link http://www.opengeospatial.org/standards/wmts} server. It inherits
+ * [WMTS](http://www.opengeospatial.org/standards/wmts) server. It inherits
  * from {@link TMSSource}.
  *
  * @extends TMSSource
@@ -63,8 +62,6 @@ class WMTSSource extends TMSSource {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * WMTSSource and {@link Source}. Only `url`, `name` and `crs` are mandatory.
-     *
-     * @constructor
      */
     constructor(source) {
         if (!source.name) {

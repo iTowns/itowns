@@ -19,7 +19,8 @@ import Style from 'Core/Style';
  * @property {Promise} whenReady - this promise is resolved when the layer is added and all initializations are done.
  * This promise is resolved with this layer.
  * This promise is returned by [View#addLayer]{@link View}.
- * @property {object} [zoom] - This property is used only the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
+ * @property {object} [zoom] - This property is used only the layer is attached
+ * to {@link TiledGeometryLayer}.
  * By example,
  * The layer checks the tile zoom level to determine if the layer is visible in this tile.
  *
@@ -38,7 +39,6 @@ class Layer extends THREE.EventDispatcher {
      * another available type of Layer, implement a new one inheriting from this
      * one or use [View#addLayer]{@link View}.
      *
-     * @constructor
      * @protected
      *
      * @param {string} id - The id of the layer, that should be unique. It is
@@ -52,17 +52,17 @@ class Layer extends THREE.EventDispatcher {
      * @param {Source|boolean} config.source - instantiated Source specifies data source to display.
      * if config.source is a boolean, it can only be false. if config.source is false,
      * the layer doesn't need Source (like debug Layer or procedural layer).
-     * @param {StyleOptions|Style} [config.style] - an object that contain any properties
+     * @param {StyleOptions} [config.style] - an object that contain any properties
      * (order, zoom, fill, stroke, point, text or/and icon)
      * and sub properties of a Style (@see {@link StyleOptions}). Or directly a {@link Style} .<br/>
      * When entering a StyleOptions the missing style properties will be look for in the data (if any)
      * what won't be done when you use a Style.
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
-     * This value is used for [Cache]{@link Cache} expiration mechanism.
-     * @param {(boolean|Object)} [config.addLabelLayer=false] - Used to tell if this layer has
+     * This value is used for cache expiration mechanism.
+     * @param {(boolean|Object)} [config.addLabelLayer] - Used to tell if this layer has
      * labels to display from its data. For example, it needs to be set to `true`
      * for a layer with vector tiles. If it's `true` a new `LabelLayer` is added and attached to this `Layer`.
-     * You can also configure it with [LabelLayer]{@link LabelLayer} options described below such as: `addLabelLayer: { performance: true }`.
+     * You can also configure it with {@link LabelLayer} options described below such as: `addLabelLayer: { performance: true }`.
      * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
      * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
      * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.

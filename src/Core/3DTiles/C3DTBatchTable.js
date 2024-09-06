@@ -3,7 +3,7 @@ import { C3DTilesTypes } from './C3DTilesEnums';
 
 const utf8Decoder = new TextDecoder();
 
-/** @classdesc
+/**
  * A 3D Tiles
  * [batch
  * table](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/BatchTable).

@@ -23,8 +23,8 @@ function getTextureFloat(buffer) {
 }
 
 /**
- * Utilitary to fetch resources from a server using the [fetch API]{@link
- * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch}.
+ * Utilitary to fetch resources from a server using the [fetch API](
+ * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch).
  *
  * @module Fetcher
  */
@@ -34,8 +34,8 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * see [the syntax for more information](
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      *
      * @return {Promise<string>} Promise containing the text.
      */
@@ -51,8 +51,8 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * see [the syntax for more information](
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      *
      * @return {Promise<Object>} Promise containing the JSON object.
      */
@@ -68,8 +68,8 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * see [the syntax for more information](
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      *
      * @return {Promise<Document>} Promise containing the XML Document.
      */
@@ -81,17 +81,17 @@ export default {
     },
 
     /**
-     * Wrapper around {@link THREE.TextureLoader}.
+     * Wrapper around [THREE.TextureLoader](https://threejs.org/docs/#api/en/loaders/TextureLoader).
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * see [the syntax for more information](
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      * Note that THREE.js docs mentions `withCredentials`, but it is not
-     * actually used in {@link THREE.TextureLoader}.
+     * actually used in [THREE.TextureLoader](https://threejs.org/docs/#api/en/loaders/TextureLoader).
      *
-     * @return {Promise<THREE.Texture>} Promise containing the {@link
-     * THREE.Texture}.
+     * @return {Promise<THREE.Texture>} Promise containing the
+     * [THREE.Texture](https://threejs.org/docs/api/en/textures/Texture.html).
      */
     texture(url, options = {}) {
         let res;
@@ -113,20 +113,21 @@ export default {
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * see [the syntax for more information](
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      *
      * @return {Promise<ArrayBuffer>} Promise containing the ArrayBuffer.
      */
     arrayBuffer,
 
     /**
-     * Wrapper over fetch to get some {@link THREE.DataTexture}.
+     * Wrapper over fetch to get some
+     * [THREE.DataTexture](https://threejs.org/docs/#api/en/textures/DataTexture).
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * see [the syntax for more information](
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      *
      * @return {Promise<THREE.DataTexture>} Promise containing the DataTexture.
      */
@@ -148,8 +149,8 @@ export default {
      * even `arrayBuffer`. The arrays contains the extensions to append after
      * the `baseUrl` (see example below).
      * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
-     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+     * see [the syntax for more information](
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      *
      * @return {Promise[]} An array of promises, containing all the files,
      * organized by their extensions (see the example below).

@@ -6,10 +6,9 @@ import CRS from 'Core/Geographic/Crs';
 const extent = new Extent(CRS.tms_4326, 0, 0, 0);
 
 /**
- * @classdesc
- * An object defining the source of resources to get from a [TMS]{@link
- * https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification} server. It
- * inherits from {@link Source}.
+ * An object defining the source of resources to get from a
+ * [TMS](https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification) server.
+ * It inherits from {@link Source}.
  *
  * @extends Source
  *
@@ -19,8 +18,8 @@ const extent = new Extent(CRS.tms_4326, 0, 0, 0);
  * @property {boolean} isInverted - The isInverted property is to be set to the
  * correct value, true or false (default being false) if the computation of the
  * coordinates needs to be inverted to match the same scheme as OSM, Google Maps
- * or other system. See [this link]{@link
- * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/}
+ * or other system. See [this link](
+ * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/)
  * for more information.
  * @property {Object} tileMatrixSetLimits - it describes the available tile for this layer
  * @property {Object} extentSetlimits - these are the extents of the set of identical zoom tiles.
@@ -74,8 +73,6 @@ class TMSSource extends Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * TMSSource and {@link Source}. Only `url` is mandatory.
-     *
-     * @constructor
      */
     constructor(source) {
         source.format = source.format || 'image/png';

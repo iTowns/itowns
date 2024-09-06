@@ -3,10 +3,7 @@ import Fetcher from 'Provider/Fetcher';
 import Potree2BinParser from 'Parser/Potree2BinParser';
 
 /**
- * @classdesc
  * Potree2Source are object containing informations on how to fetch potree 2.0 points cloud resources.
- *
- *
  */
 
 class Potree2Source extends Source {
@@ -149,8 +146,6 @@ class Potree2Source extends Source {
      * ```
      *
      * @extends Source
-     *
-     * @constructor
      */
     constructor(source) {
         if (!source.file) {

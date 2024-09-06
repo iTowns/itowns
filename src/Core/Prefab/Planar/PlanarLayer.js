@@ -15,7 +15,6 @@ class PlanarLayer extends TiledGeometryLayer {
      * A {@link TiledGeometryLayer} to use with a {@link PlanarView}. It has
      * specific method for updating and subdivising its grid.
      *
-     * @constructor
      * @extends TiledGeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is

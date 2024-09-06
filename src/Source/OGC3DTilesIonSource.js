@@ -2,7 +2,6 @@ import OGC3DTilesSource from './OGC3DTilesSource';
 
 class OGC3DTilesIonSource extends OGC3DTilesSource {
     /**
-     * @classdesc
      * An object defining the source connection to a 3DTiles asset of a [Cesium ion server](https://cesium.com/learn/ion/).
      *
      * @extends Source
@@ -11,8 +10,6 @@ class OGC3DTilesIonSource extends OGC3DTilesSource {
      * You should not change this, as it is used internally for optimisation.
      * @property {string} accessToken - The Cesium ion access token used to retrieve the resource.
      * @property {string} assetId - The id of the asset on Cesium ion.
-     *
-     * @constructor
      *
      * @param {Object} source An object that can contain all properties of an OGC3DTilesIonSource and {@link Source}.
      * Only `accessToken` and `assetId` are mandatory.

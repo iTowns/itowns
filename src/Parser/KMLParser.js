@@ -11,14 +11,12 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  */
 export default {
     /**
-     * Parse a KML file content and return a [FeatureCollection]{@link
-     * module:GeoJsonParser~FeatureCollection}.
+     * Parse a KML file content and return a {@link FeatureCollection}.
      *
      * @param {XMLDocument} kmlFile - The KML file content to parse.
      * @param {ParsingOptions} options - Options controlling the parsing.
      *
-     * @return {Promise} A promise resolving with a [FeatureCollection]{@link
-     * module:GeoJsonParser~FeatureCollection}.
+     * @return {Promise} A promise resolving with a {@link FeatureCollection}.
      */
     parse(kmlFile, options) {
         options = deprecatedParsingOptionsToNewOne(options);

@@ -14,16 +14,15 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
  * internally for optimisation.
  * @property {number} [zoom.max=Infinity] - this is the maximum zoom beyond which it'll be hidden.
  * The `max` is constant and the value is `Infinity` because there's no maximum display level after which it is hidden.
- * This property is used only if the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
+ * This property is used only if the layer is attached to {@link TiledGeometryLayer}.
  * @property {number} [zoom.min=0] - this is the minimum zoom from which it'll be visible.
- * This property is used only if the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
+ * This property is used only if the layer is attached to {@link TiledGeometryLayer}.
  */
 class GeometryLayer extends Layer {
     /**
      * A layer usually managing a geometry to display on a view. For example, it
      * can be a layer of buildings extruded from a a WFS stream.
      *
-     * @constructor
      * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
@@ -187,8 +186,7 @@ class GeometryLayer extends Layer {
     }
 
     /**
-     * Picking method for this layer. It uses the {@link Picking#pickObjectsAt}
-     * method.
+     * Picking method for this layer.
      *
      * @param {View} view - The view instance.
      * @param {Object} coordinates - The coordinates to pick in the view. It

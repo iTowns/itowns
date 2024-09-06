@@ -10,6 +10,7 @@ import Fetcher from 'Provider/Fetcher';
 import Cache from 'Core/Scheduler/Cache';
 import CRS from 'Core/Geographic/Crs';
 
+/** @private */
 export const supportedParsers = new Map([
     ['application/geo+json', GeoJsonParser.parse],
     ['application/json', GeoJsonParser.parse],
@@ -28,8 +29,8 @@ const noCache = { getByArray: () => {}, setByArray: a => a, clear: () => {} };
  * @property {boolean} isInverted - This option is to be set to the
  * correct value, true or false (default being false), if the computation of
  * the coordinates needs to be inverted to same scheme as OSM, Google Maps
- * or other system. See [this link]{@link
- * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates}
+ * or other system. See [this link](
+ * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates)
  * for more informations.
  *
  */
@@ -49,14 +50,13 @@ class InformationsData {
 /**
  * This interface describes parsing options.
  * @typedef {Object} ParsingOptions
- * @property {InformationsData|Source} in - data informations contained in the file.
+ * @property {Source} in - data informations contained in the file.
  * @property {FeatureBuildingOptions|Layer} out - options indicates how the features should be built.
  */
 
 let uid = 0;
 
 /**
- * @classdesc
  * Sources are object containing informations on how to fetch resources, from a
  * set source.
  *
@@ -78,8 +78,8 @@ let uid = 0;
  * fetched resource. If this property is set, it overrides the chosen fetcher
  * method with `format`.
  * @property {Object} networkOptions - Fetch options (passed directly to
- * `fetch()`), see [the syntax for more information]{@link
- * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
+ * `fetch()`), see [the syntax for more information](
+ * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
  * By default, set to `{ crossOrigin: 'anonymous' }`.
  * @property {string} crs - The crs projection of the resources.
  * @property {string} attribution - The intellectual property rights for the
@@ -104,8 +104,6 @@ class Source extends InformationsData {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * Source. Only the `url` property is mandatory.
-     *
-     * @constructor
      */
     constructor(source) {
         super(source);

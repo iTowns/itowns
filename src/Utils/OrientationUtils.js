@@ -118,17 +118,16 @@ export default {
     },
 
     /**
-     * FunctionOrQuaternion is either a THREE.Quaternion or a function that accepts
-     * arguments `(coordinates, target)` and returns the quaternion that models a rotation
-     * around the point of origin. If target is not provided, a new quaternion is
-     * created and returned instead.
-     *
-     * @typedef {function|THREE.Quaternion} FunctionOrQuaternion
+     * @typedef {Function|THREE.Quaternion} FunctionOrQuaternion - Either a
+     * THREE.Quaternion or a function that accepts arguments `(coordinates,
+     * target)` and returns the quaternion that models a rotation around the
+     * point of origin. If target is not provided, a new quaternion is created
+     * and returned instead.
      *
      * @property {Coordinates} coordinates the origin of the local East North Up
      * (ENU) frame
      * @property {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion.
-    */
+     */
 
     /**
      * A Projection object models a Coordinate Reference System (CRS).
@@ -190,7 +189,7 @@ export default {
      * between the ENU and LCC frames.
      * This is a generally small rotation around Z.
      *
-     * @param {Projection} proj the lcc projection (may be parsed using proj4)
+     * @param {Object} proj the lcc projection (may be parsed using proj4)
      * @param {number} proj.lat0 - the latitude of origin
      * @param {number} proj.long0 - the longitude of the central meridian
      * @param {Coordinates} [coordinates]  coordinates the origin of the local East North Up
@@ -214,7 +213,7 @@ export default {
      * between the ENU and LCC frames.
      * This is a generally small rotation around Z.
      *
-     * @param {Projection} proj the lcc projection (may be parsed using proj4)
+     * @param {Object} proj the lcc projection (may be parsed using proj4)
      * @param {number} proj.lat0 - the latitude of origin
      * @param {number} proj.long0 - the longitude of the central meridian
      * @param {Coordinates} [coordinates]  coordinates the origin of the local East North Up
@@ -235,7 +234,7 @@ export default {
      * between the ENU and TMerc frames.
      * This is a generally small rotation around Z.
      *
-     * @param {Projection} proj the tmerc projection (may be parsed using proj4)
+     * @param {Object} proj the tmerc projection (may be parsed using proj4)
      * @param {number} proj.e - the excentricity of the ellipsoid (supersedes {proj.a} and {proj.b})
      * @param {number} proj.a - the semimajor radius of the ellipsoid axis
      * @param {number} proj.b - the semiminor radius of the ellipsoid axis
@@ -275,7 +274,7 @@ export default {
      * between the ENU and TMerc frames.
      * This is a generally small rotation around Z.
      *
-     * @param {Projection} proj the tmerc projection (may be parsed using proj4)
+     * @param {Object} proj the tmerc projection (may be parsed using proj4)
      * @param {number} proj.e - the excentricity of the ellipsoid (supersedes
      * {proj.a} and {proj.b})
      * @param {number} proj.a - the semimajor radius of the ellipsoid axis

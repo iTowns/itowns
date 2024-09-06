@@ -1,7 +1,6 @@
 
 
 /**
- * @classdesc
  * Batch Table part of the 3D Tiles
  * [Batch Table Hierarchy Extension](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions/3DTILES_batch_table_hierarchy)
  * @property {object} classes - The classes as defined in the specification.

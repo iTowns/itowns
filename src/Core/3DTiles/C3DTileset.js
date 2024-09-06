@@ -8,7 +8,7 @@ import { C3DTilesTypes } from './C3DTilesEnums';
 // to a reference local to the tile.
 const tileMatrixInverse = new THREE.Matrix4();
 
-/** @classdesc
+/**
  * A 3D Tiles
  *  [Tileset](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/tileset.schema.json).
  * @property {C3DTilesTypes} type - Used by 3D Tiles extensions
