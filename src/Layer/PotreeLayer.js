@@ -41,25 +41,29 @@ class PotreeLayer extends PointCloudLayer {
 
         const resolve = this.addInitializationStep();
 
-        this.source.whenReady.then((cloud) => {
-            this.scale = new THREE.Vector3().addScalar(cloud.scale);
-            this.spacing = cloud.spacing;
-            this.hierarchyStepSize = cloud.hierarchyStepSize;
+        this.root = [];
+        this.source.whenReady
+            .then((cloud) => {
+                this.scale = new THREE.Vector3().addScalar(cloud.scale);
+                this.spacing = cloud.spacing;
+                this.hierarchyStepSize = cloud.hierarchyStepSize;
 
-            const normal = Array.isArray(cloud.pointAttributes) &&
-                cloud.pointAttributes.find(elem => elem.startsWith('NORMAL'));
-            if (normal) {
-                this.material.defines[normal] = 1;
-            }
+                const normal = Array.isArray(cloud.pointAttributes) &&
+                    cloud.pointAttributes.find(elem => elem.startsWith('NORMAL'));
+                if (normal) {
+                    this.material.defines[normal] = 1;
+                }
 
-            this.supportsProgressiveDisplay = (this.source.extension === 'cin');
+                this.supportsProgressiveDisplay = (this.source.extension === 'cin');
 
-            this.root = new PotreeNode(0, 0, this);
-            this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
-            this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
+                const root = new PotreeNode(0, 0, this);
+                root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
+                root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
 
-            return this.root.loadOctree().then(resolve);
-        });
+                this.root.push(root);
+
+                return root.loadOctree().then(resolve);
+            });
     }
 }
 
