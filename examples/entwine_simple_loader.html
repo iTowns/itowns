@@ -45,13 +45,19 @@
             function onLayerReady() {
                 var lookAt = new itowns.THREE.Vector3();
                 var size = new itowns.THREE.Vector3();
-                eptLayer.root.bbox.getSize(size);
-                eptLayer.root.bbox.getCenter(lookAt);
+
+                const bboxes = eptLayer.root.map(root => root.bbox);
+                let bbox = bboxes[0];
+                for (let i = 1; i < bboxes.length; i++) {
+                    bbox = bbox.union(bboxes[i]);
+                }
+                bbox.getSize(size);
+                bbox.getCenter(lookAt);
 
                 view.camera3D.far = 2.0 * size.length();
 
-                controls.groundLevel = eptLayer.root.bbox.min.z;
-                var position = eptLayer.root.bbox.max.clone().add(
+                controls.groundLevel = bbox.min.z;
+                var position = bbox.max.clone().add(
                     size.multiply({ x: 0, y: 0, z: size.x / size.z })
                 );
 

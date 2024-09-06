@@ -50,15 +50,17 @@ class EntwinePointTileNode extends PointCloudNode {
      * [Entwine
      * documentation](https://entwine.io/entwine-point-tile.html#ept-data)
      * @param {EntwinePointTileLayer} layer - The layer the node is attached to.
+     * @param {EntwinePointTileSource} source - The data source for the node.
      * @param {number} [numPoints=0] - The number of points in this node. If
      * `-1`, it means that the octree hierarchy associated to this node needs to
      * be loaded.
      */
-    constructor(depth, x, y, z, layer, numPoints = 0) {
+    constructor(depth, x, y, z, layer, source, numPoints = 0) {
         super(numPoints, layer);
 
         this.isEntwinePointTileNode = true;
 
+        this.source = source;
         this.depth = depth;
         this.x = x;
         this.y = y;
@@ -66,7 +68,7 @@ class EntwinePointTileNode extends PointCloudNode {
 
         this.id = buildId(depth, x, y, z);
 
-        this.url = `${this.layer.source.url}/ept-data/${this.id}.${this.layer.source.extension}`;
+        this.url = `${this.source.url}/ept-data/${this.id}.${this.source.extension}`;
     }
 
     createChildAABB(childNode) {
@@ -116,7 +118,7 @@ class EntwinePointTileNode extends PointCloudNode {
     }
 
     loadOctree() {
-        return Fetcher.json(`${this.layer.source.url}/ept-hierarchy/${this.id}.json`, this.layer.source.networkOptions)
+        return Fetcher.json(`${this.source.url}/ept-hierarchy/${this.id}.json`, this.source.networkOptions)
             .then((hierarchy) => {
                 this.numPoints = hierarchy[this.id];
 
@@ -147,7 +149,7 @@ class EntwinePointTileNode extends PointCloudNode {
         const numPoints = hierarchy[id];
 
         if (typeof numPoints == 'number') {
-            const child = new EntwinePointTileNode(depth, x, y, z, this.layer, numPoints);
+            const child = new EntwinePointTileNode(depth, x, y, z, this.layer, this.source, numPoints);
             this.add(child);
             stack.push(child);
         }

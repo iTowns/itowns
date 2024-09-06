@@ -58,11 +58,17 @@
 
             function onLayerReady() {
                 var lookAt = new itowns.THREE.Vector3();
-                eptLayer.root.bbox.getCenter(lookAt);
+
+                const bboxes = eptLayer.root.map(root => root.bbox);
+                let bbox = bboxes[0];
+                for (let i = 1; i < bboxes.length; i++) {
+                    bbox = bbox.union(bboxes[i]);
+                }
+                bbox.getCenter(lookAt);
                 var coordLookAt = new itowns.Coordinates(view.referenceCrs, lookAt);
 
                 var size = new itowns.THREE.Vector3();
-                eptLayer.root.bbox.getSize(size);
+                bbox.getSize(size);
 
                 view.controls.lookAtCoordinate({
                     coord: coordLookAt,
