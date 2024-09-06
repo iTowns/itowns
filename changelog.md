@@ -1,3 +1,18 @@
+<a name="2.44.1"></a>
+## [2.44.1](https://github.com/iTowns/itowns/compare/v2.44.0...v2.44.1) (2024-09-06)
+
+
+### Bug Fixes
+
+* **tutorials:** use OGC3DTilesLayer in 3d tiles tutorials ([e345979](https://github.com/iTowns/itowns/commit/e345979))
+
+
+### Workflow and chores
+
+* release v2.44.1 ([fc7f8e9](https://github.com/iTowns/itowns/commit/fc7f8e9))
+
+
+
 <a name="2.44.0"></a>
 # [2.44.0](https://github.com/iTowns/itowns/compare/v2.43.1...v2.44.0) (2024-09-02)
 
