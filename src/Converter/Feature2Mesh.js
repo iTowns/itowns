@@ -595,7 +595,7 @@ function featureToMesh(feature, options) {
                 try {
                     mesh = pointsToInstancedMeshes(feature);
                     mesh.isInstancedMesh = true;
-                } catch (e) {
+                } catch {
                     mesh = featureToPoint(feature, options);
                 }
             } else {

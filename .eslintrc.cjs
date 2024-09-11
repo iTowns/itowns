@@ -3,6 +3,7 @@ module.exports = {
     extends: [
         'eslint-config-airbnb-base',
         'eslint-config-airbnb-base/rules/strict',
+        'plugin:@typescript-eslint/recommended',
     ],
     parserOptions: {
         ecmaVersion: 13,
@@ -13,7 +14,9 @@ module.exports = {
     },
     settings: {
         'import/resolver': {
-            'babel-module': {},
+            'babel-module': {
+                extensions: ['.js', '.ts'],
+            },
         },
     },
     env: {
@@ -23,6 +26,9 @@ module.exports = {
         commonjs: true,
     },
     rules: {
+        'import/extensions': [
+            'off',
+        ],
         'no-trailing-spaces': 'warn',
         'padded-blocks': 'warn',
         'no-unused-vars': 'warn',

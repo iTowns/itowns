@@ -1,5 +1,4 @@
-// eslint-disable-next-line no-unused-vars
-import { Object3D, Box3 } from 'three';
+import { Box3 } from 'three';
 
 /**
  * Finds the batch table of an object in a 3D Tiles layer. This is
