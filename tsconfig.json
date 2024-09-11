@@ -5,10 +5,7 @@
         /* Type Checking */
         "strict": true,
         /* Modules */
-        "baseUrl": ".",
-        "paths": {
-            "*": [ "src/*" ]
-        },
+        "baseUrl": "./src",
         "module": "ESNext",
         /* Emit */
         "declaration": true,
