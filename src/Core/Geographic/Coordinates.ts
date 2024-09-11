@@ -1,20 +1,28 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import CRS from 'Core/Geographic/Crs';
-import Ellipsoid from 'Core/Math/Ellipsoid';
 
-proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
+import CRS from './Crs';
+import Ellipsoid from '../Math/Ellipsoid';
+
+import type { ProjectionLike } from './Crs';
 
 const ellipsoid = new Ellipsoid();
-const projectionCache = {};
+const projectionCache: Record<string, Record<string, proj4.Converter>> = {};
 
 const v0 = new THREE.Vector3();
 const v1 = new THREE.Vector3();
 
-let coord0;
-let coord1;
+let coord0: Coordinates;
+let coord1: Coordinates;
 
-function proj4cache(crsIn, crsOut) {
+export interface CoordinatesLike {
+    readonly crs: string;
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+}
+
+function proj4cache(crsIn: string, crsOut: string): proj4.Converter {
     if (!projectionCache[crsIn]) {
         projectionCache[crsIn] = {};
     }
@@ -55,6 +63,16 @@ function proj4cache(crsIn, crsOut) {
  * new Coordinates('EPSG:4326', 2.33, 48.24, 24999549); //Geographic coordinates
  */
 class Coordinates {
+    readonly isCoordinates: boolean;
+    crs: ProjectionLike;
+
+    x: number;
+    y: number;
+    z: number;
+
+    private _normal: THREE.Vector3;
+    private _normalNeedsUpdate: boolean;
+
     /**
      * @constructor
      *
@@ -70,7 +88,7 @@ class Coordinates {
      * @param {number} [v1=0] - y or latitude value.
      * @param {number} [v2=0] - z or altitude value.
      */
-    constructor(crs, v0 = 0, v1 = 0, v2 = 0) {
+    constructor(crs: ProjectionLike, v0: number = 0, v1: number = 0, v2: number = 0) {
         this.isCoordinates = true;
 
         CRS.isValid(crs);
@@ -85,9 +103,13 @@ class Coordinates {
         // Normal
         this._normal = new THREE.Vector3();
 
+        // @ts-ignore deprecate constructor array
         if (v0.length > 0) {
+            // @ts-ignore deprecate constructor array
             this.setFromArray(v0);
+            // @ts-ignore deprecate constructor array
         } else if (v0.isVector3 || v0.isCoordinates) {
+            // @ts-ignore deprecate constructor array
             this.setFromVector3(v0);
         } else {
             this.setFromValues(v0, v1, v2);
@@ -100,7 +122,7 @@ class Coordinates {
      * Sets the Coordinate Reference System.
      * @param {String} crs Coordinate Reference System (e.g. 'EPSG:4978')
      */
-    setCrs(crs) {
+    setCrs(crs: ProjectionLike) {
         CRS.isValid(crs);
         this.crs = crs;
     }
@@ -114,10 +136,10 @@ class Coordinates {
      *
      * @return {Coordinates} This Coordinates.
      */
-    setFromValues(v0 = 0, v1 = 0, v2 = 0) {
-        this.x = v0 == undefined ? 0 : v0;
-        this.y = v1 == undefined ? 0 : v1;
-        this.z = v2 == undefined ? 0 : v2;
+    setFromValues(v0: number = 0, v1: number = 0, v2: number = 0): this {
+        this.x = v0;
+        this.y = v1;
+        this.z = v2;
 
         this._normalNeedsUpdate = true;
         return this;
@@ -132,7 +154,7 @@ class Coordinates {
      *
      * @return {Coordinates} This Coordinates.
      */
-    setFromArray(array, offset = 0) {
+    setFromArray(array: number[], offset: number = 0): this {
         return this.setFromValues(array[offset], array[offset + 1], array[offset + 2]);
     }
 
@@ -145,7 +167,7 @@ class Coordinates {
      *
      * @return {Coordinates} This Coordinates.
      */
-    setFromVector3(v0) {
+    setFromVector3(v0: THREE.Vector3Like): this {
         return this.setFromValues(v0.x, v0.y, v0.z);
     }
 
@@ -155,8 +177,8 @@ class Coordinates {
      *
      * @return {Coordinates} The target with its new coordinates.
      */
-    clone() {
-        return new Coordinates(this.crs, this);
+    clone(): Coordinates {
+        return new Coordinates(this.crs, this.x, this.y, this.z);
     }
 
     /**
@@ -167,7 +189,7 @@ class Coordinates {
      *
      * @return {Coordinates} This Coordinates.
      */
-    copy(src) {
+    copy(src: CoordinatesLike): this {
         this.crs = src.crs;
         return this.setFromVector3(src);
     }
@@ -212,7 +234,7 @@ class Coordinates {
      *
      * @return {THREE.Vector3}
      */
-    toVector3(target = new THREE.Vector3()) {
+    toVector3(target: THREE.Vector3 = new THREE.Vector3()): THREE.Vector3 {
         return target.copy(this);
     }
 
@@ -226,7 +248,7 @@ class Coordinates {
      * @return {number[]} Returns an array [x, y, z], or copies x, y and z into
      * the provided array.
      */
-    toArray(array = [], offset = 0) {
+    toArray(array: number[] = [], offset: number = 0): ArrayLike<number> {
         return THREE.Vector3.prototype.toArray.call(this, array, offset);
     }
 
@@ -238,7 +260,7 @@ class Coordinates {
      * @return {number} planar distance
      *
      */
-    planarDistanceTo(coord) {
+    planarDistanceTo(coord: Coordinates): number {
         this.toVector3(v0).setZ(0);
         coord.toVector3(v1).setZ(0);
         return v0.distanceTo(v1);
@@ -255,7 +277,7 @@ class Coordinates {
      * @return {number} geodetic distance
      *
      */
-    geodeticDistanceTo(coord) {
+    geodeticDistanceTo(coord: Coordinates): number {
         this.as('EPSG:4326', coord0);
         coord.as('EPSG:4326', coord1);
         return ellipsoid.geodesicDistance(coord0, coord1);
@@ -268,7 +290,7 @@ class Coordinates {
      * @return {number} earth euclidean distance
      *
      */
-    spatialEuclideanDistanceTo(coord) {
+    spatialEuclideanDistanceTo(coord: Coordinates): number {
         this.as('EPSG:4978', coord0).toVector3(v0);
         coord.as('EPSG:4978', coord1).toVector3(v1);
         return v0.distanceTo(v1);
@@ -280,8 +302,9 @@ class Coordinates {
      * @param      {THREE.Matrix4}  mat The matrix.
      * @return     {Coordinates}  return this object.
      */
-    applyMatrix4(mat) {
-        return THREE.Vector3.prototype.applyMatrix4.call(this, mat);
+    applyMatrix4(mat: THREE.Matrix4): this {
+        THREE.Vector3.prototype.applyMatrix4.call(this, mat);
+        return this;
     }
 
     /**
@@ -309,7 +332,7 @@ class Coordinates {
      * @example
      * new Coordinates('EPSG:4978', x: 20885167, y: 849862, z: 23385912).as('EPSG:4326'); // Geographic system
      */
-    as(crs, target = new Coordinates(crs)) {
+    as(crs: ProjectionLike, target = new Coordinates(crs)): Coordinates {
         if (this.crs == crs) {
             target.copy(this);
         } else {
