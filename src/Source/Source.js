@@ -47,12 +47,11 @@ class InformationsData {
     }
 }
 /**
- * This class describes parsing options.
+ * This interface describes parsing options.
+ * @typedef {Object} ParsingOptions
  * @property {InformationsData|Source} in - data informations contained in the file.
  * @property {FeatureBuildingOptions|Layer} out - options indicates how the features should be built.
  */
-// eslint-disable-next-line
-class /* istanbul ignore next */ ParsingOptions {}
 
 let uid = 0;
 

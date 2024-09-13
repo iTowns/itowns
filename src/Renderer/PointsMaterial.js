@@ -36,14 +36,13 @@ const white = new THREE.Color(1.0,  1.0,  1.0);
  * top of canopy, and water. The different classes are defined using numeric
  * integer codes in the files.
  *
+ * @typedef {Object} Classification
  * @property {object} category - category classification,
  * @property {boolean} category.visible - category visibility,
  * @property {string} category.name - category name,
  * @property {THREE.Color} category.color - category color,
  * @property {number} category.opacity - category opacity,
  */
-// eslint-disable-next-line
-class /* istanbul ignore next */ Classification {}
 
 export const ClassificationScheme = {
     DEFAULT: {
