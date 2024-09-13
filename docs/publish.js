@@ -66,7 +66,7 @@ function sortByPackage(members, navList) {
 
     for (const type in members) {
         const member = members[type];
-        if (!member || type == 'globals' || type == 'tutorials') { continue; }
+        if (!member || type == 'tutorials') { continue; }
         member.forEach((m) => {
             const p = invertedNavList[m.name] || invertedNavList[m.memberof];
             if (!p) { return; }

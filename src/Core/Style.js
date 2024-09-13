@@ -299,8 +299,11 @@ function _addIcon(icon, domElement, opt) {
 }
 
 /**
+ * An object that can contain any properties (order, zoom, fill, stroke, point,
+ * text or/and icon) and sub properties of a Style.<br/>
+ * Used for the instanciation of a {@link Style}.
+ *
  * @typedef {Object} StyleOptions
- * @memberof StyleOptions
  *
  * @property {Number} [order] - Order of the features that will be associated to
  * the style. It can helps sorting and prioritizing features if needed.
@@ -441,15 +444,6 @@ function _addIcon(icon, domElement, opt) {
  * @property {Number|Function} [icon.opacity] - The opacity of the icon. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
 */
-
-/**
- * @description An object that can contain any properties
- * (order, zoom, fill, stroke, point, text or/and icon)
- * and sub properties of a Style.<br/>
- * Used for the instanciation of a {@link Style}.
- * @hideconstructor
- */
-export class StyleOptions {}
 
 /**
  * @class

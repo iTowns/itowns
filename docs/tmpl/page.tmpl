@@ -20,7 +20,7 @@
 <section>
 
 <article>
-<?js if (content.kind === 'class' || content.kind === 'module') { ?>
+<?js if (content.kind === 'class' || content.kind === 'module' || content.kind === 'typedef') { ?>
     <h1>
         <?js= content.name ?>
         <?js if (content.augments && content.augments.length) { ?>

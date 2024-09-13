@@ -31,6 +31,7 @@ export const FEATURE_TYPES = {
 };
 
 /**
+ * @typedef {Object} FeatureBuildingOptions
  * @property {string} crs - The CRS to convert the input coordinates to.
  * @property {string} [structure='2d'] - data structure type : 2d or 3d.
  * If the structure is 3d, the feature have 3 dimensions by vertices positions and
@@ -47,8 +48,7 @@ export const FEATURE_TYPES = {
  * @property {Style} style - The style to inherit when creating
  * style for all new features.
  *
-*/
-export class FeatureBuildingOptions {}
+ */
 
 /**
  * @property {Extent} extent - The 2D extent containing all the points
