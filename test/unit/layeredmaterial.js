@@ -6,7 +6,7 @@ import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import TileMesh from 'Core/TileMesh';
 import * as THREE from 'three';
-import Extent from 'Core/Geographic/Extent';
+import Tile from 'Core/Geographic/Tile';
 import OBB from 'Renderer/OBB';
 import LayeredMaterial from 'Renderer/LayeredMaterial';
 import sinon from 'sinon';
@@ -35,7 +35,7 @@ describe('material state vs layer state', function () {
         view.tileLayer.colorLayersOrder = [layer.id];
         view.addLayer(layer);
 
-        const extent = new Extent('TMS:4326', 3, 0, 0).as('EPSG:4326');
+        const extent = new Tile('TMS:4326', 3, 0, 0).toExtent('EPSG:4326');
         material = new LayeredMaterial();
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));

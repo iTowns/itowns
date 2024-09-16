@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import Coordinates from 'Core/Geographic/Coordinates';
+import Coordinates from '../Geographic/Coordinates';
 
 export const ellipsoidSizes = new THREE.Vector3(
     proj4.WGS84.a,
@@ -10,7 +10,13 @@ export const ellipsoidSizes = new THREE.Vector3(
 const normal = new THREE.Vector3();
 
 class Ellipsoid {
-    constructor(size = ellipsoidSizes) {
+    size: THREE.Vector3;
+    eccentricity: number;
+
+    private _radiiSquared: THREE.Vector3;
+    private _invRadiiSquared: THREE.Vector3;
+
+    constructor(size: THREE.Vector3 = ellipsoidSizes) {
         this.size = new THREE.Vector3();
         this._radiiSquared = new THREE.Vector3();
         this._invRadiiSquared = new THREE.Vector3();
@@ -19,11 +25,11 @@ class Ellipsoid {
         this.setSize(size);
     }
 
-    geodeticSurfaceNormal(cartesian, target = new THREE.Vector3()) {
+    geodeticSurfaceNormal(cartesian: Coordinates, target = new THREE.Vector3()) {
         return cartesian.toVector3(target).multiply(this._invRadiiSquared).normalize();
     }
 
-    geodeticSurfaceNormalCartographic(coordCarto, target = new THREE.Vector3()) {
+    geodeticSurfaceNormalCartographic(coordCarto: Coordinates, target = new THREE.Vector3()) {
         const longitude = THREE.MathUtils.degToRad(coordCarto.longitude);
         const latitude = THREE.MathUtils.degToRad(coordCarto.latitude);
         const cosLatitude = Math.cos(latitude);
@@ -33,7 +39,7 @@ class Ellipsoid {
             Math.sin(latitude));
     }
 
-    setSize(size) {
+    setSize(size: THREE.Vector3Like) {
         this.size.set(size.x, size.y, size.z);
 
         this._radiiSquared.multiplyVectors(size, size);
@@ -45,7 +51,7 @@ class Ellipsoid {
         this.eccentricity = Math.sqrt(this._radiiSquared.x - this._radiiSquared.z) / this.size.x;
     }
 
-    cartographicToCartesian(coordCarto, target = new THREE.Vector3()) {
+    cartographicToCartesian(coordCarto: Coordinates, target = new THREE.Vector3()) {
         normal.copy(coordCarto.geodesicNormal);
 
         target.multiplyVectors(this._radiiSquared, normal);
@@ -68,7 +74,7 @@ class Ellipsoid {
      * @param {Coordinate} [target] coordinate to copy result
      * @returns {Coordinate} an object describing the coordinates on the reference ellipsoid, angles are in degree
      */
-    cartesianToCartographic(position, target = new Coordinates('EPSG:4326', 0, 0, 0)) {
+    cartesianToCartographic(position: THREE.Vector3Like, target = new Coordinates('EPSG:4326', 0, 0, 0)) {
         // for details, see for example http://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/geodetic-datum-conversions/equations-used-datum
         // TODO the following is only valable for oblate ellipsoid of revolution. do we want to support triaxial ellipsoid?
         const R = Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
@@ -91,7 +97,7 @@ class Ellipsoid {
         return target.setFromValues(THREE.MathUtils.radToDeg(theta), THREE.MathUtils.radToDeg(phi), h);
     }
 
-    cartographicToCartesianArray(coordCartoArray) {
+    cartographicToCartesianArray(coordCartoArray: Coordinates[]) {
         const cartesianArray = [];
         for (let i = 0; i < coordCartoArray.length; i++) {
             cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
@@ -100,7 +106,7 @@ class Ellipsoid {
         return cartesianArray;
     }
 
-    intersection(ray) {
+    intersection(ray: THREE.Ray) {
         const EPSILON = 0.0001;
         const O_C = ray.origin;
         const dir = ray.direction;
@@ -137,11 +143,6 @@ class Ellipsoid {
         return inter;
     }
 
-    computeDistance(coordCarto1, coordCarto2) {
-        console.warn('computeDistance is renamed to geodesicDistance');
-        this.geodesicDistance(coordCarto1, coordCarto2);
-    }
-
     /**
      * Calculate the geodesic distance, between coordCarto1 and coordCarto2.
      * It's most short distance on ellipsoid surface between coordCarto1 and coordCarto2.
@@ -151,7 +152,7 @@ class Ellipsoid {
      * @param      {Coordinates}  coordCarto2  The coordinate carto 2
      * @return     {number}  The orthodromic distance between the two given coordinates.
      */
-    geodesicDistance(coordCarto1, coordCarto2) {
+    geodesicDistance(coordCarto1: Coordinates, coordCarto2: Coordinates) {
         // The formula uses the distance on approximated sphere,
         // with the nearest local radius of curvature of the ellipsoid
         // https://geodesie.ign.fr/contenu/fichiers/Distance_longitude_latitude.pdf

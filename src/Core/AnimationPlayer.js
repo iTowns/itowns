@@ -104,9 +104,8 @@ class AnimationPlayer extends THREE.EventDispatcher {
     playLater(duration, waitingFrame) {
         const timew = Math.floor(FRAME_DURATION * waitingFrame);
         window.clearInterval(this.waitTimer);
-        const self = this;
         this.waitTimer = window.setTimeout(() => {
-            self.play(duration);
+            this.play(duration);
         }, timew);
     }
 

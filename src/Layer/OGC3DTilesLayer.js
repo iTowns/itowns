@@ -376,18 +376,18 @@ class OGC3DTilesLayer extends GeometryLayer {
     }
 
     // eslint-disable-next-line no-unused-vars
-    attach(layer) {
+    attach() {
         console.warn('[OGC3DTilesLayer]: Attaching / detaching layers is not yet implemented for OGC3DTilesLayer.');
     }
 
     // eslint-disable-next-line no-unused-vars
-    detach(layer) {
+    detach() {
         console.warn('[OGC3DTilesLayer]: Attaching / detaching layers is not yet implemented for OGC3DTilesLayer.');
         return true;
     }
 
     // eslint-disable-next-line no-unused-vars
-    getObjectToUpdateForAttachedLayers(obj) {
+    getObjectToUpdateForAttachedLayers() {
         return null;
     }
 

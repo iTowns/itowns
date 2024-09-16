@@ -1,5 +1,6 @@
 {
     "presets": [
+        ["@babel/preset-typescript"],
         ["@babel/preset-env", {
             "targets": {
                 "browsers": "defaults and supports webgl2"
@@ -8,7 +9,10 @@
         }]
     ],
     "plugins": [
-        ["module-resolver",  { "root": ["./src"] } ],
+        ["module-resolver",  {
+            "root": ["./src"],
+            "extensions": [".js", ".ts"]
+        }],
         ["babel-plugin-inline-import", {
             "extensions": [
                 ".json",
@@ -17,7 +21,9 @@
                 ".css"
             ]
         }],
-        ["module-extension-resolver"],
+        ["module-extension-resolver", {
+            "srcExtensions": [ ".ts", ".js" ]
+        }],
         ["@babel/plugin-transform-runtime", {
             "regenerator": false
         }],

@@ -2,32 +2,34 @@ import proj4 from 'proj4';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
-function isString(s) {
+export type ProjectionLike = string;
+
+function isString(s: unknown): s is string {
     return typeof s === 'string' || s instanceof String;
 }
 
-function mustBeString(crs) {
+function mustBeString(crs: string) {
     if (!isString(crs)) {
         throw new Error(`Crs parameter value must be a string: '${crs}'`);
     }
 }
 
-function isTms(crs) {
+function isTms(crs: string): boolean {
     return isString(crs) && crs.startsWith('TMS');
 }
 
-function isEpsg(crs) {
+function isEpsg(crs: string): boolean {
     return isString(crs) && crs.startsWith('EPSG');
 }
 
-function formatToTms(crs) {
+function formatToTms(crs: string): string {
     mustBeString(crs);
-    return isTms(crs) ? crs : `TMS:${crs.match(/\d+/)[0]}`;
+    return isTms(crs) ? crs : `TMS:${crs.match(/\d+/)?.[0]}`;
 }
 
-function formatToEPSG(crs) {
+function formatToEPSG(crs: string) {
     mustBeString(crs);
-    return isEpsg(crs) ? crs : `EPSG:${crs.match(/\d+/)[0]}`;
+    return isEpsg(crs) ? crs : `EPSG:${crs.match(/\d+/)?.[0]}`;
 }
 
 const UNIT = {
@@ -35,17 +37,17 @@ const UNIT = {
     METER: 2,
 };
 
-function is4326(crs) {
+function is4326(crs: ProjectionLike) {
     return crs === 'EPSG:4326';
 }
 
-function isGeocentric(crs) {
+function isGeocentric(crs: ProjectionLike) {
     mustBeString(crs);
     const projection = proj4.defs(crs);
     return !projection ? false : projection.projName == 'geocent';
 }
 
-function _unitFromProj4Unit(projunit) {
+function _unitFromProj4Unit(projunit: string) {
     if (projunit === 'degrees') {
         return UNIT.DEGREE;
     } else if (projunit === 'm') {
@@ -55,14 +57,14 @@ function _unitFromProj4Unit(projunit) {
     }
 }
 
-function toUnit(crs) {
+function toUnit(crs: ProjectionLike) {
     mustBeString(crs);
     switch (crs) {
         case 'EPSG:4326' : return UNIT.DEGREE;
         case 'EPSG:4978' : return UNIT.METER;
         default: {
             const p = proj4.defs(formatToEPSG(crs));
-            if (!p) {
+            if (!p?.units) {
                 return undefined;
             }
             return _unitFromProj4Unit(p.units);
@@ -70,7 +72,7 @@ function toUnit(crs) {
     }
 }
 
-function toUnitWithError(crs) {
+function toUnitWithError(crs: ProjectionLike) {
     mustBeString(crs);
     const u = toUnit(crs);
     if (u === undefined) {
@@ -99,7 +101,7 @@ export default {
      *
      * @throws {Error} if the CRS is not valid.
      */
-    isValid(crs) {
+    isValid(crs: ProjectionLike) {
         toUnitWithError(crs);
     },
 
@@ -110,7 +112,7 @@ export default {
      * @return {boolean}
      * @throws {Error} if the CRS is not valid.
      */
-    isGeographic(crs) {
+    isGeographic(crs: ProjectionLike) {
         return (toUnitWithError(crs) == UNIT.DEGREE);
     },
 
@@ -121,7 +123,7 @@ export default {
      * @return {boolean}
      * @throws {Error} if the CRS is not valid.
      */
-    isMetricUnit(crs) {
+    isMetricUnit(crs: ProjectionLike) {
         return (toUnit(crs) == UNIT.METER);
     },
 
@@ -155,7 +157,7 @@ export default {
      * @param {string} crs - The CRS to use.
      * @return {number} 0.01 if the CRS is EPSG:4326, 0.001 otherwise.
      */
-    reasonnableEpsilon(crs) {
+    reasonnableEpsilon(crs: ProjectionLike) {
         if (is4326(crs)) {
             return 0.01;
         } else {
@@ -187,5 +189,5 @@ export default {
      * @param {string}  proj4def is the Proj4 definition string for the projection to use
      * @return {undefined}
      */
-    defs: (code, proj4def) => proj4.defs(code, proj4def),
+    defs: (code: string, proj4def: string) => proj4.defs(code, proj4def),
 };

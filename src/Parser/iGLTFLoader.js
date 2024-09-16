@@ -32,8 +32,6 @@ class iGLTFLoader extends THREE.Loader {
      * @param {Function} onError
      */
     load(url, onLoad, onProgress, onError) {
-        const scope = this;
-
         let resourcePath;
 
         if (this.resourcePath !== '') {
@@ -62,8 +60,8 @@ class iGLTFLoader extends THREE.Loader {
                 console.error(e);
             }
 
-            scope.manager.itemError(url);
-            scope.manager.itemEnd(url);
+            this.manager.itemError(url);
+            this.manager.itemEnd(url);
         };
 
         const loader = new THREE.FileLoader(this.manager);
@@ -75,10 +73,10 @@ class iGLTFLoader extends THREE.Loader {
 
         loader.load(url, (data) => {
             try {
-                scope.parse(data, resourcePath, (gltf) => {
+                this.parse(data, resourcePath, (gltf) => {
                     onLoad(gltf);
 
-                    scope.manager.itemEnd(url);
+                    this.manager.itemEnd(url);
                 }, _onError);
             } catch (e) {
                 _onError(e);
@@ -171,10 +169,8 @@ class iGLTFLoader extends THREE.Loader {
      * .scene, .scenes, .cameras, .animations, and .asset, when parsing is done.
      */
     parseAsync(data, path) {
-        const scope = this;
-
         return new Promise((resolve, reject) => {
-            scope.parse(data, path, resolve, reject);
+            this.parse(data, path, resolve, reject);
         });
     }
 }

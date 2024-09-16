@@ -4,8 +4,6 @@ import { init3dTilesLayer, pre3dTilesUpdate, process3dTilesNode } from 'Process/
 import C3DTileset from 'Core/3DTiles/C3DTileset';
 import C3DTExtensions from 'Core/3DTiles/C3DTExtensions';
 import { PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
-// eslint-disable-next-line no-unused-vars
-import Style from 'Core/Style';
 import C3DTFeature from 'Core/3DTiles/C3DTFeature';
 import { optimizeGeometryGroups } from 'Utils/ThreeUtils';
 

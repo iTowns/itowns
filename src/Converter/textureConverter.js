@@ -27,7 +27,7 @@ export default {
                 new THREE.Color(backgroundLayer.paint['background-color']) :
                 undefined;
 
-            extentDestination.as(CRS.formatToEPSG(layer.crs), extentTexture);
+            extentDestination.toExtent(CRS.formatToEPSG(layer.crs), extentTexture);
             texture = Feature2Texture.createTextureFromFeature(data, extentTexture, layer.subdivisionThreshold, layer.style, backgroundColor);
             texture.features = data;
             texture.extent = extentDestination;
