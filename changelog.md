@@ -1,3 +1,30 @@
+<a name="2.44.2"></a>
+## [2.44.2](https://github.com/iTowns/itowns/compare/v2.44.1...v2.44.2) (2024-09-17)
+
+
+### Bug Fixes
+
+* **3dtiles:** support point cloud attenuated mode in OGC3DTiles layer ([afcb250](https://github.com/iTowns/itowns/commit/afcb250))
+* **exampleCOPC:** fix elevation behavior ([95d2194](https://github.com/iTowns/itowns/commit/95d2194))
+* **PointCloud:** Fix clipping point cloud ([2019826](https://github.com/iTowns/itowns/commit/2019826))
+* **pointcloud:** Fix point cloud distance to camera whatever point cloud initial placement is ([ff9a86a](https://github.com/iTowns/itowns/commit/ff9a86a))
+
+
+### Workflow and chores
+
+* release v2.44.2 ([f785666](https://github.com/iTowns/itowns/commit/f785666))
+* **deps:** bump actions/download-artifact in /.github/workflows ([8e872be](https://github.com/iTowns/itowns/commit/8e872be))
+* **deps:** bump body-parser and express ([a01de04](https://github.com/iTowns/itowns/commit/a01de04))
+* fix dependency vulnerabilities ([29dfc60](https://github.com/iTowns/itowns/commit/29dfc60))
+
+
+### Documentation
+
+* remove empty class used for documentation ([9479973](https://github.com/iTowns/itowns/commit/9479973))
+* rewrite some docs to follow jsdoc semantics ([cbb1b96](https://github.com/iTowns/itowns/commit/cbb1b96))
+
+
+
 <a name="2.44.1"></a>
 ## [2.44.1](https://github.com/iTowns/itowns/compare/v2.44.0...v2.44.1) (2024-09-06)
 
