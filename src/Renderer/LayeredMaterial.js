@@ -12,10 +12,11 @@ const defaultTex = new THREE.Texture();
 // from three.js packDepthToRGBA
 const UnpackDownscale = 255 / 256; // 0..1 -> fraction (excluding 1)
 const bitSh = new THREE.Vector4(
-    UnpackDownscale / (256.0 * 256.0 * 256.0),
-    UnpackDownscale / (256.0 * 256.0),
+    UnpackDownscale,
     UnpackDownscale / 256.0,
-    UnpackDownscale);
+    UnpackDownscale / (256.0 * 256.0),
+    UnpackDownscale / (256.0 * 256.0 * 256.0),
+);
 
 export function unpack1K(color, factor) {
     return factor ? bitSh.dot(color) * factor : bitSh.dot(color);
