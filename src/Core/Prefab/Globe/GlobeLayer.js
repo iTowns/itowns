@@ -43,8 +43,6 @@ class GlobeLayer extends TiledGeometryLayer {
      * level for this tiled layer.
      * @param {number} [config.sseSubdivisionThreshold=1] - Threshold level for
      * the SSE.
-     * @param {number} [config.maxDeltaElevationLevel=4] - Maximum delta between
-     * two elevations tile.
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
@@ -67,8 +65,6 @@ class GlobeLayer extends TiledGeometryLayer {
         this.options.defaultPickingRadius = 5;
         this.minSubdivisionLevel = this.minSubdivisionLevel == undefined ? 2 : this.minSubdivisionLevel;
         this.maxSubdivisionLevel = this.maxSubdivisionLevel == undefined ? 19 : this.maxSubdivisionLevel;
-        this.maxDeltaElevationLevel = this.maxDeltaElevationLevel || 4.0;
-
         this.extent = this.schemeTile[0].clone();
 
         for (let i = 1; i < this.schemeTile.length; i++) {
