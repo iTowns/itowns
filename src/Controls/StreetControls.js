@@ -299,7 +299,7 @@ class StreetControls extends FirstPersonControls {
         startQuaternion.copy(this.camera.quaternion);
         this.end.copy(this.camera);
         this.end.lookAt(position);
-        this.tween = new TWEEN.Tween({ t: 0 }, this.tweenGroup).to({ t: 1 }, time)
+        this.tween = new TWEEN.Tween({ t: 0 }).to({ t: 1 }, time)
             .easing(TWEEN.Easing.Quadratic.Out)
             .onComplete(() => {
                 this.stopAnimations();
@@ -309,6 +309,8 @@ class StreetControls extends FirstPersonControls {
                 this.camera.quaternion.slerpQuaternions(startQuaternion, this.end.quaternion, d.t);
             })
             .start();
+
+        this.tweenGroup.add(this.tween);
 
         this.animationFrameRequester = () => {
             this.tweenGroup.update();
@@ -340,7 +342,7 @@ class StreetControls extends FirstPersonControls {
 
         this.stopAnimations();
 
-        this.tween = new TWEEN.Tween(this.camera.position, this.tweenGroup) // Create a new tween that modifies camera position
+        this.tween = new TWEEN.Tween(this.camera.position) // Create a new tween that modifies camera position
             .to(position.clone(), time)
             .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
             .onComplete(() => {
@@ -348,6 +350,8 @@ class StreetControls extends FirstPersonControls {
                 resolve();
             })
             .start();
+
+        this.tweenGroup.add(this.tween);
 
         this.animationFrameRequester = () => {
             this.tweenGroup.update();
@@ -364,6 +368,7 @@ class StreetControls extends FirstPersonControls {
         if (this.tween) {
             this.tween.stop();
             this.tween = undefined;
+            this.tweenGroup.removeAll();
         }
         if (this.animationFrameRequester) {
             this.view.removeFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, this.animationFrameRequester);
