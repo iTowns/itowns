@@ -1,5 +1,4 @@
 /* eslint-disable max-classes-per-file */
-import fetch from 'node-fetch';
 import { Camera } from 'three';
 import { DOMParser } from '@xmldom/xmldom';
 import threads from 'worker_threads';
