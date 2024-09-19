@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import replace from 'replace-in-file';
+import { replaceInFile } from 'replace-in-file';
 import path from 'path';
 import threeExamples from './threeExamples.mjs';
 
@@ -9,7 +9,7 @@ const fileGLTFLoader = path.resolve(path.dirname('./').replace('config', ''), th
 const patchBatchID = /JOINTS_0: +'skinIndex',/g;
 const patchGLTFLoader = 'JOINTS_0: \'skinIndex\',\n\t\t_BATCHID: \'_BATCHID\',';
 
-replace({
+replaceInFile({
     files: fileGLTFLoader.replaceAll('\\','/'),
     from: patchBatchID,
     to: patchGLTFLoader,
