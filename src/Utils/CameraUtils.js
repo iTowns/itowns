@@ -234,7 +234,7 @@ class CameraRig extends THREE.Object3D {
             this.end.target.rotation.z = this.start.target.rotation.z + difference - Math.sign(difference) * 2 * Math.PI;
         }
 
-        animations.push(new TWEEN.Tween(factor, tweenGroup).to({ t: 1 }, time)
+        animations.push(new TWEEN.Tween(factor).to({ t: 1 }, time)
             .easing(params.easing)
             .onUpdate((d) => {
                 // rotate to coord destination in geocentric projection
@@ -251,20 +251,22 @@ class CameraRig extends THREE.Object3D {
 
         // translate to coordinate destination in planar projection
         if (view.referenceCrs != 'EPSG:4978') {
-            animations.push(new TWEEN.Tween(this.position, tweenGroup)
+            animations.push(new TWEEN.Tween(this.position)
                 .to(this.end.position, time)
                 .easing(params.easing));
         }
 
         // translate to altitude zero
-        animations.push(new TWEEN.Tween(this.seaLevel.position, tweenGroup)
+        animations.push(new TWEEN.Tween(this.seaLevel.position)
             .to(this.end.seaLevel.position, time)
             .easing(params.easing));
 
         // translate camera position
-        animations.push(new TWEEN.Tween(this.camera.position, tweenGroup)
+        animations.push(new TWEEN.Tween(this.camera.position)
             .to(this.end.camera.position, time)
             .easing(params.easing));
+
+        tweenGroup.add(...animations);
 
         // update animations, transformation and view
         this.animationFrameRequester = () => {
