@@ -69,6 +69,9 @@ class EntwinePointTileLayer extends PointCloudLayer {
                 }
             }
 
+            this.minElevationRange = this.minElevationRange ?? this.source.boundsConforming[2];
+            this.maxElevationRange = this.maxElevationRange ?? this.source.boundsConforming[5];
+
             // for BBOX
             const tightBounds = [
                 ...forward(this.source.boundsConforming.slice(0, 3)),
@@ -79,10 +82,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
                 zmax: tightBounds[5],
             };
 
-
-            this.minElevationRange = this.minElevationRange ?? this.source.boundsConforming[2];
-            this.maxElevationRange = this.maxElevationRange ?? this.source.boundsConforming[5];
-
             const bounds = [
                 ...forward(this.source.bounds.slice(0, 3)),
                 ...forward(this.source.bounds.slice(3, 6)),
@@ -92,6 +91,8 @@ class EntwinePointTileLayer extends PointCloudLayer {
 
             this.extent = Extent.fromBox3(this.crs, this.root.bbox);
 
+            // for OBB
+            // Get the transformation between the data coordinate syteme and the view's.
             const centerZ0 = this.source.boundsConforming
                 .slice(0, 2)
                 .map((val, i) =>  Math.floor((val + this.source.boundsConforming[i + 3]) * 0.5));
@@ -100,33 +101,33 @@ class EntwinePointTileLayer extends PointCloudLayer {
             const geometry = new THREE.BufferGeometry();
             const points = new THREE.Points(geometry);
 
-            const matrixWorld = new THREE.Matrix4();
-            const matrixWorldInverse = new THREE.Matrix4();
+            const matrix = new THREE.Matrix4();
+            const matrixInverse = new THREE.Matrix4();
 
-            let origin = new Coordinates(this.crs);
+            let origin = new Coordinates(this.source.crs, ...centerZ0);
             if (this.crs === 'EPSG:4978') {
                 const axisZ = new THREE.Vector3(0, 0, 1);
                 const alignYtoEast = new THREE.Quaternion();
-                const center = new Coordinates(this.source.crs, ...centerZ0);
-                origin = center.as('EPSG:4978');
-                const center4326 = origin.as('EPSG:4326');
+                origin = origin.as('EPSG:4978');
+                const origin4326 = origin.as('EPSG:4326');
 
                 // align Z axe to geodesic normal.
                 points.quaternion.setFromUnitVectors(axisZ, origin.geodesicNormal);
                 // align Y axe to East
-                alignYtoEast.setFromAxisAngle(axisZ, THREE.MathUtils.degToRad(90 + center4326.longitude));
+                alignYtoEast.setFromAxisAngle(axisZ, THREE.MathUtils.degToRad(90 + origin4326.longitude));
                 points.quaternion.multiply(alignYtoEast);
             }
-            points.updateMatrixWorld();
+            points.updateMatrix();
 
-            matrixWorld.copy(points.matrixWorld);
-            matrixWorldInverse.copy(matrixWorld).invert();
+            matrix.copy(points.matrix);
+            matrixInverse.copy(matrix).invert();
 
             // proj in repere local (apply rotation) to get obb from bbox
             const boundsLocal = [];
             for (let i = 0; i < bounds.length; i += 3) {
-                const coord = new THREE.Vector3(...bounds.slice(i, i + 3)).sub(origin.toVector3());
-                const coordlocal = coord.applyMatrix4(matrixWorldInverse);
+                const coord = new THREE.Vector3(...bounds.slice(i, i + 3))
+                    .sub(origin.toVector3());
+                const coordlocal = coord.applyMatrix4(matrixInverse);
                 boundsLocal.push(...coordlocal);
             }
 
@@ -137,7 +138,7 @@ class EntwinePointTileLayer extends PointCloudLayer {
             geometry.computeBoundingBox();
 
             this.root.obb.fromBox3(geometry.boundingBox);
-            this.root.obb.applyMatrix4(matrixWorld);
+            this.root.obb.applyMatrix4(matrix);
             this.root.obb.position = origin.toVector3();
 
             return this.root.loadOctree().then(resolve);
