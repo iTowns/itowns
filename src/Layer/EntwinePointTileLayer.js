@@ -57,6 +57,13 @@ class EntwinePointTileLayer extends PointCloudLayer {
         this.whenReady = this.source.whenReady.then(() => {
             const crs = this.crs || 'EPSG:4326';
             if (this.crs !== config.crs) { console.warn('layer.crs is different from View.crs'); }
+
+            // NOTE: this spacing is kinda arbitrary here, we take the width and
+            // length (height can be ignored), and we divide by the specified
+            // span in ept.json. This needs improvements.
+            this.spacing = (Math.abs(this.source.bounds[3] - this.source.bounds[0])
+                + Math.abs(this.source.bounds[4] - this.source.bounds[1])) / (2 * this.source.span);
+
             this.root = new EntwinePointTileNode(0, 0, 0, 0, this, -1);
 
             let forward = (x => x);
@@ -68,19 +75,18 @@ class EntwinePointTileLayer extends PointCloudLayer {
                 }
             }
 
+            this.minElevationRange = this.source.boundsConforming[2];
+            this.maxElevationRange = this.source.boundsConforming[5];
+
             // for BBOX
-            const boundsConforming = [
+            const tightBounds = [
                 ...forward(this.source.boundsConforming.slice(0, 3)),
                 ...forward(this.source.boundsConforming.slice(3, 6)),
             ];
             this.clamp = {
-                zmin: boundsConforming[2],
-                zmax: boundsConforming[5],
+                zmin: tightBounds[2],
+                zmax: tightBounds[5],
             };
-
-
-            this.minElevationRange = this.source.boundsConforming[2];
-            this.maxElevationRange = this.source.boundsConforming[5];
 
             const bounds = [
                 ...forward(this.source.bounds.slice(0, 3)),
@@ -90,6 +96,8 @@ class EntwinePointTileLayer extends PointCloudLayer {
             this.root.bbox.setFromArray(bounds);
             this.extent = Extent.fromBox3(crs, this.root.bbox);
 
+            // for OBB
+            // Get the transformation between the data coordinate syteme and the view's.
             const centerZ0 = this.source.boundsConforming
                 .slice(0, 2)
                 .map((val, i) =>  Math.floor((val + this.source.boundsConforming[i + 3]) * 0.5));
@@ -98,33 +106,33 @@ class EntwinePointTileLayer extends PointCloudLayer {
             const geometry = new THREE.BufferGeometry();
             const points = new THREE.Points(geometry);
 
-            const matrixWorld = new THREE.Matrix4();
-            const matrixWorldInverse = new THREE.Matrix4();
+            const matrix = new THREE.Matrix4();
+            const matrixInverse = new THREE.Matrix4();
 
-            let origin = new Coordinates(this.crs);
+            let origin = new Coordinates(this.source.crs, ...centerZ0);
             if (this.crs === 'EPSG:4978') {
                 const axisZ = new THREE.Vector3(0, 0, 1);
                 const alignYtoEast = new THREE.Quaternion();
-                const center = new Coordinates(this.source.crs, ...centerZ0);
-                origin = center.as('EPSG:4978');
-                const center4326 = origin.as('EPSG:4326');
+                origin = origin.as('EPSG:4978');
+                const origin4326 = origin.as('EPSG:4326');
 
                 // align Z axe to geodesic normal.
                 points.quaternion.setFromUnitVectors(axisZ, origin.geodesicNormal);
                 // align Y axe to East
-                alignYtoEast.setFromAxisAngle(axisZ, THREE.MathUtils.degToRad(90 + center4326.longitude));
+                alignYtoEast.setFromAxisAngle(axisZ, THREE.MathUtils.degToRad(90 + origin4326.longitude));
                 points.quaternion.multiply(alignYtoEast);
             }
-            points.updateMatrixWorld();
+            points.updateMatrix();
 
-            matrixWorld.copy(points.matrixWorld);
-            matrixWorldInverse.copy(matrixWorld).invert();
+            matrix.copy(points.matrix);
+            matrixInverse.copy(matrix).invert();
 
             // proj in repere local (apply rotation) to get obb from bbox
             const boundsLocal = [];
             for (let i = 0; i < bounds.length; i += 3) {
-                const coord = new THREE.Vector3(...bounds.slice(i, i + 3)).sub(origin.toVector3());
-                const coordlocal = coord.applyMatrix4(matrixWorldInverse);
+                const coord = new THREE.Vector3(...bounds.slice(i, i + 3))
+                    .sub(origin.toVector3());
+                const coordlocal = coord.applyMatrix4(matrixInverse);
                 boundsLocal.push(...coordlocal);
             }
 
@@ -135,14 +143,8 @@ class EntwinePointTileLayer extends PointCloudLayer {
             geometry.computeBoundingBox();
 
             this.root.obb.fromBox3(geometry.boundingBox);
-            this.root.obb.applyMatrix4(matrixWorld);
+            this.root.obb.applyMatrix4(matrix);
             this.root.obb.position = origin.toVector3();
-
-            // NOTE: this spacing is kinda arbitrary here, we take the width and
-            // length (height can be ignored), and we divide by the specified
-            // span in ept.json. This needs improvements.
-            this.spacing = (Math.abs(this.source.bounds[3] - this.source.bounds[0])
-                + Math.abs(this.source.bounds[4] - this.source.bounds[1])) / (2 * this.source.span);
 
             return this.root.loadOctree().then(resolve);
         });
