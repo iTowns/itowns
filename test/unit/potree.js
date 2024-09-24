@@ -65,7 +65,6 @@ describe('Potree', function () {
             // Configure Point Cloud layer
             potreeLayer = new PotreeLayer('lion_takanawa', {
                 source,
-                onPointsCreated: () => {},
                 crs: viewer.referenceCrs,
             });
 
