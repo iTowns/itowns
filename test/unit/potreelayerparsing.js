@@ -130,8 +130,8 @@ describe('Potree Provider', function () {
                 const source = new PotreeSource({
                     file: fileName,
                     url: baseurl,
-                    cloud,
                     crs: 'EPSG:4978',
+                    cloud,
                 });
                 const layer = new PotreeLayer('pointsCloud4', { source, crs: view.referenceCrs });
                 View.prototype.addLayer.call(view, layer);
