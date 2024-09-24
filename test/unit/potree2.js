@@ -27,7 +27,6 @@ describe('Potree2', function () {
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
                 networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             }),
-            onPointsCreated: () => {},
             crs: viewer.referenceCrs,
         });
 
