@@ -1,4 +1,6 @@
 module.exports = {
+
+    // Global ESLint settings
     root: true,
     extends: [
         'eslint-config-airbnb-base',
@@ -89,6 +91,15 @@ module.exports = {
         'no-multi-spaces': 'off',
         'import/no-cycle': 'off',
         'import/no-useless-path-segments': 'off',
+        'import/extensions': [
+            'error',
+            'ignorePackages',
+            {
+                'js': 'never',
+                'ts': 'never',
+                'tsx': 'never',
+            },
+        ],
         camelcase: 'off',
         'switch-colon-spacing': 'off',
         'lines-between-class-members': 'off',
@@ -109,4 +120,26 @@ module.exports = {
     globals: {
         __DEBUG__: false,
     },
+
+    // ESLint settings for .ts files
+    overrides: [
+        {
+            files: ['**/*.ts'],
+            parser: '@typescript-eslint/parser',
+            plugins: [
+                '@stylistic',
+                '@typescript-eslint',
+                'eslint-plugin-tsdoc',
+            ],
+            extends: [
+                'plugin:@typescript-eslint/eslint-recommended',
+                'plugin:@typescript-eslint/recommended',
+            ],
+            rules: {
+                '@stylistic/max-len': ['warn', 80],
+                'valid-jsdoc': 'off',
+                'tsdoc/syntax': 'warn',
+            },
+        },
+    ],
 };
