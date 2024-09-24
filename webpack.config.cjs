@@ -45,6 +45,12 @@ module.exports = () => {
     return {
         mode,
         context: path.resolve(__dirname),
+        resolve: {
+            extensions: ['.ts', '.js'],
+            extensionAlias: {
+                '.js': ['.ts', '.js'],
+            },
+        },
         entry: {
             itowns: [
                 'core-js',
@@ -76,7 +82,7 @@ module.exports = () => {
         module: {
             rules: [
                 {
-                    test: /\.js$/,
+                    test: /\.(js|ts)$/,
                     exclude,
                     include,
                     use: babelLoaderOptions,
