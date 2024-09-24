@@ -328,10 +328,6 @@ class PointCloudLayer extends GeometryLayer {
                     redraw: true,
                     earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
                 }).then((pts) => {
-                    if (this.onPointsCreated) {
-                        this.onPointsCreated(layer, pts);
-                    }
-
                     elt.obj = pts;
                     // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
                     elt.tightbbox = pts.tightbbox;
