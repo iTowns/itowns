@@ -9,7 +9,7 @@
     "./widgets": "./lib/Utils/gui/Main.js"
   },
   "scripts": {
-    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\" \"docs/*.js\"",
+    "lint": "eslint \"src/**/*.{js,ts,tsx}\" \"test/**/*.js\" \"examples/**/*.js\" \"docs/*.js\"",
     "doc": "jsdoc --readme docs/HOMEPAGE.md -c docs/config.json",
     "doclint": "npm run doc -- -t templates/silent",
     "test": "npm run lint -- --max-warnings=0 && npm run build && npm run test-with-coverage && npm run test-functional",
@@ -81,7 +81,11 @@
     "@babel/preset-env": "^7.25.4",
     "@babel/preset-typescript": "^7.24.7",
     "@babel/register": "^7.24.6",
+    "@stylistic/eslint-plugin": "^2.8.0",
+    "@types/proj4": "^2.5.5",
     "@types/three": "^0.168.0",
+    "@typescript-eslint/eslint-plugin": "^8.5.0",
+    "@typescript-eslint/parser": "^8.5.0",
     "@xmldom/xmldom": "^0.9.2",
     "babel-inline-import-loader": "^1.0.1",
     "babel-loader": "^9.2.1",
@@ -102,6 +106,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-import-resolver-babel-module": "^5.3.2",
     "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-tsdoc": "^0.3.0",
     "eslint-webpack-plugin": "^4.2.0",
     "github-url-from-git": "^1.5.0",
     "grunt": "^1.6.1",
