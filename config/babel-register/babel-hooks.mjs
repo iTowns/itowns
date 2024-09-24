@@ -71,7 +71,18 @@ async function transpile(source, context) {
  * the Node.js default resolve hook after the last user-supplied resolve hook
  */
 export async function resolve(specifier, context, nextResolve) {
-    return nextResolve(specifier, context);
+    // Try to resolve the path of an imported module.
+    // If the resolver failed, retry substituting the extension with '.ts'.
+    try {
+        return await nextResolve(specifier, context);
+    } catch (err) {
+        if (err.code === 'ERR_MODULE_NOT_FOUND') {
+            const url = new URL(specifier, context.parentURL);
+            url.pathname = url.pathname.replace(/\.[^/.]+$/, '.ts');
+            return nextResolve(url.href, context);
+        }
+        throw err;
+    }
 }
 
 /**
@@ -87,7 +98,17 @@ export async function resolve(specifier, context, nextResolve) {
  * the last user-supplied load hook
  */
 export async function load(url, context, nextLoad) {
-    const { format, shortCircuit, source } = await nextLoad(url, context);
+    // Try to load the file using the default loader (which supports both
+    // ESM/CJS modules) but does not support '.ts' extensions. Use the ESM
+    // module loader for typescript files.
+    const { format, shortCircuit, source } = await nextLoad(url, context)
+        .catch(async (error) => {
+            if (error.code === 'ERR_UNKNOWN_FILE_EXTENSION') {
+                return nextLoad(url, { ...context, format: 'module' });
+            }
+
+            throw error;
+        });
 
     if (format !== 'module' && format !== 'commonjs') {
         return { format, shortCircuit, source };

@@ -79,6 +79,7 @@
     "@babel/core": "^7.25.2",
     "@babel/plugin-transform-runtime": "^7.25.4",
     "@babel/preset-env": "^7.25.4",
+    "@babel/preset-typescript": "^7.24.7",
     "@babel/register": "^7.24.6",
     "@types/three": "^0.168.0",
     "@xmldom/xmldom": "^0.9.2",
