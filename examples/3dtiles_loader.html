@@ -11,7 +11,15 @@
         <style type="text/css">
             #description {
                 z-index: 2;
-                right: 10px;
+                left: 10px;
+            }
+
+            #featureInfoText {
+                font-size: small;
+            }
+
+            #description .marg {
+                margin: 10px;
             }
         </style>
 
@@ -21,12 +29,17 @@
         <div id="viewerDiv"></div>
         <div id="description">Specify the URL of a tileset to load:
             <input type="text" id="url" />
-            <button onclick="setURL(document.getElementById('url').value)">
-                Load
-            </button>
+            <button onclick="readURL()">Load</button>
+            <div class="marg">
+                <button onClick="loadLyon()">Load Lyon 1 (Mesh)</button>
+                <button onClick="loadSete()">Load Sete (Point Cloud)</button>
+                <button onClick="loadLille()">Load Lille (Mesh)</button>
+                <div id="share"></div>
+            </div>
             <hr />
+            <p id="featureInfoText" class="marg"><em>Display feature information by clicking on it</em></p>
             <p><b>Feature Information:</b></p>
-            <div id="featureInfo"></div>
+            <div id="featureInfo" class="marg"></div>
         </div>
 
         <script src="js/GUI/GuiTools.js"></script>
@@ -52,28 +65,17 @@
 
             const {
                 TMSSource, WMTSSource, OGC3DTilesSource,
-                ColorLayer, ElevationLayer, OGC3DTilesLayer,
+                ColorLayer, ElevationLayer, OGC3DTilesLayer, PNTS_SIZE_MODE,
                 GlobeView, Coordinates, Fetcher,
             } = itowns;
 
+            window.layer = null; // 3D Tiles layer
+
             const uri = new URL(location);
-            const state = {
-                // URL to tileset JSON
-                tileset: uri.searchParams.get('tileset'),
-                // Cesium ION /
-                assetId: uri.searchParams.get('assetId'),
-            };
 
-            function setURL(url) {
-                if (!url) return;
+            window.gui = new dat.GUI();
 
-                uri.searchParams.set('tileset', url);
-                history.pushState(null, '', `?${uri.searchParams.toString()}`);
-
-                location.reload();
-            }
-
-            // ---- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION ----
+            // ---- Create a GlobeView ----
 
             // Define camera initial position
             const placement = {
@@ -85,7 +87,17 @@
             const viewerDiv = document.getElementById('viewerDiv');
 
             // Create a GlobeView
-            const view = new GlobeView(viewerDiv, placement, {});
+            const view = new GlobeView(viewerDiv, placement, {
+                controls: {
+                    minDistance: 100,
+                }
+            });
+
+            // Enable various compression support for 3D Tiles tileset:
+            // - `KHR_draco_mesh_compression` mesh compression extension
+            // - `KHR_texture_basisu` texture compresion extension
+            itowns.enableDracoLoader('./libs/draco/');
+            itowns.enableKtx2Loader('./lib/basis/', view.renderer);
 
             // Add ambient light to globally illuminates all objects
             const light = new AmbientLight(0x404040, 15);
@@ -94,36 +106,68 @@
             // Setup loading screen
             setupLoadingScreen(viewerDiv, view);
 
-            // Setup debug menu
-            const menuGlobe = new GuiTools('menuDiv', view, 300);
-            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer);
-
-
-            // ---- ADD A BASEMAP ----
+            // ---- Add a basemap ----
 
             // Add one imagery layer to the scene. This layer's properties are
             // defined in a json file, but it cou   ld be defined as a plain js
             // object. See `Layer` documentation for more info.
             Fetcher.json('./layers/JSONLayers/OPENSM.json').then((config) => {
-                const layer = new ColorLayer('Ortho', {
+                const colorLayer = new ColorLayer('Ortho', {
                     ...config,
                     source: new TMSSource(config.source),
                 });
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(colorLayer);
             });
 
-            // ---- ADD 3D TILES TILESET ----
+            // ---- Add 3D terrain ----
 
-            // Enable various compression support for 3D Tiles tileset:
-            // - `KHR_draco_mesh_compression` mesh compression extension
-            // - `KHR_texture_basisu` texture compresion extension
-            itowns.enableDracoLoader('./libs/draco/');
-            itowns.enableKtx2Loader('./lib/basis/', view.renderer);
+            // Add two elevation layers: world terrain and a more precise terrain for france
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var elevationLayer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(elevationLayer);
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
-            if (state.tileset) {
-                const source = new OGC3DTilesSource({ url: state.tileset });
-                const layer = new OGC3DTilesLayer('3DTiles', {
+            // ---------- 3D Tiles loading
+
+            function readURL() {
+                const url = document.getElementById('url').value;
+
+                if (url) {
+                    setUrl(url);
+                }
+            }
+
+            function setUrl(url) {
+                if (!url) return;
+
+                const input_url = document.getElementById('url');
+                if (!input_url) return;
+
+                uri.searchParams.set('copc', url);
+                history.replaceState(null, null, `?${uri.searchParams.toString()}`);
+
+                input_url.value = url;
+                load(url);
+            }
+
+
+            function load(url) {
+                const source = new OGC3DTilesSource({ url });
+
+                if (window.layer) {
+                    gui.removeFolder('Layer 3DTiles');
+                    view.removeLayer('3DTiles');
+                    view.notifyChange();
+                    window.layer.delete();
+                }
+
+                window.layer = new OGC3DTilesLayer('3DTiles', {
                     source,
+                    pntsSizeMode: PNTS_SIZE_MODE.ATTENUATED,
                 });
 
                 // Add an event for picking the 3D Tiles layer and displaying
@@ -131,20 +175,37 @@
                 const pickingArgs = {
                     htmlDiv: document.getElementById('featureInfo'),
                     view,
-                    layer,
+                    layer: window.layer,
                 };
 
                 // Add the layer to our view
-                view.addLayer(layer).then((layer) => {
+                view.addLayer(window.layer).then((layer) => {
                     zoomToLayer(view, layer);
                     window.addEventListener('click',
                         (event) => fillHTMLWithPickingInfo(event, pickingArgs), false);
                 });
 
-                debug.createOGC3DTilesDebugUI(menuGlobe.gui, view, layer);
+                window.layer.whenReady
+                    .then(() => debug.createOGC3DTilesDebugUI(gui, view, window.layer));
             }
 
-            window.setURL = setURL;
+            function loadLyon() {
+                setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/refs/heads/master/3DTiles/lyon1-4978/tileset.json");
+            }
+
+            function loadSete() {
+                setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json");
+            }
+
+            function loadLille() {
+                setUrl("https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json");
+            }
+
+            window.readURL = readURL;
+            window.loadLyon = loadLyon;
+            window.loadSete = loadSete;
+            window.loadLille = loadLille;
+
         </script>
     </body>
 </html>

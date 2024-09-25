@@ -156,7 +156,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
     /**
      * @class      PointsMaterial
      * @param      {object}  [options={}]  The options
-     * @param      {number}  [options.size=0]  size point
+     * @param      {number}  [options.size=1] point size
      * @param      {number}  [options.mode=PNTS_MODE.COLOR]  display mode.
      * @param      {number}  [options.shape=PNTS_SHAPE.CIRCLE]  rendered points shape.
      * @param      {THREE.Vector4}  [options.overlayColor=new THREE.Vector4(0, 0, 0, 0)]  overlay color.
