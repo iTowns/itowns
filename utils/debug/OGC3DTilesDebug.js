@@ -59,7 +59,6 @@ export default function createOGC3DTilesDebugUI(datDebugTool, view, _3dTileslaye
         gui.add(_3dTileslayer, 'pntsSizeMode', PNTS_SIZE_MODE).name('Pnts size mode').onChange(() => {
             view.notifyChange(view.camera.camera3D);
         });
-
         gui.add(_3dTileslayer, 'pntsMinAttenuatedSize', 0, 15).name('Min attenuated size').onChange(() => {
             view.notifyChange(view.camera.camera3D);
         });

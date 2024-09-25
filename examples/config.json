@@ -14,16 +14,8 @@
         "geoid_geoidLayer": "Display geoid heights"
     },
 
-    "3d Tiles": {
-        "3dtiles_basic": "on 3D map",
-        "3dtiles_25d": "On 2.5D map",
-        "3dtiles_batch_table": "Batch table Hierarchy extension",
-        "3dtiles_ion": "From Cesium ion",
-        "3dtiles_pointcloud": "Pointcloud classification"
-    },
-
-    "3D Tiles (new)": {
-        "3dtiles_loader": "3D Tiles tileset loader"
+    "3D Tiles": {
+        "3dtiles_loader": "3D Tiles loader"
     },
 
     "Pointcloud": {
