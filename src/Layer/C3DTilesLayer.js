@@ -105,6 +105,7 @@ class C3DTilesLayer extends GeometryLayer {
      * @param  {View}  view  The view
      */
     constructor(id, config, view) {
+        console.warn('C3DTilesLayer is deprecated and will be removed in iTowns 3.0 version. Use OGC3DTilesLayer instead.');
         super(id, new THREE.Group(), { source: config.source });
         this.isC3DTilesLayer = true;
         this.sseThreshold = config.sseThreshold || 16;
