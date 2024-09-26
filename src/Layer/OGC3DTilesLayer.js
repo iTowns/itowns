@@ -112,6 +112,13 @@ export function enableKtx2Loader(path, renderer) {
 class OGC3DTilesLayer extends GeometryLayer {
     /**
      * Layer for [3D Tiles](https://www.ogc.org/standard/3dtiles/) datasets.
+     *
+     * Advanced configuration note: 3D Tiles rendering is delegated to 3DTilesRendererJS that exposes several
+     * configuration options accessible through the tilesRenderer property of this class. see the
+     * [3DTilesRendererJS doc](https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/master/README.md). Also note that
+     * the cache is shared amongst 3D tiles layers and can be configured through tilesRenderer.lruCache (see the
+     * [following documentation](https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/master/README.md#lrucache-1).
+     *
      * @extends Layer
      *
      * @param {String} id - unique layer id.
