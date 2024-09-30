@@ -63,7 +63,7 @@ Then tests can be run with five differents methods:
 * `npm run test-dev`: build in development mode and run all tests in iTowns (to get more messages)
 * `npm run test-unit`: run unit tests only
 * `npm run test-functional`: run functional testing with examples only, use
-  `npx mocha -t 30000 test/functional/bootstrap.js
+  `mocha -t 30000 --require test/functional/hooks_functional.js
   test/functional/<test_case>.js` to run a single example
 * `npm run test-with-coverage`: build and run all tests in iTowns and generate a
   report on the coverage of the tests
