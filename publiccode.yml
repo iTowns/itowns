@@ -3,28 +3,22 @@
 # More info at https://github.com/italia/publiccode.yml
 
 publiccodeYmlVersion: '0.2'
-name: 'itowns'
-url: 'https://github.com/iTowns/itowns'
-landingURL: 'https://github.com/iTowns/itowns.git'
-softwareVersion: "2.44.2" # needs to be updated
-releaseDate: '2024-09-17'# needs to be updated
+name: itowns
+url: 'https://github.com/iTowns/itowns.git'
+landingURL: 'https://github.com/iTowns/itowns'
+softwareVersion: 2.44.2
+releaseDate: '2024-09-17'
 softwareType: library
-logo: "https://github.com/iTowns/itowns/blob/master/examples/images/itowns_logo.png"
-inputTypes: # ToDo : complete
-  - application/json
+logo: 'https://github.com/iTowns/itowns/blob/master/examples/images/itowns_logo.png'
 platforms:
   - web
 categories:
-  - website-builder
   - data-visualization
   - it-development
-usedBy: # ToDo : complete and ask for permissions
-  - IGN (https://www.ign.fr/)
-  - Ciril Grp (https://www.ciril.net/fr/)
-  - Sogelink (https://www.sogelink.com/)
-  - Laboratoire Liris (https://liris.cnrs.fr/)
-  - Laboratoire Lastig (https://www.umr-lastig.fr/)
-roadmap: "https://www.itowns-project.org/"
+  - geographic-information-systems
+usedBy:
+  - Institut national de l'information géographique et forestière (IGN)
+roadmap: 'https://www.itowns-project.org/'
 developmentStatus: stable
 intendedAudience:
   scope:
@@ -32,51 +26,56 @@ intendedAudience:
     - research
     - environment
     - government
-    - defense
+    - defence
 description:
   en:
     documentation: 'https://www.itowns-project.org/'
     apiDocumentation: 'https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals'
-    shortDescription: open-source framework designed for web-based visualisation, navigation and interaction with 2D and 3D geospatial data.
+    shortDescription: Open-source framework designed for web-based visualisation, navigation and interaction with 2D and 3D geospatial data.
     longDescription: |
-        iTowns is an open-source framework designed for web-based visualisation, navigation and interaction with 2D and 3D geospatial data on globes and maps. Built on Open Geospatial Consortium (OGC) open standards, it is developed with data and service interoperability in mind. It seamlessly integrates with geographical services, offering support of standard raster and vector data, including aerial imagery and terrain models. The framework supports large, heterogeneous 3D datasets such as OGC's 3D Tiles, making it ideal to build application for urban-planning and environmental monitoring. It can be easily extended to support other open formats, offering a highly customizable platform for developers.
- 
-        iTowns is a geographic commons, developed collectively by a diverse community of contributors, comprising independent developers, public organizations, research laboratories and private companies. iTowns offers a modular framework to build a wide range of use cases, including visualisation, GIS, environmental and educational applications, making it versatile and adaptable for different geospatial projects.
-    features: # ToDo : complete ?
-      - Navigation and interaction with 2D and 3D geospatial data
-      - Built on Open Geospatial Consortium (OGC) open standards (wms, wfs, copc, 3dTiles, ...)
-    screenshots: # ToDo : complete ?
+        iTowns is a powerful, open-source framework designed for the web-based visualization, navigation, and interaction with both 2D and 3D geospatial data on globes and maps. Built on Open Geospatial Consortium (OGC) standards, it prioritizes interoperability, seamlessly integrating with various geospatial services. The framework supports standard raster and vector data, including aerial imagery, terrain models, and large, heterogeneous 3D datasets like OGC's 3D Tiles. This makes iTowns particularly well-suited for applications in urban planning, environmental monitoring, geospatial asset management and beyond.
+
+        iTowns, based on famous ThreeJS 3D visualization library, it's very extensible and adaptable. Developers can easily extend the framework to support additional open formats, making it a highly customizable solution for a wide range of geospatial projects. Whether you're building GIS tools, visualization platforms, or educational applications, iTowns offers a modular and versatile base.
+
+        iTowns is also a collaborative geographic commons, developed by a diverse community that includes independent developers, public organizations, research institutions, and private companies. This collective effort ensures a constantly evolving platform, open to innovation and adaptable to the unique needs of various geospatial use cases.
+    features:
+      - 2D and 3D Geospatial Visualization
+      - OGC Standards Compliance
+      - Support for Large Datasets
+      - Extensibility
+      - Collaborative Development
+    screenshots:
       - 'https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itownsReleaseXS.jpg'
       - 'https://camo.githubusercontent.com/337a7f2d1c254e9099b30dc336982518fd6e8c8733c1f29fe669290b05f33905/687474703a2f2f7777772e69746f776e732d70726f6a6563742e6f72672f696d616765732f6d6f6e746167652e6a7067'
       - 'https://raw.githubusercontent.com/iTowns/itowns/refs/heads/master/docs/tutorials/images/3DTiles-mesh-b3dm-2.png'
     genericName: iTowns
 legal:
-  license: MIT and CeCILL-B
-  mainCopyrightOwner: 'IGN and Ciril Grp'
-  repoOwner: 'IGN and Ciril Grp'
+  license: MIT OR CECILL-B
+  mainCopyrightOwner: IGN and Ciril GROUP
+  repoOwner: IGN and Ciril GROUP
   authorsFile: 'https://github.com/iTowns/itowns/blob/master/CONTRIBUTORS.md'
 maintenance:
   type: community
   contractors:
-    - name: "IGN"
-      website: "https://www.ign.fr/"
-      until: "2015-09-20"
-    - name: "Ciril grp"
-      website: "https://www.ciril.net/fr/"
-      until: "2022-01-01"
-  contacts: # member of the Product Comitee
+    - name: Institut national de l'information géographique et forestière (IGN)
+      website: 'https://www.ign.fr/'
+      until: '2015-09-20'
+    - name: Ciril GROUP
+      website: 'https://www.cirilgroup.com'
+      until: '2022-01-01'
+  contacts:
     - name: Bouillaget Quentin
-      email: "quentin.bouillaget@ign.fr"
-      affiliation: IGN
+      email: quentin.bouillaget@ign.fr
+      affiliation: Institut national de l'information géographique et forestière (IGN)
     - name: Jaillot Vincent
-      email: "vjaillot@cirilgroup.com"
-      affiliation: Ciril Grp
+      email: vjaillot@cirilgroup.com
+      affiliation: Ciril GROUP
     - name: Picavet Loïc
-      email: "lpicavet@cirilgroup.com"
-      affiliation: IGN
+      email: lpicavet@cirilgroup.com
+      affiliation: Ciril GROUP
     - name: Lavenant Antoine
-      email: "antoine.lavenant@ign.fr"
-      affiliation: IGN
+      email: antoine.lavenant@ign.fr
+      affiliation: Institut national de l'information géographique et forestière (IGN)
 localisation:
   localisationReady: false
   availableLanguages:
@@ -84,6 +83,6 @@ localisation:
 dependsOn:
   open:
     - name: Three.JS
-      optional: no
-    - name: Proj4
-      optional: no
+      optional: 'no'
+    - name: proj4js
+      optional: 'no'
