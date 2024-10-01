@@ -168,6 +168,13 @@ class Potree2Layer extends PointCloudLayer {
             }
 
             const root = new Potree2Node(0, 0, this);
+            root.id = 'r';
+            root.depth = 0;
+            root.nodeType = 2;
+            root.hierarchyByteOffset = 0n;
+            root.hierarchyByteSize = BigInt(metadata.hierarchy.firstChunkSize);
+
+            root.byteOffset = 0;
 
             let forward = (x => x);
             if (this.source.crs !== this.crs) {
@@ -178,8 +185,14 @@ class Potree2Layer extends PointCloudLayer {
                 }
             }
 
-            this.minElevationRange = metadata.boundingBox.min[2];
-            this.maxElevationRange = metadata.boundingBox.max[2];
+            this.minElevationRange = this.minElevationRange ?? metadata.boundingBox.min[2];
+            this.maxElevationRange = this.maxElevationRange ?? metadata.boundingBox.max[2];
+
+            // for BBOX
+            this.clamp = {
+                zmin: forward(metadata.boundingBox.min)[2],
+                zmax: forward(metadata.boundingBox.max)[2],
+            };
 
             const bounds = [
                 ...forward(metadata.boundingBox.min),
@@ -188,16 +201,10 @@ class Potree2Layer extends PointCloudLayer {
 
             root.bbox.setFromArray(bounds);
 
-            this.minElevationRange = this.minElevationRange ?? metadata.boundingBox.min[2];
-            this.maxElevationRange = this.maxElevationRange ?? metadata.boundingBox.max[2];
+            // for OBB
+            root.obb.fromBox3(root.bbox);
+            root.obb.position = new THREE.Vector3();
 
-            root.id = 'r';
-            root.depth = 0;
-            root.nodeType = 2;
-            root.hierarchyByteOffset = 0n;
-            root.hierarchyByteSize = BigInt(metadata.hierarchy.firstChunkSize);
-
-            root.byteOffset = 0;
 
             this.root = root;
 
