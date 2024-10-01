@@ -294,12 +294,12 @@ class PointCloudLayer extends GeometryLayer {
                     // be added nor cleaned
                     this.group.add(elt.obj);
                     elt.obj.updateMatrixWorld(true);
-
-                    elt.promise = null;
-                }, (err) => {
-                    if (err.isCancelledCommandException) {
-                        elt.promise = null;
+                }).catch((err) => {
+                    if (!err.isCancelledCommandException) {
+                        return err;
                     }
+                }).finally(() => {
+                    elt.promise = null;
                 });
             }
         }
