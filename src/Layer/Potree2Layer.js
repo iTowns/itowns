@@ -36,6 +36,7 @@ of the authors and should not be interpreted as representing official policies,
 import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import Potree2Node from 'Core/Potree2Node';
+import proj4 from 'proj4';
 
 import { PointAttribute, Potree2PointAttributes, PointAttributeTypes } from 'Core/Potree2PointAttributes';
 
@@ -161,15 +162,7 @@ class Potree2Layer extends PointCloudLayer {
                 this.material.defines[normal.name] = 1;
             }
 
-            const min = new THREE.Vector3(...metadata.boundingBox.min);
-            const max = new THREE.Vector3(...metadata.boundingBox.max);
-            const boundingBox = new THREE.Box3(min, max);
-
             const root = new Potree2Node(0, 0, this);
-
-            root.bbox = boundingBox;
-            root.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
-
             root.id = 'r';
             root.depth = 0;
             root.nodeType = 2;
@@ -177,6 +170,33 @@ class Potree2Layer extends PointCloudLayer {
             root.hierarchyByteSize = BigInt(metadata.hierarchy.firstChunkSize);
 
             root.byteOffset = 0;
+
+            let forward = (x => x);
+            if (this.source.crs !== this.crs) {
+                try {
+                    forward = proj4(this.source.crs, this.crs).forward;
+                } catch (err) {
+                    throw new Error(`${err} is not defined in proj4`);
+                }
+            }
+
+            this.minElevationRange = metadata.boundingBox.min[2];
+            this.maxElevationRange = metadata.boundingBox.max[2];
+
+            // for BBOX
+            this.clamp = {
+                zmin: forward(metadata.boundingBox.min)[2],
+                zmax: forward(metadata.boundingBox.max)[2],
+            };
+
+            const min = new THREE.Vector3(...metadata.boundingBox.min);
+            const max = new THREE.Vector3(...metadata.boundingBox.max);
+            root.bbox = new THREE.Box3(min, max);
+
+            // for OBB
+            root.obb.fromBox3(root.bbox);
+            root.obb.position = new THREE.Vector3();
+
 
             this.root = root;
 
