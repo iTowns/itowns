@@ -5,7 +5,7 @@ import { Type, Dependency, DumpDotNodeStyle, Graph } from '../Prelude';
 export default class ProcessorNode extends GraphNode {
     public constructor(
         inputs: { [name: string]: [Dependency, Type] },
-        outputs: Map<string, Type> | Type,
+        outputs: Map<string, Type> | Type | null,
         public callback: (frame: number, args: { [arg: string]: unknown }) => void,
         isStatic: boolean = false,
     ) {

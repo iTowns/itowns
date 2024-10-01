@@ -107,7 +107,7 @@ void main() {
                 target: [target, BuiltinType.RenderTarget],
                 renderer: [renderer, BuiltinType.Renderer],
             },
-            BuiltinType.RenderTarget,
+            toScreen ? null : BuiltinType.RenderTarget,
             (_frame, args) => {
                 const { target: input, renderer, ...rest } = args as CallbackArgs;
 
@@ -137,7 +137,9 @@ void main() {
                 renderer.clear();
                 renderer.render(ScreenShaderNode._scene, ScreenShaderNode._camera);
 
-                this.updateOutputs({ [ScreenShaderNode.defaultIoName]: target });
+                if (target != null) {
+                    this.updateOutputs({ [ScreenShaderNode.defaultIoName]: target });
+                }
             });
 
         this._fragmentShaderParts = fragmentShaderParts;

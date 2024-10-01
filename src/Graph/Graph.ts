@@ -64,6 +64,24 @@ export default class Graph {
         return out.node.getOutput(out.output, this, frame);
     }
 
+    public run(frame: number, end: GraphNode | string): void {
+        this.validate();
+
+        let node: GraphNode;
+
+        if (typeof end == 'string') {
+            const opt = this.nodes.get(end);
+            if (opt == undefined) {
+                throw new Error(`Node "${end}" does not exist in the graph`);
+            }
+            node = opt;
+        } else {
+            node = end;
+        }
+
+        node.run(this, frame);
+    }
+
     /**
      * Get a node by name.
      * @returns The node with the given name.

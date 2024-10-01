@@ -42,7 +42,7 @@ export default abstract class GraphNode {
     public constructor(
         inputs: Map<string, [Dependency | GraphNode | null, Type]>,
         // Optional to allow for clean side-effect-only nodes
-        outputs?: Map<string, Type> | Type,
+        outputs: Map<string, Type> | Type | null,
         isStatic: boolean = false,
     ) {
         this._id = GraphNode.idCounter++;
@@ -174,7 +174,6 @@ export default abstract class GraphNode {
      * Returns a dependency object for the desired output.
      */
     public toDep(output?: string): Dependency {
-
         return { node: this, output: output ?? GraphNode.defaultIoName };
     }
 
@@ -229,15 +228,28 @@ export default abstract class GraphNode {
      * @returns The output of the node at the given frame.
      */
     public getOutput(name: string = GraphNode.defaultIoName, graph?: Graph, frame: number = 0): unknown {
-        const { frame: oFrame, outputs } = this._out;
-
-        const getOutput = outputs.get(name);
+        const getOutput = this._out.outputs.get(name);
         if (getOutput == undefined) {
             throw new Error(`Provided ${this.nodeType} node does not have an output named '${name}'`);
         }
-        const oValue = getOutput.value;
 
-        if (!this._isStatic && (oValue == undefined || oFrame !== frame) || this._needsUpdate) {
+        this._needsUpdate ||= getOutput.value == undefined;
+
+        this.run(graph, frame);
+
+        return getOutput.value;
+    }
+
+    /**
+     * Run the node for a given frame.
+     *
+     * @param graph The graph the node is a part of.
+     * @param frame The frame to get the output for.
+     */
+    public run(graph?: Graph, frame: number = 0): void {
+        const oFrame = this._out.frame;
+
+        if (!this._isStatic && oFrame !== frame || this._needsUpdate) {
             this._apply(graph, frame);
             this._out.frame = frame;
 
@@ -247,8 +259,6 @@ export default abstract class GraphNode {
         }
 
         this._needsUpdate = false;
-
-        return getOutput.value;
     }
 
     /**

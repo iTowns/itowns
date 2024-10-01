@@ -136,11 +136,11 @@ return vec4(r, g, color.b, 1.0);
 
         let frame = 0;
         view.render = function render() {
-            outerGraph.getOutput(frame++, renderFBO);
+            outerGraph.run(frame++, renderFBO);
             // Reach cruising speed before dumping so timing information is accurate
-            // if (frame == 10) {
-            //     window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
-            // }
+            if (frame == 10) {
+                window.open(outerGraph.dumpDotGraphvizLink(), '_blank', 'popup');
+            }
         };
 
         itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
