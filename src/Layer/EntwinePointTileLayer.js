@@ -34,9 +34,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name. See the list of properties to know which one can be specified.
-     * @param {string} [config.crs='ESPG:4326'] - The CRS of the {@link View} this
-     * layer will be attached to. This is used to determine the extent of this
-     * layer. Default to `EPSG:4326`.
      */
     constructor(id, config) {
         super(id, config);
@@ -51,11 +48,8 @@ class EntwinePointTileLayer extends PointCloudLayer {
          * @type {THREE.Vector3}
          */
         this.scale = new THREE.Vector3(1, 1, 1);
-
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then(() => {
-            if (this.crs !== config.crs) { console.warn('layer.crs is different from View.crs'); }
-
             // NOTE: this spacing is kinda arbitrary here, we take the width and
             // length (height can be ignored), and we divide by the specified
             // span in ept.json. This needs improvements.

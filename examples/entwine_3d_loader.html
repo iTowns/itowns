@@ -96,7 +96,6 @@
 
                 eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', {
                     source: eptSource,
-                    crs: view.referenceCrs,
                 });
 
                 itowns.View.prototype.addLayer.call(view, eptLayer).then(onLayerReady);
