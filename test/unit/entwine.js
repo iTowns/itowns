@@ -110,9 +110,13 @@ describe('Entwine Point Tile', function () {
             assert.deepStrictEqual(element[0], layer.root);
         });
 
-        it('tries to update on the root and fails', function () {
+        it('tries to update on the root and fails', function (done) {
             layer.update(context, layer, layer.root);
-            assert.strictEqual(layer.root.promise, undefined);
+            layer.root.promise
+                .then((res) => {
+                    assert.ok(res instanceof Error);
+                    done();
+                }).catch(done);
         });
 
         it('tries to update on the root and succeeds', function (done) {
@@ -142,6 +146,8 @@ describe('Entwine Point Tile', function () {
             const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
             root = new EntwinePointTileNode(0, 0, 0, 0, layer, 4000);
             root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+            root.obb.fromBox3(root.bbox);
+            root.obb.position = root.obb.center;
 
             root.add(new EntwinePointTileNode(1, 0, 0, 0, layer, 3000));
             root.add(new EntwinePointTileNode(1, 0, 0, 1, layer, 3000));
