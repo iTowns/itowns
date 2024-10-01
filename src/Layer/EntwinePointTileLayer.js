@@ -48,7 +48,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
          * @type {THREE.Vector3}
          */
         this.scale = new THREE.Vector3(1, 1, 1);
-
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then(() => {
             // NOTE: this spacing is kinda arbitrary here, we take the width and
