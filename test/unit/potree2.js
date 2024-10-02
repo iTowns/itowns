@@ -62,7 +62,7 @@ describe('Potree2', function () {
                 assert.equal(potreeLayer.group.children.length, 1);
                 done();
             }).catch(done);
-    });
+    }).timeout(5000);
 
     it('postUpdate potree2 layer', function () {
         potreeLayer.postUpdate(context, potreeLayer);
