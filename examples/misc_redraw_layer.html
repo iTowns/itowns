@@ -15,7 +15,7 @@
             <select id="styleBox" onChange="selectStyle()" style="font-size: 15px; background-color: rgba(0,0,0,0.3); border-radius: 5%; width: 175px; height: 25px; color: white; text-align: center;">
                 <option value='Type'>Stylized by Type</option>
                 <option value='Surface'>Stylized by Surface</option>
-            </select> 
+            </select>
         </div>
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
@@ -24,7 +24,7 @@
         <script type="text/javascript">
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-            
+
             // # Simple Globe viewer
 
             // Define initial camera position
@@ -67,7 +67,7 @@
 
             // Declare the source for the data on a rural area from the geoportail
             var wfsAgriLayer = new itowns.WFSSource({
-                url: 'https://wxs.ign.fr/agriculture/geoportail/wfs?',
+                url: 'https://data.geopf.fr/wfs/ows?',
                 version: '2.0.0',
                 typeName: 'RPG.2013:rpg_2013',
                 crs: 'EPSG:4326',
