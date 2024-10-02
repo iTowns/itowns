@@ -40,12 +40,20 @@ class EntwinePointTileSource extends Source {
             this.parse = metadata.dataType === 'laszip' ? LASParser.parse : PotreeBinParser.parse;
             this.extension = metadata.dataType === 'laszip' ? 'laz' : 'bin';
 
-            if (metadata.srs && metadata.srs.authority && metadata.srs.horizontal) {
-                this.crs = `${metadata.srs.authority}:${metadata.srs.horizontal}`;
-                if (!proj4.defs(this.crs)) {
-                    proj4.defs(this.crs, metadata.srs.wkt);
+            if (metadata.srs) {
+                if (metadata.srs.authority && metadata.srs.horizontal) {
+                    this.crs = `${metadata.srs.authority}:${metadata.srs.horizontal}`;
+                    if (!proj4.defs(this.crs)) {
+                        proj4.defs(this.crs, metadata.srs.wkt);
+                    }
+                } else if (metadata.srs.wkt) {
+                    proj4.defs('unknown', metadata.srs.wkt);
+                    const projCS = proj4.defs('unknown');
+                    this.crs = projCS.title || projCS.name;
+                    if (!(this.crs in proj4.defs)) {
+                        proj4.defs(this.crs, projCS);
+                    }
                 }
-
                 if (metadata.srs.vertical && metadata.srs.vertical !== metadata.srs.horizontal) {
                     console.warn('EntwinePointTileSource: Vertical coordinates system code is not yet supported.');
                 }
@@ -58,6 +66,7 @@ class EntwinePointTileSource extends Source {
                 + Math.abs(metadata.boundsConforming[4] - metadata.boundsConforming[1])) / (2 * metadata.span);
 
             this.boundsConforming = metadata.boundsConforming;
+            this.bounds = metadata.bounds;
             this.span = metadata.span;
 
             return this;
