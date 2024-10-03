@@ -2,50 +2,55 @@ import proj4 from 'proj4';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
-function isString(s) {
+/**
+ * A projection as a CRS identifier string.
+ */
+export type ProjectionLike = string;
+
+function isString(s: unknown): s is string {
     return typeof s === 'string' || s instanceof String;
 }
 
-function mustBeString(crs) {
+function mustBeString(crs: string) {
     if (!isString(crs)) {
         throw new Error(`Crs parameter value must be a string: '${crs}'`);
     }
 }
 
-function isTms(crs) {
+function isTms(crs: string) {
     return isString(crs) && crs.startsWith('TMS');
 }
 
-function isEpsg(crs) {
+function isEpsg(crs: string) {
     return isString(crs) && crs.startsWith('EPSG');
 }
 
-function formatToTms(crs) {
+function formatToTms(crs: string) {
     mustBeString(crs);
-    return isTms(crs) ? crs : `TMS:${crs.match(/\d+/)[0]}`;
+    return isTms(crs) ? crs : `TMS:${crs.match(/\d+/)?.[0]}`;
 }
 
-function formatToEPSG(crs) {
+function formatToEPSG(crs: string) {
     mustBeString(crs);
-    return isEpsg(crs) ? crs : `EPSG:${crs.match(/\d+/)[0]}`;
+    return isEpsg(crs) ? crs : `EPSG:${crs.match(/\d+/)?.[0]}`;
 }
 
 const UNIT = {
     DEGREE: 1,
     METER: 2,
-};
+} as const;
 
-function is4326(crs) {
+function is4326(crs: ProjectionLike) {
     return crs === 'EPSG:4326';
 }
 
-function isGeocentric(crs) {
+function isGeocentric(crs: ProjectionLike) {
     mustBeString(crs);
     const projection = proj4.defs(crs);
     return !projection ? false : projection.projName == 'geocent';
 }
 
-function _unitFromProj4Unit(projunit) {
+function _unitFromProj4Unit(projunit: string) {
     if (projunit === 'degrees') {
         return UNIT.DEGREE;
     } else if (projunit === 'm') {
@@ -55,14 +60,14 @@ function _unitFromProj4Unit(projunit) {
     }
 }
 
-function toUnit(crs) {
+function toUnit(crs: ProjectionLike) {
     mustBeString(crs);
     switch (crs) {
         case 'EPSG:4326' : return UNIT.DEGREE;
         case 'EPSG:4978' : return UNIT.METER;
         default: {
             const p = proj4.defs(formatToEPSG(crs));
-            if (!p) {
+            if (!p?.units) {
                 return undefined;
             }
             return _unitFromProj4Unit(p.units);
@@ -70,7 +75,7 @@ function toUnit(crs) {
     }
 }
 
-function toUnitWithError(crs) {
+function toUnitWithError(crs: ProjectionLike) {
     mustBeString(crs);
     const u = toUnit(crs);
     if (u === undefined) {
@@ -80,82 +85,74 @@ function toUnitWithError(crs) {
 }
 
 /**
- * This module provides basic methods to manipulate a CRS (as a string).
- *
- * @module CRS
+ * This module provides basic methods to manipulate a CRS.
  */
 export default {
     /**
      * Units that can be used for a CRS.
-     *
-     * @enum {number}
      */
     UNIT,
 
     /**
-     * Assert that the CRS is valid one.
+     * Assert that the CRS is a valid one.
      *
-     * @param {string} crs - The CRS to validate.
+     * @param crs - The CRS to validate.
      *
-     * @throws {Error} if the CRS is not valid.
+     * @throws {@link Error} if the CRS is not valid.
      */
-    isValid(crs) {
+    isValid(crs: ProjectionLike) {
         toUnitWithError(crs);
     },
 
     /**
      * Assert that the CRS is geographic.
      *
-     * @param {string} crs - The CRS to validate.
-     * @return {boolean}
-     * @throws {Error} if the CRS is not valid.
+     * @param crs - The CRS to validate.
+     * @throws {@link Error} if the CRS is not valid.
      */
-    isGeographic(crs) {
+    isGeographic(crs: ProjectionLike) {
         return (toUnitWithError(crs) == UNIT.DEGREE);
     },
 
     /**
      * Assert that the CRS is using metric units.
      *
-     * @param {string} crs - The CRS to validate.
-     * @return {boolean}
-     * @throws {Error} if the CRS is not valid.
+     * @param crs - The CRS to validate.
+     * @throws {@link Error} if the CRS is not valid.
      */
-    isMetricUnit(crs) {
+    isMetricUnit(crs: ProjectionLike) {
         return (toUnit(crs) == UNIT.METER);
     },
 
     /**
      * Get the unit to use with the CRS.
      *
-     * @param {string} crs - The CRS to get the unit from.
-     * @return {number} Either `UNIT.METER`, `UNIT.DEGREE` or `undefined`.
+     * @param crs - The CRS to get the unit from.
+     * @returns Either `UNIT.METER`, `UNIT.DEGREE` or `undefined`.
      */
     toUnit,
 
     /**
-     * Is the CRS EPSG:4326 ?
+     * Is the CRS EPSG:4326?
      *
-     * @param {string} crs - The CRS to test.
-     * @return {boolean}
+     * @param crs - The CRS to test.
      */
     is4326,
     /**
-     * Is the CRS geocentric ?
+     * Is the CRS geocentric?
      * if crs isn't defined the method returns false.
      *
-     * @param {string} crs - The CRS to test.
-     * @return {boolean}
+     * @param crs - The CRS to test.
      */
     isGeocentric,
 
     /**
      * Give a reasonnable epsilon to use with this CRS.
      *
-     * @param {string} crs - The CRS to use.
-     * @return {number} 0.01 if the CRS is EPSG:4326, 0.001 otherwise.
+     * @param crs - The CRS to use.
+     * @returns 0.01 if the CRS is EPSG:4326, 0.001 otherwise.
      */
-    reasonnableEpsilon(crs) {
+    reasonnableEpsilon(crs: ProjectionLike) {
         if (is4326(crs)) {
             return 0.01;
         } else {
@@ -163,17 +160,17 @@ export default {
         }
     },
     /**
-     * format crs to European Petroleum Survey Group notation : EPSG:XXXX.
+     * Format crs to European Petroleum Survey Group notation: EPSG:XXXX.
      *
-     * @param      {string}  crs     The crs to format
-     * @return     {string}  formated crs
+     * @param crs - The crs to format
+     * @returns formated crs
      */
     formatToEPSG,
     /**
-     * format crs to tile matrix set notation : TMS:XXXX.
+     * Format crs to tile matrix set notation: TMS:XXXX.
      *
-     * @param      {string}  crs     The crs to format
-     * @return     {string}  formated crs
+     * @param crs - The crs to format
+     * @returns formated crs
      */
     formatToTms,
     isTms,
@@ -183,9 +180,9 @@ export default {
     /**
      * Define a proj4 projection as a string and reference.
      *
-     * @param {string}  code    code is the projection's SRS code (only used internally by the Proj4js library)
-     * @param {string}  proj4def is the Proj4 definition string for the projection to use
-     * @return {undefined}
+     * @param code - projection's SRS code (only used internally by the Proj4js
+     * library)
+     * @param proj4def - Proj4 definition string for the projection to use
      */
-    defs: (code, proj4def) => proj4.defs(code, proj4def),
+    defs: (code: string, proj4def: string) => proj4.defs(code, proj4def),
 };
