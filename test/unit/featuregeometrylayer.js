@@ -140,5 +140,10 @@ describe('Layer with Feature process', function () {
                 done();
             }).catch(done);
     });
-});
 
+    it('invalidate cache', function () {
+        ariege.invalidateCache();
+        assert.equal(ariege.parent.level0Nodes[0].redraw, true);
+        assert.equal(ariege.parent.level0Nodes[0].layerUpdateState[ariege.id], undefined);
+    });
+});

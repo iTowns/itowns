@@ -17,6 +17,10 @@ export default {
             return;
         }
 
+        if (node.redraw) {
+            node.link[this.id] = [];
+        }
+
         if (node.layerUpdateState[layer.id] === undefined) {
             node.layerUpdateState[layer.id] = new LayerUpdateState();
         } else if (!node.layerUpdateState[layer.id].canTryUpdate()) {
