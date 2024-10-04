@@ -4,8 +4,8 @@
 
 publiccodeYmlVersion: '0.2'
 name: 'itowns'
-url: 'https://github.com/iTowns/itowns'
-landingURL: 'https://github.com/iTowns/itowns.git'
+url: 'https://github.com/iTowns/itowns.git'
+landingURL: 'https://github.com/iTowns/itowns'
 softwareVersion: "2.44.2" # needs to be updated
 releaseDate: '2024-09-17'# needs to be updated
 softwareType: library
