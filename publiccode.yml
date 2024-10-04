@@ -51,7 +51,7 @@ description:
       - 'https://raw.githubusercontent.com/iTowns/itowns/refs/heads/master/docs/tutorials/images/3DTiles-mesh-b3dm-2.png'
     genericName: iTowns
 legal:
-  license: MIT and CeCILL-B
+  license: MIT OR CECILL-B
   mainCopyrightOwner: 'IGN and Ciril Grp'
   repoOwner: 'IGN and Ciril Grp'
   authorsFile: 'https://github.com/iTowns/itowns/blob/master/CONTRIBUTORS.md'
