@@ -113,14 +113,10 @@ class CopcSource extends Source {
             }
 
             const projCS = proj4.defs('unknown');
-            if (projCS.AUTHORITY) {
-                const authority = Object.keys(projCS.AUTHORITY)[0];
-                this.crs = `${authority}:${projCS.AUTHORITY[authority]}`;
-                if (!proj4.defs(this.crs)) {
-                    proj4.defs(this.crs, proj4.defs('unknown'));
-                }
-            } else {
-                this.crs = projCS.name || 'EPSG:4326';
+            this.crs = projCS.title || projCS.name || 'EPSG:4326';
+
+            if (!proj4.defs(this.crs)) {
+                proj4.defs(this.crs, proj4.defs('unknown'));
             }
 
             const bbox = new THREE.Box3();

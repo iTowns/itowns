@@ -20,7 +20,9 @@ describe('COPC', function () {
                         assert.ok(headers.header.pointCount);
                         assert.ok(headers.info.spacing);
                         assert.ok(Array.isArray(headers.eb));
-                        assert.equal(source.crs, 'EPSG:2992');
+                        assert.equal(source.crs, 'NAD83 / Oregon GIC Lambert (ft)');
+                        // when the proj4 PR will be merged we should change to :
+                        // assert.equal(source.crs, 'EPSG:2992');
                         done();
                     }).catch(done);
             }).timeout(5000);
