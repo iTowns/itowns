@@ -10,17 +10,15 @@ softwareVersion: "2.44.2" # needs to be updated
 releaseDate: '2024-09-17'# needs to be updated
 softwareType: library
 logo: "https://github.com/iTowns/itowns/blob/master/examples/images/itowns_logo.png"
-inputTypes: # ToDo : complete
-  - application/json
 platforms:
   - web
 categories:
-  - website-builder
   - data-visualization
   - it-development
+  - geographic-information-systems
 usedBy: # ToDo : complete and ask for permissions
   - IGN (https://www.ign.fr/)
-  - Ciril Grp (https://www.ciril.net/fr/)
+  - Ciril GROUP (https://www.cirilgroup.com
   - Sogelink (https://www.sogelink.com/)
   - Laboratoire Liris (https://liris.cnrs.fr/)
   - Laboratoire Lastig (https://www.umr-lastig.fr/)
@@ -39,12 +37,17 @@ description:
     apiDocumentation: 'https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals'
     shortDescription: open-source framework designed for web-based visualisation, navigation and interaction with 2D and 3D geospatial data.
     longDescription: |
-        iTowns is an open-source framework designed for web-based visualisation, navigation and interaction with 2D and 3D geospatial data on globes and maps. Built on Open Geospatial Consortium (OGC) open standards, it is developed with data and service interoperability in mind. It seamlessly integrates with geographical services, offering support of standard raster and vector data, including aerial imagery and terrain models. The framework supports large, heterogeneous 3D datasets such as OGC's 3D Tiles, making it ideal to build application for urban-planning and environmental monitoring. It can be easily extended to support other open formats, offering a highly customizable platform for developers.
- 
-        iTowns is a geographic commons, developed collectively by a diverse community of contributors, comprising independent developers, public organizations, research laboratories and private companies. iTowns offers a modular framework to build a wide range of use cases, including visualisation, GIS, environmental and educational applications, making it versatile and adaptable for different geospatial projects.
-    features: # ToDo : complete ?
-      - Navigation and interaction with 2D and 3D geospatial data
-      - Built on Open Geospatial Consortium (OGC) open standards (wms, wfs, copc, 3dTiles, ...)
+        iTowns is a powerful, open-source framework designed for the web-based visualization, navigation, and interaction with both 2D and 3D geospatial data on globes and maps. Built on Open Geospatial Consortium (OGC) standards, it prioritizes interoperability, seamlessly integrating with various geospatial services. The framework supports standard raster and vector data, including aerial imagery, terrain models, and large, heterogeneous 3D datasets like OGC's 3D Tiles. This makes iTowns particularly well-suited for applications in urban planning, environmental monitoring, geospatial asset management and beyond.
+
+        iTowns, based on famous ThreeJS 3D visualization library, it's very extensible and adaptable. Developers can easily extend the framework to support additional open formats, making it a highly customizable solution for a wide range of geospatial projects. Whether you're building GIS tools, visualization platforms, or educational applications, iTowns offers a modular and versatile base.
+
+        iTowns is also a collaborative geographic commons, developed by a diverse community that includes independent developers, public organizations, research institutions, and private companies. This collective effort ensures a constantly evolving platform, open to innovation and adaptable to the unique needs of various geospatial use cases.
+    features:
+      - 2D and 3D Geospatial Visualization : Renders any 2D data or 3D models and terrain directly in web browsers.
+      - OGC Standards Compliance : Ensures compatibility with various geospatial formats and services (wms, wfs, copc, 3dTiles, ...)
+      - Support for Large Datasets : Handles massive datasets like OGC 3D Tiles, ideal for urban and environmental applications.
+      - Extensibility – Easily customizable with direct access (API) and also many plugins.
+      - Collaborative Development – Open-source with contributions from a diverse global community.
     screenshots: # ToDo : complete ?
       - 'https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itownsReleaseXS.jpg'
       - 'https://camo.githubusercontent.com/337a7f2d1c254e9099b30dc336982518fd6e8c8733c1f29fe669290b05f33905/687474703a2f2f7777772e69746f776e732d70726f6a6563742e6f72672f696d616765732f6d6f6e746167652e6a7067'
@@ -62,7 +65,7 @@ maintenance:
       website: "https://www.ign.fr/"
       until: "2015-09-20"
     - name: "Ciril grp"
-      website: "https://www.ciril.net/fr/"
+      website: "https://www.cirilgroup.com"
       until: "2022-01-01"
   contacts: # member of the Product Comitee
     - name: Bouillaget Quentin
@@ -73,7 +76,7 @@ maintenance:
       affiliation: Ciril Grp
     - name: Picavet Loïc
       email: "lpicavet@cirilgroup.com"
-      affiliation: IGN
+      affiliation: Ciril GROUP
     - name: Lavenant Antoine
       email: "antoine.lavenant@ign.fr"
       affiliation: IGN
@@ -85,5 +88,5 @@ dependsOn:
   open:
     - name: Three.JS
       optional: no
-    - name: Proj4
+    - name: proj4js
       optional: no
