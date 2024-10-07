@@ -1,4 +1,3 @@
-import Style from 'Core/Style';
 import { C3DTILES_LAYER_EVENTS } from 'Layer/C3DTilesLayer';
 import Widget from './Widget';
 
@@ -221,12 +220,12 @@ class C3DTilesStyle extends Widget {
                 }
 
                 // set style
-                c3DTilesLayer.style = new Style({
+                c3DTilesLayer.style = {
                     fill: {
                         color: fillColorFunction,
                         opacity: fillOpacityFunction,
                     },
-                });
+                };
             });
         });
 
