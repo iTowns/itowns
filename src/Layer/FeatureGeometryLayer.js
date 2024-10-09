@@ -61,6 +61,23 @@ class FeatureGeometryLayer extends GeometryLayer {
             this.object3d.clear();
         }
     }
+
+    selectGeometry(mouseOrEvt, radius, view) {
+        const results = view.pickObjectsAt(mouseOrEvt, radius, this.id);
+        if (results.length) {
+            if (results[0].object.isLine) {
+                const batchId = results[0].object.geometry.attributes.batchId.array[results[0].object.geometry.index.array[results[0].index]];
+                return { geometry: results[0].object.feature.geometries[batchId], mesh: results[0].object };
+            } else if (results[0].object.isPoints) {
+                const batchId = results[0].object.geometry.attributes.batchId.array[results[0].index];
+                return { geometry: results[0].object.feature.geometries[batchId], mesh: results[0].object };
+            } else if (results[0].object.isMesh) {
+                const batchId = results[0].object.geometry.attributes.batchId.array[results[0].face.a];
+                return { geometry: results[0].object.feature.geometries[batchId], mesh: results[0].object };
+            }
+        }
+        return undefined;
+    }
 }
 
 export default FeatureGeometryLayer;
