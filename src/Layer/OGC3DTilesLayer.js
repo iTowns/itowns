@@ -377,7 +377,11 @@ class OGC3DTilesLayer extends GeometryLayer {
         _raycaster.far = camera.far;
 
         _raycaster.firstHitOnly = true;
-        _raycaster.intersectObject(this.tilesRenderer.group, true, target);
+        const picked = _raycaster.intersectObject(this.tilesRenderer.group, true);
+        // Store the layer of the picked object to conform to the interface of what's returned by Picking.js (used for
+        // other GeometryLayers
+        picked.forEach((p) => { p.layer = this; });
+        target.push(...picked);
 
         return target;
     }
