@@ -31,9 +31,9 @@
             <input type="text" id="url" />
             <button onclick="readURL()">Load</button>
             <div class="marg">
-                <button onClick="loadLyon()">Load Lyon 1 (Mesh)</button>
-                <button onClick="loadSete()">Load Sete (Point Cloud)</button>
-                <button onClick="loadLille()">Load Lille (Mesh)</button>
+                <button id="loadLyon" onClick="loadLyon()">Load Lyon 1 (Mesh)</button>
+                <button id="loadSete" onClick="loadSete()">Load Sete (Point Cloud)</button>
+                <button id="loadLille" onClick="loadLille()">Load Lille (Mesh)</button>
                 <div id="share"></div>
             </div>
             <hr />
@@ -141,7 +141,7 @@
                 }
             }
 
-            function setUrl(url) {
+            function setUrl(url, layerId = '3DTiles') {
                 if (!url) return;
 
                 const input_url = document.getElementById('url');
@@ -151,21 +151,21 @@
                 history.replaceState(null, null, `?${uri.searchParams.toString()}`);
 
                 input_url.value = url;
-                load(url);
+                return load(url, layerId);
             }
 
 
-            function load(url) {
+            function load(url, layerId) {
                 const source = new OGC3DTilesSource({ url });
 
                 if (window.layer) {
-                    gui.removeFolder('Layer 3DTiles');
-                    view.removeLayer('3DTiles');
+                    gui.removeFolder('Layer ' + window.layer.id);
+                    view.removeLayer(window.layer.id);
                     view.notifyChange();
                     window.layer.delete();
                 }
 
-                window.layer = new OGC3DTilesLayer('3DTiles', {
+                window.layer = new OGC3DTilesLayer(layerId, {
                     source,
                     pntsSizeMode: PNTS_SIZE_MODE.ATTENUATED,
                 });
@@ -179,26 +179,29 @@
                 };
 
                 // Add the layer to our view
-                view.addLayer(window.layer).then((layer) => {
-                    zoomToLayer(view, layer);
+                const layerZoomPromise = view.addLayer(window.layer).then((layer) => {
                     window.addEventListener('click',
                         (event) => fillHTMLWithPickingInfo(event, pickingArgs), false);
+
+                    return zoomToLayer(view, layer);
                 });
 
                 window.layer.whenReady
                     .then(() => debug.createOGC3DTilesDebugUI(gui, view, window.layer));
+
+                return layerZoomPromise;
             }
 
             function loadLyon() {
-                setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/refs/heads/master/3DTiles/lyon1-4978/tileset.json");
+                setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/refs/heads/master/3DTiles/lyon1-4978/tileset.json", "lyon");
             }
 
             function loadSete() {
-                setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json");
+                setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json", "sete");
             }
 
             function loadLille() {
-                setUrl("https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json");
+                setUrl("https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json", "lille");
             }
 
             window.readURL = readURL;
@@ -206,6 +209,8 @@
             window.loadSete = loadSete;
             window.loadLille = loadLille;
 
+            // Expose the view on window for the functional test (3dtiles_loader.js) to work
+            window.view = view;
         </script>
     </body>
 </html>

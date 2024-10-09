@@ -69,6 +69,18 @@ export const OGC3DTILES_LAYER_EVENTS = {
      * @property {boolean} visible - the tile visible state
      */
     TILE_VISIBILITY_CHANGE: 'tile-visibility-change',
+    /**
+     * Fired when a new batch of tiles start loading (can be fired multiple times, e.g. when the camera moves and new tiles
+     * start loading)
+     * @event OGC3DTilesLayer#tiles-load-start
+     */
+    TILES_LOAD_START: 'tiles-load-start',
+    /**
+     * Fired when all visible tiles are loaded (can be fired multiple times, e.g. when the camera moves and new tiles
+     * are loaded)
+     * @event OGC3DTilesLayer#tiles-load-end
+     */
+    TILES_LOAD_END: 'tiles-load-end',
 };
 
 /**
