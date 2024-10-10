@@ -44,7 +44,7 @@ describe('Sources', function () {
 
     describe('WFSSource', function () {
         const paramsWFS = {
-            url: 'http://',
+            url: 'http://domain.com',
             typeName: 'test',
             crs: 'EPSG:4326',
         };
@@ -93,7 +93,7 @@ describe('Sources', function () {
 
     describe('WMTSSource', function () {
         const paramsWMTS = {
-            url: 'http://',
+            url: 'http://domain.com',
             name: 'name',
             crs: 'EPSG:4326',
             tileMatrixSet: 'PM',
@@ -141,7 +141,7 @@ describe('Sources', function () {
 
     describe('WMSSource', function () {
         const paramsWMS = {
-            url: 'http://',
+            url: 'http://domain.com',
             name: 'name',
             extent: [-90, 90, -45, 45],
             crs: 'EPSG:4326',
