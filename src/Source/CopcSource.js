@@ -105,19 +105,16 @@ class CopcSource extends Source {
             this.eb = metadata.eb;
 
             proj4.defs('unknown', metadata.wkt);
+            let projCS;
 
             if (proj4.defs('unknown').type === 'COMPD_CS') {
                 console.warn('CopcSource: compound coordinate system is not yet supported.');
-                metadata.wkt = metadata.wkt.slice(metadata.wkt.search('PROJCS'), metadata.wkt.search(',VERT_CS'));
-                proj4.defs('unknown', metadata.wkt);
+                projCS = proj4.defs('unknown').PROJCS;
+            } else {
+                projCS = proj4.defs('unknown');
             }
 
-            const projCS = proj4.defs('unknown');
             this.crs = projCS.title || projCS.name || 'EPSG:4326';
-
-            if (!proj4.defs(this.crs)) {
-                proj4.defs(this.crs, proj4.defs('unknown'));
-            }
 
             const bbox = new THREE.Box3();
             bbox.min.fromArray(this.info.cube, 0);
