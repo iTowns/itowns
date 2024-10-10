@@ -72,11 +72,12 @@ class WMTSSource extends TMSSource {
 
         this.isWMTSSource = true;
 
-        // Add ? at the end of the url if it is not already in the given URL
-        if (!this.url.endsWith('?')) {
-            this.url = `${this.url}?`;
+        let separator = '?';
+        if (this.url.includes('?')) {
+            separator = this.url.endsWith('?') ? '' : '&';
         }
-        this.url = `${this.url}` +
+
+        this.url = `${this.url}${separator}` +
             `LAYER=${source.name}` +
             `&FORMAT=${this.format}` +
             '&SERVICE=WMTS' +
