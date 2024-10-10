@@ -10,7 +10,8 @@
     ],
     "plugins": [
         ["module-resolver", {
-            "root": ["./src"],
+            "cwd": "packagejson",
+            "root": ["./packages/Main/src"],
             "extensions": [".js", ".ts", ".tsx"]
         }],
         ["babel-plugin-inline-import", {
