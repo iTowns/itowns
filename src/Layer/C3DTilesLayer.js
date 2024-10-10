@@ -143,7 +143,7 @@ class C3DTilesLayer extends GeometryLayer {
         }
 
         /** @type {Style} */
-        this._style = config.style || null;
+        this.style = config.style || null;
 
         /** @type {Map<string, THREE.MeshStandardMaterial>} */
         this.#fillColorMaterialsBuffer = new Map();
@@ -386,21 +386,16 @@ class C3DTilesLayer extends GeometryLayer {
                     if (c3DTileFeature.object3d != object3d) {
                         continue;// this feature do not belong to object3d
                     }
+
+                    this._style.context.setGeometry({
+                        properties: c3DTileFeature,
+                    });
+
                     /** @type {THREE.Color} */
-                    let color = null;
-                    if (typeof this._style.fill.color === 'function') {
-                        color = new THREE.Color(this._style.fill.color(c3DTileFeature));
-                    } else {
-                        color = new THREE.Color(this._style.fill.color);
-                    }
+                    const color = new THREE.Color(this._style.fill.color);
 
                     /** @type {number} */
-                    let opacity = null;
-                    if (typeof this._style.fill.opacity === 'function') {
-                        opacity = this._style.fill.opacity(c3DTileFeature);
-                    } else {
-                        opacity = this._style.fill.opacity;
-                    }
+                    const opacity = this._style.fill.opacity;
 
                     const materialId = color.getHexString() + opacity;
 
@@ -464,7 +459,13 @@ class C3DTilesLayer extends GeometryLayer {
     }
 
     set style(value) {
-        this._style = value;
+        if (value instanceof Style) {
+            this._style = value;
+        } else if (!value) {
+            this._style = null;
+        } else {
+            this._style = new Style(value);
+        }
         this.updateStyle();
     }
 
