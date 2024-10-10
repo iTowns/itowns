@@ -49,6 +49,7 @@ The following people have contributed to iTowns.
 * [Sogelink](https://www.sogelink.com/)
   * [Kévin ETOURNEAU](https://github.com/ketourneau)
   * [Alexis DELFORGES](https://github.com/pourfex)
+  * [Tim Ebben](https://github.com/tebben)
 
 The following organizations are the current maintainers of iTowns:
 * IGN (http://www.ign.fr)
