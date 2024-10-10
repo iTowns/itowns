@@ -36,6 +36,8 @@ const dollyEnd = new THREE.Vector2();
 const dollyDelta = new THREE.Vector2();
 let dollyScale;
 
+let zoomOrigin;    // will store the picking position at the start
+
 // Globe move
 const moveAroundGlobe = new THREE.Quaternion();
 const cameraTarget = new THREE.Object3D();
@@ -159,7 +161,7 @@ let previous;
  * @param      {object}  [options] An object with one or more configuration properties. Any property of GlobeControls
  * can be passed in this object.
  * @property      {number}  zoomFactor The factor the scale is multiplied by when dollying (zooming) in or
- * divided by when dollying out. Default is 2.
+ * divided by when dollying out. Default is 1.1.
  * @property      {number}  rotateSpeed Speed camera rotation in orbit and panoramic mode. Default is 0.25.
  * @property      {number}  minDistance Minimum distance between ground and camera in meters (Perspective Camera only).
  * Default is 250.
@@ -211,7 +213,7 @@ class GlobeControls extends THREE.EventDispatcher {
             console.warn('Controls zoomSpeed parameter is deprecated. Use zoomFactor instead.');
             options.zoomFactor = options.zoomFactor || options.zoomSpeed;
         }
-        this.zoomFactor = options.zoomFactor || 1.25;
+        this.zoomFactor = options.zoomFactor || 1.1;
 
         // Limits to how far you can dolly in and out ( PerspectiveCamera only )
         this.minDistance = options.minDistance || 250;
@@ -323,10 +325,10 @@ class GlobeControls extends THREE.EventDispatcher {
         coordCameraTarget.crs = this.view.referenceCrs;
     }
 
-    get dollyInScale() {
+    get zoomInScale() {
         return this.zoomFactor;
     }
-    get dollyOutScale() {
+    get zoomOutScale() {
         return 1 / this.zoomFactor;
     }
 
@@ -341,6 +343,7 @@ class GlobeControls extends THREE.EventDispatcher {
             this.player.removeEventListener('animation-stopped', this._onEndingMove);
             this._onEndingMove = null;
         }
+        zoomOrigin = null;
         this.handlingEvent(current);
     }
 
@@ -389,9 +392,10 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
+    // For Mobile
     dolly(delta) {
         if (delta === 0) { return; }
-        dollyScale = delta > 0 ? this.dollyInScale : this.dollyOutScale;
+        dollyScale = delta > 0 ? this.zoomInScale : this.zoomOutScale;
 
         if (this.camera.isPerspectiveCamera) {
             orbitScale /= dollyScale;
@@ -626,14 +630,16 @@ class GlobeControls extends THREE.EventDispatcher {
         }
     }
 
+
     handleDolly(event) {
         dollyEnd.copy(event.viewCoords);
         dollyDelta.subVectors(dollyEnd, dollyStart);
-
-        this.dolly(-dollyDelta.y);
         dollyStart.copy(dollyEnd);
+        event.delta = dollyDelta.y;
+        if (event.delta === 0) { return; }
 
-        this.update();
+
+        this.handleZoom(event);
     }
 
     handlePan(event) {
@@ -666,7 +672,6 @@ class GlobeControls extends THREE.EventDispatcher {
 
     handleEndMovement(event = {}) {
         this.dispatchEvent(this.endEvent);
-
         this.player.stop();
 
         // Launch damping movement for :
@@ -765,22 +770,42 @@ class GlobeControls extends THREE.EventDispatcher {
         this.player.stop();
         CameraUtils.stop(this.view, this.camera);
 
-        this.updateTarget();
-        const delta = -event.delta;
-        this.dolly(delta);
-
-        const previousRange = this.getRange(pickedPosition);
-        this.update();
-        const newRange = this.getRange(pickedPosition);
-        if (Math.abs(newRange - previousRange) / previousRange > 0.001) {
-            this.dispatchEvent({
-                type: CONTROL_EVENTS.RANGE_CHANGED,
-                previous: previousRange,
-                new: newRange,
-            });
+        if (!zoomOrigin) {
+            zoomOrigin = this.view.getPickingPositionFromDepth(event.viewCoords);        // mouse position
         }
-        this.dispatchEvent(this.startEvent);
-        this.dispatchEvent(this.endEvent);
+        var point = new THREE.Vector3();
+        point.copy(zoomOrigin);
+
+        this.view.getPickingPositionFromDepth(null, pickedPosition);
+        var range = this.getRange(pickedPosition);
+        range *= (event.delta > 0 ?  this.zoomInScale :  this.zoomOutScale);
+
+        if (range > this.minDistance && range < this.maxDistance) {  // check if the zoom is in the allowed interval
+            const camPos = this.getLookAtCoordinate().toVector3();
+
+            point = new Coordinates('EPSG:4978', point).as('EPSG:4326').toVector3();
+            if (camPos.x * point.x < 0) {     // Correct rotation at 180th meridian by using 0 <= longitude <=360
+                if (camPos.x - point.x > 180) { point.x += 360; } else if (point.x - camPos.x > 180) { camPos.x += 360; }
+            }
+
+            point.lerp(  // point interpol between mouse cursor and cam pos
+                camPos,
+                (event.delta > 0 ? this.zoomInScale : this.zoomOutScale), // interpol factor
+
+            );
+            if (point.x > 180) {  // Correct rotation at 180th meridian
+                point.x -= 360;
+            }
+            point = new Coordinates('EPSG:4326', point).as('EPSG:4978').toVector3();
+
+            pickedPosition.copy(point);
+
+            return this.lookAtCoordinate({       // update view to the interpolate point
+                coord: new Coordinates('EPSG:4978', point),
+                range,
+            },
+            false);
+        }
     }
 
     onTouchStart(event) {
