@@ -85,10 +85,10 @@
             const viewerDiv = document.getElementById('viewerDiv');
 
             // Create a GlobeView
-            const view = new GlobeView(viewerDiv, placement, {});
+            const view = new GlobeView(viewerDiv, placement, { activateSunlight : false });
 
             // Add ambient light to globally illuminates all objects
-            const light = new AmbientLight(0x404040, 15);
+            const light = new AmbientLight(0x404040, 40);
             view.scene.add(light);
 
             // Setup loading screen
