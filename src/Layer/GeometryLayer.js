@@ -78,7 +78,7 @@ class GeometryLayer extends Layer {
             configurable: true,
         });
 
-        this.opacity = 1.0;
+        this.opacity = config.opacity ?? 1.0;
         this.wireframe = false;
 
         this.attachedLayers = [];
