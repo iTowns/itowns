@@ -60,12 +60,12 @@ describe('Potree', function () {
             const source = new PotreeSource({
                 file: fileName,
                 url: baseurl,
+                crs: 'EPSG:4978',
             });
 
             // Configure Point Cloud layer
             potreeLayer = new PotreeLayer('lion_takanawa', {
                 source,
-                onPointsCreated: () => {},
                 crs: viewer.referenceCrs,
             });
 
