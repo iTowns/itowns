@@ -116,26 +116,27 @@ class WMSSource extends Source {
 
         const crsPropName = (this.version === '1.3.0') ? 'CRS' : 'SRS';
 
-        // Add ? at the end of the url if it is not already in the given URL
-        if (!this.url.endsWith('?')) {
-            this.url = `${this.url}?`;
-        }
-        this.url = `${this.url}SERVICE=WMS&REQUEST=GetMap&LAYERS=${
-            this.name}&VERSION=${
-            this.version}&STYLES=${
-            this.style}&FORMAT=${
-            this.format}&TRANSPARENT=${
-            this.transparent}&BBOX=%bbox&${
-            crsPropName}=${
-            this.crs}&WIDTH=${this.width}&HEIGHT=${this.height}`;
-
+        const urlObj = new URL(this.url);
+        urlObj.searchParams.set('SERVICE', 'WMS');
+        urlObj.searchParams.set('REQUEST', 'GetMap');
+        urlObj.searchParams.set('LAYERS', this.name);
+        urlObj.searchParams.set('VERSION', this.version);
+        urlObj.searchParams.set('STYLES', this.style);
+        urlObj.searchParams.set('FORMAT', this.format);
+        urlObj.searchParams.set('TRANSPARENT', this.transparent);
+        urlObj.searchParams.set('BBOX', '%bbox');
+        urlObj.searchParams.set(crsPropName, this.crs);
+        urlObj.searchParams.set('WIDTH', this.width);
+        urlObj.searchParams.set('HEIGHT', this.height);
 
         this.vendorSpecific = source.vendorSpecific;
         for (const name in this.vendorSpecific) {
             if (Object.prototype.hasOwnProperty.call(this.vendorSpecific, name)) {
-                this.url = `${this.url}&${name}=${this.vendorSpecific[name]}`;
+                urlObj.searchParams.set(name, this.vendorSpecific[name]);
             }
         }
+
+        this.url = decodeURIComponent(urlObj.toString());
     }
 
     urlFromExtent(extentOrTile) {

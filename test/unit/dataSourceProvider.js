@@ -98,7 +98,7 @@ describe('Provide in Sources', function () {
         });
 
         featureLayer.source = new WFSSource({
-            url: 'http://',
+            url: 'http://domain.com',
             typeName: 'name',
             format: 'application/json',
             extent: globalExtent,
@@ -128,7 +128,7 @@ describe('Provide in Sources', function () {
 
     it('should get wmts texture with DataSourceProvider', (done) => {
         colorlayer.source = new WMTSSource({
-            url: 'http://',
+            url: 'http://domain.com',
             name: 'name',
             format: 'image/png',
             tileMatrixSet: 'PM',
@@ -159,7 +159,7 @@ describe('Provide in Sources', function () {
 
     it('should get wmts texture elevation with DataSourceProvider', (done) => {
         elevationlayer.source = new WMTSSource({
-            url: 'http://',
+            url: 'http://domain.com',
             name: 'name',
             format: 'image/png',
             tileMatrixSet: 'PM',
@@ -188,7 +188,7 @@ describe('Provide in Sources', function () {
 
     it('should get wms texture with DataSourceProvider', (done) => {
         colorlayer.source = new WMSSource({
-            url: 'http://',
+            url: 'http://domain.com',
             name: 'name',
             format: 'image/png',
             extent: globalExtent,
@@ -320,7 +320,7 @@ describe('Provide in Sources', function () {
 
     it('should get updated RasterLayer', (done) => {
         colorlayer.source = new WMTSSource({
-            url: 'http://',
+            url: 'http://domain.com',
             name: 'name',
             format: 'image/png',
             tileMatrixSet: 'PM',

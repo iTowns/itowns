@@ -125,26 +125,25 @@ class WFSSource extends Source {
         this.typeName = source.typeName;
         this.version = source.version || '2.0.2';
         this.bboxDigits = source.bboxDigits;
-
-        // Add ? at the end of the url if it is not already in the given URL
-        if (!this.url.endsWith('?')) {
-            this.url = `${this.url}?`;
-        }
-        this.url = `${source.url
-        }SERVICE=WFS&REQUEST=GetFeature&typeName=${this.typeName
-        }&VERSION=${this.version
-        }&SRSNAME=${this.crs
-        }&outputFormat=${this.format
-        }&BBOX=%bbox,${this.crs}`;
-
         this.zoom = { min: 0, max: Infinity };
+
+        const urlObj = new URL(source.url);
+        urlObj.searchParams.set('SERVICE', 'WFS');
+        urlObj.searchParams.set('REQUEST', 'GetFeature');
+        urlObj.searchParams.set('typeName', this.typeName);
+        urlObj.searchParams.set('VERSION', this.version);
+        urlObj.searchParams.set('SRSNAME', this.crs);
+        urlObj.searchParams.set('outputFormat', this.format);
+        urlObj.searchParams.set('BBOX', `%bbox,${this.crs}`);
 
         this.vendorSpecific = source.vendorSpecific;
         for (const name in this.vendorSpecific) {
             if (Object.prototype.hasOwnProperty.call(this.vendorSpecific, name)) {
-                this.url = `${this.url}&${name}=${this.vendorSpecific[name]}`;
+                urlObj.searchParams.set(name, this.vendorSpecific[name]);
             }
         }
+
+        this.url = decodeURIComponent(urlObj.toString());
     }
 
     handlingError(err) {
