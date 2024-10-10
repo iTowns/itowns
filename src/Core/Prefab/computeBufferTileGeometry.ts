@@ -102,6 +102,9 @@ export default function computeBuffers(
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
 ) {
+    // XXX: REMOVE !!!!!
+    params.disableSkirt = true;
+
     const nSeg = params.segments;
 
     // segments count :

@@ -1,9 +1,14 @@
 import * as THREE from 'three';
 import computeBuffers, { getBufferIndexSize } from 'Core/Prefab/computeBufferTileGeometry';
 
-function defaultBuffers(params) {
+/**
+ * @param {Builder} builder
+ * @param {any} params
+ * @returns {GpuBufferAttributes}
+ */
+function defaultBuffers(builder, params) {
     params.buildIndexAndUv_0 = true;
-    params.center = params.builder.center(params.extent).clone();
+    params.center = builder.center(params.extent).clone();
     const buffers = computeBuffers(params);
     buffers.index = new THREE.BufferAttribute(buffers.index, 1);
     buffers.uvs[0] = new THREE.BufferAttribute(buffers.uvs[0], 2);
@@ -16,7 +21,7 @@ function defaultBuffers(params) {
 }
 
 class TileGeometry extends THREE.BufferGeometry {
-    constructor(params, buffers = defaultBuffers(params)) {
+    constructor(builder, params, buffers = defaultBuffers(builder, params)) {
         super();
         this.center = params.center;
         this.extent = params.extent;
@@ -35,9 +40,38 @@ class TileGeometry extends THREE.BufferGeometry {
         if (params.hideSkirt) {
             this.hideSkirt = params.hideSkirt;
         }
+
+        this._refCount = { count: -42, fn: undefined };
     }
     set hideSkirt(value) {
         this.setDrawRange(0, getBufferIndexSize(this.segments, value));
+    }
+
+    initRefCount(cacheTile, keys) {
+        this._refCount.count = 0;
+        this._refCount.fn = () => {
+            this._refCount.count--;
+            if (this._refCount.count <= 0) {
+                // To avoid remove index buffer and attribute buffer uv
+                //  error un-bound buffer in webgl with VAO rendering.
+                // Could be removed if the attribute buffer deleting is
+                //  taken into account in the buffer binding state
+                //  (in THREE.WebGLBindingStates code).
+                this.index = null;
+                delete this.attributes.uv;
+                THREE.BufferGeometry.prototype.dispose.call(this);
+                cacheTile.delete(...keys);
+            }
+        };
+    }
+
+    // override
+    dispose() {
+        if (this._refCount === -42) {
+            super.dispose();
+        } else {
+            this._refCount.fn();
+        }
     }
 }
 

@@ -75,7 +75,7 @@ class BuilderEllipsoidTile implements TileBuilder<GlobeTileBuilderParams> {
     // prepare params
     // init projected object -> params.projected
     prepare(params: TileBuilderParams): GlobeTileBuilderParams {
-        const nbRow = 2 ** (params.zoom + 1.0);
+        const nbRow = 2 ** (params.level + 1.0);
         let st1 = WGS84ToOneSubY(params.extent.south);
 
         if (!isFinite(st1)) { st1 = 0; }

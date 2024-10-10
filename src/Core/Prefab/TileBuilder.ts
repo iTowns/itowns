@@ -68,7 +68,6 @@ export interface TileBuilder<SpecializedParams extends TileBuilderParams> {
     computeShareableExtent(extent: Extent): ShareableExtent;
 }
 
-
 export default function newTileGeometry(
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
@@ -81,7 +80,8 @@ export default function newTileGeometry(
     const bufferKey =
         `${builder.crs}_${params.disableSkirt ? 0 : 1}_${params.segments}`;
 
-    let promiseGeometry = cacheTile.get(south, params.level, bufferKey);
+    // let promiseGeometry = cacheTile.get(south, params.level, bufferKey);
+    let promiseGeometry;
 
     // build geometry if doesn't exist
     if (!promiseGeometry) {
@@ -94,6 +94,7 @@ export default function newTileGeometry(
         // Read previously cached values (index and uv.wgs84 only
         // depend on the # of triangles)
         let cachedBuffers = cacheBuffer.get(bufferKey);
+        cachedBuffers = undefined;
         params.buildIndexAndUv_0 = !cachedBuffers;
         let buffers;
         try {
