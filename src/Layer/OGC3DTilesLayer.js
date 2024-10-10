@@ -69,6 +69,18 @@ export const OGC3DTILES_LAYER_EVENTS = {
      * @property {boolean} visible - the tile visible state
      */
     TILE_VISIBILITY_CHANGE: 'tile-visibility-change',
+    /**
+     * Fired when a new batch of tiles start loading (can be fired multiple times, e.g. when the camera moves and new tiles
+     * start loading)
+     * @event OGC3DTilesLayer#tiles-load-start
+     */
+    TILES_LOAD_START: 'tiles-load-start',
+    /**
+     * Fired when all visible tiles are loaded (can be fired multiple times, e.g. when the camera moves and new tiles
+     * are loaded)
+     * @event OGC3DTilesLayer#tiles-load-end
+     */
+    TILES_LOAD_END: 'tiles-load-end',
 };
 
 /**
@@ -112,6 +124,13 @@ export function enableKtx2Loader(path, renderer) {
 class OGC3DTilesLayer extends GeometryLayer {
     /**
      * Layer for [3D Tiles](https://www.ogc.org/standard/3dtiles/) datasets.
+     *
+     * Advanced configuration note: 3D Tiles rendering is delegated to 3DTilesRendererJS that exposes several
+     * configuration options accessible through the tilesRenderer property of this class. see the
+     * [3DTilesRendererJS doc](https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/master/README.md). Also note that
+     * the cache is shared amongst 3D tiles layers and can be configured through tilesRenderer.lruCache (see the
+     * [following documentation](https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/master/README.md#lrucache-1).
+     *
      * @extends Layer
      *
      * @param {String} id - unique layer id.
@@ -126,8 +145,8 @@ class OGC3DTilesLayer extends GeometryLayer {
      * @param {String} [config.pntsSizeMode= PNTS_SIZE_MODE.VALUE] {@link PointsMaterial} Point cloud size mode (passed to {@link PointsMaterial}).
      * Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance
      * from point to camera.
-     * @param {Number} [config.pntsMinAttenuatedSize=1] Minimum scale used by 'ATTENUATED' size mode.
-     * @param {Number} [config.pntsMaxAttenuatedSize=7] Maximum scale used by 'ATTENUATED' size mode.
+     * @param {Number} [config.pntsMinAttenuatedSize=3] Minimum scale used by 'ATTENUATED' size mode.
+     * @param {Number} [config.pntsMaxAttenuatedSize=10] Maximum scale used by 'ATTENUATED' size mode.
      */
     constructor(id, config) {
         super(id, new THREE.Group(), { source: config.source });
@@ -186,8 +205,8 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.pntsShape = config.pntsShape ?? PNTS_SHAPE.CIRCLE;
         this.classification = config.classification ?? ClassificationScheme.DEFAULT;
         this.pntsSizeMode = config.pntsSizeMode ?? PNTS_SIZE_MODE.VALUE;
-        this.pntsMinAttenuatedSize = config.pntsMinAttenuatedSize || 1;
-        this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 7;
+        this.pntsMinAttenuatedSize = config.pntsMinAttenuatedSize || 3;
+        this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 10;
     }
 
     /**
@@ -370,7 +389,11 @@ class OGC3DTilesLayer extends GeometryLayer {
         _raycaster.far = camera.far;
 
         _raycaster.firstHitOnly = true;
-        _raycaster.intersectObject(this.tilesRenderer.group, true, target);
+        const picked = _raycaster.intersectObject(this.tilesRenderer.group, true);
+        // Store the layer of the picked object to conform to the interface of what's returned by Picking.js (used for
+        // other GeometryLayers
+        picked.forEach((p) => { p.layer = this; });
+        target.push(...picked);
 
         return target;
     }
