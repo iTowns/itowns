@@ -126,11 +126,12 @@ class WFSSource extends Source {
         this.version = source.version || '2.0.2';
         this.bboxDigits = source.bboxDigits;
 
-        // Add ? at the end of the url if it is not already in the given URL
-        if (!this.url.endsWith('?')) {
-            this.url = `${this.url}?`;
+        let separator = '?';
+        if (this.url.includes('?')) {
+            separator = this.url.endsWith('?') ? '' : '&';
         }
-        this.url = `${source.url
+
+        this.url = `${source.url}${separator
         }SERVICE=WFS&REQUEST=GetFeature&typeName=${this.typeName
         }&VERSION=${this.version
         }&SRSNAME=${this.crs
