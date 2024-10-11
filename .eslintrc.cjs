@@ -136,7 +136,14 @@ module.exports = {
                 'plugin:@typescript-eslint/recommended',
             ],
             rules: {
-                '@stylistic/max-len': ['warn', 80],
+                '@stylistic/max-len': ['warn', {
+                    code: 100,
+                    comments: 80,
+                    ignoreUrls: true,
+                }],
+                // see https://typescript-eslint.io/rules/no-use-before-define/
+                'no-use-before-define': 'off',
+                '@typescript-eslint/no-use-before-define': 'error',
                 'valid-jsdoc': 'off',
                 'tsdoc/syntax': 'warn',
             },
