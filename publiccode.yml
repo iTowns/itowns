@@ -1,0 +1,88 @@
+# This repository adheres to the publiccode.yml standard by including this
+# metadata file that makes public software easily discoverable.
+# More info at https://github.com/italia/publiccode.yml
+
+publiccodeYmlVersion: '0.2'
+name: itowns
+url: 'https://github.com/iTowns/itowns.git'
+landingURL: 'https://github.com/iTowns/itowns'
+softwareVersion: 2.44.2
+releaseDate: '2024-09-17'
+softwareType: library
+logo: 'https://github.com/iTowns/itowns/blob/master/examples/images/itowns_logo.png'
+platforms:
+  - web
+categories:
+  - data-visualization
+  - it-development
+  - geographic-information-systems
+usedBy:
+  - Institut national de l'information géographique et forestière (IGN)
+roadmap: 'https://www.itowns-project.org/'
+developmentStatus: stable
+intendedAudience:
+  scope:
+    - science-and-technology
+    - research
+    - environment
+    - government
+    - defence
+description:
+  en:
+    documentation: 'https://www.itowns-project.org/'
+    apiDocumentation: 'https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals'
+    shortDescription: Open-source framework designed for web-based visualisation, navigation and interaction with 2D and 3D geospatial data.
+    longDescription: |
+        iTowns is a powerful, open-source framework designed for the web-based visualization, navigation, and interaction with both 2D and 3D geospatial data on globes and maps. Built on Open Geospatial Consortium (OGC) standards, it prioritizes interoperability, seamlessly integrating with various geospatial services. The framework supports standard raster and vector data, including aerial imagery, terrain models, and large, heterogeneous 3D datasets like OGC's 3D Tiles. This makes iTowns particularly well-suited for applications in urban planning, environmental monitoring, geospatial asset management and beyond.
+
+        iTowns, based on famous ThreeJS 3D visualization library, it's very extensible and adaptable. Developers can easily extend the framework to support additional open formats, making it a highly customizable solution for a wide range of geospatial projects. Whether you're building GIS tools, visualization platforms, or educational applications, iTowns offers a modular and versatile base.
+
+        iTowns is also a collaborative geographic commons, developed by a diverse community that includes independent developers, public organizations, research institutions, and private companies. This collective effort ensures a constantly evolving platform, open to innovation and adaptable to the unique needs of various geospatial use cases.
+    features:
+      - 2D and 3D Geospatial Visualization
+      - OGC Standards Compliance
+      - Support for Large Datasets
+      - Extensibility
+      - Collaborative Development
+    screenshots:
+      - 'https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itownsReleaseXS.jpg'
+      - 'https://camo.githubusercontent.com/337a7f2d1c254e9099b30dc336982518fd6e8c8733c1f29fe669290b05f33905/687474703a2f2f7777772e69746f776e732d70726f6a6563742e6f72672f696d616765732f6d6f6e746167652e6a7067'
+      - 'https://raw.githubusercontent.com/iTowns/itowns/refs/heads/master/docs/tutorials/images/3DTiles-mesh-b3dm-2.png'
+    genericName: iTowns
+legal:
+  license: MIT OR CECILL-B
+  mainCopyrightOwner: IGN and Ciril GROUP
+  repoOwner: IGN and Ciril GROUP
+  authorsFile: 'https://github.com/iTowns/itowns/blob/master/CONTRIBUTORS.md'
+maintenance:
+  type: community
+  contractors:
+    - name: Institut national de l'information géographique et forestière (IGN)
+      website: 'https://www.ign.fr/'
+      until: '2015-09-20'
+    - name: Ciril GROUP
+      website: 'https://www.cirilgroup.com'
+      until: '2022-01-01'
+  contacts:
+    - name: Bouillaget Quentin
+      email: quentin.bouillaget@ign.fr
+      affiliation: Institut national de l'information géographique et forestière (IGN)
+    - name: Jaillot Vincent
+      email: vjaillot@cirilgroup.com
+      affiliation: Ciril GROUP
+    - name: Picavet Loïc
+      email: lpicavet@cirilgroup.com
+      affiliation: Ciril GROUP
+    - name: Lavenant Antoine
+      email: antoine.lavenant@ign.fr
+      affiliation: Institut national de l'information géographique et forestière (IGN)
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en
+dependsOn:
+  open:
+    - name: Three.JS
+      optional: 'no'
+    - name: proj4js
+      optional: 'no'
