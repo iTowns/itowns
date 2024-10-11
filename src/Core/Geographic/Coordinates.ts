@@ -37,19 +37,28 @@ function proj4cache(crsIn: string, crsOut: string): proj4.Converter {
  * A Coordinates object, defined by a [crs](http://inspire.ec.europa.eu/theme/rs)
  * and three values. These values are accessible through `x`, `y` and `z`,
  * although it can also be accessible through `latitude`, `longitude` and
- * `altitude`. To change a value, prefer the `set()` method below.
+ * `altitude`. To change a value, prefer the `setFrom*` methods below.
  *
  * `EPSG:4978` and `EPSG:4326` are supported by default. To use another CRS,
  * you have to declare it with `proj4`. You can find most projections and their
  * proj4 code at [epsg.io](https://epsg.io/).
  *
- * @example
- * new Coordinates('EPSG:4978', 20885167, 849862, 23385912); //Geocentric coordinates
- * new Coordinates('EPSG:4326', 2.33, 48.24, 24999549); //Geographic coordinates
+ * @example Geocentric coordinates
+ * ```js
+ * new Coordinates('EPSG:4978', 20885167, 849862, 23385912);
+ * ```
  *
- * @example
- * // Declare EPSG:3946 with proj4
- * itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+ * @example Geographic coordinates
+ * ```js
+ * new Coordinates('EPSG:4326', 2.33, 48.24, 24999549);
+ * ```
+ *
+ * @example Defining EPSG:2154 with proj4
+ * ```js
+ * proj4.defs('EPSG:2154', `+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44
+ * +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m
+ * +no_defs +type=crs`);
+ * ```
  */
 class Coordinates {
     /**
@@ -320,21 +329,25 @@ class Coordinates {
      *
      * @returns The resulting Coordinates after the conversion.
      *
-     * @example
-     * const position = { longitude: 2.33, latitude: 48.24, altitude: 24999549 };
-     * const coords = new Coordinates('EPSG:4326', position.longitude, position.latitude, position.altitude); // Geographic system
-     * const coordinates = coords.as('EPSG:4978'); // Geocentric system
+     * @example Conversion from geographic to geocentric reference system
+     * ```js
+     * const geographicCoords = new Coordinates('EPSG:4326',
+     *     2.33,        // longitude
+     *     48.24,       // latitude
+     *     24999549,    // altitude
+     * );
+     * const geocentricCoords = geographicCoords.as('EPSG:4978');
+     * ```
      *
-     * @example
-     * const position = { x: 20885167, y: 849862, z: 23385912 };
-     * const coords = new Coordinates('EPSG:4978', position.x, position.y, position.z);  // Geocentric system
-     * const coordinates = coords.as('EPSG:4326');  // Geographic system
-     *
-     * @example
-     * new Coordinates('EPSG:4326', longitude: 2.33, latitude: 48.24, altitude: 24999549).as('EPSG:4978'); // Geocentric system
-     *
-     * @example
-     * new Coordinates('EPSG:4978', x: 20885167, y: 849862, z: 23385912).as('EPSG:4326'); // Geographic system
+     * @example Conversion from geocentric to geographic reference system
+     * ```js
+     * const geocentricCoords = new Coordinates('EPSG:4978',
+     *     20885167,    // x
+     *     849862,      // y
+     *     23385912,    // z
+     * );
+     * const geographicCoords = geocentricCoords.as('EPSG:4326');
+     * ```
      */
     as(crs: ProjectionLike, target = new Coordinates(crs)): Coordinates {
         if (this.crs == crs) {
