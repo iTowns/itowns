@@ -177,7 +177,9 @@ function Debug(view, datDebugTool, chartDivContainer) {
             const size = { x: g.width * ratio, y: g.height * ratio };
             debugCamera.aspect = size.x / size.y;
             const camera = view.camera3D;
-            const coord = new Coordinates(view.referenceCrs, camera.position).as(tileLayer.extent.crs);
+            const coord = new Coordinates(view.referenceCrs)
+                .setFromVector3(camera.position)
+                .as(tileLayer.extent.crs);
             const extent = view.tileLayer.info.displayed.extent;
             displayedTilesObb.setFromExtent(extent);
             displayedTilesObbHelper.visible = true;
