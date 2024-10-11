@@ -119,6 +119,8 @@ const viewers = [];
 // Size of the camera frustrum, in meters
 let screenMeters;
 
+let id = 0;
+
 /**
  * @property {HTMLElement} domElement - Thhe domElement holding the canvas where the view is displayed
  * @property {String} referenceCrs - The coordinate reference system of the view
@@ -169,6 +171,7 @@ class View extends THREE.EventDispatcher {
         super();
 
         this.domElement = viewerDiv;
+        this.id = id++;
 
         this.referenceCrs = crs;
 

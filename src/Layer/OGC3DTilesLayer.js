@@ -22,18 +22,13 @@ import PointsMaterial, {
 } from 'Renderer/PointsMaterial';
 
 const _raycaster = new THREE.Raycaster();
-
+const viewers = [];
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
 export const itownsGLTFLoader = new iGLTFLoader();
 itownsGLTFLoader.register(() => new GLTFMeshFeaturesExtension());
 itownsGLTFLoader.register(() => new GLTFStructuralMetadataExtension());
 itownsGLTFLoader.register(() => new GLTFCesiumRTCExtension());
-
-// Instantiated by the first tileset. Used to share cache and download and parse queues between tilesets
-let lruCache = null;
-let downloadQueue = null;
-let parseQueue = null;
 
 export const OGC3DTILES_LAYER_EVENTS = {
     /**
@@ -152,9 +147,6 @@ class OGC3DTilesLayer extends GeometryLayer {
 
         this.tilesRenderer.manager.addHandler(/\.gltf$/, itownsGLTFLoader);
 
-        this._setupCacheAndQueues();
-        this._setupEvents();
-
         this.object3d.add(this.tilesRenderer.group);
 
         // Add an initialization step that is resolved when the root tileset is loaded (see this._setup below), meaning
@@ -190,25 +182,23 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 7;
     }
 
+
     /**
      * Sets the lruCache and download and parse queues so they are shared amongst all tilesets.
-     * @private
-     */
-    _setupCacheAndQueues() {
-        if (lruCache === null) {
-            lruCache = this.tilesRenderer.lruCache;
+    * @param {String} id - viewer id.
+    * @private
+    */
+    _setupCacheAndQueues(id) {
+        if (viewers[id]) {
+            this.tilesRenderer.lruCache = viewers[id].lruCache;
+            this.tilesRenderer.downloadQueue = viewers[id].downloadQueue;
+            this.tilesRenderer.parseQueue = viewers[id].parseQueue;
         } else {
-            this.tilesRenderer.lruCache = lruCache;
-        }
-        if (downloadQueue === null) {
-            downloadQueue = this.tilesRenderer.downloadQueue;
-        } else {
-            this.tilesRenderer.downloadQueue = downloadQueue;
-        }
-        if (parseQueue === null) {
-            parseQueue = this.tilesRenderer.parseQueue;
-        } else {
-            this.tilesRenderer.parseQueue = parseQueue;
+            viewers[id] = {
+                lruCache: this.tilesRenderer.lruCache,
+                downloadQueue: this.tilesRenderer.downloadQueue,
+                parseQueue: this.tilesRenderer.parseQueue,
+            };
         }
     }
 
@@ -249,6 +239,12 @@ class OGC3DTilesLayer extends GeometryLayer {
             });
             view.notifyChange(this);
         });
+
+
+        this._setupCacheAndQueues(view.id);
+        this._setupEvents();
+
+
         // Start loading tileset and tiles
         this.tilesRenderer.update();
     }
