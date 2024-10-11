@@ -5,7 +5,20 @@ import Ellipsoid from 'Core/Math/Ellipsoid';
 describe('Ellipsoid', function () {
     const c1 = new Coordinates('EPSG:4326', 0, 0, 0);
     const ellipsoid = new Ellipsoid();
-    it('geodeticSurfaceNormalCartographic', () => {
+
+    it('geodeticSurfaceNormal', function () {
+        c1.setFromValues(6378137, 0, 0);
+        const v = ellipsoid.geodeticSurfaceNormal(c1);
+        assert.equal(v.x, 1);
+        assert.equal(v.y, 0);
+        assert.equal(v.z, 0);
+        c1.x = -6378137;
+        ellipsoid.geodeticSurfaceNormal(c1, v);
+        assert.equal(v.x, -1);
+    });
+
+    it('geodeticSurfaceNormalCartographic', function () {
+        c1.setFromValues(0, 0, 0);
         const v = ellipsoid.geodeticSurfaceNormalCartographic(c1);
         assert.equal(v.x, 1);
         assert.equal(v.y, 0);
@@ -15,13 +28,14 @@ describe('Ellipsoid', function () {
         assert.equal(v.x, -1);
     });
 
-    it('cartographicToCartesian', () => {
-        c1.x = 0;
+    it('cartographicToCartesian', function () {
+        c1.setFromValues(0, 0, 0);
         const v = ellipsoid.cartographicToCartesian(c1);
         assert.equal(v.x, ellipsoid.size.x);
     });
 
-    it('cartesianToCartographic', () => {
+    it('cartesianToCartographic', function () {
+        c1.setFromValues(0, 0, 0);
         const altitude = 2000;
         const v = ellipsoid.cartographicToCartesian(c1);
         v.x += altitude;
@@ -29,14 +43,15 @@ describe('Ellipsoid', function () {
         assert.equal(c1.z, altitude);
     });
 
-    it('cartographicToCartesianArray', () => {
-        c1.z = 0;
+    it('cartographicToCartesianArray', function () {
+        c1.setFromValues(0, 0, 0);
         const a = ellipsoid.cartographicToCartesianArray([c1]);
         assert.equal(a.length, 1);
         assert.equal(a[0].x, ellipsoid.size.x);
     });
 
-    it('geodesic distance', () => {
+    it('geodesic distance', function () {
+        c1.setFromValues(0, 0, 0);
         const a = ellipsoid.geodesicDistance(c1, c1);
         assert.equal(a, 0);
         const c2 = new Coordinates('EPSG:4326', 180, 0, 0);
