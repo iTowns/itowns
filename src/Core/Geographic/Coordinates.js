@@ -86,8 +86,16 @@ class Coordinates {
         this._normal = new THREE.Vector3();
 
         if (v0.length > 0) {
+            console.warn(
+                'Deprecated Coordinates#constructor(string, number[]),',
+                'use new Coordinates(string).setFromArray(number[]) instead.',
+            );
             this.setFromArray(v0);
         } else if (v0.isVector3 || v0.isCoordinates) {
+            console.warn(
+                'Deprecated Coordinates#constructor(string, Vector3),',
+                'use new Coordinates(string).setFromVector3(Vector3) instead.',
+            );
             this.setFromVector3(v0);
         } else {
             this.setFromValues(v0, v1, v2);
@@ -103,6 +111,7 @@ class Coordinates {
     setCrs(crs) {
         CRS.isValid(crs);
         this.crs = crs;
+        return this;
     }
 
     /**
