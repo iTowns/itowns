@@ -1,25 +1,34 @@
 import assert from 'assert';
+import { Vector3 } from 'three';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Coordinates from 'Core/Geographic/Coordinates';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import EntwinePointTileLayer from 'Layer/EntwinePointTileLayer';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
-import LASParser from 'Parser/LASParser';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
+import LASParser from 'Parser/LASParser';
 import Renderer from './bootstrap';
 
-import ept from '../data/entwine/ept.json';
-import eptHierarchy from '../data/entwine/ept-hierarchy/0-0-0-0.json';
+import eptFile from '../data/entwine/ept.json';
+import eptHierarchyFile from '../data/entwine/ept-hierarchy/0-0-0-0.json';
 
-const baseurl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds';
-const urlEpt = `${baseurl}/entwine/ept.json`;
-const urlEptHierarchy = `${baseurl}/entwine/ept-hierarchy/0-0-0-0.json`;
+// LASParser need to be mocked instead of calling it
+LASParser.enableLazPerf('./examples/libs/laz-perf');
+
+const baseurl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine';
+
+const eptSsAuthority = JSON.parse(eptFile);
+eptSsAuthority.srs = {
+    wkt: 'PROJCS["RGF93 v1 / Lambert-93",GEOGCS["RGF93 v1",DATUM["Reseau_Geodesique_Francais_1993_v1",SPHEROID["GRS 1980",6378137,298.257222101],TOWGS84[0,0,0,0,0,0,0]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4171"]],PROJECTION["Lambert_Conformal_Conic_2SP"],PARAMETER["latitude_of_origin",46.5],PARAMETER["central_meridian",3],PARAMETER["standard_parallel_1",49],PARAMETER["standard_parallel_2",44],PARAMETER["false_easting",700000],PARAMETER["false_northing",6600000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","2154"]]',
+    // wkt: 'PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["X",EAST],AXIS["Y",NORTH],EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs"],AUTHORITY["EPSG","3857"]]',
+};
 
 const resources = {
-    [urlEpt]: ept,
-    [urlEptHierarchy]: eptHierarchy,
+    [`${baseurl}/ept.json`]: JSON.parse(eptFile),
+    'withoutAutority/ept.json': eptSsAuthority,
+    [`${baseurl}/ept-hierarchy/0-0-0-0.json`]: JSON.parse(eptHierarchyFile),
 };
 
 describe('Entwine Point Tile', function () {
@@ -29,15 +38,12 @@ describe('Entwine Point Tile', function () {
 
     before(function () {
         stubFetcherJson = sinon.stub(Fetcher, 'json')
-            .callsFake(url => Promise.resolve(JSON.parse(resources[url])));
+            .callsFake(url => Promise.resolve(resources[url]));
         stubFetcherArrayBuf = sinon.stub(Fetcher, 'arrayBuffer')
             .callsFake(() => Promise.resolve(new ArrayBuffer()));
         // currently no test on data fetched...
 
         LASParser.enableLazPerf('./examples/libs/laz-perf');
-        source = new EntwinePointTileSource({
-            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine',
-        });
     });
 
     after(async function () {
@@ -46,25 +52,44 @@ describe('Entwine Point Tile', function () {
         await LASParser.terminate();
     });
 
-    it('loads the EPT structure', (done) => {
-        source.whenReady
-            .then(() => {
-                done();
-            }).catch(done);
+    describe('Entwine Point Tile Source', function () {
+        describe('data type', function () {
+            // TO DO dataType in [laszip, binary, zstandard]
+        });
+        describe('retrieving crs from srs information', function () {
+            it('No srs authority', (done) => {
+                source = new EntwinePointTileSource({
+                    url: 'withoutAutority',
+                });
+                source.whenReady
+                    .then(() => {
+                        assert.equal(source.crs, 'RGF93 v1 / Lambert-93');
+                        done();
+                    }).catch(done);
+            });
+            it('With srs authority', (done) => {
+                source = new EntwinePointTileSource({
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine',
+                });
+                source.whenReady
+                    .then(() => {
+                        assert.equal(source.crs, 'EPSG:3857');
+                        done();
+                    }).catch(done);
+            });
+        });
     });
 
-    describe('Layer', function () {
+    describe('Entwine Point Tile Layer', function () {
         let renderer;
-        let placement;
         let view;
         let layer;
         let context;
 
         before(function (done) {
             renderer = new Renderer();
-            placement = { coord: new Coordinates('EPSG:4326', 0, 0), range: 250 };
-            view = new GlobeView(renderer.domElement, placement, { renderer });
-            layer = new EntwinePointTileLayer('test', { source }, view);
+            view = new GlobeView(renderer.domElement, {}, { renderer });
+            layer = new EntwinePointTileLayer('test', { source });
 
             context = {
                 camera: view.camera,
@@ -86,14 +111,20 @@ describe('Entwine Point Tile', function () {
             assert.deepStrictEqual(element[0], layer.root);
         });
 
-        it('tries to update on the root and fails', function () {
+        it('tries to update on the root and fails', function (done) {
             layer.update(context, layer, layer.root);
-            assert.strictEqual(layer.root.promise, undefined);
+            layer.root.promise
+                .then((res) => {
+                    assert.ok(res instanceof Error);
+                    done();
+                }).catch(done);
         });
 
         it('tries to update on the root and succeeds', function (done) {
+            const lookAt = new Vector3();
+            const coord = new Coordinates(view.referenceCrs, layer.root.bbox.getCenter(lookAt));
             view.controls.lookAtCoordinate({
-                coord: source.center,
+                coord,
                 range: 250,
             }, false)
                 .then(() => {
@@ -110,12 +141,14 @@ describe('Entwine Point Tile', function () {
         });
     });
 
-    describe('Node', function () {
+    describe('Entwine Point Tile Node', function () {
         let root;
         before(function () {
             const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
             root = new EntwinePointTileNode(0, 0, 0, 0, layer, 4000);
             root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+            root.obb.fromBox3(root.bbox);
+            root.obb.position = root.obb.center;
 
             root.add(new EntwinePointTileNode(1, 0, 0, 0, layer, 3000));
             root.add(new EntwinePointTileNode(1, 0, 0, 1, layer, 3000));
