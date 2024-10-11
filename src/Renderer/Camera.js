@@ -188,7 +188,9 @@ class Camera {
      * @return  {Coordinates}   Coordinates object holding camera's position.
      */
     position(crs) {
-        return new Coordinates(this.crs, this.camera3D.position).as(crs || this.crs);
+        return new Coordinates(this.crs)
+            .setFromVector3(this.camera3D.position)
+            .as(crs || this.crs);
     }
 
     /**

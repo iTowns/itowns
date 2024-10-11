@@ -755,7 +755,7 @@ class GlobeControls extends THREE.EventDispatcher {
         const range = this.getRange(point);
         if (point && range > this.minDistance) {
             return this.lookAtCoordinate({
-                coord: new Coordinates('EPSG:4978', point),
+                coord: new Coordinates('EPSG:4978').setFromVector3(point),
                 range: range * (event.direction === 'out' ? 1 / 0.6 : 0.6),
                 time: 1500,
             });
@@ -1028,7 +1028,9 @@ class GlobeControls extends THREE.EventDispatcher {
      */
 
     getCameraCoordinate() {
-        return new Coordinates('EPSG:4978', this.camera.position).as('EPSG:4326');
+        return new Coordinates('EPSG:4978')
+            .setFromVector3(this.camera.position)
+            .as('EPSG:4326');
     }
 
     /**
@@ -1216,7 +1218,9 @@ class GlobeControls extends THREE.EventDispatcher {
             return;
         }
 
-        return new Coordinates('EPSG:4978', pickedPosition).as('EPSG:4326');
+        return new Coordinates('EPSG:4978')
+            .setFromVector3(pickedPosition)
+            .as('EPSG:4326');
     }
 }
 
