@@ -122,7 +122,8 @@ let screenMeters;
 let id = 0;
 
 /**
- * @property {HTMLElement} domElement - Thhe domElement holding the canvas where the view is displayed
+ * @property {number} id - The id of the view. It's incremented at each new view instance, starting at 0.
+ * @property {HTMLElement} domElement - The domElement holding the canvas where the view is displayed
  * @property {String} referenceCrs - The coordinate reference system of the view
  * @property {MainLoop} mainLoop - itowns mainloop scheduling the operations
  * @property {THREE.Scene} scene - threejs scene of the view
@@ -147,10 +148,10 @@ class View extends THREE.EventDispatcher {
      * var view = itowns.View('EPSG:4326', viewerDiv, { camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC } });
      * var customControls = itowns.THREE.OrbitControls(view.camera3D, viewerDiv);
      *
-     * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
+     * @param {String} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
      * @param {Object} [options] - Optional properties.
-     * @param {object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
+     * @param {Object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
      * @param {MainLoop} [options.mainLoop] - {@link MainLoop} instance to use, otherwise a default one will be constructed
      * @param {WebGLRenderer|Object} [options.renderer] - {@link WebGLRenderer} instance to use, otherwise
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to

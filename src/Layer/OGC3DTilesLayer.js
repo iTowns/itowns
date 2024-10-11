@@ -22,7 +22,12 @@ import PointsMaterial, {
 } from 'Renderer/PointsMaterial';
 
 const _raycaster = new THREE.Raycaster();
-const viewers = [];
+
+// Stores lruCache, downloadQueue and parseQueue for each id of view {@link View}
+// every time a tileset has been added
+// https://github.com/iTowns/itowns/issues/2426
+const viewers = {};
+
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
 export const itownsGLTFLoader = new iGLTFLoader();
@@ -184,10 +189,11 @@ class OGC3DTilesLayer extends GeometryLayer {
 
 
     /**
-     * Sets the lruCache and download and parse queues so they are shared amongst all tilesets.
-    * @param {String} id - viewer id.
-    * @private
-    */
+     * Sets the lruCache and download and parse queues so they are shared amongst
+     * all tilesets from a same {@link View} view.
+     * @param {String} id - viewer id.
+     * @private
+     */
     _setupCacheAndQueues(id) {
         if (viewers[id]) {
             this.tilesRenderer.lruCache = viewers[id].lruCache;
