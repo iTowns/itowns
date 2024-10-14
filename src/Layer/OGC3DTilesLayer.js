@@ -20,6 +20,7 @@ import PointsMaterial, {
     PNTS_SIZE_MODE,
     ClassificationScheme,
 } from 'Renderer/PointsMaterial';
+import { VIEW_EVENTS } from 'Core/View';
 
 const _raycaster = new THREE.Raycaster();
 
@@ -191,10 +192,11 @@ class OGC3DTilesLayer extends GeometryLayer {
     /**
      * Sets the lruCache and download and parse queues so they are shared amongst
      * all tilesets from a same {@link View} view.
-     * @param {String} id - viewer id.
+     * @param {View} view - view associated to this layer.
      * @private
      */
-    _setupCacheAndQueues(id) {
+    _setupCacheAndQueues(view) {
+        const id = view.id;
         if (viewers[id]) {
             this.tilesRenderer.lruCache = viewers[id].lruCache;
             this.tilesRenderer.downloadQueue = viewers[id].downloadQueue;
@@ -205,6 +207,9 @@ class OGC3DTilesLayer extends GeometryLayer {
                 downloadQueue: this.tilesRenderer.downloadQueue,
                 parseQueue: this.tilesRenderer.parseQueue,
             };
+            view.addEventListener(VIEW_EVENTS.REMOVED, (evt) => {
+                delete viewers[evt.target.id];
+            });
         }
     }
 
@@ -247,7 +252,7 @@ class OGC3DTilesLayer extends GeometryLayer {
         });
 
 
-        this._setupCacheAndQueues(view.id);
+        this._setupCacheAndQueues(view);
         this._setupEvents();
 
 

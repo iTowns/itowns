@@ -32,6 +32,7 @@ export const VIEW_EVENTS = {
     INITIALIZED: 'initialized',
     COLOR_LAYERS_ORDER_CHANGED,
     CAMERA_MOVED: 'camera-moved',
+    REMOVED: 'removed',
 };
 
 /**
@@ -297,6 +298,7 @@ class View extends THREE.EventDispatcher {
         }
 
         window.removeEventListener('resize', this._resizeListener);
+        this.dispatchEvent({ type: VIEW_EVENTS.REMOVED });
 
         // controls dispose
         if (this.controls) {
