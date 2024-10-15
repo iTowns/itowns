@@ -16,9 +16,12 @@ export type Buffers = {
     uvs: [Option<Float32Array>, Option<Float32Array>],
 };
 
+type TmpBuffers = Buffers & {
+    skirt: Option<Uint8Array | Uint16Array | Uint32Array>,
+}
+
 function pickUintArraySize(
     highestValue: number,
-    length: number,
 ): Uint8Array | Uint16Array | Uint32Array {
     let picked = null;
 
@@ -32,8 +35,7 @@ function pickUintArraySize(
         throw new Error('Value is too high');
     }
 
-    // @ts-expect-error: this actually works, the linter is tripping
-    return new picked.prototype.constructor(length);
+    return new picked();
 }
 
 function allocateBuffers(
@@ -41,9 +43,9 @@ function allocateBuffers(
     nSeg: number,
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
-): Buffers {
+): TmpBuffers {
     let index: Uint8Array | Uint16Array | Uint32Array | undefined;
-    const bufferIndexSize = getBufferIndexSize(nSeg, params.disableSkirt);
+    const indexBufferSize = getBufferIndexSize(nSeg, params.disableSkirt);
     if (params.buildIndexAndUv_0) {
         // if (nVertex < 2 ** 8) {
         //     index = new Uint8Array(bufferIndexSize);
@@ -52,14 +54,24 @@ function allocateBuffers(
         // } else if (nVertex < 2 ** 32) {
         //     index = new Uint32Array(bufferIndexSize);
         // }
-        index = pickUintArraySize(nVertex, bufferIndexSize);
+        index = pickUintArraySize(nVertex);
     }
 
+    const skirtOffset = index!.BYTES_PER_ELEMENT * indexBufferSize;
+    const skirtLen = index!.BYTES_PER_ELEMENT * 4 * nSeg;
+    const indexBuffer = new ArrayBuffer(
+        // Index
+        (params.buildIndexAndUv_0 ? skirtOffset : 0)
+        // Skirt temporary views
+        + (params.disableSkirt ? 0 : skirtLen),
+    );
+
     return {
-        index,
+        index: index?.constructor(indexBuffer, 0, indexBufferSize),
+        skirt: index?.constructor(indexBuffer, skirtOffset, skirtLen),
         position: new Float32Array(nVertex * 3),
         normal: new Float32Array(nVertex * 3),
-        // 2 UV set per tile: wgs84 (uv[0]) and pm (uv[1])
+        // 2 UV set per tile: wgs84 (uv[0]) and pseudo-mercator (pm, uv[1])
         //    - wgs84: 1 texture per tile because tiles are using wgs84
         //          projection
         //    - pm: use multiple textures per tile.
@@ -102,44 +114,39 @@ export default function computeBuffers(
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
 ) {
-    // XXX: REMOVE !!!!!
-    params.disableSkirt = true;
+    //     n seg, n+1 vert    + <- skirt, n verts per side
+    //    <---------------> / |
+    //    +---+---+---+---+   |
+    //    | / | / | / | / |   |  Vertices:
+    //    +---+---+---+---+ - +     tile = (n + 1)^2
+    //    | / | / | / | / |   |    skirt = 4n
+    //    +---+---+---+---+ - +
+    //    | / | / | / | / |   |  Segments:
+    //    +---+---+---+---+ - +     tile = 2 * n * (n + 1) + n^2
+    //    | / | / | / | / |   |    skirt = 2n * 4
+    //    +---+---+---+---+   |
+    const nSeg: number = Math.max(2, params.segments);
+    const nVertex: number = nSeg + 1;
+    const nTotalVertex: number =
+        nVertex ** 2 + (params.disableSkirt ? 0 : 4 * nSeg);
 
-    const nSeg = params.segments;
-
-    // segments count :
-    // Tile : (nSeg + 1) * (nSeg + 1)
-    // Skirt : 8 * (nSeg - 1)
-    const nVertex: number =
-        (nSeg + 1) ** 2 + (params.disableSkirt ? 0 : 4 * nSeg);
-    if (nVertex > 2 ** 32) {
-        throw new Error('Tile segments count is too big (> 2^32)');
+    // Computer should combust before this happens
+    if (nTotalVertex > 2 ** 32) {
+        throw new Error('Tile segments count is too big');
     }
 
-    const outBuffers: Buffers = allocateBuffers(nVertex, nSeg, builder, params);
+    const outBuffers: TmpBuffers = allocateBuffers(
+        nTotalVertex, nSeg,
+        builder, params,
+    );
+
     const computeUvs: ComputeUvs =
         [params.buildIndexAndUv_0 ? computeUv0 : () => { }];
 
     params = builder.prepare(params);
 
-    const widthSegments: number = Math.max(2, Math.floor(nSeg) || 2);
-    const heightSegments: number = Math.max(2, Math.floor(nSeg) || 2);
-
-    let idVertex: number = 0;
-    const vertices: number[][] = [];
-
-    let skirt: number[] = [];
-    const skirtEnd: number[] = [];
-
-    // TODO: Optimize by using a single arraybuffer.
-    // const byteLen = outBuffers.index.BYTES_PER_ELEMENT;
-    // const verticesBuf =
-    //     new ArrayBuffer(widthSegments * heightSegments * byteLen);
-    // const verticesRow = new Uint8Array(verticesBuf, 0, widthSegments);
-
-    for (let y = 0; y <= heightSegments; y++) {
-        const verticesRow = [];
-        const v = y / heightSegments;
+    for (let y = 0; y <= nSeg; y++) {
+        const v = y / nSeg;
 
         params.projected.y = builder.vProject(v, params.extent);
 
@@ -149,9 +156,9 @@ export default function computeBuffers(
             );
         }
 
-        for (let x = 0; x <= widthSegments; x++) {
-            const u = x / widthSegments;
-            const id_m3 = idVertex * 3;
+        for (let x = 0; x <= nSeg; x++) {
+            const u = x / nSeg;
+            const id_m3 = (y * nSeg + x) * 3;
 
             params.projected.x = builder.uProject(u, params.extent);
 
@@ -162,7 +169,7 @@ export default function computeBuffers(
             vertex.sub(params.center);
 
             // align normal to z axis
-            // HACK: this is dumb
+            // HACK: this check style is not great
             if ('quatNormalToZ' in params) {
                 const quat =
                     params.quatNormalToZ as THREE.Quaternion;
@@ -175,41 +182,47 @@ export default function computeBuffers(
 
             for (const [index, computeUv] of computeUvs.entries()) {
                 if (computeUv !== undefined) {
-                    computeUv(outBuffers.uvs[index]!, idVertex, u, v);
+                    computeUv(outBuffers.uvs[index]!, y * nSeg + x, u, v);
                 }
             }
-
-            if (!params.disableSkirt) {
-                if (y !== 0 && y !== heightSegments) {
-                    if (x === widthSegments) {
-                        skirt.push(idVertex);
-                    } else if (x === 0) {
-                        skirtEnd.push(idVertex);
-                    }
-                }
-            }
-
-            verticesRow.push(idVertex);
-
-            idVertex++;
-        }
-
-        vertices.push(verticesRow);
-
-        if (y === 0) {
-            skirt = skirt.concat(verticesRow);
-        } else if (y === heightSegments) {
-            skirt = skirt.concat(verticesRow.slice().reverse());
         }
     }
 
     if (!params.disableSkirt) {
-        skirt = skirt.concat(skirtEnd.reverse());
+        for (let x = 0; x < nVertex; x++) {
+            //   -------->
+            //   0---1---2
+            //   | / | / |   [0-9] = assign order
+            //   +---+---+
+            //   | / | / |
+            //   +---+---+
+            outBuffers.skirt![x] = x;
+            //   +---+---+
+            //   | / | / |   [0-9] = assign order
+            //   +---+---x   x = skipped for now
+            //   | / | / |
+            //   0---1---2
+            //   <--------
+            outBuffers.skirt![2 * nVertex - 2 + x] = 2 * nVertex - (x + 1);
+        }
+
+        for (let y = 1; y < nVertex - 1; y++) {
+            //   +---+---s |
+            //   | / | / | | o = stored vertices
+            //   +---+---o | s = already stored
+            //   | / | / | |
+            //   +---+---s v
+            outBuffers.skirt![nVertex - 1 + y] = y * nVertex + (nVertex - 1);
+            // ^ s---+---+
+            // | | / | / |   o = stored vertices
+            // | o---+---+   s = already stored
+            // | | / | / |
+            // | s---+---+
+            outBuffers.skirt![3 * nVertex - 3 + y] =
+                nVertex * (nVertex - 1 - y);
+        }
     }
 
-    let idVertex2 = 0;
-
-    // TODO: Maybe allocate vertex arr on the same host buffer as index?
     function bufferizeTri(id: number, va: number, vb: number, vc: number) {
         outBuffers.index![id + 0] = va;
         outBuffers.index![id + 1] = vb;
@@ -217,24 +230,26 @@ export default function computeBuffers(
     }
 
     if (params.buildIndexAndUv_0) {
-        for (let y = 0; y < heightSegments; y++) {
-            for (let x = 0; x < widthSegments; x++) {
-                const v1 = vertices[y][x + 1];
-                const v2 = vertices[y][x];
-                const v3 = vertices[y + 1][x];
-                const v4 = vertices[y + 1][x + 1];
+        for (let y = 0; y < nSeg; y++) {
+            for (let x = 0; x < nSeg; x++) {
+                const v1 = y * nVertex + (x + 1);
+                const v2 = y * nVertex + x;
+                const v3 = (y + 1) * nVertex + x;
+                const v4 = (y + 1) * nVertex + (x + 1);
 
-                bufferizeTri(idVertex2, /**/v4, v2, v1);
-                bufferizeTri(idVertex2 + 3, v4, v3, v2);
-                idVertex2 += 6;
+                const id = (y * nSeg + x) * 6;
+                bufferizeTri(id, /**/v4, v2, v1);
+                bufferizeTri(id + 3, v4, v3, v2);
             }
         }
     }
 
-    const iStart = idVertex;
+    let idVertex = nVertex ** 2;
+    let idVertex2 = 6 * nSeg ** 2;
+    const iStart = nVertex ** 2;
 
     // PERF: Beware skirt's size influences performance
-    // TODO: The size of the skirt is now a ratio of the size of the tile.
+    // INFO: The size of the skirt is now a ratio of the size of the tile.
     // To be perfect it should depend on the real elevation delta but too heavy
     // to compute
     if (!params.disableSkirt) {
