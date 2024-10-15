@@ -265,7 +265,7 @@ class StateControl extends THREE.EventDispatcher {
     touchToState(finger) {
         for (const key of Object.keys(DEFAULT_STATES)) {
             const state = this[key];
-            if (state.enable && finger == state.finger) {
+            if (state.enable && finger === state.finger) {
                 return state;
             }
         }
@@ -396,7 +396,7 @@ class StateControl extends THREE.EventDispatcher {
 
         if (this.enabled && this.ZOOM.enable) {
             viewCoords.copy(this._view.eventToViewCoords(event));
-            this.currentState = this.NONE;
+            this.currentState = this.ZOOM;
             this.dispatchEvent({ type: this.ZOOM._event, delta: event.deltaY, viewCoords });
         }
     }
