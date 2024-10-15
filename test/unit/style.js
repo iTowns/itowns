@@ -1,5 +1,6 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 import Style from 'Core/Style';
+import StyleOptions from 'Core/StyleOptions';
 import assert from 'assert';
 import { TextureLoader } from 'three';
 import Fetcher from 'Provider/Fetcher';
@@ -337,7 +338,7 @@ describe('Style', function () {
                 'label-color': '#eba55f',
                 'icon-color': '#eba55f',
             };
-            const style = Style.setFromProperties(properties, { type: FEATURE_TYPES.POINT });
+            const style = StyleOptions.setFromProperties(properties, { type: FEATURE_TYPES.POINT });
             assert.equal(style.point.radius, 2);
             assert.equal(style.text.color, '#eba55f');
             assert.equal(style.icon.color, '#eba55f');
@@ -347,7 +348,7 @@ describe('Style', function () {
                 fill: '#eba55f',
                 stroke: '#eba55f',
             };
-            const style = Style.setFromProperties(properties, { type: FEATURE_TYPES.POLYGON });
+            const style = StyleOptions.setFromProperties(properties, { type: FEATURE_TYPES.POLYGON });
             assert.equal(style.stroke.color, '#eba55f');
             assert.equal(style.fill.color, '#eba55f');
         });
@@ -359,7 +360,7 @@ describe('Style', function () {
                 const vectorTileLayer = {
                     type: 'fill',
                 };
-                let style = Style.setFromVectorTileLayer(vectorTileLayer);
+                let style = StyleOptions.setFromVectorTileLayer(vectorTileLayer);
                 // origin is undefined
                 assert.equal(style.fill.color, undefined);
                 // origin has stops or expression
@@ -369,7 +370,7 @@ describe('Style', function () {
                     },
                     'fill-outline-color': ['string', 'blue'],
                 };
-                style = Style.setFromVectorTileLayer(vectorTileLayer);
+                style = StyleOptions.setFromVectorTileLayer(vectorTileLayer);
                 assert.equal(style.fill.color, vectorTileLayer.paint['fill-color']);
                 assert.equal(style.stroke.color.constructor.name, 'StyleExpression');
                 assert.equal(style.stroke.color.evaluate().constructor.name, 'Color');
@@ -378,7 +379,7 @@ describe('Style', function () {
                     'fill-color': 'red',
                     'fill-outline-color': '#aabbccdd',
                 };
-                style = Style.setFromVectorTileLayer(vectorTileLayer);
+                style = StyleOptions.setFromVectorTileLayer(vectorTileLayer);
                 assert.equal(style.fill.color, vectorTileLayer.paint['fill-color']);
                 assert.equal(style.fill.opacity, 1);
                 assert.equal(style.stroke.color, '#aabbcc');
@@ -388,7 +389,7 @@ describe('Style', function () {
                     'fill-color': 'rgba(120, 130, 140, 12)',
                     'fill-outline-color': 'hsl(220, 230, 240)',
                 };
-                style = Style.setFromVectorTileLayer(vectorTileLayer);
+                style = StyleOptions.setFromVectorTileLayer(vectorTileLayer);
                 assert.equal(style.fill.color, 'rgb(120,130,140)');
                 assert.equal(style.fill.opacity, 12);
                 assert.equal(style.stroke.color, 'hsl(220,230,240)');
@@ -406,7 +407,7 @@ describe('Style', function () {
                     'fill-outline-color': '#eba55f',
                     'fill-opacity': 0.5,
                 };
-                const style = Style.setFromVectorTileLayer(vectorTileLayer);
+                const style = StyleOptions.setFromVectorTileLayer(vectorTileLayer);
                 // fill-outline-color
                 assert.equal(style.stroke.color, '#eba55f');
                 // fill-opacity
@@ -419,7 +420,7 @@ describe('Style', function () {
                     filler: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
                     source: 'ImgUrl',
                 };
-                const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                const style = StyleOptions.setFromVectorTileLayer(vectorTileLayer, sprites);
                 // fill-pattern
                 assert.equal(style.fill.pattern.id, imgId);
                 assert.equal(style.fill.pattern.cropValues, sprites[imgId]);
@@ -433,7 +434,7 @@ describe('Style', function () {
                     'line-color': '#eba55f',
                 },
             };
-            const style = Style.setFromVectorTileLayer(vectorTileLayer);
+            const style = StyleOptions.setFromVectorTileLayer(vectorTileLayer);
             assert.equal(style.stroke.color, '#eba55f');
         });
 
@@ -444,7 +445,7 @@ describe('Style', function () {
                     'circle-color': '#eba55f',
                 },
             };
-            const style = Style.setFromVectorTileLayer(vectorTileLayer);
+            const style = StyleOptions.setFromVectorTileLayer(vectorTileLayer);
             assert.equal(style.point.color, '#eba55f');
         });
 
@@ -457,7 +458,7 @@ describe('Style', function () {
                     'symbol-z-order': 'auto',
                     'text-justify': 'center',
                 };
-                const style = Style.setFromVectorTileLayer(vectorTileLayer);
+                const style = StyleOptions.setFromVectorTileLayer(vectorTileLayer);
                 // symbol-z-order
                 assert.equal(style.text.zOrder, 'Y');
                 // text-justify
@@ -474,7 +475,7 @@ describe('Style', function () {
                         [imgId]: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
                         source: 'ImgUrl',
                     };
-                    const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                    const style = StyleOptions.setFromVectorTileLayer(vectorTileLayer, sprites);
                     assert.equal(style.icon.id, vectorTileLayer.layout['icon-image']);
                     assert.equal(style.icon.cropValues, sprites[vectorTileLayer.layout['icon-image']]);
                 });
@@ -488,7 +489,7 @@ describe('Style', function () {
                         [imgId]: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
                         source: 'ImgUrl',
                     };
-                    const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                    const style = StyleOptions.setFromVectorTileLayer(vectorTileLayer, sprites);
                     assert.equal(style.icon.id, vectorTileLayer.layout['icon-image']);
                     assert.equal(typeof style.icon.cropValues, 'function');
                 });
@@ -505,7 +506,7 @@ describe('Style', function () {
                         [imgId]: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
                         source: 'ImgUrl',
                     };
-                    const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                    const style = StyleOptions.setFromVectorTileLayer(vectorTileLayer, sprites);
                     assert.equal(style.icon.id, vectorTileLayer.layout['icon-image']);
                     assert.equal(style.icon.cropValues.stops[0][1], sprites[vectorTileLayer.layout['icon-image'].stops[0][1]]);
                 });
@@ -522,7 +523,7 @@ describe('Style', function () {
                         [imgId]: { x: 0, y: 0, width: 0, height: 0, pixelRatio: 1 },
                         source: 'ImgUrl',
                     };
-                    const style = Style.setFromVectorTileLayer(vectorTileLayer, sprites);
+                    const style = StyleOptions.setFromVectorTileLayer(vectorTileLayer, sprites);
                     assert.equal(style.icon.id, vectorTileLayer.layout['icon-image']);
                     assert.equal(typeof style.icon.cropValues.stops[0][1], 'function');
                 });

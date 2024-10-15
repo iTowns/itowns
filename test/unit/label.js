@@ -2,6 +2,7 @@ import assert from 'assert';
 import * as THREE from 'three';
 import Label from 'Core/Label';
 import Style from 'Core/Style';
+import StyleOptions from 'Core/StyleOptions';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
@@ -64,7 +65,7 @@ describe('Label', function () {
     };
 
     before('init style', function () {
-        style = new Style(Style.setFromVectorTileLayer(layerVT, sprites));
+        style = new Style(StyleOptions.setFromVectorTileLayer(layerVT, sprites));
     });
 
     it('should throw errors for bad Label construction', function () {
