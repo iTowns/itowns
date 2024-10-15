@@ -32,7 +32,7 @@ export const VIEW_EVENTS = {
     INITIALIZED: 'initialized',
     COLOR_LAYERS_ORDER_CHANGED,
     CAMERA_MOVED: 'camera-moved',
-    REMOVED: 'removed',
+    DISPOSED: 'disposed',
 };
 
 /**
@@ -298,7 +298,6 @@ class View extends THREE.EventDispatcher {
         }
 
         window.removeEventListener('resize', this._resizeListener);
-        this.dispatchEvent({ type: VIEW_EVENTS.REMOVED });
 
         // controls dispose
         if (this.controls) {
@@ -309,8 +308,6 @@ class View extends THREE.EventDispatcher {
         }
         // remove alls frameRequester
         this.removeAllFrameRequesters();
-        // remove alls events
-        this.removeAllEvents();
         // remove all layers
         const layers = this.getLayers(l => !l.isTiledGeometryLayer && !l.isAtmosphere);
         for (const layer of layers) {
@@ -327,6 +324,9 @@ class View extends THREE.EventDispatcher {
         viewers.splice(id, 1);
         // Remove remaining objects in the scene (e.g. helpers, debug, etc.)
         this.scene.traverse(ObjectRemovalHelper.cleanup);
+        this.dispatchEvent({ type: VIEW_EVENTS.DISPOSED });
+        // remove alls events
+        this.removeAllEvents();
     }
 
     /**

@@ -207,7 +207,7 @@ class OGC3DTilesLayer extends GeometryLayer {
                 downloadQueue: this.tilesRenderer.downloadQueue,
                 parseQueue: this.tilesRenderer.parseQueue,
             };
-            view.addEventListener(VIEW_EVENTS.REMOVED, (evt) => {
+            view.addEventListener(VIEW_EVENTS.DISPOSED, (evt) => {
                 delete viewers[evt.target.id];
             });
         }
