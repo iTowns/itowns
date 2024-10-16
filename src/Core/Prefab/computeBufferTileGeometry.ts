@@ -17,12 +17,13 @@ export type Buffers = {
 };
 
 type TmpBuffers = Buffers & {
+    indexBuffer: ArrayBuffer,
     skirt: Option<Uint8Array | Uint16Array | Uint32Array>,
 }
 
 function pickUintArraySize(
     highestValue: number,
-): Uint8Array | Uint16Array | Uint32Array {
+): Uint8ArrayConstructor | Uint16ArrayConstructor | Uint32ArrayConstructor {
     let picked = null;
 
     if (highestValue < 2 ** 8) {
@@ -35,8 +36,10 @@ function pickUintArraySize(
         throw new Error('Value is too high');
     }
 
-    return new picked();
+    return picked;
 }
+
+let _FIRST = true;
 
 function allocateBuffers(
     nVertex: number,
@@ -44,21 +47,13 @@ function allocateBuffers(
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
 ): TmpBuffers {
-    let index: Uint8Array | Uint16Array | Uint32Array | undefined;
     const indexBufferSize = getBufferIndexSize(nSeg, params.disableSkirt);
-    if (params.buildIndexAndUv_0) {
-        // if (nVertex < 2 ** 8) {
-        //     index = new Uint8Array(bufferIndexSize);
-        // } else if (nVertex < 2 ** 16) {
-        //     index = new Uint16Array(bufferIndexSize);
-        // } else if (nVertex < 2 ** 32) {
-        //     index = new Uint32Array(bufferIndexSize);
-        // }
-        index = pickUintArraySize(nVertex);
-    }
+    const indexConstructor = params.buildIndexAndUv_0
+        ? pickUintArraySize(nVertex)
+        : undefined;
 
-    const skirtOffset = index!.BYTES_PER_ELEMENT * indexBufferSize;
-    const skirtLen = index!.BYTES_PER_ELEMENT * 4 * nSeg;
+    const skirtOffset = indexConstructor!.BYTES_PER_ELEMENT * indexBufferSize;
+    const skirtLen = indexConstructor!.BYTES_PER_ELEMENT * 4 * nSeg;
     const indexBuffer = new ArrayBuffer(
         // Index
         (params.buildIndexAndUv_0 ? skirtOffset : 0)
@@ -67,8 +62,13 @@ function allocateBuffers(
     );
 
     return {
-        index: index?.constructor(indexBuffer, 0, indexBufferSize),
-        skirt: index?.constructor(indexBuffer, skirtOffset, skirtLen),
+        indexBuffer,
+        index: indexConstructor !== undefined
+            ? new indexConstructor(indexBuffer, 0, indexBufferSize)
+            : undefined,
+        skirt: !params.disableSkirt && indexConstructor !== undefined
+            ? new indexConstructor(indexBuffer, skirtOffset, 4 * nSeg)
+            : undefined,
         position: new Float32Array(nVertex * 3),
         normal: new Float32Array(nVertex * 3),
         // 2 UV set per tile: wgs84 (uv[0]) and pseudo-mercator (pm, uv[1])
@@ -127,8 +127,9 @@ export default function computeBuffers(
     //    +---+---+---+---+   |
     const nSeg: number = Math.max(2, params.segments);
     const nVertex: number = nSeg + 1;
-    const nTotalVertex: number =
-        nVertex ** 2 + (params.disableSkirt ? 0 : 4 * nSeg);
+    const nTileVertex: number = nVertex ** 2;
+    const nSkirtVertex: number = params.disableSkirt ? 0 : 4 * nSeg;
+    const nTotalVertex: number = nTileVertex + nSkirtVertex;
 
     // Computer should combust before this happens
     if (nTotalVertex > 2 ** 32) {
@@ -158,7 +159,7 @@ export default function computeBuffers(
 
         for (let x = 0; x <= nSeg; x++) {
             const u = x / nSeg;
-            const id_m3 = (y * nSeg + x) * 3;
+            const id_m3 = (y * nVertex + x) * 3;
 
             params.projected.x = builder.uProject(u, params.extent);
 
@@ -182,12 +183,13 @@ export default function computeBuffers(
 
             for (const [index, computeUv] of computeUvs.entries()) {
                 if (computeUv !== undefined) {
-                    computeUv(outBuffers.uvs[index]!, y * nSeg + x, u, v);
+                    computeUv(outBuffers.uvs[index]!, y * nVertex + x, u, v);
                 }
             }
         }
     }
 
+    // Fill skirt index buffer
     if (!params.disableSkirt) {
         for (let x = 0; x < nVertex; x++) {
             //   -------->
@@ -244,9 +246,16 @@ export default function computeBuffers(
         }
     }
 
-    let idVertex = nVertex ** 2;
-    let idVertex2 = 6 * nSeg ** 2;
-    const iStart = nVertex ** 2;
+    let idVertex2 = 6 * (nVertex - 1) ** 2;
+
+    // XXX: REMOVE THIS (and the variable, obviously)
+    if (_FIRST) {
+        console.log('vertices:', outBuffers.index);
+        console.log('resolution:', nSeg);
+        console.log('skirt:', outBuffers.skirt);
+        console.log('idVertex2', idVertex2);
+        _FIRST = false;
+    }
 
     // PERF: Beware skirt's size influences performance
     // INFO: The size of the skirt is now a ratio of the size of the tile.
@@ -269,15 +278,15 @@ export default function computeBuffers(
                 bufferizeTri(id, v1, v3, v4);
                 return id + 6;
             },
-            uv: (buf: Option<Float32Array>, id: number) => {
-                buf![idVertex * 2 + 0] = buf![id * 2 + 0];
-                buf![idVertex * 2 + 1] = buf![id * 2 + 1];
+            uv: (buf: Option<Float32Array>, idTo: number, idFrom: number) => {
+                buf![(nTileVertex + idTo) * 2 + 0] = buf![idFrom * 2 + 0];
+                buf![(nTileVertex + idTo) * 2 + 1] = buf![idFrom * 2 + 1];
             },
         } : { index: () => { }, uv: () => { } };
 
-        for (let i = 0; i < skirt.length; i++) {
-            const id = skirt[i];
-            const id_m3 = idVertex * 3;
+        for (let i = 0; i < outBuffers.skirt!.length; i++) {
+            const id = outBuffers.skirt![i];
+            const id_m3 = (nTileVertex + i) * 3;
             const id2_m3 = id * 3;
 
             outBuffers.position[id_m3 + 0] = outBuffers.position[id2_m3 + 0]
@@ -291,23 +300,21 @@ export default function computeBuffers(
             outBuffers.normal[id_m3 + 1] = outBuffers.normal[id2_m3 + 1];
             outBuffers.normal[id_m3 + 2] = outBuffers.normal[id2_m3 + 2];
 
-            buildSkirt.uv(outBuffers.uvs[0], id);
+            buildSkirt.uv(outBuffers.uvs[0], nTileVertex + i, id);
 
             if (outBuffers.uvs[1] !== undefined) {
-                outBuffers.uvs[1][idVertex] = outBuffers.uvs[1][id];
+                outBuffers.uvs[1][nTileVertex + i] = outBuffers.uvs[1][id];
             }
 
-            const idf = (i + 1) % skirt.length;
+            const idf = (i + 1) % outBuffers.skirt!.length;
 
             const v1 = id;
-            const v2 = idVertex;
-            const v3 = (idf === 0) ? iStart : idVertex + 1;
-            const v4 = skirt[idf];
+            const v2 = nTileVertex + i;
+            const v3 = (idf === 0) ? nVertex ** 2 : nTileVertex + i;
+            const v4 = outBuffers.skirt![idf];
 
             idVertex2 = buildSkirt.index(idVertex2, v1, v2, v3, v4)
                 ?? idVertex2;
-
-            idVertex++;
         }
     }
 
