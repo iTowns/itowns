@@ -1,0 +1,116 @@
+import * as THREE from 'three';
+import Coordinates from 'Core/Geographic/Coordinates';
+import Extent from 'Core/Geographic/Extent';
+import {
+    Projected,
+    ShareableExtent,
+    TileBuilder,
+    TileBuilderParams,
+} from '../TileBuilder';
+
+const quaternion = new THREE.Quaternion();
+const center = new THREE.Vector3();
+
+type Transform = {
+    coords: Coordinates,
+    position: THREE.Vector3,
+    normal: THREE.Vector3,
+};
+
+export interface PlanarTileBuilderParams extends TileBuilderParams {
+    crs: string;
+    uvCount?: number;
+    nbRow: number;
+}
+
+class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
+    private _uvCount: number;
+    private _transform: Transform;
+    private _crs: string;
+
+    constructor(options: {
+        projection?: string,
+        crs: string,
+        uvCount?: number,
+    }) {
+        /* istanbul ignore next */
+        if (options.projection) {
+            console.warn('PlanarTileBuilder projection parameter is deprecated,'
+                + ' use crs instead.');
+            options.crs ??= options.projection;
+        }
+
+        this._crs = options.crs;
+
+        this._transform = {
+            coords: new Coordinates('EPSG:4326', 0, 0),
+            position: new THREE.Vector3(),
+            normal: new THREE.Vector3(0, 0, 1),
+        };
+
+        this._uvCount = options.uvCount ?? 1;
+    }
+
+    public get uvCount(): number {
+        return this._uvCount;
+    }
+
+    public get crs(): string {
+        return this._crs;
+    }
+
+    // prepare params
+    // init projected object -> params.projected
+    prepare(params: TileBuilderParams): PlanarTileBuilderParams {
+        const newParams = params as PlanarTileBuilderParams;
+        newParams.nbRow = 2 ** (params.zoom + 1.0);
+        newParams.projected = new Projected();
+        return newParams;
+    }
+
+    // get center tile in cartesian 3D
+    center(extent: Extent): THREE.Vector3 {
+        extent.center(this._transform.coords);
+        center.set(this._transform.coords.x, this._transform.coords.y, 0);
+        return center;
+    }
+
+    // set position 3D cartesian
+    vertexPosition(position: THREE.Vector2): THREE.Vector3 {
+        this._transform.position.set(position.x, position.y, 0);
+        return this._transform.position;
+    }
+
+    // get normal for last vertex
+    vertexNormal(): THREE.Vector3 {
+        return this._transform.normal;
+    }
+
+    // coord u tile to projected
+    uProject(u: number, extent: Extent): number {
+        return extent.west + u * (extent.east - extent.west);
+    }
+
+    // coord v tile to projected
+    vProject(v: number, extent: Extent): number {
+        return extent.south + v * (extent.north - extent.south);
+    }
+
+    computeShareableExtent(extent: Extent): ShareableExtent {
+        // compute shareable extent to pool the geometries
+        // the geometry in common extent is identical to the existing input
+        // with a translation
+        return {
+            shareableExtent: new Extent(extent.crs, {
+                west: 0,
+                east: Math.abs(extent.west - extent.east),
+                south: 0,
+                north: Math.abs(extent.north - extent.south),
+            }),
+            quaternion,
+            position: this.center(extent).clone(),
+        };
+    }
+}
+
+export default PlanarTileBuilder;
