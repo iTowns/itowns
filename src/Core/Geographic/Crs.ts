@@ -1,5 +1,7 @@
 import proj4 from 'proj4';
 
+import type { ProjectionDefinition } from 'proj4';
+
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
 /**
@@ -50,10 +52,14 @@ function isGeocentric(crs: ProjectionLike) {
     return !projection ? false : projection.projName == 'geocent';
 }
 
-function _unitFromProj4Unit(projunit: string) {
-    if (projunit === 'degrees') {
+function unitFromProj4Unit(proj: ProjectionDefinition) {
+    if (proj.units === 'degrees') {
         return UNIT.DEGREE;
-    } else if (projunit === 'm') {
+    } else if (proj.units === 'm') {
+        return UNIT.METER;
+    } else if (proj.units === undefined && proj.to_meter === undefined) {
+        // See https://proj.org/en/9.4/usage/projections.html [17/10/2024]
+        // > The default unit for projected coordinates is the meter.
         return UNIT.METER;
     } else {
         return undefined;
@@ -62,26 +68,11 @@ function _unitFromProj4Unit(projunit: string) {
 
 function toUnit(crs: ProjectionLike) {
     mustBeString(crs);
-    switch (crs) {
-        case 'EPSG:4326' : return UNIT.DEGREE;
-        case 'EPSG:4978' : return UNIT.METER;
-        default: {
-            const p = proj4.defs(formatToEPSG(crs));
-            if (!p?.units) {
-                return undefined;
-            }
-            return _unitFromProj4Unit(p.units);
-        }
+    const p = proj4.defs(formatToEPSG(crs));
+    if (!p) {
+        return undefined;
     }
-}
-
-function toUnitWithError(crs: ProjectionLike) {
-    mustBeString(crs);
-    const u = toUnit(crs);
-    if (u === undefined) {
-        throw new Error(`No unit found for crs: '${crs}'`);
-    }
-    return u;
+    return unitFromProj4Unit(p);
 }
 
 /**
@@ -101,7 +92,13 @@ export default {
      * @throws {@link Error} if the CRS is not valid.
      */
     isValid(crs: ProjectionLike) {
-        toUnitWithError(crs);
+        const proj = proj4.defs(crs);
+        if (!proj) {
+            throw new Error(`Undefined crs '${crs}'. Add it with proj4.defs('${crs}', string)`);
+        }
+        if (!unitFromProj4Unit(proj)) {
+            throw new Error(`No valid unit found for crs '${crs}', found ${proj.units}`);
+        }
     },
 
     /**
@@ -111,7 +108,7 @@ export default {
      * @throws {@link Error} if the CRS is not valid.
      */
     isGeographic(crs: ProjectionLike) {
-        return (toUnitWithError(crs) == UNIT.DEGREE);
+        return (toUnit(crs) == UNIT.DEGREE);
     },
 
     /**
