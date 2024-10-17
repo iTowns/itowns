@@ -317,6 +317,10 @@ export default function computeBuffers(
                 if (v4 == 0) {
                     console.log('idf:', idf);
                 }
+                if (i == outBuffers.skirt!.length - 1) {
+                    console.log('BREAK');
+                    console.log(outBuffers.index);
+                }
             }
 
             idVertex2 = buildSkirt.index(idVertex2, v1, v2, v3, v4)
