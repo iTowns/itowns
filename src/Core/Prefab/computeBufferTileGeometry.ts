@@ -39,7 +39,7 @@ function pickUintArraySize(
     return picked;
 }
 
-let _FIRST = true;
+let _FIRST = 0;
 
 function allocateBuffers(
     nVertex: number,
@@ -249,12 +249,11 @@ export default function computeBuffers(
     let idVertex2 = 6 * (nVertex - 1) ** 2;
 
     // XXX: REMOVE THIS (and the variable, obviously)
-    if (_FIRST) {
+    if (_FIRST == 0) {
         console.log('vertices:', outBuffers.index);
         console.log('resolution:', nSeg);
         console.log('skirt:', outBuffers.skirt);
         console.log('idVertex2', idVertex2);
-        _FIRST = false;
     }
 
     // PERF: Beware skirt's size influences performance
@@ -275,7 +274,7 @@ export default function computeBuffers(
                 v1: number, v2: number, v3: number, v4: number,
             ) => {
                 bufferizeTri(id, v1, v2, v3);
-                bufferizeTri(id, v1, v3, v4);
+                bufferizeTri(id + 3, v1, v3, v4);
                 return id + 6;
             },
             uv: (buf: Option<Float32Array>, idTo: number, idFrom: number) => {
@@ -310,12 +309,22 @@ export default function computeBuffers(
 
             const v1 = id;
             const v2 = nTileVertex + i;
-            const v3 = (idf === 0) ? nVertex ** 2 : nTileVertex + i;
+            const v3 = (idf === 0) ? nVertex ** 2 : nTileVertex + i + 1;
             const v4 = outBuffers.skirt![idf];
+
+            if (_FIRST < nSeg) {
+                console.log('v[1-4]:', [v1, v2, v3, v4]);
+                if (v4 == 0) {
+                    console.log('idf:', idf);
+                }
+            }
 
             idVertex2 = buildSkirt.index(idVertex2, v1, v2, v3, v4)
                 ?? idVertex2;
         }
+
+
+        _FIRST += outBuffers.skirt!.length;
     }
 
     return outBuffers;
