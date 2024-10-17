@@ -34,11 +34,19 @@ describe('CRS assertions', function () {
         assert.strictEqual(CRS.toUnit('EPSG:7133'), CRS.UNIT.DEGREE);
         assert.strictEqual(CRS.toUnit('EPSG:4978'), CRS.UNIT.METER);
         assert.strictEqual(CRS.toUnit('EPSG:3857'), CRS.UNIT.METER);
+        assert.strictEqual(CRS.toUnit('EPSG:INVALID'), undefined);
     });
 
     it('should check if the CRS is EPSG:4326', function () {
         assert.ok(CRS.is4326('EPSG:4326'));
         assert.ok(!CRS.is4326('EPSG:3857'));
+    });
+
+    it('should assert that the CRS is geocentric', function () {
+        assert.ok(!CRS.isGeocentric('EPSG:4326'));
+        assert.ok(!CRS.isGeocentric('EPSG:7133'));
+        assert.ok(CRS.isGeocentric('EPSG:4978'));
+        assert.ok(!CRS.isGeocentric('EPSG:3857'));
     });
 
     it('should return a reasonnable epsilon', function () {
