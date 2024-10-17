@@ -3,7 +3,7 @@ import proj4 from 'proj4';
 import CRS from 'Core/Geographic/Crs';
 
 proj4.defs('EPSG:7133', '+proj=longlat +ellps=GRS80 +no_defs +units=degrees');
-proj4.defs('EPSG:INVALID', '+no_defs');
+proj4.defs('EPSG:INVALID', '+units=invalid +no_defs');
 
 describe('CRS assertions', function () {
     it('should assert that the CRS is valid', function () {
