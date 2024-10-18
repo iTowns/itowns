@@ -32,6 +32,7 @@ export const VIEW_EVENTS = {
     INITIALIZED: 'initialized',
     COLOR_LAYERS_ORDER_CHANGED,
     CAMERA_MOVED: 'camera-moved',
+    DISPOSED: 'disposed',
 };
 
 /**
@@ -119,8 +120,11 @@ const viewers = [];
 // Size of the camera frustrum, in meters
 let screenMeters;
 
+let id = 0;
+
 /**
- * @property {HTMLElement} domElement - Thhe domElement holding the canvas where the view is displayed
+ * @property {number} id - The id of the view. It's incremented at each new view instance, starting at 0.
+ * @property {HTMLElement} domElement - The domElement holding the canvas where the view is displayed
  * @property {String} referenceCrs - The coordinate reference system of the view
  * @property {MainLoop} mainLoop - itowns mainloop scheduling the operations
  * @property {THREE.Scene} scene - threejs scene of the view
@@ -145,10 +149,10 @@ class View extends THREE.EventDispatcher {
      * var view = itowns.View('EPSG:4326', viewerDiv, { camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC } });
      * var customControls = itowns.THREE.OrbitControls(view.camera3D, viewerDiv);
      *
-     * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
+     * @param {String} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
      * @param {Object} [options] - Optional properties.
-     * @param {object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
+     * @param {Object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
      * @param {MainLoop} [options.mainLoop] - {@link MainLoop} instance to use, otherwise a default one will be constructed
      * @param {WebGLRenderer|Object} [options.renderer] - {@link WebGLRenderer} instance to use, otherwise
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
@@ -169,6 +173,7 @@ class View extends THREE.EventDispatcher {
         super();
 
         this.domElement = viewerDiv;
+        this.id = id++;
 
         this.referenceCrs = crs;
 
@@ -303,8 +308,6 @@ class View extends THREE.EventDispatcher {
         }
         // remove alls frameRequester
         this.removeAllFrameRequesters();
-        // remove alls events
-        this.removeAllEvents();
         // remove all layers
         const layers = this.getLayers(l => !l.isTiledGeometryLayer && !l.isAtmosphere);
         for (const layer of layers) {
@@ -321,6 +324,9 @@ class View extends THREE.EventDispatcher {
         viewers.splice(id, 1);
         // Remove remaining objects in the scene (e.g. helpers, debug, etc.)
         this.scene.traverse(ObjectRemovalHelper.cleanup);
+        this.dispatchEvent({ type: VIEW_EVENTS.DISPOSED });
+        // remove alls events
+        this.removeAllEvents();
     }
 
     /**
