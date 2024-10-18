@@ -104,14 +104,6 @@ describe('Extent', function () {
         assert.equal(dimensions.y, 20);
     });
 
-    it('should return the same planar dimensions with deprecated dimensions method', function () {
-        const extent = new Extent('EPSG:4326', -15, 10, -10, 10);
-        const dimensions = extent.planarDimensions();
-        const dimensions_2 = extent.dimensions();
-        assert.equal(dimensions.x, dimensions_2.x);
-        assert.equal(dimensions.y, dimensions_2.y);
-    });
-
     it('should return the correct earth euclidean dimensions', function () {
         const extent = new Extent('EPSG:4326', 3, 3.01, 46, 46.01);
         const dimensions = new Vector2();
