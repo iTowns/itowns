@@ -47,7 +47,7 @@ function zoomToSphere(view, tile, sphere) {
     const distance = radius * Math.tan(fov * 2);
 
     return {
-        coord: new Coordinates('EPSG:4978', center),
+        coord: new Coordinates('EPSG:4978').setFromVector3(center),
         range: distance + radius,
     };
 }

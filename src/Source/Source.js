@@ -126,7 +126,7 @@ class Source extends InformationsData {
         this.whenReady = Promise.resolve();
         this._featuresCaches = {};
         if (source.extent && !(source.extent.isExtent)) {
-            this.extent = new Extent(this.crs, source.extent);
+            this.extent = new Extent(this.crs).setFromExtent(source.extent);
         } else {
             this.extent = source.extent;
         }
