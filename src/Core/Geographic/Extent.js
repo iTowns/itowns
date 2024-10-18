@@ -336,6 +336,36 @@ class Extent {
     }
 
     /**
+     * Set this extent `west` property to `array[offset + 0]`, `east` property
+     * to `array[offset + 1]`, `south` property to `array[offset + 2]` and
+     * `north` property to `array[offset + 3]`.
+     * @param {number[]} array - the source array
+     * @param {number} [offset=0] - offset into the array. Default is 0.
+     * @returns {this}
+     */
+    setFromArray(array, offset = 0) {
+        this.west = array[offset];
+        this.east = array[offset + 1];
+        this.south = array[offset + 2];
+        this.north = array[offset + 3];
+        return this;
+    }
+
+    /**
+     * Set this extent `west`, `east`, `south` and `north` properties from an
+     * `extent` bounds.
+     * @param {Object} extent - the source extent
+     * @returns {this}
+     */
+    setFromExtent(extent) {
+        this.west = extent.west;
+        this.east = extent.east;
+        this.south = extent.south;
+        this.north = extent.north;
+        return this;
+    }
+
+    /**
      * Copy to this extent to input extent.
      * @param {Extent} extent
      * @return {Extent} copied extent
