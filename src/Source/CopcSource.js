@@ -1,9 +1,8 @@
+import proj4 from 'proj4';
 import { Binary, Info, Las } from 'copc';
-import Extent from 'Core/Geographic/Extent';
 import Fetcher from 'Provider/Fetcher';
 import LASParser from 'Parser/LASParser';
 import Source from 'Source/Source';
-import * as THREE from 'three';
 
 /**
  * @param {function(number, number):Promise<Uint8Array>} fetcher
@@ -102,13 +101,21 @@ class CopcSource extends Source {
             this.header = metadata.header;
             this.info = metadata.info;
             this.eb = metadata.eb;
-            // TODO: use wkt definition in `metadata.wkt` to infer/define crs
-            this.crs = config.crs || 'EPSG:4326';
 
-            const bbox = new THREE.Box3();
-            bbox.min.fromArray(this.info.cube, 0);
-            bbox.max.fromArray(this.info.cube, 3);
-            this.extent = Extent.fromBox3(this.crs, bbox);
+            proj4.defs('unknown', metadata.wkt);
+            let projCS;
+
+            if (proj4.defs('unknown').type === 'COMPD_CS') {
+                console.warn('CopcSource: compound coordinate system is not yet supported.');
+                projCS = proj4.defs('unknown').PROJCS;
+            } else {
+                projCS = proj4.defs('unknown');
+            }
+
+            this.crs = projCS.title || projCS.name || 'EPSG:4326';
+            if (!proj4.defs(this.crs)) {
+                proj4.defs(this.crs, projCS);
+            }
 
             return this;
         });
