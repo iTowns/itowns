@@ -128,20 +128,6 @@ class Extent {
     }
 
     /**
-    * Returns the dimension of the extent, in a `THREE.Vector2`.
-    *
-    * @param {THREE.Vector2} [target] - The target to assign the result in.
-    *
-    * @return {THREE.Vector2}
-    */
-    dimensions(target = new THREE.Vector2()) {
-        console.warn('Extent.dimensions is deprecated, use planarDimensions, geodeticDimensions or spatialEuclideanDimensions');
-        target.x = Math.abs(this.east - this.west);
-        target.y = Math.abs(this.north - this.south);
-        return target;
-    }
-
-    /**
      *  Planar dimensions are two planar distances west/east and south/north.
      *  Planar distance straight-line Euclidean distance calculated in a 2D Cartesian coordinate system.
      *
