@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import Feature2Texture from 'Converter/Feature2Texture';
 import Extent from 'Core/Geographic/Extent';
 
-const extentTexture = new Extent('EPSG:4326', [0, 0, 0, 0]);
+const extentTexture = new Extent('EPSG:4326');
 
 const textureLayer = (texture, layer) => {
     texture.generateMipmaps = false;

@@ -44,7 +44,7 @@ class Extent {
      * @param {number} [v2] south value
      * @param {number} [v3] north value
      */
-    constructor(crs, v0, v1, v2, v3) {
+    constructor(crs, v0 = 0, v1 = 0, v2 = 0, v3 = 0) {
         if (CRS.isGeocentric(crs)) {
             throw new Error(`${crs} is a geocentric projection, it doesn't make sense with a geographical extent`);
         }
@@ -76,7 +76,7 @@ class Extent {
      */
     as(crs, target) {
         CRS.isValid(crs);
-        target = target || new Extent('EPSG:4326', [0, 0, 0, 0]);
+        target = target || new Extent('EPSG:4326');
         if (this.crs != crs) {
             // Compute min/max in x/y by projecting 8 cardinal points,
             // and then taking the min/max of each coordinates.
@@ -272,7 +272,7 @@ class Extent {
      */
     intersect(extent) {
         if (!this.intersectsExtent(extent)) {
-            return new Extent(this.crs, 0, 0, 0, 0);
+            return new Extent(this.crs);
         }
         if (extent.crs != this.crs) {
             extent = extent.as(this.crs, _extent);
@@ -302,29 +302,18 @@ class Extent {
         if (v0 == undefined) {
             throw new Error('No values to set in the extent');
         }
-        if (v0.isExtent) {
-            v1 = v0.east;
-            v2 = v0.south;
-            v3 = v0.north;
-            v0 = v0.west;
-        }
-
-        if (v0.isCoordinates) {
-            // seem never used
-            this.west = v0.x;
-            this.east = v1.x;
-            this.south = v0.y;
-            this.north = v1.y;
-        } else if (v0.west !== undefined) {
-            this.west = v0.west;
-            this.east = v0.east;
-            this.south = v0.south;
-            this.north = v0.north;
+        if (v0.west !== undefined) {
+            console.warn(
+                'Deprecated Extent#constructor(string, Extent) and Extent#set(Extent),',
+                'use new Extent(string).setFromExtent(Extent) instead.',
+            );
+            this.setFromExtent(v0);
         } else if (v0.length == 4) {
-            this.west = v0[0];
-            this.east = v0[1];
-            this.south = v0[2];
-            this.north = v0[3];
+            console.warn(
+                'Deprecated Extent#constructor(string, number[]) and Extent#set(number[]),',
+                'use new Extent(string).setFromArray(number[]) instead.',
+            );
+            this.setFromArray(v0);
         } else if (v3 !== undefined) {
             this.west = v0;
             this.east = v1;
@@ -372,7 +361,7 @@ class Extent {
      */
     copy(extent) {
         this.crs = extent.crs;
-        return this.set(extent);
+        return this.setFromExtent(extent);
     }
 
     /**
@@ -463,7 +452,7 @@ class Extent {
             cNorthEast.setFromVector3(box.max).as(crs, cNorthEast).toVector3(box.max);
         }
 
-        return new Extent(crs, {
+        return new Extent(crs).setFromExtent({
             west: box.min.x,
             east: box.max.x,
             south: box.min.y,
@@ -576,6 +565,6 @@ class Extent {
     }
 }
 
-_extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
+_extent = new Extent('EPSG:4326');
 
 export default Extent;
