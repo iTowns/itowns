@@ -18,8 +18,8 @@ function _rowColfromParent(/** @type {Tile} */ tile, /** @type {number} */ zoom)
     return r;
 }
 
-const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
-const _extent2 = new Extent('EPSG:4326', [0, 0, 0, 0]);
+const _extent = new Extent('EPSG:4326');
+const _extent2 = new Extent('EPSG:4326');
 
 const _c = new Coordinates('EPSG:4326', 0, 0);
 
@@ -57,7 +57,7 @@ class Tile {
      */
     toExtent(crs, target) {
         CRS.isValid(crs);
-        target = target || new Extent('EPSG:4326', [0, 0, 0, 0]);
+        target = target || new Extent('EPSG:4326');
         const { epsg, globalExtent, globalDimension } = getInfoTms(this.crs);
         const countTiles = getCountTiles(this.crs, this.zoom);
 

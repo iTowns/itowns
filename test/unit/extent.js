@@ -14,43 +14,12 @@ describe('Extent', function () {
     const minZ = -50;
     const maxZ = 42;
 
-    it('should build the expected extent using Coordinates', function () {
-        const withCoords = new Extent('EPSG:4326',
-            new Coordinates('EPSG:4326', minX, minY),
-            new Coordinates('EPSG:4326', maxX, maxY));
-        assert.equal(minX, withCoords.west);
-        assert.equal(maxX, withCoords.east);
-        assert.equal(minY, withCoords.south);
-        assert.equal(maxY, withCoords.north);
-    });
-
-    it('should build the expected extent using keywords', function () {
-        const withKeywords = new Extent('EPSG:4326', {
-            south: minY,
-            east: maxX,
-            north: maxY,
-            west: minX,
-        });
-        assert.equal(minX, withKeywords.west);
-        assert.equal(maxX, withKeywords.east);
-        assert.equal(minY, withKeywords.south);
-        assert.equal(maxY, withKeywords.north);
-    });
-
     it('should build the expected extent using values', function () {
         const withValues = new Extent('EPSG:4326',
             minX,
             maxX,
             minY,
             maxY);
-        assert.equal(minX, withValues.west);
-        assert.equal(maxX, withValues.east);
-        assert.equal(minY, withValues.south);
-        assert.equal(maxY, withValues.north);
-    });
-
-    it('should build the expected extent using Array', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
         assert.equal(minX, withValues.west);
         assert.equal(maxX, withValues.east);
         assert.equal(minY, withValues.south);
@@ -125,7 +94,7 @@ describe('Extent', function () {
     });
 
     it('should clone extent like expected', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
         const clonedExtent = withValues.clone();
         assert.equal(clonedExtent.west, withValues.west);
         assert.equal(clonedExtent.east, withValues.east);
@@ -134,7 +103,7 @@ describe('Extent', function () {
     });
 
     it('should convert extent EPSG:4326 like expected', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]).as('EPSG:3857');
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY).as('EPSG:3857');
         assert.equal(0, withValues.west);
         assert.equal(1113194.9079327357, withValues.east);
         assert.equal(-111325.14286638597, withValues.south);
@@ -142,33 +111,33 @@ describe('Extent', function () {
     });
 
     it('should return center of extent expected', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
         const center = withValues.center();
         assert.equal(5, center.longitude);
         assert.equal(1, center.latitude);
     });
     it('should return dimensions of extent expected', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
         const dimensions = withValues.planarDimensions();
         assert.equal(10, dimensions.x);
         assert.equal(4, dimensions.y);
     });
 
     it('should return true is point is inside extent expected', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
         const coord = new Coordinates('EPSG:4326', minX + 1, minY + 2);
         assert.ok(withValues.isPointInside(coord));
     });
 
     it('should return true is extent is inside extent expected', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
-        const inside = new Extent('EPSG:4326', [minX + 1, maxX - 1, minY + 1, maxY - 1]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
+        const inside = new Extent('EPSG:4326', minX + 1, maxX - 1, minY + 1, maxY - 1);
         assert.ok(withValues.isInside(inside, 1));
     });
 
     it('should return expected offset', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
-        const inside = new Extent('EPSG:4326', [minX + 1, maxX - 1, minY + 1, maxY - 1]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
+        const inside = new Extent('EPSG:4326', minX + 1, maxX - 1, minY + 1, maxY - 1);
         const offset = withValues.offsetToParent(inside);
         assert.equal(offset.x, -0.125);
         assert.equal(offset.y, -0.5);
@@ -177,14 +146,14 @@ describe('Extent', function () {
     });
 
     it('should return true if intersect other extent', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
-        const inter = new Extent('EPSG:4326', [minX + 1, maxX - 1, maxY - 1, maxY + 2]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
+        const inter = new Extent('EPSG:4326', minX + 1, maxX - 1, maxY - 1, maxY + 2);
         assert.ok(withValues.intersectsExtent(inter));
     });
 
     it('should intersect like expected', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
-        const extent = new Extent('EPSG:4326', [minX + 1, maxX - 1, maxY - 1, maxY + 2]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
+        const extent = new Extent('EPSG:4326', minX + 1, maxX - 1, maxY - 1, maxY + 2);
         const inter = withValues.intersect(extent);
         assert.equal(1, inter.west);
         assert.equal(9, inter.east);
@@ -193,7 +162,7 @@ describe('Extent', function () {
     });
 
     it('should set values', function () {
-        const withValues = new Extent('EPSG:4326', [0, 0, 0, 0]);
+        const withValues = new Extent('EPSG:4326');
         withValues.set(minX, maxX, minY, maxY);
         assert.equal(minX, withValues.west);
         assert.equal(maxX, withValues.east);
@@ -202,7 +171,7 @@ describe('Extent', function () {
     });
 
     it('should set values from array', function () {
-        const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
+        const extent = new Extent('EPSG:4326');
         const array = [minX, maxX, minY, maxY, minZ, maxZ];
 
         extent.setFromArray(array);
@@ -219,7 +188,7 @@ describe('Extent', function () {
     });
 
     it('sould set values from an extent-like object', function () {
-        const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
+        const extent = new Extent('EPSG:4326');
         extent.setFromExtent({
             west: minX,
             east: maxX,
@@ -233,8 +202,8 @@ describe('Extent', function () {
     });
 
     it('should copy extent', function () {
-        const toCopy = new Extent('EPSG:2154', [minX, maxX, minY, maxY]);
-        const withValues = new Extent('EPSG:4326', [0, 0, 0, 0]);
+        const toCopy = new Extent('EPSG:2154', minX, maxX, minY, maxY);
+        const withValues = new Extent('EPSG:4326');
         withValues.copy(toCopy);
         assert.equal('EPSG:2154', withValues.crs);
         assert.equal(minX, withValues.west);
@@ -244,8 +213,8 @@ describe('Extent', function () {
     });
 
     it('should union like expected', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
-        const extent = new Extent('EPSG:4326', [minX + 1, maxX - 1, maxY - 1, maxY + 2]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
+        const extent = new Extent('EPSG:4326', minX + 1, maxX - 1, maxY - 1, maxY + 2);
         withValues.union(extent);
         assert.equal(0, withValues.west);
         assert.equal(10, withValues.east);
@@ -254,7 +223,7 @@ describe('Extent', function () {
     });
 
     it('should expand by point', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
         const coord = new Coordinates('EPSG:4326', maxX + 1, maxY + 2);
         withValues.expandByCoordinates(coord);
         assert.equal(0, withValues.west);
@@ -264,7 +233,7 @@ describe('Extent', function () {
     });
 
     it('should convert EPSG extent values to string', function () {
-        const withValues = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
+        const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
         const tostring = withValues.toString(',');
         const toValues = tostring.split(',').map(s => Number(s));
         assert.equal(toValues[0], withValues.east);
@@ -274,8 +243,8 @@ describe('Extent', function () {
     });
 
     it('should copy and transform extent', function () {
-        const withValues = new Extent('EPSG:4326', [0, 0, 0, 0]);
-        const extent = new Extent('EPSG:4326', [minX + 1, maxX - 1, maxY - 1, maxY + 2]);
+        const withValues = new Extent('EPSG:4326', 0, 0, 0, 0);
+        const extent = new Extent('EPSG:4326', minX + 1, maxX - 1, maxY - 1, maxY + 2);
         const position = new Vector3(1, 2, 0);
         const scale = new Vector3(2, -2, 1);
         const quaternion = new Quaternion();

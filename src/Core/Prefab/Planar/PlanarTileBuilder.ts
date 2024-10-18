@@ -97,7 +97,7 @@ export class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
         // the geometry in common extent is identical to the existing input
         // with a translation
         return {
-            shareableExtent: new Extent(extent.crs, {
+            shareableExtent: new Extent(extent.crs).setFromExtent({
                 west: 0,
                 east: Math.abs(extent.west - extent.east),
                 south: 0,
