@@ -33,7 +33,6 @@ class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
         crs: string,
         uvCount?: number,
     }) {
-        /* istanbul ignore next */
         if (options.projection) {
             console.warn('PlanarTileBuilder projection parameter is deprecated,'
                 + ' use crs instead.');

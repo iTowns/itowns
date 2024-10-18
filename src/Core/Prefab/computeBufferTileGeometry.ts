@@ -17,7 +17,10 @@ export type Buffers = {
 };
 
 type TmpBuffers = Buffers & {
-    indexBuffer: ArrayBuffer,
+    // NOTE: This field will be important when ArrayBuffer.resize
+    // becomes more widespread. Available in all latest versions of the
+    // most common browsers as of October 2024 but people don't update.
+    // indexBuffer: ArrayBuffer,
     skirt: Option<Uint8Array | Uint16Array | Uint32Array>,
 }
 
@@ -39,34 +42,54 @@ function pickUintArraySize(
     return picked;
 }
 
+type IndexArray = Option<Uint8Array | Uint16Array | Uint32Array>;
+
+function allocateIndexBuffer(
+    nVertex: number,
+    nSeg: number,
+    params: TileBuilderParams,
+): Option<{ index: IndexArray, skirt: IndexArray }> {
+    if (!params.buildIndexAndUv_0) {
+        return undefined;
+    }
+
+    const indexBufferSize = getBufferIndexSize(nSeg, params.disableSkirt);
+    const indexConstructor = pickUintArraySize(nVertex);
+
+    const skirtOffset = indexConstructor!.BYTES_PER_ELEMENT * indexBufferSize;
+    const skirtLen = indexConstructor!.BYTES_PER_ELEMENT * 4 * nSeg;
+    const indexBuffer = new ArrayBuffer(
+        // Index
+        skirtOffset
+        // Skirt temporary view
+        + (params.disableSkirt ? 0 : skirtLen),
+    );
+
+    const index = new indexConstructor(indexBuffer, 0, indexBufferSize);
+    const skirt = !params.disableSkirt
+        ? new indexConstructor(indexBuffer, skirtOffset, 4 * nSeg)
+        : undefined;
+
+    return {
+        index,
+        skirt,
+    };
+}
+
 function allocateBuffers(
     nVertex: number,
     nSeg: number,
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
 ): TmpBuffers {
-    const indexBufferSize = getBufferIndexSize(nSeg, params.disableSkirt);
-    const indexConstructor = params.buildIndexAndUv_0
-        ? pickUintArraySize(nVertex)
-        : undefined;
-
-    const skirtOffset = indexConstructor!.BYTES_PER_ELEMENT * indexBufferSize;
-    const skirtLen = indexConstructor!.BYTES_PER_ELEMENT * 4 * nSeg;
-    const indexBuffer = new ArrayBuffer(
-        // Index
-        (params.buildIndexAndUv_0 ? skirtOffset : 0)
-        // Skirt temporary views
-        + (params.disableSkirt ? 0 : skirtLen),
-    );
+    const {
+        index,
+        skirt,
+    } = allocateIndexBuffer(nVertex, nSeg, params) ?? {};
 
     return {
-        indexBuffer,
-        index: indexConstructor !== undefined
-            ? new indexConstructor(indexBuffer, 0, indexBufferSize)
-            : undefined,
-        skirt: !params.disableSkirt && indexConstructor !== undefined
-            ? new indexConstructor(indexBuffer, skirtOffset, 4 * nSeg)
-            : undefined,
+        index,
+        skirt,
         position: new Float32Array(nVertex * 3),
         normal: new Float32Array(nVertex * 3),
         // 2 UV set per tile: wgs84 (uv[0]) and pseudo-mercator (pm, uv[1])
@@ -188,7 +211,7 @@ export default function computeBuffers(
     }
 
     // Fill skirt index buffer
-    if (!params.disableSkirt) {
+    if (params.buildIndexAndUv_0 && !params.disableSkirt) {
         for (let x = 0; x < nVertex; x++) {
             //   -------->
             //   0---1---2
@@ -248,7 +271,7 @@ export default function computeBuffers(
     // INFO: The size of the skirt is now a ratio of the size of the tile.
     // To be perfect it should depend on the real elevation delta but too heavy
     // to compute
-    if (!params.disableSkirt) {
+    if (params.buildIndexAndUv_0 && !params.disableSkirt) {
         // We compute the actual size of tile segment to use later for
         // the skirt.
         const segmentSize = new THREE.Vector3()

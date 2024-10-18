@@ -138,9 +138,9 @@ export default function newTileGeometry(
         return Promise.resolve({ geometry, quaternion, position });
     }
 
-    (cacheTile.get(south, params.level, bufferKey)! as Promise<unknown>)
+    (cacheTile.get(south, params.level, bufferKey)! as Promise<THREE.BufferGeometry>)
         .then((v) => {
-            console.log(v);
+            console.log(`cache.get(${south}, ${params.level}, ${bufferKey}).index:`, v.index == null);
         });
 
 
