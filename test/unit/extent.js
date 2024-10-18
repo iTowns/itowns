@@ -11,6 +11,8 @@ describe('Extent', function () {
     const maxX = 10;
     const minY = -1;
     const maxY = 3;
+    const minZ = -50;
+    const maxZ = 42;
 
     it('should build the expected extent using Coordinates', function () {
         const withCoords = new Extent('EPSG:4326',
@@ -199,10 +201,42 @@ describe('Extent', function () {
         assert.equal(maxY, withValues.north);
     });
 
+    it('should set values from array', function () {
+        const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
+        const array = [minX, maxX, minY, maxY, minZ, maxZ];
+
+        extent.setFromArray(array);
+        assert.deepEqual(
+            [minX, maxX, minY, maxY],
+            [extent.west, extent.east, extent.south, extent.north],
+        );
+
+        extent.setFromArray(array, 2);
+        assert.deepEqual(
+            [minY, maxY, minZ, maxZ],
+            [extent.west, extent.east, extent.south, extent.north],
+        );
+    });
+
+    it('sould set values from an extent-like object', function () {
+        const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
+        extent.setFromExtent({
+            west: minX,
+            east: maxX,
+            south: minY,
+            north: maxY,
+        });
+        assert.equal(minX, extent.west);
+        assert.equal(maxX, extent.east);
+        assert.equal(minY, extent.south);
+        assert.equal(maxY, extent.north);
+    });
+
     it('should copy extent', function () {
-        const toCopy = new Extent('EPSG:4326', [minX, maxX, minY, maxY]);
+        const toCopy = new Extent('EPSG:2154', [minX, maxX, minY, maxY]);
         const withValues = new Extent('EPSG:4326', [0, 0, 0, 0]);
         withValues.copy(toCopy);
+        assert.equal('EPSG:2154', withValues.crs);
         assert.equal(minX, withValues.west);
         assert.equal(maxX, withValues.east);
         assert.equal(minY, withValues.south);
