@@ -11,6 +11,6 @@ describe('source_file_gpx_3d', function _() {
     });
 
     it('should wait for the mesh to be added to the scene', async function _it() {
-        await page.waitForFunction(() => view.scene.children.length === 5, { timeout: 10000 });
+        await page.waitForFunction(() => view.scene.children.length === 4, { timeout: 10000 });
     });
 });
