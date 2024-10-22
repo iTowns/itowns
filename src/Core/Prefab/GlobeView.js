@@ -96,11 +96,6 @@ class GlobeView extends View {
         const tileLayer = new GlobeLayer('globe', options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
 
-        const sun = new THREE.DirectionalLight();
-        sun.position.set(-0.5, 0, 1);
-        sun.updateMatrixWorld(true);
-        this.scene.add(sun);
-
         this.addLayer(tileLayer);
         this.tileLayer = tileLayer;
 
