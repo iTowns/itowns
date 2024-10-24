@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
 import Source from 'Source/Source';
-import Cache from 'Core/Scheduler/Cache';
+import { LRUCache } from 'lru-cache';
 import Style from 'Core/Style';
 
 /**
@@ -198,7 +198,10 @@ class Layer extends THREE.EventDispatcher {
         /**
          * @type {Cache}
          */
-        this.cache = new Cache(cacheLifeTime);
+        this.cache = new LRUCache({
+            max: 500,
+            ...(cacheLifeTime !== Infinity && { ttl: cacheLifeTime }),
+        });
 
         this.mergeFeatures = mergeFeatures;
     }
@@ -271,14 +274,14 @@ class Layer extends THREE.EventDispatcher {
     }
 
     getData(from, to) {
-        const key = this.source.requestToKey(this.source.isVectorSource ? to : from);
-        let data = this.cache.getByArray(key);
+        const key = this.source.getDataKey(this.source.isVectorSource ? to : from);
+        let data = this.cache.get(key);
         if (!data) {
             data = this.source.loadData(from, this)
                 .then(feat => this.convert(feat, to), (err) => {
                     throw err;
                 });
-            this.cache.setByArray(data, key);
+            this.cache.set(key, data);
         }
         return data;
     }

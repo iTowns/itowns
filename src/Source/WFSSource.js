@@ -159,11 +159,11 @@ class WFSSource extends Source {
         return super.handlingError(err);
     }
 
-    requestToKey(extent) {
+    getDataKey(extent) {
         if (extent.isTile) {
-            return super.requestToKey(extent);
+            return super.getDataKey(extent);
         } else {
-            return [extent.zoom, extent.south, extent.west];
+            return `z${extent.zoom}s${extent.south}w${extent.west}`;
         }
     }
 

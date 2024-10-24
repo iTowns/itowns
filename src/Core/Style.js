@@ -1,4 +1,4 @@
-import Cache from 'Core/Scheduler/Cache';
+import { LRUCache } from 'lru-cache';
 import Fetcher from 'Provider/Fetcher';
 import { Color } from 'three';
 import { deltaE } from 'Renderer/Color';
@@ -6,7 +6,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
 
-const cacheStyle = new Cache();
+const cachedImg = new LRUCache({ max: 500 });
 
 const matrix = document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGMatrix();
 const canvas = document.createElement('canvas');
@@ -43,11 +43,12 @@ export function readExpression(property, ctx) {
     return property;
 }
 
-async function loadImage(source) {
-    let promise = cacheStyle.get(source, 'null');
+async function loadImage(url) {
+    const imgUrl = url.split('?')[0];
+    let promise = cachedImg.get(imgUrl);
     if (!promise) {
-        promise = Fetcher.texture(source, { crossOrigin: 'anonymous' });
-        cacheStyle.set(promise, source, 'null');
+        promise = Fetcher.texture(url, { crossOrigin: 'anonymous' });
+        cachedImg.set(imgUrl, promise);
     }
     return (await promise).image;
 }
@@ -70,7 +71,7 @@ function replaceWhitePxl(imgd, color, id) {
     if (!color) {
         return imgd;
     }
-    const imgdColored = cacheStyle.get(id, color);
+    const imgdColored = cachedImg.get(`${id}_${color}`);
     if (!imgdColored) {
         const pix = imgd.data;
         const newColor = new Color(color);
@@ -81,7 +82,7 @@ function replaceWhitePxl(imgd, color, id) {
             pix[i + 1] = (pix[i + 1] * d +  newColor.g * 255 * (1 - d));
             pix[i + 2] = (pix[i + 2] * d +  newColor.b * 255 * (1 - d));
         }
-        cacheStyle.set(imgd, id, color);
+        cachedImg.set(`${id}_${color}`, imgd);
         return imgd;
     }
     return imgdColored;

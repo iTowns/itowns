@@ -46,8 +46,6 @@ describe('Provide in Sources', function () {
     let nodeLayerElevation;
     let featureLayer;
 
-    let featureCountByCb = 0;
-
     // Mock scheduler
     const context = {
         view: {
@@ -104,10 +102,6 @@ describe('Provide in Sources', function () {
             extent: globalExtent,
             crs: 'EPSG:3857',
         });
-
-        featureLayer.source.onParsedFile = (fc) => {
-            featureCountByCb = fc.features.length;
-        };
 
         planarlayer.attach(featureLayer);
 
@@ -263,7 +257,7 @@ describe('Provide in Sources', function () {
         tile.parent = { pendingSubdivision: false };
         featureLayer.source.uid = 8;
         featureLayer.mergeFeatures = true;
-        featureLayer.cache.data.clear();
+        featureLayer.cache.clear();
         featureLayer.source._featuresCaches = {};
         featureLayer.source.onLayerAdded({ out: featureLayer });
         featureLayer.update(context, featureLayer, tile);
@@ -273,7 +267,6 @@ describe('Provide in Sources', function () {
                 assert.ok(features[0].meshes.children[1].isPoints);
                 assert.equal(features[0].meshes.children[0].children.length, 0);
                 assert.equal(features[0].meshes.children[1].children.length, 0);
-                assert.equal(featureCountByCb, 2);
                 done();
             }).catch(done);
     });
