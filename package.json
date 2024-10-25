@@ -1,5 +1,5 @@
 {
-  "name": "itowns",
+  "name": "@holothedrunk/itowns",
   "version": "2.44.2",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "type": "module",
