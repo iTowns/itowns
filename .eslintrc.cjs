@@ -60,6 +60,7 @@ module.exports = {
       devDependencies: ['test/**', 'tests/**', 'examples/**'],
     }], */
         'import/no-extraneous-dependencies': 'off',
+        'import/prefer-default-export': 'off',
 
         // TODO reactivate all the following rules
 
@@ -95,9 +96,9 @@ module.exports = {
             'error',
             'ignorePackages',
             {
-                'js': 'never',
-                'ts': 'never',
-                'tsx': 'never',
+                js: 'never',
+                ts: 'never',
+                tsx: 'never',
             },
         ],
         camelcase: 'off',
