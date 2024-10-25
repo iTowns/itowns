@@ -1,5 +1,5 @@
 import { featureFilter } from '@mapbox/mapbox-gl-style-spec';
-import Style from 'Core/Style';
+import StyleOptions from 'Core/StyleOptions';
 import TMSSource from 'Source/TMSSource';
 import URLBuilder from 'Provider/URLBuilder';
 import Fetcher from 'Provider/Fetcher';
@@ -102,7 +102,7 @@ class VectorTilesSource extends TMSSource {
                 if (layer.type === 'background') {
                     this.backgroundLayer = layer;
                 } else if (ffilter(layer)) {
-                    const style = Style.setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle);
+                    const style = StyleOptions.setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle);
                     this.styles[layer.id] = style;
 
                     if (!this.layers[layer['source-layer']]) {
