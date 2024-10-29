@@ -32,35 +32,34 @@ describe('Style', function () {
         stubFetcherTexture.restore();
     });
 
-    const styleOpt = {
-        fill: {
-            color: 'blue',
-            opacity: {
-                stops: [[10, '{opacity}']], // Mapbox vectorTile
-            },
-            pattern: {
-                // Mock MapBox StyleExpression() instance
-                expression: { evaluate: () => 'pattern' },
-            },
-            extrusion_height: {
-                stops: [[10, (p, ctx) => 10 + ctx.coordinates.z]],
-            },
-        },
-    };
-    const ctx = {
-        coordinates: { z: -2 },
-        properties: {
-            opacity: -3,
-        },
-    };
-
-    const style = new Style(styleOpt);
-    style.point.color = 'red';
-    style.setContext(ctx);
-    // mock StyleContext() instance
-    style.context.featureStyle = { stroke: { color: 'pink' } };
-
     it('Instanciate style from styleOpt and context', function _it() {
+        const styleOpt = {
+            fill: {
+                color: 'blue',
+                opacity: {
+                    stops: [[10, '{opacity}']], // Mapbox vectorTile
+                },
+                pattern: {
+                    // Mock MapBox StyleExpression() instance
+                    expression: { evaluate: () => 'pattern' },
+                },
+                extrusion_height: {
+                    stops: [[10, (p, ctx) => 10 + ctx.coordinates.z]],
+                },
+            },
+        };
+        const ctx = {
+            coordinates: { z: -2 },
+            properties: {
+                opacity: -3,
+            },
+        };
+        const style = new Style(styleOpt);
+        style.point.color = 'red';
+        style.setContext(ctx);
+        // mock StyleContext() instance
+        style.context.featureStyle = { stroke: { color: 'pink' } };
+
         // no default value
         assert.equal(style.point.line, undefined);
         // defaultValue is value
@@ -80,6 +79,44 @@ describe('Style', function () {
         // value from Feature.style
         assert.equal(style.stroke.color, style.context.featureStyle.stroke.color);
         assert.equal(style.stroke.color, 'pink');
+    });
+
+    it('Instanciate style from fct at category level', function _it() {
+        const fill = () => ({
+            color: 'blue',
+            opacity: {
+                stops: [[10, '{opacity}']], // Mapbox vectorTile
+            },
+            pattern: {
+                // Mock MapBox StyleExpression() instance
+                expression: { evaluate: () => 'pattern' },
+            },
+            extrusion_height: {
+                stops: [[10, (p, ctx) => 10 + ctx.coordinates.z]],
+            },
+        });
+        const styleOpt = {
+            fill,
+        };
+        const ctx = {
+            coordinates: { z: -2 },
+            properties: {
+                opacity: -3,
+            },
+        };
+        const style = new Style(styleOpt);
+        style.setContext(ctx);
+        // mock StyleContext() instance
+        style.context.featureStyle = { stroke: { color: 'pink' } };
+
+        // userValue
+        assert.equal(style.fill.color, fill().color);
+        // userValue with stops & {}
+        assert.equal(style.fill.opacity, ctx.properties.opacity);
+        // userValue as MapBox expression
+        assert.equal(style.fill.pattern, fill().pattern.expression.evaluate());
+        // userValue with stops & function
+        assert.equal(style.fill.extrusion_height, fill().extrusion_height.stops[0][1](2, ctx));
     });
 
     describe('applyToCanvasPolygon()', () => {

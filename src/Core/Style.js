@@ -138,6 +138,102 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
         });
 }
 
+const defaultRules = {
+    zoom: {
+        keys: ['min', 'max'],
+    },
+    fill: {
+        keys: ['color', 'opacity', 'pattern', 'base_altitude'],
+        ifKeys: ['extrusion_height'],
+        defaultValue: {
+            opacity: 1.0,
+            base_altitude: baseAltitudeDefault,
+        },
+    },
+    stroke: {
+        keys: ['color', 'opacity', 'width', 'dasharray', 'base_altitude'],
+        defaultValue: {
+            opacity: 1.0,
+            width: 1.0,
+            dasharray: [],
+            base_altitude: baseAltitudeDefault,
+        },
+    },
+    point: {
+        keys: ['color', 'line', 'opacity', 'radius', 'width', 'base_altitude'],
+        ifKeys: ['model'],
+        defaultValue: {
+            opacity: 1.0,
+            radius: 2.0,
+            width: 0.0,
+            base_altitude: baseAltitudeDefault,
+        },
+    },
+    text: {
+        keys: ['field', 'zOrder', 'color', 'anchor', 'offset', 'padding', 'size', 'placement', 'rotation', 'wrap', 'spacing', 'transform', 'justify', 'opacity', 'font', 'haloColor', 'haloWidth', 'haloBlur'],
+        defaultValue: {
+            zOrder: 'auto',
+            color: '#000000',
+            anchor: 'center',
+            offset: [0, 0],
+            padding: 2,
+            size: 16,
+            placement: 'point',
+            rotation: 'auto',
+            wrap: 10,
+            spacing: 0,
+            transform: 'none',
+            justify: 'center',
+            opacity: 1.0,
+            font: ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif'],
+            haloColor: '#000000',
+            haloWidth: 0,
+            haloBlur: 0,
+        },
+    },
+    icon: {
+        keys: ['source', 'id', 'cropValues', 'anchor', 'size', 'color', 'opacity'],
+        defaultValue: {
+            anchor: 'center',
+            size: 1,
+            opacity: 1.0,
+        },
+    },
+};
+
+function defineStyleCategory(style, category, userValue) {
+    let value;
+    Object.defineProperty(
+        style,
+        category,
+        {
+            enumerable: true,
+            get: () => {
+                if (value != undefined) {
+                    return value;
+                }
+                style[category] = {};
+                value = { ...userValue };
+                if (userValue instanceof Function) {
+                    value = readExpression(userValue, style.context);
+                }
+                defaultRules[category].keys.forEach((key) => {
+                    defineStyleProperty(style, category, key, value[key], defaultRules[category].defaultValue?.[key]);// zoom has no defaultValue
+                });
+                defaultRules[category].ifKeys?.forEach((key) => { // zoom, stroke, text and icon have no ifKeys
+                    if (value[key] != undefined) {
+                        defineStyleProperty(style, category, key, value[key]);
+                    }
+                });
+
+                return value;
+            },
+            set: (v) => {
+                value = v;
+            },
+        });
+}
+
 /**
  * StyleContext stores metadata of one FeatureGeometry that are needed for its style computation:
  * type of feature and what is needed (fill, stroke or draw a point, etc.) as well as where to get its
@@ -450,69 +546,17 @@ class Style {
         params.text = params.text || {};
         params.icon = params.icon || {};
 
-        this.zoom = {};
-        defineStyleProperty(this, 'zoom', 'min', params.zoom.min);
-        defineStyleProperty(this, 'zoom', 'max', params.zoom.max);
-
-        this.fill = {};
-        defineStyleProperty(this, 'fill', 'color', params.fill.color);
-        defineStyleProperty(this, 'fill', 'opacity', params.fill.opacity, 1.0);
-        defineStyleProperty(this, 'fill', 'pattern', params.fill.pattern);
-        defineStyleProperty(this, 'fill', 'base_altitude', params.fill.base_altitude, baseAltitudeDefault);
-        if (params.fill.extrusion_height) {
-            defineStyleProperty(this, 'fill', 'extrusion_height', params.fill.extrusion_height);
-        }
-
-        this.stroke = {};
-        defineStyleProperty(this, 'stroke', 'color', params.stroke.color);
-        defineStyleProperty(this, 'stroke', 'opacity', params.stroke.opacity, 1.0);
-        defineStyleProperty(this, 'stroke', 'width', params.stroke.width, 1.0);
-        defineStyleProperty(this, 'stroke', 'dasharray', params.stroke.dasharray, []);
-        defineStyleProperty(this, 'stroke', 'base_altitude', params.stroke.base_altitude, baseAltitudeDefault);
-
-        this.point = {};
-        defineStyleProperty(this, 'point', 'color', params.point.color);
-        defineStyleProperty(this, 'point', 'line', params.point.line);
-        defineStyleProperty(this, 'point', 'opacity', params.point.opacity, 1.0);
-        defineStyleProperty(this, 'point', 'radius', params.point.radius, 2.0);
-        defineStyleProperty(this, 'point', 'width', params.point.width, 0.0);
-        defineStyleProperty(this, 'point', 'base_altitude', params.point.base_altitude, baseAltitudeDefault);
-        if (params.point.model) {
-            defineStyleProperty(this, 'point', 'model', params.point.model);
-        }
-
-        this.text = {};
-        defineStyleProperty(this, 'text', 'field', params.text.field);
-        defineStyleProperty(this, 'text', 'zOrder', params.text.zOrder, 'auto');
-        defineStyleProperty(this, 'text', 'color', params.text.color, '#000000');
-        defineStyleProperty(this, 'text', 'anchor', params.text.anchor, 'center');
-        defineStyleProperty(this, 'text', 'offset', params.text.offset, [0, 0]);
-        defineStyleProperty(this, 'text', 'padding', params.text.padding, 2);
-        defineStyleProperty(this, 'text', 'size', params.text.size, 16);
-        defineStyleProperty(this, 'text', 'placement', params.text.placement, 'point');
-        defineStyleProperty(this, 'text', 'rotation', params.text.rotation, 'auto');
-        defineStyleProperty(this, 'text', 'wrap', params.text.wrap, 10);
-        defineStyleProperty(this, 'text', 'spacing', params.text.spacing, 0);
-        defineStyleProperty(this, 'text', 'transform', params.text.transform, 'none');
-        defineStyleProperty(this, 'text', 'justify', params.text.justify, 'center');
-        defineStyleProperty(this, 'text', 'opacity', params.text.opacity, 1.0);
-        defineStyleProperty(this, 'text', 'font', params.text.font, ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif']);
-        defineStyleProperty(this, 'text', 'haloColor', params.text.haloColor, '#000000');
-        defineStyleProperty(this, 'text', 'haloWidth', params.text.haloWidth, 0);
-        defineStyleProperty(this, 'text', 'haloBlur', params.text.haloBlur, 0);
-
-        this.icon = {};
-        defineStyleProperty(this, 'icon', 'source', params.icon.source);
         if (params.icon.key) {
             console.warn("'icon.key' is deprecated: use 'icon.id' instead");
             params.icon.id = params.icon.key;
         }
-        defineStyleProperty(this, 'icon', 'id', params.icon.id);
-        defineStyleProperty(this, 'icon', 'cropValues', params.icon.cropValues);
-        defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor, 'center');
-        defineStyleProperty(this, 'icon', 'size', params.icon.size, 1);
-        defineStyleProperty(this, 'icon', 'color', params.icon.color);
-        defineStyleProperty(this, 'icon', 'opacity', params.icon.opacity, 1.0);
+
+        defineStyleCategory(this, 'zoom', params.zoom);
+        defineStyleCategory(this, 'fill', params.fill);
+        defineStyleCategory(this, 'stroke', params.stroke);
+        defineStyleCategory(this, 'point', params.point);
+        defineStyleCategory(this, 'text', params.text);
+        defineStyleCategory(this, 'icon', params.icon);
     }
 
     setContext(ctx) {
