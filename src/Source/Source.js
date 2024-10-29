@@ -108,6 +108,7 @@ class Source extends InformationsData {
     constructor(source) {
         super(source);
         this.isSource = true;
+        this.warn = new Set();
 
         if (!source.url) {
             throw new Error('New Source: url is required');

@@ -250,6 +250,11 @@ class LabelLayer extends GeometryLayer {
         data.features.forEach((f) => {
             // TODO: add support for LINE and POLYGON
             if (f.type !== FEATURE_TYPES.POINT) {
+                const warn = `Type label ${Object.keys(FEATURE_TYPES).filter(ft => FEATURE_TYPES[ft] === f.type)} not supported`;
+                if (!this.source.warn.has(warn)) {
+                    this.source.warn.add(warn);
+                    console.warn(warn);
+                }
                 return;
             }
             context.setFeature(f);
