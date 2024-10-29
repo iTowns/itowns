@@ -235,7 +235,7 @@ const COGParser = (function _() {
          */
         parse: async function _(data, options) {
             const source = options.in;
-            const tileExtent = options.extent.as(source.crs);
+            const tileExtent = options.extent.isExtent ? options.extent.as(source.crs) : options.extent.toExtent(source.crs);
 
             const level = selectLevel(source, tileExtent, source.tileWidth, source.tileHeight);
             const viewport = makeWindowFromExtent(source, tileExtent, level.resolution);
