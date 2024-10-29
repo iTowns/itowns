@@ -13,7 +13,7 @@ import sprite from '../data/vectortiles/sprite.json';
 import mapboxStyle from '../data/mapboxMulti.json';
 
 const resources = {
-    'test/data/vectortiles/style.json': style,
+    'https://test/data/vectortiles/style.json': style,
     'https://test/tilejson.json': tilejson,
     'https://test/sprite.json': sprite,
     'https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7.json': mapboxStyle,
@@ -187,7 +187,7 @@ describe('VectorTilesSource', function () {
 
     it('loads the style from a file', function _it(done) {
         const source = new VectorTilesSource({
-            style: 'test/data/vectortiles/style.json',
+            style: 'https://test/data/vectortiles/style.json',
         });
         source.whenReady
             .then(() => {
