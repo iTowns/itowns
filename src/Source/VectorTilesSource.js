@@ -104,7 +104,7 @@ class VectorTilesSource extends TMSSource {
                 if (layer.type === 'background') {
                     this.backgroundLayer = layer;
                 } else if (ffilter(layer)) {
-                    const style = Style.setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle);
+                    const style = Style.setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle, this.warn);
                     this.styles[layer.id] = style;
 
                     if (!this.layers[layer['source-layer']]) {
