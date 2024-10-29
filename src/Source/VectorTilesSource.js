@@ -140,7 +140,7 @@ class VectorTilesSource extends TMSSource {
                 });
                 return Promise.all(TMSUrlList);
             }
-            return (Promise.resolve([this.url]));
+            return (Promise.resolve([toTMSUrl(this.url)]));
         }).then((TMSUrlList) => {
             this.urls = Array.from(new Set(TMSUrlList));
         });
