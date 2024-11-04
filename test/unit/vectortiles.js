@@ -67,15 +67,17 @@ describe('Vector tiles', function () {
         }).catch(done);
     });
 
-    it('returns nothing', (done) => {
+    it('returns an empty collection', (done) => {
         parse(null).then((collection) => {
-            assert.equal(collection, undefined);
+            assert.ok(collection.isFeatureCollection);
+            assert.equal(collection.features.length, 0);
             done();
         }).catch(done);
     });
 
     it('filters all features out', (done) => {
         parse(multipolygon, {}).then((collection) => {
+            assert.ok(collection.isFeatureCollection);
             assert.equal(collection.features.length, 0);
             done();
         }).catch(done);
