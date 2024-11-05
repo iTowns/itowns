@@ -398,6 +398,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
     }
 
     recomputeVisibleTexture() {
+        let needTransparency;
         const texture = this.visiTexture;
         const scheme = this.classificationScheme;
 
@@ -416,9 +417,11 @@ class PointsMaterial extends THREE.ShaderMaterial {
             }
 
             data[i] = visible ? 255 : 0;
+            needTransparency = needTransparency || visible === false;
         }
         texture.needsUpdate = true;
 
+        this.userData.needTransparency.classTransparency = needTransparency;
 
         this.dispatchEvent({
             type: 'material_property_changed',
