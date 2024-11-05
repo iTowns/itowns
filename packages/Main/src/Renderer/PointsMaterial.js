@@ -398,6 +398,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
     }
 
     recomputeVisibleTexture() {
+        let needTransparency;
         const texture = this.visiTexture;
         const scheme = this.classificationScheme;
 
@@ -416,9 +417,15 @@ class PointsMaterial extends THREE.ShaderMaterial {
             }
 
             data[i] = visible ? 255 : 0;
+            needTransparency = needTransparency || visible === false;
         }
         texture.needsUpdate = true;
 
+        this.userData.needTransparency[PNTS_MODE.CLASSIFICATION] = needTransparency;
+        this.userData.needTransparency[PNTS_MODE.RETURN_NUMBER] = needTransparency;
+        this.userData.needTransparency[PNTS_MODE.RETURN_TYPE] = needTransparency;
+        this.userData.needTransparency[PNTS_MODE.RETURN_COUNT] = needTransparency;
+        this.userData.needTransparency[PNTS_MODE.POINT_SOURCE_ID] = needTransparency;
 
         this.dispatchEvent({
             type: 'material_property_changed',
