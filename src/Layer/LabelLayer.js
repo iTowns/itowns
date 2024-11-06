@@ -294,6 +294,10 @@ class LabelLayer extends GeometryLayer {
                     }
                 }
 
+                if (this.style.zoom.min > this.style.context.zoom || this.style.zoom.max <= this.style.context.zoom) {
+                    return;
+                }
+
                 const label = new Label(content, coord.clone(), this.style);
 
                 label.layerId = this.id;
