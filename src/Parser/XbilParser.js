@@ -64,16 +64,17 @@ export function computeMinMaxElevation(texture, pitch, options) {
                 }
             }
         }
-        // Clamp values to zmin and zmax values configured in ElevationLayer
-        if (options.zmin != null) {
-            if (min < options.zmin) { min = options.zmin; }
-            if (max < options.zmin) { max = options.zmin; }
-        }
+    }
 
-        if (options.zmax != null) {
-            if (min > options.zmax) { min = options.zmax; }
-            if (max > options.zmax) { max = options.zmax; }
-        }
+    // Clamp values to zmin and zmax values configured in ElevationLayer
+    if (options.zmin != null) {
+        if (min < options.zmin) { min = options.zmin; }
+        if (max < options.zmin) { max = options.zmin; }
+    }
+
+    if (options.zmax != null) {
+        if (min > options.zmax) { min = options.zmax; }
+        if (max > options.zmax) { max = options.zmax; }
     }
 
     if (max === -Infinity || min === Infinity) {
