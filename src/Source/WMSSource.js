@@ -106,8 +106,8 @@ class WMSSource extends Source {
         // 4326 (lat/long) axis order depends on the WMS version used
             if (this.crs == 'EPSG:4326') {
             // EPSG 4326 x = lat, long = y
-            // version 1.1.0 long/lat while version 1.3.0 mandates xy (so lat,long)
-                this.axisOrder = (this.version === '1.1.0' ? 'wsen' : 'swne');
+            // version 1.X.X long/lat while version 1.3.0 mandates xy (so lat,long)
+                this.axisOrder = (this.version === '1.3.0' ? 'swne' : 'wsen');
             } else {
             // xy,xy order
                 this.axisOrder = 'wsen';
