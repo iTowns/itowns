@@ -9,7 +9,7 @@ landingURL: 'https://github.com/iTowns/itowns'
 softwareVersion: 2.44.2
 releaseDate: '2024-09-17'
 softwareType: library
-logo: 'https://github.com/iTowns/itowns/blob/master/examples/images/itowns_logo.png'
+logo: 'https://raw.githubusercontent.com/iTowns/itowns/refs/heads/master/examples/images/itowns_logo.png'
 platforms:
   - web
 categories:
