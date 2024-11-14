@@ -304,6 +304,7 @@ class LabelLayer extends GeometryLayer {
                     const label = new Label(content, coord.clone(), this.style);
 
                     label.layerId = this.id;
+                    label.order = f.order;
                     label.padding = this.margin || label.padding;
 
                     labels.push(label);
