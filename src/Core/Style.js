@@ -302,14 +302,11 @@ function _addIcon(icon, domElement, opt) {
 }
 
 /**
- * An object that can contain any properties (order, zoom, fill, stroke, point,
+ * An object that can contain any properties (zoom, fill, stroke, point,
  * text or/and icon) and sub properties of a Style.<br/>
  * Used for the instanciation of a {@link Style}.
  *
  * @typedef {Object} StyleOptions
- *
- * @property {Number} [order] - Order of the features that will be associated to
- * the style. It can helps sorting and prioritizing features if needed.
  *
  * @property {Object} [zoom] - Level on which to display the feature
  * @property {Number} [zoom.max] - max level
@@ -468,8 +465,6 @@ function _addIcon(icon, domElement, opt) {
  * The first parameter of functions used to set `Style` properties is always an object containing
  * the properties of the features displayed with the current `Style` instance.
  *
- * @property {Number} order - Order of the features that will be associated to
- * the style. It can helps sorting and prioritizing features if needed.
  * @property {Object} fill - Polygons and fillings style.
  * @property {String|Function|THREE.Color} fill.color - Defines the main color of the filling. Can be
  * any [valid color
@@ -619,14 +614,12 @@ function _addIcon(icon, domElement, opt) {
 class Style {
     /**
      * @param {StyleOptions} [params={}] An object that contain any properties
-     * (order, zoom, fill, stroke, point, text or/and icon)
+     * (zoom, fill, stroke, point, text or/and icon)
      * and sub properties of a Style ({@link StyleOptions}).
      */
     constructor(params = {}) {
         this.isStyle = true;
         this.context = new StyleContext();
-
-        this.order = params.order || 0;
 
         params.zoom = params.zoom || {};
         params.fill = params.fill || {};
@@ -767,12 +760,11 @@ class Style {
      * set Style from vector tile layer properties.
      * @param {Object} layer vector tile layer.
      * @param {Object} sprites vector tile layer.
-     * @param {Number} [order=0]
      * @param {Boolean} [symbolToCircle=false]
      *
      * @returns {StyleOptions} containing all properties for itowns.Style
      */
-    static setFromVectorTileLayer(layer, sprites, order = 0, symbolToCircle = false) {
+    static setFromVectorTileLayer(layer, sprites, symbolToCircle = false) {
         const style = {
             fill: {},
             stroke: {},
@@ -783,8 +775,6 @@ class Style {
 
         layer.layout = layer.layout || {};
         layer.paint = layer.paint || {};
-
-        style.order = order;
 
         if (layer.type === 'fill') {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern'], { type: 'color' }));
@@ -847,7 +837,7 @@ class Style {
 
             // content
             style.text.field = readVectorProperty(layer.layout['text-field']);
-            style.text.wrap = readVectorProperty(layer.layout['text-max-width']);
+            style.text.wrap = readVectorProperty(layer.layout['text-max-width']);// Units ems
             style.text.spacing = readVectorProperty(layer.layout['text-letter-spacing']);
             style.text.transform = readVectorProperty(layer.layout['text-transform']);
             style.text.justify = readVectorProperty(layer.layout['text-justify']);
