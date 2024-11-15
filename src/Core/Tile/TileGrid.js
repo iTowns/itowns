@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import CRS from '../Geographic/Crs';
+import * as CRS from '../Geographic/Crs';
 import Extent from '../Geographic/Extent';
 
 const _countTiles = new THREE.Vector2();

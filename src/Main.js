@@ -7,7 +7,7 @@ export const REVISION = conf.version;
 export { default as Extent } from 'Core/Geographic/Extent';
 export { default as Coordinates } from 'Core/Geographic/Coordinates';
 export { default as GeoidGrid } from 'Core/Geographic/GeoidGrid';
-export { default as CRS } from 'Core/Geographic/Crs';
+export * as CRS from 'Core/Geographic/Crs';
 
 export { default as Ellipsoid, ellipsoidSizes } from 'Core/Math/Ellipsoid';
 export { default as GlobeView, GLOBE_VIEW_EVENTS } from 'Core/Prefab/GlobeView';

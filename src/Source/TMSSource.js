@@ -1,9 +1,9 @@
+import * as CRS from 'Core/Geographic/Crs';
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
 import Extent from 'Core/Geographic/Extent';
 import Tile from 'Core/Tile/Tile';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
-import CRS from 'Core/Geographic/Crs';
 
 const _tile = new Tile(CRS.tms_4326, 0, 0, 0);
 

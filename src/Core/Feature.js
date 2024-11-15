@@ -1,7 +1,7 @@
 import * as THREE from 'three';
+import * as CRS from 'Core/Geographic/Crs';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
-import CRS from 'Core/Geographic/Crs';
 import Style from 'Core/Style';
 
 function defaultExtent(crs) {

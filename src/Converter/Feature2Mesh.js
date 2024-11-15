@@ -1,10 +1,10 @@
 import * as THREE from 'three';
+import * as Crs from 'Core/Geographic/Crs';
 import Earcut from 'earcut';
 import { FEATURE_TYPES } from 'Core/Feature';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { deprecatedFeature2MeshOptions } from 'Core/Deprecated/Undeprecator';
 import Extent from 'Core/Geographic/Extent';
-import Crs from 'Core/Geographic/Crs';
 import OrientationUtils from 'Utils/OrientationUtils';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Style, { StyleContext } from 'Core/Style';

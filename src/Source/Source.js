@@ -1,3 +1,4 @@
+import * as CRS from 'Core/Geographic/Crs';
 import Extent from 'Core/Geographic/Extent';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import KMLParser from 'Parser/KMLParser';
@@ -8,7 +9,6 @@ import ISGParser from 'Parser/ISGParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
 import Cache from 'Core/Scheduler/Cache';
-import CRS from 'Core/Geographic/Crs';
 
 /** @private */
 export const supportedParsers = new Map([

@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+import * as CRS from 'Core/Geographic/Crs';
+
 import View, { VIEW_EVENTS } from 'Core/View';
 import GlobeControls from 'Controls/GlobeControls';
 import Coordinates from 'Core/Geographic/Coordinates';
@@ -8,7 +10,6 @@ import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
 import CameraUtils from 'Utils/CameraUtils';
 
-import CRS from 'Core/Geographic/Crs';
 import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 
 /**

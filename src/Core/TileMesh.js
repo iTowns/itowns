@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import CRS from 'Core/Geographic/Crs';
+import * as CRS from 'Core/Geographic/Crs';
 import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 import { tiledCovering } from 'Core/Tile/Tile';
 

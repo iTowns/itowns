@@ -1,6 +1,6 @@
+import * as CRS from 'Core/Geographic/Crs';
 import Source from 'Source/Source';
 import Cache from 'Core/Scheduler/Cache';
-import CRS from 'Core/Geographic/Crs';
 
 /**
  * An object defining the source of a single resource to get from a direct

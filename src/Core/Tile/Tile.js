@@ -1,6 +1,6 @@
 import * as THREE from 'three';
+import * as CRS from '../Geographic/Crs';
 import Coordinates from '../Geographic/Coordinates';
-import CRS from '../Geographic/Crs';
 import Extent from '../Geographic/Extent';
 import { getInfoTms, getCountTiles } from './TileGrid';
 
