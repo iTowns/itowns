@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
+import * as CRS from 'Core/Geographic/Crs';
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
-import CRS from 'Core/Geographic/Crs';
 import PlanarTileBuilder from './PlanarTileBuilder';
 
 /**

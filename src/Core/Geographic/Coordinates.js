@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import CRS from 'Core/Geographic/Crs';
+import * as CRS from 'Core/Geographic/Crs';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');

@@ -1,8 +1,8 @@
 import * as THREE from 'three';
+import * as CRS from 'Core/Geographic/Crs';
 import TileGeometry from 'Core/TileGeometry';
 import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
 import Coordinates from 'Core/Geographic/Coordinates';
-import CRS from 'Core/Geographic/Crs';
 
 // get oriented bounding box of tile
 const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount: 1 });

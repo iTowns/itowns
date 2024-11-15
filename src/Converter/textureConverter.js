@@ -1,7 +1,7 @@
 import * as THREE from 'three';
+import * as CRS from 'Core/Geographic/Crs';
 import Feature2Texture from 'Converter/Feature2Texture';
 import Extent from 'Core/Geographic/Extent';
-import CRS from 'Core/Geographic/Crs';
 
 const extentTexture = new Extent('EPSG:4326', [0, 0, 0, 0]);
 
