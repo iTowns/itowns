@@ -234,7 +234,7 @@ class Extent {
      */
     isInside(extent, epsilon) {
         extent.as(this.crs, _extent);
-        epsilon = epsilon == undefined ? CRS.reasonnableEpsilon(this.crs) : epsilon;
+        epsilon = epsilon ?? CRS.reasonableEpsilon(this.crs);
         return this.east - _extent.east <= epsilon &&
                 _extent.west - this.west <= epsilon &&
                 this.north - _extent.north <= epsilon &&
