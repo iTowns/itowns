@@ -118,7 +118,7 @@ function unitFromProj4Unit(proj: ProjectionDefinition) {
  * @param crs - The CRS to extract the unit from.
  * @returns Either `UNIT.METER`, `UNIT.DEGREE` or `undefined`.
  */
-export function toUnit(crs: ProjectionLike) {
+export function getUnit(crs: ProjectionLike) {
     mustBeString(crs);
     const p = proj4.defs(formatToEPSG(crs));
     if (!p) {
@@ -134,7 +134,7 @@ export function toUnit(crs: ProjectionLike) {
  * @throws {@link Error} if the CRS is not valid.
  */
 export function isMetricUnit(crs: ProjectionLike) {
-    return (toUnit(crs) == UNIT.METER);
+    return getUnit(crs) === UNIT.METER;
 }
 
 /**
@@ -144,7 +144,7 @@ export function isMetricUnit(crs: ProjectionLike) {
  * @throws {@link Error} if the CRS is not valid.
  */
 export function isGeographic(crs: ProjectionLike) {
-    return (toUnit(crs) == UNIT.DEGREE);
+    return getUnit(crs) === UNIT.DEGREE;
 }
 
 /**

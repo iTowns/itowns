@@ -30,11 +30,11 @@ describe('CRS assertions', function () {
     });
 
     it('should get the correct unit for this CRS', function () {
-        assert.strictEqual(CRS.toUnit('EPSG:4326'), CRS.UNIT.DEGREE);
-        assert.strictEqual(CRS.toUnit('EPSG:7133'), CRS.UNIT.DEGREE);
-        assert.strictEqual(CRS.toUnit('EPSG:4978'), CRS.UNIT.METER);
-        assert.strictEqual(CRS.toUnit('EPSG:3857'), CRS.UNIT.METER);
-        assert.strictEqual(CRS.toUnit('EPSG:INVALID'), undefined);
+        assert.strictEqual(CRS.getUnit('EPSG:4326'), CRS.UNIT.DEGREE);
+        assert.strictEqual(CRS.getUnit('EPSG:7133'), CRS.UNIT.DEGREE);
+        assert.strictEqual(CRS.getUnit('EPSG:4978'), CRS.UNIT.METER);
+        assert.strictEqual(CRS.getUnit('EPSG:3857'), CRS.UNIT.METER);
+        assert.strictEqual(CRS.getUnit('EPSG:INVALID'), undefined);
     });
 
     it('should check if the CRS is EPSG:4326', function () {
