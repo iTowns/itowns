@@ -49,8 +49,8 @@ describe('CRS assertions', function () {
         assert.ok(!CRS.isGeocentric('EPSG:3857'));
     });
 
-    it('should return a reasonnable epsilon', function () {
-        assert.strictEqual(CRS.reasonnableEpsilon('EPSG:4326'), 0.01);
-        assert.strictEqual(CRS.reasonnableEpsilon('EPSG:3857'), 0.001);
+    it('should return a reasonable epsilon', function () {
+        assert.strictEqual(CRS.reasonableEpsilon('EPSG:4326'), 0.01);
+        assert.strictEqual(CRS.reasonableEpsilon('EPSG:3857'), 0.001);
     });
 });

@@ -177,12 +177,12 @@ export function isValid(crs: ProjectionLike) {
 }
 
 /**
- * Gives a reasonnable epsilon for this CRS.
+ * Gives a reasonable epsilon for this CRS.
  *
  * @param crs - The CRS to use.
  * @returns 0.01 if the CRS is EPSG:4326, 0.001 otherwise.
  */
-export function reasonnableEpsilon(crs: ProjectionLike) {
+export function reasonableEpsilon(crs: ProjectionLike) {
     if (is4326(crs)) {
         return 0.01;
     } else {
