@@ -10,16 +10,23 @@ import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 
-import ept from '../data/entwine/ept.json';
-import eptHierarchy from '../data/entwine/ept-hierarchy/0-0-0-0.json';
+import eptFile from '../data/entwine/ept.json';
+import eptHierarchyFile from '../data/entwine/ept-hierarchy/0-0-0-0.json';
 
-const baseurl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds';
-const urlEpt = `${baseurl}/entwine/ept.json`;
-const urlEptHierarchy = `${baseurl}/entwine/ept-hierarchy/0-0-0-0.json`;
+// LASParser need to be mocked instead of calling it
+LASParser.enableLazPerf('./examples/libs/laz-perf');
+
+const baseurl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine';
+
+const eptSsAuthority = JSON.parse(eptFile);
+eptSsAuthority.srs = {
+    wkt: 'PROJCS["RGF93 v1 / Lambert-93",GEOGCS["RGF93 v1",DATUM["Reseau_Geodesique_Francais_1993_v1",SPHEROID["GRS 1980",6378137,298.257222101],TOWGS84[0,0,0,0,0,0,0]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4171"]],PROJECTION["Lambert_Conformal_Conic_2SP"],PARAMETER["latitude_of_origin",46.5],PARAMETER["central_meridian",3],PARAMETER["standard_parallel_1",49],PARAMETER["standard_parallel_2",44],PARAMETER["false_easting",700000],PARAMETER["false_northing",6600000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","2154"]]',
+};
 
 const resources = {
-    [urlEpt]: ept,
-    [urlEptHierarchy]: eptHierarchy,
+    [`${baseurl}/ept.json`]: JSON.parse(eptFile),
+    'withoutAutority/ept.json': eptSsAuthority,
+    [`${baseurl}/ept-hierarchy/0-0-0-0.json`]: JSON.parse(eptHierarchyFile),
 };
 
 describe('Entwine Point Tile', function () {
@@ -29,15 +36,12 @@ describe('Entwine Point Tile', function () {
 
     before(function () {
         stubFetcherJson = sinon.stub(Fetcher, 'json')
-            .callsFake(url => Promise.resolve(JSON.parse(resources[url])));
+            .callsFake(url => Promise.resolve(resources[url]));
         stubFetcherArrayBuf = sinon.stub(Fetcher, 'arrayBuffer')
             .callsFake(() => Promise.resolve(new ArrayBuffer()));
         // currently no test on data fetched...
 
         LASParser.enableLazPerf('./examples/libs/laz-perf');
-        source = new EntwinePointTileSource({
-            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine',
-        });
     });
 
     after(async function () {
@@ -46,11 +50,32 @@ describe('Entwine Point Tile', function () {
         await LASParser.terminate();
     });
 
-    it('loads the EPT structure', (done) => {
-        source.whenReady
-            .then(() => {
-                done();
-            }).catch(done);
+    describe('Entwine Point Tile Source', function () {
+        describe('data type', function () {
+            // TO DO dataType in [laszip, binary, zstandard]
+        });
+        describe('retrieving crs from srs information', function () {
+            it('No srs authority', (done) => {
+                source = new EntwinePointTileSource({
+                    url: 'withoutAutority',
+                });
+                source.whenReady
+                    .then(() => {
+                        assert.equal(source.crs, 'RGF93 v1 / Lambert-93');
+                        done();
+                    }).catch(done);
+            });
+            it('With srs authority', (done) => {
+                source = new EntwinePointTileSource({
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine',
+                });
+                source.whenReady
+                    .then(() => {
+                        assert.equal(source.crs, 'EPSG:3857');
+                        done();
+                    }).catch(done);
+            });
+        });
     });
 
     describe('Layer', function () {
