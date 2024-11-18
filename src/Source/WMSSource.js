@@ -102,16 +102,16 @@ class WMSSource extends Source {
         this.transparent = source.transparent || false;
         this.bboxDigits = source.bboxDigits;
 
-        if (!source.axisOrder) {
-        // 4326 (lat/long) axis order depends on the WMS version used
-            if (this.crs == 'EPSG:4326') {
+        if (source.axisOrder) {
+            this.axisOrder = source.axisOrder;
+        } else if (this.crs == 'EPSG:4326') {
+            // 4326 (lat/long) axis order depends on the WMS version used
             // EPSG 4326 x = lat, long = y
             // version 1.X.X long/lat while version 1.3.0 mandates xy (so lat,long)
-                this.axisOrder = (this.version === '1.3.0' ? 'swne' : 'wsen');
-            } else {
+            this.axisOrder = this.version === '1.3.0' ? 'swne' : 'wsen';
+        } else {
             // xy,xy order
-                this.axisOrder = 'wsen';
-            }
+            this.axisOrder = 'wsen';
         }
 
         const crsPropName = (this.version === '1.3.0') ? 'CRS' : 'SRS';
