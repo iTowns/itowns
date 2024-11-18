@@ -42,7 +42,7 @@ class OrientedImageSource extends Source {
         return this.imageUrl(imageInfo.cameraId, imageInfo.panoId);
     }
 
-    requestToKey(image) {
+    keysFromExtent(image) {
         return [image.cameraId, image.panoId];
     }
 

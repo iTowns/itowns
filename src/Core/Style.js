@@ -78,11 +78,12 @@ function readVectorProperty(property, options) {
     }
 }
 
-async function loadImage(source) {
-    let promise = cacheStyle.get(source, 'null');
+async function loadImage(url) {
+    const source = url.split('?')[0];
+    let promise = cacheStyle.get(source);
     if (!promise) {
-        promise = Fetcher.texture(source, { crossOrigin: 'anonymous' });
-        cacheStyle.set(promise, source, 'null');
+        promise = Fetcher.texture(url, { crossOrigin: 'anonymous' });
+        cacheStyle.set(promise, source);
     }
     return (await promise).image;
 }

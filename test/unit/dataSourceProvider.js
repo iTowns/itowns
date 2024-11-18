@@ -263,7 +263,7 @@ describe('Provide in Sources', function () {
         tile.parent = { pendingSubdivision: false };
         featureLayer.source.uid = 8;
         featureLayer.mergeFeatures = true;
-        featureLayer.cache.data.clear();
+        featureLayer.cache.clear();
         featureLayer.source._featuresCaches = {};
         featureLayer.source.onLayerAdded({ out: featureLayer });
         featureLayer.update(context, featureLayer, tile);

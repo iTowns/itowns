@@ -158,18 +158,18 @@ class VectorTilesSource extends TMSSource {
 
     loadData(extent, out) {
         const cache = this._featuresCaches[out.crs];
-        const key = this.requestToKey(extent);
+        const key = this.keysFromExtent(extent);
         // try to get parsed data from cache
-        let features = cache.getByArray(key);
+        let features = cache.get(...key);
         if (!features) {
             // otherwise fetch/parse the data
-            features = cache.setByArray(
+            features = cache.set(
                 Promise.all(this.urls.map(url =>
                     this.fetcher(this.urlFromExtent(extent, url), this.networkOptions)
                         .then(file => this.parser(file, { out, in: this, extent }))))
                     .then(collections => mergeCollections(collections))
                     .catch(err => this.handlingError(err)),
-                key);
+                ...key);
 
             /* istanbul ignore next */
             if (this.onParsedFile) {
