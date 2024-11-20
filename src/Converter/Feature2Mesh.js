@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as Crs from 'Core/Geographic/Crs';
 import Earcut from 'earcut';
 import { FEATURE_TYPES } from 'Core/Feature';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
@@ -64,7 +63,7 @@ class FeatureMesh extends THREE.Group {
             } else {
                 // calculate the scale transformation to transform the feature.extent
                 // to feature.extent.as(crs)
-                coord.crs = Crs.formatToEPSG(this.#originalCrs);
+                coord.crs = this.#originalCrs;
                 // TODO: An extent here could be either a geographic extent (for
                 // features from WFS) or a tiled extent (for features from MVT).
                 // Unify both behavior.

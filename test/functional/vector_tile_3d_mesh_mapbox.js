@@ -13,7 +13,7 @@ describe('vector_tile_3d_mesh_mapbox', function _describe() {
     it('should correctly load building features on a given TMS tile', async function _it() {
         const featuresCollection = await page.evaluate(async function _() {
             const layers = view.getLayers(l => l.source && l.source.isVectorSource);
-            const res = await layers[0].source.loadData({ zoom: 15, row: 11634, col: 16859 }, { crs: 'EPSG:4978', source: { crs: 'TMS:3857' } });
+            const res = await layers[0].source.loadData({ zoom: 15, row: 11634, col: 16859 }, { crs: 'EPSG:4978', source: { crs: 'EPSG:3857' } });
             return res;
         });
         assert.ok(featuresCollection.isFeatureCollection);

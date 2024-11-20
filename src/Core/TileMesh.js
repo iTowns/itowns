@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as CRS from 'Core/Geographic/Crs';
 import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 import { tiledCovering } from 'Core/Tile/Tile';
 
@@ -77,7 +76,7 @@ class TileMesh extends THREE.Mesh {
     }
 
     getExtentsByProjection(crs) {
-        return this.#_tms.get(CRS.formatToTms(crs));
+        return this.#_tms.get(crs);
     }
 
     /**

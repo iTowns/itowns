@@ -1,4 +1,3 @@
-import * as CRS from 'Core/Geographic/Crs';
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
 import Extent from 'Core/Geographic/Extent';
@@ -161,7 +160,7 @@ class WFSSource extends Source {
     }
 
     requestToKey(extent) {
-        if (CRS.isTms(extent.crs)) {
+        if (extent.isTile) {
             return super.requestToKey(extent);
         } else {
             return [extent.zoom, extent.south, extent.west];

@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as CRS from '../Geographic/Crs';
 import Extent from '../Geographic/Extent';
 
 const _countTiles = new THREE.Vector2();
@@ -19,27 +18,25 @@ extent3857.clampSouthNorth(extent3857.west, extent3857.east);
 globalExtentTMS.set('EPSG:3857', extent3857);
 
 schemeTiles.set('default', new THREE.Vector2(1, 1));
-schemeTiles.set(CRS.tms_3857, schemeTiles.get('default'));
-schemeTiles.set(CRS.tms_4326, new THREE.Vector2(2, 1));
+schemeTiles.set('EPSG:3857', schemeTiles.get('default'));
+schemeTiles.set('EPSG:4326', new THREE.Vector2(2, 1));
 
 export function getInfoTms(/** @type {string} */ crs) {
-    const epsg = CRS.formatToEPSG(crs);
-    const globalExtent = globalExtentTMS.get(epsg);
+    const globalExtent = globalExtentTMS.get(crs);
     const globalDimension = globalExtent.planarDimensions(_dim);
-    const tms = CRS.formatToTms(crs);
-    const sTs = schemeTiles.get(tms) || schemeTiles.get('default');
+    const sTs = schemeTiles.get(crs) || schemeTiles.get('default');
     // The isInverted parameter is to be set to the correct value, true or false
     // (default being false) if the computation of the coordinates needs to be
     // inverted to match the same scheme as OSM, Google Maps or other system.
     // See link below for more information
     // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
     // in crs includes ':NI' => tms isn't inverted (NOT INVERTED)
-    const isInverted = !tms.includes(':NI');
-    return { epsg, globalExtent, globalDimension, sTs, isInverted };
+    const isInverted = !crs.includes(':NI');
+    return { epsg: crs, globalExtent, globalDimension, sTs, isInverted };
 }
 
 export function getCountTiles(/** @type {string} */ crs, /** @type {number} */ zoom) {
-    const sTs = schemeTiles.get(CRS.formatToTms(crs)) || schemeTiles.get('default');
+    const sTs = schemeTiles.get(crs) || schemeTiles.get('default');
     const count = 2 ** zoom;
     _countTiles.set(count, count).multiply(sTs);
     return _countTiles;

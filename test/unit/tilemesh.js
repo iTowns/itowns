@@ -23,7 +23,7 @@ FakeTileMesh.prototype.constructor = FakeTileMesh;
 FakeTileMesh.prototype.findCommonAncestor = TileMesh.prototype.findCommonAncestor;
 
 describe('TileMesh', function () {
-    const tile = new Tile('TMS:3857', 5, 10, 10);
+    const tile = new Tile('EPSG:3857', 5, 10, 10);
     const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB();
 
@@ -221,7 +221,7 @@ describe('TileMesh', function () {
         const tileMesh = new TileMesh(geom, material, planarlayer, tile.toExtent('EPSG:3857'), 0);
         const rasterNode = elevationLayer.setupRasterNode(tileMesh);
         const texture = new THREE.Texture();
-        texture.extent = new Tile('TMS:3857', 4, 10, 10);
+        texture.extent = new Tile('EPSG:3857', 4, 10, 10);
         texture.image = {
             width: 3,
             height: 3,

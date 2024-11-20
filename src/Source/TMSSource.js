@@ -1,11 +1,10 @@
-import * as CRS from 'Core/Geographic/Crs';
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
 import Extent from 'Core/Geographic/Extent';
 import Tile from 'Core/Tile/Tile';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
 
-const _tile = new Tile(CRS.tms_4326, 0, 0, 0);
+const _tile = new Tile('EPSG:4326', 0, 0, 0);
 
 /**
  * An object defining the source of resources to get from a
@@ -95,7 +94,7 @@ class TMSSource extends Source {
         this.zoom = source.zoom;
 
         this.isInverted = source.isInverted || false;
-        this.crs = CRS.formatToTms(source.crs);
+        this.crs = source.crs;
         this.tileMatrixSetLimits = source.tileMatrixSetLimits;
         this.extentSetlimits = {};
         this.tileMatrixCallback = source.tileMatrixCallback || (zoomLevel => zoomLevel);

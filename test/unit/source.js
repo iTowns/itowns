@@ -79,7 +79,7 @@ describe('Sources', function () {
 
         it('should return keys from request', function () {
             const source = new WFSSource(paramsWFS);
-            const tile = new Tile('TMS:4326', 5, 10, 15);
+            const tile = new Tile('EPSG:4326', 5, 10, 15);
             const keys = source.requestToKey(tile);
             assert.equal(tile.zoom, keys[0]);
             assert.equal(tile.row, keys[1]);
@@ -105,7 +105,7 @@ describe('Sources', function () {
 
         it('should instance and use WMTSSource', function () {
             const source = new WMTSSource(paramsWMTS);
-            const extent = new Tile('TMS:3857', 5, 0, 0);
+            const extent = new Tile('EPSG:3857', 5, 0, 0);
             assert.ok(source.isWMTSSource);
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent, 5));
@@ -122,7 +122,7 @@ describe('Sources', function () {
                 5: { minTileRow: 0, maxTileRow: 32, minTileCol: 0, maxTileCol: 32 },
             };
             const source = new WMTSSource(paramsWMTS);
-            const extent = new Tile('TMS:3857', 5, 0, 0);
+            const extent = new Tile('EPSG:3857', 5, 0, 0);
             source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
             assert.ok(source.isWMTSSource);
             assert.ok(source.urlFromExtent(extent));
@@ -132,7 +132,7 @@ describe('Sources', function () {
         it('should use vendor specific parameters for the creation of the WMTS url', function () {
             paramsWMTS.vendorSpecific = vendorSpecific;
             const source = new WMTSSource(paramsWMTS);
-            const tile = new Tile('TMS:4326', 0, 10, 0);
+            const tile = new Tile('EPSG:4326', 0, 10, 0);
             const url = source.urlFromExtent(tile);
             const end = '&buffer=4096&format_options=dpi:300;quantizer:octree&tiled=true';
             assert.ok(url.endsWith(end));
@@ -203,7 +203,7 @@ describe('Sources', function () {
         it('should instance and use TMSSource', function () {
             const source = new TMSSource(paramsTMS);
             source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
-            const extent = new Tile('TMS:3857', 5, 0, 0);
+            const extent = new Tile('EPSG:3857', 5, 0, 0);
             assert.ok(source.isTMSSource);
             assert.ok(source.urlFromExtent(extent));
             assert.ok(source.extentInsideLimit(extent, extent.zoom));

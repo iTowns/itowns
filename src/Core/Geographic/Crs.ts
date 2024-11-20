@@ -22,48 +22,6 @@ function mustBeString(crs: string) {
 }
 
 /**
- * Checks that a given CRS identifier follows the TMS:XXXX format.
- * @internal
- *
- * @param crs - The CRS identifier string.
- */
-export function isTms(crs: string) {
-    return isString(crs) && crs.startsWith('TMS');
-}
-
-/**
- * Checks that a given CRS identifier follows the EPSG:XXXX format.
- * @internal
- *
- * @param crs - The CRS identifier string.
- */
-export function isEpsg(crs: string) {
-    return isString(crs) && crs.startsWith('EPSG');
-}
-
-/**
- * Converts the input to the tile matrix set notation: TMS:XXXX.
- * @internal
- *
- * @param crs - The input to format.
- */
-export function formatToTms(crs: string) {
-    mustBeString(crs);
-    return isTms(crs) ? crs : `TMS:${crs.match(/\d+/)?.[0]}`;
-}
-
-/**
- * Converts the input to European Petroleum Survey Group notation: EPSG:XXXX.
- * @internal
- *
- * @param crs - The input to format.
- */
-export function formatToEPSG(crs: string) {
-    mustBeString(crs);
-    return isEpsg(crs) ? crs : `EPSG:${crs.match(/\d+/)?.[0]}`;
-}
-
-/**
  * System units supported for a coordinate system. See
  * [proj](https://proj4.org/en/9.5/operations/conversions/unitconvert.html#angular-units).
  * Note that only degree and meters units are supported for now.
@@ -78,15 +36,6 @@ export const UNIT = {
      */
     METER: 2,
 } as const;
-
-/**
- * @internal
- */
-export const tms_3857 = 'TMS:3857';
-/**
- * @internal
- */
-export const tms_4326 = 'TMS:4326';
 
 /**
  * Checks that the CRS is EPSG:4326.
@@ -120,7 +69,7 @@ function unitFromProj4Unit(proj: ProjectionDefinition) {
  */
 export function getUnit(crs: ProjectionLike) {
     mustBeString(crs);
-    const p = proj4.defs(formatToEPSG(crs));
+    const p = proj4.defs(crs);
     if (!p) {
         return undefined;
     }
