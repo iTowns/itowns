@@ -1,4 +1,4 @@
-import { featureFilter } from '@mapbox/mapbox-gl-style-spec';
+import { featureFilter } from '@maplibre/maplibre-gl-style-spec';
 import Style from 'Core/Style';
 import TMSSource from 'Source/TMSSource';
 import URLBuilder from 'Provider/URLBuilder';
