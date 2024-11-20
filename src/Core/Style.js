@@ -1,7 +1,7 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 import Cache from 'Core/Scheduler/Cache';
 import Fetcher from 'Provider/Fetcher';
-import * as mapbox from '@mapbox/mapbox-gl-style-spec';
+import * as maplibre from '@maplibre/maplibre-gl-style-spec';
 import { Color } from 'three';
 import { deltaE } from 'Renderer/Color';
 import Coordinates from 'Core/Geographic/Coordinates';
@@ -70,8 +70,8 @@ function rgba2rgb(orig) {
 
 function readVectorProperty(property, options) {
     if (property != undefined) {
-        if (mapbox.expression.isExpression(property)) {
-            return mapbox.expression.createExpression(property, options).value;
+        if (maplibre.expression.isExpression(property)) {
+            return maplibre.expression.createExpression(property, options).value;
         } else {
             return property;
         }
