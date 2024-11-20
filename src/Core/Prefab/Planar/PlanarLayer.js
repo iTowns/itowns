@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 
-import * as CRS from 'Core/Geographic/Crs';
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
 import PlanarTileBuilder from './PlanarTileBuilder';
@@ -35,8 +34,7 @@ class PlanarLayer extends TiledGeometryLayer {
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */
     constructor(id, extent, object3d, config = {}) {
-        const tms = CRS.formatToTms(extent.crs);
-        const tileMatrixSets = [tms];
+        const tileMatrixSets = [extent.crs];
         if (!globalExtentTMS.get(extent.crs)) {
             // Add new global extent for this new crs projection.
             globalExtentTMS.set(extent.crs, extent);

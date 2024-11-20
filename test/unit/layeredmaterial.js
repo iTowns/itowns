@@ -35,7 +35,7 @@ describe('material state vs layer state', function () {
         view.tileLayer.colorLayersOrder = [layer.id];
         view.addLayer(layer);
 
-        const extent = new Tile('TMS:4326', 3, 0, 0).toExtent('EPSG:4326');
+        const extent = new Tile('EPSG:4326', 3, 0, 0).toExtent('EPSG:4326');
         material = new LayeredMaterial();
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));

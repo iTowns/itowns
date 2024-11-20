@@ -44,12 +44,12 @@ describe('Handling no data source error', function () {
         crs: 'EPSG:4326',
         info: { update: () => {} },
         tileMatrixSets: [
-            'TMS:4326',
-            'TMS:3857',
+            'EPSG:4326',
+            'EPSG:3857',
         ],
         parent: { tileMatrixSets: [
-            'TMS:4326',
-            'TMS:3857',
+            'EPSG:4326',
+            'EPSG:3857',
         ],
         },
     });

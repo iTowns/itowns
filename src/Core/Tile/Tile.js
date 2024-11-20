@@ -169,10 +169,10 @@ class Tile {
  * @returns {Tile[]}
  */
 export function tiledCovering(e, tms) {
-    if (e.crs == 'EPSG:4326' && tms == CRS.tms_3857) {
+    if (e.crs == 'EPSG:4326' && tms == 'EPSG:3857') {
         const WMTS_PM = [];
-        const extent = _extent.copy(e).as(CRS.formatToEPSG(tms), _extent2);
-        const { globalExtent, globalDimension, sTs } = getInfoTms(CRS.formatToEPSG(tms));
+        const extent = _extent.copy(e).as(tms, _extent2);
+        const { globalExtent, globalDimension, sTs } = getInfoTms(tms);
         extent.clampByExtent(globalExtent);
         extent.planarDimensions(_dimensionTile);
 

@@ -9,24 +9,24 @@ describe('Tile', function () {
     const row = 22;
     const col = 10;
 
-    it('should convert tile TMS:4326 like expected', function () {
-        const withValues = new Tile('TMS:4326', 0, 0, 0).toExtent('EPSG:4326');
+    it('should convert tile EPSG:4326 like expected', function () {
+        const withValues = new Tile('EPSG:4326', 0, 0, 0).toExtent('EPSG:4326');
         assert.equal(-180, withValues.west);
         assert.equal(0, withValues.east);
         assert.equal(-90, withValues.south);
         assert.equal(90, withValues.north);
     });
 
-    it('should convert TMS:3857 tile to EPSG:3857 extent like expected', function () {
-        const withValues = new Tile('TMS:3857', 0, 0, 0).toExtent('EPSG:3857');
+    it('should convert EPSG:3857 tile to EPSG:3857 extent like expected', function () {
+        const withValues = new Tile('EPSG:3857', 0, 0, 0).toExtent('EPSG:3857');
         assert.equal(-20037508.342789244, withValues.west);
         assert.equal(20037508.342789244, withValues.east);
         assert.equal(-20037508.342789244, withValues.south);
         assert.equal(20037508.342789244, withValues.north);
     });
 
-    it('should convert TMS:3857 tile to EPSG:4326 extent like expected', function () {
-        const withValues = new Tile('TMS:3857', 0, 0, 0);
+    it('should convert EPSG:3857 tile to EPSG:4326 extent like expected', function () {
+        const withValues = new Tile('EPSG:3857', 0, 0, 0);
         const result = withValues.toExtent('EPSG:4326');
         assert.equal(-180.00000000000003, result.west);
         assert.equal(180.00000000000003, result.east);
@@ -35,8 +35,8 @@ describe('Tile', function () {
     });
 
     it('should return expected offset using tiled extent', function () {
-        const withValues = new Tile('TMS:4326', zoom, row, col);
-        const parent = new Tile('TMS:4326', zoom - 2, row, col);
+        const withValues = new Tile('EPSG:4326', zoom, row, col);
+        const parent = new Tile('EPSG:4326', zoom - 2, row, col);
         const offset = withValues.offsetToParent(parent);
         assert.equal(offset.x, 0.5);
         assert.equal(offset.y, 0.5);
@@ -45,7 +45,7 @@ describe('Tile', function () {
     });
 
     it('should return expected tiled extent parent', function () {
-        const withValues = new Tile('TMS:4326', zoom, row, col);
+        const withValues = new Tile('EPSG:4326', zoom, row, col);
         const parent = withValues.tiledExtentParent(zoom - 2);
         assert.equal(parent.zoom, 3);
         assert.equal(parent.row, 5);
@@ -53,7 +53,7 @@ describe('Tile', function () {
     });
 
     it('should convert TMS extent values to string', function () {
-        const withValues = new Tile('TMS:4326', 0, 1, 2);
+        const withValues = new Tile('EPSG:4326', 0, 1, 2);
         const tostring = withValues.toString(',');
         const toValues = tostring.split(',').map(s => Number(s));
         assert.equal(toValues[0], withValues.zoom);

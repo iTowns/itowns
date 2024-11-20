@@ -49,10 +49,6 @@ class Extent {
             throw new Error(`${crs} is a geocentric projection, it doesn't make sense with a geographical extent`);
         }
 
-        if (CRS.isTms(crs)) {
-            throw new Error(`${crs} is a tiled projection, use Tile instead`);
-        }
-
         this.isExtent = true;
         this.crs = crs;
 

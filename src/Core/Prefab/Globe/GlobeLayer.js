@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as CRS from 'Core/Geographic/Crs';
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
 import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 import { globalExtentTMS, schemeTiles } from 'Core/Tile/TileGrid';
@@ -48,13 +47,13 @@ class GlobeLayer extends TiledGeometryLayer {
      */
     constructor(id, object3d, config = {}) {
         // Configure tiles
-        const scheme = schemeTiles.get(CRS.tms_4326);
+        const scheme = schemeTiles.get('EPSG:4326');
         const schemeTile = globalExtentTMS.get('EPSG:4326').subdivisionByScheme(scheme);
 
         // Supported tile matrix set for color/elevation layer
         config.tileMatrixSets = [
-            CRS.tms_4326,
-            CRS.tms_3857,
+            'EPSG:4326',
+            'EPSG:3857',
         ];
         const uvCount = config.tileMatrixSets.length;
         const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount });
@@ -104,7 +103,7 @@ class GlobeLayer extends TiledGeometryLayer {
 
     subdivision(context, layer, node) {
         if (node.level == 5) {
-            const row = node.getExtentsByProjection(CRS.tms_4326)[0].row;
+            const row = node.getExtentsByProjection('EPSG:4326')[0].row;
             if (row == 31 || row == 0) {
                 // doesn't subdivise the pole
                 return false;
