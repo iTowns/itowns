@@ -917,7 +917,10 @@ class Style {
                     style.icon.source = sprites.source;
                     style.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
                     const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['icon-color'], { type: 'color' }));
-                    style.icon.color = color;
+                    // https://docs.mapbox.com/style-spec/reference/layers/#paint-symbol-icon-color
+                    if (iconImg.sdf) {
+                        style.icon.color = color;
+                    }
                     style.icon.opacity = readVectorProperty(layer.paint['icon-opacity']) || (opacity !== undefined && opacity);
                 } catch (err) {
                     err.message = `VTlayer '${layer.id}': argument sprites must not be null when using layer.layout['icon-image']`;
