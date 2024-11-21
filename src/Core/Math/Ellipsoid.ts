@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import proj4 from 'proj4';
 import Coordinates from '../Geographic/Coordinates';
 
+/**
+ * Length of the semi-axes of the WGS84 ellipsoid.
+ * @internal
+ */
 export const ellipsoidSizes = new THREE.Vector3(
     proj4.WGS84.a,
     proj4.WGS84.a,
@@ -10,12 +14,22 @@ export const ellipsoidSizes = new THREE.Vector3(
 const normal = new THREE.Vector3();
 
 class Ellipsoid {
+    /**
+     * Length of the semi-axes of the ellipsoid.
+     */
     size: THREE.Vector3;
+    /**
+     * Eccentricity of the ellipsoid.
+     */
     eccentricity: number;
 
     private _radiiSquared: THREE.Vector3;
     private _invRadiiSquared: THREE.Vector3;
 
+    /**
+     * @param size - Length of the semi-axes of the ellipsoid. Defaults to those
+     * defined by the WGS84 ellipsoid.
+     */
     constructor(size: THREE.Vector3 = ellipsoidSizes) {
         this.size = new THREE.Vector3();
         this._radiiSquared = new THREE.Vector3();
@@ -25,10 +39,26 @@ class Ellipsoid {
         this.setSize(size);
     }
 
+    /**
+     * Computes the normal vector to an ellipsoid at the given cartesian
+     * coordinate `(x, y, z)`.
+     *
+     * @param cartesian - The given cartesian coordinate.
+     * @param target - An object to store this vector to. If this is not
+     * specified, a new vector will be created.
+     */
     geodeticSurfaceNormal(cartesian: Coordinates, target = new THREE.Vector3()) {
         return cartesian.toVector3(target).multiply(this._invRadiiSquared).normalize();
     }
 
+    /**
+     * Computes the normal vector to an ellipsoid at the given geographic
+     * coordinate `(longitude, latitude, altitude)`.
+     *
+     * @param coordCarto - The given geographic coordinate.
+     * @param target - An object to store this vector to. If this is not
+     * specified, a new vector will be created.
+     */
     geodeticSurfaceNormalCartographic(coordCarto: Coordinates, target = new THREE.Vector3()) {
         const longitude = THREE.MathUtils.degToRad(coordCarto.longitude);
         const latitude = THREE.MathUtils.degToRad(coordCarto.latitude);
@@ -39,7 +69,14 @@ class Ellipsoid {
             Math.sin(latitude));
     }
 
-    setSize(size: THREE.Vector3Like) {
+    /**
+     * Sets the length of the semi-axes of this ellipsoid from a 3-dimensional
+     * vector-like object. The object shall have both `x`, `y` and `z`
+     * properties.
+     *
+     * @param size - The source vector.
+     */
+    setSize(size: THREE.Vector3Like): this {
         this.size.set(size.x, size.y, size.z);
 
         this._radiiSquared.multiplyVectors(size, size);
@@ -49,6 +86,8 @@ class Ellipsoid {
         this._invRadiiSquared.z = (size.z === 0) ? 0 : 1 / this._radiiSquared.z;
 
         this.eccentricity = Math.sqrt(this._radiiSquared.x - this._radiiSquared.z) / this.size.x;
+
+        return this;
     }
 
     cartographicToCartesian(coordCarto: Coordinates, target = new THREE.Vector3()) {
