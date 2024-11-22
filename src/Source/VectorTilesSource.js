@@ -71,11 +71,11 @@ class VectorTilesSource extends TMSSource {
 
         this.accessToken = source.accessToken;
 
-        let styleUrl;
+        let mvtStyleUrl;
         if (source.style) {
             if (typeof source.style == 'string') {
-                styleUrl = urlParser.normalizeStyleURL(source.style, this.accessToken);
-                promise = Fetcher.json(styleUrl, this.networkOptions);
+                mvtStyleUrl = urlParser.normalizeStyleURL(source.style, this.accessToken);
+                promise = Fetcher.json(mvtStyleUrl, this.networkOptions);
             } else {
                 promise = Promise.resolve(source.style);
             }
@@ -83,27 +83,34 @@ class VectorTilesSource extends TMSSource {
             throw new Error('New VectorTilesSource: style is required');
         }
 
-        this.whenReady = promise.then((style) => {
-            this.jsonStyle = style;
-            let baseurl = source.sprite || style.sprite;
+        this.whenReady = promise.then((mvtStyle) => {
+            this.jsonStyle = mvtStyle;
+            let baseurl = source.sprite || mvtStyle.sprite;
             if (baseurl) {
-                baseurl = new URL(baseurl, styleUrl).toString();
+                baseurl = new URL(baseurl, mvtStyleUrl).toString();
                 const spriteUrl = urlParser.normalizeSpriteURL(baseurl, '', '.json', this.accessToken);
                 return Fetcher.json(spriteUrl, this.networkOptions).then((sprites) => {
                     this.sprites = sprites;
                     const imgUrl = urlParser.normalizeSpriteURL(baseurl, '', '.png', this.accessToken);
                     this.sprites.source = imgUrl;
-                    return style;
+                    return mvtStyle;
                 });
             }
 
-            return style;
-        }).then((style) => {
-            style.layers.forEach((layer, order) => {
+            return mvtStyle;
+        }).then((mvtStyle) => {
+            mvtStyle.layers.forEach((layer, order) => {
                 layer.sourceUid = this.uid;
                 if (layer.type === 'background') {
                     this.backgroundLayer = layer;
                 } else if (ffilter(layer)) {
+                    if (layer['source-layer'] === undefined) {
+                        const refProperties = ['type', 'source', 'source-layer', 'minzoom', 'maxzoom', 'filter', 'layout'];
+                        const refLayer = mvtStyle.layers.filter(l => l.id === layer.ref)[0];
+                        refProperties.forEach((prop) => {
+                            layer[prop] = refLayer[prop];
+                        });
+                    }
                     const style = Style.setFromVectorTileLayer(layer, this.sprites, order, this.symbolToCircle, this.warn);
                     this.styles[layer.id] = style;
 
@@ -123,9 +130,9 @@ class VectorTilesSource extends TMSSource {
             });
 
             if (this.url == '.') {
-                const TMSUrlList = Object.values(style.sources).map((sourceVT) => {
+                const TMSUrlList = Object.values(mvtStyle.sources).map((sourceVT) => {
                     if (sourceVT.url) {
-                        sourceVT.url = new URL(sourceVT.url, styleUrl).toString();
+                        sourceVT.url = new URL(sourceVT.url, mvtStyleUrl).toString();
                         const urlSource = urlParser.normalizeSourceURL(sourceVT.url, this.accessToken);
                         return Fetcher.json(urlSource, this.networkOptions).then((tileJSON) => {
                             if (tileJSON.tiles[0]) {
