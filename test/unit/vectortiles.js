@@ -176,6 +176,7 @@ describe('VectorTilesSource', function () {
                     paint: {
                         'fill-color': 'rgb(255, 0, 0)',
                     },
+                    'source-layer': 'source_layer',
                 }],
             },
         });
@@ -213,6 +214,7 @@ describe('VectorTilesSource', function () {
                     paint: {
                         'fill-color': 'rgb(255, 0, 0)',
                     },
+                    'source-layer': 'source_layer',
                 }, {
                     // minzoom is 5 (specified)
                     id: 'second',
@@ -221,6 +223,7 @@ describe('VectorTilesSource', function () {
                         'fill-color': 'rgb(255, 0, 0)',
                     },
                     minzoom: 5,
+                    'source-layer': 'source_layer',
                 }, {
                     // minzoom is 4 (first stop)
                     // If a style have `stops` expression, should it be used to determine the min zoom?
@@ -230,6 +233,7 @@ describe('VectorTilesSource', function () {
                         'fill-color': 'rgb(255, 0, 0)',
                         'fill-opacity': { stops: [[4, 1], [7, 0.5]] },
                     },
+                    'source-layer': 'source_layer',
                 }, {
                     // minzoom is 1 (first stop and no specified minzoom)
                     id: 'fourth',
@@ -238,6 +242,7 @@ describe('VectorTilesSource', function () {
                         'fill-color': 'rgb(255, 0, 0)',
                         'fill-opacity': { stops: [[1, 1], [7, 0.5]] },
                     },
+                    'source-layer': 'source_layer',
                 }, {
                     // minzoom is 4 (first stop is higher than specified)
                     id: 'fifth',
@@ -247,6 +252,7 @@ describe('VectorTilesSource', function () {
                         'fill-opacity': { stops: [[4, 1], [7, 0.5]] },
                     },
                     minzoom: 3,
+                    'source-layer': 'source_layer',
                 }],
             },
         });
