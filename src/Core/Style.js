@@ -941,17 +941,16 @@ class Style {
      * @param {Boolean} canBeFilled - true if feature.type == FEATURE_TYPES.POLYGON.
      */
     applyToCanvasPolygon(txtrCtx, polygon, invCtxScale, canBeFilled) {
-        const context = this.context;
         // draw line or edge of polygon
         if (this.stroke) {
             // TO DO add possibility of using a pattern (https://github.com/iTowns/itowns/issues/2210)
-            this._applyStrokeToPolygon(txtrCtx, invCtxScale, polygon, context);
+            this._applyStrokeToPolygon(txtrCtx, invCtxScale, polygon);
         }
 
         // fill inside of polygon
-        if (canBeFilled && this.fill) {
+        if (canBeFilled && (this.fill.pattern || this.fill.color)) {
             // canBeFilled can be move to StyleContext in the later PR
-            this._applyFillToPolygon(txtrCtx, invCtxScale, polygon, context);
+            this._applyFillToPolygon(txtrCtx, invCtxScale, polygon);
         }
     }
 
