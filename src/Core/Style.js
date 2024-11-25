@@ -871,7 +871,6 @@ class Style {
                                 if (stop[1].includes('{')) {
                                     cropValues = function _(p) {
                                         const id = stop[1].replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
-                                        cropValues = sprites[id];
                                         return sprites[id];
                                     };
                                 }
@@ -884,7 +883,6 @@ class Style {
                         if (iconImg[0].includes('{')) {
                             style.icon.cropValues = function _(p) {
                                 const id = iconImg.replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
-                                style.icon.cropValues = sprites[id];
                                 return sprites[id];
                             };
                         }
