@@ -127,10 +127,6 @@ class VectorTilesSource extends TMSSource {
                         id: layer.id,
                         order,
                         filterExpression: featureFilter(layer.filter),
-                        zoom: {
-                            min: layer.minzoom || 0,
-                            max: layer.maxzoom || 24,
-                        },
                     });
                 }
             });
