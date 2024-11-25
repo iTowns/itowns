@@ -825,6 +825,8 @@ class Style {
             style.point.opacity = opacity;
             style.point.radius = readVectorProperty(layer.paint['circle-radius']);
         } else if (layer.type === 'symbol') {
+            // if symbol we shouldn't draw stroke but defaut value is 1.
+            style.stroke.width = 0.0;
             // overlapping order
             style.text.zOrder = readVectorProperty(layer.layout['symbol-z-order']);
             if (style.text.zOrder == 'auto') {
