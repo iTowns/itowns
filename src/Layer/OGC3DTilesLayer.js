@@ -356,14 +356,14 @@ class OGC3DTilesLayer extends GeometryLayer {
     getC3DTileFeatureFromIntersectsArray(intersects) {
         if (!intersects.length) { return null; }
 
-        const { face, index, object } = intersects[0];
+        const { face, index, object, instanceId } = intersects[0];
 
         /** @type{number|null} */
         let batchId;
         if (object.isPoints && index) {
             batchId = object.geometry.getAttribute('_BATCHID')?.getX(index) ?? index;
         } else if (object.isMesh && face) {
-            batchId = object.geometry.getAttribute('_BATCHID')?.getX(face.a);
+            batchId = object.geometry.getAttribute('_BATCHID')?.getX(face.a) ?? instanceId;
         }
 
         if (batchId === undefined) {
