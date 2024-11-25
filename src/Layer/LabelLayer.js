@@ -5,7 +5,6 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import Label from 'Core/Label';
-import { FEATURE_TYPES } from 'Core/Feature';
 import { readExpression, StyleContext } from 'Core/Style';
 import { ScreenGrid } from 'Renderer/Label2DRenderer';
 
@@ -254,10 +253,12 @@ class LabelLayer extends GeometryLayer {
         context.setZoom(extentOrTile.zoom);
 
         data.features.forEach((f) => {
-            // TODO: add support for LINE and POLYGON
-            if (f.type !== FEATURE_TYPES.POINT) {
-                return;
+            if (f.style.text) {
+                if (Object.keys(f.style.text).length === 0) {
+                    return;
+                }
             }
+
             context.setFeature(f);
 
             const featureField = f.style?.text?.field;
@@ -270,19 +271,11 @@ class LabelLayer extends GeometryLayer {
             labels.needsAltitude = labels.needsAltitude || this.forceClampToTerrain === true || (isDefaultElevationStyle && !f.hasRawElevationData);
 
             f.geometries.forEach((g) => {
-                // NOTE: this only works because only POINT is supported, it
-                // needs more work for LINE and POLYGON
-                coord.setFromArray(f.vertices, g.size * g.indices[0].offset);
-                // Transform coordinate to data.crs projection
-                coord.applyMatrix4(data.matrixWorld);
-
-                if (!_extent.isPointInside(coord)) { return; }
-                const geometryField = g.properties.style && g.properties.style.text && g.properties.style.text.field;
-
                 context.setGeometry(g);
-                let content;
                 this.style.setContext(context);
                 const layerField = this.style.text && this.style.text.field;
+                const geometryField = g.properties.style && g.properties.style.text && g.properties.style.text.field;
+                let content;
                 if (this.labelDomelement) {
                     content = readExpression(this.labelDomelement, context);
                 } else if (!geometryField && !featureField && !layerField) {
@@ -298,12 +291,23 @@ class LabelLayer extends GeometryLayer {
                     return;
                 }
 
-                const label = new Label(content, coord.clone(), this.style);
+                // NOTE: this only works fine for POINT.
+                // It needs more work for LINE and POLYGON as we currently only use the first point of the entity
 
-                label.layerId = this.id;
-                label.padding = this.margin || label.padding;
+                g.indices.forEach((i) => {
+                    coord.setFromArray(f.vertices, g.size * i.offset);
+                    // Transform coordinate to data.crs projection
+                    coord.applyMatrix4(data.matrixWorld);
 
-                labels.push(label);
+                    if (!_extent.isPointInside(coord)) { return; }
+
+                    const label = new Label(content, coord.clone(), this.style);
+
+                    label.layerId = this.id;
+                    label.padding = this.margin || label.padding;
+
+                    labels.push(label);
+                });
             });
         });
 
