@@ -152,21 +152,12 @@ function readPBF(file, options) {
             const layers = options.in.layers[vtLayerName]
                 .filter(l => l.filterExpression.filter({ zoom: z }, vtFeature));
 
-            let feature;
-
             for (const layer of layers) {
-                if (!feature) {
-                    feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
-                    feature.id = layer.id;
-                    feature.order = layer.order;
-                    feature.style = options.in.styles[feature.id];
-                    vtFeatureToFeatureGeometry(vtFeature, feature);
-                } else if (!collection.features.find(f => f.id === layer.id)) {
-                    feature = collection.newFeatureByReference(feature);
-                    feature.id = layer.id;
-                    feature.order = layer.order;
-                    feature.style = options.in.styles[feature.id];
-                }
+                const feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
+                feature.id = layer.id;
+                feature.order = layer.order;
+                feature.style = options.in.styles[feature.id];
+                vtFeatureToFeatureGeometry(vtFeature, feature);
             }
         }
     });
