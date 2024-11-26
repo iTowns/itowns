@@ -186,13 +186,15 @@ class Label2DRenderer {
         if (!frustum.containsPoint(worldPosition.applyMatrix4(camera.matrixWorldInverse)) ||
         // Check if globe horizon culls the label
         // Do some horizon culling (if possible) if the tiles level is small enough.
-            label.horizonCullingPoint && GlobeLayer.horizonCulling(label.horizonCullingPoint) ||
-        // Check if content isn't present in visible labels
-            this.grid.visible.some((l) => {
-                // TODO for icon without text filter by position
-                const textContent = label.content.textContent;
-                return textContent !== '' && l.content.textContent.toLowerCase() == textContent.toLowerCase();
-            })) {
+            label.horizonCullingPoint && GlobeLayer.horizonCulling(label.horizonCullingPoint)
+            // Why do we might need this part ?
+            // || // Check if content isn't present in visible labels
+            // this.grid.visible.some((l) => {
+            //     // TODO for icon without text filter by position
+            //     const textContent = label.content.textContent;
+            //     return textContent !== '' && l.content.textContent.toLowerCase() == textContent.toLowerCase();
+            // })
+        ) {
             label.visible = false;
         } else {
             // projecting world position label
