@@ -162,7 +162,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
                 const dataValue = style.context.featureStyle?.[category]?.[parameter];
                 if (dataValue != undefined) { return readExpression(dataValue, style.context); }
                 if (defaultValue instanceof Function) {
-                    return defaultValue(style.context.properties, style.context);
+                    return defaultValue(style.context.properties, style.context) ?? defaultValue;
                 }
                 return defaultValue;
             },
@@ -808,7 +808,8 @@ class Style {
                 style.stroke.color = color;
                 style.stroke.opacity = opacity;
                 style.stroke.width = 1.0;
-                style.stroke.dasharray = [];
+            } else {
+                style.stroke.width  = 0.0;
             }
         } else if (layer.type === 'line') {
             const prepare = readVectorProperty(layer.paint['line-color'], { type: 'color' });
@@ -942,7 +943,7 @@ class Style {
      */
     applyToCanvasPolygon(txtrCtx, polygon, invCtxScale, canBeFilled) {
         // draw line or edge of polygon
-        if (this.stroke) {
+        if (this.stroke.width > 0) {
             // TO DO add possibility of using a pattern (https://github.com/iTowns/itowns/issues/2210)
             this._applyStrokeToPolygon(txtrCtx, invCtxScale, polygon);
         }
@@ -958,11 +959,11 @@ class Style {
         if (txtrCtx.strokeStyle !== this.stroke.color) {
             txtrCtx.strokeStyle = this.stroke.color;
         }
-        const width = (this.stroke.width || 2.0) * invCtxScale;
+        const width = this.stroke.width * invCtxScale;
         if (txtrCtx.lineWidth !== width) {
             txtrCtx.lineWidth = width;
         }
-        const alpha = this.stroke.opacity == undefined ? 1.0 : this.stroke.opacity;
+        const alpha = this.stroke.opacity;
         if (alpha !== txtrCtx.globalAlpha && typeof alpha == 'number') {
             txtrCtx.globalAlpha = alpha;
         }
