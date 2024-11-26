@@ -1,0 +1,91 @@
+<html>
+  <head>
+    <title>Itowns - vector-tiles 2d </title>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="css/example.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="css/LoadingScreen.css"
+    />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+  </head>
+  <body>
+    <div id="viewerDiv"></div>
+
+    <!-- Import iTowns source code -->
+    <script src="../dist/itowns.js"></script>
+    <script src="../dist/debug.js"></script>
+    <!-- Import iTowns LoadingScreen and GuiTools plugins -->
+    <script src="js/GUI/GuiTools.js"></script>
+    <script src="js/GUI/LoadingScreen.js"></script>
+
+    <script>
+      const typeView = 'Planar';
+      // const typeView = 'Globe';
+
+      // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+      var viewerDiv = document.getElementById('viewerDiv');
+      let view;
+
+      if (typeView === 'Globe') {
+        const coord = new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712); // Paris
+        // const coord = new itowns.Coordinates("EPSG:4326", 60.599525, 56.834341); // Yekaterinburg
+        const placement = {
+          coord,
+          range: 950000,
+        };
+        view = new itowns.GlobeView(viewerDiv, placement);
+      } else if (typeView === 'Planar') {
+        // Define geographic extent: CRS, min/max X, min/max Y
+        var extent = new itowns.Extent(
+            'EPSG:3857',
+            -20037508.342789244, 20037508.342789244,
+            -20037508.342789255, 20037508.342789244);
+
+        // Instanciate PlanarView
+        view = new itowns.PlanarView(viewerDiv, extent, {
+            maxSubdivisionLevel: 20,
+            controls: {
+                // We do not want the user to zoom out too much
+                maxAltitude: 40000000,
+                // We want to keep the rotation disabled, to only have a view from the top
+                enableRotation: false,
+                // Don't zoom too much on smart zoom
+                smartTravelHeightMax: 100000,
+            },
+        });
+      }
+ 
+      const debugMenu = new GuiTools("menuDiv", view);
+      setupLoadingScreen(viewerDiv, view);
+
+      const source = new itowns.VectorTilesSource({
+        style: "mapbox://styles/mapbox/streets-v8",
+        accessToken:
+          "pk.eyJ1IjoiZnRvcm9tYW5vZmYiLCJhIjoiY2xrc2Zpa2o3MDQxNTNxcG5sczJyaTlncyJ9.5KFKdMLIiy-b_fAjSVhjCQ",
+      });
+
+      const layer = new itowns.ColorLayer("vector-map", {
+        source,
+        noTextureParentOutsideLimit: true,
+        addLabelLayer: true,
+      });
+
+      view.addLayer(layer).then(() => {
+        debugMenu.addLayerGUI.bind(debugMenu);
+        itowns.ColorLayersOrdering.moveLayerToIndex(view, "vector-map", 15);
+      });
+
+      debug.createTileDebugUI(debugMenu.gui, view);
+    </script>
+  </body>
+</html>
