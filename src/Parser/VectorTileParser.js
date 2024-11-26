@@ -152,8 +152,19 @@ function readPBF(file, options) {
             const layers = options.in.layers[vtLayerName]
                 .filter(l => l.filterExpression.filter({ zoom: z }, vtFeature));
 
-            let feature;
+            for (const layer of layers) {
+                const feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
+                feature.id = layer.id;
+                feature.order = layer.order;
+                feature.style = options.in.styles[feature.id];
+                vtFeatureToFeatureGeometry(vtFeature, feature);
+            }
 
+
+            /*
+            // This optimization is not fully working and need to be reassessed
+            // (see https://github.com/iTowns/itowns/pull/2469/files#r1861802136)
+            let feature;
             for (const layer of layers) {
                 if (!feature) {
                     feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
@@ -168,6 +179,7 @@ function readPBF(file, options) {
                     feature.style = options.in.styles[feature.id];
                 }
             }
+            */
         }
     });
 
