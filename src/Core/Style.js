@@ -872,8 +872,13 @@ class Style {
                                     cropValues = function _(p) {
                                         const id = stop[1].replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
                                         cropValues = sprites[id];
+                                        if (cropValues === undefined) {
+                                            console.warn(`WARNING: "${id}" not found in sprite file`);
+                                        }
                                         return sprites[id];
                                     };
+                                } else if (cropValues === undefined) {
+                                    console.warn(`WARNING: "${stop[1]}" not found in sprite file`);
                                 }
                                 return [stop[0], cropValues];
                             }),
