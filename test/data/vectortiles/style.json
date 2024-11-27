@@ -19,7 +19,8 @@
             "maxzoom": 13,
             "paint": {
                 "fill-color": "rgb(255, 0, 0)"
-            }
+            },
+            "source-layer": "source_layer"
         }
     ]
 }
