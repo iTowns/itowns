@@ -5,7 +5,7 @@ import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 // get oriented bounding box of tile
-const builder = new GlobeTileBuilder({ crs: 'EPSG:4978', uvCount: 1 });
+const builder = new GlobeTileBuilder({ uvCount: 1 });
 const size = new THREE.Vector3();
 const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();

@@ -18,11 +18,11 @@ export type Buffers = {
     uvs: [Option<Float32Array>, Option<Float32Array>],
 };
 
-type TmpBuffers = Buffers & {
+type BuffersAndSkirt = Buffers & {
     skirt: IndexArray,
 };
 
-function pickUintArraySize(
+function getUintArrayConstructor(
     highestValue: number,
 ): Uint8ArrayConstructor | Uint16ArrayConstructor | Uint32ArrayConstructor {
     let picked = null;
@@ -50,7 +50,7 @@ function allocateIndexBuffer(
     }
 
     const indexBufferSize = getBufferIndexSize(nSeg, params.disableSkirt);
-    const indexConstructor = pickUintArraySize(nVertex);
+    const indexConstructor = getUintArrayConstructor(nVertex);
 
     const tileLen = indexBufferSize;
     const skirtLen = 4 * nSeg;
@@ -77,7 +77,7 @@ function allocateBuffers(
     nSeg: number,
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
-): TmpBuffers {
+): BuffersAndSkirt {
     const {
         index,
         skirt,
@@ -127,11 +127,12 @@ function initComputeUv1(value: number): (uv: Float32Array, id: number) => void {
 type ComputeUvs =
     [typeof computeUv0 | (() => void), ReturnType<typeof initComputeUv1>?];
 
+/** Compute buffers describing a tile according to a builder and its params. */
 // TODO: Split this even further into subfunctions
 export function computeBuffers(
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
-) {
+): Buffers {
     //     n seg, n+1 vert    + <- skirt, n verts per side
     //    <---------------> / |
     //    +---+---+---+---+   |
@@ -154,7 +155,7 @@ export function computeBuffers(
         throw new Error('Tile segments count is too big');
     }
 
-    const outBuffers: TmpBuffers = allocateBuffers(
+    const outBuffers: BuffersAndSkirt = allocateBuffers(
         nTotalVertex, nSeg,
         builder, params,
     );
@@ -167,7 +168,7 @@ export function computeBuffers(
     for (let y = 0; y <= nSeg; y++) {
         const v = y / nSeg;
 
-        params.projected.y = builder.vProject(v, params.extent);
+        params.coordinates.y = builder.vProject(v, params.extent);
 
         if (builder.computeExtraOffset !== undefined) {
             computeUvs[1] = initComputeUv1(
@@ -179,9 +180,9 @@ export function computeBuffers(
             const u = x / nSeg;
             const id_m3 = (y * nVertex + x) * 3;
 
-            params.projected.x = builder.uProject(u, params.extent);
+            params.coordinates.x = builder.uProject(u, params.extent);
 
-            const vertex = builder.vertexPosition(params.projected);
+            const vertex = builder.vertexPosition(params.coordinates);
             const normal = builder.vertexNormal();
 
             // move geometry to center world
@@ -243,6 +244,7 @@ export function computeBuffers(
         }
     }
 
+    /** Copy passed indices at the desired index of the output index buffer. */
     function bufferizeTri(id: number, va: number, vb: number, vc: number) {
         outBuffers.index![id + 0] = va;
         outBuffers.index![id + 1] = vb;
