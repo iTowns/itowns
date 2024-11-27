@@ -57,7 +57,7 @@ class GlobeLayer extends TiledGeometryLayer {
             CRS.tms_3857,
         ];
         const uvCount = config.tileMatrixSets.length;
-        const builder = new GlobeTileBuilder({ crs: 'EPSG:4978', uvCount });
+        const builder = new GlobeTileBuilder({ uvCount });
 
         super(id, object3d || new THREE.Group(), schemeTile, builder, config);
 

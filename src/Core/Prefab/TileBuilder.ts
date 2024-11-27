@@ -4,6 +4,7 @@ import Cache from 'Core/Scheduler/Cache';
 import { computeBuffers } from 'Core/Prefab/computeBufferTileGeometry';
 import OBB from 'Renderer/OBB';
 import type Extent from 'Core/Geographic/Extent';
+import Coordinates from 'Core/Geographic/Coordinates';
 
 const cacheBuffer = new Map<string, { [buf: string]: THREE.BufferAttribute }>();
 const cacheTile = new Cache();
@@ -15,46 +16,33 @@ export type GpuBufferAttributes = {
     uvs: THREE.BufferAttribute[];
 };
 
+/**
+ * Reference to a tile's extent with rigid transformations.
+ * Enables reuse of geometry, saving a bit of memory.
+ */
 export type ShareableExtent = {
     shareableExtent: Extent;
     quaternion: THREE.Quaternion;
     position: THREE.Vector3;
 };
 
-// TODO: Check if this order is right
-// Ideally we split this into Vec2 and a simpler LatLon type
-// Somewhat equivalent to a light Coordinates class
-export class Projected extends THREE.Vector2 {
-    public get longitude(): number {
-        return this.x;
-    }
-
-    public set longitude(longitude: number) {
-        this.x = longitude;
-    }
-
-    public get latitude(): number {
-        return this.y;
-    }
-
-    public set latitude(latitude: number) {
-        this.y = latitude;
-    }
-}
-
 export interface TileBuilderParams {
     /** Whether to build the skirt. */
     disableSkirt: boolean;
     /** Whether to render the skirt. */
     hideSkirt: boolean;
+    /**
+     * Cache-related.
+     * Tells the function whether to build or skip the index and uv buffers.
+     */
     buildIndexAndUv_0: boolean;
     /** Number of segments (edge loops) inside tiles. */
     segments: number;
+    // TODO: Move this out of the interface
     /** Buffer for projected points. */
-    projected: Projected;
+    coordinates: Coordinates;
     extent: Extent;
     level: number;
-    zoom: number;
     center: THREE.Vector3;
 }
 
@@ -63,13 +51,26 @@ export interface TileBuilder<SpecializedParams extends TileBuilderParams> {
 
     /** Convert builder-agnostic params to specialized ones. */
     prepare(params: TileBuilderParams): SpecializedParams;
+    /**
+     * Computes final offset of the second texture set.
+     * Only relevant in the case of more than one texture sets.
+     */
     computeExtraOffset?: (params: SpecializedParams) => number;
-    /** Get the center of the tile in 3D cartesian coordinates. */
+    /** Get the center of the current tile as a 3D vector. */
     center(extent: Extent): THREE.Vector3;
-    vertexPosition(position: THREE.Vector2): THREE.Vector3;
+    /** Converts an x/y tile-space position to its equivalent in 3D space. */
+    vertexPosition(coordinates: Coordinates): THREE.Vector3;
+    /** Gets the geodesic normal of the last processed vertex. */
     vertexNormal(): THREE.Vector3;
+    /** Project horizontal texture coordinate to world space. */
     uProject(u: number, extent: Extent): number;
+    /** Project vertical texture coordinate to world space. */
     vProject(v: number, extent: Extent): number;
+    /**
+     * Compute shareable extent to pool geometries together.
+     * The geometry of tiles on the same latitude is the same with an added
+     * rigid transform.
+     */
     computeShareableExtent(extent: Extent): ShareableExtent;
 }
 
@@ -86,7 +87,6 @@ export function newTileGeometry(
         `${builder.crs}_${params.disableSkirt ? 0 : 1}_${params.segments}`;
 
     let promiseGeometry = cacheTile.get(south, params.level, bufferKey);
-    // let promiseGeometry;
 
     // build geometry if doesn't exist
     if (!promiseGeometry) {

@@ -83,7 +83,7 @@ describe('Planar tiles OBB computation', function () {
     });
 });
 describe('Ellipsoid tiles OBB computation', function () {
-    const builder = new GlobeTileBuilder({ crs: 'EPSG:4978', uvCount: 1 });
+    const builder = new GlobeTileBuilder({ uvCount: 1 });
 
     it('should compute globe-level 0 OBB correctly', function (done) {
         const extent = new Extent('EPSG:4326', -180, 0, -90, 90);

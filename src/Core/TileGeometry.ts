@@ -2,15 +2,16 @@ import * as THREE from 'three';
 
 import { computeBuffers, getBufferIndexSize }
     from 'Core/Prefab/computeBufferTileGeometry';
-import { GpuBufferAttributes, Projected, TileBuilder, TileBuilderParams }
+import { GpuBufferAttributes, TileBuilder, TileBuilderParams }
     from 'Core/Prefab/TileBuilder';
 import Extent from 'Core/Geographic/Extent';
 import Cache from 'Core/Scheduler/Cache';
 
 import OBB from 'Renderer/OBB';
+import Coordinates from './Geographic/Coordinates';
 
 type PartialTileBuilderParams =
-    Pick<TileBuilderParams, 'extent' | 'level' | 'zoom'>
+    Pick<TileBuilderParams, 'extent' | 'level'>
     & Partial<TileBuilderParams>;
 
 function defaultBuffers(
@@ -22,7 +23,7 @@ function defaultBuffers(
         hideSkirt: false,
         buildIndexAndUv_0: true,
         segments: 16,
-        projected: new Projected(0, 0),
+        coordinates: new Coordinates(builder.crs),
         center: builder.center(params.extent!).clone(),
         ...params,
     };
@@ -49,11 +50,21 @@ function defaultBuffers(
 }
 
 export class TileGeometry extends THREE.BufferGeometry {
+    /** Oriented Bounding Box of the tile geometry. */
     public OBB: OBB | null;
+    /** Ground area covered by this tile geometry. */
     public extent: Extent;
+    /** Resolution of the tile geometry in segments per side. */
     public segments: number;
-    public tileCenter: THREE.Vector3;
 
+    /**
+     * [TileGeometry] instances are shared between tiles. Since a geometry
+     * handles its own GPU resource, it needs a reference counter to dispose of
+     * that resource only when it is discarded by every single owner of a
+     * reference to the geometry.
+     */
+    // https://github.com/iTowns/itowns/pull/2440#discussion_r1860743294
+    // TODO: Remove nullability by reworking OBB:setFromExtent
     private _refCount: {
         count: number,
         fn: () => void,
@@ -65,7 +76,6 @@ export class TileGeometry extends THREE.BufferGeometry {
         bufferAttributes: GpuBufferAttributes = defaultBuffers(builder, params),
     ) {
         super();
-        this.tileCenter = params.center;
         this.extent = params.extent;
         this.segments = params.segments;
         this.setIndex(bufferAttributes.index);
@@ -96,8 +106,7 @@ export class TileGeometry extends THREE.BufferGeometry {
     }
 
     /**
-     * Initialize reference count for this geometry.
-     * Idempotent operation.
+     * Initialize reference count for this geometry if it is currently null.
      *
      * @param cacheTile - The [Cache] used to store this geometry.
      * @param keys - The [south, level, epsg] key of this geometry.
@@ -143,6 +152,10 @@ export class TileGeometry extends THREE.BufferGeometry {
         this._refCount.count++;
     }
 
+    /**
+     * The current reference count of this [TileGeometry] if it has been
+     * initialized.
+     */
     public get refCount(): number | undefined {
         return this._refCount?.count;
     }

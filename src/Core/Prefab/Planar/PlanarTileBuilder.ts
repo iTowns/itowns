@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import Coordinates from 'Core/Geographic/Coordinates';
 import Extent from 'Core/Geographic/Extent';
 import {
-    Projected,
     ShareableExtent,
     TileBuilder,
     TileBuilderParams,
@@ -17,12 +16,17 @@ type Transform = {
     normal: THREE.Vector3,
 };
 
+/** Specialized parameters for the [PlanarTileBuilder]. */
 export interface PlanarTileBuilderParams extends TileBuilderParams {
     crs: string;
     uvCount?: number;
     nbRow: number;
 }
 
+/**
+ * TileBuilder implementation for the purpose of generating planar
+ * tile arrangements.
+ */
 export class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
     private _uvCount: number;
     private _transform: Transform;
@@ -58,12 +62,10 @@ export class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
         return this._crs;
     }
 
-    // prepare params
-    // init projected object -> params.projected
     public prepare(params: TileBuilderParams): PlanarTileBuilderParams {
         const newParams = params as PlanarTileBuilderParams;
-        newParams.nbRow = 2 ** (params.zoom + 1.0);
-        newParams.projected = new Projected();
+        newParams.nbRow = 2 ** (params.level + 1.0);
+        newParams.coordinates = new Coordinates(this.crs);
         return newParams;
     }
 
@@ -73,23 +75,19 @@ export class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
         return center;
     }
 
-    // set position 3D cartesian
-    public vertexPosition(position: THREE.Vector2): THREE.Vector3 {
-        this._transform.position.set(position.x, position.y, 0);
+    public vertexPosition(coordinates: Coordinates): THREE.Vector3 {
+        this._transform.position.set(coordinates.x, coordinates.y, 0);
         return this._transform.position;
     }
 
-    // get normal for last vertex
     public vertexNormal(): THREE.Vector3 {
         return this._transform.normal;
     }
 
-    // coord u tile to projected
     public uProject(u: number, extent: Extent): number {
         return extent.west + u * (extent.east - extent.west);
     }
 
-    // coord v tile to projected
     public vProject(v: number, extent: Extent): number {
         return extent.south + v * (extent.north - extent.south);
     }
