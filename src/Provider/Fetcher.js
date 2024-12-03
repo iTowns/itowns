@@ -104,7 +104,11 @@ export default {
             rej = reject;
         });
 
-        textureLoader.load(url, res, () => {}, rej);
+        textureLoader.load(url, res, () => {}, (event) => {
+            const error = new Error(`Failed to load texture from URL: \`${url}\``);
+            error.originalEvent = event;
+            rej(error);
+        });
         return promise;
     },
 
