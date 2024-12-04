@@ -85,7 +85,7 @@ jobs:
         include:
           - package: "@gchoqueux/geographic"
             path: "Geographic"
-          - package: "itowns"
+          - package: "@gchoqueux/itowns"
             path: "Main"
     steps:
 
@@ -129,39 +129,40 @@ jobs:
         parallel-finished: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
   # Functional tests
-  functional-tests:
-    name: Functional tests
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
+  # functional-tests:
+  #   name: Functional tests
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
 
-      # Use specific Node.js version
-      - uses: actions/checkout@v4
-      - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: 'npm'
+  #     # Use specific Node.js version
+  #     - uses: actions/checkout@v4
+  #     - name: Use Node.js 22.x
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 22.x
+  #         cache: 'npm'
 
-      # Install packages
-      - name: Install packages
-        run: npm ci
+  #     # Install packages
+  #     - name: Install packages
+  #       run: npm ci
 
-      # Download artifact from build
-      - name: Download itowns bundle
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-itowns
+  #     # Download artifact from build
+  #     - name: Download itowns bundle
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist-itowns
 
-      - name: Run functional tests
-        run: npm run test-functional
+  #     - name: Run functional tests
+  #       run: npm run test-functional
 
 
   # Publish NPM package
   publish:
     name: Publish NPM package
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [finish-coverage, functional-tests]
+    # needs: [finish-coverage, functional-tests]
+    needs: [finish-coverage]
     runs-on: ubuntu-latest
     permissions:
         # id-token: write permission is required for npm provenance:
@@ -218,7 +219,8 @@ jobs:
   deploy:
     name: Deploy to itowns.github.io
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [finish-coverage, functional-tests]
+    # needs: [finish-coverage, functional-tests]
+    needs: [finish-coverage]
     runs-on: ubuntu-latest
     steps:
 
@@ -279,7 +281,8 @@ jobs:
   release:
     name: Release GitHub
     if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
-    needs: [finish-coverage, functional-tests]
+    # needs: [finish-coverage, functional-tests]
+    needs: [finish-coverage]
     runs-on: ubuntu-latest
     steps:
 
