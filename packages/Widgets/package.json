@@ -29,7 +29,7 @@
     "url": "https://github.com/itowns/itowns/issues"
   },
   "dependencies": {
-    "@itowns/geographic": "^2.44.2",
+    "@gchoqueux/geographic": "^2.44.2",
     "itowns": "^2.44.2"
   },
   "homepage": "https://itowns.github.io/"

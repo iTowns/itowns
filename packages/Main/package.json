@@ -20,7 +20,7 @@
     "prepublishOnly": "npx copyfiles -u 1 \"../../examples/**/*\" ./examples/ && npx copyfiles -u 1 \"../../docs/**/*\" ./docs/ && npx copyfiles -u 1 \"../../dist/**/*\" ./dist/ ",
     "postpublish": "node clean.cjs",
     "publish-next": "npm version prerelease --preid next && npm run update-package",
-    "update-package": "npm remove @itowns/geographic && npm install @itowns/geographic@$npm_package_version --save"
+    "update-package": "npm remove @gchoqueux/geographic && npm install @gchoqueux/geographic@$npm_package_version --save"
   },
   "c8": {
     "exclude": [
@@ -47,7 +47,7 @@
     "url": "https://github.com/iTowns/itowns/issues"
   },
   "dependencies": {
-    "@itowns/geographic": "^2.44.2",
+    "@gchoqueux/geographic": "^2.44.2",
     "@mapbox/mapbox-gl-style-spec": "^13.28.0",
     "@mapbox/vector-tile": "^2.0.3",
     "@tmcw/togeojson": "^5.8.1",

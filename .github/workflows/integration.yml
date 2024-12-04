@@ -83,7 +83,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - package: "@itowns/geographic"
+          - package: "@gchoqueux/geographic"
             path: "Geographic"
           - package: "itowns"
             path: "Main"
@@ -239,7 +239,7 @@ jobs:
           cp -R buildDocs itowns/docs
 
       # When deploying a release, we copy itowns bundles in dev folder to be published on
-      # iTowns/itowns.github.io. This is because we can't publish both a release version
+      # gchoqueux/itowns.github.io. This is because we can't publish both a release version
       # (in itowns/ folder) and a @next version (in itowns/dev folder) at the same time.
       - name: add dev bundle if release
         if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
@@ -253,7 +253,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          external_repository: iTowns/itowns.github.io
+          external_repository: gchoqueux/itowns.github.io
           publish_dir: ./itowns
           destination_dir: ./itowns
           publish_branch: master
@@ -263,12 +263,12 @@ jobs:
       - name: Deploy Dev to itowns.github.io
         # Prevent deploying @next version when a release is done. Doing so would cause an issue,
         # since it is not possible to use the same deploy key to simultaneously deploy two different
-        # folders on iTowns/itowns.github.io (the release bundle on previous step and this one.
+        # folders on gchoqueux/itowns.github.io (the release bundle on previous step and this one.
         if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          external_repository: iTowns/itowns.github.io
+          external_repository: gchoqueux/itowns.github.io
           publish_dir: ./itowns
           destination_dir: ./itowns/dev
           publish_branch: master
