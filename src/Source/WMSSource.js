@@ -1,8 +1,37 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
 import Extent from 'Core/Geographic/Extent';
+import * as CRS from 'Core/Geographic/Crs';
 
 const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
+
+/**
+ * Proj provides an optional param to define axis order and orientation for a
+ * given projection. 'enu' for instance stands for east, north, up.
+ * Elevation is not needed here. The two first characters are sufficient to map
+ * proj axis to iTowns bbox order formalism.
+ * 'enu' corresponds to 'wsen' because bbox starts by lower value coordinates
+ * and preserves axis ordering, here long/lat.
+ */
+const projAxisToBboxMappings = {
+    en: 'wsen',
+    es: 'wnes',
+    wn: 'eswn',
+    ws: 'enws',
+    ne: 'swne',
+    se: 'nwse',
+    nw: 'senw',
+    sw: 'nesw',
+};
+
+/**
+ * Provides the bbox axis order matching provided proj4 axis
+ * @param {string} projAxis the CRS axis order as defined in proj4
+ * @returns {string} the corresponding bbox axis order to use for WMS 1.3.0
+ */
+function projAxisToWmsBbox(projAxis) {
+    return projAxis && projAxisToBboxMappings[projAxis.slice(0, 2)] || 'wsen';
+}
 
 /**
  * An object defining the source of images to get from a
@@ -104,13 +133,11 @@ class WMSSource extends Source {
 
         if (source.axisOrder) {
             this.axisOrder = source.axisOrder;
-        } else if (this.crs == 'EPSG:4326') {
-            // 4326 (lat/long) axis order depends on the WMS version used
-            // EPSG 4326 x = lat, long = y
-            // version 1.X.X long/lat while version 1.3.0 mandates xy (so lat,long)
-            this.axisOrder = this.version === '1.3.0' ? 'swne' : 'wsen';
+        } else if (this.version === '1.3.0') { // If not set, axis order depends on WMS version
+            // Version 1.3.0 depends on CRS axis order as defined in epsg.org database
+            this.axisOrder = projAxisToWmsBbox(CRS.axisOrder(this.crs));
         } else {
-            // xy,xy order
+            // Versions 1.X.X mandate long/lat order, east-north orientation
             this.axisOrder = 'wsen';
         }
 
