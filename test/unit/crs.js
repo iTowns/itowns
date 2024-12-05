@@ -53,4 +53,10 @@ describe('CRS assertions', function () {
         assert.strictEqual(CRS.reasonableEpsilon('EPSG:4326'), 0.01);
         assert.strictEqual(CRS.reasonableEpsilon('EPSG:3857'), 0.001);
     });
+
+    it('should return neu axis order', function () {
+        assert.equal(CRS.axisOrder('WGS84'), 'neu');
+        assert.equal(CRS.axisOrder('WGS84'), 'neu');
+        assert.equal(CRS.axisOrder('EPSG:4269'), 'neu');
+    });
 });

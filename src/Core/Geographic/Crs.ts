@@ -4,6 +4,12 @@ import type { ProjectionDefinition } from 'proj4';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
+// Redefining proj4 global projections to match epsg.org database axis order.
+// See https://github.com/iTowns/itowns/pull/2465#issuecomment-2517024859
+proj4.defs('EPSG:4326').axis = 'neu';
+proj4.defs('EPSG:4269').axis = 'neu';
+proj4.defs('WGS84').axis = 'neu';
+
 /**
  * A projection as a CRS identifier string. This identifier references a
  * projection definition previously defined with
@@ -137,6 +143,19 @@ export function reasonableEpsilon(crs: ProjectionLike) {
     } else {
         return 0.001;
     }
+}
+
+/**
+ * Returns the axis parameter defined in proj4 for the provided crs.
+ * Might be undefined depending on crs definition.
+ *
+ * @param crs - The CRS to get axis from.
+ * @returns the matching proj4 axis string, 'enu' for instance (east, north, up)
+ */
+export function axisOrder(crs: ProjectionLike) {
+    mustBeString(crs);
+    const projection = proj4.defs(crs);
+    return !projection ? undefined : projection.axis;
 }
 
 /**
