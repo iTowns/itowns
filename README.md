@@ -58,8 +58,46 @@ github release page.
 
 In your project:
 
+To use all iTowns features, install `itowns` package :
+
 ```bash
 npm install --save itowns
+```
+
+```js
+import { Coordinates } from 'itowns';
+
+const coordinates = new Coordinates('EPSG:4326', 88., 50.3, 120.3);
+
+// change projection system to pseudo mercator
+coordinates.as('EPSG:3857');
+```
+
+To import Widget features
+
+```js
+import { Navigation } from 'itowns/widgets';
+
+const viewerDiv = document.getElementById('viewerDiv');
+
+// Create a GlobeView
+const view = new itowns.GlobeView(viewerDiv);
+
+// Add navigation widget
+const navigation = new Navigation(view, {
+    position: 'bottom-right',
+    translate: { y: -40 },
+});
+```
+
+To use only geographic features, install `@itowns/geographic` package :
+
+```bash
+npm install --save @itowns/geographic
+```
+
+```js
+import { Coordinates, Extent, CRS } from '@itowns/geographic';
 ```
 
 This package contains the ES5-compatible sources of iTowns, up to date with the latest release.

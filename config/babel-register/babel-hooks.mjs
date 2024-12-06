@@ -71,6 +71,9 @@ async function transpile(source, context) {
  * the Node.js default resolve hook after the last user-supplied resolve hook
  */
 export async function resolve(specifier, context, nextResolve) {
+    if (specifier == '@itowns/geographic') {
+        specifier = '@gchoqueux/geographic';
+    }
     // Try to resolve the path of an imported module.
     // If the resolver failed, retry substituting the extension with '.ts'.
     try {

@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
 
     // Global ESLint settings
@@ -15,7 +17,15 @@ module.exports = {
     },
     settings: {
         'import/resolver': {
-            'babel-module': {},
+            'babel-module': {
+                alias: {
+                    '@itowns/geographic': path.resolve(__dirname, 'packages/Geographic/src/Main.js'),
+                    itowns: path.resolve(__dirname, 'packages/Main/src/Main.js'),
+                },
+                plugins: [
+                    ['module-extension-resolver'],
+                ],
+            },
         },
     },
     env: {
