@@ -330,7 +330,7 @@ jobs:
       # Zip assets into bundle
       - name: Zip assets
         run: |
-          zip --junk-paths bundles ./packages/Main/dist/*.js ./packages/Main/dist/*.map
+          zip --junk-paths bundles ./dist/*.js ./dist/*.map
 
       # Upload release asset
       - name: upload release asset
