@@ -116,10 +116,11 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
 function readPBF(file, options) {
     options.out = options.out || {};
     const vectorTile = new VectorTile(new Protobuf(file));
-    const sourceLayers = Object.keys(vectorTile.layers);
+    const vtLayerNames = Object.keys(vectorTile.layers);
 
-    if (sourceLayers.length < 1) {
-        return;
+    const collection = new FeatureCollection(options.out);
+    if (vtLayerNames.length < 1) {
+        return Promise.resolve(collection);
     }
 
     // x,y,z tile coordinates
@@ -130,26 +131,25 @@ function readPBF(file, options) {
     // Only if the layer.origin is top
     const y = options.in.isInverted ? options.extent.row : (1 << z) - options.extent.row - 1;
 
-    const collection = new FeatureCollection(options.out);
-
-    const vFeature = vectorTile.layers[sourceLayers[0]];
-    // TODO: verify if size is correct because is computed with only one feature (vFeature).
-    const size = vFeature.extent * 2 ** z;
+    const vFeature0 = vectorTile.layers[vtLayerNames[0]];
+    // TODO: verify if size is correct because is computed with only one feature (vFeature0).
+    const size = vFeature0.extent * 2 ** z;
     const center = -0.5 * size;
 
     collection.scale.set(globalExtent.x / size, -globalExtent.y / size, 1);
-    collection.position.set(vFeature.extent * x + center, vFeature.extent * y + center, 0).multiply(collection.scale);
+    collection.position.set(vFeature0.extent * x + center, vFeature0.extent * y + center, 0).multiply(collection.scale);
     collection.updateMatrixWorld();
 
-    sourceLayers.forEach((layer_id) => {
-        if (!options.in.layers[layer_id]) { return; }
+    vtLayerNames.forEach((vtLayerName) => {
+        if (!options.in.layers[vtLayerName]) { return Promise.resolve(collection); }
 
-        const sourceLayer = vectorTile.layers[layer_id];
+        const vectorTileLayer = vectorTile.layers[vtLayerName];
 
-        for (let i = sourceLayer.length - 1; i >= 0; i--) {
-            const vtFeature = sourceLayer.feature(i);
+        for (let i = vectorTileLayer.length - 1; i >= 0; i--) {
+            const vtFeature = vectorTileLayer.feature(i);
             vtFeature.tileNumbers = { x, y: options.extent.row, z };
-            const layers = options.in.layers[layer_id].filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.zoom.min && z < l.zoom.max);
+            const layers = options.in.layers[vtLayerName]
+                .filter(l => l.filterExpression.filter({ zoom: z }, vtFeature) && z >= l.zoom.min && z < l.zoom.max);
             let feature;
 
             for (const layer of layers) {
