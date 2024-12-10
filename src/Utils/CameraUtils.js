@@ -154,7 +154,10 @@ class CameraRig extends THREE.Object3D {
 
     // set rig's objects transformation from camera's position and target's position
     setFromPositions(view, cameraPosition) {
-        this.setTargetFromCoordinate(view, new Coordinates(view.referenceCrs, targetPosition));
+        this.setTargetFromCoordinate(
+            view,
+            new Coordinates(view.referenceCrs).setFromVector3(targetPosition),
+        );
         this.target.rotation.set(0, 0, 0);
         this.updateMatrixWorld(true);
         this.camera.position.copy(cameraPosition);
