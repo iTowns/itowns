@@ -456,6 +456,25 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
+     * Redraws some imagery layers from the current layer list when the style has been modified.
+     * @example
+     * view.redrawLayer(layers);
+     * @param {string|Array<string>} layerId The identifier or an array of identifier
+     */
+    redrawLayer(layerId) {
+        if (!layerId.isArray) { layerId = [layerId]; }
+        layerId.forEach((layerIds) => {
+            const layer = this.getLayerById(layerIds);
+            if (layer) {
+                layer.invalidateCache();
+                this.notifyChange(layer);
+            } else {
+                throw new Error(`${layerIds} doesn't exist`);
+            }
+        });
+    }
+
+    /**
      * Notifies the scene it needs to be updated due to changes exterior to the
      * scene itself (e.g. camera movement).
      * non-interactive events (e.g: texture loaded)
