@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
 import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
 import { globalExtentTMS, schemeTiles } from 'Core/Tile/TileGrid';
-import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
+import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
 
 // matrix to convert sphere to ellipsoid
 const worldToScaledEllipsoid = new THREE.Matrix4();
@@ -61,8 +61,9 @@ class GlobeLayer extends TiledGeometryLayer {
             'EPSG:4326',
             'EPSG:3857',
         ];
+
         const uvCount = tileMatrixSets.length;
-        const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount });
+        const builder = new GlobeTileBuilder({ uvCount });
 
         super(id, object3d || new THREE.Group(), schemeTile, builder, {
             tileMatrixSets,

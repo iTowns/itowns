@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import * as CRS from 'Core/Geographic/Crs';
-import TileGeometry from 'Core/TileGeometry';
-import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
+import { TileGeometry } from 'Core/TileGeometry';
+import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
 import Coordinates from 'Core/Geographic/Coordinates';
 
 // get oriented bounding box of tile
-const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount: 1 });
+const builder = new GlobeTileBuilder({ uvCount: 1 });
 const size = new THREE.Vector3();
 const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();
@@ -90,7 +90,7 @@ class OBB extends THREE.Object3D {
 
         // this is the same as isPointInsideSphere.position
         const distance = Math.sqrt((x - localSpherePosition.x) * (x - localSpherePosition.x) +
-                               (y - localSpherePosition.y) * (y - localSpherePosition.y));
+            (y - localSpherePosition.y) * (y - localSpherePosition.y));
 
         return distance < sphere.radius;
     }
@@ -106,18 +106,17 @@ class OBB extends THREE.Object3D {
      */
     setFromExtent(extent, minHeight = extent.min || 0, maxHeight = extent.max || 0) {
         if (extent.crs == 'EPSG:4326') {
-            const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
+            const { shareableExtent, quaternion, position } = builder.computeShareableExtent(extent);
             // Compute the minimum count of segment to build tile
-            const segments = Math.max(Math.floor(sharableExtent.planarDimensions(dimension).x / 90 + 1), 2);
+            const segments = Math.max(Math.floor(shareableExtent.planarDimensions(dimension).x / 90 + 1), 2);
             const paramsGeometry = {
-                extent: sharableExtent,
+                extent: shareableExtent,
                 level: 0,
                 segments,
                 disableSkirt: true,
-                builder,
             };
 
-            const geometry = new TileGeometry(paramsGeometry);
+            const geometry = new TileGeometry(builder, paramsGeometry);
             obb.box3D.copy(geometry.boundingBox);
             obb.natBox.copy(geometry.boundingBox);
             this.copy(obb);

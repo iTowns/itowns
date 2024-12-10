@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import proj4 from 'proj4';
 import assert from 'assert';
 import Extent from 'Core/Geographic/Extent';
-import PlanarTileBuilder from 'Core/Prefab/Planar/PlanarTileBuilder';
-import BuilderEllipsoidTile from 'Core/Prefab/Globe/BuilderEllipsoidTile';
-import newTileGeometry from 'Core/Prefab/TileBuilder';
+import { PlanarTileBuilder } from 'Core/Prefab/Planar/PlanarTileBuilder';
+import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
+import { newTileGeometry } from 'Core/Prefab/TileBuilder';
 import OBB from 'Renderer/OBB';
 
 describe('OBB', function () {
@@ -83,7 +83,7 @@ describe('Planar tiles OBB computation', function () {
     });
 });
 describe('Ellipsoid tiles OBB computation', function () {
-    const builder = new BuilderEllipsoidTile({ crs: 'EPSG:4978', uvCount: 1 });
+    const builder = new GlobeTileBuilder({ uvCount: 1 });
 
     it('should compute globe-level 0 OBB correctly', function (done) {
         const extent = new Extent('EPSG:4326', -180, 0, -90, 90);
