@@ -57,8 +57,8 @@
   },
   "homepage": "https://itowns.github.io/",
   "dependencies": {
-    "@mapbox/mapbox-gl-style-spec": "^13.28.0",
     "@mapbox/vector-tile": "^2.0.3",
+    "@maplibre/maplibre-gl-style-spec": "^22.0.0",
     "@tmcw/togeojson": "^5.8.1",
     "@tweenjs/tween.js": "^25.0.0",
     "3d-tiles-renderer": "^0.3.39",
