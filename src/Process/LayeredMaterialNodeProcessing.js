@@ -190,8 +190,8 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
 
     // Possible conditions to *not* update the elevation texture
     if (layer.frozen ||
-            !material.visible ||
-            !node.layerUpdateState[layer.id].canTryUpdate()) {
+        !material.visible ||
+        !node.layerUpdateState[layer.id].canTryUpdate()) {
         return;
     }
 
@@ -238,7 +238,7 @@ export function removeLayeredMaterialNodeLayer(layerId) {
      */
     return function removeLayeredMaterialNodeLayer(node) {
         if (node.material?.removeLayer) {
-            if (node.material.elevationLayerIds.indexOf(layerId) > -1) {
+            if (node.material.elevationTile !== undefined) {
                 node.setBBoxZ({ min: 0, max: 0 });
             }
             node.material.removeLayer(layerId);

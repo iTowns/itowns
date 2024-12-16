@@ -5,7 +5,7 @@
  */
 import * as THREE from 'three';
 import TileMesh from 'Core/TileMesh';
-import LayeredMaterial from 'Renderer/LayeredMaterial';
+import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import { newTileGeometry } from 'Core/Prefab/TileBuilder';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { geoidLayerIsVisible } from 'Layer/GeoidLayer';

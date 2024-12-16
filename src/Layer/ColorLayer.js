@@ -146,9 +146,9 @@ class ColorLayer extends RasterLayer {
     setupRasterNode(node) {
         const rasterColorNode = new RasterColorTile(node.material, this);
 
-        node.material.addLayer(rasterColorNode);
+        node.material.addColorLayer(rasterColorNode);
         // set up ColorLayer ordering.
-        node.material.setSequence(this.parent.colorLayersOrder);
+        node.material.setColorLayerIds(this.parent.colorLayersOrder);
 
         return rasterColorNode;
     }
