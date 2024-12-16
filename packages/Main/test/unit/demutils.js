@@ -82,8 +82,8 @@ describe('DemUtils', function () {
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
         const material = new THREE.Material();
-        const nodeLayer = new RasterElevationTile(elevationlayer);
-        material.getElevationLayer = () => nodeLayer;
+        const nodeLayer = new RasterElevationTile(material, elevationlayer);
+        material.getElevationTile = () => nodeLayer;
         const tile = new TileMesh(geom, material, viewer.tileLayer, extent, 5);
         tile.layerUpdateState[elevationlayer.id] = new LayerUpdateState();
         tiles.push(tile);
@@ -101,7 +101,7 @@ describe('DemUtils', function () {
 
     it('get elevation value at center with FAST_READ_Z', () => {
         const elevation = DEMUtils.getElevationValueAt(viewer.tileLayer, coord, DEMUtils.FAST_READ_Z, tiles);
-        assert.equal(elevation,  ELEVATION);
+        assert.equal(elevation, ELEVATION);
     });
 
     it('get terrain at center with PRECISE_READ_Z', () => {
@@ -111,7 +111,7 @@ describe('DemUtils', function () {
 
     it('get terrain at center with FAST_READ_Z', () => {
         const elevation = DEMUtils.getTerrainObjectAt(viewer.tileLayer, coord, DEMUtils.FAST_READ_Z, tiles);
-        assert.equal(elevation.coord.z,  ELEVATION);
+        assert.equal(elevation.coord.z, ELEVATION);
     });
 });
 
