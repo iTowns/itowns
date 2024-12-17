@@ -51,7 +51,6 @@ function _updateVector3(layer, method, nodes, vecCRS, vec, offset, matrices = {}
  *
  * @return {boolean} true if successful, false if we couldn't lookup the elevation at the given coords
  */
-/* istanbul ignore next */
 function placeObjectOnGround(layer, crs, obj, options = {}, tileHint) {
     console.warn('placeObjectOnGround has been deprecated because it needs review and test');
     let tiles;
