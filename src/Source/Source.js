@@ -22,7 +22,7 @@ export const supportedParsers = new Map([
     ['application/gdf', GDFParser.parse],
 ]);
 
-const noCache = { getByArray: () => {}, setByArray: a => a, clear: () => {} };
+const noCache = { getByArray: () => { }, setByArray: a => a, clear: () => { } };
 
 /**
  * @property {string} crs - data crs projection.
@@ -36,7 +36,6 @@ const noCache = { getByArray: () => {}, setByArray: a => a, clear: () => {} };
  */
 class InformationsData {
     constructor(options) {
-        /* istanbul ignore next */
         if (options.projection) {
             console.warn('Source projection parameter is deprecated, use crs instead.');
             options.crs = options.crs || options.projection;
@@ -174,7 +173,6 @@ class Source extends InformationsData {
                     .catch(err => this.handlingError(err)),
                 key);
 
-            /* istanbul ignore next */
             if (this.onParsedFile) {
                 features.then((feat) => {
                     this.onParsedFile(feat);

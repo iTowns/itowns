@@ -171,7 +171,6 @@ class VectorTilesSource extends TMSSource {
                     .catch(err => this.handlingError(err)),
                 key);
 
-            /* istanbul ignore next */
             if (this.onParsedFile) {
                 features.then((feat) => {
                     this.onParsedFile(feat);

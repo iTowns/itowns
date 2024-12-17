@@ -103,12 +103,10 @@ class FileSource extends Source {
      * presents in `features` under the property `crs`, it is fine.
      */
     constructor(source) {
-        /* istanbul ignore next */
         if (source.parsedData) {
             console.warn('FileSource parsedData parameter is deprecated, use features instead of.');
             source.features = source.features || source.parsedData;
         }
-        /* istanbul ignore next */
         if (source.projection) {
             console.warn('FileSource projection parameter is deprecated, use crs instead.');
             source.crs = source.crs || source.projection;

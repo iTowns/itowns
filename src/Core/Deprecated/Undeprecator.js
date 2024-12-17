@@ -15,7 +15,6 @@ export const deprecatedColorLayerOptions = (options) => {
 };
 
 export const deprecatedParsingOptionsToNewOne = (options) => {
-    /* istanbul ignore next */
     if (options.crsOut || options.crsIn) {
         console.warn('Parsing options with crsIn and crsOut are deprecated, use { in, out } structure.');
         const newOptions = { in: {}, out: {} };

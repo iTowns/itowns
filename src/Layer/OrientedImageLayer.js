@@ -28,7 +28,7 @@ function updatePano(context, camera, layer) {
         const imagesInfo = layer.cameras.map(cam => ({
             cameraId: cam.name,
             panoId: newPano.id,
-            as: () => {},
+            as: () => { },
         })).filter(info => !panoCameras || panoCameras.includes(info.cameraId));
 
         const command = {
@@ -48,7 +48,7 @@ function updatePano(context, camera, layer) {
                     layer.material.updateUniforms(context.camera.camera3D);
                     context.view.notifyChange(layer, true);
                 }
-            }, () => {});
+            }, () => { });
     }
 }
 
@@ -103,12 +103,11 @@ class OrientedImageLayer extends GeometryLayer {
         const {
             backgroundDistance,
             background = createBackground(backgroundDistance),
-            onPanoChanged = () => {},
-            getCamerasNameFromFeature = () => {},
+            onPanoChanged = () => { },
+            getCamerasNameFromFeature = () => { },
             ...geometryOptions
         } = config;
 
-        /* istanbul ignore next */
         if (config.projection) {
             console.warn('OrientedImageLayer projection parameter is deprecated, use crs instead.');
             config.crs = config.crs || config.projection;
@@ -144,7 +143,7 @@ class OrientedImageLayer extends GeometryLayer {
 
         // panos is an array of feature point, representing many panoramics.
         // for each point, there is a position and a quaternion attribute.
-        this.source.whenReady.then(metadata => GeoJsonParser.parse(config.orientation || metadata.orientation, options).then((orientation) =>  {
+        this.source.whenReady.then(metadata => GeoJsonParser.parse(config.orientation || metadata.orientation, options).then((orientation) => {
             this.panos = orientation.features;
 
             // the crs input is parsed in geojson parser
@@ -171,7 +170,7 @@ class OrientedImageLayer extends GeometryLayer {
             }
         }).then(() => {
             // array of cameras, represent the projective texture configuration for each panoramic.
-            CameraCalibrationParser.parse(config.calibration  || metadata.calibration, config).then((cameras) => {
+            CameraCalibrationParser.parse(config.calibration || metadata.calibration, config).then((cameras) => {
                 this.cameras = cameras;
                 // create the material
                 this.material = new OrientedImageMaterial(this.cameras, config);
