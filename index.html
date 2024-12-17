@@ -1,84 +1,17 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
+
+<!--- This file is only loaded when serving iTowns locally. -->
+
 <html>
-    <head>
-        <title>Globe</title>
-        <link rel="stylesheet" type="text/css" href="examples/css/example.css">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
-    </head>
-    <body>
-        <div id="viewerDiv" class="viewer"></div>
-        <script src="examples/js/GUI/GuiTools.js"></script>
-        <script src="dist/itowns.js"></script>
-        <script src="dist/debug.js"></script>
-        <script type="text/javascript">
-            /* global itowns,document,GuiTools, debug, window */
-            var placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
-                range: 25000000,
-            }
 
-            // iTowns namespace defined here
-            var viewerDiv = document.getElementById('viewerDiv');
-            var view = new itowns.GlobeView(viewerDiv, placement);
-            var menuGlobe = new GuiTools('menuDiv', view);
+<head>
+    <title>iTowns - redirecting...</title>
+</head>
 
-            function createWMTSSourceFromConfig(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                return config;
-            }
+<body>
+    <script type="text/javascript">
+        window.location.href = 'examples/';
+    </script>
+</body>
 
-            function addColorLayerFromConfig(config) {
-                var layer = new itowns.ColorLayer(config.id, config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            }
-
-            itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Region.json')
-                .then(function _(config) {
-                    config.source = new itowns.WMSSource(config.source);
-                    return config;
-                }).then(addColorLayerFromConfig);
-
-            itowns.Fetcher.json('examples/layers/JSONLayers/Cada.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Administrative.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Transport.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Railways.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/Denomination.json').then(createWMTSSourceFromConfig).then(addColorLayerFromConfig);
-
-            function addElevationLayerFromConfig(config) {
-                var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            }
-
-            itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json')
-                .then(createWMTSSourceFromConfig).then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json')
-                .then(createWMTSSourceFromConfig).then(addElevationLayerFromConfig);
-
-            const atmosphere = view.getLayerById('atmosphere');
-            menuGlobe.addGUI('RealisticLighting', false, function (v) {
-                atmosphere.setRealisticOn(v);
-                view.notifyChange(atmosphere);
-            });
-
-            // eslint-disable-next-line prefer-arrow-callback
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function m() {
-                // eslint-disable-next-line no-console
-                console.info('Globe initialized');
-            });
-
-            const d = new debug.Debug(view, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
-            window.view = view;
-
-        </script>
-    </body>
 </html>
