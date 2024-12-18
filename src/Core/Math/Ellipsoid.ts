@@ -47,7 +47,10 @@ class Ellipsoid {
      * @param target - An object to store this vector to. If this is not
      * specified, a new vector will be created.
      */
-    geodeticSurfaceNormal(cartesian: Coordinates, target = new THREE.Vector3()) {
+    geodeticSurfaceNormal(
+        cartesian: Coordinates,
+        target = new THREE.Vector3(),
+    ): THREE.Vector3 {
         return cartesian.toVector3(target).multiply(this._invRadiiSquared).normalize();
     }
 
@@ -59,7 +62,10 @@ class Ellipsoid {
      * @param target - An object to store this vector to. If this is not
      * specified, a new vector will be created.
      */
-    geodeticSurfaceNormalCartographic(coordCarto: Coordinates, target = new THREE.Vector3()) {
+    geodeticSurfaceNormalCartographic(
+        coordCarto: Coordinates,
+        target = new THREE.Vector3(),
+    ): THREE.Vector3 {
         const longitude = THREE.MathUtils.degToRad(coordCarto.longitude);
         const latitude = THREE.MathUtils.degToRad(coordCarto.latitude);
         const cosLatitude = Math.cos(latitude);
@@ -90,7 +96,10 @@ class Ellipsoid {
         return this;
     }
 
-    cartographicToCartesian(coordCarto: Coordinates, target = new THREE.Vector3()) {
+    cartographicToCartesian(
+        coordCarto: Coordinates,
+        target = new THREE.Vector3(),
+    ): THREE.Vector3 {
         normal.copy(coordCarto.geodesicNormal);
 
         target.multiplyVectors(this._radiiSquared, normal);
@@ -115,7 +124,7 @@ class Ellipsoid {
     cartesianToCartographic(
         position: THREE.Vector3Like,
         target = new Coordinates('EPSG:4326', 0, 0, 0),
-    ) {
+    ): Coordinates {
         // for details, see for example http://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/geodetic-datum-conversions/equations-used-datum
         // TODO the following is only valable for oblate ellipsoid of
         // revolution. do we want to support triaxial ellipsoid?
@@ -149,7 +158,7 @@ class Ellipsoid {
         );
     }
 
-    cartographicToCartesianArray(coordCartoArray: Coordinates[]) {
+    cartographicToCartesianArray(coordCartoArray: Coordinates[]): THREE.Vector3[] {
         const cartesianArray = [];
         for (let i = 0; i < coordCartoArray.length; i++) {
             cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
@@ -158,7 +167,7 @@ class Ellipsoid {
         return cartesianArray;
     }
 
-    intersection(ray: THREE.Ray) {
+    intersection(ray: THREE.Ray): THREE.Vector3 | false {
         const EPSILON = 0.0001;
         const O_C = ray.origin;
         const dir = ray.direction;
@@ -215,7 +224,7 @@ class Ellipsoid {
      * @param coordCarto2 - The coordinate carto 2
      * @returns The orthodromic distance between the two given coordinates.
      */
-    geodesicDistance(coordCarto1: Coordinates, coordCarto2: Coordinates) {
+    geodesicDistance(coordCarto1: Coordinates, coordCarto2: Coordinates): number {
         // The formula uses the distance on approximated sphere,
         // with the nearest local radius of curvature of the ellipsoid
         // https://geodesie.ign.fr/contenu/fichiers/Distance_longitude_latitude.pdf
