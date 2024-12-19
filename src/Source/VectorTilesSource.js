@@ -20,6 +20,16 @@ function mergeCollections(collections) {
     return collection;
 }
 
+// A deprecated (but still in use) Mapbox spec allows using 'ref' as a propertie to reference an other layer
+// instead of duplicating the following properties: 'type', 'source', 'source-layer', 'minzoom', 'maxzoom', 'filter', 'layout'
+function getPropertiesFromRefLayer(layers, layer) {
+    const refProperties = ['type', 'source', 'source-layer', 'minzoom', 'maxzoom', 'filter', 'layout'];
+    const refLayer = layers.filter(l => l.id === layer.ref)[0];
+    refProperties.forEach((prop) => {
+        layer[prop] = refLayer[prop];
+    });
+}
+
 /**
  * VectorTilesSource are object containing informations on how to fetch vector
  * tiles resources.
@@ -105,11 +115,7 @@ class VectorTilesSource extends TMSSource {
                     this.backgroundLayer = layer;
                 } else if (ffilter(layer)) {
                     if (layer['source-layer'] === undefined) {
-                        const refProperties = ['type', 'source', 'source-layer', 'minzoom', 'maxzoom', 'filter', 'layout'];
-                        const refLayer = mvtStyle.layers.filter(l => l.id === layer.ref)[0];
-                        refProperties.forEach((prop) => {
-                            layer[prop] = refLayer[prop];
-                        });
+                        getPropertiesFromRefLayer(mvtStyle.layers, layer);
                     }
                     const style = Style.setFromVectorTileLayer(layer, this.sprites, this.symbolToCircle, this.warn);
                     this.styles[layer.id] = style;
