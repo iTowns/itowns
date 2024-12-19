@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Itowns - Globe</title>
+    <title>Itowns - vector-tiles 2d </title>
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,11 +15,6 @@
       type="text/css"
       href="css/LoadingScreen.css"
     />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="https://www.itowns-project.org/itowns/examples/css/widgets.css"
-    />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
   </head>
@@ -29,8 +24,6 @@
     <!-- Import iTowns source code -->
     <script src="../dist/itowns.js"></script>
     <script src="../dist/debug.js"></script>
-    <!-- Import iTowns Widgets plugin -->
-    <script src="../dist/itowns_widgets.js"></script>
     <!-- Import iTowns LoadingScreen and GuiTools plugins -->
     <script src="js/GUI/GuiTools.js"></script>
     <script src="js/GUI/LoadingScreen.js"></script>
@@ -78,7 +71,7 @@
       const source = new itowns.VectorTilesSource({
         style: "mapbox://styles/mapbox/streets-v8",
         accessToken:
-          "pk.eyJ1IjoiZ2VvdXJmbyIsImEiOiJjbHdyZWVrd2owOW1rMmlxdmx2Z3Fwb2JhIn0.sg5en26yZ6aSEg6CsfUByA",
+          "pk.eyJ1IjoiZnRvcm9tYW5vZmYiLCJhIjoiY2xrc2Zpa2o3MDQxNTNxcG5sczJyaTlncyJ9.5KFKdMLIiy-b_fAjSVhjCQ",
       });
 
       const layer = new itowns.ColorLayer("vector-map", {
