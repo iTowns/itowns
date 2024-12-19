@@ -8,7 +8,7 @@ const _tmsCoord = new THREE.Vector2();
 const _dimensionTile = new THREE.Vector2();
 const r = { row: 0, col: 0, invDiff: 0 };
 
-function _rowColfromParent(/** @type {Tile} */ tile, /** @type {number} */ zoom) {
+function _rowColfromParent(tile: Tile, zoom: number) {
     const diffLevel = tile.zoom - zoom;
     const diff = 2 ** diffLevel;
     r.invDiff = 1 / diff;
@@ -18,21 +18,29 @@ function _rowColfromParent(/** @type {Tile} */ tile, /** @type {number} */ zoom)
     return r;
 }
 
-const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
-const _extent2 = new Extent('EPSG:4326', [0, 0, 0, 0]);
+const _extent = new Extent('EPSG:4326');
+const _extent2 = new Extent('EPSG:4326');
 
 const _c = new Coordinates('EPSG:4326', 0, 0);
 
 class Tile {
+    readonly isTile: true;
+
+    crs: string;
+    zoom: number;
+    row: number;
+    col: number;
+
     /**
-     * Tile is a geographical bounding rectangle defined by zoom, row and column.
+     * A tile is a geographical bounding rectangle uniquely defined by its zoom,
+     * row and column.
      *
-     * @param {String} crs projection of limit values.
-     * @param {number} [zoom=0] zoom value
-     * @param {number} [row=0] row value
-     * @param {number} [col=0] column value
+     * @param crs - projection of limit values.
+     * @param zoom - `zoom` value. Default is 0.
+     * @param row - `row` value. Default is 0.
+     * @param col - `column` value. Default is 0.
      */
-    constructor(crs, zoom = 0, row = 0, col = 0) {
+    constructor(crs: string, zoom = 0, row = 0, col = 0) {
         this.isTile = true;
 
         this.crs = crs;
@@ -42,69 +50,66 @@ class Tile {
     }
 
     /**
-     * Clone this tile
-     * @return {Tile} cloned tile
+     * Returns a new tile with the same bounds and crs as this one.
      */
     clone() {
         return new Tile(this.crs, this.zoom, this.row, this.col);
     }
 
     /**
-     * Convert tile to the specified extent.
-     * @param {string} crs the projection of destination.
-     * @param {Extent} target copy the destination to target.
-     * @return {Extent}
+     * Converts this tile to the specified extent.
+     * @param crs - target's projection.
+     * @param target - The target to store the projected extent. If this not
+     * provided a new extent will be created.
      */
-    toExtent(crs, target) {
+    toExtent(crs: string, target = new Extent('EPSG:4326')) {
         CRS.isValid(crs);
-        target = target || new Extent('EPSG:4326', [0, 0, 0, 0]);
         const { epsg, globalExtent, globalDimension } = getInfoTms(this.crs);
         const countTiles = getCountTiles(this.crs, this.zoom);
 
         _dimensionTile.set(1, 1).divide(countTiles).multiply(globalDimension);
 
-        target.west = globalExtent.west + (globalDimension.x - _dimensionTile.x * (countTiles.x - this.col));
+        target.west = globalExtent.west +
+            (globalDimension.x - _dimensionTile.x * (countTiles.x - this.col));
         target.east = target.west + _dimensionTile.x;
-        target.south = globalExtent.south + _dimensionTile.y * (countTiles.y - this.row - 1);
+        target.south = globalExtent.south +
+            _dimensionTile.y * (countTiles.y - this.row - 1);
         target.north = target.south + _dimensionTile.y;
         target.crs = epsg;
-        target.zoom = this.zoom;
 
         return crs == epsg ? target : target.as(crs, target);
     }
 
     /**
-     * Return true if `tile` is inside this tile.
+     * Checks whether another tile is inside this tile.
      *
-     * @param {Tile} tile the tile to check
-     *
-     * @return {boolean}
+     * @param extent - the tile to check.
      */
-    isInside(tile) {
+    isInside(tile: Tile) {
         if (this.zoom == tile.zoom) {
             return this.row == tile.row &&
                 this.col == tile.col;
         } else if (this.zoom < tile.zoom) {
             return false;
         } else {
-            _rowColfromParent(this, tile.zoom);
+            const r = _rowColfromParent(this, tile.zoom);
             return r.row == tile.row && r.col == tile.col;
         }
     }
 
     /**
-     * Return the translation and scale to transform this tile to input tile.
+     * Returns the translation and scale to transform this tile to the input
+     * tile.
      *
-     * @param {Tile} tile input tile
-     * @param {THREE.Vector4} target copy the result to target.
-     * @return {THREE.Vector4} {x: translation on west-east, y: translation on south-north, z: scale on west-east, w: scale on south-north}
+     * @param tile - the input tile.
+     * @param target - copy the result to target.
      */
-    offsetToParent(tile, target = new THREE.Vector4()) {
+    offsetToParent(tile: Tile, target = new THREE.Vector4()) {
         if (this.crs != tile.crs) {
             throw new Error('unsupported mix');
         }
 
-        _rowColfromParent(this, tile.zoom);
+        const r = _rowColfromParent(this, tile.zoom);
         return target.set(
             this.col * r.invDiff - r.col,
             this.row * r.invDiff - r.row,
@@ -112,14 +117,13 @@ class Tile {
     }
 
     /**
-     * Return parent tile with input level
+     * Returns the parent tile at the given level.
      *
-     * @param {number} levelParent level of parent.
-     * @return {Tile}
+     * @param levelParent - the level of the parent tile.
      */
-    tiledExtentParent(levelParent) {
+    tiledExtentParent(levelParent: number) {
         if (levelParent && levelParent < this.zoom) {
-            _rowColfromParent(this, levelParent);
+            const r = _rowColfromParent(this, levelParent);
             return new Tile(this.crs, levelParent, r.row, r.col);
         } else {
             return this;
@@ -127,13 +131,11 @@ class Tile {
     }
 
     /**
-     * Set zoom, row and column values
+     * Sets zoom, row and column values.
      *
-     * @param {number} [zoom=0] zoom value
-     * @param {number} [row=0] row value
-     * @param {number} [col=0] column value
-     *
-     * @return {Tile}
+     * @param zoom - zoom value.
+     * @param row - row value.
+     * @param col - column value.
      */
     set(zoom = 0, row = 0, col = 0) {
         this.zoom = zoom;
@@ -144,31 +146,24 @@ class Tile {
     }
 
     /**
-     * Copy to this tile to input tile.
-     * @param {Tile} tile
-     * @return {Tile} copied extent
+     * Copies the passed tile to this tile.
+     * @param tile - tile to copy.
      */
-    copy(tile) {
+    copy(tile: Tile): this {
         this.crs = tile.crs;
         return this.set(tile.zoom, tile.row, tile.col);
     }
 
     /**
      * Return values of tile in string, separated by the separator input.
-     * @param {string} separator
-     * @return {string}
+     * @param separator - string separator
      */
     toString(separator = '') {
         return `${this.zoom}${separator}${this.row}${separator}${this.col}`;
     }
 }
 
-/**
- * @param {Extent} e
- * @param {string} tms
- * @returns {Tile[]}
- */
-export function tiledCovering(e, tms) {
+export function tiledCovering(e: Extent, tms: string) {
     if (e.crs == 'EPSG:4326' && tms == 'EPSG:3857') {
         const WMTS_PM = [];
         const extent = _extent.copy(e).as(tms, _extent2);
@@ -176,7 +171,8 @@ export function tiledCovering(e, tms) {
         extent.clampByExtent(globalExtent);
         extent.planarDimensions(_dimensionTile);
 
-        const zoom = (e.zoom + 1) || Math.floor(Math.log2(Math.round(globalDimension.x / (_dimensionTile.x * sTs.x))));
+        const zoom = Math.floor(Math.log2(
+            Math.round(globalDimension.x / (_dimensionTile.x * sTs.x))));
         const countTiles = getCountTiles(tms, zoom);
         const center = extent.center(_c);
 
@@ -185,7 +181,8 @@ export function tiledCovering(e, tms) {
         _tmsCoord.divide(globalDimension).multiply(countTiles).floor();
 
         // ]N; N+1] => N
-        const maxRow = Math.ceil((globalExtent.north - extent.south) / globalDimension.x * countTiles.y) - 1;
+        const maxRow = Math.ceil(
+            (globalExtent.north - extent.south) / globalDimension.x * countTiles.y) - 1;
 
         for (let r = maxRow; r >= _tmsCoord.y; r--) {
             WMTS_PM.push(new Tile(tms, zoom, r, _tmsCoord.x));
@@ -198,12 +195,15 @@ export function tiledCovering(e, tms) {
         const center = e.center(_c);
         e.planarDimensions(_dimensionTile);
         // Each level has 2^n * 2^n tiles...
-        // ... so we count how many tiles of the same width as tile we can fit in the layer
+        // ... so we count how many tiles of the same width as tile we can fit
+        // in the layer
         // ... 2^zoom = tilecount => zoom = log2(tilecount)
-        const zoom = Math.floor(Math.log2(Math.round(globalDimension.x / (_dimensionTile.x * sTs.x))));
+        const zoom = Math.floor(Math.log2(
+            Math.round(globalDimension.x / (_dimensionTile.x * sTs.x))));
         const countTiles = getCountTiles(tms, zoom);
 
-        // Now that we have computed zoom, we can deduce x and y (or row / column)
+        // Now that we have computed zoom, we can deduce x and y (or row /
+        // column)
         _tmsCoord.x = center.x - globalExtent.west;
         _tmsCoord.y = isInverted ? globalExtent.north - center.y : center.y - globalExtent.south;
         _tmsCoord.divide(globalDimension).multiply(countTiles).floor();

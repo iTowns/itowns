@@ -2,10 +2,7 @@ import * as THREE from 'three';
 import * as CRS from './Crs';
 import Coordinates from './Coordinates';
 
-/**
- * Extent is a SIG-area (so 2D)
- * It can use explicit coordinates (e.g: lon/lat) or implicit (WMTS coordinates)
- */
+import type { ProjectionLike } from './Crs';
 
 const _dim = new THREE.Vector2();
 const _dim2 = new THREE.Vector2();
@@ -19,8 +16,7 @@ const cNorthEast =  new Coordinates('EPSG:4326', 0, 0, 0);
 const southWest = new THREE.Vector3();
 const northEast = new THREE.Vector3();
 
-/** @type {Extent} */
-let _extent;
+let _extent: Extent;
 
 const cardinals = new Array(8);
 for (let i = cardinals.length - 1; i >= 0; i--) {
@@ -29,24 +25,60 @@ for (let i = cardinals.length - 1; i >= 0; i--) {
 
 const _c = new Coordinates('EPSG:4326', 0, 0);
 
+export interface ExtentLike {
+    readonly west: number;
+    readonly east: number;
+    readonly south: number;
+    readonly north: number;
+}
+
+/**
+ * A class representing a geographical extent.
+ *
+ * An extent is a geographical bounding rectangle defined by 4 limits: west,
+ * east, south and north.
+ *
+ * **Warning**: Using a geocentric projection is not suitable for representing a
+ * geographical extent. Please use a geographic projection.
+ */
 class Extent {
     /**
-     * Extent is geographical bounding rectangle defined by 4 limits: west, east, south and north.
-     *
-     * Warning, using geocentric projection isn't consistent with geographical extent.
-     *
-     * @param {String} crs projection of limit values.
-     * @param {number|Array.<number>|Coordinates|Object} v0 west value, Array
-     * of values [west, east, south and north], Coordinates of west-south
-     * corner or object {west, east, south and north}
-     * @param {number|Coordinates} [v1] east value or Coordinates of
-     * east-north corner
-     * @param {number} [v2] south value
-     * @param {number} [v3] north value
+     * Read-only flag to check if a given object is of type `Extent`.
      */
-    constructor(crs, v0, v1, v2, v3) {
+    readonly isExtent: true;
+    /**
+     * A default or user-defined CRS (see {@link ProjectionLike}).
+     */
+    crs: ProjectionLike;
+    /**
+     * West longitude bound of this extent.
+     */
+    west: number;
+    /**
+     * East longitude bound of this extent.
+     */
+    east: number;
+    /**
+     * South latitude bound of this extent.
+     */
+    south: number;
+    /**
+     * North latitude bound of this extent.
+     */
+    north: number;
+
+    /**
+     * @param crs - A default or user-defined CRS (see {@link ProjectionLike}).
+     * @param west - the `west` value of this extent. Default is 0.
+     * @param east - the `east` value of this extent. Default is 0.
+     * @param south - the `south` value of this extent. Default is 0.
+     * @param north - the `north` value of this extent. Default is 0.
+     */
+    constructor(crs: ProjectionLike, west = 0, east = 0, south = 0, north = 0) {
         if (CRS.isGeocentric(crs)) {
-            throw new Error(`${crs} is a geocentric projection, it doesn't make sense with a geographical extent`);
+            throw new Error(
+                `Non-compatible geocentric projection ${crs} to build a geographical extent`,
+            );
         }
 
         this.isExtent = true;
@@ -57,26 +89,25 @@ class Extent {
         this.south = 0;
         this.north = 0;
 
-        this.set(v0, v1, v2, v3);
+        this.set(west, east, south, north);
     }
 
     /**
-     * Clone this extent
-     * @return {Extent} cloned extent
+     * Returns a new extent with the same bounds and crs as this one.
      */
     clone() {
         return new Extent(this.crs, this.west, this.east, this.south, this.north);
     }
 
     /**
-     * Convert Extent to the specified projection.
-     * @param {string} crs the projection of destination.
-     * @param {Extent} [target] copy the destination to target.
-     * @return {Extent}
+     * Projects this extent to the specified projection.
+     *
+     * @param crs - target's projection.
+     * @param target - The target to store the projected extent. If this not
+     * provided a new extent will be created.
      */
-    as(crs, target) {
+    as(crs: string, target: Extent = new Extent('EPSG:4326')) {
         CRS.isValid(crs);
-        target = target || new Extent('EPSG:4326', [0, 0, 0, 0]);
         if (this.crs != crs) {
             // Compute min/max in x/y by projecting 8 cardinal points,
             // and then taking the min/max of each coordinates.
@@ -114,9 +145,10 @@ class Extent {
     }
 
     /**
-     * Return the center of Extent
-     * @param {Coordinates} target copy the center to the target.
-     * @return {Coordinates}
+     * Returns the center of the extent.
+     *
+     * @param target - The target to store the center coordinate. If this not
+     * provided a new coordinate will be created.
      */
     center(target = new Coordinates(this.crs)) {
         this.planarDimensions(_dim);
@@ -128,25 +160,12 @@ class Extent {
     }
 
     /**
-    * Returns the dimension of the extent, in a `THREE.Vector2`.
-    *
-    * @param {THREE.Vector2} [target] - The target to assign the result in.
-    *
-    * @return {THREE.Vector2}
-    */
-    dimensions(target = new THREE.Vector2()) {
-        console.warn('Extent.dimensions is deprecated, use planarDimensions, geodeticDimensions or spatialEuclideanDimensions');
-        target.x = Math.abs(this.east - this.west);
-        target.y = Math.abs(this.north - this.south);
-        return target;
-    }
-
-    /**
-     *  Planar dimensions are two planar distances west/east and south/north.
-     *  Planar distance straight-line Euclidean distance calculated in a 2D Cartesian coordinate system.
+     * Returns the planar dimensions as two-vector planar distances west/east
+     * and south/north.
+     * The planar distance is a straight-line Euclidean distance calculated in a
+     * 2D Cartesian coordinate system.
      *
-     * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
-     * @return     {THREE.Vector2}  Planar dimensions
+     * @param target - optional target
      */
     planarDimensions(target = new THREE.Vector2()) {
         // Calculte the dimensions for x and y
@@ -154,12 +173,12 @@ class Extent {
     }
 
     /**
-     *  Geodetic dimensions are two planar distances west/east and south/north.
-     *  Geodetic distance is calculated in an ellispoid space as the distance
-     *  across the curved surface of the world.
+     * Returns the geodetic dimensions as two-vector planar distances west/east
+     * and south/north.
+     * Geodetic distance is calculated in an ellispoid space as the distance
+     * across the curved surface of the ellipsoid.
      *
-     * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
-     * @return     {THREE.Vector2}  geodetic dimensions
+     * @param target - optional target
      */
     geodeticDimensions(target = new THREE.Vector2()) {
         // set 3 corners extent
@@ -172,15 +191,18 @@ class Extent {
         cNorthEast.setFromValues(this.east, this.north, 0);
 
         // calcul geodetic distance northWest/northEast and northWest/southWest
-        return target.set(cNorthWest.geodeticDistanceTo(cNorthEast), cNorthWest.geodeticDistanceTo(cSouthWest));
+        return target.set(
+            cNorthWest.geodeticDistanceTo(cNorthEast),
+            cNorthWest.geodeticDistanceTo(cSouthWest),
+        );
     }
 
     /**
-     *  Spatial euclidean dimensions are two spatial euclidean distances between west/east corner and south/north corner.
-     *  Spatial euclidean distance chord is calculated in a ellispoid space.
+     *  Returns the spatial euclidean dimensions as a two-vector spatial
+     *  euclidean distances between west/east corner and south/north corner.
+     *  Spatial euclidean distance chord is calculated in an ellispoid space.
      *
-     * @param      {THREE.Vector2}  [target=new THREE.Vector2()]  The target
-     * @return     {THREE.Vector2}  spatial euclidean dimensions
+     * @param target - optional target
      */
     spatialEuclideanDimensions(target = new THREE.Vector2()) {
         // set 3 corners extent
@@ -193,19 +215,20 @@ class Extent {
         cNorthEast.setFromValues(this.east, this.north, 0);
 
         // calcul chord distance northWest/northEast and northWest/southWest
-        return target.set(cNorthWest.spatialEuclideanDistanceTo(cNorthEast), cNorthWest.spatialEuclideanDistanceTo(cSouthWest));
+        return target.set(
+            cNorthWest.spatialEuclideanDistanceTo(cNorthEast),
+            cNorthWest.spatialEuclideanDistanceTo(cSouthWest),
+        );
     }
 
     /**
-     * Return true if `coord` is inside the bounding box.
+     * Checks whether a coordinates is inside the extent.
      *
-     * @param {Coordinates} coord
-     * @param {number} [epsilon=0] - to take into account when comparing to the
-     * point.
-     *
-     * @return {boolean}
+     * @param coord - the given coordinates.
+     * @param epsilon - error margin when comparing to the coordinates.
+     * Default is 0.
      */
-    isPointInside(coord, epsilon = 0) {
+    isPointInside(coord: Coordinates, epsilon = 0) {
         if (this.crs == coord.crs) {
             _c.copy(coord);
         } else {
@@ -220,17 +243,13 @@ class Extent {
     }
 
     /**
-     * Return true if `extent` is inside this extent.
+     * Checks whether another extent is inside the extent.
      *
-     * @param {Extent} extent the extent to check
-     * @param {number} epsilon to take into account when comparing to the
-     * point.
-     *
-     * @return {boolean}
+     * @param extent - the extent to check
+     * @param epsilon - error margin when comparing the extent bounds.
      */
-    isInside(extent, epsilon) {
+    isInside(extent: Extent, epsilon = CRS.reasonableEpsilon(this.crs)) {
         extent.as(this.crs, _extent);
-        epsilon = epsilon ?? CRS.reasonableEpsilon(this.crs);
         return this.east - _extent.east <= epsilon &&
                 _extent.west - this.west <= epsilon &&
                 this.north - _extent.north <= epsilon &&
@@ -238,13 +257,17 @@ class Extent {
     }
 
     /**
-     * Return the translation and scale to transform this extent to input extent.
+     * Return the translation and scale to transform this extent to the input
+     * extent.
      *
-     * @param {Extent} extent input extent
-     * @param {THREE.Vector4} target copy the result to target.
-     * @return {THREE.Vector4} {x: translation on west-east, y: translation on south-north, z: scale on west-east, w: scale on south-north}
+     * @param extent - input extent
+     * @param target - copy the result to target.
+     * @returns A {@link THREE.Vector4} where the `x` property encodes the
+     * translation on west-east, the `y` property the translation on
+     * south-north, the `z` property the scale on west-east, the `w` property
+     * the scale on south-north.
      */
-    offsetToParent(extent, target = new THREE.Vector4()) {
+    offsetToParent(extent: Extent, target = new THREE.Vector4()) {
         if (this.crs != extent.crs) {
             throw new Error('unsupported mix');
         }
@@ -262,15 +285,15 @@ class Extent {
     }
 
     /**
-     * Return true if this bounding box intersect with the bouding box parameter
-     * @param {Extent} extent
-     * @returns {Boolean}
+     * Checks wheter this bounding box intersects with the given extent
+     * parameter.
+     * @param extent - the provided extent
      */
-    intersectsExtent(extent) {
+    intersectsExtent(extent: Extent) {
         return Extent.intersectsExtent(this, extent);
     }
 
-    static intersectsExtent(/** @type {Extent} */extentA, /** @type {Extent} */ extentB) {
+    static intersectsExtent(extentA: Extent, extentB: Extent) {
         // TODO don't work when is on limit
         const other = extentB.crs == extentA.crs ? extentB : extentB.as(extentA.crs, _extent);
         return !(extentA.west >= other.east ||
@@ -280,13 +303,12 @@ class Extent {
     }
 
     /**
-     * Return the intersection of this extent with another one
-     * @param {Extent} extent
-     * @returns {Extent}
+     * Returns the intersection of this extent with another one.
+     * @param extent - extent to intersect
      */
-    intersect(extent) {
+    intersect(extent: Extent) {
         if (!this.intersectsExtent(extent)) {
-            return new Extent(this.crs, 0, 0, 0, 0);
+            return new Extent(this.crs);
         }
         if (extent.crs != this.crs) {
             extent = extent.as(this.crs, _extent);
@@ -301,44 +323,31 @@ class Extent {
     /**
      * Set west, east, south and north values.
      *
-     * @param {number|Array.<number>|Coordinates|Object|Extent} v0 west value,
-     * Array of values [west, east, south and north], Extent of same type (tiled
-     * or not), Coordinates of west-south corner or object {west, east, south
-     * and north}
-     * @param {number|Coordinates} [v1] east value, row value or Coordinates of
-     * east-north corner
-     * @param {number} [v2] south value or column value
-     * @param {number} [v3] north value
-     *
-     * @return {Extent}
+     * @param v0 - the `west` value of this extent. Default is 0.
+     * @param v1 - the `east` value of this extent. Default is 0.
+     * @param v2 - the `south` value of this extent. Default is 0.
+     * @param v3 - the `north` value of this extent. Default is 0.
      */
-    set(v0, v1, v2, v3) {
+    set(v0: number, v1: number, v2: number, v3: number): this {
         if (v0 == undefined) {
             throw new Error('No values to set in the extent');
         }
-        if (v0.isExtent) {
-            v1 = v0.east;
-            v2 = v0.south;
-            v3 = v0.north;
-            v0 = v0.west;
-        }
-
-        if (v0.isCoordinates) {
-            // seem never used
-            this.west = v0.x;
-            this.east = v1.x;
-            this.south = v0.y;
-            this.north = v1.y;
-        } else if (v0.west !== undefined) {
-            this.west = v0.west;
-            this.east = v0.east;
-            this.south = v0.south;
-            this.north = v0.north;
-        } else if (v0.length == 4) {
-            this.west = v0[0];
-            this.east = v0[1];
-            this.south = v0[2];
-            this.north = v0[3];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((v0 as any).west !== undefined) {
+            console.warn(
+                'Deprecated Extent#constructor(string, Extent) and Extent#set(Extent),',
+                'use new Extent(string).setFromExtent(Extent) instead.',
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.setFromExtent(v0 as any);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } else if ((v0 as any).length == 4) { // deepscan-disable-line
+            console.warn(
+                'Deprecated Extent#constructor(string, number[]) and Extent#set(number[]),',
+                'use new Extent(string).setFromArray(number[]) instead.',
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.setFromArray(v0 as any);
         } else if (v3 !== undefined) {
             this.west = v0;
             this.east = v1;
@@ -350,20 +359,47 @@ class Extent {
     }
 
     /**
-     * Copy to this extent to input extent.
-     * @param {Extent} extent
-     * @return {Extent} copied extent
+     * Sets this extent `west` property to `array[offset + 0]`, `east` property
+     * to `array[offset + 1]`, `south` property to `array[offset + 2]` and
+     * `north` property to `array[offset + 3]`.
+     * @param array - the source array
+     * @param offset - offset into the array. Default is 0.
      */
-    copy(extent) {
+    setFromArray(array: ArrayLike<number>, offset: number = 0): this {
+        this.west = array[offset];
+        this.east = array[offset + 1];
+        this.south = array[offset + 2];
+        this.north = array[offset + 3];
+        return this;
+    }
+
+    /**
+     * Sets this extent `west`, `east`, `south` and `north` properties from an
+     * `extent` bounds.
+     * @param extent - the source extent
+     */
+    setFromExtent(extent: ExtentLike): this {
+        this.west = extent.west;
+        this.east = extent.east;
+        this.south = extent.south;
+        this.north = extent.north;
+        return this;
+    }
+
+    /**
+     * Copies the passed extent to this extent.
+     * @param extent - extent to copy.
+     */
+    copy(extent: Extent): this {
         this.crs = extent.crs;
-        return this.set(extent);
+        return this.setFromExtent(extent);
     }
 
     /**
      * Union this extent with the input extent.
-     * @param {Extent} extent the extent to union.
+     * @param extent - the extent to union.
      */
-    union(extent) {
+    union(extent: Extent) {
         if (extent.crs != this.crs) {
             throw new Error('unsupported union between 2 diff crs');
         }
@@ -395,9 +431,9 @@ class Extent {
     /**
      * expandByCoordinates perfoms the minimal extension
      * for the coordinates to belong to this Extent object
-     * @param {Coordinates} coordinates  The coordinates to belong
+     * @param coordinates - The coordinates to belong
      */
-    expandByCoordinates(coordinates) {
+    expandByCoordinates(coordinates: Coordinates) {
         const coords = coordinates.crs == this.crs ? coordinates : coordinates.as(this.crs, _c);
         this.expandByValuesCoordinates(coords.x, coords.y);
     }
@@ -405,11 +441,11 @@ class Extent {
     /**
     * expandByValuesCoordinates perfoms the minimal extension
     * for the coordinates values to belong to this Extent object
-    * @param {number} we  The coordinate on west-east
-    * @param {number} sn  The coordinate on south-north
+    * @param we - The coordinate on west-east
+    * @param sn - The coordinate on south-north
     *
     */
-    expandByValuesCoordinates(we, sn) {
+    expandByValuesCoordinates(we: number, sn: number) {
         if (we < this.west) {
             this.west = we;
         }
@@ -431,11 +467,10 @@ class Extent {
      * should be the geocentric coordinates of `min` and `max` of a `box3`
      * in local tangent plane.
      *
-     * @param {string} crs Projection of extent to instancied.
-     * @param {THREE.Box3} box
-     * @return {Extent}
+     * @param crs - Projection of extent to instancied.
+     * @param box - Bounding-box
      */
-    static fromBox3(crs, box) {
+    static fromBox3(crs: ProjectionLike, box: THREE.Box3) {
         if (CRS.isGeocentric(crs)) {
             // if geocentric reproject box on 'EPSG:4326'
             crs = 'EPSG:4326';
@@ -447,7 +482,7 @@ class Extent {
             cNorthEast.setFromVector3(box.max).as(crs, cNorthEast).toVector3(box.max);
         }
 
-        return new Extent(crs, {
+        return new Extent(crs).setFromExtent({
             west: box.min.x,
             east: box.max.x,
             south: box.min.y,
@@ -457,30 +492,30 @@ class Extent {
 
     /**
      * Return values of extent in string, separated by the separator input.
-     * @param {string} separator
-     * @return {string}
+     * @param sep - string separator
      */
-    toString(separator = '') {
-        return `${this.east}${separator}${this.north}${separator}${this.west}${separator}${this.south}`;
+    toString(sep = '') {
+        return `${this.east}${sep}${this.north}${sep}${this.west}${sep}${this.south}`;
     }
 
     /**
      * Subdivide equally an extent from its center to return four extents:
      * north-west, north-east, south-west and south-east.
      *
-     * @returns {Extent[]} An array containing the four sections of the extent. The
-     * order of the sections is [NW, NE, SW, SE].
+     * @returns An array containing the four sections of the extent. The order
+     * of the sections is [NW, NE, SW, SE].
      */
     subdivision() {
         return this.subdivisionByScheme();
     }
+
     /**
      * subdivise extent by scheme.x on west-east and scheme.y on south-north.
      *
-     * @param      {THREE.Vector2}  [scheme=Vector2(2,2)]  The scheme to subdivise.
-     * @return     {Array<Extent>}   subdivised extents.
+     * @param scheme - The scheme to subdivise.
+     * @returns subdivised extents.
      */
-    subdivisionByScheme(scheme = defaultScheme) {
+    subdivisionByScheme(scheme = defaultScheme): Extent[] {
         const subdivisedExtents = [];
         const dimSub = this.planarDimensions(_dim).divide(scheme);
         for (let x = scheme.x - 1; x >= 0; x--) {
@@ -498,12 +533,13 @@ class Extent {
     }
 
     /**
-     * Multiplies all extent `coordinates` (with an implicit 1 in the 4th dimension) and `matrix`.
+     * Multiplies all extent `coordinates` (with an implicit 1 in the 4th
+     * dimension) and `matrix`.
      *
-     * @param      {THREE.Matrix4}  matrix  The matrix
-     * @return     {Extent}  return this extent instance.
+     * @param matrix - The matrix
+     * @returns return this extent instance.
      */
-    applyMatrix4(matrix) {
+    applyMatrix4(matrix: THREE.Matrix4): this {
         southWest.set(this.west, this.south, 0).applyMatrix4(matrix);
         northEast.set(this.east, this.north, 0).applyMatrix4(matrix);
         this.west = southWest.x;
@@ -526,11 +562,11 @@ class Extent {
     /**
      * clamp south and north values
      *
-     * @param      {number}  [south=this.south]  The min south
-     * @param      {number}  [north=this.north]  The max north
-     * @return     {Extent}  this extent
+     * @param south - The min south
+     * @param north - The max north
+     * @returns this extent
      */
-    clampSouthNorth(south = this.south, north = this.north) {
+    clampSouthNorth(south = this.south, north = this.north): this {
         this.south = Math.max(this.south, south);
         this.north = Math.min(this.north, north);
         return this;
@@ -539,27 +575,28 @@ class Extent {
     /**
      * clamp west and east values
      *
-     * @param      {number}  [west=this.west]  The min west
-     * @param      {number}  [east=this.east]  The max east
-     * @return     {Extent}  this extent
+     * @param west - The min west
+     * @param east - The max east
+     * @returns this extent
      */
-    clampWestEast(west = this.west, east = this.east) {
+    clampWestEast(west = this.west, east = this.east): this {
         this.west = Math.max(this.west, west);
         this.east = Math.min(this.east, east);
         return this;
     }
+
     /**
      * clamp this extent by passed extent
      *
-     * @param      {Extent}  extent  The maximum extent.
-     * @return     {Extent}  this extent.
+     * @param extent - The maximum extent.
+     * @returns this extent.
      */
-    clampByExtent(extent) {
+    clampByExtent(extent: ExtentLike): this {
         this.clampSouthNorth(extent.south, extent.north);
         return this.clampWestEast(extent.west, extent.east);
     }
 }
 
-_extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
+_extent = new Extent('EPSG:4326');
 
 export default Extent;

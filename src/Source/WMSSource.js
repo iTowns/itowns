@@ -3,7 +3,7 @@ import URLBuilder from 'Provider/URLBuilder';
 import Extent from 'Core/Geographic/Extent';
 import * as CRS from 'Core/Geographic/Crs';
 
-const _extent = new Extent('EPSG:4326', [0, 0, 0, 0]);
+const _extent = new Extent('EPSG:4326');
 
 /**
  * Proj provides an optional param to define axis order and orientation for a
