@@ -403,7 +403,7 @@ class TiledGeometryLayer extends GeometryLayer {
             if (layerUpdateState[c.id] && layerUpdateState[c.id].inError()) {
                 continue;
             }
-            nodeLayer = node.material.getLayer(c.id);
+            nodeLayer = node.material.getColorLayer(c.id);
             if (c.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
                 return false;
             }
