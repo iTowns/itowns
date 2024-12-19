@@ -88,7 +88,7 @@
                 eptSource = new itowns.EntwinePointTileSource({ url });
 
                 if (eptLayer) {
-                    debugGUI.removeFolder(eptLayer.debugUI);
+                    debugGui.removeFolder(eptLayer.debugUI);
                     view.removeLayer('Entwine Point Tile');
                     view.notifyChange();
                     eptLayer.delete();

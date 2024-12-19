@@ -328,10 +328,6 @@ class PointCloudLayer extends GeometryLayer {
                     redraw: true,
                     earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
                 }).then((pts) => {
-                    if (this.onPointsCreated) {
-                        this.onPointsCreated(layer, pts);
-                    }
-
                     elt.obj = pts;
                     // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
                     elt.tightbbox = pts.tightbbox;
@@ -340,12 +336,12 @@ class PointCloudLayer extends GeometryLayer {
                     // be added nor cleaned
                     this.group.add(elt.obj);
                     elt.obj.updateMatrixWorld(true);
-
-                    elt.promise = null;
-                }, (err) => {
-                    if (err.isCancelledCommandException) {
-                        elt.promise = null;
+                }).catch((err) => {
+                    if (!err.isCancelledCommandException) {
+                        return err;
                     }
+                }).finally(() => {
+                    elt.promise = null;
                 });
             }
         }
