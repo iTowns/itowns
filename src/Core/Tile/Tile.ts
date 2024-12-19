@@ -32,12 +32,13 @@ class Tile {
     col: number;
 
     /**
-     * Tile is a geographical bounding rectangle defined by zoom, row and column.
+     * A tile is a geographical bounding rectangle uniquely defined by its zoom,
+     * row and column.
      *
-     * @param {String} crs projection of limit values.
-     * @param {number} [zoom=0] zoom value
-     * @param {number} [row=0] row value
-     * @param {number} [col=0] column value
+     * @param crs - projection of limit values.
+     * @param zoom - `zoom` value. Default is 0.
+     * @param row - `row` value. Default is 0.
+     * @param col - `column` value. Default is 0.
      */
     constructor(crs: string, zoom = 0, row = 0, col = 0) {
         this.isTile = true;
@@ -49,18 +50,17 @@ class Tile {
     }
 
     /**
-     * Clone this tile
-     * @return {Tile} cloned tile
+     * Returns a new tile with the same bounds and crs as this one.
      */
     clone() {
         return new Tile(this.crs, this.zoom, this.row, this.col);
     }
 
     /**
-     * Convert tile to the specified extent.
-     * @param {string} crs the projection of destination.
-     * @param {Extent} target copy the destination to target.
-     * @return {Extent}
+     * Converts this tile to the specified extent.
+     * @param crs - target's projection.
+     * @param target - The target to store the projected extent. If this not
+     * provided a new extent will be created.
      */
     toExtent(crs: string, target = new Extent('EPSG:4326')) {
         CRS.isValid(crs);
@@ -81,11 +81,9 @@ class Tile {
     }
 
     /**
-     * Return true if `tile` is inside this tile.
+     * Checks whether another tile is inside this tile.
      *
-     * @param {Tile} tile the tile to check
-     *
-     * @return {boolean}
+     * @param extent - the tile to check.
      */
     isInside(tile: Tile) {
         if (this.zoom == tile.zoom) {
@@ -100,11 +98,11 @@ class Tile {
     }
 
     /**
-     * Return the translation and scale to transform this tile to input tile.
+     * Returns the translation and scale to transform this tile to the input
+     * tile.
      *
-     * @param {Tile} tile input tile
-     * @param {THREE.Vector4} target copy the result to target.
-     * @return {THREE.Vector4} {x: translation on west-east, y: translation on south-north, z: scale on west-east, w: scale on south-north}
+     * @param tile - the input tile.
+     * @param target - copy the result to target.
      */
     offsetToParent(tile: Tile, target = new THREE.Vector4()) {
         if (this.crs != tile.crs) {
@@ -119,10 +117,9 @@ class Tile {
     }
 
     /**
-     * Return parent tile with input level
+     * Returns the parent tile at the given level.
      *
-     * @param {number} levelParent level of parent.
-     * @return {Tile}
+     * @param levelParent - the level of the parent tile.
      */
     tiledExtentParent(levelParent: number) {
         if (levelParent && levelParent < this.zoom) {
@@ -134,13 +131,11 @@ class Tile {
     }
 
     /**
-     * Set zoom, row and column values
+     * Sets zoom, row and column values.
      *
-     * @param {number} [zoom=0] zoom value
-     * @param {number} [row=0] row value
-     * @param {number} [col=0] column value
-     *
-     * @return {Tile}
+     * @param zoom - zoom value.
+     * @param row - row value.
+     * @param col - column value.
      */
     set(zoom = 0, row = 0, col = 0) {
         this.zoom = zoom;
@@ -151,9 +146,8 @@ class Tile {
     }
 
     /**
-     * Copy to this tile to input tile.
-     * @param {Tile} tile
-     * @return {Tile} copied extent
+     * Copies the passed tile to this tile.
+     * @param tile - tile to copy.
      */
     copy(tile: Tile): this {
         this.crs = tile.crs;
@@ -162,19 +156,13 @@ class Tile {
 
     /**
      * Return values of tile in string, separated by the separator input.
-     * @param {string} separator
-     * @return {string}
+     * @param separator - string separator
      */
     toString(separator = '') {
         return `${this.zoom}${separator}${this.row}${separator}${this.col}`;
     }
 }
 
-/**
- * @param {Extent} e
- * @param {string} tms
- * @returns {Tile[]}
- */
 export function tiledCovering(e: Extent, tms: string) {
     if (e.crs == 'EPSG:4326' && tms == 'EPSG:3857') {
         const WMTS_PM = [];

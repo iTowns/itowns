@@ -21,6 +21,8 @@ const defaultScheme = new THREE.Vector2(1, 1);
 schemeTiles.set('EPSG:3857', defaultScheme);
 schemeTiles.set('EPSG:4326', new THREE.Vector2(2, 1));
 
+// TODO: For now we can only have a single TMS grid per proj4 identifier.
+// This causes TMS identifier to be proj4 identifier.
 export function getInfoTms(crs: string) {
     const globalExtent = globalExtentTMS.get(crs);
     if (!globalExtent) {
