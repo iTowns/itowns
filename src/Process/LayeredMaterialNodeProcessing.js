@@ -107,11 +107,15 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         return;
     }
 
-    if (nodeLayer.level >= extentsDestination[0].zoom) {
-        // default decision method
-        node.layerUpdateState[layer.id].noMoreUpdatePossible();
-        return;
+    // During the redraw processing, skip the noMoreUpdatePossible state
+    if (!node.redraw) {
+        if (nodeLayer.level >= extentsDestination[0].zoom) {
+            // default decision method
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            return;
+        }
     }
+    node.redraw = false;
 
     // is fetching data from this layer disabled?
     if (layer.frozen) {
