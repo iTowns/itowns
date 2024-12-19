@@ -87,14 +87,18 @@ async function loadImage(source) {
     return (await promise).image;
 }
 
-function cropImage(img, cropValues = { width: img.naturalWidth, height: img.naturalHeight }) {
-    canvas.width = cropValues.width;
-    canvas.height = cropValues.height;
+function cropImage(img, cropValues) {
+    const x = cropValues.x || 0;
+    const y = cropValues.y || 0;
+    const width = cropValues.width || img.naturalWidth;
+    const height = cropValues.height || img.naturalHeight;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(img,
-        cropValues.x || 0, cropValues.y || 0, cropValues.width, cropValues.height,
-        0, 0, cropValues.width, cropValues.height);
-    return ctx.getImageData(0, 0, cropValues.width, cropValues.height);
+        x, y, width, height,
+        0, 0, width, height);
+    return ctx.getImageData(0, 0, width, height);
 }
 
 function replaceWhitePxl(imgd, color, id) {
@@ -158,7 +162,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
                 const dataValue = style.context.featureStyle?.[category]?.[parameter];
                 if (dataValue != undefined) { return readExpression(dataValue, style.context); }
                 if (defaultValue instanceof Function) {
-                    return defaultValue(style.context.properties, style.context);
+                    return defaultValue(style.context.properties, style.context) ?? defaultValue;
                 }
                 return defaultValue;
             },
@@ -298,14 +302,11 @@ function _addIcon(icon, domElement, opt) {
 }
 
 /**
- * An object that can contain any properties (order, zoom, fill, stroke, point,
+ * An object that can contain any properties (zoom, fill, stroke, point,
  * text or/and icon) and sub properties of a Style.<br/>
  * Used for the instanciation of a {@link Style}.
  *
  * @typedef {Object} StyleOptions
- *
- * @property {Number} [order] - Order of the features that will be associated to
- * the style. It can helps sorting and prioritizing features if needed.
  *
  * @property {Object} [zoom] - Level on which to display the feature
  * @property {Number} [zoom.max] - max level
@@ -464,8 +465,6 @@ function _addIcon(icon, domElement, opt) {
  * The first parameter of functions used to set `Style` properties is always an object containing
  * the properties of the features displayed with the current `Style` instance.
  *
- * @property {Number} order - Order of the features that will be associated to
- * the style. It can helps sorting and prioritizing features if needed.
  * @property {Object} fill - Polygons and fillings style.
  * @property {String|Function|THREE.Color} fill.color - Defines the main color of the filling. Can be
  * any [valid color
@@ -615,14 +614,12 @@ function _addIcon(icon, domElement, opt) {
 class Style {
     /**
      * @param {StyleOptions} [params={}] An object that contain any properties
-     * (order, zoom, fill, stroke, point, text or/and icon)
+     * (zoom, fill, stroke, point, text or/and icon)
      * and sub properties of a Style ({@link StyleOptions}).
      */
     constructor(params = {}) {
         this.isStyle = true;
         this.context = new StyleContext();
-
-        this.order = params.order || 0;
 
         params.zoom = params.zoom || {};
         params.fill = params.fill || {};
@@ -763,12 +760,12 @@ class Style {
      * set Style from vector tile layer properties.
      * @param {Object} layer vector tile layer.
      * @param {Object} sprites vector tile layer.
-     * @param {Number} [order=0]
      * @param {Boolean} [symbolToCircle=false]
+     * @param {Set} warn Set storing all warnings encountered by the source.
      *
      * @returns {StyleOptions} containing all properties for itowns.Style
      */
-    static setFromVectorTileLayer(layer, sprites, order = 0, symbolToCircle = false) {
+    static setFromVectorTileLayer(layer, sprites, symbolToCircle = false, warn) {
         const style = {
             fill: {},
             stroke: {},
@@ -779,8 +776,6 @@ class Style {
 
         layer.layout = layer.layout || {};
         layer.paint = layer.paint || {};
-
-        style.order = order;
 
         if (layer.type === 'fill') {
             const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['fill-color'] || layer.paint['fill-pattern'], { type: 'color' }));
@@ -804,7 +799,8 @@ class Style {
                 style.stroke.color = color;
                 style.stroke.opacity = opacity;
                 style.stroke.width = 1.0;
-                style.stroke.dasharray = [];
+            } else {
+                style.stroke.width  = 0.0;
             }
         } else if (layer.type === 'line') {
             const prepare = readVectorProperty(layer.paint['line-color'], { type: 'color' });
@@ -820,6 +816,8 @@ class Style {
             style.point.opacity = opacity;
             style.point.radius = readVectorProperty(layer.paint['circle-radius']);
         } else if (layer.type === 'symbol') {
+            // if symbol we shouldn't draw stroke but defaut value is 1.
+            style.stroke.width = 0.0;
             // overlapping order
             style.text.zOrder = readVectorProperty(layer.layout['symbol-z-order']);
             if (style.text.zOrder == 'auto') {
@@ -840,7 +838,7 @@ class Style {
 
             // content
             style.text.field = readVectorProperty(layer.layout['text-field']);
-            style.text.wrap = readVectorProperty(layer.layout['text-max-width']);
+            style.text.wrap = readVectorProperty(layer.layout['text-max-width']);// Units ems
             style.text.spacing = readVectorProperty(layer.layout['text-letter-spacing']);
             style.text.transform = readVectorProperty(layer.layout['text-transform']);
             style.text.justify = readVectorProperty(layer.layout['text-justify']);
@@ -861,6 +859,12 @@ class Style {
             // additional icon
             const iconImg = readVectorProperty(layer.layout['icon-image']);
             if (iconImg) {
+                const cropValueDefault = {
+                    x: 0,
+                    y: 0,
+                    width: 1,
+                    height: 1,
+                };
                 try {
                     style.icon.id = iconImg;
                     if (iconImg.stops) {
@@ -871,9 +875,23 @@ class Style {
                                 if (stop[1].includes('{')) {
                                     cropValues = function _(p) {
                                         const id = stop[1].replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
-                                        cropValues = sprites[id];
+                                        if (cropValues === undefined) {
+                                            const warning = `WARNING: "${id}" not found in sprite file`;
+                                            if (!warn.has(warning)) {
+                                                warn.add(warning);
+                                                console.warn(warning);
+                                            }
+                                            sprites[id] = cropValueDefault;// or return cropValueDefault;
+                                        }
                                         return sprites[id];
                                     };
+                                } else if (cropValues === undefined) {
+                                    const warning = `WARNING: "${stop[1]}" not found in sprite file`;
+                                    if (!warn.has(warning)) {
+                                        warn.add(warning);
+                                        console.warn(warning);
+                                    }
+                                    cropValues = cropValueDefault;
                                 }
                                 return [stop[0], cropValues];
                             }),
@@ -881,19 +899,36 @@ class Style {
                         style.icon.cropValues = iconCropValue;
                     } else {
                         style.icon.cropValues = sprites[iconImg];
-                        if (iconImg[0].includes('{')) {
+                        if (iconImg.includes('{')) {
                             style.icon.cropValues = function _(p) {
                                 const id = iconImg.replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
-                                style.icon.cropValues = sprites[id];
+                                if (sprites[id] === undefined) {
+                                    const warning = `WARNING: "${id}" not found in sprite file`;
+                                    if (!warn.has(warning)) {
+                                        warn.add(warning);
+                                        console.warn(warning);
+                                    }
+                                    sprites[id] = cropValueDefault;// or return cropValueDefault;
+                                }
                                 return sprites[id];
                             };
+                        } else if (sprites[iconImg] === undefined) {
+                            const warning = `WARNING: "${iconImg}" not found in sprite file`;
+                            if (!warn.has(warning)) {
+                                warn.add(warning);
+                                console.warn(warning);
+                            }
+                            style.icon.cropValues = cropValueDefault;
                         }
                     }
                     style.icon.source = sprites.source;
-                    style.icon.size = readVectorProperty(layer.layout['icon-size']) || 1;
+                    style.icon.size = readVectorProperty(layer.layout['icon-size']) ?? 1;
                     const { color, opacity } = rgba2rgb(readVectorProperty(layer.paint['icon-color'], { type: 'color' }));
-                    style.icon.color = color;
-                    style.icon.opacity = readVectorProperty(layer.paint['icon-opacity']) || (opacity !== undefined && opacity);
+                    // https://docs.mapbox.com/style-spec/reference/layers/#paint-symbol-icon-color
+                    if (iconImg.sdf) {
+                        style.icon.color = color;
+                    }
+                    style.icon.opacity = readVectorProperty(layer.paint['icon-opacity']) ?? (opacity !== undefined && opacity);
                 } catch (err) {
                     err.message = `VTlayer '${layer.id}': argument sprites must not be null when using layer.layout['icon-image']`;
                     throw err;
@@ -919,17 +954,16 @@ class Style {
      * @param {Boolean} canBeFilled - true if feature.type == FEATURE_TYPES.POLYGON.
      */
     applyToCanvasPolygon(txtrCtx, polygon, invCtxScale, canBeFilled) {
-        const context = this.context;
         // draw line or edge of polygon
-        if (this.stroke) {
+        if (this.stroke.width > 0) {
             // TO DO add possibility of using a pattern (https://github.com/iTowns/itowns/issues/2210)
-            this._applyStrokeToPolygon(txtrCtx, invCtxScale, polygon, context);
+            this._applyStrokeToPolygon(txtrCtx, invCtxScale, polygon);
         }
 
         // fill inside of polygon
-        if (canBeFilled && this.fill) {
+        if (canBeFilled && (this.fill.pattern || this.fill.color)) {
             // canBeFilled can be move to StyleContext in the later PR
-            this._applyFillToPolygon(txtrCtx, invCtxScale, polygon, context);
+            this._applyFillToPolygon(txtrCtx, invCtxScale, polygon);
         }
     }
 
@@ -937,11 +971,11 @@ class Style {
         if (txtrCtx.strokeStyle !== this.stroke.color) {
             txtrCtx.strokeStyle = this.stroke.color;
         }
-        const width = (this.stroke.width || 2.0) * invCtxScale;
+        const width = this.stroke.width * invCtxScale;
         if (txtrCtx.lineWidth !== width) {
             txtrCtx.lineWidth = width;
         }
-        const alpha = this.stroke.opacity == undefined ? 1.0 : this.stroke.opacity;
+        const alpha = this.stroke.opacity;
         if (alpha !== txtrCtx.globalAlpha && typeof alpha == 'number') {
             txtrCtx.globalAlpha = alpha;
         }
@@ -957,7 +991,7 @@ class Style {
         // need doc for the txtrCtx.fillStyle.src that seems to always be undefined
         if (this.fill.pattern) {
             let img = this.fill.pattern;
-            const cropValues = this.fill.pattern.cropValues;
+            const cropValues = { ...this.fill.pattern.cropValues };
             if (this.fill.pattern.source) {
                 img = await loadImage(this.fill.pattern.source);
             }
@@ -1032,7 +1066,7 @@ class Style {
         if (!this.icon.cropValues && !this.icon.color) {
             icon.src = this.icon.source;
         } else {
-            const cropValues = this.icon.cropValues;
+            const cropValues = { ...this.icon.cropValues };
             const color = this.icon.color;
             const id = this.icon.id || this.icon.source;
             const img = await loadImage(this.icon.source);
