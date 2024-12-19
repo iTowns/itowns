@@ -54,10 +54,11 @@
                     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
                 }
             }
-		</script>
+        </script>
 
         <script type="module">
             import { AmbientLight } from 'three';
+            import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
             import {
                 zoomToLayer,
                 fillHTMLWithPickingInfo,
@@ -95,9 +96,11 @@
 
             // Enable various compression support for 3D Tiles tileset:
             // - `KHR_draco_mesh_compression` mesh compression extension
-            // - `KHR_texture_basisu` texture compresion extension
+            // - `KHR_texture_basisu` texture compression extension
+            // - `EXT_meshopt_compression` data compression extension
             itowns.enableDracoLoader('./libs/draco/');
             itowns.enableKtx2Loader('./lib/basis/', view.renderer);
+            itowns.enableMeshoptDecoder(MeshoptDecoder);
 
             // Add ambient light to globally illuminates all objects
             const light = new AmbientLight(0x404040, 40);

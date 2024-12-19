@@ -122,6 +122,27 @@ export function enableKtx2Loader(path, renderer) {
     itownsGLTFLoader.setKTX2Loader(ktx2Loader);
 }
 
+/**
+ * Enable loading 3D Tiles and GLTF with
+ * [meshopt](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md) compression extension.
+ *
+ * @param {MeshOptDecoder.constructor} MeshOptDecoder - The Meshopt decoder
+ * module.
+ *
+ * @example
+ * import * as itowns from 'itowns';
+ * import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+ *
+ * // Enable support of EXT_meshopt_compression
+ * itowns.enableMeshoptDecoder(MeshoptDecoder);
+ */
+export function enableMeshoptDecoder(MeshOptDecoder) {
+    if (!MeshOptDecoder) {
+        throw new Error('MeshOptDecoder module is mandatory');
+    }
+    itownsGLTFLoader.setMeshoptDecoder(MeshOptDecoder);
+}
+
 class OGC3DTilesLayer extends GeometryLayer {
     /**
      * Layer for [3D Tiles](https://www.ogc.org/standard/3dtiles/) datasets.
