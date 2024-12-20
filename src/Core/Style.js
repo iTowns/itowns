@@ -87,14 +87,18 @@ async function loadImage(source) {
     return (await promise).image;
 }
 
-function cropImage(img, cropValues = { width: img.naturalWidth, height: img.naturalHeight }) {
-    canvas.width = cropValues.width;
-    canvas.height = cropValues.height;
+function cropImage(img, cropValues) {
+    const x = cropValues.x || 0;
+    const y = cropValues.y || 0;
+    const width = cropValues.width || img.naturalWidth;
+    const height = cropValues.height || img.naturalHeight;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(img,
-        cropValues.x || 0, cropValues.y || 0, cropValues.width, cropValues.height,
-        0, 0, cropValues.width, cropValues.height);
-    return ctx.getImageData(0, 0, cropValues.width, cropValues.height);
+        x, y, width, height,
+        0, 0, width, height);
+    return ctx.getImageData(0, 0, width, height);
 }
 
 function replaceWhitePxl(imgd, color, id) {
@@ -861,6 +865,12 @@ class Style {
             // additional icon
             const iconImg = readVectorProperty(layer.layout['icon-image']);
             if (iconImg) {
+                const cropValueDefault = {
+                    x: 0,
+                    y: 0,
+                    width: 1,
+                    height: 1,
+                };
                 try {
                     style.icon.id = iconImg;
                     if (iconImg.stops) {
@@ -871,8 +881,15 @@ class Style {
                                 if (stop[1].includes('{')) {
                                     cropValues = function _(p) {
                                         const id = stop[1].replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
+                                        if (cropValues === undefined) {
+                                            // const warning = `WARNING: "${id}" not found in sprite file`;
+                                            sprites[id] = cropValueDefault;// or return cropValueDefault;
+                                        }
                                         return sprites[id];
                                     };
+                                } else if (cropValues === undefined) {
+                                    // const warning = `WARNING: "${stop[1]}" not found in sprite file`;
+                                    cropValues = cropValueDefault;
                                 }
                                 return [stop[0], cropValues];
                             }),
@@ -880,11 +897,18 @@ class Style {
                         style.icon.cropValues = iconCropValue;
                     } else {
                         style.icon.cropValues = sprites[iconImg];
-                        if (iconImg[0].includes('{')) {
+                        if (iconImg.includes('{')) {
                             style.icon.cropValues = function _(p) {
                                 const id = iconImg.replace(/\{(.+?)\}/g, (a, b) => (p[b] || '')).trim();
+                                if (sprites[id] === undefined) {
+                                    // const warning = `WARNING: "${id}" not found in sprite file`;
+                                    sprites[id] = cropValueDefault;// or return cropValueDefault;
+                                }
                                 return sprites[id];
                             };
+                        } else if (sprites[iconImg] === undefined) {
+                            // const warning = `WARNING: "${iconImg}" not found in sprite file`;
+                            style.icon.cropValues = cropValueDefault;
                         }
                     }
                     style.icon.source = sprites.source;
@@ -955,7 +979,7 @@ class Style {
         // need doc for the txtrCtx.fillStyle.src that seems to always be undefined
         if (this.fill.pattern) {
             let img = this.fill.pattern;
-            const cropValues = this.fill.pattern.cropValues;
+            const cropValues = { ...this.fill.pattern.cropValues };
             if (this.fill.pattern.source) {
                 img = await loadImage(this.fill.pattern.source);
             }
@@ -1030,7 +1054,7 @@ class Style {
         if (!this.icon.cropValues && !this.icon.color) {
             icon.src = this.icon.source;
         } else {
-            const cropValues = this.icon.cropValues;
+            const cropValues = { ...this.icon.cropValues };
             const color = this.icon.color;
             const id = this.icon.id || this.icon.source;
             const img = await loadImage(this.icon.source);
