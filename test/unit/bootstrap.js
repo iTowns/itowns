@@ -3,6 +3,9 @@ import { Camera } from 'three';
 import { DOMParser } from '@xmldom/xmldom';
 import threads from 'worker_threads';
 import 'webgl-mock';
+import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
+
+setGlobalDispatcher(new EnvHttpProxyAgent());
 
 const WORKER = Symbol('worker');
 
