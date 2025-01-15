@@ -33,6 +33,11 @@ export function fillHTMLWithPickingInfo(event, pickingArg) {
         // eslint-disable-next-line
         htmlDiv.appendChild(createHTMLListFromObject(closestC3DTileFeature));
     }
+
+    layer.getMetadataFromIntersections(intersects).then((metadata) => {
+        // eslint-disable-next-line
+        metadata?.forEach(m => htmlDiv.appendChild(createHTMLListFromObject(m)));
+    });
 }
 
 function zoomToSphere(view, tile, sphere) {
