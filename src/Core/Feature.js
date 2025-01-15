@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
-import Style from 'Core/Style';
+import StyleOptions from 'Core/StyleOptions';
 
 function defaultExtent(crs) {
     return new Extent(crs, Infinity, -Infinity, Infinity, -Infinity);
@@ -250,7 +250,7 @@ class Feature {
         }
         this._pos = 0;
         this._pushValues = (this.size === 3 ? push3DValues : push2DValues).bind(this);
-        this.style = Style.setFromProperties;
+        this.style = StyleOptions.setFromProperties;
     }
     /**
      * Instance a new {@link FeatureGeometry}  and push in {@link Feature}.

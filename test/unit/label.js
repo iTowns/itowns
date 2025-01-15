@@ -58,13 +58,19 @@ describe('Label', function () {
             'text-field': 'label',
         },
     };
-    const sprites = {
-        img: '',
-        icon: { x: 0, y: 0, width: 10, height: 10 },
-    };
 
     before('init style', function () {
-        style = new Style(Style.setFromVectorTileLayer(layerVT, sprites));
+        const styleOptions = {
+            text: {
+                field: 'label',
+            },
+            icon: {
+                id: 'icon',
+                cropValues: { x: 0, y: 0, width: 10, height: 10 },
+                size: 1,
+            },
+        };
+        style = new Style(styleOptions);
     });
 
     it('should throw errors for bad Label construction', function () {
