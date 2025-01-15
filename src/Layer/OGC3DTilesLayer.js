@@ -144,6 +144,90 @@ export function enableMeshoptDecoder(MeshOptDecoder) {
     itownsGLTFLoader.setMeshoptDecoder(MeshOptDecoder);
 }
 
+async function getMeshFeatures(meshFeatures, options) {
+    const { faceIndex, barycoord } = options;
+
+    const features = await meshFeatures.getFeaturesAsync(faceIndex, barycoord);
+    return {
+        features,
+        featureIds: meshFeatures.getFeatureInfo(),
+    };
+}
+
+function getStructuralMetadata(structuralMetadata, options) {
+    const { index, faceIndex, barycoord, tableIndices, features } = options;
+
+    const tableData = [];
+    if (tableIndices !== undefined && features !== undefined) {
+        structuralMetadata.getPropertyTableData(
+            tableIndices,
+            features,
+            tableData,
+        );
+    }
+
+    const attributeData = [];
+    if (index !== undefined) {
+        structuralMetadata.getPropertyAttributeData(index, attributeData);
+    }
+
+    const textureData = [];
+    if (faceIndex !== undefined) {
+        structuralMetadata.getPropertyTextureData(
+            faceIndex,
+            barycoord,
+            textureData,
+        );
+    }
+
+    const metadata = [
+        ...tableData,
+        ...textureData,
+        ...attributeData,
+    ];
+
+    return metadata;
+}
+
+async function getMetadataFromIntersection(intersection) {
+    const { point, object, face, faceIndex } = intersection;
+    const { meshFeatures, structuralMetadata } = object.userData;
+
+    const barycoord = new THREE.Vector3();
+    if (face) {
+        const position = object.geometry.getAttribute('position');
+        const triangle = new THREE.Triangle().setFromAttributeAndIndices(
+            position,
+            face.a,
+            face.b,
+            face.c,
+        );
+        triangle.a.applyMatrix4(object.matrixWorld);
+        triangle.b.applyMatrix4(object.matrixWorld);
+        triangle.c.applyMatrix4(object.matrixWorld);
+        triangle.getBarycoord(point, barycoord);
+    } else {
+        barycoord.set(0, 0, 0);
+    }
+
+    // EXT_mesh_features
+    const { features, featureIds } = meshFeatures ? await getMeshFeatures(meshFeatures, {
+        faceIndex,
+        barycoord,
+    }) : {};
+    const tableIndices = featureIds?.map(p => p.propertyTable);
+
+    // EXT_structural_metadata
+    const metadata = structuralMetadata ? getStructuralMetadata(structuralMetadata, {
+        ...intersection,
+        barycoord,
+        tableIndices,
+        features,
+    }) : [];
+
+    return metadata;
+}
+
 class OGC3DTilesLayer extends GeometryLayer {
     /**
      * Layer for [3D Tiles](https://www.ogc.org/standard/3dtiles/) datasets.
@@ -285,7 +369,8 @@ class OGC3DTilesLayer extends GeometryLayer {
                 this._res();
             }
         });
-        this.tilesRenderer.addEventListener('load-model', ({ scene }) => {
+        this.tilesRenderer.addEventListener('load-model', (e) => {
+            const { scene } = e;
             scene.traverse((obj) => {
                 this._assignFinalMaterial(obj);
                 this._assignFinalAttributes(obj);
@@ -370,9 +455,34 @@ class OGC3DTilesLayer extends GeometryLayer {
     }
 
     /**
+     * Get the [metadata](https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata)
+     * of the closest intersected object from a list of intersections.
+     *
+     * This method retrieves structured metadata stored in GLTF 2.0 assets using
+     * the [`EXT_structural_metadata`](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata)
+     * extension.
+     *
+     * Internally, it uses the closest intersected point to index metadata
+     * stored in property attributes and textures.
+     *
+     * If present in GLTF 2.0 assets, this method leverages the
+     * [`EXT_mesh_features`](`https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features)
+     * extension and the returned featured to index metadata stored in property tables.
+     *
+     * @param {Array<THREE.Intersection>} intersections
+     * @returns {Promise<Object | null>} - the intersected object's metadata
+     */
+    async getMetadataFromIntersections(intersections) {
+        if (!intersections.length) { return null; }
+
+        const metadata = await getMetadataFromIntersection(intersections[0]);
+        return metadata;
+    }
+
+    /**
      * Get the attributes for the closest intersection from a list of
      * intersects.
-     * @param {Array} intersects -  An array containing all
+     * @param {Array<THREE.Intersection>} intersects -  An array containing all
      * objects picked under mouse coordinates computed with view.pickObjectsAt(..).
      * @returns {Object | null} - An object containing
      */
