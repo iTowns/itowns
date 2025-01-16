@@ -218,7 +218,7 @@ export const mochaHooks = {
         // for more information on developing with the SUID sandbox.
         // If you want to live dangerously and need an immediate workaround, you can try
         // using --no-sandbox.
-        const args = [];
+        const args = ['--no-sandbox'];
 
         if (process.env.HTTPS_PROXY) {
             args.push(`--proxy-server=${process.env.HTTPS_PROXY}`);
