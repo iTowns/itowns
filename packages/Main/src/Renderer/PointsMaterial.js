@@ -113,7 +113,6 @@ function generateGradientTexture(gradient) {
 }
 
 function recomputeTexture(scheme, texture, nbClass) {
-    let needTransparency;
     const data = texture.image.data;
     const width = texture.image.width;
     if (!nbClass) { nbClass = Object.keys(scheme).length; }
@@ -141,11 +140,8 @@ function recomputeTexture(scheme, texture, nbClass) {
         data[j + 1] = parseInt(255 * color.g, 10);
         data[j + 2] = parseInt(255 * color.b, 10);
         data[j + 3] = parseInt(255 * opacity, 10);
-
-        needTransparency = needTransparency || opacity < 1;
     }
     texture.needsUpdate = true;
-    return needTransparency;
 }
 
 class PointsMaterial extends THREE.ShaderMaterial {
@@ -207,6 +203,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
         super({
             ...materialOptions,
             fog: true,
+            transparent: true,
             precision: 'highp',
             vertexColors: true,
         });
@@ -218,7 +215,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
         this.vertexShader = PointsVS;
         this.fragmentShader = PointsFS;
 
-        this.userData.needTransparency = {};
         this.gradients = gradients;
         this.gradientTexture = new THREE.CanvasTexture();
 
@@ -286,11 +282,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @returns {this}
      */
     copy(source) {
-        // Manually copy this needTransparency if source doesn't have one. Prevents losing it when copying a three
-        // PointsMaterial into this PointsMaterial
-        const needTransparency = source.userData.needTransparency !== undefined ? source.userData.needTransparency
-            : this.userData.needTransparency;
-
         if (source.isShaderMaterial) {
             super.copy(source);
         } else {
@@ -304,8 +295,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
         this.size = source.size;
         this.sizeAttenuation = source.sizeAttenuation;
         this.fog = source.fog;
-
-        this.userData.needTransparency = needTransparency;
 
         return this;
     }
@@ -377,8 +366,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
     }
 
     recomputeClassification() {
-        const needTransparency = recomputeTexture(this.classificationScheme, this.classificationTexture, 256);
-        this.userData.needTransparency[PNTS_MODE.CLASSIFICATION] = needTransparency;
+        recomputeTexture(this.classificationScheme, this.classificationTexture, 256);
         this.dispatchEvent({
             type: 'material_property_changed',
             target: this.uniforms,
@@ -386,11 +374,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
     }
 
     recomputeDiscreteTexture() {
-        const needTransparency = recomputeTexture(this.discreteScheme, this.discreteTexture);
-        this.userData.needTransparency[PNTS_MODE.RETURN_NUMBER] = needTransparency;
-        this.userData.needTransparency[PNTS_MODE.RETURN_TYPE] = needTransparency;
-        this.userData.needTransparency[PNTS_MODE.RETURN_COUNT] = needTransparency;
-        this.userData.needTransparency[PNTS_MODE.POINT_SOURCE_ID] = needTransparency;
+        recomputeTexture(this.discreteScheme, this.discreteTexture);
         this.dispatchEvent({
             type: 'material_property_changed',
             target: this.uniforms,
@@ -398,7 +382,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
     }
 
     recomputeVisibleTexture() {
-        let needTransparency;
         const texture = this.visiTexture;
         const scheme = this.classificationScheme;
 
@@ -417,11 +400,8 @@ class PointsMaterial extends THREE.ShaderMaterial {
             }
 
             data[i] = visible ? 255 : 0;
-            needTransparency = needTransparency || visible === false;
         }
         texture.needsUpdate = true;
-
-        this.userData.needTransparency.classTransparency = needTransparency;
 
         this.dispatchEvent({
             type: 'material_property_changed',

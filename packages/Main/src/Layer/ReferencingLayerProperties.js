@@ -58,10 +58,9 @@ function ReferLayerProperties(material, layer) {
 
         Object.defineProperty(material, 'transparent', {
             get: () => {
-                const needTransparency = material.userData.needTransparency?.[material.mode] || material.layer.opacity < 1.0;
-                if (transparent != needTransparency) {
+                if (transparent != material.layer.opacity < 1.0) {
                     material.needsUpdate = true;
-                    transparent = needTransparency;
+                    transparent = material.layer.opacity < 1.0;
                 }
                 return transparent;
             },
