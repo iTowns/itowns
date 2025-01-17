@@ -158,23 +158,40 @@ class OGC3DTilesLayer extends GeometryLayer {
      * @param {String} id - unique layer id.
      * @param {Object} config - layer specific configuration
      * @param {OGC3DTilesSource} config.source - data source configuration
-     * @param {String} [config.pntsMode= PNTS_MODE.COLOR] Point cloud coloring mode (passed to {@link PointsMaterial}).
+     * @param {String} [config.pntsMode = PNTS_MODE.COLOR] Point cloud coloring mode (passed to {@link PointsMaterial}).
      *      Only 'COLOR' or 'CLASSIFICATION' are possible. COLOR uses RGB colors of the points,
      *      CLASSIFICATION uses a classification property of the batch table to color points.
-     * @param {ClassificationScheme}  [config.classificationScheme]  {@link PointsMaterial} classification scheme
-     * @param {String} [config.pntsShape= PNTS_SHAPE.CIRCLE] Point cloud point shape. Only 'CIRCLE' or 'SQUARE' are possible.
+     * @param {ClassificationScheme}  [config.classificationScheme = ClassificationScheme.DEFAULT]  {@link PointsMaterial} classification scheme
+     * @param {String} [config.pntsShape = PNTS_SHAPE.CIRCLE] Point cloud point shape. Only 'CIRCLE' or 'SQUARE' are possible.
      * (passed to {@link PointsMaterial}).
-     * @param {String} [config.pntsSizeMode= PNTS_SIZE_MODE.VALUE] {@link PointsMaterial} Point cloud size mode (passed to {@link PointsMaterial}).
+     * @param {String} [config.pntsSizeMode = PNTS_SIZE_MODE.VALUE] {@link PointsMaterial} Point cloud size mode (passed to {@link PointsMaterial}).
      * Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance
      * from point to camera.
-     * @param {Number} [config.pntsMinAttenuatedSize=3] Minimum scale used by 'ATTENUATED' size mode.
-     * @param {Number} [config.pntsMaxAttenuatedSize=10] Maximum scale used by 'ATTENUATED' size mode.
+     * @param {Number} [config.pntsMinAttenuatedSize = 3] Minimum scale used by 'ATTENUATED' size mode.
+     * @param {Number} [config.pntsMaxAttenuatedSize = 10] Maximum scale used by 'ATTENUATED' size mode.
      */
     constructor(id, config) {
-        super(id, new THREE.Group(), { source: config.source });
-        this.isOGC3DTilesLayer = true;
+        const {
+            pntsMode = PNTS_MODE.COLOR,
+            pntsShape = PNTS_SHAPE.CIRCLE,
+            classification = ClassificationScheme.DEFAULT,
+            pntsSizeMode = PNTS_SIZE_MODE.VALUE,
+            pntsMinAttenuatedSize = 3,
+            pntsMaxAttenuatedSize = 10,
+            ...geometryLayerConfig
+        } = config;
+        super(id, new THREE.Group(), geometryLayerConfig);
 
-        this._handlePointsMaterialConfig(config);
+        this.isOGC3DTilesLayer = true;
+        // Store points material config so they can be used later to substitute points tiles material
+        // by our own PointsMaterial. These properties should eventually be managed through the Style API
+        // (see https://github.com/iTowns/itowns/issues/2336)
+        this.pntsMode = pntsMode;
+        this.pntsShape = pntsShape;
+        this.classification = classification;
+        this.pntsSizeMode = pntsSizeMode;
+        this.pntsMinAttenuatedSize = pntsMinAttenuatedSize;
+        this.pntsMaxAttenuatedSize = pntsMaxAttenuatedSize;
 
         this.tilesRenderer = new TilesRenderer(this.source.url);
         if (config.source.isOGC3DTilesIonSource) {
@@ -212,22 +229,6 @@ class OGC3DTilesLayer extends GeometryLayer {
             this.sseThreshold = config.sseThreshold;
         }
     }
-
-    /**
-     * Store points material config so they can be used later to substitute points tiles material by our own PointsMaterial
-     * These properties should eventually be managed through the Style API (see https://github.com/iTowns/itowns/issues/2336)
-     * @param {Object} config - points material configuration as passed to the layer constructor.
-     * @private
-     */
-    _handlePointsMaterialConfig(config) {
-        this.pntsMode = config.pntsMode ?? PNTS_MODE.COLOR;
-        this.pntsShape = config.pntsShape ?? PNTS_SHAPE.CIRCLE;
-        this.classification = config.classification ?? ClassificationScheme.DEFAULT;
-        this.pntsSizeMode = config.pntsSizeMode ?? PNTS_SIZE_MODE.VALUE;
-        this.pntsMinAttenuatedSize = config.pntsMinAttenuatedSize || 3;
-        this.pntsMaxAttenuatedSize = config.pntsMaxAttenuatedSize || 10;
-    }
-
 
     /**
      * Sets the lruCache and download and parse queues so they are shared amongst
