@@ -6,7 +6,10 @@ import OBB from 'Renderer/OBB';
 import type Extent from 'Core/Geographic/Extent';
 import Coordinates from 'Core/Geographic/Coordinates';
 
-const cacheBuffer = new Map<string, { [buf: string]: THREE.BufferAttribute }>();
+const cacheBuffer = new Map<string, {
+    index: THREE.BufferAttribute,
+    uv: THREE.BufferAttribute,
+}>();
 const cacheTile = new Cache();
 
 export type GpuBufferAttributes = {
@@ -31,11 +34,6 @@ export interface TileBuilderParams {
     disableSkirt: boolean;
     /** Whether to render the skirt. */
     hideSkirt: boolean;
-    /**
-     * Cache-related.
-     * Tells the function whether to build or skip the index and uv buffers.
-     */
-    buildIndexAndUv_0: boolean;
     /** Number of segments (edge loops) inside tiles. */
     segments: number;
     // TODO: Move this out of the interface
@@ -99,21 +97,27 @@ export function newTileGeometry(
         // Read previously cached values (index and uv.wgs84 only
         // depend on the # of triangles)
         let cachedBuffers = cacheBuffer.get(bufferKey);
-        params.buildIndexAndUv_0 = !cachedBuffers;
+
         let buffers;
         try {
-            buffers = computeBuffers(builder, params);
+            buffers = computeBuffers(builder, params,
+                cachedBuffers !== undefined ? {
+                    index: cachedBuffers.index.array as Uint32Array,
+                    uv: cachedBuffers.uv.array as Float32Array,
+                } : undefined);
         } catch (e) {
             return Promise.reject(e);
         }
 
         if (!cachedBuffers) {
-            cachedBuffers = {};
             // We know the fields will exist due to the condition
             // matching with the one for buildIndexAndUv_0.
             // TODO: Make this brain-based check compiler-based.
-            cachedBuffers.index = new THREE.BufferAttribute(buffers.index!, 1);
-            cachedBuffers.uv = new THREE.BufferAttribute(buffers.uvs[0]!, 2);
+
+            cachedBuffers = {
+                index: new THREE.BufferAttribute(buffers.index!, 1),
+                uv: new THREE.BufferAttribute(buffers.uvs[0]!, 2),
+            };
 
             // Update cacheBuffer
             cacheBuffer.set(bufferKey, cachedBuffers);
