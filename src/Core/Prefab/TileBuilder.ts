@@ -100,11 +100,19 @@ export function newTileGeometry(
 
         let buffers;
         try {
-            buffers = computeBuffers(builder, params,
-                cachedBuffers !== undefined ? {
-                    index: cachedBuffers.index.array as Uint32Array,
-                    uv: cachedBuffers.uv.array as Float32Array,
-                } : undefined);
+            buffers = computeBuffers(
+                builder,
+                params,
+                // @ts-expect-error: can't sync index type right now
+                cachedBuffers !== undefined
+                    ? {
+                        // We lost type information along the way with the
+                        // storage as THREE.BufferAttribute.
+                        index: cachedBuffers.index.array,
+                        uv: cachedBuffers.uv.array as Float32Array,
+                    }
+                    : undefined,
+            );
         } catch (e) {
             return Promise.reject(e);
         }

@@ -50,7 +50,7 @@ function allocateIndexBuffer(
     nSeg: number,
     params: TileBuilderParams,
     cache?: BufferCache['index'],
-): Option<{ index: IndexArray, skirt: IndexArray }> {
+): { index: IndexArray, skirt: IndexArray } {
     const indexBufferSize = getBufferIndexSize(nSeg, params.disableSkirt);
     const indexConstructor = getUintArrayConstructor(nVertex);
 
@@ -89,7 +89,7 @@ function allocateBuffers(
     const {
         index,
         skirt,
-    } = allocateIndexBuffer(nVertex, nSeg, params, cache?.index) ?? {};
+    } = allocateIndexBuffer(nVertex, nSeg, params, cache?.index);
 
     return {
         index,
