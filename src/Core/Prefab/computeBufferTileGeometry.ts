@@ -40,20 +40,27 @@ function getUintArrayConstructor(
     return picked;
 }
 
+type BufferCache = {
+    index: Exclude<IndexArray, undefined>;
+    uv: Float32Array;
+};
+
 function allocateIndexBuffer(
     nVertex: number,
     nSeg: number,
     params: TileBuilderParams,
-): Option<{ index: IndexArray, skirt: IndexArray }> {
-    if (!params.buildIndexAndUv_0) {
-        return undefined;
-    }
-
+    cache?: BufferCache['index'],
+): { index: IndexArray, skirt: IndexArray } {
     const indexBufferSize = getBufferIndexSize(nSeg, params.disableSkirt);
     const indexConstructor = getUintArrayConstructor(nVertex);
 
     const tileLen = indexBufferSize;
     const skirtLen = 4 * nSeg;
+
+    if (cache !== undefined) {
+        return { index: cache, skirt: cache.subarray(tileLen, tileLen + skirtLen) };
+    }
+
     const indexBuffer = new ArrayBuffer((
         // Tile
         tileLen
@@ -77,11 +84,12 @@ function allocateBuffers(
     nSeg: number,
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
+    cache?: BufferCache,
 ): BuffersAndSkirt {
     const {
         index,
         skirt,
-    } = allocateIndexBuffer(nVertex, nSeg, params) ?? {};
+    } = allocateIndexBuffer(nVertex, nSeg, params, cache?.index);
 
     return {
         index,
@@ -105,9 +113,7 @@ function allocateBuffers(
         //        * u = wgs84.u
         //        * v = textureid + v in builder texture
         uvs: [
-            params.buildIndexAndUv_0
-                ? new Float32Array(nVertex * 2)
-                : undefined,
+            cache?.uv ?? new Float32Array(nVertex * 2),
             builder.computeExtraOffset !== undefined
                 ? new Float32Array(nVertex)
                 : undefined,
@@ -132,6 +138,7 @@ type ComputeUvs =
 export function computeBuffers(
     builder: TileBuilder<TileBuilderParams>,
     params: TileBuilderParams,
+    cache?: BufferCache,
 ): Buffers {
     //     n seg, n+1 vert    + <- skirt, n verts per side
     //    <---------------> / |
@@ -158,10 +165,11 @@ export function computeBuffers(
     const outBuffers: BuffersAndSkirt = allocateBuffers(
         nTotalVertex, nSeg,
         builder, params,
+        cache,
     );
 
     const computeUvs: ComputeUvs =
-        [params.buildIndexAndUv_0 ? computeUv0 : () => { }];
+        [cache === undefined ? computeUv0 : () => { }];
 
     params = builder.prepare(params);
 
@@ -209,7 +217,7 @@ export function computeBuffers(
     }
 
     // Fill skirt index buffer
-    if (params.buildIndexAndUv_0 && !params.disableSkirt) {
+    if (cache === undefined && !params.disableSkirt) {
         for (let x = 0; x < nVertex; x++) {
             //   -------->
             //   0---1---2
@@ -251,7 +259,7 @@ export function computeBuffers(
         outBuffers.index![id + 2] = vc;
     }
 
-    if (params.buildIndexAndUv_0) {
+    if (cache === undefined) {
         for (let y = 0; y < nSeg; y++) {
             for (let x = 0; x < nSeg; x++) {
                 const v1 = y * nVertex + (x + 1);
@@ -270,7 +278,7 @@ export function computeBuffers(
     // INFO: The size of the skirt is now a ratio of the size of the tile.
     // To be perfect it should depend on the real elevation delta but too heavy
     // to compute
-    if (params.buildIndexAndUv_0 && !params.disableSkirt) {
+    if (!params.disableSkirt) {
         // We compute the actual size of tile segment to use later for
         // the skirt.
         const segmentSize = new THREE.Vector3()
@@ -278,7 +286,7 @@ export function computeBuffers(
             .distanceTo(new THREE.Vector3()
                 .fromArray(outBuffers.position, 3));
 
-        const buildSkirt = {
+        const buildSkirt = cache === undefined ? {
             index: (
                 id: number,
                 v1: number, v2: number, v3: number, v4: number,
@@ -291,7 +299,7 @@ export function computeBuffers(
                 buf![idTo * 2 + 0] = buf![idFrom * 2 + 0];
                 buf![idTo * 2 + 1] = buf![idFrom * 2 + 1];
             },
-        };
+        } : { index: () => { }, uv: () => { } };
 
         // Alias for readability
         const start = nTileVertex;
