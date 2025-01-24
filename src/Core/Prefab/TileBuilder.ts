@@ -103,12 +103,10 @@ export function newTileGeometry(
             buffers = computeBuffers(
                 builder,
                 params,
-                // @ts-expect-error: can't sync index type right now
                 cachedBuffers !== undefined
                     ? {
-                        // We lost type information along the way with the
-                        // storage as THREE.BufferAttribute.
-                        index: cachedBuffers.index.array,
+                        index: cachedBuffers.index.array as
+                            Uint8Array | Uint16Array | Uint32Array,
                         uv: cachedBuffers.uv.array as Float32Array,
                     }
                     : undefined,
