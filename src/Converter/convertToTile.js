@@ -31,6 +31,22 @@ function setTileFromTiledLayer(tile, tileLayer) {
     }
 }
 
+class AccessMap {
+    constructor() {
+        this.accessed = new Map();
+    }
+
+    insert(prop) {
+        const count = this.accessed.get(prop);
+        this.accessed.set(prop, (count ?? 0) + 1);
+        if (count === undefined) {
+            console.log(prop, this.accessed, this.accessed != undefined ? 'exists' : 'missing');
+        }
+    }
+}
+
+const accessMap = new AccessMap();
+
 export default {
     convert(requester, extent, layer) {
         const builder = layer.builder;
@@ -50,7 +66,23 @@ export default {
             result.geometry.increaseRefCount();
             const crsCount = layer.tileMatrixSets.length;
             const material = new LayeredMaterial(layer.materialOptions, crsCount);
-            ReferLayerProperties(material, layer);
+
+            const handler = {
+                get(target, prop, receiver) {
+                    accessMap.insert(prop);
+                    if (typeof target[prop] === 'object' && target[prop] !== null) {
+                        // eslint-disable-next-line prefer-rest-params
+                        return new Proxy(Reflect.get(...arguments), handler);
+                    } else {
+                        // eslint-disable-next-line prefer-rest-params
+                        return Reflect.get(...arguments);
+                    }
+                },
+            };
+
+            const proxy = new Proxy(material, handler);
+
+            ReferLayerProperties(proxy, layer);
 
             const tile = new TileMesh(result.geometry, material, layer, extent, level);
 
