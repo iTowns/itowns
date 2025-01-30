@@ -19,7 +19,7 @@
     </head>
     <body>
         <div id="description">Specify the URL of a COPC file to load:
-            <input type="text" id="url" />
+            <input type="text" id="copc_url" />
             <button onclick="readURL()">Load</button>
             <div>
                 <button onClick="loadAutzen()">Load Autzen Stadium (80mb)</button>
@@ -71,7 +71,7 @@
 
 
             function readURL() {
-                const url = document.getElementById('url').value;
+                const url = document.getElementById('copc_url').value;
 
                 if (url) {
                     setUrl(url);
@@ -81,7 +81,7 @@
             function setUrl(url) {
                 if (!url) return;
 
-                const input_url = document.getElementById('url');
+                const input_url = document.getElementById('copc_url');
                 if (!input_url) return;
 
                 uri.searchParams.set('copc', url);
@@ -93,6 +93,13 @@
 
 
             function load(url) {
+                const options = {};
+                const urlParams = uri.searchParams
+                urlParams.keys().forEach(key => {
+                    if (key !== 'copc') {
+                        options[key] = parseInt(urlParams.get(key), 10);
+                    }
+                });
                 const source = new itowns.CopcSource({ url });
 
                 if (layer) {
@@ -102,12 +109,15 @@
                     layer.delete();
                 }
 
-                layer = new itowns.CopcLayer('COPC', {
+                const config = {
                     source,
                     crs: view.referenceCrs,
                     sseThreshold: 2,
                     pointBudget: 3000000,
-                });
+                    ...options,
+                };
+
+                layer = new itowns.CopcLayer('COPC', config);
                 view.addLayer(layer).then(onLayerReady);
                 layer.whenReady
                     .then(() => debug.PointCloudDebug.initTools(view, layer, gui));
