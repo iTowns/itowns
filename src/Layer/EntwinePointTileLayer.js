@@ -60,8 +60,8 @@ class EntwinePointTileLayer extends PointCloudLayer {
             this.root = new EntwinePointTileNode(0, 0, 0, 0, this, -1);
             this.root.bbox.min.fromArray(this.source.boundsConforming, 0);
             this.root.bbox.max.fromArray(this.source.boundsConforming, 3);
-            this.minElevationRange = this.source.boundsConforming[2];
-            this.maxElevationRange = this.source.boundsConforming[5];
+            this.minElevationRange = this.minElevationRange ?? this.source.boundsConforming[2];
+            this.maxElevationRange = this.maxElevationRange ?? this.source.boundsConforming[5];
 
             this.extent = Extent.fromBox3(config.crs || 'EPSG:4326', this.root.bbox);
             return this.root.loadOctree().then(resolve);

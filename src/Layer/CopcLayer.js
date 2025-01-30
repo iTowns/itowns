@@ -46,8 +46,8 @@ class CopcLayer extends PointCloudLayer {
             this.root.bbox.min.fromArray(cube, 0);
             this.root.bbox.max.fromArray(cube, 3);
 
-            this.minElevationRange = source.header.min[2];
-            this.maxElevationRange = source.header.max[2];
+            this.minElevationRange = this.minElevationRange ?? source.header.min[2];
+            this.maxElevationRange = this.maxElevationRange ?? source.header.max[2];
 
             this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
             this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
