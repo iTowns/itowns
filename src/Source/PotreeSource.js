@@ -63,6 +63,9 @@ class PotreeSource extends Source {
         if (!source.file) {
             throw new Error('New PotreeSource: file is required');
         }
+        if (!source.crs) {
+            throw new Error('New PotreeSource: crs is required');
+        }
 
         super(source);
         this.file = source.file;
