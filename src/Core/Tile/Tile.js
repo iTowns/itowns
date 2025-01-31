@@ -100,7 +100,7 @@ class Tile {
      * @return {THREE.Vector4} {x: translation on west-east, y: translation on south-north, z: scale on west-east, w: scale on south-north}
      */
     offsetToParent(tile, target = new THREE.Vector4()) {
-        if (this.crs != tile.crs) {
+        if (this.crs !== tile.crs) {
             throw new Error('unsupported mix');
         }
 
