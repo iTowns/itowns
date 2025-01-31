@@ -176,6 +176,9 @@ class Potree2Layer extends PointCloudLayer {
             root.bbox = boundingBox;
             root.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
 
+            this.minElevationRange = this.minElevationRange ?? metadata.boundingBox.min[2];
+            this.maxElevationRange = this.maxElevationRange ?? metadata.boundingBox.max[2];
+
             root.id = 'r';
             root.depth = 0;
             root.nodeType = 2;

@@ -160,9 +160,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @param      {number}  [options.mode=PNTS_MODE.COLOR]  display mode.
      * @param      {number}  [options.shape=PNTS_SHAPE.CIRCLE]  rendered points shape.
      * @param      {THREE.Vector4}  [options.overlayColor=new THREE.Vector4(0, 0, 0, 0)]  overlay color.
-     * @param      {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(1, 65536)]  intensity range.
-     * @param      {THREE.Vector2}  [options.elevationRange=new THREE.Vector2(0, 1000)]  elevation range.
-     * @param      {THREE.Vector2}  [options.angleRange=new THREE.Vector2(-90, 90)]  scan angle range.
+
      * @param      {Scheme}  [options.classificationScheme]  LUT for point classification colorization.
      * @param      {Scheme}  [options.discreteScheme]  LUT for other discret point values colorization.
      * @param      {string}  [options.gradient]  Descrition of the gradient to use for continuous point values.
@@ -171,6 +169,9 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @param      {number}  [options.minAttenuatedSize=3]  minimum scale used by 'ATTENUATED' size mode
      * @param      {number}  [options.maxAttenuatedSize=10]  maximum scale used by 'ATTENUATED' size mode
      *
+     * @property {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(1, 65536)]  intensity range (default value will be [1, 65536] if not defined at Layer level).
+     * @property {THREE.Vector2}  [options.elevationRange=new THREE.Vector2(0, 1000)]  elevation range (default value will be [0, 1000] if not defined at Layer level).
+     * @property {THREE.Vector2}  [options.angleRange=new THREE.Vector2(-90, 90)]  scan angle range (default value will be [-90, 90] if not defined at Layer level).
      * @property {Scheme}  classificationScheme - Color scheme for point classification values.
      * @property {Scheme}  discreteScheme - Color scheme for all other discrete values.
      * @property {object}  gradients - Descriptions of all available gradients.
