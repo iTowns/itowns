@@ -42,8 +42,8 @@ class OrientedImageSource extends Source {
         return this.imageUrl(imageInfo.cameraId, imageInfo.panoId);
     }
 
-    requestToKey(image) {
-        return [image.cameraId, image.panoId];
+    getDataKey(image) {
+        return `c${image.cameraId}p${image.panoId}`;
     }
 
     /**

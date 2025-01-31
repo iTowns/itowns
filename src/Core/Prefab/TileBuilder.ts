@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { TileGeometry } from 'Core/TileGeometry';
-import Cache from 'Core/Scheduler/Cache';
+import { LRUCache } from 'lru-cache';
 import { computeBuffers } from 'Core/Prefab/computeBufferTileGeometry';
 import OBB from 'Renderer/OBB';
 import type Extent from 'Core/Geographic/Extent';
@@ -10,7 +10,7 @@ const cacheBuffer = new Map<string, {
     index: THREE.BufferAttribute,
     uv: THREE.BufferAttribute,
 }>();
-const cacheTile = new Cache();
+const cacheTile = new LRUCache<string, Promise<TileGeometry>>({ max: 500 });
 
 export type GpuBufferAttributes = {
     index: THREE.BufferAttribute | null;
@@ -84,13 +84,14 @@ export function newTileGeometry(
     const bufferKey =
         `${builder.crs}_${params.disableSkirt ? 0 : 1}_${params.segments}`;
 
-    let promiseGeometry = cacheTile.get(south, params.level, bufferKey);
+    const key = `s${south}l${params.level}bK${bufferKey}`;
+    let promiseGeometry = cacheTile.get(key);
 
     // build geometry if doesn't exist
     if (!promiseGeometry) {
         let resolve;
         promiseGeometry = new Promise((r) => { resolve = r; });
-        cacheTile.set(promiseGeometry, south, params.level, bufferKey);
+        cacheTile.set(key, promiseGeometry);
 
         params.extent = shareableExtent;
         params.center = builder.center(params.extent).clone();
@@ -145,7 +146,7 @@ export function newTileGeometry(
         const geometry = new TileGeometry(builder, params, gpuBuffers);
         geometry.OBB =
             new OBB(geometry.boundingBox!.min, geometry.boundingBox!.max);
-        geometry.initRefCount(cacheTile, [south, params.level, bufferKey]);
+        geometry.initRefCount(cacheTile, key);
         resolve!(geometry);
 
         return Promise.resolve({ geometry, quaternion, position });

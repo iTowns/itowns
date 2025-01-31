@@ -53,7 +53,6 @@ function updateElements(context, geometryLayer, elements) {
                 for (const attachedLayer of geometryLayer.attachedLayers) {
                     if (attachedLayer.ready) {
                         attachedLayer.update(context, attachedLayer, sub.element, sub.parent);
-                        attachedLayer.cache.flush();
                     }
                 }
             } else if (sub.elements) {
@@ -67,7 +66,6 @@ function updateElements(context, geometryLayer, elements) {
                     for (const attachedLayer of geometryLayer.attachedLayers) {
                         if (attachedLayer.ready) {
                             attachedLayer.update(context, attachedLayer, sub.elements[i], sub.parent);
-                            attachedLayer.cache.flush();
                         }
                     }
                 }
@@ -161,7 +159,6 @@ class MainLoop extends EventDispatcher {
                 }
 
                 // Clear the cache of expired resources
-                geometryLayer.cache.flush();
 
                 view.execFrameRequesters(MAIN_LOOP_EVENTS.AFTER_LAYER_UPDATE, dt, this.#updateLoopRestarted, geometryLayer);
             }

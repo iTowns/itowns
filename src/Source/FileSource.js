@@ -1,5 +1,5 @@
 import Source from 'Source/Source';
-import Cache from 'Core/Scheduler/Cache';
+import { LRUCache } from 'lru-cache';
 
 /**
  * An object defining the source of a single resource to get from a direct
@@ -136,8 +136,8 @@ class FileSource extends Source {
                 this.fetchedData = f;
             });
         } else if (source.features) {
-            this._featuresCaches[source.features.crs] = new Cache();
-            this._featuresCaches[source.features.crs].setByArray(Promise.resolve(source.features), [0]);
+            this._featuresCaches[source.features.crs] = new LRUCache({ max: 500 });
+            this._featuresCaches[source.features.crs].set(0, Promise.resolve(source.features));
         }
 
         this.whenReady.then(() => this.fetchedData);
@@ -152,14 +152,14 @@ class FileSource extends Source {
     onLayerAdded(options) {
         options.in = this;
         super.onLayerAdded(options);
-        let features = this._featuresCaches[options.out.crs].getByArray([0]);
+        let features = this._featuresCaches[options.out.crs].get(0);
         if (!features) {
             options.out.buildExtent = this.crs != 'EPSG:4978';
             if (options.out.buildExtent) {
                 options.out.forcedExtentCrs = options.out.crs != 'EPSG:4978' ? options.out.crs : this.crs;
             }
             features = this.parser(this.fetchedData, options);
-            this._featuresCaches[options.out.crs].setByArray(features, [0]);
+            this._featuresCaches[options.out.crs].set(0, features);
         }
         features.then((data) => {
             if (data.extent) {
@@ -181,7 +181,7 @@ class FileSource extends Source {
      * @return     {FeatureCollection|Texture}  The parsed data.
      */
     loadData(extent, out) {
-        return this._featuresCaches[out.crs].getByArray([0]);
+        return this._featuresCaches[out.crs].get(0);
     }
 
     extentInsideLimit(extent) {

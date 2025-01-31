@@ -10,6 +10,7 @@
             "*": [ "src/*" ]
         },
         "module": "ESNext",
+        "moduleResolution": "bundler",
         /* Emit */
         "declaration": true,
         "emitDeclarationOnly": true,

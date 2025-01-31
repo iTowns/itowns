@@ -8,7 +8,8 @@ import GTXParser from 'Parser/GTXParser';
 import ISGParser from 'Parser/ISGParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
-import Cache from 'Core/Scheduler/Cache';
+// import Cache from 'Core/Scheduler/Cache';
+import { LRUCache } from 'lru-cache';
 
 /** @private */
 export const supportedParsers = new Map([
@@ -22,30 +23,8 @@ export const supportedParsers = new Map([
     ['application/gdf', GDFParser.parse],
 ]);
 
-const noCache = { getByArray: () => { }, setByArray: a => a, clear: () => { } };
+const noCache = { get: () => {}, set: a => a, clear: () => {} };
 
-/**
- * @property {string} crs - data crs projection.
- * @property {boolean} isInverted - This option is to be set to the
- * correct value, true or false (default being false), if the computation of
- * the coordinates needs to be inverted to same scheme as OSM, Google Maps
- * or other system. See [this link](
- * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates)
- * for more informations.
- *
- */
-class InformationsData {
-    constructor(options) {
-        if (options.projection) {
-            console.warn('Source projection parameter is deprecated, use crs instead.');
-            options.crs = options.crs || options.projection;
-        }
-        if (options.crs) {
-            CRS.isValid(options.crs);
-        }
-        this.crs = options.crs;
-    }
-}
 /**
  * This interface describes parsing options.
  * @typedef {Object} ParsingOptions
@@ -99,13 +78,20 @@ let uid = 0;
  *  depending on the current fetched tile for example</li>
  * </ul>
  */
-class Source extends InformationsData {
+class Source {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * Source. Only the `url` property is mandatory.
      */
     constructor(source) {
-        super(source);
+        if (source.projection) {
+            console.warn('Source projection parameter is deprecated, use crs instead.');
+            source.crs = source.crs || source.projection;
+        }
+        if (source.crs) {
+            CRS.isValid(source.crs);
+        }
+        this.crs = source.crs;
         this.isSource = true;
 
         if (!source.url) {
@@ -148,8 +134,8 @@ class Source extends InformationsData {
         throw new Error('In extended Source, you have to implement the method urlFromExtent!');
     }
 
-    requestToKey(extent) {
-        return [extent.zoom, extent.row, extent.col];
+    getDataKey(extent) {
+        return `z${extent.zoom}r${extent.row}c${extent.col}`;
     }
 
     /**
@@ -162,24 +148,17 @@ class Source extends InformationsData {
      */
     loadData(extent, out) {
         const cache = this._featuresCaches[out.crs];
-        const key = this.requestToKey(extent);
+        const key = this.getDataKey(extent);
+        // console.log('Source.loadData', key);
         // try to get parsed data from cache
-        let features = cache.getByArray(key);
+        let features = cache.get(key);
         if (!features) {
             // otherwise fetch/parse the data
-            features = cache.setByArray(
-                this.fetcher(this.urlFromExtent(extent), this.networkOptions)
-                    .then(file => this.parser(file, { out, in: this, extent }))
-                    .catch(err => this.handlingError(err)),
-                key);
+            features = this.fetcher(this.urlFromExtent(extent), this.networkOptions)
+                .then(file => this.parser(file, { out, in: this, extent }))
+                .catch(err => this.handlingError(err));
 
-            if (this.onParsedFile) {
-                features.then((feat) => {
-                    this.onParsedFile(feat);
-                    console.warn('Source.onParsedFile was deprecated');
-                    return feat;
-                });
-            }
+            cache.set(key, features);
         }
         return features;
     }
@@ -195,7 +174,7 @@ class Source extends InformationsData {
             // Cache feature only if it's vector data, the feature are cached in source.
             // It's not necessary to cache raster in Source,
             // because it's already cached on layer.
-            this._featuresCaches[options.out.crs] = this.isVectorSource ? new Cache() : noCache;
+            this._featuresCaches[options.out.crs] = this.isVectorSource ? new LRUCache({ max: 500 }) : noCache;
         }
     }
 

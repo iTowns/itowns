@@ -5,7 +5,7 @@ import { computeBuffers, getBufferIndexSize }
 import { GpuBufferAttributes, TileBuilder, TileBuilderParams }
     from 'Core/Prefab/TileBuilder';
 import Extent from 'Core/Geographic/Extent';
-import Cache from 'Core/Scheduler/Cache';
+import { LRUCache } from 'lru-cache';
 
 import OBB from 'Renderer/OBB';
 import Coordinates from './Geographic/Coordinates';
@@ -112,8 +112,8 @@ export class TileGeometry extends THREE.BufferGeometry {
      * @param keys - The [south, level, epsg] key of this geometry.
      */
     public initRefCount(
-        cacheTile: Cache,
-        keys: [string, number, string],
+        cacheTile: LRUCache<string, Promise<TileGeometry>>,
+        key: string,
     ): void {
         if (this._refCount !== null) {
             return;
@@ -131,7 +131,7 @@ export class TileGeometry extends THREE.BufferGeometry {
                     //  (in THREE.WebGLBindingStates code).
                     this.index = null;
                     delete this.attributes.uv;
-                    cacheTile.delete(...keys);
+                    cacheTile.delete(key);
                     super.dispose();
                     // THREE.BufferGeometry.prototype.dispose.call(this);
                 }
