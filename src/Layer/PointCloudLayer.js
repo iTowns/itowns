@@ -144,7 +144,9 @@ class PointCloudLayer extends GeometryLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name. See the list of properties to know which one can be specified.
-     * @param {Source} config.source - Description and options of the source.
+     * @param {Source} config.source - Description and options of the source See @Layer.
+     * @param {number}  [options.minElevationRange] - Min value for the elevation range (default value will be taken from the source.metadata).
+     * @param {number}  [options.maxElevationRange] - Max value for the elevation range (default value will be taken from the source.metadata).
      */
     constructor(id, config = {}) {
         const {
@@ -157,8 +159,8 @@ class PointCloudLayer extends GeometryLayer {
             sseThreshold = 2,
             minIntensityRange = 1,
             maxIntensityRange = 65536,
-            minElevationRange = 0,
-            maxElevationRange = 1000,
+            minElevationRange,
+            maxElevationRange,
             minAngleRange = -90,
             maxAngleRange = 90,
             material = {},
