@@ -129,7 +129,7 @@
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var elevationLayer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(elevationLayer);
+                // view.addLayer(elevationLayer);
             }
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);

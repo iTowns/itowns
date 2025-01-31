@@ -143,6 +143,119 @@ export function enableMeshoptDecoder(MeshOptDecoder) {
     itownsGLTFLoader.setMeshoptDecoder(MeshOptDecoder);
 }
 
+/**
+ * @param {THREE.Intersection} intersection
+ * @returns {Object|undefined}
+ */
+function getBatchTableFeature(intersection) {
+    const { face, index, object, instanceId } = intersection;
+    const { geometry } = object;
+
+    /** @type {number | undefined} */
+    let batchId;
+    if (object.isPoints && index) {
+        batchId = geometry.getAttribute('_BATCHID')?.getX(index) ?? index;
+    } else if (object.isMesh && face) {
+        batchId = geometry.getAttribute('_BATCHID')?.getX(face.a) ?? instanceId;
+    }
+
+    if (batchId === undefined) {
+        return undefined;
+    }
+
+    /** @type {THREE.Object3D | undefined} */
+    let tileObject = object;
+    while (!tileObject.batchTable && tileObject.parent) {
+        tileObject = tileObject.parent;
+    }
+
+    return tileObject?.batchTable?.getDataFromId(batchId);
+}
+
+async function getMeshFeatures(meshFeatures, options) {
+    const { faceIndex, barycoord } = options;
+
+    const features = await meshFeatures.getFeaturesAsync(faceIndex, barycoord);
+    return {
+        features,
+        featureIds: meshFeatures.getFeatureInfo(),
+    };
+}
+
+function getStructuralMetadata(structuralMetadata, options) {
+    const { index, faceIndex, barycoord, tableIndices, features } = options;
+
+    const tableData = [];
+    if (tableIndices !== undefined && features !== undefined) {
+        structuralMetadata.getPropertyTableData(
+            tableIndices,
+            features,
+            tableData,
+        );
+    }
+
+    const attributeData = [];
+    if (index !== undefined) {
+        structuralMetadata.getPropertyAttributeData(index, attributeData);
+    }
+
+    const textureData = [];
+    if (faceIndex !== undefined) {
+        structuralMetadata.getPropertyTextureData(
+            faceIndex,
+            barycoord,
+            textureData,
+        );
+    }
+
+    const metadata = [
+        ...tableData,
+        ...textureData,
+        ...attributeData,
+    ];
+
+    return metadata;
+}
+
+async function getMetadataFromIntersection(intersection) {
+    const { point, object, face, faceIndex } = intersection;
+    const { meshFeatures, structuralMetadata } = object.userData;
+
+    const barycoord = new THREE.Vector3();
+    if (face) {
+        const position = object.geometry.getAttribute('position');
+        const triangle = new THREE.Triangle().setFromAttributeAndIndices(
+            position,
+            face.a,
+            face.b,
+            face.c,
+        );
+        triangle.a.applyMatrix4(object.matrixWorld);
+        triangle.b.applyMatrix4(object.matrixWorld);
+        triangle.c.applyMatrix4(object.matrixWorld);
+        triangle.getBarycoord(point, barycoord);
+    } else {
+        barycoord.set(0, 0, 0);
+    }
+
+    // EXT_mesh_features
+    const { features, featureIds } = meshFeatures ? await getMeshFeatures(meshFeatures, {
+        faceIndex,
+        barycoord,
+    }) : {};
+    const tableIndices = featureIds?.map(p => p.propertyTable);
+
+    // EXT_structural_metadata
+    const metadata = structuralMetadata ? getStructuralMetadata(structuralMetadata, {
+        ...intersection,
+        barycoord,
+        tableIndices,
+        features,
+    }) : [];
+
+    return metadata;
+}
+
 class OGC3DTilesLayer extends GeometryLayer {
     /**
      * Layer for [3D Tiles](https://www.ogc.org/standard/3dtiles/) datasets.
@@ -194,6 +307,11 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.pntsMaxAttenuatedSize = pntsMaxAttenuatedSize;
 
         this.tilesRenderer = new TilesRenderer(this.source.url);
+        /** @type {RequestInit} */
+        // const fetchOptions = {
+        //     mode: 'no-cors',
+        // };
+        // this.tilesRenderer.fetchOptions = fetchOptions;
         if (config.source.isOGC3DTilesIonSource) {
             this.tilesRenderer.registerPlugin(new CesiumIonAuthPlugin({
                 apiToken: config.source.accessToken,
@@ -284,7 +402,8 @@ class OGC3DTilesLayer extends GeometryLayer {
                 this._res();
             }
         });
-        this.tilesRenderer.addEventListener('load-model', ({ scene }) => {
+        this.tilesRenderer.addEventListener('load-model', (e) => {
+            const { scene } = e;
             scene.traverse((obj) => {
                 this._assignFinalMaterial(obj);
                 this._assignFinalAttributes(obj);
@@ -369,35 +488,30 @@ class OGC3DTilesLayer extends GeometryLayer {
     }
 
     /**
+     * Get the [metadata](https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata)
+     * of the closest intersected object from a list of intersections. Note that
+     * it only supports metadata from the [`EXT_structural_metadata`](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata)
+     * gltf extension. It also optionnaly uses features from the [](`https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features).
+     * @param {Array<THREE.Intersection>} intersections
+     * @returns {Promise<Object | null>} - the intersected object's metadata
+     */
+    async getMetadataFromIntersections(intersections) {
+        if (!intersections.length) { return null; }
+
+        const metadata = await getMetadataFromIntersection(intersections[0]);
+        return metadata;
+    }
+
+    /**
      * Get the attributes for the closest intersection from a list of
      * intersects.
-     * @param {Array} intersects -  An array containing all
+     * @param {Array<THREE.Intersection>} intersects -  An array containing all
      * objects picked under mouse coordinates computed with view.pickObjectsAt(..).
      * @returns {Object | null} - An object containing
      */
     getC3DTileFeatureFromIntersectsArray(intersects) {
         if (!intersects.length) { return null; }
-
-        const { face, index, object, instanceId } = intersects[0];
-
-        /** @type{number|null} */
-        let batchId;
-        if (object.isPoints && index) {
-            batchId = object.geometry.getAttribute('_BATCHID')?.getX(index) ?? index;
-        } else if (object.isMesh && face) {
-            batchId = object.geometry.getAttribute('_BATCHID')?.getX(face.a) ?? instanceId;
-        }
-
-        if (batchId === undefined) {
-            return null;
-        }
-
-        let tileObject = object;
-        while (!tileObject.batchTable) {
-            tileObject = tileObject.parent;
-        }
-
-        return tileObject.batchTable.getDataFromId(batchId);
+        return getBatchTableFeature(intersects[0]);
     }
 
     /**
