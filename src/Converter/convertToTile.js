@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import TileMesh from 'Core/TileMesh';
-import LayeredMaterial from 'Renderer/LayeredMaterial';
+import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import { newTileGeometry } from 'Core/Prefab/TileBuilder';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
@@ -13,7 +13,7 @@ function setTileFromTiledLayer(tile, tileLayer) {
     }
 
     if (__DEBUG__) {
-        tile.material.showOutline = tileLayer.showOutline || false;
+        tile.material.setUniform('showOutline', tileLayer.showOutline || false);
     }
 
     if (tileLayer.isGlobeLayer) {
@@ -30,6 +30,22 @@ function setTileFromTiledLayer(tile, tileLayer) {
         tile.horizonCullingPointElevationScaled = tile.horizonCullingPoint.clone();
     }
 }
+
+class AccessMap {
+    constructor() {
+        this.accessed = new Map();
+    }
+
+    insert(prop) {
+        const count = this.accessed.get(prop);
+        this.accessed.set(prop, (count ?? 0) + 1);
+        if (count === undefined) {
+            console.log(prop, this.accessed, this.accessed != undefined ? 'exists' : 'missing');
+        }
+    }
+}
+
+const accessMap = new AccessMap();
 
 export default {
     convert(requester, extent, layer) {
@@ -50,7 +66,23 @@ export default {
             result.geometry.increaseRefCount();
             const crsCount = layer.tileMatrixSets.length;
             const material = new LayeredMaterial(layer.materialOptions, crsCount);
-            ReferLayerProperties(material, layer);
+
+            const handler = {
+                get(target, prop, receiver) {
+                    accessMap.insert(prop);
+                    if (typeof target[prop] === 'object' && target[prop] !== null) {
+                        // eslint-disable-next-line prefer-rest-params
+                        return new Proxy(Reflect.get(...arguments), handler);
+                    } else {
+                        // eslint-disable-next-line prefer-rest-params
+                        return Reflect.get(...arguments);
+                    }
+                },
+            };
+
+            const proxy = new Proxy(material, handler);
+
+            ReferLayerProperties(proxy, layer);
 
             const tile = new TileMesh(result.geometry, material, layer, extent, level);
 
@@ -73,7 +105,7 @@ export default {
                 tile.geoidHeight = parent.geoidHeight;
                 const geoidHeight = geoidLayerIsVisible(layer) ? tile.geoidHeight : 0;
                 tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max, geoidHeight });
-                tile.material.geoidHeight = geoidHeight;
+                tile.material.setUniform('geoidHeight', geoidHeight);
             }
 
             return tile;
