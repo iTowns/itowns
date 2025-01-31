@@ -1,5 +1,5 @@
 export default {
-    patchedPath: './src/ThreeExtended/',
+    patchedPath: './packages/Main/src/ThreeExtended/',
     filesExamples: [
         './loaders/GLTFLoader.js',
         './loaders/DRACOLoader.js',
@@ -9,6 +9,6 @@ export default {
         './utils/WorkerPool.js',
         './capabilities/WebGL.js',
         './libs/ktx-parse.module.js',
-        './libs/zstddec.module.js'
+        './libs/zstddec.module.js',
     ],
 };
