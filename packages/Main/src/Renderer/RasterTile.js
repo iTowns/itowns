@@ -120,7 +120,7 @@ class RasterTile extends THREE.EventDispatcher {
         this.level = EMPTY_TEXTURE_ZOOM;
     }
 
-    disposeAtIndexes(indexes = null) {
+    disposeAtIndexes(indexes) {
         for (const index of indexes) {
             const texture = this.textures[index];
             if (texture && texture.isTexture) {
@@ -263,7 +263,7 @@ export class RasterElevationTile extends RasterTile {
         const parentDataElevation = parentTexture && parentTexture.image && parentTexture.image.data;
         const dataElevation = texture.image && texture.image.data;
 
-        if (parentDataElevation && dataElevation && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
+        if (dataElevation && !checkNodeElevationTextureValidity(dataElevation, nodatavalue)) {
             insertSignificantValuesFromParent(dataElevation, parentDataElevation && dataParent(texture, parentTexture, parentDataElevation, pitch), nodatavalue);
         }
     }
