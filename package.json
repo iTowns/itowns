@@ -73,7 +73,7 @@
   },
   "peerDependencies": {
     "proj4": "^2.12.1",
-    "three": "^0.168.0"
+    "three": "^0.170.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.25.6",
@@ -84,7 +84,7 @@
     "@babel/register": "^7.24.6",
     "@stylistic/eslint-plugin": "^2.8.0",
     "@types/proj4": "^2.5.5",
-    "@types/three": "^0.168.0",
+    "@types/three": "^0.170.0",
     "@typescript-eslint/eslint-plugin": "^8.5.0",
     "@typescript-eslint/parser": "^8.5.0",
     "@xmldom/xmldom": "^0.9.2",
@@ -120,7 +120,7 @@
     "q": "^1.5.1",
     "replace-in-file": "^8.1.0",
     "sinon": "^19.0.2",
-    "three": "^0.168.0",
+    "three": "^0.170.0",
     "typescript": "^5.6.2",
     "undici": "^7.2.0",
     "webgl-mock": "^0.1.7",
