@@ -226,6 +226,8 @@ global.document = {
                     gl.getParameter = () => 'WebGL 2';
                     // Mock WebGL 2.0 methods
                     gl.texImage3D = () => {};
+                    // Fix getExtension returning undefined
+                    gl.getExtension = () => null;
                     return gl;
                 }
             };
