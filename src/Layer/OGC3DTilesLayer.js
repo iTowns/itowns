@@ -1,13 +1,14 @@
 import * as THREE from 'three';
+import { TilesRenderer } from '3d-tiles-renderer';
 import {
-    TilesRenderer,
     GLTFStructuralMetadataExtension,
     GLTFMeshFeaturesExtension,
     GLTFCesiumRTCExtension,
     CesiumIonAuthPlugin,
     GoogleCloudAuthPlugin,
     ImplicitTilingPlugin,
-} from '3d-tiles-renderer';
+// eslint-disable-next-line import/no-unresolved
+} from '3d-tiles-renderer/plugins';
 
 import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
