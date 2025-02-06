@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
     <head>
         <title>Point Cloud on globe</title>
@@ -45,6 +44,7 @@
     <body>
         <div id="viewerDiv"></div>
         <div id="info"></div>
+
         <script type="module">
 
             import lil from 'lil';
@@ -65,29 +65,64 @@
 
             debugGui = new lil();
 
-            var placement = {
-                coord: new itowns.Coordinates('EPSG:4326',  4.631512, 43.675626),
-                range: 100,
-                tilt: 45,
-                heading: -60
-            }
-
-            view = new itowns.GlobeView(viewerDiv, placement, { handleCollision: false });
+            var view = new itowns.GlobeView(viewerDiv);
             setupLoadingScreen(viewerDiv, view);
 
             view.controls.minDistance = 50;
 
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(layer);
+            });
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                var layer = new itowns.ColorLayer(config.id, config);
+                view.addLayer(layer);
+            });
+
+            /* OTHER dataset
+            Donnees geocentrique -> probleme pour le placement camera
+            name = 'eglise_saint_blaise_arles';
+            const url = 'https://raw.githubusercontent.com/gmaillet/dataset/master/';
+            const file = 'eglise_saint_blaise_arles.js';
+            const crs = 'EPSG:4978';
+            */
+
+            itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+            name = 'TempleSagradaFamilia';
+            const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia';
+            const file = 'cloud.js';
+            const crs = 'EPSG:25831';
+
             // Configure Point Cloud layer
-            potreeLayer = new itowns.PotreeLayer('eglise_saint_blaise_arles', {
-                source: new itowns.PotreeSource({
-                    file: 'eglise_saint_blaise_arles.js',
-                    url: 'https://raw.githubusercontent.com/gmaillet/dataset/master',
-                    crs: view.referenceCrs,
-                }),
+            const potreeSource = new itowns.PotreeSource({
+                    file,
+                    url,
+                    crs,
+                });
+
+            potreeLayer = new itowns.PotreeLayer(name, {
+                source: potreeSource,
             });
 
             // add potreeLayer to scene
             function onLayerReady() {
+                var lookAt = potreeLayer.root.clampOBB.position;
+
+                var coordLookAt = new itowns.Coordinates(view.referenceCrs).setFromVector3(lookAt);
+
+                var size = new THREE.Vector3();
+                potreeLayer.root.voxelOBB.box3D.getSize(size);
+
+                console.log(coordLookAt);
+
+                view.controls.lookAtCoordinate({
+                    coord: coordLookAt,
+                    range: 2 * size.length(),
+                }, false);
+
+                // add GUI
                 debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);
 
                 // update stats window
@@ -100,16 +135,7 @@
 
             itowns.View.prototype.addLayer.call(view, potreeLayer).then(onLayerReady);
 
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer);
-            });
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer(config.id, config);
-                view.addLayer(layer);
-            });
+
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
