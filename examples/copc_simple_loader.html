@@ -2,7 +2,7 @@
     <head>
         <meta charset="UTF-8">
 
-        <title>Itowns - COPC loader</title>
+        <title>Itowns - COPC simple loader</title>
 
         <script type="importmap">
         {
@@ -32,12 +32,12 @@
     </head>
     <body>
         <div id="description">Specify the URL of a COPC file to load:
-            <input type="text" id="copc_url" />
-            <button onclick="readURL()">Load</button>
+            <input type="text" id="loadUrl" />
+            <button id="loadUrlBtn">Load</button>
             <div>
-                <button id="loadAutzenButton">Load Autzen Stadium (80mb)</button>
-                <button id="loadSofiButton">Load SoFI Stadium (2.3gb)</button>
-                <button id="loadMillsiteButton">Load Millsite (1.9gb)</button>
+                <button id="loadAutzenBtn">Load Autzen Stadium (80mb)</button>
+                <button id="loadSofiBtn">Load SoFI Stadium (2.3gb)</button>
+                <button id="loadMillsiteBtn">Load Millsite (1.9gb)</button>
             <div id="share"></div>
             </div>
         </div>
@@ -53,32 +53,45 @@
 
             let layer; // COPCLayer
 
-            const uri = new URL(location);
-
+            const viewerDiv = document.getElementById('viewerDiv');
             const gui = new lil();
 
-            const viewerDiv = document.getElementById('viewerDiv');
             const view = new itowns.View('EPSG:4326', viewerDiv);
             const controls = new itowns.PlanarControls(view);
             view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
 
-            setUrl(uri.searchParams.get('copc'));
+            // Check if an url had been given as an argument
+            // and parse to get url and options.
+            const urlParams = new URL(location).searchParams;
+            let url = urlParams.get('copc');
+            urlParams.delete('copc');
+
+            const options = {};
+            for (const [k, v] of urlParams) {
+                options[k] = isNaN(parseFloat(v, 10)) ? v : parseFloat(v, 10);
+            }
+
+            loadCopc(url, options)
+
+            function changeViewCrs(crs) {
+                view.referenceCrs = crs;
+                view.camera.crs = crs;
+            }
 
             function onLayerReady() {
-                const camera = view.camera.camera3D;
+                var lookAt = layer.root.origin.toVector3();
 
-                const lookAt = new THREE.Vector3();
                 const size = new THREE.Vector3();
-                layer.root.bbox.getSize(size);
-                layer.root.bbox.getCenter(lookAt);
+                layer.root.voxelOBB.box3D.getSize(size);
 
-                camera.far = 2.0 * size.length();
-
-                controls.groundLevel = layer.root.bbox.min.z;
-                const position = layer.root.bbox.min.clone().add(
-                    size.multiply({ x: 1, y: 1, z: size.x / size.z }),
+                controls.groundLevel = layer.minElevationRange;
+                var corner = new THREE.Vector3(...layer.source.header.min);
+                var position = corner.clone().add(
+                    size.multiply({ x: 0, y: 0, z: (size.x / size.z) })
                 );
 
+                const camera = view.camera.camera3D;
+                camera.far = 10.0 * size.length();
                 camera.position.copy(position);
                 camera.lookAt(lookAt);
                 camera.updateProjectionMatrix();
@@ -86,83 +99,67 @@
                 view.notifyChange(camera);
             }
 
+            function loadCopc(url, options) {
+                if(!url) return;
 
-            function readURL() {
-                const url = document.getElementById('copc_url').value;
+                // Share the view
+                document.getElementById('share').innerHTML = '<a href="' +
+                    location.href.replace(location.search, '') +
+                    '?copc=' + url
+                    + '" target="_blank">Link to share this view</a>';
 
-                if (url) {
-                    setUrl(url);
-                }
-            }
-
-            function setUrl(url) {
-                if (!url) return;
-
-                const input_url = document.getElementById('copc_url');
-                if (!input_url) return;
-
-                uri.searchParams.set('copc', url);
-                history.replaceState(null, null, `?${uri.searchParams.toString()}`);
-
-                input_url.value = url;
-                load(url);
-            }
-
-
-            function load(url) {
-                const options = {};
-                const urlParams = uri.searchParams
-                urlParams.keys().forEach(key => {
-                    if (key !== 'copc') {
-                        options[key] = parseInt(urlParams.get(key), 10);
-                    }
-                });
                 const source = new itowns.CopcSource({ url });
-
-                if (layer) {
-                    layer.debugUI.destroy()
-                    view.removeLayer('COPC');
-                    view.notifyChange();
-                    layer.delete();
-                }
 
                 const config = {
                     source,
-                    crs: view.referenceCrs,
                     sseThreshold: 2,
                     pointBudget: 3000000,
                     ...options,
                 };
 
-                layer = new itowns.CopcLayer('COPC', config);
-                view.addLayer(layer).then(onLayerReady);
-                layer.whenReady
-                    .then(() => debug.PointCloudDebug.initTools(view, layer, gui));
+                source.whenReady.then(() => {
+                    changeViewCrs(source.crs);
+                    if (layer) {
+                        layer.debugUI.destroy();
+                        view.removeLayer('COPC', true);
+                    }
+                    layer = new itowns.CopcLayer('COPC', config);
+                    view.addLayer(layer).then(onLayerReady);
+                    layer.whenReady
+                        .then(() => debug.PointCloudDebug.initTools(view, layer, gui));
+                })
             }
 
             function loadAutzen() {
-                setUrl("https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz");
+                loadCopc("https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz");
             }
 
             function loadSofi() {
-                setUrl("https://s3.amazonaws.com/hobu-lidar/sofi.copc.laz");
+                loadCopc("https://s3.amazonaws.com/hobu-lidar/sofi.copc.laz");
             }
 
             function loadMillsite() {
-                setUrl("https://s3.amazonaws.com/data.entwine.io/millsite.copc.laz");
+                loadCopc("https://s3.amazonaws.com/data.entwine.io/millsite.copc.laz");
             }
 
-            const loadAutzenButton = document.getElementById('loadAutzenButton');
-            const loadSofiButton = document.getElementById('loadSofiButton');
-            const loadMillsiteButton = document.getElementById('loadMillsiteButton');
+            const loadAutzenBtn = document.getElementById('loadAutzenBtn');
+            const loadSofiBtn = document.getElementById('loadSofiBtn');
+            const loadMillsiteBtn = document.getElementById('loadMillsiteBtn');
 
-            loadAutzenButton.addEventListener('click', loadAutzen);
-            loadSofiButton.addEventListener('click', loadSofi);
-            loadMillsiteButton.addEventListener('click', loadMillsite);
+            loadAutzenBtn.addEventListener('click', loadAutzen);
+            loadSofiBtn.addEventListener('click', loadSofi);
+            loadMillsiteBtn.addEventListener('click', loadMillsite);
 
-            window.view = view;
+            // window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
+
+            function load() {
+                const url = document.getElementById('loadUrl').value;
+                if (url) { loadCopc(url); }
+            }
+            const loadUrlBtn = document.getElementById('loadUrlBtn');
+            loadUrlBtn.addEventListener('click', load);
 
         </script>
     </body>

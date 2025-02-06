@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Itowns - Entwine 3D loader</title>
+        <title>Itowns - COPC 3D loader</title>
 
         <script type="importmap">
         {
@@ -30,19 +30,23 @@
         </style>
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script> -->
     </head>
     <body>
-        <div id="description">Specify the URL of a Entwine Point Tree to load:
+        <div id="description">Specify the URL of a COPC file to load:
             <input type="text" id="loadUrl" />
-            <button id='loadUrlBtn'>Load</button>
-            <button id="loadLyonBtn">Load "Grand Lyon" dataset</button>
+            <button id="loadUrlBtn">Load</button>
+            <button id='loadLidarHDBtn'>Load LiDAR HD dataset</button>
             <div id="share"></div>
         </div>
         <div id="viewerDiv"></div>
 
+        <!-- <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script> -->
+        <!-- <script type="text/javascript"> -->
         <script type="module">
 
-            // TODO rempa click
             import lil from 'lil';
             import GuiTools from 'GuiTools';
             import setupLoadingScreen from 'LoadingScreen';
@@ -64,7 +68,6 @@
                 var layer = new itowns.ColorLayer('Ortho', config);
                 view.addLayer(layer);
             });
-
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
@@ -75,70 +78,82 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
+            var layer;
+
             // Check if an url had been given as an argument
             // and parse to get url and options.
-            const urlParams = new URL(location).searchParams;
-            let url = urlParams.get('ept');
-            urlParams.delete('ept');
+            const urlParams = new URL(location.href).searchParams
+            let url = urlParams.get('copc');
+            urlParams.delete('copc');
 
             const options = {};
             for (const [k, v] of urlParams) {
                 options[k] = isNaN(parseFloat(v, 10)) ? v : parseFloat(v, 10);
             }
 
-            loadEPT(url);
+            loadCopc(url, options);
 
-            var eptLayer;
             function onLayerReady() {
-                var lookAt = eptLayer.root.origin;
+                var lookAt = layer.root.clampOBB.position;
+                var coordLookAt = new itowns.Coordinates(view.referenceCrs).setFromVector3(lookAt);
 
                 var size = new THREE.Vector3();
-                eptLayer.root.voxelOBB.box3D.getSize(size);
+                layer.root.voxelOBB.box3D.getSize(size);
 
                 view.controls.lookAtCoordinate({
-                    coord: lookAt,
+                    coord: coordLookAt,
                     range: 2 * size.length(),
                 }, false);
             }
 
-            function loadEPT(url) {
+            function loadCopc(url, options) {
                 if(!url) return;
+
+                // Share the view
                 document.getElementById('share').innerHTML = '<a href="' +
-                    location.href.replace(location.search, '?ept=' + url) +
+                    location.href.replace(location.search, '?copc=' + url) +
                     '" target="_blank">Link to share this view</a>';
 
-                const eptSource = new itowns.EntwinePointTileSource({ url });
+                const source = new itowns.CopcSource({ url });
 
-                if (eptLayer) {
-                    eptLayer.debugUI.destroy();
-                    view.removeLayer('Entwine Point Tile');
+                if (layer) {
+                    layer.debugUI.destroy();
+                    view.removeLayer('COPC');
                     view.notifyChange();
-                    eptLayer.delete();
+                    layer.delete();
                 }
 
-                eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', {
-                    source: eptSource,
+                const config = {
+                    source,
                     crs: view.referenceCrs,
-                });
+                    sseThreshold: 2,
+                    pointBudget: 3000000,
+                    ...options,
+                }
 
-                itowns.View.prototype.addLayer.call(view, eptLayer).then(onLayerReady);
+                layer = new itowns.CopcLayer('COPC', config);
 
-                eptLayer.whenReady
-                    .then(() => debug.PointCloudDebug.initTools(view, eptLayer, debugGui));
+                itowns.View.prototype.addLayer.call(view, layer).then(onLayerReady);
+
+                layer.whenReady
+                    .then(() => debug.PointCloudDebug.initTools(view, layer, debugGui));
             }
 
             const loadUrlBtn = document.getElementById('loadUrlBtn');
             loadUrlBtn.addEventListener('click', () => {
-                url = document.getElementById('loadUrl').value;
-                loadEPT(url);
+                const url = document.getElementById('loadUrl').value;
+                if (url) { loadCopc(url); }
             });
 
-            const loadLyonBtn = document.getElementById('loadLyonBtn');
-            loadLyonBtn.addEventListener('click', () => {
-                url = 'https://download.data.grandlyon.com/files/grandlyon/imagerie/mnt2018/lidar/ept/';
-                loadEPT(url);
+            const loadLidarHDBtn = document.getElementById('loadLidarHDBtn');
+            loadLidarHDBtn.addEventListener('click', () => {
+                const url ="https://dl-lidar.ign.fr/ppk-lidar/ML/LHD_FXX_0746_6509_PTS_C_LAMB93_IGN69.copc.laz" // fixed with proxy
+                const options = {
+                    mode: 2,
+                    opacity: 0.5,
+                }
+                loadCopc(url, options);
             });
-
         </script>
     </body>
 </html>
