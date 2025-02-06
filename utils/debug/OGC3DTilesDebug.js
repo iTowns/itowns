@@ -1,4 +1,5 @@
-import { DebugTilesPlugin } from '3d-tiles-renderer';
+// eslint-disable-next-line import/no-unresolved
+import { DebugTilesPlugin } from '3d-tiles-renderer/plugins';
 
 import { PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
 import GeometryDebug from './GeometryDebug';
