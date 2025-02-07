@@ -4,9 +4,9 @@ import OGC3DTilesLayer, {
     itownsGLTFLoader,
     enableDracoLoader,
     enableKtx2Loader,
+    enableMeshoptDecoder,
 } from 'Layer/OGC3DTilesLayer';
-import { WebGLRenderer } from 'three';
-
+import { BufferAttribute, Matrix4, Vector3, WebGLRenderer } from 'three';
 
 describe('OGC3DTilesLayer', function () {
     const source =  new OGC3DTilesSource({ url: 'https://mock.com/tileset.json' });
@@ -86,5 +86,112 @@ describe('OGC3DTilesLayer', function () {
         // Should set Ktx2Loader
         enableKtx2Loader('mockedPath/', mockedRenderer);
         assert.ok(itownsGLTFLoader.glTFLoader.ktx2Loader);
+    });
+
+    it('should enable MeshOptDecoder', function () {
+        const MeshOptDecoder = {};
+
+        assert.throws(
+            () => { enableMeshoptDecoder(undefined); },
+            { message: 'MeshOptDecoder module is mandatory' },
+        );
+
+        // Should set MeshOptDecoder
+        enableMeshoptDecoder(MeshOptDecoder);
+        assert.ok(itownsGLTFLoader.glTFLoader.meshoptDecoder);
+    });
+
+    it('should not return metadata when there is no EXT_structural_metadata', async function () {
+        const layer = new OGC3DTilesLayer('ogc3DTiles', { source });
+        const intersection = { object: { userData: {} } };
+
+        assert.deepEqual(
+            await layer.getMetadataFromIntersections([intersection]),
+            [],
+        );
+    });
+
+    it('should return metadata if EXT_structural_metadata is present', async function () {
+        const layer = new OGC3DTilesLayer('ogc3DTiles', { source });
+
+        // Mock StructuralMetadata by returning the parameters as metadata.
+        const structuralMetadata = {
+            getPropertyAttributeData(index, attributeData) {
+                attributeData.push({ index });
+            },
+            getPropertyTextureData(faceIndex, barycoord, textureData) {
+                textureData.push({ faceIndex, barycoord });
+            },
+            getPropertyTableData(tableIndices, features, tableData) {
+                tableData.push({ tableIndices, features });
+            },
+        };
+
+        // Mock MeshFeatures
+        const meshFeatures = {
+            getFeaturesAsync() {
+                return Promise.resolve([0]);
+            },
+            getFeatureInfo() {
+                return [
+                    { label: '', propertyTable: 0, nullFeatureId: null },
+                    { label: '', propertyTable: 1, nullFeatureId: null },
+                    { label: '', propertyTable: 2, nullFeatureId: null },
+                ];
+            },
+        };
+
+        // Test the access to the metadata associated to this vertex
+        const vertexMetadata = await layer.getMetadataFromIntersections([{
+            object: { userData: { structuralMetadata } },
+            index: 0,
+        }]);
+        assert.deepEqual(vertexMetadata, [{
+            index: 0,
+        }]);
+
+        // Test the access to the metadata associated to the index of this face
+        const uvMetadata = await layer.getMetadataFromIntersections([{
+            object: { userData: { structuralMetadata } },
+            faceIndex: 0,
+        }]);
+        assert.deepEqual(uvMetadata, [{
+            barycoord: { x: 0, y: 0, z: 0 },
+            faceIndex: 0,
+        }]);
+
+        // Test the access to the metadata associated to the face and its index
+        const uvMetadataWithFace = await layer.getMetadataFromIntersections([{
+            point: new Vector3(),
+            object: {
+                geometry: {
+                    getAttribute() {
+                        return new BufferAttribute(new Float32Array([
+                            -1.0, -1.0, +1.0,
+                            +1.0, -1.0, +1.0,
+                            +1.0, +1.0, +1.0,
+                        ]), 3);
+                    },
+                },
+                matrixWorld: new Matrix4(),
+                userData: { structuralMetadata },
+            },
+            face: { a: 0, b: 1, c: 2 },
+            faceIndex: 0,
+        }]);
+        assert.deepEqual(uvMetadataWithFace, [{
+            barycoord: { x: 0.5, y: 0, z: 0.5 },
+            faceIndex: 0,
+        }]);
+
+        const featureMetadata = await layer.getMetadataFromIntersections([{
+            object: {
+                userData: { meshFeatures, structuralMetadata },
+            },
+        }]);
+        assert.deepEqual(featureMetadata, [{
+            tableIndices: [0, 1, 2],
+            features: [0],
+        }]);
     });
 });
