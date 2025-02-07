@@ -1,0 +1,10 @@
+{
+    "extends": "../../tsconfig.json",
+    "include": [ "src/Main.js" ],
+    "exclude": [ "node_modules", "lib" ],
+    "compilerOptions": {
+        "paths": {
+            "*": [ "src/*" ]
+        },
+    }
+}

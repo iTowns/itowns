@@ -1,43 +1,49 @@
 {
-  "name": "itowns",
+  "private": true,
   "version": "2.44.2",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "type": "module",
-  "main": "lib/Main.js",
-  "exports": {
-    ".": "./lib/Main.js",
-    "./widgets": "./lib/Utils/gui/Main.js"
-  },
+  "workspaces": [
+    "packages/Geographic",
+    "packages/Main",
+    "packages/Debug",
+    "packages/Widgets"
+  ],
   "scripts": {
-    "lint": "eslint \"src/**/*.{js,ts,tsx}\" \"test/**/*.js\" \"examples/**/*.js\" \"docs/*.js\"",
+    "lint": "npm run lint --workspaces && eslint \"examples/**/*.js\" \"docs/*.js\"",
     "doc": "jsdoc --readme docs/HOMEPAGE.md -c docs/config.json",
     "doclint": "npm run doc -- -t templates/silent",
-    "test": "npm run lint -- --max-warnings=0 && npm run build && npm run test-with-coverage && npm run test-functional",
-    "test-dev": "npm run lint -- --max-warnings=0 && npm run build-dev && npm run test-with-coverage && npm run test-functional",
-    "test-unit": "npm run base-test-unit test/unit",
-    "test-functional": "mocha -t 100000 --require test/hooks_functional.js --recursive test/functional",
-    "test-with-coverage": "c8 -n src -r html cross-env npm run test-unit",
-    "test-with-coverage_lcov": "c8 -n src --reporter=lcov cross-env npm run test-unit",
-    "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --file test/unit/bootstrap.js --import=./config/babel-register/register.mjs",
-    "build": "cross-env NODE_ENV=production webpack",
+    "test": "npm run transpile && npm run test-with-coverage && npm run build && npm run test-functional",
+    "test-dev": "npm run test-unit && npm run build-dev && npm run test-functional",
+    "test-unit": "npm run test-unit --workspaces --if-present",
+    "test-functional": "npm run build && mocha -t 100000 --require test/hooks_functional.js --recursive test/functional",
+    "test-with-coverage": "npm run test-with-coverage --workspaces --if-present",
+    "test-with-coverage_lcov": "npm run test-with-coverage_lcov --workspaces --if-present && c8 report --reporter=lcov",
+    "build": "npm run transpile && cross-env NODE_ENV=production webpack",
     "build-dev": "cross-env NODE_ENV=development webpack",
-    "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib --extensions .js,.ts",
+    "transpile": "npm run transpile --workspaces",
     "start": "cross-env NODE_ENV=development webpack serve",
     "start-https": "cross-env NODE_ENV=development webpack serve --https",
     "debug": "cross-env noInline=true npm start",
     "prepublishOnly": "npm run build && npm run transpile",
     "prepare": "cross-env NO_UPDATE_NOTIFIER=true node ./config/prepare.mjs && node ./config/replace.config.mjs",
-    "watch": "npm run transpile -- --watch",
+    "watch": "node ./config/concurrently.mjs watch",
     "changelog": "conventional-changelog -n ./config/conventionalChangelog/config.cjs -i changelog.md -s",
-    "bump": "if [ -z $npm_config_level ]; then grunt bump:minor;  else grunt bump:$npm_config_level; fi && npm run changelog && npm install && git add -A && git commit --amend --no-edit",
-    "publish-next": "npm version prerelease --preid next && npm publish --access public --tag=next --provenance",
-    "publish-latest": "npm publish --access public --tag=latest --provenance"
+    "bump": "if [ -z $npm_config_level ]; then grunt bump:minor;  else grunt bump:$npm_config_level; fi && npm run changelog && npm run update-packages && npm install && git add -A && git commit --amend --no-edit",
+    "prerelease-next": "npm version prerelease --preid next && npm run prerelease-next --workspaces --if-present && npm run update-packages",
+    "publish-next": "npm run prerelease-next && npm run publish-next --workspaces --if-present",
+    "publish-latest": "npm run publish-latest --workspaces --if-present",
+    "update-packages": "npm run update-package --workspaces --if-present"
   },
   "c8": {
     "exclude": [
+      "**/test/**",
+      "**/lib/**",
       "**/*ThreeExtended",
       "**/*src/Utils/placeObjectOnGround.js",
-      "**/*src/Parser/deprecated/LegacyGLTFLoader.js"
+      "**/*src/Parser/deprecated/LegacyGLTFLoader.js",
+      "**/packages/Widgets/",
+      "**/packages/Debug/"
     ]
   },
   "files": [
@@ -56,25 +62,6 @@
     "url": "https://github.com/iTowns/itowns/issues"
   },
   "homepage": "https://itowns.github.io/",
-  "dependencies": {
-    "@mapbox/vector-tile": "^2.0.3",
-    "@maplibre/maplibre-gl-style-spec": "^22.0.0",
-    "@tmcw/togeojson": "^5.8.1",
-    "@tweenjs/tween.js": "^25.0.0",
-    "3d-tiles-renderer": "^0.4.4",
-    "brotli-compress": "^1.3.3",
-    "copc": "^0.0.6",
-    "earcut": "^3.0.0",
-    "js-priority-queue": "^0.1.5",
-    "lru-cache": "^11.0.1",
-    "pbf": "^4.0.1",
-    "shpjs": "^6.1.0",
-    "threads": "^1.7.0"
-  },
-  "peerDependencies": {
-    "proj4": "^2.12.1",
-    "three": "^0.170.0"
-  },
   "devDependencies": {
     "@babel/cli": "^7.25.6",
     "@babel/core": "^7.25.2",
@@ -97,8 +84,8 @@
     "babel-plugin-module-resolver": "^5.0.2",
     "c8": "^10.1.2",
     "chalk": "^5.3.0",
-    "chart.js": "^4.4.4",
     "compare-func": "^2.0.0",
+    "concurrently": "^8.2.2",
     "conventional-changelog-cli": "^4.1.0",
     "copyfiles": "^2.4.1",
     "core-js": "^3.38.1",

@@ -9,7 +9,6 @@ on:
       - master
   workflow_dispatch: {}
 
-
 jobs:
 
   # Build bundle, doc and check linter
@@ -79,8 +78,15 @@ jobs:
   # Unit and coverage tests
   unit-and-coverage-tests:
     name: Unit and coverage tests
-    needs: build
+    needs: [build, check-commit-message]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - package: "@itowns/geographic"
+            path: "Geographic"
+          - package: "itowns"
+            path: "Main"
     steps:
 
       # Use specific Node.js version
@@ -95,17 +101,33 @@ jobs:
       - name: Install packages
         run: npm ci
 
-      - name: Run unit tests
-        run: npm run test-with-coverage_lcov
+      # Transpile
+      - name: transpile packages
+        run: npm run transpile
 
-      # Code coverage
-      - name: Coveralls
-        if: ${{ success() }}
-        uses: coverallsapp/github-action@master
+      - name: Test ${{ matrix.package }}
+        run: npm run test-with-coverage_lcov --workspace ${{ matrix.package}}
+      - name: Coveralls Parallel
+        uses: coverallsapp/github-action@v2
         with:
+          format: lcov
+          base-path: ./packages/${{ matrix.path }}
+          path-to-lcov: ./packages/${{ matrix.path }}/coverage/lcov.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          flag-name: run-${{ matrix.package }}
+          parallel: true
 
-
+  # Final Code coverage
+  finish-coverage:
+    name: finish parallel test unit
+    needs: unit-and-coverage-tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Close parallel build
+      uses: coverallsapp/github-action@v2
+      with:
+        parallel-finished: true
+        github-token: ${{ secrets.GITHUB_TOKEN }}
   # Functional tests
   functional-tests:
     name: Functional tests
@@ -139,7 +161,7 @@ jobs:
   publish:
     name: Publish NPM package
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
+    needs: [finish-coverage, functional-tests]
     runs-on: ubuntu-latest
     permissions:
         # id-token: write permission is required for npm provenance:
@@ -177,6 +199,8 @@ jobs:
           git checkout next
           git reset --hard master
           npm run publish-next
+          git add .
+          git commit --amend --no-edit
           git push -f
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -187,16 +211,17 @@ jobs:
           git checkout next
           git merge master
           npm run publish-next
+          git add .
+          git commit --amend --no-edit
           git push
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
 
   # Deploy on itowns.github.io website
   deploy:
     name: Deploy to itowns.github.io
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
+    needs: [finish-coverage, functional-tests]
     runs-on: ubuntu-latest
     steps:
 
@@ -257,7 +282,7 @@ jobs:
   release:
     name: Release GitHub
     if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
-    needs: [unit-and-coverage-tests, functional-tests, check-commit-message]
+    needs: [finish-coverage, functional-tests]
     runs-on: ubuntu-latest
     steps:
 

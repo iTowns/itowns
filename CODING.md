@@ -34,6 +34,17 @@ See the [node website](https://nodejs.org) to install node and npm.
    * You can then require `src/Main.js` in your code
 * Test and lint changes: see test, lint and test-examples npm script
 
+## Monorepo structure
+
+The project is organized into the following sub-packages. This structuring is in progress.
+The roadmap is to divide the `Main` sub-module into independent functionalities.
+The final structure is exposed in this (page)[https://github.com/iTowns/itowns/issues/2414]. 
+
+* `Geographic` (public): The geographic package provides utilities for handling coordinates, ellipsoids, extents and rotations across different coordinate systems;
+* `Main` (public): all featues that haven't yet been moved to sub-module;
+* `Debug` (private, for the moment): iTowns debugging utilities;
+* `Widgets` (private, for the moment): Graphic user interface for iTowns;
+
 ## Debugging
 * `babel-inline-import-loader` prevents the source map debug in browser. If you
   want launch server and debug with the original source map, run : `npm run

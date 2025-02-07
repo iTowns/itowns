@@ -1,14 +1,9 @@
 {
-    "include": [ "src/Main.js" ],
-    "exclude": [ "node_modules", "lib", "dist" ],
     "compilerOptions": {
         /* Type Checking */
         "strict": true,
         /* Modules */
         "baseUrl": ".",
-        "paths": {
-            "*": [ "src/*" ]
-        },
         "module": "ESNext",
         "moduleResolution": "bundler",
         /* Emit */
