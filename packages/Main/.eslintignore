@@ -1,0 +1,5 @@
+src/ThreeExtended/
+test/hooks.js
+dist/
+node_modules/
+test/data/

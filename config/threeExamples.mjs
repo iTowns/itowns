@@ -1,5 +1,5 @@
 export default {
-    patchedPath: './src/ThreeExtended/',
+    patchedPath: './packages/Main/src/ThreeExtended/',
     filesExamples: [
         './loaders/GLTFLoader.js',
         './loaders/DRACOLoader.js',

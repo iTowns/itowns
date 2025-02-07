@@ -1,0 +1,42 @@
+{
+    "presets": [
+        ["@babel/preset-typescript"],
+        ["@babel/preset-env", {
+            "targets": {
+                "browsers": "defaults and supports webgl2"
+            },
+            "modules": false
+        }]
+    ],
+    "plugins": [
+        ["module-resolver", {
+            "cwd": "packagejson",
+            "root": ["./src"],
+            "extensions": [".js", ".ts", ".tsx"]
+        }],
+        ["babel-plugin-inline-import", {
+            "extensions": [
+                ".json",
+                ".geojson",
+                ".glsl",
+                ".css"
+            ]
+        }],
+        ["module-extension-resolver", {
+            "srcExtensions": [".ts", ".js"]
+        }],
+        ["@babel/plugin-transform-runtime", {
+            "regenerator": false
+        }],
+        ["minify-replace", {
+            "replacements": [{
+                "identifierName": "__DEBUG__",
+                "replacement": {
+                    "type": "booleanLiteral",
+                    "value": false
+                }
+            }]
+        }],
+        ["minify-dead-code-elimination"]
+    ]
+}

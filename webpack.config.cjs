@@ -23,8 +23,10 @@ const babelConf = {
 };
 
 const include = [
-    path.resolve(__dirname, 'src'),
-    path.resolve(__dirname, 'utils'),
+    path.resolve(__dirname, 'packages/Geographic/src'),
+    path.resolve(__dirname, 'packages/Main/src'),
+    path.resolve(__dirname, 'packages/Debug/src'),
+    path.resolve(__dirname, 'packages/Widgets/src'),
 ];
 
 const exclude = [
@@ -50,25 +52,29 @@ module.exports = () => {
             extensionAlias: {
                 '.js': ['.ts', '.js'],
             },
+            alias: {
+                itowns: path.resolve(__dirname, 'packages/Main/src/Main.js'),
+                '@itowns/geographic': path.resolve(__dirname, 'packages/Geographic/src/Main.js'),
+            },
         },
         entry: {
             itowns: [
                 'core-js',
-                './src/MainBundle.js',
+                './packages/Main/src/MainBundle.js',
             ],
             debug: {
-                import: './utils/debug/Main.js',
+                import: './packages/Debug/src/Main.js',
                 dependOn: 'itowns',
             },
             itowns_widgets: {
-                import: './src/Utils/gui/Main.js',
+                import: './packages/Widgets/src/Main.js',
                 dependOn: 'itowns',
             },
             itowns_potree2worker: {
-                import: './src/Worker/Potree2Worker.js',
+                import: './packages/Main/src/Worker/Potree2Worker.js',
             },
             itowns_lasworker: {
-                import: './src/Worker/LASLoaderWorker.js',
+                import: './packages/Main/src/Worker/LASLoaderWorker.js',
             },
         },
         devtool: 'source-map',

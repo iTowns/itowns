@@ -3,12 +3,12 @@
 # See https://help.github.com/articles/ignoring-files/ for how to configure your environment.
 # See https://github.com/github/gitignore/tree/master/Global for a list of global ignore rules.
 
-/node_modules/
-/dist/
+node_modules/
+**/dist/
 /potree/
 potree
-/lib/
+**/lib/
 /docs/out/
-coverage
+**/coverage
 .nyc_output/
-/src/ThreeExtended/
+**/src/ThreeExtended/
