@@ -294,6 +294,14 @@ class Layer extends THREE.EventDispatcher {
     delete(clearCache) {
         console.warn('Function delete doesn\'t exist for this layer');
     }
+
+    /**
+     * Invalidate the cache of this layer.
+     * Only implemented in {@link ColorLayer} and {@link FeatureGeometryLayer} for the moment.
+     */
+    invalidateCache() {
+        throw new Error('invalidateCache is not supported yet in this type of layer');
+    }
 }
 
 export default Layer;
