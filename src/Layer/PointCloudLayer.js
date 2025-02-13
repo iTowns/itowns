@@ -78,7 +78,7 @@ function markForDeletion(elt) {
     if (!elt.notVisibleSince) {
         elt.notVisibleSince = Date.now();
         // Set .sse to an invalid value
-        elt.sse = 1;
+        elt.invSse = 1;
     }
     for (const child of elt.children) {
         markForDeletion(child);
@@ -285,31 +285,30 @@ class PointCloudLayer extends GeometryLayer {
     }
 
     updateAll(context, srcs) {
-        console.log('###updateAll');
+        console.log('###updateAll', srcs);
         const queue = new FlatQueue();
-        // console.log('PointCloudLayer.updateAll');
         const elementsToUpdate = this.preUpdate(context, srcs);
+        // as a simplification we curently always update from root
 
-        // console.log(elementsToUpdate, elementsToUpdate.sse);
-
-        // `update` is called in `updateElements`.
-        this.updateElements(context, elementsToUpdate, queue);
+        const numPoint = 0;
+        // List element to update and add them to the queue
+        this.updateElements(context, [this.root], queue);
         // console.log(' >>> updateAll', queue, queue.pop(), queue.pop(), queue.pop(), queue.pop(), queue.pop());
 
-        this.update(context, this, queue);
+        // we update the node following the invSse
+        this.update(context, this, queue, numPoint);
 
         // `postUpdate` is called when this geom layer update process is finished
         // this.postUpdate();
     }
 
     updateElements(context, elements, queue) {
-        console.log(' > updateElements', elements.map(e => e.id));
+        console.log(' > look for ele to update:', elements.map(e => e.id));
         if (!elements) {
             console.log('elements is empty');
             return;
         }
         for (const element of elements) {
-            // console.log(element.id);
             element.visible = false;
 
             if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < element.depth) {
@@ -321,29 +320,26 @@ class PointCloudLayer extends GeometryLayer {
             const bbox = (element.tightbbox ? element.tightbbox : element.bbox);
             element.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
             if (!element.visible) {
-                console.log(element.id, 'invisible');
+                console.log(' ', element.id, 'invisible');
                 markForDeletion(element);
                 continue;
             }
-            console.log(element.id, 'is visible and will be updated');
+            console.log(' ', element.id, 'is visible and will be updated');
 
             element.notVisibleSince = undefined;
             point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
             point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
 
             const distance = bbox.distanceToPoint(point);
-            element.sse = -1 * computeScreenSpaceError(context, this.pointSize, this.spacing, element, distance) / this.sseThreshold;
+            element.invSse = -1 * computeScreenSpaceError(context, this.pointSize, this.spacing, element, distance) / this.sseThreshold;
 
             // add element to the queue
-            queue.push(element, element.sse);
+            queue.push(element, element.invSse);
 
             // update element
-            // TODO find a way to notify attachedLayers when geometryLayer deletes some elements
-            // and then update Debug.js:addGeometryLayerDebugFeatures
-
             if (element.children && element.children.length) {
-                if (element.sse <= -1) {
-                    console.log('      ', element.id, 'with childern');
+                if (element.invSse <= -1) {
+                    console.log('      add ', element.id, 'childern');
                     this.updateElements(context, element.children, queue);
                 } else {
                     console.log('      ', element.id, 'without childern');
@@ -392,12 +388,14 @@ class PointCloudLayer extends GeometryLayer {
         }
     }
 
-    update(context, layer, queue) {
+    update(context, layer, queue, numPoint) {
         console.log(' >> update');
 
         while (queue.length > 0) {
             const elt = queue.pop();
-            console.log(elt.id);
+            console.log('  update', elt.id);
+
+            numPoint += elt.numPoints;
 
             // pick the best bounding box
             const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
@@ -407,7 +405,7 @@ class PointCloudLayer extends GeometryLayer {
             point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
 
             // only load geometry if this elements has points
-            if (elt.numPoints !== 0) {
+            if (elt.numPoints !== 0 && numPoint < this.pointBudget) {
                 if (elt.obj) {
                     elt.obj.visible = true;
 
@@ -417,15 +415,15 @@ class PointCloudLayer extends GeometryLayer {
                                 initBoundingBox(elt, layer);
                             }
                             elt.obj.boxHelper.visible = true;
-                            elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                            elt.obj.boxHelper.material.color.g = elt.sse;
+                            elt.obj.boxHelper.material.color.r = 1 - elt.invSse;
+                            elt.obj.boxHelper.material.color.g = elt.invSse;
                         }
                     }
                 } else if (!elt.promise) {
                     const distance = Math.max(0.001, bbox.distanceToPoint(point));
                     // Increase priority of nearest node
                     const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / distance;
-                    console.log('send promise');
+                    console.log('   -> send promise to get data');
                     elt.promise = context.scheduler.execute({
                         layer,
                         requester: elt,
@@ -434,7 +432,7 @@ class PointCloudLayer extends GeometryLayer {
                         redraw: true,
                         earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
                     }).then((pts) => {
-                        console.log('THEN loaded', elt.id, elt.sse, elt.visible);
+                        console.log('   THEN', elt.id, 'loaded', elt.invSse, elt.visible);
                         elt.obj = pts;
 
                         // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
@@ -489,7 +487,7 @@ class PointCloudLayer extends GeometryLayer {
                 // This format doesn't require points to be evenly distributed, so
                 // we're going to sort the nodes by "importance" (= on screen size)
                 // and display only the first N nodes
-                this.group.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
+                this.group.children.sort((p1, p2) => p2.userData.node.invSse - p1.userData.node.invSse);
 
                 let limitHit = false;
                 this.displayedCount = 0;
