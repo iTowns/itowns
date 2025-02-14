@@ -128,6 +128,7 @@ jobs:
       with:
         parallel-finished: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
+        carryforward: "run-@itowns/geographic,run-itowns"
   # Functional tests
   functional-tests:
     name: Functional tests
