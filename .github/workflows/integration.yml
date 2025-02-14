@@ -9,6 +9,9 @@ on:
       - master
   workflow_dispatch: {}
 
+env:
+  COVERALLS_PARALLEL: true
+
 jobs:
 
   # Build bundle, doc and check linter
@@ -128,6 +131,7 @@ jobs:
       with:
         parallel-finished: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
+        carryforward: "run-@itowns/geographic,run-itowns"
   # Functional tests
   functional-tests:
     name: Functional tests
