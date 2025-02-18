@@ -1,54 +1,42 @@
-import * as THREE from 'three';
+import { Euler, MathUtils, Matrix4, Quaternion, Vector3 } from 'three';
 import proj4 from 'proj4';
+import type { ProjectionDefinition } from 'proj4';
 import Coordinates from './Coordinates';
 
-const DEG2RAD = THREE.MathUtils.DEG2RAD;
-const matrix = new THREE.Matrix4();
-const north = new THREE.Vector3();
-const east = new THREE.Vector3();
-const axis = new THREE.Vector3().set(0, 0, 1);
+const DEG2RAD = MathUtils.DEG2RAD;
+const matrix = new Matrix4();
+const north = new Vector3();
+const east = new Vector3();
+const axis = new Vector3().set(0, 0, 1);
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-const euler = new THREE.Euler();
-const quat = new THREE.Quaternion();
+const euler = new Euler();
+const quat = new Quaternion();
 
-function quaternionIdentity(coordinates, target = new THREE.Quaternion()) {
-    return coordinates ? target.set(0, 0, 0, 1) : quaternionIdentity;
+interface EulerAngles {
+    /** angle in degrees */
+    roll: number;
+    /** angle in degrees */
+    pitch: number;
+    /** angle in degrees */
+    heading: number;
 }
 
-/**
- * The OrientationUtils module provides methods to compute the quaternion that
- * models a rotation defined with various conventions, including between different
- * CRS.
- * The local <a href="https://en.wikipedia.org/wiki/Local_tangent_plane_coordinates#Local_east,_north,_up_(ENU)_coordinates">
- * East/North/Up frame (ENU)</a> is used as a pivot frame when computing the rotation between two distinct CRS.
- * If the origin of the frame is undefined, CRS-related methods precompute and return a function
- * that can be applied efficiently to many points of origin.
- * Otherwise, the target quaternion is returned at the provided origin coordinates.
- *
- * @example
- * // Compute the rotation around the point of origin from a frame aligned with Lambert93 axes (epsg:2154),
- * // to the geocentric frame (epsg:4978)
- * quat_crs2crs = OrientationUtils.quaternionFromCRSToCRS("EPSG:2154", "EPSG:4978")(origin);
- * // Compute the rotation of a sensor platform defined by its attitude
- * quat_attitude = OrientationUtils.quaternionFromAttitude(attitude);
- * // Compute the rotation from the sensor platform frame to the geocentric frame
- * quat = quat_crs2crs.multiply(quat_attitude);
- *
- * @module OrientationUtils
- */
+interface PhotogrammetryAngles {
+    /** angle in degrees */
+    omega: number;
+    /** angle in degrees */
+    phi: number;
+    /** angle in degrees */
+    kappa: number;
+}
 
-    /**
-     * @typedef {Object} Attitude
-     * Properties are either defined as (omega, phi, kappa) or as (roll, pitch,
-     * heading) or all `undefined`.
-     *
-     * @property {number} omega - angle in degrees
-     * @property {number} phi - angle in degrees
-     * @property {number} kappa - angle in degrees
-     * @property {number} roll - angle in degrees
-     * @property {number} pitch - angle in degrees
-     * @property {number} heading - angle in degrees
-     */
+type Attitude = Partial<EulerAngles> | Partial<PhotogrammetryAngles>;
+
+type QuaternionFunction = (coords: Coordinates, target?: Quaternion) => Quaternion;
+
+type ProjectionLike = ProjectionDefinition | string;
+type LCCProjection = { long0: number, lat0: number };
+type TMercProjection = { a: number, b: number, e?: number, long0: number };
 
 /**
  * The transform from the platform frame to the local East, North, Up (ENU)
@@ -61,11 +49,16 @@ function quaternionIdentity(coordinates, target = new THREE.Quaternion()) {
  *
  * @return {THREE.Quaternion} target quaternion
  */
-export function quaternionFromRollPitchHeading(roll = 0, pitch = 0, heading = 0, target = new THREE.Quaternion()) {
+export function quaternionFromRollPitchHeading(
+    roll = 0,
+    pitch = 0,
+    heading = 0,
+    target = new Quaternion(),
+) {
     roll *= DEG2RAD;
     pitch *= DEG2RAD;
     heading *= DEG2RAD;
-    // return this.setFromEuler(euler.set(pitch, roll, heading , 'ZXY')).conjugate();
+    // return setFromEuler(euler.set(pitch, roll, heading , 'ZXY')).conjugate();
     return target.setFromEuler(euler.set(-pitch, -roll, -heading, 'YXZ')); // optimized version of above
 }
 
@@ -89,7 +82,12 @@ export function quaternionFromRollPitchHeading(roll = 0, pitch = 0, heading = 0,
  *
  * @return {THREE.Quaternion} target quaternion
  */
-export function quaternionFromOmegaPhiKappa(omega = 0, phi = 0, kappa = 0, target = new THREE.Quaternion()) {
+export function quaternionFromOmegaPhiKappa(
+    omega = 0,
+    phi = 0,
+    kappa = 0,
+    target = new Quaternion(),
+) {
     omega *= DEG2RAD;
     phi *= DEG2RAD;
     kappa *= DEG2RAD;
@@ -107,37 +105,18 @@ export function quaternionFromOmegaPhiKappa(omega = 0, phi = 0, kappa = 0, targe
  *
  * @return {THREE.Quaternion} target quaternion
  */
-export function quaternionFromAttitude(attitude, target = new THREE.Quaternion()) {
-    if ((attitude.roll !== undefined) || (attitude.pitch !== undefined) || (attitude.heading !== undefined)) {
-        return this.quaternionFromRollPitchHeading(attitude.roll, attitude.pitch, attitude.heading, target);
+export function quaternionFromAttitude(attitude: Attitude, target = new Quaternion()) {
+    if ('roll' in attitude || 'pitch' in attitude || 'heading' in attitude) {
+        return quaternionFromRollPitchHeading(attitude.roll, attitude.pitch, attitude.heading, target);
     }
-    if ((attitude.omega !== undefined) || (attitude.phi !== undefined) || (attitude.kappa !== undefined)) {
-        return this.quaternionFromOmegaPhiKappa(attitude.omega, attitude.phi, attitude.kappa, target);
+    if ('omega' in attitude || 'phi' in attitude || 'kappa' in attitude) {
+        return quaternionFromOmegaPhiKappa(attitude.omega, attitude.phi, attitude.kappa, target);
     }
     return target.set(0, 0, 0, 1);
 }
 
-/**
- * @typedef {Function|THREE.Quaternion} FunctionOrQuaternion - Either a
- * THREE.Quaternion or a function that accepts arguments `(coordinates,
- * target)` and returns the quaternion that models a rotation around the
- * point of origin. If target is not provided, a new quaternion is created
- * and returned instead.
- *
- * @property {Coordinates} coordinates the origin of the local East North Up
- * (ENU) frame
- * @property {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion.
- */
-
-/**
- * A Projection object models a Coordinate Reference System (CRS).
- * Such an object is usually created with proj4 using `proj4.defs(crs);`
- *
- * @typedef {Object} Projection
- *
- * @property {string} projName
- */
-
+export function quaternionFromEnuToGeocent(): QuaternionFunction;
+export function quaternionFromEnuToGeocent(coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Set the quaternion according to the rotation from the local East North Up (ENU)
  * frame to the geocentric frame. The up direction of the ENU frame is
@@ -149,9 +128,9 @@ export function quaternionFromAttitude(attitude, target = new THREE.Quaternion()
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromEnuToGeocent(coordinates, target = new THREE.Quaternion()) {
-    if (coordinates) { return this.quaternionFromEnuToGeocent()(coordinates, target); }
-    return (coordinates, target = new THREE.Quaternion()) => {
+export function quaternionFromEnuToGeocent(coordinates?: Coordinates, target = new Quaternion()) {
+    if (coordinates) { return quaternionFromEnuToGeocent()(coordinates, target); }
+    return (coordinates: Coordinates, target = new Quaternion()) => {
         const up = coordinates.geodesicNormal;
         if (up.x == 0 && up.y == 0) {
             return target.set(0, 0, 0, 1);
@@ -164,6 +143,8 @@ export function quaternionFromEnuToGeocent(coordinates, target = new THREE.Quate
     };
 }
 
+export function quaternionFromGeocentToEnu(): QuaternionFunction;
+export function quaternionFromGeocentToEnu(coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Set the quaternion according to the rotation from a geocentric frame
  * to the local East North Up (ENU) frame. The up direction of the ENU frame is
@@ -175,13 +156,15 @@ export function quaternionFromEnuToGeocent(coordinates, target = new THREE.Quate
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromGeocentToEnu(coordinates, target = new THREE.Quaternion()) {
-    if (coordinates) { return this.quaternionFromGeocentToEnu()(coordinates, target); }
-    const toGeocent = this.quaternionFromEnuToGeocent();
-    return (coordinates, target = new THREE.Quaternion()) => toGeocent(coordinates, target).conjugate();
+export function quaternionFromGeocentToEnu(coordinates?: Coordinates, target = new Quaternion()) {
+    if (coordinates) { return quaternionFromGeocentToEnu()(coordinates, target); }
+    const toGeocent = quaternionFromEnuToGeocent();
+    return (coordinates: Coordinates, target = new Quaternion()) => toGeocent(coordinates, target).conjugate();
 }
 
 
+export function quaternionFromLCCToEnu(proj: LCCProjection): QuaternionFunction;
+export function quaternionFromLCCToEnu(proj: LCCProjection, coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Computes the rotation from a Lambert Conformal Conic (LCC) frame to the local East North Up (ENU) frame.
  * The quaternion accounts for the
@@ -197,15 +180,17 @@ export function quaternionFromGeocentToEnu(coordinates, target = new THREE.Quate
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromLCCToEnu(proj, coordinates, target = new THREE.Quaternion()) {
-    if (coordinates) { return this.quaternionFromLCCToEnu(proj)(coordinates, target); }
+export function quaternionFromLCCToEnu(proj: LCCProjection, coordinates?: Coordinates, target = new Quaternion()) {
+    if (coordinates) { return quaternionFromLCCToEnu(proj)(coordinates, target); }
     const sinlat0 = Math.sin(proj.lat0);
-    return (coordinates, target = new THREE.Quaternion()) => {
+    return (coordinates: Coordinates, target = new Quaternion()) => {
         const long = coordinates.as(coord.crs, coord).longitude * DEG2RAD;
         return target.setFromAxisAngle(axis, sinlat0 * (proj.long0 - long));
     };
 }
 
+export function quaternionFromEnuToLCC(proj: LCCProjection): QuaternionFunction;
+export function quaternionFromEnuToLCC(proj: LCCProjection, coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Computes the rotation from the local East North Up (ENU) frame to a Lambert Conformal Conic (LCC) frame.
  * The quaternion accounts for the
@@ -221,12 +206,14 @@ export function quaternionFromLCCToEnu(proj, coordinates, target = new THREE.Qua
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromEnuToLCC(proj, coordinates, target = new THREE.Quaternion()) {
-    if (coordinates) { return this.quaternionFromEnuToLCC(proj)(coordinates, target); }
-    const fromLCC = this.quaternionFromLCCToEnu(proj);
-    return (coordinates, target = new THREE.Quaternion()) => fromLCC(coordinates, target).conjugate();
+export function quaternionFromEnuToLCC(proj: LCCProjection, coordinates?: Coordinates, target = new Quaternion()) {
+    if (coordinates) { return quaternionFromEnuToLCC(proj)(coordinates, target); }
+    const fromLCC = quaternionFromLCCToEnu(proj);
+    return (coordinates: Coordinates, target = new Quaternion()) => fromLCC(coordinates, target).conjugate();
 }
 
+export function quaternionFromTMercToEnu(proj: TMercProjection): QuaternionFunction;
+export function quaternionFromTMercToEnu(proj: TMercProjection, coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Computes the rotation from a Transverse Mercator frame (TMerc) to the local East North Up (ENU) frame.
  * The quaternion accounts for the
@@ -245,13 +232,18 @@ export function quaternionFromEnuToLCC(proj, coordinates, target = new THREE.Qua
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromTMercToEnu(proj, coordinates, target = new THREE.Quaternion()) {
-    if (coordinates) { return this.quaternionFromTMercToEnu(proj)(coordinates, target); }
-    const a2 = proj.a * proj.a;
-    const b2 = proj.b * proj.b;
-    const e2 = proj.e * proj.e;
-    const eta0 = proj.e ? (e2 / (1 - e2)) : (a2 / b2 - 1);
-    return (coordinates, target = new THREE.Quaternion()) => {
+export function quaternionFromTMercToEnu(proj: TMercProjection, coordinates?: Coordinates, target = new Quaternion()) {
+    if (coordinates) { return quaternionFromTMercToEnu(proj)(coordinates, target); }
+    let eta0;
+    if (!proj.e) {
+        const a2 = proj.a * proj.a;
+        const b2 = proj.b * proj.b;
+        eta0 = (a2 / b2 - 1);
+    } else {
+        const e2 = proj.e * proj.e;
+        eta0 = (e2 / (1 - e2));
+    }
+    return (coordinates: Coordinates, target = new Quaternion()) => {
         coordinates.as(coord.crs, coord);
         const long = coord.longitude * DEG2RAD;
         const lat = coord.latitude * DEG2RAD;
@@ -267,6 +259,8 @@ export function quaternionFromTMercToEnu(proj, coordinates, target = new THREE.Q
     };
 }
 
+export function quaternionFromEnuToTMerc(proj: TMercProjection): QuaternionFunction;
+export function quaternionFromEnuToTMerc(proj: TMercProjection, coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Computes the rotation from the local East North Up (ENU) to a Transverse Mercator frame.
  * The quaternion accounts for the
@@ -286,12 +280,14 @@ export function quaternionFromTMercToEnu(proj, coordinates, target = new THREE.Q
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromEnuToTMerc(proj, coordinates, target = new THREE.Quaternion()) {
-    if (coordinates) { return this.quaternionFromEnuToTMerc(proj)(coordinates, target); }
-    const fromTMerc = this.quaternionFromTMercToEnu(proj);
-    return (coordinates, target = new THREE.Quaternion()) => fromTMerc(coordinates, target).conjugate();
+export function quaternionFromEnuToTMerc(proj: TMercProjection, coordinates?: Coordinates, target = new Quaternion()) {
+    if (coordinates) { return quaternionFromEnuToTMerc(proj)(coordinates, target); }
+    const fromTMerc = quaternionFromTMercToEnu(proj);
+    return (coordinates: Coordinates, target = new Quaternion()) => fromTMerc(coordinates, target).conjugate();
 }
 
+export function quaternionFromLongLatToEnu(): QuaternionFunction;
+export function quaternionFromLongLatToEnu(coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Computes the rotation from a LongLat frame to the local East North Up (ENU) frame.
  * The identity quaternion (0,0,0,1) is returned, as longlat and ENU frame are assumed to be aligned.
@@ -301,10 +297,14 @@ export function quaternionFromEnuToTMerc(proj, coordinates, target = new THREE.Q
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromLongLatToEnu(coordinates, target = new THREE.Quaternion()) {
-    return quaternionIdentity(coordinates, target);
+export function quaternionFromLongLatToEnu(coordinates?: Coordinates, target = new Quaternion()) {
+    return coordinates ? target.set(0, 0, 0, 1) :
+        (coordinates: Coordinates, target = new Quaternion()) =>
+            quaternionFromLongLatToEnu(coordinates, target);
 }
 
+export function quaternionFromEnuToLongLat(): QuaternionFunction;
+export function quaternionFromEnuToLongLat(coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Computes the rotation from the local East North Up (ENU) frame to a LongLat frame.
  * The identity quaternion (0,0,0,1) is returned, as longlat and ENU frame are assumed to be aligned.
@@ -314,11 +314,15 @@ export function quaternionFromLongLatToEnu(coordinates, target = new THREE.Quate
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromEnuToLongLat(coordinates, target = new THREE.Quaternion()) {
-    return quaternionIdentity(coordinates, target);
+export function quaternionFromEnuToLongLat(coordinates?: Coordinates, target = new Quaternion()) {
+    return coordinates ? target.set(0, 0, 0, 1) :
+        (coordinates: Coordinates, target = new Quaternion()) =>
+            quaternionFromEnuToLongLat(coordinates, target);
 }
 
 
+export function quaternionUnimplemented(proj: { projName?: string }): QuaternionFunction;
+export function quaternionUnimplemented(proj: { projName?: string }, coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Warns for an unimplemented projection, sets the quaternion to the
  * identity (0,0,0,1).
@@ -331,11 +335,15 @@ export function quaternionFromEnuToLongLat(coordinates, target = new THREE.Quate
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionUnimplemented(proj, coordinates, target = new THREE.Quaternion()) {
+export function quaternionUnimplemented(proj: { projName?: string }, coordinates?: Coordinates, target = new Quaternion()) {
     console.warn('This quaternion function is not implemented for projections of type', proj.projName);
-    return quaternionIdentity(coordinates, target);
+    return coordinates ? target.set(0, 0, 0, 1) :
+        (coordinates: Coordinates, target = new Quaternion()) =>
+            quaternionUnimplemented(proj, coordinates, target);
 }
 
+export function quaternionFromEnuToCRS(proj: ProjectionLike): QuaternionFunction;
+export function quaternionFromEnuToCRS(proj: ProjectionLike, coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Compute the quaternion that models the rotation from the local East North
  * Up (ENU) frame to the frame of the given crs.
@@ -348,18 +356,20 @@ export function quaternionUnimplemented(proj, coordinates, target = new THREE.Qu
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromEnuToCRS(crsOrProj, coordinates, target = new THREE.Quaternion()) {
-    if (coordinates) { return this.quaternionFromEnuToCRS(crsOrProj)(coordinates, target); }
-    const proj = crsOrProj.projName ? crsOrProj : proj4.defs(crsOrProj);
+export function quaternionFromEnuToCRS(crsOrProj: ProjectionLike, coordinates?: Coordinates, target = new Quaternion()) {
+    if (coordinates) { return quaternionFromEnuToCRS(crsOrProj)(coordinates, target); }
+    const proj = typeof crsOrProj === 'string' ? proj4.defs(crsOrProj) : crsOrProj;
     switch (proj.projName) {
-        case 'geocent': return this.quaternionFromEnuToGeocent();
-        case 'lcc': return this.quaternionFromEnuToLCC(proj);
-        case 'tmerc': return this.quaternionFromEnuToTMerc(proj);
-        case 'longlat': return this.quaternionFromEnuToLongLat();
-        default: return this.quaternionUnimplemented(proj);
+        case 'geocent': return quaternionFromEnuToGeocent();
+        case 'lcc': return quaternionFromEnuToLCC(proj as LCCProjection);
+        case 'tmerc': return quaternionFromEnuToTMerc(proj as TMercProjection);
+        case 'longlat': return quaternionFromEnuToLongLat();
+        default: return quaternionUnimplemented(proj);
     }
 }
 
+export function quaternionFromCRSToEnu(proj: ProjectionLike): QuaternionFunction;
+export function quaternionFromCRSToEnu(proj: ProjectionLike, coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Compute the quaternion that models the rotation from the frame of the
  * given crs to the local East North Up (ENU) frame.
@@ -372,18 +382,20 @@ export function quaternionFromEnuToCRS(crsOrProj, coordinates, target = new THRE
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromCRSToEnu(crsOrProj, coordinates, target = new THREE.Quaternion()) {
-    if (coordinates) { return this.quaternionFromCRSToEnu(crsOrProj)(coordinates, target); }
-    const proj = crsOrProj.projName ? crsOrProj : proj4.defs(crsOrProj);
+export function quaternionFromCRSToEnu(crsOrProj: ProjectionLike, coordinates?: Coordinates, target = new Quaternion()) {
+    if (coordinates) { return quaternionFromCRSToEnu(crsOrProj)(coordinates, target); }
+    const proj = typeof crsOrProj === 'string' ? proj4.defs(crsOrProj) : crsOrProj;
     switch (proj.projName) {
-        case 'geocent': return this.quaternionFromGeocentToEnu();
-        case 'lcc': return this.quaternionFromLCCToEnu(proj);
-        case 'tmerc': return this.quaternionFromTMercToEnu(proj);
-        case 'longlat': return this.quaternionFromLongLatToEnu();
-        default: return this.quaternionUnimplemented(proj);
+        case 'geocent': return quaternionFromGeocentToEnu();
+        case 'lcc': return quaternionFromLCCToEnu(proj as LCCProjection);
+        case 'tmerc': return quaternionFromTMercToEnu(proj as TMercProjection);
+        case 'longlat': return quaternionFromLongLatToEnu();
+        default: return quaternionUnimplemented(proj);
     }
 }
 
+export function quaternionFromCRSToCRS(crsIn: ProjectionLike, crsOut: ProjectionLike): QuaternionFunction;
+export function quaternionFromCRSToCRS(crsIn: ProjectionLike, crsOut: ProjectionLike, coords: Coordinates, target?: Quaternion): Quaternion;
 /**
  * Return the function that computes the quaternion that represents a
  * rotation of coordinates between two CRS frames.
@@ -395,15 +407,15 @@ export function quaternionFromCRSToEnu(crsOrProj, coordinates, target = new THRE
  * @param {THREE.Quaternion} [target=new THREE.Quaternion()] output Quaternion
  * @return {FunctionOrQuaternion} The target quaternion if coordinates is defined, otherwise, a function to compute it from coordinates.
  */
-export function quaternionFromCRSToCRS(crsIn, crsOut, coordinates, target = new THREE.Quaternion()) {
-    if (coordinates) { return this.quaternionFromCRSToCRS(crsIn, crsOut)(coordinates, target); }
+export function quaternionFromCRSToCRS(crsIn: ProjectionLike, crsOut: ProjectionLike, coordinates?: Coordinates, target = new Quaternion()) {
+    if (coordinates) { return quaternionFromCRSToCRS(crsIn, crsOut)(coordinates, target); }
     if (crsIn == crsOut) {
-        return (origin, target = new THREE.Quaternion()) => target.set(0, 0, 0, 1);
+        return (origin: Coordinates, target = new Quaternion()) => target.set(0, 0, 0, 1);
     }
 
     // get rotations from the local East/North/Up (ENU) frame to both CRS.
-    const fromCrs = this.quaternionFromCRSToEnu(crsIn);
-    const toCrs = this.quaternionFromEnuToCRS(crsOut);
-    return (origin, target = new THREE.Quaternion()) =>
+    const fromCrs = quaternionFromCRSToEnu(crsIn);
+    const toCrs = quaternionFromEnuToCRS(crsOut);
+    return (origin: Coordinates, target = new Quaternion()) =>
         toCrs(origin, target).multiply(fromCrs(origin, quat));
 }
