@@ -46,7 +46,10 @@ class CopcLayer extends PointCloudLayer {
             this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
             this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
 
-            this.setElevationRange(source.header.min[2], source.header.max[2]);
+            this.zmin = source.header.min[2];
+            this.zmax = source.header.max[2];
+
+            this.setElevationRange();
 
             this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1);
 
