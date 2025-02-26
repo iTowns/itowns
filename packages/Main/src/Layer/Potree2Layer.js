@@ -161,7 +161,10 @@ class Potree2Layer extends PointCloudLayer {
             }
 
             // currently the spec on potree2 only have boundingBox and no boundsConforming
-            this.setElevationRange(metadata.boundingBox.min[2], metadata.boundingBox.max[2]);
+            this.zmin = metadata.boundingBox.min[2];
+            this.zmax = metadata.boundingBox.max[2];
+
+            this.setElevationRange();
 
             const root = new Potree2Node(0, 0, this);
             root.id = 'r';
