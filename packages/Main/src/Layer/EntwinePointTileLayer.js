@@ -55,7 +55,10 @@ class EntwinePointTileLayer extends PointCloudLayer {
             this.spacing = (Math.abs(source.bounds[3] - source.bounds[0])
                 + Math.abs(source.bounds[4] - source.bounds[1])) / (2 * source.span);
 
-            this.setElevationRange(source.boundsConforming[2], source.boundsConforming[5]);
+            this.zmin = source.boundsConforming[2];
+            this.zmax = source.boundsConforming[5];
+
+            this.setElevationRange();
 
             this.root = new EntwinePointTileNode(0, 0, 0, 0, this, -1);
 

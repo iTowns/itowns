@@ -159,6 +159,8 @@ function changeAngleRange(layer) {
  * @property {number} [maxIntensityRange=1] - The maximal intensity of the
  * layer. Changing this value will affect the material, if it has the
  * corresponding uniform. The value is normalized between 0 and 1.
+ * @property {number} zmin - The minimal value for elevation (read from the metadata).
+ * @property {number} zmax - The maximal value for elevation (read from the metadata).
  *
  * @extends GeometryLayer
  */
@@ -319,9 +321,9 @@ class PointCloudLayer extends GeometryLayer {
         this.root._quaternion = rotation;
     }
 
-    setElevationRange(zmin, zmax) {
-        this.minElevationRange = this.minElevationRange ?? zmin;
-        this.maxElevationRange = this.maxElevationRange ?? zmax;
+    setElevationRange() {
+        this.minElevationRange = this.minElevationRange ?? this.zmin;
+        this.maxElevationRange = this.maxElevationRange ?? this.zmax;
     }
 
     preUpdate(context, changeSources) {
@@ -389,7 +391,15 @@ class PointCloudLayer extends GeometryLayer {
         if (elt.obj) {
             obj = elt.obj;
         } else {
-            elt.boxHelper = createBoxHelper(elt._bbox, elt._quaternion, elt._position);
+            // get a clamped bbox from the full bbox
+            const bbox = elt._bbox.clone();
+            if (bbox.min.z < layer.zmax) {
+                bbox.max.z = Math.min(bbox.max.z, layer.zmax);
+            }
+            if (bbox.max.z > layer.zmin) {
+                bbox.min.z = Math.max(bbox.min.z, layer.zmin);
+            }
+            elt.boxHelper = createBoxHelper(bbox, elt._quaternion, elt._position);
             obj = elt.boxHelper;
         }
         const bbox = obj.geometry.boundingBox;
