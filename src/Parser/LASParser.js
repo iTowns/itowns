@@ -122,6 +122,7 @@ export default {
     async parseChunk(data, options = {}) {
         const lasLoader = await loader();
         const origin = getOrigin(options);
+        const quaternion = getLocalRotation(options, origin);
         const parsedData = await lasLoader.parseChunk(Transfer(data), {
             pointCount: options.in.pointCount,
             header: options.in.header,
@@ -135,15 +136,14 @@ export default {
                 crs: options.out.crs,
                 projDefs: proj4.defs(options.out.crs),
                 origin,
+                rotation: quaternion.toArray(),
             },
         });
 
-        const rotation = getLocalRotation(options, origin);
         const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.applyQuaternion(rotation);
-        geometry.computeBoundingBox();
+        geometry.boundingBox = new THREE.Box3().setFromArray(parsedData.attributes.bbox);
         geometry.userData.origin = new THREE.Vector3().fromArray(origin);
-        geometry.userData.rotation = rotation;
+        geometry.userData.rotation = quaternion;
         return geometry;
     },
 
@@ -171,6 +171,7 @@ export default {
 
         const lasLoader = await loader();
         const origin = getOrigin(options);
+        const quaternion = getLocalRotation(options, origin);
         const parsedData = await lasLoader.parseFile(Transfer(data), {
             colorDepth: options.in.colorDepth,
             in: {
@@ -181,15 +182,14 @@ export default {
                 crs: options.out.crs,
                 projDefs: proj4.defs(options.out.crs),
                 origin,
+                rotation: quaternion.toArray(),
             },
         });
 
-        const rotation = getLocalRotation(options, origin);
         const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.applyQuaternion(rotation);
-        geometry.computeBoundingBox();
+        geometry.boundingBox = new THREE.Box3().setFromArray(parsedData.attributes.bbox);
         geometry.userData.origin = new THREE.Vector3().fromArray(origin);
-        geometry.userData.rotation = rotation;
+        geometry.userData.rotation = quaternion;
         geometry.userData.header = parsedData.header;
 
         return geometry;
