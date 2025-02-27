@@ -48,7 +48,7 @@ class PotreeLayer extends PointCloudLayer {
 
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then((cloud) => {
-            this.scale = new THREE.Vector3().addScalar(cloud.scale);
+            this.scale = new THREE.Vector3(1, 1, 1);// to refacto : all PointCloud have the same ?
 
             const normal = Array.isArray(cloud.pointAttributes) &&
                 cloud.pointAttributes.find(elem => elem.startsWith('NORMAL'));

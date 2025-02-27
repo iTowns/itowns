@@ -79,7 +79,7 @@ class Potree2Layer extends PointCloudLayer {
          * @type {boolean}
          * @readonly
          */
-        this.isPotreeLayer = true;
+        this.isPotree2Layer = true;
 
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then((metadata) => {
