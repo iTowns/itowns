@@ -84,6 +84,17 @@ describe('Potree', function () {
         });
 
         describe('potree Layer', function () {
+            it('no crs -> should fail', function () {
+                try {
+                    const source = new PotreeSource({
+                        file: fileName,
+                        url: baseurl,
+                    });
+                } catch (err) {
+                    assert.ok(err instanceof Error);
+                    assert.equal(err.message, 'New PotreeSource: crs is required');
+                }
+            });
             it('Add point potree layer', function (done) {
                 View.prototype.addLayer.call(viewer, potreeLayer)
                     .then(() => {

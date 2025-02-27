@@ -178,6 +178,11 @@ class Potree2Layer extends PointCloudLayer {
             return this.root.loadOctree().then(resolve);
         });
     }
+
+    setRootBbox(min, max) {
+        this.root._bbox.min.set(...min);
+        this.root._bbox.max.set(...max);
+    }
 }
 
 export default Potree2Layer;

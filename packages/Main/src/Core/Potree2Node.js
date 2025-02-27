@@ -79,10 +79,13 @@ class Potree2Node extends PotreeNode {
             .then(file => this.layer.source.parser(file, {
                 in: {
                     source: this.layer.source,
-                    bbox: this.bbox,
+                    bbox: this._bbox,
                     numPoints: this.numPoints,
                 },
-                out: this.layer,
+                out: {
+                    ...this.layer,
+                    origin: this._bbox.min,
+                },
             }))
             .then((data) => {
                 this.loaded = true;
