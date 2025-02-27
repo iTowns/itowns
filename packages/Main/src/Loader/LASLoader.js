@@ -21,6 +21,37 @@ function defaultColorEncoding(header) {
 }
 
 /**
+ * Applies the given Quaternion to this vector.
+ * @param {Array} v - The array depicting the position [x, y, z].
+ * @param {Array} q - The Array depicting the Quaternion. [x, y, z, w]
+ *
+ * @return {Vector3} A reference to this vector.
+ */
+function _applyQuaternion(v, q) {
+    // quaternion q is assumed to have unit length
+    const vx = v[0];
+    const vy = v[1];
+    const vz = v[2];
+    const qx = q[0];
+    const qy = q[1];
+    const qz = q[2];
+    const qw = q[3];
+
+    // t = 2 * cross( q.xyz, v );
+    const tx = 2 * (qy * vz - qz * vy);
+    const ty = 2 * (qz * vx - qx * vz);
+    const tz = 2 * (qx * vy - qy * vx);
+
+    const res = [];
+    // v + q.w * t + cross( q.xyz, t );
+    res[0] = vx + qw * tx + qy * tz - qz * ty;
+    res[1] = vy + qw * ty + qz * tx - qx * tz;
+    res[2] = vz + qw * tz + qx * ty - qy * tx;
+
+    return res;
+}
+
+/**
  * @classdesc
  * Loader for LAS and LAZ (LASZip) point clouds. It uses the copc.js library and
  * the laz-perf decoder under the hood.
@@ -53,6 +84,8 @@ class LASLoader {
         const forward = (options.in.crs !== options.out.crs) ?
             proj4(options.in.projDefs, options.out.projDefs).forward :
             (x => x);
+        const applyQuaternion = (options.in.crs !== options.out.crs) ?
+            _applyQuaternion : (x => x);
 
         const getPosition = ['X', 'Y', 'Z'].map(view.getter);
         const getIntensity = view.getter('Intensity');
@@ -82,15 +115,32 @@ class LASLoader {
         const scanAngles = new Float32Array(view.pointCount);
 
         const origin = options.out.origin;
+        const quaternion = options.out.rotation;
+        let minX = Infinity; let minY = Infinity; let minZ = Infinity;
+        let maxX = -Infinity; let maxY = -Infinity; let maxZ = -Infinity;
         for (let i = 0; i < view.pointCount; i++) {
             // `getPosition` apply scale and offset transform to the X, Y, Z
             // values. See https://github.com/connormanning/copc.js/blob/master/src/las/extractor.ts.
             // we thus apply the projection to get values in the Crs of the view.
             const point = getPosition.map(f => f(i));
             const [x, y, z] = forward(point);
-            positions[i * 3] = x - origin[0];
-            positions[i * 3 + 1] = y - origin[1];
-            positions[i * 3 + 2] = z - origin[2];
+
+            const position = applyQuaternion([
+                x - origin[0],
+                y - origin[1],
+                z - origin[2],
+            ], quaternion);
+
+            positions[i * 3] = position[0];
+            positions[i * 3 + 1] = position[1];
+            positions[i * 3 + 2] = position[2];
+
+            minX = Math.min(minX, position[0]);
+            minY = Math.min(minY, position[1]);
+            minZ = Math.min(minZ, position[2]);
+            maxX = Math.max(maxX, position[0]);
+            maxY = Math.max(maxY, position[1]);
+            maxZ = Math.max(maxZ, position[2]);
 
             intensities[i] = getIntensity(i);
             returnNumbers[i] = getReturnNumber(i);
@@ -128,6 +178,7 @@ class LASLoader {
             pointSourceID: pointSourceIDs,
             color: colors,
             scanAngle: scanAngles,
+            bbox: [minX, minY, minZ, maxX, maxY, maxZ],
         };
     }
 
