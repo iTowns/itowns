@@ -60,12 +60,13 @@
                 view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
                 // Configure Point Cloud layer
+                const potreeSource = new itowns.PotreeSource({
+                    file: 'eglise_saint_blaise_arles.js',
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/eglise_saint_blaise_arles',
+                    crs: 'EPSG:3946',
+                });
                 potreeLayer = new itowns.PotreeLayer('eglise_saint_blaise_arles', {
-                    source: new itowns.PotreeSource({
-                        file: 'eglise_saint_blaise_arles.js',
-                        url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/eglise_saint_blaise_arles',
-                        crs: view.referenceCrs,
-                    }),
+                    source: potreeSource,
                 });
 
                 // point selection on double-click
@@ -85,33 +86,36 @@
                 function placeCamera(position, lookAt) {
                     view.camera3D.position.copy(position);
                     view.camera3D.lookAt(lookAt);
-                    // create controls
-                    controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
-                    debugGui.add(controls.options, 'moveSpeed', 1, 100).name('Movement speed');
 
                     view.notifyChange(view.camera3D);
                 }
 
                 // add potreeLayer to scene
                 function onLayerReady() {
-                    var ratio;
                     var position;
                     var lookAt = new itowns.THREE.Vector3();
                     var size = new itowns.THREE.Vector3();
 
-                    potreeLayer.root.bbox.getSize(size);
-                    potreeLayer.root.bbox.getCenter(lookAt);
+                    potreeLayer.root._bbox.getSize(size);
+                    potreeLayer.root._bbox.getCenter(lookAt);
+                    lookAt.z = potreeLayer.root._bbox.min.z;
 
                     debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);
 
-                    view.camera3D.far = 2.0 * size.length();
+                    view.camera3D.far = 5.0 * size.length();
 
-                    ratio = size.x / size.z;
-                    position = potreeLayer.root.bbox.min.clone().add(
-                        size.multiply({ x: 0, y: 0, z: ratio * 0.5 }));
-                    lookAt.z = potreeLayer.root.bbox.min.z;
+                    console.log(potreeLayer.source.boundsConforming);
+                    var corner = new itowns.THREE.Vector3(...potreeLayer.source.boundsConforming.slice(0, 3));
+                    console.log('corner', corner);
+                    var position = corner.clone().add(
+                        size.multiply({ x: 0, y: 0, z: (size.x / size.z) })
+                    );
+
+
                     placeCamera(position, lookAt);
-                    controls.moveSpeed = size.length() / 3;
+
+                    controls = new itowns.PlanarControls(view);
+                    controls.groundLevel = potreeLayer.minElevationRange;
 
                     // update stats window
                     var info = document.getElementById('info');

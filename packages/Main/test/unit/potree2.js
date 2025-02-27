@@ -41,6 +41,19 @@ describe('Potree2', function () {
         };
     });
 
+    it('no crs -> should fail', function () {
+        try {
+            const source = new Potree2Source({
+                file: 'metadata.json',
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
+                networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
+            });
+        } catch (err) {
+            assert.ok(err instanceof Error);
+            assert.equal(err.message, 'New PotreeSource: crs is required');
+        }
+    });
+
     it('Add point potree2 layer', function (done) {
         View.prototype.addLayer.call(viewer, potreeLayer)
             .then(() => {

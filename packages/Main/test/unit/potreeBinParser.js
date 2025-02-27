@@ -13,6 +13,7 @@ describe('PotreeBinParser', function () {
             in: {
                 pointAttributes: ['POSITION_CARTESIAN'],
             },
+            out: { center: { x: 0, y: 0, z: 0 } },
         };
 
         PotreeBinParser.parse(buffer, options)
@@ -55,6 +56,7 @@ describe('PotreeBinParser', function () {
             in: {
                 pointAttributes: ['POSITION_CARTESIAN', 'INTENSITY', 'COLOR_PACKED', 'CLASSIFICATION'],
             },
+            out: { center: { x: 0, y: 0, z: 0 } },
         };
 
         PotreeBinParser.parse(buffer, options)
