@@ -29,42 +29,49 @@ class PotreeNode extends PointCloudNode {
         super.add(node, indexChild);
     }
 
-    createChildAABB(node, childIndex) {
+    createChildAABB(childNode, childIndex) {
         // Code inspired from potree
-        node.bbox.copy(this.bbox);
-        this.bbox.getCenter(node.bbox.max);
-        dHalfLength.copy(node.bbox.max).sub(this.bbox.min);
+        childNode._bbox.copy(this._bbox);
+        this._bbox.getCenter(childNode._bbox.max);
+        dHalfLength.copy(childNode._bbox.max).sub(this._bbox.min);
 
         if (childIndex === 1) {
-            node.bbox.min.z += dHalfLength.z;
-            node.bbox.max.z += dHalfLength.z;
+            childNode._bbox.min.z += dHalfLength.z;
+            childNode._bbox.max.z += dHalfLength.z;
         } else if (childIndex === 3) {
-            node.bbox.min.z += dHalfLength.z;
-            node.bbox.max.z += dHalfLength.z;
-            node.bbox.min.y += dHalfLength.y;
-            node.bbox.max.y += dHalfLength.y;
+            childNode._bbox.min.z += dHalfLength.z;
+            childNode._bbox.max.z += dHalfLength.z;
+            childNode._bbox.min.y += dHalfLength.y;
+            childNode._bbox.max.y += dHalfLength.y;
         } else if (childIndex === 0) {
             //
         } else if (childIndex === 2) {
-            node.bbox.min.y += dHalfLength.y;
-            node.bbox.max.y += dHalfLength.y;
+            childNode._bbox.min.y += dHalfLength.y;
+            childNode._bbox.max.y += dHalfLength.y;
         } else if (childIndex === 5) {
-            node.bbox.min.z += dHalfLength.z;
-            node.bbox.max.z += dHalfLength.z;
-            node.bbox.min.x += dHalfLength.x;
-            node.bbox.max.x += dHalfLength.x;
+            childNode._bbox.min.z += dHalfLength.z;
+            childNode._bbox.max.z += dHalfLength.z;
+            childNode._bbox.min.x += dHalfLength.x;
+            childNode._bbox.max.x += dHalfLength.x;
         } else if (childIndex === 7) {
-            node.bbox.min.add(dHalfLength);
-            node.bbox.max.add(dHalfLength);
+            childNode._bbox.min.add(dHalfLength);
+            childNode._bbox.max.add(dHalfLength);
         } else if (childIndex === 4) {
-            node.bbox.min.x += dHalfLength.x;
-            node.bbox.max.x += dHalfLength.x;
+            childNode._bbox.min.x += dHalfLength.x;
+            childNode._bbox.max.x += dHalfLength.x;
         } else if (childIndex === 6) {
-            node.bbox.min.y += dHalfLength.y;
-            node.bbox.max.y += dHalfLength.y;
-            node.bbox.min.x += dHalfLength.x;
-            node.bbox.max.x += dHalfLength.x;
+            childNode._bbox.min.y += dHalfLength.y;
+            childNode._bbox.max.y += dHalfLength.y;
+            childNode._bbox.min.x += dHalfLength.x;
+            childNode._bbox.max.x += dHalfLength.x;
         }
+    }
+
+    getCenter() {
+        // With the potree format the node data are already encoded using the min corner of the bbox as origin.
+        // Linked with the reprojection of points, we might need to change that to the real center but it
+        // would need to make changes in the parser.
+        return this._bbox.min;
     }
 
     loadOctree() {
