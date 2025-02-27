@@ -69,6 +69,7 @@ export default {
      * @param {ArrayBuffer} buffer - the bin buffer.
      * @param {Object} options
      * @param {string[]} options.in.pointAttributes - the point attributes information contained in cloud.js
+     * @param {THREE.Vector3} options.out.center - the origin position of the data
      * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
      *
      */
@@ -102,6 +103,9 @@ export default {
             attrOffset = elemOffset;
             geometry.setAttribute(attr.attributeName, new THREE.BufferAttribute(array, attr.numElements, attr.normalized));
         }
+
+        geometry.userData.origin = options.out.center;
+        geometry.userData.rotation = new THREE.Quaternion();
 
         geometry.computeBoundingBox();
 
