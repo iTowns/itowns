@@ -77,6 +77,14 @@ class PotreeSource extends Source {
         // https://github.com/PropellerAero/potree-propeller-private/blob/master/docs/file_format.md#cloudjs
         this.whenReady = (source.cloud ? Promise.resolve(source.cloud) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
             .then((cloud) => {
+                this.boundsConforming = [
+                    cloud.tightBoundingBox.lx,
+                    cloud.tightBoundingBox.ly,
+                    cloud.tightBoundingBox.lz,
+                    cloud.tightBoundingBox.ux,
+                    cloud.tightBoundingBox.uy,
+                    cloud.tightBoundingBox.uz,
+                ];
                 this.pointAttributes = cloud.pointAttributes;
                 this.baseurl = `${this.url}/${cloud.octreeDir}/r`;
                 this.extension = cloud.pointAttributes === 'CIN' ? 'cin' : 'bin';
