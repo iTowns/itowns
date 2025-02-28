@@ -284,6 +284,8 @@ class PointCloudLayer extends GeometryLayer {
     }
 
     update(context, layer, elt) {
+        // console.log('update', elt);
+
         elt.visible = false;
 
         if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
@@ -321,7 +323,8 @@ class PointCloudLayer extends GeometryLayer {
             } else if (!elt.promise) {
                 const distance = Math.max(0.001, bbox.distanceToPoint(point));
                 // Increase priority of nearest node
-                const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / distance;
+                // console.log('#####', layer.spacing, elt.sId);
+                const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing[elt.sId], elt, distance) / distance;
                 elt.promise = context.scheduler.execute({
                     layer,
                     requester: elt,
