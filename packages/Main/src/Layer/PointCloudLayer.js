@@ -284,7 +284,7 @@ class PointCloudLayer extends GeometryLayer {
 
         if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
             markForDeletion(elt);
-            return;
+            return [];
         }
 
         // pick the best bounding box
@@ -292,7 +292,7 @@ class PointCloudLayer extends GeometryLayer {
         elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
         if (!elt.visible) {
             markForDeletion(elt);
-            return;
+            return [];
         }
 
         elt.notVisibleSince = undefined;
@@ -353,6 +353,7 @@ class PointCloudLayer extends GeometryLayer {
                 for (const child of elt.children) {
                     markForDeletion(child);
                 }
+                return [];
             }
         }
     }

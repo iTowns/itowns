@@ -113,6 +113,7 @@ class CopcNode extends PointCloudNode {
             node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
             node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
         }
+        return this;
     }
 
     /**
@@ -173,7 +174,11 @@ class CopcNode extends PointCloudNode {
         const sources = await this.layer.source.whenReady;
         let source = this.layer.source;
         if (sources.length > 1) {
-            source = sources[this.sId];
+            if (sources[this.sId].isSource) {
+                source = await sources[this.sId].whenReady;
+            } else {
+                sources[this.sId].load();
+            }
         }
         const geometry = await this.layer.source.parser(buffer, {
             in: {
