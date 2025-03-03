@@ -41,7 +41,7 @@
                 var size = new itowns.THREE.Vector3();
 
                 console.log(vpcLayer);
-                const rootBbox = vpcLayer.root[0].bbox;
+                const rootBbox = vpcLayer.roots[0].bbox;
                 rootBbox.getSize(size);
                 rootBbox.getCenter(lookAt);
 

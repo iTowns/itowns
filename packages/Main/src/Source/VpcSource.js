@@ -3,6 +3,7 @@ import Fetcher from 'Provider/Fetcher';
 import Source from 'Source/Source';
 import { CopcSource } from 'Main';
 
+// import vpc from '../../../../examples/layers/test_vpc_4_dalles.json';
 import vpc from '../../../../examples/layers/test_vpc_4_dalles.json';
 
 /**
@@ -39,16 +40,16 @@ class VpcSource extends Source {
         const eptUrl = 'https://download.data.grandlyon.com/files/grandlyon/imagerie/mnt2018/lidar/ept/';
 
         this.whenReady = Fetcher.json(`${eptUrl}/ept.json`, this.networkOptions).then(() => {
+        // this.whenReady = Fetcher.json('https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/amiens.vpc', this.networkOptions).then((meta) => {
             const meta = JSON.parse(vpc);
-            console.log(meta);
+            console.log('vpc file', meta);
 
             this.urls = meta.features.map(f => f.assets.data.href);
-            const bboxes = meta.features.map(f => f.bbox);
 
-            const projBboxes = meta.features.map(f => f.properties['proj:bbox']);
-            const projsWkt2 = meta.features.map(f => f.properties['proj:wkt2']);
-
-            console.log(this.urls, bboxes, projBboxes, projsWkt2);
+            // const bboxes = meta.features.map(f => f.bbox);
+            // const projBboxes = meta.features.map(f => f.properties['proj:bbox']);
+            // const projsWkt2 = meta.features.map(f => f.properties['proj:wkt2']);
+            // console.log('urls', this.urls, '\nbboxes', bboxes, '\nprojBboxes', projBboxes, '\nwkt2', projsWkt2);
 
             /* FOR ONE proj:wkt2
             proj4.defs('unknown', projsWkt2[0]);
@@ -70,12 +71,12 @@ class VpcSource extends Source {
             const copcSources = [];
             this.urls.forEach((url) => {
                 const copcSource = new CopcSource({ url });
-                copcSources.push(copcSource.whenReady);
+                copcSources.push(copcSource);
             });
 
-            console.log(copcSources);
+            this.sources = copcSources;
 
-            return Promise.all(copcSources);
+            return copcSources;
         });
     }
 }

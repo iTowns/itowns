@@ -169,7 +169,7 @@ class CopcNode extends PointCloudNode {
         const sources = await this.layer.source.whenReady;
         let source = this.layer.source;
         if (sources.length > 1) {
-            source = sources[this.sId];
+            source = await sources[this.sId].whenReady;
         }
         const geometry = await this.layer.source.parser(buffer, {
             in: {

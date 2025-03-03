@@ -38,35 +38,44 @@ class VpcLayer extends PointCloudLayer {
         this.isVpcLayer = true;
 
         this.root = [];
+        this.roots = [];
         this.spacing = [];
+        this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
+        this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
 
-        const resolve = () => this;
+        const minElevationRanges = [];
+        const maxElevationRanges = [];
+
+        const resolve = this.addInitializationStep();
 
         this.whenReady = this.source.whenReady.then((/** @type {CopcSource} */ sources) => {
-            console.log(sources);
+            const promisesAll = [];
 
-            const loadOctrees = [];
+            sources.forEach((source, i) => {
+                const promise =
+                    source.whenReady.then((src) => {
+                        minElevationRanges.push(src.header.min[2]);
+                        maxElevationRanges.push(src.header.max[2]);
 
-            sources.forEach((src, i) => {
-                this.minElevationRange = this.minElevationRange ?? src.header.min[2];
-                this.maxElevationRange = this.maxElevationRange ?? src.header.max[2];
+                        const { cube, rootHierarchyPage } = src.info;
+                        const { pageOffset, pageLength } = rootHierarchyPage;
 
-                this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
-                this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
-                const { cube, rootHierarchyPage } = src.info;
-                const { pageOffset, pageLength } = rootHierarchyPage;
+                        this.spacing.push(src.info.spacing);
 
-                this.spacing.push(src.info.spacing);
+                        const root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1, i);
+                        root.bbox.min.fromArray(cube, 0);
+                        root.bbox.max.fromArray(cube, 3);
+                        this.roots.push(root);
 
-                const root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1, i);
-                root.bbox.min.fromArray(cube, 0);
-                root.bbox.max.fromArray(cube, 3);
-                this.root.push(root);
-
-                loadOctrees.push(root.loadOctree().then(resolve));
+                        return root.loadOctree().then(resolve);
+                    });
+                promisesAll.push(promise);
             });
 
-            return Promise.all(loadOctrees);
+            return Promise.all(promisesAll).then(() => {
+                this.minElevationRange = this.minElevationRange ?? Math.min(...minElevationRanges);
+                this.maxElevationRange = this.maxElevationRange ?? Math.max(...maxElevationRanges);
+            });
         });
     }
 
@@ -76,7 +85,6 @@ class VpcLayer extends PointCloudLayer {
     // }
 
     preUpdate(context, changeSources) {
-        console.log('preUpdate');
         // See https://cesiumjs.org/hosted-apps/massiveworlds/downloads/Ring/WorldScaleTerrainRendering.pptx
         // slide 17
         context.camera.preSSE =
@@ -101,8 +109,7 @@ class VpcLayer extends PointCloudLayer {
                 // if the change is caused by a camera move, no need to bother
                 // to find common ancestor: we need to update the whole tree:
                 // some invisible tiles may now be visible
-                console.log('preUpdate source.isCamera');
-                return this.root;
+                return this.roots;
             }
             if (source.obj === undefined) {
                 continue;
@@ -115,20 +122,20 @@ class VpcLayer extends PointCloudLayer {
                     commonAncestor = source.findCommonAncestor(commonAncestor);
 
                     if (!commonAncestor) {
-                        console.log('preUpdate commonAncestor');
-                        return [this.root];
+                        console.log('preUpdate !commonAncestor');
+                        return this.roots;
                     }
                 }
             }
         }
 
         if (commonAncestor) {
+            console.log('preUpdate commonAncestor');
             return [commonAncestor];
         }
 
-        console.log('preUpdate END');
         // Start updating from hierarchy root
-        return this.root;
+        return this.roots;
     }
 }
 
