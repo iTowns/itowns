@@ -284,13 +284,11 @@ class PointCloudLayer extends GeometryLayer {
     }
 
     update(context, layer, elt) {
-        // console.log('update', elt);
-
         elt.visible = false;
 
         if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
             markForDeletion(elt);
-            return;
+            return [];
         }
 
         // pick the best bounding box
@@ -298,7 +296,7 @@ class PointCloudLayer extends GeometryLayer {
         elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
         if (!elt.visible) {
             markForDeletion(elt);
-            return;
+            return [];
         }
 
         elt.notVisibleSince = undefined;
@@ -323,8 +321,7 @@ class PointCloudLayer extends GeometryLayer {
             } else if (!elt.promise) {
                 const distance = Math.max(0.001, bbox.distanceToPoint(point));
                 // Increase priority of nearest node
-                // console.log('#####', layer.spacing, elt.sId);
-                const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing[elt.sId], elt, distance) / distance;
+                const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / distance;
                 elt.promise = context.scheduler.execute({
                     layer,
                     requester: elt,
@@ -360,6 +357,7 @@ class PointCloudLayer extends GeometryLayer {
                 for (const child of elt.children) {
                     markForDeletion(child);
                 }
+                return [];
             }
         }
     }

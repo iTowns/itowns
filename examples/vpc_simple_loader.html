@@ -40,8 +40,7 @@
                 var lookAt = new itowns.THREE.Vector3();
                 var size = new itowns.THREE.Vector3();
 
-                console.log(vpcLayer);
-                const rootBbox = vpcLayer.root[0].bbox;
+                const rootBbox = vpcLayer.roots[0].bbox;
                 rootBbox.getSize(size);
                 rootBbox.getCenter(lookAt);
 
@@ -59,10 +58,15 @@
                 view.notifyChange(view.camera3D);
             }
 
-            var url = 'https://storage.sbg.cloud.ovh.net/test.vpc';
+            // VPC copc
+            // const url = 'https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/amiens.vpc';
+            // const url = 'https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/rouen.vpc';
+
+            // VPC ept
+            // const url = 'https://data.geopf.fr/chunk/telechargement/download/lidarhd_fxx_ept/vpc/index.vpc';
+            const url = 'https://data.geopf.fr/chunk/telechargement/download/lidarhd_fxx_ept/vpc/index.vpc';
 
             const options = {};
-            // vpcSource = new itowns.CopcSource({ url });
             vpcSource = new itowns.VpcSource({ url });
 
             const config = {
@@ -76,7 +80,9 @@
             view.addLayer(vpcLayer).then(onLayerReady);
 
             vpcLayer.whenReady
-                .then(() => debug.PointCloudDebug.initTools(view, vpcLayer, debugGui));
+                .then(() => {
+                    debug.PointCloudDebug.initTools(view, vpcLayer, debugGui);
+                });
 
         </script>
     </body>
