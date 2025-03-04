@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { CRS, Coordinates } from '@itowns/geographic';
 import Camera from 'Renderer/Camera';
-import initializeWebXR from 'Renderer/WebXR';
 import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from 'Core/MainLoop';
 import Capabilities from 'Core/System/Capabilities';
 import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
@@ -13,6 +12,7 @@ import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
+import WebXR from '../Renderer/WebXR';
 
 export const VIEW_EVENTS = {
     /**
@@ -262,7 +262,8 @@ class View extends THREE.EventDispatcher {
         viewers.push(this);
 
         if (options.webXR) {
-            initializeWebXR(this, options.webXR);
+            const webXR = new WebXR(this, options.webXR);
+            webXR.initializeWebXR();
         }
     }
 
