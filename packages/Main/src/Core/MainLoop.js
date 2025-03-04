@@ -32,11 +32,15 @@ function updateElements(context, geometryLayer, elements) {
     if (!elements) {
         return;
     }
+    // console.log('updateElements', elements.length);
     for (const element of elements) {
         // update element
         // TODO find a way to notify attachedLayers when geometryLayer deletes some elements
         // and then update Debug.js:addGeometryLayerDebugFeatures
-        const newElementsToUpdate = geometryLayer.update(context, geometryLayer, element);
+        geometryLayer.update(context, geometryLayer, element)
+            .then((newElementsToUpdate) => {
+                updateElements(context, geometryLayer, newElementsToUpdate);
+            });
 
         const sub = geometryLayer.getObjectToUpdateForAttachedLayers(element);
 
@@ -71,7 +75,6 @@ function updateElements(context, geometryLayer, elements) {
                 }
             }
         }
-        updateElements(context, geometryLayer, newElementsToUpdate);
     }
 }
 
