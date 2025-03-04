@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Coordinates from 'Core/Geographic/Coordinates';
+import { Coordinates } from '@itowns/geographic';
 import DEMUtils from 'Utils/DEMUtils';
 import { XRControllerModelFactory } from 'ThreeExtended/webxr/XRControllerModelFactory';
 
@@ -54,7 +54,7 @@ class VRControls {
                 gripController.userData.handedness = event.data.handedness;
                 this.bindGripController(controllerModelFactory, gripController, this.groupXR);
                 this.controllers.push(controller);
-                this.groupXR.add(controller);
+                this.groupXR.add(gripController);
 
 
                 // Event listeners
