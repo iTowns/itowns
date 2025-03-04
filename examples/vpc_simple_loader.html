@@ -36,11 +36,11 @@
 
             var vpcLayer, vpcSource;
 
-            function onLayerReady() {
+            async function onLayerReady() {
                 var lookAt = new itowns.THREE.Vector3();
                 var size = new itowns.THREE.Vector3();
 
-                console.log(vpcLayer);
+                console.log('example onLayerReasy', vpcLayer);
                 const rootBbox = vpcLayer.roots[0].bbox;
                 rootBbox.getSize(size);
                 rootBbox.getCenter(lookAt);
@@ -76,7 +76,9 @@
             view.addLayer(vpcLayer).then(onLayerReady);
 
             vpcLayer.whenReady
-                .then(() => debug.PointCloudDebug.initTools(view, vpcLayer, debugGui));
+                .then(() => {
+                    debug.PointCloudDebug.initTools(view, vpcLayer, debugGui);
+                });
 
         </script>
     </body>

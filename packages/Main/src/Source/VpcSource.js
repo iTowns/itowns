@@ -39,17 +39,19 @@ class VpcSource extends Source {
 
         const eptUrl = 'https://download.data.grandlyon.com/files/grandlyon/imagerie/mnt2018/lidar/ept/';
 
-        this.whenReady = Fetcher.json(`${eptUrl}/ept.json`, this.networkOptions).then(() => {
-        // this.whenReady = Fetcher.json('https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/amiens.vpc', this.networkOptions).then((meta) => {
-            const meta = JSON.parse(vpc);
+        // this.whenReady = Fetcher.json(`${eptUrl}/ept.json`, this.networkOptions).then(() => {
+        this.whenReady = Fetcher.json('https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/amiens.vpc', this.networkOptions).then((meta) => {
+            // const meta = JSON.parse(vpc);
             console.log('vpc file', meta);
 
             this.urls = meta.features.map(f => f.assets.data.href);
 
             // const bboxes = meta.features.map(f => f.bbox);
-            // const projBboxes = meta.features.map(f => f.properties['proj:bbox']);
+            const boundsConformings = meta.features.map(f => f.properties['proj:bbox']);
+            this.minElevation = Math.min(...boundsConformings.map(bC => bC[2]));
+            this.maxElevation = Math.max(...boundsConformings.map(bC => bC[5]));
             // const projsWkt2 = meta.features.map(f => f.properties['proj:wkt2']);
-            // console.log('urls', this.urls, '\nbboxes', bboxes, '\nprojBboxes', projBboxes, '\nwkt2', projsWkt2);
+            // console.log('urls', this.urls, '\nbboxes', bboxes, '\nprojBboxes', boundsConforming, '\nwkt2', projsWkt2);
 
             /* FOR ONE proj:wkt2
             proj4.defs('unknown', projsWkt2[0]);
@@ -68,16 +70,40 @@ class VpcSource extends Source {
             }
             */
 
-            const copcSources = [];
-            this.urls.forEach((url) => {
-                const copcSource = new CopcSource({ url });
-                copcSources.push(copcSource);
+            // this.copcSources = [];
+            // this.urls.forEach((url) => {
+            //     const copcSource = new CopcSource({ url });
+            //     this.copcSources.push(copcSource);
+            // });
+
+            this.copcSources = [];
+            this.promises = [];
+            this.urls.forEach((url, i) => {
+                const p = new Promise((re, rj) => {
+                    // this._resolve = re;
+                    // this._reject = rj;
+                    this.promises.push({ resolve: re, reject: rj });
+                }).then((res) => {
+                    this.sources[i] = res;
+                    return res;
+                });
+                const mockSource = {
+                    url,
+                    boundsConforming: boundsConformings[i],
+                    whenReady: p,
+                };
+                this.copcSources.push(mockSource);
             });
 
-            this.sources = copcSources;
+            this.sources = this.copcSources;
 
-            return copcSources;
+            return this.copcSources;
         });
+    }
+
+    load(index) {
+        const copcSource = new CopcSource({ url: this.urls[index] });
+        this.promises[index].resolve(copcSource.whenReady);
     }
 }
 
