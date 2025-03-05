@@ -1,15 +1,27 @@
-import * as THREE from 'three';
 import { Hierarchy } from 'copc';
 import PointCloudNode from 'Core/PointCloudNode';
-
-const size = new THREE.Vector3();
-const position = new THREE.Vector3();
-const translation = new THREE.Vector3();
 
 function buildId(depth, x, y, z) {
     return `${depth}-${x}-${y}-${z}`;
 }
 
+/**
+ * @extends PointCloudNode
+ *
+ * @property {boolean} isCopcNode - Used to checkout whether this
+ * node is a CopcNode. Default is `true`. You should not change
+ * this, as it is used internally for optimisation.
+ * @property {number} entryOffset - Offset from the beginning of the file of
+ * the node entry
+ * @property {number} entryLength - Size of the node entry
+ * @property {CopcLayer} layer - COPC layer the node belongs to.
+ * @property {number} depth - Depth within the octree
+ * @property {number} x - X position within the octree
+ * @property {number} y - Y position within the octree
+ * @property {number} z - Z position within the octree
+ * @property {string} id - The id of the node, constituted of the four
+ * components: `depth-x-y-z`.
+ */
 class CopcNode extends PointCloudNode {
     /**
      * Constructs a new instance of a COPC Octree node
@@ -18,7 +30,7 @@ class CopcNode extends PointCloudNode {
      * @param {number} x - X position within the octree
      * @param {number} y - Y position within the octree
      * @param {number} z - Z position with the octree
-     * @param {number} entryOffset - Offset from the beginning of the file of
+     * @param {number} entryOffset - Offset from the beginning of the file to
      * the node entry
      * @param {number} entryLength - Size of the node entry
      * @param {CopcLayer} layer - Parent COPC layer
@@ -35,10 +47,8 @@ class CopcNode extends PointCloudNode {
         this.x = x;
         this.y = y;
         this.z = z;
-    }
 
-    get id() {
-        return buildId(this.depth, this.x, this.y, this.z);
+        this.id = buildId(depth, x, y, z);
     }
 
     get octreeIsLoaded() {
@@ -59,35 +69,39 @@ class CopcNode extends PointCloudNode {
         });
     }
 
-    /**
-     * Create an (A)xis (A)ligned (B)ounding (B)ox for the given node given
-     * `this` is its parent.
-     * @param {CopcNode} node - The child node
-     */
-    createChildAABB(node) {
-        // factor to apply, based on the depth difference (can be > 1)
-        const f = 2 ** (node.depth - this.depth);
+    async loadOctree() {
+        // Load hierarchy
+        const buffer = await this._fetch(this.entryOffset, this.entryLength);
+        const hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
 
-        // size of the child node bbox (Vector3), based on the size of the
-        // parent node, and divided by the factor
-        this.bbox.getSize(size).divideScalar(f);
+        // Update current node entry from loaded subtree
+        const node = hierarchy.nodes[this.id];
+        if (!node) {
+            return Promise.reject('[CopcNode]: Ill-formed data, entry not found in hierarchy.');
+        }
+        this.numPoints = node.pointCount;
+        this.entryOffset = node.pointDataOffset;
+        this.entryLength = node.pointDataLength;
 
-        // initialize the child node bbox at the location of the parent node bbox
-        node.bbox.min.copy(this.bbox.min);
+        // Load subtree entries
+        const stack = [];
+        stack.push(this);
+        while (stack.length) {
+            const node = stack.shift();
+            const depth = node.depth + 1;
+            const x = node.x * 2;
+            const y = node.y * 2;
+            const z = node.z * 2;
 
-        // position of the parent node, if it was at the same depth as the
-        // child, found by multiplying the tree position by the factor
-        position.copy(this).multiplyScalar(f);
-
-        // difference in position between the two nodes, at child depth, and
-        // scale it using the size
-        translation.subVectors(node, position).multiply(size);
-
-        // apply the translation to the child node bbox
-        node.bbox.min.add(translation);
-
-        // use the size computed above to set the max
-        node.bbox.max.copy(node.bbox.min).add(size);
+            node.findAndCreateChild(depth, x,     y,     z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y,     z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x,     y + 1, z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y + 1, z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x,     y,     z + 1, hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y,     z + 1, hierarchy, stack);
+            node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
+        }
     }
 
     /**
@@ -132,41 +146,6 @@ class CopcNode extends PointCloudNode {
         );
         this.add(child);
         stack.push(child);
-    }
-
-    async loadOctree() {
-        // Load hierarchy
-        const buffer = await this._fetch(this.entryOffset, this.entryLength);
-        const hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
-
-        // Update current node entry from loaded subtree
-        const node = hierarchy.nodes[this.id];
-        if (!node) {
-            return Promise.reject('[CopcNode]: Ill-formed data, entry not found in hierarchy.');
-        }
-        this.numPoints = node.pointCount;
-        this.entryOffset = node.pointDataOffset;
-        this.entryLength = node.pointDataLength;
-
-        // Load subtree entries
-        const stack = [];
-        stack.push(this);
-        while (stack.length) {
-            const node = stack.shift();
-            const depth = node.depth + 1;
-            const x = node.x * 2;
-            const y = node.y * 2;
-            const z = node.z * 2;
-
-            node.findAndCreateChild(depth, x,     y,     z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y,     z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x,     y + 1, z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y + 1, z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x,     y,     z + 1, hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y,     z + 1, hierarchy, stack);
-            node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
-        }
     }
 
     /**

@@ -15,6 +15,14 @@ class PotreeNode extends PointCloudNode {
         this.baseurl = layer.source.baseurl;
     }
 
+    get octreeIsLoaded() {
+        return !(this.childrenBitField && this.children.length === 0);
+    }
+
+    get url() {
+        return `${this.baseurl}/r${this.id}.${this.layer.source.extension}`;
+    }
+
     add(node, indexChild, root) {
         super.add(node, indexChild);
         node.id = this.id + indexChild;
@@ -62,14 +70,6 @@ class PotreeNode extends PointCloudNode {
             node.bbox.min.x += dHalfLength.x;
             node.bbox.max.x += dHalfLength.x;
         }
-    }
-
-    get octreeIsLoaded() {
-        return !(this.childrenBitField && this.children.length === 0);
-    }
-
-    get url() {
-        return `${this.baseurl}/r${this.id}.${this.layer.source.extension}`;
     }
 
     loadOctree() {
