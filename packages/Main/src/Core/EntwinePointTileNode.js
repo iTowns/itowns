@@ -1,10 +1,5 @@
-import * as THREE from 'three';
 import Fetcher from 'Provider/Fetcher';
 import PointCloudNode from 'Core/PointCloudNode';
-
-const size = new THREE.Vector3();
-const position = new THREE.Vector3();
-const translation = new THREE.Vector3();
 
 function buildId(depth, x, y, z) {
     return `${depth}-${x}-${y}-${z}`;
@@ -22,10 +17,10 @@ function buildId(depth, x, y, z) {
  * @property {number} x - The x coordinate of the node in the tree - see the
  * [Entwine
  * documentation](https://entwine.io/entwine-point-tile.html#ept-data)
- * @property {number} y - The x coordinate of the node in the tree - see the
+ * @property {number} y - The y coordinate of the node in the tree - see the
  * [Entwine
  * documentation](https://entwine.io/entwine-point-tile.html#ept-data)
- * @property {number} z - The x coordinate of the node in the tree - see the
+ * @property {number} z - The z coordinate of the node in the tree - see the
  * [Entwine
  * documentation](https://entwine.io/entwine-point-tile.html#ept-data)
  * @property {string} id - The id of the node, constituted of the four
@@ -43,10 +38,10 @@ class EntwinePointTileNode extends PointCloudNode {
      * @param {number} x - The x coordinate of the node in the tree - see the
      * [Entwine
      * documentation](https://entwine.io/entwine-point-tile.html#ept-data)
-     * @param {number} y - The x coordinate of the node in the tree - see the
+     * @param {number} y - The y coordinate of the node in the tree - see the
      * [Entwine
      * documentation](https://entwine.io/entwine-point-tile.html#ept-data)
-     * @param {number} z - The x coordinate of the node in the tree - see the
+     * @param {number} z - The z coordinate of the node in the tree - see the
      * [Entwine
      * documentation](https://entwine.io/entwine-point-tile.html#ept-data)
      * @param {EntwinePointTileLayer} layer - The layer the node is attached to.
@@ -56,7 +51,6 @@ class EntwinePointTileNode extends PointCloudNode {
      */
     constructor(depth, x, y, z, layer, numPoints = 0) {
         super(numPoints, layer);
-
         this.isEntwinePointTileNode = true;
 
         this.depth = depth;
@@ -69,38 +63,13 @@ class EntwinePointTileNode extends PointCloudNode {
         this.url = `${this.layer.source.url}/ept-data/${this.id}.${this.layer.source.extension}`;
     }
 
-    createChildAABB(node) {
-        // factor to apply, based on the depth difference (can be > 1)
-        const f = 2 ** (node.depth - this.depth);
-
-        // size of the child node bbox (Vector3), based on the size of the
-        // parent node, and divided by the factor
-        this.bbox.getSize(size).divideScalar(f);
-
-        // initialize the child node bbox at the location of the parent node bbox
-        node.bbox.min.copy(this.bbox.min);
-
-        // position of the parent node, if it was at the same depth than the
-        // child, found by multiplying the tree position by the factor
-        position.copy(this).multiplyScalar(f);
-
-        // difference in position between the two nodes, at child depth, and
-        // scale it using the size
-        translation.subVectors(node, position).multiply(size);
-
-        // apply the translation to the child node bbox
-        node.bbox.min.add(translation);
-
-        // use the size computed above to set the max
-        node.bbox.max.copy(node.bbox.min).add(size);
-    }
-
     get octreeIsLoaded() {
         return this.numPoints >= 0;
     }
 
     loadOctree() {
-        return Fetcher.json(`${this.layer.source.url}/ept-hierarchy/${this.id}.json`, this.layer.source.networkOptions).then((hierarchy) => {
+        const hierarchyUrl = `${this.layer.source.url}/ept-hierarchy/${this.id}.json`;
+        return Fetcher.json(hierarchyUrl, this.layer.source.networkOptions).then((hierarchy) => {
             this.numPoints = hierarchy[this.id];
 
             const stack = [];
