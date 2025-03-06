@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import VRControls from 'Controls/VRControls';
 
 // TODO handle xr session end
+
+
 function updateCamera3D(xr, view) {
     /* This is what's done in updateUserCamera the WebXRManager.js of threejs
             Update projectionMatrix, could be replaced by:
@@ -29,7 +31,6 @@ function updateCamera3D(xr, view) {
         .getWorldQuaternion(view.camera3D.quaternion);
 
 
-    //                //  TODO is it necessary ?
     // Update the local transformation matrix for the object itself
     view.camera3D.updateMatrix();
     //
@@ -67,13 +68,12 @@ class WebXR {
         this.vrControls = null;
     }
 
+    // Start the webXR handler
     initializeWebXR = () => {
         const xr = this.view.renderer.xr;
 
         xr.addEventListener('sessionstart', () => {
             xr.enabled = true;
-
-            let vrControls;
 
             xr.getReferenceSpace('local');
 
@@ -95,7 +95,6 @@ class WebXR {
             this.view._camXR.near = 0.1;
             this.view._camXR.updateProjectionMatrix();
 
-            // this.view._camXR.updateMatrixWorld(true);
             vrHeadSet.add(this.view._camXR);
 
             this.view.notifyChange();
@@ -104,8 +103,6 @@ class WebXR {
                 this.vrControls = new VRControls(this.view, vrHeadSet);
             }
 
-            // TODO Fix asynchronization between xr and MainLoop render loops.
-            // (see MainLoop#scheduleViewUpdate).
             xr.setAnimationLoop((timestamp) => {
                 if (xr.isPresenting && xr.getCamera().cameras.length > 0) {
                     // TODO should be called only once, but the first values are wrong because the camL&camR weren't updated

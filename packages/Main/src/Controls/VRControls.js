@@ -4,10 +4,6 @@ import DEMUtils from 'Utils/DEMUtils';
 import { XRControllerModelFactory } from 'ThreeExtended/webxr/XRControllerModelFactory';
 
 /**
- * Controller.userData {
- *   isSelecting,
- *  lockedTeleportPosition
- * }
  * Requires a contextXR variable.
  * @param {*} _view itowns view object
  * @param {*} _groupXR XR 3D object group
@@ -45,7 +41,6 @@ class VRControls {
             controller.addEventListener('connected', (event) => {
                 controller.name = event.data.handedness;    // Left or right
                 controller.userData.handedness = event.data.handedness;
-                // bindControllerListeners(controller, vrHeadSet);
                 controller.gamepad = event.data.gamepad;
                 this.groupXR.add(controller);
 
@@ -91,7 +86,7 @@ class VRControls {
 Listening {XRInputSource} and emit changes for convenience user binding,
 There is NO JOYSTICK Events so we need to check it ourselves
 Adding a few internal states for reactivity
-- controller.isStickActive      {boolean} true when a controller stick is not on initial state.
+- controller.isStickActive {boolean} true when a controller stick is not on initial state.
 */
 
     listenGamepad() {
