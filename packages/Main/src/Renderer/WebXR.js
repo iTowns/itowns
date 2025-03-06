@@ -1,67 +1,142 @@
 import * as THREE from 'three';
+import VRControls from 'Controls/VRControls';
 
-async function shutdownXR(session) {
-    if (session) {
-        await session.end();
-    }
+// TODO handle xr session end
+
+
+function updateCamera3D(xr, view) {
+    /* This is what's done in updateUserCamera the WebXRManager.js of threejs
+            Update projectionMatrix, could be replaced by:
+           camera.projectionMatrix.copy( cameraXR.projectionMatrix );
+          camera.projectionMatrixInverse.copy( cameraXR.projectionMatrixInverse );
+           But it safer to also change all the attributes, in case of another call to updateProjectionMatrix
+   */
+
+    const {
+        near,
+        far,
+        aspect,
+        fov,
+    } = extractCameraAttributesFromProjectionMatrix(view._camXR.projectionMatrix);
+    view.camera3D.near = near;
+    view.camera3D.far = far;
+    view.camera3D.aspect = aspect;
+    view.camera3D.fov = fov;
+    view.camera3D.zoom = 1;
+    view.camera3D.updateProjectionMatrix();
+
+    xr.getCamera()
+        .getWorldPosition(view.camera3D.position);
+    xr.getCamera()
+        .getWorldQuaternion(view.camera3D.quaternion);
+
+
+    // Update the local transformation matrix for the object itself
+    view.camera3D.updateMatrix();
+
+    // // Update the world transformation matrix, ensuring it reflects global transforms
+    view.camera3D.updateMatrixWorld(true);
+    view.notifyChange(view.camera3D, true);
 }
+// Note: WebXR cameras are perspective cameras
+function extractCameraAttributesFromProjectionMatrix(projectionMatrix) {
+    const m = projectionMatrix.elements;
 
-const initializeWebXR = (view, options) => {
-    const scale = options.scale || 1.0;
+    // Extract near and far
+    const near = m[14] / (m[10] - 1);
+    const far = m[14] / (m[10] + 1);
 
-    const xr = view.mainLoop.gfxEngine.renderer.xr;
+    // Extract vertical FOV
+    const fovY = 2 * Math.atan(1 / m[5]); // m[5] = 1 / tan(fovY / 2)
+    const fov = THREE.MathUtils.radToDeg(fovY); // Convert to degrees
 
-    xr.addEventListener('sessionstart', () => {
-        const camera = view.camera.camera3D;
+    // Extract aspect ratio
+    const aspect = m[5] / m[0]; // m[0] = 1 / (tan(fovY / 2) * aspect)
 
-        const exitXRSession = (event) => {
-            if (event.key === 'Escape') {
-                document.removeEventListener('keydown', exitXRSession);
-                xr.enabled = false;
-                view.camera.camera3D = camera;
+    return {
+        near,
+        far,
+        aspect,
+        fov,
+    };
+}
+/**
+ * @property {VRControls} vrControls - WebXR controllers handler
+ * */
+class WebXR {
+    /**
+     * Handler of a webXR session
+     *
+     *
+     * @param {GlobeView} view - The view where the webXR session will be started
+     * @param {Object} [options] - WebXR configuration - its presence alone
+     * enable WebXR to switch on VR visualization.
+     * @param {function} [options.callback] - WebXR rendering callback (optional).
+     * @param {boolean} [options.controllers] - Enable the webXR controllers handling (optional).
+     */
+    constructor(view, options) {
+        this.view = view;
+        this.options = options;
+        this.renderCb = options.callback;
+        this.vrControls = null;
+    }
 
-                view.scene.scale.multiplyScalar(1 / scale);
-                view.scene.updateMatrixWorld();
+    // Start the webXR handler
+    initializeWebXR = () => {
+        const xr = this.view.renderer.xr;
 
-                shutdownXR(xr.getSession());
-                view.notifyChange(view.camera.camera3D, true);
+        xr.addEventListener('sessionstart', () => {
+            xr.enabled = true;
+
+            xr.getReferenceSpace('local');
+
+            // To avoid controllers precision issues, headset should handle camera position
+            const vrHeadSet = new THREE.Object3D();
+            vrHeadSet.name = 'xrHeadset';
+            this.view.scene.add(vrHeadSet);
+
+            this.view.camera3D.getWorldPosition(vrHeadSet.position);
+            this.view.camera3D.getWorldQuaternion(vrHeadSet.quaternion);
+            vrHeadSet.updateMatrixWorld(true);
+            vrHeadSet.add(xr.getCamera());
+
+            // Placeholder camera to initialize correctly the vr, which needs a parent
+            this.view._camXR = this.view.camera3D.clone();
+
+            // Important to see the controllers -> maybe could be improved
+            this.view._camXR.far = 2000000;
+            this.view._camXR.near = 0.1;
+            this.view._camXR.updateProjectionMatrix();
+
+            vrHeadSet.add(this.view._camXR);
+
+            this.view.notifyChange();
+
+            if (this.options.controllers) {
+                this.vrControls = new VRControls(this.view, vrHeadSet);
             }
-        };
-        view.scene.scale.multiplyScalar(scale);
-        view.scene.updateMatrixWorld();
-        xr.enabled = true;
-        xr.getReferenceSpace('local');
 
-        const position = view.camera.position();
-        const geodesicNormal = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), position.geodesicNormal).invert();
+            xr.setAnimationLoop((timestamp) => {
+                if (xr.isPresenting && xr.getCamera().cameras.length > 0) {
+                    // TODO should be called only once, but the first values are wrong because the camL&camR weren't updated
+                    updateCamera3D(xr, this.view);
 
-        const quat = new THREE.Quaternion(-1, 0, 0, 1).normalize().multiply(geodesicNormal);
-        const trans = camera.position.clone().multiplyScalar(-scale).applyQuaternion(quat);
-        const transform = new XRRigidTransform(trans, quat);
+                    // This will also update the controllers position
+                    vrHeadSet.updateMatrixWorld(true);
 
-        const baseReferenceSpace = xr.getReferenceSpace();
-        const teleportSpaceOffset = baseReferenceSpace.getOffsetReferenceSpace(transform);
-        xr.setReferenceSpace(teleportSpaceOffset);
+                    if (this.vrControls) {
+                        this.vrControls.listenGamepad();
+                    }
 
-        view.camera.camera3D = xr.getCamera();
-        view.camera.resize(view.camera.width, view.camera.height);
-
-        document.addEventListener('keydown', exitXRSession, false);
-
-        // TODO Fix asynchronization between xr and MainLoop render loops.
-        // (see MainLoop#scheduleViewUpdate).
-        xr.setAnimationLoop((timestamp) => {
-            if (xr.isPresenting && view.camera.camera3D.cameras[0]) {
-                view.camera.camera3D.updateMatrix();
-                view.camera.camera3D.updateMatrixWorld(true);
-                view.notifyChange(view.camera.camera3D, true);
-            }
-
-            view.mainLoop.step(view, timestamp);
+                    if (this.renderCb) {
+                        this.renderCb();
+                    }
+                }
+                this.view.mainLoop.step(this.view, timestamp);
+            });
         });
-    });
-};
-
-export default initializeWebXR;
+    };
+}
+export default WebXR;
 
 
