@@ -2,119 +2,131 @@ import * as THREE from 'three';
 import VRControls from 'Controls/VRControls';
 
 // TODO handle xr session end
+function updateCamera3D(xr, view) {
+    /* This is what's done in updateUserCamera the WebXRManager.js of threejs
+            Update projectionMatrix, could be replaced by:
+           camera.projectionMatrix.copy( cameraXR.projectionMatrix );
+          camera.projectionMatrixInverse.copy( cameraXR.projectionMatrixInverse );
+           But it safer to also change all the attributes, in case of another call to updateProjectionMatrix
+   */
 
-/**
- *
- * @param {*} view  current view
- * @param {*} options controllers, callback
- */
-const initializeWebXR = (view, options) => {
-    const xr = view.renderer.xr;
+    const {
+        near,
+        far,
+        aspect,
+        fov,
+    } = extractCameraAttributesFromProjectionMatrix(view._camXR.projectionMatrix);
+    view.camera3D.near = near;
+    view.camera3D.far = far;
+    view.camera3D.aspect = aspect;
+    view.camera3D.fov = fov;
+    view.camera3D.zoom = 1;
+    view.camera3D.updateProjectionMatrix();
 
-    xr.addEventListener('sessionstart', () => {
-        xr.enabled = true;
+    xr.getCamera()
+        .getWorldPosition(view.camera3D.position);
+    xr.getCamera()
+        .getWorldQuaternion(view.camera3D.quaternion);
 
-        let vrControls;
 
-        xr.getReferenceSpace('local');
+    //                //  TODO is it necessary ?
+    // Update the local transformation matrix for the object itself
+    view.camera3D.updateMatrix();
+    //
+    // // Update the world transformation matrix, ensuring it reflects global transforms
+    view.camera3D.updateMatrixWorld(true);
+    view.notifyChange(view.camera3D, true);
+}
 
-        // To avoid controllers precision issues, headset should handle camera position
-        const vrHeadSet = new THREE.Object3D();
-        vrHeadSet.name = 'xrHeadset';
-        view.scene.add(vrHeadSet);
+function extractCameraAttributesFromProjectionMatrix(projectionMatrix) {
+    const m = projectionMatrix.elements;
 
-        view.camera3D.getWorldPosition(vrHeadSet.position);
-        view.camera3D.getWorldQuaternion(vrHeadSet.quaternion);
-        vrHeadSet.updateMatrixWorld(true);
-        vrHeadSet.add(xr.getCamera());
+    // Extract near and far
+    const near = m[14] / (m[10] - 1);
+    const far = m[14] / (m[10] + 1);
 
-        // Placeholder camera to initialize correctly the vr, which needs a parent
-        view._camXR = view.camera3D.clone();
+    // Extract vertical FOV
+    const fovY = 2 * Math.atan(1 / m[5]); // m[5] = 1 / tan(fovY / 2)
+    const fov = THREE.MathUtils.radToDeg(fovY); // Convert to degrees
 
-        // Important to see the controllers -> maybe could be improved
-        view._camXR.far = 2000000;
-        view._camXR.near = 0.1;
-        view._camXR.updateProjectionMatrix();
+    // Extract aspect ratio
+    const aspect = m[5] / m[0]; // m[0] = 1 / (tan(fovY / 2) * aspect)
 
-        // view._camXR.updateMatrixWorld(true);
-        vrHeadSet.add(view._camXR);
+    return {
+        near,
+        far,
+        aspect,
+        fov,
+    };
+}
 
-        view.notifyChange();
+class WebXR {
+    constructor(view, options) {
+        this.view = view;
+        this.options = options;
+    }
 
-        if (options.controllers) {
-            vrControls = new VRControls(view, vrHeadSet);
-        }
+    initializeWebXR = () => {
+        const xr = this.view.renderer.xr;
 
-        // TODO Fix asynchronization between xr and MainLoop render loops.
-        // (see MainLoop#scheduleViewUpdate).
-        xr.setAnimationLoop((timestamp) => {
-            if (xr.isPresenting && xr.getCamera().cameras.length > 0) {
-                // TODO should be called only once, but the first values are wrong because the camL&camR weren't updated
-                updateCamera3D();
+        xr.addEventListener('sessionstart', () => {
+            xr.enabled = true;
 
-                // This will also update the controllers position
-                vrHeadSet.updateMatrixWorld(true);
+            let vrControls;
 
-                if (vrControls) {
-                    vrControls.listenGamepad();
-                }
+            xr.getReferenceSpace('local');
 
-                if (options.callback) {
-                    options.callback();
-                }
+            // To avoid controllers precision issues, headset should handle camera position
+            const vrHeadSet = new THREE.Object3D();
+            vrHeadSet.name = 'xrHeadset';
+            this.view.scene.add(vrHeadSet);
+
+            this.view.camera3D.getWorldPosition(vrHeadSet.position);
+            this.view.camera3D.getWorldQuaternion(vrHeadSet.quaternion);
+            vrHeadSet.updateMatrixWorld(true);
+            vrHeadSet.add(xr.getCamera());
+
+            // Placeholder camera to initialize correctly the vr, which needs a parent
+            this.view._camXR = this.view.camera3D.clone();
+
+            // Important to see the controllers -> maybe could be improved
+            this.view._camXR.far = 2000000;
+            this.view._camXR.near = 0.1;
+            this.view._camXR.updateProjectionMatrix();
+
+            // this.view._camXR.updateMatrixWorld(true);
+            vrHeadSet.add(this.view._camXR);
+
+            this.view.notifyChange();
+
+            if (this.options.controllers) {
+                vrControls = new VRControls(this.view, vrHeadSet);
+                this.vrControls = vrControls;
             }
-            view.mainLoop.step(view, timestamp);
+
+            // TODO Fix asynchronization between xr and MainLoop render loops.
+            // (see MainLoop#scheduleViewUpdate).
+            xr.setAnimationLoop((timestamp) => {
+                if (xr.isPresenting && xr.getCamera().cameras.length > 0) {
+                    // TODO should be called only once, but the first values are wrong because the camL&camR weren't updated
+                    updateCamera3D(xr, this.view);
+
+                    // This will also update the controllers position
+                    vrHeadSet.updateMatrixWorld(true);
+
+                    if (vrControls) {
+                        vrControls.listenGamepad();
+                    }
+
+                    if (this.options.callback) {
+                        this.options.callback();
+                    }
+                }
+                this.view.mainLoop.step(this.view, timestamp);
+            });
         });
-    });
-
-    function updateCamera3D() {
-        /* This is what's done in updateUserCamera the WebXRManager.js of threejs
-                Update projectionMatrix, could be replaced by:
-               camera.projectionMatrix.copy( cameraXR.projectionMatrix );
-              camera.projectionMatrixInverse.copy( cameraXR.projectionMatrixInverse );
-               But it safer to also change all the attributes, in case of another call to updateProjectionMatrix
-       */
-
-        const { near, far, aspect, fov } = extractCameraAttributesFromProjectionMatrix(view._camXR.projectionMatrix);
-        view.camera3D.near = near;
-        view.camera3D.far = far;
-        view.camera3D.aspect = aspect;
-        view.camera3D.fov = fov;
-        view.camera3D.zoom = 1;
-        view.camera3D.updateProjectionMatrix();
-
-        xr.getCamera().getWorldPosition(view.camera3D.position);
-        xr.getCamera().getWorldQuaternion(view.camera3D.quaternion);
-
-
-
-        //                //  TODO is it necessary ?
-        // Update the local transformation matrix for the object itself
-        view.camera3D.updateMatrix();
-        //
-        // // Update the world transformation matrix, ensuring it reflects global transforms
-        view.camera3D.updateMatrixWorld(true);
-        view.notifyChange(view.camera3D, true);
-    }
-
-    function extractCameraAttributesFromProjectionMatrix(projectionMatrix) {
-        const m = projectionMatrix.elements;
-
-        // Extract near and far
-        const near = m[14] / (m[10] - 1);
-        const far = m[14] / (m[10] + 1);
-
-        // Extract vertical FOV
-        const fovY = 2 * Math.atan(1 / m[5]); // m[5] = 1 / tan(fovY / 2)
-        const fov = THREE.MathUtils.radToDeg(fovY); // Convert to degrees
-
-        // Extract aspect ratio
-        const aspect = m[5] / m[0]; // m[0] = 1 / (tan(fovY / 2) * aspect)
-
-        return { near, far, aspect, fov };
-    }
-};
-
-export default initializeWebXR;
+    };
+}
+export default WebXR;
 
 
