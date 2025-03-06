@@ -262,8 +262,8 @@ class View extends THREE.EventDispatcher {
         viewers.push(this);
 
         if (options.webXR) {
-            const webXR = new WebXR(this, options.webXR);
-            webXR.initializeWebXR();
+            this.webXR = new WebXR(this, options.webXR);
+            this.webXR.initializeWebXR();
         }
     }
 
