@@ -64,6 +64,7 @@ class WebXR {
     constructor(view, options) {
         this.view = view;
         this.options = options;
+        this.vrControls = null;
     }
 
     initializeWebXR = () => {
@@ -100,8 +101,7 @@ class WebXR {
             this.view.notifyChange();
 
             if (this.options.controllers) {
-                vrControls = new VRControls(this.view, vrHeadSet);
-                this.vrControls = vrControls;
+                this.vrControls = new VRControls(this.view, vrHeadSet);
             }
 
             // TODO Fix asynchronization between xr and MainLoop render loops.
@@ -114,8 +114,8 @@ class WebXR {
                     // This will also update the controllers position
                     vrHeadSet.updateMatrixWorld(true);
 
-                    if (vrControls) {
-                        vrControls.listenGamepad();
+                    if (this.vrControls) {
+                        this.vrControls.listenGamepad();
                     }
 
                     if (this.options.callback) {
