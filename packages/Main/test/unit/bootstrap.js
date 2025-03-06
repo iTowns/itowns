@@ -298,6 +298,8 @@ class Renderer {
         });
         this.xr.setReferenceSpace = () => {};
         this.xr.getCamera = () => new Camera();
+        this.xr.getController = () => new EventDispatcher();
+        this.xr.getControllerGrip = () => new EventDispatcher();
         this.xr.setAnimationLoop = () => {};
         this.xr.getSession = () => {};
 
