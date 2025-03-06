@@ -1,9 +1,10 @@
 /* eslint-disable max-classes-per-file */
-import { Camera } from 'three';
+import { Object3D } from 'three';
 import { DOMParser } from '@xmldom/xmldom';
 import threads from 'worker_threads';
 import 'webgl-mock';
 import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
+import * as THREE from 'three';
 
 setGlobalDispatcher(new EnvHttpProxyAgent());
 
@@ -297,8 +298,76 @@ class Renderer {
             getOffsetReferenceSpace: () => {},
         });
         this.xr.setReferenceSpace = () => {};
-        this.xr.getCamera = () => new Camera();
-        this.xr.setAnimationLoop = () => {};
+        this.xr.getCamera = () => {
+            // Create a new THREE.Object3D instance to represent the camera.
+            const cameraObj = new THREE.Object3D();
+
+            // Add a cameras property to mimic the original structure.
+            cameraObj.cameras = [new THREE.PerspectiveCamera()];
+
+            // Override getWorldPosition to copy a fixed position into the target vector.
+            cameraObj.getWorldPosition = function (target) {
+                target.copy(new THREE.Vector3(80, 90, 100));
+            };
+
+            // Override getWorldQuaternion to copy a fixed quaternion into the target.
+            cameraObj.getWorldQuaternion = function (target) {
+                target.copy(new THREE.Quaternion(0, 0, 0, 1));
+            };
+
+            return cameraObj;
+        };
+        this.xr.setAnimationLoop = function (callback) {
+            this.animationLoopCallback = callback;
+        };
+        // Return a fake controller
+        const _getController = () => {
+            const controller = new Object3D();
+            controller.gamepad = { axes: [0, 0, 0, 0], buttons: [] };
+            controller.addEventListener = function (event, fn) {
+                this.listeners = this.listeners || {};
+                if (!this.listeners[event]) { this.listeners[event] = []; }
+                this.listeners[event].push(fn);
+            };
+            controller.dispatchEvent = function (event) {
+                if (this.listeners && this.listeners[event.type]) {
+                    this.listeners[event.type].forEach(fn => fn(event));
+                }
+            };
+            controller.gamepad = {
+                axes: [0, 0, 0.5, 0],
+                buttons: [
+                    { pressed: true, touched: false },  // simulate a pressed button at index 0
+                ],
+            };
+            controller.isStickActive = false;
+            controller.lastButtonItem = undefined;
+            controller.gamepad.endGamePadtrackEmit = undefined;
+            return controller;
+        };
+        // Return a fake controller grip.
+        const _getControllerGrip = () => new Object3D();
+
+        // Patch getController and getControllerGrip to cache objects per index.
+        const controllersCache = {};
+        const gripsCache = {};
+
+        // Patch getController because we need to keep track of each created object:
+        this.xr.getController = function (i) {
+            if (!controllersCache[i]) {
+                controllersCache[i] = _getController();
+            }
+            return controllersCache[i];
+        };
+
+        // Patch getControllerGrip:
+        this.xr.getControllerGrip = function (i) {
+            if (!gripsCache[i]) {
+                gripsCache[i] = _getControllerGrip();
+            }
+            return gripsCache[i];
+        };
+
         this.xr.getSession = () => {};
 
         this.context = {
