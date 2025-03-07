@@ -80,8 +80,10 @@ class GlobeView extends View {
      * @param {CameraTransformOptions|Extent} placement - An object to place view
      * @param {object} [options] - See options of {@link View}.
      * @param {Object} [options.controls] - See options of {@link GlobeControls}
-     * @param {Object} [options.webXR] - WebXR configuration - enable WebXR button to switch on VR visualization. (optional).
+     * @param {Object} [options.webXR] - WebXR configuration - its presence alone
+     * enable WebXR to switch on VR visualization. (optional).
      * @param {function} [options.webXR.callback] - WebXR rendering callback (optional).
+     * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling (optional).
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);

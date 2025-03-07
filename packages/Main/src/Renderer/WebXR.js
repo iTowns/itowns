@@ -60,8 +60,21 @@ function extractCameraAttributesFromProjectionMatrix(projectionMatrix) {
         fov,
     };
 }
-
+/**
+ * @property {VRControls} vrControls - WebXR controllers handler
+ * */
 class WebXR {
+    /**
+     * Handler of a webXR session
+     *
+     *
+     * @param {GlobeView} view - The view where the webXR session will be started
+     * @param {object} [options] - See options of {@link GlobeView}.
+     * @param {Object} [options.webXR] - WebXR configuration - its presence alone
+     * enable WebXR to switch on VR visualization. (optional).
+     * @param {function} [options.webXR.callback] - WebXR rendering callback (optional).
+     * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling (optional).
+     */
     constructor(view, options) {
         this.view = view;
         this.options = options;

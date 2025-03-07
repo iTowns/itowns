@@ -4,13 +4,15 @@ import DEMUtils from 'Utils/DEMUtils';
 import { XRControllerModelFactory } from 'ThreeExtended/webxr/XRControllerModelFactory';
 
 /**
- * Requires a contextXR variable.
- * @param {*} _view itowns view object
- * @param {*} _groupXR XR 3D object group
- */
+ * @property {Array} controllers - WebXR controllers list
+ * */
 class VRControls {
     static MIN_DELTA_ALTITUDE = 1.8;
-
+    /**
+     * Requires a contextXR variable.
+     * @param {*} _view itowns view object
+     * @param {*} _groupXR XR 3D object group
+     */
     constructor(_view, _groupXR = {}) {
     // Store instance references.
         this.view = _view;
