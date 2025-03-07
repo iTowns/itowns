@@ -4,8 +4,11 @@
   "description": "Geodesy",
   "type": "module",
   "main": "lib/Main.js",
-  "exports": "./lib/Main.js",
-  "types": "./lib/Main.d.ts",
+  "exports": {
+    "types": "./src/Main.ts",
+    "default": "./lib/Main.js"
+  },
+  "types": "./src/Main.ts",
   "scripts": {
     "build": "",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\" \"test/**/*.js\"",

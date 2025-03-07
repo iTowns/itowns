@@ -18,5 +18,10 @@
         "target": "ESNext",
         /* Completeness */
         "skipLibCheck": true
-    }
+    },
+    "files": [],
+    "references": [
+        { "path": "./packages/Geographic" },
+        { "path": "./packages/Main" }
+    ]
 }
