@@ -165,18 +165,6 @@ Adding a few internal states for reactivity
 
     // Apply a translation and rotation to the XR group.
     applyTransformationToXR(trans, offsetRotation) {
-        if (!offsetRotation) {
-            console.error('missing rotation quaternion');
-            return;
-
-            // offsetRotation = this.groupXR.quaternion;
-        }
-
-        if (!trans) {
-            console.error('missing translation vector');
-            return;
-        }
-
         this.groupXR.position.copy(trans);
         this.groupXR.quaternion.copy(offsetRotation);
         this.groupXR.updateMatrixWorld(true);
@@ -184,8 +172,8 @@ Adding a few internal states for reactivity
 
     /**
    * Clamp the given translation vector so that the camera remains at or above ground level.
-   * @param {Vector3} trans - The translation vector.
-   * @returns {Vector3} The clamped coordinates as a Vector3.
+   * @param {THREE.Vector3} trans - The translation vector.
+   * @returns {THREE.Vector3} The clamped coordinates as a Vector3.
    */
     clampToGround(trans) {
         const transCoordinate = new Coordinates(

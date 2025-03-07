@@ -33,12 +33,12 @@ function updateCamera3D(xr, view) {
 
     // Update the local transformation matrix for the object itself
     view.camera3D.updateMatrix();
-    //
+
     // // Update the world transformation matrix, ensuring it reflects global transforms
     view.camera3D.updateMatrixWorld(true);
     view.notifyChange(view.camera3D, true);
 }
-
+// Note: WebXR cameras are perspective cameras
 function extractCameraAttributesFromProjectionMatrix(projectionMatrix) {
     const m = projectionMatrix.elements;
 

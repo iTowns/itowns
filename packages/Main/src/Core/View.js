@@ -12,7 +12,6 @@ import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
-import WebXR from '../Renderer/WebXR';
 
 export const VIEW_EVENTS = {
     /**
@@ -158,10 +157,6 @@ class View extends THREE.EventDispatcher {
      * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
      * added to viewerDiv (mutually exclusive with mainLoop)
      * //TODO define webxr only in globelayer ?
-     * @param {Object} [options.webXR] - enable webxr button to switch on VR visualization.
-     * @param {number} [options.webXR.controllers=false] - enable vr controllers.
-     // * @param {number} [options.webXR.scale=1.0] - apply webxr scale tranformation.
-     @param {number} [options.webXR.callback] - rendering callback.
      * @param {Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
      * @param {Color} [options.diffuse] - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
@@ -260,11 +255,6 @@ class View extends THREE.EventDispatcher {
 
         // push all viewer to keep source.cache
         viewers.push(this);
-
-        if (options.webXR) {
-            this.webXR = new WebXR(this, options.webXR);
-            this.webXR.initializeWebXR();
-        }
     }
 
     /**

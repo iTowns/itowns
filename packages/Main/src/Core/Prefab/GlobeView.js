@@ -6,6 +6,7 @@ import { Coordinates, ellipsoidSizes } from '@itowns/geographic';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
 import CameraUtils from 'Utils/CameraUtils';
+import WebXR from 'Renderer/WebXR';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -79,6 +80,8 @@ class GlobeView extends View {
      * @param {CameraTransformOptions|Extent} placement - An object to place view
      * @param {object} [options] - See options of {@link View}.
      * @param {Object} [options.controls] - See options of {@link GlobeControls}
+     * @param {Object} [options.webXR] - WebXR configuration - enable WebXR button to switch on VR visualization. (optional).
+     * @param {function} [options.webXR.callback] - WebXR rendering callback (optional).
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -113,6 +116,11 @@ class GlobeView extends View {
 
         // GlobeView needs this.camera.resize to set perpsective matrix camera
         this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+
+        if (options.webXR) {
+            this.webXR = new WebXR(this, options.webXR);
+            this.webXR.initializeWebXR();
+        }
     }
 
     /**
