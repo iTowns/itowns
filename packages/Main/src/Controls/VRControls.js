@@ -8,6 +8,7 @@ import { XRControllerModelFactory } from 'ThreeExtended/webxr/XRControllerModelF
  * */
 class VRControls {
     static MIN_DELTA_ALTITUDE = 1.8;
+    static MAX_NUMBER_CONTROLLERS = 2;  // For now, we are fully supporting a maximum of 2 controllers.
     /**
      * Requires a contextXR variable.
      * @param {*} _view itowns view object
@@ -36,7 +37,7 @@ class VRControls {
 
         const controllerModelFactory = new XRControllerModelFactory();
 
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < VRControls.MAX_NUMBER_CONTROLLERS; i++) {
             const controller = this.webXRManager.getController(i);
 
 
