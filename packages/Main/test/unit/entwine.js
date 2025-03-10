@@ -61,7 +61,7 @@ describe('Entwine Point Tile', function () {
                 });
                 source.whenReady
                     .then(() => {
-                        assert.equal(source.crs, 'RGF93 v1 / Lambert-93');
+                        assert.equal(source.crs, 'EPSG:2154');
                         done();
                     }).catch(done);
             });
