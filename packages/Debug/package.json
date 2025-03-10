@@ -30,11 +30,11 @@
   "dependencies": {
     "@itowns/geographic": "^2.45.1",
     "@tweenjs/tween.js": "^25.0.0",
-    "chart.js": "^4.4.4",
+    "chart.js": "^4.4.8",
     "dat.gui": "^0.7.9",
     "itowns": "^2.45.1"
   },
   "peerDependencies": {
-    "three": "^0.170.0"
+    "three": "^0.174.0"
   }
 }
