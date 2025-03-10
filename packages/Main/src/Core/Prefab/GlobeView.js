@@ -120,7 +120,7 @@ class GlobeView extends View {
         this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
 
         if (options.webXR) {
-            this.webXR = new WebXR(this, options.webXR);
+            this.webXR = new WebXR(this, typeof options.webXR === 'boolean' ? {} : options.webXR);
             this.webXR.initializeWebXR();
         }
     }

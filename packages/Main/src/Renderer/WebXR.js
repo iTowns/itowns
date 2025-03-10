@@ -69,15 +69,15 @@ class WebXR {
      *
      *
      * @param {GlobeView} view - The view where the webXR session will be started
-     * @param {object} [options] - See options of {@link GlobeView}.
-     * @param {Object} [options.webXR] - WebXR configuration - its presence alone
-     * enable WebXR to switch on VR visualization. (optional).
-     * @param {function} [options.webXR.callback] - WebXR rendering callback (optional).
-     * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling (optional).
+     * @param {Object} [options] - WebXR configuration - its presence alone
+     * enable WebXR to switch on VR visualization.
+     * @param {function} [options.callback] - WebXR rendering callback (optional).
+     * @param {boolean} [options.controllers] - Enable the webXR controllers handling (optional).
      */
     constructor(view, options) {
         this.view = view;
         this.options = options;
+        this.renderCb = options.callback;
         this.vrControls = null;
     }
 
@@ -128,8 +128,8 @@ class WebXR {
                         this.vrControls.listenGamepad();
                     }
 
-                    if (this.options.callback) {
-                        this.options.callback();
+                    if (this.renderCb) {
+                        this.renderCb();
                     }
                 }
                 this.view.mainLoop.step(this.view, timestamp);
