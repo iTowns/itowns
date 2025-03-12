@@ -1,3 +1,14 @@
+<a name="2.45.1"></a>
+## [2.45.1](https://github.com/iTowns/itowns/compare/v2.45.0...v2.45.1) (2025-03-12)
+
+
+### Workflow and chores
+
+* release v2.45.1 ([dbe1086](https://github.com/iTowns/itowns/commit/dbe1086))
+* fix publish npm package ([1496c96](https://github.com/iTowns/itowns/commit/1496c96))
+
+
+
 <a name="2.45.0"></a>
 # [2.45.0](https://github.com/iTowns/itowns/compare/v2.44.2...v2.45.0) (2025-02-14)
 
