@@ -1,5 +1,6 @@
 {
   "private": true,
+  "name": "@itowns/debug",
   "version": "2.45.1",
   "type": "module",
   "main": "lib/Main.js",
