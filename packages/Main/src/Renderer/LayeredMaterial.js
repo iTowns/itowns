@@ -96,7 +96,7 @@ export const ELEVATION_MODES = {
 
 let nbSamplers;
 const fragmentShader = [];
-class LayeredMaterial extends THREE.ShaderMaterial {
+export class LayeredMaterial extends THREE.ShaderMaterial {
     #_visible = true;
     constructor(options = {}, crsCount) {
         super(options);
