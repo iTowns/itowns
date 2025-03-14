@@ -202,6 +202,7 @@ class LayeredMaterial extends THREE.ShaderMaterial {
     }
 
     updateLayersUniforms() {
+        if (!this.layers.some(l => l.needsUpdate)) { return; } // don't update if no layer needs update
         const colorlayers = this.layers.filter(l => this.colorLayerIds.includes(l.id) && l.visible && l.opacity > 0);
         colorlayers.sort((a, b) => this.colorLayerIds.indexOf(a.id) - this.colorLayerIds.indexOf(b.id));
         updateLayersUniforms(this.getUniformByType('color'), colorlayers, this.defines.NUM_FS_TEXTURES);
@@ -211,25 +212,24 @@ class LayeredMaterial extends THREE.ShaderMaterial {
             const elevationLayer = this.getElevationLayer() ? [this.getElevationLayer()] : [];
             updateLayersUniforms(this.getUniformByType('elevation'), elevationLayer, this.defines.NUM_VS_TEXTURES);
         }
-        this.layersNeedUpdate = false;
     }
 
     dispose() {
         this.dispatchEvent({ type: 'dispose' });
         this.layers.forEach(l => l.dispose(true));
         this.layers.length = 0;
-        this.layersNeedUpdate = true;
+        this.updateLayersUniforms();
     }
 
     // TODO: rename to setColorLayerIds and add setElevationLayerIds ?
     setSequence(sequenceLayer) {
         this.colorLayerIds = sequenceLayer;
-        this.layersNeedUpdate = true;
+        this.updateLayersUniforms();
     }
 
     setSequenceElevation(layerId) {
         this.elevationLayerIds[0] = layerId;
-        this.layersNeedUpdate = true;
+        this.updateLayersUniforms();
     }
 
     removeLayer(layerId) {
