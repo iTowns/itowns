@@ -430,18 +430,13 @@ class TiledGeometryLayer extends GeometryLayer {
             // TODO: pendingSubdivision mechanism is fragile, get rid of it
             node.pendingSubdivision = true;
 
-            const command = {
-                /* mandatory */
-                view: context.view,
-                requester: node,
-                layer: this,
-                priority: 10000,
-                /* specific params */
-                extentsSource: extents,
-                redraw: false,
-            };
+            const promises = [];
 
-            return context.scheduler.execute(command).then((children) => {
+            for (const extent of extents) {
+                promises.push(this.convert(node, extent));
+            }
+
+            return Promise.all(promises).then((children) => {
                 for (const child of children) {
                     node.add(child);
                     child.updateMatrixWorld(true);
