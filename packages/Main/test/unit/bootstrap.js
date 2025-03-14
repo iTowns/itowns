@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { Camera } from 'three';
+import { Camera, Object3D } from 'three';
 import { DOMParser } from '@xmldom/xmldom';
 import threads from 'worker_threads';
 import 'webgl-mock';
@@ -298,8 +298,47 @@ class Renderer {
         });
         this.xr.setReferenceSpace = () => {};
         this.xr.getCamera = () => new Camera();
-        this.xr.getController = () => new EventDispatcher();
-        this.xr.getControllerGrip = () => new EventDispatcher();
+
+        // Return a fake controller
+        const _getController = () => {
+            const controller = new Object3D();
+            controller.gamepad = { axes: [0, 0, 0, 0], buttons: [] };
+            controller.addEventListener = function (event, fn) {
+                this.listeners = this.listeners || {};
+                if (!this.listeners[event]) { this.listeners[event] = []; }
+                this.listeners[event].push(fn);
+            };
+            controller.dispatchEvent = function (event) {
+                if (this.listeners && this.listeners[event.type]) {
+                    this.listeners[event.type].forEach(fn => fn(event));
+                }
+            };
+
+            return controller;
+        };
+        // Return a fake controller grip.
+        const _getControllerGrip = () => new Object3D();
+
+        // Patch getController and getControllerGrip to cache objects per index.
+        const controllersCache = {};
+        const gripsCache = {};
+
+        // Patch getController because we need to keep track of each created object:
+        this.xr.getController = function (i) {
+            if (!controllersCache[i]) {
+                controllersCache[i] = _getController();
+            }
+            return controllersCache[i];
+        };
+
+        // Patch getControllerGrip:
+        this.xr.getControllerGrip = function (i) {
+            if (!gripsCache[i]) {
+                gripsCache[i] = _getControllerGrip();
+            }
+            return gripsCache[i];
+        };
+
         this.xr.setAnimationLoop = () => {};
         this.xr.getSession = () => {};
 

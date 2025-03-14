@@ -258,7 +258,6 @@ Adding a few internal states for reactivity
     // Compute a translation vector for vertical adjustment.
     getTranslationElevation(axisValue, speedFactor) {
         const speed = axisValue * speedFactor;
-        // const direction = this.view.controls.getCameraCoordinate().geodesicNormal.clone();
         const direction = this.view.camera3D.position.clone().normalize();
 
         direction.multiplyScalar(-speed);
