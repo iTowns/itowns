@@ -28,7 +28,7 @@ function getIndiceWithPitch(i, pitch, w) {
  * @class RasterTile
  */
 class RasterTile extends THREE.EventDispatcher {
-    constructor(material, layer) {
+    constructor(layer) {
         super();
         this.layer = layer;
         this.crs = layer.parent.tileMatrixSets.indexOf(layer.crs);
@@ -39,9 +39,9 @@ class RasterTile extends THREE.EventDispatcher {
         this.textures = [];
         this.offsetScales = [];
         this.level = EMPTY_TEXTURE_ZOOM;
-        this.material = material;
+        this.needsUpdate = false;
 
-        this._handlerCBEvent = () => { this.material.layersNeedUpdate = true; };
+        this._handlerCBEvent = () => { this.needsUpdate = true; };
         layer.addEventListener('visible-property-changed', this._handlerCBEvent);
         layer.addEventListener('opacity-property-changed', this._handlerCBEvent);
     }
@@ -127,7 +127,7 @@ class RasterTile extends THREE.EventDispatcher {
                 texture.dispose();
             }
         }
-        this.material.layersNeedUpdate = true;
+        this.needsUpdate = true;
     }
 
     setTexture(index, texture, offsetScale) {
@@ -135,7 +135,7 @@ class RasterTile extends THREE.EventDispatcher {
             this.level = (texture && texture.extent) ? texture.extent.zoom : this.level;
             this.textures[index] = texture || null;
             this.offsetScales[index] = offsetScale;
-            this.material.layersNeedUpdate = true;
+            this.needsUpdate = true;
         }
     }
 
@@ -167,8 +167,8 @@ export class RasterColorTile extends RasterTile {
 }
 
 export class RasterElevationTile extends RasterTile {
-    constructor(material, layer) {
-        super(material, layer);
+    constructor(layer) {
+        super(layer);
         const defaultEle = {
             bias: 0,
             mode: ELEVATION_MODES.DATA,

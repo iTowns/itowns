@@ -52,7 +52,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         ],
     };
 
-    const nodeLayer = new RasterColorTile(material, layer);
+    const nodeLayer = new RasterColorTile(layer);
     material.getLayer = () => nodeLayer;
 
     beforeEach('reset state', function () {

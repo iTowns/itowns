@@ -190,6 +190,8 @@ class LayeredMaterial extends THREE.ShaderMaterial {
                 }
             },
         });
+
+        this.uniformsNeedUpdate = false;
     }
 
     getUniformByType(type) {
@@ -202,6 +204,11 @@ class LayeredMaterial extends THREE.ShaderMaterial {
     }
 
     updateLayersUniforms() {
+        if (!this.uniformsNeedUpdate && !this.layers.some(l => l.needsUpdate)) {
+            // don't update if no layer needs update
+            return;
+        }
+
         const colorlayers = this.layers.filter(l => this.colorLayerIds.includes(l.id) && l.visible && l.opacity > 0);
         colorlayers.sort((a, b) => this.colorLayerIds.indexOf(a.id) - this.colorLayerIds.indexOf(b.id));
         updateLayersUniforms(this.getUniformByType('color'), colorlayers, this.defines.NUM_FS_TEXTURES);
@@ -211,25 +218,27 @@ class LayeredMaterial extends THREE.ShaderMaterial {
             const elevationLayer = this.getElevationLayer() ? [this.getElevationLayer()] : [];
             updateLayersUniforms(this.getUniformByType('elevation'), elevationLayer, this.defines.NUM_VS_TEXTURES);
         }
-        this.layersNeedUpdate = false;
+
+        this.uniformsNeedUpdate = false;
+        this.layers.forEach((l) => { l.needsUpdate = false; });
     }
 
     dispose() {
         this.dispatchEvent({ type: 'dispose' });
         this.layers.forEach(l => l.dispose(true));
         this.layers.length = 0;
-        this.layersNeedUpdate = true;
+        this.uniformsNeedUpdate = true;
     }
 
     // TODO: rename to setColorLayerIds and add setElevationLayerIds ?
     setSequence(sequenceLayer) {
         this.colorLayerIds = sequenceLayer;
-        this.layersNeedUpdate = true;
+        this.uniformsNeedUpdate = true;
     }
 
     setSequenceElevation(layerId) {
         this.elevationLayerIds[0] = layerId;
-        this.layersNeedUpdate = true;
+        this.uniformsNeedUpdate = true;
     }
 
     removeLayer(layerId) {
