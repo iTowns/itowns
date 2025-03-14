@@ -50,6 +50,9 @@ function computePitchs(textures, extentsDestination) {
 }
 
 export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
+    if (node.pendingSubdivision) {
+        return;
+    }
     const material = node.material;
     if (!parent || !material) {
         return;
@@ -161,6 +164,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 }
 
 export function updateLayeredMaterialNodeElevation(context, layer, node, parent) {
+    if (node.pendingSubdivision) {
+        return;
+    }
     const material = node.material;
     if (!parent || !material) {
         return;
