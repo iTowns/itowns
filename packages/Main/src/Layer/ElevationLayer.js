@@ -115,7 +115,7 @@ class ElevationLayer extends RasterLayer {
      * @return     {RasterElevationTile}  The raster elevation node added.
      */
     setupRasterNode(node) {
-        const rasterElevationNode = new RasterElevationTile(node.material, this);
+        const rasterElevationNode = new RasterElevationTile(this);
 
         node.material.addLayer(rasterElevationNode);
         node.material.setSequenceElevation(this.id);
