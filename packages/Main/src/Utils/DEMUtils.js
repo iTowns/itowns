@@ -242,7 +242,7 @@ function _readZCorrect(layer, texture, uv, tileDimensions, tileOwnerDimensions) 
     // 'modulo' is the gap (in [0, 1]) between 2 successive vertices in the geometry
     // e.g if you have 5 vertices, the only possible values for u (or v) are: 0, 0.25, 0.5, 0.75, 1
     // so modulo would be 0.25
-    // note: currently the number of segments is hard-coded to 16 (see TileProvider) => 17 vertices
+    // note: currently the number of segments is hard-coded to 16 (see TileBuilder) => 17 vertices
     const modulo = (tileDimensions.x / tileOwnerDimensions.x) / (17 - 1);
     let u = Math.floor(uv.x / modulo) * modulo;
     let v = Math.floor(uv.y / modulo) * modulo;
