@@ -441,7 +441,13 @@ class TiledGeometryLayer extends GeometryLayer {
                 redraw: false,
             };
 
-            return context.scheduler.execute(command).then((children) => {
+            const promises = [];
+
+            for (const extent of extents) {
+                promises.push(this.convert(node, extent));
+            }
+    
+            return Promise.all(promises).then((children) => {
                 for (const child of children) {
                     node.add(child);
                     child.updateMatrixWorld(true);
