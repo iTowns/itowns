@@ -157,6 +157,7 @@ module.exports = {
                 '@typescript-eslint/no-use-before-define': 'error',
                 'valid-jsdoc': 'off',
                 'tsdoc/syntax': 'warn',
+                'no-useless-constructor': 'off',
             },
         },
     ],
