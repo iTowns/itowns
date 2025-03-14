@@ -6,7 +6,6 @@
 
 import PriorityQueue from 'js-priority-queue';
 import DataSourceProvider from 'Provider/DataSourceProvider';
-import TileProvider from 'Provider/TileProvider';
 import $3dTilesProvider from 'Provider/3dTilesProvider';
 import PointCloudProvider from 'Provider/PointCloudProvider';
 import URLBuilder from 'Provider/URLBuilder';
@@ -122,7 +121,6 @@ Scheduler.prototype.constructor = Scheduler;
 
 Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     // Register all providers
-    this.addProtocolProvider('tile', TileProvider);
     this.addProtocolProvider('3d-tiles', $3dTilesProvider);
     this.addProtocolProvider('pointcloud', PointCloudProvider);
 };
