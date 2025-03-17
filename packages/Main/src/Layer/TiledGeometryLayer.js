@@ -303,13 +303,6 @@ class TiledGeometryLayer extends GeometryLayer {
         if (!node.parent) {
             return ObjectRemovalHelper.removeChildrenAndCleanup(this, node);
         }
-        // early exit if parent' subdivision is in progress
-        if (node.parent.pendingSubdivision) {
-            node.visible = false;
-            node.material.visible = false;
-            this.info.update(node);
-            return undefined;
-        }
 
         // do proper culling
         node.visible = !this.culling(node, context.camera);
@@ -320,10 +313,10 @@ class TiledGeometryLayer extends GeometryLayer {
             node.material.visible = true;
             this.info.update(node);
 
-            if (node.pendingSubdivision || (TiledGeometryLayer.hasEnoughTexturesToSubdivide(context, node) && this.subdivision(context, this, node))) {
+            if (this.subdivision(context, this, node)) {
                 this.subdivideNode(context, node);
                 // display iff children aren't ready
-                node.material.visible = node.pendingSubdivision;
+                node.material.visible = false;
                 this.info.update(node);
                 requestChildrenUpdate = true;
             }
@@ -422,34 +415,16 @@ class TiledGeometryLayer extends GeometryLayer {
      * @param {Object} context - The context of the update; see the {@link
      * MainLoop} for more informations.
      * @param {TileMesh} node - The node to subdivide.
-     * @return {Promise}  { description_of_the_return_value }
      */
     subdivideNode(context, node) {
-        if (!node.pendingSubdivision && !node.children.some(n => n.layer == this)) {
+        if (!node.children.some(n => n.layer == this)) {
             const extents = node.extent.subdivision();
-            // TODO: pendingSubdivision mechanism is fragile, get rid of it
-            node.pendingSubdivision = true;
-
-            const promises = [];
-
             for (const extent of extents) {
-                promises.push(this.convert(node, extent));
+                const child = this.convert(node, extent);
+                node.add(child);
+                child.updateMatrixWorld(true);
             }
-
-            return Promise.all(promises).then((children) => {
-                for (const child of children) {
-                    node.add(child);
-                    child.updateMatrixWorld(true);
-                }
-
-                node.pendingSubdivision = false;
-                context.view.notifyChange(node, false);
-            }, (err) => {
-                node.pendingSubdivision = false;
-                if (!err.isCancelledCommandException) {
-                    throw new Error(err);
-                }
-            });
+            context.view.notifyChange(node, false);
         }
     }
 

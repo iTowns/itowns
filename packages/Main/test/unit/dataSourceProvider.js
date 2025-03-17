@@ -213,7 +213,7 @@ describe('Provide in Sources', function () {
         const tile = new TileMesh(geom, material, planarlayer, extent, featureLayer.zoom.min);
         material.visible = true;
         nodeLayer.level = EMPTY_TEXTURE_ZOOM;
-        tile.parent = { pendingSubdivision: false };
+        tile.parent = {};
         featureLayer.mergeFeatures = false;
         tile.layerUpdateState = { test: new LayerUpdateState() };
 
@@ -235,7 +235,7 @@ describe('Provide in Sources', function () {
             extent,
             featureLayer.zoom.min);
         tile.material.visible = true;
-        tile.parent = { pendingSubdivision: false };
+        tile.parent = {};
         featureLayer.source.uid = 8;
         featureLayer.mergeFeatures = true;
         featureLayer.cache.clear();
@@ -260,7 +260,7 @@ describe('Provide in Sources', function () {
             extent,
             zoom);
         material.visible = true;
-        tile.parent = { pendingSubdivision: false };
+        tile.parent = {};
         nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.material.visible = true;
         featureLayer.source.uid = 22;
