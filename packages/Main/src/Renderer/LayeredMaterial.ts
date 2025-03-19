@@ -37,12 +37,12 @@ export function getMaxColorSamplerUnitsCount(): number {
     );
 }
 
-export const colorLayerEffects: Record<string, number> = {
+export const colorLayerEffects = {
     noEffect: 0,
     removeLightColor: 1,
     removeWhiteColor: 2,
     customEffect: 3,
-};
+} as const;
 
 /** GPU struct for color layers */
 interface StructColorLayer {
@@ -129,7 +129,7 @@ export const ELEVATION_MODES = {
     RGBA: 0,
     COLOR: 1,
     DATA: 2,
-};
+} as const;
 
 /**
  * Convenience type that wraps all of the generic type's fields in
@@ -165,30 +165,30 @@ interface LayeredMaterialRawUniforms {
     minBorderDistance: number;
 
     // Debug
-    showOutline: boolean,
-    outlineWidth: number,
-    outlineColors: THREE.Color[]
+    showOutline: boolean;
+    outlineWidth: number;
+    outlineColors: THREE.Color[];
 
     // Elevation layers
-    elevationLayers: Array<StructElevationLayer>,
-    elevationTextures: Array<THREE.Texture>,
-    elevationOffsetScales: Array<THREE.Vector4>,
-    elevationTextureCount: number,
+    elevationLayers: Array<StructElevationLayer>;
+    elevationTextures: Array<THREE.Texture>;
+    elevationOffsetScales: Array<THREE.Vector4>;
+    elevationTextureCount: number;
 
     // Color layers
-    colorLayers: Array<StructColorLayer>,
-    colorTextures: Array<THREE.Texture>,
-    colorOffsetScales: Array<THREE.Vector4>,
-    colorTextureCount: number,
+    colorLayers: Array<StructColorLayer>;
+    colorTextures: Array<THREE.Texture>;
+    colorOffsetScales: Array<THREE.Vector4>;
+    colorTextureCount: number;
 }
 
 let nbSamplers: [number, number] | undefined;
 const fragmentShader: string[] = [];
 
 /** Replacing the default uniforms dynamic type with our own static map. */
-export type LayeredMaterialParameters =
-    Omit<THREE.ShaderMaterialParameters, 'uniforms'>
-    & { uniforms?: MappedUniforms<LayeredMaterialRawUniforms> };
+export interface LayeredMaterialParameters extends THREE.ShaderMaterialParameters {
+    uniforms?: MappedUniforms<LayeredMaterialRawUniforms>;
+}
 
 type DefineMapping<Prefix extends string, Mapping extends Record<string, unknown>> = {
     [Name in Extract<keyof Mapping, string> as `${Prefix}_${Name}`]: Mapping[Name]
@@ -409,13 +409,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         ]?: LayeredMaterialRawUniforms[Name]
     }): void {
         for (const [name, value] of Object.entries(uniforms)) {
-            const uniform = this.uniforms[name];
-            if (uniform === undefined) {
-                continue;
-            }
-            if (uniform.value !== value) {
-                uniform.value = value;
-            }
+            this.setUniform(name as keyof LayeredMaterialRawUniforms, value);
         }
     }
 
