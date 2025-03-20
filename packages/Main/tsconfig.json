@@ -1,6 +1,6 @@
 {
     "extends": "../../tsconfig.json",
-    "include": [ "src/Main.js" ],
+    "include": [ "src/Main.js", "src/global.d.ts" ],
     "exclude": [ "lib" ],
     "compilerOptions": {
         "declaration": true,
