@@ -49,6 +49,7 @@
                 "PointCloudLayer",
                 "PotreeLayer",
                 "CopcLayer",
+                "VpcLayer",
                 "Potree2Layer",
                 "C3DTilesLayer",
                 "OGC3DTilesLayer",
@@ -78,6 +79,7 @@
                 "VectorTilesSource",
                 "EntwinePointTileSource",
                 "CopcSource",
+                "VpcSource",
                 "OGC3DTilesSource",
                 "OGC3DTilesIonSource",
                 "OGC3DTilesGoogleSource"

@@ -28,6 +28,7 @@ function addPickingAttribute(points) {
 
 export default {
     executeCommand(command) {
+        // console.log('executeCommand', command.requester);
         const layer = command.layer;
         const node = command.requester;
 
