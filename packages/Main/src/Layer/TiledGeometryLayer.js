@@ -9,7 +9,9 @@ import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
-
+// Common tile matrix sets covering the whole earth usually have a limit to zoom level 24.
+// (https://docs.ogc.org/is/17-083r4/17-083r4.html#toc48)
+const MAX_SUBDIVISION_LEVEL = 24;
 /**
  * @property {InfoTiledGeometryLayer} info - Status information of layer
  * @property {boolean} isTiledGeometryLayer - Used to checkout whether this
@@ -320,7 +322,7 @@ class TiledGeometryLayer extends GeometryLayer {
             node.material.visible = true;
             this.info.update(node);
 
-            if (this.subdivision(context, this, node)) {
+            if (node.level < MAX_SUBDIVISION_LEVEL && this.subdivision(context, this, node)) {
                 this.subdivideNode(context, node);
                 // display iff children aren't ready
                 node.material.visible = node.pendingSubdivision;
