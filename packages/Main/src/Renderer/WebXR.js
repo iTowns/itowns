@@ -2,7 +2,10 @@ import * as THREE from 'three';
 import VRControls from 'Controls/VRControls';
 
 // TODO handle xr session end
+export const VR_EVENTS = {
+    CONTROLS_INITIALIZED: 'vrControls-initialized',
 
+};
 
 function updateCamera3D(xr, view) {
     /* This is what's done in updateUserCamera the WebXRManager.js of threejs
@@ -63,7 +66,7 @@ function extractCameraAttributesFromProjectionMatrix(projectionMatrix) {
 /**
  * @property {VRControls} vrControls - WebXR controllers handler
  * */
-class WebXR {
+class WebXR extends THREE.EventDispatcher {
     /**
      * Handler of a webXR session
      *
@@ -75,6 +78,7 @@ class WebXR {
      * @param {boolean} [options.controllers] - Enable the webXR controllers handling (optional).
      */
     constructor(view, options) {
+        super();
         this.view = view;
         this.options = options;
         this.renderCb = options.callback;
@@ -114,6 +118,11 @@ class WebXR {
 
             if (this.options.controllers) {
                 this.vrControls = new VRControls(this.view, vrHeadSet);
+                this.dispatchEvent(
+                    {
+                        type: 'vrControls-initialized',
+                    },
+                );
             }
 
             xr.setAnimationLoop((timestamp) => {
