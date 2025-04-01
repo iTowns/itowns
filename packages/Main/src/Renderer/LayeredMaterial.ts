@@ -1,7 +1,5 @@
 import * as THREE from 'three';
-// @ts-expect-error: importing non-ts file
 import TileVS from 'Renderer/Shader/TileVS.glsl';
-// @ts-expect-error: importing non-ts file
 import TileFS from 'Renderer/Shader/TileFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import Capabilities from 'Core/System/Capabilities';
@@ -265,10 +263,8 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         initModeDefines(defines);
         fillInProp(defines, 'MODE', RenderMode.MODES.FINAL);
 
-        // @ts-expect-error: global constexpr
         fillInProp(defines, 'DEBUG', +__DEBUG__);
 
-        // @ts-expect-error: global constexpr
         if (__DEBUG__) {
             const outlineColors = [new THREE.Color(1.0, 0.0, 0.0)];
             if (crsCount > 1) {

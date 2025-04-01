@@ -8,6 +8,7 @@ import { Coordinates, Extent } from '@itowns/geographic';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
 import sinon from 'sinon';
+import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import Renderer from './bootstrap';
 
 import feature from '../data/filesource/feat_Polygone.geojson';
@@ -68,7 +69,8 @@ describe('Layer with Feature process', function () {
         const extent = new Extent('EPSG:4326', 1.40625, 2.8125, 42.1875, 43.59375);
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
-        tile = new TileMesh(geom, new THREE.Material(), viewer.tileLayer, extent, 7);
+        const material = new LayeredMaterial(viewer.tileLayer.materialOptions, 1);
+        tile = new TileMesh(geom, material, viewer.tileLayer, extent, 7);
         tile.parent = {};
     });
 
