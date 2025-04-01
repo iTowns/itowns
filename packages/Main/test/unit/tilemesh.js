@@ -10,6 +10,7 @@ import { newTileGeometry } from 'Core/Prefab/TileBuilder';
 import OBB from 'Renderer/OBB';
 import ElevationLayer from 'Layer/ElevationLayer';
 import Source from 'Source/Source';
+import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 
 // It is relatively long to create TileMesh on the go (in term of code), so we
 // emulate a fake one with the necessary informations in it.
@@ -162,11 +163,11 @@ describe('TileMesh', function () {
     it('throw error if there\'s not extent in constructor', () => {
         assert.doesNotThrow(() => {
             // eslint-disable-next-line no-unused-vars
-            const tileMesh = new TileMesh(geom, new THREE.Material(), planarlayer, tile.toExtent('EPSG:3857'), 0);
+            const tileMesh = new TileMesh(geom, new LayeredMaterial(), planarlayer, tile.toExtent('EPSG:3857'), 0);
         });
         assert.throws(() => {
             // eslint-disable-next-line no-unused-vars
-            const tileMesh = new TileMesh(geom, new THREE.Material(), planarlayer);
+            const tileMesh = new TileMesh(geom, new LayeredMaterial(), planarlayer);
         });
     });
 
@@ -174,11 +175,11 @@ describe('TileMesh', function () {
     const elevationLayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: new Source({ url: 'node' }) });
     elevationLayer.parent = planarlayer;
 
-    const material = new THREE.Material();
-    material.addLayer = () => { };
-    material.setSequenceElevation = () => { };
-    material.setElevationTile = () => { };
-    material.setElevationTileId = () => { };
+    const material = new LayeredMaterial();
+    material.addLayer = () => {};
+    material.setSequenceElevation = () => {};
+    material.setElevationTile = () => {};
+    material.setElevationTileId = () => {};
 
     it('event rasterElevationLevelChanged RasterElevationTile sets TileMesh bounding box ', () => {
         const tileMesh = new TileMesh(geom, material, planarlayer, tile.toExtent('EPSG:3857'), 0);

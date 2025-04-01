@@ -8,13 +8,14 @@ import Layer from 'Layer/Layer';
 import Source from 'Source/Source';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import { RasterColorTile } from 'Renderer/RasterTile';
+import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 
 describe('updateLayeredMaterialNodeImagery', function () {
     // Misc var to initialize a TileMesh instance
     const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const extent = new Extent('EPSG:4326', 0, 11.25, 0, 11.25);
-    const material = new THREE.Material();
+    const material = new LayeredMaterial();
 
     // Mock scheduler
     const context = {

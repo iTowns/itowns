@@ -11,6 +11,7 @@ import OBB from 'Renderer/OBB';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import DEMUtils from 'Utils/DEMUtils';
 import { RasterElevationTile } from 'Renderer/RasterTile';
+import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import sinon from 'sinon';
 import Renderer from './bootstrap';
 
@@ -81,7 +82,7 @@ describe('DemUtils', function () {
     it('load elevation texture', (done) => {
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
-        const material = new THREE.Material();
+        const material = new LayeredMaterial();
         const nodeLayer = new RasterElevationTile(material, elevationlayer);
         material.getElevationTile = () => nodeLayer;
         const tile = new TileMesh(geom, material, viewer.tileLayer, extent, 5);
