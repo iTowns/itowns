@@ -11,12 +11,7 @@ export const STRATEGY_GROUP = 1;
 export const STRATEGY_PROGRESSIVE = 2;
 export const STRATEGY_DICHOTOMY = 3;
 
-function _minimizeNetworkTraffic(node, nodeLevel, currentLevel, source) {
-    // TO DO source.isVectorTileSource is a temp fix for pendingSubdivision.
-    // see issue https://github.com/iTowns/itowns/issues/2214
-    if (node.pendingSubdivision && !source.isVectorTileSource) {
-        return currentLevel;
-    }
+function _minimizeNetworkTraffic(node, nodeLevel) {
     return nodeLevel;
 }
 
@@ -74,7 +69,7 @@ export function chooseNextLevelToFetch(strategy, node, nodeLevel = node.level, c
             // default strategy
             case STRATEGY_MIN_NETWORK_TRAFFIC:
             default:
-                nextLevelToFetch = _minimizeNetworkTraffic(node, nodeLevel, currentLevel, layer.source);
+                nextLevelToFetch = _minimizeNetworkTraffic(node, nodeLevel);
         }
         nextLevelToFetch = Math.min(nextLevelToFetch, maxZoom);
     }
