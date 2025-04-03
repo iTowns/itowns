@@ -40,7 +40,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
     const layer = new Layer('foo', {
         source,
         crs: 'EPSG:4326',
-        info: { update: () => {} },
+        info: { update: () => { } },
     });
     layer.tileMatrixSets = [
         'EPSG:4326',
@@ -53,7 +53,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         ],
     };
 
-    const nodeLayer = new RasterColorTile(material, layer);
+    const nodeLayer = new RasterColorTile(layer);
     material.getTile = () => nodeLayer;
 
     beforeEach('reset state', function () {

@@ -83,7 +83,7 @@ describe('DemUtils', function () {
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
         const material = new LayeredMaterial();
-        const nodeLayer = new RasterElevationTile(material, elevationlayer);
+        const nodeLayer = new RasterElevationTile(elevationlayer);
         material.getElevationTile = () => nodeLayer;
         const tile = new TileMesh(geom, material, viewer.tileLayer, extent, 5);
         tile.layerUpdateState[elevationlayer.id] = new LayerUpdateState();

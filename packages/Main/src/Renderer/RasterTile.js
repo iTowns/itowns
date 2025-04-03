@@ -28,7 +28,7 @@ function getIndiceWithPitch(i, pitch, w) {
  * @class RasterTile
  */
 export class RasterTile extends THREE.EventDispatcher {
-    constructor(material, layer) {
+    constructor(layer) {
         super();
         this.layer = layer;
         this.crs = layer.parent.tileMatrixSets.indexOf(layer.crs);

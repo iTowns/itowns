@@ -43,7 +43,7 @@ describe('Handling no data source error', function () {
     const layer = new Layer('foo', {
         source,
         crs: 'EPSG:4326',
-        info: { update: () => {} },
+        info: { update: () => { } },
     });
     layer.tileMatrixSets = [
         'EPSG:4326',
