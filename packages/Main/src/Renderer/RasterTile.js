@@ -165,8 +165,8 @@ export class RasterColorTile extends RasterTile {
 }
 
 export class RasterElevationTile extends RasterTile {
-    constructor(layer) {
-        super(layer);
+    constructor(material, layer) {
+        super(material, layer);
         const defaultEle = {
             bias: 0,
             mode: ELEVATION_MODES.DATA,

@@ -56,7 +56,7 @@ describe('Handling no data source error', function () {
         ],
     };
 
-    const nodeLayer = new RasterColorTile(layer);
+    const nodeLayer = new RasterColorTile(material, layer);
     nodeLayer.level = 10;
 
     const node = new TileMesh(geom, material, layer, extent, 19);
