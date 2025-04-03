@@ -6,6 +6,7 @@ import FileSource from 'Source/FileSource';
 import { Extent, Coordinates } from '@itowns/geographic';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
+import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import Renderer from './bootstrap';
 
 import geojson_big from '../data/geojson/map_big.geojson';
@@ -55,7 +56,8 @@ files.forEach((geojson, i) => {
         const extent = new Extent('EPSG:4326', 4.1, 4.3, 48.1, 48.3);
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
-        const tile = new TileMesh(geom, new THREE.Material(), viewer.tileLayer, extent, 9);
+        const material = new LayeredMaterial(viewer.tileLayer.materialOptions, 1);
+        const tile = new TileMesh(geom, material, viewer.tileLayer, extent, 9);
         tile.parent = {};
 
         viewer.addLayer(layerProj4);
