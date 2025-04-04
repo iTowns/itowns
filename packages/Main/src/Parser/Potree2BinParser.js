@@ -37,8 +37,10 @@ export default {
      * @param {ArrayBuffer} buffer - the bin buffer.
      * @param {Object} options
      * @param {string[]} options.in.pointAttributes - the point attributes information contained in metadata.js
-     * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
+     * @param {THREE.Box3} options.in.bbox - the bbox of the node
+     * @param {THREE.Vector3} options.out.center - the origin position of the data
      *
+     * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
      */
     parse: async function parse(buffer, options) {
         const metadata = options.in.source.metadata;
@@ -94,6 +96,9 @@ export default {
                 geometry.setAttribute(property, bufferAttribute);
             }
         });
+
+        geometry.userData.origin = options.out.center;
+        geometry.userData.rotation = new THREE.Quaternion();
 
         geometry.computeBoundingBox();
 
