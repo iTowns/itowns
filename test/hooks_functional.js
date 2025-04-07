@@ -148,11 +148,16 @@ const loadExample = async (url, screenshotName) => {
         await initializeLayers();
     } catch (e) {
         if (e instanceof Error && e.name === 'TimeoutError') {
-            console.warn('     *** Warning: initializeLayers timed out -> Camera motion had been stopped ***');
+            console.warn('     *** Warning: initializeLayers timed out ***');
             await page.evaluate(() => {
                 itowns.CameraUtils.stop(view, view.camera3D);
             });
-            await initializeLayers();
+            console.warn('         -> Camera motion had been stopped');
+            try {
+                await initializeLayers();
+            } catch (e) {
+                console.warn('     *** Warning: initializeLayers timed out again ***');
+            }
         } else {
             console.warn(e);
             throw e;
