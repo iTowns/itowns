@@ -10,7 +10,7 @@ const cacheBuffer = new Map<string, {
     index: THREE.BufferAttribute,
     uv: THREE.BufferAttribute,
 }>();
-const cacheTile = new LRUCache<string, Promise<TileGeometry>>({ max: 500 });
+const cacheTile = new LRUCache<string, TileGeometry>({ max: 500 });
 
 export type GpuBufferAttributes = {
     index: THREE.BufferAttribute | null;
@@ -85,13 +85,11 @@ export function newTileGeometry(
         `${builder.crs}_${params.disableSkirt ? 0 : 1}_${params.segments}`;
 
     const key = `s${south}l${params.level}bK${bufferKey}`;
-    let promiseGeometry = cacheTile.get(key);
+    let tileGeometry = cacheTile.get(key);
 
     // build geometry if doesn't exist
-    if (!promiseGeometry) {
-        let resolve;
-        promiseGeometry = new Promise((r) => { resolve = r; });
-        cacheTile.set(key, promiseGeometry);
+    if (!tileGeometry) {
+        cacheTile.set(key, tileGeometry);
 
         params.extent = shareableExtent;
         params.center = builder.center(params.extent).clone();
@@ -100,21 +98,18 @@ export function newTileGeometry(
         let cachedBuffers = cacheBuffer.get(bufferKey);
 
         let buffers;
-        try {
-            buffers = computeBuffers(
-                builder,
-                params,
-                cachedBuffers !== undefined
-                    ? {
-                        index: cachedBuffers.index.array as
-                            Uint8Array | Uint16Array | Uint32Array,
-                        uv: cachedBuffers.uv.array as Float32Array,
-                    }
-                    : undefined,
-            );
-        } catch (e) {
-            return Promise.reject(e);
-        }
+        // TODO removed a try catch here that didn't seem needed after a first quick look, but needs to be re-checked
+        buffers = computeBuffers(
+            builder,
+            params,
+            cachedBuffers !== undefined
+                ? {
+                    index: cachedBuffers.index.array as
+                        Uint8Array | Uint16Array | Uint32Array,
+                    uv: cachedBuffers.uv.array as Float32Array,
+                }
+                : undefined,
+        );
 
         if (!cachedBuffers) {
             // We know the fields will exist due to the condition
@@ -143,15 +138,11 @@ export function newTileGeometry(
             normal: new THREE.BufferAttribute(buffers.normal, 3),
         };
 
-        const geometry = new TileGeometry(builder, params, gpuBuffers);
-        geometry.OBB =
-            new OBB(geometry.boundingBox!.min, geometry.boundingBox!.max);
-        geometry.initRefCount(cacheTile, key);
-        resolve!(geometry);
-
-        return Promise.resolve({ geometry, quaternion, position });
+        tileGeometry = new TileGeometry(builder, params, gpuBuffers);
+        tileGeometry.OBB =
+            new OBB(tileGeometry.boundingBox!.min, tileGeometry.boundingBox!.max);
+        tileGeometry.initRefCount(cacheTile, key);
     }
 
-    return (promiseGeometry as Promise<TileGeometry>)
-        .then(geometry => ({ geometry, quaternion, position }));
+    return { tileGeometry, quaternion, position };
 }
