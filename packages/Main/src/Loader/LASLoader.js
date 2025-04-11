@@ -1,5 +1,6 @@
 import { LazPerf } from 'laz-perf';
 import { Las } from 'copc';
+import proj4 from 'proj4';
 
 /**
  * @typedef {Object} Header - Partial LAS header.
@@ -17,6 +18,37 @@ import { Las } from 'copc';
 
 function defaultColorEncoding(header) {
     return (header.majorVersion === 1 && header.minorVersion <= 2) ? 8 : 16;
+}
+
+/**
+ * Applies the given Quaternion to this vector.
+ * @param {Array} v - The array depicting the position [x, y, z].
+ * @param {Array} q - The Array depicting the Quaternion. [x, y, z, w]
+ *
+ * @return {Vector3} A reference to this vector.
+ */
+function _applyQuaternion(v, q) {
+    // quaternion q is assumed to have unit length
+    const vx = v[0];
+    const vy = v[1];
+    const vz = v[2];
+    const qx = q[0];
+    const qy = q[1];
+    const qz = q[2];
+    const qw = q[3];
+
+    // t = 2 * cross( q.xyz, v );
+    const tx = 2 * (qy * vz - qz * vy);
+    const ty = 2 * (qz * vx - qx * vz);
+    const tz = 2 * (qx * vy - qy * vx);
+
+    const res = [];
+    // v + q.w * t + cross( q.xyz, t );
+    res[0] = vx + qw * tx + qy * tz - qz * ty;
+    res[1] = vy + qw * ty + qz * tx - qx * tz;
+    res[2] = vz + qw * tz + qx * ty - qy * tx;
+
+    return res;
 }
 
 /**
@@ -47,7 +79,13 @@ class LASLoader {
     }
 
     _parseView(view, options) {
-        const colorDepth = options.colorDepth ?? 16;
+        const colorDepth = options.colorDepth ?? defaultColorEncoding(options.header);
+
+        const forward = (options.in.crs !== options.out.crs) ?
+            proj4(options.in.projDefs, options.out.projDefs).forward :
+            (x => x);
+        const applyQuaternion = (options.in.crs !== options.out.crs) ?
+            _applyQuaternion : (x => x);
 
         const getPosition = ['X', 'Y', 'Z'].map(view.getter);
         const getIntensity = view.getter('Intensity');
@@ -60,6 +98,7 @@ class LASLoader {
         const getScanAngle = view.getter('ScanAngle');
 
         const positions = new Float32Array(view.pointCount * 3);
+
         const intensities = new Uint16Array(view.pointCount);
         const returnNumbers = new Uint8Array(view.pointCount);
         const numberOfReturns = new Uint8Array(view.pointCount);
@@ -75,16 +114,33 @@ class LASLoader {
         */
         const scanAngles = new Float32Array(view.pointCount);
 
-        // For precision we take the first point that will be use as origin for a local referentiel.
-        const origin = getPosition.map(f => f(0)).map(val => Math.floor(val));
-
+        const origin = options.out.origin;
+        const quaternion = options.out.rotation;
+        let minX = Infinity; let minY = Infinity; let minZ = Infinity;
+        let maxX = -Infinity; let maxY = -Infinity; let maxZ = -Infinity;
         for (let i = 0; i < view.pointCount; i++) {
             // `getPosition` apply scale and offset transform to the X, Y, Z
             // values. See https://github.com/connormanning/copc.js/blob/master/src/las/extractor.ts.
-            const [x, y, z] = getPosition.map(f => f(i));
-            positions[i * 3] = x - origin[0];
-            positions[i * 3 + 1] = y - origin[1];
-            positions[i * 3 + 2] = z - origin[2];
+            // we thus apply the projection to get values in the Crs of the view.
+            const point = getPosition.map(f => f(i));
+            const [x, y, z] = forward(point);
+
+            const position = applyQuaternion([
+                x - origin[0],
+                y - origin[1],
+                z - origin[2],
+            ], quaternion);
+
+            positions[i * 3] = position[0];
+            positions[i * 3 + 1] = position[1];
+            positions[i * 3 + 2] = position[2];
+
+            minX = Math.min(minX, position[0]);
+            minY = Math.min(minY, position[1]);
+            minZ = Math.min(minZ, position[2]);
+            maxX = Math.max(maxX, position[0]);
+            maxY = Math.max(maxY, position[1]);
+            maxZ = Math.max(maxZ, position[2]);
 
             intensities[i] = getIntensity(i);
             returnNumbers[i] = getReturnNumber(i);
@@ -122,7 +178,7 @@ class LASLoader {
             pointSourceID: pointSourceIDs,
             color: colors,
             scanAngle: scanAngles,
-            origin,
+            bbox: [minX, minY, minZ, maxX, maxY, maxZ],
         };
     }
 
@@ -153,8 +209,6 @@ class LASLoader {
         const { header, eb, pointCount } = options;
         const { pointDataRecordFormat, pointDataRecordLength } = header;
 
-        const colorDepth = options.colorDepth ?? defaultColorEncoding(header);
-
         const bytes = new Uint8Array(data);
         const pointData = await Las.PointData.decompressChunk(bytes, {
             pointCount,
@@ -163,7 +217,7 @@ class LASLoader {
         }, this._initDecoder());
 
         const view = Las.View.create(pointData, header, eb);
-        const attributes = this._parseView(view, { colorDepth });
+        const attributes = this._parseView(view, options);
         return { attributes };
     }
 
@@ -182,7 +236,7 @@ class LASLoader {
         const pointData = await Las.PointData.decompressFile(bytes, this._initDecoder());
 
         const header = Las.Header.parse(bytes);
-        const colorDepth = options.colorDepth ?? defaultColorEncoding(header);
+        options.header = header;
 
         const getter = async (begin, end) => bytes.slice(begin, end);
         const vlrs = await Las.Vlr.walk(getter, header);
@@ -190,7 +244,7 @@ class LASLoader {
         const eb = ebVlr && Las.ExtraBytes.parse(await Las.Vlr.fetch(getter, ebVlr));
 
         const view = Las.View.create(pointData, header, eb);
-        const attributes = this._parseView(view, { colorDepth });
+        const attributes = this._parseView(view, options);
         return {
             header,
             attributes,
