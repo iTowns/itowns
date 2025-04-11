@@ -9,6 +9,7 @@ import GlobeView from 'Core/Prefab/GlobeView';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
 import sinon from 'sinon';
+import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import Renderer from './bootstrap';
 
 const ELEVATION = 10;
@@ -50,7 +51,8 @@ describe('GlobeView', function () {
         const extent = new Extent('EPSG:4326', 4.1, 4.3, 48.1, 48.3);
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
-        tile = new TileMesh(geom, new THREE.Material(), view.tileLayer, extent, 9);
+        const material = new LayeredMaterial(view.tileLayer.materialOptions, 1);
+        tile = new TileMesh(geom, material, view.tileLayer, extent, 9);
         tile.parent = {};
     });
 

@@ -27,8 +27,8 @@ function getIndiceWithPitch(i, pitch, w) {
  *
  * @class RasterTile
  */
-class RasterTile extends THREE.EventDispatcher {
-    constructor(layer) {
+export class RasterTile extends THREE.EventDispatcher {
+    constructor(material, layer) {
         super();
         this.layer = layer;
         this.crs = layer.parent.tileMatrixSets.indexOf(layer.crs);
@@ -152,8 +152,6 @@ class RasterTile extends THREE.EventDispatcher {
     }
 }
 
-export default RasterTile;
-
 export class RasterColorTile extends RasterTile {
     get effect_type() {
         return this.layer.effect_type;
@@ -167,8 +165,8 @@ export class RasterColorTile extends RasterTile {
 }
 
 export class RasterElevationTile extends RasterTile {
-    constructor(layer) {
-        super(layer);
+    constructor(material, layer) {
+        super(material, layer);
         const defaultEle = {
             bias: 0,
             mode: ELEVATION_MODES.DATA,
