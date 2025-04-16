@@ -65,7 +65,7 @@
 
             function loadCOG(url) {
                 // create a source from a Cloud Optimized GeoTiff
-                var cogSource = new COGSource({
+                var cogSource = new itowns.COGSource({
                     url: url,
                     crs: "EPSG:2154",
                     // Default resample method is 'nearest', 'bilinear' looks better when zoomed
