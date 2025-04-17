@@ -3,33 +3,26 @@ import CopcNode from 'Core/CopcNode';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 
-// const bboxMesh = new THREE.Mesh();
-// const box3 = new THREE.Box3();
+const bboxMesh = new THREE.Mesh();
+const box3 = new THREE.Box3();
+bboxMesh.geometry.boundingBox = box3;
+
 function initBoundingBox(elt, layer) {
-    console.log('######initBoundingBox');
-    const box3 = new THREE.Box3();
-    const bboxMesh = new THREE.Mesh();
-    console.log(elt.tightbbox.min);
     elt.tightbbox.getSize(box3.max);
-    console.log('max', box3.max);
     box3.max.multiplyScalar(0.5);
     box3.min.copy(box3.max).negate();
-    console.log(box3);
     elt.obj.boxHelper = new THREE.BoxHelper(bboxMesh);
     elt.obj.boxHelper.geometry = elt.obj.boxHelper.geometry.toNonIndexed();
     elt.obj.boxHelper.computeLineDistances();
-    console.log(elt.obj.boxHelper.geometry);
     elt.obj.boxHelper.material = elt.childrenBitField ? new THREE.LineDashedMaterial({ dashSize: 0.25, gapSize: 0.25 }) : new THREE.LineBasicMaterial();
     elt.obj.boxHelper.material.color.setHex(0);
     elt.obj.boxHelper.material.linewidth = 2;
     elt.obj.boxHelper.frustumCulled = false;
     elt.obj.boxHelper.position.copy(elt.tightbbox.min).add(box3.max);
-    console.log('position', elt.obj.boxHelper.position);
     elt.obj.boxHelper.autoUpdateMatrix = false;
     layer.bboxes.add(elt.obj.boxHelper);
     elt.obj.boxHelper.updateMatrix();
     elt.obj.boxHelper.updateMatrixWorld();
-    console.log('^^^^^initBoundingBox');
 }
 
 function computeSSEPerspective(context, pointSize, spacing, elt, distance) {
@@ -163,9 +156,7 @@ class VpcLayer extends PointCloudLayer {
                             const root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1, i);
                             root.bbox.min.fromArray(cube, 0);
                             root.bbox.max.fromArray(cube, 3);
-                            // this.roots.push(root);
                             this.roots[i] = root;
-                            // console.log(i);
 
                             return root.loadOctree().then(res => resolve(res));
                         } else {
@@ -266,7 +257,6 @@ class VpcLayer extends PointCloudLayer {
 
         // pick the best bounding box
         const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        // console.log(elt);
         elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
         if (!elt.visible) {
             markForDeletion(elt);
@@ -274,18 +264,11 @@ class VpcLayer extends PointCloudLayer {
         }
 
         if (!(elt.isCopcNode || elt.isEntwinePointTileNode)) {
-            // console.log('elt', elt);
-            // console.log('tightbbox', elt.tightbbox);
             layer.source.load(elt.sId);
             await layer.loadOctrees[elt.sId];
-            // console.log('elt2', elt, this.roots[elt.sId]);
             elt = this.roots[elt.sId];
             elt.visible = true;
-            // this.update(context, layer, elt);
-            // return;
         }
-
-        // console.log('elt3', elt);
 
         elt.notVisibleSince = undefined;
         const point = new THREE.Vector3();
@@ -299,12 +282,11 @@ class VpcLayer extends PointCloudLayer {
                 if (__DEBUG__) {
                     if (this.bboxes.visible) {
                         if (!elt.obj.boxHelper) {
-                            // console.log(elt, layer);
                             initBoundingBox(elt, layer);
                         }
                         elt.obj.boxHelper.visible = true;
-                        // elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                        // elt.obj.boxHelper.material.color.g = elt.sse;
+                        elt.obj.boxHelper.material.color.r = 1 - elt.sse;
+                        elt.obj.boxHelper.material.color.g = elt.sse;
                     }
                 }
             } else if (!elt.promise) {
