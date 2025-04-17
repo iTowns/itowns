@@ -1,22 +1,29 @@
 import * as THREE from 'three';
 import CopcNode from 'Core/CopcNode';
+import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 
-const geometry = new THREE.BufferGeometry();
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
+// const bboxMesh = new THREE.Mesh();
+// const box3 = new THREE.Box3();
 function initBoundingBox(elt, layer) {
+    const box3 = new THREE.Box3();
+    const bboxMesh = new THREE.Mesh();
+    console.log(elt.tightbbox.min);
     elt.tightbbox.getSize(box3.max);
+    console.log('max', box3.max);
     box3.max.multiplyScalar(0.5);
     box3.min.copy(box3.max).negate();
+    console.log(box3);
     elt.obj.boxHelper = new THREE.BoxHelper(bboxMesh);
     elt.obj.boxHelper.geometry = elt.obj.boxHelper.geometry.toNonIndexed();
     elt.obj.boxHelper.computeLineDistances();
+    console.log(elt.obj.boxHelper.geometry);
     elt.obj.boxHelper.material = elt.childrenBitField ? new THREE.LineDashedMaterial({ dashSize: 0.25, gapSize: 0.25 }) : new THREE.LineBasicMaterial();
     elt.obj.boxHelper.material.color.setHex(0);
     elt.obj.boxHelper.material.linewidth = 2;
     elt.obj.boxHelper.frustumCulled = false;
     elt.obj.boxHelper.position.copy(elt.tightbbox.min).add(box3.max);
+    console.log('position', elt.obj.boxHelper.position);
     elt.obj.boxHelper.autoUpdateMatrix = false;
     layer.bboxes.add(elt.obj.boxHelper);
     elt.obj.boxHelper.updateMatrix();
@@ -116,7 +123,7 @@ class VpcLayer extends PointCloudLayer {
          */
         this.isVpcLayer = true;
 
-        this.root = [];
+        // this.root = [];
         this.roots = [];
         this.spacing = [];
         this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
@@ -143,21 +150,36 @@ class VpcLayer extends PointCloudLayer {
                 const promise =
                     // source.whenReady.then((src) => {
                     this.source.sources[i].whenReady.then((src) => {
-                        minElevationRanges.push(src.header.min[2]);
-                        maxElevationRanges.push(src.header.max[2]);
+                        if (this.source.sources[i].isCopcSource) {
+                            minElevationRanges.push(src.header.min[2]);
+                            maxElevationRanges.push(src.header.max[2]);
 
-                        const { cube, rootHierarchyPage } = src.info;
-                        const { pageOffset, pageLength } = rootHierarchyPage;
+                            const { cube, rootHierarchyPage } = src.info;
+                            const { pageOffset, pageLength } = rootHierarchyPage;
 
-                        this.spacing.push(src.info.spacing);
+                            this.spacing.push(src.info.spacing);
 
-                        const root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1, i);
-                        root.bbox.min.fromArray(cube, 0);
-                        root.bbox.max.fromArray(cube, 3);
-                        // this.roots.push(root);
-                        this.roots[i] = root;
+                            const root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1, i);
+                            root.bbox.min.fromArray(cube, 0);
+                            root.bbox.max.fromArray(cube, 3);
+                            // this.roots.push(root);
+                            this.roots[i] = root;
+                            console.log(this.source.sources[i]);
 
-                        return root.loadOctree().then(res => resolve(res));
+                            return root.loadOctree().then(res => resolve(res));
+                        } else {
+                            minElevationRanges.push(src.boundsConforming[2]);
+                            maxElevationRanges.push(src.boundsConforming[5]);
+
+                            this.spacing.push(src.spacing);
+
+                            const root = new EntwinePointTileNode(0, 0, 0, 0, this, -1, i);
+                            root.bbox.min.fromArray(src.boundsConforming, 0);
+                            root.bbox.max.fromArray(src.boundsConforming, 3);
+                            this.roots[i] = root;
+
+                            return root.loadOctree().then(res => resolve(res));
+                        }
                     });
                 this.loadOctrees.push(promise);
 
@@ -243,14 +265,20 @@ class VpcLayer extends PointCloudLayer {
 
         // pick the best bounding box
         const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
+        // console.log(elt);
         elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
         if (!elt.visible) {
             markForDeletion(elt);
             return [];
         }
-        if (!elt.isCopcNode) {
+
+        if (!(elt.isCopcNode || elt.isEntwinePointTileNode)) {
+            console.log(elt);
+            console.log('tightbbox', elt.tightbbox);
             layer.source.load(elt.sId);
             await layer.loadOctrees[elt.sId];
+            // this.update(context, layer, elt);
+            // return;
         }
 
         elt.notVisibleSince = undefined;
@@ -265,11 +293,12 @@ class VpcLayer extends PointCloudLayer {
                 if (__DEBUG__) {
                     if (this.bboxes.visible) {
                         if (!elt.obj.boxHelper) {
+                            console.log(elt, layer);
                             initBoundingBox(elt, layer);
                         }
                         elt.obj.boxHelper.visible = true;
-                        elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                        elt.obj.boxHelper.material.color.g = elt.sse;
+                        // elt.obj.boxHelper.material.color.r = 1 - elt.sse;
+                        // elt.obj.boxHelper.material.color.g = elt.sse;
                     }
                 }
             } else if (!elt.promise) {

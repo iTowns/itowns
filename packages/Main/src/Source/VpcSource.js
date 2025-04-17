@@ -1,7 +1,7 @@
 import LASParser from 'Parser/LASParser';
 import Fetcher from 'Provider/Fetcher';
 import Source from 'Source/Source';
-import { CopcSource } from 'Main';
+import { CopcSource, EntwinePointTileSource } from 'Main';
 
 // import vpc from '../../../../examples/layers/test_vpc_4_dalles.json';
 
@@ -53,7 +53,6 @@ class VpcSource extends Source {
             this.minElevation = Math.min(...boundsConformings.map(bC => bC[2]));
             this.maxElevation = Math.max(...boundsConformings.map(bC => bC[5]));
             // const projsWkt2 = meta.features.map(f => f.properties['proj:wkt2']);
-            // console.log('urls', this.urls, '\nbboxes', bboxes, '\nprojBboxes', boundsConforming, '\nwkt2', projsWkt2);
 
             /* FOR ONE proj:wkt2
             proj4.defs('unknown', projsWkt2[0]);
@@ -72,40 +71,37 @@ class VpcSource extends Source {
             }
             */
 
-            // this.copcSources = [];
-            // this.urls.forEach((url) => {
-            //     const copcSource = new CopcSource({ url });
-            //     this.copcSources.push(copcSource);
-            // });
-
-            this.copcSources = [];
+            this.sources = [];
             this.promises = [];
             this.urls.forEach((url, i) => {
                 const p = new Promise((re, rj) => {
-                    // this._resolve = re;
-                    // this._reject = rj;
                     this.promises.push({ resolve: re, reject: rj });
                 }).then((res) => {
                     this.sources[i] = res;
                     return res;
                 });
+
                 const mockSource = {
                     url,
                     boundsConforming: boundsConformings[i],
                     whenReady: p,
                 };
-                this.copcSources.push(mockSource);
+                this.sources.push(mockSource);
             });
 
-            this.sources = this.copcSources;
-
-            return this.copcSources;
+            return this.sources;
         });
     }
 
     load(index) {
-        const copcSource = new CopcSource({ url: this.urls[index] });
-        this.promises[index].resolve(copcSource.whenReady);
+        const url = this.urls[index];
+        let source;
+        if (url.includes('.copc')) {
+            source = new CopcSource({ url });
+        } else {
+            source = new EntwinePointTileSource({ url });
+        }
+        this.promises[index].resolve(source.whenReady);
     }
 }
 
