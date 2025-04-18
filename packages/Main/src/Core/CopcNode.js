@@ -144,6 +144,8 @@ class CopcNode extends PointCloudNode {
             this.layer,
             pointCount,
         );
+        child._quaternion = this._quaternion;
+        child._position = this._position;
         this.add(child);
         stack.push(child);
     }
@@ -157,13 +159,18 @@ class CopcNode extends PointCloudNode {
             await this.loadOctree();
         }
 
+        this.getCenter();
+
         const buffer = await this._fetch(this.entryOffset, this.entryLength);
         const geometry = await this.layer.source.parser(buffer, {
             in: {
                 ...this.layer.source,
                 pointCount: this.numPoints,
             },
-            out: this.layer,
+            out: {
+                ...this.layer,
+                center: this.center,
+            },
         });
 
         return geometry;
