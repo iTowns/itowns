@@ -30,6 +30,8 @@
         <script src="../dist/debug.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
+        <script src="js/plugins/COGParser.js"></script>
+        <script src="js/plugins/COGSource.js"></script>
         <script type="text/javascript">
             itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
@@ -65,7 +67,7 @@
                 // create a source from a Cloud Optimized GeoTiff
                 var cogSource = new itowns.CogSource({
                     url: url,
-                    crs: "EPSG:2154",
+                    crs: "EPSG:4326",
                     // Default resample method is 'nearest', 'bilinear' looks better when zoomed
                     resampleMethod: 'bilinear'
                 });
@@ -75,14 +77,13 @@
                         view.dispose(true);
                         removeAllChildNodes(viewerDiv);
                     }
-                    view = new itowns.PlanarView(viewerDiv, cogSource.extent, {
-                        // Default maxSubdivisionLevel is 5, so with huge geotiff it's not enough to see details when zoomed
-                        // maxSubdivisionLevel: 10,
-                        // disableSkirt: true,
-                        placement: { tilt: 90 }
+
+                    view = new itowns.GlobeView(viewerDiv, {
+                        coord: cogSource.extent.center(),
+                        range: cogSource.extent.planarDimensions().x,
                     });
-                    view.camera.camera3D.far = 1000000;
                     setupLoadingScreen(viewerDiv, view);
+
                     menuGlobe = new GuiTools('menuDiv', view);
                     debug.createTileDebugUI(menuGlobe.gui, view);
 

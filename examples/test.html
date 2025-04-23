@@ -1,0 +1,75 @@
+<html>
+    <head>
+        <title>GeoTiff</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
+
+        <script type="text/javascript">
+
+            const dataExtent = new itowns.Extent(
+                'EPSG:4326',
+                -62.95280769, 45.304315330000001,
+                -13.007809419999999, 51.105279680000002,
+            );
+
+            const viewContainer = document.getElementById('viewerDiv');
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', -2.249557, 47.368139),
+                range: 10000,
+                tilt: 45,
+            };
+            const view = new itowns.GlobeView(viewContainer, placement);
+
+            const debugMenu = new GuiTools('menuDiv', view);
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then((config) => {
+                const colorLayer = new itowns.ColorLayer('Ortho', {
+                    ...config,
+                    source: new itowns.WMTSSource(config.source),
+                });
+                view.addLayer(colorLayer);
+            });
+
+
+
+
+            const elevationSource = new itowns.WMSSource({
+                crs: 'EPSG:4326',
+                extent: dataExtent,
+                url: 'https://data.geopf.fr/wms-r/wms',
+                name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+                version: '1.3.0',
+
+                fetcher: itowns.Fetcher.geotiff,
+                parser: itowns.GeotiffParser.parse,
+                format: 'image/geotiff',  // TODO: this should not be needed. iTowns needs fixing...
+            });
+
+            const elevationLayer = new itowns.ElevationLayer(
+                'elevation',
+                {
+                    source: elevationSource,
+                },
+            );
+
+            view.addLayer(elevationLayer);
+
+        </script>
+    </body>
+</html>
