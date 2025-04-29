@@ -34,42 +34,48 @@ class PotreeNode extends PointCloudNode {
         }
     }
 
-    createChildAABB(node, childIndex) {
+    createChildAABB(childNode, childIndex) {
         // Code inspired from potree
-        node.bbox.copy(this.bbox);
-        this.bbox.getCenter(node.bbox.max);
-        dHalfLength.copy(node.bbox.max).sub(this.bbox.min);
+        childNode._bbox.copy(this._bbox);
+        this._bbox.getCenter(childNode._bbox.max);
+        dHalfLength.copy(childNode._bbox.max).sub(this._bbox.min);
 
         if (childIndex === 1) {
-            node.bbox.min.z += dHalfLength.z;
-            node.bbox.max.z += dHalfLength.z;
+            childNode._bbox.min.z += dHalfLength.z;
+            childNode._bbox.max.z += dHalfLength.z;
         } else if (childIndex === 3) {
-            node.bbox.min.z += dHalfLength.z;
-            node.bbox.max.z += dHalfLength.z;
-            node.bbox.min.y += dHalfLength.y;
-            node.bbox.max.y += dHalfLength.y;
+            childNode._bbox.min.z += dHalfLength.z;
+            childNode._bbox.max.z += dHalfLength.z;
+            childNode._bbox.min.y += dHalfLength.y;
+            childNode._bbox.max.y += dHalfLength.y;
         } else if (childIndex === 0) {
             //
         } else if (childIndex === 2) {
-            node.bbox.min.y += dHalfLength.y;
-            node.bbox.max.y += dHalfLength.y;
+            childNode._bbox.min.y += dHalfLength.y;
+            childNode._bbox.max.y += dHalfLength.y;
         } else if (childIndex === 5) {
-            node.bbox.min.z += dHalfLength.z;
-            node.bbox.max.z += dHalfLength.z;
-            node.bbox.min.x += dHalfLength.x;
-            node.bbox.max.x += dHalfLength.x;
+            childNode._bbox.min.z += dHalfLength.z;
+            childNode._bbox.max.z += dHalfLength.z;
+            childNode._bbox.min.x += dHalfLength.x;
+            childNode._bbox.max.x += dHalfLength.x;
         } else if (childIndex === 7) {
-            node.bbox.min.add(dHalfLength);
-            node.bbox.max.add(dHalfLength);
+            childNode._bbox.min.add(dHalfLength);
+            childNode._bbox.max.add(dHalfLength);
         } else if (childIndex === 4) {
-            node.bbox.min.x += dHalfLength.x;
-            node.bbox.max.x += dHalfLength.x;
+            childNode._bbox.min.x += dHalfLength.x;
+            childNode._bbox.max.x += dHalfLength.x;
         } else if (childIndex === 6) {
-            node.bbox.min.y += dHalfLength.y;
-            node.bbox.max.y += dHalfLength.y;
-            node.bbox.min.x += dHalfLength.x;
-            node.bbox.max.x += dHalfLength.x;
+            childNode._bbox.min.y += dHalfLength.y;
+            childNode._bbox.max.y += dHalfLength.y;
+            childNode._bbox.min.x += dHalfLength.x;
+            childNode._bbox.max.x += dHalfLength.x;
         }
+    }
+
+    getCenter() {
+        // for potree we send the point use as origin for the data
+        // ie the min corner of the bbox
+        this.center = this._bbox.min;
     }
 
     loadOctree() {
@@ -93,6 +99,8 @@ class PotreeNode extends PointCloudNode {
                         const childrenBitField = view.getUint8(offset); offset += 1;
                         const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
                         const item = new PotreeNode(numPoints, childrenBitField, this.layer);
+                        item._quaternion = this._quaternion;
+                        item._position = this._position;
                         snode.add(item, indexChild, this);
                         stack.push(item);
                     }
