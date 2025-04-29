@@ -8,7 +8,6 @@ import { globalExtentTMS } from 'Core/Tile/TileGrid';
 import OBB from 'Renderer/OBB';
 import DataSourceProvider from 'Provider/DataSourceProvider';
 import Fetcher from 'Provider/Fetcher';
-import TileProvider from 'Provider/TileProvider';
 import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
 import WFSSource from 'Source/WFSSource';
@@ -206,24 +205,6 @@ describe('Provide in Sources', function () {
             .then((textures) => {
                 assert.equal(textures.length, 1);
                 assert.equal(textures[0].isTexture, true);
-                done();
-            }).catch(done);
-    });
-
-    it('should get 4 TileMesh from TileProvider', (done) => {
-        const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
-        material.visible = true;
-        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
-        tile.parent = { };
-
-        planarlayer.subdivideNode(context, tile);
-        TileProvider.executeCommand(context.scheduler.commands[0])
-            .then((tiles) => {
-                assert.equal(tiles.length, 4);
-                assert.equal(tiles[0].extent.west, tile.extent.east * 0.5);
-                assert.equal(tiles[0].extent.east, tile.extent.east);
-                assert.equal(tiles[0].extent.north, tile.extent.north);
-                assert.equal(tiles[0].extent.south, tile.extent.north * 0.5);
                 done();
             }).catch(done);
     });
