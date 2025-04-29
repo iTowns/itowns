@@ -8,7 +8,6 @@ import { globalExtentTMS } from 'Core/Tile/TileGrid';
 import OBB from 'Renderer/OBB';
 import DataSourceProvider from 'Provider/DataSourceProvider';
 import Fetcher from 'Provider/Fetcher';
-import TileProvider from 'Provider/TileProvider';
 import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
 import WFSSource from 'Source/WFSSource';
@@ -210,29 +209,11 @@ describe('Provide in Sources', function () {
             }).catch(done);
     });
 
-    it('should get 4 TileMesh from TileProvider', (done) => {
-        const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
-        material.visible = true;
-        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
-        tile.parent = { };
-
-        planarlayer.subdivideNode(context, tile);
-        TileProvider.executeCommand(context.scheduler.commands[0])
-            .then((tiles) => {
-                assert.equal(tiles.length, 4);
-                assert.equal(tiles[0].extent.west, tile.extent.east * 0.5);
-                assert.equal(tiles[0].extent.east, tile.extent.east);
-                assert.equal(tiles[0].extent.north, tile.extent.north);
-                assert.equal(tiles[0].extent.south, tile.extent.north * 0.5);
-                done();
-            }).catch(done);
-    });
-
     it('should get 3 meshs with WFS source and DataSourceProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, featureLayer.zoom.min);
         material.visible = true;
         nodeLayer.level = EMPTY_TEXTURE_ZOOM;
-        tile.parent = { pendingSubdivision: false };
+        tile.parent = {};
         featureLayer.mergeFeatures = false;
         tile.layerUpdateState = { test: new LayerUpdateState() };
 
@@ -254,7 +235,7 @@ describe('Provide in Sources', function () {
             extent,
             featureLayer.zoom.min);
         tile.material.visible = true;
-        tile.parent = { pendingSubdivision: false };
+        tile.parent = {};
         featureLayer.source.uid = 8;
         featureLayer.mergeFeatures = true;
         featureLayer.cache.clear();
@@ -279,7 +260,7 @@ describe('Provide in Sources', function () {
             extent,
             zoom);
         material.visible = true;
-        tile.parent = { pendingSubdivision: false };
+        tile.parent = {};
         nodeLayer.level = EMPTY_TEXTURE_ZOOM;
         tile.material.visible = true;
         featureLayer.source.uid = 22;
