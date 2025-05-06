@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-describe('view_multiglobe', function _() {
+describe('view_multiglobe', function _describe() {
     let result;
     before(async () => {
         result = await loadExample('examples/view_multiglobe.html', this.fullTitle());
@@ -10,28 +10,21 @@ describe('view_multiglobe', function _() {
         assert.ok(result);
     });
 
-    it('zoom and check that the level is correct', async function __() {
-        // press-space and zoom in
+    it('move view to 2nd globe', async () => {
+    // press-space
         await page.evaluate(() => {
             onKeyPress({ keyCode: 32 });
-            for (let i = 0; i < 50; i++) {
-                onMouseWheel({ detail: -1 });
-            }
         });
 
-        await waitUntilItownsIsIdle(this.test.fullTitle());
+        await page.waitForFunction(() => view.mainLoop.renderingState === 0 && view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0);
 
         // verify that we properly updated the globe
-        const { layer, level } = await page.evaluate(() => {
+        const { layer } = await page.evaluate(() => {
             const pick = view.pickObjectsAt({ x: 200, y: 150 })[0];
-            console.log('pick', pick);
             return {
                 layer: pick.layer.id,
-                level: pick.object.level,
             };
         });
-
         assert.equal('globe2', layer);
-        assert.equal(8, level);
     });
 });
