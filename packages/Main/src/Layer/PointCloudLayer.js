@@ -285,27 +285,22 @@ class PointCloudLayer extends GeometryLayer {
     }
 
     updateAll(context, srcs) {
-        console.log('###updateAll', srcs);
         const queue = new FlatQueue();
         const elementsToUpdate = this.preUpdate(context, srcs);
-        // as a simplification we curently always update from root
+
+        // List element to update and add them to the queue
+        this.updateElements(context, elementsToUpdate, queue);
 
         const numPoint = 0;
-        // List element to update and add them to the queue
-        this.updateElements(context, [this.root], queue);
-        // console.log(' >>> updateAll', queue, queue.pop(), queue.pop(), queue.pop(), queue.pop(), queue.pop());
-
         // we update the node following the invSse
         this.update(context, this, queue, numPoint);
 
         // `postUpdate` is called when this geom layer update process is finished
-        // this.postUpdate();
+        this.postUpdate();
     }
 
     updateElements(context, elements, queue) {
-        console.log(' > look for ele to update:', elements.map(e => e.id));
         if (!elements) {
-            console.log('elements is empty');
             return;
         }
         for (const element of elements) {
@@ -320,11 +315,9 @@ class PointCloudLayer extends GeometryLayer {
             const bbox = (element.tightbbox ? element.tightbbox : element.bbox);
             element.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
             if (!element.visible) {
-                console.log(' ', element.id, 'invisible');
                 markForDeletion(element);
                 continue;
             }
-            console.log(' ', element.id, 'is visible and will be updated');
 
             element.notVisibleSince = undefined;
             point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
@@ -339,10 +332,8 @@ class PointCloudLayer extends GeometryLayer {
             // update element
             if (element.children && element.children.length) {
                 if (element.invSse <= -1) {
-                    console.log('      add ', element.id, 'childern');
                     this.updateElements(context, element.children, queue);
                 } else {
-                    console.log('      ', element.id, 'without childern');
                     for (const child of element.children) {
                         markForDeletion(child);
                     }
@@ -389,11 +380,8 @@ class PointCloudLayer extends GeometryLayer {
     }
 
     update(context, layer, queue, numPoint) {
-        console.log(' >> update');
-
         while (queue.length > 0) {
             const elt = queue.pop();
-            console.log('  update', elt.id);
 
             numPoint += elt.numPoints;
 
@@ -423,7 +411,6 @@ class PointCloudLayer extends GeometryLayer {
                     const distance = Math.max(0.001, bbox.distanceToPoint(point));
                     // Increase priority of nearest node
                     const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / distance;
-                    console.log('   -> send promise to get data');
                     elt.promise = context.scheduler.execute({
                         layer,
                         requester: elt,
@@ -432,7 +419,6 @@ class PointCloudLayer extends GeometryLayer {
                         redraw: true,
                         earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
                     }).then((pts) => {
-                        console.log('   THEN', elt.id, 'loaded', elt.invSse, elt.visible);
                         elt.obj = pts;
 
                         // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
@@ -455,7 +441,6 @@ class PointCloudLayer extends GeometryLayer {
     }
 
     postUpdate() {
-        console.log('  >>> postUpdate');
         this.displayedCount = 0;
         for (const pts of this.group.children) {
             if (pts.visible) {
