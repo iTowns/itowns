@@ -8,6 +8,7 @@ import { Coordinates } from '@itowns/geographic';
 import PotreeNode from 'Core/PotreeNode';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
+import FlatQueue from 'flatqueue';
 import Renderer from './bootstrap';
 
 const resources = new Map();
@@ -42,7 +43,7 @@ describe('Potree', function () {
         let viewer;
         let potreeLayer;
         let context;
-        let elt;
+        let elemToUpdate;
         let stubFetcherJson;
         let stubFetcherArrayBuf;
 
@@ -83,6 +84,7 @@ describe('Potree', function () {
         });
 
         describe('potree Layer', function () {
+            const queue = new FlatQueue();
             it('Add point potree layer', function (done) {
                 View.prototype.addLayer.call(viewer, potreeLayer)
                     .then((layer) => {
@@ -94,16 +96,17 @@ describe('Potree', function () {
             });
 
             it('preupdate potree layer', function () {
-                elt = potreeLayer.preUpdate(context, new Set([potreeLayer]));
-                assert.equal(elt.length, 1);
+                elemToUpdate = potreeLayer.preUpdate(context, new Set([potreeLayer]));
+                assert.equal(elemToUpdate.length, 1);
             });
 
             it('update potree layer', function (done) {
                 assert.equal(potreeLayer.group.children.length, 0);
-                potreeLayer.update(context, potreeLayer, elt[0]);
-                elt[0].promise
+                queue.push(elemToUpdate[0]);
+                potreeLayer.update(context, potreeLayer, queue, 0);
+                elemToUpdate[0].promise
                     .then(() => {
-                        assert.equal(potreeLayer.group.children.length, 1);
+                        assert.equal(elemToUpdate[0].promise, null);
                         done();
                     }).catch(done);
             });
