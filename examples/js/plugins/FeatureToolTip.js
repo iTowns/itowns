@@ -1,3 +1,5 @@
+import * as itowns from 'itowns';
+
 /* global itowns */
 /**
  * A tooltip that can display some useful information about a feature when
@@ -238,6 +240,5 @@ const FeatureToolTip = (function _() {
     };
 }());
 
-if (typeof module != 'undefined' && module.exports) {
-    module.exports = FeatureToolTip;
-}
+
+export default FeatureToolTip;

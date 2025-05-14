@@ -1,4 +1,7 @@
-/* global itowns, GeoTIFF, COGParser, THREE  */
+import * as itowns from 'itowns';
+import * as THREE from 'three';
+import * as GeoTIFF from 'geotiff';
+import COGParser from './COGParser.js';
 
 /**
  * @classdesc
@@ -126,6 +129,4 @@ class COGSource extends itowns.Source {
     }
 }
 
-if (typeof module != 'undefined' && module.exports) {
-    module.exports = COGSource;
-}
+export default COGSource;

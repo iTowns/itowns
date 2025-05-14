@@ -1,4 +1,4 @@
-/* global itowns */
+import * as itowns from 'itowns';
 
 // eslint-disable-next-line no-unused-vars
 function setupLoadingScreen(viewerDiv, view) {
@@ -39,3 +39,6 @@ function setupLoadingScreen(viewerDiv, view) {
     view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, hideLoader);
     setTimeout(hideLoader, 3000);
 }
+
+
+export default setupLoadingScreen;

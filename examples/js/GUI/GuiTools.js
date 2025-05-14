@@ -1,3 +1,7 @@
+// eslint-disable-next-line
+import * as itowns from 'itowns';
+import dat from 'dat';
+
 /**
  * Generated On: 2015-10-5
  * Class: GuiTools
@@ -187,3 +191,6 @@ function createHTMLListFromObject(jsObject) {
     });
     return list;
 }
+
+
+export default GuiTools;
