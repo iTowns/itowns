@@ -2,6 +2,23 @@
     <head>
         <title>Itowns - Entwine 3D loader</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./js/GUI/GuiTools.js",
+                "LoadingScreen": "./js/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./js/GUI/GuiTools.js"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -19,7 +36,7 @@
     <body>
         <div id="description">Specify the URL of a Entwine Point Tree to load:
             <input type="text" id="ept_url" />
-            <button onclick="readEPTURL()">Load</button>
+            <button id='readUrlButton'>Load</button>
             <p>If your dataset is not displaying at the right location,
             check that it has been converted in <code>EPSG:4978</code>.</p>
             <div id="share"></div>
@@ -27,11 +44,17 @@
         <div id="viewerDiv">
         </div>
 
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script type="text/javascript">
-            var debugGui = new lil.GUI();
+        <script type="module">
+
+            // TODO rempa click
+            import dat from 'dat';
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+            var debugGui = new dat.GUI();
             var viewerDiv = document.getElementById('viewerDiv');
 
             var view = new itowns.GlobeView(viewerDiv);
@@ -57,11 +80,11 @@
             var eptLayer, eptSource;
 
             function onLayerReady() {
-                var lookAt = new itowns.THREE.Vector3();
+                var lookAt = new THREE.Vector3();
                 eptLayer.root.bbox.getCenter(lookAt);
                 var coordLookAt = new itowns.Coordinates(view.referenceCrs, lookAt);
 
-                var size = new itowns.THREE.Vector3();
+                var size = new THREE.Vector3();
                 eptLayer.root.bbox.getSize(size);
 
                 view.controls.lookAtCoordinate({
@@ -102,6 +125,10 @@
 
                 debug.PointCloudDebug.initTools(view, eptLayer, debugGui);
             }
+
+            const readUrlButton = document.getElementById('readUrlButton');
+
+            readUrlButton.addEventListener('click', readEPTURL);
 
             readEPTURL();
         </script>
