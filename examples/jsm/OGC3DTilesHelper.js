@@ -1,6 +1,6 @@
 import { MathUtils, Vector3 } from 'three';
 
-const { Coordinates, Extent, CameraUtils } = itowns;
+import { Coordinates, Extent, CameraUtils } from 'itowns';
 
 /**
  * Function allowing picking on a given 3D tiles layer and filling an html div

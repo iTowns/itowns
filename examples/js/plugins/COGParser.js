@@ -1,4 +1,7 @@
-/* global itowns, THREE */
+import * as itowns from 'itowns';
+import * as THREE from 'three';
+import * as geotiff from 'geotiff';
+
 
 /**
  * @typedef  {Object} GeoTIFFLevel
@@ -213,11 +216,6 @@ function convertToRGBA(buffer, newBuffer, defaultAlpha) {
  * @module COGParser
  */
 const COGParser = (function _() {
-    if (typeof THREE == 'undefined'  && itowns.THREE) {
-        // eslint-disable-next-line no-global-assign
-        THREE = itowns.THREE;
-    }
-
     return {
         /**
          * Parse a COG file and return a `THREE.DataTexture`.
@@ -252,6 +250,4 @@ const COGParser = (function _() {
     };
 }());
 
-if (typeof module != 'undefined' && module.exports) {
-    module.exports = COGParser;
-}
+export default COGParser;

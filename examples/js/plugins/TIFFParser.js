@@ -1,3 +1,7 @@
+import * as THREE from 'three';
+import * as itowns from 'itowns';
+import UTIF from 'UTIF';
+
 /* global itowns, THREE, UTIF */
 
 /**
@@ -35,7 +39,7 @@ const TIFFParser = (function _() {
          *
          * @memberof module:TIFFParser
          */
-        parse: function _(data) {
+        parse: function _(data, options) {
             const IFD = UTIF.decode(data)[0];
             UTIF.decodeImage(data, IFD);
             IFD.data = UTIF.toRGBA8(IFD);
@@ -73,8 +77,8 @@ const TIFFParser = (function _() {
             texture.flipY = true;
             texture.needsUpdate = true;
 
-            if (data.extent) {
-                texture.extent = data.extent;
+            if (options.extent) {
+                texture.extent = options.extent;
             }
 
             return Promise.resolve(texture);
@@ -82,6 +86,4 @@ const TIFFParser = (function _() {
     };
 }());
 
-if (typeof module != 'undefined' && module.exports) {
-    module.exports = TIFFParser;
-}
+export default TIFFParser;
