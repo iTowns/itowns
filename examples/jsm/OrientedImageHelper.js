@@ -1,4 +1,3 @@
-import * as itowns from 'itowns';
 import * as THREE from 'three';
 
 // set object position to the coordinate
@@ -125,13 +124,12 @@ function setupPictureUI(menu, pictureInfos, plane, updateDistanceCallback, view,
 }
 
 
-export default { setupPictureUI,
- setupPictureFromCamera,
- setupViewCameraLookingAtObject,
- initCamera,
- setupViewCameraDecomposing,
- setupPictureFromCamera,
- addCameraHelper,
- transformTexturedPlane,
- setupPictureUI
+export default {
+    setupPictureFromCamera,
+    setupViewCameraLookingAtObject,
+    initCamera,
+    setupViewCameraDecomposing,
+    addCameraHelper,
+    transformTexturedPlane,
+    setupPictureUI,
 };
