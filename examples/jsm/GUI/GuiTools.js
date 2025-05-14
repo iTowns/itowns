@@ -1,5 +1,5 @@
-// eslint-disable-next-line
 import * as itowns from 'itowns';
+// eslint-disable-next-line
 import dat from 'dat';
 
 /**
@@ -7,8 +7,6 @@ import dat from 'dat';
  * Class: GuiTools
  * Description: Classe pour créer un menu.
  */
-
-/* global dat, itowns */
 
 dat.GUI.prototype.removeFolder = function removeFolder(name) {
     const folder = this.__folders[name];

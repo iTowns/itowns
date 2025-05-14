@@ -1,7 +1,4 @@
-import * as itowns from 'itowns';
 import * as THREE from 'three';
-import * as geotiff from 'geotiff';
-
 
 /**
  * @typedef  {Object} GeoTIFFLevel
