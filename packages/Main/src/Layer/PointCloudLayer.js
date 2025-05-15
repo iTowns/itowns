@@ -2,28 +2,83 @@ import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
 import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
+import proj4 from 'proj4';
+import { Coordinates, OrientationUtils } from '@itowns/geographic';
 
 const point = new THREE.Vector3();
 const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
 bboxMesh.geometry.boundingBox = box3;
 
+
+/**
+ * Generate the position array of the bbox corner form the bbox
+ * Adapted from THREE.BoxHelper.js
+ * https://github.com/mrdoob/three.js/blob/master/src/helpers/BoxHelper.js
+ *
+ * @param {THREE.box3} bbox - Box3 of the node
+ * @returns {array}
+ */
+function getCornerPosition(bbox) {
+    const array =  new Float32Array(8 * 3);
+
+    const min = bbox.min;
+    const max = bbox.max;
+
+    /*
+      5____4
+    1/___0/|
+    | 6__|_7
+    2/___3/
+
+    0: max.x, max.y, max.z
+    1: min.x, max.y, max.z
+    2: min.x, min.y, max.z
+    3: max.x, min.y, max.z
+    4: max.x, max.y, min.z
+    5: min.x, max.y, min.z
+    6: min.x, min.y, min.z
+    7: max.x, min.y, min.z
+    */
+    array[0] = max.x; array[1] = max.y; array[2] = max.z;
+    array[3] = min.x; array[4] = max.y; array[5] = max.z;
+    array[6] = min.x; array[7] = min.y; array[8] = max.z;
+    array[9] = max.x; array[10] = min.y; array[11] = max.z;
+    array[12] = max.x; array[13] = max.y; array[14] = min.z;
+    array[15] = min.x; array[16] = max.y; array[17] = min.z;
+    array[18] = min.x; array[19] = min.y; array[20] = min.z;
+    array[21] = max.x; array[22] = min.y; array[23] = min.z;
+    return array;
+}
+
 function initBoundingBox(elt, layer) {
-    elt.tightbbox.getSize(box3.max);
-    box3.max.multiplyScalar(0.5);
-    box3.min.copy(box3.max).negate();
-    elt.obj.boxHelper = new THREE.BoxHelper(bboxMesh);
-    elt.obj.boxHelper.geometry = elt.obj.boxHelper.geometry.toNonIndexed();
-    elt.obj.boxHelper.computeLineDistances();
-    elt.obj.boxHelper.material = elt.childrenBitField ? new THREE.LineDashedMaterial({ dashSize: 0.25, gapSize: 0.25 }) : new THREE.LineBasicMaterial();
-    elt.obj.boxHelper.material.color.setHex(0);
-    elt.obj.boxHelper.material.linewidth = 2;
-    elt.obj.boxHelper.frustumCulled = false;
-    elt.obj.boxHelper.position.copy(elt.tightbbox.min).add(box3.max);
-    elt.obj.boxHelper.autoUpdateMatrix = false;
-    layer.bboxes.add(elt.obj.boxHelper);
-    elt.obj.boxHelper.updateMatrix();
-    elt.obj.boxHelper.updateMatrixWorld();
+    // bbox in local ref -> cyan
+    const boxHelper = elt.boxHelper;
+    elt.obj.boxHelper = boxHelper;
+    layer.bboxes.add(boxHelper);
+    boxHelper.updateMatrixWorld(true);
+
+    // tightbbox in local ref -> blue
+    const tightboxHelper = new THREE.BoxHelper(undefined, 0x0000ff);
+    tightboxHelper.geometry.attributes.position.array = getCornerPosition(elt.obj.geometry.boundingBox);
+    tightboxHelper.applyMatrix4(elt.obj.matrixWorld);
+    elt.obj.tightboxHelper = tightboxHelper;
+    layer.bboxes.add(tightboxHelper);
+    tightboxHelper.updateMatrixWorld(true);
+}
+
+function createBoxHelper(bbox, quaternion, origin) {
+    const boxHelper = new THREE.BoxHelper(undefined, 0x00ffff);
+    boxHelper.geometry.attributes.position.array = getCornerPosition(bbox);
+
+    boxHelper.position.copy(origin);
+    boxHelper.quaternion.copy(quaternion.clone().invert());
+    boxHelper.updateMatrix();
+    boxHelper.updateMatrixWorld();
+
+    boxHelper.geometry.computeBoundingBox();
+
+    return boxHelper;
 }
 
 function computeSSEPerspective(context, pointSize, spacing, elt, distance) {
@@ -70,6 +125,7 @@ function markForDeletion(elt) {
         if (__DEBUG__) {
             if (elt.obj.boxHelper) {
                 elt.obj.boxHelper.visible = false;
+                elt.obj.tightboxHelper.visible = false;
             }
         }
     }
@@ -127,6 +183,8 @@ function changeAngleRange(layer) {
  * @property {number} [maxIntensityRange=1] - The maximal intensity of the
  * layer. Changing this value will affect the material, if it has the
  * corresponding uniform. The value is normalized between 0 and 1.
+ * @property {number} zmin - The minimal value for elevation (read from the metadata).
+ * @property {number} zmax - The maximal value for elevation (read from the metadata).
  *
  * @extends GeometryLayer
  */
@@ -178,10 +236,14 @@ class PointCloudLayer extends GeometryLayer {
         this.protocol = 'pointcloud';
 
         this.group = group;
+        this.group.name = 'points';
         this.object3d.add(this.group);
-        this.bboxes = bboxes || new THREE.Group();
+
+        this.bboxes = bboxes;
+        this.bboxes.name = 'bboxes';
         this.bboxes.visible = false;
         this.object3d.add(this.bboxes);
+
         this.group.updateMatrixWorld();
 
         // default config
@@ -229,6 +291,63 @@ class PointCloudLayer extends GeometryLayer {
          * @type {PointCloudNode | undefined}
          */
         this.root = undefined;
+    }
+
+    setRootBbox(min, max) {
+        let forward = (x => x);
+        if (this.source.crs !== this.crs) {
+            try {
+                forward = proj4(this.source.crs, this.crs).forward;
+            } catch (err) {
+                throw new Error(`${err} is not defined in proj4`);
+            }
+        }
+
+        const corners = [
+            ...forward([max[0], max[1], max[2]]),
+            ...forward([min[0], max[1], max[2]]),
+            ...forward([min[0], min[1], max[2]]),
+            ...forward([max[0], min[1], max[2]]),
+            ...forward([max[0], max[1], min[2]]),
+            ...forward([min[0], max[1], min[2]]),
+            ...forward([min[0], min[1], min[2]]),
+            ...forward([max[0], min[1], min[2]]),
+        ];
+
+        // get center of box at altitude Z=0 and project it in view crs;
+        const origin = forward([(min[0] + max[0]) * 0.5, (min[1] + max[1]) * 0.5, 0]);
+
+        // getLocalRotation()
+        const isGeocentric = proj4.defs(this.crs).projName === 'geocent';
+        let rotation = new THREE.Quaternion();
+        if (isGeocentric) {
+            const coordOrigin = new Coordinates(this.crs, origin);
+            rotation = OrientationUtils.quaternionFromCRSToCRS(this.crs, 'EPSG:4326')(coordOrigin);
+        }
+
+        // project corners in local referentiel
+        const cornersLocal = [];
+        for (let i = 0; i < 24; i += 3) {
+            const cornerLocal = new THREE.Vector3(
+                corners[i] - origin[0],
+                corners[i + 1] - origin[1],
+                corners[i + 2] - origin[2],
+            );
+            cornerLocal.applyQuaternion(rotation);
+            cornersLocal.push(...cornerLocal.toArray());
+        }
+
+        // get the bbox containing all cornersLocal => the bboxLocal
+        const _bbox = new THREE.Box3().setFromArray(cornersLocal);
+        this.root._bbox = _bbox;
+
+        this.root._position = new THREE.Vector3(...origin);
+        this.root._quaternion = rotation;
+    }
+
+    setElevationRange() {
+        this.minElevationRange = this.minElevationRange ?? this.zmin;
+        this.maxElevationRange = this.maxElevationRange ?? this.zmax;
     }
 
     preUpdate(context, changeSources) {
@@ -291,17 +410,37 @@ class PointCloudLayer extends GeometryLayer {
             return;
         }
 
-        // pick the best bounding box
-        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
+        // get object on which to measure distance
+        let obj;
+        if (elt.obj) {
+            obj = elt.obj;
+        } else {
+            // get a clamped bbox from the full bbox
+            const bbox = elt._bbox.clone();
+            if (bbox.min.z < layer.zmax) {
+                bbox.max.z = Math.min(bbox.max.z, layer.zmax);
+            }
+            if (bbox.max.z > layer.zmin) {
+                bbox.min.z = Math.max(bbox.min.z, layer.zmin);
+            }
+            elt.boxHelper = createBoxHelper(bbox, elt._quaternion, elt._position);
+            obj = elt.boxHelper;
+        }
+        const bbox = obj.geometry.boundingBox;
+        elt.visible = context.camera.isBox3Visible(obj.geometry.boundingBox, obj.matrixWorld);
+
         if (!elt.visible) {
             markForDeletion(elt);
             return;
         }
 
         elt.notVisibleSince = undefined;
-        point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
-        point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
+
+        point.copy(context.camera.camera3D.position)
+            .sub(obj.getWorldPosition(new THREE.Vector3()))
+            .applyQuaternion(obj.getWorldQuaternion(new THREE.Quaternion()).invert());
+
+        const distanceToCamera = bbox.distanceToPoint(point);
 
         // only load geometry if this elements has points
         if (elt.numPoints !== 0) {
@@ -316,10 +455,12 @@ class PointCloudLayer extends GeometryLayer {
                         elt.obj.boxHelper.visible = true;
                         elt.obj.boxHelper.material.color.r = 1 - elt.sse;
                         elt.obj.boxHelper.material.color.g = elt.sse;
+
+                        elt.obj.tightboxHelper.visible = true;
                     }
                 }
             } else if (!elt.promise) {
-                const distance = Math.max(0.001, bbox.distanceToPoint(point));
+                const distance = Math.max(0.001, distanceToCamera);
                 // Increase priority of nearest node
                 const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / distance;
                 elt.promise = context.scheduler.execute({
@@ -331,8 +472,6 @@ class PointCloudLayer extends GeometryLayer {
                     earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
                 }).then((pts) => {
                     elt.obj = pts;
-                    // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
-                    elt.tightbbox = pts.tightbbox;
 
                     // make sure to add it here, otherwise it might never
                     // be added nor cleaned
@@ -349,8 +488,7 @@ class PointCloudLayer extends GeometryLayer {
         }
 
         if (elt.children && elt.children.length) {
-            const distance = bbox.distanceToPoint(point);
-            elt.sse = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / this.sseThreshold;
+            elt.sse = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distanceToCamera) / this.sseThreshold;
             if (elt.sse >= 1) {
                 return elt.children;
             } else {
@@ -433,6 +571,17 @@ class PointCloudLayer extends GeometryLayer {
                             obj.boxHelper.material.dispose();
                         }
                         obj.boxHelper.geometry.dispose();
+                    }
+                    if (obj.tightboxHelper) {
+                        obj.tightboxHelper.removeMe = true;
+                        if (Array.isArray(obj.tightboxHelper.material)) {
+                            for (const material of obj.tightboxHelper.material) {
+                                material.dispose();
+                            }
+                        } else {
+                            obj.tightboxHelper.material.dispose();
+                        }
+                        obj.tightboxHelper.geometry.dispose();
                     }
                 }
             }
