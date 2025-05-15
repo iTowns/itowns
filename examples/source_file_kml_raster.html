@@ -104,6 +104,10 @@
             debug.createTileDebugUI(menuGlobe.gui, view);
 
             view.addLayer(kmlLayer).then(FeatureToolTip.addLayer);
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
         </script>
     </body>
 </html>

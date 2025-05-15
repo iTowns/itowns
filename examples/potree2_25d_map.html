@@ -139,7 +139,11 @@
                 }
                 window.view = view;
                 view.addLayer(potreeLayer).then(onLayerReady);
-            </script>
+                window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
+        </script>
     </body>
 </html>
 

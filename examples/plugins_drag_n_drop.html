@@ -75,6 +75,10 @@
             DragNDrop.setView(view);
             DragNDrop.register('geojson', DragNDrop.JSON, itowns.GeoJsonParser.parse, DragNDrop.COLOR);
             DragNDrop.register('gpx', DragNDrop.XML, itowns.GpxParser.parse, DragNDrop.COLOR);
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
         </script>
     </body>
 </html>
