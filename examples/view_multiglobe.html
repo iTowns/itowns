@@ -141,6 +141,7 @@
             // Zoom on mouse-wheel
             var onMouseWheel = function onMouseWheel(event) {
                 var geo = new itowns.Coordinates('EPSG:4978', cameraThree.position).as('EPSG:4326');
+                let delta;
                 // WebKit / Opera / Explorer 9
                 if (event.wheelDelta !== undefined) {
                     delta = event.wheelDelta;
@@ -159,6 +160,12 @@
             };
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
             viewerDiv.addEventListener('mousewheel', onMouseWheel);
+
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+            window.onKeyPress = onKeyPress;
+            window.onMouseWheel = onMouseWheel;
         </script>
     </body>
 </html>
