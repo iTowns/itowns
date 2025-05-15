@@ -87,10 +87,21 @@
                     menuGlobe = new GuiTools('menuDiv', view);
                     debug.createTileDebugUI(menuGlobe.gui, view);
 
-                    var cogLayer = new itowns.ColorLayer('cog', {
-                        source: cogSource,
+                    itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then((config) => {
+                        const colorLayer = new itowns.ColorLayer('Ortho', {
+                            ...config,
+                            source: new itowns.TMSSource(config.source),
+                        });
+                        view.addLayer(colorLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
                     });
-                    view.addLayer(cogLayer);
+
+                    var cogLayer = new itowns.ElevationLayer('cog', {
+                        source: cogSource,
+                        clampValues: {
+                            min: -100,
+                        },
+                    });
+                    view.addLayer(cogLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
                 });
             }
 
