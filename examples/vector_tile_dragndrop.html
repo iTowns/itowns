@@ -94,6 +94,10 @@
             document.addEventListener('dragleave', function _(e) { e.preventDefault(); }, false);
             document.addEventListener('drop', function _(e) { loadStyle(e, e.dataTransfer.files); }, false);
             document.addEventListener('paste', function _(e) { loadStyle(e, e.clipboardData.files); }, false);
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
         </script>
     </body>
 </html>

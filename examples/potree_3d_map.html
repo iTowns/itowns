@@ -110,6 +110,10 @@
                 var layer = new itowns.ColorLayer(config.id, config);
                 view.addLayer(layer);
             });
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
         </script>
     </body>
 </html>

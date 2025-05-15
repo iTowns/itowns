@@ -141,6 +141,10 @@
             const menu = new GuiTools('menuDiv', view);
             const d = new debug.Debug(view, menu.gui);
             debug.createTileDebugUI(menu.gui, view, view.tileLayer, d);
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
         </script>
     </body>
 </html>
