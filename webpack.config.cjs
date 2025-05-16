@@ -44,7 +44,7 @@ module.exports = () => {
         options: babelConf,
     });
 
-    return {
+    const configESM = {
         mode,
         context: path.resolve(__dirname),
         resolve: {
@@ -60,7 +60,6 @@ module.exports = () => {
         entry: {
             itowns: [
                 'core-js',
-                './packages/Main/src/MainBundle.js',
             ],
             debug: {
                 import: './packages/Debug/src/Main.js',
@@ -80,10 +79,6 @@ module.exports = () => {
         devtool: 'source-map',
         output: {
             path: path.resolve(__dirname, 'dist'),
-            filename: '[name].js',
-            library: '[name]',
-            libraryTarget: 'umd',
-            umdNamedDefine: true,
         },
         module: {
             rules: [
@@ -95,12 +90,57 @@ module.exports = () => {
                 },
             ],
         },
-        plugins: [
-            new ESLintPlugin({
-                files: include,
-            }),
-        ],
-        devServer: {
+    };
+
+    const configUMD = structuredClone(configESM);
+
+    // UMD
+    configUMD.entry.itowns.push('./packages/Main/src/MainBundle.js');
+    configUMD.output.filename = '[name].umd.js';
+    configUMD.output.library = '[name]';
+    configUMD.output.libraryTarget = 'umd';
+    configUMD.output.umdNamedDefine = true;
+
+    // ESM
+    configESM.entry.itowns.push('./packages/Main/src/Main.js');
+
+    configESM.output.filename = '[name].js';
+    configESM.output.libraryTarget = 'module';
+
+    configESM.resolve.fallback = {
+        os: false,
+        fs: false,
+        zlib: false,
+        http: false,
+        tty: false,
+        url: false,
+        util: false,
+        child_process: false,
+        module: false,
+        'node:modules': false,
+        path: false,
+        'https-browserify': false,
+        https: false,
+        stream: false,
+    };
+
+    configESM.plugins = [
+        new ESLintPlugin({
+            files: include,
+        }),
+    ];
+
+    configESM.experiments = {
+        outputModule: true,
+    };
+
+    configESM.externals = {
+        three: 'three',
+    };
+
+    if (debugBuild) {
+        configESM.devServer = {
+            hot: false,
             devMiddleware: {
                 publicPath: '/dist/',
             },
@@ -117,6 +157,10 @@ module.exports = () => {
                     warnings: false,
                 },
             },
-        },
-    };
+        };
+
+        return configESM;
+    } else {
+        return [configESM, configUMD];
+    }
 };
