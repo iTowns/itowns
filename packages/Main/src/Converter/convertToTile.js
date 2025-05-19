@@ -45,38 +45,38 @@ export default {
             hideSkirt: layer.hideSkirt,
         };
 
-        return newTileGeometry(builder, paramsGeometry).then((result) => {
-            // build tile mesh
-            result.geometry.increaseRefCount();
-            const crsCount = layer.tileMatrixSets.length;
-            const material = new LayeredMaterial(layer.materialOptions, crsCount);
-            ReferLayerProperties(material, layer);
+        const { tileGeometry, quaternion: tileQuaternion, position: tilePosition } = newTileGeometry(builder, paramsGeometry);
 
-            const tile = new TileMesh(result.geometry, material, layer, extent, level);
+        // build tile mesh
+        tileGeometry.increaseRefCount();
+        const crsCount = layer.tileMatrixSets.length;
+        const material = new LayeredMaterial(layer.materialOptions, crsCount);
+        ReferLayerProperties(material, layer);
 
-            if (parent && parent.isTileMesh) {
-                // get parent extent transformation
-                const pTrans = builder.computeShareableExtent(parent.extent);
-                // place relative to his parent
-                result.position.sub(pTrans.position).applyQuaternion(pTrans.quaternion.invert());
-                result.quaternion.premultiply(pTrans.quaternion);
-            }
+        const tile = new TileMesh(tileGeometry, material, layer, extent, level);
 
-            tile.position.copy(result.position);
-            tile.quaternion.copy(result.quaternion);
-            tile.visible = false;
-            tile.updateMatrix();
+        if (parent && parent.isTileMesh) {
+            // get parent extent transformation
+            const pTrans = builder.computeShareableExtent(parent.extent);
+            // place relative to his parent
+            tilePosition.sub(pTrans.position).applyQuaternion(pTrans.quaternion.invert());
+            tileQuaternion.premultiply(pTrans.quaternion);
+        }
 
-            setTileFromTiledLayer(tile, layer);
+        tile.position.copy(tilePosition);
+        tile.quaternion.copy(tileQuaternion);
+        tile.visible = false;
+        tile.updateMatrix();
 
-            if (parent) {
-                tile.geoidHeight = parent.geoidHeight;
-                const geoidHeight = geoidLayerIsVisible(layer) ? tile.geoidHeight : 0;
-                tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max, geoidHeight });
-                tile.material.geoidHeight = geoidHeight;
-            }
+        setTileFromTiledLayer(tile, layer);
 
-            return tile;
-        });
+        if (parent) {
+            tile.geoidHeight = parent.geoidHeight;
+            const geoidHeight = geoidLayerIsVisible(layer) ? tile.geoidHeight : 0;
+            tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max, geoidHeight });
+            tile.material.geoidHeight = geoidHeight;
+        }
+
+        return tile;
     },
 };
