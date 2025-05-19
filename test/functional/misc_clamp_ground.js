@@ -28,10 +28,10 @@ describe('misc_clamp_ground', function _() {
             // because it drew the cone in front of the cone
 
             // compute the on screen cone position
-            const coneCenter = new itowns.THREE.Vector3(0, 0, 0)
+            const coneCenter = new THREE.Vector3(0, 0, 0)
                 .applyMatrix4(view.mesh.matrixWorld);
 
-            const viewMatrix = new itowns.THREE.Matrix4().multiplyMatrices(view.camera3D.projectionMatrix, view.camera3D.matrixWorldInverse);
+            const viewMatrix = new THREE.Matrix4().multiplyMatrices(view.camera3D.projectionMatrix, view.camera3D.matrixWorldInverse);
 
             coneCenter.applyMatrix4(viewMatrix);
             const mouse = view.normalizedToViewCoords(coneCenter);
