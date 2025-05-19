@@ -2,7 +2,7 @@
     <head>
         <meta charset="UTF-8">
 
-        <title>Itowns - COPC loader</title>
+        <title>Itowns - COPC simple loader</title>
 
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -20,7 +20,7 @@
     <body>
         <div id="description">Specify the URL of a COPC file to load:
             <input type="text" id="copc_url" />
-            <button onclick="readURL()">Load</button>
+            <button onclick="load()">Load</button>
             <div>
                 <button onClick="loadAutzen()">Load Autzen Stadium (80mb)</button>
                 <button onClick="loadSofi()">Load SoFI Stadium (2.3gb)</button>
@@ -35,33 +35,40 @@
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
             let layer; // COPCLayer
-
-            const uri = new URL(location);
-
-            const gui = new dat.GUI();
+            let view;
+            let control;
 
             const viewerDiv = document.getElementById('viewerDiv');
-            const view = new itowns.View('EPSG:4326', viewerDiv);
-            const controls = new itowns.PlanarControls(view);
-            view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
+            const gui = new dat.GUI();
 
-            setUrl(uri.searchParams.get('copc'));
+            const urlParams = new URL(location).searchParams;
+            let url = urlParams.get('copc');
+
+            const options = {};
+            urlParams.keys().forEach(key => {
+                if (key !== 'copc') {
+                    options[key] = parseInt(urlParams.get(key), 10);
+                }
+            });
+            
+            loadCopc(url, options)
 
             function onLayerReady(layer) {
                 const camera = view.camera.camera3D;
 
-                const lookAt = new itowns.THREE.Vector3();
+                const lookAt = layer.root._position;
+                lookAt.z = (layer.zmax + layer.zmin) * 0.5;
+
                 const size = new itowns.THREE.Vector3();
-                layer.root.bbox.getSize(size);
-                layer.root.bbox.getCenter(lookAt);
+                layer.root._bbox.getSize(size);
 
-                camera.far = 2.0 * size.length();
-
-                controls.groundLevel = layer.root.bbox.min.z;
-                const position = layer.root.bbox.min.clone().add(
-                    size.multiply({ x: 1, y: 1, z: size.x / size.z }),
+                controls.groundLevel = layer.minElevationRange;
+                var corner = new itowns.THREE.Vector3(...layer.source.header.min);
+                var position = corner.clone().add(
+                    size.multiply({ x: 0, y: 0, z: (size.x / size.z) })
                 );
 
+                camera.far = 5.0 * size.length();
                 camera.position.copy(position);
                 camera.lookAt(lookAt);
                 camera.updateProjectionMatrix();
@@ -69,58 +76,41 @@
                 view.notifyChange(camera);
             }
 
-
-            function readURL() {
-                const url = document.getElementById('copc_url').value;
-
-                if (url) {
-                    setUrl(url);
-                }
+            function setView(crs) {
+                view = new itowns.View(crs, viewerDiv);
+                controls = new itowns.PlanarControls(view);
+                view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
             }
 
-            function setUrl(url) {
-                if (!url) return;
+            function loadCopc(url, options) {
+                if(!url) return;
+                document.getElementById('share').innerHTML = '<a href="' +
+                    location.href.replace(location.search, '') +
+                    '?copc=' + url
+                    + '" target="_blank">Link to share this view</a>';
 
-                const input_url = document.getElementById('copc_url');
-                if (!input_url) return;
-
-                uri.searchParams.set('copc', url);
-                history.replaceState(null, null, `?${uri.searchParams.toString()}`);
-
-                input_url.value = url;
-                load(url);
-            }
-
-
-            function load(url) {
-                const options = {};
-                const urlParams = uri.searchParams
-                urlParams.keys().forEach(key => {
-                    if (key !== 'copc') {
-                        options[key] = parseInt(urlParams.get(key), 10);
-                    }
-                });
                 const source = new itowns.CopcSource({ url });
-
-                if (layer) {
-                    gui.removeFolder(layer.debugUI);
-                    view.removeLayer('COPC');
-                    view.notifyChange();
-                    layer.delete();
-                }
 
                 const config = {
                     source,
-                    crs: view.referenceCrs,
                     sseThreshold: 2,
                     pointBudget: 3000000,
                     ...options,
                 };
 
-                layer = new itowns.CopcLayer('COPC', config);
-                view.addLayer(layer).then(onLayerReady);
-                layer.whenReady
-                    .then(() => debug.PointCloudDebug.initTools(view, layer, gui));
+                source.whenReady.then(() => {
+                    setView(source.crs);
+                    layer = new itowns.CopcLayer('COPC', config);
+                    view.addLayer(layer).then(onLayerReady);
+                    layer.whenReady
+                        .then(() => debug.PointCloudDebug.initTools(view, layer, gui));
+                })
+            }
+
+            function setUrl(urlCopc) {
+                const url = location.href.replace(location.search, '') +
+                    '?copc=' + urlCopc;
+                location.assign(url);
             }
 
             function loadAutzen() {
@@ -134,6 +124,14 @@
             function loadMillsite() {
                 setUrl("https://s3.amazonaws.com/data.entwine.io/millsite.copc.laz");
             }
+
+            function load() {
+                const url = document.getElementById('copc_url').value;
+                if (url) {
+                    setUrl(url);
+                }
+            }
+
         </script>
     </body>
 </html>
