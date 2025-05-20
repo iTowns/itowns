@@ -418,11 +418,12 @@ class OGC3DTilesLayer extends GeometryLayer {
                 maxAttenuatedSize: this.pntsMaxAttenuatedSize,
             });
             pointsMaterial.copy(material);
-
             material = pointsMaterial;
+            material.depthWrite = false;
         }
 
         if (material) {
+            material.transparent = true;
             ReferLayerProperties(material, this);
         }
 
