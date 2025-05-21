@@ -1,5 +1,7 @@
-import type { CRS } from '@itowns/geographic';
-import type { AsyncSource, Loader } from './Source';
+import { CRS } from '@itowns/geographic';
+import { Loader } from 'three';
+import { Source } from './Source';
+import { SourceCapabilities } from './SourceCapabilities';
 
 export interface RemoteSourceOptions<Data> {
     loader: Loader<Data>,
@@ -10,10 +12,11 @@ export interface RemoteSourceOptions<Data> {
     networkOptions: RequestInit;
 }
 
-export abstract class RemoteSource<Key, Data> implements AsyncSource<Key, Data> {
+export abstract class RemoteSource<Key, Data> implements Source<Key, Promise<Data>> {
     public readonly isSource = true as const;
-    public readonly isAsyncSource = true as const;
     public readonly isRemoteSource = true as const;
+
+    declare public capabilities: SourceCapabilities;
 
     protected loader: Loader<Data>;
 
@@ -32,3 +35,4 @@ export abstract class RemoteSource<Key, Data> implements AsyncSource<Key, Data> 
 
     public abstract load(key: Key): Promise<Data>;
 }
+
