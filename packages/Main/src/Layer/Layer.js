@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
-import Source from 'Source/Source';
+import { Source } from 'Source/Source';
 import { LRUCache } from 'lru-cache';
 import Style from 'Core/Style';
 
@@ -149,7 +149,7 @@ class Layer extends THREE.EventDispatcher {
          * @type {number}
          */
         this.subdivisionThreshold = subdivisionThreshold;
-        this.sizeDiagonalTexture =  (2 * (this.subdivisionThreshold * this.subdivisionThreshold)) ** 0.5;
+        this.sizeDiagonalTexture = (2 * (this.subdivisionThreshold * this.subdivisionThreshold)) ** 0.5;
 
         this.addLabelLayer = addLabelLayer;
 
@@ -189,7 +189,7 @@ class Layer extends THREE.EventDispatcher {
             this._reject = rj;
         }).then(() => {
             this.ready = true;
-            this.source.onLayerAdded({ out: this });
+            this.source.capabilities.layerEventHandler?.onLayerAdded(this);
             return this;
         });
 

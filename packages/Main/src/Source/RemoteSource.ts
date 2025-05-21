@@ -16,19 +16,19 @@ export abstract class RemoteSource<Key, Data> implements Source<Key, Promise<Dat
     public readonly isSource = true as const;
     public readonly isRemoteSource = true as const;
 
-    declare public capabilities: SourceCapabilities;
+    public abstract readonly capabilities: SourceCapabilities;
 
     protected loader: Loader<Data>;
 
+    public url: string;
     public readonly crs: CRS.ProjectionLike;
-    public readonly url: string;
     public readonly format: string;
     public networkOptions: RequestInit;
 
     public constructor(options: RemoteSourceOptions<Data>) {
         this.loader = options.loader;
-        this.crs = options.crs;
         this.url = options.url;
+        this.crs = options.crs;
         this.format = options.format;
         this.networkOptions = options.networkOptions;
     }
