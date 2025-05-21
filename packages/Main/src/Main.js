@@ -78,6 +78,7 @@ export { default as GeoidLayer } from 'Layer/GeoidLayer';
 export { Source } from 'Source/Source';
 // export { default as FileSource } from 'Source/FileSource';
 export { TmsSource } from 'Source/TmsSource';
+export { default as WmtsSource } from 'Source/WmtsSource';
 // export { default as WFSSource } from 'Source/WFSSource';
 // export { default as WMSSource } from 'Source/WMSSource';
 // export { default as WMTSSource } from 'Source/WMTSSource';
