@@ -170,6 +170,7 @@ class PointCloudLayer extends GeometryLayer {
         } = config;
 
         super(id, object3d, geometryLayerConfig);
+        this.oldQueues = [{}];
 
         /**
          * @type {boolean}
@@ -285,7 +286,9 @@ class PointCloudLayer extends GeometryLayer {
     }
 
     updateAll(context, srcs) {
+        this.oldQueues.at(-1).active = false;
         const queue = new FlatQueue();
+        queue.active = true;
         const elementsToUpdate = this.preUpdate(context, srcs);
 
         // List element to update and add them to the queue
@@ -297,8 +300,10 @@ class PointCloudLayer extends GeometryLayer {
 
         // `postUpdate` is called when this geom layer update process is finished
         this.postUpdate();
+        this.oldQueues.push(queue);
     }
 
+    // add elements to update to queue
     updateElements(context, elements, queue) {
         if (!elements) {
             return;
@@ -329,7 +334,7 @@ class PointCloudLayer extends GeometryLayer {
             // add element to the queue
             queue.push(element, element.invSse);
 
-            // update element
+            // add element children to queue if needed
             if (element.children && element.children.length) {
                 if (element.invSse <= -1) {
                     this.updateElements(context, element.children, queue);
@@ -417,7 +422,7 @@ class PointCloudLayer extends GeometryLayer {
                         view: context.view,
                         priority,
                         redraw: true,
-                        earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
+                        earlyDropFunction: cmd => !cmd.requester.visible || !this.visible  || (!queue.active && !elt.visible),
                     }).then((pts) => {
                         elt.obj = pts;
 
