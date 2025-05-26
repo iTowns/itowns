@@ -80,11 +80,11 @@
             loadCopc(url, options);
 
             function onLayerReady() {
-                var lookAt = layer.root._position;
+                var lookAt = layer.root.clampOBB.position;
                 var coordLookAt = new itowns.Coordinates(view.referenceCrs).setFromVector3(lookAt);
 
                 var size = new itowns.THREE.Vector3();
-                layer.root._bbox.getSize(size);
+                layer.root.voxelOBB.box3D.getSize(size);
 
                 view.controls.lookAtCoordinate({
                     coord: coordLookAt,
