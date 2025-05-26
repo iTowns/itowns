@@ -169,6 +169,10 @@ export default {
                 // disable picking mode
                 o.material.enablePicking(false);
 
+                // Skip if geometry is invalid or missing position attribute
+                if (!o.geometry || !o.geometry.attributes || !o.geometry.attributes.position) {
+                    return;
+                }
                 // if baseId matches objId, the clicked point belongs to `o`
                 for (let i = 0; i < candidates.length; i++) {
                     if (candidates[i].objId == o.baseId) {
