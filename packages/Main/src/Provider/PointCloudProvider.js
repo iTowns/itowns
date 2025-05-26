@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Extent } from '@itowns/geographic';
+// import { Extent } from '@itowns/geographic';
 
 let nextuuid = 1;
 function addPickingAttribute(points) {
@@ -44,7 +44,7 @@ export default {
             points.updateMatrix();
 
             points.layer = layer;
-            points.extent = Extent.fromBox3(command.view.referenceCrs, node.bbox);
+            // points.extent = Extent.fromBox3(command.view.referenceCrs, node.bbox);
             points.userData.node = node;
             return points;
         });
