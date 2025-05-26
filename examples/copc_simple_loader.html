@@ -56,11 +56,11 @@
             function onLayerReady(layer) {
                 const camera = view.camera.camera3D;
 
-                const lookAt = layer.root._position;
+                const lookAt = layer.root.clampOBB.position;
                 lookAt.z = (layer.zmax + layer.zmin) * 0.5;
 
                 const size = new itowns.THREE.Vector3();
-                layer.root._bbox.getSize(size);
+                layer.root.voxelOBB.box3D.getSize(size);
 
                 controls.groundLevel = layer.minElevationRange;
                 var corner = new itowns.THREE.Vector3(...layer.source.header.min);

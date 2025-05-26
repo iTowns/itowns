@@ -144,8 +144,6 @@ class CopcNode extends PointCloudNode {
             this.layer,
             pointCount,
         );
-        child._quaternion = this._quaternion;
-        child._position = this._position;
         this.add(child);
         stack.push(child);
     }

@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { Extent } from '@itowns/geographic';
 
 let nextuuid = 1;
 function addPickingAttribute(points) {
@@ -42,9 +41,11 @@ export default {
             const quaternion = geometry.userData.rotation.clone().invert();
             points.quaternion.copy(quaternion);
             points.updateMatrix();
+            points.updateMatrixWorld(true);
+
+            points.matrixWorldInverse = points.matrixWorld.clone().invert();
 
             points.layer = layer;
-            points.extent = Extent.fromBox3(command.view.referenceCrs, node.bbox);
             points.userData.node = node;
             return points;
         });

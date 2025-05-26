@@ -4,6 +4,7 @@ import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
 import proj4 from 'proj4';
 import { Coordinates, OrientationUtils } from '@itowns/geographic';
+import { OBBHelper } from '@itowns/debug';
 
 const point = new THREE.Vector3();
 const bboxMesh = new THREE.Mesh();
@@ -51,12 +52,15 @@ function getCornerPosition(bbox) {
     return array;
 }
 
+const red =  new THREE.Color(0xff0000);
 function initBoundingBox(elt, layer) {
     // bbox in local ref -> cyan
-    const boxHelper = elt.boxHelper;
-    elt.obj.boxHelper = boxHelper;
-    layer.bboxes.add(boxHelper);
-    boxHelper.updateMatrixWorld(true);
+
+    // elt.obj.boxHelper = new THREE.Group();
+    const clampOBB = new OBBHelper(elt.clampOBB, elt.voxelKey, red);
+    elt.obj.boxHelper = clampOBB;
+    // elt.obj.boxHelper.add(clampOBB);
+    layer.bboxes.add(elt.obj.boxHelper);
 
     // tightbbox in local ref -> blue
     const tightboxHelper = new THREE.BoxHelper(undefined, 0x0000ff);
@@ -65,20 +69,6 @@ function initBoundingBox(elt, layer) {
     elt.obj.tightboxHelper = tightboxHelper;
     layer.bboxes.add(tightboxHelper);
     tightboxHelper.updateMatrixWorld(true);
-}
-
-function createBoxHelper(bbox, quaternion, origin) {
-    const boxHelper = new THREE.BoxHelper(undefined, 0x00ffff);
-    boxHelper.geometry.attributes.position.array = getCornerPosition(bbox);
-
-    boxHelper.position.copy(origin);
-    boxHelper.quaternion.copy(quaternion.clone().invert());
-    boxHelper.updateMatrix();
-    boxHelper.updateMatrixWorld();
-
-    boxHelper.geometry.computeBoundingBox();
-
-    return boxHelper;
 }
 
 function computeSSEPerspective(context, pointSize, spacing, elt, distance) {
@@ -338,11 +328,27 @@ class PointCloudLayer extends GeometryLayer {
         }
 
         // get the bbox containing all cornersLocal => the bboxLocal
-        const _bbox = new THREE.Box3().setFromArray(cornersLocal);
-        this.root._bbox = _bbox;
+        this.root.voxelOBB.box3D.setFromArray(cornersLocal);
+        this.root.voxelOBB.position.set(...origin);
+        this.root.voxelOBB.quaternion.copy(rotation).invert();
+        this.root.voxelOBB.scale.copy(this.root.layer.scale);
 
-        this.root._position = new THREE.Vector3(...origin);
-        this.root._quaternion = rotation;
+        this.root.voxelOBB.updateMatrix();
+        this.root.voxelOBB.updateMatrixWorld(true);
+
+        this.root.voxelOBB.matrixWorldInverse = this.root.voxelOBB.matrixWorld.clone().invert();
+
+        this.root.clampOBB.copy(this.root.voxelOBB);
+
+        const clampBBox = this.root.clampOBB.box3D;
+        if (clampBBox.min.z < this.zmax) {
+            clampBBox.max.z = Math.min(clampBBox.max.z, this.zmax);
+        }
+        if (clampBBox.max.z > this.zmin) {
+            clampBBox.min.z = Math.max(clampBBox.min.z, this.zmin);
+        }
+
+        this.root.clampOBB.matrixWorldInverse = this.root.voxelOBB.matrixWorldInverse;
     }
 
     setElevationRange() {
@@ -411,23 +417,21 @@ class PointCloudLayer extends GeometryLayer {
         }
 
         // get object on which to measure distance
-        let obj;
+        let bbox;
+        let matrixWorld;
+        let matrixWorldInverse;
         if (elt.obj) {
-            obj = elt.obj;
+            const obj = elt.obj;
+            bbox = obj.geometry.boundingBox;
+            matrixWorld = obj.matrixWorld;
+            matrixWorldInverse = obj.matrixWorldInverse;
         } else {
-            // get a clamped bbox from the full bbox
-            const bbox = elt._bbox.clone();
-            if (bbox.min.z < layer.zmax) {
-                bbox.max.z = Math.min(bbox.max.z, layer.zmax);
-            }
-            if (bbox.max.z > layer.zmin) {
-                bbox.min.z = Math.max(bbox.min.z, layer.zmin);
-            }
-            elt.boxHelper = createBoxHelper(bbox, elt._quaternion, elt._position);
-            obj = elt.boxHelper;
+            bbox = elt.clampOBB.box3D;
+            matrixWorld = elt.clampOBB.matrixWorld;
+            matrixWorldInverse = elt.clampOBB.matrixWorldInverse;
         }
-        const bbox = obj.geometry.boundingBox;
-        elt.visible = context.camera.isBox3Visible(obj.geometry.boundingBox, obj.matrixWorld);
+
+        elt.visible = context.camera.isBox3Visible(bbox, matrixWorld);
 
         if (!elt.visible) {
             markForDeletion(elt);
@@ -436,10 +440,7 @@ class PointCloudLayer extends GeometryLayer {
 
         elt.notVisibleSince = undefined;
 
-        point.copy(context.camera.camera3D.position)
-            .sub(obj.getWorldPosition(new THREE.Vector3()))
-            .applyQuaternion(obj.getWorldQuaternion(new THREE.Quaternion()).invert());
-
+        point.copy(context.camera.camera3D.position).applyMatrix4(matrixWorldInverse);
         const distanceToCamera = bbox.distanceToPoint(point);
 
         // only load geometry if this elements has points
