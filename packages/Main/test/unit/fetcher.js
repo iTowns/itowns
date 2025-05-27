@@ -44,6 +44,7 @@ describe('Fetcher', function () {
     describe('json', function () {
         const url =  `${itownsdataUrl}/immersive/exampleParis1/cameraCalibration.json`;
         it('should load a json file', (done) => {
+            console.log('url', url);
             Fetcher.json(url, networkOptions)
                 .then((json) => {
                     assert.ok(Array.isArray(json));
@@ -57,6 +58,7 @@ describe('Fetcher', function () {
     describe('xml', function () {
         const url =  `${itownsdataUrl}/ULTRA2009.gpx`;
         it('should load a xml file', (done) => {
+            console.log('url', url);
             Fetcher.xml(url, networkOptions)
                 .then((xml) => {
                     assert.ok(Object.keys(xml).includes('childNodes'));

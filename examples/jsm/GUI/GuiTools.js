@@ -1,10 +1,12 @@
+import * as itowns from 'itowns';
+// eslint-disable-next-line
+import dat from 'dat';
+
 /**
  * Generated On: 2015-10-5
  * Class: GuiTools
  * Description: Classe pour créer un menu.
  */
-
-/* global dat, itowns */
 
 dat.GUI.prototype.removeFolder = function removeFolder(name) {
     const folder = this.__folders[name];
@@ -187,3 +189,6 @@ function createHTMLListFromObject(jsObject) {
     });
     return list;
 }
+
+
+export default GuiTools;
