@@ -117,6 +117,9 @@ const waitNextRender = async page => page.evaluate(() => new Promise((resolve) =
 const loadExample = async (url, screenshotName) => {
     url = `http://localhost:${itownsPort}/${url}`;
 
+    global.page.close();
+    global.page = await browser.newPage();
+
     const pageErrors = [];
     page.on('pageerror', (e) => { pageErrors.push(e); });
 
@@ -127,7 +130,7 @@ const loadExample = async (url, screenshotName) => {
     }
 
     if (pageErrors.length > 0) {
-        const err = new Error(`page ${url} encoutered ${pageErrors.length} error(s). [${pageErrors.map(e => e.message)}]`, { errors: pageErrors });
+        const err = new Error(`page ${url} encoutered ${pageErrors.length} error(s). [${pageErrors.map(e => e.message)}]`, { cause: pageErrors });
         throw err;
     }
 
