@@ -8,13 +8,14 @@ import Layer from 'Layer/Layer';
 import Source from 'Source/Source';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import { RasterColorTile } from 'Renderer/RasterTile';
+import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 
 describe('updateLayeredMaterialNodeImagery', function () {
     // Misc var to initialize a TileMesh instance
     const geom = new THREE.BufferGeometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
     const extent = new Extent('EPSG:4326', 0, 11.25, 0, 11.25);
-    const material = new THREE.Material();
+    const material = new LayeredMaterial();
 
     // Mock scheduler
     const context = {
@@ -39,7 +40,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
     const layer = new Layer('foo', {
         source,
         crs: 'EPSG:4326',
-        info: { update: () => {} },
+        info: { update: () => { } },
     });
     layer.tileMatrixSets = [
         'EPSG:4326',
@@ -53,7 +54,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
     };
 
     const nodeLayer = new RasterColorTile(layer);
-    material.getLayer = () => nodeLayer;
+    material.getTile = () => nodeLayer;
 
     beforeEach('reset state', function () {
         // clear commands array
@@ -76,7 +77,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         const tile = new TileMesh(geom, material, layer, extent, 0);
         material.visible = false;
         nodeLayer.level = 0;
-        tile.parent = { };
+        tile.parent = {};
         updateLayeredMaterialNodeImagery(context, layer, tile, tile.parent);
         assert.equal(context.scheduler.commands.length, 0);
     });
@@ -85,7 +86,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         const tile = new TileMesh(geom, material, layer, extent, 3);
         material.visible = true;
         nodeLayer.level = 3;
-        tile.parent = { };
+        tile.parent = {};
         updateLayeredMaterialNodeImagery(context, layer, tile, tile.parent);
         assert.equal(context.scheduler.commands.length, 0);
     });
@@ -94,7 +95,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         const tile = new TileMesh(geom, material, layer, extent, 2);
         material.visible = true;
         nodeLayer.level = 1;
-        tile.parent = { };
+        tile.parent = {};
 
         // FIRST PASS: init Node From Parent and get out of the function
         // without any network fetch
@@ -112,7 +113,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         // Emulate a situation where tile inherited a level 1 texture
         material.visible = true;
         nodeLayer.level = 1;
-        tile.parent = { };
+        tile.parent = {};
         source.isWMTSSource = true;
         source.tileMatrixSet = 'WGS84G';
         // Emulate a situation where tile inherited a level 1 texture

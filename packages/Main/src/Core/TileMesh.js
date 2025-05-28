@@ -26,7 +26,7 @@ class TileMesh extends THREE.Mesh {
 
         this.level = level;
 
-        this.material.objectId = this.id;
+        this.material.setUniform('objectId', this.id);
 
         this.obb = this.geometry.OBB.clone();
         this.boundingSphere = new THREE.Sphere();
