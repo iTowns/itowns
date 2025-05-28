@@ -55,6 +55,7 @@ module.exports = () => {
             alias: {
                 itowns: path.resolve(__dirname, 'packages/Main/src/Main.js'),
                 '@itowns/geographic': path.resolve(__dirname, 'packages/Geographic/src/Main.js'),
+                '@itowns/debug': path.resolve(__dirname, 'packages/Debug/src/Main.js'),
             },
         },
         entry: {
