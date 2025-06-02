@@ -166,6 +166,13 @@ export default {
         if (layer.material.shape != undefined) {
             styleUI.add(layer.material, 'shape', PNTS_SHAPE).name('Shape mode').onChange(update);
         }
+        if (layer.material.gamma != undefined) {
+            styleUI.add(layer.material, 'gamma', 1, 10).name('Gamma').onChange(update);
+        }
+        if (layer.material.ambientBoost != undefined) {
+            styleUI.add(layer.material, 'ambientBoost', 0, 0.5).name('Ambient Boost').onChange(update);
+        }
+
         styleUI.add(layer, 'opacity', 0, 1).name('Layer opacity').onChange(update);
         styleUI.add(layer, 'pointSize', 0, 15).name('Point size').onChange(update);
         if (layer.material.sizeMode != undefined && view.camera.camera3D.isPerspectiveCamera) {
