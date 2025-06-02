@@ -204,7 +204,9 @@ class PointsMaterial extends THREE.ShaderMaterial {
             minAttenuatedSize = 3,
             maxAttenuatedSize = 10,
             gradient,
+            gamma = 1.0,
             scale = 0.05 * 0.5 / Math.tan(1.0 / 2.0),
+            ambientBoost = 0.0,
             ...materialOptions
         } = options;
 
@@ -242,6 +244,8 @@ class PointsMaterial extends THREE.ShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'scale', scale);
         CommonMaterial.setUniformProperty(this, 'minAttenuatedSize', minAttenuatedSize);
         CommonMaterial.setUniformProperty(this, 'maxAttenuatedSize', maxAttenuatedSize);
+        CommonMaterial.setUniformProperty(this, 'gamma', gamma);
+        CommonMaterial.setUniformProperty(this, 'ambientBoost', ambientBoost);
 
         // add classification texture to apply classification lut.
         const data = new Uint8Array(256 * 4);
@@ -369,6 +373,26 @@ class PointsMaterial extends THREE.ShaderMaterial {
         this.sizeMode = value ?
             PNTS_SIZE_MODE.ATTENUATED :
             PNTS_SIZE_MODE.VALUE;
+    }
+
+    /** @returns {number} */
+    get gamma() {
+        return this.uniforms.gamma.value;
+    }
+
+    /** @param {number} gamma */
+    set gamma(gamma) {
+        this.uniforms.gamma.value = gamma;
+    }
+
+    /** @returns {number} */
+    get ambientBoost() {
+        return this.uniforms.ambientBoost.value;
+    }
+
+    /** @param {number} ambientBoost */
+    set ambientBoost(ambientBoost) {
+        this.uniforms.ambientBoost.value = ambientBoost;
     }
 
     recomputeClassification() {

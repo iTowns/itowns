@@ -10,6 +10,8 @@
 
 uniform vec3 diffuse;
 uniform float opacity;
+uniform float gamma;
+uniform float ambientBoost;
 
 uniform bool picking;
 uniform int shape;
@@ -35,6 +37,11 @@ void main() {
 #include <alphahash_fragment>
 
     vec3 outgoingLight = diffuseColor.rgb;
+    
+    outgoingLight = max(outgoingLight, vec3(ambientBoost));
+    
+    outgoingLight = pow(outgoingLight, vec3(1.0 / gamma));
+    
 #include <opaque_fragment> // gl_FragColor
 #include <tonemapping_fragment>
 #include <fog_fragment>
