@@ -11,7 +11,7 @@
     "lint": "eslint \"src/**/*.{js,ts,tsx}\"",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib --extensions .js,.ts",
     "watch": "npm run transpile -- --watch",
-    "prerelease-next": "npm version prerelease --preid next",
+    "prerelease-next": "npm version prerelease --preid next --legacy-peer-deps",
     "update-package": "npm remove @itowns/geographic itowns && npm install @itowns/geographic@$npm_package_version itowns@$npm_package_version --save"
   },
   "files": [
