@@ -410,16 +410,13 @@ export function quaternionFromEnuToCRS(
     target = new Quaternion(),
 ) {
     if (coordinates) { return quaternionFromEnuToCRS(crsOrProj)(coordinates, target); }
-    const proj = typeof crsOrProj === 'string' ? proj4.defs(crsOrProj) : crsOrProj;
-    switch (proj.projName) {
-        case 'geocent': return quaternionFromEnuToGeocent();
-        case 'lcc':
+    // @ts-expect-error: .oProj not documented on type Converter
+    const proj = typeof crsOrProj === 'string' ? proj4(crsOrProj).oProj : crsOrProj.oProj;
+    switch (proj.names[0]) {
+        case 'Geocentric': return quaternionFromEnuToGeocent();
         case 'Lambert Tangential Conformal Conic Projection':
-        case 'Lambert_Conformal_Conic':
-        case 'Lambert_Conformal_Conic_1SP': case 'Lambert_Conformal_Conic_2SP':
-        case 'Lambert Conic Conformal (1SP)': case 'Lambert Conic Conformal (2SP)':
             return quaternionFromEnuToLCC(proj as LCCProjection);
-        case 'tmerc': return quaternionFromEnuToTMerc(proj as TMercProjection);
+        case 'Fast_Transverse_Mercator': return quaternionFromEnuToTMerc(proj as TMercProjection);
         case 'longlat': return quaternionFromEnuToLongLat();
         default: return quaternionUnimplemented(proj);
     }
@@ -448,16 +445,13 @@ export function quaternionFromCRSToEnu(
     target = new Quaternion(),
 ) {
     if (coordinates) { return quaternionFromCRSToEnu(crsOrProj)(coordinates, target); }
-    const proj = typeof crsOrProj === 'string' ? proj4.defs(crsOrProj) : crsOrProj;
-    switch (proj.projName) {
-        case 'geocent': return quaternionFromGeocentToEnu();
-        case 'lcc':
+    // @ts-expect-error: .oProj not documented on type Converter
+    const proj = typeof crsOrProj === 'string' ? proj4(crsOrProj).oProj : crsOrProj.oProj;
+    switch (proj.names[0]) {
+        case 'Geocentric': return quaternionFromGeocentToEnu();
         case 'Lambert Tangential Conformal Conic Projection':
-        case 'Lambert_Conformal_Conic':
-        case 'Lambert_Conformal_Conic_1SP': case 'Lambert_Conformal_Conic_2SP':
-        case 'Lambert Conic Conformal (1SP)': case 'Lambert Conic Conformal (2SP)':
             return quaternionFromLCCToEnu(proj as LCCProjection);
-        case 'tmerc': return quaternionFromTMercToEnu(proj as TMercProjection);
+        case 'Fast_Transverse_Mercator': return quaternionFromTMercToEnu(proj as TMercProjection);
         case 'longlat': return quaternionFromLongLatToEnu();
         default: return quaternionUnimplemented(proj);
     }
