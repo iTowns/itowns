@@ -94,7 +94,6 @@ class Layer extends THREE.EventDispatcher {
             options = {},
             updateStrategy,
             zoom,
-            mergeFeatures = true,
             crs,
         } = config;
 
@@ -195,8 +194,6 @@ class Layer extends THREE.EventDispatcher {
             max: 500,
             ...(cacheLifeTime !== Infinity && { ttl: cacheLifeTime }),
         });
-
-        this.mergeFeatures = mergeFeatures;
     }
 
     addInitializationStep() {
