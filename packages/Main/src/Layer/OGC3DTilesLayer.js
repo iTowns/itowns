@@ -278,6 +278,7 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.pntsMinAttenuatedSize = pntsMinAttenuatedSize;
         this.pntsMaxAttenuatedSize = pntsMaxAttenuatedSize;
 
+        /** @type{any} */
         this.tilesRenderer = new TilesRenderer(this.source.url);
         if (config.source.isOGC3DTilesIonSource) {
             this.tilesRenderer.registerPlugin(new CesiumIonAuthPlugin({
