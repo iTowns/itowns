@@ -1,6 +1,7 @@
 import assert from 'assert';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import CopcSource from 'Source/CopcSource';
+import CopcLayer from 'Layer/CopcLayer';
 
 const copcUrl = 'https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz';
 
@@ -24,6 +25,19 @@ describe('COPC', function () {
                         done();
                     }).catch(done);
             }).timeout(5000);
+        });
+
+        describe('Copc Layer', function () {
+            it('instanciates a layer', (done) => {
+                const layer = new CopcLayer('copc', { source, crs: 'EPSG:4978' });
+                layer.whenReady
+                    .then(() => {
+                        assert.equal(layer.zmin, source.header.min[2]);
+                        assert.ok(layer.root.isCopcNode);
+                        assert.ok(layer.root._position.isVector3);
+                        done();
+                    }).catch(done);
+            });
         });
     });
 });
