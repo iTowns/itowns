@@ -71,6 +71,13 @@ class ColorLayer extends RasterLayer {
      * * `2`: white color to invisible effect.
      * * `3`: custom shader effect (defined `ShaderChunk.customBodyColorLayer` and `ShaderChunk.customHeaderColorLayer`).
      * @param {number} [config.effect_parameter=1.0] - amount value used with effect applied on raster color.
+     * @param {(boolean|Object)} [config.addLabelLayer] - Used to tell if this layer has
+     * labels to display from its data. For example, it needs to be set to `true`
+     * for a layer with vector tiles. If it's `true` a new `LabelLayer` is added and attached to this `Layer`.
+     * You can also configure it with {@link LabelLayer} options described below such as: `addLabelLayer: { performance: true }`.
+     * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
+     * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
+     * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.
      *
      * @example
      * // Create a ColorLayer
@@ -96,6 +103,7 @@ class ColorLayer extends RasterLayer {
             effect_type = 0,
             effect_parameter = 1.0,
             transparent,
+            addLabelLayer = false,
             ...rasterConfig
         } = config;
 
@@ -134,6 +142,7 @@ class ColorLayer extends RasterLayer {
         // Feature options
         this.buildExtent = true;
         this.structure = '2d';
+        this.addLabelLayer = addLabelLayer;
     }
 
     /**
