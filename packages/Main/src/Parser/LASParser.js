@@ -8,7 +8,7 @@ let _thread;
 
 function workerInstance() {
     return new Worker(
-        /* webpackChunkName: "itowns_lasparser" */
+        /* webpackChunkName: "itowns_lasworker" */
         new URL('../Worker/LASLoaderWorker.js', import.meta.url),
         { type: 'module' },
     );
@@ -31,8 +31,8 @@ function getLocalRotation(options, origin) {
     const isGeocentric = proj4.defs(options.out.crs).projName === 'geocent';
     let rotation = new THREE.Quaternion();
     if (isGeocentric) {
-        const coordOrigin = new Coordinates(options.out.crs, origin);
-        rotation = OrientationUtils.quaternionFromCRSToCRS(options.out.crs, 'EPSG:4326')(coordOrigin);
+        const coordOrigin = new Coordinates(options.out.crs).setFromArray(origin);
+        rotation = OrientationUtils.quaternionFromCRSToCRS(options.out.crs, options.in.crs)(coordOrigin);
     }
     return rotation;
 }
