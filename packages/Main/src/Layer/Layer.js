@@ -3,7 +3,6 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
 import Source from 'Source/Source';
 import { LRUCache } from 'lru-cache';
-import Style from 'Core/Style';
 
 /**
  * @property {boolean} isLayer - Used to checkout whether this layer is a Layer.
@@ -52,11 +51,6 @@ class Layer extends THREE.EventDispatcher {
      * @param {Source|boolean} config.source - instantiated Source specifies data source to display.
      * if config.source is a boolean, it can only be false. if config.source is false,
      * the layer doesn't need Source (like debug Layer or procedural layer).
-     * @param {StyleOptions} [config.style] - an object that contain any properties
-     * (order, zoom, fill, stroke, point, text or/and icon)
-     * and sub properties of a Style (@see {@link StyleOptions}). Or directly a {@link Style} .<br/>
-     * When entering a StyleOptions the missing style properties will be look for in the data (if any)
-     * what won't be done when you use a Style.
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
      * This value is used for cache expiration mechanism.
      * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
@@ -88,7 +82,6 @@ class Layer extends THREE.EventDispatcher {
         const {
             source,
             name,
-            style = {},
             subdivisionThreshold = 256,
             cacheLifeTime,
             options = {},
@@ -128,16 +121,6 @@ class Layer extends THREE.EventDispatcher {
         this.source = source || new Source({ url: 'none' });
 
         this.crs = crs;
-
-        if (style && !(style instanceof Style)) {
-            if (typeof style.fill?.pattern === 'string') {
-                console.warn('Using style.fill.pattern = { source: Img|url } is adviced');
-                style.fill.pattern = { source: style.fill.pattern };
-            }
-            this.style = new Style(style);
-        } else {
-            this.style = style || new Style();
-        }
 
         /**
          * @type {number}

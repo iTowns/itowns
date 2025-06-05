@@ -3,6 +3,7 @@ import { Group } from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
 import FeatureProcessing from 'Process/FeatureProcessing';
 import Feature2Mesh from 'Converter/Feature2Mesh';
+import Style from 'Core/Style';
 
 /**
  * `FeatureGeometryLayer` displays geographic vector data (geojson, kml...) in object 3D.
@@ -56,6 +57,7 @@ class FeatureGeometryLayer extends GeometryLayer {
             accurate = true,
             filter,
             mergeFeatures = true,
+            style = {},
             ...geometryOptions
         } = options;
 
@@ -69,6 +71,8 @@ class FeatureGeometryLayer extends GeometryLayer {
         this.onMeshCreated = onMeshCreated;
 
         this.isFeatureGeometryLayer = true;
+
+        this.style = style instanceof Style ? style : new Style(style);
         this.accurate = accurate;
         this.buildExtent = !this.accurate;
         this.filter = filter;

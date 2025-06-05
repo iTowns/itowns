@@ -2,6 +2,7 @@ import RasterLayer from 'Layer/RasterLayer';
 import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterColorTile } from 'Renderer/RasterTile';
 import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
+import Style from 'Core/Style';
 
 /**
  * Fires when the visiblity of the layer has changed.
@@ -105,6 +106,7 @@ class ColorLayer extends RasterLayer {
             transparent,
             addLabelLayer = false,
             mergeFeatures = true,
+            style = {},
             ...rasterConfig
         } = config;
 
@@ -115,6 +117,8 @@ class ColorLayer extends RasterLayer {
          * @readonly
          */
         this.isColorLayer = true;
+
+        this.style = style instanceof Style ? style : new Style(style);
 
         /**
          * @type {boolean}
