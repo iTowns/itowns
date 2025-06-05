@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
 import Source from 'Source/Source';
 import { LRUCache } from 'lru-cache';
@@ -85,7 +84,6 @@ class Layer extends THREE.EventDispatcher {
             subdivisionThreshold = 256,
             cacheLifeTime,
             options = {},
-            updateStrategy,
             zoom,
             crs,
         } = config;
@@ -130,11 +128,6 @@ class Layer extends THREE.EventDispatcher {
 
         // Default properties
         this.options = options;
-
-        this.updateStrategy = updateStrategy ?? {
-            type: STRATEGY_MIN_NETWORK_TRAFFIC,
-            options: {},
-        };
 
         this.defineLayerProperty('frozen', false);
 
