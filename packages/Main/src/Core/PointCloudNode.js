@@ -11,8 +11,6 @@ const translation = new THREE.Vector3();
  * @property {array} children
  * @property {OBB} voxelOBB the node cubique obb
  * @property {OBB} clampOBB the cubique obb clamped to zmin and zmax
- * @property {THREE.Vector3} _position
- * @property {THREE.quaternion} _quaternion
  * @property {number} sse
  */
 class PointCloudNode extends THREE.EventDispatcher {
@@ -25,8 +23,6 @@ class PointCloudNode extends THREE.EventDispatcher {
         this.children = [];
         this.voxelOBB = new OBB();
         this.clampOBB = new OBB();
-        this._position = new THREE.Vector3();
-        this._quaternion = new THREE.Quaternion();
         this.sse = -1;
     }
 
