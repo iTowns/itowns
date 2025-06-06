@@ -48,6 +48,7 @@ class CopcNode extends PointCloudNode {
         this.y = y;
         this.z = z;
 
+        this.pointSpacing = this.layer.spacing / 2 ** depth;
         this.voxelKey = buildVoxelKey(depth, x, y, z);
     }
 
