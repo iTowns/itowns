@@ -162,7 +162,6 @@ class Potree2Node extends PotreeNode {
                 }
 
                 const child = new Potree2Node(numPoints, childMask, this.layer);
-                child.spacing = current.spacing / 2;
 
                 current.add(child, childIndex);
                 stack.push(child);

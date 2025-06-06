@@ -58,7 +58,6 @@ class EntwinePointTileNode extends PointCloudNode {
         this.y = y;
         this.z = z;
 
-        this.pointSpacing = this.layer.spacing / 2 ** depth;
         this.voxelKey = buildVoxelKey(depth, x, y, z);
 
         this.url = `${this.layer.source.url}/ept-data/${this.voxelKey}.${this.layer.source.extension}`;
