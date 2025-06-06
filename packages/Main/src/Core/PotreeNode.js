@@ -10,8 +10,11 @@ class PotreeNode extends PointCloudNode {
     constructor(numPoints = 0, childrenBitField = 0, layer) {
         super(numPoints, layer);
         this.childrenBitField = childrenBitField;
-        this.id = '';
+
         this.depth = 0;
+
+        this.hierarchyKey = 'r';
+
         this.baseurl = layer.source.baseurl;
     }
 
@@ -20,15 +23,15 @@ class PotreeNode extends PointCloudNode {
     }
 
     get url() {
-        return `${this.baseurl}/r${this.id}.${this.layer.source.extension}`;
+        return `${this.baseurl}/${this.hierarchyKey}.${this.layer.source.extension}`;
     }
 
     add(node, indexChild, root) {
         super.add(node, indexChild);
-        node.id = this.id + indexChild;
-        node.depth = node.id.length;
-        if ((node.id.length % this.layer.hierarchyStepSize) == 0) {
-            node.baseurl = `${root.baseurl}/${node.id.substr(root.id.length)}`;
+        node.hierarchyKey = this.hierarchyKey + indexChild;
+        node.depth = node.hierarchyKey.length - 1;
+        if ((node.depth % this.layer.hierarchyStepSize) == 0) {
+            node.baseurl = `${root.baseurl}/${node.hierarchyKey.substr(root.hierarchyKey.length)}`;
         } else {
             node.baseurl = root.baseurl;
         }
@@ -73,7 +76,7 @@ class PotreeNode extends PointCloudNode {
     }
 
     loadOctree() {
-        const octreeUrl = `${this.baseurl}/r${this.id}.${this.layer.source.extensionOctree}`;
+        const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.layer.source.extensionOctree}`;
         return this.layer.source.fetcher(octreeUrl, this.layer.source.networkOptions).then((blob) => {
             const view = new DataView(blob);
             const stack = [];
