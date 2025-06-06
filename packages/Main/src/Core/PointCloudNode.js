@@ -16,6 +16,10 @@ class PointCloudNode extends THREE.EventDispatcher {
         this.sse = -1;
     }
 
+    get id() {
+        throw new Error('In extended PointCloudNode, you have to implement the getter id!');
+    }
+
     add(node, indexChild) {
         this.children.push(node);
         node.parent = this;
