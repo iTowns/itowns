@@ -159,21 +159,32 @@ describe('Entwine Point Tile', function () {
             root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, layer));
         });
 
-        it('finds the common ancestor of two nodes', () => {
-            let ancestor = root.children[2].children[1].children[0].findCommonAncestor(root.children[2].children[0].children[0]);
-            assert.deepStrictEqual(ancestor, root.children[2]);
+        describe('finds the common ancestor of two nodes', () => {
+            let ancestor;
+            it('cousins => grand parent', () => {
+                ancestor = root.children[2].children[1].children[0].findCommonAncestor(root.children[2].children[0].children[0]);
+                assert.deepStrictEqual(ancestor, root.children[2]);
+            });
 
-            ancestor = root.children[0].children[0].children[0].findCommonAncestor(root.children[0].children[0].children[1]);
-            assert.deepStrictEqual(ancestor, root.children[0].children[0]);
+            it('brothers => parent', () => {
+                ancestor = root.children[0].children[0].children[0].findCommonAncestor(root.children[0].children[0].children[1]);
+                assert.deepStrictEqual(ancestor, root.children[0].children[0]);
+            });
 
-            ancestor = root.children[0].children[1].findCommonAncestor(root.children[2].children[1].children[0]);
-            assert.deepStrictEqual(ancestor, root);
+            it('grand child and grand grand child => root', () => {
+                ancestor = root.children[0].children[1].findCommonAncestor(root.children[2].children[1].children[0]);
+                assert.deepStrictEqual(ancestor, root);
+            });
 
-            ancestor = root.children[1].findCommonAncestor(root.children[1].children[0].children[0]);
-            assert.deepStrictEqual(ancestor, root.children[1]);
+            it('parent and child => parent', () => {
+                ancestor = root.children[1].findCommonAncestor(root.children[1].children[0].children[0]);
+                assert.deepStrictEqual(ancestor, root.children[1]);
+            });
 
-            ancestor = root.children[2].children[0].findCommonAncestor(root.children[2]);
-            assert.deepStrictEqual(ancestor, root.children[2]);
+            it('child and parent => parent', () => {
+                ancestor = root.children[2].children[0].findCommonAncestor(root.children[2]);
+                assert.deepStrictEqual(ancestor, root.children[2]);
+            });
         });
     });
 });
