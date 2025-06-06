@@ -26,11 +26,10 @@ function initBoundingBox(elt, layer) {
     elt.obj.boxHelper.updateMatrixWorld();
 }
 
-function computeSSEPerspective(context, pointSize, spacing, elt, distance) {
+function computeSSEPerspective(context, pointSize, pointSpacing, distance) {
     if (distance <= 0) {
         return Infinity;
     }
-    const pointSpacing = spacing / 2 ** elt.depth;
     // Estimate the onscreen distance between 2 points
     const onScreenSpacing = context.camera.preSSE * pointSpacing / distance;
     // [  P1  ]--------------[   P2   ]
@@ -40,9 +39,7 @@ function computeSSEPerspective(context, pointSize, spacing, elt, distance) {
     return Math.max(0.0, onScreenSpacing - pointSize);
 }
 
-function computeSSEOrthographic(context, pointSize, spacing, elt) {
-    const pointSpacing = spacing / 2 ** elt.depth;
-
+function computeSSEOrthographic(context, pointSize, pointSpacing) {
     // Given an identity view matrix, project pointSpacing from world space to
     // clip space. v' = vVP = vP
     const v = new THREE.Vector4(pointSpacing);
@@ -56,12 +53,12 @@ function computeSSEOrthographic(context, pointSize, spacing, elt) {
     return Math.max(0.0, distance - pointSize);
 }
 
-function computeScreenSpaceError(context, pointSize, spacing, elt, distance) {
+function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
     if (context.camera.camera3D.isOrthographicCamera) {
-        return computeSSEOrthographic(context, pointSize, spacing, elt);
+        return computeSSEOrthographic(context, pointSize, pointSpacing);
     }
 
-    return computeSSEPerspective(context, pointSize, spacing, elt, distance);
+    return computeSSEPerspective(context, pointSize, pointSpacing, distance);
 }
 
 function markForDeletion(elt) {
@@ -321,7 +318,7 @@ class PointCloudLayer extends GeometryLayer {
             } else if (!elt.promise) {
                 const distance = Math.max(0.001, bbox.distanceToPoint(point));
                 // Increase priority of nearest node
-                const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / distance;
+                const priority = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distance) / distance;
                 elt.promise = context.scheduler.execute({
                     layer,
                     requester: elt,
@@ -350,7 +347,7 @@ class PointCloudLayer extends GeometryLayer {
 
         if (elt.children && elt.children.length) {
             const distance = bbox.distanceToPoint(point);
-            elt.sse = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / this.sseThreshold;
+            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distance) / this.sseThreshold;
             if (elt.sse >= 1) {
                 return elt.children;
             } else {
