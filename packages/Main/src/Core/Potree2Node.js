@@ -100,8 +100,8 @@ class Potree2Node extends PotreeNode {
     }
 
     async loadHierarchy() {
-        const hierarchyPath = `${this.baseurl}/hierarchy.bin`;
-        const buffer = await this.layer.source.fetcher(hierarchyPath, this.networkOptions(this.hierarchyByteOffset, this.hierarchyByteSize));
+        const hierarchyUrl = `${this.baseurl}/hierarchy.bin`;
+        const buffer = await this.layer.source.fetcher(hierarchyUrl, this.networkOptions(this.hierarchyByteOffset, this.hierarchyByteSize));
         this.parseHierarchy(buffer);
     }
 

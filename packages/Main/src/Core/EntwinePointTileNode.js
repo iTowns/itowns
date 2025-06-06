@@ -1,7 +1,7 @@
 import Fetcher from 'Provider/Fetcher';
 import PointCloudNode from 'Core/PointCloudNode';
 
-function buildId(depth, x, y, z) {
+function buildVoxelKey(depth, x, y, z) {
     return `${depth}-${x}-${y}-${z}`;
 }
 
@@ -23,7 +23,7 @@ function buildId(depth, x, y, z) {
  * @property {number} z - The z coordinate of the node in the tree - see the
  * [Entwine
  * documentation](https://entwine.io/entwine-point-tile.html#ept-data)
- * @property {string} id - The id of the node, constituted of the four
+ * @property {string} voxelKey - The id of the node, constituted of the four
  * components: `depth-x-y-z`.
  */
 class EntwinePointTileNode extends PointCloudNode {
@@ -58,19 +58,23 @@ class EntwinePointTileNode extends PointCloudNode {
         this.y = y;
         this.z = z;
 
-        this.id = buildId(depth, x, y, z);
+        this.voxelKey = buildVoxelKey(depth, x, y, z);
 
-        this.url = `${this.layer.source.url}/ept-data/${this.id}.${this.layer.source.extension}`;
+        this.url = `${this.layer.source.url}/ept-data/${this.voxelKey}.${this.layer.source.extension}`;
     }
 
     get octreeIsLoaded() {
         return this.numPoints >= 0;
     }
 
+    get id() {
+        return `${this.depth}${this.x}${this.y}${this.z}`;
+    }
+
     loadOctree() {
-        const hierarchyUrl = `${this.layer.source.url}/ept-hierarchy/${this.id}.json`;
+        const hierarchyUrl = `${this.layer.source.url}/ept-hierarchy/${this.voxelKey}.json`;
         return Fetcher.json(hierarchyUrl, this.layer.source.networkOptions).then((hierarchy) => {
-            this.numPoints = hierarchy[this.id];
+            this.numPoints = hierarchy[this.voxelKey];
 
             const stack = [];
             stack.push(this);
@@ -95,8 +99,8 @@ class EntwinePointTileNode extends PointCloudNode {
     }
 
     findAndCreateChild(depth, x, y, z, hierarchy, stack) {
-        const id = buildId(depth, x, y, z);
-        const numPoints = hierarchy[id];
+        const voxelKey = buildVoxelKey(depth, x, y, z);
+        const numPoints = hierarchy[voxelKey];
 
         if (typeof numPoints == 'number') {
             const child = new EntwinePointTileNode(depth, x, y, z, this.layer, numPoints);

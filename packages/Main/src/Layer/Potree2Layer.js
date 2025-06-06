@@ -179,8 +179,6 @@ class Potree2Layer extends PointCloudLayer {
             this.minElevationRange = this.minElevationRange ?? metadata.boundingBox.min[2];
             this.maxElevationRange = this.maxElevationRange ?? metadata.boundingBox.max[2];
 
-            root.id = 'r';
-            root.depth = 0;
             root.nodeType = 2;
             root.hierarchyByteOffset = 0n;
             root.hierarchyByteSize = BigInt(metadata.hierarchy.firstChunkSize);
