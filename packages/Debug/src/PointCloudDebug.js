@@ -99,7 +99,7 @@ export default {
                     update();
                 });
 
-            const classeUI = styleUI.addFolder('Classe Visibility').close();
+            const classeUI = styleUI.addFolder('Classe Visibility');
             Object.entries(layer.material.classificationScheme).forEach((classe) => {
                 classeUI.add(classe[1], 'visible').name(classe[1].name)
                     .onChange(() => {
