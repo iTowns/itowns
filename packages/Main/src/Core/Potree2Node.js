@@ -71,41 +71,58 @@ class Potree2Node extends PointCloudNode {
     }
 
     createChildAABB(childNode, childIndex) {
+        const voxelBBox = this.voxelOBB.box3D;
+        const childVoxelBBox = childNode.voxelOBB.box3D;
+
         // Code inspired from potree
-        childNode._bbox.copy(this._bbox);
-        this._bbox.getCenter(childNode._bbox.max);
-        dHalfLength.copy(childNode._bbox.max).sub(this._bbox.min);
+        childVoxelBBox.copy(voxelBBox);
+        voxelBBox.getCenter(childVoxelBBox.max);
+        dHalfLength.copy(childVoxelBBox.max).sub(voxelBBox.min);
 
         if (childIndex === 1) {
-            childNode._bbox.min.z += dHalfLength.z;
-            childNode._bbox.max.z += dHalfLength.z;
+            childVoxelBBox.min.z += dHalfLength.z;
+            childVoxelBBox.max.z += dHalfLength.z;
         } else if (childIndex === 3) {
-            childNode._bbox.min.z += dHalfLength.z;
-            childNode._bbox.max.z += dHalfLength.z;
-            childNode._bbox.min.y += dHalfLength.y;
-            childNode._bbox.max.y += dHalfLength.y;
+            childVoxelBBox.min.z += dHalfLength.z;
+            childVoxelBBox.max.z += dHalfLength.z;
+            childVoxelBBox.min.y += dHalfLength.y;
+            childVoxelBBox.max.y += dHalfLength.y;
         } else if (childIndex === 0) {
             //
         } else if (childIndex === 2) {
-            childNode._bbox.min.y += dHalfLength.y;
-            childNode._bbox.max.y += dHalfLength.y;
+            childVoxelBBox.min.y += dHalfLength.y;
+            childVoxelBBox.max.y += dHalfLength.y;
         } else if (childIndex === 5) {
-            childNode._bbox.min.z += dHalfLength.z;
-            childNode._bbox.max.z += dHalfLength.z;
-            childNode._bbox.min.x += dHalfLength.x;
-            childNode._bbox.max.x += dHalfLength.x;
+            childVoxelBBox.min.z += dHalfLength.z;
+            childVoxelBBox.max.z += dHalfLength.z;
+            childVoxelBBox.min.x += dHalfLength.x;
+            childVoxelBBox.max.x += dHalfLength.x;
         } else if (childIndex === 7) {
-            childNode._bbox.min.add(dHalfLength);
-            childNode._bbox.max.add(dHalfLength);
+            childVoxelBBox.min.add(dHalfLength);
+            childVoxelBBox.max.add(dHalfLength);
         } else if (childIndex === 4) {
-            childNode._bbox.min.x += dHalfLength.x;
-            childNode._bbox.max.x += dHalfLength.x;
+            childVoxelBBox.min.x += dHalfLength.x;
+            childVoxelBBox.max.x += dHalfLength.x;
         } else if (childIndex === 6) {
-            childNode._bbox.min.y += dHalfLength.y;
-            childNode._bbox.max.y += dHalfLength.y;
-            childNode._bbox.min.x += dHalfLength.x;
-            childNode._bbox.max.x += dHalfLength.x;
+            childVoxelBBox.min.y += dHalfLength.y;
+            childVoxelBBox.max.y += dHalfLength.y;
+            childVoxelBBox.min.x += dHalfLength.x;
+            childVoxelBBox.max.x += dHalfLength.x;
         }
+
+        childNode.clampOBB.copy(childNode.voxelOBB);
+
+        const childClampBBox = childNode.clampOBB.box3D;
+
+        if (childClampBBox.min.z < this.layer.zmax) {
+            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.layer.zmax);
+        }
+        if (childClampBBox.max.z > this.layer.zmin) {
+            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.layer.zmin);
+        }
+
+        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
+        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
     networkOptions(byteOffset, byteSize) {
@@ -137,12 +154,12 @@ class Potree2Node extends PointCloudNode {
             .then(file => this.layer.source.parser(file, {
                 in: {
                     source: this.layer.source,
-                    bbox: this._bbox,
+                    bbox: this.voxelOBB.box3D,
                     numPoints: this.numPoints,
                 },
                 out: {
                     ...this.layer,
-                    origin: this._bbox.min,
+                    origin: this.voxelOBB.box3D.min,
                 },
             }))
             .then((data) => {
@@ -223,8 +240,6 @@ class Potree2Node extends PointCloudNode {
                 }
 
                 const child = new Potree2Node(numPoints, childMask, this.layer);
-                child._quaternion = this._quaternion;
-                child._position = this._position;
                 child.spacing = current.spacing / 2;
 
                 current.add(child, childIndex);
