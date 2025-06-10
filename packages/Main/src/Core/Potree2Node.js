@@ -79,12 +79,12 @@ class Potree2Node extends PotreeNode {
             .then(file => this.layer.source.parser(file, {
                 in: {
                     source: this.layer.source,
-                    bbox: this._bbox,
+                    bbox: this.voxelOBB.box3D,
                     numPoints: this.numPoints,
                 },
                 out: {
                     ...this.layer,
-                    origin: this._bbox.min,
+                    origin: this.voxelOBB.box3D.min,
                 },
             }))
             .then((data) => {
@@ -165,8 +165,6 @@ class Potree2Node extends PotreeNode {
                 }
 
                 const child = new Potree2Node(numPoints, childMask, this.layer);
-                child._quaternion = this._quaternion;
-                child._position = this._position;
                 child.spacing = current.spacing / 2;
 
                 current.add(child, childIndex);
