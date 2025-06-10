@@ -34,7 +34,7 @@
         </div>
 
         <div>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script>
             <script src="../dist/itowns.js"></script>
             <script src="js/GUI/LoadingScreen.js"></script>
             <script src="../dist/debug.js"></script>
@@ -52,7 +52,7 @@
                 viewerDiv = document.getElementById('viewerDiv');
                 viewerDiv.style.display = 'block';
 
-                debugGui = new dat.GUI();
+                debugGui = new lil.GUI();
 
                 // TODO: do we really need to disable logarithmicDepthBuffer ?
                 view = new itowns.View('EPSG:3946', viewerDiv);
@@ -98,9 +98,9 @@
                     var lookAt = new itowns.THREE.Vector3();
                     var size = new itowns.THREE.Vector3();
 
-                    potreeLayer.root._bbox.getSize(size);
-                    potreeLayer.root._bbox.getCenter(lookAt);
-                    lookAt.z = potreeLayer.root._bbox.min.z;
+                    potreeLayer.root.voxelOBB.box3D.getSize(size);
+                    potreeLayer.root.voxelOBB.box3D.getCenter(lookAt);
+                    lookAt.z = potreeLayer.root.voxelOBB.box3D.min.z;
 
                     debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);
 
