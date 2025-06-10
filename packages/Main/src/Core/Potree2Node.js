@@ -33,13 +33,7 @@ of the authors and should not be interpreted as representing official policies,
     either expressed or implied, of the FreeBSD Project.
  */
 
-import * as THREE from 'three';
-import PointCloudNode from 'Core/PointCloudNode';
-
-// Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
-// (PotreeConverter protocol builds implicit octree hierarchy by applying the same
-// subdivision algo recursively)
-const dHalfLength = new THREE.Vector3();
+import PotreeNode from 'Core/PotreeNode';
 
 const NODE_TYPE = {
     NORMAL: 0,
@@ -47,82 +41,13 @@ const NODE_TYPE = {
     PROXY: 2,
 };
 
-class Potree2Node extends PointCloudNode {
+class Potree2Node extends PotreeNode {
     constructor(numPoints = 0, childrenBitField = 0, layer) {
-        super(numPoints, layer);
-        this.childrenBitField = childrenBitField;
-        this.id = '';
-        this.depth = 0;
-        this.baseurl = layer.source.baseurl;
-    }
-
-    get octreeIsLoaded() {
-        return !(this.childrenBitField && this.children.length === 0);
+        super(numPoints, childrenBitField, layer);
     }
 
     get url() {
         return `${this.baseurl}/octree.bin`;
-    }
-
-    add(node, indexChild) {
-        super.add(node, indexChild);
-        node.id = this.id + indexChild;
-        node.depth = this.depth + 1;
-    }
-
-    createChildAABB(childNode, childIndex) {
-        const voxelBBox = this.voxelOBB.box3D;
-        const childVoxelBBox = childNode.voxelOBB.box3D;
-
-        // Code inspired from potree
-        childVoxelBBox.copy(voxelBBox);
-        voxelBBox.getCenter(childVoxelBBox.max);
-        dHalfLength.copy(childVoxelBBox.max).sub(voxelBBox.min);
-
-        if (childIndex === 1) {
-            childVoxelBBox.min.z += dHalfLength.z;
-            childVoxelBBox.max.z += dHalfLength.z;
-        } else if (childIndex === 3) {
-            childVoxelBBox.min.z += dHalfLength.z;
-            childVoxelBBox.max.z += dHalfLength.z;
-            childVoxelBBox.min.y += dHalfLength.y;
-            childVoxelBBox.max.y += dHalfLength.y;
-        } else if (childIndex === 0) {
-            //
-        } else if (childIndex === 2) {
-            childVoxelBBox.min.y += dHalfLength.y;
-            childVoxelBBox.max.y += dHalfLength.y;
-        } else if (childIndex === 5) {
-            childVoxelBBox.min.z += dHalfLength.z;
-            childVoxelBBox.max.z += dHalfLength.z;
-            childVoxelBBox.min.x += dHalfLength.x;
-            childVoxelBBox.max.x += dHalfLength.x;
-        } else if (childIndex === 7) {
-            childVoxelBBox.min.add(dHalfLength);
-            childVoxelBBox.max.add(dHalfLength);
-        } else if (childIndex === 4) {
-            childVoxelBBox.min.x += dHalfLength.x;
-            childVoxelBBox.max.x += dHalfLength.x;
-        } else if (childIndex === 6) {
-            childVoxelBBox.min.y += dHalfLength.y;
-            childVoxelBBox.max.y += dHalfLength.y;
-            childVoxelBBox.min.x += dHalfLength.x;
-            childVoxelBBox.max.x += dHalfLength.x;
-        }
-
-        childNode.clampOBB.copy(childNode.voxelOBB);
-
-        const childClampBBox = childNode.clampOBB.box3D;
-
-        if (childClampBBox.min.z < this.layer.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.layer.zmax);
-        }
-        if (childClampBBox.max.z > this.layer.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.layer.zmin);
-        }
-
-        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
-        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
     networkOptions(byteOffset, byteSize) {
