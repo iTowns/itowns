@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { TileGeometry } from 'Core/TileGeometry';
-import { GlobeTileBuilder, GlobeTileBuilderParams } from 'Core/Prefab/Globe/GlobeTileBuilder';
+import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
 import { CRS, Coordinates } from '@itowns/geographic';
+
+import type { Extent } from '@itowns/geographic';
 
 // get oriented bounding box of tile
 const builder = new GlobeTileBuilder({ uvCount: 1 });
@@ -9,14 +11,17 @@ const size = new THREE.Vector3();
 const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-let obb;
+let _obb: OBB;
 
 // it could be considered to remove THREE.Object3D extend.
 /**
  * Oriented bounding box
- * @extends THREE.Object3D
  */
 class OBB extends THREE.Object3D {
+    box3D: THREE.Box3;
+    natBox: THREE.Box3;
+    z: { min: number, max: number, scale: number, delta: number };
+
     /**
      * @param {THREE.Vector3}  min representing the lower (x, y, z) boundary of the box. Default is ( + Infinity, + Infinity, + Infinity ).
      * @param {THREE.Vector3}  max representing the lower upper (x, y, z) boundary of the box. Default is ( - Infinity, - Infinity, - Infinity ).
@@ -25,16 +30,7 @@ class OBB extends THREE.Object3D {
         super();
         this.box3D = new THREE.Box3(min.clone(), max.clone());
         this.natBox = this.box3D.clone();
-        this.z = { min: 0, max: 0, scale: 1.0 };
-    }
-
-    /**
-     * Creates a new instance of the object with same properties than original.
-     *
-     * @return     {OBB}  Copy of this object.
-     */
-    clone() {
-        return new OBB().copy(this);
+        this.z = { min: 0, max: 0, scale: 1.0, delta: 0 };
     }
 
     /**
@@ -43,7 +39,7 @@ class OBB extends THREE.Object3D {
      * @param      {OBB}  cOBB OBB to copy
      * @return     {OBB}  the copy
      */
-    copy(cOBB) {
+    override copy(cOBB: OBB): this {
         super.copy(cOBB);
         this.box3D.copy(cOBB.box3D);
         this.natBox.copy(cOBB.natBox);
@@ -62,11 +58,11 @@ class OBB extends THREE.Object3D {
      * @param {number}  [elevation.scale]           The scale of oriented bounding box Z axis
      * @param {number}  [elevation.geoidHeight]     The geoid height added to ellipsoid.
      */
-    updateZ(elevation = {}) {
+    updateZ(elevation: { min?: number, max?: number, scale?: number, geoidHeight?: number } = {}) {
         this.z.min = elevation.min ?? this.z.min;
         this.z.max = elevation.max ?? this.z.max;
 
-        this.z.scale = elevation.scale > 0 ? elevation.scale : this.z.scale;
+        this.z.scale = elevation.scale && elevation.scale > 0 ? elevation.scale : this.z.scale;
         this.z.delta = Math.abs(this.z.max - this.z.min) * this.z.scale;
 
         const geoidHeight = elevation.geoidHeight || 0;
@@ -81,7 +77,7 @@ class OBB extends THREE.Object3D {
      * @param      {Sphere}   sphere  The sphere
      * @return     {boolean}  True if sphere is above the XY space of the box, False otherwise.
      */
-    isSphereAboveXYBox(sphere) {
+    isSphereAboveXYBox(sphere: THREE.Sphere): boolean {
         const localSpherePosition = this.worldToLocal(sphere.center);
         // get obb closest point to sphere center by clamping
         const x = Math.max(this.box3D.min.x, Math.min(localSpherePosition.x, this.box3D.max.x));
@@ -103,7 +99,7 @@ class OBB extends THREE.Object3D {
      * @param      {number}        maxHeight  The maximum height of OBB
      * @return     {OBB}           return this object
      */
-    setFromExtent(extent, minHeight = extent.min || 0, maxHeight = extent.max || 0) {
+    setFromExtent(extent: Extent, minHeight = 0, maxHeight = 0): this {
         if (extent.crs == 'EPSG:4326') {
             const { shareableExtent, quaternion, position } = builder.computeShareableExtent(extent);
             // Compute the minimum count of segment to build tile
@@ -116,9 +112,11 @@ class OBB extends THREE.Object3D {
             };
 
             const geometry = new TileGeometry(builder, paramsGeometry);
-            obb.box3D.copy(geometry.boundingBox);
-            obb.natBox.copy(geometry.boundingBox);
-            this.copy(obb);
+            if (geometry.boundingBox) {
+                _obb.box3D.copy(geometry.boundingBox);
+                _obb.natBox.copy(geometry.boundingBox);
+                this.copy(_obb);
+            }
 
             this.updateZ({ min: minHeight, max: maxHeight });
             this.position.copy(position);
@@ -137,6 +135,6 @@ class OBB extends THREE.Object3D {
     }
 }
 
-obb = new OBB();
+_obb = new OBB();
 
 export default OBB;
