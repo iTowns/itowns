@@ -33,13 +33,7 @@ of the authors and should not be interpreted as representing official policies,
     either expressed or implied, of the FreeBSD Project.
  */
 
-import * as THREE from 'three';
-import PointCloudNode from 'Core/PointCloudNode';
-
-// Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
-// (PotreeConverter protocol builds implicit octree hierarchy by applying the same
-// subdivision algo recursively)
-const dHalfLength = new THREE.Vector3();
+import PotreeNode from 'Core/PotreeNode';
 
 const NODE_TYPE = {
     NORMAL: 0,
@@ -47,65 +41,13 @@ const NODE_TYPE = {
     PROXY: 2,
 };
 
-class Potree2Node extends PointCloudNode {
+class Potree2Node extends PotreeNode {
     constructor(numPoints = 0, childrenBitField = 0, layer) {
-        super(numPoints, layer);
-        this.childrenBitField = childrenBitField;
-        this.id = '';
-        this.depth = 0;
-        this.baseurl = layer.source.baseurl;
-    }
-
-    get octreeIsLoaded() {
-        return !(this.childrenBitField && this.children.length === 0);
+        super(numPoints, childrenBitField, layer);
     }
 
     get url() {
         return `${this.baseurl}/octree.bin`;
-    }
-
-    add(node, indexChild) {
-        super.add(node, indexChild);
-        node.id = this.id + indexChild;
-        node.depth = this.depth + 1;
-    }
-
-    createChildAABB(node, childIndex) {
-        // Code inspired from potree
-        node.bbox.copy(this.bbox);
-        this.bbox.getCenter(node.bbox.max);
-        dHalfLength.copy(node.bbox.max).sub(this.bbox.min);
-
-        if (childIndex === 1) {
-            node.bbox.min.z += dHalfLength.z;
-            node.bbox.max.z += dHalfLength.z;
-        } else if (childIndex === 3) {
-            node.bbox.min.z += dHalfLength.z;
-            node.bbox.max.z += dHalfLength.z;
-            node.bbox.min.y += dHalfLength.y;
-            node.bbox.max.y += dHalfLength.y;
-        } else if (childIndex === 0) {
-            //
-        } else if (childIndex === 2) {
-            node.bbox.min.y += dHalfLength.y;
-            node.bbox.max.y += dHalfLength.y;
-        } else if (childIndex === 5) {
-            node.bbox.min.z += dHalfLength.z;
-            node.bbox.max.z += dHalfLength.z;
-            node.bbox.min.x += dHalfLength.x;
-            node.bbox.max.x += dHalfLength.x;
-        } else if (childIndex === 7) {
-            node.bbox.min.add(dHalfLength);
-            node.bbox.max.add(dHalfLength);
-        } else if (childIndex === 4) {
-            node.bbox.min.x += dHalfLength.x;
-            node.bbox.max.x += dHalfLength.x;
-        } else if (childIndex === 6) {
-            node.bbox.min.y += dHalfLength.y;
-            node.bbox.max.y += dHalfLength.y;
-            node.bbox.min.x += dHalfLength.x;
-            node.bbox.max.x += dHalfLength.x;
-        }
     }
 
     networkOptions(byteOffset, byteSize) {
