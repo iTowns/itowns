@@ -23,15 +23,10 @@ class PotreeNode extends PointCloudNode {
         return `${this.baseurl}/r${this.id}.${this.layer.source.extension}`;
     }
 
-    add(node, indexChild, root) {
-        super.add(node, indexChild);
+    add(node, indexChild) {
         node.id = this.id + indexChild;
-        node.depth = node.id.length;
-        if ((node.id.length % this.layer.hierarchyStepSize) == 0) {
-            node.baseurl = `${root.baseurl}/${node.id.substr(root.id.length)}`;
-        } else {
-            node.baseurl = root.baseurl;
-        }
+        node.depth = this.depth + 1;
+        super.add(node, indexChild);
     }
 
     createChildAABB(node, childIndex) {
@@ -92,9 +87,14 @@ class PotreeNode extends PointCloudNode {
                     if (snode.childrenBitField & (1 << indexChild) && (offset + 5) <= blob.byteLength) {
                         const childrenBitField = view.getUint8(offset); offset += 1;
                         const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
-                        const item = new PotreeNode(numPoints, childrenBitField, this.layer);
-                        snode.add(item, indexChild, this);
-                        stack.push(item);
+                        const child = new PotreeNode(numPoints, childrenBitField, this.layer);
+                        snode.add(child, indexChild);
+                        if ((child.id.length % this.layer.hierarchyStepSize) == 0) {
+                            child.baseurl = `${this.baseurl}/${child.id}`;
+                        } else {
+                            child.baseurl = this.baseurl;
+                        }
+                        stack.push(child);
                     }
                 }
             }
