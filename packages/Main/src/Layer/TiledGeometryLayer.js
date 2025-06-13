@@ -69,7 +69,7 @@ class TiledGeometryLayer extends GeometryLayer {
             showOutline = false,
             segments,
             disableSkirt = false,
-            materialOptions,
+            materialOptions = {},
             ...configGeometryLayer
         } = config;
 
@@ -136,6 +136,7 @@ class TiledGeometryLayer extends GeometryLayer {
 
         this.tileMatrixSets = tileMatrixSets;
 
+        materialOptions.transparent = materialOptions.transparent ?? true;
         this.materialOptions = materialOptions;
 
         /*
