@@ -6,7 +6,7 @@ let _thread;
 
 function workerInstance() {
     return new Worker(
-        /* webpackChunkName: "itowns_lasparser" */
+        /* webpackChunkName: "itowns_lasworker" */
         new URL('../Worker/LASLoaderWorker.js', import.meta.url),
         { type: 'module' },
     );

@@ -35,6 +35,7 @@ module.exports = {
         commonjs: true,
     },
     rules: {
+        // 'linebreak-style': 'off',
         'no-trailing-spaces': 'warn',
         'padded-blocks': 'warn',
         'no-unused-vars': 'warn',
