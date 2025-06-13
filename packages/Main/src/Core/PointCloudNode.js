@@ -16,6 +16,15 @@ class PointCloudNode extends THREE.EventDispatcher {
         this.sse = -1;
     }
 
+    get pointSpacing() {
+        return this.layer.spacing / 2 ** this.depth;
+    }
+
+    get id() {
+        // hierarchyKey for potreeNode
+        return this.hierarchyKey ?? `${this.depth}${this.x}${this.y}${this.z}`;
+    }
+
     add(node, indexChild) {
         this.children.push(node);
         node.parent = this;
