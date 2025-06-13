@@ -42,8 +42,7 @@ export interface GlobeTileBuilderParams extends TileBuilderParams {
  * TileBuilder implementation for the purpose of generating globe (or more
  * precisely ellipsoidal) tile arrangements.
  */
-export class GlobeTileBuilder
-implements TileBuilder<GlobeTileBuilderParams> {
+export class GlobeTileBuilder implements TileBuilder<GlobeTileBuilderParams> {
     private static _crs: string = 'EPSG:4978';
     private static _computeExtraOffset(params: GlobeTileBuilderParams): number {
         const t = WGS84ToOneSubY(params.coordinates.latitude) * params.nbRow;

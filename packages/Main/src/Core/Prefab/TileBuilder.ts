@@ -53,7 +53,7 @@ export interface TileBuilder<SpecializedParams extends TileBuilderParams> {
      * Computes final offset of the second texture set.
      * Only relevant in the case of more than one texture sets.
      */
-    computeExtraOffset?: (params: SpecializedParams) => number;
+    computeExtraOffset?(params: SpecializedParams): number;
     /** Get the center of the current tile as a 3D vector. */
     center(extent: Extent): THREE.Vector3;
     /** Converts an x/y tile-space position to its equivalent in 3D space. */
