@@ -36,15 +36,17 @@ export interface TileBuilderParams {
     hideSkirt: boolean;
     /** Number of segments (edge loops) inside tiles. */
     segments: number;
-    // TODO: Move this out of the interface
     /** Buffer for projected points. */
-    coordinates: Coordinates;
     extent: Extent;
     level: number;
-    center: THREE.Vector3;
 }
 
-export interface TileBuilder<SpecializedParams extends TileBuilderParams> {
+export interface FinalParams extends TileBuilderParams {
+    center: THREE.Vector3;
+    coordinates: Coordinates;
+}
+
+export interface TileBuilder<SpecializedParams extends FinalParams = FinalParams> {
     crs: string;
 
     /** Convert builder-agnostic params to specialized ones. */
@@ -73,7 +75,7 @@ export interface TileBuilder<SpecializedParams extends TileBuilderParams> {
 }
 
 export function newTileGeometry(
-    builder: TileBuilder<TileBuilderParams>,
+    builder: TileBuilder,
     params: TileBuilderParams,
 ) {
     const { shareableExtent, quaternion, position } =
@@ -94,7 +96,7 @@ export function newTileGeometry(
         cacheTile.set(key, promiseGeometry);
 
         params.extent = shareableExtent;
-        params.center = builder.center(params.extent).clone();
+        const center = builder.center(params.extent).clone();
         // Read previously cached values (index and uv.wgs84 only
         // depend on the # of triangles)
         let cachedBuffers = cacheBuffer.get(bufferKey);
@@ -103,7 +105,7 @@ export function newTileGeometry(
         try {
             buffers = computeBuffers(
                 builder,
-                params,
+                { ...params, center },
                 cachedBuffers !== undefined
                     ? {
                         index: cachedBuffers.index.array as

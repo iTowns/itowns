@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { computeBuffers, getBufferIndexSize }
     from 'Core/Prefab/computeBufferTileGeometry';
-import { GpuBufferAttributes, TileBuilder, TileBuilderParams }
+import { FinalParams, GpuBufferAttributes, TileBuilder, TileBuilderParams }
     from 'Core/Prefab/TileBuilder';
 import { Coordinates, Extent } from '@itowns/geographic';
 import { LRUCache } from 'lru-cache';
@@ -15,7 +15,7 @@ type PartialParams<
 > = Pick<Params, Keys> & Partial<Params>;
 
 function defaultBuffers(
-    builder: TileBuilder<TileBuilderParams>,
+    builder: TileBuilder<FinalParams>,
     params: PartialParams<TileBuilderParams>,
 ): GpuBufferAttributes {
     const fullParams = {
@@ -73,8 +73,8 @@ export class TileGeometry<
     } | null;
 
     public constructor(
-        builder: TileBuilder<BuilderParams>,
-        params: PartialParams<BuilderParams, 'extent' | 'level' | 'segments'>,
+        builder: TileBuilder<FinalParams>,
+        params: PartialParams<FinalParams, 'extent' | 'level' | 'segments'>,
         bufferAttributes: GpuBufferAttributes = defaultBuffers(builder, params),
     ) {
         super();
