@@ -102,7 +102,7 @@ jobs:
         run: npm ci
 
       # Transpile
-      - name: transpile packages
+      - name: Transpile packages
         run: npm run transpile
 
       - name: Test ${{ matrix.package }}
@@ -297,7 +297,7 @@ jobs:
         run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
 
       - name: Get release version
-        run: echo ::set-output name=VERSION::$(node -e "console.log(require('./package.json').version);")
+        run: echo "VERSION=$(node -e "console.log(require('./package.json').version);")" >> $GITHUB_OUTPUT
         id: npm_pack
 
       - name: itowns Version
