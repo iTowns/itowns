@@ -32,7 +32,7 @@
     <body>
         <div id="viewerDiv"></div>
         <div id="info"></div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script>
         <script src="../dist/itowns.js"></script>
         <script src="js/GUI/LoadingScreen.js"></script>
         <script src="../dist/debug.js"></script>
@@ -46,7 +46,7 @@
             viewerDiv = document.getElementById('viewerDiv');
             viewerDiv.style.display = 'block';
 
-            debugGui = new dat.GUI();
+            debugGui = new lil.GUI();
 
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326',  4.631512, 43.675626),
