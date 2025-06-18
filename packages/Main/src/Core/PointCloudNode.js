@@ -57,11 +57,6 @@ class PointCloudNode extends THREE.EventDispatcher {
     }
 
     load() {
-        // Query octree/HRC if we don't have children potreeNode yet.
-        if (!this.octreeIsLoaded) {
-            this.loadOctree();
-        }
-
         return this.layer.source.fetcher(this.url, this.layer.source.networkOptions)
             .then(file => this.layer.source.parse(file, { out: this.layer, in: this.layer.source }));
     }

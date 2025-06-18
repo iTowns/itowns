@@ -74,6 +74,14 @@ class PotreeNode extends PointCloudNode {
         }
     }
 
+    load() {
+        // Query octree/HRC if we don't have children potreeNode yet.
+        if (!this.octreeIsLoaded) {
+            this.loadOctree();
+        }
+        return super.load();
+    }
+
     loadOctree() {
         const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.layer.source.extensionOctree}`;
         return this.layer.source.fetcher(octreeUrl, this.layer.source.networkOptions).then((blob) => {
