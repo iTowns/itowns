@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { Coordinates, Extent } from '@itowns/geographic';
 import {
-    FinalParams,
     ShareableExtent,
     TileBuilder,
     TileBuilderParams,
@@ -17,8 +16,7 @@ type Transform = {
 };
 
 /** Specialized parameters for the [PlanarTileBuilder]. */
-export interface PlanarTileBuilderParams extends FinalParams {
-    crs: string;
+export interface PlanarTileBuilderParams extends TileBuilderParams {
     uvCount?: number;
     nbRow: number;
 }

@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { Coordinates, Extent } from '@itowns/geographic';
 import {
     ShareableExtent,
-    FinalParams,
     TileBuilder,
     TileBuilderParams,
 } from '../TileBuilder';
@@ -30,21 +29,21 @@ type Transform = {
 };
 
 /** Specialized parameters for the [GlobeTileBuilder]. */
-export interface GlobeTileBuilderParams extends FinalParams {
+export interface GlobeTileBuilderParams extends TileBuilderParams {
     /** Number of rows of tiles, essentially the resolution of the globe. */
     nbRow: number;
     /** Offset of the second texture set. */
     deltaUV1: number;
     /** Transformation to align a tile's normal to the Z axis. */
     quatNormalToZ: THREE.Quaternion;
-    coordinates: Coordinates;
 }
 
 /**
  * TileBuilder implementation for the purpose of generating globe (or more
  * precisely ellipsoidal) tile arrangements.
  */
-export class GlobeTileBuilder implements TileBuilder<GlobeTileBuilderParams> {
+export class GlobeTileBuilder
+implements TileBuilder<GlobeTileBuilderParams> {
     private static _crs: string = 'EPSG:4978';
     private static _computeExtraOffset(params: GlobeTileBuilderParams): number {
         const t = WGS84ToOneSubY(params.coordinates.latitude) * params.nbRow;

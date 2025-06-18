@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { TileBuilder, TileBuilderParams } from 'Core/Prefab/TileBuilder';
+import type { TileBuilder, TileBuilderPrepareParams } from 'Core/Prefab/TileBuilder';
 
 export function getBufferIndexSize(segments: number, noSkirt: boolean): number {
     const triangles = (segments) * (segments) * 2
@@ -66,7 +66,7 @@ function allocateIndexBuffer(
         tileLen
         // Skirt
         + (params.disableSkirt ? 0 : skirtLen)
-    ) * indexConstructor!.BYTES_PER_ELEMENT);
+    ) * indexConstructor.BYTES_PER_ELEMENT);
 
     const index = new indexConstructor(indexBuffer);
     const skirt = !params.disableSkirt
@@ -133,7 +133,7 @@ function initComputeUv1(value: number): (uv: Float32Array, id: number) => void {
 type ComputeUvs =
     [typeof computeUv0 | (() => void), ReturnType<typeof initComputeUv1>?];
 
-interface ComputeBuffersParams extends TileBuilderParams {
+interface ComputeBuffersParams extends TileBuilderPrepareParams {
     center: THREE.Vector3;
 }
 

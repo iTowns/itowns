@@ -29,7 +29,7 @@ export type ShareableExtent = {
     position: THREE.Vector3;
 };
 
-export interface TileBuilderParams {
+export interface TileBuilderPrepareParams {
     /** Whether to build the skirt. */
     disableSkirt: boolean;
     /** Whether to render the skirt. */
@@ -41,16 +41,16 @@ export interface TileBuilderParams {
     level: number;
 }
 
-export interface FinalParams extends TileBuilderParams {
+export interface TileBuilderParams extends TileBuilderPrepareParams {
     center: THREE.Vector3;
     coordinates: Coordinates;
 }
 
-export interface TileBuilder<SpecializedParams extends FinalParams = FinalParams> {
+export interface TileBuilder<SpecializedParams extends TileBuilderParams = TileBuilderParams> {
     crs: string;
 
     /** Convert builder-agnostic params to specialized ones. */
-    prepare(params: TileBuilderParams): SpecializedParams;
+    prepare(params: TileBuilderPrepareParams): SpecializedParams;
     /**
      * Computes final offset of the second texture set.
      * Only relevant in the case of more than one texture sets.
@@ -76,7 +76,7 @@ export interface TileBuilder<SpecializedParams extends FinalParams = FinalParams
 
 export function newTileGeometry(
     builder: TileBuilder,
-    params: TileBuilderParams,
+    params: TileBuilderPrepareParams,
 ) {
     const { shareableExtent, quaternion, position } =
         builder.computeShareableExtent(params.extent);

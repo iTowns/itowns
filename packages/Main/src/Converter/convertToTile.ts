@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import TileMesh from 'Core/TileMesh';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
-import { FinalParams, newTileGeometry, TileBuilder, TileBuilderParams } from 'Core/Prefab/TileBuilder';
+import { newTileGeometry, TileBuilder, TileBuilderParams } from 'Core/Prefab/TileBuilder';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 
@@ -19,7 +19,7 @@ interface TileLayerLike {
     hideSkirt: boolean;
     tileMatrixSets: string[];
     materialOptions: LayeredMaterialParameters;
-    builder: TileBuilder<FinalParams>;
+    builder: TileBuilder<TileBuilderParams>;
 }
 
 function setTileFromTiledLayer(tile: TileMesh, tileLayer: TileLayerLike) {
