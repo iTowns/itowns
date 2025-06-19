@@ -130,9 +130,9 @@ class Atmosphere extends GeometryLayer {
 
     update(context, layer, node) {
         // update uniforms
-        node.material.fogDistance = this.fog.distance;
-        node.material.lightingEnabled = this.realisticAtmosphere.visible;
-        node.material.lightPosition = this.realisticLightingPosition;
+        node.material.setUniform('fogDistance', this.fog.distance);
+        node.material.setUniform('lightingEnabled', this.realisticAtmosphere.visible);
+        node.material.setUniform('lightPosition', this.realisticLightingPosition);
     }
 
     // eslint-disable-next-line no-unused-vars
