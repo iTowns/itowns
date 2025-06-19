@@ -20,7 +20,7 @@ const skyShader = {
 
     uniforms: {
 
-        luminance: {
+        luminanceAtmosphere: {
             type: 'f',
             value: 1,
         },
@@ -77,11 +77,11 @@ const skyShader = {
         '// uniform sampler2D sDiffuse;',
         '// const float turbidity = 10.0; //',
         '// const float reileigh = 2.; //',
-        '// const float luminance = 1.0; //',
+        '// const float luminanceAtmosphere = 1.0; //',
         '// const float mieCoefficient = 0.005;',
         '// const float mieDirectionalG = 0.8;',
 
-        'uniform float luminance;',
+        'uniform float luminanceAtmosphere;',
         'uniform float turbidity;',
         'uniform float reileigh;',
         'uniform float mieCoefficient;',
@@ -241,12 +241,12 @@ const skyShader = {
         'texColor += vec3(0.0,0.001,0.0025)*0.3;',
 
         'float g_fMaxLuminance = 1.0;',
-        'float fLumScaled = 0.1 / luminance;     ',
+        'float fLumScaled = 0.1 / luminanceAtmosphere;     ',
         'float fLumCompressed = (fLumScaled * (1.0 + (fLumScaled / (g_fMaxLuminance * g_fMaxLuminance)))) / (1.0 + fLumScaled); ',
 
         'float ExposureBias = fLumCompressed;',
 
-        'vec3 curr = Uncharted2Tonemap((log2(2.0/pow(luminance,4.0)))*texColor);',
+        'vec3 curr = Uncharted2Tonemap((log2(2.0/pow(luminanceAtmosphere,4.0)))*texColor);',
         'vec3 color = curr*whiteScale;',
 
         'vec3 retColor = pow(color,vec3(1.0/(1.2+(1.2*sunfade))));',

@@ -227,14 +227,14 @@ class Atmosphere extends GeometryLayer {
             reileigh: 2,
             mieCoefficient: 0.005,
             mieDirectionalG: 0.8,
-            luminance: 1,
+            luminanceAtmosphere: 1,
             inclination: 0.49, // elevation / inclination
             azimuth: 0.25, // Facing front,
             sun: !true,
         };
         skyDome.material.uniforms.turbidity.value = effectController.turbidity;
         skyDome.material.uniforms.reileigh.value = effectController.reileigh;
-        skyDome.material.uniforms.luminance.value = effectController.luminance;
+        skyDome.material.uniforms.luminanceAtmosphere.value = effectController.luminanceAtmosphere;
         skyDome.material.uniforms.mieCoefficient.value = effectController.mieCoefficient;
         skyDome.material.uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
         skyDome.material.uniforms.up.value = new THREE.Vector3(); // no more necessary, estimate normal from cam..
