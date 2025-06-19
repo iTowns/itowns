@@ -50,7 +50,6 @@
                 "PotreeLayer",
                 "CopcLayer",
                 "Potree2Layer",
-                "C3DTilesLayer",
                 "OGC3DTilesLayer",
                 "LabelLayer",
                 "GlobeLayer",
@@ -123,16 +122,6 @@
                 "RasterTile"
             ],
 
-            "3D Tiles": [
-                "3dTilesProcessing",
-                "C3DTileset",
-                "C3DTBatchTable",
-                "C3DTBoundingVolume",
-                "C3DTExtensions",
-                "C3DTBatchTableHierarchyExtension",
-                "C3DTFeature"
-            ],
-
             "Plugins": [
                 "DragNDrop",
                 "FeatureToolTip",
@@ -147,7 +136,6 @@
                 "Minimap",
                 "Scale",
                 "Searchbar",
-                "C3DTilesStyle"
             ]
         },
         "tutorialSections": {
