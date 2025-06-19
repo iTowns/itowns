@@ -14,8 +14,7 @@
     "transpileOnly": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib --extensions .js,.ts",
     "transpile": "npm run transpileOnly && npm run copy_transpile",
     "watch": "npm run transpileOnly -- --watch",
-    "prerelease-next": "npm version prerelease --preid next",
-    "update-package": "npm remove @itowns/geographic itowns && npm install @itowns/geographic@$npm_package_version itowns@$npm_package_version --save"
+    "version": "cross-env-shell npm install @itowns/geographic@$npm_package_version itowns@$npm_package_version"
   },
   "files": [
     "*.md",
