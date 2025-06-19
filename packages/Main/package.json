@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "@itowns/geographic": "^2.45.1",
+    "@itowns/debug": "^2.45.1",
     "@mapbox/vector-tile": "^2.0.3",
     "@maplibre/maplibre-gl-style-spec": "^23.1.0",
     "@tmcw/togeojson": "^7.0.0",

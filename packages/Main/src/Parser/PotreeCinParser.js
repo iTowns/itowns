@@ -5,10 +5,12 @@ export default {
     /** Parse .cin PotreeConverter format (see {@link https://github.com/peppsac/PotreeConverter/tree/custom_bin}) and convert to a THREE.BufferGeometry
      * @function parse
      * @param {ArrayBuffer} buffer - the cin buffer.
-     * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
+     * @param {Object} options
+     * @param {THREE.Vector3} options.out.origin - the origin position of the data
      *
+     * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
      */
-    parse: function parse(buffer) {
+    parse: function parse(buffer, options) {
         if (!buffer) {
             throw new Error('No array buffer provided.');
         }
@@ -28,6 +30,9 @@ export default {
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 4, true));
         geometry.boundingBox = box;
+
+        geometry.userData.origin = options.out.origin;
+        geometry.userData.rotation = new THREE.Quaternion();
 
         return Promise.resolve(geometry);
     },

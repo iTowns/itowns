@@ -10,7 +10,7 @@ describe('preUpdate Potree2Layer', function () {
         hierarchyStepSize: 1,
     };
     layer.root = new Potree2Node(4000, 0, layer);
-    layer.root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+    layer.root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
     layer.root.add(new Potree2Node(3000, 0, layer), 1, layer.root);
     layer.root.children[0].obj = { layer, isPoints: true };
