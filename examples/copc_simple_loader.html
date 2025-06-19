@@ -9,7 +9,7 @@
             "imports": {
                 "itowns": "../dist/itowns.js",
                 "debug": "../dist/debug.js",
-                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "lil": "https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.esm.js",
                 "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
                 "itowns_widgets": "../dist/itowns_widgets.js",
@@ -30,7 +30,6 @@
         </style>
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script>
     </head>
     <body>
         <div id="description">Specify the URL of a COPC file to load:
@@ -46,7 +45,7 @@
         <div id="viewerDiv"></div>
 
         <script type="module">
-            import dat from 'dat';
+            import lil from 'lil';
             import GuiTools from 'GuiTools';
             import setupLoadingScreen from 'LoadingScreen';
             import * as THREE from 'three';
@@ -58,7 +57,7 @@
 
             const uri = new URL(location);
 
-            const gui = new lil.GUI();
+            const gui = new lil();
 
             const viewerDiv = document.getElementById('viewerDiv');
             const view = new itowns.View('EPSG:4326', viewerDiv);

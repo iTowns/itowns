@@ -7,13 +7,11 @@
             "imports": {
                 "itowns": "../dist/itowns.js",
                 "debug": "../dist/debug.js",
-                "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
                 "itowns_widgets": "../dist/itowns_widgets.js",
                 "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
                 "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
-                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
-                "GuiTools": "./js/GUI/GuiTools.js"
+                "lil": "https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.esm.js"
             }
         }
         </script>
@@ -43,8 +41,7 @@
 
         <script type="module">
 
-            import dat from 'dat';
-            import GuiTools from 'GuiTools';
+            import lil from 'lil';
             import setupLoadingScreen from 'LoadingScreen';
             import * as THREE from 'three';
             import * as itowns from 'itowns';
@@ -53,7 +50,7 @@
 
             itowns.CRS.defs('EPSG:3946', '+proj=lcc +lat_0=46 +lon_0=3 +lat_1=45.25 +lat_2=46.75 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
 
-            var debugGui = new lil.GUI();
+            var debugGui = new lil();
             var viewerDiv = document.getElementById('viewerDiv');
             viewerDiv.style.display = 'block';
             var view = new itowns.View('EPSG:3946', viewerDiv);
@@ -106,6 +103,7 @@
 
             let eptName;
             function loadEPT(url, options) {
+                console.log('url', url);
                 eptSource = new itowns.EntwinePointTileSource({ url });
 
                 if (eptLayer) {
@@ -145,7 +143,7 @@
             }
 
             function onloadGrandLyon() {
-                document.getElementById('ept_url').value = 'https://download.data.grandlyon.com/files/grandlyon/imagerie/mnt2018/lidar/ept/';
+                document.getElementById('ept_url').value = 'https://download.data.grandlyon.com/files/grandlyon/imagerie/mnt2018/lidar/ept';
                 readEPTURL();
             }
 

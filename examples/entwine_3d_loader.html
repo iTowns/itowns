@@ -7,14 +7,13 @@
             "imports": {
                 "itowns": "../dist/itowns.js",
                 "debug": "../dist/debug.js",
-                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "lil": "https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.esm.js",
                 "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
                 "itowns_widgets": "../dist/itowns_widgets.js",
-                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
-                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
-                "GuiTools": "./js/GUI/GuiTools.js"
+                "three": "https://unpkg.com/three@0.174.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.174.0/examples/jsm/",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js"
             }
         }
         </script>
@@ -31,7 +30,6 @@
         </style>
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script>
     </head>
     <body>
         <div id="description">Specify the URL of a Entwine Point Tree to load:
@@ -47,14 +45,14 @@
         <script type="module">
 
             // TODO rempa click
-            import dat from 'dat';
+            import lil from 'lil';
             import GuiTools from 'GuiTools';
             import setupLoadingScreen from 'LoadingScreen';
             import * as THREE from 'three';
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
-            var debugGui = new dat.GUI();
+            var debugGui = new lil();
             var viewerDiv = document.getElementById('viewerDiv');
 
             var view = new itowns.GlobeView(viewerDiv);
