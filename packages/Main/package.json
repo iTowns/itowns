@@ -21,7 +21,8 @@
     "publish-latest": "npm publish --access public --tag=latest --provenance",
     "prerelease-next": "npm version prerelease --preid next",
     "publish-next": "npm publish --access public --tag=next --provenance",
-    "update-package": "npm remove @itowns/geographic && npm install @itowns/geographic@$npm_package_version --save"
+    "update-package": "npm remove @itowns/geographic && npm install @itowns/geographic@$npm_package_version --save",
+    "postversion": "cross-env-shell npm install @itowns/geographic@$npm_package_version"
   },
   "c8": {
     "exclude": [
@@ -64,8 +65,7 @@
     "threads": "^1.7.0"
   },
   "peerDependencies": {
-    "proj4": "^2.15.0",
-    "three": "^0.174.0"
+    "proj4": "^2.15.0"
   },
   "devDependencies": {
     "chalk": "^5.4.1",

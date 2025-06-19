@@ -15,7 +15,8 @@
     "transpile": "npm run transpileOnly && npm run copy_transpile",
     "watch": "npm run transpileOnly -- --watch",
     "prerelease-next": "npm version prerelease --preid next",
-    "update-package": "npm remove @itowns/geographic itowns && npm install @itowns/geographic@$npm_package_version itowns@$npm_package_version --save"
+    "update-package": "npm remove @itowns/geographic itowns && npm install @itowns/geographic@$npm_package_version itowns@$npm_package_version --save",
+    "postversion": "cross-env-shell npm install @itowns/geographic@$npm_package_version itowns@$npm_package_version"
   },
   "files": [
     "*.md",
@@ -32,7 +33,6 @@
   },
   "homepage": "https://itowns.github.io/",
   "dependencies": {
-    "@itowns/geographic": "^2.45.1",
     "itowns": "^2.45.1"
   }
 }
