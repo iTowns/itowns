@@ -1,4 +1,5 @@
-/* global itowns */
+import * as itowns from 'itowns';
+
 /**
  * This module can be added to a web page or in a web application. It provides a
  * simple behavior where single files can be drag and dropped onto a viewer. No
@@ -210,6 +211,4 @@ const DragNDrop = (function _() {
     };
 }());
 
-if (typeof module != 'undefined' && module.exports) {
-    module.exports = DragNDrop;
-}
+export default DragNDrop;
