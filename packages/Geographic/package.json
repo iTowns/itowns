@@ -19,7 +19,6 @@
     "test-with-coverage_lcov": "c8 -n src --reporter=lcov cross-env npm run test-unit",
     "watch": "npm run transpile -- --watch",
     "publish-latest": "npm publish --access public --tag=latest --provenance",
-    "prerelease-next": "npm version prerelease --preid next",
     "publish-next": "npm publish --access public --tag=next --provenance"
   },
   "files": [

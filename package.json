@@ -1,5 +1,6 @@
 {
   "private": true,
+  "name": "itowns-repository",
   "version": "2.45.1",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "type": "module",
@@ -29,11 +30,11 @@
     "prepare": "cross-env NO_UPDATE_NOTIFIER=true node ./config/prepare.mjs && node ./config/replace.config.mjs",
     "watch": "node ./config/concurrently.mjs watch",
     "changelog": "conventional-changelog -n ./config/conventionalChangelog/config.cjs -i changelog.md -s",
-    "bump": "if [ -z $npm_config_level ]; then grunt bump:minor;  else grunt bump:$npm_config_level; fi && npm run changelog && npm run update-packages && npm install && git add -A && git commit --amend --no-edit",
-    "prerelease-next": "npm version prerelease --preid next && npm run prerelease-next --workspaces --if-present && npm run update-packages",
+    "bump": "npm version ${npm_config_level:-minor} -m \"release v%s\"",
+    "version": "node ./config/version.mjs",
+    "prerelease-next": "npm version prerelease --preid next",
     "publish-next": "npm run prerelease-next && npm run prepublishOnly && npm run publish-next --workspaces --if-present",
-    "publish-latest": "npm run prepublishOnly && npm run publish-latest --workspaces --if-present",
-    "update-packages": "npm run update-package --workspaces --if-present"
+    "publish-latest": "npm run prepublishOnly && npm run publish-latest --workspaces --if-present"
   },
   "c8": {
     "exclude": [
@@ -96,8 +97,6 @@
     "eslint-plugin-tsdoc": "^0.3.0",
     "eslint-webpack-plugin": "^4.2.0",
     "github-url-from-git": "^1.5.0",
-    "grunt": "^1.6.1",
-    "grunt-bump": "^0.8.0",
     "https-proxy-agent": "^7.0.6",
     "jsdoc": "^4.0.4",
     "mocha": "^11.1.0",
