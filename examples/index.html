@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <title>Itowns Examples</title>
@@ -9,117 +10,134 @@
 
 <body data-spy="scroll" data-target="nav" onload="onLoad()">
 
-<div id="main">
-    <iframe id="content" class="scroll-section" frameborder="0" height="100%"></iframe>
-    <button id="view-source" class="text" title="View source"></button>
-</div>
+    <div id="main">
+        <iframe id="content" class="scroll-section" frameborder="0" height="100%"></iframe>
+        <button id="view-source" class="text" title="View source"></button>
+    </div>
 
-<nav class="scroll-section">
-    <a href="/">
-        <img src="images/itowns_logo.png" width="245px" id="itowns-logo">
-    </a>
-</nav>
+    <nav class="scroll-section">
+        <a href="/">
+            <img src="images/itowns_logo.png" width="245px" id="itowns-logo">
+        </a>
+    </nav>
 
-<script type="text/javascript">
-    var baseURI = document.baseURI;
+    <script type="text/javascript">
+        var baseURI = document.baseURI;
 
-    if (baseURI.includes('/itowns/dev/')) {
-        document.getElementById('itowns-logo').setAttribute('src', 'images/itowns_logo_next.png');
-    }
+        if (baseURI.includes('/itowns/dev/')) {
+            document.getElementById('itowns-logo').setAttribute('src', 'images/itowns_logo_next.png');
+        }
 
-    function bindIframe() {
-        var navLinks = document.getElementsByClassName('nav-link');
-        for (var i = 0; i < navLinks.length; i++) {
-            navLinks[i].addEventListener('click', function(e) {
-                e.preventDefault();
-                var target = e.target.localName === 'b' ? e.target.parentNode : e.target;
-                var url = target.href.replace('#', '') + '.html';
-                var slug = target.hash;
-                goTo(url, slug);
+        function bindIframe() {
+            var navLinks = document.getElementsByClassName('nav-link');
+            for (var i = 0; i < navLinks.length; i++) {
+                navLinks[i].addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var target = e.target.localName === 'b' ? e.target.parentNode : e.target;
+                    var url = target.href.replace('#', '') + '.html';
+                    var slug = target.hash;
+                    goTo(url, slug);
+                });
+            }
+
+            // load page if setted
+            if (document.location.hash) {
+                var url = document.location.href.replace('#', '') + '.html';
+                goTo(url);
+            } else {
+                goTo('view_3d_map.html');
+            }
+        }
+
+        function goTo(url, slug) {
+            if (slug) window.location.hash = slug;
+            var iframe = document.getElementById('content');
+            iframe.src = url.replace('index.html', '');
+            iframe.focus();
+
+            let viewSrc = `https://github.com/iTowns/itowns/blob/master/examples/${window.location.hash.substr(1) || 'view_3d_map'
+                }.html`;
+            document.getElementById('view-source').onclick = () => {window.open(viewSrc);};
+        }
+
+        /** @param {Record<string, Record<string, string>>} list - List of examples */
+        function initNavigation(list) {
+            // Add version switch :
+            const versionSwitchText = document.createElement('p');
+            versionSwitchText.innerHTML = `iTowns examples of the ${(baseURI.includes("/itowns/dev/") && "next version (current master branch)")
+                || "latest released version"}.`;
+
+            const versionSwitchButton = document.createElement('button');
+            versionSwitchButton.classList.add('switch-button');
+            versionSwitchButton.innerHTML = `Switch to ${(baseURI.includes("/itowns/dev/") && "latest release") || "next version"
+                }`;
+            versionSwitchButton.onclick = () => {
+                if (baseURI.includes("/itowns/dev/")) {
+                    window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
+                } else {
+                    window.location.href = document.location.href.replace('/itowns/', '/itowns/dev/');
+                }
+            };
+
+            const nav = document.getElementsByTagName('nav')[0];
+            const versionSwitch = document.createElement('div');
+            versionSwitch.id = "version-switch";
+            versionSwitch.appendChild(versionSwitchText);
+            versionSwitch.appendChild(versionSwitchButton);
+            nav.appendChild(versionSwitch);
+
+            // Add horizontal divider :
+            const titleDivider = document.createElement('hr');
+            titleDivider.classList.add('title-divider');
+            nav.appendChild(titleDivider);
+
+            // Dropdown example selector
+            const examples = Object.entries(list).flatMap(([sectionName, section]) => {
+                return [
+                    `<optgroup label="${sectionName}"`,
+                    ...Object.entries(section).map(([slug, name]) => `<option value=${slug}>${name}</option>`),
+                    '</optgroup>',
+                ];
+            });
+
+            const exampleSelector = document.createElement('select');
+            exampleSelector.setAttribute('name', 'example');
+            exampleSelector.insertAdjacentHTML('afterbegin', examples.join('\n'));
+            exampleSelector.onchange = (event) => {
+                console.log('changed');
+                // TODO: Change this to a change of the edit area
+                const oldUrl = window.location.href;
+                const newUrl = oldUrl.slice(0, oldUrl.lastIndexOf('#')) + `#${event.target.value}`;
+                console.log(`${oldUrl} -> ${newUrl}`);
+                window.open(newUrl, '_self');
+                window.location.reload()
+            }
+
+            // Set displayed default to current example
+            // TODO: Change this once the editor is in
+            const url = window.location.href;
+            const currentExample = url.slice(url.lastIndexOf('#') + 1);
+            if (currentExample) {
+                const children = Array.from(exampleSelector.children).flatMap(optgroup => Array.from(optgroup.children));
+                const selected = children.find(child => child.value == currentExample);
+                if (selected) {
+                    selected.setAttribute('selected', '');
+                }
+            }
+
+            nav.appendChild(exampleSelector)
+        }
+
+        function onLoad() {
+            // Get the configuration
+            fetch('./config.json').then(function _(response) {
+                return response.json();
+            }).then(function _(config) {
+                initNavigation(config);
+                bindIframe();
             });
         }
-
-        // load page if setted
-        if (document.location.hash) {
-            var url = document.location.href.replace('#', '') + '.html';
-            goTo(url);
-        } else {
-            goTo('view_3d_map.html');
-        }
-    }
-
-    function goTo(url, slug) {
-        if (slug) window.location.hash = slug;
-        var iframe = document.getElementById('content');
-        iframe.src = url.replace('index.html', '');
-        iframe.focus();
-
-        let viewSrc = `https://github.com/iTowns/itowns/blob/master/examples/${
-            window.location.hash.substr(1) || 'view_3d_map'
-        }.html`;
-        document.getElementById('view-source').onclick = () => { window.open(viewSrc); };
-    }
-
-    function initNavigation(list) {
-        // Add version switch :
-        const versionSwitchText = document.createElement('p');
-        versionSwitchText.innerHTML = `iTowns examples of the ${
-            (baseURI.includes("/itowns/dev/") && "next version (current master branch)")
-                || "latest released version"
-        }.`;
-
-        const versionSwitchButton = document.createElement('button');
-        versionSwitchButton.classList.add('switch-button');
-        versionSwitchButton.innerHTML = `Switch to ${
-            (baseURI.includes("/itowns/dev/") && "latest release") || "next version"
-        }`;
-        versionSwitchButton.onclick = () => {
-            if (baseURI.includes("/itowns/dev/")) {
-                window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
-            } else {
-                window.location.href = document.location.href.replace('/itowns/', '/itowns/dev/');
-            }
-        };
-
-        const versionSwitch = document.createElement('div');
-        versionSwitch.id = "version-switch";
-        versionSwitch.appendChild(versionSwitchText);
-        versionSwitch.appendChild(versionSwitchButton);
-        document.getElementsByTagName('nav')[0].appendChild(versionSwitch);
-
-        // Add horizontal divider :
-        const titleDivider = document.createElement('hr');
-        titleDivider.classList.add('title-divider');
-        document.getElementsByTagName('nav')[0].appendChild(titleDivider);
-
-        var nav = '<h2>Examples</h2>';
-
-        for (var section in list) {
-            nav += '<div class="package">';
-            nav += `<h3 class="nav-section">${section}</h3>`;
-            nav += '<ul>';
-
-            for (var example in list[section]) {
-                nav += '<li class="nav-item">';
-                nav += `<a class="nav-link" href="#${example}">`;
-                nav += `${list[section][example]}</a></li>`;
-            }
-
-            nav += '</ul></div>';
-        }
-
-        document.getElementsByTagName('nav')[0].insertAdjacentHTML('beforeend', nav);
-    }
-
-    function onLoad() {
-        // Get the configuration
-        fetch('./config.json').then(function _(response) {
-            return response.json();
-        }).then(function _(config) {
-            initNavigation(config);
-            bindIframe();
-        });
-    }
-</script>
+    </script>
 </body>
+
 </html>
