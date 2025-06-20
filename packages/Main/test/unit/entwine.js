@@ -5,16 +5,13 @@ import { Coordinates } from '@itowns/geographic';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import EntwinePointTileLayer from 'Layer/EntwinePointTileLayer';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
-import LASParser from 'Parser/LASParser';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
+import FlatQueue from 'flatqueue';
 import Renderer from './bootstrap';
 
 import eptFile from '../data/entwine/ept.json';
 import eptHierarchyFile from '../data/entwine/ept-hierarchy/0-0-0-0.json';
-
-// LASParser need to be mocked instead of calling it
-LASParser.enableLazPerf('./examples/libs/laz-perf');
 
 const baseurl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine';
 
@@ -40,17 +37,14 @@ describe('Entwine Point Tile', function () {
         stubFetcherArrayBuf = sinon.stub(Fetcher, 'arrayBuffer')
             .callsFake(() => Promise.resolve(new ArrayBuffer()));
         // currently no test on data fetched...
-
-        LASParser.enableLazPerf('../../examples/libs/laz-perf');
     });
 
     after(async function () {
         stubFetcherJson.restore();
         stubFetcherArrayBuf.restore();
-        await LASParser.terminate();
     });
 
-    describe('Entwine Point Tile Source', function () {
+    describe('EntwinePointTileSource', function () {
         describe('data type', function () {
             // TO DO dataType in [laszip, binary, zstandard]
         });
@@ -78,7 +72,7 @@ describe('Entwine Point Tile', function () {
         });
     });
 
-    describe('Layer', function () {
+    describe('EntwinePointTileLayer', function () {
         let renderer;
         let placement;
         let view;
@@ -122,7 +116,9 @@ describe('Entwine Point Tile', function () {
                 range: 250,
             }, false)
                 .then(() => {
-                    layer.update(context, layer, layer.root);
+                    const queue = new FlatQueue();
+                    queue.push(layer.root);
+                    layer.update(context, layer, queue, 0);
                     layer.root.promise
                         .then(() => {
                             done();
@@ -135,7 +131,7 @@ describe('Entwine Point Tile', function () {
         });
     });
 
-    describe('Node', function () {
+    describe('EntwinePointTileNode', function () {
         let root;
         before(function () {
             const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
