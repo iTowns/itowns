@@ -46,7 +46,8 @@ export { default as Label } from 'Core/Label';
 // Layers provided by default in iTowns
 // A custom layer should at least implements Layer
 // See http://www.itowns-project.org/itowns/docs/#api/Layer/Layer
-export { default as Layer, ImageryLayers } from 'Layer/Layer';
+export { default as Layer } from 'Layer/Layer';
+export * as ImageryLayers from 'Layer/ImageryLayers';
 export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
 export { default as GeometryLayer } from 'Layer/GeometryLayer';
