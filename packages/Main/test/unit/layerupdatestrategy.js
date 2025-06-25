@@ -5,7 +5,13 @@ import { Extent } from '@itowns/geographic';
 import OBB from 'Renderer/OBB';
 import Layer from 'Layer/Layer';
 import Source from 'Source/Source';
-import { STRATEGY_DICHOTOMY, STRATEGY_PROGRESSIVE, STRATEGY_GROUP, chooseNextLevelToFetch } from 'Layer/LayerUpdateStrategy';
+import {
+    STRATEGY_MIN_NETWORK_TRAFFIC,
+    STRATEGY_DICHOTOMY,
+    STRATEGY_PROGRESSIVE,
+    STRATEGY_GROUP,
+    chooseNextLevelToFetch,
+} from 'Layer/LayerUpdateStrategy';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import { RasterColorTile } from 'Renderer/RasterTile';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
@@ -89,46 +95,60 @@ describe('Handling no data source error', function () {
     });
 
     it('STRATEGY_MIN_NETWORK_TRAFFIC 15', () => {
+        layer.updateStrategy = {
+            type: STRATEGY_MIN_NETWORK_TRAFFIC,
+        };
         maxLevelWithoutError = 15;
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, maxLevelWithoutError);
     });
 
     it('STRATEGY_MIN_NETWORK_TRAFFIC 19', () => {
+        layer.updateStrategy = {
+            type: STRATEGY_MIN_NETWORK_TRAFFIC,
+        };
         maxLevelWithoutError = 19;
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, maxLevelWithoutError);
     });
 
     it('STRATEGY_DICHOTOMY', () => {
-        layer.updateStrategy.type = STRATEGY_DICHOTOMY;
+        layer.updateStrategy = {
+            type: STRATEGY_DICHOTOMY,
+            options: {/* zoom: { min : number } */},
+        };
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, maxLevelWithoutError);
     });
 
     it('STRATEGY_PROGRESSIVE', () => {
-        layer.updateStrategy.type = STRATEGY_PROGRESSIVE;
+        layer.updateStrategy = {
+            type: STRATEGY_PROGRESSIVE,
+            options: {/* increment: number */},
+        };
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, maxLevelWithoutError);
     });
 
     it('STRATEGY_GROUP', () => {
-        layer.updateStrategy.type = STRATEGY_GROUP;
-        layer.updateStrategy.options = { groups: [10, 15, 20] };
+        layer.updateStrategy = {
+            type: STRATEGY_GROUP,
+            options: { groups: [10, 15, 20] },
+        };
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, 15);

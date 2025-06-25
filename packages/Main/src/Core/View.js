@@ -374,8 +374,7 @@ class View extends THREE.EventDispatcher {
             this.scene.add(layer.object3d);
         }
 
-        Promise.all(layer._promises).then(() => {
-            layer._resolve();
+        layer.startup().then(() => {
             this.notifyChange(parentLayer || layer, false);
             if (!this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END] ||
                 !this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].includes(this._allLayersAreReadyCallback)) {
@@ -385,7 +384,7 @@ class View extends THREE.EventDispatcher {
                 type: VIEW_EVENTS.LAYER_ADDED,
                 layerId: layer.id,
             });
-        }, layer._reject);
+        });
 
         return layer.whenReady;
     }

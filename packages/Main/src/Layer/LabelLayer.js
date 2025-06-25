@@ -4,7 +4,7 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import GeometryLayer from 'Layer/GeometryLayer';
 import { Coordinates, Extent } from '@itowns/geographic';
 import Label from 'Core/Label';
-import { readExpression, StyleContext } from 'Core/Style';
+import Style, { readExpression, StyleContext } from 'Core/Style';
 import { ScreenGrid } from 'Renderer/Label2DRenderer';
 
 const context = new StyleContext();
@@ -179,11 +179,15 @@ class LabelLayer extends GeometryLayer {
             performance = true,
             forceClampToTerrain = false,
             margin,
+            style = {},
             ...geometryConfig
         } = config;
         super(id, config.object3d || new THREE.Group(), geometryConfig);
 
         this.isLabelLayer = true;
+
+        this.style = style instanceof Style ? style : new Style(style);
+
         this.domElement = new DomNode();
         this.domElement.show();
         this.domElement.dom.id = `itowns-label-${this.id}`;
