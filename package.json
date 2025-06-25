@@ -30,7 +30,7 @@
     "watch": "node ./config/concurrently.mjs watch",
     "changelog": "conventional-changelog -n ./config/conventionalChangelog/config.cjs -i changelog.md -s",
     "bump": "if [ -z $npm_config_level ]; then grunt bump:minor;  else grunt bump:$npm_config_level; fi && npm run changelog && npm run update-packages && npm install && git add -A && git commit --amend --no-edit",
-    "prerelease-next": "npm version prerelease --preid next && npm run prerelease-next --workspaces --if-present && npm run update-packages",
+    "prerelease-next": "npm version prerelease --preid next --legacy-peer-deps && npm run prerelease-next --workspaces --if-present && npm run update-packages",
     "publish-next": "npm run prerelease-next && npm run prepublishOnly && npm run publish-next --workspaces --if-present",
     "publish-latest": "npm run prepublishOnly && npm run publish-latest --workspaces --if-present",
     "update-packages": "npm run update-package --workspaces --if-present"
