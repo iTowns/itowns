@@ -12,8 +12,10 @@ import {
 
 import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
-import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
-import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
+// eslint-disable-next-line import/extensions, import/no-unresolved
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+// eslint-disable-next-line import/extensions, import/no-unresolved
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import PointsMaterial, {
     PNTS_MODE,
