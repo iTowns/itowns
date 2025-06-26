@@ -36,7 +36,7 @@
     "url": "https://github.com/itowns/itowns/issues"
   },
   "peerDependencies": {
-    "proj4": "^2.15.0",
+    "proj4": "^2.19.3",
     "three": "^0.174.0"
   },
   "homepage": "https://itowns.github.io/"
