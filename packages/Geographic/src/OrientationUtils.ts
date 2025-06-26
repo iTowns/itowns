@@ -1,6 +1,6 @@
 import { Euler, MathUtils, Matrix4, Quaternion, Vector3 } from 'three';
 import proj4 from 'proj4';
-import type { ProjectionDefinition } from 'proj4';
+import type { ProjectionDefinition } from 'proj4/dist/lib/defs';
 import Coordinates from './Coordinates';
 
 const DEG2RAD = MathUtils.DEG2RAD;
@@ -410,9 +410,11 @@ export function quaternionFromEnuToCRS(
     target = new Quaternion(),
 ) {
     if (coordinates) { return quaternionFromEnuToCRS(crsOrProj)(coordinates, target); }
-    // @ts-expect-error: .oProj not documented on type Converter
-    const proj = typeof crsOrProj === 'string' ? proj4(crsOrProj).oProj : crsOrProj.oProj;
-    switch (proj.names[0]) {
+    const proj = typeof crsOrProj === 'string' ?
+        proj4(crsOrProj).oProj as ProjectionDefinition :
+        crsOrProj;
+    const names = proj4.Proj.projections.get(proj.projName).names;
+    switch (names[0]) {
         case 'Geocentric': return quaternionFromEnuToGeocent();
         case 'Lambert Tangential Conformal Conic Projection':
             return quaternionFromEnuToLCC(proj as LCCProjection);
@@ -445,9 +447,11 @@ export function quaternionFromCRSToEnu(
     target = new Quaternion(),
 ) {
     if (coordinates) { return quaternionFromCRSToEnu(crsOrProj)(coordinates, target); }
-    // @ts-expect-error: .oProj not documented on type Converter
-    const proj = typeof crsOrProj === 'string' ? proj4(crsOrProj).oProj : crsOrProj.oProj;
-    switch (proj.names[0]) {
+    const proj = typeof crsOrProj === 'string' ?
+        proj4(crsOrProj).oProj as ProjectionDefinition :
+        crsOrProj;
+    const names = proj4.Proj.projections.get(proj.projName).names;
+    switch (names[0]) {
         case 'Geocentric': return quaternionFromGeocentToEnu();
         case 'Lambert Tangential Conformal Conic Projection':
             return quaternionFromLCCToEnu(proj as LCCProjection);
