@@ -1,6 +1,6 @@
 import proj4 from 'proj4';
 
-import type { ProjectionDefinition } from 'proj4';
+import type { ProjectionDefinition } from 'proj4/dist/lib/defs';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
@@ -15,7 +15,7 @@ proj4.defs('WGS84').axis = 'neu';
  * projection definition previously defined with
  * [`proj4.defs`](https://github.com/proj4js/proj4js#named-projections).
  */
-export type ProjectionLike = string;
+export type ProjectionAlias = string;
 
 function isString(s: unknown): s is string {
     return typeof s === 'string' || s instanceof String;
@@ -53,7 +53,7 @@ export const UNIT = {
  *
  * @param crs - The CRS to test.
  */
-export function is4326(crs: ProjectionLike) {
+export function is4326(crs: ProjectionAlias) {
     return crs === 'EPSG:4326';
 }
 
@@ -79,7 +79,7 @@ function unitFromProj4Unit(proj: ProjectionDefinition) {
  * @param crs - The CRS to extract the unit from.
  * @returns Either `UNIT.METER`, `UNIT.DEGREE`, `UNIT.FOOT` or `undefined`.
  */
-export function getUnit(crs: ProjectionLike) {
+export function getUnit(crs: ProjectionAlias) {
     mustBeString(crs);
     const p = proj4.defs(crs);
     if (!p) {
@@ -94,7 +94,7 @@ export function getUnit(crs: ProjectionLike) {
  * @param crs - The CRS to check.
  * @throws {@link Error} if the CRS is not valid.
  */
-export function isMetricUnit(crs: ProjectionLike) {
+export function isMetricUnit(crs: ProjectionAlias) {
     return getUnit(crs) === UNIT.METER;
 }
 
@@ -104,7 +104,7 @@ export function isMetricUnit(crs: ProjectionLike) {
  * @param crs - The CRS to check.
  * @throws {@link Error} if the CRS is not valid.
  */
-export function isGeographic(crs: ProjectionLike) {
+export function isGeographic(crs: ProjectionAlias) {
     return getUnit(crs) === UNIT.DEGREE;
 }
 
@@ -114,7 +114,7 @@ export function isGeographic(crs: ProjectionLike) {
  * @param crs - The CRS to test.
  * @returns false if the crs isn't defined.
  */
-export function isGeocentric(crs: ProjectionLike) {
+export function isGeocentric(crs: ProjectionAlias) {
     mustBeString(crs);
     const projection = proj4.defs(crs);
     return !projection ? false : projection.projName == 'geocent';
@@ -127,7 +127,7 @@ export function isGeocentric(crs: ProjectionLike) {
  * @param crs - The CRS to test.
  * @throws {@link Error} if the crs is not valid.
  */
-export function isValid(crs: ProjectionLike) {
+export function isValid(crs: ProjectionAlias) {
     const proj = proj4.defs(crs);
     if (!proj) {
         throw new Error(`Undefined crs '${crs}'. Add it with proj4.defs('${crs}', string)`);
@@ -143,7 +143,7 @@ export function isValid(crs: ProjectionLike) {
  * @param crs - The CRS to use.
  * @returns 0.01 if the CRS is EPSG:4326, 0.001 otherwise.
  */
-export function reasonableEpsilon(crs: ProjectionLike) {
+export function reasonableEpsilon(crs: ProjectionAlias) {
     if (is4326(crs)) {
         return 0.01;
     } else {
@@ -158,7 +158,7 @@ export function reasonableEpsilon(crs: ProjectionLike) {
  * @param crs - The CRS to get axis from.
  * @returns the matching proj4 axis string, 'enu' for instance (east, north, up)
  */
-export function axisOrder(crs: ProjectionLike) {
+export function axisOrder(crs: ProjectionAlias) {
     mustBeString(crs);
     const projection = proj4.defs(crs);
     return !projection ? undefined : projection.axis;
