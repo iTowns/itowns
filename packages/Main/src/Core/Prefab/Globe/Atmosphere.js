@@ -71,6 +71,7 @@ class Atmosphere extends GeometryLayer {
         const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
         const basicAtmosphereOut = new THREE.Mesh(sphereGeometry, material);
         basicAtmosphereOut.scale.copy(ellipsoidSizes).multiplyScalar(1.14);
+        basicAtmosphereOut.renderOrder = 1;
 
         this.basicAtmosphere = new THREE.Object3D();
         this.realisticAtmosphere = new THREE.Object3D();
@@ -101,6 +102,7 @@ class Atmosphere extends GeometryLayer {
 
         const basicAtmosphereIn = new THREE.Mesh(sphereGeometry, materialAtmoIn);
         basicAtmosphereIn.scale.copy(ellipsoidSizes).multiplyScalar(1.002);
+        basicAtmosphereIn.renderOrder = 2;
 
         this.basicAtmosphere.add(basicAtmosphereIn);
         this.realisticLightingPosition = { x: -0.5, y: 0.0, z: 1.0 };
@@ -205,6 +207,7 @@ class Atmosphere extends GeometryLayer {
             depthWrite: false,
         });
         const ground = new THREE.Mesh(geometryAtmosphereIn, materialAtmosphereIn);
+        ground.renderOrder = 2;
 
         const geometryAtmosphereOut = new THREE.SphereGeometry(atmosphere.outerRadius, 196, 196);
         const materialAtmosphereOut = new THREE.ShaderMaterial({
@@ -215,8 +218,10 @@ class Atmosphere extends GeometryLayer {
             side: THREE.BackSide,
         });
         const sky = new THREE.Mesh(geometryAtmosphereOut, materialAtmosphereOut);
+        sky.renderOrder = 1;
 
         const skyDome = new Sky();
+        skyDome.renderOrder = 1;
         skyDome.frustumCulled = false;
 
         this.realisticAtmosphere.add(ground);
