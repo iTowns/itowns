@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import Coordinates from './Coordinates';
 import * as CRS from './Crs';
 
-import type { ProjectionLike } from './Crs';
+import type { ProjectionAlias } from './Crs';
 
 const _dim = new THREE.Vector2();
 const _dim2 = new THREE.Vector2();
@@ -47,9 +47,9 @@ class Extent {
      */
     readonly isExtent: true;
     /**
-     * A default or user-defined CRS (see {@link ProjectionLike}).
+     * A default or user-defined CRS (see {@link ProjectionAlias}).
      */
-    crs: ProjectionLike;
+    crs: ProjectionAlias;
     /**
      * West longitude bound of this extent.
      */
@@ -68,13 +68,13 @@ class Extent {
     north: number;
 
     /**
-     * @param crs - A default or user-defined CRS (see {@link ProjectionLike}).
+     * @param crs - A default or user-defined CRS (see {@link ProjectionAlias}).
      * @param west - the `west` value of this extent. Default is 0.
      * @param east - the `east` value of this extent. Default is 0.
      * @param south - the `south` value of this extent. Default is 0.
      * @param north - the `north` value of this extent. Default is 0.
      */
-    constructor(crs: ProjectionLike, west = 0, east = 0, south = 0, north = 0) {
+    constructor(crs: ProjectionAlias, west = 0, east = 0, south = 0, north = 0) {
         if (CRS.isGeocentric(crs)) {
             throw new Error(
                 `Non-compatible geocentric projection ${crs} to build a geographical extent`,
@@ -470,7 +470,7 @@ class Extent {
      * @param crs - Projection of extent to instancied.
      * @param box - Bounding-box
      */
-    static fromBox3(crs: ProjectionLike, box: THREE.Box3) {
+    static fromBox3(crs: ProjectionAlias, box: THREE.Box3) {
         if (CRS.isGeocentric(crs)) {
             // if geocentric reproject box on 'EPSG:4326'
             crs = 'EPSG:4326';
