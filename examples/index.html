@@ -11,15 +11,27 @@
 <body data-spy="scroll" data-target="nav" onload="onLoad()">
 
     <div id="main">
-        <iframe id="content" class="scroll-section" frameborder="0" height="100%"></iframe>
+        <iframe id="content" frameborder="0" height="100%"></iframe>
         <button id="view-source" class="text" title="View source"></button>
     </div>
 
-    <nav class="scroll-section">
-        <a href="/">
-            <img src="images/itowns_logo.png" width="245px" id="itowns-logo">
-        </a>
-    </nav>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.4.0/codemirror.js"></script> -->
+    <div class="editor-panel">
+        <nav id="editor-header">
+            <a href="/">
+                <img src="images/itowns_logo.png" width="245px" id="itowns-logo">
+            </a>
+            <div class="switch">
+                <label for="version-switch">Latest</label>
+                <input id="version-switch" type="checkbox" name="version-switch">
+                <span class="slider"></span>
+            </div>
+            <!-- <div id="itowns-info"> -->
+            <!-- </div> -->
+            <!-- <div id="settings"> -->
+            <!-- </div> -->
+        </nav>
+    </div>
 
     <script type="text/javascript">
         var baseURI = document.baseURI;
@@ -62,34 +74,56 @@
 
         /** @param {Record<string, Record<string, string>>} list - List of examples */
         function initNavigation(list) {
-            // Add version switch :
-            const versionSwitchText = document.createElement('p');
-            versionSwitchText.innerHTML = `iTowns examples of the ${(baseURI.includes("/itowns/dev/") && "next version (current master branch)")
-                || "latest released version"}.`;
+            const nav = document.getElementById('editor-header');
 
-            const versionSwitchButton = document.createElement('button');
-            versionSwitchButton.classList.add('switch-button');
-            versionSwitchButton.innerHTML = `Switch to ${(baseURI.includes("/itowns/dev/") && "latest release") || "next version"
-                }`;
-            versionSwitchButton.onclick = () => {
-                if (baseURI.includes("/itowns/dev/")) {
-                    window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
-                } else {
-                    window.location.href = document.location.href.replace('/itowns/', '/itowns/dev/');
+            const versionSwitch = document.getElementById('version-switch');
+            if (!baseURI.includes('/itowns/')) {
+                versionSwitch.setAttribute('disabled', '');
+            } else {
+                versionSwitch.onchange = (event) => {
+                    console.log('toggled');
+                    if (baseURI.includes("/itowns/dev/")) {
+                        window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
+                    } else {
+                        window.location.href = document.location.href.replace('/itowns/', '/itowns/dev/');
+                    }
                 }
-            };
-
-            const nav = document.getElementsByTagName('nav')[0];
-            const versionSwitch = document.createElement('div');
-            versionSwitch.id = "version-switch";
-            versionSwitch.appendChild(versionSwitchText);
-            versionSwitch.appendChild(versionSwitchButton);
-            nav.appendChild(versionSwitch);
-
-            // Add horizontal divider :
-            const titleDivider = document.createElement('hr');
-            titleDivider.classList.add('title-divider');
-            nav.appendChild(titleDivider);
+                if (baseURI.includes('/itowns/dev/')) {
+                    versionSwitch.setAttribute('checked', '');
+                }
+            }
+            // Add version switch :
+            // const versionSwitchText = document.createElement('p');
+            // versionSwitchText.innerHTML = `iTowns examples of the ${(baseURI.includes("/itowns/dev/") && "next version (current master branch)")
+            //     || "latest released version"}.`;
+            // const versionSwitchButton = document.createElement('button');
+            // versionSwitchButton.classList.add('switch-button');
+            // versionSwitchButton.innerHTML = `Switch to ${(baseURI.includes("/itowns/dev/") && "latest release") || "next version"
+            //     }`;
+            // versionSwitchButton.onclick = () => {
+            //     if (baseURI.includes("/itowns/dev/")) {
+            //         window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
+            //     } else {
+            //         window.location.href = document.location.href.replace('/itowns/', '/itowns/dev/');
+            //     }
+            // };
+            //
+            // const versionSwitch = document.createElement('div');
+            // versionSwitch.id = "version-switch";
+            // versionSwitch.appendChild(versionSwitchText);
+            // versionSwitch.appendChild(versionSwitchButton);
+            // const versionSwitch = document.createElement('label');
+            // versionSwitch.className = 'switch';
+            //
+            // const versionSwitchCheckbox = document.createElement('input');
+            // versionSwitchCheckbox.setAttribute('type', 'checkbox');
+            // versionSwitch.appendChild(versionSwitchCheckbox);
+            //
+            // const versionSwitchSlider = document.createElement('span');
+            // versionSwitchSlider.className = 'slider';
+            // versionSwitch.appendChild(versionSwitchSlider);
+            //
+            // nav.appendChild(versionSwitch);
 
             // Dropdown example selector
             const examples = Object.entries(list).flatMap(([sectionName, section]) => {
@@ -107,10 +141,12 @@
                 console.log('changed');
                 // TODO: Change this to a change of the edit area
                 const oldUrl = window.location.href;
-                const newUrl = oldUrl.slice(0, oldUrl.lastIndexOf('#')) + `#${event.target.value}`;
-                console.log(`${oldUrl} -> ${newUrl}`);
+                const navIndex = oldUrl.lastIndexOf('#');
+                const newUrl = oldUrl.slice(0, navIndex) + `#${event.target.value}`;
                 window.open(newUrl, '_self');
-                window.location.reload()
+                if (navIndex >= 0) {
+                    window.location.reload()
+                }
             }
 
             // Set displayed default to current example
@@ -126,6 +162,17 @@
             }
 
             nav.appendChild(exampleSelector)
+
+            // Add horizontal divider :
+            const titleDivider = document.createElement('hr');
+            titleDivider.classList.add('title-divider');
+            nav.appendChild(titleDivider);
+
+            // const textArea = document.createElement('textarea');
+            // // nav.appendChild(textArea);
+            // const navParent = document.getElementsByTagName('nav');
+            // navParent.appendChild(textArea);
+            // const editor = CodeMirror.fromTextArea(textArea, {lineNumbers: true});
         }
 
         function onLoad() {
