@@ -1,5 +1,6 @@
 /* GENERAL */
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
     height: 100%;
@@ -12,11 +13,6 @@ body {
     overflow: hidden;
 }
 
-.scroll-section {
-    height: 100%;
-    position: absolute;
-}
-
 #description {
     position: absolute;
     top: 10px;
@@ -24,17 +20,19 @@ body {
     overflow: hidden;
 }
 
-#description, .text {
+#description,
+.text {
     z-index: 1;
     color: #eee;
-    font: 16px 'Lucida Grande',sans-serif;
+    font: 16px 'Lucida Grande', sans-serif;
     max-width: 40%;
     background: #1a1a1a;
     opacity: 0.8;
     padding: 10px;
 }
 
-#description p, #description ul {
+#description p,
+#description ul {
     margin: 0px;
 }
 
@@ -46,10 +44,11 @@ body {
     overflow: hidden;
 }
 
-#attribution, .text {
+#attribution,
+.text {
     z-index: 2;
     color: #eee;
-    font: 13px 'Lucida Grande',sans-serif;
+    font: 13px 'Lucida Grande', sans-serif;
     max-width: 40%;
     background: #1a1a1a;
     opacity: 0.8;
@@ -64,7 +63,7 @@ body {
     color: #f0c0c0;
 }
 
-.text > ul {
+.text>ul {
     padding: 0 2rem;
 }
 
@@ -113,40 +112,42 @@ body {
 #view-source:hover {
     cursor: pointer;
 }
+
 #view-source:active {
     background-color: #222222;
 }
 
 /* NAVIGATION (LEFT) */
-nav {
-    width: calc(100% * 7 / 16 - 4em);
+#editor-header {
+    display: flex;
+    flex-flow: column;
+    width: 100%;
     padding: 0 2rem;
     overflow: auto;
     font-family: Consolas, Monaco, 'Andale Mono', monospace;
 }
 
-nav img {
+#editor-header img {
     margin-top: 20px;
 }
 
-.nav-section {
-    margin-top: 0px;
-}
-
-nav .package {
+#editor-header .package {
     padding-bottom: 20px;
 }
 
-nav ul {
+#editor-header ul {
     padding: 0;
     margin: 0;
 }
 
-nav li {
+#editor-header li {
     list-style: none;
 }
 
-a, a:visited, nav ul a, nav ul a:visited {
+a,
+a:visited,
+nav ul a,
+nav ul a:visited {
     cursor: pointer;
     color: #6091b2;
     text-decoration: underline;
@@ -157,7 +158,11 @@ a:hover {
     color: #6091b2aa;
 }
 
-h1, h2, h3, h4, h5 {
+h1,
+h2,
+h3,
+h4,
+h5 {
     font-weight: bold;
     color: #4b4b4b;
 }
@@ -170,28 +175,6 @@ h3 {
 .title-divider {
     margin: 26px 0;
 }
-
-#version-switch {
-    text-align: justify;
-    line-height: 1.6;
-}
-
-.switch-button {
-    width: 100%;
-    height: 30px;
-    border: 1px solid #222222;
-    border-radius: 7px;
-    margin-bottom: 10px;
-}
-.switch-button:hover {
-    cursor: pointer;
-    background-color: #E5E5E5;
-}
-.switch-button:active {
-    background-color: #404E76;
-    color: white;
-}
-
 
 /* IFRAME/EXAMPLE CONTENT */
 #viewerDiv {
@@ -211,8 +194,9 @@ h3 {
     z-index: 0;
 }
 
-#menuDiv, .ac {
-/* Disable select DAT.gui */
+#menuDiv,
+.ac {
+    /* Disable select DAT.gui */
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
@@ -253,7 +237,7 @@ h3 {
 
 .tooltip {
     display: none;
-    background-image: linear-gradient(rgba(167, 164, 164, 0.95), rgba(60, 60, 60,0.95));
+    background-image: linear-gradient(rgba(167, 164, 164, 0.95), rgba(60, 60, 60, 0.95));
     box-shadow: -1px 2px 5px 1px rgba(0, 0, 0, 0.5);
     margin-top: 20px;
     margin-left: 20px;
@@ -267,11 +251,12 @@ h3 {
     text-align: left;
 }
 
-.tooltip li, .coord {
+.tooltip li,
+.coord {
     font-size: 12px;
     padding-left: 20px;
     color: #93B7C0;
-    text-shadow: 0px 1px 0px rgba(200,200,200,.3), 0px -1px 0px rgba(30,30,30,.7);
+    text-shadow: 0px 1px 0px rgba(200, 200, 200, .3), 0px -1px 0px rgba(30, 30, 30, .7);
 }
 
 /* Circle for Sse helper */
@@ -284,7 +269,7 @@ h3 {
     position: absolute;
     z-index: 9;
     font-family: 'Open Sans',
-    sans-serif;
+        sans-serif;
     font-size: 20px;
     line-height: 0px;
     text-align: center;
@@ -299,7 +284,89 @@ h3 {
 }
 
 :root {
-  --text_stroke_display: 'none';
-  --text_stroke_width: 0px;
-  --text_stroke_color: 'white';
+    --text_stroke_display: 'none';
+    --text_stroke_width: 0px;
+    --text_stroke_color: 'white';
 }
+
+.editor-panel {
+    width: calc(100% * 7 / 16);
+    height: 100%;
+    position: absolute;
+    display: flex;
+    grid-template-columns: auto auto;
+    background-color: dodgerblue;
+}
+
+.editor-panel>* {
+    background-color: white;
+}
+
+/* /** VERSION SWITCH */
+/* /* The switch - the box around the slider */
+/* .switch { */
+/*     font-size: 12px; */
+/*     position: relative; */
+/*     display: inline-block; */
+/*     overflow: visible; */
+/*     width: 2em; */
+/*     height: 1em; */
+/* } */
+/**/
+/* /* Hide default HTML checkbox */
+/* .switch input { */
+/*     opacity: 0; */
+/*     width: 0; */
+/*     height: 0; */
+/* } */
+/**/
+/* /* The slider */
+/* .slider { */
+/*     position: absolute; */
+/*     cursor: pointer; */
+/*     top: 0; */
+/*     left: 0; */
+/*     right: 0; */
+/*     bottom: 0; */
+/*     background-color: #ccc; */
+/*     -webkit-transition: .4s; */
+/*     transition: .4s; */
+/*     border-radius: 1em; */
+/* } */
+/**/
+/* .slider:before { */
+/*     position: absolute; */
+/*     content: ""; */
+/*     height: .8em; */
+/*     width: .8em; */
+/*     left: .2em; */
+/*     bottom: .1em; */
+/*     background-color: white; */
+/*     -webkit-transition: .4s; */
+/*     transition: .4s; */
+/*     border-radius: 50%; */
+/* } */
+/**/
+/* input:disabled+.slider { */
+/*     background-color: #bbb; */
+/* } */
+/**/
+/* input:disabled+.slider:before { */
+/*     background-color: #ccc; */
+/* } */
+/**/
+/* input:checked+.slider { */
+/*     background-color: #2196F3; */
+/* } */
+/**/
+/* input:focus+.slider { */
+/*     box-shadow: 0 0 1px #2196F3; */
+/* } */
+/**/
+/* input:checked+.slider:before { */
+/*     -webkit-transform: translateX(1.2em); */
+/*     -ms-transform: translateX(1.2em); */
+/*     transform: translateX(1.2em); */
+/* } */
+
+/* .itowns-info {} */
