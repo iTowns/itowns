@@ -86,7 +86,7 @@
     "chalk": "^5.4.1",
     "compare-func": "^2.0.0",
     "concurrently": "^9.1.2",
-    "conventional-changelog-cli": "^5.0.0",
+    "conventional-changelog-cli": "^4.1.0",
     "copyfiles": "^2.4.1",
     "core-js": "^3.41.0",
     "cross-env": "^7.0.3",
