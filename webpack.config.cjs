@@ -138,7 +138,7 @@ module.exports = () => {
         three: 'three',
     };
 
-    if (debugBuild) {
+    if (process.env.WEBPACK_SERVE) {
         configESM.devServer = {
             hot: false,
             devMiddleware: {
