@@ -100,7 +100,7 @@ describe('Handling no data source error', function () {
         };
         maxLevelWithoutError = 15;
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, maxLevelWithoutError);
@@ -112,7 +112,7 @@ describe('Handling no data source error', function () {
         };
         maxLevelWithoutError = 19;
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, maxLevelWithoutError);
@@ -124,7 +124,7 @@ describe('Handling no data source error', function () {
             options: {/* zoom: { min : number } */},
         };
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, maxLevelWithoutError);
@@ -136,7 +136,7 @@ describe('Handling no data source error', function () {
             options: {/* increment: number */},
         };
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, maxLevelWithoutError);
@@ -148,7 +148,7 @@ describe('Handling no data source error', function () {
             options: { groups: [10, 15, 20] },
         };
         while (!LOADED) {
-            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, 20, nodeLayer.level, layer, failureParams);
+            const targetLevel = chooseNextLevelToFetch(layer.updateStrategy, 20, nodeLayer.level, failureParams, source.zoom);
             loadLevel(targetLevel, nodeLayer.level);
         }
         assert.equal(nodeLayer.level, 15);
