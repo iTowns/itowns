@@ -84,6 +84,22 @@ const defaultStructLayers: Readonly<{
 };
 
 
+function getImageData(image: HTMLCanvasElement | ImageBitmap | OffscreenCanvas) {
+    const w = image.width;
+    const h = image.height;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d')!;
+
+    // flip vertically because a DataArrayTexture expects
+    // (0, 0) to be the bottom-left of the texture.
+    ctx.scale(1, -1);
+
+    ctx.drawImage(image, 0, -h, w, h); // draw upside-down
+    return ctx.getImageData(0, 0, w, h).data;
+}
+
 function updateLayersUniforms(
     uniforms: { [name: string]: THREE.IUniform },
     tiles: RasterTile[],
@@ -91,12 +107,14 @@ function updateLayersUniforms(
 ) {
     // Aliases for readability
     const uLayers = uniforms.layers.value;
-    const uTextures = uniforms.textures.value;
+    const uTextures = uniforms.textures;
     const uOffsetScales = uniforms.offsetScales.value;
     const uTextureCount = uniforms.textureCount;
 
     // Flatten the 2d array: [i, j] -> layers[_layerIds[i]].textures[j]
     let count = 0;
+    let width = 0;
+    let height = 0;
     for (const tile of tiles) {
         // FIXME: RasterElevationTile are always passed to this function alone
         // so this works, but it's really not great even ignoring the dynamic
@@ -110,10 +128,36 @@ function updateLayersUniforms(
             ++i, ++count
         ) {
             uOffsetScales[count] = tile.offsetScales[i];
-            uTextures[count] = tile.textures[i];
             uLayers[count] = tile;
+
+            if (count == 0) {
+                const img = tile.textures[i].image;
+                width = img.width;
+                height = img.height;
+            }
         }
     }
+
+    if (count == 0) { // no texture was found
+        uTextures.value = new THREE.DataArrayTexture();// needed or can be left undefined?
+    } else {
+        const pxPerImg = 4 * width * height; // assuming RGBA
+        const texData = new Uint8Array(pxPerImg * count);
+        count = 0;
+        for (const tile of tiles) {
+            for (
+                let i = 0;
+                i < tile.textures.length && count < max;
+                ++i, ++count
+            ) {
+                const img = tile.textures[i].image;
+                texData.set(getImageData(img), pxPerImg * count);
+            }
+        }
+        uTextures.value = new THREE.DataArrayTexture(texData, width, height, count);
+        uTextures.value.needsUpdate = true;
+    }
+
     if (count > max) {
         console.warn(
             `LayeredMaterial: Not enough texture units (${max} < ${count}),`
@@ -177,7 +221,7 @@ interface LayeredMaterialRawUniforms {
 
     // Color layers
     colorLayers: Array<StructColorLayer>;
-    colorTextures: Array<THREE.Texture>;
+    colorTextures: THREE.DataArrayTexture;
     colorOffsetScales: Array<THREE.Vector4>;
     colorTextureCount: number;
 }
@@ -330,7 +374,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
 
             colorLayers: new Array(nbSamplers[1])
                 .fill(defaultStructLayers.color),
-            colorTextures: new Array(nbSamplers[1]).fill(defaultTex),
+            colorTextures: new THREE.DataArrayTexture(null, 1, 1, 1),
             colorOffsetScales: new Array(nbSamplers[1])
                 .fill(identityOffsetScale),
             colorTextureCount: 0,
