@@ -55,6 +55,7 @@ class FeatureGeometryLayer extends GeometryLayer {
             onMeshCreated,
             accurate = true,
             filter,
+            mergeFeatures = true,
             ...geometryOptions
         } = options;
 
@@ -71,6 +72,7 @@ class FeatureGeometryLayer extends GeometryLayer {
         this.accurate = accurate;
         this.buildExtent = !this.accurate;
         this.filter = filter;
+        this.mergeFeatures = mergeFeatures;
     }
 
     preUpdate(context, sources) {
