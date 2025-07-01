@@ -9,7 +9,7 @@ struct Layer {
 
 #include <itowns/custom_header_colorLayer>
 
-uniform sampler2D   colorTextures[NUM_FS_TEXTURES];
+uniform sampler2DArray   colorTextures;
 uniform vec4        colorOffsetScales[NUM_FS_TEXTURES];
 uniform Layer       colorLayers[NUM_FS_TEXTURES];
 uniform int         colorTextureCount;
@@ -50,7 +50,7 @@ vec4 getOutlineColor(vec3 outlineColor, vec2 uv) {
 #endif
 
 uniform float minBorderDistance;
-vec4 getLayerColor(int textureOffset, sampler2D tex, vec4 offsetScale, Layer layer) {
+vec4 getLayerColor(int textureOffset, sampler2DArray tex, vec4 offsetScale, Layer layer) {
     if ( textureOffset >= colorTextureCount ) return vec4(0);
 
     vec3 uv;
@@ -61,7 +61,7 @@ vec4 getLayerColor(int textureOffset, sampler2D tex, vec4 offsetScale, Layer lay
 
     float borderDistance = getBorderDistance(uv.xy);
     if (textureOffset != layer.textureOffset + int(uv.z) || borderDistance < minBorderDistance ) return vec4(0);
-    vec4 color = texture2D(tex, pitUV(uv.xy, offsetScale));
+    vec4 color = texture(tex, vec3(pitUV(uv.xy, offsetScale), float(textureOffset)));
     if (layer.effect_type == 3) {
         #include <itowns/custom_body_colorLayer>
     } else {
