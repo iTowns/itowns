@@ -5,7 +5,10 @@
   "type": "module",
   "main": "lib/Main.js",
   "exports": {
-    ".": "./lib/Main.js",
+    ".": {
+      "types": "./lib/Main.d.ts",
+      "default": "./lib/Main.js"
+    },
     "./widgets": "./lib/Utils/gui/Main.js"
   },
   "scripts": {
