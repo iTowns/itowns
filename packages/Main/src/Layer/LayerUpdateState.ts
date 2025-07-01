@@ -4,16 +4,28 @@ const UPDATE_STATE = {
     ERROR: 2,
     DEFINITIVE_ERROR: 3,
     FINISHED: 4,
-};
+} as const;
+
+// TODO: we should be able to configure this per layer
 const PAUSE_BETWEEN_ERRORS = [1.0, 3.0, 7.0, 60.0];
 
+export type UpdateState = (typeof UPDATE_STATE)[keyof typeof UPDATE_STATE];
+
 /**
- * LayerUpdateState is the update state of a layer, for a given object (e.g tile).
- * It stores information to allow smart update decisions, and especially network
- * error handling.
- * @constructor
+ * LayerUpdateState is the update state of a layer, for a given object
+ * (e.g. tile).
+ * It stores information to allow smart update decisions, and especially
+ * network error handling.
  */
 class LayerUpdateState {
+    errorCount: number;
+    failureParams: {
+        lowestLevelError: number;
+    };
+
+    private state: UpdateState;
+    private lastErrorTimestamp: number;
+
     constructor() {
         this.state = UPDATE_STATE.IDLE;
         this.lastErrorTimestamp = 0;
@@ -75,14 +87,20 @@ class LayerUpdateState {
         this.state = UPDATE_STATE.FINISHED;
     }
 
-    noData(failureParams) {
+    noData(failureParams: { targetLevel: number }) {
         this.state = UPDATE_STATE.IDLE;
-        this.failureParams.lowestLevelError = Math.min(failureParams.targetLevel, this.failureParams.lowestLevelError);
+        this.failureParams.lowestLevelError = Math.min(
+            failureParams.targetLevel,
+            this.failureParams.lowestLevelError,
+        );
     }
 
-    failure(timestamp, definitive, failureParams) {
+    failure(timestamp: number, definitive: boolean, failureParams: { targetLevel: number }) {
         if (failureParams && failureParams.targetLevel != undefined) {
-            this.failureParams.lowestLevelError = Math.min(failureParams.targetLevel, this.failureParams.lowestLevelError);
+            this.failureParams.lowestLevelError = Math.min(
+                failureParams.targetLevel,
+                this.failureParams.lowestLevelError,
+            );
         }
         this.lastErrorTimestamp = timestamp;
         this.state = definitive ? UPDATE_STATE.DEFINITIVE_ERROR : UPDATE_STATE.ERROR;
