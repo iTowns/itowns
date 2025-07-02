@@ -6,6 +6,7 @@ import View from 'Core/View';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import Potree2Node from 'Core/Potree2Node';
 import { Vector3 } from 'three';
+import FlatQueue from 'flatqueue';
 import Renderer from './bootstrap';
 
 describe('Potree2', function () {
@@ -13,7 +14,7 @@ describe('Potree2', function () {
     let viewer;
     let potreeLayer;
     let context;
-    let elt;
+    let elemToUpdate;
 
     before(function () {
         renderer = new Renderer();
@@ -50,16 +51,18 @@ describe('Potree2', function () {
     });
 
     it('preupdate potree2 layer', function () {
-        elt = potreeLayer.preUpdate(context, new Set([potreeLayer]));
-        assert.equal(elt.length, 1);
+        elemToUpdate = potreeLayer.preUpdate(context, new Set([potreeLayer]));
+        assert.equal(elemToUpdate.length, 1);
     });
 
     it('update potree2 layer', function (done) {
+        const queue = new FlatQueue();
         assert.equal(potreeLayer.group.children.length, 0);
-        potreeLayer.update(context, potreeLayer, elt[0]);
-        elt[0].promise
+        queue.push(elemToUpdate[0]);
+        potreeLayer.update(context, potreeLayer, queue, 0);
+        elemToUpdate[0].promise
             .then(() => {
-                assert.equal(potreeLayer.group.children.length, 1);
+                assert.equal(elemToUpdate[0].promise, null);
                 done();
             }).catch(done);
     }).timeout(5000);

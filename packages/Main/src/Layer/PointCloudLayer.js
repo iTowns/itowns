@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
 import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
+import FlatQueue from 'flatqueue';
 
 const point = new THREE.Vector3();
 const bboxMesh = new THREE.Mesh();
@@ -77,7 +78,7 @@ function markForDeletion(elt) {
     if (!elt.notVisibleSince) {
         elt.notVisibleSince = Date.now();
         // Set .sse to an invalid value
-        elt.sse = -1;
+        elt.invSse = 1;
     }
     for (const child of elt.children) {
         markForDeletion(child);
@@ -169,6 +170,7 @@ class PointCloudLayer extends GeometryLayer {
         } = config;
 
         super(id, object3d, geometryLayerConfig);
+        this.oldQueues = [{}];
 
         /**
          * @type {boolean}
@@ -283,79 +285,161 @@ class PointCloudLayer extends GeometryLayer {
         return [this.root];
     }
 
-    update(context, layer, elt) {
-        elt.visible = false;
+    updateAll(context, srcs) {
+        this.oldQueues.at(-1).active = false;
+        const queue = new FlatQueue();
+        queue.active = true;
+        const elementsToUpdate = this.preUpdate(context, srcs);
 
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
+        // List element to update and add them to the queue
+        this.updateElements(context, elementsToUpdate, queue);
+
+        const numPoint = 0;
+        // we update the node following the invSse
+        this.update(context, this, queue, numPoint);
+
+        // `postUpdate` is called when this geom layer update process is finished
+        this.postUpdate();
+        this.oldQueues.push(queue);
+    }
+
+    // add elements to update to queue
+    updateElements(context, elements, queue) {
+        if (!elements) {
             return;
         }
+        for (const element of elements) {
+            element.visible = false;
 
-        // pick the best bounding box
-        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return;
-        }
+            if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < element.depth) {
+                markForDeletion(element);
+                continue;
+            }
 
-        elt.notVisibleSince = undefined;
-        point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
-        point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
+            // pick the best bounding box
+            const bbox = (element.tightbbox ? element.tightbbox : element.bbox);
+            element.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
+            if (!element.visible) {
+                markForDeletion(element);
+                continue;
+            }
 
-        // only load geometry if this elements has points
-        if (elt.numPoints !== 0) {
-            if (elt.obj) {
-                elt.obj.visible = true;
+            element.notVisibleSince = undefined;
+            point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
+            point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
 
-                if (__DEBUG__) {
-                    if (this.bboxes.visible) {
-                        if (!elt.obj.boxHelper) {
-                            initBoundingBox(elt, layer);
-                        }
-                        elt.obj.boxHelper.visible = true;
-                        elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                        elt.obj.boxHelper.material.color.g = elt.sse;
+            const distance = bbox.distanceToPoint(point);
+            element.invSse = -1 * computeScreenSpaceError(context, this.pointSize, this.spacing, element, distance) / this.sseThreshold;
+
+            // add element to the queue
+            queue.push(element, element.invSse);
+
+            // add element children to queue if needed
+            if (element.children && element.children.length) {
+                if (element.invSse <= -1) {
+                    this.updateElements(context, element.children, queue);
+                } else {
+                    for (const child of element.children) {
+                        markForDeletion(child);
                     }
                 }
-            } else if (!elt.promise) {
-                const distance = Math.max(0.001, bbox.distanceToPoint(point));
-                // Increase priority of nearest node
-                const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / distance;
-                elt.promise = context.scheduler.execute({
-                    layer,
-                    requester: elt,
-                    view: context.view,
-                    priority,
-                    redraw: true,
-                    earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
-                }).then((pts) => {
-                    elt.obj = pts;
-                    // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
-                    elt.tightbbox = pts.tightbbox;
-
-                    // make sure to add it here, otherwise it might never
-                    // be added nor cleaned
-                    this.group.add(elt.obj);
-                    elt.obj.updateMatrixWorld(true);
-                }).catch((err) => {
-                    if (!err.isCancelledCommandException) {
-                        return err;
-                    }
-                }).finally(() => {
-                    elt.promise = null;
-                });
             }
-        }
 
-        if (elt.children && elt.children.length) {
-            const distance = bbox.distanceToPoint(point);
-            elt.sse = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / this.sseThreshold;
-            if (elt.sse >= 1) {
-                return elt.children;
-            } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
+            // const sub = this.getObjectToUpdateForAttachedLayers(element);
+
+            // if (sub) {
+            //     if (sub.element) {
+            //         if (__DEBUG__) {
+            //             if (!(sub.element.isObject3D)) {
+            //                 throw new Error(`
+            //                     Invalid object for attached layer to update.
+            //                     Must be a THREE.Object and have a THREE.Material`);
+            //             }
+            //         }
+            //         // update attached layers
+            //         for (const attachedLayer of this.attachedLayers) {
+            //             if (attachedLayer.ready) {
+            //                 attachedLayer.update(context, attachedLayer, sub.element, sub.parent);
+            //                 attachedLayer.cache.flush();
+            //             }
+            //         }
+            //     } else if (sub.elements) {
+            //         for (let i = 0; i < sub.elements.length; i++) {
+            //             if (!(sub.elements[i].isObject3D)) {
+            //                 throw new Error(`
+            //                     Invalid object for attached layer to update.
+            //                     Must be a THREE.Object and have a THREE.Material`);
+            //             }
+            //             // update attached layers
+            //             for (const attachedLayer of this.attachedLayers) {
+            //                 if (attachedLayer.ready) {
+            //                     attachedLayer.update(context, attachedLayer, sub.elements[i], sub.parent);
+            //                     attachedLayer.cache.flush();
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            // this.updateElements(context, newElementsToUpdate, priorityQueue, queue);
+        }
+    }
+
+    update(context, layer, queue, numPoint) {
+        while (queue.length > 0) {
+            const elt = queue.pop();
+
+            numPoint += elt.numPoints;
+
+            // pick the best bounding box
+            const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
+
+            elt.notVisibleSince = undefined;
+            point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
+            point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
+
+            // only load geometry if this elements has points
+            if (elt.numPoints !== 0 && numPoint < this.pointBudget) {
+                if (elt.obj) {
+                    elt.obj.visible = true;
+
+                    if (__DEBUG__) {
+                        if (this.bboxes.visible) {
+                            if (!elt.obj.boxHelper) {
+                                initBoundingBox(elt, layer);
+                            }
+                            elt.obj.boxHelper.visible = true;
+                            elt.obj.boxHelper.material.color.r = 1 - elt.invSse;
+                            elt.obj.boxHelper.material.color.g = elt.invSse;
+                        }
+                    }
+                } else if (!elt.promise) {
+                    const distance = Math.max(0.001, bbox.distanceToPoint(point));
+                    // Increase priority of nearest node
+                    const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing, elt, distance) / distance;
+                    elt.promise = context.scheduler.execute({
+                        layer,
+                        requester: elt,
+                        view: context.view,
+                        priority,
+                        redraw: true,
+                        earlyDropFunction: cmd => !cmd.requester.visible || !this.visible  || (!queue.active && !elt.visible),
+                    }).then((pts) => {
+                        elt.obj = pts;
+
+                        // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
+                        elt.tightbbox = pts.tightbbox;
+
+                        // make sure to add it here, otherwise it might never
+                        // be added nor cleaned
+                        this.group.add(elt.obj);
+                        elt.obj.updateMatrixWorld(true);
+                    }).catch((err) => {
+                        if (!err.isCancelledCommandException) {
+                            return err;
+                        }
+                    }).finally(() => {
+                        elt.promise = null;
+                    });
                 }
             }
         }
@@ -393,7 +477,7 @@ class PointCloudLayer extends GeometryLayer {
                 // This format doesn't require points to be evenly distributed, so
                 // we're going to sort the nodes by "importance" (= on screen size)
                 // and display only the first N nodes
-                this.group.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
+                this.group.children.sort((p1, p2) => p1.userData.node.invSse - p2.userData.node.invSse);
 
                 let limitHit = false;
                 this.displayedCount = 0;
