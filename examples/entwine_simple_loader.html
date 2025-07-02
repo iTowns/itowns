@@ -75,9 +75,9 @@
 
             function onLayerReady() {
                 var size = new itowns.THREE.Vector3();
-                eptLayer.root._bbox.getSize(size);
+                eptLayer.root.voxelOBB.box3D.getSize(size);
                 
-                var lookAt = eptLayer.root._position;
+                var lookAt = eptLayer.root.clampOBB.position;
                 lookAt.z = (eptLayer.zmax + eptLayer.zmin) * 0.5;
 
                 view.camera3D.far = 2.0 * size.length();
