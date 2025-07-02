@@ -319,7 +319,7 @@ class PointCloudLayer extends GeometryLayer {
         let rotation = new THREE.Quaternion();
         if (isGeocentric) {
             const coordOrigin = new Coordinates(this.crs, origin);
-            rotation = OrientationUtils.quaternionFromCRSToCRS(this.crs, 'EPSG:4326')(coordOrigin);
+            rotation = OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(coordOrigin);
         }
 
         // project corners in local referentiel
