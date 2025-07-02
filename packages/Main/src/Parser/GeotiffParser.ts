@@ -193,6 +193,12 @@ class GeotiffNode {
         this.samplesPerPixel = image.getSamplesPerPixel();
     }
 
+    private get reader() {
+        return this.samplesPerPixel === 3
+            ? this.image.readRGB.bind(this.image)
+            : this.image.readRasters.bind(this.image);
+    }
+
     /**
      * Extract a portion of the image into a Three.js Texture. The portion is
      * delimited by a window. This window is a set of four boundaries (Xmin,
@@ -211,16 +217,17 @@ class GeotiffNode {
             imageWindow,
             textureDimensions,
             defaultAlpha = 255,
-            resampleMethod,
+            resampleMethod = 'nearest',
             pool,
         } = options;
 
-        let typedArray = await this.readImage({
+        let typedArray = <TypedArrayWithDimensions> await this.reader({
             window: imageWindow,
-            outputWidth: textureDimensions.x,
-            outputHeight: textureDimensions.y,
-            resampleMethod,
             pool,
+            width: textureDimensions.x,
+            height: textureDimensions.y,
+            resampleMethod,
+            interleave: true,
         });
 
         // If TypedArray is an RGB buffer, convert it to RGBA.
@@ -272,54 +279,6 @@ class GeotiffNode {
         if ((yMax - yMin) === 0) { yMax += 1; }
 
         return [xMin, yMin, xMax, yMax];
-    }
-
-    private get reader() {
-        return this.samplesPerPixel === 3
-            ? this.image.readRGB.bind(this.image)
-            : this.image.readRasters.bind(this.image);
-    }
-
-    /**
-     * Wrapper arround GeoTIFF reader to retrieve actual image data.
-     */
-    private async readImage(
-        options: {
-            window?: Array<number>,
-            outputWidth: number,
-            outputHeight: number,
-            resampleMethod?: string,
-            pool?: Pool,
-        },
-    ): Promise<TypedArrayWithDimensions> {
-        const {
-            window,
-            outputWidth,
-            outputHeight,
-            resampleMethod = 'nearest',
-            pool,
-        } = options;
-
-        try {
-            return <TypedArrayWithDimensions> await this.reader({
-                window,
-                pool,
-                width: outputWidth,
-                height: outputHeight,
-                resampleMethod,
-                interleave: true,
-            });
-        // TODO: Do we still need to catch this error?
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            if (error.toString() === 'AggregateError: Request failed') {
-                await new Promise((resolve) => {
-                    setTimeout(resolve, 100);
-                });
-                return this.readImage(options);
-            }
-            throw error;
-        }
     }
 }
 
