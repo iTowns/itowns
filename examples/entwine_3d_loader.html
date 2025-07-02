@@ -62,11 +62,11 @@
 
             var eptLayer;
             function onLayerReady() {
-                var lookAt = eptLayer.root._position;
+                var lookAt = eptLayer.root.clampOBB.position;
                 var coordLookAt = new itowns.Coordinates(view.referenceCrs).setFromVector3(lookAt);
 
                 var size = new itowns.THREE.Vector3();
-                eptLayer.root._bbox.getSize(size);
+                eptLayer.root.voxelOBB.box3D.getSize(size);
 
                 view.controls.lookAtCoordinate({
                     coord: coordLookAt,
