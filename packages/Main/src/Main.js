@@ -110,6 +110,7 @@ export { default as GDFParser } from 'Parser/GDFParser';
 export { default as GTXParser } from 'Parser/GTXParser';
 export { default as B3dmParser } from 'Parser/B3dmParser';
 export { default as iGLTFLoader } from 'Parser/iGLTFLoader';
+export { default as GeotiffParser } from 'Parser/GeotiffParser';
 
 // 3D Tiles classes and extensions
 // Exported to allow one to implement its own 3D Tiles extension which needs to

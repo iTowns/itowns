@@ -96,6 +96,7 @@
                 "B3dmParser",
                 "ShapefileParser",
                 "LASParser",
+                "GeotiffParser",
                 "GTXParser",
                 "GDFParser",
                 "ISGParser"
