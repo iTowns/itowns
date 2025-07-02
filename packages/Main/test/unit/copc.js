@@ -34,7 +34,7 @@ describe('COPC', function () {
                     .then(() => {
                         assert.equal(layer.zmin, source.header.min[2]);
                         assert.ok(layer.root.isCopcNode);
-                        assert.ok(layer.root._position.isVector3);
+                        assert.ok(layer.root.children.length > 0);
                         done();
                     }).catch(done);
             });

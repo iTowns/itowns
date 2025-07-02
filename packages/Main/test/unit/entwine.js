@@ -117,7 +117,7 @@ describe('Entwine Point Tile', function () {
 
         it('tries to update on the root and succeeds', function (done) {
             const lookAt = new Vector3();
-            const coord = new Coordinates(view.referenceCrs).setFromVector3(layer.root.bbox.getCenter(lookAt));
+            const coord = new Coordinates(view.referenceCrs).setFromVector3(layer.root.voxelOBB.box3D.getCenter(lookAt));
             view.controls.lookAtCoordinate({
                 coord,
                 range: 250,
@@ -141,7 +141,7 @@ describe('Entwine Point Tile', function () {
         before(function () {
             const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
             root = new EntwinePointTileNode(0, 0, 0, 0, layer, 4000);
-            root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+            root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
             root.add(new EntwinePointTileNode(1, 0, 0, 0, layer, 3000));
             root.add(new EntwinePointTileNode(1, 0, 0, 1, layer, 3000));
