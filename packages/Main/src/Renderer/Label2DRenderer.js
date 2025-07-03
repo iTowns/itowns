@@ -87,7 +87,7 @@ const worldPosition = new THREE.Vector3();
 /**
  * This renderer is inspired by the
  * [`THREE.CSS2DRenderer`](https://threejs.org/docs/#examples/en/renderers/CSS2DRenderer).
- * It is instanciated in `c3DEngine`, as another renderer to handles Labels.
+ * It is instantiated in `c3DEngine`, as another renderer to handles Labels.
  */
 class Label2DRenderer {
     constructor() {

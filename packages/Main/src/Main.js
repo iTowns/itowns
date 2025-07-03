@@ -72,6 +72,7 @@ export { default as PlanarLayer } from 'Core/Prefab/Planar/PlanarLayer';
 export { default as LabelLayer } from 'Layer/LabelLayer';
 export { default as EntwinePointTileLayer } from 'Layer/EntwinePointTileLayer';
 export { default as CopcLayer } from 'Layer/CopcLayer';
+export { default as VpcLayer } from 'Layer/VpcLayer';
 export { default as GeoidLayer } from 'Layer/GeoidLayer';
 
 // Sources provided by default in iTowns
@@ -96,6 +97,7 @@ export { default as OGC3DTilesGoogleSource } from 'Source/OGC3DTilesGoogleSource
 export { default as EntwinePointTileSource } from 'Source/EntwinePointTileSource';
 export { default as CopcSource } from 'Source/CopcSource';
 export { default as CogSource } from 'Source/CogSource';
+export { default as VpcSource } from 'Source/VpcSource';
 
 // Parsers provided by default in iTowns
 // Custom parser can be implemented as wanted, as long as the main function

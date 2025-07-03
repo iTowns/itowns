@@ -119,7 +119,7 @@ class Potree2Layer extends PointCloudLayer {
             this.root = root;
 
             this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', boundingBox);
-            return this.root.loadOctree().then(resolve);
+            return root.loadOctree().then(resolve);
         });
     }
 }
