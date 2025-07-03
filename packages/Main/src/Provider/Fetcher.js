@@ -1,4 +1,5 @@
 import { TextureLoader, DataTexture, RedFormat, FloatType } from 'three';
+import * as GeoTIFF from 'geotiff';
 
 const TEXTURE_TILE_DIM = 256;
 const TEXTURE_TILE_SIZE = TEXTURE_TILE_DIM * TEXTURE_TILE_DIM;
@@ -142,6 +143,10 @@ export default {
             texture.needsUpdate = true;
             return texture;
         });
+    },
+
+    geotiff(url) {
+        return GeoTIFF.fromUrl(url, { allowFullFile: true }).then(geotiff => geotiff.getImage());
     },
 
     /**
