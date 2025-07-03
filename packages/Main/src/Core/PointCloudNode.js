@@ -24,7 +24,11 @@ class PointCloudNode extends THREE.EventDispatcher {
     }
 
     get pointSpacing() {
-        return this.source.spacing / 2 ** this.depth;
+        let spacing = this.source.spacing;
+        if (this.source.spacing.length > 0) {
+            spacing = this.source.spacing[this.sId];
+        }
+        return spacing / 2 ** this.depth;
     }
 
     get id() {

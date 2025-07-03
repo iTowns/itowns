@@ -48,8 +48,9 @@ class EntwinePointTileNode extends PointCloudNode {
      * @param {number} [numPoints=0] - The number of points in this node. If
      * `-1`, it means that the octree hierarchy associated to this node needs to
      * be loaded.
+     * @param {number} [sId] - id for multisource
      */
-    constructor(depth, x, y, z, source, numPoints = 0) {
+    constructor(depth, x, y, z, source, numPoints = 0, sId = -1) {
         super(numPoints, source);
         this.isEntwinePointTileNode = true;
 
@@ -57,10 +58,18 @@ class EntwinePointTileNode extends PointCloudNode {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.sId = sId;
 
         this.voxelKey = buildVoxelKey(depth, x, y, z);
 
-        this.url = `${this.source.url}/ept-data/${this.voxelKey}.${this.source.extension}`;
+        let sourceUrl = this.source.url;
+        let sourceExtension = this.source.extension;
+        if (this.source.urls) {
+            sourceUrl = this.source.sources[this.sId].url;
+            sourceExtension = this.source.sources[this.sId].extension;
+        }
+
+        this.url = `${sourceUrl}/ept-data/${this.voxelKey}.${sourceExtension}`;
     }
 
     get octreeIsLoaded() {
@@ -72,7 +81,11 @@ class EntwinePointTileNode extends PointCloudNode {
     }
 
     loadOctree() {
-        const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
+        let sourceUrl = this.source.url;
+        if (this.source.urls) {
+            sourceUrl = this.source.sources[this.sId].url;
+        }
+        const hierarchyUrl = `${sourceUrl}/ept-hierarchy/${this.voxelKey}.json`;
         return Fetcher.json(hierarchyUrl, this.source.networkOptions).then((hierarchy) => {
             this.numPoints = hierarchy[this.voxelKey];
 
@@ -95,7 +108,24 @@ class EntwinePointTileNode extends PointCloudNode {
                 node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
                 node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
             }
+            return this;
         });
+    }
+
+    load() {
+        let sourceFetcher = this.source.fetcher;
+        let sourceParse = this.source.parse;
+        let layerSource = this.source;
+        if (this.source.urls) {
+            sourceFetcher = this.source.sources[this.sId].fetcher;
+            sourceParse = this.source.sources[this.sId].parse;
+            layerSource = this.source.sources[this.sId];
+        }
+
+        return sourceFetcher(this.url, this.source.networkOptions)
+            .then(file => sourceParse(file, {
+                in: layerSource,
+            }));
     }
 
     findAndCreateChild(depth, x, y, z, hierarchy, stack) {
@@ -103,7 +133,7 @@ class EntwinePointTileNode extends PointCloudNode {
         const numPoints = hierarchy[voxelKey];
 
         if (typeof numPoints == 'number') {
-            const child = new EntwinePointTileNode(depth, x, y, z, this.source, numPoints);
+            const child = new EntwinePointTileNode(depth, x, y, z, this.source, numPoints, this.sId);
             this.add(child);
             stack.push(child);
         }
