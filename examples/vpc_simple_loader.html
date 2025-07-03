@@ -1,0 +1,88 @@
+<html>
+    <head>
+        <title>Itowns - Vpc simple loader</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <style type="text/css">
+            #description {
+                z-index: 2;
+                left: 10px;
+            }
+        </style>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script>
+    </head>
+    <body>
+        <div id="viewerDiv">
+        </div>
+
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_0=46 +lon_0=3 +lat_1=45.25 +lat_2=46.75 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
+
+            var debugGui = new lil.GUI();
+            var viewerDiv = document.getElementById('viewerDiv');
+            viewerDiv.style.display = 'block';
+            var view = new itowns.View('EPSG:3946', viewerDiv);
+            view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
+
+            const controls = new itowns.PlanarControls(view);
+
+            var vpcLayer, vpcSource;
+
+            function onLayerReady() {
+                var lookAt = new itowns.THREE.Vector3();
+                var size = new itowns.THREE.Vector3();
+
+                const rootBbox = vpcLayer.roots[0].bbox;
+                rootBbox.getSize(size);
+                rootBbox.getCenter(lookAt);
+
+                view.camera3D.far = 10.0 * size.length();
+
+                controls.groundLevel = rootBbox.min.z;
+                var position = rootBbox.min.clone().add(
+                    size.multiply({ x: 0, y: 0, z: size.x / size.z })
+                );
+
+                view.camera3D.position.copy(position);
+                view.camera3D.lookAt(lookAt);
+                view.camera3D.updateProjectionMatrix();
+
+                view.notifyChange(view.camera3D);
+            }
+
+            // VPC copc
+            // const url = 'https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/amiens.vpc';
+            // const url = 'https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/rouen.vpc';
+
+            // VPC ept
+            const url = 'https://data.geopf.fr/chunk/telechargement/download/lidarhd_fxx_ept/vpc/index.vpc';
+
+            const options = {};
+            vpcSource = new itowns.VpcSource({ url });
+
+            const config = {
+                source: vpcSource,
+                crs: view.referenceCrs,
+                    sseThreshold: 2,
+                    pointBudget: 3000000,
+            }
+            vpcLayer = new itowns.VpcLayer('VPC', config);
+
+            view.addLayer(vpcLayer).then(onLayerReady);
+
+            vpcLayer.whenReady
+                .then(() => {
+                    debug.PointCloudDebug.initTools(view, vpcLayer, debugGui);
+                });
+
+        </script>
+    </body>
+</html>
