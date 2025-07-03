@@ -159,7 +159,7 @@ GuiTools.prototype.colorLayerFolder = function colorLayerFolder(nameLayer, value
 // Recursive function that creates an HTML List from a javascript
 // object
 // eslint-disable-next-line no-unused-vars
-function createHTMLListFromObject(jsObject) {
+export function createHTMLListFromObject(jsObject) {
     const list = document.createElement('ul');
     // Change the padding (top: 0, right:0, bottom:0 and left:1.5)
     list.style.padding = '0 0 0 1.5rem';
