@@ -1,188 +1,222 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Itowns Examples</title>
 
-    <link type="text/css" rel="stylesheet" href="css/example.css">
+    <!-- Code Mirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/codemirror.min.css"
+        integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link cype="text/css" rel="stylesheet" href="css/example.css" />
 </head>
 
 <body data-spy="scroll" data-target="nav" onload="onLoad()">
+    <!-- Code Mirror Main -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/codemirror.min.js"
+        integrity="sha512-tXHFLFVaasTvIEFYN8K6UlGvb6Sh1ealAA8YxjpezWMio6u0vU9KfGFzKVth49xh2affuBfmLGY8t2G5pZH+zg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Code Mirror JavaScript support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/mode/javascript/javascript.min.js"
+        integrity="sha512-Cbz+kvn+l5pi5HfXsEB/FYgZVKjGIhOgYNBwj4W2IHP2y8r3AdyDCQRnEUqIQ+6aJjygKPTyaNT2eIihaykJlw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Code Mirror XML support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/mode/xml/xml.min.js"
+        integrity="sha512-LarNmzVokUmcA7aUDtqZ6oTS+YXmUKzpGdm8DxC46A6AHu+PQiYCUlwEGWidjVYMo/QXZMFMIadZtrkfApYp/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Code Mirror CSS support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/mode/css/css.min.js"
+        integrity="sha512-rQImvJlBa8MV1Tl1SXR5zD2bWfmgCEIzTieFegGg89AAt7j/NBEe50M5CqYQJnRwtkjKMmuYgHBqtD1Ubbk5ww=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Code Mirror HTML Mixed support-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/mode/htmlmixed/htmlmixed.min.js"
+        integrity="sha512-HN6cn6mIWeFJFwRN9yetDAMSh+AK9myHF1X9GlSlKmThaat65342Yw8wL7ITuaJnPioG0SYG09gy0qd5+s777w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <div id="main">
         <iframe id="content" frameborder="0" height="100%"></iframe>
-        <button id="view-source" class="text" title="View source"></button>
     </div>
 
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.4.0/codemirror.js"></script> -->
-    <div class="editor-panel">
-        <nav id="editor-header">
-            <a href="/">
-                <img src="images/itowns_logo.png" width="245px" id="itowns-logo">
-            </a>
-            <div class="switch">
-                <label for="version-switch">Latest</label>
-                <input id="version-switch" type="checkbox" name="version-switch">
-                <span class="slider"></span>
+    <div id="editor-panel">
+        <div id="editor-header">
+            <div>
+                <a href="/">
+                    <picture>
+                        <source media="(width <= 1700px)" srcset="./images/itowns_logo.svg" width="245" />
+                        <source media="(width > 1700px)" srcset="images/itowns_logo.png" width="245" />
+                        <!-- Fallback Image -->
+                        <img src="images/itowns_logo.png" width="245px" id="itowns-logo" />
+                    </picture>
+                </a>
+                <div class="switch">
+                    <label for="version-switch">Latest</label>
+                    <input id="version-switch" type="checkbox" name="version-switch" />
+                    <span class="slider"></span>
+                </div>
             </div>
-            <!-- <div id="itowns-info"> -->
-            <!-- </div> -->
-            <!-- <div id="settings"> -->
-            <!-- </div> -->
-        </nav>
+            <hr />
+            <div>
+                <select id="example-selector"></select>
+                <div>
+                    <button type="button" id="run-button" class="header-button" />
+                    <button type="button" id="share-button" class="header-button" />
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div style="display: flex; padding: 1em; height: 100%">
+            <textarea id="code-editor"></textarea>
+        </div>
     </div>
 
     <script type="text/javascript">
+        const iframe = document.getElementById("content");
+        const exampleSelector = document.getElementById("example-selector");
+        const codeEditorTextArea = document.getElementById("code-editor");
+        const codeEditor = CodeMirror.fromTextArea(codeEditorTextArea, {
+            lineNumbers: true,
+            mode: "htmlmixed",
+        });
+
+        const exampleCache = {};
+
         var baseURI = document.baseURI;
-
-        if (baseURI.includes('/itowns/dev/')) {
-            document.getElementById('itowns-logo').setAttribute('src', 'images/itowns_logo_next.png');
+        if (baseURI.includes("/itowns/dev/")) {
+            document
+                .getElementById("itowns-logo")
+                .setAttribute("src", "images/itowns_logo_next.png");
+            document
+                .getElementById("version-switch")
+                .setAttribute("checked", "");
         }
 
-        function bindIframe() {
-            var navLinks = document.getElementsByClassName('nav-link');
-            for (var i = 0; i < navLinks.length; i++) {
-                navLinks[i].addEventListener('click', function (e) {
-                    e.preventDefault();
-                    var target = e.target.localName === 'b' ? e.target.parentNode : e.target;
-                    var url = target.href.replace('#', '') + '.html';
-                    var slug = target.hash;
-                    goTo(url, slug);
+        function runCode() {
+            iframe.srcdoc = codeEditor.getValue();
+        }
+        document.getElementById("run-button").onclick = runCode;
+        codeEditor.setOption("extraKeys", {
+            "Ctrl-Enter": runCode,
+        });
+
+        function shareCode() {
+            const code = btoa(codeEditor.getValue());
+            const url = new URL(document.location.toString());
+            url.hash = "";
+            url.search = "?code=" + encodeURIComponent(code);
+            navigator.clipboard.writeText(url);
+        }
+        document.getElementById("share-button").onclick = shareCode;
+
+        /** @param {string} slug - An example's slug */
+        function cacheExample(slug) {
+            console.info(
+                `Caching example '${slug.replace("'", "&quot;")}'`,
+            );
+            const src = `https://raw.githubusercontent.com/itowns/itowns/refs/heads/master/examples/${slug}.html`;
+            return fetch(src)
+                .then((response) => response.text())
+                .then((text) => {
+                    exampleCache[slug] = text;
+                    return text;
                 });
-            }
-
-            // load page if setted
-            if (document.location.hash) {
-                var url = document.location.href.replace('#', '') + '.html';
-                goTo(url);
-            } else {
-                goTo('view_3d_map.html');
-            }
         }
 
-        function goTo(url, slug) {
-            if (slug) window.location.hash = slug;
-            var iframe = document.getElementById('content');
-            iframe.src = url.replace('index.html', '');
-            iframe.focus();
-
-            let viewSrc = `https://github.com/iTowns/itowns/blob/master/examples/${window.location.hash.substr(1) || 'view_3d_map'
-                }.html`;
-            document.getElementById('view-source').onclick = () => {window.open(viewSrc);};
+        /** @param {string} slug - An example's slug */
+        async function loadExample(slug) {
+            console.info(
+                `Loading example '${slug.replace("'", "&quot;")}'`,
+            );
+            const example =
+                exampleCache[slug] ??
+                (await (() => {
+                    codeEditor.setValue("Loading...");
+                    return cacheExample(slug);
+                })());
+            codeEditor.setValue(example);
+            window.location.hash = slug;
+            window.location.search = "";
+            runCode();
         }
 
         /** @param {Record<string, Record<string, string>>} list - List of examples */
         function initNavigation(list) {
-            const nav = document.getElementById('editor-header');
-
-            const versionSwitch = document.getElementById('version-switch');
-            if (!baseURI.includes('/itowns/')) {
-                versionSwitch.setAttribute('disabled', '');
+            const nav = document.getElementById("editor-header");
+            const versionSwitch = document.getElementById("version-switch");
+            if (!baseURI.includes("/itowns/")) {
+                versionSwitch.setAttribute("disabled", "");
             } else {
                 versionSwitch.onchange = (event) => {
-                    console.log('toggled');
-                    if (baseURI.includes("/itowns/dev/")) {
-                        window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
-                    } else {
-                        window.location.href = document.location.href.replace('/itowns/', '/itowns/dev/');
-                    }
-                }
-                if (baseURI.includes('/itowns/dev/')) {
-                    versionSwitch.setAttribute('checked', '');
+                    console.log("toggled");
+                    window.location.href = document.location.href.replace();
+                    const isDev = baseURI.includes("/itowns/dev/");
+                    const options = ["/itowns/", "/itowns/dev/"];
+                    window.location.href = document.location.href.replace(
+                        options[isDev],
+                        options[!isDev],
+                    );
+                };
+                if (baseURI.includes("/itowns/dev/")) {
+                    versionSwitch.setAttribute("checked", "");
                 }
             }
-            // Add version switch :
-            // const versionSwitchText = document.createElement('p');
-            // versionSwitchText.innerHTML = `iTowns examples of the ${(baseURI.includes("/itowns/dev/") && "next version (current master branch)")
-            //     || "latest released version"}.`;
-            // const versionSwitchButton = document.createElement('button');
-            // versionSwitchButton.classList.add('switch-button');
-            // versionSwitchButton.innerHTML = `Switch to ${(baseURI.includes("/itowns/dev/") && "latest release") || "next version"
-            //     }`;
-            // versionSwitchButton.onclick = () => {
-            //     if (baseURI.includes("/itowns/dev/")) {
-            //         window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
-            //     } else {
-            //         window.location.href = document.location.href.replace('/itowns/', '/itowns/dev/');
-            //     }
-            // };
-            //
-            // const versionSwitch = document.createElement('div');
-            // versionSwitch.id = "version-switch";
-            // versionSwitch.appendChild(versionSwitchText);
-            // versionSwitch.appendChild(versionSwitchButton);
-            // const versionSwitch = document.createElement('label');
-            // versionSwitch.className = 'switch';
-            //
-            // const versionSwitchCheckbox = document.createElement('input');
-            // versionSwitchCheckbox.setAttribute('type', 'checkbox');
-            // versionSwitch.appendChild(versionSwitchCheckbox);
-            //
-            // const versionSwitchSlider = document.createElement('span');
-            // versionSwitchSlider.className = 'slider';
-            // versionSwitch.appendChild(versionSwitchSlider);
-            //
-            // nav.appendChild(versionSwitch);
 
             // Dropdown example selector
-            const examples = Object.entries(list).flatMap(([sectionName, section]) => {
-                return [
-                    `<optgroup label="${sectionName}"`,
-                    ...Object.entries(section).map(([slug, name]) => `<option value=${slug}>${name}</option>`),
-                    '</optgroup>',
-                ];
-            });
+            const examples = [
+                "<option hidden value='custom'>Custom</option>",
+                ...Object.entries(list).flatMap(
+                    ([sectionName, section]) => {
+                        return [
+                            `<optgroup label="${sectionName}">`,
+                            ...Object.entries(section).map(
+                                ([slug, name]) =>
+                                    `<option value=${slug}>${name}</option>`,
+                            ),
+                            "</optgroup>",
+                        ];
+                    },
+                ),
+            ];
 
-            const exampleSelector = document.createElement('select');
-            exampleSelector.setAttribute('name', 'example');
-            exampleSelector.insertAdjacentHTML('afterbegin', examples.join('\n'));
-            exampleSelector.onchange = (event) => {
-                console.log('changed');
-                // TODO: Change this to a change of the edit area
-                const oldUrl = window.location.href;
-                const navIndex = oldUrl.lastIndexOf('#');
-                const newUrl = oldUrl.slice(0, navIndex) + `#${event.target.value}`;
-                window.open(newUrl, '_self');
-                if (navIndex >= 0) {
-                    window.location.reload()
-                }
-            }
+            const exampleSelector =
+                document.getElementById("example-selector");
+            exampleSelector.insertAdjacentHTML(
+                "afterbegin",
+                examples.join("\n"),
+            );
+            exampleSelector.onchange = (event) =>
+                loadExample(event.target.value);
 
-            // Set displayed default to current example
-            // TODO: Change this once the editor is in
-            const url = window.location.href;
-            const currentExample = url.slice(url.lastIndexOf('#') + 1);
-            if (currentExample) {
-                const children = Array.from(exampleSelector.children).flatMap(optgroup => Array.from(optgroup.children));
-                const selected = children.find(child => child.value == currentExample);
-                if (selected) {
-                    selected.setAttribute('selected', '');
-                }
-            }
-
-            nav.appendChild(exampleSelector)
-
-            // Add horizontal divider :
-            const titleDivider = document.createElement('hr');
-            titleDivider.classList.add('title-divider');
-            nav.appendChild(titleDivider);
-
-            // const textArea = document.createElement('textarea');
-            // // nav.appendChild(textArea);
-            // const navParent = document.getElementsByTagName('nav');
-            // navParent.appendChild(textArea);
-            // const editor = CodeMirror.fromTextArea(textArea, {lineNumbers: true});
+            const hash = window.location.hash;
+            const currentExample = hash.slice(1) || "custom";
+            exampleSelector.value = currentExample;
         }
 
         function onLoad() {
             // Get the configuration
-            fetch('./config.json').then(function _(response) {
-                return response.json();
-            }).then(function _(config) {
-                initNavigation(config);
-                bindIframe();
-            });
+            fetch("./config.json")
+                .then(function _(response) {
+                    return response.json();
+                })
+                .then(function _(config) {
+                    initNavigation(config);
+
+                    const searchParams = new URL(
+                        document.location.toString(),
+                    ).searchParams;
+                    const code = searchParams.get("code");
+
+                    if (!code) {
+                        loadExample(
+                            window.location.hash.replace("#", "") ||
+                            "view_3d_map",
+                        );
+                    } else {
+                        codeEditor.setValue(atob(decodeURIComponent(code)));
+                        // TODO: Security check
+                        runCode();
+                    }
+                });
         }
     </script>
 </body>
