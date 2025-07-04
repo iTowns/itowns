@@ -5,6 +5,7 @@ import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
 import { RasterTile, RasterElevationTile, RasterColorTile } from './RasterTile';
+import { makeDataArrayTexture } from './WebGLComposer';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
 const defaultTex = new THREE.Texture();
@@ -83,23 +84,15 @@ const defaultStructLayers: Readonly<{
     },
 };
 
-
-function getImageData(image: HTMLCanvasElement | ImageBitmap | OffscreenCanvas) {
-    const w = image.width;
-    const h = image.height;
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d')!;
-
-    // flip vertically because a DataArrayTexture expects
-    // (0, 0) to be the bottom-left of the texture.
-    ctx.scale(1, -1);
-
-    ctx.drawImage(image, 0, -h, w, h); // draw upside-down
-    return ctx.getImageData(0, 0, w, h).data;
-}
-
+/**
+ * Updates the uniforms for layered textures,
+ * including populating the DataArrayTexture
+ * with content from individual 2D textures on the GPU.
+ *
+ * @param uniforms - The uniforms object for your material.
+ * @param tiles - An array of RasterTile objects, each containing textures.
+ * @param max - The maximum number of layers for the DataArrayTexture.
+ */
 function updateLayersUniforms(
     uniforms: { [name: string]: THREE.IUniform },
     tiles: RasterTile[],
@@ -115,6 +108,9 @@ function updateLayersUniforms(
     let count = 0;
     let width = 0;
     let height = 0;
+
+    // Determine total count of textures and dimensions
+    // (assuming all textures are same size)
     for (const tile of tiles) {
         // FIXME: RasterElevationTile are always passed to this function alone
         // so this works, but it's really not great even ignoring the dynamic
@@ -130,32 +126,25 @@ function updateLayersUniforms(
             uOffsetScales[count] = tile.offsetScales[i];
             uLayers[count] = tile;
 
-            if (count == 0) {
-                const img = tile.textures[i].image;
+            const img = tile.textures[i].image;
+            if (!img || img.width <= 0 || img.height <= 0) {
+                console.error('Texture image not loaded or has zero dimensions');
+                uTextureCount.value = 0;
+                return;
+            } else if (count == 0) {
                 width = img.width;
                 height = img.height;
+            } else if (width !== img.width || height !== img.height) {
+                console.error('Texture dimensions mismatch');
+                uTextureCount.value = 0;
+                return;
             }
         }
     }
 
-    if (count == 0) { // no texture was found
-        uTextures.value = new THREE.DataArrayTexture();// needed or can be left undefined?
-    } else {
-        const pxPerImg = 4 * width * height; // assuming RGBA
-        const texData = new Uint8Array(pxPerImg * count);
-        count = 0;
-        for (const tile of tiles) {
-            for (
-                let i = 0;
-                i < tile.textures.length && count < max;
-                ++i, ++count
-            ) {
-                const img = tile.textures[i].image;
-                texData.set(getImageData(img), pxPerImg * count);
-            }
-        }
-        uTextures.value = new THREE.DataArrayTexture(texData, width, height, count);
-        uTextures.value.needsUpdate = true;
+    if (!makeDataArrayTexture(uTextures, width, height, count, tiles, max)) {
+        uTextureCount.value = 0;
+        return;
     }
 
     if (count > max) {
