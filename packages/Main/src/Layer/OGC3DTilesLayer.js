@@ -429,6 +429,7 @@ class OGC3DTilesLayer extends GeometryLayer {
         }
 
         model.material = material;
+        model.renderOrder = 1;
     }
 
     /**
