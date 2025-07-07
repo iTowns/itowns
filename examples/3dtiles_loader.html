@@ -161,7 +161,7 @@
                 const input_url = document.getElementById('url');
                 if (!input_url) return;
 
-                uri.searchParams.set('copc', url);
+                uri.searchParams.set('3dtiles', url);
                 history.replaceState(null, null, `?${uri.searchParams.toString()}`);
 
                 input_url.value = url;
@@ -219,6 +219,15 @@
             window.loadLyon = loadLyon;
             window.loadSete = loadSete;
             window.loadLille = loadLille;
+
+            
+            function loadPassedModel() {
+                const passedUrl = uri.searchParams.get('3dtiles');
+                if (passedUrl) {
+                    setUrl(passedUrl);
+                }
+            }
+            loadPassedModel();
 
         </script>
     </body>
