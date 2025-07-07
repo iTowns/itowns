@@ -23,17 +23,11 @@ export function unpack1K(color: THREE.Vector4Like, factor: number): number {
     return factor ? bitSh.dot(color) * factor : bitSh.dot(color);
 }
 
-// Max sampler color count to LayeredMaterial
-// Because there's a statement limitation to unroll, in getColorAtIdUv method
-const maxSamplersColorCount = 15;
 const samplersElevationCount = 1;
 
 export function getMaxColorSamplerUnitsCount(): number {
     const maxSamplerUnitsCount = Capabilities.getMaxTextureUnitsCount();
-    return Math.min(
-        maxSamplerUnitsCount - samplersElevationCount,
-        maxSamplersColorCount,
-    );
+    return maxSamplerUnitsCount - samplersElevationCount;
 }
 
 export const colorLayerEffects = {
