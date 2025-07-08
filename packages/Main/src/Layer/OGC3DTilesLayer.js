@@ -333,17 +333,16 @@ class OGC3DTilesLayer extends GeometryLayer {
      */
     _setupCacheAndQueues(view) {
         const id = view.id;
+        // Share the caches and queues to cut down on memory and correctly prioritize downloads.
+        // https://github.com/NASA-AMMOS/3DTilesRendererJS?tab=readme-ov-file#multiple-tilesrenderers-with-shared-caches-and-queues
         if (viewers[id]) {
-            // Store the original queues before sharing
-            const originalDownloadQueue = this.tilesRenderer.downloadQueue;
-            const originalParseQueue = this.tilesRenderer.parseQueue;
 
-            // Share the caches and queues
             this.tilesRenderer.lruCache = viewers[id].lruCache;
             this.tilesRenderer.downloadQueue = viewers[id].downloadQueue;
             this.tilesRenderer.parseQueue = viewers[id].parseQueue;
 
             // Store references to all layer callbacks for this view
+            // Each tile has it's own callback
             if (!viewers[id].layerCallbacks) {
                 viewers[id].layerCallbacks = [];
             }
@@ -361,10 +360,15 @@ class OGC3DTilesLayer extends GeometryLayer {
             };
 
             // Set the combined callback
+            // We set our scheduling callback for tiles downloading and parsing -> MANDATORY for VR
+            // (WebXR session has its own requestAnimationFrame method separate from that of the window
+            //  https://github.com/NASA-AMMOS/3DTilesRendererJS/issues/213#issuecomment-947943386)
+            // Necessary to update rendering of the tiles in VR
+            // Example: https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/de25d27dc0e75278962b5f401faee30f8dce2fe0/example/vr.js
             this.tilesRenderer.downloadQueue.schedulingCallback = combinedCallback;
             this.tilesRenderer.parseQueue.schedulingCallback = combinedCallback;
         } else {
-            // First layer - set up the scheduling callbacks
+            // Set the combined callback (cf. above comment)
             this.tilesRenderer.downloadQueue.schedulingCallback = this.tilesSchedulingCB;
             this.tilesRenderer.parseQueue.schedulingCallback = this.tilesSchedulingCB;
 
@@ -507,9 +511,7 @@ class OGC3DTilesLayer extends GeometryLayer {
             const callbackIndex = viewers[this._viewId].layerCallbacks.indexOf(this._originalSchedulingCallback);
             if (callbackIndex !== -1) {
                 viewers[this._viewId].layerCallbacks.splice(callbackIndex, 1);
-
             }
-
             // If no more layers are using this view's queues, clean up completely
             if (viewers[this._viewId].layerCallbacks.length === 0) {
                 delete viewers[this._viewId];
