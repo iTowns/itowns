@@ -15,15 +15,10 @@ function _WebGLShader(renderer, type, string) {
     return shader;
 }
 
-function isFirefox() {
-    return navigator && navigator.userAgent && navigator.userAgent.toLowerCase().includes('firefox');
-}
-
 export default {
     isLogDepthBufferSupported() {
         return logDepthBufferSupported;
     },
-    isFirefox,
     getMaxTextureUnitsCount() {
         return maxTexturesUnits;
     },
@@ -48,21 +43,9 @@ export default {
         gl.linkProgram(program);
 
         if (gl.getProgramParameter(program, gl.LINK_STATUS) === false) {
-            if (maxTexturesUnits > 16) {
-                const info = gl.getProgramInfoLog(program);
-                // eslint-disable-next-line no-console
-                console.warn(`${info}: using a maximum of 16 texture units instead of the reported value (${maxTexturesUnits})`);
-                if (isFirefox()) {
-                    // eslint-disable-next-line no-console
-                    console.warn(`It can come from a Mesa/Firefox bug;
-                        the shader compiles to an error when using more than 16 sampler uniforms,
-                        see https://bugzilla.mozilla.org/show_bug.cgi?id=777028`);
-                }
-                maxTexturesUnits = 16;
-            } else {
-                throw (new Error(`The GPU capabilities could not be determined accurately.
-                    Impossible to link a shader with the Maximum texture units ${maxTexturesUnits}`));
-            }
+            // the link operation failed
+            throw new Error(`The GPU capabilities could not be determined accurately.
+                Impossible to link a shader with the Maximum texture units ${maxTexturesUnits}`);
         }
 
         gl.deleteProgram(program);

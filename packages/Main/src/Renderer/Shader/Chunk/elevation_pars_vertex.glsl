@@ -8,7 +8,7 @@
     };
 
     uniform Layer       elevationLayers[NUM_VS_TEXTURES];
-    uniform sampler2D   elevationTextures[NUM_VS_TEXTURES];
+    uniform sampler2DArray   elevationTextures;
     uniform vec4        elevationOffsetScales[NUM_VS_TEXTURES];
     uniform int         elevationTextureCount;
     uniform float       geoidHeight;
@@ -21,15 +21,15 @@
         return Result;
     }
 
-    float getElevationMode(vec2 uv, sampler2D tex, int mode) {
+    float getElevationMode(vec2 uv, sampler2DArray tex, int mode) {
         if (mode == ELEVATION_RGBA)
-            return decode32(texture2D( tex, uv ).abgr * 255.0);
+            return decode32(texture(tex, vec3(uv, 0.0)).abgr * 255.0);
         if (mode == ELEVATION_DATA || mode == ELEVATION_COLOR)
-            return texture2D( tex, uv ).r;
+            return texture(tex, vec3(uv, 0.0)).r;
         return 0.;
     }
 
-    float getElevation(vec2 uv, sampler2D tex, vec4 offsetScale, Layer layer) {
+    float getElevation(vec2 uv, sampler2DArray tex, vec4 offsetScale, Layer layer) {
         // Elevation textures are inverted along the y-axis
         uv = vec2(uv.x, 1.0 - uv.y);
         uv = uv * offsetScale.zw + offsetScale.xy;
