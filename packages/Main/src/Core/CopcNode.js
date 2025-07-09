@@ -35,8 +35,9 @@ class CopcNode extends PointCloudNode {
      * @param {number} entryLength - Size of the node entry
      * @param {CopcLayer} layer - Parent COPC layer
      * @param {number} [numPoints=0] - Number of points given by this entry
+     * @param {number} [sId] - id for multisource
      */
-    constructor(depth, x, y, z, entryOffset, entryLength, layer, numPoints = 0) {
+    constructor(depth, x, y, z, entryOffset, entryLength, layer, numPoints = 0, sId = -1) {
         super(numPoints, layer);
         this.isCopcNode = true;
 
@@ -47,6 +48,8 @@ class CopcNode extends PointCloudNode {
         this.x = x;
         this.y = y;
         this.z = z;
+
+        this.sId = sId;
 
         this.voxelKey = buildVoxelKey(depth, x, y, z);
     }
@@ -64,7 +67,11 @@ class CopcNode extends PointCloudNode {
      * @param {number} size
      */
     async _fetch(offset, size) {
-        return this.layer.source.fetcher(this.layer.source.url, {
+        let sourceUrl = this.layer.source.url;
+        if (this.layer.source.urls) {
+            sourceUrl = this.layer.source.urls[this.sId];
+        }
+        return this.layer.source.fetcher(sourceUrl, {
             ...this.layer.source.networkOptions,
             headers: {
                 ...this.layer.source.networkOptions.headers,
@@ -106,6 +113,7 @@ class CopcNode extends PointCloudNode {
             node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
             node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
         }
+        return this;
     }
 
     /**
@@ -147,6 +155,7 @@ class CopcNode extends PointCloudNode {
             byteSize,
             this.layer,
             pointCount,
+            this.sId,
         );
         this.add(child);
         stack.push(child);
@@ -162,9 +171,18 @@ class CopcNode extends PointCloudNode {
         }
 
         const buffer = await this._fetch(this.entryOffset, this.entryLength);
+        const sources = await this.layer.source.whenReady;
+        let source = this.layer.source;
+        if (sources.length > 1) {
+            if (sources[this.sId].isSource) {
+                source = await sources[this.sId].whenReady;
+            } else {
+                sources[this.sId].load();
+            }
+        }
         const geometry = await this.layer.source.parser(buffer, {
             in: {
-                ...this.layer.source,
+                ...source,
                 pointCount: this.numPoints,
             },
             out: this.layer,
