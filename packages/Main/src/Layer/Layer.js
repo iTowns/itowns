@@ -1,9 +1,7 @@
 import * as THREE from 'three';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import InfoLayer from 'Layer/InfoLayer';
 import Source from 'Source/Source';
 import { LRUCache } from 'lru-cache';
-import Style from 'Core/Style';
 
 /**
  * @property {boolean} isLayer - Used to checkout whether this layer is a Layer.
@@ -52,17 +50,8 @@ class Layer extends THREE.EventDispatcher {
      * @param {Source|boolean} config.source - instantiated Source specifies data source to display.
      * if config.source is a boolean, it can only be false. if config.source is false,
      * the layer doesn't need Source (like debug Layer or procedural layer).
-     * @param {StyleOptions} [config.style] - an object that contain any properties
-     * (order, zoom, fill, stroke, point, text or/and icon)
-     * and sub properties of a Style (@see {@link StyleOptions}). Or directly a {@link Style} .<br/>
-     * When entering a StyleOptions the missing style properties will be look for in the data (if any)
-     * what won't be done when you use a Style.
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
      * This value is used for cache expiration mechanism.
-     * @param {(boolean|Object)} [config.addLabelLayer] - Used to tell if this layer has
-     * labels to display from its data. For example, it needs to be set to `true`
-     * for a layer with vector tiles. If it's `true` a new `LabelLayer` is added and attached to this `Layer`.
-     * You can also configure it with {@link LabelLayer} options described below such as: `addLabelLayer: { performance: true }`.
      * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
      * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
      * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.
@@ -92,14 +81,10 @@ class Layer extends THREE.EventDispatcher {
         const {
             source,
             name,
-            style = {},
             subdivisionThreshold = 256,
-            addLabelLayer = false,
             cacheLifeTime,
             options = {},
-            updateStrategy,
             zoom,
-            mergeFeatures = true,
             crs,
         } = config;
 
@@ -135,31 +120,14 @@ class Layer extends THREE.EventDispatcher {
 
         this.crs = crs;
 
-        if (style && !(style instanceof Style)) {
-            if (typeof style.fill?.pattern === 'string') {
-                console.warn('Using style.fill.pattern = { source: Img|url } is adviced');
-                style.fill.pattern = { source: style.fill.pattern };
-            }
-            this.style = new Style(style);
-        } else {
-            this.style = style || new Style();
-        }
-
         /**
          * @type {number}
          */
         this.subdivisionThreshold = subdivisionThreshold;
         this.sizeDiagonalTexture =  (2 * (this.subdivisionThreshold * this.subdivisionThreshold)) ** 0.5;
 
-        this.addLabelLayer = addLabelLayer;
-
         // Default properties
         this.options = options;
-
-        this.updateStrategy = updateStrategy ?? {
-            type: STRATEGY_MIN_NETWORK_TRAFFIC,
-            options: {},
-        };
 
         this.defineLayerProperty('frozen', false);
 
@@ -202,8 +170,6 @@ class Layer extends THREE.EventDispatcher {
             max: 500,
             ...(cacheLifeTime !== Infinity && { ttl: cacheLifeTime }),
         });
-
-        this.mergeFeatures = mergeFeatures;
     }
 
     addInitializationStep() {
@@ -211,6 +177,21 @@ class Layer extends THREE.EventDispatcher {
         let resolve;
         this._promises.push(new Promise((re) => { resolve = re; }));
         return resolve;
+    }
+
+    /**
+     * The startup stage is the first stage of the layer lifecycle. It is called
+     * internally when the layer is added to the view.
+     * @param {View} context - the context the layer has been added to.
+     * @returns {Promise<void>}
+     */
+    async startup(/* context */) {
+        try {
+            await Promise.all(this._promises);
+            this._resolve();
+        } catch (error) {
+            this._reject(error);
+        }
     }
 
     /**
@@ -297,48 +278,3 @@ class Layer extends THREE.EventDispatcher {
 }
 
 export default Layer;
-
-export const ImageryLayers = {
-    // move this to new index
-    // After the modification :
-    //      * the minimum sequence will always be 0
-    //      * the maximum sequence will always be layers.lenght - 1
-    // the ordering of all layers (Except that specified) doesn't change
-    moveLayerToIndex: function moveLayerToIndex(layer, newIndex, imageryLayers) {
-        newIndex = Math.min(newIndex, imageryLayers.length - 1);
-        newIndex = Math.max(newIndex, 0);
-        const oldIndex = layer.sequence;
-
-        for (const imagery of imageryLayers) {
-            if (imagery.id === layer.id) {
-                // change index of specified layer
-                imagery.sequence = newIndex;
-            } else if (imagery.sequence > oldIndex && imagery.sequence <= newIndex) {
-                // down all layers between the old index and new index (to compensate the deletion of the old index)
-                imagery.sequence--;
-            } else if (imagery.sequence >= newIndex && imagery.sequence < oldIndex) {
-                // up all layers between the new index and old index (to compensate the insertion of the new index)
-                imagery.sequence++;
-            }
-        }
-    },
-
-    moveLayerDown: function moveLayerDown(layer, imageryLayers) {
-        if (layer.sequence > 0) {
-            this.moveLayerToIndex(layer, layer.sequence - 1, imageryLayers);
-        }
-    },
-
-    moveLayerUp: function moveLayerUp(layer, imageryLayers) {
-        const m = imageryLayers.length - 1;
-        if (layer.sequence < m) {
-            this.moveLayerToIndex(layer, layer.sequence + 1, imageryLayers);
-        }
-    },
-
-    getColorLayersIdOrderedBySequence: function getColorLayersIdOrderedBySequence(imageryLayers) {
-        const copy = Array.from(imageryLayers);
-        copy.sort((a, b) => a.sequence - b.sequence);
-        return copy.map(l => l.id);
-    },
-};
