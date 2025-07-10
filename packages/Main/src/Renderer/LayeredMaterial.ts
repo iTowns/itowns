@@ -148,7 +148,8 @@ interface LayeredMaterialRawUniforms {
     lightPosition: THREE.Vector3;
 
     // Misc
-    fogDistance: number;
+    fogNear: number;
+    fogFar: number;
     fogColor: THREE.Color;
     overlayAlpha: number;
     overlayColor: THREE.Color;
@@ -212,7 +213,6 @@ type RenderModeDefines = DefineMapping<'MODE', typeof RenderMode.MODES>;
 type LayeredMaterialDefines = {
     NUM_VS_TEXTURES: number;
     NUM_FS_TEXTURES: number;
-    USE_FOG: number;
     NUM_CRS: number;
     DEBUG: number;
     MODE: number;
@@ -255,9 +255,6 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
 
         fillInProp(defines, 'NUM_VS_TEXTURES', nbSamplers[0]);
         fillInProp(defines, 'NUM_FS_TEXTURES', nbSamplers[1]);
-        // TODO: We do not use the fog from the scene, is this a desired
-        // behavior?
-        fillInProp(defines, 'USE_FOG', 1);
         fillInProp(defines, 'NUM_CRS', crsCount);
 
         initModeDefines(defines);
@@ -280,6 +277,8 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
 
         this.defines = defines;
 
+        this.fog = true;
+
         this.vertexShader = TileVS;
         // three loop unrolling of ShaderMaterial only supports integer bounds,
         // see https://github.com/mrdoob/three.js/issues/28020
@@ -296,7 +295,8 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             lightPosition: new THREE.Vector3(-0.5, 0.0, 1.0),
 
             // Misc properties
-            fogDistance: 1000000000.0,
+            fogNear: 1,
+            fogFar: 1000,
             fogColor: new THREE.Color(0.76, 0.85, 1.0),
             overlayAlpha: 0,
             overlayColor: new THREE.Color(1.0, 0.3, 0.0),
