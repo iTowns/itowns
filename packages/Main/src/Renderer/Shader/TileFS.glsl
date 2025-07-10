@@ -3,7 +3,7 @@
 #include <itowns/pitUV>
 #include <itowns/color_layers_pars_fragment>
 #if MODE == MODE_FINAL
-#include <itowns/fog_pars_fragment>
+#include <fog_pars_fragment>
 #include <itowns/overlay_pars_fragment>
 #include <itowns/lighting_pars_fragment>
 #endif
@@ -52,7 +52,7 @@ void main() {
     }
   #endif
 
-    #include <itowns/fog_fragment>
+    #include <fog_fragment>
     #include <itowns/lighting_fragment>
     #include <itowns/overlay_fragment>
 
