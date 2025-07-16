@@ -151,6 +151,7 @@ interface LayeredMaterialRawUniforms {
     fogNear: number;
     fogFar: number;
     fogColor: THREE.Color;
+    fogDensity: number;
     overlayAlpha: number;
     overlayColor: THREE.Color;
     objectId: number;
@@ -298,6 +299,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             fogNear: 1,
             fogFar: 1000,
             fogColor: new THREE.Color(0.76, 0.85, 1.0),
+            fogDensity: 0.00025,
             overlayAlpha: 0,
             overlayColor: new THREE.Color(1.0, 0.3, 0.0),
             objectId: 0,
