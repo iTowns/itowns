@@ -7,6 +7,7 @@ import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
 import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
+import DEMUtils from 'Utils/DEMUtils';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -61,6 +62,10 @@ export const GLOBE_VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED: VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED,
 };
 
+const OBSERVABLE_RATIO = 0.8; // proportion of the observable depth range that is actually visible
+const FOG_SPREAD = 0.5; // proportion of the visible depth range that contains fog
+const ALTITUDE_MAX = 8849; // altitude of Mount Everest
+
 class GlobeView extends View {
     /**
      * Creates a view of a globe.
@@ -93,12 +98,54 @@ class GlobeView extends View {
 
         this.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
         this.camera3D.far = ellipsoidSizes.x * 10;
+        const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
+        const elevationMax = Math.max(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z) +
+            ALTITUDE_MAX;
 
         const tileLayer = new GlobeLayer('globe', options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
 
         this.addLayer(tileLayer);
         this.tileLayer = tileLayer;
+
+        const corner = new THREE.Vector4(1, 1, -1); // a corner of the camera in NDC at near plane
+        corner.applyMatrix4(this.camera3D.projectionMatrixInverse).divideScalar(corner.z);
+        const fovDepthFactor = 1 / Math.sqrt(1 + corner.x * corner.x + corner.y * corner.y);
+
+        this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
+            // update camera's near and far
+            const originToCamSq = this.camera3D.position.lengthSq();
+
+            // get elevation (origin to ground) under camera
+            const camCoordinates = new Coordinates(this.referenceCrs)
+                .setFromVector3(this.camera3D.position);
+            const layer = this.getLayers(l => l.isTiledGeometryLayer)[0];
+            camCoordinates.as(layer.extent.crs, camCoordinates);
+            const elevation = DEMUtils.getElevationValueAt(
+                layer, camCoordinates, DEMUtils.FAST_READ_Z);
+
+            let camToGroundDist;
+            if (elevation !== undefined) {
+                camToGroundDist = camCoordinates.z - elevation;
+            } else { // elevation unknown so use the worst case
+                // more optimized than calling .length()
+                camToGroundDist = Math.sqrt(originToCamSq) - elevationMax;
+            }
+
+            const near = Math.max(1, camToGroundDist * fovDepthFactor);
+            this.camera3D.near = near;
+
+            // distance from camera to the horizon
+            const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
+
+            this.camera3D.far = OBSERVABLE_RATIO * (horizonDist - near) + near;
+            this.camera3D.updateProjectionMatrix();
+
+            const fog = this.scene.fog;
+            if (!fog) { return; }
+            fog.far = this.camera3D.far;
+            fog.near = fog.far - FOG_SPREAD * (fog.far - this.camera3D.near);
+        });
 
         if (!placement.isExtent) {
             placement.coord = placement.coord || new Coordinates('EPSG:4326', 0, 0);
