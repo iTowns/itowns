@@ -278,7 +278,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
 
         this.defines = defines;
 
-        this.fog = true;
+        this.fog = true; // receive the fog defined on the scene, if any
 
         this.vertexShader = TileVS;
         // three loop unrolling of ShaderMaterial only supports integer bounds,
