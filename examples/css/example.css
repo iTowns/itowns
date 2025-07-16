@@ -7,8 +7,13 @@
 }
 
 /* GENERAL */
+* {
+    transition-duration: 200ms;
+}
+
 html,
 body {
+    background-color: black;
     margin: 0;
     padding: 0;
     height: 100%;
@@ -60,6 +65,7 @@ body {
 
 /* NAVIGATION (LEFT) */
 #editor-panel {
+    background-color: white;
     width: calc(100% * 7 / 16);
     height: 100%;
     position: absolute;
@@ -108,20 +114,29 @@ body {
     gap: 1em;
 }
 
+.selector {
+    border: 0;
+    background-color: #404e73;
+    color: white;
+    padding: 1em;
+    border-radius: 0.3em;
+}
+
+#example-selector {
+    width: 30%;
+    flex-grow: 3;
+}
+
+#font-size-selector {
+    width: 4em;
+}
+
 #editor-header> :nth-child(3)>div {
     display: flex;
     flex-flow: row;
     justify-content: space-around;
     align-items: center;
     gap: inherit;
-}
-
-#example-selector {
-    border: 0;
-    background-color: #404e73;
-    color: white;
-    padding: 1em;
-    border-radius: 0.3em;
 }
 
 .header-button {
@@ -149,6 +164,16 @@ body {
     background-size: 3em;
 }
 
+.CodeMirror {
+    font-size: 1em;
+}
+
+.CodeMirror-gutter-wrapper,
+.CodeMirror-gutter,
+.CodeMirror-gutters,
+.CodeMirror-linenumber {
+    transition-duration: 0ms;
+}
 
 @media (width > 1700px) {
     #editor-header {
@@ -179,6 +204,10 @@ body {
 
     #editor-header>hr {
         margin: 0 1em;
+    }
+
+    #editor-header> :nth-child(3) {
+        padding-top: 1.5em;
     }
 }
 

@@ -57,7 +57,8 @@
             </div>
             <hr />
             <div>
-                <select id="example-selector"></select>
+                <select id="example-selector" class="selector"></select>
+                <input type="number" id="font-size-selector" class="selector" />
                 <div>
                     <button type="button" id="run-button" class="header-button" />
                     <button type="button" id="share-button" class="header-button" />
@@ -107,6 +108,22 @@
             navigator.clipboard.writeText(url);
         }
         document.getElementById("share-button").onclick = shareCode;
+
+        /** @returns {number} - The CodeMirror editor's font size */
+        function getEditorFontSize() {
+            const editor = document.getElementsByClassName("CodeMirror")[0];
+            return parseFloat(window.getComputedStyle(editor, null).getPropertyValue("font-size"));
+        }
+
+        /** @param {number} size_px - The new font size to apply */
+        function setEditorFontSize(size_px) {
+            console.info("Setting editor font size");
+            const editor = document.getElementsByClassName("CodeMirror")[0];
+            editor.style.fontSize = `${size_px}px`;
+        }
+        const fontSizeSelector = document.getElementById("font-size-selector");
+        fontSizeSelector.value = getEditorFontSize();
+        fontSizeSelector.onchange = (event) => setEditorFontSize(event.target.value);
 
         /** @param {string} slug - An example's slug */
         function cacheExample(slug) {
