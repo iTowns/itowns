@@ -62,8 +62,6 @@ export const GLOBE_VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED: VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED,
 };
 
-const OBSERVABLE_RATIO = 0.8; // proportion of the observable depth range that is actually visible
-const FOG_SPREAD = 0.5; // proportion of the visible depth range that contains fog
 const ALTITUDE_MAX = 8849; // altitude of Mount Everest
 
 class GlobeView extends View {
@@ -89,6 +87,8 @@ class GlobeView extends View {
      * enable WebXR to switch on VR visualization. (optional).
      * @param {function} [options.webXR.callback] - WebXR rendering callback (optional).
      * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling (optional).
+     * @param {number} [options.observableRatio=0.8] - Proportion of the observable depth range that is actually visible. Between 0 and 1.
+     * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog. Between 0 and 1.
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -138,13 +138,13 @@ class GlobeView extends View {
             // distance from camera to the horizon
             const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
 
-            this.camera3D.far = OBSERVABLE_RATIO * (horizonDist - near) + near;
+            this.camera3D.far = this.observableRatio * (horizonDist - near) + near;
             this.camera3D.updateProjectionMatrix();
 
             const fog = this.scene.fog;
             if (!fog) { return; }
             fog.far = this.camera3D.far;
-            fog.near = fog.far - FOG_SPREAD * (fog.far - this.camera3D.near);
+            fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
         });
 
         if (!placement.isExtent) {
@@ -170,6 +170,9 @@ class GlobeView extends View {
             this.webXR = new WebXR(this, typeof options.webXR === 'boolean' ? {} : options.webXR);
             this.webXR.initializeWebXR();
         }
+
+        this.observableRatio = options.observableRatio ?? 0.8;
+        this.fogSpread = options.fogSpread ?? 0.5;
     }
 
     /**
