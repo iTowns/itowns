@@ -44,7 +44,7 @@ module.exports = () => {
         options: babelConf,
     });
 
-    return {
+    const sharedConfig = {
         mode,
         context: path.resolve(__dirname),
         resolve: {
@@ -60,7 +60,6 @@ module.exports = () => {
         entry: {
             itowns: [
                 'core-js',
-                './packages/Main/src/MainBundle.js',
             ],
             debug: {
                 import: './packages/Debug/src/Main.js',
@@ -80,10 +79,6 @@ module.exports = () => {
         devtool: 'source-map',
         output: {
             path: path.resolve(__dirname, 'dist'),
-            filename: '[name].js',
-            library: '[name]',
-            libraryTarget: 'umd',
-            umdNamedDefine: true,
         },
         module: {
             rules: [
@@ -95,12 +90,77 @@ module.exports = () => {
                 },
             ],
         },
+    };
+
+    // UMD
+    const configUMD = {
+        ...sharedConfig,
+        entry: {
+            ...sharedConfig.entry,
+            itowns: [
+                'core-js',
+                './packages/Main/src/MainBundle.js',
+            ],
+        },
+        output: {
+            ...sharedConfig.output,
+            filename: '[name].umd.js',
+            library: '[name]',
+            libraryTarget: 'umd',
+            umdNamedDefine: true,
+        },
+    };
+
+    // ESM
+    const configESM = {
+        ...sharedConfig,
+        entry: {
+            ...sharedConfig.entry,
+            itowns: [
+                'core-js',
+                './packages/Main/src/Main.js',
+            ],
+        },
+        output: {
+            ...sharedConfig.output,
+            filename: '[name].js',
+            libraryTarget: 'module',
+        },
+        resolve: {
+            ...sharedConfig.resolve,
+            fallback: {
+                os: false,
+                fs: false,
+                zlib: false,
+                http: false,
+                tty: false,
+                url: false,
+                util: false,
+                child_process: false,
+                module: false,
+                'node:modules': false,
+                path: false,
+                'https-browserify': false,
+                https: false,
+                stream: false,
+            },
+        },
         plugins: [
             new ESLintPlugin({
                 files: include,
             }),
         ],
-        devServer: {
+        experiments: {
+            outputModule: true,
+        },
+        externals: {
+            three: 'three',
+        },
+    };
+
+    if (process.env.WEBPACK_SERVE) {
+        configESM.devServer = {
+            hot: false,
             devMiddleware: {
                 publicPath: '/dist/',
             },
@@ -117,6 +177,10 @@ module.exports = () => {
                     warnings: false,
                 },
             },
-        },
-    };
+        };
+
+        return configESM;
+    } else {
+        return [configESM, configUMD];
+    }
 };
