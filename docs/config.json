@@ -179,7 +179,7 @@
         }
     },
     "source": {
-        "include": [ "examples/jsm/plugins", "packages" ],
+        "include": [ "examples/jsmm/plugins", "packages" ],
         "excludePattern": "(^|\\/|\\\\)lib"
     },
     "plugins": ["plugins/markdown"]
