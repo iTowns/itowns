@@ -2,29 +2,46 @@
     <head>
         <title>Itowns - Mars</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
         <div id="miniDiv"></div>
 
-        <script src="js/GUI/GuiTools.js"></script>
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
             // # Simple Globe viewer
             // Define initial camera position
             // mars crs projection is EPSG:104905
             // Globe view could be use only 4326 and 3857
             // For the moment, the example uses earth to visualize Mars WMTS.
             // We keep 'EPSG:104905' in comment for the moment
-            itowns.proj4.defs('EPSG:104905', '+proj=longlat +a=3396190 +rf=169.894447223612 +no_defs +type=crs');
+            itowns.CRS.defs('EPSG:104905', '+proj=longlat +a=3396190 +rf=169.894447223612 +no_defs +type=crs');
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 77.6, 18.2),
                 range: 25000000,

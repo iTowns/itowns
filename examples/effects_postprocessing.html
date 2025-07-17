@@ -3,6 +3,21 @@
     <head>
         <title>Itowns - postprocessing</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -11,8 +26,6 @@
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
         <!-- from https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/DotScreenShader.js -->
         <script type="x-shader/x-vertex" id="vertexshader">
             varying vec2 vUv;
@@ -49,7 +62,14 @@
             }
         </script>
 
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
                 range: 25000000,
@@ -62,18 +82,18 @@
 
             // Simple postprocessing setup
             //
-            var postprocessScene = new itowns.THREE.Scene();
-            var quad = new itowns.THREE.Mesh(new itowns.THREE.PlaneGeometry(2, 2), null);
-            var cam = new itowns.THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
+            var postprocessScene = new THREE.Scene();
+            var quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), null);
+            var cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
 
             setupLoadingScreen(viewerDiv, view);
 
             quad.frustumCulled = false;
-            quad.material = new itowns.THREE.ShaderMaterial({
+            quad.material = new THREE.ShaderMaterial({
                 uniforms: {
                     tDiffuse: { value: null },
-                    tSize: { value: new itowns.THREE.Vector2(256, 256) },
-                    center: { value: new itowns.THREE.Vector2(0.5, 0.5) },
+                    tSize: { value: new THREE.Vector2(256, 256) },
+                    center: { value: new THREE.Vector2(0.5, 0.5) },
                     angle: { value: 1.57 },
                     scale: { value: 1.0 },
                 },

@@ -2,6 +2,21 @@
     <head>
         <title>Itowns - Immersive Paris</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -17,13 +32,16 @@
             </ul>
         </div>
         <div id="viewerDiv"></div>
-        <script src="../dist/itowns.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
-        <script src="js/GUI/GuiTools.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
             // Define crs projection that we will use (taken from https://epsg.io/2154, Proj4js section)
-            itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+            itowns.CRS.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
             // Define initial camera position
             var placement = {
@@ -152,7 +170,7 @@
                     debug.GeometryDebug.addWireFrameCheckbox(gui, view, buildingLayer);
                 });
 
-                var altitude = new itowns.THREE.Vector3();
+                var altitude = new THREE.Vector3();
 
                 view.controls.transformationPositionPickOnTheGround = (position) => {
                     position.copy(orientedImageLayer.mostNearPano(position).position);

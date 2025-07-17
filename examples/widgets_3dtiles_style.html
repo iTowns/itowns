@@ -2,23 +2,39 @@
     <head>
         <title>Itowns - 3D Tiles Style Widget </title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/widgets.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv" class="viewer"></div>
-        <script src="../dist/itowns.js"></script>
-        <script src="../dist/itowns_widgets.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script src="js/GUI/GuiTools.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
-            itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+            itowns.CRS.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
             // Define geographic extent: CRS, min/max X, min/max Y
             const extent = new itowns.Extent( 'EPSG:3946',
@@ -88,12 +104,12 @@
             itowns.View.prototype.addLayer.call(view, $3dTilesLayer);
 
             // Lights
-            const dirLight = new itowns.THREE.DirectionalLight(0xffffff, 1);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
             dirLight.position.set(-0.9, 0.3, 1);
             dirLight.updateMatrixWorld();
             view.scene.add( dirLight );
 
-            const ambLight = new itowns.THREE.AmbientLight(0xffffff, 0.2);
+            const ambLight = new THREE.AmbientLight(0xffffff, 0.2);
             view.scene.add( ambLight );
 
             // Request redraw
@@ -104,9 +120,9 @@
             widget.domElement.setAttribute('id', 'widgets-3dtilesstyle');
 
             // Add a box3 to C3DTileFeature onclick
-            const geometry = new itowns.THREE.BoxGeometry();
-            const material = new itowns.THREE.MeshBasicMaterial( {color: 0x00ff00, opacity: 0.5, transparent: true} );
-            const cube = new itowns.THREE.Mesh( geometry, material );
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshBasicMaterial( {color: 0x00ff00, opacity: 0.5, transparent: true} );
+            const cube = new THREE.Mesh( geometry, material );
             view.domElement.onclick = (event) => {
                 const intersects = view.pickObjectsAt(event, 5, [$3dTilesLayer]);
                 const c3DTileFeatureClicked = $3dTilesLayer.getC3DTileFeatureFromIntersectsArray(intersects);

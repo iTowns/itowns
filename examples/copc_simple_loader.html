@@ -4,6 +4,21 @@
 
         <title>Itowns - COPC loader</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "lil": "https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.esm.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
@@ -15,30 +30,34 @@
         </style>
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script>
     </head>
     <body>
         <div id="description">Specify the URL of a COPC file to load:
             <input type="text" id="copc_url" />
             <button onclick="readURL()">Load</button>
             <div>
-                <button onClick="loadAutzen()">Load Autzen Stadium (80mb)</button>
-                <button onClick="loadSofi()">Load SoFI Stadium (2.3gb)</button>
-                <button onClick="loadMillsite()">Load Millsite (1.9gb)</button>
+                <button id="loadAutzenButton">Load Autzen Stadium (80mb)</button>
+                <button id="loadSofiButton">Load SoFI Stadium (2.3gb)</button>
+                <button id="loadMillsiteButton">Load Millsite (1.9gb)</button>
             <div id="share"></div>
             </div>
         </div>
         <div id="viewerDiv"></div>
 
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+            import lil from 'lil';
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+
             let layer; // COPCLayer
 
             const uri = new URL(location);
 
-            const gui = new lil.GUI();
+            const gui = new lil();
 
             const viewerDiv = document.getElementById('viewerDiv');
             const view = new itowns.View('EPSG:4326', viewerDiv);
@@ -50,8 +69,8 @@
             function onLayerReady(layer) {
                 const camera = view.camera.camera3D;
 
-                const lookAt = new itowns.THREE.Vector3();
-                const size = new itowns.THREE.Vector3();
+                const lookAt = new THREE.Vector3();
+                const size = new THREE.Vector3();
                 layer.root.bbox.getSize(size);
                 layer.root.bbox.getCenter(lookAt);
 
@@ -134,6 +153,14 @@
             function loadMillsite() {
                 setUrl("https://s3.amazonaws.com/data.entwine.io/millsite.copc.laz");
             }
+
+            const loadAutzenButton = document.getElementById('loadAutzenButton');
+            const loadSofiButton = document.getElementById('loadSofiButton');
+            const loadMillsiteButton = document.getElementById('loadMillsiteButton');
+
+            loadAutzenButton.addEventListener('click', loadAutzen);
+            loadSofiButton.addEventListener('click', loadSofi);
+            loadMillsiteButton.addEventListener('click', loadMillsite);
         </script>
     </body>
 </html>

@@ -3,6 +3,20 @@
     <head>
         <title>Point Cloud Viewer</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+                "lil": "https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.esm.min.js"
+            }
+        }
+        </script>
+
         <style type="text/css">
             #info {
                 color: #7ad7ff;
@@ -34,11 +48,15 @@
         </div>
 
         <div>
-            <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script>
-            <script src="../dist/itowns.js"></script>
-            <script src="js/GUI/LoadingScreen.js"></script>
-            <script src="../dist/debug.js"></script>
-            <script type="text/javascript">
+        <script type="module">
+
+                import lil from 'lil';
+                import setupLoadingScreen from 'LoadingScreen';
+                import * as THREE from 'three';
+                import * as itowns from 'itowns';
+                import * as debug from 'debug';
+                import * as itowns_widgets from 'itowns_widgets';
+
                 var potreeLayer;
                 var oldPostUpdate;
                 var viewerDiv;
@@ -47,12 +65,12 @@
                 var controls;
 
                 // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
-                itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+                itowns.CRS.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
                 viewerDiv = document.getElementById('viewerDiv');
                 viewerDiv.style.display = 'block';
 
-                debugGui = new lil.GUI();
+                debugGui = new lil();
 
                 // TODO: do we really need to disable logarithmicDepthBuffer ?
                 view = new itowns.View('EPSG:3946', viewerDiv);
@@ -96,8 +114,8 @@
                 function onLayerReady() {
                     var ratio;
                     var position;
-                    var lookAt = new itowns.THREE.Vector3();
-                    var size = new itowns.THREE.Vector3();
+                    var lookAt = new THREE.Vector3();
+                    var size = new THREE.Vector3();
 
                     potreeLayer.root.bbox.getSize(size);
                     potreeLayer.root.bbox.getCenter(lookAt);

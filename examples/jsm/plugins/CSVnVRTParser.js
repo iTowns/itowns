@@ -1,4 +1,4 @@
-/* global itowns */
+import * as itowns from 'itowns';
 
 /**
  * A module to parse OGR Virtual Format files.
@@ -195,6 +195,4 @@ const CSVnVRTParser = (function _() {
     };
 }());
 
-if (typeof module != 'undefined' && module.exports) {
-    module.exports = CSVnVRTParser;
-}
+export default CSVnVRTParser;

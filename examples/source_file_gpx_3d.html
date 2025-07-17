@@ -2,6 +2,21 @@
     <head>
         <title>Itowns - Globe/Gpx</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -9,9 +24,14 @@
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
             // # Loading gpx file
 
             // Define initial camera position
@@ -48,8 +68,8 @@
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
             // update the waypoint
-            var distance, scale, point = new itowns.THREE.Vector3();
-            var size = new itowns.THREE.Vector2();
+            var distance, scale, point = new THREE.Vector3();
+            var size = new THREE.Vector2();
             function updatePointScale(renderer, scene, camera) {
                 point.copy(this.geometry.boundingSphere.center).applyMatrix4(this.matrixWorld);;
                 distance = camera.position.distanceTo(point);
@@ -68,8 +88,8 @@
                     color: 'white',
                 }
             };
-            var waypointGeometry = new itowns.THREE.BoxGeometry(1, 1, 80);
-            var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
+            var waypointGeometry = new THREE.BoxGeometry(1, 1, 80);
+            var waypointMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
@@ -91,9 +111,9 @@
                                 if (m.type == 'Points') {
                                     var vertices = m.feature.vertices;
                                     for (var i = 0; i < vertices.length; i += 3) {
-                                        var waypoint = new itowns.THREE.Mesh(waypointGeometry, waypointMaterial);
+                                        var waypoint = new THREE.Mesh(waypointGeometry, waypointMaterial);
                                         waypoint.position.fromArray(vertices, i);
-                                        waypoint.lookAt(mesh.worldToLocal(new itowns.THREE.Vector3()));
+                                        waypoint.lookAt(mesh.worldToLocal(new THREE.Vector3()));
                                         waypoint.onBeforeRender = updatePointScale;
                                         waypoint.updateMatrix();
                                         mesh.add(waypoint);

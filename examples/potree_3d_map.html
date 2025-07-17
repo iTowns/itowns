@@ -3,6 +3,19 @@
     <head>
         <title>Point Cloud on globe</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "lil": "https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.esm.min.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
         <style type="text/css">
             #info {
                 color: #7ad7ff;
@@ -32,11 +45,15 @@
     <body>
         <div id="viewerDiv"></div>
         <div id="info"></div>
-        <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script>
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+
+            import lil from 'lil';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+
             var potreeLayer;
             var oldPostUpdate;
             var viewerDiv;
@@ -46,7 +63,7 @@
             viewerDiv = document.getElementById('viewerDiv');
             viewerDiv.style.display = 'block';
 
-            debugGui = new lil.GUI();
+            debugGui = new lil();
 
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326',  4.631512, 43.675626),

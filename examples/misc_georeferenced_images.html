@@ -1,6 +1,22 @@
 <html>
     <head>
         <title>Itowns - Oriented image</title>
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "OrientedImageHelper": "./jsm/OrientedImageHelper.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <style type="text/css">
             #info {
@@ -17,8 +33,6 @@
         </style>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
-        <script src="js/OrientedImageHelper.js"></script>
     </head>
     <body>
         <div id="viewerDiv">
@@ -27,10 +41,16 @@
                 <a href="https://smapshot.heig-vd.ch/map/?imageId=2873" target="_blank"> smapshot.heig-vd.ch </a>
             </p>
         </div>
-        <script src="js/GUI/GuiTools.js"></script>
-        <script src="../dist/itowns.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+            import OrientedImageHelper from 'OrientedImageHelper';
+
             // Define initial camera position.
             // Note that camera initial position will be overwritten by picture position later
             // var dummyPositionOnGlobe = { longitude: 0, latitude: 0, altitude: 10000000 };
@@ -98,36 +118,36 @@
                     // We are creating the classic aircraft axis, using lookAt and Up :
                     // First we look at the north, (north is on the Y axis in ENH orientation),
                     // so Z axis will point to the north
-                    enhToOrientationLookAt: new itowns.THREE.Vector3(0, 1, 0),
+                    enhToOrientationLookAt: new THREE.Vector3(0, 1, 0),
                     // then set the up vector to look to the ground,
                     // wich is the opposition of Z in ENH orientation, so Y axis will point to the ground.
-                    enhToOrientationUp: new itowns.THREE.Vector3(0, 0, -1),
+                    enhToOrientationUp: new THREE.Vector3(0, 0, -1),
                     // after that, X axis will naturally point the east.
                     //
                     // From the previous space (X to East, Y to the ground, Z to the north),
                     // let's define the camera orientation (X to East, Y to the sky, Z to the south).
-                    orientationToCameraUp: new itowns.THREE.Vector3(0, -1, 0),
-                    orientationToCameraLookAt: new itowns.THREE.Vector3(0, 0, 1),
+                    orientationToCameraUp: new THREE.Vector3(0, -1, 0),
+                    orientationToCameraLookAt: new THREE.Vector3(0, 0, 1),
                 },
                 distance: 4000,
                 opacity: 1,
             };
 
             function parseAircraftConventionOrientationToMatrix(panoramic) {
-                var euler = new itowns.THREE.Euler(
-                    itowns.THREE.MathUtils.degToRad(panoramic.tilt),
-                    itowns.THREE.MathUtils.degToRad(panoramic.azimuth),
-                    itowns.THREE.MathUtils.degToRad(panoramic.roll),
+                var euler = new THREE.Euler(
+                    THREE.MathUtils.degToRad(panoramic.tilt),
+                    THREE.MathUtils.degToRad(panoramic.azimuth),
+                    THREE.MathUtils.degToRad(panoramic.roll),
                     'ZYX');
 
-                return new itowns.THREE.Matrix4().makeRotationFromEuler(euler);
+                return new THREE.Matrix4().makeRotationFromEuler(euler);
             }
 
             coord = new itowns.Coordinates('EPSG:4326', pictureInfos.panoramic.longitude, pictureInfos.panoramic.latitude, pictureInfos.panoramic.height);
             rotationMatrix = parseAircraftConventionOrientationToMatrix(pictureInfos.panoramic);
 
             // eslint-disable-next-line no-unused-vars
-            camera = initCamera(view, pictureInfos.panoramic.image, coord,
+            camera = OrientedImageHelper.initCamera(view, pictureInfos.panoramic.image, coord,
                 pictureInfos.camera.enhToOrientationUp, pictureInfos.camera.enhToOrientationLookAt,
                 rotationMatrix,
                 pictureInfos.camera.orientationToCameraUp, pictureInfos.camera.orientationToCameraLookAt,
@@ -135,10 +155,10 @@
                 pictureInfos.camera.size, pictureInfos.camera.focal);
 
 
-            plane = setupPictureFromCamera(camera, pictureInfos.panoramic.image, pictureInfos.opacity,
+            plane = OrientedImageHelper.setupPictureFromCamera(camera, pictureInfos.panoramic.image, pictureInfos.opacity,
                 pictureInfos.distance);
 
-            setupViewCameraDecomposing(view, camera);
+            OrientedImageHelper.setupViewCameraDecomposing(view, camera);
 
             // open view camera FOV of 10° to see landscape around the picture.
             view.camera3D.fov += 10;
@@ -154,9 +174,9 @@
             var menuGlobe = new GuiTools('menuDiv', view);
             // setup GUI
             function updatePlaneDistance() {
-                transformTexturedPlane(camera, pictureInfos.distance, plane);
+                OrientedImageHelper.transformTexturedPlane(camera, pictureInfos.distance, plane);
             }
-            setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, view, 3000, 15000);
+            OrientedImageHelper.setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, view, 3000, 15000);
 
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
