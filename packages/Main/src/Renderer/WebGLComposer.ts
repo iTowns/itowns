@@ -130,6 +130,10 @@ export function makeDataArrayTexture(
     // Allocate immutable storage
     gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, count);
 
+    // Avoid visible seams
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
     // Create a temporary THREE.WebGLRenderTarget.
     // This render target's internal framebuffer
     // will be used to attach layers.
