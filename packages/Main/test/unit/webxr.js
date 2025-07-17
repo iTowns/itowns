@@ -72,7 +72,7 @@ describe('WebXR', function () {
         fakeCamera3D.updateProjectionMatrix();
         // Define a fake main loop with a step function that sets a flag when called.
         const fakeMainLoop = {
-            step(view, timestamp) {
+            step() {
                 this.called = true;
             },
         };
@@ -84,7 +84,7 @@ describe('WebXR', function () {
             camera3D: fakeCamera3D,
             mainLoop: fakeMainLoop,
             // notifyChange will flag that it was invoked.
-            notifyChange(camera, flag) {
+            notifyChange() {
                 notifyCalled = true;
             },
         };

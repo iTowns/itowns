@@ -12,8 +12,10 @@ import {
 
 import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
-import { DRACOLoader } from 'ThreeExtended/loaders/DRACOLoader';
-import { KTX2Loader } from 'ThreeExtended/loaders/KTX2Loader';
+// eslint-disable-next-line import/extensions, import/no-unresolved
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+// eslint-disable-next-line import/extensions, import/no-unresolved
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import PointsMaterial, {
     PNTS_MODE,
@@ -549,9 +551,9 @@ class OGC3DTilesLayer extends GeometryLayer {
         /** @type{number|null} */
         let batchId;
         if (object.isPoints && index != null) {
-            batchId = object.geometry.getAttribute('_BATCHID')?.getX(index) ?? index;
+            batchId = object.geometry.getAttribute('_batchid')?.getX(index) ?? index;
         } else if (object.isMesh && face) {
-            batchId = object.geometry.getAttribute('_BATCHID')?.getX(face.a) ?? instanceId;
+            batchId = object.geometry.getAttribute('_batchid')?.getX(face.a) ?? instanceId;
         }
 
         if (batchId === undefined) {

@@ -16,7 +16,7 @@ function createTileContent(tileId) {
     const geometry = new THREE.SphereGeometry(15, 32, 16);
     const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 
-    // Add _BATCHID geometry attributes
+    // Add _batchid geometry attributes
     const array = [];
     let currentBatchId = Math.round(Math.random() * 50);
     for (let index = 0; index < geometry.attributes.position.count; index++) {
@@ -27,7 +27,7 @@ function createTileContent(tileId) {
             currentBatchId = Math.round(Math.random() * 50);
         }
     }
-    geometry.setAttribute('_BATCHID', new THREE.BufferAttribute(Int32Array.from(array), 1));
+    geometry.setAttribute('_batchid', new THREE.BufferAttribute(Int32Array.from(array), 1));
 
     const result = new THREE.Mesh(geometry, material);
     result.batchTable = new C3DTBatchTable();
