@@ -11,4 +11,3 @@ potree
 /docs/out/
 **/coverage
 .nyc_output/
-**/src/ThreeExtended/

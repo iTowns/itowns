@@ -51,7 +51,7 @@ function findTileID(object) {
  * @returns {boolean} - true if object3d has feature
  */
 function object3DHasFeature(object3d) {
-    return object3d.geometry && object3d.geometry.attributes._BATCHID;
+    return object3d.geometry && object3d.geometry.attributes._batchid;
 }
 
 /**
@@ -237,13 +237,13 @@ class C3DTilesLayer extends GeometryLayer {
      * @returns {C3DTileFeature} - the closest C3DTileFeature of the intersects array
      */
     getC3DTileFeatureFromIntersectsArray(intersects) {
-        // find closest intersect with an attributes _BATCHID + face != undefined
+        // find closest intersect with an attributes _batchid + face != undefined
         let closestIntersect = null;
 
         for (let index = 0; index < intersects.length; index++) {
             const i = intersects[index];
             if (i.object.geometry &&
-                i.object.geometry.attributes._BATCHID &&
+                i.object.geometry.attributes._batchid &&
                 i.face && // need face to get batch id
                 i.layer == this // just to be sure that the right layer intersected
             ) {
@@ -260,7 +260,7 @@ class C3DTilesLayer extends GeometryLayer {
         // face is a Face3 object of THREE which is a
         // triangular face. face.a is its first vertex
         const vertex = closestIntersect.face.a;
-        const batchID = closestIntersect.object.geometry.attributes._BATCHID.getX(vertex);
+        const batchID = closestIntersect.object.geometry.attributes._batchid.getX(vertex);
 
         return this.tilesC3DTileFeatures.get(tileId).get(batchID);
     }
@@ -287,7 +287,7 @@ class C3DTilesLayer extends GeometryLayer {
         this.tilesC3DTileFeatures.set(tileContent.tileId, new Map()); // initialize
         tileContent.traverse((child) => {
             if (object3DHasFeature(child)) {
-                const batchIdAttribute = child.geometry.getAttribute('_BATCHID');
+                const batchIdAttribute = child.geometry.getAttribute('_batchid');
                 let currentBatchId = batchIdAttribute.getX(0);
                 let start = 0;
                 let count = 0;
