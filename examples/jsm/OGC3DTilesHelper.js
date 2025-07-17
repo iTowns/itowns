@@ -1,6 +1,9 @@
 import { MathUtils, Vector3 } from 'three';
 
-const { Coordinates, Extent, CameraUtils } = itowns;
+import { Coordinates, Extent, CameraUtils } from 'itowns';
+
+// eslint-disable-next-line import/extensions
+import { createHTMLListFromObject } from './GUI/GuiTools.js';
 
 /**
  * Function allowing picking on a given 3D tiles layer and filling an html div

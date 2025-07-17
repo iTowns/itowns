@@ -3,6 +3,21 @@
     <head>
         <title>Itowns - multiglobe</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -23,9 +38,14 @@
     <body>
         <div id="viewerDiv"></div>
         <span id="help">Press <em>Space</em> to switch globe</span>
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
             /* global itowns,document,GuiTools*/
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
@@ -42,7 +62,7 @@
             var front = 0;
 
             // Create the first globe
-            object3d = new itowns.THREE.Object3D();
+            object3d = new THREE.Object3D();
             var view = new itowns.GlobeView(viewerDiv, placement, { noControls: true, object3d });
             var cameraThree = view.camera3D;
             setupLoadingScreen(viewerDiv, view);
@@ -57,7 +77,7 @@
             });
 
             // Create a second smaller globe
-            object3d = new itowns.THREE.Object3D();
+            object3d = new THREE.Object3D();
             object3d.scale.divideScalar(3);
             object3d.position.y = 10000000;
             object3d.updateMatrixWorld();
@@ -65,7 +85,7 @@
             object3ds.push(object3d);
 
             // define pole texture
-            globe2.diffuse = new itowns.THREE.Color(0xd0d5d8);
+            globe2.diffuse = new THREE.Color(0xd0d5d8);
 
             // add globe2 to the view so it gets updated
             itowns.View.prototype.addLayer.call(view, globe2);
@@ -83,11 +103,11 @@
                 // "ignore" is true if this is the first animation step
                 t = ignore ? 0 : Math.min(1, dt / 1000 + t);
 
-                object3ds[front].position.y = itowns.THREE.MathUtils.lerp(front ? 10000000 : -10000000, 0, t);
-                object3ds[front].scale.setScalar(itowns.THREE.MathUtils.lerp(0.3, 1, t));
+                object3ds[front].position.y = THREE.MathUtils.lerp(front ? 10000000 : -10000000, 0, t);
+                object3ds[front].scale.setScalar(THREE.MathUtils.lerp(0.3, 1, t));
 
-                object3ds[1 - front].position.y = itowns.THREE.MathUtils.lerp(front ? -10000000 : 10000000, 0, 1 - t);
-                object3ds[1 - front].scale.setScalar(itowns.THREE.MathUtils.lerp(0.3, 1, 1 - t));
+                object3ds[1 - front].position.y = THREE.MathUtils.lerp(front ? -10000000 : 10000000, 0, 1 - t);
+                object3ds[1 - front].scale.setScalar(THREE.MathUtils.lerp(0.3, 1, 1 - t));
 
                 atmosphere3D.position.y = object3ds[0].position.y;
                 atmosphere3D.scale.copy(object3ds[0].scale);

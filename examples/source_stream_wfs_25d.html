@@ -2,6 +2,21 @@
     <head>
         <title>Itowns - WFS (geojson) example</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -25,11 +40,16 @@
             <ul id="info"></ul>
         </div>
         <div id="viewerDiv"></div>
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
-            itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+            itowns.CRS.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
             /* global itowns,document, setupLoadingScreen, window */
 
             var extent;
@@ -41,7 +61,7 @@
             var wmsImageryLayer;
             var rgb;
             var lyonTclBusSource;
-            var color = new itowns.THREE.Color();
+            var color = new THREE.Color();
 
             // Define geographic extent: CRS, min/max X, min/max Y
             extent = new itowns.Extent(
@@ -148,7 +168,7 @@
                 const line = properties.ligne;
                 let color = colorsLine.get(line);
                 if (color === undefined) {
-                    color = new itowns.THREE.Color(0xffffff * Math.random());
+                    color = new THREE.Color(0xffffff * Math.random());
                     colorsLine.set(line, color);
                 }
                 return colorsLine.get(line);
@@ -191,10 +211,10 @@
                 }
             });
 
-            const orange = new itowns.THREE.Color(0xffa400);
-            const blue = new itowns.THREE.Color(0x47edff);
-            const black = new itowns.THREE.Color(0x000000);
-            const red = new itowns.THREE.Color(0xff0000);
+            const orange = new THREE.Color(0xffa400);
+            const blue = new THREE.Color(0x47edff);
+            const black = new THREE.Color(0x000000);
+            const red = new THREE.Color(0xff0000);
 
             function colorBuildings(properties, ctx) {
                 const distance = ctx.coordinates.planarDistanceTo(centerMap);

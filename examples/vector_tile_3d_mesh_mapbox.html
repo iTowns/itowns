@@ -2,6 +2,21 @@
     <head>
         <title>Itowns - Globe + vector-tiles 3d</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -10,17 +25,12 @@
         <link rel="stylesheet" type="text/css" href="css/widgets.css">
         <link rel="stylesheet" type="text/css" href="css/mapbox.css">
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
 
         <!-- Import iTowns source code -->
-        <script src="../dist/itowns.js"></script>
-        <script src="../dist/debug.js"></script>
         <!-- Import iTowns LoadingScreen and GuiTools plugins -->
-        <script src="js/GUI/GuiTools.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
         <div id="description">
             <p><b>Building Information</b></p>
             <ul id="info">
@@ -34,7 +44,14 @@
               <a href="https://www.mapbox.com/map-feedback/" target="_blank"><strong>Improve this map</strong></a>
             </div>
           </div>
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
 
             // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
 
@@ -52,7 +69,7 @@
             const view = new itowns.GlobeView(viewerDiv, placement);
 
             // Define poles texture
-            view.tileLayer.noTextureColor = new itowns.THREE.Color(0x95c1e1);
+            view.tileLayer.noTextureColor = new THREE.Color(0x95c1e1);
 
             // Disable atmosphere lighting
             view.getLayerById('atmosphere').visible = false;

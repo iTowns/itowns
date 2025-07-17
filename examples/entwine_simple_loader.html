@@ -2,6 +2,19 @@
     <head>
         <title>Itowns - Entwine simple loader</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+                "lil": "https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.esm.js"
+            }
+        }
+        </script>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -19,21 +32,25 @@
     <body>
         <div id="description">Specify the URL of a Entwine Point Tree to load:
             <input type="text" id="ept_url" />
-            <button onclick="readEPTURL()">Load</button>
-            <button onclick="loadGrandLyon()">Load the Grand Lyon
-                dataset</button>
+            <button id="readUrlButton">Load</button>
+            <button id="loadLyonButton">Load the Grand Lyon dataset</button>
             <div id="share"></div>
         </div>
         <div id="viewerDiv">
         </div>
 
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script type="text/javascript">
-            itowns.proj4.defs('EPSG:3946', '+proj=lcc +lat_0=46 +lon_0=3 +lat_1=45.25 +lat_2=46.75 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
+        <script type="module">
 
-            var debugGui = new lil.GUI();
+            import lil from 'lil';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+
+            itowns.CRS.defs('EPSG:3946', '+proj=lcc +lat_0=46 +lon_0=3 +lat_1=45.25 +lat_2=46.75 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
+
+            var debugGui = new lil();
             var viewerDiv = document.getElementById('viewerDiv');
             viewerDiv.style.display = 'block';
             var view = new itowns.View('EPSG:3946', viewerDiv);
@@ -44,8 +61,8 @@
             var eptLayer, eptSource;
 
             function onLayerReady() {
-                var lookAt = new itowns.THREE.Vector3();
-                var size = new itowns.THREE.Vector3();
+                var lookAt = new THREE.Vector3();
+                var size = new THREE.Vector3();
                 eptLayer.root.bbox.getSize(size);
                 eptLayer.root.bbox.getCenter(lookAt);
 
@@ -124,10 +141,16 @@
                 view.domElement.addEventListener('dblclick', dblClickHandler);
             }
 
-            function loadGrandLyon() {
+            function onloadGrandLyon() {
                 document.getElementById('ept_url').value = 'https://download.data.grandlyon.com/files/grandlyon/imagerie/mnt2018/lidar/ept';
                 readEPTURL();
             }
+
+            const loadLyonButton = document.getElementById('loadLyonButton');
+            const readUrlButton = document.getElementById('readUrlButton');
+
+            loadLyonButton.addEventListener('click', onloadGrandLyon);
+            readUrlButton.addEventListener('click', readEPTURL);
 
             readEPTURL();
         </script>

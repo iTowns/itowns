@@ -2,6 +2,21 @@
     <head>
         <title>Itowns - 3D Tiles loader</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -23,17 +38,16 @@
             }
         </style>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
         <div id="description">Specify the URL of a tileset to load:
             <input type="text" id="url" />
-            <button onclick="readURL()">Load</button>
+            <button id="readURLButton">Load</button>
             <div class="marg">
-                <button onClick="loadLyon()">Load Lyon 1 (Mesh)</button>
-                <button onClick="loadSete()">Load Sete (Point Cloud)</button>
-                <button onClick="loadLille()">Load Lille (Mesh)</button>
+                <button id="loadLyonButton">Load Lyon 1 (Mesh)</button>
+                <button id="loadSeteButton">Load Sete (Point Cloud)</button>
+                <button id="loadLilleButton">Load Lille (Mesh)</button>
                 <div id="share"></div>
             </div>
             <hr />
@@ -42,21 +56,16 @@
             <div id="featureInfo" class="marg"></div>
         </div>
 
-        <script src="js/GUI/GuiTools.js"></script>
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="../dist/debug.js"></script>
-
-        <script type="importmap">
-            {
-                "imports": {
-                    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-                    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-                }
-            }
-        </script>
 
         <script type="module">
+            import * as THREE from 'three';
+            import dat from 'dat';
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+
             import {
                 AmbientLight,
                 PMREMGenerator,
@@ -214,6 +223,20 @@
             function loadLille() {
                 setUrl("https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json");
             }
+
+
+            
+
+            const readUrlButton = document.getElementById('readURLButton');
+            
+            const loadLyonButton = document.getElementById('loadLyonButton');
+            const loadSeteButton = document.getElementById('loadSeteButton');
+            const loadLilleButton = document.getElementById('loadLilleButton');
+
+            loadLyonButton.addEventListener('click', loadLyon);
+            loadSeteButton.addEventListener('click', loadSete);
+            loadLilleButton.addEventListener('click', loadLille);
+            readUrlButton.addEventListener('click', readEPTURL);
 
             window.readURL = readURL;
             window.loadLyon = loadLyon;

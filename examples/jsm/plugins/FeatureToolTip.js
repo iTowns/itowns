@@ -1,4 +1,5 @@
-/* global itowns */
+import * as itowns from 'itowns';
+
 /**
  * A tooltip that can display some useful information about a feature when
  * hovering it.
@@ -238,6 +239,5 @@ const FeatureToolTip = (function _() {
     };
 }());
 
-if (typeof module != 'undefined' && module.exports) {
-    module.exports = FeatureToolTip;
-}
+
+export default FeatureToolTip;

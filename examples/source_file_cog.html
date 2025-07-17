@@ -1,6 +1,24 @@
 <html>
     <head>
         <title>Cloud Optimized GeoTiff</title>
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+                "COGParser": "./jsm/plugins/COGParser.js",
+                "COGSource": "./jsm/plugins/COGSource.js",
+                "geotiff": "https://esm.sh/geotiff@2.1.3"
+            }
+        }
+        </script>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
@@ -13,27 +31,29 @@
         </style>
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="description">
             <div>Specify the URL of a COG to load:
                 <input type="text" id="cog_url" />
-                <button onclick="readCOGURL()">Load</button>
+                <button id="readCOGURLButton">Load</button>
             </div>
-            <button onclick="loadRGBSample()">Load RGB sample</button>
-            <button onclick="load1BandSample()">Load 1 band sample</button>
+            <button id="loadRGBSampleButton">Load RGB sample</button>
+            <button id="load1BandSampleButton">Load 1 band sample</button>
         </div>
         <div id="viewerDiv"></div>
-        <script src="js/GUI/GuiTools.js"></script>
-        <script src="../dist/itowns.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
-        <script src="js/plugins/COGParser.js"></script>
-        <script src="js/plugins/COGSource.js"></script>
-        <script type="text/javascript">
-            itowns.proj4.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+            import COGParser from 'COGParser';
+            import COGSource from 'COGSource';
+
+            itowns.CRS.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
             var viewerDiv = document.getElementById('viewerDiv');
             var view;
@@ -92,6 +112,13 @@
             }
 
             readCOGURL();
+            const loadRGBSampleButton = document.getElementById('loadRGBSampleButton');
+            const load1BandSampleButton = document.getElementById('load1BandSampleButton');
+            const readCOGURLButton = document.getElementById('readCOGURLButton');
+
+            loadRGBSampleButton.addEventListener('click', loadRGBSample);
+            load1BandSampleButton.addEventListener('click', load1BandSample);
+            readCOGURLButton.addEventListener('click', readCOGURL);
         </script>
     </body>
 </html>

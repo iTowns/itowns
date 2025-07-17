@@ -2,21 +2,38 @@
     <head>
         <title>Itowns - Custom ColorLayer effect</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
         <div id="miniDiv"></div>
-        <script src="../dist/itowns.js"></script>
-        <script src="js/GUI/LoadingScreen.js"></script>
-        <script src="../dist/debug.js"></script>
-        <script src="js/GUI/GuiTools.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
             // # Orthographic viewer
 
             // Define geographic extent: CRS, min/max X, min/max Y
@@ -34,7 +51,7 @@
             var view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true, maxSubdivisionLevel: 10,
                 camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC },
                 placement: new itowns.Extent('EPSG:3857', -20000000, 20000000, -8000000, 20000000),
-                diffuse: new itowns.THREE.Color(0x444444),
+                diffuse: new THREE.Color(0x444444),
                 controls: {
                     // Faster zoom in/out speed
                     zoomFactor: 3,
@@ -103,7 +120,7 @@
                 crs: 'EPSG:3857',
                 isInverted: true,
                 format: 'image/png',
-                url: 'http://osm.oslandia.io/styles/klokantech-basic/${z}/${x}/${y}.png',
+                url: 'https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/${z}/${x}/${y}.jpg',
                 tileMatrixSet: 'PM'
             });
 
@@ -112,8 +129,8 @@
                 source: opensmSource,
                 effect_type: itowns.colorLayerEffects.customEffect,
                 effect_parameter: 1.0,
-                magFilter: itowns.THREE.NearestFilter,
-                minFilter: itowns.THREE.NearestFilter,
+                magFilter: THREE.NearestFilter,
+                minFilter: THREE.NearestFilter,
             });
 
             var opensm = new itowns.ColorLayer('OPENSM', { source: opensmSource });
@@ -124,7 +141,7 @@
             // Request redraw
             view.notifyChange();
 
-            menuGlobe = new GuiTools('menuDiv', view);
+            const menuGlobe = new GuiTools('menuDiv', view);
             menuGlobe.addImageryLayersGUI(view.getLayers(function gui(l) { return l.isColorLayer; }));
             debug.createTileDebugUI(menuGlobe.gui, view);
 

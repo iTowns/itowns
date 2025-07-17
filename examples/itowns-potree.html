@@ -2,6 +2,21 @@
     <head>
         <title>iTowns - Potree</title>
 
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+            }
+        }
+        </script>
+
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -25,19 +40,7 @@
         </div>
 
         <!-- Import iTowns source code -->
-        <script src="../dist/itowns.js"></script>
-        <script src="../dist/debug.js"></script>
         <!-- Import iTowns LoadingScreen pluggin -->
-        <script src="js/GUI/LoadingScreen.js"></script>
-
-        <!-- Define THREE and proj4 constants so that Potree may access them. Otherwise, we would need to access them
-             with `itowns.THREE` or `itowns.proj4`. -->
-        <script type="text/javascript">
-            const THREE = itowns.THREE;
-            THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
-
-            const proj4 = itowns.proj4;
-        </script>
 
         <!-- Import Potree source code -->
         <script src="../potree/libs/jquery/jquery-3.1.1.min.js"></script>
@@ -46,13 +49,19 @@
         <script src="../potree/libs/plasio/js/laslaz.js"></script>
         <script src="../potree/build/potree/potree.js"></script>
 
-        <script type="text/javascript">
+        <script type="module">
 
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
 
+            THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 
             // `viewerDiv` contains both iTowns and Potree rendering area (`<canvas>`)
             const viewerDiv = document.getElementById('potree_render_area');
-
 
 
             // ---------- CREATE A POTREE VIEWER FOR SUPPORTING POINT CLOUD VISUALIZATION : ----------
@@ -60,7 +69,7 @@
             const coordinates = new itowns.Coordinates('EPSG:4978');
 
             // Define crs projection of the point cloud data (taken from https://epsg.io/2154, Proj4js section)
-            proj4.defs(
+            itowns.CRS.defs(
                 'EPSG:2154',
                 '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80'
                 + ' towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
