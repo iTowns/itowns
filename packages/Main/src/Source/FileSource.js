@@ -152,24 +152,24 @@ class FileSource extends Source {
     onLayerAdded(options) {
         options.in = this;
         super.onLayerAdded(options);
-        let features = this._featuresCaches[options.out.crs].get(0);
-        if (!features) {
-            options.out.buildExtent = this.crs != 'EPSG:4978';
-            if (options.out.buildExtent) {
-                options.out.forcedExtentCrs = options.out.crs != 'EPSG:4978' ? options.out.crs : this.crs;
-            }
-            features = this.parser(this.fetchedData, options);
-            this._featuresCaches[options.out.crs].set(0, features);
-        }
-        features.then((data) => {
-            if (data.extent) {
-                this.extent = data.extent.clone();
-                // Transform local extent to data.crs projection.
-                if (this.extent.crs == data.crs) {
-                    this.extent.applyMatrix4(data.matrixWorld);
-                }
-            }
-        });
+        // let features = this._featuresCaches[options.out.crs].get(0);
+        // if (!features) {
+        //     options.out.buildExtent = this.crs != 'EPSG:4978';
+        //     if (options.out.buildExtent) {
+        //         options.out.forcedExtentCrs = options.out.crs != 'EPSG:4978' ? options.out.crs : this.crs;
+        //     }
+        //     features = this.parser(this.fetchedData, options);
+        //     this._featuresCaches[options.out.crs].set(0, features);
+        // }
+        // features.then((data) => {
+        //     if (data.extent) {
+        //         this.extent = data.extent.clone();
+        //         // Transform local extent to data.crs projection.
+        //         if (this.extent.crs == data.crs) {
+        //             this.extent.applyMatrix4(data.matrixWorld);
+        //         }
+        //     }
+        // });
     }
 
     /**
@@ -181,7 +181,13 @@ class FileSource extends Source {
      * @return     {FeatureCollection|Texture}  The parsed data.
      */
     loadData(extent, out) {
-        return this._featuresCaches[out.crs].get(0);
+        const features = this.parser(this.fetchedData, {
+            in: this,
+            out,
+            extent,
+        });
+        return features;
+        // return this._featuresCaches[out.crs].get(0);
     }
 
     extentInsideLimit(extent) {
