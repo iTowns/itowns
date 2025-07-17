@@ -16,7 +16,6 @@ import iGLTFLoader from 'Parser/iGLTFLoader';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 // eslint-disable-next-line import/extensions, import/no-unresolved
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
-import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import PointsMaterial, {
     PNTS_MODE,
     PNTS_SHAPE,
@@ -144,6 +143,88 @@ export function enableMeshoptDecoder(MeshOptDecoder) {
         throw new Error('MeshOptDecoder module is mandatory');
     }
     itownsGLTFLoader.setMeshoptDecoder(MeshOptDecoder);
+}
+
+// TODO: rename
+function referMaterialProperties(material, layer) {
+    Object.defineProperty(material, 'opacity', {
+        get: () => layer.opacity,
+        set: () => {},
+    });
+
+    let _transparent = material.transparent;
+    Object.defineProperty(material, 'transparent', {
+        get: () => {
+            const transparent = material.opacity < 1.0;
+            if (transparent != _transparent) {
+                material.needsUpdate = true;
+                _transparent = transparent;
+            }
+            return transparent;
+        },
+        set: () => {},
+    });
+
+    Object.defineProperty(material, 'wireframe', {
+        get: () => layer.wireframe,
+        set: () => {},
+    });
+}
+
+function referPointsMaterialProperties(material, layer) {
+    let _transparent = material.transparent;
+    Object.defineProperty(material, 'transparent', {
+        get: () => {
+            const transparent = material.opacity < 1.0
+                || material.classificationTexture.userData.transparent;
+            if (transparent != _transparent) {
+                material.needsUpdate = true;
+                _transparent = transparent;
+            }
+            return transparent;
+        },
+        set: () => {},
+    });
+
+    Object.defineProperty(material, 'wireframe', {
+        get: () => layer.wireframe,
+        set: () => {},
+    });
+
+    Object.defineProperty(material.uniforms.opacity, 'value', {
+        get: () => layer.opacity,
+        set: () => {},
+    });
+
+    Object.defineProperty(material.uniforms.mode, 'value', {
+        get: () => layer.pntsMode,
+        set: () => {},
+    });
+
+    Object.defineProperty(material.uniforms.shape, 'value', {
+        get: () => layer.pntsShape,
+        set: () => {},
+    });
+
+    Object.defineProperty(material.uniforms.sizeMode, 'value', {
+        get: () => layer.pntsSizeMode,
+        set: () => {},
+    });
+
+    Object.defineProperty(material.uniforms.minAttenuatedSize, 'value', {
+        get: () => layer.pntsMinAttenuatedSize,
+        set: () => {},
+    });
+
+    Object.defineProperty(material.uniforms.maxAttenuatedSize, 'value', {
+        get: () => layer.pntsMaxAttenuatedSize,
+        set: () => {},
+    });
+
+    Object.defineProperty(material.uniforms.scale, 'value', {
+        get: () => layer.scale,
+        set: () => {},
+    });
 }
 
 async function getMeshFeatures(meshFeatures, options) {
@@ -429,6 +510,10 @@ class OGC3DTilesLayer extends GeometryLayer {
      * @private
      */
     _assignFinalMaterial(model) {
+        if (!model.isMesh && !model.isPoints) {
+            return;
+        }
+
         let material = model.material;
 
         if (model.isPoints) {
@@ -442,12 +527,9 @@ class OGC3DTilesLayer extends GeometryLayer {
             });
             pointsMaterial.copy(material);
             material = pointsMaterial;
-            material.depthWrite = false;
-        }
-
-        if (material) {
-            material.transparent = true;
-            ReferLayerProperties(material, this);
+            referPointsMaterialProperties(material, this);
+        } else {
+            referMaterialProperties(material, this);
         }
 
         model.material = material;
