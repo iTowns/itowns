@@ -102,10 +102,10 @@ If you're using a module bundler (like wepback), you can directly write
 #### Bundles iTowns
 
 Alternatively, we provide 2 bundles (ESM and UMD) you can directly include in your html files
-that exposes `itowns` in `window`:
 
+##### UMD packaging 
 
-#### UMD packaging 
+UMD exposes `itowns` in `window`:
 
 ```html
 <script src="node_modules/itowns/dist/itowns.umd.js"></script>
@@ -116,9 +116,9 @@ that exposes `itowns` in `window`:
 
 **/!\ Please note that this UMD bundle also contains the peer dependencies**.
 
-#### EMS packaging 
+##### EMS packaging 
 
-EMS bundle must import in `importmap`  and use in `module` script.
+iTowns EMS bundle must import in `importmap`  and use in `module` script.
 
 ```html
 <script type="importmap">

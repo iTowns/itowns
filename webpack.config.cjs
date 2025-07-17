@@ -44,7 +44,7 @@ module.exports = () => {
         options: babelConf,
     });
 
-    const configESM = {
+    const sharedConfig = {
         mode,
         context: path.resolve(__dirname),
         resolve: {
@@ -92,7 +92,7 @@ module.exports = () => {
         },
     };
 
-    const configUMD = structuredClone(configESM);
+    const configUMD = structuredClone(sharedConfig);
 
     // UMD
     configUMD.entry.itowns.push('./packages/Main/src/MainBundle.js');
@@ -102,6 +102,8 @@ module.exports = () => {
     configUMD.output.umdNamedDefine = true;
 
     // ESM
+    const configESM = structuredClone(sharedConfig);
+
     configESM.entry.itowns.push('./packages/Main/src/Main.js');
 
     configESM.output.filename = '[name].js';
