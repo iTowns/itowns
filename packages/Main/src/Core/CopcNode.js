@@ -1,7 +1,7 @@
 import { Hierarchy } from 'copc';
 import PointCloudNode from 'Core/PointCloudNode';
 
-function buildId(depth, x, y, z) {
+function buildVoxelKey(depth, x, y, z) {
     return `${depth}-${x}-${y}-${z}`;
 }
 
@@ -19,7 +19,7 @@ function buildId(depth, x, y, z) {
  * @property {number} x - X position within the octree
  * @property {number} y - Y position within the octree
  * @property {number} z - Z position within the octree
- * @property {string} id - The id of the node, constituted of the four
+ * @property {string} voxelKey - The id of the node, constituted of the four
  * components: `depth-x-y-z`.
  */
 class CopcNode extends PointCloudNode {
@@ -42,17 +42,21 @@ class CopcNode extends PointCloudNode {
 
         this.entryOffset = entryOffset;
         this.entryLength = entryLength;
-        this.layer = layer;
+
         this.depth = depth;
         this.x = x;
         this.y = y;
         this.z = z;
 
-        this.id = buildId(depth, x, y, z);
+        this.voxelKey = buildVoxelKey(depth, x, y, z);
     }
 
     get octreeIsLoaded() {
         return this.numPoints >= 0;
+    }
+
+    get id() {
+        return `${this.depth}${this.x}${this.y}${this.z}`;
     }
 
     /**
@@ -75,7 +79,7 @@ class CopcNode extends PointCloudNode {
         const hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
 
         // Update current node entry from loaded subtree
-        const node = hierarchy.nodes[this.id];
+        const node = hierarchy.nodes[this.voxelKey];
         if (!node) {
             return Promise.reject('[CopcNode]: Ill-formed data, entry not found in hierarchy.');
         }
@@ -115,19 +119,19 @@ class CopcNode extends PointCloudNode {
      * @param {CopcNode[]} stack - Stack of node candidates for traversal
      */
     findAndCreateChild(depth, x, y, z, hierarchy, stack) {
-        const id = buildId(depth, x, y, z);
+        const voxelKey = buildVoxelKey(depth, x, y, z);
 
         let pointCount;
         let offset;
         let byteSize;
 
-        const node = hierarchy.nodes[id];
+        const node = hierarchy.nodes[voxelKey];
         if (node) {
             pointCount = node.pointCount;
             offset = node.pointDataOffset;
             byteSize = node.pointDataLength;
         } else {
-            const page = hierarchy.pages[id];
+            const page = hierarchy.pages[voxelKey];
             if (!page) { return; }
             pointCount = -1;
             offset = page.pageOffset;

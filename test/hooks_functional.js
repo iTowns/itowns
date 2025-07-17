@@ -130,7 +130,9 @@ const loadExample = async (url, screenshotName) => {
     }
 
     if (pageErrors.length > 0) {
-        const err = new Error(`page ${url} encoutered ${pageErrors.length} error(s). [${pageErrors.map(e => e.message)}]`, { cause: pageErrors });
+        const err = new Error(`page ${url} encoutered ${pageErrors.length} error(s):\n` +
+            `${pageErrors.map((e, i) => `\t${i + 1}. ${e.message.replaceAll('\n', '\n\t    ')}`).join('\n')}`,
+        { cause: pageErrors[0] });
         throw err;
     }
 
