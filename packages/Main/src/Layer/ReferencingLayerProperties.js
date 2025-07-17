@@ -2,6 +2,7 @@
 // next step is move these properties to Style class
 function ReferLayerProperties(material, layer) {
     if (layer && layer.isGeometryLayer) {
+        let transparent = material.transparent;
         material.layer = layer;
 
         if (material.uniforms && material.uniforms.opacity != undefined) {
@@ -52,6 +53,16 @@ function ReferLayerProperties(material, layer) {
 
         Object.defineProperty(material, 'wireframe', {
             get: () => material.layer.wireframe,
+        });
+
+        Object.defineProperty(material, 'transparent', {
+            get: () => {
+                if (transparent != material.layer.opacity < 1.0) {
+                    material.needsUpdate = true;
+                    transparent = material.layer.opacity < 1.0;
+                }
+                return transparent;
+            },
         });
     }
 

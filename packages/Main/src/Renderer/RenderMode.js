@@ -14,7 +14,6 @@ function push(object3d, mode) {
         const material = node.material;
         if (material) {
             material.mode = m;
-            material.transparent = m === MODES.FINAL;
         }
     });
 
