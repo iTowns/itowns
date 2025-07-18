@@ -320,9 +320,6 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.tilesSchedulingCB = (func) => {
             this.tasks.push(func);
         };
-
-        // Store the original scheduling callback for this layer
-        this._originalSchedulingCallback = this.tilesSchedulingCB;
     }
 
     /**
@@ -336,27 +333,18 @@ class OGC3DTilesLayer extends GeometryLayer {
         // Share the caches and queues to cut down on memory and correctly prioritize downloads.
         // https://github.com/NASA-AMMOS/3DTilesRendererJS?tab=readme-ov-file#multiple-tilesrenderers-with-shared-caches-and-queues
         if (viewers[id]) {
-
             this.tilesRenderer.lruCache = viewers[id].lruCache;
             this.tilesRenderer.downloadQueue = viewers[id].downloadQueue;
             this.tilesRenderer.parseQueue = viewers[id].parseQueue;
 
-            // Store references to all layer callbacks for this view
-            // Each tile has it's own callback
-            if (!viewers[id].layerCallbacks) {
-                viewers[id].layerCallbacks = [];
-            }
-            viewers[id].layerCallbacks.push(this._originalSchedulingCallback);
-
+            // Add this layer's callback to the map
+            viewers[id].layerCallbacks[this.id] = this.tilesSchedulingCB;
+        } else {
             // Create a combined callback that calls all layer callbacks
             const combinedCallback = (func) => {
-                if (viewers[id] && viewers[id].layerCallbacks) {
-                    // Filter out null/undefined callbacks (from deleted layers)
-                    viewers[id].layerCallbacks = viewers[id].layerCallbacks.filter(callback => callback != null);
-                    viewers[id].layerCallbacks.forEach((callback) => {
-                        if (callback) { callback(func); }
-                    });
-                }
+                Object.values(viewers[id].layerCallbacks).forEach((callback) => {
+                    callback(func);
+                });
             };
 
             // Set the combined callback
@@ -367,16 +355,14 @@ class OGC3DTilesLayer extends GeometryLayer {
             // Example: https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/de25d27dc0e75278962b5f401faee30f8dce2fe0/example/vr.js
             this.tilesRenderer.downloadQueue.schedulingCallback = combinedCallback;
             this.tilesRenderer.parseQueue.schedulingCallback = combinedCallback;
-        } else {
-            // Set the combined callback (cf. above comment)
-            this.tilesRenderer.downloadQueue.schedulingCallback = this.tilesSchedulingCB;
-            this.tilesRenderer.parseQueue.schedulingCallback = this.tilesSchedulingCB;
 
             viewers[id] = {
                 lruCache: this.tilesRenderer.lruCache,
                 downloadQueue: this.tilesRenderer.downloadQueue,
                 parseQueue: this.tilesRenderer.parseQueue,
-                layerCallbacks: [this._originalSchedulingCallback],
+                layerCallbacks: {
+                    [this.id]: this.tilesSchedulingCB,
+                },
             };
             view.addEventListener(VIEW_EVENTS.DISPOSED, (evt) => {
                 delete viewers[evt.target.id];
@@ -507,13 +493,11 @@ class OGC3DTilesLayer extends GeometryLayer {
      */
     delete() {
         // Clean up the callback reference from the shared callbacks
-        if (this._viewId !== null && viewers[this._viewId] && viewers[this._viewId].layerCallbacks) {
-            const callbackIndex = viewers[this._viewId].layerCallbacks.indexOf(this._originalSchedulingCallback);
-            if (callbackIndex !== -1) {
-                viewers[this._viewId].layerCallbacks.splice(callbackIndex, 1);
-            }
+        if (this._viewId != null && viewers[this._viewId]?.layerCallbacks) {
+            delete viewers[this._viewId].layerCallbacks[this.id];
+
             // If no more layers are using this view's queues, clean up completely
-            if (viewers[this._viewId].layerCallbacks.length === 0) {
+            if (Object.keys(viewers[this._viewId].layerCallbacks).length === 0) {
                 delete viewers[this._viewId];
             }
         }
@@ -521,7 +505,6 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.tilesRenderer.dispose();
 
         // Clean up references
-        this._originalSchedulingCallback = null;
         this.tilesSchedulingCB = null;
         this._viewId = null;
     }
@@ -565,7 +548,7 @@ class OGC3DTilesLayer extends GeometryLayer {
 
         /** @type{number|null} */
         let batchId;
-        if (object.isPoints && index) {
+        if (object.isPoints && index != null) {
             batchId = object.geometry.getAttribute('_BATCHID')?.getX(index) ?? index;
         } else if (object.isMesh && face) {
             batchId = object.geometry.getAttribute('_BATCHID')?.getX(face.a) ?? instanceId;
