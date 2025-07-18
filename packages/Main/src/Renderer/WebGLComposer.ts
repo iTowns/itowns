@@ -22,7 +22,8 @@ const copyTextureShader = {
 
 let renderTarget: THREE.WebGLRenderTarget | null = null;
 let material: THREE.ShaderMaterial | null = null;
-let geometry: THREE.PlaneGeometry | null = null;
+let quadScene: THREE.Scene | null = null;
+let quadCam: THREE.OrthographicCamera | null = null;
 
 /**
  * Renders a single 2D texture layer into the DataArrayTexture on the GPU.
@@ -134,13 +135,10 @@ export function makeDataArrayTexture(
     }
 
     // Set up the quad for rendering
-    const quadScene = new THREE.Scene();
-    const quadCam = new THREE.OrthographicCamera(
-        -1, 1, 1, -1, 0, 1);
-    if (!geometry) {
-        geometry = new THREE.PlaneGeometry(2, 2);
-    }
-    if (!material) {
+    if (!quadScene) {
+        quadScene = new THREE.Scene();
+        quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const geometry = new THREE.PlaneGeometry(2, 2);
         material = new THREE.ShaderMaterial({
             uniforms: {
                 // This uniform will be updated with each source 2D texture
@@ -149,9 +147,9 @@ export function makeDataArrayTexture(
             vertexShader: copyTextureShader.vertexShader,
             fragmentShader: copyTextureShader.fragmentShader,
         });
+        const quad = new THREE.Mesh(geometry, material);
+        quadScene.add(quad);
     }
-    const quad = new THREE.Mesh(geometry, material);
-    quadScene.add(quad);
 
     // loop through each tile and its textures
     // to render them into DataArrayTexture layers
@@ -163,11 +161,11 @@ export function makeDataArrayTexture(
             ++i, ++count
         ) {
             // Set the current source 2D texture on the quad's material
-            material.uniforms.sourceTexture.value = tile.textures[i];
+            material!.uniforms.sourceTexture.value = tile.textures[i];
 
             // render this source texture into the current layer
             drawTextureLayer(renderer, renderTarget, uTextures.value,
-                count, quadScene, quadCam);
+                count, quadScene!, quadCam!);
         }
     }
 
