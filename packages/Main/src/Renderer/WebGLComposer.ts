@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { RasterTile } from './RasterTile';
 
-// Define the shader for copying a 2D texture to a framebuffer
+// shader for copying a 2D texture to a framebuffer
 const copyTextureShader = {
     vertexShader: `
         varying vec2 vUv;
@@ -48,18 +48,17 @@ function drawTextureLayer(
 ) {
     const gl = renderer.getContext();
 
-    // 1. Set the render target.
-    const current = renderer.getRenderTarget();
+    // save the previous render target and temporarily set the new one
+    const previousRenderTarget = renderer.getRenderTarget();
     renderer.setRenderTarget(renderTarget);
 
-    // 2. Get the raw WebGLTexture object for the DataArrayTexture.
+    // get the raw WebGLTexture object for the DataArrayTexture
     const props = renderer.properties.get(dataArrayTextureToPopulate) as
         { __webglTexture: WebGLTexture };
     const dataArrayTextureWebGL = props.__webglTexture;
 
-    // 3. Attach the specific layer of the DataArrayTexture to the framebuffer's
-    // COLOR_ATTACHMENT0. The framebuffer is already bound by
-    // `renderer.setRenderTarget(renderTarget)`.
+    // attach the specific layer of the DataArrayTexture to the framebuffer's
+    // COLOR_ATTACHMENT0
     if ('framebufferTextureLayer' in gl) {
         gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
             dataArrayTextureWebGL, 0, layerIndex);
@@ -68,19 +67,10 @@ function drawTextureLayer(
         return;
     }
 
-    // 4. Check framebuffer status after attaching the layer.
-    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    if (status !== gl.FRAMEBUFFER_COMPLETE) {
-        console.error('Framebuffer not complete after attaching layer:', status);
-        return;
-    }
-
-    // 5. Render the quad scene.
     renderer.render(quadScene, quadCam);
 
-    // 6. Reset render target to null. This unbinds the custom framebuffer
-    // and restores the default framebuffer (usually the screen).
-    renderer.setRenderTarget(current);
+    // reset render target to the old one
+    renderer.setRenderTarget(previousRenderTarget);
 }
 
 /**
