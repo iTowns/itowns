@@ -78,6 +78,9 @@ const defaultStructLayers: Readonly<{
     },
 };
 
+const textureArraysCache = new Map<string, THREE.DataArrayTexture>();
+const TEXTURE_ARRAY_CACHE_CAPACITY = 200;
+
 /**
  * Updates the uniforms for layered textures,
  * including populating the DataArrayTexture
@@ -87,10 +90,11 @@ const defaultStructLayers: Readonly<{
  * @param tiles - An array of RasterTile objects, each containing textures.
  * @param max - The maximum number of layers for the DataArrayTexture.
  */
-function updateLayersUniforms(
+function updateLayersUniforms<Type extends 'c' | 'e'>(
     uniforms: { [name: string]: THREE.IUniform },
     tiles: RasterTile[],
     max: number,
+    type: Type,
 ) {
     // Aliases for readability
     const uLayers = uniforms.layers.value;
@@ -105,6 +109,7 @@ function updateLayersUniforms(
 
     // Determine total count of textures and dimensions
     // (assuming all textures are same size)
+    let textureSetId: string = type;
     for (const tile of tiles) {
         // FIXME: RasterElevationTile are always passed to this function alone
         // so this works, but it's really not great even ignoring the dynamic
@@ -117,6 +122,7 @@ function updateLayersUniforms(
             i < tile.textures.length && count < max;
             ++i, ++count
         ) {
+            textureSetId += `${tile.textures[i].id}.`;
             uOffsetScales[count] = tile.offsetScales[i];
             uLayers[count] = tile;
 
@@ -136,10 +142,23 @@ function updateLayersUniforms(
         }
     }
 
+    if (textureArraysCache.has(textureSetId)) {
+        uTextures.value = textureArraysCache.get(textureSetId);
+        uTextureCount.value = count;
+        return;
+    }
+
     if (!makeDataArrayTexture(uTextures, width, height, count, tiles, max)) {
         uTextureCount.value = 0;
         return;
     }
+
+    if (textureArraysCache.size >= TEXTURE_ARRAY_CACHE_CAPACITY) {
+        const oldestEntry = textureArraysCache.entries().next().value!;
+        oldestEntry[1].dispose();
+        textureArraysCache.delete(oldestEntry[0]);
+    }
+    textureArraysCache.set(textureSetId, uTextures.value);
 
     if (count > max) {
         console.warn(
@@ -466,6 +485,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             this.getLayerUniforms('color'),
             colorlayers,
             this.defines.NUM_FS_TEXTURES,
+            'c',
         );
 
         if (this.elevationTileId !== undefined && this.getElevationTile()) {
@@ -474,6 +494,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
                     this.getLayerUniforms('elevation'),
                     [this.elevationTile],
                     this.defines.NUM_VS_TEXTURES,
+                    'e',
                 );
             }
         }
