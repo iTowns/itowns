@@ -74,6 +74,56 @@ function drawTextureLayer(
     renderer.setRenderTarget(previousRenderTarget);
 }
 
+function getInternalFormat(
+    gl: WebGL2RenderingContext,
+    format: THREE.PixelFormat,
+    type: THREE.TextureDataType): number {
+    if (type === THREE.UnsignedByteType) {
+        switch (format) {
+            case THREE.RGBAFormat:
+                return gl.RGBA8;
+            case THREE.RedFormat:
+                return gl.R8;
+            case THREE.RGBFormat:
+                return gl.RGB8;
+            default:
+                console.error(`Unsupported format/type combo: format=${format}, type=UnsignedByte`);
+                return -1;
+        }
+    }
+
+    if (type === THREE.FloatType) {
+        switch (format) {
+            case THREE.RGBAFormat:
+                return gl.RGBA32F;
+            case THREE.RedFormat:
+                return gl.R32F;
+            case THREE.RGBFormat:
+                return gl.RGB32F;
+            default:
+                console.error(`Unsupported format/type combo: format=${format}, type=Float`);
+                return -1;
+        }
+    }
+
+    if (type === THREE.HalfFloatType) {
+        switch (format) {
+            case THREE.RGBAFormat:
+                return gl.RGBA16F;
+            case THREE.RedFormat:
+                return gl.R16F;
+            case THREE.RGBFormat:
+                return gl.RGB16F;
+            default:
+                console.error(`Unsupported format/type combo: format=${format}, type=HalfFloat`);
+                return -1;
+        }
+    }
+
+    console.error(`Unsupported type: ${type}`);
+    return -1;
+}
+
 /**
  * Initializes a THREE.DataArrayTexture with immutable storage and populates
  * its layers by rendering individual 2D textures onto them using the GPU.
@@ -118,8 +168,6 @@ export function makeDataArrayTexture(
         { __webglTexture: WebGLTexture };
     textureProps.__webglTexture = gl.createTexture(); // Create a raw WebGL texture
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, textureProps.__webglTexture);
-    // Allocate immutable storage
-    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, count);
 
     // Avoid visible seams
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -150,6 +198,16 @@ export function makeDataArrayTexture(
         const quad = new THREE.Mesh(geometry, material);
         quadScene.add(quad);
     }
+
+    const firstTexture = tiles[0].textures[0]; // exists because count > 0
+
+    // Allocate immutable storage
+    const glFormat = getInternalFormat(gl, firstTexture.format, firstTexture.type);
+    if (glFormat < 0) {
+        uTextures.value.dispose();
+        return false;
+    }
+    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, glFormat, width, height, count);
 
     // loop through each tile and its textures
     // to render them into DataArrayTexture layers
