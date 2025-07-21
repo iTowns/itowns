@@ -145,6 +145,8 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
     if (textureArraysCache.has(textureSetId)) {
         uTextures.value = textureArraysCache.get(textureSetId);
         uTextureCount.value = count;
+        const renderer: THREE.WebGLRenderer = view.renderer;
+        renderer.initTexture(uTextures.value);
         return;
     }
 
