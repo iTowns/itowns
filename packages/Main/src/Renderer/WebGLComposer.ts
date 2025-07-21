@@ -141,12 +141,7 @@ export function makeDataArrayTexture(
     uTextures: THREE.IUniform, width: number, height: number, count: number, tiles: RasterTile[],
     max: number,
 ): boolean {
-    // If no textures found, dispose previous DataArrayTexture and reset
-    if (count === 0) {
-        if (uTextures.value instanceof THREE.DataArrayTexture) { uTextures.value.dispose(); }
-        uTextures.value = new THREE.DataArrayTexture();
-        return false;
-    }
+    if (count === 0) { return false; }
 
     const renderer: THREE.WebGLRenderer = view.renderer;
     const gl = renderer.getContext();
@@ -155,10 +150,6 @@ export function makeDataArrayTexture(
         return false;
     }
 
-    // Dispose previous DataArrayTexture to prevent memory leaks if re-creating
-    if (uTextures.value instanceof THREE.DataArrayTexture) { uTextures.value.dispose(); }
-
-    // Create a new THREE.DataArrayTexture.
     uTextures.value = new THREE.DataArrayTexture(null, width, height, count);
 
     // Manually initialize the WebGL
@@ -203,10 +194,7 @@ export function makeDataArrayTexture(
 
     // Allocate immutable storage
     const glFormat = getInternalFormat(gl, firstTexture.format, firstTexture.type);
-    if (glFormat < 0) {
-        uTextures.value.dispose();
-        return false;
-    }
+    if (glFormat < 0) { return false; }
     gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, glFormat, width, height, count);
 
     // loop through each tile and its textures
