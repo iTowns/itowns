@@ -99,14 +99,42 @@ This package contains the ES5-compatible sources of iTowns, up to date with the 
 If you're using a module bundler (like wepback), you can directly write
 `require('itowns')` in your code.
 
-Alternatively, we provide a bundle you can directly include in your html files
-that exposes `itowns` in `window`:
+#### Bundles iTowns
+
+Alternatively, we provide 2 bundles (ESM and UMD) you can directly include in your html files
+
+##### UMD packaging 
+
+UMD exposes `itowns` in `window`:
 
 ```html
-<script src="node_modules/itowns/dist/itowns.js"></script>
+<script src="node_modules/itowns/dist/itowns.umd.js"></script>
+<script type="text/javascript">
+    const  coord = new itowns.Coordinates('EPSG:4326', 3.5, 44);
+</script>
 ```
 
-**/!\ Please note that this bundle also contains the dependencies**.
+**/!\ Please note that this UMD bundle also contains the peer dependencies**.
+
+##### EMS packaging 
+
+iTowns EMS bundle must import in `importmap`  and use in `module` script.
+
+```html
+<script type="importmap">
+{
+    "imports": {
+        "itowns": "node_modules/itowns/dist/itowns.js",
+        "three": "https://unpkg.com/three@0.174.0/build/three.module.js"
+    }
+}
+</script>
+<script type="module">
+    import * as THREE from 'three';
+    import * as itowns from 'itowns';
+    const  coord = new itowns.Coordinates('EPSG:4326', 3.5, 44);
+</script>
+```
 
 ### From a release bundle
 

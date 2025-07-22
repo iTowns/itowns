@@ -8,8 +8,13 @@ import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_befor
 
 const cachedImg = new LRUCache({ max: 500 });
 
-const matrix = document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGMatrix();
-const canvas = document.createElement('canvas');
+let matrix;
+let canvas;
+
+if (typeof document !== 'undefined') {
+    matrix = document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGMatrix();
+    canvas = document.createElement('canvas');
+}
 
 function baseAltitudeDefault(properties, ctx) {
     return ctx?.coordinates?.z || 0;
@@ -623,7 +628,11 @@ class Style {
             return;
         }
 
-        const icon = document.createElement('img');
+        let icon;
+
+        if (typeof document !== 'undefined') {
+            icon = document.createElement('img');
+        }
 
         const iconPromise  = new Promise((resolve, reject) => {
             const opt = {
@@ -676,14 +685,14 @@ const CustomStyle = {
     itowns_stroke_single_before,
 };
 
-const customStyleSheet = document.createElement('style');
-customStyleSheet.type = 'text/css';
-
-Object.keys(CustomStyle).forEach((key) => {
-    customStyleSheet.innerHTML += `${CustomStyle[key]}\n\n`;
-});
-
 if (typeof document !== 'undefined') {
+    const customStyleSheet = document.createElement('style');
+    customStyleSheet.type = 'text/css';
+
+    Object.keys(CustomStyle).forEach((key) => {
+        customStyleSheet.innerHTML += `${CustomStyle[key]}\n\n`;
+    });
+
     document.getElementsByTagName('head')[0].appendChild(customStyleSheet);
 }
 
