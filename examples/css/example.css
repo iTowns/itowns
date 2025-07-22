@@ -3,7 +3,8 @@
     --text_stroke_display: "none";
     --text_stroke_width: 0px;
     --text_stroke_color: "white";
-    --screen_size_threshold: 1700px;
+
+    color-scheme: light dark;
 }
 
 /* GENERAL */
@@ -18,7 +19,7 @@ body {
     padding: 0;
     height: 100%;
     width: 100%;
-    color: #202020;
+    color: light-dark(#202020, #F0F0F0);
     font-size: 13px;
 }
 
@@ -65,7 +66,7 @@ body {
 
 /* NAVIGATION (LEFT) */
 #editor-panel {
-    background-color: white;
+    background-color: light-dark(white, #202030);
     width: calc(100% * 7 / 16);
     height: 100%;
     position: absolute;
@@ -76,6 +77,80 @@ body {
 
 #editor-panel>hr {
     margin: 0 1em;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    cursor: pointer;
+}
+
+.switch {
+    display: flex;
+    flex-direction: row;
+    gap: .2em;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.switch .checkmark {
+    display: inline-block;
+    position: relative;
+    top: .15em;
+    width: 1em;
+    height: 1em;
+    background-color: #7ea8c5;
+    border-radius: .3em;
+}
+
+.switch>* {
+    margin: 0;
+}
+
+.switch:has(input:disabled) {
+    cursor: default;
+}
+
+.switch:has(input:disabled) .checkmark {
+    background-color: light-dark(#c0c0c0, #303e63);
+}
+
+.switch:has(input:checked) {
+    font-weight: bold;
+}
+
+.switch:hover .checkmark {
+    background-color: #404e73;
+}
+
+.checkmark:after {
+    content: "";
+    position: relative;
+    display: none;
+}
+
+.switch input:checked~.checkmark:after {
+    display: block;
+}
+
+.switch .checkmark:after {
+    left: .29em;
+    top: .1em;
+    width: .2em;
+    height: .5em;
+    border: solid white;
+    border-width: 0 .3em .3em 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.switch input:disabled~label {
+    color: #c0c0c0;
 }
 
 #editor-header {
@@ -143,15 +218,43 @@ body {
     width: 3em;
     height: 3em;
     border: 0;
-    filter: invert(28%) sepia(13%) saturate(1533%) hue-rotate(186deg) brightness(97%) contrast(90%);
 }
 
-.header-button:hover {
-    filter: invert(70%);
+@media(prefers-color-scheme: light) {
+    .header-button {
+        filter: invert(28%) sepia(13%) saturate(1533%) hue-rotate(186deg) brightness(97%) contrast(90%);
+    }
+
+    .header-button:hover {
+        filter: invert(70%);
+    }
+
+    .header-button:active {
+        filter: invert(52%) sepia(67%) saturate(5866%) hue-rotate(168deg) brightness(104%) contrast(105%);
+    }
 }
 
-.header-button:active {
-    filter: invert(52%) sepia(67%) saturate(5866%) hue-rotate(168deg) brightness(104%) contrast(105%);
+@media(prefers-color-scheme: dark) {
+    #itowns-logo {
+        filter: drop-shadow(-1px -1px 0.5px #7ea8c5) drop-shadow(-1px 1px 0.5px #7ea8c5) drop-shadow(1px -1px 0.5px #7ea8c5) drop-shadow(1px 1px 0.5px #7ea8c5);
+    }
+
+    .header-button {
+        filter: brightness(0) saturate(100%) invert(64%) sepia(70%) saturate(186%) hue-rotate(161deg) brightness(89%) contrast(86%);
+    }
+
+    .header-button:before {
+        background-color: white;
+        background-size: 1em;
+    }
+
+    .header-button:hover {
+        filter: invert(70%);
+    }
+
+    .header-button:active {
+        filter: invert(52%) sepia(67%) saturate(5866%) hue-rotate(168deg) brightness(104%) contrast(105%);
+    }
 }
 
 #run-button {
@@ -166,12 +269,10 @@ body {
 
 .CodeMirror {
     font-size: 1em;
+    border-radius: .5em;
 }
 
-.CodeMirror-gutter-wrapper,
-.CodeMirror-gutter,
-.CodeMirror-gutters,
-.CodeMirror-linenumber {
+.CodeMirror * {
     transition-duration: 0ms;
 }
 
@@ -182,7 +283,7 @@ body {
     }
 
     .CodeMirror {
-        height: calc(100% - 200px);
+        height: calc(100% - 200px - 1em);
     }
 }
 
@@ -199,7 +300,7 @@ body {
     }
 
     .CodeMirror {
-        height: calc(100% - 200px);
+        height: calc(100% - 200px - 2em);
     }
 
     #editor-header>hr {
