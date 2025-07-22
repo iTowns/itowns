@@ -96,8 +96,6 @@ class GlobeView extends View {
         super('EPSG:4978', viewerDiv, options);
         this.isGlobeView = true;
 
-        this.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
-        this.camera3D.far = ellipsoidSizes.x * 10;
         const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
         const elevationMax = Math.max(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z) +
             ALTITUDE_MAX;
