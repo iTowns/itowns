@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import View from 'Core/View';
+import View, { VIEW_EVENTS } from 'Core/View';
 import CameraUtils from 'Utils/CameraUtils';
 
 import PlanarControls from 'Controls/PlanarControls';
@@ -45,6 +45,49 @@ class PlanarView extends View {
 
         this.addLayer(tileLayer);
 
+        this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
+            // update camera's near and far
+
+            const obj = tileLayer.object3d;
+            const box = new THREE.Box3();
+            obj.traverse((child) => {
+                if (child.isMesh && child.geometry) {
+                    child.geometry.computeBoundingBox();
+                    const childBox = new THREE.Box3().copy(child.geometry.boundingBox)
+                        .applyMatrix4(child.matrixWorld);
+                    box.union(childBox);
+                }
+            });
+            if (box.isEmpty()) { return; }
+
+            let maxDistSq = 0;
+            const camPos = this.camera3D.position;
+            for (const x of [box.min.x, box.max.x]) {
+                for (const y of [box.min.y, box.max.y]) {
+                    for (const z of [box.min.z, box.max.z]) {
+                        const distSq = camPos.distanceToSquared({ x, y, z });
+                        if (distSq > maxDistSq) {
+                            maxDistSq = distSq;
+                        }
+                    }
+                }
+            }
+
+            this.camera3D.far = Math.sqrt(maxDistSq);
+
+            const closestPoint = new THREE.Vector3();
+            box.clampPoint(camPos, closestPoint);
+            this.camera3D.near = Math.max(1, closestPoint.distanceToSquared(camPos) /
+                this.camera3D.far);
+
+            this.camera3D.updateProjectionMatrix();
+
+            const fog = this.scene.fog;
+            if (!fog) { return; }
+            fog.far = this.camera3D.far;
+            fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
+        });
+
         // Configure camera
         const placement = options.placement || {};
         if (!placement.isExtent) {
@@ -60,6 +103,8 @@ class PlanarView extends View {
         }
 
         this.tileLayer = tileLayer;
+
+        this.fogSpread = options.fogSpread ?? 0.5;
     }
 
     addLayer(layer) {
