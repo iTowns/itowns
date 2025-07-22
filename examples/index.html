@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/codemirror.min.css"
         integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Code Mirror Shadowfox dark theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/shadowfox.min.css"
+        integrity="sha512-Xt1Gi99yJFMZ0ocjkdHqKWLjtb/l8pzJo5cCmHV2GvBFwJiOCLR2HXQBrcFmqY6i8+gXnRaKTGzoBVOl3YUwjw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link cype="text/css" rel="stylesheet" href="css/example.css" />
 </head>
 
@@ -42,18 +46,18 @@
         <div id="editor-header">
             <div>
                 <a href="/">
-                    <picture>
+                    <picture id="itowns-logo">
                         <source media="(width <= 1700px)" srcset="./images/itowns_logo.svg" width="245" />
                         <source media="(width > 1700px)" srcset="images/itowns_logo.png" width="245" />
                         <!-- Fallback Image -->
-                        <img src="images/itowns_logo.png" width="245px" id="itowns-logo" />
+                        <img src="images/itowns_logo.png" width="245px" />
                     </picture>
                 </a>
-                <div class="switch">
-                    <label for="version-switch">Latest</label>
+                <label class="switch">
                     <input id="version-switch" type="checkbox" name="version-switch" />
-                    <span class="slider"></span>
-                </div>
+                    <span class="checkmark"></span>
+                    Latest
+                </label>
             </div>
             <hr />
             <div>
@@ -75,9 +79,23 @@
         const iframe = document.getElementById("content");
         const exampleSelector = document.getElementById("example-selector");
         const codeEditorTextArea = document.getElementById("code-editor");
+
+        /**
+         * @param {boolean} isDark - Which theme name to get
+         * @returns {string}
+         */
+        function getTheme(isDark) {
+            return isDark ? "shadowfox" : "default";
+        }
+
         const codeEditor = CodeMirror.fromTextArea(codeEditorTextArea, {
             lineNumbers: true,
             mode: "htmlmixed",
+            theme: getTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches),
+        });
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            codeEditor.setOption("theme", getTheme(event.matches));
         });
 
         const exampleCache = {};
