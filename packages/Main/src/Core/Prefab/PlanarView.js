@@ -36,9 +36,6 @@ class PlanarView extends View {
         // Configure camera
         const dim = extent.planarDimensions();
         const max = Math.max(dim.x, dim.y);
-        this.camera3D.near = 0.1;
-        this.camera3D.far = this.camera3D.isOrthographicCamera ? 2000 : 2 * max;
-        this.camera3D.updateProjectionMatrix();
 
         const tileLayer = new PlanarLayer('planar', extent, options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
