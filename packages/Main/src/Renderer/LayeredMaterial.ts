@@ -122,11 +122,14 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
             i < tile.textures.length && count < max;
             ++i, ++count
         ) {
-            textureSetId += `${tile.textures[i].id}.`;
+            const texture = tile.textures[i];
+            if (!texture) { continue; }
+
+            textureSetId += `${texture.id}.`;
             uOffsetScales[count] = tile.offsetScales[i];
             uLayers[count] = tile;
 
-            const img = tile.textures[i].image;
+            const img = texture.image;
             if (!img || img.width <= 0 || img.height <= 0) {
                 console.error('Texture image not loaded or has zero dimensions');
                 uTextureCount.value = 0;
