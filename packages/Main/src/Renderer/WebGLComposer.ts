@@ -190,28 +190,32 @@ export function makeDataArrayTexture(
         quadScene.add(quad);
     }
 
-    const firstTexture = tiles[0].textures[0]; // exists because count > 0
-
-    // Allocate immutable storage
-    const glFormat = getInternalFormat(gl, firstTexture.format, firstTexture.type);
-    if (glFormat < 0) { return false; }
-    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, glFormat, width, height, count);
-
     // loop through each tile and its textures
     // to render them into DataArrayTexture layers
-    count = 0;
+    let currentLayerIndex = 0;
     for (const tile of tiles) {
         for (
             let i = 0;
-            i < tile.textures.length && count < max;
-            ++i, ++count
+            i < tile.textures.length && currentLayerIndex < max;
+            ++i, ++currentLayerIndex
         ) {
+            const texture = tile.textures[i];
+            if (!texture) { continue; }
+
+            if (!currentLayerIndex) {
+                // Allocate immutable storage,
+                // with parameters from the first found texture
+                const glFormat = getInternalFormat(gl, texture.format, texture.type);
+                if (glFormat < 0) { return false; }
+                gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, glFormat, width, height, count);
+            }
+
             // Set the current source 2D texture on the quad's material
-            material!.uniforms.sourceTexture.value = tile.textures[i];
+            material!.uniforms.sourceTexture.value = texture;
 
             // render this source texture into the current layer
             drawTextureLayer(renderer, renderTarget, uTextures.value,
-                count, quadScene!, quadCam!);
+                currentLayerIndex, quadScene!, quadCam!);
         }
     }
 
