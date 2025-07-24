@@ -87,8 +87,10 @@ class GlobeView extends View {
      * enable WebXR to switch on VR visualization. (optional).
      * @param {function} [options.webXR.callback] - WebXR rendering callback (optional).
      * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling (optional).
-     * @param {number} [options.observableRatio=0.8] - Proportion of the observable depth range that is actually visible. Between 0 and 1.
-     * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog. Between 0 and 1.
+     * @param {number} [options.farFactor=20] - Controls how far the camera can see. (optional)
+     * The maximum view distance is this factor times the camera’s altitude (above sea level).
+     * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
+     * Between 0 and 1. (optional)
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -97,8 +99,6 @@ class GlobeView extends View {
         this.isGlobeView = true;
 
         const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
-        const elevationMax = Math.max(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z) +
-            ALTITUDE_MAX;
 
         const tileLayer = new GlobeLayer('globe', options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
@@ -114,29 +114,25 @@ class GlobeView extends View {
             // update camera's near and far
             const originToCamSq = this.camera3D.position.lengthSq();
 
-            // get elevation (origin to ground) under camera
+            // get the minimum possible elevation (origin to ground), i.e. sea elevation, under camera
             const camCoordinates = new Coordinates(this.referenceCrs)
                 .setFromVector3(this.camera3D.position);
             const layer = this.getLayers(l => l.isTiledGeometryLayer)[0];
             camCoordinates.as(layer.extent.crs, camCoordinates);
-            const elevation = DEMUtils.getElevationValueAt(
-                layer, camCoordinates, DEMUtils.FAST_READ_Z);
+            camCoordinates.z = 0;
+            camCoordinates.as(this.referenceCrs, camCoordinates);
+            const seaElevationUnderCam = camCoordinates.toVector3().length();
 
-            let camToGroundDist;
-            if (elevation !== undefined) {
-                camToGroundDist = camCoordinates.z - elevation;
-            } else { // elevation unknown so use the worst case
-                // more optimized than calling .length()
-                camToGroundDist = Math.sqrt(originToCamSq) - elevationMax;
-            }
+            // maximum possible distance from ground to camera
+            const camToSeaLevel = Math.sqrt(originToCamSq) - seaElevationUnderCam;
 
-            const near = Math.max(1, camToGroundDist * fovDepthFactor);
-            this.camera3D.near = near;
+            const camToGroundDistMin = camToSeaLevel - ALTITUDE_MAX;
+            this.camera3D.near = Math.max(1, camToGroundDistMin * fovDepthFactor);
 
             // distance from camera to the horizon
             const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
 
-            this.camera3D.far = this.observableRatio * (horizonDist - near) + near;
+            this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
             this.camera3D.updateProjectionMatrix();
 
             const fog = this.scene.fog;
@@ -169,7 +165,7 @@ class GlobeView extends View {
             this.webXR.initializeWebXR();
         }
 
-        this.observableRatio = options.observableRatio ?? 0.8;
+        this.farFactor = options.farFactor ?? 20;
         this.fogSpread = options.fogSpread ?? 0.5;
     }
 
