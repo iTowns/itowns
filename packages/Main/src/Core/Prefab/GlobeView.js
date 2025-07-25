@@ -7,7 +7,6 @@ import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
 import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
-import DEMUtils from 'Utils/DEMUtils';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -99,7 +98,8 @@ class GlobeView extends View {
         this.isGlobeView = true;
 
         const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
-
+        this.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
+        this.camera3D.far = ellipsoidSizes.x * 10;
         const tileLayer = new GlobeLayer('globe', options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
 
@@ -148,6 +148,9 @@ class GlobeView extends View {
             placement.range = placement.range || ellipsoidSizes.x * 2.0;
         }
 
+        this.farFactor = options.farFactor ?? 20;
+        this.fogSpread = options.fogSpread ?? 0.5;
+
         if (options.noControls) {
             CameraUtils.transformCameraToLookAtTarget(this, this.camera3D, placement);
         } else {
@@ -164,9 +167,6 @@ class GlobeView extends View {
             this.webXR = new WebXR(this, typeof options.webXR === 'boolean' ? {} : options.webXR);
             this.webXR.initializeWebXR();
         }
-
-        this.farFactor = options.farFactor ?? 20;
-        this.fogSpread = options.fogSpread ?? 0.5;
     }
 
     /**
