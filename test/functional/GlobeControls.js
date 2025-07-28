@@ -168,7 +168,7 @@ describe('GlobeControls with globe example', function _() {
             };
             view.controls.addEventListener('animation-ended', endAni);
         }));
-
+        await new Promise((resolve) => { setTimeout(resolve, 500); });
         await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.mouse.click(middleWidth, middleHeight);
         await page.mouse.click(middleWidth, middleHeight);

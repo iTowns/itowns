@@ -130,9 +130,14 @@
                 if (evt.keyCode == 32) {
                     front = 1 - front;
                     t = 0;
+
                     // schedule the animation
                     view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                     view.notifyChange(cameraThree);
+
+                    view.camera3D.near = 15;
+                    view.camera3D.far = 63781370;
+                    view.camera3D.updateProjectionMatrix();
                 }
             }
             viewerDiv.focus();
@@ -157,6 +162,10 @@
                 }
                 cameraThree.position.copy(geo.as('EPSG:4978'));
                 view.notifyChange(cameraThree);
+
+                view.camera3D.near = 15;
+                view.camera3D.far = 63781370;
+                view.camera3D.updateProjectionMatrix();
             };
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
             viewerDiv.addEventListener('mousewheel', onMouseWheel);
