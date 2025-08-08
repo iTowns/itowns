@@ -59,12 +59,23 @@
                 setupLoadingScreen(viewerDiv, view);
                 view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
+                const url = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/eglise_saint_blaise_arles';
+                const file = 'eglise_saint_blaise_arles.js';
+                const crs = 'EPSG:3946';
+
+                // const url = 'https://viz.lib.vt.edu/thessaloniki/resources/pointclouds/thessaloniki';
+                // const file = 'cloud.js';
+                // const crs = 'EPSG:4326';
+
                 // Configure Point Cloud layer
                 const potreeSource = new itowns.PotreeSource({
-                    file: 'eglise_saint_blaise_arles.js',
-                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/eglise_saint_blaise_arles',
-                    crs: 'EPSG:3946',
+                    file,
+                    url,
+                    crs,
                 });
+
+
+
                 potreeLayer = new itowns.PotreeLayer('eglise_saint_blaise_arles', {
                     source: potreeSource,
                 });
