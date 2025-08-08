@@ -60,12 +60,15 @@
                 view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
                 // Configure Point Cloud layer
-                potreeLayer = new itowns.Potree2Layer('Lion', {
-                    source: new itowns.Potree2Source({
+                source = new itowns.Potree2Source({
                         file: 'metadata.json',
                         url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
                         crs: 'EPSG:3946',
+                        // url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/potreeData/pointclouds/potree2.0/Arene-1_L93',
+                        // crs: 'EPSG:2154',
                     }),
+                potreeLayer = new itowns.Potree2Layer('Lion', {
+                    source,
                 });
 
                 // point selection on double-click
