@@ -11,6 +11,7 @@ import Label2DRenderer from 'Renderer/Label2DRenderer';
 import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
 // eslint-disable-next-line import/extensions, import/no-unresolved
 import WEBGL from 'three/addons/capabilities/WebGL.js';
+import { EffectComposer } from 'postprocessing';
 
 const depthRGBA = new THREE.Vector4();
 class c3DEngine {
@@ -60,7 +61,7 @@ class c3DEngine {
             if (view._camXR) {
                 this.renderer.render(view.scene, view._camXR);
             } else {
-                this.renderer.render(view.scene, view.camera3D);
+                this.composer.render();
             }
             if (view.tileLayer) {
                 this.label2dRenderer.render(view.tileLayer.object3d, view.camera3D);
@@ -123,6 +124,12 @@ class c3DEngine {
             this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
             viewerDiv.appendChild(this.renderer.domElement);
         }
+
+        // Use floating-point render buffer, as radiance/luminance will be stored here.
+        /** @type {EffectComposer} */
+        this.composer = new EffectComposer(this.renderer, {
+            frameBufferType: THREE.HalfFloatType,
+        });
     }
 
     getWindowSize() {
