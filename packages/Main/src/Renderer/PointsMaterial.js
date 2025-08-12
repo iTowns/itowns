@@ -214,6 +214,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
             precision: 'highp',
             vertexColors: true,
         });
+        this.name = 'PointsMaterial';
         this.uniforms = THREE.UniformsUtils.merge([
             // THREE.PointsMaterial uniforms
             THREE.UniformsLib.points,
