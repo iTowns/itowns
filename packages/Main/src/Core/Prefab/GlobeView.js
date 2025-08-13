@@ -97,7 +97,6 @@ class GlobeView extends View {
         super('EPSG:4978', viewerDiv, options);
         this.isGlobeView = true;
 
-        const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
         this.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
         this.camera3D.far = ellipsoidSizes.x * 10;
         const tileLayer = new GlobeLayer('globe', options.object3d, options);
@@ -105,41 +104,6 @@ class GlobeView extends View {
 
         this.addLayer(tileLayer);
         this.tileLayer = tileLayer;
-
-        const corner = new THREE.Vector4(1, 1, -1); // a corner of the camera in NDC at near plane
-        corner.applyMatrix4(this.camera3D.projectionMatrixInverse).divideScalar(corner.z);
-        const fovDepthFactor = 1 / Math.sqrt(1 + corner.x * corner.x + corner.y * corner.y);
-
-        this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
-            // update camera's near and far
-            const originToCamSq = this.camera3D.position.lengthSq();
-
-            // get the minimum possible elevation (origin to ground), i.e. sea elevation, under camera
-            const camCoordinates = new Coordinates(this.referenceCrs)
-                .setFromVector3(this.camera3D.position);
-            const layer = this.getLayers(l => l.isTiledGeometryLayer)[0];
-            camCoordinates.as(layer.extent.crs, camCoordinates);
-            camCoordinates.z = 0;
-            camCoordinates.as(this.referenceCrs, camCoordinates);
-            const seaElevationUnderCam = camCoordinates.toVector3().length();
-
-            // maximum possible distance from ground to camera
-            const camToSeaLevel = Math.sqrt(originToCamSq) - seaElevationUnderCam;
-
-            const camToGroundDistMin = camToSeaLevel - ALTITUDE_MAX;
-            this.camera3D.near = Math.max(1, camToGroundDistMin * fovDepthFactor);
-
-            // distance from camera to the horizon
-            const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
-
-            this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
-            this.camera3D.updateProjectionMatrix();
-
-            const fog = this.scene.fog;
-            if (!fog) { return; }
-            fog.far = this.camera3D.far;
-            fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
-        });
 
         if (!placement.isExtent) {
             placement.coord = placement.coord || new Coordinates('EPSG:4326', 0, 0);
@@ -156,6 +120,42 @@ class GlobeView extends View {
         } else {
             this.controls = new GlobeControls(this, placement, options.controls);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
+
+            const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
+            const corner = new THREE.Vector4(1, 1, -1); // a corner of the camera in NDC at near plane
+            corner.applyMatrix4(this.camera3D.projectionMatrixInverse).divideScalar(corner.z);
+            const fovDepthFactor = 1 / Math.sqrt(1 + corner.x * corner.x + corner.y * corner.y);
+
+            this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
+                // update camera's near and far
+                const originToCamSq = this.camera3D.position.lengthSq();
+
+                // get the minimum possible elevation (origin to ground), i.e. sea elevation, under camera
+                const camCoordinates = new Coordinates(this.referenceCrs)
+                    .setFromVector3(this.camera3D.position);
+                const layer = this.getLayers(l => l.isTiledGeometryLayer)[0];
+                camCoordinates.as(layer.extent.crs, camCoordinates);
+                camCoordinates.z = 0;
+                camCoordinates.as(this.referenceCrs, camCoordinates);
+                const seaElevationUnderCam = camCoordinates.toVector3().length();
+
+                // maximum possible distance from ground to camera
+                const camToSeaLevel = Math.sqrt(originToCamSq) - seaElevationUnderCam;
+
+                const camToGroundDistMin = camToSeaLevel - ALTITUDE_MAX;
+                this.camera3D.near = Math.max(1, camToGroundDistMin * fovDepthFactor);
+
+                // distance from camera to the horizon
+                const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
+
+                this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
+                this.camera3D.updateProjectionMatrix();
+
+                const fog = this.scene.fog;
+                if (!fog) { return; }
+                fog.far = this.camera3D.far;
+                fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
+            });
         }
 
         this.addLayer(new Atmosphere('atmosphere', options.atmosphere));
