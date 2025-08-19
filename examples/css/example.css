@@ -125,6 +125,7 @@ body {
 
 .switch:hover .checkmark {
     background-color: #404e73;
+    cursor: pointer;
 }
 
 .checkmark:after {
@@ -195,6 +196,7 @@ body {
     color: white;
     padding: 1em;
     border-radius: 0.3em;
+    cursor: pointer;
 }
 
 #example-selector {
@@ -204,6 +206,7 @@ body {
 
 #font-size-selector {
     width: 4em;
+    cursor: text;
 }
 
 #editor-header> :nth-child(3)>div {
@@ -218,6 +221,7 @@ body {
     width: 3em;
     height: 3em;
     border: 0;
+    cursor: pointer;
 }
 
 @media(prefers-color-scheme: light) {
