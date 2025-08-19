@@ -7,11 +7,6 @@
     color-scheme: light dark;
 }
 
-/* GENERAL */
-* {
-    transition-duration: 200ms;
-}
-
 html,
 body {
     background-color: black;
@@ -64,6 +59,11 @@ body {
     width: calc(100% * 9 / 16);
 }
 
+/* Makes the iframe canvas bouncy on resize. No practical reason but it sure looks neat. */
+#viewerDiv>canvas:nth-child(2) {
+    transition-duration: 200ms;
+}
+
 /* NAVIGATION (LEFT) */
 #editor-panel {
     background-color: light-dark(white, #202030);
@@ -73,6 +73,12 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: start;
+    /* Drawer-style animation on resize */
+    transition-duration: 200ms;
+}
+
+#editor-panel>* {
+    transition-duration: 200ms;
 }
 
 #editor-panel>hr {
@@ -277,6 +283,7 @@ body {
 }
 
 .CodeMirror * {
+    overscroll-behavior: none;
     transition-duration: 0ms;
 }
 
