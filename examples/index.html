@@ -62,7 +62,7 @@
             <hr />
             <div>
                 <select id="example-selector" class="selector"></select>
-                <input type="number" id="font-size-selector" class="selector" />
+                <input id="font-size-selector" class="selector" type="number" min="8" step="1" />
                 <div>
                     <button type="button" id="run-button" class="header-button" />
                     <button type="button" id="share-button" class="header-button" />
@@ -127,6 +127,8 @@
         }
         document.getElementById("share-button").onclick = shareCode;
 
+        const fontSizeSelector = document.getElementById("font-size-selector");
+
         /** @returns {number} - The CodeMirror editor's font size */
         function getEditorFontSize() {
             const editor = document.getElementsByClassName("CodeMirror")[0];
@@ -135,13 +137,16 @@
 
         /** @param {number} size_px - The new font size to apply */
         function setEditorFontSize(size_px) {
-            console.info("Setting editor font size");
+            const size = Math.max(8, Math.round(size_px));
             const editor = document.getElementsByClassName("CodeMirror")[0];
-            editor.style.fontSize = `${size_px}px`;
+            editor.style.fontSize = `${size}px`;
+            // Must release focus to change value
+            document.activeElement.blur();
+            fontSizeSelector.value = size;
+            fontSizeSelector.focus();
         }
-        const fontSizeSelector = document.getElementById("font-size-selector");
         fontSizeSelector.value = getEditorFontSize();
-        fontSizeSelector.onchange = (event) => setEditorFontSize(event.target.value);
+        fontSizeSelector.onchange = (event) => setEditorFontSize(event.target.value || 13);
 
         /** @param {string} slug - An example's slug */
         function cacheExample(slug) {
