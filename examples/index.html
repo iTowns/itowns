@@ -110,7 +110,27 @@
                 .setAttribute("checked", "");
         }
 
+        /**
+         * UTF-8 fix to btoa.
+         * @param {string} string - A valid UTF-8 string.
+         * @returns {string} The encoded string.
+         */
+        function toBase64(string) {
+            return btoa(Array.from(new TextEncoder().encode(string), byte => String.fromCodePoint(byte)).join(""));
+        }
+
+        /* UTF-8 fix to atob.
+         * @param {string} bytes - A base64-encoded string.
+         * @returns {string} The decoded string.
+         */
+        function fromBase64(bytes) {
+            return new TextDecoder().decode(Uint8Array.from(atob(bytes), m => m.codePointAt(0)));
+        }
+
         function runCode() {
+            const code = codeEditor.getValue();
+            localStorage.setItem("code", toBase64(code));
+
             iframe.srcdoc = codeEditor.getValue();
         }
         document.getElementById("run-button").onclick = runCode;
@@ -119,10 +139,13 @@
         });
 
         function shareCode() {
-            const code = btoa(codeEditor.getValue());
+            const code = codeEditor.getValue();
+            const base64 = toBase64(code);
+            localStorage.setItem("code", base64);
+
             const url = new URL(document.location.toString());
             url.hash = "";
-            url.search = "?code=" + encodeURIComponent(code);
+            url.search = "?code=" + encodeURIComponent(base64);
             navigator.clipboard.writeText(url);
         }
         document.getElementById("share-button").onclick = shareCode;
@@ -150,9 +173,6 @@
 
         /** @param {string} slug - An example's slug */
         function cacheExample(slug) {
-            console.info(
-                `Caching example '${slug.replace("'", "&quot;")}'`,
-            );
             const src = `https://raw.githubusercontent.com/itowns/itowns/refs/heads/master/examples/${slug}.html`;
             return fetch(src)
                 .then((response) => response.text())
@@ -164,15 +184,10 @@
 
         /** @param {string} slug - An example's slug */
         async function loadExample(slug) {
-            console.info(
-                `Loading example '${slug.replace("'", "&quot;")}'`,
-            );
-            const example =
-                exampleCache[slug] ??
-                (await (() => {
-                    codeEditor.setValue("Loading...");
-                    return cacheExample(slug);
-                })());
+            const example = exampleCache[slug] ?? (await (() => {
+                codeEditor.setValue("Loading...");
+                return cacheExample(slug);
+            })());
             codeEditor.setValue(example);
             window.location.hash = slug;
             window.location.search = "";
@@ -187,7 +202,6 @@
                 versionSwitch.setAttribute("disabled", "");
             } else {
                 versionSwitch.onchange = (event) => {
-                    console.log("toggled");
                     window.location.href = document.location.href.replace();
                     const isDev = baseURI.includes("/itowns/dev/");
                     const options = ["/itowns/", "/itowns/dev/"];
@@ -244,17 +258,24 @@
                     const searchParams = new URL(
                         document.location.toString(),
                     ).searchParams;
-                    const code = searchParams.get("code");
+                    const urlCode = searchParams.get("code");
 
-                    if (!code) {
-                        loadExample(
-                            window.location.hash.replace("#", "") ||
-                            "view_3d_map",
-                        );
+                    const localCode = localStorage.getItem("code");
+
+                    if (!urlCode) {
+                        if (!localCode) {
+                            loadExample(
+                                window.location.hash.replace("#", "") ||
+                                "view_3d_map",
+                            );
+                        }
+                        else {
+                            codeEditor.setValue(fromBase64(localCode));
+                            runCode();
+                        }
                     } else {
-                        codeEditor.setValue(atob(decodeURIComponent(code)));
-                        // TODO: Security check
-                        runCode();
+                        codeEditor.setValue(fromBase64(decodeURIComponent(urlCode)));
+                        alert('Please check foreign code before running it!');
                     }
                 });
         }
