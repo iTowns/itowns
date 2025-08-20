@@ -1,8 +1,8 @@
 import Source from 'Source/Source';
-import URLBuilder from 'Provider/URLBuilder';
 import { Extent } from '@itowns/geographic';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
 import Tile from 'Core/Tile/Tile';
+import { xyz, subDomains } from 'Provider/URLBuilder';
 
 const _tile = new Tile('EPSG:4326', 0, 0, 0);
 
@@ -117,7 +117,7 @@ class TMSSource extends Source {
     }
 
     urlFromExtent(tile) {
-        return URLBuilder.xyz(tile, this);
+        return subDomains(xyz(tile, this));
     }
 
     onLayerAdded(options) {

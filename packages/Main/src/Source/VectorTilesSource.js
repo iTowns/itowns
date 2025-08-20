@@ -1,7 +1,7 @@
 import { featureFilter } from '@maplibre/maplibre-gl-style-spec';
 import StyleOptions from 'Core/StyleOptions';
 import TMSSource from 'Source/TMSSource';
-import URLBuilder from 'Provider/URLBuilder';
+import * as URLBuilder from 'Provider/URLBuilder';
 import Fetcher from 'Provider/Fetcher';
 import urlParser from 'Parser/MapBoxUrlParser';
 
