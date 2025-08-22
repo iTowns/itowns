@@ -1,5 +1,24 @@
 import Source from 'Source/Source';
 import { LRUCache } from 'lru-cache';
+import Fetcher from 'Provider/Fetcher';
+import GeoJsonParser from 'Parser/GeoJsonParser';
+import KMLParser from 'Parser/KMLParser';
+import GpxParser from 'Parser/GpxParser';
+import VectorTileParser from 'Parser/VectorTileParser';
+import GTXParser from 'Parser/GTXParser';
+import ISGParser from 'Parser/ISGParser';
+import GDFParser from 'Parser/GDFParser';
+
+const supportedParsers = new Map([
+    ['application/geo+json', GeoJsonParser.parse],
+    ['application/json', GeoJsonParser.parse],
+    ['application/kml', KMLParser.parse],
+    ['application/gpx', GpxParser.parse],
+    ['application/x-protobuf;type=mapbox-vector', VectorTileParser.parse],
+    ['application/gtx', GTXParser.parse],
+    ['application/isg', ISGParser.parse],
+    ['application/gdf', GDFParser.parse],
+]);
 
 /**
  * An object defining the source of a single resource to get from a direct
@@ -125,17 +144,23 @@ class FileSource extends Source {
         }
 
         // the fake url is for when we use the fetchedData or features mode
-        source.url = source.url || 'none';
         super(source);
+        this.url = source.url || 'none';
+        this.networkOptions = source.networkOptions ?? {};
 
         this.isFileSource = true;
 
         this.fetchedData = source.fetchedData;
+        this.parser = source.parser || supportedParsers.get(source.format) || ((d, opt) => { d.extent = opt.extent; return d; });
+        this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
+        this._featuresCaches = this.isVectorSource ? {} : null;
         if (!this.fetchedData && !source.features) {
-            this.whenReady = this.fetcher(this.urlFromExtent(), this.networkOptions).then((f) => {
+            const fetcher = source.fetcher || Fetcher.get(source.format);
+            this.whenReady = fetcher(this.urlFromExtent(), this.networkOptions).then((f) => {
                 this.fetchedData = f;
             });
         } else if (source.features) {
+            this._featuresCaches = {};
             this._featuresCaches[source.features.crs] = new LRUCache({ max: 500 });
             this._featuresCaches[source.features.crs].set(0, Promise.resolve(source.features));
         }
@@ -149,9 +174,18 @@ class FileSource extends Source {
         return this.url;
     }
 
+    getDataKey(extent) {
+        return `z${extent.zoom}r${extent.row}c${extent.col}`;
+    }
+
     onLayerAdded(options) {
         options.in = this;
-        super.onLayerAdded(options);
+        if (!this._featuresCaches[options.out.crs]) {
+            // Cache feature only if it's vector data, the feature are cached in source.
+            // It's not necessary to cache raster in Source,
+            // because it's already cached on layer.
+            this._featuresCaches[options.out.crs] = this.isVectorSource ? new LRUCache({ max: 500 }) : noCache;
+        }
         let features = this._featuresCaches[options.out.crs].get(0);
         if (!features) {
             options.out.buildExtent = this.crs != 'EPSG:4978';
@@ -170,6 +204,15 @@ class FileSource extends Source {
                 }
             }
         });
+    }
+
+    onLayerRemoved(options = {}) {
+        // delete unused cache
+        const unusedCache = this._featuresCaches[options.unusedCrs];
+        if (unusedCache) {
+            unusedCache.clear();
+            delete this._featuresCaches[options.unusedCrs];
+        }
     }
 
     /**

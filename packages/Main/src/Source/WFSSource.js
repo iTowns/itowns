@@ -1,8 +1,20 @@
-import Source from 'Source/Source';
 import { Extent } from '@itowns/geographic';
+import Fetcher from 'Provider/Fetcher';
+import GeoJsonParser from 'Parser/GeoJsonParser';
+import KMLParser from 'Parser/KMLParser';
+import GpxParser from 'Parser/GpxParser';
 import { bbox, subDomains } from 'Provider/URLBuilder';
+import { LRUCache } from 'lru-cache';
+import URLSource from './URLSource';
 
 const _extent = new Extent('EPSG:4326');
+
+export const supportedParsers = new Map([
+    ['application/geo+json', GeoJsonParser.parse],
+    ['application/json', GeoJsonParser.parse],
+    ['application/kml', KMLParser.parse],
+    ['application/gpx', GpxParser.parse],
+]);
 
 /**
  * An object defining the source of resources to get from a
@@ -97,36 +109,51 @@ const _extent = new Extent('EPSG:4326');
  * // Add the layer
  * view.addLayer(geometryLayer);
  */
-class WFSSource extends Source {
+class WFSSource extends URLSource {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * WFSSource and {@link Source}. `url`, `typeName` and `crs` are
      * mandatory.
      */
     constructor(source) {
-        if (source.projection) {
-            console.warn('WFSSource projection parameter is deprecated, use crs instead.');
-            source.crs = source.crs || source.projection;
+        const {
+            typeName,
+            crs,
+            format = 'application/json',
+            fetcher = Fetcher.get(format),
+            parser = supportedParsers.get(format),
+            version = '2.0.2',
+            bboxDigits,
+            vendorSpecific,
+        } = source;
+
+        if (!typeName) {
+            throw new Error('[WFSSource]: source.typeName is required.');
         }
-        if (!source.typeName) {
-            throw new Error('source.typeName is required in wfs source.');
+
+        if (!crs) {
+            throw new Error('[WFSSource]: source.crs is required.');
         }
 
-        if (!source.crs) {
-            throw new Error('source.crs is required in wfs source');
+        if (!fetcher) {
+            throw new Error(`[WFSSource]: unsupported fetcher type ${format}.`);
         }
 
-        source.format = source.format || 'application/json';
+        if (!parser) {
+            throw new Error(`[WFSSource]: unsupported parser type ${format}.`);
+        }
 
-        super(source);
+        super({ ...source, fetcher, parser });
 
+        this.isVectorSource = true;
         this.isWFSSource = true;
-        this.typeName = source.typeName;
-        this.version = source.version || '2.0.2';
-        this.bboxDigits = source.bboxDigits;
+        this.format = format;
+        this.typeName = typeName;
+        this.version = version;
+        this.bboxDigits = bboxDigits;
         this.zoom = { min: 0, max: Infinity };
 
-        const urlObj = new URL(source.url);
+        const urlObj = new URL(this.url);
         urlObj.searchParams.set('SERVICE', 'WFS');
         urlObj.searchParams.set('REQUEST', 'GetFeature');
         urlObj.searchParams.set('typeName', this.typeName);
@@ -135,7 +162,7 @@ class WFSSource extends Source {
         urlObj.searchParams.set('outputFormat', this.format);
         urlObj.searchParams.set('BBOX', `%bbox,${this.crs}`);
 
-        this.vendorSpecific = source.vendorSpecific;
+        this.vendorSpecific = vendorSpecific;
         for (const name in this.vendorSpecific) {
             if (Object.prototype.hasOwnProperty.call(this.vendorSpecific, name)) {
                 urlObj.searchParams.set(name, this.vendorSpecific[name]);
@@ -143,6 +170,7 @@ class WFSSource extends Source {
         }
 
         this.url = decodeURIComponent(urlObj.toString());
+        this._featuresCaches = {};
     }
 
     handlingError(err) {
@@ -159,12 +187,25 @@ class WFSSource extends Source {
         return super.handlingError(err);
     }
 
-    getDataKey(extent) {
-        if (extent.isTile) {
-            return super.getDataKey(extent);
+    getDataKey(extentOrTile) {
+        if (extentOrTile.isTile) {
+            return `z${extentOrTile.zoom}r${extentOrTile.row}c${extentOrTile.col}`;
         } else {
-            return `z${extent.zoom}s${extent.south}w${extent.west}`;
+            return `z${extentOrTile.zoom}s${extentOrTile.south}w${extentOrTile.west}`;
         }
+    }
+
+    loadData(extent, out) {
+        const cache = this._featuresCaches[out.crs];
+        const key = this.getDataKey(extent);
+        // console.log('Source.loadData', key);
+        // try to get parsed data from cache
+        let features = cache.get(key);
+        if (!features) {
+            features = super.loadData(extent, out);
+            cache.set(key, features);
+        }
+        return features;
     }
 
     urlFromExtent(extentOrTile) {
@@ -172,6 +213,25 @@ class WFSSource extends Source {
             extentOrTile.as(this.crs, _extent) :
             extentOrTile.toExtent(this.crs, _extent);
         return subDomains(bbox(extent, this));
+    }
+
+    onLayerAdded(options) {
+        // Added new cache by crs
+        if (!this._featuresCaches[options.out.crs]) {
+            // Cache feature only if it's vector data, the feature are cached in source.
+            // It's not necessary to cache raster in Source,
+            // because it's already cached on layer.
+            this._featuresCaches[options.out.crs] = new LRUCache({ max: 500 });
+        }
+    }
+
+    onLayerRemoved(options = {}) {
+        // delete unused cache
+        const unusedCache = this._featuresCaches[options.unusedCrs];
+        if (unusedCache) {
+            unusedCache.clear();
+            delete this._featuresCaches[options.unusedCrs];
+        }
     }
 
     extentInsideLimit(extent) {

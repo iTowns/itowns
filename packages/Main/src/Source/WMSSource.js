@@ -1,6 +1,7 @@
-import Source from 'Source/Source';
 import { Extent, CRS } from '@itowns/geographic';
 import { bbox, subDomains } from 'Provider/URLBuilder';
+import Fetcher from 'Provider/Fetcher';
+import URLSource from './URLSource';
 
 const _extent = new Extent('EPSG:4326');
 
@@ -96,42 +97,58 @@ function projAxisToWmsBbox(projAxis) {
  * // Add the layer
  * view.addLayer(colorlayer);
  */
-class WMSSource extends Source {
+class WMSSource extends URLSource {
     /**
      * @param {Object} source - An object that can contain all properties of
      * WMSSource and {@link Source}. `url`, `name`, `extent` and `crs`
      * are mandatory.
      */
     constructor(source) {
-        if (!source.name) {
-            throw new Error('source.name is required.');
+        const {
+            name,
+            extent,
+            crs,
+            format = 'image/png',
+            fetcher = Fetcher.get(format),
+            parser = ((d, opt) => { d.extent = opt.extent; return d; }),
+            style = '',
+            width = source.height || 256,
+            height = source.width || 256,
+            version = '1.3.0',
+            transparent = false,
+            bboxDigits,
+            axisOrder,
+            vendorSpecific,
+        } = source;
+
+        if (!name) {
+            throw new Error('[WMSSource]: source.name is required.');
         }
 
-        if (!source.extent) {
-            throw new Error('source.extent is required');
+        if (!extent) {
+            throw new Error('[WMSSource]: source.extent is required');
         }
 
-        if (!source.crs && !source.projection) {
-            throw new Error('source.crs is required');
+        if (!crs) {
+            throw new Error('[WMSSource]: source.crs is required');
         }
 
-        source.format = source.format || 'image/png';
-
-        super(source);
+        super({ ...source, fetcher, parser });
 
         this.isWMSSource = true;
-        this.name = source.name;
+        this.format = format;
+        this.name = name;
         this.zoom = { min: 0, max: Infinity };
-        this.style = source.style || '';
+        this.style = style;
 
-        this.width = source.width || source.height || 256;
-        this.height = source.height || source.width || 256;
-        this.version = source.version || '1.3.0';
-        this.transparent = source.transparent || false;
-        this.bboxDigits = source.bboxDigits;
+        this.width = width;
+        this.height = height;
+        this.version = version;
+        this.transparent = transparent;
+        this.bboxDigits = bboxDigits;
 
-        if (source.axisOrder) {
-            this.axisOrder = source.axisOrder;
+        if (axisOrder) {
+            this.axisOrder = axisOrder;
         } else if (this.version === '1.3.0') { // If not set, axis order depends on WMS version
             // Version 1.3.0 depends on CRS axis order as defined in epsg.org database
             this.axisOrder = projAxisToWmsBbox(CRS.axisOrder(this.crs));
@@ -155,7 +172,7 @@ class WMSSource extends Source {
         urlObj.searchParams.set('WIDTH', this.width);
         urlObj.searchParams.set('HEIGHT', this.height);
 
-        this.vendorSpecific = source.vendorSpecific;
+        this.vendorSpecific = vendorSpecific;
         for (const name in this.vendorSpecific) {
             if (Object.prototype.hasOwnProperty.call(this.vendorSpecific, name)) {
                 urlObj.searchParams.set(name, this.vendorSpecific[name]);
@@ -166,10 +183,18 @@ class WMSSource extends Source {
     }
 
     urlFromExtent(extentOrTile) {
-        const extent = extentOrTile.isExtent ?
-            extentOrTile.as(this.crs, _extent) :
-            extentOrTile.toExtent(this.crs, _extent);
-        return subDomains(bbox(extent, this));
+        if (extentOrTile.isTile) {
+            extentOrTile = extentOrTile.toExtent(this.crs, _extent);
+        }
+        return subDomains(bbox(extentOrTile, this));
+    }
+
+    getDataKey(extentOrTile) {
+        if (extentOrTile.isTile) {
+            return `z${extentOrTile.zoom}r${extentOrTile.row}c${extentOrTile.col}`;
+        } else {
+            return `z${extentOrTile.zoom}s${extentOrTile.south}w${extentOrTile.west}`;
+        }
     }
 
     extentInsideLimit(extent) {
