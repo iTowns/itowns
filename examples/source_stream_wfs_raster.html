@@ -138,6 +138,10 @@
                 itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
             });
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
 </script>
     </body>
 </html>

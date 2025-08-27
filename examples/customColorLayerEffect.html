@@ -153,6 +153,10 @@
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
                 itowns.ColorLayersOrdering.moveLayerToIndex(view, 'OPENSM', 0);
             });
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
         </script>
     </body>
 </html>

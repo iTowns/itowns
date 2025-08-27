@@ -93,6 +93,10 @@
                 .then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json')
                 .then(addElevationLayerFromConfig);
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
         </script>
     </body>
 </html>
