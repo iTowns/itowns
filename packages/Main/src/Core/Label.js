@@ -7,16 +7,18 @@ let rect;
 
 // set it once
 let STYLE_TRANSFORM = '';
-if (document.documentElement.style.transform !== undefined) {
-    STYLE_TRANSFORM = 'transform';
-} else if (document.documentElement.style.webkitTransform !== undefined) {
-    STYLE_TRANSFORM = 'webkitTransform';
-} else if (document.documentElement.style.mozTransform !== undefined) {
-    STYLE_TRANSFORM = 'mozTransform';
-} else if (document.documentElement.style.oTransform !== undefined) {
-    STYLE_TRANSFORM = 'oTransform';
-} else {
-    STYLE_TRANSFORM = 'transform';
+if (typeof document !== 'undefined') {
+    if (document.documentElement.style.transform !== undefined) {
+        STYLE_TRANSFORM = 'transform';
+    } else if (document.documentElement.style.webkitTransform !== undefined) {
+        STYLE_TRANSFORM = 'webkitTransform';
+    } else if (document.documentElement.style.mozTransform !== undefined) {
+        STYLE_TRANSFORM = 'mozTransform';
+    } else if (document.documentElement.style.oTransform !== undefined) {
+        STYLE_TRANSFORM = 'oTransform';
+    } else {
+        STYLE_TRANSFORM = 'transform';
+    }
 }
 
 /**

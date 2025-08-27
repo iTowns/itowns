@@ -5,7 +5,6 @@ describe('Camera utils with globe example', function _() {
         await loadExample('examples/view_3d_map.html', this.fullTitle());
 
         await page.evaluate(() => {
-            window.THREE = itowns.THREE;
             const raycaster = new THREE.Raycaster();
             const screen = new THREE.Vector2();
             const ellipsoid = new itowns.Ellipsoid(itowns.ellipsoidSizes);

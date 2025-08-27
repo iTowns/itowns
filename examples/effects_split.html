@@ -157,6 +157,10 @@
             // Override default rendering method when color layers are ready
             Promise.all([pOrtho, pOsm]).then(
                 function _() { view.render = splitRendering; }).catch(console.error);
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
         </script>
     </body>
 </html>
