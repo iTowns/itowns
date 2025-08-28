@@ -1,5 +1,5 @@
 const conf = {
-    version: '2.45.2-next.4',
+    version: '2.45.2-next.5',
 };
 
 export const REVISION = conf.version;
