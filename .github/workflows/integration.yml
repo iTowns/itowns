@@ -22,7 +22,7 @@ jobs:
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 22.17
           cache: 'npm'
 
       # Install packages
@@ -94,7 +94,7 @@ jobs:
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 22.17
           cache: 'npm'
 
       # Install packages
@@ -140,7 +140,7 @@ jobs:
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 22.17
           cache: 'npm'
 
       # Install packages
@@ -181,7 +181,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 22.17
           registry-url: https://registry.npmjs.org/
 
       - run: npm ci
@@ -291,7 +291,7 @@ jobs:
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 22.17
 
       - name: Message commit
         run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
