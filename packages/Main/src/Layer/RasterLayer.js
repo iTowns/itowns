@@ -1,4 +1,5 @@
 import Layer from 'Layer/Layer';
+import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import { removeLayeredMaterialNodeTile } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
@@ -9,6 +10,7 @@ class RasterLayer extends Layer {
             cacheLifeTime = CACHE_POLICIES.TEXTURE,
             minFilter,
             magFilter,
+            updateStrategy,
             ...layerConfig
         } = config;
 
@@ -19,6 +21,11 @@ class RasterLayer extends Layer {
 
         this.minFilter = minFilter;
         this.magFilter = magFilter;
+
+        this.updateStrategy = updateStrategy ?? {
+            type: STRATEGY_MIN_NETWORK_TRAFFIC,
+            options: {},
+        };
     }
 
     convert(data, extentDestination) {

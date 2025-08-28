@@ -4,7 +4,7 @@ import { InfoTiledGeometryLayer } from 'Layer/InfoLayer';
 import Picking from 'Core/Picking';
 import convertToTile from 'Converter/convertToTile';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
-import { ImageryLayers } from 'Layer/Layer';
+import { getColorLayersIdOrderedBySequence } from 'Layer/ImageryLayers';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
 const subdivisionVector = new THREE.Vector3();
@@ -250,7 +250,7 @@ class TiledGeometryLayer extends GeometryLayer {
         // Prepare ColorLayer sequence order
         // In this moment, there is only one color layers sequence, because they are attached to tileLayer.
         // In future, the sequence must be returned by parent geometry layer.
-        this.colorLayersOrder = ImageryLayers.getColorLayersIdOrderedBySequence(context.colorLayers);
+        this.colorLayersOrder = getColorLayersIdOrderedBySequence(context.colorLayers);
 
         let commonAncestor;
         for (const source of sources.values()) {
