@@ -155,7 +155,7 @@ Scheduler.prototype.execute = function execute(command) {
     // parse host
     const layer = command.layer;
     const host = layer.source && layer.source.url && layer.source.url !== 'none' ?
-        new URL(URLBuilder.subDomains(layer.source.url), document.location).host : undefined;
+        new URL(URLBuilder.subDomains(layer.source.url), import.meta.url).host : undefined;
 
     command.promise = new Promise((resolve, reject) => {
         command.resolve = resolve;
