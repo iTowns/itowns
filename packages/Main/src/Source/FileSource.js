@@ -180,11 +180,11 @@ class FileSource extends Source {
 
     onLayerAdded(options) {
         options.in = this;
-        if (!this._featuresCaches[options.out.crs]) {
+        if (this._featuresCaches && !this._featuresCaches[options.out.crs]) {
             // Cache feature only if it's vector data, the feature are cached in source.
             // It's not necessary to cache raster in Source,
             // because it's already cached on layer.
-            this._featuresCaches[options.out.crs] = this.isVectorSource ? new LRUCache({ max: 500 }) : noCache;
+            this._featuresCaches[options.out.crs] = new LRUCache({ max: 500 });
         }
         let features = this._featuresCaches[options.out.crs].get(0);
         if (!features) {
@@ -207,6 +207,10 @@ class FileSource extends Source {
     }
 
     onLayerRemoved(options = {}) {
+        if (!this._featuresCaches) {
+            return;
+        }
+
         // delete unused cache
         const unusedCache = this._featuresCaches[options.unusedCrs];
         if (unusedCache) {
