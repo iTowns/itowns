@@ -32,12 +32,14 @@ interface ExtentSource {
  * then loop back to `a`.
  *
  * @example
+ * ```
  * const url = 'https://${u:a|b|c}.tile.openstreetmap.org/';
  * const urlWithSubdomains = subDomains(url);
  * // First call returns 'https://a.tile.openstreetmap.org/'
  * // Second call returns 'https://b.tile.openstreetmap.org/'
  * // Third call returns 'https://c.tile.openstreetmap.org/'
  * // And so on...
+ * ```
  *
  * @param url - The URL to process for subdomains
  * @returns The URL with subdomain replacement applied
@@ -69,21 +71,23 @@ export function subDomains(url: string): string {
  * </ul>
  *
  * @example
+ * ```
  * coords = new Extent(CRS.formatToTms('EPSG:4326'), 12, 1410, 2072);
  * source.url = 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL';
  * url = xyz(coords, source);
  *
  * // The resulting url is:
  * // http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=12&TILEROW=1410&TILECOL=2072;
- *
+ * ```
  * @example
+ * ```
  * coords = new Extent('TMS', 15, 2142, 3412);
  * source.url = 'http://server.geo/tms/${z}/${y}/${x}.jpg';
  * url = xyz(coords, source);
  *
  * // The resulting url is:
  * // http://server.geo/tms/15/2142/3412.jpg;
- *
+ * ```
  * @param coords - tile coordinates
  * @param source - the source object (url and tileMatrixCallback)
  *
@@ -107,6 +111,7 @@ export function xyz(coords: TileLike, source: TileSource): string {
  * `WEST, SOUTH, EAST, NORTH`. The default order is `wsen`.
  *
  * @example
+ * ```
  * extent = new Extent('EPSG:4326', 12, 14, 35, 46);
  * source.crs = 'EPSG:4326';
  * source.url = 'http://server.geo/wms/BBOX=%bbox&FORMAT=jpg&SERVICE=WMS';
@@ -114,7 +119,7 @@ export function xyz(coords: TileLike, source: TileSource): string {
  *
  * // The resulting url is:
  * // http://server.geo/wms/BBOX=12,35,14,46&FORMAT=jpg&SERVICE=WMS
- *
+ * ```
  * @param bbox - the bounding box (west, south, east, north)
  * @param source - the source of data (url, crs, bboxDigits and axisOrder)
  *
