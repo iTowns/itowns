@@ -110,6 +110,7 @@
                 if (evt.keyCode == 32) {
                     front = 1 - front;
                     t = 0;
+
                     // schedule the animation
                     view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                     view.notifyChange(cameraThree);
