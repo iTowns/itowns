@@ -34,6 +34,9 @@ of the authors and should not be interpreted as representing official policies,
  */
 
 import PotreeNode from 'Core/PotreeNode';
+import { Fetcher } from 'itowns';
+
+const urlArene = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/potreeData/pointclouds/potree2.0/Arene-1_L93/octree.bin';
 
 const NODE_TYPE = {
     NORMAL: 0,
@@ -74,21 +77,43 @@ class Potree2Node extends PotreeNode {
         if (!this.octreeIsLoaded) {
             await this.loadOctree();
         }
-
-        return this.layer.source.fetcher(this.url, this.networkOptions(this.byteOffset, this.byteSize))
-            .then(file => this.layer.source.parser(file, {
-                in: {
-                    source: this.layer.source,
-                    bbox: this.bbox,
-                    numPoints: this.numPoints,
-                },
-                out: this.layer,
-            }))
-            .then((data) => {
-                this.loaded = true;
-                this.loading = false;
-                return data.geometry;
-            });
+        if (this.url === urlArene) {
+            return Fetcher.arrayBuffer('./layers/octree.bin', this.networkOptions(this.byteOffset, this.byteSize))
+                .then(file => this.layer.source.parser(file, {
+                    in: {
+                        source: this.layer.source,
+                        bbox: this.voxelOBB.box3D,
+                        numPoints: this.numPoints,
+                    },
+                    out: {
+                        ...this.layer,
+                        origin: this.voxelOBB.box3D.min,
+                    },
+                }))
+                .then((data) => {
+                    this.loaded = true;
+                    this.loading = false;
+                    return data.geometry;
+                });
+        } else {
+            return this.layer.source.fetcher(this.url, this.networkOptions(this.byteOffset, this.byteSize))
+                .then(file => this.layer.source.parser(file, {
+                    in: {
+                        source: this.layer.source,
+                        bbox: this.voxelOBB.box3D,
+                        numPoints: this.numPoints,
+                    },
+                    out: {
+                        ...this.layer,
+                        origin: this.voxelOBB.box3D.min,
+                    },
+                }))
+                .then((data) => {
+                    this.loaded = true;
+                    this.loading = false;
+                    return data.geometry;
+                });
+        }
     }
 
     async loadOctree() {

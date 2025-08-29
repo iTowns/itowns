@@ -61,12 +61,14 @@
             view.controls.minDistance = 50;
 
             // Configure Point Cloud layer
-            potreeLayer = new itowns.PotreeLayer('eglise_saint_blaise_arles', {
-                source: new itowns.PotreeSource({
+            const potreeSource = new itowns.PotreeSource({
                     file: 'eglise_saint_blaise_arles.js',
                     url: 'https://raw.githubusercontent.com/gmaillet/dataset/master/',
                     crs: view.referenceCrs,
-                }),
+                });
+
+            potreeLayer = new itowns.PotreeLayer('eglise_saint_blaise_arles', {
+                source: potreeSource,
             });
 
             // add potreeLayer to scene

@@ -60,12 +60,15 @@
                 view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
                 // Configure Point Cloud layer
-                potreeLayer = new itowns.Potree2Layer('Lion', {
-                    source: new itowns.Potree2Source({
+                source = new itowns.Potree2Source({
                         file: 'metadata.json',
                         url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
-                        crs: view.referenceCrs,
+                        crs: 'EPSG:3946',
+                        // url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/potreeData/pointclouds/potree2.0/Arene-1_L93',
+                        // crs: 'EPSG:2154',
                     }),
+                potreeLayer = new itowns.Potree2Layer('Lion', {
+                    source,
                 });
 
                 // point selection on double-click
@@ -94,22 +97,26 @@
 
                 // add potreeLayer to scene
                 function onLayerReady() {
-                    var ratio;
                     var position;
                     var lookAt = new itowns.THREE.Vector3();
                     var size = new itowns.THREE.Vector3();
 
-                    potreeLayer.root.bbox.getSize(size);
-                    potreeLayer.root.bbox.getCenter(lookAt);
+                    potreeLayer.root.voxelOBB.box3D.getSize(size);
+                    potreeLayer.root.voxelOBB.box3D.getCenter(lookAt);
+                    lookAt.z = potreeLayer.root.voxelOBB.box3D.min.z;
 
                     debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);
 
                     view.camera.camera3D.far = 2.0 * size.length();
 
-                    ratio = size.x / size.z;
-                    position = potreeLayer.root.bbox.min.clone().add(
-                        size.multiply({ x: 0, y: 0, z: ratio * 0.5 }));
-                    lookAt.z = potreeLayer.root.bbox.min.z;
+                    // position = potreeLayer.root.bbox.min.clone().add(
+                    //     size.multiply({ x: 0, y: 0, z: (size.x / size.z) * 0.5 }));
+
+                    var corner = new itowns.THREE.Vector3(...potreeLayer.source.metadata.boundingBox.min);
+                    var position = corner.clone().add(
+                        size.multiply({ x: 0, y: 0, z: (size.x / size.z) })
+                    );
+
                     placeCamera(position, lookAt);
                     controls.moveSpeed = size.length() / 3;
 
