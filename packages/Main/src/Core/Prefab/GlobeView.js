@@ -130,17 +130,11 @@ class GlobeView extends View {
                 // update camera's near and far
                 const originToCamSq = this.camera3D.position.lengthSq();
 
-                // get the minimum possible elevation (origin to ground), i.e. sea elevation, under camera
+                // maximum possible distance from ground to camera
                 const camCoordinates = new Coordinates(this.referenceCrs)
                     .setFromVector3(this.camera3D.position);
-                const layer = this.getLayers(l => l.isTiledGeometryLayer)[0];
-                camCoordinates.as(layer.extent.crs, camCoordinates);
-                camCoordinates.z = 0;
-                camCoordinates.as(this.referenceCrs, camCoordinates);
-                const seaElevationUnderCam = camCoordinates.toVector3().length();
-
-                // maximum possible distance from ground to camera
-                const camToSeaLevel = Math.sqrt(originToCamSq) - seaElevationUnderCam;
+                camCoordinates.as(this.tileLayer.extent.crs, camCoordinates);
+                const camToSeaLevel = camCoordinates.z;
 
                 const camToGroundDistMin = camToSeaLevel - ALTITUDE_MAX;
                 this.camera3D.near = Math.max(1, camToGroundDistMin * fovDepthFactor);

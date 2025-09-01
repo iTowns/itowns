@@ -50,7 +50,8 @@ class PlanarView extends View {
             // update camera's near and far
 
             // compute layer's bounding box
-            const obj = tileLayer.object3d;
+            if (!this.tileLayer) { return; }
+            const obj = this.tileLayer.object3d;
             const box = new THREE.Box3();
             obj.traverse((child) => {
                 if (child.isMesh && child.geometry) {
