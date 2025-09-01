@@ -1,6 +1,7 @@
 import { Extent, CRS } from '@itowns/geographic';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import KMLParser from 'Parser/KMLParser';
+import GeotiffParser from 'Parser/GeotiffParser';
 import GDFParser from 'Parser/GDFParser';
 import GpxParser from 'Parser/GpxParser';
 import GTXParser from 'Parser/GTXParser';
@@ -20,6 +21,7 @@ export const supportedParsers = new Map([
     ['application/gtx', GTXParser.parse],
     ['application/isg', ISGParser.parse],
     ['application/gdf', GDFParser.parse],
+    ['image/geotiff', GeotiffParser.parse],
 ]);
 
 const noCache = { get: () => {}, set: a => a, clear: () => {} };
