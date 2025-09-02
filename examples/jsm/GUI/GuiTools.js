@@ -1,10 +1,12 @@
+import * as itowns from 'itowns';
+// eslint-disable-next-line
+import dat from 'dat';
+
 /**
  * Generated On: 2015-10-5
  * Class: GuiTools
  * Description: Classe pour créer un menu.
  */
-
-/* global dat, itowns */
 
 dat.GUI.prototype.removeFolder = function removeFolder(name) {
     const folder = this.__folders[name];
@@ -157,7 +159,7 @@ GuiTools.prototype.colorLayerFolder = function colorLayerFolder(nameLayer, value
 // Recursive function that creates an HTML List from a javascript
 // object
 // eslint-disable-next-line no-unused-vars
-function createHTMLListFromObject(jsObject) {
+export function createHTMLListFromObject(jsObject) {
     const list = document.createElement('ul');
     // Change the padding (top: 0, right:0, bottom:0 and left:1.5)
     list.style.padding = '0 0 0 1.5rem';
@@ -187,3 +189,6 @@ function createHTMLListFromObject(jsObject) {
     });
     return list;
 }
+
+
+export default GuiTools;
