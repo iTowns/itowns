@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+import { VIEW_EVENTS } from 'Core/View';
 
 // event keycode
 export const keys = {
@@ -336,30 +337,31 @@ class PlanarControls extends THREE.EventDispatcher {
             dt = 16;
         }
         const onMovement = this.state !== STATE.NONE;
+        let camChanged = true;
         switch (this.state) {
             case STATE.TRAVEL:
                 this.handleTravel(dt);
-                this.view.notifyChange(this.camera);
                 break;
             case STATE.ORTHO_ZOOM:
                 this.handleZoomOrtho(dt);
-                this.view.notifyChange(this.camera);
                 break;
             case STATE.DRAG:
                 this.handleDragMovement();
-                this.view.notifyChange(this.camera);
                 break;
             case STATE.ROTATE:
                 this.handleRotation();
-                this.view.notifyChange(this.camera);
                 break;
             case STATE.PAN:
                 this.handlePanMovement();
-                this.view.notifyChange(this.camera);
                 break;
             case STATE.NONE:
             default:
+                camChanged = false;
                 break;
+        }
+        if (camChanged) {
+            this.view.dispatchEvent({ type: VIEW_EVENTS.CAMERA_MOVED });
+            this.view.notifyChange(this.camera);
         }
         // We test if camera collides to the geometry layer or is too close to the ground, and adjust its altitude in
         // case
