@@ -38,7 +38,7 @@ void main() {
     vec4 color;
     #pragma unroll_loop
     for ( int i = 0; i < NUM_FS_TEXTURES; i ++ ) {
-        color = getLayerColor( i , colorTextures[ i ], colorOffsetScales[ i ], colorLayers[ i ]);
+        color = getLayerColor( i , colorTextures, colorOffsetScales[ i ], colorLayers[ i ]);
         gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
     }
 

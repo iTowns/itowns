@@ -5,6 +5,7 @@ import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
 import { RasterTile, RasterElevationTile, RasterColorTile } from './RasterTile';
+import { makeDataArrayTexture } from './WebGLComposer';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
 const defaultTex = new THREE.Texture();
@@ -22,17 +23,11 @@ export function unpack1K(color: THREE.Vector4Like, factor: number): number {
     return factor ? bitSh.dot(color) * factor : bitSh.dot(color);
 }
 
-// Max sampler color count to LayeredMaterial
-// Because there's a statement limitation to unroll, in getColorAtIdUv method
-const maxSamplersColorCount = 15;
 const samplersElevationCount = 1;
 
 export function getMaxColorSamplerUnitsCount(): number {
     const maxSamplerUnitsCount = Capabilities.getMaxTextureUnitsCount();
-    return Math.min(
-        maxSamplerUnitsCount - samplersElevationCount,
-        maxSamplersColorCount,
-    );
+    return maxSamplerUnitsCount - samplersElevationCount;
 }
 
 export const colorLayerEffects = {
@@ -83,20 +78,38 @@ const defaultStructLayers: Readonly<{
     },
 };
 
+const textureArraysCache = new Map<string, THREE.DataArrayTexture>();
+const TEXTURE_ARRAY_CACHE_CAPACITY = 200;
 
-function updateLayersUniforms(
+/**
+ * Updates the uniforms for layered textures,
+ * including populating the DataArrayTexture
+ * with content from individual 2D textures on the GPU.
+ *
+ * @param uniforms - The uniforms object for your material.
+ * @param tiles - An array of RasterTile objects, each containing textures.
+ * @param max - The maximum number of layers for the DataArrayTexture.
+ */
+function updateLayersUniforms<Type extends 'c' | 'e'>(
     uniforms: { [name: string]: THREE.IUniform },
     tiles: RasterTile[],
     max: number,
+    type: Type,
 ) {
     // Aliases for readability
     const uLayers = uniforms.layers.value;
-    const uTextures = uniforms.textures.value;
+    const uTextures = uniforms.textures;
     const uOffsetScales = uniforms.offsetScales.value;
     const uTextureCount = uniforms.textureCount;
 
     // Flatten the 2d array: [i, j] -> layers[_layerIds[i]].textures[j]
     let count = 0;
+    let width = 0;
+    let height = 0;
+
+    // Determine total count of textures and dimensions
+    // (assuming all textures are same size)
+    let textureSetId: string = type;
     for (const tile of tiles) {
         // FIXME: RasterElevationTile are always passed to this function alone
         // so this works, but it's really not great even ignoring the dynamic
@@ -109,11 +122,49 @@ function updateLayersUniforms(
             i < tile.textures.length && count < max;
             ++i, ++count
         ) {
+            const texture = tile.textures[i];
+            if (!texture) { continue; }
+
+            textureSetId += `${texture.id}.`;
             uOffsetScales[count] = tile.offsetScales[i];
-            uTextures[count] = tile.textures[i];
             uLayers[count] = tile;
+
+            const img = texture.image;
+            if (!img || img.width <= 0 || img.height <= 0) {
+                console.error('Texture image not loaded or has zero dimensions');
+                uTextureCount.value = 0;
+                return;
+            } else if (count == 0) {
+                width = img.width;
+                height = img.height;
+            } else if (width !== img.width || height !== img.height) {
+                console.error('Texture dimensions mismatch');
+                uTextureCount.value = 0;
+                return;
+            }
         }
     }
+
+    if (textureArraysCache.has(textureSetId)) {
+        uTextures.value = textureArraysCache.get(textureSetId);
+        uTextureCount.value = count;
+        const renderer: THREE.WebGLRenderer = view.renderer;
+        renderer.initTexture(uTextures.value);
+        return;
+    }
+
+    if (!makeDataArrayTexture(uTextures, width, height, count, tiles, max)) {
+        uTextureCount.value = 0;
+        return;
+    }
+
+    if (textureArraysCache.size >= TEXTURE_ARRAY_CACHE_CAPACITY) {
+        const oldestEntry = textureArraysCache.entries().next().value!;
+        oldestEntry[1].dispose();
+        textureArraysCache.delete(oldestEntry[0]);
+    }
+    textureArraysCache.set(textureSetId, uTextures.value);
+
     if (count > max) {
         console.warn(
             `LayeredMaterial: Not enough texture units (${max} < ${count}),`
@@ -177,7 +228,7 @@ interface LayeredMaterialRawUniforms {
 
     // Color layers
     colorLayers: Array<StructColorLayer>;
-    colorTextures: Array<THREE.Texture>;
+    colorTextures: THREE.DataArrayTexture;
     colorOffsetScales: Array<THREE.Vector4>;
     colorTextureCount: number;
 }
@@ -330,7 +381,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
 
             colorLayers: new Array(nbSamplers[1])
                 .fill(defaultStructLayers.color),
-            colorTextures: new Array(nbSamplers[1]).fill(defaultTex),
+            colorTextures: new THREE.DataArrayTexture(null, 1, 1, 1),
             colorOffsetScales: new Array(nbSamplers[1])
                 .fill(identityOffsetScale),
             colorTextureCount: 0,
@@ -439,6 +490,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             this.getLayerUniforms('color'),
             colorlayers,
             this.defines.NUM_FS_TEXTURES,
+            'c',
         );
 
         if (this.elevationTileId !== undefined && this.getElevationTile()) {
@@ -447,6 +499,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
                     this.getLayerUniforms('elevation'),
                     [this.elevationTile],
                     this.defines.NUM_VS_TEXTURES,
+                    'e',
                 );
             }
         }
