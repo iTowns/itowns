@@ -221,6 +221,18 @@ class View extends THREE.EventDispatcher {
             }
         };
 
+        // Factor to apply to the camera's near value.
+        // Given a plane orthogonal the camera direction (in this case, the near plane),
+        // fovDepthFactor represents the ratio between:
+        // * the distance to a point on this plane at the center of the view and
+        // * the distance to a point on this plane in a corner.
+        this.fovDepthFactor = 1;
+        if (this.camera3D.isPerspectiveCamera) {
+            const corner = new THREE.Vector4(1, 1, -1); // a corner of the camera in NDC at near plane
+            corner.applyMatrix4(this.camera3D.projectionMatrixInverse).divideScalar(corner.z);
+            this.fovDepthFactor /= Math.sqrt(1 + corner.x * corner.x + corner.y * corner.y);
+        }
+
         this.camera.resize(this.domElement.clientWidth, this.domElement.clientHeight);
 
         const fn = () => {

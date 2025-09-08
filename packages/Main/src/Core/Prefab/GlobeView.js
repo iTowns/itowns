@@ -122,9 +122,6 @@ class GlobeView extends View {
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
 
             const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
-            const corner = new THREE.Vector4(1, 1, -1); // a corner of the camera in NDC at near plane
-            corner.applyMatrix4(this.camera3D.projectionMatrixInverse).divideScalar(corner.z);
-            const fovDepthFactor = 1 / Math.sqrt(1 + corner.x * corner.x + corner.y * corner.y);
 
             this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
                 // update camera's near and far
@@ -137,7 +134,7 @@ class GlobeView extends View {
                 const camToSeaLevel = camCoordinates.z;
 
                 const camToGroundDistMin = camToSeaLevel - ALTITUDE_MAX;
-                this.camera3D.near = Math.max(1, camToGroundDistMin * fovDepthFactor);
+                this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
 
                 // distance from camera to the horizon
                 const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));

@@ -47,10 +47,6 @@ class PlanarView extends View {
 
         this.addLayer(tileLayer);
 
-        const corner = new THREE.Vector4(1, 1, -1); // a corner of the camera in NDC at near plane
-        corner.applyMatrix4(this.camera3D.projectionMatrixInverse).divideScalar(corner.z);
-        const fovDepthFactor = 1 / Math.sqrt(1 + corner.x * corner.x + corner.y * corner.y);
-
         this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
             // update camera's near and far
 
@@ -80,7 +76,7 @@ class PlanarView extends View {
 
             // compute camera's near and far values
             const distance = box.distanceToPoint(camPos);
-            this.camera3D.near = Math.max(1, distance * fovDepthFactor);
+            this.camera3D.near = Math.max(1, distance * this.fovDepthFactor);
             const boxBottomToCam = camPos.z - box.min.z;
             const far = this.farFactor * boxBottomToCam;
             this.camera3D.far = Math.min(far, maxDist);
