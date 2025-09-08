@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import View, { VIEW_EVENTS } from 'Core/View';
 import CameraUtils from 'Utils/CameraUtils';
+import { OBB } from 'itowns';
 
 import PlanarControls from 'Controls/PlanarControls';
 import PlanarLayer from './Planar/PlanarLayer';
@@ -46,26 +47,25 @@ class PlanarView extends View {
 
         this.addLayer(tileLayer);
 
+        const corner = new THREE.Vector4(1, 1, -1); // a corner of the camera in NDC at near plane
+        corner.applyMatrix4(this.camera3D.projectionMatrixInverse).divideScalar(corner.z);
+        const fovDepthFactor = 1 / Math.sqrt(1 + corner.x * corner.x + corner.y * corner.y);
+
         this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
             // update camera's near and far
 
-            // compute layer's bounding box
             if (!this.tileLayer) { return; }
-            const obj = this.tileLayer.object3d;
-            const box = new THREE.Box3();
-            obj.traverse((child) => {
-                if (child.isMesh && child.geometry) {
-                    child.geometry.computeBoundingBox();
-                    const childBox = new THREE.Box3().copy(child.geometry.boundingBox)
-                        .applyMatrix4(child.matrixWorld);
-                    box.union(childBox);
-                }
-            });
-            if (box.isEmpty()) { return; }
+            const camPos = this.camera3D.position;
+
+            // get the displayed tiles extent OBB
+            const displayedExtent = this.tileLayer?.info?.displayed?.extent;
+            if (!displayedExtent) { return; }
+            this.displayedObb ||= new OBB(); // cache the OBB instance
+            this.displayedObb.setFromExtent(displayedExtent);
+            const box = this.displayedObb.box3D.clone().applyMatrix4(this.displayedObb.matrixWorld);
 
             // calculate the greatest distance to the corners of the box
             let maxDistSq = 0;
-            const camPos = this.camera3D.position;
             for (const x of [box.min.x, box.max.x]) {
                 for (const y of [box.min.y, box.max.y]) {
                     for (const z of [box.min.z, box.max.z]) {
@@ -78,10 +78,9 @@ class PlanarView extends View {
             }
             const maxDist = Math.sqrt(maxDistSq);
 
-            const closestPoint = new THREE.Vector3();
-            box.clampPoint(camPos, closestPoint);
-            this.camera3D.near = Math.max(1, closestPoint.distanceToSquared(camPos) / maxDist);
-
+            // compute camera's near and far values
+            const distance = box.distanceToPoint(camPos);
+            this.camera3D.near = Math.max(1, distance * fovDepthFactor);
             const boxBottomToCam = camPos.z - box.min.z;
             const far = this.farFactor * boxBottomToCam;
             this.camera3D.far = Math.min(far, maxDist);
