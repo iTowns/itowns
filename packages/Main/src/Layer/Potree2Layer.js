@@ -92,9 +92,8 @@ class Potree2Layer extends PointCloudLayer {
                 this.material.defines[normal.name] = 1;
             }
 
-            // currently the spec on potree2 only have boundingBox and no boundsConforming
-            this.zmin = metadata.boundingBox.min[2];
-            this.zmax = metadata.boundingBox.max[2];
+            this.zmin = metadata.attributes.filter(attributes => attributes.name === 'position')[0].min[2];
+            this.zmax = metadata.attributes.filter(attributes => attributes.name === 'position')[0].max[2];
 
             this.setElevationRange();
 
