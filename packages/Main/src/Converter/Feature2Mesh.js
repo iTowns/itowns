@@ -45,6 +45,7 @@ class FeatureMesh extends THREE.Group {
         this.#originalCrs = collection.crs;
         this.#currentCrs = this.#originalCrs;
         this.extent = collection.extent;
+        this.isFeatureMesh = true;
 
         this.add(this.#place.add(this.#collection));
     }
@@ -701,5 +702,32 @@ export default {
 
             return featureNode;
         };
+    },
+
+    updateColors(featureMesh, options = {}) {
+        style = options.style ? new Style(options.style) : defaultStyle;
+        const feature = featureMesh.feature;
+        const numVertices = feature.vertices?.length;
+        if (!numVertices) { return; }
+        const colors = new Uint8Array(numVertices * 2);
+
+        for (const geometry of feature.geometries) {
+            const start = geometry.indices[0].offset;
+            context.setGeometry(geometry);
+
+            const lastIndex = geometry.indices.slice(-1)[0];
+            const end = lastIndex.offset + lastIndex.count;
+            const count = end - start;
+            const startIn = start * 3;
+            const endIn = startIn + count * 3;
+
+            for (let i = startIn, t = startIn + numVertices; i < endIn; i += 3, t += 3) {
+                // color base and top mesh
+                const meshColor = toColor(style.fill.color).multiplyScalar(255);
+                meshColor.toArray(colors, t); // top
+                meshColor.multiplyScalar(0.5).toArray(colors, i); // the base is half-dark
+            }
+        }
+        featureMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     },
 };
