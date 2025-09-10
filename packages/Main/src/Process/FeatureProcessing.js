@@ -29,11 +29,7 @@ export default {
 
                 // update existing features
                 for (const featureMesh of f.meshes.children) {
-                    const newColor = layer.style?.fill?.color;
-                    if (featureMesh.oldColor !== newColor) {
-                        featureMesh.oldColor = newColor;
-                        Feature2Mesh.updateColors(featureMesh, { style: layer.style });
-                    }
+                    Feature2Mesh.updateFillStyle(featureMesh, { style: layer.style });
                 }
             });
             return;
