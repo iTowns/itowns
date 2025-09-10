@@ -273,7 +273,7 @@ function featureToLine(feature, options) {
         const id = batchId(geometry.properties, featureId);
 
         const start = geometry.indices[0].offset;
-        // To avoid integer overflow with indice value (16 bits)
+        // To avoid integer overflow with index value (16 bits)
         if (start > 0xffff) {
             console.warn('Feature to Line: integer overflow, too many points in lines');
             break;
@@ -450,45 +450,9 @@ function featureToExtrudedPolygon(feature, options) {
         const count = end - start;
         const isClockWise = geometry.indices[0].ccw ?? (area(ptsIn, start, count) < 0);
 
-        const startIn = start * 3;
         const startTop = start + totalVertices;
-        const endIn = startIn + count * 3;
         const id = batchId(geometry.properties, featureId);
-
-        for (let i = startIn, t = startIn + ptsIn.length, b = start; i < endIn; i += 3, t += 3, b += 1) {
-            if (feature.normals) {
-                normal.fromArray(feature.normals, i).multiply(inverseScale);
-            }
-
-            const localCoord = context.setLocalCoordinatesFromArray(ptsIn, i);
-            style.setContext(context);
-            const { base_altitude, extrusion_height, color } = style.fill;
-
-            coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
-            if (coord.crs == 'EPSG:4978') {
-            // altitude convertion from geocentered to elevation (from ground)
-                coord.as('EPSG:4326', coord);
-            }
-
-            // Calculate the new base coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(normal)
-                .multiplyScalar(base_altitude - coord.z).add(localCoord)
-            // and update the geometry buffer (vertices).
-                .toArray(vertices, i);
-            batchIds[b] = id;
-
-            // populate top geometry buffers
-            topCoord.copy(normal)
-                .multiplyScalar(extrusion_height).add(baseCoord)
-                .toArray(vertices, t);
-            batchIds[b + totalVertices] = id;
-
-            // coloring base and top mesh
-            const meshColor = toColor(color).multiplyScalar(255);
-            meshColor.toArray(colors, t); // top
-            meshColor.multiplyScalar(0.5).toArray(colors, i); // base is half dark
-        }
+        updateExtrudedPolygonVertices({ feature }, { style: options.style }, vertices, colors, batchIds, id);
 
         featureId++;
 
@@ -515,13 +479,13 @@ function featureToExtrudedPolygon(feature, options) {
 
         // add extruded holes
         for (let i = 1; i < geometry.indices.length; i++) {
-            const indice = geometry.indices[i];
+            const index = geometry.indices[i];
             addExtrudedPolygonSideFaces(
                 indices,
                 totalVertices,
-                indice.offset,
-                indice.count,
-                !(indice.ccw ?? isClockWise));
+                index.offset,
+                index.count,
+                !(index.ccw ?? isClockWise));
         }
     }
 
@@ -533,6 +497,80 @@ function featureToExtrudedPolygon(feature, options) {
     geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
 
     return new THREE.Mesh(geom, options.polygonMaterial);
+}
+
+/**
+ * Update base and top vertex data for extruded polygons.
+ *
+ * @param {Object} featureMesh - The feature mesh providing feature and collection context.
+ * @param {Object} options - Options; if options.style is provided, it is used to compute fill properties.
+ * @param {Float32Array} [vertices] - Optional target positions buffer (xyz) to write into.
+ * @param {Uint8Array} [colors] - Optional target colors buffer (rgb, Uint8, normalized) to write into.
+ * @param {Uint32Array} [batchIds] - Optional target per-vertex batch id buffer.
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
+ */
+function updateExtrudedPolygonVertices(featureMesh, options, vertices, colors, batchIds, id) {
+    const feature = featureMesh.feature;
+    const numVertices = feature.vertices?.length;
+    if (!numVertices) {
+        console.error('Feature has no vertices');
+        return;
+    }
+
+    // context setup
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    normal.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+
+    // geometry range
+    const geometry = context.getGeometry();
+    const start = geometry.indices[0].offset;
+    const lastIndex = geometry.indices.slice(-1)[0];
+    const end = lastIndex.offset + lastIndex.count;
+    const count = end - start;
+    const startIn = start * 3;
+    const endIn = startIn + count * 3;
+
+    for (let i = startIn, t = startIn + numVertices; i < endIn; i += 3, t += 3) {
+        if (feature.normals) {
+            normal.fromArray(feature.normals, i).multiply(inverseScale);
+        }
+
+        const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, i);
+        style.setContext(context);
+        const { base_altitude, extrusion_height, color } = style.fill;
+
+        const worldCoord = coord.copy(localCoord).applyMatrix4(context.collection.matrixWorld);
+        if (worldCoord.crs === 'EPSG:4978') {
+        // altitude conversion from geocentered to elevation (from ground)
+            worldCoord.as('EPSG:4326', worldCoord);
+        }
+
+        if (vertices) {
+            baseCoord.copy(normal)
+                .multiplyScalar(base_altitude - worldCoord.z).add(localCoord)
+            // and update the geometry buffer (vertices).
+                .toArray(vertices, i);
+
+            // populate top geometry buffers
+            topCoord.copy(normal)
+                .multiplyScalar(extrusion_height).add(baseCoord)
+                .toArray(vertices, t);
+        }
+
+        if (batchIds) {
+            batchIds[(i / 3) | 0] = id;
+            batchIds[(t / 3) | 0] = id;
+        }
+
+        // coloring base and top mesh
+        if (colors) {
+            const meshColor = toColor(color).multiplyScalar(255);
+            meshColor.toArray(colors, t); // top
+            meshColor.multiplyScalar(0.5).toArray(colors, i); // base is half-dark
+        }
+    }
 }
 
 /**
@@ -704,30 +742,33 @@ export default {
         };
     },
 
-    updateColors(featureMesh, options = {}) {
-        style = options.style ? new Style(options.style) : defaultStyle;
+    updateFillStyle(featureMesh, options = {}) {
         const feature = featureMesh.feature;
         const numVertices = feature.vertices?.length;
         if (!numVertices) { return; }
-        const colors = new Uint8Array(numVertices * 2);
+
+        // only define attributes that need an update
+        let colors;
+        let posAttr;
+        const newColor = options.style?.fill?.color;
+        if (featureMesh.oldColor !== newColor) {
+            featureMesh.oldColor = newColor;
+            colors = new Uint8Array(numVertices * 2);
+        }
+        const newExtrusionHeight = options.style?.fill?.extrusion_height;
+        if (featureMesh.oldExtrusionHeight !== newExtrusionHeight) {
+            featureMesh.oldExtrusionHeight = newExtrusionHeight;
+            posAttr = featureMesh.geometry.getAttribute('position');
+        }
 
         for (const geometry of feature.geometries) {
-            const start = geometry.indices[0].offset;
             context.setGeometry(geometry);
-
-            const lastIndex = geometry.indices.slice(-1)[0];
-            const end = lastIndex.offset + lastIndex.count;
-            const count = end - start;
-            const startIn = start * 3;
-            const endIn = startIn + count * 3;
-
-            for (let i = startIn, t = startIn + numVertices; i < endIn; i += 3, t += 3) {
-                // color base and top mesh
-                const meshColor = toColor(style.fill.color).multiplyScalar(255);
-                meshColor.toArray(colors, t); // top
-                meshColor.multiplyScalar(0.5).toArray(colors, i); // the base is half-dark
-            }
+            updateExtrudedPolygonVertices(featureMesh, options, posAttr?.array, colors);
         }
-        featureMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+
+        if (colors) {
+            featureMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+        }
+        if (posAttr) { posAttr.needsUpdate = true; }
     },
 };
