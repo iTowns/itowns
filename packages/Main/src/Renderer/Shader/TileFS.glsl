@@ -56,16 +56,19 @@ void main() {
     }
   #endif
 
-    vec3 normal = normalize(vNormal);
-	vec4 diffuseColor = gl_FragColor;
-    float specularStrength = 1.;
-    ReflectedLight reflectedLight = ReflectedLight(vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
+    // if no lights are defined, keep flat shading
+    #if NUM_DIR_LIGHTS + NUM_SPOT_LIGHTS + NUM_POINT_LIGHTS + NUM_HEMI_LIGHTS > 0
+        vec3 normal = normalize(vNormal);
+        vec4 diffuseColor = gl_FragColor;
+        float specularStrength = 1.;
+        ReflectedLight reflectedLight = ReflectedLight(vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
 
-    #include <lights_lambert_fragment>
-    #include <lights_fragment_begin>
-    #include <lights_fragment_end>
+        #include <lights_lambert_fragment>
+        #include <lights_fragment_begin>
+        #include <lights_fragment_end>
 
-    gl_FragColor.rgb = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
+        gl_FragColor.rgb = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
+    #endif
 
     #include <fog_fragment>
     #include <itowns/overlay_fragment>
