@@ -60,8 +60,10 @@ class c3DEngine {
             this.renderer.clear();
             if (view._camXR) {
                 this.renderer.render(view.scene, view._camXR);
-            } else {
+            } else if (this.composer.passes.length) {
                 this.composer.render();
+            } else {
+                this.renderer.render(view.scene, view.camera3D);
             }
             if (view.tileLayer) {
                 this.label2dRenderer.render(view.tileLayer.object3d, view.camera3D);
