@@ -79,4 +79,31 @@ function ReferLayerProperties(material, layer) {
     return material;
 }
 
+/**
+ * Patches castShadow and receiveShadow on a THREE.Object3D so that they
+ * combine the layer value with a local per-object value:
+ *   getter returns `layer.<prop> && localValue`
+ *   setter stores the local value
+ *
+ * @param {THREE.Object3D} object3d - The object to patch
+ * @param {GeometryLayer} layer - The layer whose shadow properties are combined
+ */
+export function referShadowProperties(object3d, layer) {
+    if (!layer) { return; }
+
+    let _castShadow = true;
+    Object.defineProperty(object3d, 'castShadow', {
+        get() { return layer.castShadow && _castShadow; },
+        set(value) { _castShadow = value; },
+        configurable: true,
+    });
+
+    let _receiveShadow = true;
+    Object.defineProperty(object3d, 'receiveShadow', {
+        get() { return layer.receiveShadow && _receiveShadow; },
+        set(value) { _receiveShadow = value; },
+        configurable: true,
+    });
+}
+
 export default ReferLayerProperties;

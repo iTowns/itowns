@@ -7,6 +7,7 @@ import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
 import SkyManager from 'Core/Prefab/Globe/SkyManager';
+import SunLightLayer from 'Layer/SunLightLayer';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -92,6 +93,8 @@ class GlobeView extends View {
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * If true, it can later be switched by setting this.skyManager.enabled to true/false.
      * If false, it will be impossible to enable it later on.
+     * @param {boolean} [options.shadows=false] - Enable shadow map rendering. Can be toggled
+     * later via `this.shadows`.
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -166,8 +169,20 @@ class GlobeView extends View {
             this.webXR.initializeWebXR();
         }
 
+        this.date = new Date(); // now
+
+        // Sunlight and shadow layer
+        this.sunLightLayer = new SunLightLayer(this);
+        this.addLayer(this.sunLightLayer);
+
         if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
+        }
+
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFShadowMap;
+        if (options.shadows === true) {
+            this.shadows = true;
         }
     }
 
@@ -212,6 +227,21 @@ class GlobeView extends View {
 
     getMetersToDegrees(meters = 1) {
         return THREE.MathUtils.radToDeg(2 * Math.asin(meters / (2 * ellipsoidSizes.x)));
+    }
+
+    /**
+     * Enable or disable shadow rendering.
+     * Does not affect shadows cast by user-defined lights.
+     * @type {boolean}
+     */
+    get shadows() {
+        return this.sunLightLayer.castShadow;
+    }
+
+    set shadows(value) {
+        if (this.sunLightLayer.castShadow == value) { return; }
+        this.sunLightLayer.castShadow = value;
+        this.notifyChange(this.camera3D);
     }
 }
 

@@ -624,6 +624,7 @@ function featureToMesh(feature, options) {
         mesh.material.vertexColors = true;
         mesh.material.color = new THREE.Color(0xffffff);
     }
+
     mesh.feature = feature;
 
     return mesh;
@@ -692,9 +693,10 @@ export default {
             const features = collection.features;
             if (!features || features.length == 0) { return; }
 
+            const layer = this;
             const meshes = features.map((feature) => {
                 const mesh = featureToMesh(feature, options);
-                mesh.layer = this;
+                mesh.layer = layer;
                 return mesh;
             });
             const featureNode = new FeatureMesh(meshes, collection);
