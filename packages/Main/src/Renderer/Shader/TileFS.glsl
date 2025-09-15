@@ -6,8 +6,9 @@
 #include <fog_pars_fragment>
 #include <itowns/overlay_pars_fragment>
 #include <normal_pars_fragment>
+#include <packing>
+#include <shadowmap_pars_fragment>
 #endif
-// TODO move to MODE_FINAL?
 #include <common>
 #include <lights_lambert_pars_fragment>
 #include <lights_pars_begin>

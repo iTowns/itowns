@@ -76,6 +76,8 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
 
         this.link = {};
 
+        this.receiveShadow = true;
+
         let _visible = true;
         Object.defineProperty(this, 'visible', {
             get() { return _visible; },
