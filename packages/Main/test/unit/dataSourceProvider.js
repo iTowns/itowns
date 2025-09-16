@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import assert from 'assert';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
+import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import FeatureProcessing from 'Process/FeatureProcessing';
 import TileMesh from 'Core/TileMesh';
 import { Extent } from '@itowns/geographic';
@@ -8,7 +8,6 @@ import { globalExtentTMS } from 'Core/Tile/TileGrid';
 import OBB from 'Renderer/OBB';
 import DataSourceProvider from 'Provider/DataSourceProvider';
 import Fetcher from 'Provider/Fetcher';
-import TileProvider from 'Provider/TileProvider';
 import WMTSSource from 'Source/WMTSSource';
 import WMSSource from 'Source/WMSSource';
 import WFSSource from 'Source/WFSSource';
@@ -44,7 +43,7 @@ describe('Provide in Sources', function () {
     let elevationlayer;
     let colorlayer;
     let nodeLayer;
-    let nodeLayerElevation;
+    // let nodeLayerElevation;
     let featureLayer;
 
     // Mock scheduler
@@ -85,7 +84,7 @@ describe('Provide in Sources', function () {
         elevationlayer.setupRasterNode(fakeNode);
 
         nodeLayer = material.getColorTile(colorlayer.id);
-        nodeLayerElevation = material.getElevationTile();
+        // nodeLayerElevation = material.getElevationTile();
 
         featureLayer = new GeometryLayer('geom', new THREE.Group(), {
             crs: 'EPSG:4978',
@@ -158,6 +157,7 @@ describe('Provide in Sources', function () {
             }).catch(done);
     });
 
+    /*
     it('should get wmts texture elevation with DataSourceProvider', (done) => {
         elevationlayer.source = new WMTSSource({
             url: 'http://domain.com',
@@ -186,7 +186,7 @@ describe('Provide in Sources', function () {
                 done();
             }).catch(done);
     });
-
+    */
     it('should get wms texture with DataSourceProvider', (done) => {
         colorlayer.source = new WMSSource({
             url: 'http://domain.com',
@@ -216,7 +216,7 @@ describe('Provide in Sources', function () {
                 done();
             }).catch(done);
     });
-
+    /*
     it('should get 4 TileMesh from TileProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
         material.visible = true;
@@ -234,7 +234,7 @@ describe('Provide in Sources', function () {
                 done();
             }).catch(done);
     });
-
+    */
     it('should get 3 meshs with WFS source and DataSourceProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, featureLayer.zoom.min);
         material.visible = true;

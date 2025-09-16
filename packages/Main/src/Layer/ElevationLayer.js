@@ -1,5 +1,5 @@
 import RasterLayer from 'Layer/RasterLayer';
-import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
+import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterElevationTile } from 'Renderer/RasterTile';
 
 /**
@@ -139,7 +139,7 @@ class ElevationLayer extends RasterLayer {
     }
 
     update(context, layer, node, parent) {
-        return updateLayeredMaterialNodeElevation(context, this, node, parent);
+        return updateLayeredMaterialNodeImagery(context, this, node, parent);
     }
 }
 

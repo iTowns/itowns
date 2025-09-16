@@ -153,5 +153,12 @@ export function newTileGeometry(
     }
 
     return (promiseGeometry as Promise<TileGeometry>)
-        .then(geometry => ({ geometry, quaternion, position }));
+        .then((geometry) => {
+            if (!geometry.attributes.uv) {
+                const cachedBuffers = cacheBuffer.get(bufferKey);
+                geometry.attributes.uv = cachedBuffers.uv;
+                geometry.index = cachedBuffers.index;
+            }
+            return { geometry, quaternion, position };
+        });
 }

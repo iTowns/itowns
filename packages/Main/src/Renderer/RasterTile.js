@@ -1,8 +1,42 @@
+/* eslint padded-blocks: 0 */
 import * as THREE from 'three';
 import { ELEVATION_MODES } from 'Renderer/LayeredMaterial';
+import LayerUpdateState from 'Layer/LayerUpdateState';
+import { nextLevelToFetch } from 'Layer/LayerUpdateStrategy';
+import handlingError from 'Process/handlerNodeError';
+import { scheduler } from 'Core/View';
 import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent, computeMinMaxElevation } from 'Parser/XbilParser';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
+
+function materialCommandQueuePriorityFunction(material) {
+    // We know that 'node' is visible because commands can only be
+    // issued for visible nodes.
+    // TODO: need priorization of displayed nodes
+    // Then prefer displayed node over non-displayed one
+    return material.visible ? 100 : 10;
+}
+
+function refinementCommandCancellationFn(cmd) {
+    const { requester } = cmd;
+    const child = requester.children[0];
+
+    return !cmd.view || !requester.parent || !requester.material || !requester.material.visible || child?.visible;
+}
+
+// eslint-disable-next-line no-unused-vars
+function buildCommand(tile, extentsSource, requester, view) {
+    return {
+        view,
+        layer: tile.layer,
+        extentsSource,
+        extentsDestination: tile.tiles,
+        requester,
+        priority: materialCommandQueuePriorityFunction(requester.material),
+        earlyDropFunction: refinementCommandCancellationFn,
+        partialLoading: true,
+    };
+}
 
 const pitch = new THREE.Vector4();
 
@@ -40,6 +74,8 @@ export class RasterTile extends THREE.EventDispatcher {
         this.offsetScales = [];
         this.level = EMPTY_TEXTURE_ZOOM;
         this.needsUpdate = false;
+        this.state = new LayerUpdateState();
+        this.lowestLevelError = Infinity;
 
         this._handlerCBEvent = () => { this.needsUpdate = true; };
         layer.addEventListener('visible-property-changed', this._handlerCBEvent);
@@ -58,6 +94,41 @@ export class RasterTile extends THREE.EventDispatcher {
         return this.layer.visible;
     }
 
+    load(requester, view) {
+        if (this.state.canTryUpdate()) {
+
+            this.state.newTry();
+
+            const nextLevel = nextLevelToFetch(this);
+            const nextTiles = [];
+
+            this.tiles.forEach((tile) => {
+
+                const nextTile = tile.tiledExtentParent(nextLevel);
+
+                if (this.layer.source.tileInsideLimit(nextTile)) { // /!\ work only with TMS || move to
+                    nextTiles.push(nextTile);
+                }
+            });
+
+            scheduler.execute(buildCommand(this, nextTiles, requester, view)).then((textures) => {
+
+                this.setTextures(textures);
+
+                if (nextLevelToFetch(this) == this.level) {
+                    this.state.noMoreUpdatePossible();
+                } else {
+                    this.state.success();
+                }
+
+                this.dispatchEvent({ type: 'RasterTileLoaded', node: this });
+
+                return textures;
+
+            }).catch(err => handlingError(err, this, nextLevel));
+        }
+    }
+
     initFromParent(parent, extents) {
         if (parent && parent.level > this.level) {
             let index = 0;
@@ -69,6 +140,10 @@ export class RasterTile extends THREE.EventDispatcher {
                     this.setTexture(index++, matchingParentTexture,
                         childExtent.offsetToParent(matchingParentTexture.extent));
                 }
+            }
+
+            if (nextLevelToFetch(this) == this.level) {
+                this.state.noMoreUpdatePossible();
             }
 
             if (__DEBUG__) {
@@ -136,13 +211,14 @@ export class RasterTile extends THREE.EventDispatcher {
             this.textures[index] = texture || null;
             this.offsetScales[index] = offsetScale;
             this.needsUpdate = true;
+            return texture;
         }
     }
 
-    setTextures(textures, pitchs) {
+    setTextures(textures) {
         this.disposeRedrawnTextures(textures);
         for (let i = 0, il = textures.length; i < il; ++i) {
-            this.setTexture(i, textures[i], pitchs[i]);
+            this.setTexture(i, textures[i], this.tiles[i].offsetToParent(textures[i].extent));
         }
     }
 
@@ -219,14 +295,14 @@ export class RasterElevationTile extends RasterTile {
         }
     }
 
-    setTextures(textures, offsetScales) {
+    setTextures(textures) {
         const anyValidTexture = textures.find(texture => texture != null);
         if (!anyValidTexture) {
             return;
         }
         const currentLevel = this.level;
         this.replaceNoDataValueFromTexture(anyValidTexture);
-        super.setTextures(textures, offsetScales);
+        super.setTextures(textures);
         this.updateMinMaxElevation();
         if (currentLevel !== this.level) {
             this.dispatchEvent({ type: 'rasterElevationLevelChanged', node: this });

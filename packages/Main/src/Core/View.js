@@ -12,6 +12,8 @@ import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
+export const scheduler = new Scheduler();
+
 export const VIEW_EVENTS = {
     /**
      * Fires when all the layers of the view are considered initialized.
@@ -185,7 +187,7 @@ class View extends THREE.EventDispatcher {
             engine = new c3DEngine(viewerDiv, options.renderer);
         }
 
-        this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), engine);
+        this.mainLoop = options.mainLoop || new MainLoop(scheduler, engine);
 
         this.scene = options.scene3D || new THREE.Scene();
         if (!options.scene3D) {

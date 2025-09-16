@@ -130,7 +130,7 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
             if (!texture) { continue; }
 
             textureSetId += `${texture.id}.`;
-            uOffsetScales[count] = tile.offsetScales[i];
+            uOffsetScales[count] = tile.offsetScales[i] || uOffsetScales[count];
             uLayers[count] = tile;
 
             const img = texture.image;
