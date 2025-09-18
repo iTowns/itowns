@@ -1,0 +1,3 @@
+{
+    "node-option": ["require=./test/functional/preload-jsdom.cjs"]
+}
