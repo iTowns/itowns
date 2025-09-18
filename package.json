@@ -98,7 +98,6 @@
     "github-url-from-git": "^1.5.0",
     "https-proxy-agent": "^7.0.6",
     "jsdoc": "^4.0.4",
-    "jsdom": "^27.0.0",
     "mocha": "^11.1.0",
     "proj4": "^2.19.10",
     "puppeteer": "^24.4.0",
