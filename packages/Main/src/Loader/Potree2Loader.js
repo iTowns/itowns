@@ -89,7 +89,7 @@ export default function load(buffer, options) {
 
                 const x = (view.getInt32(pointOffset + attributeOffset + 0, true) * scale[0]) + offset[0] - min.x;
                 const y = (view.getInt32(pointOffset + attributeOffset + 4, true) * scale[1]) + offset[1] - min.y;
-                const z = (view.getInt32(pointOffset + attributeOffset + 8, true) * scale[2]) + offset[2] - min.z;
+                const z = (view.getInt32(pointOffset + attributeOffset + 8, true) * scale[2]) + offset[2];
 
                 const index = toIndex(x, y, z);
                 const count = grid[index]++;
