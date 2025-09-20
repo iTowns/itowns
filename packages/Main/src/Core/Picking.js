@@ -147,7 +147,12 @@ export default {
         const candidates = [];
 
         traversePickingCircle(radius, (x, y) => {
-            const idx = (y * 2 * radius + x) * 4;
+            // x, y are offset from the center of the picking circle,
+            // and pixels is a square where 0, 0 is the top-left corner.
+            // So we need to shift x,y by radius.
+            const xi = x + radius;
+            const yi = y + radius;
+            const idx = (yi * (radius * 2 + 1) + xi) * 4;
             const data = buffer.slice(idx, idx + 4);
 
             // see PotreeProvider and the construction of unique_id
