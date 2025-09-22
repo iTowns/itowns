@@ -4,6 +4,7 @@ import TileFS from 'Renderer/Shader/TileFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
+import { LRUCache } from 'lru-cache';
 import { RasterTile, RasterElevationTile, RasterColorTile } from './RasterTile';
 import { makeDataArrayTexture } from './WebGLComposer';
 
@@ -78,8 +79,10 @@ const defaultStructLayers: Readonly<{
     },
 };
 
-const textureArraysCache = new Map<string, THREE.DataArrayTexture>();
-const TEXTURE_ARRAY_CACHE_CAPACITY = 200;
+const textureArraysCache = new LRUCache<string, THREE.DataArrayTexture>({
+    max: 200,
+    dispose: (texture) => { texture.dispose(); },
+});
 
 /**
  * Updates the uniforms for layered textures,
@@ -147,10 +150,11 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
         }
     }
 
-    if (textureArraysCache.has(textureSetId)) {
-        uTextures.value = textureArraysCache.get(textureSetId);
+    const cachedTexture = textureArraysCache.get(textureSetId);
+    if (cachedTexture) {
+        uTextures.value = cachedTexture;
         uTextureCount.value = count;
-        renderer.initTexture(uTextures.value);
+        renderer.initTexture(cachedTexture);
         return;
     }
 
@@ -159,11 +163,6 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
         return;
     }
 
-    if (textureArraysCache.size >= TEXTURE_ARRAY_CACHE_CAPACITY) {
-        const oldestEntry = textureArraysCache.entries().next().value!;
-        oldestEntry[1].dispose();
-        textureArraysCache.delete(oldestEntry[0]);
-    }
     textureArraysCache.set(textureSetId, uTextures.value);
 
     if (count > max) {
