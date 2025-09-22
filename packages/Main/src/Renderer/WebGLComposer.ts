@@ -133,15 +133,14 @@ function getInternalFormat(
  * @param count - The total number of layers the DataArrayTexture should have.
  * @param tiles - An array of RasterTile objects, each containing textures.
  * @param max - The maximum allowed number of layers for the DataArrayTexture.
+ * @param renderer - The renderer used to render the texture.
  * @returns True if the function succeeded
  */
 export function makeDataArrayTexture(
     uTextures: THREE.IUniform, width: number, height: number, count: number, tiles: RasterTile[],
-    max: number,
-): boolean {
+    max: number, renderer: THREE.WebGLRenderer): boolean {
     if (count === 0) { return false; }
 
-    const renderer: THREE.WebGLRenderer = view.renderer;
     const gl = renderer.getContext();
     if (!('TEXTURE_2D_ARRAY' in gl && 'texStorage3D' in gl)) {
         console.error('Some WebGL features are missing');

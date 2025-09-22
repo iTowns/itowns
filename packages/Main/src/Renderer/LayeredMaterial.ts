@@ -89,13 +89,15 @@ const TEXTURE_ARRAY_CACHE_CAPACITY = 200;
  * @param uniforms - The uniforms object for your material.
  * @param tiles - An array of RasterTile objects, each containing textures.
  * @param max - The maximum number of layers for the DataArrayTexture.
+ * @param type - Layer set identifier: 'c' for color, 'e' for elevation.
+ * @param renderer - The renderer used to render textures.
  */
 function updateLayersUniforms<Type extends 'c' | 'e'>(
     uniforms: { [name: string]: THREE.IUniform },
     tiles: RasterTile[],
     max: number,
     type: Type,
-) {
+    renderer: THREE.WebGLRenderer) {
     // Aliases for readability
     const uLayers = uniforms.layers.value;
     const uTextures = uniforms.textures;
@@ -148,12 +150,11 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
     if (textureArraysCache.has(textureSetId)) {
         uTextures.value = textureArraysCache.get(textureSetId);
         uTextureCount.value = count;
-        const renderer: THREE.WebGLRenderer = view.renderer;
         renderer.initTexture(uTextures.value);
         return;
     }
 
-    if (!makeDataArrayTexture(uTextures, width, height, count, tiles, max)) {
+    if (!makeDataArrayTexture(uTextures, width, height, count, tiles, max, renderer)) {
         uTextureCount.value = 0;
         return;
     }
@@ -479,7 +480,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         };
     }
 
-    public updateLayersUniforms(): void {
+    public updateLayersUniforms(renderer: THREE.WebGLRenderer): void {
         const colorlayers = this.colorTiles
             .filter(rt => rt.visible && rt.opacity > 0);
         colorlayers.sort((a, b) =>
@@ -491,6 +492,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             colorlayers,
             this.defines.NUM_FS_TEXTURES,
             'c',
+            renderer,
         );
 
         if (this.elevationTileId !== undefined && this.getElevationTile()) {
@@ -500,6 +502,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
                     [this.elevationTile],
                     this.defines.NUM_VS_TEXTURES,
                     'e',
+                    renderer,
                 );
             }
         }
