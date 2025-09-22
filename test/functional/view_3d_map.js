@@ -39,7 +39,7 @@ describe('view_3d_map', function _() {
         const maxColorSamplerUnitsCount = await page.evaluate(
             () => itowns.getMaxColorSamplerUnitsCount(),
         );
-        const colorSamplerUnitsCount = await page.evaluate(() => view.tileLayer.countColorLayersTextures(view.getLayers(l => l.isColorLayer)[0]));
+        const colorSamplerUnitsCount = await page.evaluate(() => view.getLayers(l => l.isColorLayer).length);
         const limit = maxColorSamplerUnitsCount - colorSamplerUnitsCount;
 
         // add layers just below the capacity limit

@@ -176,7 +176,6 @@ class View extends THREE.EventDispatcher {
         // options.renderer can be 2 separate things:
         //   - an actual renderer (in this case we don't use viewerDiv)
         //   - options for the renderer to be created
-        // here renderer is passed to engine
         if (options.renderer && options.renderer.domElement) {
             engine = new c3DEngine(options.renderer);
         } else {
