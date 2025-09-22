@@ -158,6 +158,13 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
         return;
     }
 
+    // If the textures are the original array obtained when loaded,
+    // they are not yet handled by our cache, so dispose of them
+    // before replacing them with data array textures.
+    if (!(uTextures.value instanceof THREE.DataArrayTexture)) {
+        for (const texture of uTextures.value) { texture.dispose(); }
+    }
+
     if (!makeDataArrayTexture(uTextures, width, height, count, tiles, max, renderer)) {
         uTextureCount.value = 0;
         return;

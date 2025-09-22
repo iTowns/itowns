@@ -200,7 +200,10 @@ export function makeDataArrayTexture(
                 // Allocate immutable storage,
                 // with parameters from the first found texture
                 const glFormat = getInternalFormat(gl, texture.format, texture.type);
-                if (glFormat < 0) { return false; }
+                if (glFormat < 0) {
+                    uTextures.value.dispose();
+                    return false;
+                }
                 gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, glFormat, width, height, count);
             }
 
