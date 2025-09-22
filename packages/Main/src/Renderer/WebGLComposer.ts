@@ -23,7 +23,7 @@ const copyTextureShader = {
 let renderTarget: THREE.WebGLRenderTarget | null = null;
 let material: THREE.ShaderMaterial | null = null;
 let quadScene: THREE.Scene | null = null;
-let quadCam: THREE.OrthographicCamera | null = null;
+const quadCam: THREE.OrthographicCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
 /**
  * Renders a single 2D texture layer into the DataArrayTexture on the GPU.
@@ -37,7 +37,6 @@ let quadCam: THREE.OrthographicCamera | null = null;
  * @param layerIndex - The index of the layer
  * in the DataArrayTexture to write to.
  * @param quadScene - The scene containing the quad used for rendering.
- * @param quadCam - The camera for the quad scene.
  */
 function drawTextureLayer(
     renderer: THREE.WebGLRenderer,
@@ -45,7 +44,6 @@ function drawTextureLayer(
     dataArrayTextureToPopulate: THREE.DataArrayTexture,
     layerIndex: number,
     quadScene: THREE.Scene,
-    quadCam: THREE.OrthographicCamera,
 ) {
     const gl = renderer.getContext();
 
@@ -176,7 +174,6 @@ export function makeDataArrayTexture(
     // Set up the quad for rendering
     if (!quadScene) {
         quadScene = new THREE.Scene();
-        quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
         const geometry = new THREE.PlaneGeometry(2, 2);
         material = new THREE.ShaderMaterial({
             uniforms: {
@@ -215,7 +212,7 @@ export function makeDataArrayTexture(
 
             // render this source texture into the current layer
             drawTextureLayer(renderer, renderTarget, uTextures.value,
-                currentLayerIndex, quadScene!, quadCam!);
+                currentLayerIndex, quadScene!);
         }
     }
 
