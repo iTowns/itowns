@@ -248,7 +248,12 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
     public override defines: LayeredMaterialDefines;
 
     constructor(options: LayeredMaterialParameters = {}, crsCount: number) {
-        super(options);
+        const lambertUniforms = THREE.UniformsUtils.clone(THREE.ShaderLib.lambert.uniforms);
+        const shaderMaterialParams: THREE.ShaderMaterialParameters = { ...options };
+        shaderMaterialParams.uniforms = shaderMaterialParams.uniforms ?? {};
+        Object.assign(shaderMaterialParams.uniforms, lambertUniforms);
+        super(shaderMaterialParams);
+        this.name = 'LayeredMaterial';
 
         nbSamplers ??= [samplersElevationCount, getMaxColorSamplerUnitsCount()];
 
@@ -277,6 +282,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         }
 
         this.defines = defines;
+        this.lights = true;
 
         this.fog = true; // receive the fog defined on the scene, if any
 

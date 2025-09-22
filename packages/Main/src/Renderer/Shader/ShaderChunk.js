@@ -3,8 +3,6 @@ import color_layers_pars_fragment from './Chunk/color_layers_pars_fragment.glsl'
 import elevation_pars_vertex from './Chunk/elevation_pars_vertex.glsl';
 import elevation_vertex from './Chunk/elevation_vertex.glsl';
 import geoid_vertex from './Chunk/geoid_vertex.glsl';
-import lighting_fragment from './Chunk/lighting_fragment.glsl';
-import lighting_pars_fragment from './Chunk/lighting_pars_fragment.glsl';
 import mode_pars_fragment from './Chunk/mode_pars_fragment.glsl';
 import mode_depth_fragment from './Chunk/mode_depth_fragment.glsl';
 import mode_id_fragment from './Chunk/mode_id_fragment.glsl';
@@ -26,8 +24,6 @@ const itownsShaderChunk = {
     elevation_pars_vertex,
     elevation_vertex,
     geoid_vertex,
-    lighting_fragment,
-    lighting_pars_fragment,
     mode_depth_fragment,
     mode_id_fragment,
     mode_pars_fragment,

@@ -68,8 +68,6 @@
             setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
 
-            const atmosphere3D = view.getLayerById('atmosphere').object3d;
-
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ColorLayer('Ortho', config);
@@ -109,10 +107,6 @@
                 object3ds[1 - front].position.y = THREE.MathUtils.lerp(front ? -10000000 : 10000000, 0, 1 - t);
                 object3ds[1 - front].scale.setScalar(THREE.MathUtils.lerp(0.3, 1, 1 - t));
 
-                atmosphere3D.position.y = object3ds[0].position.y;
-                atmosphere3D.scale.copy(object3ds[0].scale);
-                atmosphere3D.updateMatrixWorld(true);
-
                 object3ds[0].updateMatrixWorld(true);
                 object3ds[1].updateMatrixWorld(true);
 
@@ -130,9 +124,14 @@
                 if (evt.keyCode == 32) {
                     front = 1 - front;
                     t = 0;
+
                     // schedule the animation
                     view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                     view.notifyChange(cameraThree);
+
+                    view.camera3D.near = 15;
+                    view.camera3D.far = 63781370;
+                    view.camera3D.updateProjectionMatrix();
                 }
             }
             viewerDiv.focus();
@@ -157,6 +156,10 @@
                 }
                 cameraThree.position.copy(geo.as('EPSG:4978'));
                 view.notifyChange(cameraThree);
+
+                view.camera3D.near = 15;
+                view.camera3D.far = 63781370;
+                view.camera3D.updateProjectionMatrix();
             };
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
             viewerDiv.addEventListener('mousewheel', onMouseWheel);
