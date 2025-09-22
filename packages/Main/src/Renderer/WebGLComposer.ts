@@ -22,7 +22,7 @@ const copyTextureShader = {
 
 let renderTarget: THREE.WebGLRenderTarget | null = null;
 let material: THREE.ShaderMaterial | null = null;
-let quadScene: THREE.Scene | null = null;
+let quad: THREE.Mesh | null = null;
 const quadCam: THREE.OrthographicCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
 /**
@@ -36,14 +36,14 @@ const quadCam: THREE.OrthographicCamera = new THREE.OrthographicCamera(-1, 1, 1,
  * that layers are being written into.
  * @param layerIndex - The index of the layer
  * in the DataArrayTexture to write to.
- * @param quadScene - The scene containing the quad used for rendering.
+ * @param quad - The quad used for rendering.
  */
 function drawTextureLayer(
     renderer: THREE.WebGLRenderer,
     renderTarget: THREE.WebGLRenderTarget,
     dataArrayTextureToPopulate: THREE.DataArrayTexture,
     layerIndex: number,
-    quadScene: THREE.Scene,
+    quad: THREE.Mesh,
 ) {
     const gl = renderer.getContext();
 
@@ -66,7 +66,7 @@ function drawTextureLayer(
         return;
     }
 
-    renderer.render(quadScene, quadCam);
+    renderer.render(quad, quadCam);
 
     // reset render target to the old one
     renderer.setRenderTarget(previousRenderTarget);
@@ -172,8 +172,7 @@ export function makeDataArrayTexture(
     }
 
     // Set up the quad for rendering
-    if (!quadScene) {
-        quadScene = new THREE.Scene();
+    if (!quad) {
         const geometry = new THREE.PlaneGeometry(2, 2);
         material = new THREE.ShaderMaterial({
             uniforms: {
@@ -183,8 +182,7 @@ export function makeDataArrayTexture(
             vertexShader: copyTextureShader.vertexShader,
             fragmentShader: copyTextureShader.fragmentShader,
         });
-        const quad = new THREE.Mesh(geometry, material);
-        quadScene.add(quad);
+        quad = new THREE.Mesh(geometry, material);
     }
 
     // loop through each tile and its textures
@@ -212,7 +210,7 @@ export function makeDataArrayTexture(
 
             // render this source texture into the current layer
             drawTextureLayer(renderer, renderTarget, uTextures.value,
-                currentLayerIndex, quadScene!);
+                currentLayerIndex, quad!);
         }
     }
 
