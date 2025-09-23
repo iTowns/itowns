@@ -9,7 +9,6 @@ import { RasterTile, RasterElevationTile, RasterColorTile } from './RasterTile';
 import { makeDataArrayTexture } from './WebGLComposer';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
-const defaultTex = new THREE.Texture();
 
 // from three.js packDepthToRGBA
 const UnpackDownscale = 255 / 256; // 0..1 -> fraction (excluding 1)

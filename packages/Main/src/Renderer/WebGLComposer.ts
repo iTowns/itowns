@@ -20,103 +20,9 @@ const copyTextureShader = {
     `,
 };
 
-let renderTarget: THREE.WebGLRenderTarget | null = null;
 let material: THREE.ShaderMaterial | null = null;
 let quad: THREE.Mesh | null = null;
 const quadCam: THREE.OrthographicCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-/**
- * Renders a single 2D texture layer into the DataArrayTexture on the GPU.
- * This function is called for each layer.
- *
- * @param renderer - The Three.js WebGLRenderer instance.
- * @param renderTarget - A temporary WebGLRenderTarget
- * used to bind the framebuffer.
- * @param dataArrayTextureToPopulate - The DataArrayTexture
- * that layers are being written into.
- * @param layerIndex - The index of the layer
- * in the DataArrayTexture to write to.
- * @param quad - The quad used for rendering.
- */
-function drawTextureLayer(
-    renderer: THREE.WebGLRenderer,
-    renderTarget: THREE.WebGLRenderTarget,
-    dataArrayTextureToPopulate: THREE.DataArrayTexture,
-    layerIndex: number,
-    quad: THREE.Mesh,
-) {
-    const previousRenderTarget = renderer.getRenderTarget();
-    renderer.setRenderTarget(renderTarget);
-
-    // get the raw WebGLTexture object for the DataArrayTexture
-    const props = renderer.properties.get(dataArrayTextureToPopulate) as
-        { __webglTexture: WebGLTexture };
-    const dataArrayTextureWebGL = props.__webglTexture;
-
-    // attach the specific layer of the DataArrayTexture to the framebuffer's
-    // COLOR_ATTACHMENT0
-    const gl = renderer.getContext();
-    if ('framebufferTextureLayer' in gl) {
-        gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-            dataArrayTextureWebGL, 0, layerIndex);
-    } else {
-        console.error('framebufferTextureLayer function not supported');
-        return;
-    }
-
-    renderer.render(quad, quadCam);
-    renderer.setRenderTarget(previousRenderTarget);
-}
-
-function getInternalFormat(
-    gl: WebGL2RenderingContext,
-    format: THREE.PixelFormat,
-    type: THREE.TextureDataType): number {
-    if (type === THREE.UnsignedByteType) {
-        switch (format) {
-            case THREE.RGBAFormat:
-                return gl.RGBA8;
-            case THREE.RedFormat:
-                return gl.R8;
-            case THREE.RGBFormat:
-                return gl.RGB8;
-            default:
-                console.error(`Unsupported format/type combo: format=${format}, type=UnsignedByte`);
-                return -1;
-        }
-    }
-
-    if (type === THREE.FloatType) {
-        switch (format) {
-            case THREE.RGBAFormat:
-                return gl.RGBA32F;
-            case THREE.RedFormat:
-                return gl.R32F;
-            case THREE.RGBFormat:
-                return gl.RGB32F;
-            default:
-                console.error(`Unsupported format/type combo: format=${format}, type=Float`);
-                return -1;
-        }
-    }
-
-    if (type === THREE.HalfFloatType) {
-        switch (format) {
-            case THREE.RGBAFormat:
-                return gl.RGBA16F;
-            case THREE.RedFormat:
-                return gl.R16F;
-            case THREE.RGBFormat:
-                return gl.RGB16F;
-            default:
-                console.error(`Unsupported format/type combo: format=${format}, type=HalfFloat`);
-                return -1;
-        }
-    }
-
-    console.error(`Unsupported type: ${type}`);
-    return -1;
-}
 
 /**
  * Initializes a THREE.DataArrayTexture with immutable storage and populates
@@ -137,32 +43,15 @@ export function makeDataArrayTexture(
     max: number, renderer: THREE.WebGLRenderer): boolean {
     if (count === 0) { return false; }
 
-    const gl = renderer.getContext();
-    if (!('TEXTURE_2D_ARRAY' in gl && 'texStorage3D' in gl)) {
-        console.error('Some WebGL features are missing');
-        return false;
-    }
-
-    uTextures.value = new THREE.DataArrayTexture(null, width, height, count);
-
-    // Manually initialize the WebGL
-    // texture with immutable storage (gl.texStorage3D)
-    // This is a requirement for attaching layers to a framebuffer.
-    const textureProps = renderer.properties.get(uTextures.value) as
-        { __webglTexture: WebGLTexture };
-    textureProps.__webglTexture = gl.createTexture(); // Create a raw WebGL texture
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, textureProps.__webglTexture);
-
-    // Avoid visible seams
-    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    // Create a temporary THREE.WebGLRenderTarget.
+    // Create a temporary THREE.WebGLArrayRenderTarget.
     // This render target's internal framebuffer
     // will be used to attach layers.
-    renderTarget ??= new THREE.WebGLRenderTarget(width, height, {
+    const renderTarget = new THREE.WebGLArrayRenderTarget(width, height, count, {
         depthBuffer: false, // No depth buffer needed for simple 2D texture copy
     });
+
+    const arrayTexture = renderTarget.texture;
+    uTextures.value = arrayTexture;
 
     // Set up the quad for rendering
     if (!quad) {
@@ -190,23 +79,25 @@ export function makeDataArrayTexture(
             const texture = tile.textures[i];
             if (!texture) { continue; }
 
-            if (!currentLayerIndex) {
-                // Allocate immutable storage,
-                // with parameters from the first found texture
-                const glFormat = getInternalFormat(gl, texture.format, texture.type);
-                if (glFormat < 0) {
-                    uTextures.value.dispose();
-                    return false;
-                }
-                gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, glFormat, width, height, count);
-            }
-
             // Set the current source 2D texture on the quad's material
             material!.uniforms.sourceTexture.value = texture;
 
+            if (!currentLayerIndex) {
+                // Set parameters from the first found texture
+                arrayTexture.magFilter = texture.magFilter;
+                arrayTexture.minFilter = texture.minFilter;
+                arrayTexture.wrapS = texture.wrapS;
+                arrayTexture.wrapT = texture.wrapT;
+                arrayTexture.format = texture.format;
+                arrayTexture.type = texture.type;
+                arrayTexture.internalFormat = texture.internalFormat;
+            }
+
             // render this source texture into the current layer
-            drawTextureLayer(renderer, renderTarget, uTextures.value,
-                currentLayerIndex, quad!);
+            const previousRenderTarget = renderer.getRenderTarget();
+            renderer.setRenderTarget(renderTarget, currentLayerIndex);
+            renderer.render(quad, quadCam);
+            renderer.setRenderTarget(previousRenderTarget);
         }
     }
 
