@@ -225,7 +225,7 @@ interface LayeredMaterialRawUniforms {
     elevationLayers: Array<StructElevationLayer>;
     // can be [] on initialization
     // so we don't have to instantiate an empty DataArrayTexture
-    elevationTextures: THREE.DataArrayTexture | [];
+    elevationTextures: THREE.DataArrayTexture | null;
     elevationOffsetScales: Array<THREE.Vector4>;
     elevationTextureCount: number;
 
@@ -233,7 +233,7 @@ interface LayeredMaterialRawUniforms {
     colorLayers: Array<StructColorLayer>;
     // can be [] on initialization
     // so we don't have to instantiate an empty DataArrayTexture
-    colorTextures: THREE.DataArrayTexture | [];
+    colorTextures: THREE.DataArrayTexture | null;
     colorOffsetScales: Array<THREE.Vector4>;
     colorTextureCount: number;
 }
@@ -379,14 +379,14 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         this.initUniforms({
             elevationLayers: new Array(nbSamplers[0])
                 .fill(defaultStructLayers.elevation),
-            elevationTextures: [],
+            elevationTextures: null,
             elevationOffsetScales: new Array(nbSamplers[0])
                 .fill(identityOffsetScale),
             elevationTextureCount: 0,
 
             colorLayers: new Array(nbSamplers[1])
                 .fill(defaultStructLayers.color),
-            colorTextures: [],
+            colorTextures: null,
             colorOffsetScales: new Array(nbSamplers[1])
                 .fill(identityOffsetScale),
             colorTextureCount: 0,
