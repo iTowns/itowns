@@ -158,13 +158,8 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
         return;
     }
 
-    // If the textures are the original array obtained when loaded,
-    // they are not yet handled by our cache, so dispose of them
-    // before replacing them with data array textures.
-    if (!(uTextures.value instanceof THREE.DataArrayTexture)) {
-        for (const texture of uTextures.value) { texture.dispose(); }
-    }
-
+    // Memory management of these textures is only done by `textureArraysCache`,
+    // so we don't have to dispose of them manually.
     if (!makeDataArrayTexture(uTextures, width, height, count, tiles, max, renderer)) {
         uTextureCount.value = 0;
         return;
@@ -229,13 +224,17 @@ interface LayeredMaterialRawUniforms {
 
     // Elevation layers
     elevationLayers: Array<StructElevationLayer>;
-    elevationTextures: Array<THREE.Texture>;
+    // can be [] on initialization
+    // so we don't have to instantiate an empty DataArrayTexture
+    elevationTextures: THREE.DataArrayTexture | [];
     elevationOffsetScales: Array<THREE.Vector4>;
     elevationTextureCount: number;
 
     // Color layers
     colorLayers: Array<StructColorLayer>;
-    colorTextures: THREE.DataArrayTexture;
+    // can be [] on initialization
+    // so we don't have to instantiate an empty DataArrayTexture
+    colorTextures: THREE.DataArrayTexture | [];
     colorOffsetScales: Array<THREE.Vector4>;
     colorTextureCount: number;
 }
@@ -381,14 +380,14 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         this.initUniforms({
             elevationLayers: new Array(nbSamplers[0])
                 .fill(defaultStructLayers.elevation),
-            elevationTextures: new Array(nbSamplers[0]).fill(defaultTex),
+            elevationTextures: [],
             elevationOffsetScales: new Array(nbSamplers[0])
                 .fill(identityOffsetScale),
             elevationTextureCount: 0,
 
             colorLayers: new Array(nbSamplers[1])
                 .fill(defaultStructLayers.color),
-            colorTextures: new THREE.DataArrayTexture(null, 1, 1, 1),
+            colorTextures: [],
             colorOffsetScales: new Array(nbSamplers[1])
                 .fill(identityOffsetScale),
             colorTextureCount: 0,
