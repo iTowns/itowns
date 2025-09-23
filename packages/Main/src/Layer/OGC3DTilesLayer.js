@@ -145,7 +145,16 @@ export function enableMeshoptDecoder(MeshOptDecoder) {
     itownsGLTFLoader.setMeshoptDecoder(MeshOptDecoder);
 }
 
-// TODO: rename
+/**
+ * Patches material properties to automatically update the material (uniforms
+ * and shader) when the layer properties are updated. Note that:
+ * - The transparent property is set according to the opacity. This leads
+ *   to the recompilation of the material if not cached.
+ * - The material properties cannot be set from within the material, so the
+ *   setters are not implemented and shall not be used.
+ * @param {Material} material A three.js material
+ * @param {OGC3DTilesLayer} layer An OGC3DTilesLayer
+ */
 function referMaterialProperties(material, layer) {
     Object.defineProperty(material, 'opacity', {
         get: () => layer.opacity,
@@ -171,6 +180,17 @@ function referMaterialProperties(material, layer) {
     });
 }
 
+/**
+ * Patches material properties to automatically update the material (uniforms
+ * and shader) when the layer properties are updated. Note that:
+ * - The transparent property is set according to the opacity **and** the
+ *   presence of non-opaque pixels in the classification texture. This leads
+ *   to the recompilation of the material if not cached.
+ * - The material properties cannot be set from within the material, so the
+ *   setters are not implemented and shall not be used.
+ * @param {PointsMaterial} material An itowns PointsMaterial
+ * @param {OGC3DTilesLayer} layer An OGC3DTilesLayer
+ */
 function referPointsMaterialProperties(material, layer) {
     let _transparent = material.transparent;
     Object.defineProperty(material, 'transparent', {
