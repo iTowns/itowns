@@ -13,7 +13,7 @@ class PotreeNode extends PointCloudNode {
 
         this.depth = 0;
 
-        this.hierarchyKey = 'r';
+        this.hierarchyKey = '';
 
         this.baseurl = layer.source.baseurl;
     }
@@ -23,7 +23,7 @@ class PotreeNode extends PointCloudNode {
     }
 
     get url() {
-        return `${this.baseurl}/${this.hierarchyKey}.${this.layer.source.extension}`;
+        return `${this.baseurl}/r${this.hierarchyKey}.${this.layer.source.extension}`;
     }
 
     get id() {
@@ -83,7 +83,7 @@ class PotreeNode extends PointCloudNode {
     }
 
     loadOctree() {
-        const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.layer.source.extensionOctree}`;
+        const octreeUrl = `${this.baseurl}/r${this.hierarchyKey}.${this.layer.source.extensionOctree}`;
         return this.layer.source.fetcher(octreeUrl, this.layer.source.networkOptions).then((blob) => {
             const view = new DataView(blob);
             const stack = [];
