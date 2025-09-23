@@ -45,9 +45,6 @@ function drawTextureLayer(
     layerIndex: number,
     quad: THREE.Mesh,
 ) {
-    const gl = renderer.getContext();
-
-    // save the previous render target and temporarily set the new one
     const previousRenderTarget = renderer.getRenderTarget();
     renderer.setRenderTarget(renderTarget);
 
@@ -58,6 +55,7 @@ function drawTextureLayer(
 
     // attach the specific layer of the DataArrayTexture to the framebuffer's
     // COLOR_ATTACHMENT0
+    const gl = renderer.getContext();
     if ('framebufferTextureLayer' in gl) {
         gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
             dataArrayTextureWebGL, 0, layerIndex);
@@ -67,8 +65,6 @@ function drawTextureLayer(
     }
 
     renderer.render(quad, quadCam);
-
-    // reset render target to the old one
     renderer.setRenderTarget(previousRenderTarget);
 }
 
@@ -164,11 +160,9 @@ export function makeDataArrayTexture(
     // Create a temporary THREE.WebGLRenderTarget.
     // This render target's internal framebuffer
     // will be used to attach layers.
-    if (!renderTarget) {
-        renderTarget = new THREE.WebGLRenderTarget(width, height, {
-            depthBuffer: false, // No depth buffer needed for simple 2D texture copy
-        });
-    }
+    renderTarget ??= new THREE.WebGLRenderTarget(width, height, {
+        depthBuffer: false, // No depth buffer needed for simple 2D texture copy
+    });
 
     // Set up the quad for rendering
     if (!quad) {
