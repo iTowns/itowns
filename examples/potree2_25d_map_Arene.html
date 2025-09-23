@@ -1,20 +1,19 @@
-<!-- <!DOCTYPE html> -->
 <html>
     <head>
         <title>Point Cloud Viewer</title>
 
         <script type="importmap">
-        {
-            "imports": {
-                "itowns": "../dist/itowns.js",
-                "debug": "../dist/debug.js",
-                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
-                "itowns_widgets": "../dist/itowns_widgets.js",
-                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
-                "lil": "https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.esm.min.js"
+            {
+                "imports": {
+                    "itowns": "../dist/itowns.js",
+                    "debug": "../dist/debug.js",
+                    "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                    "itowns_widgets": "../dist/itowns_widgets.js",
+                    "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+                    "lil": "https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.esm.min.js"
+                }
             }
-        }
         </script>
 
         <style type="text/css">
@@ -56,34 +55,28 @@
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
 
-            var potreeLayer;
-            var oldPostUpdate;
-            var viewerDiv;
-            var debugGui;
-            var view;
-            var controls;
-
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
-            itowns.CRS.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+            itowns.CRS.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
-            viewerDiv = document.getElementById('viewerDiv');
+            const viewerDiv = document.getElementById('viewerDiv');
             viewerDiv.style.display = 'block';
 
-            debugGui = new lil();
+            const debugGui = new lil();
 
-            const crs = 'EPSG:4326';
-            view = new itowns.View(crs, viewerDiv);
+            const view = new itowns.View('EPSG:2154', viewerDiv);
+            const controls = new itowns.PlanarControls(view);
             setupLoadingScreen(viewerDiv, view);
             view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
             // Configure Point Cloud layer
             const source = new itowns.Potree2Source({
-                file: 'metadata.json',
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
-                crs,
-            });
+                    file: 'metadata.json',
+                    url: 'https://media.githubusercontent.com/media/itowns/iTowns2-sample-data/potreeData/pointclouds/potree2.0/Arene-1_L93',
+                    crs: 'EPSG:2154',
+                });
 
-            potreeLayer = new itowns.Potree2Layer('Lion', {
+            const name = source.url.split('/').pop();
+            const potreeLayer = new itowns.Potree2Layer(name, {
                 source,
             });
 
@@ -101,37 +94,27 @@
             }
             view.domElement.addEventListener('dblclick', dblClickHandler);
 
-            function placeCamera(position, lookAt) {
-                view.camera.camera3D.position.copy(position);
-                view.camera.camera3D.lookAt(lookAt);
-                // create controls
-                controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
-                debugGui.add(controls.options, 'moveSpeed', 1, 100).name('Movement speed');
-
-                view.notifyChange(view.camera.camera3D);
-            }
-
-            // add potreeLayer to scene
             function onLayerReady() {
-                var position;
-                var lookAt = new THREE.Vector3();
+                var lookAt = potreeLayer.root.center.toVector3();
+
                 var size = new THREE.Vector3();
-
                 potreeLayer.root.voxelOBB.box3D.getSize(size);
-                potreeLayer.root.voxelOBB.box3D.getCenter(lookAt);
-                lookAt.z = potreeLayer.root.voxelOBB.box3D.min.z;
+                view.camera3D.far = 10.0 * size.length();
 
-                debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);
-
-                view.camera.camera3D.far = 2.0 * size.length();
-
-                var corner = new THREE.Vector3(...potreeLayer.source.metadata.boundingBox.min);
+                controls.groundLevel = potreeLayer.minElevationRange;
+                var corner = new THREE.Vector3(...potreeLayer.metadata.boundingBox.min);
                 var position = corner.clone().add(
                     size.multiply({ x: 0, y: 0, z: (size.x / size.z) })
                 );
 
-                placeCamera(position, lookAt);
-                controls.moveSpeed = size.length() / 3;
+                view.camera3D.position.copy(position);
+                view.camera3D.lookAt(lookAt);
+                view.camera3D.updateProjectionMatrix();
+
+                view.notifyChange(view.camera3D);
+
+                // Add debug
+                debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);
 
                 // update stats window
                 var info = document.getElementById('info');
@@ -139,12 +122,11 @@
                     info.textContent = potreeLayer.displayedCount.toLocaleString() + ' points';
                 });
             }
-            window.view = view;
+
             view.addLayer(potreeLayer).then(onLayerReady);
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
-
         </script>
     </body>
 </html>

@@ -1,11 +1,6 @@
 import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import PotreeNode from 'Core/PotreeNode';
-import { Extent } from '@itowns/geographic';
-
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
 
 /**
  * @property {boolean} isPotreeLayer - Used to checkout whether this layer
@@ -52,9 +47,8 @@ class PotreeLayer extends PointCloudLayer {
         this.isPotreeLayer = true;
 
         const resolve = this.addInitializationStep();
-
-        this.source.whenReady.then((cloud) => {
-            this.scale = new THREE.Vector3().addScalar(cloud.scale);
+        this.whenReady = this.source.whenReady.then((cloud) => {
+            this.scale = new THREE.Vector3(1, 1, 1);// to refacto : all PointCloud have the same ?
             this.spacing = cloud.spacing;
             this.hierarchyStepSize = cloud.hierarchyStepSize;
 
@@ -66,16 +60,35 @@ class PotreeLayer extends PointCloudLayer {
 
             this.supportsProgressiveDisplay = (this.source.extension === 'cin');
 
+            this.zmin = cloud.tightBoundingBox.lz;
+            this.zmax = cloud.tightBoundingBox.uz;
+
+            this.setElevationRange();
+
             this.root = new PotreeNode(0, 0, this);
-            this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
-            this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
 
-            this.minElevationRange = this.minElevationRange ?? cloud.boundingBox.lz;
-            this.maxElevationRange = this.maxElevationRange ?? cloud.boundingBox.uz;
+            this.setRootBbox([cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz],
+                [cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz]);
 
-            this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', this.root.bbox);
             return this.root.loadOctree().then(resolve);
         });
+    }
+
+    setRootBbox(min, max) {
+        this.root.voxelOBB.box3D.min.set(...min);
+        this.root.voxelOBB.box3D.max.set(...max);
+        this.root.voxelOBB.matrixWorldInverse = this.root.voxelOBB.matrixWorld.clone().invert();
+
+        this.root.clampOBB.copy(this.root.voxelOBB);
+        const clampBBox = this.root.clampOBB.box3D;
+        if (clampBBox.min.z < this.zmax) {
+            clampBBox.max.z = Math.min(clampBBox.max.z, this.zmax);
+        }
+        if (clampBBox.max.z > this.zmin) {
+            clampBBox.min.z = Math.max(clampBBox.min.z, this.zmin);
+        }
+
+        this.root.clampOBB.matrixWorldInverse = this.root.voxelOBB.matrixWorldInverse;
     }
 }
 

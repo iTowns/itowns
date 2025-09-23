@@ -442,7 +442,6 @@ class OGC3DTilesLayer extends GeometryLayer {
             });
             pointsMaterial.copy(material);
             material = pointsMaterial;
-            material.depthWrite = false;
         }
 
         if (material) {
