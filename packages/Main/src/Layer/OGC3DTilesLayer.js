@@ -145,6 +145,10 @@ export function enableMeshoptDecoder(MeshOptDecoder) {
     itownsGLTFLoader.setMeshoptDecoder(MeshOptDecoder);
 }
 
+const noSetter = () => {
+    console.warn('[OGC3DTilesLayer] Material property cannot be set from the material, use layer properties instead');
+};
+
 /**
  * Patches material properties to automatically update the material (uniforms
  * and shader) when the layer properties are updated. Note that:
@@ -158,7 +162,7 @@ export function enableMeshoptDecoder(MeshOptDecoder) {
 function referMaterialProperties(material, layer) {
     Object.defineProperty(material, 'opacity', {
         get: () => layer.opacity,
-        set: () => {},
+        set: noSetter,
     });
 
     let _transparent = material.transparent;
@@ -171,12 +175,12 @@ function referMaterialProperties(material, layer) {
             }
             return transparent;
         },
-        set: () => {},
+        set: noSetter,
     });
 
     Object.defineProperty(material, 'wireframe', {
         get: () => layer.wireframe,
-        set: () => {},
+        set: noSetter,
     });
 }
 
@@ -203,47 +207,47 @@ function referPointsMaterialProperties(material, layer) {
             }
             return transparent;
         },
-        set: () => {},
+        set: noSetter,
     });
 
     Object.defineProperty(material, 'wireframe', {
         get: () => layer.wireframe,
-        set: () => {},
+        set: noSetter,
     });
 
     Object.defineProperty(material.uniforms.opacity, 'value', {
         get: () => layer.opacity,
-        set: () => {},
+        set: noSetter,
     });
 
     Object.defineProperty(material.uniforms.mode, 'value', {
         get: () => layer.pntsMode,
-        set: () => {},
+        set: noSetter,
     });
 
     Object.defineProperty(material.uniforms.shape, 'value', {
         get: () => layer.pntsShape,
-        set: () => {},
+        set: noSetter,
     });
 
     Object.defineProperty(material.uniforms.sizeMode, 'value', {
         get: () => layer.pntsSizeMode,
-        set: () => {},
+        set: noSetter,
     });
 
     Object.defineProperty(material.uniforms.minAttenuatedSize, 'value', {
         get: () => layer.pntsMinAttenuatedSize,
-        set: () => {},
+        set: noSetter,
     });
 
     Object.defineProperty(material.uniforms.maxAttenuatedSize, 'value', {
         get: () => layer.pntsMaxAttenuatedSize,
-        set: () => {},
+        set: noSetter,
     });
 
     Object.defineProperty(material.uniforms.scale, 'value', {
         get: () => layer.scale,
-        set: () => {},
+        set: noSetter,
     });
 }
 
