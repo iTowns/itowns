@@ -153,7 +153,6 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
     if (cachedTexture) {
         uTextures.value = cachedTexture;
         uTextureCount.value = count;
-        renderer.initTexture(cachedTexture);
         return;
     }
 
@@ -223,16 +222,12 @@ interface LayeredMaterialRawUniforms {
 
     // Elevation layers
     elevationLayers: Array<StructElevationLayer>;
-    // can be [] on initialization
-    // so we don't have to instantiate an empty DataArrayTexture
     elevationTextures: THREE.DataArrayTexture | null;
     elevationOffsetScales: Array<THREE.Vector4>;
     elevationTextureCount: number;
 
     // Color layers
     colorLayers: Array<StructColorLayer>;
-    // can be [] on initialization
-    // so we don't have to instantiate an empty DataArrayTexture
     colorTextures: THREE.DataArrayTexture | null;
     colorOffsetScales: Array<THREE.Vector4>;
     colorTextureCount: number;

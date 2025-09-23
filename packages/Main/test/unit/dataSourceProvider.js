@@ -22,6 +22,7 @@ import Feature2Mesh from 'Converter/Feature2Mesh';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import { EMPTY_TEXTURE_ZOOM } from 'Renderer/RasterTile';
 import sinon from 'sinon';
+import Renderer from './bootstrap';
 
 import holes from '../data/geojson/holesPoints.geojson';
 
@@ -64,8 +65,13 @@ describe('Provide in Sources', function () {
         stubFetcherJson = sinon.stub(Fetcher, 'json')
             .callsFake(() => Promise.resolve(JSON.parse(holes)));
         stubFetcherTexture = sinon.stub(Fetcher, 'texture')
-            .callsFake(() => Promise.resolve(new THREE.Texture()));
-
+            .callsFake(() => {
+                const texture = new THREE.Texture({
+                    width: 1,
+                    height: 1,
+                });
+                return Promise.resolve(texture);
+            });
         planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
         colorlayer = new ColorLayer('color', { crs: 'EPSG:3857', source: false });
         elevationlayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: false });
@@ -337,9 +343,9 @@ describe('Provide in Sources', function () {
             .then((result) => {
                 tile.material.setColorTileIds([colorlayer.id]);
                 tile.material.getColorTile(colorlayer.id).setTextures(result, [new THREE.Vector4()]);
-                assert.equal(tile.material.uniforms.colorTextures.value[0].anisotropy, 1);
-                tile.material.updateLayersUniforms();
-                assert.equal(tile.material.uniforms.colorTextures.value[0].anisotropy, 16);
+                assert.equal(tile.material.uniforms.colorTextures.value, null);
+                tile.material.updateLayersUniforms(new Renderer());
+                assert.equal(tile.material.uniforms.colorTextures.value.anisotropy, 16);
                 done();
             }).catch(done);
     });
