@@ -94,4 +94,43 @@ describe('PointsMaterial', function () {
             assert.equal(material.sizeAttenuation, true);
         });
     });
+
+    describe('#recomputeClassification', function () {
+        const material = new PointsMaterial();
+        const { classificationTexture } = material;
+
+        it('should recompute the opaque classification texture', function () {
+            const scheme = {
+                0: { visible: true, color: new Color(0.5, 0.25, 0.125), opacity: 1 },
+            };
+            material.classificationScheme = scheme;
+
+            material.recomputeClassification();
+
+            const data = classificationTexture.source.data.data;
+            assert.deepEqual(
+                data.slice(0, 3),
+                new Uint8Array(scheme[0].color.toArray().map(c => c * 255)),
+            );
+            assert.deepEqual(data[3], Math.floor(scheme[0].opacity * 255));
+            assert.equal(classificationTexture.userData.transparent, false);
+        });
+
+        it('should recompute the transparent classification texture', function () {
+            const scheme = {
+                0: { visible: true, color: new Color(0.5, 0.25, 0.125), opacity: 0.5 },
+            };
+            material.classificationScheme = scheme;
+
+            material.recomputeClassification();
+
+            const data = classificationTexture.source.data.data;
+            assert.deepEqual(
+                data.slice(0, 3),
+                new Uint8Array(scheme[0].color.toArray().map(c => c * 255)),
+            );
+            assert.deepEqual(data[3], Math.floor(scheme[0].opacity * 255));
+            assert.equal(classificationTexture.userData.transparent, true);
+        });
+    });
 });
