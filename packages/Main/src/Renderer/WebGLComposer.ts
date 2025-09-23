@@ -23,7 +23,7 @@ const copyTextureShader = {
 let material: THREE.ShaderMaterial | null = null;
 let quad: THREE.Mesh | null = null;
 const quadCam: THREE.OrthographicCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
+const emptyArrayTexture = new THREE.DataArrayTexture(null, 1, 1, 1);
 /**
  * Initializes a THREE.DataArrayTexture with immutable storage and populates
  * its layers by rendering individual 2D textures onto them using the GPU.
@@ -100,6 +100,11 @@ export function makeDataArrayTexture(
             renderer.setRenderTarget(previousRenderTarget);
         }
     }
+
+    // unlink texture so it is not disposed of
+    // when disposing of the render target
+    renderTarget.texture = emptyArrayTexture;
+    renderTarget.dispose();
 
     return true;
 }
