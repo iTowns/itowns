@@ -91,6 +91,8 @@ export function makeDataArrayTexture(
                 arrayTexture.format = texture.format;
                 arrayTexture.type = texture.type;
                 arrayTexture.internalFormat = texture.internalFormat;
+                arrayTexture.anisotropy = texture.anisotropy;
+                arrayTexture.premultiplyAlpha = texture.premultiplyAlpha;
             }
 
             // render this source texture into the current layer
