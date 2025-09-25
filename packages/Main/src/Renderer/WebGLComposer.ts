@@ -70,6 +70,7 @@ export function makeDataArrayTexture(
     // loop through each tile and its textures
     // to render them into DataArrayTexture layers
     let currentLayerIndex = 0;
+    const previousRenderTarget = renderer.getRenderTarget();
     for (const tile of tiles) {
         for (
             let i = 0;
@@ -96,12 +97,11 @@ export function makeDataArrayTexture(
             }
 
             // render this source texture into the current layer
-            const previousRenderTarget = renderer.getRenderTarget();
             renderer.setRenderTarget(renderTarget, currentLayerIndex);
             renderer.render(quad, quadCam);
-            renderer.setRenderTarget(previousRenderTarget);
         }
     }
+    renderer.setRenderTarget(previousRenderTarget);
 
     // unlink texture so it is not disposed of
     // when disposing of the render target
