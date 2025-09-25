@@ -104,6 +104,7 @@ class ColorLayer extends RasterLayer {
             effect_parameter = 1.0,
             transparent,
             addLabelLayer = false,
+            mergeFeatures = true,
             ...rasterConfig
         } = config;
 
@@ -143,6 +144,7 @@ class ColorLayer extends RasterLayer {
         this.buildExtent = true;
         this.structure = '2d';
         this.addLabelLayer = addLabelLayer;
+        this.mergeFeatures = mergeFeatures;
     }
 
     /**
