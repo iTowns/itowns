@@ -180,6 +180,21 @@ class Layer extends THREE.EventDispatcher {
     }
 
     /**
+     * The startup stage is the first stage of the layer lifecycle. It is called
+     * internally when the layer is added to the view.
+     * @param {View} context - the context the layer has been added to.
+     * @returns {Promise<void>}
+     */
+    async startup(/* context */) {
+        try {
+            await Promise.all(this._promises);
+            this._resolve();
+        } catch (error) {
+            this._reject(error);
+        }
+    }
+
+    /**
      * Defines a property for this layer, with a default value and a callback
      * executed when the property changes.
      * <br><br>
