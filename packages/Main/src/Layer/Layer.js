@@ -59,10 +59,6 @@ class Layer extends THREE.EventDispatcher {
      * what won't be done when you use a Style.
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
      * This value is used for cache expiration mechanism.
-     * @param {(boolean|Object)} [config.addLabelLayer] - Used to tell if this layer has
-     * labels to display from its data. For example, it needs to be set to `true`
-     * for a layer with vector tiles. If it's `true` a new `LabelLayer` is added and attached to this `Layer`.
-     * You can also configure it with {@link LabelLayer} options described below such as: `addLabelLayer: { performance: true }`.
      * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
      * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
      * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.
@@ -94,7 +90,6 @@ class Layer extends THREE.EventDispatcher {
             name,
             style = {},
             subdivisionThreshold = 256,
-            addLabelLayer = false,
             cacheLifeTime,
             options = {},
             updateStrategy,
@@ -150,8 +145,6 @@ class Layer extends THREE.EventDispatcher {
          */
         this.subdivisionThreshold = subdivisionThreshold;
         this.sizeDiagonalTexture =  (2 * (this.subdivisionThreshold * this.subdivisionThreshold)) ** 0.5;
-
-        this.addLabelLayer = addLabelLayer;
 
         // Default properties
         this.options = options;
