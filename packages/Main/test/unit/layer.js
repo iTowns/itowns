@@ -1,5 +1,6 @@
 import assert from 'assert';
-import Layer, { ImageryLayers } from 'Layer/Layer';
+import Layer from 'Layer/Layer';
+import * as ImageryLayers from 'Layer/ImageryLayers';
 import ColorLayer from 'Layer/ColorLayer';
 
 describe('Layer', function () {

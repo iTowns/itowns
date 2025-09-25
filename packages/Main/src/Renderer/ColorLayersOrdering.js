@@ -1,7 +1,12 @@
-import { ImageryLayers } from 'Layer/Layer';
+import {
+    getColorLayersIdOrderedBySequence,
+    moveLayerUp,
+    moveLayerDown,
+    moveLayerToIndex,
+} from 'Layer/ImageryLayers';
 
 function updateLayersOrdering(geometryLayer, imageryLayers) {
-    const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
+    const sequence = getColorLayersIdOrderedBySequence(imageryLayers);
     const cO = function cO(object) {
         if (object.material?.setColorTileIds) {
             object.material.setColorTileIds(sequence);
@@ -35,13 +40,13 @@ export default {
         const imageryLayers = view.getLayers(l => l.isColorLayer);
         const layer = view.getLayerById(layerId);
         if (layer) {
-            const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
-            ImageryLayers.moveLayerUp(layer, imageryLayers);
+            const previousSequence = getColorLayersIdOrderedBySequence(imageryLayers);
+            moveLayerUp(layer, imageryLayers);
             updateLayersOrdering(view.tileLayer, imageryLayers);
             view.dispatchEvent({
                 type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
-                new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
+                new: { sequence: getColorLayersIdOrderedBySequence(imageryLayers) },
             });
             view.notifyChange(view.tileLayer);
         } else {
@@ -62,13 +67,13 @@ export default {
         const imageryLayers = view.getLayers(l => l.isColorLayer);
         const layer = view.getLayerById(layerId);
         if (layer) {
-            const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
-            ImageryLayers.moveLayerDown(layer, imageryLayers);
+            const previousSequence = getColorLayersIdOrderedBySequence(imageryLayers);
+            moveLayerDown(layer, imageryLayers);
             updateLayersOrdering(view.tileLayer, imageryLayers);
             view.dispatchEvent({
                 type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
-                new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
+                new: { sequence: getColorLayersIdOrderedBySequence(imageryLayers) },
             });
             view.notifyChange(view.tileLayer);
         } else {
@@ -90,13 +95,13 @@ export default {
         const imageryLayers = view.getLayers(l => l.isColorLayer);
         const layer = view.getLayerById(layerId);
         if (layer) {
-            const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
-            ImageryLayers.moveLayerToIndex(layer, index, imageryLayers);
+            const previousSequence = getColorLayersIdOrderedBySequence(imageryLayers);
+            moveLayerToIndex(layer, index, imageryLayers);
             updateLayersOrdering(view.tileLayer, imageryLayers);
             view.dispatchEvent({
                 type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
-                new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
+                new: { sequence: getColorLayersIdOrderedBySequence(imageryLayers) },
             });
             view.notifyChange(view.tileLayer);
         } else {
