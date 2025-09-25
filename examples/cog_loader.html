@@ -1,0 +1,144 @@
+<html>
+    <head>
+        <title>iTowns - COG loader</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js"
+            }
+        }
+        </script>
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <style type="text/css">
+            #menuDiv {
+                left: unset;
+                right: 10px;
+            }
+            #description {
+                z-index: 2;
+                left: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="description">
+            <form id="cog-source-form">
+                <label for="cog-url">
+                    Specify the URL of a COG to load:
+                </label>
+                <input type="text" name="cog-source-url" id="cog-url">
+                <input type="submit" value="Load">
+            </form>
+        </div>
+
+        <div id="viewerDiv"></div>
+
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+
+
+
+            // ---------- CREATE A GlobeView TO SUPPORT DATA VISUALIZATION: ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 25000000,
+            }
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+
+
+            // ---------- DISPLAY OSM MAP: ----------
+
+            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then((config) => {
+                const colorLayer = new itowns.ColorLayer(
+                    'Ortho',
+                    {
+                        ...config,
+                        source: new itowns.TMSSource(config.source),
+                    },
+                );
+                view.addLayer(colorLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
+            });
+
+
+
+            // ---------- DISPLAY COG ON USER DEMAND: ----------
+
+            function onCogLayerAdded(layer) {
+                debugMenu.addLayerGUI(layer);
+
+                const extentCenter = layer.source.extent.center();
+                const extentDimensions = layer.source.extent.geodeticDimensions();
+
+                itowns.CameraUtils.animateCameraToLookAtTarget(
+                    view,
+                    view.camera.camera3D,
+                    {
+                        coord: extentCenter,
+                        range: Math.min(extentDimensions.x, extentDimensions.y),
+                    },
+                );
+            }
+
+            function loadCog(url) {
+                if (view.getLayerById('cog')) {
+                    view.removeLayer('cog');
+                }
+
+                const cogSource = new itowns.CogSource({
+                    url,
+                    crs: 'EPSG:4326',
+                });
+
+                const cogLayer = new itowns.ColorLayer(
+                    'cog',
+                    {
+                        source: cogSource,
+                    },
+                );
+
+                view.addLayer(cogLayer).then(onCogLayerAdded);
+            }
+
+            const form = document.getElementById('cog-source-form');
+            form.addEventListener(
+                'submit',
+                (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(form);
+                    const url = formData.get('cog-source-url');
+                    loadCog(url);
+                },
+            );
+
+
+        </script>
+    </body>
+</html>
