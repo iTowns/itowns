@@ -124,6 +124,20 @@ describe('Potree', function () {
                 done();
             });
 
+            it('construct a correct URL', function () {
+                const node = new PotreeNode(0, 0, {
+                    source: {
+                        baseurl,
+                        extension: 'bin',
+                    },
+                });
+                const hierarchyKey = '044';
+
+                node.hierarchyKey = hierarchyKey;
+
+                assert.equal(node.url, `${baseurl}/r${hierarchyKey}.bin`);
+            });
+
             it('load octree', function (done) {
                 const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
                 root.loadOctree()
