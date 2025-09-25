@@ -16,7 +16,6 @@ import iGLTFLoader from 'Parser/iGLTFLoader';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 // eslint-disable-next-line import/extensions, import/no-unresolved
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
-import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import PointsMaterial, {
     PNTS_MODE,
     PNTS_SHAPE,
@@ -144,6 +143,112 @@ export function enableMeshoptDecoder(MeshOptDecoder) {
         throw new Error('MeshOptDecoder module is mandatory');
     }
     itownsGLTFLoader.setMeshoptDecoder(MeshOptDecoder);
+}
+
+const noSetter = () => {
+    console.warn('[OGC3DTilesLayer] Material property cannot be set from the material, use layer properties instead');
+};
+
+/**
+ * Patches material properties to automatically update the material (uniforms
+ * and shader) when the layer properties are updated. Note that:
+ * - The transparent property is set according to the opacity. This leads
+ *   to the recompilation of the material if not cached.
+ * - The material properties cannot be set from within the material, so the
+ *   setters are not implemented and shall not be used.
+ * @param {Material} material A three.js material
+ * @param {OGC3DTilesLayer} layer An OGC3DTilesLayer
+ */
+function referMaterialProperties(material, layer) {
+    Object.defineProperty(material, 'opacity', {
+        get: () => layer.opacity,
+        set: noSetter,
+    });
+
+    let _transparent = material.transparent;
+    Object.defineProperty(material, 'transparent', {
+        get: () => {
+            const transparent = material.opacity < 1.0;
+            if (transparent != _transparent) {
+                material.needsUpdate = true;
+                _transparent = transparent;
+            }
+            return transparent;
+        },
+        set: noSetter,
+    });
+
+    Object.defineProperty(material, 'wireframe', {
+        get: () => layer.wireframe,
+        set: noSetter,
+    });
+}
+
+/**
+ * Patches material properties to automatically update the material (uniforms
+ * and shader) when the layer properties are updated. Note that:
+ * - The transparent property is set according to the opacity **and** the
+ *   presence of non-opaque pixels in the classification texture. This leads
+ *   to the recompilation of the material if not cached.
+ * - The material properties cannot be set from within the material, so the
+ *   setters are not implemented and shall not be used.
+ * @param {PointsMaterial} material An itowns PointsMaterial
+ * @param {OGC3DTilesLayer} layer An OGC3DTilesLayer
+ */
+function referPointsMaterialProperties(material, layer) {
+    let _transparent = material.transparent;
+    Object.defineProperty(material, 'transparent', {
+        get: () => {
+            const transparent = material.opacity < 1.0
+                || material.classificationTexture.userData.transparent;
+            if (transparent != _transparent) {
+                material.needsUpdate = true;
+                _transparent = transparent;
+            }
+            return transparent;
+        },
+        set: noSetter,
+    });
+
+    Object.defineProperty(material, 'wireframe', {
+        get: () => layer.wireframe,
+        set: noSetter,
+    });
+
+    Object.defineProperty(material.uniforms.opacity, 'value', {
+        get: () => layer.opacity,
+        set: noSetter,
+    });
+
+    Object.defineProperty(material.uniforms.mode, 'value', {
+        get: () => layer.pntsMode,
+        set: noSetter,
+    });
+
+    Object.defineProperty(material.uniforms.shape, 'value', {
+        get: () => layer.pntsShape,
+        set: noSetter,
+    });
+
+    Object.defineProperty(material.uniforms.sizeMode, 'value', {
+        get: () => layer.pntsSizeMode,
+        set: noSetter,
+    });
+
+    Object.defineProperty(material.uniforms.minAttenuatedSize, 'value', {
+        get: () => layer.pntsMinAttenuatedSize,
+        set: noSetter,
+    });
+
+    Object.defineProperty(material.uniforms.maxAttenuatedSize, 'value', {
+        get: () => layer.pntsMaxAttenuatedSize,
+        set: noSetter,
+    });
+
+    Object.defineProperty(material.uniforms.scale, 'value', {
+        get: () => layer.scale,
+        set: noSetter,
+    });
 }
 
 async function getMeshFeatures(meshFeatures, options) {
@@ -429,6 +534,10 @@ class OGC3DTilesLayer extends GeometryLayer {
      * @private
      */
     _assignFinalMaterial(model) {
+        if (!model.isMesh && !model.isPoints) {
+            return;
+        }
+
         let material = model.material;
 
         if (model.isPoints) {
@@ -442,12 +551,9 @@ class OGC3DTilesLayer extends GeometryLayer {
             });
             pointsMaterial.copy(material);
             material = pointsMaterial;
-            material.depthWrite = false;
-        }
-
-        if (material) {
-            material.transparent = true;
-            ReferLayerProperties(material, this);
+            referPointsMaterialProperties(material, this);
+        } else {
+            referMaterialProperties(material, this);
         }
 
         model.material = material;

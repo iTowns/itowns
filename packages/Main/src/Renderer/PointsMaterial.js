@@ -117,6 +117,7 @@ function recomputeTexture(scheme, texture, nbClass) {
     const width = texture.image.width;
     if (!nbClass) { nbClass = Object.keys(scheme).length; }
 
+    texture.userData.transparent = false;
     for (let i = 0; i < width; i++) {
         let color;
         let opacity;
@@ -140,6 +141,10 @@ function recomputeTexture(scheme, texture, nbClass) {
         data[j + 1] = parseInt(255 * color.g, 10);
         data[j + 2] = parseInt(255 * color.b, 10);
         data[j + 3] = parseInt(255 * opacity, 10);
+
+        if (opacity < 1.0) {
+            texture.userData.transparent = true;
+        }
     }
     texture.needsUpdate = true;
 }

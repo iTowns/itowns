@@ -6,7 +6,7 @@ import OGC3DTilesLayer, {
     enableKtx2Loader,
     enableMeshoptDecoder,
 } from 'Layer/OGC3DTilesLayer';
-import { BufferAttribute, Matrix4, Vector3, WebGLRenderer } from 'three';
+import { BufferAttribute, PointsMaterial, Matrix4, Vector3, WebGLRenderer } from 'three';
 
 describe('OGC3DTilesLayer', function () {
     const source =  new OGC3DTilesSource({ url: 'https://mock.com/tileset.json' });
@@ -193,5 +193,61 @@ describe('OGC3DTilesLayer', function () {
             tableIndices: [0, 1, 2],
             features: [0],
         }]);
+    });
+
+    it('should not assign a material to an Object3D', function () {
+        const material = {};
+        const model = { material };
+        const layer = new OGC3DTilesLayer('ogc3DTiles', { source });
+
+        layer._assignFinalMaterial(model);
+
+        assert.equal(model.material, material);
+    });
+
+    it('should link standard material properties to layer properties', function () {
+        const layer = new OGC3DTilesLayer('3dtiles', { source });
+        const material = { opacity: 1.0, wireframe: false };
+        const model = { isMesh: true, material };
+
+        layer._assignFinalMaterial(model);
+
+        layer.opacity = 1.0;
+        assert.equal(material.opacity, layer.opacity);
+        assert.equal(material.transparent, layer.opacity < 1.0);
+
+        layer.opacity = 0.5;
+        assert.equal(material.opacity, layer.opacity);
+        assert.equal(material.transparent, layer.opacity < 1.0);
+
+        layer.wireframe = true;
+        assert.equal(material.wireframe, layer.wireframe);
+
+        layer.wireframe = false;
+        assert.equal(material.wireframe, layer.wireframe);
+    });
+
+    it('assign and link points material properties to layer properties', function () {
+        const layer = new OGC3DTilesLayer('3dtiles', { source });
+        const oldMaterial = new PointsMaterial();
+        const model = { isPoints: true, material: oldMaterial };
+
+        layer._assignFinalMaterial(model);
+        const material = model.material;
+
+        assert.notEqual(material, oldMaterial);
+
+        layer.opacity = 1.0;
+        assert.equal(material.opacity, layer.opacity);
+        assert.equal(material.transparent, layer.opacity < 1.0);
+
+        layer.opacity = 0.5;
+        assert.equal(material.opacity, layer.opacity);
+        assert.equal(material.transparent, layer.opacity < 1.0);
+
+        layer.opacity = 1.0;
+        material.classificationTexture.userData.transparent = false;
+        assert.equal(material.opacity, layer.opacity);
+        assert.equal(material.transparent, layer.opacity < 1.0);
     });
 });
