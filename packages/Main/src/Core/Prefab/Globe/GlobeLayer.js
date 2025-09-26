@@ -101,17 +101,6 @@ class GlobeLayer extends TiledGeometryLayer {
         return super.preUpdate(context, changeSources);
     }
 
-    countColorLayersTextures(...layers) {
-        let occupancy = 0;
-        for (const layer of layers) {
-            const crs = layer.crs || layer.source.crs;
-            // 'EPSG:3857' occupies the maximum 3 textures on tiles
-            // 'EPSG:4326' occupies 1 textures on tile
-            occupancy += crs == 'EPSG:3857' ? 3 : 1;
-        }
-        return occupancy;
-    }
-
     subdivision(context, layer, node) {
         if (node.level == 5) {
             const row = node.getExtentsByProjection('EPSG:4326')[0].row;
