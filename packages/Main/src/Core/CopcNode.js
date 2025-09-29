@@ -35,7 +35,8 @@ class CopcNode extends PointCloudNode {
      * @param {number} entryLength - Size of the node entry
      * @param {CopcLayer} layer - Parent COPC layer
      * @param {number} [numPoints=0] - Number of points given by this entry
-     * @param {number} [sId] - id for multisource
+     * @param {number} [sId] - ID of the source this node belongs to.
+     * Mainly used for VPCSource (multi-source)
      */
     constructor(depth, x, y, z, entryOffset, entryLength, layer, numPoints = 0, sId = -1) {
         super(numPoints, layer);
@@ -113,7 +114,6 @@ class CopcNode extends PointCloudNode {
             node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
             node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
         }
-        return this;
     }
 
     /**

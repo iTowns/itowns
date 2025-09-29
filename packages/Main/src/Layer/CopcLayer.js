@@ -37,7 +37,7 @@ class CopcLayer extends PointCloudLayer {
          */
         this.isCopcLayer = true;
 
-        const resolve = () => this;
+        const resolve = () => PointCloudLayer.prototype.addInitializationStep.call(this);
         this.whenReady = this.source.whenReady.then((/** @type {CopcSource} */ source) => {
             const { cube } = source.info;
             const { pageOffset, pageLength } = source.info.rootHierarchyPage;

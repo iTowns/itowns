@@ -87,7 +87,7 @@ function markForDeletion(elt) {
 }
 
 /**
- * A layer for [Cloud Optimised Point Cloud](https://copc.io) (COPC) datasets.
+ * A layer for [Virtual Point Clouds](https://github.com/PDAL/wrench/blob/main/vpc-spec.md) (VPC) datasets.
  * See {@link PointCloudLayer} class for documentation on base properties.
  *
  * @extends {PointCloudLayer}
@@ -127,8 +127,7 @@ class VpcLayer extends PointCloudLayer {
         const minElevationRanges = [];
         const maxElevationRanges = [];
 
-        // const resolve = this.addInitializationStep();
-        const resolve = res => res;
+        const resolve = this.addInitializationStep();
 
         this.loadOctrees = [];
         this.whenReady = this.source.whenReady.then((/** @type {VpcSource} */ sources) => {
@@ -159,7 +158,7 @@ class VpcLayer extends PointCloudLayer {
                             root.bbox.max.fromArray(cube, 3);
                             this.roots[i] = root;
 
-                            return root.loadOctree().then(res => resolve(res));
+                            return root.loadOctree().then(resolve);
                         } else {
                             minElevationRanges.push(src.boundsConforming[2]);
                             maxElevationRanges.push(src.boundsConforming[5]);
@@ -173,7 +172,7 @@ class VpcLayer extends PointCloudLayer {
                             root.bbox.max.fromArray(src.boundsConforming, 3);
                             this.roots[i] = root;
 
-                            return root.loadOctree().then(res => resolve(res));
+                            return root.loadOctree().then(resolve);
                         }
                     });
                 this.loadOctrees.push(promise);
