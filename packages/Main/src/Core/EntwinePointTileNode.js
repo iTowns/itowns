@@ -48,7 +48,8 @@ class EntwinePointTileNode extends PointCloudNode {
      * @param {number} [numPoints=0] - The number of points in this node. If
      * `-1`, it means that the octree hierarchy associated to this node needs to
      * be loaded.
-     * @param {number} [sId] - id for multisource
+     * @param {number} [sId] - ID of the source this node belongs to.
+     * Mainly used for VPCSource (multi-source)
      */
     constructor(depth, x, y, z, source, numPoints = 0, sId = -1) {
         super(numPoints, source);
@@ -108,7 +109,6 @@ class EntwinePointTileNode extends PointCloudNode {
                 node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
                 node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
             }
-            return this;
         });
     }
 
