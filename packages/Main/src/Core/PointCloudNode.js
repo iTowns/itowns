@@ -5,11 +5,12 @@ const position = new THREE.Vector3();
 const translation = new THREE.Vector3();
 
 class PointCloudNode extends THREE.EventDispatcher {
-    constructor(numPoints = 0, layer) {
+    constructor(numPoints = 0, source) {
         super();
 
         this.numPoints = numPoints;
-        this.layer = layer;
+
+        this.source = source;
 
         this.children = [];
         this.bbox = new THREE.Box3();
@@ -17,7 +18,7 @@ class PointCloudNode extends THREE.EventDispatcher {
     }
 
     get pointSpacing() {
-        return this.layer.spacing / 2 ** this.depth;
+        return this.source.spacing / 2 ** this.depth;
     }
 
     get id() {
@@ -57,8 +58,11 @@ class PointCloudNode extends THREE.EventDispatcher {
     }
 
     load() {
-        return this.layer.source.fetcher(this.url, this.layer.source.networkOptions)
-            .then(file => this.layer.source.parse(file, { out: this.layer, in: this.layer.source }));
+        return this.source.fetcher(this.url, this.source.networkOptions)
+            .then(file => this.source.parse(file, {
+                in: this.source,
+                // out: this.layer,
+            }));
     }
 
     findCommonAncestor(node) {
