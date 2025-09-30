@@ -6,7 +6,7 @@ import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
 import { LRUCache } from 'lru-cache';
 import { RasterTile, RasterElevationTile, RasterColorTile } from './RasterTile';
-import { makeDataArrayTexture } from './WebGLComposer';
+import { makeDataArrayRenderTarget } from './WebGLComposer';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
 
@@ -78,9 +78,9 @@ const defaultStructLayers: Readonly<{
     },
 };
 
-const textureArraysCache = new LRUCache<string, THREE.DataArrayTexture>({
+const rtCache = new LRUCache<string, THREE.WebGLArrayRenderTarget>({
     max: 200,
-    dispose: (texture) => { texture.dispose(); },
+    dispose: (rt) => { rt.dispose(); },
 });
 
 /**
@@ -149,25 +149,27 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
         }
     }
 
-    const cachedTexture = textureArraysCache.get(textureSetId);
-    if (cachedTexture) {
-        uTextures.value = cachedTexture;
+    const cachedRT = rtCache.get(textureSetId);
+    if (cachedRT) {
+        uTextures.value = cachedRT.texture;
         uTextureCount.value = count;
         return;
     }
 
     // Memory management of these textures is only done by `textureArraysCache`,
     // so we don't have to dispose of them manually.
-    if (!makeDataArrayTexture(uTextures, width, height, count, tiles, max, renderer)) {
+    const rt = makeDataArrayRenderTarget(width, height, count, tiles, max, renderer);
+    if (!rt) {
         uTextureCount.value = 0;
         return;
     }
 
-    textureArraysCache.set(textureSetId, uTextures.value);
+    rtCache.set(textureSetId, rt);
+    uniforms.textures.value = rt.texture;
 
     if (count > max) {
         console.warn(
-            `LayeredMaterial: Not enough texture units (${max} < ${count}),`
+            `LayeredMaterial: Not enough texture units (${max} < ${count}), `
             + 'excess textures have been discarded.',
         );
     }

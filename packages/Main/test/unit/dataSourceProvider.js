@@ -66,10 +66,11 @@ describe('Provide in Sources', function () {
             .callsFake(() => Promise.resolve(JSON.parse(holes)));
         stubFetcherTexture = sinon.stub(Fetcher, 'texture')
             .callsFake(() => {
-                const texture = new THREE.Texture({
+                const texture = new THREE.Texture();
+                texture.image = {
                     width: 1,
                     height: 1,
-                });
+                };
                 return Promise.resolve(texture);
             });
         planarlayer = new PlanarLayer('globe', globalExtent, new THREE.Group());
