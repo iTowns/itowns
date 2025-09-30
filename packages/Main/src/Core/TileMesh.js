@@ -112,7 +112,9 @@ class TileMesh extends THREE.Mesh {
      * @param {THREE.WebGLRenderer} renderer - The renderer used to render textures.
      */
     onBeforeRender(renderer) {
-        this.material.updateLayersUniforms(renderer);
+        if (this.material.layersNeedUpdate) {
+            this.material.updateLayersUniforms(renderer);
+        }
     }
 }
 
