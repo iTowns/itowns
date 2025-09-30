@@ -67,10 +67,12 @@ describe('material state vs layer state', function () {
 
     it('should update material uniforms', () => {
         layer.visible = false;
+        node.material.layersNeedUpdate = true;
         node.onBeforeRender();
         assert.equal(material.uniforms.colorLayers.value[0].id, undefined);
 
         layer.visible = true;
+        node.material.layersNeedUpdate = true;
         node.onBeforeRender();
         assert.equal(material.uniforms.colorLayers.value[0].id, layer.id);
         assert.equal(material.uniforms.colorLayers.value[0].opacity, layer.opacity);
