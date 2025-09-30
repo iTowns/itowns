@@ -44,13 +44,13 @@ class EntwinePointTileNode extends PointCloudNode {
      * @param {number} z - The z coordinate of the node in the tree - see the
      * [Entwine
      * documentation](https://entwine.io/entwine-point-tile.html#ept-data)
-     * @param {EntwinePointTileLayer} layer - The layer the node is attached to.
+     * @param {EntwinePointTileSource} source - Data source (Ept) of the node.
      * @param {number} [numPoints=0] - The number of points in this node. If
      * `-1`, it means that the octree hierarchy associated to this node needs to
      * be loaded.
      */
-    constructor(depth, x, y, z, layer, numPoints = 0) {
-        super(numPoints, layer);
+    constructor(depth, x, y, z, source, numPoints = 0) {
+        super(numPoints, source);
         this.isEntwinePointTileNode = true;
 
         this.depth = depth;
@@ -60,7 +60,7 @@ class EntwinePointTileNode extends PointCloudNode {
 
         this.voxelKey = buildVoxelKey(depth, x, y, z);
 
-        this.url = `${this.layer.source.url}/ept-data/${this.voxelKey}.${this.layer.source.extension}`;
+        this.url = `${this.source.url}/ept-data/${this.voxelKey}.${this.source.extension}`;
     }
 
     get octreeIsLoaded() {
@@ -72,8 +72,8 @@ class EntwinePointTileNode extends PointCloudNode {
     }
 
     loadOctree() {
-        const hierarchyUrl = `${this.layer.source.url}/ept-hierarchy/${this.voxelKey}.json`;
-        return Fetcher.json(hierarchyUrl, this.layer.source.networkOptions).then((hierarchy) => {
+        const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
+        return Fetcher.json(hierarchyUrl, this.source.networkOptions).then((hierarchy) => {
             this.numPoints = hierarchy[this.voxelKey];
 
             const stack = [];
@@ -103,7 +103,7 @@ class EntwinePointTileNode extends PointCloudNode {
         const numPoints = hierarchy[voxelKey];
 
         if (typeof numPoints == 'number') {
-            const child = new EntwinePointTileNode(depth, x, y, z, this.layer, numPoints);
+            const child = new EntwinePointTileNode(depth, x, y, z, this.source, numPoints);
             this.add(child);
             stack.push(child);
         }

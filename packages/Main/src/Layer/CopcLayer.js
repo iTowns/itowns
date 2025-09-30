@@ -42,9 +42,7 @@ class CopcLayer extends PointCloudLayer {
             const { cube } = source.info;
             const { pageOffset, pageLength } = source.info.rootHierarchyPage;
 
-            this.spacing = source.info.spacing;
-
-            this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1);
+            this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this.source, -1);
             this.root.bbox.min.fromArray(cube, 0);
             this.root.bbox.max.fromArray(cube, 3);
 

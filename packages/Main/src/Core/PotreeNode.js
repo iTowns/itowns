@@ -7,15 +7,15 @@ import PointCloudNode from 'Core/PointCloudNode';
 const dHalfLength = new THREE.Vector3();
 
 class PotreeNode extends PointCloudNode {
-    constructor(numPoints = 0, childrenBitField = 0, layer) {
-        super(numPoints, layer);
+    constructor(numPoints = 0, childrenBitField = 0, source) {
+        super(numPoints, source);
         this.childrenBitField = childrenBitField;
 
         this.depth = 0;
 
-        this.hierarchyKey = '';
+        this.hierarchyKey = 'r';
 
-        this.baseurl = layer.source.baseurl;
+        this.baseurl = source.baseurl;
     }
 
     get octreeIsLoaded() {
@@ -23,7 +23,7 @@ class PotreeNode extends PointCloudNode {
     }
 
     get url() {
-        return `${this.baseurl}/r${this.hierarchyKey}.${this.layer.source.extension}`;
+        return `${this.baseurl}/${this.hierarchyKey}.${this.source.extension}`;
     }
 
     get id() {
@@ -83,8 +83,8 @@ class PotreeNode extends PointCloudNode {
     }
 
     loadOctree() {
-        const octreeUrl = `${this.baseurl}/r${this.hierarchyKey}.${this.layer.source.extensionOctree}`;
-        return this.layer.source.fetcher(octreeUrl, this.layer.source.networkOptions).then((blob) => {
+        const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
+        return this.source.fetcher(octreeUrl, this.source.networkOptions).then((blob) => {
             const view = new DataView(blob);
             const stack = [];
             let offset = 0;
@@ -102,10 +102,10 @@ class PotreeNode extends PointCloudNode {
                     if (snode.childrenBitField & (1 << indexChild) && (offset + 5) <= blob.byteLength) {
                         const childrenBitField = view.getUint8(offset); offset += 1;
                         const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
-                        const child = new PotreeNode(numPoints, childrenBitField, this.layer);
+                        const child = new PotreeNode(numPoints, childrenBitField, this.source);
                         snode.add(child, indexChild);
-                        if ((child.id.length % this.layer.hierarchyStepSize) == 0) {
-                            child.baseurl = `${this.baseurl}/${child.id}`;
+                        if ((child.depth % this.source.hierarchyStepSize) == 0) {
+                            child.baseurl = `${this.baseurl}/${child.hierarchyKey.substring(1)}`;
                         } else {
                             child.baseurl = this.baseurl;
                         }
