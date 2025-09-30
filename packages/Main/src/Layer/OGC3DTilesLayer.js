@@ -160,27 +160,30 @@ const noSetter = () => {
  * @param {OGC3DTilesLayer} layer An OGC3DTilesLayer
  */
 function referMaterialProperties(material, layer) {
+    let opacity = material.opacity;
     Object.defineProperty(material, 'opacity', {
-        get: () => layer.opacity,
-        set: noSetter,
+        get: () => layer.opacity * opacity,
+        set: (value) => { opacity = value; },
     });
 
-    let _transparent = material.transparent;
+    let transparent = material.transparent;
+    let tPrev = transparent;
     Object.defineProperty(material, 'transparent', {
         get: () => {
-            const transparent = material.opacity < 1.0;
-            if (transparent != _transparent) {
+            const t = material.opacity < 1.0 || transparent;
+            if (t != tPrev) {
                 material.needsUpdate = true;
-                _transparent = transparent;
+                tPrev = t;
             }
-            return transparent;
+            return t;
         },
-        set: noSetter,
+        set: (value) => { transparent = value; },
     });
 
+    let wireframe = material.wireframe;
     Object.defineProperty(material, 'wireframe', {
-        get: () => layer.wireframe,
-        set: noSetter,
+        get: () => layer.wireframe || wireframe,
+        set: (value) => { wireframe = value; },
     });
 }
 
@@ -196,28 +199,32 @@ function referMaterialProperties(material, layer) {
  * @param {OGC3DTilesLayer} layer An OGC3DTilesLayer
  */
 function referPointsMaterialProperties(material, layer) {
-    let _transparent = material.transparent;
+    let transparent = material.transparent;
+    let tPrev = transparent;
     Object.defineProperty(material, 'transparent', {
         get: () => {
-            const transparent = material.opacity < 1.0
-                || material.classificationTexture.userData.transparent;
-            if (transparent != _transparent) {
+            const t = material.opacity < 1.0
+                || material.classificationTexture.userData.transparent
+                || transparent;
+            if (t != tPrev) {
                 material.needsUpdate = true;
-                _transparent = transparent;
+                tPrev = t;
             }
-            return transparent;
+            return t;
         },
-        set: noSetter,
+        set: (value) => { transparent = value; },
     });
 
+    let wireframe = material.wireframe;
     Object.defineProperty(material, 'wireframe', {
-        get: () => layer.wireframe,
-        set: noSetter,
+        get: () => layer.wireframe || wireframe,
+        set: (value) => { wireframe = value; },
     });
 
+    let opacity = material.uniforms.opacity.value;
     Object.defineProperty(material.uniforms.opacity, 'value', {
-        get: () => layer.opacity,
-        set: noSetter,
+        get: () => layer.opacity * opacity,
+        set: (value) => { opacity = value; },
     });
 
     Object.defineProperty(material.uniforms.mode, 'value', {
