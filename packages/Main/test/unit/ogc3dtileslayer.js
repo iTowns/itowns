@@ -207,7 +207,7 @@ describe('OGC3DTilesLayer', function () {
 
     it('should link standard material properties to layer properties', function () {
         const layer = new OGC3DTilesLayer('3dtiles', { source });
-        const material = { opacity: 1.0, wireframe: false };
+        const material = { opacity: 1.0, transparent: false, wireframe: false };
         const model = { isMesh: true, material };
 
         layer._assignFinalMaterial(model);

@@ -2,16 +2,20 @@
 // next step is move these properties to Style class
 function ReferLayerProperties(material, layer) {
     if (layer && layer.isGeometryLayer) {
-        let transparent = material.transparent;
         material.layer = layer;
 
+        let opacity;
         if (material.uniforms && material.uniforms.opacity != undefined) {
+            opacity = material.uniforms.opacity.value;
             Object.defineProperty(material.uniforms.opacity, 'value', {
-                get: () => material.layer.opacity,
+                get: () => material.layer.opacity || opacity,
+                set: (value) => { opacity = value; },
             });
         } else if (material.opacity != undefined) {
+            opacity = material.opacity;
             Object.defineProperty(material, 'opacity', {
                 get: () => material.layer.opacity,
+                set: (value) => { opacity = value; },
             });
         }
 
@@ -51,18 +55,24 @@ function ReferLayerProperties(material, layer) {
             });
         }
 
+        let wireframe = material.wireframe;
         Object.defineProperty(material, 'wireframe', {
-            get: () => material.layer.wireframe,
+            get: () => material.layer.wireframe || wireframe,
+            set: (value) => { wireframe = value; },
         });
 
+        let transparent = material.transparent;
+        let tPrev = transparent;
         Object.defineProperty(material, 'transparent', {
             get: () => {
-                if (transparent != material.layer.opacity < 1.0) {
+                const t = material.layer.opacity < 1.0 || transparent;
+                if (t !== tPrev) {
                     material.needsUpdate = true;
-                    transparent = material.layer.opacity < 1.0;
+                    tPrev = t;
                 }
-                return transparent;
+                return t;
             },
+            set: (value) => { transparent = value; },
         });
     }
 
