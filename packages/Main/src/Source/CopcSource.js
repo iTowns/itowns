@@ -104,6 +104,8 @@ class CopcSource extends Source {
             this.info = metadata.info;
             this.eb = metadata.eb;
 
+            this.spacing = this.info.spacing;
+
             proj4.defs('unknown', metadata.wkt);
             let projCS;
 
