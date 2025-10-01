@@ -42,9 +42,7 @@ export default {
      */
     parse: async function parse(buffer, options) {
         const metadata = options.in.source.metadata;
-        const layer = options.out;
-
-        const pointAttributes = layer.pointAttributes;
+        const pointAttributes = options.in.source.pointAttributes;
         const scale = metadata.scale;
         const box = options.in.bbox;
         const min = box.min;
