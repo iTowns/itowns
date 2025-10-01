@@ -7,7 +7,6 @@ import { COLOR_LAYERS_ORDER_CHANGED } from 'Renderer/ColorLayersOrdering';
 import c3DEngine from 'Renderer/c3DEngine';
 import RenderMode from 'Renderer/RenderMode';
 import FeaturesUtils from 'Utils/FeaturesUtils';
-import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
@@ -348,17 +347,8 @@ class View extends THREE.EventDispatcher {
             if (layer.isColorLayer) {
                 const layerColors = this.getLayers(l => l.isColorLayer);
                 layer.sequence = layerColors.length;
-
-                const sumColorLayers = parentLayer.countColorLayersTextures(...layerColors, layer);
-
-                if (sumColorLayers <= getMaxColorSamplerUnitsCount()) {
-                    parentLayer.attach(layer);
-                } else {
-                    return layer._reject(new Error(`Cant add color layer ${layer.id}: the maximum layer is reached`));
-                }
-            } else {
-                parentLayer.attach(layer);
             }
+            parentLayer.attach(layer);
         } else {
             if (typeof (layer.update) !== 'function') {
                 return layer._reject(new Error('Cant add GeometryLayer: missing a update function'));
