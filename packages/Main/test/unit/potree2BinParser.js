@@ -19,30 +19,24 @@ describe('Potree2BinParser', function () {
                         scale: [1, 1, 1],
                         offset: [0, 0, 0],
                     },
+                    pointAttributes: {
+                        attributes: [{
+                            name: 'position',
+                            type: {
+                                name: 'int32',
+                                size: 4,
+                            },
+                            numElements: 3,
+                            byteSize: 12,
+                            description: '',
+                            range: [0, 0],
+                            initialRange: [0, 0],
+                        }],
+                        vectors: [],
+                    },
                 },
                 bbox: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)),
                 numPoints: nbPoints,
-            },
-            out: {
-                pointAttributes: {
-                    attributes: [{
-                        name: 'position',
-                        type: {
-                            name: 'int32',
-                            size: 4,
-                        },
-                        numElements: 3,
-                        byteSize: 12,
-                        description: '',
-                        range: [0, 0],
-                        initialRange: [0, 0],
-                    }],
-                    vectors: [],
-                },
-                offset: new THREE.Vector3(),
-            },
-            node: {
-                bbox: new THREE.Box3(),
             },
         };
 
@@ -88,63 +82,57 @@ describe('Potree2BinParser', function () {
                         scale: [1, 1, 1],
                         offset: [0, 0, 0],
                     },
+                    pointAttributes: {
+                        attributes: [{
+                            name: 'position',
+                            type: {
+                                name: 'int32',
+                                size: 4,
+                            },
+                            numElements: 3,
+                            byteSize: 12,
+                            description: '',
+                            range: [0, 0],
+                            initialRange: [0, 0],
+                        }, {
+                            name: 'intensity',
+                            type: {
+                                name: 'uint16',
+                                size: 2,
+                            },
+                            numElements: 1,
+                            byteSize: 2,
+                            description: '',
+                            range: [0, 0],
+                            initialRange: [0, 0],
+                        }, {
+                            name: 'rgba',
+                            type: {
+                                name: 'uint16',
+                                size: 2,
+                            },
+                            numElements: 3,
+                            byteSize: 6,
+                            description: '',
+                            range: [0, 0],
+                            initialRange: [0, 0],
+                        }, {
+                            name: 'classification',
+                            type: {
+                                name: 'uint8',
+                                size: 1,
+                            },
+                            numElements: 1,
+                            byteSize: 1,
+                            description: '',
+                            range: [0, 0],
+                            initialRange: [0, 0],
+                        }],
+                        vectors: [],
+                    },
                 },
                 bbox: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)),
                 numPoints,
-            },
-            out: {
-                pointAttributes: {
-                    attributes: [{
-                        name: 'position',
-                        type: {
-                            name: 'int32',
-                            size: 4,
-                        },
-                        numElements: 3,
-                        byteSize: 12,
-                        description: '',
-                        range: [0, 0],
-                        initialRange: [0, 0],
-                    }, {
-                        name: 'intensity',
-                        type: {
-                            name: 'uint16',
-                            size: 2,
-                        },
-                        numElements: 1,
-                        byteSize: 2,
-                        description: '',
-                        range: [0, 0],
-                        initialRange: [0, 0],
-                    }, {
-                        name: 'rgba',
-                        type: {
-                            name: 'uint16',
-                            size: 2,
-                        },
-                        numElements: 3,
-                        byteSize: 6,
-                        description: '',
-                        range: [0, 0],
-                        initialRange: [0, 0],
-                    }, {
-                        name: 'classification',
-                        type: {
-                            name: 'uint8',
-                            size: 1,
-                        },
-                        numElements: 1,
-                        byteSize: 1,
-                        description: '',
-                        range: [0, 0],
-                        initialRange: [0, 0],
-                    }],
-                    vectors: [],
-                },
-                offset: new THREE.Vector3(),
-            },
-            node: {
-                bbox: new THREE.Box3(),
             },
         };
 
