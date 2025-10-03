@@ -540,9 +540,14 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             const idSeq = this.colorTileIds.indexOf(tileId);
             if (idSeq > -1) {
                 this.colorTileIds.splice(idSeq, 1);
-            } else {
-                this.elevationTileId = undefined;
             }
+            return;
+        }
+
+        if (this.elevationTileId === tileId) {
+            this.elevationTile?.dispose();
+            this.elevationTileId = undefined;
+            this.elevationTile = undefined;
         }
     }
 
