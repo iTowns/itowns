@@ -120,7 +120,7 @@ const textAnchorPosition = {
  * @param {All} [defaultValue] - The default value to return (if needed).
  */
 function defineStyleProperty(style, category, parameter, userValue, defaultValue) {
-    let property;
+    let property = userValue;
     Object.defineProperty(
         style[category],
         parameter,
@@ -128,8 +128,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
             enumerable: true,
             get: () => {
                 // != to check for 'undefined' and 'null' value)
-                if (property != undefined) { return property; }
-                if (userValue != undefined) { return readExpression(userValue, style.context); }
+                if (property != undefined) { return readExpression(property, style.context); }
                 const dataValue = style.context.featureStyle?.[category]?.[parameter];
                 if (dataValue != undefined) { return readExpression(dataValue, style.context); }
                 if (defaultValue instanceof Function) {
@@ -139,6 +138,9 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
             },
             set: (v) => {
                 property = v;
+                if (parameter == 'extrusion_height') {
+                    style[category].extrusionHeightSet = v != undefined;
+                }
             },
         });
 }
@@ -464,9 +466,7 @@ class Style {
         defineStyleProperty(this, 'fill', 'opacity', params.fill.opacity, 1.0);
         defineStyleProperty(this, 'fill', 'pattern', params.fill.pattern);
         defineStyleProperty(this, 'fill', 'base_altitude', params.fill.base_altitude, baseAltitudeDefault);
-        if (params.fill.extrusion_height) {
-            defineStyleProperty(this, 'fill', 'extrusion_height', params.fill.extrusion_height);
-        }
+        defineStyleProperty(this, 'fill', 'extrusion_height', params.fill.extrusion_height);
 
         this.stroke = {};
         defineStyleProperty(this, 'stroke', 'color', params.stroke.color);
