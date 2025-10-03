@@ -3,7 +3,7 @@ import proj4, { type Converter } from 'proj4';
 import Ellipsoid from './Ellipsoid';
 import * as CRS from './Crs';
 
-import type { ProjectionAlias } from './Crs';
+import type { ProjectionLike } from './Crs';
 
 const ellipsoid = new Ellipsoid();
 const projectionCache: Record<string, Record<string, Converter>> = {};
@@ -21,7 +21,7 @@ export interface CoordinatesLike {
     readonly z: number;
 }
 
-function proj4cache(crsIn: ProjectionAlias, crsOut: ProjectionAlias): Converter {
+function proj4cache(crsIn: ProjectionLike, crsOut: ProjectionLike): Converter {
     if (!projectionCache[crsIn]) {
         projectionCache[crsIn] = {};
     }
@@ -71,9 +71,9 @@ class Coordinates {
      */
     readonly isCoordinates: boolean;
     /**
-     * A default or user-defined CRS (see {@link ProjectionAlias}).
+     * A default or user-defined CRS (see {@link ProjectionLike}).
      */
-    crs: ProjectionAlias;
+    crs: ProjectionLike;
 
     /** The x value (or longitude) of this coordinate. */
     x: number;
@@ -86,12 +86,12 @@ class Coordinates {
     private _normalNeedsUpdate: boolean;
 
     /**
-     * @param crs - A default or user-defined CRS (see {@link ProjectionAlias}).
+     * @param crs - A default or user-defined CRS (see {@link ProjectionLike}).
      * @param x - x or longitude value.
      * @param y - y or latitude value.
      * @param z - z or altitude value.
      */
-    constructor(crs: ProjectionAlias, x: number = 0, y: number = 0, z: number = 0) {
+    constructor(crs: ProjectionLike, x: number = 0, y: number = 0, z: number = 0) {
         this.isCoordinates = true;
 
         CRS.isValid(crs);
@@ -133,7 +133,7 @@ class Coordinates {
      * Sets the Coordinate Reference System.
      * @param crs - Coordinate Reference System (e.g. 'EPSG:4978')
      */
-    setCrs(crs: ProjectionAlias): this {
+    setCrs(crs: ProjectionLike): this {
         CRS.isValid(crs);
         this.crs = crs;
         return this;
@@ -340,7 +340,7 @@ class Coordinates {
      * const geographicCoords = geocentricCoords.as('EPSG:4326');
      * ```
      */
-    as(crs: ProjectionAlias, target = new Coordinates(crs)): Coordinates {
+    as(crs: ProjectionLike, target = new Coordinates(crs)): Coordinates {
         if (this.crs == crs) {
             target.copy(this);
         } else {

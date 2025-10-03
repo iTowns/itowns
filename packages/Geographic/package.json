@@ -3,12 +3,12 @@
   "version": "2.46.0",
   "description": "Geodesy",
   "type": "module",
-  "main": "lib/Main.js",
+  "main": "lib/index.js",
   "exports": {
-    "types": "./src/Main.ts",
-    "default": "./lib/Main.js"
+    "types": "./src/index.ts",
+    "default": "./lib/index.js"
   },
-  "types": "./src/Main.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "build": "",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\" \"test/**/*.js\"",
