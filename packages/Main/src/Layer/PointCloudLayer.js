@@ -8,7 +8,7 @@ const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
 bboxMesh.geometry.boundingBox = box3;
 
-function initBoundingBox(elt, layer) {
+export function initBoundingBox(elt, layer) {
     elt.tightbbox.getSize(box3.max);
     box3.max.multiplyScalar(0.5);
     box3.min.copy(box3.max).negate();
@@ -53,7 +53,7 @@ function computeSSEOrthographic(context, pointSize, pointSpacing) {
     return Math.max(0.0, distance - pointSize);
 }
 
-function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
+export function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
     if (context.camera.camera3D.isOrthographicCamera) {
         return computeSSEOrthographic(context, pointSize, pointSpacing);
     }
