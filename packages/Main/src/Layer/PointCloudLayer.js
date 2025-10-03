@@ -279,22 +279,8 @@ class PointCloudLayer extends GeometryLayer {
         return [this.root];
     }
 
-    update(context, layer, elt) {
-        elt.visible = false;
-
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
-            return [];
-        }
-
-        // pick the best bounding box
-        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return [];
-        }
-
+    // PointCloudLayer.update separate in 2 parts: update and loadData
+    loadData(elt, context, layer, bbox) {
         elt.notVisibleSince = undefined;
         point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
         point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
@@ -356,6 +342,25 @@ class PointCloudLayer extends GeometryLayer {
                 return [];
             }
         }
+    }
+
+    update(context, layer, elt) {
+        elt.visible = false;
+
+        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
+            markForDeletion(elt);
+            return [];
+        }
+
+        // pick the best bounding box
+        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
+        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
+        if (!elt.visible) {
+            markForDeletion(elt);
+            return [];
+        }
+
+        return this.loadData(elt, context, layer, bbox);
     }
 
     postUpdate() {

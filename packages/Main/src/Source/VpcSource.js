@@ -38,12 +38,23 @@ class VpcSource extends Source {
         this.spacings = [];
 
         const urlVpc = this.url;
-        this.whenReady = Fetcher.json(urlVpc, this.networkOptions).then((meta) => {
-            this.urls = meta.features.map(f => f.assets.data.href);
+        this.whenReady = Fetcher.json(urlVpc, this.networkOptions).then((metadata) => {
+            this.urls = metadata.features.map(f => f.assets.data.href);
 
-            const boundsConformings = meta.features.map(f => f.properties['proj:bbox']);
-            this.minElevation = Math.min(...boundsConformings.map(bC => bC[2]));
-            this.maxElevation = Math.max(...boundsConformings.map(bC => bC[5]));
+            this.metadata = metadata;
+            const boundsConformings = metadata.features.map(f => f.properties['proj:bbox']);
+
+            this.boundsConforming = [
+                Math.min(...boundsConformings.map(b => b[0])),
+                Math.min(...boundsConformings.map(b => b[1])),
+                Math.min(...boundsConformings.map(b => b[2])),
+                Math.max(...boundsConformings.map(b => b[3])),
+                Math.max(...boundsConformings.map(b => b[4])),
+                Math.max(...boundsConformings.map(b => b[5])),
+            ];
+
+            this.minElevation = this.boundsConforming[2];
+            this.maxElevation = this.boundsConforming[5];
 
             /* FOR ONE proj:wkt2
             const projsWkt2 = meta.features.map(f => f.properties['proj:wkt2']);
@@ -85,7 +96,11 @@ class VpcSource extends Source {
         });
     }
 
-    load(index) {
+    get spacing() {
+        return this.spacings;
+    }
+
+    instanciate(index) {
         const url = this.urls[index];
         let source;
         if (url.includes('.copc')) {

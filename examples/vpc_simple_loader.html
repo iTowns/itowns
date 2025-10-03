@@ -57,7 +57,7 @@
                 var lookAt = new THREE.Vector3();
                 var size = new THREE.Vector3();
 
-                const rootBbox = vpcLayer.roots[0].bbox;
+                const rootBbox = vpcLayer.root.children[0].bbox;
                 rootBbox.getSize(size);
                 rootBbox.getCenter(lookAt);
 
