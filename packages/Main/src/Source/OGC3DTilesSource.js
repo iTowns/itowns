@@ -16,6 +16,14 @@ class OGC3DTilesSource extends Source {
      */
     constructor(source) {
         super(source);
+
+        if (!source.url) {
+            throw new Error(`[${this.constructor.name}]: url is required`);
+        }
+
+        this.url = source.url;
+        this.networkOptions = source.networkOptions ?? {};
+
         this.isOGC3DTilesSource = true;
     }
 }

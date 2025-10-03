@@ -22,7 +22,15 @@ class C3DTilesSource extends Source {
      */
     constructor(source) {
         super(source);
+
         this.isC3DTilesSource = true;
+
+        if (!source.url) {
+            throw new Error(`[${this.constructor.name}]: url is required`);
+        }
+
+        this.url = source.url;
+        this.networkOptions = source.networkOptions ?? {};
         this.baseUrl = this.url.slice(0, this.url.lastIndexOf('/') + 1);
         this.whenReady = Fetcher.json(this.url, this.networkOptions);
     }

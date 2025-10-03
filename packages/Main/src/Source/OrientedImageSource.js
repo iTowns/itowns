@@ -1,11 +1,11 @@
-import Source from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
+import URLSource from './URLSource';
 
 /**
  * OrientedImageSource is a specific source used to load oriented images.
  * @extends Source
  */
-class OrientedImageSource extends Source {
+class OrientedImageSource extends URLSource {
     /**
      * @param { Object } source - Configuration object
      * @param { string } source.url - Url for all the textures.
@@ -17,8 +17,13 @@ class OrientedImageSource extends Source {
      * to find the good texture for each camera for each panoramic.
      */
     constructor(source) {
-        super(source);
+        const fetcher = Fetcher.texture;
+        const parser = (d, opt) => { d.extent = opt.extent; return d; };
+        super({ ...source, fetcher, parser });
         this.isOrientedImageSource = true;
+
+        this.url = source.url;
+        this.networkOptions = source.networkOptions ?? {};
 
         // Fetch the two files
         const promises = [];
