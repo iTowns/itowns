@@ -205,6 +205,7 @@ function referPointsMaterialProperties(material, layer) {
         get: () => {
             const t = material.opacity < 1.0
                 || material.classificationTexture.userData.transparent
+                || material.visibilityTexture.userData.transparent
                 || transparent;
             if (t != tPrev) {
                 material.needsUpdate = true;
