@@ -1,3 +1,121 @@
+<a name="2.46.1-next.0"></a>
+## [2.46.1-next.0](https://github.com/iTowns/itowns/compare/v2.45.1...v2.46.1-next.0) (2025-10-03)
+
+
+### Features
+
+* Add gamma and ambient boost option for Point Shader ([#2550](https://github.com/iTowns/itowns/issues/2550)) ([f1b6761](https://github.com/iTowns/itowns/commit/f1b6761))
+* **example:** 3dTilesLoader, parse url search-param query ([adecc81](https://github.com/iTowns/itowns/commit/adecc81))
+* export type definitions for the itowns package ([f256f47](https://github.com/iTowns/itowns/commit/f256f47))
+* **Layer:** add startup lifecycle method ([35935c7](https://github.com/iTowns/itowns/commit/35935c7))
+* **Main:** add tsc command to generate types for typescript integration ([#2552](https://github.com/iTowns/itowns/issues/2552)) ([fc2694a](https://github.com/iTowns/itowns/commit/fc2694a))
+* **PointMaterial:** force transparent to true (instead of needTransparency) and depthWrite to false + add Visibility Texture ([ed09804](https://github.com/iTowns/itowns/commit/ed09804))
+* **renderer:** pack textures in texture arrays to reduce number of texture slots per layer ([b46b807](https://github.com/iTowns/itowns/commit/b46b807))
+* **VR:** add control event ([a6c9136](https://github.com/iTowns/itowns/commit/a6c9136))
+* **webXR:** implement controllers support ([deebca2](https://github.com/iTowns/itowns/commit/deebca2))
+
+
+### Bug Fixes
+
+* **3dtiles:** handle multiple 3dtiles ([12af9a1](https://github.com/iTowns/itowns/commit/12af9a1))
+* add nosetter ([0ec1ec2](https://github.com/iTowns/itowns/commit/0ec1ec2))
+* add required name in package.json for yarn ([ac5f830](https://github.com/iTowns/itowns/commit/ac5f830))
+* add some unit tests ([5fbf3c3](https://github.com/iTowns/itowns/commit/5fbf3c3))
+* **Atmosphere:** add RenderOrder to basic- and realistic- Atmosphere meshes ([5143311](https://github.com/iTowns/itowns/commit/5143311))
+* **Atmosphere:** double luminance declaration ([1fa5a5a](https://github.com/iTowns/itowns/commit/1fa5a5a))
+* **Atmosphere:** set tile atmosphere uniforms ([fb8aa9c](https://github.com/iTowns/itowns/commit/fb8aa9c)), closes [#2477](https://github.com/iTowns/itowns/issues/2477)
+* change document.location -> import.meta.url ([#2590](https://github.com/iTowns/itowns/issues/2590)) ([6662fc5](https://github.com/iTowns/itowns/commit/6662fc5))
+* **ci:** revert convential-changelog from 5.0.0 to 4.1.0 ([58595f6](https://github.com/iTowns/itowns/commit/58595f6)), closes [#2511](https://github.com/iTowns/itowns/issues/2511)
+* **docs:** fix error in config file ([56aae0a](https://github.com/iTowns/itowns/commit/56aae0a))
+* **elevation:** fix non-disposed raster tile ([f9cdab7](https://github.com/iTowns/itowns/commit/f9cdab7))
+* **eslint:** allow useless constructors in TS ([#2520](https://github.com/iTowns/itowns/issues/2520)) ([6ce9e81](https://github.com/iTowns/itowns/commit/6ce9e81))
+* **examples:** fix broken copc loader example ([b63980b](https://github.com/iTowns/itowns/commit/b63980b))
+* **examples:** update potrees examples to lil-gui ([691750d](https://github.com/iTowns/itowns/commit/691750d))
+* Fix monorepo typescript issues ([88aea43](https://github.com/iTowns/itowns/commit/88aea43))
+* **layers:** per material uniform setting ([90159bd](https://github.com/iTowns/itowns/commit/90159bd))
+* **material:** set transparency when some points classes are disabled ([f26f050](https://github.com/iTowns/itowns/commit/f26f050))
+* **OrientationUtils:** add all lcc aliases ([d741e14](https://github.com/iTowns/itowns/commit/d741e14))
+* **OrientationUtils:** upgrade ts type to proj4 2.19.3 ([c103328](https://github.com/iTowns/itowns/commit/c103328))
+* **package:** fix peerDeps issues when bumping version ([b380897](https://github.com/iTowns/itowns/commit/b380897))
+* **Parser:** wrong chunk name for worker ([2516c1f](https://github.com/iTowns/itowns/commit/2516c1f))
+* **Picking:** Fix traversePickingCircle for pickPointsAt ([d343727](https://github.com/iTowns/itowns/commit/d343727))
+* **Picking:** No geometry or unloaded points should not be taken for picking ([83b9d70](https://github.com/iTowns/itowns/commit/83b9d70))
+* post-review comments ([d1a7186](https://github.com/iTowns/itowns/commit/d1a7186))
+* **potree:** Fix incorrectly built points URL ([1ba02ee](https://github.com/iTowns/itowns/commit/1ba02ee))
+* **RasterTile:** remove unnecessary material reference ([840d42f](https://github.com/iTowns/itowns/commit/840d42f))
+* **renderer:** Remove custom fog shader to support standard Three fog ([3c5881b](https://github.com/iTowns/itowns/commit/3c5881b))
+* **RenderMode:** change material.transparent to true when rendering mode is Final ([651c88a](https://github.com/iTowns/itowns/commit/651c88a))
+* **review:** use the alias names list of proj4 ([0da7ce5](https://github.com/iTowns/itowns/commit/0da7ce5))
+* **subdivision:** Remove the subdividing condition in the update strategy ([#2522](https://github.com/iTowns/itowns/issues/2522)) ([2c5c086](https://github.com/iTowns/itowns/commit/2c5c086))
+* **terrain:** fix depth & transparency issues ([564cb06](https://github.com/iTowns/itowns/commit/564cb06))
+* **test:** entwine Node ([0e45990](https://github.com/iTowns/itowns/commit/0e45990))
+* **test:** expose variables for functional tests ([350e3b1](https://github.com/iTowns/itowns/commit/350e3b1))
+* **test:** node 22.18 breaks npm package ([737a8f3](https://github.com/iTowns/itowns/commit/737a8f3))
+* **TileLayer:** transparence set to true by default ([54a4fce](https://github.com/iTowns/itowns/commit/54a4fce))
+* **types:** resolve absolute imports to relative paths in .d.ts ([bf93558](https://github.com/iTowns/itowns/commit/bf93558))
+* use a fresh page when loading an example ([ca60dfe](https://github.com/iTowns/itowns/commit/ca60dfe))
+
+
+### Examples
+
+* **3DTiles:** fix function naming error ([2ca0505](https://github.com/iTowns/itowns/commit/2ca0505))
+
+
+### Code Refactoring
+
+* **LayeredMaterial:** migrate to TypeScript ([#2477](https://github.com/iTowns/itowns/issues/2477)) ([22b875d](https://github.com/iTowns/itowns/commit/22b875d))
+* **Layer:** move mergeFeatures up ([656872c](https://github.com/iTowns/itowns/commit/656872c))
+* **Layer:** move strat up ([e1a8911](https://github.com/iTowns/itowns/commit/e1a8911))
+* migrate LayerUpdateState to typescript ([524bba6](https://github.com/iTowns/itowns/commit/524bba6))
+* move addLabelLayer to ColorLayer ([15e0f38](https://github.com/iTowns/itowns/commit/15e0f38))
+* move ImageryLayers in its own module ([c37563b](https://github.com/iTowns/itowns/commit/c37563b))
+* move style property up ([45a1132](https://github.com/iTowns/itowns/commit/45a1132))
+* **PointCloudExamples:** move to lil gui ([cfae5dc](https://github.com/iTowns/itowns/commit/cfae5dc))
+* **PointCloudLayer:** homogeneisation and move createChildAABB() to parent ([1ed7e79](https://github.com/iTowns/itowns/commit/1ed7e79))
+* **PointCloudLayer:** move layer.spacing to node.pointSpacing ([8f93b67](https://github.com/iTowns/itowns/commit/8f93b67))
+* **PointCloudLayer:** move spacing from Source to Layer ([9251665](https://github.com/iTowns/itowns/commit/9251665))
+* **PointCloudNode:** methode load() ([fb56b76](https://github.com/iTowns/itowns/commit/fb56b76))
+* **PointCloudNode:** move pointSpacing to PointCloudNode ([6a42dfe](https://github.com/iTowns/itowns/commit/6a42dfe))
+* **PointCloudNode:** rename id as voxelKey (copc and ept) and as hierarchyKey for Potree (1 & 2) ([ea4f882](https://github.com/iTowns/itowns/commit/ea4f882))
+* **Potree2Node:** Potree2Node as child of PotreeNode ([5035d34](https://github.com/iTowns/itowns/commit/5035d34))
+* **PotreeNode:** simplification ([685fdb5](https://github.com/iTowns/itowns/commit/685fdb5))
+
+
+### Workflow and chores
+
+* release v2.46.0 ([b538924](https://github.com/iTowns/itowns/commit/b538924))
+* add discord badge and invite link ([66b46d5](https://github.com/iTowns/itowns/commit/66b46d5))
+* build to esm module ([00ca223](https://github.com/iTowns/itowns/commit/00ca223))
+* **ci:** fix deprecated set-output syntax ([9428cf0](https://github.com/iTowns/itowns/commit/9428cf0))
+* **ci:** use gh cli instead of deprecated actions ([5bda83e](https://github.com/iTowns/itowns/commit/5bda83e))
+* **deps-dev:** bump http-proxy-middleware from 2.0.7 to 2.0.9 ([2fae44b](https://github.com/iTowns/itowns/commit/2fae44b))
+* **deps-dev:** bump tar-fs from 3.0.8 to 3.0.9 ([182cb7d](https://github.com/iTowns/itowns/commit/182cb7d))
+* **deps-dev:** bump tar-fs from 3.0.9 to 3.1.1 ([b7d784a](https://github.com/iTowns/itowns/commit/b7d784a))
+* **deps-dev:** bump undici from 7.4.0 to 7.5.0 ([a39544c](https://github.com/iTowns/itowns/commit/a39544c))
+* **deps-dev:** bump webpack-dev-server from 5.2.0 to 5.2.1 ([8e3e3b2](https://github.com/iTowns/itowns/commit/8e3e3b2))
+* **deps:** bump [@babel](https://github.com/babel)/runtime from 7.25.6 to 7.26.10 ([9cb6b0d](https://github.com/iTowns/itowns/commit/9cb6b0d))
+* **deps:** bump developer dependencies ([4bcdcb6](https://github.com/iTowns/itowns/commit/4bcdcb6))
+* **deps:** bump on-headers and compression ([8924e73](https://github.com/iTowns/itowns/commit/8924e73))
+* **Geographic:** upgrade Crs, Coordinates and Extent to new def types in proj4 2.19.3 ([fecc1f0](https://github.com/iTowns/itowns/commit/fecc1f0))
+* migrate LayerUpdateStrategy to typescript ([f740b72](https://github.com/iTowns/itowns/commit/f740b72))
+* **proj4:** upgrade to 2.19.3 ([ea45788](https://github.com/iTowns/itowns/commit/ea45788))
+* **typescript:** add support for __DEBUG__ and glsl imports ([3c1bb1c](https://github.com/iTowns/itowns/commit/3c1bb1c))
+* update examples to module esm ([40ecb0b](https://github.com/iTowns/itowns/commit/40ecb0b))
+* use jsm three addons directly ([ec288de](https://github.com/iTowns/itowns/commit/ec288de))
+
+
+### Documentation
+
+* **3DTiles:** Replace C3DTilesLayer by OGC3DTilesLayer in the documentation ([0491983](https://github.com/iTowns/itowns/commit/0491983))
+* **bundle:** add doc to use the bundles ESM and UMD ([60a9465](https://github.com/iTowns/itowns/commit/60a9465))
+
+
+### Tests
+
+* **hooks_functional:** fix message when page errors ([9817605](https://github.com/iTowns/itowns/commit/9817605))
+
+
+
 <a name="2.46.0"></a>
 # [2.46.0](https://github.com/iTowns/itowns/compare/v2.45.1...v2.46.0) (2025-10-03)
 
