@@ -1,70 +1,9 @@
 import * as THREE from 'three';
 import CopcNode from 'Core/CopcNode';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
-import PointCloudLayer from 'Layer/PointCloudLayer';
+import PointCloudLayer, { computeScreenSpaceError, initBoundingBox } from 'Layer/PointCloudLayer';
 
-
-// PointCLoudLayer functions
 const point = new THREE.Vector3();
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
-
-function initBoundingBox(elt, layer) {
-    elt.tightbbox.getSize(box3.max);
-    box3.max.multiplyScalar(0.5);
-    box3.min.copy(box3.max).negate();
-    elt.obj.boxHelper = new THREE.BoxHelper(bboxMesh);
-    elt.obj.boxHelper.geometry = elt.obj.boxHelper.geometry.toNonIndexed();
-    elt.obj.boxHelper.computeLineDistances();
-    elt.obj.boxHelper.material = elt.childrenBitField ? new THREE.LineDashedMaterial({ dashSize: 0.25, gapSize: 0.25 }) : new THREE.LineBasicMaterial();
-    elt.obj.boxHelper.material.color.setHex(0);
-    elt.obj.boxHelper.material.linewidth = 2;
-    elt.obj.boxHelper.frustumCulled = false;
-    elt.obj.boxHelper.position.copy(elt.tightbbox.min).add(box3.max);
-    elt.obj.boxHelper.autoUpdateMatrix = false;
-    layer.bboxes.add(elt.obj.boxHelper);
-    elt.obj.boxHelper.updateMatrix();
-    elt.obj.boxHelper.updateMatrixWorld();
-}
-
-function computeSSEPerspective(context, pointSize, spacing, elt, distance) {
-    if (distance <= 0) {
-        return Infinity;
-    }
-    const pointSpacing = spacing / 2 ** elt.depth;
-    // Estimate the onscreen distance between 2 points
-    const onScreenSpacing = context.camera.preSSE * pointSpacing / distance;
-    // [  P1  ]--------------[   P2   ]
-    //     <--------------------->      = pointsSpacing (in world coordinates)
-    //                                  ~ onScreenSpacing (in pixels)
-    // <------>                         = pointSize (in pixels)
-    return Math.max(0.0, onScreenSpacing - pointSize);
-}
-
-function computeSSEOrthographic(context, pointSize, spacing, elt) {
-    const pointSpacing = spacing / 2 ** elt.depth;
-
-    // Given an identity view matrix, project pointSpacing from world space to
-    // clip space. v' = vVP = vP
-    const v = new THREE.Vector4(pointSpacing);
-    v.applyMatrix4(context.camera.camera3D.projectionMatrix);
-
-    // We map v' to the screen space and calculate the distance to the origin.
-    const dx = v.x * 0.5 * context.camera.width;
-    const dy = v.y * 0.5 * context.camera.height;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    return Math.max(0.0, distance - pointSize);
-}
-
-function computeScreenSpaceError(context, pointSize, spacing, elt, distance) {
-    if (context.camera.camera3D.isOrthographicCamera) {
-        return computeSSEOrthographic(context, pointSize, spacing, elt);
-    }
-
-    return computeSSEPerspective(context, pointSize, spacing, elt, distance);
-}
 
 function markForDeletion(elt) {
     if (elt.obj) {
@@ -91,6 +30,15 @@ function markForDeletion(elt) {
  * See {@link PointCloudLayer} class for documentation on base properties.
  *
  * @extends {PointCloudLayer}
+ *
+ * @property {boolean} isVpcLayer - Used to checkout whether this layer
+ * is a VpcLayer. Default is `true`. You should not change this, as it is
+ * used internally for optimisation.
+ *
+ * @property {CopcNode[]|EntwinePointTileNode[]} roots @private Array containing all root nodes
+ * @property {number[]} spacings @private Array containing all spacing values
+ *
+ *
  *
  * @example
  * // Create a new VPC layer
@@ -120,12 +68,9 @@ class VpcLayer extends PointCloudLayer {
         this.isVpcLayer = true;
 
         this.roots = [];
-        this.spacing = [];
+        this.spacings = [];
         this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
         this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
-
-        const minElevationRanges = [];
-        const maxElevationRanges = [];
 
         const resolve = this.addInitializationStep();
 
@@ -145,13 +90,10 @@ class VpcLayer extends PointCloudLayer {
                 const promise =
                     this.source.sources[i].whenReady.then((src) => {
                         if (this.source.sources[i].isCopcSource) {
-                            minElevationRanges.push(src.header.min[2]);
-                            maxElevationRanges.push(src.header.max[2]);
-
                             const { cube, rootHierarchyPage } = src.info;
                             const { pageOffset, pageLength } = rootHierarchyPage;
 
-                            this.spacing.push(src.info.spacing);
+                            this.spacings.push(src.info.spacing);
 
                             const root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1, i);
                             root.bbox.min.fromArray(cube, 0);
@@ -160,12 +102,9 @@ class VpcLayer extends PointCloudLayer {
 
                             return root.loadOctree().then(resolve);
                         } else {
-                            minElevationRanges.push(src.boundsConforming[2]);
-                            maxElevationRanges.push(src.boundsConforming[5]);
-
                             const spacing = (Math.abs(src.bounds[3] - src.bounds[0])
                                 + Math.abs(src.bounds[4] - src.bounds[1])) / (2 * src.span);
-                            this.spacing.push(spacing);
+                            this.spacings.push(spacing);
 
                             const root = new EntwinePointTileNode(0, 0, 0, 0, this, -1, i);
                             root.bbox.min.fromArray(src.boundsConforming, 0);
@@ -262,7 +201,7 @@ class VpcLayer extends PointCloudLayer {
             } else if (!elt.promise) {
                 const distance = Math.max(0.001, bbox.distanceToPoint(point));
                 // Increase priority of nearest node
-                const priority = computeScreenSpaceError(context, layer.pointSize, layer.spacing[elt.sId], elt, distance) / distance;
+                const priority = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distance) / distance;
                 elt.promise = context.scheduler.execute({
                     layer,
                     requester: elt,
@@ -291,7 +230,7 @@ class VpcLayer extends PointCloudLayer {
 
         if (elt.children && elt.children.length) {
             const distance = bbox.distanceToPoint(point);
-            elt.sse = computeScreenSpaceError(context, layer.pointSize, layer.spacing[elt.sId], elt, distance) / this.sseThreshold;
+            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distance) / this.sseThreshold;
             if (elt.sse >= 1) {
                 return elt.children;
             } else {
