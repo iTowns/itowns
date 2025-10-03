@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Vector3, type Vector3Like, type Matrix4, MathUtils } from 'three';
 import proj4 from 'proj4';
 import type { Converter } from 'proj4/dist/lib/core';
 import Ellipsoid from './Ellipsoid';
@@ -9,8 +9,8 @@ import type { ProjectionAlias } from './Crs';
 const ellipsoid = new Ellipsoid();
 const projectionCache: Record<string, Record<string, Converter>> = {};
 
-const v0 = new THREE.Vector3();
-const v1 = new THREE.Vector3();
+const v0 = new Vector3();
+const v1 = new Vector3();
 
 let coord0: Coordinates;
 let coord1: Coordinates;
@@ -83,7 +83,7 @@ class Coordinates {
     /** The z value (or altitude) of this coordinate. */
     z: number;
 
-    private _normal: THREE.Vector3;
+    private _normal: Vector3;
     private _normalNeedsUpdate: boolean;
 
     /**
@@ -105,7 +105,7 @@ class Coordinates {
         this.z = 0;
 
         // Normal
-        this._normal = new THREE.Vector3();
+        this._normal = new Vector3();
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((x as any).length > 0) { // deepscan-disable-line
@@ -180,7 +180,7 @@ class Coordinates {
      *
      * @param v - The source object.
      */
-    setFromVector3(v: THREE.Vector3Like): this {
+    setFromVector3(v: Vector3Like): this {
         return this.setFromValues(v.x, v.y, v.z);
     }
 
@@ -247,7 +247,7 @@ class Coordinates {
      * @returns A vector `(x, y, z)`, or copies x, y and z into the provided
      * vector.
      */
-    toVector3(target: THREE.Vector3 = new THREE.Vector3()): THREE.Vector3 {
+    toVector3(target: Vector3 = new Vector3()): Vector3 {
         return target.copy(this);
     }
 
@@ -262,7 +262,7 @@ class Coordinates {
      * array.
      */
     toArray(array: number[] = [], offset: number = 0): ArrayLike<number> {
-        return THREE.Vector3.prototype.toArray.call(this, array, offset);
+        return Vector3.prototype.toArray.call(this, array, offset);
     }
 
     /**
@@ -306,8 +306,8 @@ class Coordinates {
      *
      * @param mat - The matrix.
      */
-    applyMatrix4(mat: THREE.Matrix4): this {
-        THREE.Vector3.prototype.applyMatrix4.call(this, mat);
+    applyMatrix4(mat: Matrix4): this {
+        Vector3.prototype.applyMatrix4.call(this, mat);
         return this;
     }
 
@@ -346,7 +346,7 @@ class Coordinates {
             target.copy(this);
         } else {
             if (CRS.is4326(this.crs) && crs == 'EPSG:3857') {
-                this.y = THREE.MathUtils.clamp(this.y, -89.999999, 89.999999);
+                this.y = MathUtils.clamp(this.y, -89.999999, 89.999999);
             }
 
             target.setFromArray(proj4cache(this.crs, crs)
