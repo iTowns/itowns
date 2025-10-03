@@ -15,6 +15,7 @@ import { CopcSource, EntwinePointTileSource } from 'Main';
  * this, as it is used internally for optimisation.
  * @property {string} url - The URL of the directory containing the whole
  * Entwine Point Tile structure.
+ * @property {number[]} spacings @private Array containing all spacing values.
  */
 class VpcSource extends Source {
     /**
@@ -33,6 +34,8 @@ class VpcSource extends Source {
         this.fetcher = Fetcher.arrayBuffer;
 
         this.colorDepth = config.colorDepth ?? 16;
+
+        this.spacings = [];
 
         const urlVpc = this.url;
         this.whenReady = Fetcher.json(urlVpc, this.networkOptions).then((meta) => {
