@@ -87,32 +87,29 @@ class VpcLayer extends PointCloudLayer {
                     children: [],
                     sId: i,
                 };
+                let subRoot;
                 const promise =
                     this.source.sources[i].whenReady.then((src) => {
                         if (this.source.sources[i].isCopcSource) {
-                            const { cube, rootHierarchyPage } = src.info;
-                            const { pageOffset, pageLength } = rootHierarchyPage;
+                            const { info } = src;
+                            const { pageOffset, pageLength } = info.rootHierarchyPage;
 
-                            this.spacings.push(src.info.spacing);
+                            this.spacings.push(info.spacing);
 
-                            const root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1, i);
-                            root.bbox.min.fromArray(cube, 0);
-                            root.bbox.max.fromArray(cube, 3);
-                            this.roots[i] = root;
-
-                            return root.loadOctree().then(resolve);
+                            subRoot = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1, i);
+                            subRoot.bbox.min.fromArray(info.cube, 0);
+                            subRoot.bbox.max.fromArray(info.cube, 3);
                         } else {
                             const spacing = (Math.abs(src.bounds[3] - src.bounds[0])
                                 + Math.abs(src.bounds[4] - src.bounds[1])) / (2 * src.span);
                             this.spacings.push(spacing);
 
-                            const root = new EntwinePointTileNode(0, 0, 0, 0, this, -1, i);
-                            root.bbox.min.fromArray(src.boundsConforming, 0);
-                            root.bbox.max.fromArray(src.boundsConforming, 3);
-                            this.roots[i] = root;
-
-                            return root.loadOctree().then(resolve);
+                            subRoot = new EntwinePointTileNode(0, 0, 0, 0, this, -1, i);
+                            subRoot.bbox.min.fromArray(src.boundsConforming, 0);
+                            subRoot.bbox.max.fromArray(src.boundsConforming, 3);
                         }
+                        this.roots[i] = subRoot;
+                        return subRoot.loadOctree().then(resolve);
                     });
                 this.loadOctrees.push(promise);
 
