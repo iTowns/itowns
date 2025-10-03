@@ -1,6 +1,5 @@
 import { Euler, MathUtils, Matrix4, Quaternion, Vector3 } from 'three';
-import proj4 from 'proj4';
-import type { ProjectionDefinition } from 'proj4/dist/lib/defs';
+import proj4, { type ProjectionDefinition } from 'proj4';
 import Coordinates from './Coordinates';
 
 const matrix = new Matrix4();
@@ -412,8 +411,8 @@ export function quaternionFromEnuToCRS(
     const proj = typeof crsOrProj === 'string' ?
         proj4(crsOrProj).oProj as ProjectionDefinition :
         crsOrProj;
-    const names = proj4.Proj.projections.get(proj.projName).names;
-    switch (names[0]) {
+    const projOrFalse = proj4.Proj.projections.get(proj.projName as string);
+    switch (projOrFalse && projOrFalse.names[0]) {
         case 'Geocentric': return quaternionFromEnuToGeocent();
         case 'Lambert Tangential Conformal Conic Projection':
             return quaternionFromEnuToLCC(proj as LCCProjection);
@@ -449,8 +448,8 @@ export function quaternionFromCRSToEnu(
     const proj = typeof crsOrProj === 'string' ?
         proj4(crsOrProj).oProj as ProjectionDefinition :
         crsOrProj;
-    const names = proj4.Proj.projections.get(proj.projName).names;
-    switch (names[0]) {
+    const projOrFalse = proj4.Proj.projections.get(proj.projName as string);
+    switch (projOrFalse && projOrFalse.names[0]) {
         case 'Geocentric': return quaternionFromGeocentToEnu();
         case 'Lambert Tangential Conformal Conic Projection':
             return quaternionFromLCCToEnu(proj as LCCProjection);

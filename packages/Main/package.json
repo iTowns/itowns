@@ -66,7 +66,7 @@
     "threads": "^1.7.0"
   },
   "peerDependencies": {
-    "proj4": "^2.19.3",
+    "proj4": "^2.19.10",
     "three": "^0.174.0"
   },
   "devDependencies": {

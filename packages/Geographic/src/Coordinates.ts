@@ -1,6 +1,5 @@
 import { Vector3, type Vector3Like, type Matrix4, MathUtils } from 'three';
-import proj4 from 'proj4';
-import type { Converter } from 'proj4/dist/lib/core';
+import proj4, { type Converter } from 'proj4';
 import Ellipsoid from './Ellipsoid';
 import * as CRS from './Crs';
 
