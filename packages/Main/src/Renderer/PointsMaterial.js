@@ -417,6 +417,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
         const data = texture.image.data;
         const width = texture.image.width;
 
+        texture.userData.transparent = false;
         for (let i = 0; i < width; i++) {
             let visible;
 
@@ -429,6 +430,10 @@ class PointsMaterial extends THREE.ShaderMaterial {
             }
 
             data[i] = visible ? 255 : 0;
+
+            if (!visible) {
+                texture.userData.transparent = true;
+            }
         }
         texture.needsUpdate = true;
 
