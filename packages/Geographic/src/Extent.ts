@@ -1,20 +1,20 @@
-import * as THREE from 'three';
+import { Vector2, Vector3, Vector4, Box3, type Matrix4 } from 'three';
 import Coordinates from './Coordinates';
 import * as CRS from './Crs';
 
 import type { ProjectionAlias } from './Crs';
 
-const _dim = new THREE.Vector2();
-const _dim2 = new THREE.Vector2();
-const _box = new THREE.Box3();
-const defaultScheme = new THREE.Vector2(2, 2);
+const _dim = new Vector2();
+const _dim2 = new Vector2();
+const _box = new Box3();
+const defaultScheme = new Vector2(2, 2);
 
 const cNorthWest =  new Coordinates('EPSG:4326', 0, 0, 0);
 const cSouthWest =  new Coordinates('EPSG:4326', 0, 0, 0);
 const cNorthEast =  new Coordinates('EPSG:4326', 0, 0, 0);
 
-const southWest = new THREE.Vector3();
-const northEast = new THREE.Vector3();
+const southWest = new Vector3();
+const northEast = new Vector3();
 
 let _extent: Extent;
 
@@ -167,7 +167,7 @@ class Extent {
      *
      * @param target - optional target
      */
-    planarDimensions(target = new THREE.Vector2()) {
+    planarDimensions(target = new Vector2()) {
         // Calculte the dimensions for x and y
         return target.set(Math.abs(this.east - this.west), Math.abs(this.north - this.south));
     }
@@ -180,7 +180,7 @@ class Extent {
      *
      * @param target - optional target
      */
-    geodeticDimensions(target = new THREE.Vector2()) {
+    geodeticDimensions(target = new Vector2()) {
         // set 3 corners extent
         cNorthWest.crs = this.crs;
         cSouthWest.crs = this.crs;
@@ -204,7 +204,7 @@ class Extent {
      *
      * @param target - optional target
      */
-    spatialEuclideanDimensions(target = new THREE.Vector2()) {
+    spatialEuclideanDimensions(target = new Vector2()) {
         // set 3 corners extent
         cNorthWest.crs = this.crs;
         cSouthWest.crs = this.crs;
@@ -267,7 +267,7 @@ class Extent {
      * south-north, the `z` property the scale on west-east, the `w` property
      * the scale on south-north.
      */
-    offsetToParent(extent: Extent, target = new THREE.Vector4()) {
+    offsetToParent(extent: Extent, target = new Vector4()) {
         if (this.crs != extent.crs) {
             throw new Error('unsupported mix');
         }
@@ -470,7 +470,7 @@ class Extent {
      * @param crs - Projection of extent to instancied.
      * @param box - Bounding-box
      */
-    static fromBox3(crs: ProjectionAlias, box: THREE.Box3) {
+    static fromBox3(crs: ProjectionAlias, box: Box3) {
         if (CRS.isGeocentric(crs)) {
             // if geocentric reproject box on 'EPSG:4326'
             crs = 'EPSG:4326';
@@ -539,7 +539,7 @@ class Extent {
      * @param matrix - The matrix
      * @returns return this extent instance.
      */
-    applyMatrix4(matrix: THREE.Matrix4): this {
+    applyMatrix4(matrix: Matrix4): this {
         southWest.set(this.west, this.south, 0).applyMatrix4(matrix);
         northEast.set(this.east, this.north, 0).applyMatrix4(matrix);
         this.west = southWest.x;
