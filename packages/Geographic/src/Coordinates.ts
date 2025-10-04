@@ -5,11 +5,11 @@ import * as CRS from './Crs';
 
 import type { ProjectionLike } from './Crs';
 
-const ellipsoid = new Ellipsoid();
+const ellipsoid = /* @__PURE__ */ new Ellipsoid();
 const projectionCache: Record<string, Record<string, Converter>> = {};
 
-const v0 = new Vector3();
-const v1 = new Vector3();
+const v0 = /* @__PURE__ */ new Vector3();
+const v1 = /* @__PURE__ */ new Vector3();
 
 let coord0: Coordinates;
 let coord1: Coordinates;
@@ -358,7 +358,7 @@ class Coordinates {
     }
 }
 
-coord0 = new Coordinates('EPSG:4326', 0, 0, 0);
-coord1 = new Coordinates('EPSG:4326', 0, 0, 0);
+coord0 = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
+coord1 = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
 
 export default Coordinates;
