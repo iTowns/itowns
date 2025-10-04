@@ -4,26 +4,32 @@ import * as CRS from './Crs';
 
 import type { ProjectionLike } from './Crs';
 
-const _dim = new Vector2();
-const _dim2 = new Vector2();
-const _box = new Box3();
-const defaultScheme = new Vector2(2, 2);
+const _dim = /* @__PURE__ */ new Vector2();
+const _dim2 = /* @__PURE__ */ new Vector2();
+const _box = /* @__PURE__ */ new Box3();
+const defaultScheme = /* @__PURE__ */ new Vector2(2, 2);
 
-const cNorthWest =  new Coordinates('EPSG:4326', 0, 0, 0);
-const cSouthWest =  new Coordinates('EPSG:4326', 0, 0, 0);
-const cNorthEast =  new Coordinates('EPSG:4326', 0, 0, 0);
+const cNorthWest =  /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
+const cSouthWest =  /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
+const cNorthEast =  /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
 
-const southWest = new Vector3();
-const northEast = new Vector3();
+const southWest = /* @__PURE__ */ new Vector3();
+const northEast = /* @__PURE__ */ new Vector3();
 
 let _extent: Extent;
 
-const cardinals = new Array(8);
-for (let i = cardinals.length - 1; i >= 0; i--) {
-    cardinals[i] = new Coordinates('EPSG:4326', 0, 0, 0);
-}
+const cardinals = [
+    /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
+    /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
+    /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
+    /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
+    /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
+    /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
+    /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
+    /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
+] as const;
 
-const _c = new Coordinates('EPSG:4326', 0, 0);
+const _c = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0);
 
 export interface ExtentLike {
     readonly west: number;
@@ -597,6 +603,6 @@ class Extent {
     }
 }
 
-_extent = new Extent('EPSG:4326');
+_extent = /* @__PURE__ */ new Extent('EPSG:4326');
 
 export default Extent;

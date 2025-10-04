@@ -2,13 +2,13 @@ import { Euler, MathUtils, Matrix4, Quaternion, Vector3 } from 'three';
 import proj4, { type ProjectionDefinition } from 'proj4';
 import Coordinates from './Coordinates';
 
-const matrix = new Matrix4();
-const north = new Vector3();
-const east = new Vector3();
-const axis = new Vector3().set(0, 0, 1);
-const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-const euler = new Euler();
-const quat = new Quaternion();
+const matrix = /* @__PURE__ */ new Matrix4();
+const north = /* @__PURE__ */ new Vector3();
+const east = /* @__PURE__ */ new Vector3();
+const axis = /* @__PURE__ */ new Vector3().set(0, 0, 1);
+const coord = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
+const euler = /* @__PURE__ */ new Euler();
+const quat = /* @__PURE__ */ new Quaternion();
 
 interface EulerAngles {
     /** angle in degrees */

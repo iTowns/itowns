@@ -6,12 +6,13 @@ import Coordinates from './Coordinates';
  * Length of the semi-axes of the WGS84 ellipsoid.
  * @internal
  */
-export const ellipsoidSizes = new Vector3(
+export const ellipsoidSizes = /* @__PURE__ */ (() => new Vector3(
     proj4.WGS84.a,
     proj4.WGS84.a,
-    proj4.WGS84.b);
+    proj4.WGS84.b,
+))();
 
-const normal = new Vector3();
+const normal = /* @__PURE__ */ new Vector3();
 
 class Ellipsoid {
     /**
