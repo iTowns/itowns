@@ -86,6 +86,9 @@ class CopcSource extends Source {
 
         this.isCopcSource = true;
 
+        this.url = config.url;
+        this.networkOptions = config.networkOptions;
+
         this.parser = LASParser.parseChunk;
         this.fetcher = Fetcher.arrayBuffer;
 

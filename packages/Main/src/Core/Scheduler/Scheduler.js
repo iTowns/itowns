@@ -9,7 +9,7 @@ import DataSourceProvider from 'Provider/DataSourceProvider';
 import TileProvider from 'Provider/TileProvider';
 import $3dTilesProvider from 'Provider/3dTilesProvider';
 import PointCloudProvider from 'Provider/PointCloudProvider';
-import URLBuilder from 'Provider/URLBuilder';
+import * as URLBuilder from 'Provider/URLBuilder';
 import CancelledCommandException from './CancelledCommandException';
 
 function queueOrdering(a, b) {
