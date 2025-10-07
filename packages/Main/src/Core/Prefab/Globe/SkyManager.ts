@@ -14,6 +14,7 @@ import {
     ToneMappingEffect,
     FXAAEffect,
     ToneMappingMode,
+    EffectMaterial,
 } from 'postprocessing';
 import View from 'Core/View';
 
@@ -22,6 +23,7 @@ class SkyManager {
     skyLight: SkyLightProbe;
     sunLight: SunDirectionalLight;
     aerialPerspective: AerialPerspectiveEffect;
+    effectPass: EffectPass;
 
     public date: Date;
 
@@ -50,26 +52,25 @@ class SkyManager {
         // Only creating a sky light probe *and* a sunlight
         // (without adding them to the scene) is enough to render a sky.
         this.sunLight = new SunDirectionalLight({ distance: 300 });
-        this.sunLight.intensity = 0.1;
+        this.sunLight.intensity = 0.2;
         this.sunLight.target.position.copy(camera.position);
 
         scene.add(this.sunLight);
         scene.add(this.sunLight.target); // to update matrixWorld at each frame
 
-        this.aerialPerspective = new AerialPerspectiveEffect(camera, {
-            transmittance: false,
-            inscatter: false,
-        });
+        this.aerialPerspective = new AerialPerspectiveEffect(camera);
         this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
 
         const renderer = view.renderer;
         renderer.toneMappingExposure = 10;
 
         composer.addPass(new RenderPass(scene, camera));
-        composer.addPass(new EffectPass(camera, this.aerialPerspective));
-        composer.addPass(
-            new EffectPass(camera, new ToneMappingEffect({ mode: ToneMappingMode.AGX })),
+        this.effectPass = new EffectPass(
+            camera,
+            this.aerialPerspective,
+            new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
         );
+        composer.addPass(this.effectPass);
         composer.addPass(new EffectPass(camera, new FXAAEffect())); // anti-aliasing
 
         // Generate precomputed textures.
@@ -105,6 +106,9 @@ class SkyManager {
         skyMaterial.needsUpdate = true; // useless?
 
         this.aerialPerspective.sunDirection.copy(sunDirection);
+        // The changes to the camera's near/far must be manually updated
+        // to the uniforms used in post-processing effects
+        (this.effectPass.fullscreenMaterial as EffectMaterial).adoptCameraSettings(camera);
 
         this.sunLight.sunDirection.copy(sunDirection);
         this.sunLight.update();
