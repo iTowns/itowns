@@ -3,12 +3,12 @@
   "version": "2.46.1-next.0",
   "description": "Geodesy",
   "type": "module",
-  "main": "lib/Main.js",
+  "main": "lib/index.js",
   "exports": {
-    "types": "./src/Main.ts",
-    "default": "./lib/Main.js"
+    "types": "./src/index.ts",
+    "default": "./lib/index.js"
   },
-  "types": "./src/Main.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "build": "",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\" \"test/**/*.js\"",
@@ -35,7 +35,7 @@
     "url": "https://github.com/itowns/itowns/issues"
   },
   "peerDependencies": {
-    "proj4": "^2.19.3",
+    "proj4": "^2.19.10",
     "three": "^0.174.0"
   },
   "homepage": "https://itowns.github.io/"

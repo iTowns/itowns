@@ -1,16 +1,15 @@
-import * as THREE from 'three';
-import proj4 from 'proj4';
-import type { Converter } from 'proj4/dist/lib/core';
+import { Vector3, type Vector3Like, type Matrix4, MathUtils } from 'three';
+import proj4, { type Converter } from 'proj4';
 import Ellipsoid from './Ellipsoid';
 import * as CRS from './Crs';
 
-import type { ProjectionAlias } from './Crs';
+import type { ProjectionLike } from './Crs';
 
-const ellipsoid = new Ellipsoid();
+const ellipsoid = /* @__PURE__ */ new Ellipsoid();
 const projectionCache: Record<string, Record<string, Converter>> = {};
 
-const v0 = new THREE.Vector3();
-const v1 = new THREE.Vector3();
+const v0 = /* @__PURE__ */ new Vector3();
+const v1 = /* @__PURE__ */ new Vector3();
 
 let coord0: Coordinates;
 let coord1: Coordinates;
@@ -22,7 +21,7 @@ export interface CoordinatesLike {
     readonly z: number;
 }
 
-function proj4cache(crsIn: ProjectionAlias, crsOut: ProjectionAlias): Converter {
+function proj4cache(crsIn: ProjectionLike, crsOut: ProjectionLike): Converter {
     if (!projectionCache[crsIn]) {
         projectionCache[crsIn] = {};
     }
@@ -72,9 +71,9 @@ class Coordinates {
      */
     readonly isCoordinates: boolean;
     /**
-     * A default or user-defined CRS (see {@link ProjectionAlias}).
+     * A default or user-defined CRS (see {@link ProjectionLike}).
      */
-    crs: ProjectionAlias;
+    crs: ProjectionLike;
 
     /** The x value (or longitude) of this coordinate. */
     x: number;
@@ -83,16 +82,16 @@ class Coordinates {
     /** The z value (or altitude) of this coordinate. */
     z: number;
 
-    private _normal: THREE.Vector3;
+    private _normal: Vector3;
     private _normalNeedsUpdate: boolean;
 
     /**
-     * @param crs - A default or user-defined CRS (see {@link ProjectionAlias}).
+     * @param crs - A default or user-defined CRS (see {@link ProjectionLike}).
      * @param x - x or longitude value.
      * @param y - y or latitude value.
      * @param z - z or altitude value.
      */
-    constructor(crs: ProjectionAlias, x: number = 0, y: number = 0, z: number = 0) {
+    constructor(crs: ProjectionLike, x: number = 0, y: number = 0, z: number = 0) {
         this.isCoordinates = true;
 
         CRS.isValid(crs);
@@ -105,7 +104,7 @@ class Coordinates {
         this.z = 0;
 
         // Normal
-        this._normal = new THREE.Vector3();
+        this._normal = new Vector3();
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((x as any).length > 0) { // deepscan-disable-line
@@ -134,7 +133,7 @@ class Coordinates {
      * Sets the Coordinate Reference System.
      * @param crs - Coordinate Reference System (e.g. 'EPSG:4978')
      */
-    setCrs(crs: ProjectionAlias): this {
+    setCrs(crs: ProjectionLike): this {
         CRS.isValid(crs);
         this.crs = crs;
         return this;
@@ -180,7 +179,7 @@ class Coordinates {
      *
      * @param v - The source object.
      */
-    setFromVector3(v: THREE.Vector3Like): this {
+    setFromVector3(v: Vector3Like): this {
         return this.setFromValues(v.x, v.y, v.z);
     }
 
@@ -247,7 +246,7 @@ class Coordinates {
      * @returns A vector `(x, y, z)`, or copies x, y and z into the provided
      * vector.
      */
-    toVector3(target: THREE.Vector3 = new THREE.Vector3()): THREE.Vector3 {
+    toVector3(target: Vector3 = new Vector3()): Vector3 {
         return target.copy(this);
     }
 
@@ -262,7 +261,7 @@ class Coordinates {
      * array.
      */
     toArray(array: number[] = [], offset: number = 0): ArrayLike<number> {
-        return THREE.Vector3.prototype.toArray.call(this, array, offset);
+        return Vector3.prototype.toArray.call(this, array, offset);
     }
 
     /**
@@ -306,8 +305,8 @@ class Coordinates {
      *
      * @param mat - The matrix.
      */
-    applyMatrix4(mat: THREE.Matrix4): this {
-        THREE.Vector3.prototype.applyMatrix4.call(this, mat);
+    applyMatrix4(mat: Matrix4): this {
+        Vector3.prototype.applyMatrix4.call(this, mat);
         return this;
     }
 
@@ -341,12 +340,12 @@ class Coordinates {
      * const geographicCoords = geocentricCoords.as('EPSG:4326');
      * ```
      */
-    as(crs: ProjectionAlias, target = new Coordinates(crs)): Coordinates {
+    as(crs: ProjectionLike, target = new Coordinates(crs)): Coordinates {
         if (this.crs == crs) {
             target.copy(this);
         } else {
             if (CRS.is4326(this.crs) && crs == 'EPSG:3857') {
-                this.y = THREE.MathUtils.clamp(this.y, -89.999999, 89.999999);
+                this.y = MathUtils.clamp(this.y, -89.999999, 89.999999);
             }
 
             target.setFromArray(proj4cache(this.crs, crs)
@@ -359,7 +358,7 @@ class Coordinates {
     }
 }
 
-coord0 = new Coordinates('EPSG:4326', 0, 0, 0);
-coord1 = new Coordinates('EPSG:4326', 0, 0, 0);
+coord0 = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
+coord1 = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
 
 export default Coordinates;

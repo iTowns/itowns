@@ -1,16 +1,14 @@
 import { Euler, MathUtils, Matrix4, Quaternion, Vector3 } from 'three';
-import proj4 from 'proj4';
-import type { ProjectionDefinition } from 'proj4/dist/lib/defs';
+import proj4, { type ProjectionDefinition } from 'proj4';
 import Coordinates from './Coordinates';
 
-const DEG2RAD = MathUtils.DEG2RAD;
-const matrix = new Matrix4();
-const north = new Vector3();
-const east = new Vector3();
-const axis = new Vector3().set(0, 0, 1);
-const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-const euler = new Euler();
-const quat = new Quaternion();
+const matrix = /* @__PURE__ */ new Matrix4();
+const north = /* @__PURE__ */ new Vector3();
+const east = /* @__PURE__ */ new Vector3();
+const axis = /* @__PURE__ */ new Vector3().set(0, 0, 1);
+const coord = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
+const euler = /* @__PURE__ */ new Euler();
+const quat = /* @__PURE__ */ new Quaternion();
 
 interface EulerAngles {
     /** angle in degrees */
@@ -55,9 +53,9 @@ export function quaternionFromRollPitchHeading(
     heading = 0,
     target = new Quaternion(),
 ) {
-    roll *= DEG2RAD;
-    pitch *= DEG2RAD;
-    heading *= DEG2RAD;
+    roll *= MathUtils.DEG2RAD;
+    pitch *= MathUtils.DEG2RAD;
+    heading *= MathUtils.DEG2RAD;
     // return setFromEuler(euler.set(pitch, roll, heading , 'ZXY')).conjugate();
     // Below is optimized version of above line
     return target.setFromEuler(euler.set(-pitch, -roll, -heading, 'YXZ'));
@@ -90,9 +88,9 @@ export function quaternionFromOmegaPhiKappa(
     kappa = 0,
     target = new Quaternion(),
 ) {
-    omega *= DEG2RAD;
-    phi *= DEG2RAD;
-    kappa *= DEG2RAD;
+    omega *= MathUtils.DEG2RAD;
+    phi *= MathUtils.DEG2RAD;
+    kappa *= MathUtils.DEG2RAD;
     target.setFromEuler(euler.set(omega, phi, kappa, 'XYZ'));
     target.set(target.w, target.z, -target.y, -target.x);
     // <=> target.multiply(new THREE.Quaternion(1, 0, 0, 0));
@@ -202,7 +200,7 @@ export function quaternionFromLCCToEnu(
     if (coordinates) { return quaternionFromLCCToEnu(proj)(coordinates, target); }
     const sinlat0 = Math.sin(proj.lat0);
     return (coordinates: Coordinates, target = new Quaternion()) => {
-        const long = coordinates.as(coord.crs, coord).longitude * DEG2RAD;
+        const long = coordinates.as(coord.crs, coord).longitude * MathUtils.DEG2RAD;
         return target.setFromAxisAngle(axis, sinlat0 * (proj.long0 - long));
     };
 }
@@ -273,8 +271,8 @@ export function quaternionFromTMercToEnu(
     }
     return (coordinates: Coordinates, target = new Quaternion()) => {
         coordinates.as(coord.crs, coord);
-        const long = coord.longitude * DEG2RAD;
-        const lat = coord.latitude * DEG2RAD;
+        const long = coord.longitude * MathUtils.DEG2RAD;
+        const lat = coord.latitude * MathUtils.DEG2RAD;
         const dlong = proj.long0 - long;
         const coslat = Math.cos(lat);
         const sinlat = Math.sin(lat);
@@ -413,8 +411,8 @@ export function quaternionFromEnuToCRS(
     const proj = typeof crsOrProj === 'string' ?
         proj4(crsOrProj).oProj as ProjectionDefinition :
         crsOrProj;
-    const names = proj4.Proj.projections.get(proj.projName).names;
-    switch (names[0]) {
+    const projOrFalse = proj4.Proj.projections.get(proj.projName as string);
+    switch (projOrFalse && projOrFalse.names[0]) {
         case 'Geocentric': return quaternionFromEnuToGeocent();
         case 'Lambert Tangential Conformal Conic Projection':
             return quaternionFromEnuToLCC(proj as LCCProjection);
@@ -450,8 +448,8 @@ export function quaternionFromCRSToEnu(
     const proj = typeof crsOrProj === 'string' ?
         proj4(crsOrProj).oProj as ProjectionDefinition :
         crsOrProj;
-    const names = proj4.Proj.projections.get(proj.projName).names;
-    switch (names[0]) {
+    const projOrFalse = proj4.Proj.projections.get(proj.projName as string);
+    switch (projOrFalse && projOrFalse.names[0]) {
         case 'Geocentric': return quaternionFromGeocentToEnu();
         case 'Lambert Tangential Conformal Conic Projection':
             return quaternionFromLCCToEnu(proj as LCCProjection);

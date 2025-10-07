@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Vector3, type Vector3Like, type Ray, MathUtils } from 'three';
 import proj4 from 'proj4';
 import Coordinates from './Coordinates';
 
@@ -6,34 +6,35 @@ import Coordinates from './Coordinates';
  * Length of the semi-axes of the WGS84 ellipsoid.
  * @internal
  */
-export const ellipsoidSizes = new THREE.Vector3(
+export const ellipsoidSizes = /* @__PURE__ */ (() => new Vector3(
     proj4.WGS84.a,
     proj4.WGS84.a,
-    proj4.WGS84.b);
+    proj4.WGS84.b,
+))();
 
-const normal = new THREE.Vector3();
+const normal = /* @__PURE__ */ new Vector3();
 
 class Ellipsoid {
     /**
      * Length of the semi-axes of the ellipsoid.
      */
-    size: THREE.Vector3;
+    size: Vector3;
     /**
      * Eccentricity of the ellipsoid.
      */
     eccentricity: number;
 
-    private _radiiSquared: THREE.Vector3;
-    private _invRadiiSquared: THREE.Vector3;
+    private _radiiSquared: Vector3;
+    private _invRadiiSquared: Vector3;
 
     /**
      * @param size - Length of the semi-axes of the ellipsoid. Defaults to those
      * defined by the WGS84 ellipsoid.
      */
-    constructor(size: THREE.Vector3 = ellipsoidSizes) {
-        this.size = new THREE.Vector3();
-        this._radiiSquared = new THREE.Vector3();
-        this._invRadiiSquared = new THREE.Vector3();
+    constructor(size: Vector3 = ellipsoidSizes) {
+        this.size = new Vector3();
+        this._radiiSquared = new Vector3();
+        this._invRadiiSquared = new Vector3();
         this.eccentricity = 0;
 
         this.setSize(size);
@@ -49,8 +50,8 @@ class Ellipsoid {
      */
     geodeticSurfaceNormal(
         cartesian: Coordinates,
-        target = new THREE.Vector3(),
-    ): THREE.Vector3 {
+        target = new Vector3(),
+    ): Vector3 {
         return cartesian.toVector3(target).multiply(this._invRadiiSquared).normalize();
     }
 
@@ -64,10 +65,10 @@ class Ellipsoid {
      */
     geodeticSurfaceNormalCartographic(
         coordCarto: Coordinates,
-        target = new THREE.Vector3(),
-    ): THREE.Vector3 {
-        const longitude = THREE.MathUtils.degToRad(coordCarto.longitude);
-        const latitude = THREE.MathUtils.degToRad(coordCarto.latitude);
+        target = new Vector3(),
+    ): Vector3 {
+        const longitude = MathUtils.degToRad(coordCarto.longitude);
+        const latitude = MathUtils.degToRad(coordCarto.latitude);
         const cosLatitude = Math.cos(latitude);
 
         return target.set(cosLatitude * Math.cos(longitude),
@@ -82,7 +83,7 @@ class Ellipsoid {
      *
      * @param size - The source vector.
      */
-    setSize(size: THREE.Vector3Like): this {
+    setSize(size: Vector3Like): this {
         this.size.set(size.x, size.y, size.z);
 
         this._radiiSquared.multiplyVectors(size, size);
@@ -98,8 +99,8 @@ class Ellipsoid {
 
     cartographicToCartesian(
         coordCarto: Coordinates,
-        target = new THREE.Vector3(),
-    ): THREE.Vector3 {
+        target = new Vector3(),
+    ): Vector3 {
         normal.copy(coordCarto.geodesicNormal);
 
         target.multiplyVectors(this._radiiSquared, normal);
@@ -122,7 +123,7 @@ class Ellipsoid {
      * angles are in degree
      */
     cartesianToCartographic(
-        position: THREE.Vector3Like,
+        position: Vector3Like,
         target = new Coordinates('EPSG:4326', 0, 0, 0),
     ): Coordinates {
         // for details, see for example http://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/geodetic-datum-conversions/equations-used-datum
@@ -152,13 +153,13 @@ class Ellipsoid {
             a * Math.sqrt(1 - e * Math.sin(phi) * Math.sin(phi));
 
         return target.setFromValues(
-            THREE.MathUtils.radToDeg(theta),
-            THREE.MathUtils.radToDeg(phi),
+            MathUtils.radToDeg(theta),
+            MathUtils.radToDeg(phi),
             h,
         );
     }
 
-    cartographicToCartesianArray(coordCartoArray: Coordinates[]): THREE.Vector3[] {
+    cartographicToCartesianArray(coordCartoArray: Coordinates[]): Vector3[] {
         const cartesianArray = [];
         for (let i = 0; i < coordCartoArray.length; i++) {
             cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
@@ -167,7 +168,7 @@ class Ellipsoid {
         return cartesianArray;
     }
 
-    intersection(ray: THREE.Ray): THREE.Vector3 | false {
+    intersection(ray: Ray): Vector3 | false {
         const EPSILON = 0.0001;
         const O_C = ray.origin;
         const dir = ray.direction;
@@ -207,7 +208,7 @@ class Ellipsoid {
 
         if (t < EPSILON) { return false; } // Too close to intersection
 
-        const inter = new THREE.Vector3();
+        const inter = new Vector3();
 
         inter.addVectors(ray.origin, dir.clone().setLength(t));
 
@@ -228,10 +229,10 @@ class Ellipsoid {
         // The formula uses the distance on approximated sphere,
         // with the nearest local radius of curvature of the ellipsoid
         // https://geodesie.ign.fr/contenu/fichiers/Distance_longitude_latitude.pdf
-        const longitude1 = THREE.MathUtils.degToRad(coordCarto1.longitude);
-        const latitude1 = THREE.MathUtils.degToRad(coordCarto1.latitude);
-        const longitude2 = THREE.MathUtils.degToRad(coordCarto2.longitude);
-        const latitude2 = THREE.MathUtils.degToRad(coordCarto2.latitude);
+        const longitude1 = MathUtils.degToRad(coordCarto1.longitude);
+        const latitude1 = MathUtils.degToRad(coordCarto1.latitude);
+        const longitude2 = MathUtils.degToRad(coordCarto2.longitude);
+        const latitude2 = MathUtils.degToRad(coordCarto2.latitude);
 
         const distRad = Math.acos(
             Math.sin(latitude1) * Math.sin(latitude2) +
