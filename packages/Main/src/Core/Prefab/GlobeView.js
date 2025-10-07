@@ -111,7 +111,7 @@ class GlobeView extends View {
             placement.range = placement.range || ellipsoidSizes.x * 2.0;
         }
 
-        this.farFactor = options.farFactor ?? 20;
+        this.farFactor = options.farFactor ?? 40;
         this.fogSpread = options.fogSpread ?? 0.5;
 
         if (options.noControls) {
