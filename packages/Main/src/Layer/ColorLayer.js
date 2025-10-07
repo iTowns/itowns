@@ -72,13 +72,18 @@ class ColorLayer extends RasterLayer {
      * * `2`: white color to invisible effect.
      * * `3`: custom shader effect (defined `ShaderChunk.customBodyColorLayer` and `ShaderChunk.customHeaderColorLayer`).
      * @param {number} [config.effect_parameter=1.0] - amount value used with effect applied on raster color.
-     * @param {(boolean|Object)} [config.addLabelLayer] - Used to tell if this layer has
-     * labels to display from its data. For example, it needs to be set to `true`
-     * for a layer with vector tiles. If it's `true` a new `LabelLayer` is added and attached to this `Layer`.
-     * You can also configure it with {@link LabelLayer} options described below such as: `addLabelLayer: { performance: true }`.
-     * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
-     * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
-     * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.
+     * @param {(boolean|Object)} [config.addLabelLayer] - Used to indicate
+     * whether this layer can display labels from the data. For example, it
+     * needs to be set for vector tile layers if you want to display labels.
+     * If set, a new `LabelLayer` is added and attached to this layer.
+     * You can also configure it with {@link LabelLayer} options described below
+     * such as: `addLabelLayer: { performance: true }`.
+     * @param {boolean} [config.addLabelLayer.performance=false] - When adding
+     * a label layer, remove all labels that have no chance of being visible.
+     * Even if a label is visible, it may never be displayed if there are too
+     * many labels in the same screen area.
+     * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - Use
+     * elevation layer to clamp labels to terrain.
      *
      * @example
      * // Create a ColorLayer
