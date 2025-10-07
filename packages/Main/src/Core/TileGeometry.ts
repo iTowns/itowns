@@ -9,13 +9,14 @@ import { LRUCache } from 'lru-cache';
 
 import OBB from 'Renderer/OBB';
 
-type PartialTileBuilderParams =
-    Pick<TileBuilderParams, 'extent' | 'level'>
-    & Partial<TileBuilderParams>;
+type PartialParams<
+    Params extends TileBuilderParams,
+    Keys extends keyof Params = 'extent' | 'level'
+> = Pick<Params, Keys> & Partial<Params>;
 
 function defaultBuffers(
     builder: TileBuilder<TileBuilderParams>,
-    params: PartialTileBuilderParams,
+    params: PartialParams<TileBuilderParams>,
 ): GpuBufferAttributes {
     const fullParams = {
         disableSkirt: false,
@@ -48,7 +49,9 @@ function defaultBuffers(
     return bufferAttributes;
 }
 
-export class TileGeometry extends THREE.BufferGeometry {
+export class TileGeometry<
+    BuilderParams extends TileBuilderParams = TileBuilderParams
+> extends THREE.BufferGeometry {
     /** Oriented Bounding Box of the tile geometry. */
     public OBB: OBB | null;
     /** Ground area covered by this tile geometry. */
@@ -70,8 +73,8 @@ export class TileGeometry extends THREE.BufferGeometry {
     } | null;
 
     public constructor(
-        builder: TileBuilder<TileBuilderParams>,
-        params: TileBuilderParams,
+        builder: TileBuilder<BuilderParams>,
+        params: PartialParams<BuilderParams, 'extent' | 'level' | 'segments'>,
         bufferAttributes: GpuBufferAttributes = defaultBuffers(builder, params),
     ) {
         super();
@@ -88,9 +91,7 @@ export class TileGeometry extends THREE.BufferGeometry {
 
         this.computeBoundingBox();
         this.OBB = null;
-        if (params.hideSkirt) {
-            this.hideSkirt = params.hideSkirt;
-        }
+        this.hideSkirt = params.hideSkirt ?? false;
 
         this._refCount = null;
     }
@@ -111,7 +112,7 @@ export class TileGeometry extends THREE.BufferGeometry {
      * @param keys - The [south, level, epsg] key of this geometry.
      */
     public initRefCount(
-        cacheTile: LRUCache<string, Promise<TileGeometry>>,
+        cacheTile: LRUCache<string, Promise<this>>,
         key: string,
     ): void {
         if (this._refCount !== null) {

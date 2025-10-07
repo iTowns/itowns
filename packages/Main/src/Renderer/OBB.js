@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { TileGeometry } from 'Core/TileGeometry';
-import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
+import { GlobeTileBuilder, GlobeTileBuilderParams } from 'Core/Prefab/Globe/GlobeTileBuilder';
 import { CRS, Coordinates } from '@itowns/geographic';
 
 // get oriented bounding box of tile
