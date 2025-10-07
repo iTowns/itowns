@@ -15,7 +15,7 @@ type PartialParams<
 > = Pick<Params, Keys> & Partial<Params>;
 
 function defaultBuffers(
-    builder: TileBuilder<TileBuilderParams>,
+    builder: TileBuilder,
     params: PartialParams<TileBuilderParams>,
 ): GpuBufferAttributes {
     const fullParams = {
@@ -49,9 +49,7 @@ function defaultBuffers(
     return bufferAttributes;
 }
 
-export class TileGeometry<
-    BuilderParams extends TileBuilderParams = TileBuilderParams
-> extends THREE.BufferGeometry {
+export class TileGeometry extends THREE.BufferGeometry {
     /** Oriented Bounding Box of the tile geometry. */
     public OBB: OBB | null;
     /** Ground area covered by this tile geometry. */
@@ -73,8 +71,8 @@ export class TileGeometry<
     } | null;
 
     public constructor(
-        builder: TileBuilder<BuilderParams>,
-        params: PartialParams<BuilderParams, 'extent' | 'level' | 'segments'>,
+        builder: TileBuilder,
+        params: PartialParams<TileBuilderParams, 'extent' | 'level' | 'segments'>,
         bufferAttributes: GpuBufferAttributes = defaultBuffers(builder, params),
     ) {
         super();
