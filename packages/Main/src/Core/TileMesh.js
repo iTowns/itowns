@@ -22,7 +22,6 @@ class TileMesh extends THREE.Mesh {
         }
         this.layer = layer;
         this.extent = extent;
-        this.extent.zoom = level;
 
         this.level = level;
 
