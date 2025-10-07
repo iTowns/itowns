@@ -325,6 +325,8 @@ jobs:
             --notes-file ./changelog.md \
             --draft=false \
             --prerelease=false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Zip assets into bundle
       - name: Zip assets
@@ -335,4 +337,6 @@ jobs:
       - name: Upload release asset
         run: |
           gh release upload v${{ steps.npm_pack.outputs.VERSION }} bundles.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
