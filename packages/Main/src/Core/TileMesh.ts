@@ -3,7 +3,7 @@ import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 import { tiledCovering } from 'Core/Tile/Tile';
 
 import type { Extent } from '@itowns/geographic';
-import type { TileGeometry } from './TileGeometry';
+import type { TileGeometry } from 'Core/TileGeometry';
 import type Tile from 'Core/Tile/Tile';
 import OBB from 'Renderer/OBB';
 import type { LayeredMaterial } from 'Renderer/LayeredMaterial';
@@ -14,13 +14,14 @@ interface TileLayerLike {
 }
 
 /**
- * A TileMesh is a THREE.Mesh with a geometricError and an OBB
- * The objectId property of the material is the with the id of the TileMesh
- * @param {TileGeometry} geometry - the tile geometry
- * @param {THREE.Material} material - a THREE.Material compatible with THREE.Mesh
- * @param {Layer} layer - the layer the tile is added to
- * @param {Extent} extent - the tile extent
- * @param {?number} level - the tile level (default = 0)
+ * A TileMesh is a THREE.Mesh with a geometricError and an OBB.
+ * The objectId property of the layered material is assigned to the id of the
+ * TileMesh.
+ * @param geometry - The tile geometry
+ * @param material - A THREE.Material compatible with THREE.Mesh
+ * @param layer - The layer the tile is added to
+ * @param extent - The tile extent
+ * @param level - The tile level (default = 0)
  */
 class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
     readonly isTileMesh: true;
@@ -36,8 +37,7 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
     horizonCullingPoint: THREE.Vector3 | undefined;
     horizonCullingPointElevationScaled: THREE.Vector3 | undefined;
 
-    #_tms = new Map<string, Tile[]>();
-    #visible = true;
+    private _tms = new Map<string, Tile[]>();
 
     constructor(
         geometry: TileGeometry,
@@ -63,7 +63,7 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
         this.obb.box3D.getBoundingSphere(this.boundingSphere);
 
         for (const tms of layer.tileMatrixSets) {
-            this.#_tms.set(tms, tiledCovering(this.extent, tms));
+            this._tms.set(tms, tiledCovering(this.extent, tms));
         }
 
         this.frustumCulled = false;
@@ -76,45 +76,46 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
 
         this.link = {};
 
+        let _visible = true;
         Object.defineProperty(this, 'visible', {
-            get() { return this.#visible; },
+            get() { return _visible; },
             set(v) {
-                if (this.#visible != v) {
-                    this.#visible = v;
+                if (_visible != v) {
+                    _visible = v;
                     this.dispatchEvent({ type: v ? 'shown' : 'hidden' });
                 }
             },
         });
     }
+
     /**
-     * If specified, update the min and max elevation of the OBB
-     * and updates accordingly the bounding sphere and the geometric error
+     * If specified, updates the min and max elevation of the OBB
+     * and updates accordingly the bounding sphere and the geometric error.
      *
-     * @param {Object}  elevation
-     * @param {number}  [elevation.min]
-     * @param {number}  [elevation.max]
-     * @param {number}  [elevation.scale]
+     * @param elevation - Elevation parameters
      */
     setBBoxZ(elevation: { min?: number, max?: number, scale?: number, geoidHeight?: number }) {
         elevation.geoidHeight = geoidLayerIsVisible(this.layer) ? this.geoidHeight : 0;
         this.obb.updateZ(elevation);
         if (this.horizonCullingPointElevationScaled && this.horizonCullingPoint) {
-            this.horizonCullingPointElevationScaled.setLength(this.obb.z.delta + this.horizonCullingPoint.length());
+            this.horizonCullingPointElevationScaled.setLength(
+                this.obb.z.delta + this.horizonCullingPoint.length(),
+            );
         }
         this.obb.box3D.getBoundingSphere(this.boundingSphere);
     }
 
     getExtentsByProjection(tms: string) {
-        return this.#_tms.get(tms);
+        return this._tms.get(tms);
     }
 
     /**
-     * Search for a common ancestor between this tile and another one. It goes
+     * Finds the common ancestor between this tile and another one. It goes
      * through parents on each side until one is found.
      *
-     * @param {TileMesh} tile
-     *
-     * @return {TileMesh} the resulting common ancestor
+     * @param tile - The tile to find common ancestor with
+     * @returns The common ancestor between those two tiles, or undefined if
+     * not found
      */
     findCommonAncestor(tile: TileMesh): TileMesh | undefined {
         if (!tile) {
@@ -124,17 +125,14 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
             if (tile.id == this.id) {
                 return tile;
             } else if (tile.level != 0) {
-                // @ts-ignore By invariant, parent of a TileMesh is always a TileMesh
-                return this.parent.findCommonAncestor(tile.parent);
+                return (this.parent as TileMesh)?.findCommonAncestor(tile.parent as TileMesh);
             } else {
                 return undefined;
             }
         } else if (tile.level < this.level) {
-            // @ts-ignore By invariant, parent of a TileMesh is always a TileMesh
-            return this.parent.findCommonAncestor(tile);
+            return (this.parent as TileMesh)?.findCommonAncestor(tile as TileMesh);
         } else {
-            // @ts-ignore By invariant, parent of a TileMesh is always a TileMesh
-            return this.findCommonAncestor(tile.parent);
+            return this.findCommonAncestor(tile.parent as TileMesh);
         }
     }
 
