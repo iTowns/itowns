@@ -17,7 +17,6 @@ type Transform = {
 
 /** Specialized parameters for the [PlanarTileBuilder]. */
 export interface PlanarTileBuilderParams extends TileBuilderParams {
-    crs: string;
     uvCount?: number;
     nbRow: number;
 }

@@ -29,26 +29,28 @@ export type ShareableExtent = {
     position: THREE.Vector3;
 };
 
-export interface TileBuilderParams {
+export interface TileBuilderPrepareParams {
     /** Whether to build the skirt. */
     disableSkirt: boolean;
     /** Whether to render the skirt. */
     hideSkirt: boolean;
     /** Number of segments (edge loops) inside tiles. */
     segments: number;
-    // TODO: Move this out of the interface
     /** Buffer for projected points. */
-    coordinates: Coordinates;
     extent: Extent;
     level: number;
-    center: THREE.Vector3;
 }
 
-export interface TileBuilder<SpecializedParams extends TileBuilderParams> {
+export interface TileBuilderParams extends TileBuilderPrepareParams {
+    center: THREE.Vector3;
+    coordinates: Coordinates;
+}
+
+export interface TileBuilder<SpecializedParams extends TileBuilderParams = TileBuilderParams> {
     crs: string;
 
     /** Convert builder-agnostic params to specialized ones. */
-    prepare(params: TileBuilderParams): SpecializedParams;
+    prepare(params: TileBuilderPrepareParams): SpecializedParams;
     /**
      * Computes final offset of the second texture set.
      * Only relevant in the case of more than one texture sets.
@@ -73,8 +75,8 @@ export interface TileBuilder<SpecializedParams extends TileBuilderParams> {
 }
 
 export function newTileGeometry(
-    builder: TileBuilder<TileBuilderParams>,
-    params: TileBuilderParams,
+    builder: TileBuilder,
+    params: TileBuilderPrepareParams,
 ) {
     const { shareableExtent, quaternion, position } =
         builder.computeShareableExtent(params.extent);
@@ -94,7 +96,7 @@ export function newTileGeometry(
         cacheTile.set(key, promiseGeometry);
 
         params.extent = shareableExtent;
-        params.center = builder.center(params.extent).clone();
+        const center = builder.center(params.extent).clone();
         // Read previously cached values (index and uv.wgs84 only
         // depend on the # of triangles)
         let cachedBuffers = cacheBuffer.get(bufferKey);
@@ -103,7 +105,7 @@ export function newTileGeometry(
         try {
             buffers = computeBuffers(
                 builder,
-                params,
+                { ...params, center },
                 cachedBuffers !== undefined
                     ? {
                         index: cachedBuffers.index.array as
