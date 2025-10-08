@@ -81,9 +81,13 @@ class GlobeView extends View {
      * @param {object} [options] - See options of {@link View}.
      * @param {Object} [options.controls] - See options of {@link GlobeControls}
      * @param {Object} [options.webXR] - WebXR configuration - its presence alone
-     * enable WebXR to switch on VR visualization. (optional).
-     * @param {function} [options.webXR.callback] - WebXR rendering callback (optional).
-     * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling (optional).
+     * enable WebXR to switch on VR visualization.
+     * @param {function} [options.webXR.callback] - WebXR rendering callback.
+     * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling.
+     * @param {number} [options.farFactor=20] - Controls how far the camera can see.
+     * The maximum view distance is this factor times the camera’s altitude (above sea level).
+     * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
+     * Between 0 and 1.
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -93,7 +97,6 @@ class GlobeView extends View {
 
         this.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
         this.camera3D.far = ellipsoidSizes.x * 10;
-
         const tileLayer = new GlobeLayer('globe', options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
 
@@ -107,11 +110,45 @@ class GlobeView extends View {
             placement.range = placement.range || ellipsoidSizes.x * 2.0;
         }
 
+        this.farFactor = options.farFactor ?? 20;
+        this.fogSpread = options.fogSpread ?? 0.5;
+
         if (options.noControls) {
             CameraUtils.transformCameraToLookAtTarget(this, this.camera3D, placement);
+
+            // In this case, since the camera's near and far properties aren't
+            // dynamically computed, the default fog won't be adapted, so disable it.
+            this.scene.fog = null;
         } else {
             this.controls = new GlobeControls(this, placement, options.controls);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
+
+            const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
+
+            this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
+                // update camera's near and far
+                const originToCamSq = this.camera3D.position.lengthSq();
+
+                // maximum possible distance from ground to camera
+                const camCoordinates = new Coordinates(this.referenceCrs)
+                    .setFromVector3(this.camera3D.position);
+                camCoordinates.as(this.tileLayer.extent.crs, camCoordinates);
+                const camToSeaLevel = camCoordinates.z;
+
+                const camToGroundDistMin = camToSeaLevel - View.ALTITUDE_MAX;
+                this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
+
+                // distance from camera to the horizon
+                const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
+
+                this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
+                this.camera3D.updateProjectionMatrix();
+
+                const fog = this.scene.fog;
+                if (!fog) { return; }
+                fog.far = this.camera3D.far;
+                fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
+            });
         }
 
         this.addLayer(new Atmosphere('atmosphere', options.atmosphere));
