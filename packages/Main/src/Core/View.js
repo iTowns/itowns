@@ -191,7 +191,6 @@ class View extends THREE.EventDispatcher {
         if (!options.scene3D) {
             this.scene.matrixWorldAutoUpdate = false;
         }
-        this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
 
         this.camera = new Camera(
             this.referenceCrs,
