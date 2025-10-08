@@ -71,7 +71,7 @@ class CopcSource extends Source {
      * @param {Object} config - Source configuration
      * @param {string} config.url - URL of the COPC resource.
      * @param {8 | 16} [config.colorDepth=16] - Encoding of the `color`
-     * attribute. Either `8` or `16` bits.
+     * attribute. Either `8` or `16` bits. By default it is to 16.
      * @param {string} [config._lazPerfBaseUrl] - (experimental) Overrides base
      * url of the `las-zip.wasm` file of the `laz-perf` library.
      * @param {string} [config.crs='EPSG:4326'] - Native CRS of the COPC

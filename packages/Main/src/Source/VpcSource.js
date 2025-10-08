@@ -21,9 +21,9 @@ class VpcSource extends Source {
     /**
      * @param {Object} config - The configuration, see {@link Source} for
      * available values.
-     * @param {number|string} [config.colorDepth='auto'] - Does the color
-     * encoding is known ? Is it `8` or `16` bits ? By default it is to
-     * `'auto'`, but it will be more performant if a specific value is set.
+     * @param {number} [config.colorDepth] - Color depth (in bits).
+     * Either 8 or 16 bits. By defaults it will be set to 8 bits for LAS 1.2 and
+     * 16 bits for later versions (as mandatory by the specification).
      */
     constructor(config) {
         super(config);
@@ -33,7 +33,7 @@ class VpcSource extends Source {
         this.parser = LASParser.parseChunk;
         this.fetcher = Fetcher.arrayBuffer;
 
-        this.colorDepth = config.colorDepth ?? 16;
+        this.colorDepth = config.colorDepth;
 
         this.spacings = [];
 
