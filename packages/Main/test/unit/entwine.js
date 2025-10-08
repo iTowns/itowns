@@ -118,8 +118,7 @@ describe('Entwine Point Tile', function () {
 
         it('tries to update on the root and succeeds', function (done) {
             view.controls.lookAtCoordinate({
-                coord: source.center,
-                range: 250,
+                range: -250,
             }, false)
                 .then(() => {
                     layer.update(context, layer, layer.root);
