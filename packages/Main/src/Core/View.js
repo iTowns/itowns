@@ -133,6 +133,9 @@ class View extends THREE.EventDispatcher {
     #layers = [];
     #pixelDepthBuffer = new Uint8Array(4);
     #fullSizeDepthBuffer;
+
+    static ALTITUDE_MAX = 100000; // more than 10 times altitude of Mount Everest
+
     /**
      * Constructs an Itowns View instance
      *
@@ -188,6 +191,7 @@ class View extends THREE.EventDispatcher {
         if (!options.scene3D) {
             this.scene.matrixWorldAutoUpdate = false;
         }
+        this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
 
         this.camera = new Camera(
             this.referenceCrs,
@@ -218,6 +222,18 @@ class View extends THREE.EventDispatcher {
                 this.removeFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
             }
         };
+
+        // Factor to apply to the camera's near value.
+        // Given a plane orthogonal the camera direction (in this case, the near plane),
+        // fovDepthFactor represents the ratio between:
+        // * the distance to a point on this plane at the center of the view and
+        // * the distance to a point on this plane in a corner.
+        this.fovDepthFactor = 1;
+        if (this.camera3D.isPerspectiveCamera) {
+            const corner = new THREE.Vector4(1, 1, -1); // a corner of the camera in NDC at near plane
+            corner.applyMatrix4(this.camera3D.projectionMatrixInverse).divideScalar(corner.z);
+            this.fovDepthFactor /= Math.sqrt(1 + corner.x * corner.x + corner.y * corner.y);
+        }
 
         this.camera.resize(this.domElement.clientWidth, this.domElement.clientHeight);
 

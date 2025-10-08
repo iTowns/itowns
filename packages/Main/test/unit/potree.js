@@ -37,7 +37,7 @@ describe('Potree', function () {
     }).timeout(5000);
 
     describe('unit tests', function () {
-        const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), range: 250 };
+        const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), range: -250 };
         let renderer;
         let viewer;
         let potreeLayer;

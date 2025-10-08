@@ -60,7 +60,7 @@ class EntwinePointTileSource extends Source {
             }
 
             this.boundsConforming = metadata.boundsConforming;
-            this.bounds = metadata.bounds;
+            this.bounds = metadata.bounds; // xMin, yMin, zMin, xMax, yMax, zMax
             this.span = metadata.span;
 
             return this;

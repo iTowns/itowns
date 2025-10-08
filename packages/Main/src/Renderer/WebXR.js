@@ -74,8 +74,8 @@ class WebXR extends THREE.EventDispatcher {
      * @param {GlobeView} view - The view where the webXR session will be started
      * @param {Object} [options] - WebXR configuration - its presence alone
      * enable WebXR to switch on VR visualization.
-     * @param {function} [options.callback] - WebXR rendering callback (optional).
-     * @param {boolean} [options.controllers] - Enable the webXR controllers handling (optional).
+     * @param {function} [options.callback] - WebXR rendering callback.
+     * @param {boolean} [options.controllers] - Enable the webXR controllers handling.
      */
     constructor(view, options) {
         super();
