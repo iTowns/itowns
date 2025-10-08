@@ -82,6 +82,9 @@ class VpcSource extends Source {
                 }).then((res) => {
                     this.sources[i] = res;
                     return res;
+                }).catch((err) => {
+                    console.warn(err);
+                    this.handlingError(err);
                 });
 
                 const mockSource = {
@@ -105,8 +108,11 @@ class VpcSource extends Source {
         let source;
         if (url.includes('.copc')) {
             source = new CopcSource({ url });
-        } else {
+        } else if (url.includes('.json')) {
             source = new EntwinePointTileSource({ url });
+        } else {
+            console.warn('Error: Stack format not supported');
+            this.handlingError('Stack format not supported');
         }
         this.promises[index].resolve(source.whenReady);
     }
