@@ -1,3 +1,38 @@
+<a name="2.46.1-next.3"></a>
+## [2.46.1-next.3](https://github.com/iTowns/itowns/compare/v2.46.0...v2.46.1-next.3) (2025-10-08)
+
+
+### Features
+
+* **camera:** calculate dynamic, optimized camera near/far and fog ([56b722b](https://github.com/iTowns/itowns/commit/56b722b))
+* **deps:** bump proj4 from 2.9.3 to 2.9.10 ([16cf342](https://github.com/iTowns/itowns/commit/16cf342))
+* **geographic:** let user import single modules ([f160270](https://github.com/iTowns/itowns/commit/f160270))
+
+
+### Bug Fixes
+
+* **ci:** fix missing env variable for release ([e548cf0](https://github.com/iTowns/itowns/commit/e548cf0))
+
+
+### Code Refactoring
+
+* **geographic:** don't use three default import ([be2ec44](https://github.com/iTowns/itowns/commit/be2ec44))
+
+
+### Workflow and chores
+
+* **geographic:** mark module-levels function as pure ([872baed](https://github.com/iTowns/itowns/commit/872baed))
+* **integration:** update job names to match Node version ([00e8ead](https://github.com/iTowns/itowns/commit/00e8ead))
+
+
+### Others
+
+* 2.46.1-next.2 ([9884dbf](https://github.com/iTowns/itowns/commit/9884dbf))
+* 2.46.1-next.1 ([2e1d0ae](https://github.com/iTowns/itowns/commit/2e1d0ae))
+* 2.46.1-next.0 ([d9faec7](https://github.com/iTowns/itowns/commit/d9faec7))
+
+
+
 <a name="2.46.1-next.2"></a>
 ## [2.46.1-next.2](https://github.com/iTowns/itowns/compare/v2.46.0...v2.46.1-next.2) (2025-10-08)
 
