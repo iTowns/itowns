@@ -110,6 +110,7 @@ class PlanarView extends View {
 
         this.farFactor = options.farFactor ?? 20;
         this.fogSpread = options.fogSpread ?? 0.5;
+        this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
     }
 
     addLayer(layer) {
