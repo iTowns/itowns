@@ -48,8 +48,10 @@ class EntwinePointTileNode extends PointCloudNode {
      * @param {number} [numPoints=0] - The number of points in this node. If
      * `-1`, it means that the octree hierarchy associated to this node needs to
      * be loaded.
+     * @param {number} [sId] - ID of the source this node belongs to.
+     * Mainly used for VPCSource (multi-source)
      */
-    constructor(depth, x, y, z, layer, numPoints = 0) {
+    constructor(depth, x, y, z, layer, numPoints = 0, sId = -1) {
         super(numPoints, layer);
         this.isEntwinePointTileNode = true;
 
@@ -57,10 +59,18 @@ class EntwinePointTileNode extends PointCloudNode {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.sId = sId;
 
         this.voxelKey = buildVoxelKey(depth, x, y, z);
 
-        this.url = `${this.layer.source.url}/ept-data/${this.voxelKey}.${this.layer.source.extension}`;
+        let sourceUrl = this.layer.source.url;
+        let sourceExtension = this.layer.source.extension;
+        if (this.layer.source.urls) {
+            sourceUrl = this.layer.source.sources[this.sId].url;
+            sourceExtension = this.layer.source.sources[this.sId].extension;
+        }
+
+        this.url = `${sourceUrl}/ept-data/${this.voxelKey}.${sourceExtension}`;
     }
 
     get octreeIsLoaded() {
@@ -72,7 +82,11 @@ class EntwinePointTileNode extends PointCloudNode {
     }
 
     loadOctree() {
-        const hierarchyUrl = `${this.layer.source.url}/ept-hierarchy/${this.voxelKey}.json`;
+        let sourceUrl = this.layer.source.url;
+        if (this.layer.source.urls) {
+            sourceUrl = this.layer.source.sources[this.sId].url;
+        }
+        const hierarchyUrl = `${sourceUrl}/ept-hierarchy/${this.voxelKey}.json`;
         return Fetcher.json(hierarchyUrl, this.layer.source.networkOptions).then((hierarchy) => {
             this.numPoints = hierarchy[this.voxelKey];
 
@@ -98,12 +112,26 @@ class EntwinePointTileNode extends PointCloudNode {
         });
     }
 
+    load() {
+        let sourceFetcher = this.layer.source.fetcher;
+        let sourceParse = this.layer.source.parse;
+        let layerSource = this.layer.source;
+        if (this.layer.source.urls) {
+            sourceFetcher = this.layer.source.sources[this.sId].fetcher;
+            sourceParse = this.layer.source.sources[this.sId].parse;
+            layerSource = this.layer.source.sources[this.sId];
+        }
+
+        return sourceFetcher(this.url, this.layer.source.networkOptions)
+            .then(file => sourceParse(file, { out: this.layer, in: layerSource }));
+    }
+
     findAndCreateChild(depth, x, y, z, hierarchy, stack) {
         const voxelKey = buildVoxelKey(depth, x, y, z);
         const numPoints = hierarchy[voxelKey];
 
         if (typeof numPoints == 'number') {
-            const child = new EntwinePointTileNode(depth, x, y, z, this.layer, numPoints);
+            const child = new EntwinePointTileNode(depth, x, y, z, this.layer, numPoints, this.sId);
             this.add(child);
             stack.push(child);
         }

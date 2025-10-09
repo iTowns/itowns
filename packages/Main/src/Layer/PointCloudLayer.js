@@ -8,7 +8,7 @@ const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
 bboxMesh.geometry.boundingBox = box3;
 
-function initBoundingBox(elt, layer) {
+export function initBoundingBox(elt, layer) {
     elt.tightbbox.getSize(box3.max);
     box3.max.multiplyScalar(0.5);
     box3.min.copy(box3.max).negate();
@@ -53,7 +53,7 @@ function computeSSEOrthographic(context, pointSize, pointSpacing) {
     return Math.max(0.0, distance - pointSize);
 }
 
-function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
+export function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
     if (context.camera.camera3D.isOrthographicCamera) {
         return computeSSEOrthographic(context, pointSize, pointSpacing);
     }
@@ -279,22 +279,8 @@ class PointCloudLayer extends GeometryLayer {
         return [this.root];
     }
 
-    update(context, layer, elt) {
-        elt.visible = false;
-
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
-            return;
-        }
-
-        // pick the best bounding box
-        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return;
-        }
-
+    // PointCloudLayer.update separate in 2 parts: update and loadData
+    loadData(elt, context, layer, bbox) {
         elt.notVisibleSince = undefined;
         point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
         point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
@@ -353,8 +339,28 @@ class PointCloudLayer extends GeometryLayer {
                 for (const child of elt.children) {
                     markForDeletion(child);
                 }
+                return [];
             }
         }
+    }
+
+    update(context, layer, elt) {
+        elt.visible = false;
+
+        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
+            markForDeletion(elt);
+            return [];
+        }
+
+        // pick the best bounding box
+        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
+        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
+        if (!elt.visible) {
+            markForDeletion(elt);
+            return [];
+        }
+
+        return this.loadData(elt, context, layer, bbox);
     }
 
     postUpdate() {
