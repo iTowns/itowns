@@ -63,6 +63,12 @@ class EntwinePointTileSource extends Source {
             this.bounds = metadata.bounds; // xMin, yMin, zMin, xMax, yMax, zMax
             this.span = metadata.span;
 
+            // NOTE: this spacing is kinda arbitrary here, we take the width and
+            // length (height can be ignored), and we divide by the specified
+            // span in ept.json. This needs improvements.
+            this.spacing = (Math.abs(this.bounds[3] - this.bounds[0])
+                + Math.abs(this.bounds[4] - this.bounds[1])) / (2 * this.span);
+
             return this;
         });
 

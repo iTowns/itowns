@@ -40,6 +40,7 @@ describe('Potree', function () {
         const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), range: -250 };
         let renderer;
         let viewer;
+        let potreeSource;
         let potreeLayer;
         let context;
         let elt;
@@ -57,14 +58,14 @@ describe('Potree', function () {
             renderer = new Renderer();
             viewer = new GlobeView(renderer.domElement, placement, { renderer });
 
-            const source = new PotreeSource({
+            potreeSource = new PotreeSource({
                 file: fileName,
                 url: baseurl,
             });
 
             // Configure Point Cloud layer
             potreeLayer = new PotreeLayer('lion_takanawa', {
-                source,
+                source: potreeSource,
                 crs: viewer.referenceCrs,
             });
 
@@ -118,7 +119,7 @@ describe('Potree', function () {
             const childrenBitField = 5;
 
             it('instance', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
+                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
                 assert.equal(root.numPoints, numPoints);
                 assert.equal(root.childrenBitField, childrenBitField);
                 done();
@@ -126,20 +127,18 @@ describe('Potree', function () {
 
             it('construct a correct URL', function () {
                 const node = new PotreeNode(0, 0, {
-                    source: {
-                        baseurl,
-                        extension: 'bin',
-                    },
+                    baseurl,
+                    extension: 'bin',
                 });
                 const hierarchyKey = '044';
 
                 node.hierarchyKey = hierarchyKey;
 
-                assert.equal(node.url, `${baseurl}/r${hierarchyKey}.bin`);
+                assert.equal(node.url, `${baseurl}/${hierarchyKey}.bin`);
             });
 
             it('load octree', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
+                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
                 root.loadOctree()
                     .then(() => {
                         assert.equal(6, root.children.length);
@@ -148,7 +147,7 @@ describe('Potree', function () {
             });
 
             it('load child node', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeLayer);
+                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
                 root.loadOctree()
                     .then(() => root.children[0].load()
                         .then(() => {

@@ -66,6 +66,7 @@
 
                 // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
                 itowns.CRS.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+                itowns.CRS.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
                 viewerDiv = document.getElementById('viewerDiv');
                 viewerDiv.style.display = 'block';
@@ -81,8 +82,10 @@
                 potreeLayer = new itowns.Potree2Layer('Lion', {
                     source: new itowns.Potree2Source({
                         file: 'metadata.json',
-                        url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
-                        crs: view.referenceCrs,
+                        // url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
+                        // crs: view.referenceCrs,
+                        url: 'https://media.githubusercontent.com/media/itowns/iTowns2-sample-data/potreeData/pointclouds/potree2.0/Arene-1_L93',
+                        crs: 'EPSG:2154',
                     }),
                 });
 

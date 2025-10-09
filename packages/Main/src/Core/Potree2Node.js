@@ -42,8 +42,8 @@ const NODE_TYPE = {
 };
 
 class Potree2Node extends PotreeNode {
-    constructor(numPoints = 0, childrenBitField = 0, layer) {
-        super(numPoints, childrenBitField, layer);
+    constructor(numPoints = 0, childrenBitField = 0, source) {
+        super(numPoints, childrenBitField, source);
     }
 
     get url() {
@@ -54,14 +54,15 @@ class Potree2Node extends PotreeNode {
         const first = byteOffset;
         const last = first + byteSize - 1n;
 
+        const regex = /^https:\/\/(raw|media)\.githubusercontent\.com/;
         // When we specify 'multipart/byteranges' on headers request it trigger a preflight request
         // Actually github doesn't support it https://github.com/orgs/community/discussions/24659
         // But if we omit header parameter, github seems to know it's a 'multipart/byteranges' request (thanks to 'Range' parameter)
         const networkOptions = {
-            ...this.layer.source.networkOptions,
+            ...this.source.networkOptions,
             headers: {
-                ...this.layer.source.networkOptions.headers,
-                ...(this.url.startsWith('https://raw.githubusercontent.com') ? {} : { 'content-type': 'multipart/byteranges' }),
+                ...this.source.networkOptions.headers,
+                ...(regex.test(this.url) ? {} : { 'content-type': 'multipart/byteranges' }),
                 Range: `bytes=${first}-${last}`,
             },
         };
@@ -75,14 +76,14 @@ class Potree2Node extends PotreeNode {
             await this.loadOctree();
         }
 
-        return this.layer.source.fetcher(this.url, this.networkOptions(this.byteOffset, this.byteSize))
-            .then(file => this.layer.source.parser(file, {
+        return this.source.fetcher(this.url, this.networkOptions(this.byteOffset, this.byteSize))
+            .then(file => this.source.parser(file, {
                 in: {
-                    source: this.layer.source,
+                    source: this.source,
                     bbox: this.bbox,
                     numPoints: this.numPoints,
                 },
-                out: this.layer,
+                // out: this.layer,
             }))
             .then((data) => {
                 this.loaded = true;
@@ -101,7 +102,7 @@ class Potree2Node extends PotreeNode {
 
     async loadHierarchy() {
         const hierarchyUrl = `${this.baseurl}/hierarchy.bin`;
-        const buffer = await this.layer.source.fetcher(hierarchyUrl, this.networkOptions(this.hierarchyByteOffset, this.hierarchyByteSize));
+        const buffer = await this.source.fetcher(hierarchyUrl, this.networkOptions(this.hierarchyByteOffset, this.hierarchyByteSize));
         this.parseHierarchy(buffer);
     }
 
@@ -161,7 +162,7 @@ class Potree2Node extends PotreeNode {
                     continue;
                 }
 
-                const child = new Potree2Node(numPoints, childMask, this.layer);
+                const child = new Potree2Node(numPoints, childMask, this.source);
 
                 current.add(child, childIndex);
                 stack.push(child);
