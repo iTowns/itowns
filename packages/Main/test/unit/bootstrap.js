@@ -411,6 +411,7 @@ class Renderer {
     clear() {}
     render() {}
     readRenderTargetPixels() { }
+    readRenderTargetPixelsAsync() { }
     getContext() { return this.context; }
     getDrawingBufferSize() { return new THREE.Vector2(4, 4); } // arbitrary size
 }
