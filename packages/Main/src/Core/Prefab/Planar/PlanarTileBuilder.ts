@@ -26,14 +26,12 @@ export interface PlanarTileBuilderParams extends TileBuilderParams {
  * tile arrangements.
  */
 export class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
-    private _uvCount: number;
     private _transform: Transform;
     private _crs: string;
 
     public constructor(options: {
         projection?: string,
         crs: string,
-        uvCount?: number,
     }) {
         if (options.projection) {
             console.warn('PlanarTileBuilder projection parameter is deprecated,'
@@ -48,8 +46,6 @@ export class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
             position: new THREE.Vector3(),
             normal: new THREE.Vector3(0, 0, 1),
         };
-
-        this._uvCount = options.uvCount ?? 1;
     }
 
     public get uvCount(): number {
