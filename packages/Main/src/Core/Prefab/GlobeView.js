@@ -117,8 +117,7 @@ class GlobeView extends View {
             CameraUtils.transformCameraToLookAtTarget(this, this.camera3D, placement);
 
             // In this case, since the camera's near and far properties aren't
-            // dynamically computed, the default fog won't be adapted, so disable it.
-            this.scene.fog = null;
+            // dynamically computed, the default fog won't be adapted, so don't enable it
         } else {
             this.controls = new GlobeControls(this, placement, options.controls);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
@@ -149,6 +148,8 @@ class GlobeView extends View {
                 fog.far = this.camera3D.far;
                 fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
             });
+
+            this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
         }
 
         this.addLayer(new Atmosphere('atmosphere', options.atmosphere));
