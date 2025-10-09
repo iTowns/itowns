@@ -6,8 +6,6 @@ import {
     TileBuilderParams,
 } from '../TileBuilder';
 
-const PI_OV_FOUR = Math.PI / 4;
-const INV_TWO_PI = 1.0 / (Math.PI * 2);
 const axisZ = new THREE.Vector3(0, 0, 1);
 const axisY = new THREE.Vector3(0, 1, 0);
 const quatToAlignLongitude = new THREE.Quaternion();

@@ -33,15 +33,9 @@ function defaultBuffers(
         index: buffers.index
             ? new THREE.BufferAttribute(buffers.index, 1)
             : null,
-        uvs: [
-            ...(buffers.uvs[0]
-                ? [new THREE.BufferAttribute(buffers.uvs[0], 2)]
-                : []
-            ),
-            ...(buffers.uvs[1]
-                ? [new THREE.BufferAttribute(buffers.uvs[1], 1)]
-                : []),
-        ],
+        uv: buffers.uv
+            ? new THREE.BufferAttribute(buffers.uv, 2)
+            : null,
         position: new THREE.BufferAttribute(buffers.position, 3),
         normal: new THREE.BufferAttribute(buffers.normal, 3),
     };
@@ -81,11 +75,7 @@ export class TileGeometry extends THREE.BufferGeometry {
         this.setIndex(bufferAttributes.index);
         this.setAttribute('position', bufferAttributes.position);
         this.setAttribute('normal', bufferAttributes.normal);
-        this.setAttribute('uv', bufferAttributes.uvs[0]);
-
-        for (let i = 1; i < bufferAttributes.uvs.length; i++) {
-            this.setAttribute(`uv_${i}`, bufferAttributes.uvs[i]);
-        }
+        this.setAttribute('uv', bufferAttributes.uv);
 
         this.computeBoundingBox();
         this.OBB = null;
