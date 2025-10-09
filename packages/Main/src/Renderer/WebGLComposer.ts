@@ -23,6 +23,9 @@ export function drawMap(
     const previousRenderTarget = renderer.getRenderTarget();
 
     renderer.setRenderTarget(renderTarget);
+    const a = renderer.getClearAlpha();
+    renderer.setClearAlpha(0);
+    renderer.clear();
     renderTarget.texture.extent = extent;
 
     for (const tile of tiles) {
@@ -37,6 +40,7 @@ export function drawMap(
     }
 
     renderer.setRenderTarget(previousRenderTarget);
+    renderer.setClearAlpha(a);
 
     return renderTarget;
 }
