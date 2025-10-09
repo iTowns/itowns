@@ -117,6 +117,8 @@ function updateLayersUniforms(
         drawMap(renderTarget, tiles, renderer, extent);
 
         rtCache.set(textureSetId, renderTarget);
+    } else {
+        drawMap(renderTarget, tiles, renderer, extent);
     }
 
     uniforms.colorOffsetScales.value = identityOffsetScale;
