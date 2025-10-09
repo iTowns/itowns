@@ -19,10 +19,13 @@ export function drawMap(
     tiles: RasterTile[],
     renderer: THREE.WebGLRenderer,
     extent: Extent,
-): THREE.WebGLArrayRenderTarget | null {
+): undefined {
     const previousRenderTarget = renderer.getRenderTarget();
 
     renderer.setRenderTarget(renderTarget);
+    const a = renderer.getClearAlpha();
+    renderer.setClearAlpha(0);
+    renderer.clear();
     renderTarget.texture.extent = extent;
 
     for (const tile of tiles) {
@@ -37,6 +40,5 @@ export function drawMap(
     }
 
     renderer.setRenderTarget(previousRenderTarget);
-
-    return renderTarget;
+    renderer.setClearAlpha(a);
 }
