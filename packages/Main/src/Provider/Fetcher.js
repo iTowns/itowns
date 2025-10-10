@@ -1,4 +1,5 @@
 import { TextureLoader, DataTexture, RedFormat, FloatType } from 'three';
+import * as GeoTIFF from 'geotiff';
 
 const TEXTURE_TILE_DIM = 256;
 const TEXTURE_TILE_SIZE = TEXTURE_TILE_DIM * TEXTURE_TILE_DIM;
@@ -144,6 +145,10 @@ export default {
         });
     },
 
+    geotiff(url) {
+        return GeoTIFF.fromUrl(url, { allowFullFile: true }).then(geotiff => geotiff.getImage());
+    },
+
     /**
      * Wrapper over fetch to get a bunch of files sharing the same name, but
      * different extensions.
@@ -228,6 +233,8 @@ export default {
                 }
             case 'image':
                 switch (subtype) {
+                    case 'geotiff':
+                        return this.geotiff;
                     case 'x-bil;bits=32':
                         return this.textureFloat;
                     default:
