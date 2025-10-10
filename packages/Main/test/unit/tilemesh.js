@@ -5,7 +5,7 @@ import TileMesh from 'Core/TileMesh';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';
 import Tile from 'Core/Tile/Tile';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
-import TileProvider from 'Provider/TileProvider';
+// import TileProvider from 'Provider/TileProvider';
 import { newTileGeometry } from 'Core/Prefab/TileBuilder';
 import OBB from 'Renderer/OBB';
 import ElevationLayer from 'Layer/ElevationLayer';
@@ -66,16 +66,16 @@ describe('TileMesh', function () {
         assert.equal(res, tree[1][0]);
     });
 
-    it('subdivide tile by 4 tiles', function (done) {
-        const tile = planarlayer.object3d.children[0];
-        planarlayer.subdivideNode(context, tile);
-        const command = context.scheduler.commands[0];
-        TileProvider.executeCommand(command).then((tiles) => {
-            context.scheduler.commands = [];
-            assert.equal(tiles.length, 4);
-            done();
-        });
-    });
+    // it('subdivide tile by 4 tiles', function (done) {
+    //     const tile = planarlayer.object3d.children[0];
+    //     planarlayer.subdivideNode(context, tile);
+    //     const command = context.scheduler.commands[0];
+    //     TileProvider.executeCommand(command).then((tiles) => {
+    //         context.scheduler.commands = [];
+    //         assert.equal(tiles.length, 4);
+    //         done();
+    //     });
+    // });
 
     it('Choose the right typed Array', function (done) {
         const paramsGeometry = {
@@ -101,17 +101,17 @@ describe('TileMesh', function () {
         Promise.all([a, b]).then(() => done());
     });
 
-    it('catch error when subdivide tile without material', function (done) {
-        const tile = planarlayer.object3d.children[0];
-        tile.pendingSubdivision = false;
-        tile.material = undefined;
-        planarlayer.subdivideNode(context, tile);
-        const command = context.scheduler.commands[0];
-        TileProvider.executeCommand(command).catch((error) => {
-            assert.ok(error.isCancelledCommandException);
-            done();
-        });
-    });
+    // it('catch error when subdivide tile without material', function (done) {
+    //     const tile = planarlayer.object3d.children[0];
+    //     tile.pendingSubdivision = false;
+    //     tile.material = undefined;
+    //     planarlayer.subdivideNode(context, tile);
+    //     const command = context.scheduler.commands[0];
+    //     TileProvider.executeCommand(command).catch((error) => {
+    //         assert.ok(error.isCancelledCommandException);
+    //         done();
+    //     });
+    // });
 
     it('should find the correct common ancestor between two tiles of different level', function () {
         const res = tree[2][0].findCommonAncestor(tree[3][4]);

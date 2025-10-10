@@ -112,3 +112,12 @@ export function chooseNextLevelToFetch(
     }
     return nextLevelToFetch;
 }
+
+export const nextLevelToFetch = t =>
+    chooseNextLevelToFetch(
+        t.layer.updateStrategy.type,
+        t.tiles[0].zoom,
+        t.level,
+        t.state.failureParams,
+        t.layer.zoom,
+    );
