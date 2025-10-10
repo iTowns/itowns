@@ -751,7 +751,7 @@ export default {
         let colors;
         let posAttr;
         const newColor = options.style?.fill?.color;
-        if (featureMesh.oldColor !== newColor) {
+        if (featureMesh.oldColor && !featureMesh.oldColor.equals(newColor)) {
             featureMesh.oldColor = newColor;
             colors = new Uint8Array(numVertices * 2);
         }
