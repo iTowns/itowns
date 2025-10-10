@@ -8,13 +8,13 @@ function ReferLayerProperties(material, layer) {
         if (material.uniforms && material.uniforms.opacity != undefined) {
             opacity = material.uniforms.opacity.value;
             Object.defineProperty(material.uniforms.opacity, 'value', {
-                get: () => material.layer.opacity || opacity,
+                get: () => material.layer.opacity * opacity,
                 set: (value) => { opacity = value; },
             });
         } else if (material.opacity != undefined) {
             opacity = material.opacity;
             Object.defineProperty(material, 'opacity', {
-                get: () => material.layer.opacity,
+                get: () => material.layer.opacity * opacity,
                 set: (value) => { opacity = value; },
             });
         }
