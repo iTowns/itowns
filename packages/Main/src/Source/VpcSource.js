@@ -1,3 +1,4 @@
+import proj4 from 'proj4';
 import LASParser from 'Parser/LASParser';
 import Fetcher from 'Provider/Fetcher';
 import Source from 'Source/Source';
@@ -38,65 +39,69 @@ class VpcSource extends Source {
         this.spacings = [];
 
         const urlVpc = this.url;
-        this.whenReady = Fetcher.json(urlVpc, this.networkOptions).then((metadata) => {
-            this.urls = metadata.features.map(f => f.assets.data.href);
+        this.whenReady = Fetcher.json(urlVpc, this.networkOptions)
+            .then((metadata) => {
+                this.urls = metadata.features.map(f => f.assets.data.href);
 
-            this.metadata = metadata;
-            const boundsConformings = metadata.features.map(f => f.properties['proj:bbox']);
+                this.metadata = metadata;
+                const boundsConformings = metadata.features.map(f => f.properties['proj:bbox']);
 
-            this.boundsConforming = [
-                Math.min(...boundsConformings.map(b => b[0])),
-                Math.min(...boundsConformings.map(b => b[1])),
-                Math.min(...boundsConformings.map(b => b[2])),
-                Math.max(...boundsConformings.map(b => b[3])),
-                Math.max(...boundsConformings.map(b => b[4])),
-                Math.max(...boundsConformings.map(b => b[5])),
-            ];
+                this.boundsConforming = [
+                    Math.min(...boundsConformings.map(b => b[0])),
+                    Math.min(...boundsConformings.map(b => b[1])),
+                    Math.min(...boundsConformings.map(b => b[2])),
+                    Math.max(...boundsConformings.map(b => b[3])),
+                    Math.max(...boundsConformings.map(b => b[4])),
+                    Math.max(...boundsConformings.map(b => b[5])),
+                ];
 
-            this.minElevation = this.boundsConforming[2];
-            this.maxElevation = this.boundsConforming[5];
+                this.minElevation = this.boundsConforming[2];
+                this.maxElevation = this.boundsConforming[5];
 
-            /* FOR ONE proj:wkt2
-            const projsWkt2 = meta.features.map(f => f.properties['proj:wkt2']);
-            proj4.defs('unknown', projsWkt2[0]);
-            let projCS;
+                const projsWkt2 = [...new Set(metadata.features.map(f => f.properties['proj:wkt2']))];
 
-            if (proj4.defs('unknown').type === 'COMPD_CS') {
-                console.warn('CopcSource: compound coordinate system is not yet supported.');
-                projCS = proj4.defs('unknown').PROJCS;
-            } else {
-                projCS = proj4.defs('unknown');
-            }
+                if (projsWkt2.length !== 1) {
+                    console.warn('Only 1 crs is currently supported for 1 vpc. The extra crs will not be considered');
+                }
 
-            this.crs = projCS.title || projCS.name || 'EPSG:4326';
-            if (!(this.crs in proj4.defs)) {
-                proj4.defs(this.crs, projCS);
-            }
-            */
+                proj4.defs('unknown', projsWkt2[0]);
+                let projCS;
 
-            this.sources = [];
-            this.promises = [];
-            this.urls.forEach((url, i) => {
-                const p = new Promise((re, rj) => {
-                    this.promises.push({ resolve: re, reject: rj });
-                }).then((res) => {
-                    this.sources[i] = res;
-                    return res;
-                }).catch((err) => {
-                    console.warn(err);
-                    this.handlingError(err);
+                if (proj4.defs('unknown').type === 'COMPD_CS') {
+                    console.warn('CopcSource: compound coordinate system is not yet supported.');
+                    projCS = proj4.defs('unknown').PROJCS;
+                } else {
+                    projCS = proj4.defs('unknown');
+                }
+
+                this.crs = projCS.title || projCS.name || 'EPSG:4326';
+                if (!(this.crs in proj4.defs)) {
+                    proj4.defs(this.crs, projCS);
+                }
+
+                this.sources = [];
+                this.promises = [];
+                this.urls.forEach((url, i) => {
+                    const p = new Promise((re, rj) => {
+                        this.promises.push({ resolve: re, reject: rj });
+                    }).then((res) => {
+                        this.sources[i] = res;
+                        return res;
+                    }).catch((err) => {
+                        console.warn(err);
+                        this.handlingError(err);
+                    });
+
+                    const mockSource = {
+                        url,
+                        boundsConforming: boundsConformings[i],
+                        whenReady: p,
+                    };
+                    this.sources.push(mockSource);
                 });
 
-                const mockSource = {
-                    url,
-                    boundsConforming: boundsConformings[i],
-                    whenReady: p,
-                };
-                this.sources.push(mockSource);
+                return this.sources;
             });
-
-            return this.sources;
-        });
     }
 
     get spacing() {
