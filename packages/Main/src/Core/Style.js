@@ -495,6 +495,9 @@ class Style {
         defineStyleProperty(this, 'stroke', 'width', params.stroke.width, 1.0);
         defineStyleProperty(this, 'stroke', 'dasharray', params.stroke.dasharray, []);
         defineStyleProperty(this, 'stroke', 'base_altitude', params.stroke.base_altitude, baseAltitudeDefault);
+        if (params.stroke.extrusion_radius) {
+            defineStyleProperty(this, 'stroke', 'extrusion_radius', params.stroke.extrusion_radius);
+        }
 
         this.point = {};
         defineStyleProperty(this, 'point', 'color', params.point.color);
