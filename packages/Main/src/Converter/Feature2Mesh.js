@@ -259,7 +259,6 @@ function featureToLine(feature, options) {
     const vertices = new Float32Array(ptsIn.length);
     const geom = new THREE.BufferGeometry();
 
-    const lineMaterialWidth = [];
     context.setFeature(feature);
 
     const countIndices = (count - feature.geometries.length) * 2;
@@ -282,50 +281,20 @@ function featureToLine(feature, options) {
         const count = geometry.indices[0].count;
         const end = start + count;
 
-        for (let v = start * 3, j = start; j < end; v += 3, j += 1) {
-            if (j < end - 1) {
-                if (j < 0xffff) {
-                    indices[i++] = j;
-                    indices[i++] = j + 1;
-                } else {
-                    break;
-                }
-            }
-            if (feature.normals) {
-                up.fromArray(feature.normals, v).multiply(inverseScale);
-            }
-
-            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
-            style.setContext(context);
-            const { base_altitude, color, width } = style.stroke;
-
-            coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
-            if (coord.crs == 'EPSG:4978') {
-            // altitude convertion from geocentered to elevation (from ground)
-                coord.as('EPSG:4326', coord);
-            }
-
-            // Calculate the new coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(up)
-                .multiplyScalar(base_altitude - coord.z).add(localCoord)
-            // and update the geometry buffer (vertices).
-                .toArray(vertices, v);
-
-            toColor(color).multiplyScalar(255).toArray(colors, v);
-
-            if (!lineMaterialWidth.includes(width)) {
-                lineMaterialWidth.push(width);
-            }
-            batchIds[j] = id;
+        for (let j = start; j < end - 1; j++) {
+            if (j >= 0xffff) { break; }
+            indices[i++] = j;
+            indices[i++] = j + 1;
         }
+
+        updateLineVertices({ feature }, vertices, colors, batchIds, id);
+
         featureId++;
     }
-    options.lineMaterial.linewidth = lineMaterialWidth[0];
-    if (lineMaterialWidth.length > 1) {
-        // TODO CREATE material for each feature
-        console.warn('Too many differents stroke.width, only the first one will be used');
-    }
+
+    // TODO CREATE material for each feature
+    options.lineMaterial.linewidth = style.stroke.width;
+
     geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
@@ -350,7 +319,7 @@ function featureToExtrudedLine(feature, options) {
     let featureId = 0;
     let vertexBaseIndex = 0;
 
-    // Build a cylinder (approximated by n segments) per line segment
+    // Build one cylinder per line segment
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
         const id = batchIdFn(geometry.properties, featureId);
@@ -359,7 +328,7 @@ function featureToExtrudedLine(feature, options) {
         const count = geometry.indices[0].count;
         const end = start + count;
 
-        updateExtrudedLineVertices({ feature }, { style: options.style }, vertices, colors, batchIds, id);
+        updateExtrudedLineVertices({ feature }, vertices, colors, batchIds, id);
 
         for (let j = start; j < end - 1; j++) {
             // Indices for cylindrical side quads
@@ -507,7 +476,7 @@ function featureToExtrudedPolygon(feature, options) {
 
         const startTop = start + totalVertices;
         const id = batchId(geometry.properties, featureId);
-        updateExtrudedPolygonVertices({ feature }, { style: options.style }, vertices, colors, batchIds, id);
+        updateExtrudedPolygonVertices({ feature }, vertices, colors, batchIds, id);
 
         featureId++;
 
@@ -558,13 +527,12 @@ function featureToExtrudedPolygon(feature, options) {
  * Update base and top vertex data for extruded polygons.
  *
  * @param {Object} featureMesh - The feature mesh providing feature and collection context.
- * @param {Object} options - Options; if options.style is provided, it is used to compute fill properties.
  * @param {Float32Array} [vertices] - Optional target positions buffer (xyz) to write into.
  * @param {Uint8Array} [colors] - Optional target colors buffer (rgb, Uint8, normalized) to write into.
  * @param {Uint32Array} [batchIds] - Optional target per-vertex batch id buffer.
  * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
  */
-function updateExtrudedPolygonVertices(featureMesh, options, vertices, colors, batchIds, id) {
+function updateExtrudedPolygonVertices(featureMesh, vertices, colors, batchIds, id) {
     const feature = featureMesh.feature;
     const numVertices = feature.vertices?.length;
     if (!numVertices) {
@@ -630,7 +598,7 @@ function updateExtrudedPolygonVertices(featureMesh, options, vertices, colors, b
     }
 }
 
-function updateExtrudedLineVertices(featureMesh, options, vertices, colors, batchIds, id) {
+function updateLineVertices(featureMesh, vertices, colors, batchIds, id) {
     const feature = featureMesh.feature;
     const ptsIn = feature.vertices;
     if (!ptsIn?.length) {
@@ -650,9 +618,54 @@ function updateExtrudedLineVertices(featureMesh, options, vertices, colors, batc
     const start = geometry.indices[0].offset;
     const count = geometry.indices[0].count;
     const end = start + count;
-    const { base_altitude, extrusion_radius, color } = style.stroke;
-    let meshColor;
-    if (colors) { meshColor = toColor(color).multiplyScalar(255); }
+    const base_altitude = style.stroke.base_altitude;
+    for (let v = start * 3, j = start; j < end; v += 3, j += 1) {
+        if (feature.normals) {
+            up.fromArray(feature.normals, v).multiply(inverseScale);
+        }
+
+        const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
+
+        coord.copy(localCoord)
+            .applyMatrix4(context.collection.matrixWorld);
+        if (coord.crs == 'EPSG:4978') {
+            // altitude conversion from geocentered to elevation (from ground)
+            coord.as('EPSG:4326', coord);
+        }
+
+        // Calculate the new coordinates using the elevation shift (baseCoord)
+        baseCoord.copy(up)
+            .multiplyScalar(base_altitude - coord.z).add(localCoord)
+            // and update the geometry buffer (vertices).
+            .toArray(vertices, v);
+
+        if (colors) { toColor(style.stroke.color).multiplyScalar(255).toArray(colors, v); }
+
+        batchIds[j] = id;
+    }
+}
+
+function updateExtrudedLineVertices(featureMesh, vertices, colors, batchIds, id) {
+    const feature = featureMesh.feature;
+    const ptsIn = feature.vertices;
+    if (!ptsIn?.length) {
+        console.error('Feature has no vertices');
+        return;
+    }
+
+    // context setup
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+    style.setContext(context);
+
+    // geometry range
+    const geometry = context.getGeometry();
+    const start = geometry.indices[0].offset;
+    const count = geometry.indices[0].count;
+    const end = start + count;
+    const { base_altitude, extrusion_radius } = style.stroke;
 
     // For each consecutive pair of points, make a cylinder centered on the segment
     for (let i = start; i < end - 1; i++) {
@@ -689,6 +702,7 @@ function updateExtrudedLineVertices(featureMesh, options, vertices, colors, batc
         // Create ring vertices around both ends
         const r = extrusion_radius || 0;
         let vShift = 0;
+        const meshColor = toColor(style.stroke.color).multiplyScalar(255);
         for (let k = 0; k < SEGMENTS; k++) {
             const theta = (k / SEGMENTS) * Math.PI * 2;
             const normal = new THREE.Vector3()
@@ -940,15 +954,15 @@ export default {
                     switch (feature.type) {
                         case FEATURE_TYPES.LINE: {
                             if (newExtrusionHeight !== null) {
-                                updateExtrudedLineVertices(featureMesh, options, posAttr?.array, colors);
+                                updateExtrudedLineVertices(featureMesh, posAttr?.array, colors);
                             } else {
-                                console.warn('Updating unextruded line style not yet implemented');
+                                updateLineVertices(featureMesh, posAttr?.array, colors);
                             }
                             break;
                         }
                         case FEATURE_TYPES.POLYGON: {
                             if (newExtrusionHeight !== null) {
-                                updateExtrudedPolygonVertices(featureMesh, options, posAttr?.array, colors);
+                                updateExtrudedPolygonVertices(featureMesh, posAttr?.array, colors);
                             } else {
                                 console.warn('Updating unextruded polygon style not yet implemented');
                             }
