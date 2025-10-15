@@ -13,7 +13,7 @@ let style;
 
 const dim_ref = new THREE.Vector2();
 const dim = new THREE.Vector2();
-const normal = new THREE.Vector3();
+const up = new THREE.Vector3();
 const baseCoord = new THREE.Vector3();
 const topCoord = new THREE.Vector3();
 const inverseScale = new THREE.Vector3();
@@ -24,6 +24,7 @@ const maxValueUint8 = 2 ** 8 - 1;
 const maxValueUint16 = 2 ** 16 - 1;
 const maxValueUint32 = 2 ** 32 - 1;
 const crsWGS84 = 'EPSG:4326';
+const SEGMENTS = 8; // radial segments in a circle - used to model cylinders and spheres
 
 class FeatureMesh extends THREE.Group {
     #currentCrs;
@@ -188,7 +189,7 @@ function featureToPoint(feature, options) {
     let featureId = 0;
     const vertices = new Float32Array(ptsIn);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    normal.set(0, 0, 1).multiply(inverseScale);
+    up.set(0, 0, 1).multiply(inverseScale);
 
     const pointMaterialSize = [];
     context.setFeature(feature);
@@ -202,7 +203,7 @@ function featureToPoint(feature, options) {
 
         for (let v = start * 3, j = start; j < end; v += 3, j += 1) {
             if (feature.normals) {
-                normal.fromArray(feature.normals, v).multiply(inverseScale);
+                up.fromArray(feature.normals, v).multiply(inverseScale);
             }
 
             const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
@@ -217,7 +218,7 @@ function featureToPoint(feature, options) {
             }
 
             // Calculate the new coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(normal)
+            baseCoord.copy(up)
                 .multiplyScalar(base_altitude - coord.z).add(localCoord)
             // and update the geometry buffer (vertices).
                 .toArray(vertices, v);
@@ -266,7 +267,7 @@ function featureToLine(feature, options) {
 
     let i = 0;
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    normal.set(0, 0, 1).multiply(inverseScale);
+    up.set(0, 0, 1).multiply(inverseScale);
     // Multi line case
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
@@ -291,7 +292,7 @@ function featureToLine(feature, options) {
                 }
             }
             if (feature.normals) {
-                normal.fromArray(feature.normals, v).multiply(inverseScale);
+                up.fromArray(feature.normals, v).multiply(inverseScale);
             }
 
             const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
@@ -306,7 +307,7 @@ function featureToLine(feature, options) {
             }
 
             // Calculate the new coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(normal)
+            baseCoord.copy(up)
                 .multiplyScalar(base_altitude - coord.z).add(localCoord)
             // and update the geometry buffer (vertices).
                 .toArray(vertices, v);
@@ -333,6 +334,60 @@ function featureToLine(feature, options) {
     return new THREE.LineSegments(geom, options.lineMaterial);
 }
 
+function featureToExtrudedLine(feature, options) {
+    const vertSize = (feature.vertices.length - 3 * feature.geometries.length) * 2 * SEGMENTS;
+    const vertices = new Float32Array(vertSize);
+    const colors = new Uint8Array(vertSize);
+    const batchIdFn = options.batchId || ((p, id) => id);
+    const indices = [];
+    const batchIds = new Uint32Array(vertices.length / 3);
+
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+
+    let featureId = 0;
+    let vertexBaseIndex = 0;
+
+    // Build a cylinder (approximated by n segments) per line segment
+    for (const geometry of feature.geometries) {
+        context.setGeometry(geometry);
+        const id = batchIdFn(geometry.properties, featureId);
+
+        const start = geometry.indices[0].offset;
+        const count = geometry.indices[0].count;
+        const end = start + count;
+
+        updateExtrudedLineVertices({ feature }, { style: options.style }, vertices, colors, batchIds, id);
+
+        for (let j = start; j < end - 1; j++) {
+            // Indices for cylindrical side quads
+            // Connect them in an order such that normals face outwards
+            for (let k = 0; k < SEGMENTS - 1; k++) {
+                const v = vertexBaseIndex + k * 2;
+                indices.push(v, v + 2, v + 1);
+                indices.push(v + 1, v + 2, v + 3);
+            }
+            const v = vertexBaseIndex + 2 * SEGMENTS - 2;
+            indices.push(v, vertexBaseIndex, v + 1);
+            indices.push(v + 1, vertexBaseIndex, vertexBaseIndex + 1);
+
+            vertexBaseIndex += SEGMENTS * 2;
+        }
+
+        featureId++;
+    }
+
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geom.setAttribute('color', new THREE.Uint8BufferAttribute(colors, 3, true));
+    geom.setAttribute('batchId', new THREE.Uint32BufferAttribute(batchIds, 1));
+    geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
+
+    return new THREE.Mesh(geom, options.polygonMaterial);
+}
+
 function featureToPolygon(feature, options) {
     const vertices = new Float32Array(feature.vertices);
     const colors = new Uint8Array(feature.vertices.length);
@@ -343,7 +398,7 @@ function featureToPolygon(feature, options) {
     context.setFeature(feature);
 
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    normal.set(0, 0, 1).multiply(inverseScale);
+    up.set(0, 0, 1).multiply(inverseScale);
     let featureId = 0;
 
     for (const geometry of feature.geometries) {
@@ -364,7 +419,7 @@ function featureToPolygon(feature, options) {
 
         for (let i = startIn, b = start; i < endIn; i += 3, b += 1) {
             if (feature.normals) {
-                normal.fromArray(feature.normals, i).multiply(inverseScale);
+                up.fromArray(feature.normals, i).multiply(inverseScale);
             }
 
             const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, i);
@@ -379,7 +434,7 @@ function featureToPolygon(feature, options) {
             }
 
             // Calculate the new coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(normal)
+            baseCoord.copy(up)
                 .multiplyScalar(base_altitude - coord.z).add(localCoord)
             // and update the geometry buffer (vertices).
                 .toArray(vertices, i);
@@ -438,7 +493,7 @@ function featureToExtrudedPolygon(feature, options) {
 
     context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    normal.set(0, 0, 1).multiply(inverseScale);
+    up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
 
     for (const geometry of feature.geometries) {
@@ -520,8 +575,9 @@ function updateExtrudedPolygonVertices(featureMesh, options, vertices, colors, b
     // context setup
     context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    normal.set(0, 0, 1).multiply(inverseScale);
+    up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
+    style.setContext(context);
 
     // geometry range
     const geometry = context.getGeometry();
@@ -531,16 +587,18 @@ function updateExtrudedPolygonVertices(featureMesh, options, vertices, colors, b
     const count = end - start;
     const startIn = start * 3;
     const endIn = startIn + count * 3;
+    const { base_altitude, extrusion_height, color } = style.fill;
+    let meshColor;
+    if (colors) { meshColor = toColor(color).multiplyScalar(255); }
 
-    for (let i = startIn, t = startIn + numVertices; i < endIn; i += 3, t += 3) {
+    for (let i = startIn; i < endIn; i += 3) {
+        const t = numVertices + i;
+
         if (feature.normals) {
-            normal.fromArray(feature.normals, i).multiply(inverseScale);
+            up.fromArray(feature.normals, i).multiply(inverseScale);
         }
 
         const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, i);
-        style.setContext(context);
-        const { base_altitude, extrusion_height, color } = style.fill;
-
         const worldCoord = coord.copy(localCoord).applyMatrix4(context.collection.matrixWorld);
         if (worldCoord.crs === 'EPSG:4978') {
         // altitude conversion from geocentered to elevation (from ground)
@@ -548,13 +606,13 @@ function updateExtrudedPolygonVertices(featureMesh, options, vertices, colors, b
         }
 
         if (vertices) {
-            baseCoord.copy(normal)
+            baseCoord.copy(up)
                 .multiplyScalar(base_altitude - worldCoord.z).add(localCoord)
             // and update the geometry buffer (vertices).
                 .toArray(vertices, i);
 
             // populate top geometry buffers
-            topCoord.copy(normal)
+            topCoord.copy(up)
                 .multiplyScalar(extrusion_height).add(baseCoord)
                 .toArray(vertices, t);
         }
@@ -566,9 +624,92 @@ function updateExtrudedPolygonVertices(featureMesh, options, vertices, colors, b
 
         // coloring base and top mesh
         if (colors) {
-            const meshColor = toColor(color).multiplyScalar(255);
             meshColor.toArray(colors, t); // top
             meshColor.multiplyScalar(0.5).toArray(colors, i); // base is half-dark
+        }
+    }
+}
+
+function updateExtrudedLineVertices(featureMesh, options, vertices, colors, batchIds, id) {
+    const feature = featureMesh.feature;
+    const ptsIn = feature.vertices;
+    if (!ptsIn?.length) {
+        console.error('Feature has no vertices');
+        return;
+    }
+
+    // context setup
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+    style.setContext(context);
+
+    // geometry range
+    const geometry = context.getGeometry();
+    const start = geometry.indices[0].offset;
+    const count = geometry.indices[0].count;
+    const end = start + count;
+    const { base_altitude, extrusion_radius, color } = style.stroke;
+    let meshColor;
+    if (colors) { meshColor = toColor(color).multiplyScalar(255); }
+
+    // For each consecutive pair of points, make a cylinder centered on the segment
+    for (let i = start; i < end - 1; i++) {
+        const iVertIn = i * 3;
+
+        // Base and top points in layer-local space with altitude shift
+        if (feature.normals) {
+            up.fromArray(feature.normals, iVertIn).multiply(inverseScale);
+        } else {
+            up.set(0, 0, 1).multiply(inverseScale);
+        }
+
+        const p0Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn).clone();
+        coord.copy(p0Local).applyMatrix4(context.collection.matrixWorld);
+        if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
+        baseCoord.copy(up).multiplyScalar(base_altitude - coord.z).add(p0Local);
+
+        const p1Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn + 3).clone();
+        coord.copy(p1Local).applyMatrix4(context.collection.matrixWorld);
+        if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
+        topCoord.copy(up).multiplyScalar(base_altitude - coord.z).add(p1Local);
+
+        // Axis vector
+        const zAxis = new THREE.Vector3().subVectors(topCoord, baseCoord);
+        const axisLen = zAxis.length();
+        if (axisLen === 0) { continue; } // start and end are the same
+        zAxis.divideScalar(axisLen);
+
+        // Build a local frame: choose an arbitrary vector not parallel to axis
+        const tmp = Math.abs(zAxis.z) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, 1);
+        const xAxis = new THREE.Vector3().crossVectors(zAxis, tmp).normalize();
+        const yAxis = new THREE.Vector3().crossVectors(zAxis, xAxis).normalize();
+
+        // Create ring vertices around both ends
+        const r = extrusion_radius || 0;
+        let vShift = 0;
+        for (let k = 0; k < SEGMENTS; k++) {
+            const theta = (k / SEGMENTS) * Math.PI * 2;
+            const normal = new THREE.Vector3()
+                .copy(xAxis).multiplyScalar(Math.cos(theta))
+                .addScaledVector(yAxis, Math.sin(theta));
+            const p0 = new THREE.Vector3().copy(baseCoord).addScaledVector(normal, r);
+            const p1 = new THREE.Vector3().copy(topCoord).addScaledVector(normal, r);
+            const iVertOut = 2 * SEGMENTS * iVertIn + vShift;
+            if (vertices) {
+                p0.toArray(vertices, iVertOut);
+                p1.toArray(vertices, iVertOut + 3);
+            }
+            if (batchIds) {
+                batchIds[SEGMENTS * i + k] = id;
+                batchIds[SEGMENTS * i + k + 1] = id;
+            }
+            if (colors) {
+                meshColor.toArray(colors, iVertOut);
+                meshColor.toArray(colors, iVertOut + 3);
+            }
+            vShift += 6;
         }
     }
 }
@@ -647,7 +788,11 @@ function featureToMesh(feature, options) {
             }
             break;
         case FEATURE_TYPES.LINE:
-            mesh = featureToLine(feature, options);
+            if (style.stroke && Object.keys(style.stroke).includes('extrusion_radius')) {
+                mesh = featureToExtrudedLine(feature, options);
+            } else {
+                mesh = featureToLine(feature, options);
+            }
             break;
         case FEATURE_TYPES.POLYGON:
             if (style.isExtruded()) {
@@ -744,31 +889,74 @@ export default {
 
     updateFillStyle(featureMesh, options = {}) {
         const feature = featureMesh.feature;
-        const numVertices = feature.vertices?.length;
-        if (!numVertices) { return; }
+        let vertSize = feature.vertices?.length;
+        if (!vertSize) { return; }
 
         // only define attributes that need an update
-        let colors;
         let posAttr;
-        const newColor = options.style?.fill?.color;
-        if (featureMesh.oldColor && !featureMesh.oldColor.equals(newColor)) {
+        let newColor;
+        let newExtrusionHeight = null;
+        switch (feature.type) {
+            case FEATURE_TYPES.POINT: {
+                const pointStyle = options.style.point;
+                if (pointStyle?.model?.object) { break; } // instanced mesh
+                newColor = pointStyle?.color;
+                break;
+            }
+            case FEATURE_TYPES.LINE: {
+                const strokeStyle = options.style?.stroke;
+                newColor = strokeStyle?.color;
+                if (strokeStyle && 'extrusion_radius' in strokeStyle) {
+                    vertSize = SEGMENTS * 2 * (vertSize - 3 * feature.geometries.length);
+                    newExtrusionHeight = strokeStyle.extrusion_radius;
+                }
+                break;
+            }
+            case FEATURE_TYPES.POLYGON: {
+                const fillStyle = options.style?.fill;
+                newColor = fillStyle?.color;
+                if (fillStyle && 'extrusion_height' in fillStyle) {
+                    vertSize *= 2;
+                    newExtrusionHeight = fillStyle.extrusion_height;
+                }
+                break;
+            }
+            default:
+                console.error(`Trying to update style of unsupported feature type: ${feature.type}`);
+        }
+        let colors;
+        if (newColor && featureMesh.oldColor && !featureMesh.oldColor.equals(newColor)) {
             featureMesh.oldColor = newColor;
-            colors = new Uint8Array(numVertices * 2);
-        }
-        const newExtrusionHeight = options.style?.fill?.extrusion_height;
-        if (featureMesh.oldExtrusionHeight !== newExtrusionHeight) {
-            featureMesh.oldExtrusionHeight = newExtrusionHeight;
-            posAttr = featureMesh.geometry.getAttribute('position');
-        }
-
-        for (const geometry of feature.geometries) {
-            context.setGeometry(geometry);
-            updateExtrudedPolygonVertices(featureMesh, options, posAttr?.array, colors);
-        }
-
-        if (colors) {
+            colors = new Uint8Array(vertSize);
             featureMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         }
-        if (posAttr) { posAttr.needsUpdate = true; }
+        if (newExtrusionHeight !== null && featureMesh.oldExtrusionHeight !== newExtrusionHeight) {
+            featureMesh.oldExtrusionHeight = newExtrusionHeight;
+            posAttr = featureMesh.geometry.getAttribute('position');
+            for (const geometry of feature.geometries) {
+                context.setGeometry(geometry);
+                switch (feature.type) {
+                    case FEATURE_TYPES.LINE: {
+                        if (newExtrusionHeight !== null) {
+                            updateExtrudedLineVertices(featureMesh, options, posAttr?.array, colors);
+                        } else {
+                            console.warn('Updating unextruded line style not yet implemented');
+                        }
+                        break;
+                    }
+                    case FEATURE_TYPES.POLYGON: {
+                        if (newExtrusionHeight !== null) {
+                            updateExtrudedPolygonVertices(featureMesh, options, posAttr?.array, colors);
+                        } else {
+                            console.warn('Updating unextruded polygon style not yet implemented');
+                        }
+                        break;
+                    }
+                    default:
+                        console.warn('Updating point style not yet implemented');
+                }
+            }
+            posAttr.needsUpdate = true;
+        }
     },
 };
