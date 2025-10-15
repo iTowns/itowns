@@ -925,38 +925,42 @@ export default {
                 console.error(`Trying to update style of unsupported feature type: ${feature.type}`);
         }
         let colors;
-        if (newColor && featureMesh.oldColor && !featureMesh.oldColor.equals(newColor)) {
-            featureMesh.oldColor = newColor;
-            colors = new Uint8Array(vertSize);
-            featureMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-        }
-        if (newExtrusionHeight !== null && featureMesh.oldExtrusionHeight !== newExtrusionHeight) {
-            featureMesh.oldExtrusionHeight = newExtrusionHeight;
-            posAttr = featureMesh.geometry.getAttribute('position');
-            for (const geometry of feature.geometries) {
-                context.setGeometry(geometry);
-                switch (feature.type) {
-                    case FEATURE_TYPES.LINE: {
-                        if (newExtrusionHeight !== null) {
-                            updateExtrudedLineVertices(featureMesh, options, posAttr?.array, colors);
-                        } else {
-                            console.warn('Updating unextruded line style not yet implemented');
-                        }
-                        break;
-                    }
-                    case FEATURE_TYPES.POLYGON: {
-                        if (newExtrusionHeight !== null) {
-                            updateExtrudedPolygonVertices(featureMesh, options, posAttr?.array, colors);
-                        } else {
-                            console.warn('Updating unextruded polygon style not yet implemented');
-                        }
-                        break;
-                    }
-                    default:
-                        console.warn('Updating point style not yet implemented');
-                }
+        if (newColor) {
+            if (featureMesh.oldColor && !featureMesh.oldColor.equals(newColor)) {
+                colors = new Uint8Array(vertSize);
+                featureMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
             }
-            posAttr.needsUpdate = true;
+            featureMesh.oldColor = newColor;
+        }
+        if (newExtrusionHeight !== undefined) {
+            if (featureMesh.oldExtrusionHeight !== undefined && featureMesh.oldExtrusionHeight !== newExtrusionHeight) {
+                posAttr = featureMesh.geometry.getAttribute('position');
+                for (const geometry of feature.geometries) {
+                    context.setGeometry(geometry);
+                    switch (feature.type) {
+                        case FEATURE_TYPES.LINE: {
+                            if (newExtrusionHeight !== null) {
+                                updateExtrudedLineVertices(featureMesh, options, posAttr?.array, colors);
+                            } else {
+                                console.warn('Updating unextruded line style not yet implemented');
+                            }
+                            break;
+                        }
+                        case FEATURE_TYPES.POLYGON: {
+                            if (newExtrusionHeight !== null) {
+                                updateExtrudedPolygonVertices(featureMesh, options, posAttr?.array, colors);
+                            } else {
+                                console.warn('Updating unextruded polygon style not yet implemented');
+                            }
+                            break;
+                        }
+                        default:
+                            console.warn('Updating point style not yet implemented');
+                    }
+                }
+                posAttr.needsUpdate = true;
+            }
+            featureMesh.oldExtrusionHeight = newExtrusionHeight;
         }
     },
 };
