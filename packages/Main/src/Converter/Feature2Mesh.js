@@ -352,7 +352,6 @@ function featureToExtrudedLine(feature, options) {
     const vertices = new Float32Array(vertSize);
     const colors = new Uint8Array(vertSize);
     const batchIdFn = options.batchId || ((p, id) => id);
-    const indices = [];
     const batchIds = new Uint32Array(vertices.length / 3);
 
     context.setFeature(feature);
@@ -361,42 +360,48 @@ function featureToExtrudedLine(feature, options) {
     coord.setCrs(context.collection.crs);
 
     let featureId = 0;
-    let vertexBaseIndex = 0;
 
     // Build one cylinder per line segment
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
         const id = batchIdFn(geometry.properties, featureId);
+        updateExtrudedLineVertices({ feature }, vertices, colors, batchIds, id);
+        featureId++;
+    }
 
+    let totalSegments = 0;
+    for (const g of feature.geometries) {
+        totalSegments += Math.max(0, g.indices[0].count - 1);
+    }
+    const indexCount = totalSegments * SEGMENTS * 6;
+    const indices = getIntArrayFromSize(indexCount, vertices.length / 3);
+    let vertexBaseIndex = 0;
+    let iIndices = 0;
+    for (const geometry of feature.geometries) {
+        context.setGeometry(geometry);
         const start = geometry.indices[0].offset;
         const count = geometry.indices[0].count;
         const end = start + count;
-
-        updateExtrudedLineVertices({ feature }, vertices, colors, batchIds, id);
-
         for (let j = start; j < end - 1; j++) {
             // Indices for cylindrical side quads
             // Connect them in an order such that normals face outwards
             for (let k = 0; k < SEGMENTS - 1; k++) {
                 const v = vertexBaseIndex + k * 2;
-                indices.push(v, v + 2, v + 1);
-                indices.push(v + 1, v + 2, v + 3);
+                indices.set([v, v + 2, v + 1, v + 1, v + 2, v + 3], iIndices);
+                iIndices += 6;
             }
             const v = vertexBaseIndex + 2 * SEGMENTS - 2;
-            indices.push(v, vertexBaseIndex, v + 1);
-            indices.push(v + 1, vertexBaseIndex, vertexBaseIndex + 1);
-
+            indices.set([v, vertexBaseIndex, v + 1, v + 1, vertexBaseIndex, vertexBaseIndex + 1], iIndices);
+            iIndices += 6;
             vertexBaseIndex += SEGMENTS * 2;
         }
-
-        featureId++;
     }
 
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
     geom.setAttribute('color', new THREE.Uint8BufferAttribute(colors, 3, true));
     geom.setAttribute('batchId', new THREE.Uint32BufferAttribute(batchIds, 1));
-    geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
+    geom.setIndex(new THREE.BufferAttribute(indices, 1));
 
     return new THREE.Mesh(geom, options.polygonMaterial);
 }
@@ -745,7 +750,14 @@ function updateExtrudedLineVertices(featureMesh, vertices, colors, batchIds, id)
     const start = geometry.indices[0].offset;
     const count = geometry.indices[0].count;
     const end = start + count;
-    const { base_altitude, extrusion_radius } = style.stroke;
+    const { base_altitude, extrusion_radius: radius } = style.stroke;
+
+    // pre-allocated vectors
+    const xAxis = new THREE.Vector3();
+    const yAxis = new THREE.Vector3();
+    const zAxis = new THREE.Vector3();
+    const normal = new THREE.Vector3();
+    const vertex = new THREE.Vector3();
 
     // For each consecutive pair of points, make a cylinder centered on the segment
     for (let i = start; i < end - 1; i++) {
@@ -754,8 +766,6 @@ function updateExtrudedLineVertices(featureMesh, vertices, colors, batchIds, id)
         // Base and top points in layer-local space with altitude shift
         if (feature.normals) {
             up.fromArray(feature.normals, iVertIn).multiply(inverseScale);
-        } else {
-            up.set(0, 0, 1).multiply(inverseScale);
         }
 
         const p0Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn).clone();
@@ -769,31 +779,27 @@ function updateExtrudedLineVertices(featureMesh, vertices, colors, batchIds, id)
         topCoord.copy(up).multiplyScalar(base_altitude - coord.z).add(p1Local);
 
         // Axis vector
-        const zAxis = new THREE.Vector3().subVectors(topCoord, baseCoord);
+        zAxis.subVectors(topCoord, baseCoord);
         const axisLen = zAxis.length();
         if (axisLen === 0) { continue; } // start and end are the same
         zAxis.divideScalar(axisLen);
 
-        // Build a local frame: choose an arbitrary vector not parallel to axis
-        const tmp = Math.abs(zAxis.z) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, 1);
-        const xAxis = new THREE.Vector3().crossVectors(zAxis, tmp).normalize();
-        const yAxis = new THREE.Vector3().crossVectors(zAxis, xAxis).normalize();
+        // Build a local frame: choose an arbitrary vector not parallel to Z axis
+        if (Math.abs(zAxis.z) > 0.9) { xAxis.set(1, 0, 0); } else { xAxis.set(0, 0, 1); }
+        yAxis.crossVectors(zAxis, xAxis);
+        xAxis.crossVectors(yAxis, zAxis);
 
         // Create ring vertices around both ends
-        const r = extrusion_radius || 0;
         let vShift = 0;
         const meshColor = toColor(style.stroke.color).multiplyScalar(255);
         for (let k = 0; k < SEGMENTS; k++) {
             const iVertOut = 2 * SEGMENTS * iVertIn + vShift;
             if (vertices) {
                 const theta = (k / SEGMENTS) * Math.PI * 2;
-                const normal = new THREE.Vector3()
-                    .copy(xAxis).multiplyScalar(Math.cos(theta))
+                normal.copy(xAxis).multiplyScalar(Math.cos(theta))
                     .addScaledVector(yAxis, Math.sin(theta));
-                const p0 = new THREE.Vector3().copy(baseCoord).addScaledVector(normal, r);
-                const p1 = new THREE.Vector3().copy(topCoord).addScaledVector(normal, r);
-                p0.toArray(vertices, iVertOut);
-                p1.toArray(vertices, iVertOut + 3);
+                vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, iVertOut);
+                vertex.copy(topCoord).addScaledVector(normal, radius).toArray(vertices, iVertOut + 3);
             }
             if (batchIds) {
                 batchIds[SEGMENTS * i + k] = id;
