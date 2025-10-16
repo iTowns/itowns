@@ -81,35 +81,35 @@ class VpcLayer extends PointCloudLayer {
             sources.forEach((source, i) => {
                 const boundsConforming = source.boundsConforming;
                 const bbox = new THREE.Box3().setFromArray(boundsConforming);
-                const root = {
+                const mockRoot = {
                     bbox,
                     children: [],
                     waitingForSource: true,
                     source,
                 };
-                let secondaryRoot;
+
                 const promise =
-                    this.source.sources[i].whenReady.then((src) => {
-                        if (this.source.sources[i].isCopcSource) {
+                    source.whenReady.then((src) => {
+                        let root;
+                        if (src.isCopcSource) {
                             const { info } = src;
                             const { pageOffset, pageLength } = info.rootHierarchyPage;
-                            secondaryRoot = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, src, -1);
-                            secondaryRoot.bbox.min.fromArray(info.cube, 0);
-                            secondaryRoot.bbox.max.fromArray(info.cube, 3);
+                            root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, src, -1);
+                            root.bbox.min.fromArray(info.cube, 0);
+                            root.bbox.max.fromArray(info.cube, 3);
                         } else {
-                            secondaryRoot = new EntwinePointTileNode(0, 0, 0, 0, src, -1);
-                            secondaryRoot.bbox.min.fromArray(src.boundsConforming, 0);
-                            secondaryRoot.bbox.max.fromArray(src.boundsConforming, 3);
+                            root = new EntwinePointTileNode(0, 0, 0, 0, src, -1);
+                            root.bbox.min.fromArray(src.boundsConforming, 0);
+                            root.bbox.max.fromArray(src.boundsConforming, 3);
                         }
-                        this.root.children[i] = secondaryRoot;
-                        return secondaryRoot.loadOctree().then(resolve)
-                            .then(() => secondaryRoot);
+                        this.root.children[i] = root;
+                        return root.loadOctree().then(resolve)
+                            .then(() => root);
                     });
 
-                root.loadOctree = promise;
-
-                root.load = () => promise.then(() => this.root.children[i].load());
-                this.root.children.push(root);
+                mockRoot.loadOctree = promise;
+                mockRoot.load = () => mockRoot.loadOctree.then(root => root.load());
+                this.root.children.push(mockRoot);
             });
             this.ready = true;
         });
