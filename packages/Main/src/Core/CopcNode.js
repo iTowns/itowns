@@ -34,10 +34,8 @@ class CopcNode extends PointCloudNode {
      * @param {number} entryLength - Size of the node entry.
      * @param {CopcSource} source - Data source (COPC) of the node.
      * @param {number} [numPoints=0] - Number of points given by this entry.
-     * @param {number} [sId] - ID of the source this node belongs to.
-     * Mainly used for VPCSource (multi-source).
      */
-    constructor(depth, x, y, z, entryOffset, entryLength, source, numPoints = 0, sId = -1) {
+    constructor(depth, x, y, z, entryOffset, entryLength, source, numPoints = 0) {
         super(numPoints, source);
         this.isCopcNode = true;
 
@@ -48,8 +46,6 @@ class CopcNode extends PointCloudNode {
         this.x = x;
         this.y = y;
         this.z = z;
-
-        this.sId = sId;
 
         this.voxelKey = buildVoxelKey(depth, x, y, z);
     }
@@ -67,11 +63,7 @@ class CopcNode extends PointCloudNode {
      * @param {number} size
      */
     async _fetch(offset, size) {
-        let sourceUrl = this.source.url;
-        if (this.source.urls) {
-            sourceUrl = this.source.urls[this.sId];
-        }
-        return this.source.fetcher(sourceUrl, {
+        return this.source.fetcher(this.source.url, {
             ...this.source.networkOptions,
             headers: {
                 ...this.source.networkOptions.headers,
@@ -154,7 +146,6 @@ class CopcNode extends PointCloudNode {
             byteSize,
             this.source,
             pointCount,
-            this.sId,
         );
         this.add(child);
         stack.push(child);
@@ -170,18 +161,9 @@ class CopcNode extends PointCloudNode {
         }
 
         const buffer = await this._fetch(this.entryOffset, this.entryLength);
-        const sources = await this.source.whenReady;
-        let source = this.source;
-        if (sources.length > 1) {
-            if (sources[this.sId].isSource) {
-                source = await sources[this.sId].whenReady;
-            } else {
-                sources[this.sId].load();
-            }
-        }
         const geometry = await this.source.parser(buffer, {
             in: {
-                ...source,
+                ...this.source,
                 pointCount: this.numPoints,
             },
         });

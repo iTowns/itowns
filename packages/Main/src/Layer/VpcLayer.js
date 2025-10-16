@@ -84,8 +84,8 @@ class VpcLayer extends PointCloudLayer {
                 const root = {
                     bbox,
                     children: [],
-                    sId: i,
                     waitingForSource: true,
+                    source,
                 };
                 let secondaryRoot;
                 const promise =
@@ -93,23 +93,17 @@ class VpcLayer extends PointCloudLayer {
                         if (this.source.sources[i].isCopcSource) {
                             const { info } = src;
                             const { pageOffset, pageLength } = info.rootHierarchyPage;
-
-                            this.source.spacings[i] = info.spacing;
-
-                            secondaryRoot = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this.source, -1, i);
+                            secondaryRoot = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, src, -1);
                             secondaryRoot.bbox.min.fromArray(info.cube, 0);
                             secondaryRoot.bbox.max.fromArray(info.cube, 3);
                         } else {
-                            const spacing = (Math.abs(src.bounds[3] - src.bounds[0])
-                                + Math.abs(src.bounds[4] - src.bounds[1])) / (2 * src.span);
-                            this.source.spacings[i] = spacing;
-
-                            secondaryRoot = new EntwinePointTileNode(0, 0, 0, 0, this.source, -1, i);
+                            secondaryRoot = new EntwinePointTileNode(0, 0, 0, 0, src, -1);
                             secondaryRoot.bbox.min.fromArray(src.boundsConforming, 0);
                             secondaryRoot.bbox.max.fromArray(src.boundsConforming, 3);
                         }
                         this.root.children[i] = secondaryRoot;
-                        return secondaryRoot.loadOctree().then(resolve);
+                        return secondaryRoot.loadOctree().then(resolve)
+                            .then(() => secondaryRoot);
                     });
 
                 root.loadOctree = promise;
@@ -138,18 +132,13 @@ class VpcLayer extends PointCloudLayer {
         }
 
         if (elt.waitingForSource) {
-            layer.source.instanciate(elt.sId);
+            layer.source.instanciate(elt.source);
             elt.loadOctree
-                .then(() => this.loadData(this.root.children[elt.sId], context, layer, bbox));
+                .then(eltLoaded => this.loadData(eltLoaded, context, layer, bbox));
         } else {
             return this.loadData(elt, context, layer, bbox);
         }
     }
-
-    /*
-    postUpdate() {
-    }
-    */
 }
 
 export default VpcLayer;

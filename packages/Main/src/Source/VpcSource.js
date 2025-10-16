@@ -3,6 +3,10 @@ import LASParser from 'Parser/LASParser';
 import Fetcher from 'Provider/Fetcher';
 import Source from 'Source/Source';
 import { CopcSource, EntwinePointTileSource } from 'Main';
+import { LRUCache } from 'lru-cache';
+
+const cachedSrc = new LRUCache({ max: 500 });
+
 
 /**
  * An object defining the source of Entwine Point Tile data. It fetches and
@@ -16,7 +20,6 @@ import { CopcSource, EntwinePointTileSource } from 'Main';
  * this, as it is used internally for optimisation.
  * @property {string} url - The URL of the directory containing the whole
  * Entwine Point Tile structure.
- * @property {number[]} spacings @private Array containing all spacing values.
  */
 class VpcSource extends Source {
     /**
@@ -36,10 +39,9 @@ class VpcSource extends Source {
 
         this.colorDepth = config.colorDepth;
 
-        this.spacings = [];
+        this.spacing = Infinity;
 
-        const urlVpc = this.url;
-        this.whenReady = Fetcher.json(urlVpc, this.networkOptions)
+        this.whenReady = Fetcher.json(this.url, this.networkOptions)
             .then((metadata) => {
                 this.urls = metadata.features.map(f => f.assets.data.href);
 
@@ -59,14 +61,12 @@ class VpcSource extends Source {
                 this.maxElevation = this.boundsConforming[5];
 
                 const projsWkt2 = [...new Set(metadata.features.map(f => f.properties['proj:wkt2']))];
-
                 if (projsWkt2.length !== 1) {
                     console.warn('Only 1 crs is currently supported for 1 vpc. The extra crs will not be considered');
                 }
 
                 proj4.defs('unknown', projsWkt2[0]);
                 let projCS;
-
                 if (proj4.defs('unknown').type === 'COMPD_CS') {
                     console.warn('CopcSource: compound coordinate system is not yet supported.');
                     projCS = proj4.defs('unknown').PROJCS;
@@ -96,6 +96,7 @@ class VpcSource extends Source {
                         url,
                         boundsConforming: boundsConformings[i],
                         whenReady: p,
+                        sId: i,
                     };
                     this.sources.push(mockSource);
                 });
@@ -104,22 +105,25 @@ class VpcSource extends Source {
             });
     }
 
-    get spacing() {
-        return this.spacings;
-    }
-
-    instanciate(index) {
-        const url = this.urls[index];
-        let source;
-        if (url.includes('.copc')) {
-            source = new CopcSource({ url });
-        } else if (url.includes('.json')) {
-            source = new EntwinePointTileSource({ url });
-        } else {
-            console.warn('Error: Stack format not supported');
-            this.handlingError('Stack format not supported');
+    instanciate(source) {
+        let newSource;
+        const url = source.url;
+        let promise = cachedSrc.get(url);
+        if (!promise) {
+            if (url.includes('.copc')) {
+                newSource = new CopcSource({ url });
+            } else if (url.includes('.json')) {
+                newSource = new EntwinePointTileSource({ url });
+            } else {
+                console.warn('Error: Stack format not supported');
+                this.handlingError('Stack format not supported');
+            }
+            promise = newSource.whenReady;
+            cachedSrc.set(url, promise);
         }
-        this.promises[index].resolve(source.whenReady);
+        const srcWhenReady = promise;
+
+        this.promises[source.sId].resolve(srcWhenReady);
     }
 }
 
