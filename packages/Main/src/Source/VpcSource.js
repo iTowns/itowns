@@ -82,7 +82,7 @@ class VpcSource extends Source {
                 this.sources = [];
                 this.promises = [];
                 this.urls.forEach((url, i) => {
-                    const p = new Promise((re, rj) => {
+                    const promise = new Promise((re, rj) => {
                         this.promises.push({ resolve: re, reject: rj });
                     }).then((res) => {
                         this.sources[i] = res;
@@ -95,7 +95,7 @@ class VpcSource extends Source {
                     const mockSource = {
                         url,
                         boundsConforming: boundsConformings[i],
-                        whenReady: p,
+                        whenReady: promise,
                         sId: i,
                     };
                     this.sources.push(mockSource);
@@ -115,8 +115,9 @@ class VpcSource extends Source {
             } else if (url.includes('.json')) {
                 newSource = new EntwinePointTileSource({ url });
             } else {
-                console.warn('Error: Stack format not supported');
-                this.handlingError('Stack format not supported');
+                const msg = 'Error: Stack format not supported';
+                console.warn(msg);
+                this.handlingError(msg);
             }
             promise = newSource.whenReady;
             cachedSrc.set(url, promise);
