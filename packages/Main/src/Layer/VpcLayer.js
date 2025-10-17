@@ -24,6 +24,26 @@ function markForDeletion(elt) {
     }
 }
 
+function _intanciateNode(source) {
+    let root;
+    if (source.isCopcSource) {
+        const { info } = source;
+        const { pageOffset, pageLength } = info.rootHierarchyPage;
+        root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, source, -1);
+        root.bbox.min.fromArray(info.cube, 0);
+        root.bbox.max.fromArray(info.cube, 3);
+    } else if (source.isEntwinePointTileSource) {
+        root = new EntwinePointTileNode(0, 0, 0, 0, source, -1);
+        root.bbox.min.fromArray(source.boundsConforming, 0);
+        root.bbox.max.fromArray(source.boundsConforming, 3);
+    } else {
+        const msg = 'Error: Stack format not supported';
+        console.warn(msg);
+        PointCloudLayer.handlingError(msg);
+    }
+    return root;
+}
+
 /**
  * A layer for [Virtual Point Clouds](https://github.com/PDAL/wrench/blob/main/vpc-spec.md) (VPC) datasets.
  * See {@link PointCloudLayer} class for documentation on base properties.
@@ -88,27 +108,18 @@ class VpcLayer extends PointCloudLayer {
                     source,
                 };
 
+                // We need to wait for the source to be instanciate to be able
+                // to instanciate a node and load the Octree associated.
                 const promise =
                     source.whenReady.then((src) => {
-                        let root;
-                        if (src.isCopcSource) {
-                            const { info } = src;
-                            const { pageOffset, pageLength } = info.rootHierarchyPage;
-                            root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, src, -1);
-                            root.bbox.min.fromArray(info.cube, 0);
-                            root.bbox.max.fromArray(info.cube, 3);
-                        } else {
-                            root = new EntwinePointTileNode(0, 0, 0, 0, src, -1);
-                            root.bbox.min.fromArray(src.boundsConforming, 0);
-                            root.bbox.max.fromArray(src.boundsConforming, 3);
-                        }
+                        const root = _intanciateNode(src);
                         this.root.children[i] = root;
                         return root.loadOctree().then(resolve)
                             .then(() => root);
                     });
 
                 mockRoot.loadOctree = promise;
-                mockRoot.load = () => mockRoot.loadOctree.then(root => root.load());
+                mockRoot.load = () => promise.then(root => root.load());
                 this.root.children.push(mockRoot);
             });
             this.ready = true;

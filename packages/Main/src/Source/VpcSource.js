@@ -7,7 +7,6 @@ import { LRUCache } from 'lru-cache';
 
 const cachedSrc = new LRUCache({ max: 500 });
 
-
 /**
  * An object defining the source of Entwine Point Tile data. It fetches and
  * parses the main configuration file of Entwine Point Tile format,
@@ -20,6 +19,9 @@ const cachedSrc = new LRUCache({ max: 500 });
  * this, as it is used internally for optimisation.
  * @property {string} url - The URL of the directory containing the whole
  * Entwine Point Tile structure.
+ * @property {Object[]|PointCloudSource[]} sources - Array of all the source described in the VPC.
+ * initialized with mockSource that will be replace by COPC or EPT Source as soon as any data need
+ * to be loaded.
  */
 class VpcSource extends Source {
     /**
@@ -33,6 +35,7 @@ class VpcSource extends Source {
         super(config);
 
         this.isVpcSource = true;
+        this.sources = [];
 
         this.parser = LASParser.parseChunk;
         this.fetcher = Fetcher.arrayBuffer;
@@ -43,8 +46,6 @@ class VpcSource extends Source {
 
         this.whenReady = Fetcher.json(this.url, this.networkOptions)
             .then((metadata) => {
-                this.urls = metadata.features.map(f => f.assets.data.href);
-
                 this.metadata = metadata;
                 const boundsConformings = metadata.features.map(f => f.properties['proj:bbox']);
 
@@ -60,11 +61,11 @@ class VpcSource extends Source {
                 this.minElevation = this.boundsConforming[2];
                 this.maxElevation = this.boundsConforming[5];
 
+                // Crs
                 const projsWkt2 = [...new Set(metadata.features.map(f => f.properties['proj:wkt2']))];
                 if (projsWkt2.length !== 1) {
                     console.warn('Only 1 crs is currently supported for 1 vpc. The extra crs will not be considered');
                 }
-
                 proj4.defs('unknown', projsWkt2[0]);
                 let projCS;
                 if (proj4.defs('unknown').type === 'COMPD_CS') {
@@ -73,17 +74,18 @@ class VpcSource extends Source {
                 } else {
                     projCS = proj4.defs('unknown');
                 }
-
                 this.crs = projCS.title || projCS.name || 'EPSG:4326';
                 if (!(this.crs in proj4.defs)) {
                     proj4.defs(this.crs, projCS);
                 }
 
-                this.sources = [];
-                this.promises = [];
+                // Creation of 1 mockSource for each item in the stack (that will be replace when instanciate)
+                this._promises = [];
+                this.urls = metadata.features.map(f => f.assets.data.href);
                 this.urls.forEach((url, i) => {
-                    const promise = new Promise((re, rj) => {
-                        this.promises.push({ resolve: re, reject: rj });
+                    const whenReady = new Promise((re, rj) => {
+                        // waiting for this.instanciate(source);
+                        this._promises.push({ resolve: re, reject: rj });
                     }).then((res) => {
                         this.sources[i] = res;
                         return res;
@@ -95,7 +97,7 @@ class VpcSource extends Source {
                     const mockSource = {
                         url,
                         boundsConforming: boundsConformings[i],
-                        whenReady: promise,
+                        whenReady,
                         sId: i,
                     };
                     this.sources.push(mockSource);
@@ -108,8 +110,8 @@ class VpcSource extends Source {
     instanciate(source) {
         let newSource;
         const url = source.url;
-        let promise = cachedSrc.get(url);
-        if (!promise) {
+        let srcWhenReady = cachedSrc.get(url);
+        if (!srcWhenReady) {
             if (url.includes('.copc')) {
                 newSource = new CopcSource({ url });
             } else if (url.includes('.json')) {
@@ -119,12 +121,10 @@ class VpcSource extends Source {
                 console.warn(msg);
                 this.handlingError(msg);
             }
-            promise = newSource.whenReady;
-            cachedSrc.set(url, promise);
+            srcWhenReady = newSource.whenReady;
+            cachedSrc.set(url, srcWhenReady);
         }
-        const srcWhenReady = promise;
-
-        this.promises[source.sId].resolve(srcWhenReady);
+        this._promises[source.sId].resolve(srcWhenReady);
     }
 }
 
