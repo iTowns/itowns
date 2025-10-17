@@ -7,7 +7,6 @@ import GTXParser from 'Parser/GTXParser';
 import ISGParser from 'Parser/ISGParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
-// import Cache from 'Core/Scheduler/Cache';
 import { LRUCache } from 'lru-cache';
 
 /** @private */
@@ -148,7 +147,6 @@ class Source {
     loadData(extent, out) {
         const cache = this._featuresCaches[out.crs];
         const key = this.getDataKey(extent);
-        // console.log('Source.loadData', key);
         // try to get parsed data from cache
         let features = cache.get(key);
         if (!features) {
