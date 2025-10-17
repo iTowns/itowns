@@ -1,3 +1,4 @@
+import { Coordinates } from '@itowns/geographic';
 import assert from 'assert';
 import Potree2BinParser from 'Parser/Potree2BinParser';
 import * as THREE from 'three';
@@ -34,9 +35,15 @@ describe('Potree2BinParser', function () {
                         }],
                         vectors: [],
                     },
+                    crs: 'EPSG:4978',
                 },
-                bbox: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)),
+                voxelOBB: {
+                    box3D: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)),
+                },
                 numPoints: nbPoints,
+                crs: 'EPSG:4978',
+                origin: new Coordinates('EPSG:4978', 0, 0, 0),
+                rotation: new THREE.Quaternion(),
             },
         };
 
@@ -130,9 +137,15 @@ describe('Potree2BinParser', function () {
                         }],
                         vectors: [],
                     },
+                    crs: 'EPSG:4978',
                 },
-                bbox: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)),
+                voxelOBB: {
+                    box3D: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)),
+                },
                 numPoints,
+                crs: 'EPSG:4978',
+                origin: new Coordinates('EPSG:4978', 0, 0, 0),
+                rotation: new THREE.Quaternion(),
             },
         };
 

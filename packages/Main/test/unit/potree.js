@@ -87,6 +87,7 @@ describe('Potree', function () {
         describe('potree Layer', function () {
             it('no crs -> should fail', function () {
                 try {
+                    // eslint-disable-next-line no-unused-vars
                     const source = new PotreeSource({
                         file: fileName,
                         url: baseurl,
@@ -160,6 +161,7 @@ describe('Potree', function () {
 
             it('load child node', function (done) {
                 const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
+                root.crs = 'EPSG:4978';
                 root.loadOctree()
                     .then(() => root.children[0].load()
                         .then(() => {

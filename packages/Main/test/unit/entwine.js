@@ -120,7 +120,7 @@ describe('Entwine Point Tile', function () {
             const coord = new Coordinates(view.referenceCrs).setFromVector3(layer.root.voxelOBB.box3D.getCenter(lookAt));
             view.controls.lookAtCoordinate({
                 coord,
-                range: 250,
+                range: -250,
             }, false)
                 .then(() => {
                     layer.update(context, layer, layer.root);

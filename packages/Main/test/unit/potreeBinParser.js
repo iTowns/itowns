@@ -1,7 +1,13 @@
 import assert from 'assert';
 import PotreeBinParser from 'Parser/PotreeBinParser';
+import { Coordinates } from '@itowns/geographic';
+import * as THREE from 'three';
 
 describe('PotreeBinParser', function () {
+    const bBox = new THREE.Box3();
+    bBox.min.set(0, 0, 0);
+    bBox.max.set(10, 10, 10);
+
     it('should correctly parse position buffer', function (done) {
         const buffer = new ArrayBuffer(12 * 4);
         const dv = new DataView(buffer);
@@ -11,9 +17,16 @@ describe('PotreeBinParser', function () {
 
         const options = {
             in: {
-                pointAttributes: ['POSITION_CARTESIAN'],
+                source: {
+                    pointAttributes: ['POSITION_CARTESIAN'],
+                    scale: 1,
+                    crs: 'EPSG:4978',
+                },
+                crs: 'EPSG:4978',
+                origin: new Coordinates('EPSG:4978', 0, 0, 0),
+                rotation: new THREE.Quaternion(),
+                offsetBBox: bBox,
             },
-            out: { center: { x: 0, y: 0, z: 0 } },
         };
 
         PotreeBinParser.parse(buffer, options)
@@ -54,9 +67,16 @@ describe('PotreeBinParser', function () {
 
         const options = {
             in: {
-                pointAttributes: ['POSITION_CARTESIAN', 'INTENSITY', 'COLOR_PACKED', 'CLASSIFICATION'],
+                source: {
+                    pointAttributes: ['POSITION_CARTESIAN', 'INTENSITY', 'COLOR_PACKED', 'CLASSIFICATION'],
+                    scale: 1,
+                    crs: 'EPSG:4978',
+                },
+                crs: 'EPSG:4978',
+                origin: new Coordinates('EPSG:4978', 0, 0, 0),
+                rotation: new THREE.Quaternion(),
+                offsetBBox: bBox,
             },
-            out: { center: { x: 0, y: 0, z: 0 } },
         };
 
         PotreeBinParser.parse(buffer, options)

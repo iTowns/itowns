@@ -26,10 +26,10 @@ describe('Potree2', function () {
             file: 'metadata.json',
             url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
+            crs: viewer.referenceCrs,
         });
         potree2Layer = new Potree2Layer('lion', {
             source: potree2Source,
-            crs: viewer.referenceCrs,
         });
 
         context = {
@@ -43,6 +43,7 @@ describe('Potree2', function () {
 
     it('no crs -> should fail', function () {
         try {
+            // eslint-disable-next-line no-unused-vars
             const source = new Potree2Source({
                 file: 'metadata.json',
                 url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
@@ -109,6 +110,7 @@ describe('Potree2', function () {
 
         it('load child node', function (done) {
             const root = new Potree2Node(numPoints, childrenBitField, potree2Source);
+            root.crs = 'EPSG:4978';
             root.nodeType = 2;
             root.hierarchyByteOffset = 0n;
             root.hierarchyByteSize = 12650n;
