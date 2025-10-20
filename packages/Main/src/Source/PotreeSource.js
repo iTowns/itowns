@@ -78,6 +78,9 @@ class PotreeSource extends Source {
                 this.extension = cloud.pointAttributes === 'CIN' ? 'cin' : 'bin';
                 this.parse = this.extension === 'cin' ? PotreeCinParser.parse : PotreeBinParser.parse;
 
+                this.spacing = cloud.spacing;
+                this.hierarchyStepSize = cloud.hierarchyStepSize;
+
                 return cloud;
             });
     }

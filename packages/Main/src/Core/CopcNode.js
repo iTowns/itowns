@@ -14,7 +14,6 @@ function buildVoxelKey(depth, x, y, z) {
  * @property {number} entryOffset - Offset from the beginning of the file of
  * the node entry
  * @property {number} entryLength - Size of the node entry
- * @property {CopcLayer} layer - COPC layer the node belongs to.
  * @property {number} depth - Depth within the octree
  * @property {number} x - X position within the octree
  * @property {number} y - Y position within the octree
@@ -26,18 +25,18 @@ class CopcNode extends PointCloudNode {
     /**
      * Constructs a new instance of a COPC Octree node
      *
-     * @param {number} depth - Depth within the octree
-     * @param {number} x - X position within the octree
-     * @param {number} y - Y position within the octree
-     * @param {number} z - Z position with the octree
+     * @param {number} depth - Depth within the octree.
+     * @param {number} x - X position within the octree.
+     * @param {number} y - Y position within the octree.
+     * @param {number} z - Z position with the octree.
      * @param {number} entryOffset - Offset from the beginning of the file to
-     * the node entry
-     * @param {number} entryLength - Size of the node entry
-     * @param {CopcLayer} layer - Parent COPC layer
-     * @param {number} [numPoints=0] - Number of points given by this entry
+     * the node entry.
+     * @param {number} entryLength - Size of the node entry.
+     * @param {CopcSource} source - Data source (COPC) of the node.
+     * @param {number} [numPoints=0] - Number of points given by this entry.
      */
-    constructor(depth, x, y, z, entryOffset, entryLength, layer, numPoints = 0) {
-        super(numPoints, layer);
+    constructor(depth, x, y, z, entryOffset, entryLength, source, numPoints = 0) {
+        super(numPoints, source);
         this.isCopcNode = true;
 
         this.entryOffset = entryOffset;
@@ -64,10 +63,10 @@ class CopcNode extends PointCloudNode {
      * @param {number} size
      */
     async _fetch(offset, size) {
-        return this.layer.source.fetcher(this.layer.source.url, {
-            ...this.layer.source.networkOptions,
+        return this.source.fetcher(this.source.url, {
+            ...this.source.networkOptions,
             headers: {
-                ...this.layer.source.networkOptions.headers,
+                ...this.source.networkOptions.headers,
                 range: `bytes=${offset}-${offset + size - 1}`,
             },
         });
@@ -145,7 +144,7 @@ class CopcNode extends PointCloudNode {
             z,
             offset,
             byteSize,
-            this.layer,
+            this.source,
             pointCount,
         );
         this.add(child);
@@ -162,12 +161,11 @@ class CopcNode extends PointCloudNode {
         }
 
         const buffer = await this._fetch(this.entryOffset, this.entryLength);
-        const geometry = await this.layer.source.parser(buffer, {
+        const geometry = await this.source.parser(buffer, {
             in: {
-                ...this.layer.source,
+                ...this.source,
                 pointCount: this.numPoints,
             },
-            out: this.layer,
         });
 
         return geometry;
