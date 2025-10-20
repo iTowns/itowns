@@ -130,15 +130,28 @@
             }
 
             function loadAmiens() {
-                loadVPC('https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/amiens.vpc');
+                const options = {
+                    material: {mode: 2},
+                    opacity: 0.9,
+                }
+                loadVPC('https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/amiens.vpc', options);
+                // loadVPC('https://dl-lidar.ign.fr/ppk-lidar/amiens.vpc', options);
             }
 
             function loadRouen() {
-                loadVPC('https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/rouen.vpc');
+                const options = {
+                    material: {mode: 2},
+                    opacity: 0.9,
+                }
+                loadVPC('https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/rouen.vpc', options);
             }
 
             function loadOrleans() {
-                loadVPC('https://data.geopf.fr/chunk/telechargement/download/lidarhd_fxx_ept/vpc/index.vpc');
+                const options = {
+                    material: {mode: 2},
+                    opacity: 0.9,
+                }
+                loadVPC('https://data.geopf.fr/chunk/telechargement/download/lidarhd_fxx_ept/vpc/index.vpc', options);
             }
 
             const readUrlBtn = document.getElementById('readUrlBtn');
