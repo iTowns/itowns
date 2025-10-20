@@ -69,7 +69,7 @@ function unitFromProj4Unit(proj: ProjectionDefinition) {
         return UNIT.DEGREE;
     } else if (proj.units === 'm' || proj.units === 'meter') {
         return UNIT.METER;
-    } else if (proj.units === 'foot') {
+    } else if (proj.units === 'foot' || proj.units === 'ft') {
         return UNIT.FOOT;
     } else if (proj.units === undefined && proj.to_meter === undefined) {
         // See https://proj.org/en/9.4/usage/projections.html [17/10/2024]
