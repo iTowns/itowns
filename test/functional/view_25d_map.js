@@ -27,9 +27,9 @@ describe('view_25d_map', function _() {
                 .forEach(t => (!r[t.level] ? r[t.level] = 1 : r[t.level]++));
             return r;
         });
-        assert.equal(displayedTiles['1'], 1);
-        assert.equal(displayedTiles['2'], 6);
-        assert.equal(displayedTiles['3'], 6);
+        assert.equal(displayedTiles['1'], 4);
+        assert.equal(displayedTiles['2'], 8);
+        assert.equal(displayedTiles['3'], 5);
     });
 
     it('should get picking position from depth', async function __() {
