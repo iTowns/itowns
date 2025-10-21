@@ -147,6 +147,7 @@ class CopcNode extends PointCloudNode {
             this.source,
             pointCount,
         );
+        child.crs = this.crs;
         this.add(child);
         stack.push(child);
     }
@@ -169,6 +170,7 @@ class CopcNode extends PointCloudNode {
                 pointCount: this.numPoints,
             },
             out: {
+                crs: this.crs,
                 origin: this.origin,
                 rotation,
             },

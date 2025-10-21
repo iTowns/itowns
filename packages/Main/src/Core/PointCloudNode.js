@@ -97,7 +97,7 @@ class PointCloudNode extends THREE.EventDispatcher {
         if (value != undefined) { return value; }
         const centerBbox = new THREE.Vector3();
         this.voxelOBB.box3D.getCenter(centerBbox);
-        value =  new Coordinates(this.layer.crs).setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrixWorld));
+        value =  new Coordinates(this.crs).setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrixWorld));
         return value;
     }
 
@@ -105,8 +105,8 @@ class PointCloudNode extends THREE.EventDispatcher {
     get origin() {
         let value;
         if (value != undefined) { return value; }
-        const centerCrsIn = proj4(this.layer.crs, this.layer.source.crs).forward(this.center);
-        value =  new Coordinates(this.layer.crs).setFromArray(proj4(this.layer.source.crs, this.layer.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
+        const centerCrsIn = proj4(this.crs, this.source.crs).forward(this.center);
+        value =  new Coordinates(this.crs).setFromArray(proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
         return value;
     }
 
@@ -116,10 +116,10 @@ class PointCloudNode extends THREE.EventDispatcher {
      * @returns {THREE.Quaternion}
      */
     getLocalRotation() {
-        const isGeocentric = proj4.defs(this.layer.crs).projName === 'geocent';
+        const isGeocentric = proj4.defs(this.crs).projName === 'geocent';
         let rotation = new THREE.Quaternion();
         if (isGeocentric) {
-            rotation = OrientationUtils.quaternionFromCRSToCRS(this.layer.crs, this.layer.source.crs)(this.origin);
+            rotation = OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
         }
         return rotation;
     }
@@ -130,6 +130,7 @@ class PointCloudNode extends THREE.EventDispatcher {
             .then(file => this.source.parse(file, {
                 in: this.source,
                 out: {
+                    crs: this.crs,
                     origin: this.origin,
                     rotation,
                 },

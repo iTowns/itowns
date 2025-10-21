@@ -47,7 +47,8 @@ class CopcLayer extends PointCloudLayer {
 
             this.setElevationRange();
 
-            this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this, -1);
+            this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this.source, -1);
+            this.root.crs = this.crs;
 
             this.setRootBbox(cube.slice(0, 3), cube.slice(3, 6));
 
