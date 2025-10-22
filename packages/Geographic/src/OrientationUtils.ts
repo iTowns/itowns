@@ -488,7 +488,10 @@ export function quaternionFromCRSToCRS(
 ) {
     if (coordinates) { return quaternionFromCRSToCRS(crsIn, crsOut)(coordinates, target); }
     if (crsIn == crsOut) {
-        return (origin: Coordinates, target = new Quaternion()) => target.set(0, 0, 0, 1);
+        return (origin: Coordinates, target = new Quaternion()) => {
+            void origin;
+            return target.set(0, 0, 0, 1);
+        };
     }
 
     // get rotations from the local East/North/Up (ENU) frame to both CRS.
