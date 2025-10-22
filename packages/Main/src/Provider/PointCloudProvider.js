@@ -35,7 +35,6 @@ export default {
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            points.scale.copy(layer.scale);
             points.position.copy(geometry.userData.origin || node.bbox.min);
 
             const quaternion = geometry.userData.rotation.clone().invert();

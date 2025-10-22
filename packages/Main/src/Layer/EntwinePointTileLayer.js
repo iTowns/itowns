@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 
@@ -45,7 +44,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
         /**
          * @type {THREE.Vector3}
          */
-        this.scale = new THREE.Vector3(1, 1, 1);
 
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then(() => {

@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import CopcNode from 'Core/CopcNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 
@@ -41,9 +40,6 @@ class CopcLayer extends PointCloudLayer {
         this.whenReady = this.source.whenReady.then((/** @type {CopcSource} */ source) => {
             const { cube } = source.info;
             const { pageOffset, pageLength } = source.info.rootHierarchyPage;
-
-            this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
-            this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
 
             this.setElevationRange();
 
