@@ -2,6 +2,9 @@
     <head>
         <title>Cloud Optimized GeoTiff</title>
 
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
         <script type="importmap">
         {
             "imports": {
@@ -10,16 +13,11 @@
                 "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
                 "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
-                "itowns_widgets": "../dist/itowns_widgets.js",
-                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
-                "COGParser": "./jsm/plugins/COGParser.js",
-                "COGSource": "./jsm/plugins/COGSource.js",
-                "geotiff": "https://esm.sh/geotiff@2.1.3"
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js"
             }
         }
         </script>
-        <meta charset="UTF-8">
+
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
 
@@ -28,20 +26,23 @@
                 z-index: 2;
                 left: 10px;
             }
+            #menuDiv {
+                left: unset;
+                right: 10px;
+            }
         </style>
-
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
         <div id="description">
-            <div>Specify the URL of a COG to load:
+            <form>Specify the URL of a COG to load:
                 <input type="text" id="cog_url" />
                 <button id="readCOGURLButton">Load</button>
-            </div>
+            </form>
             <button id="loadRGBSampleButton">Load RGB sample</button>
-            <button id="load1BandSampleButton">Load 1 band sample</button>
         </div>
+
         <div id="viewerDiv"></div>
+
         <script type="module">
 
             import GuiTools from 'GuiTools';
@@ -49,17 +50,20 @@
             import * as THREE from 'three';
             import * as itowns from 'itowns';
             import * as debug from 'debug';
-            import * as itowns_widgets from 'itowns_widgets';
-            import COGParser from 'COGParser';
-            import COGSource from 'COGSource';
 
-            itowns.CRS.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+            itowns.CRS.defs(
+                'EPSG:2154',
+                '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000'
+                    + ' +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+            );
 
-            var viewerDiv = document.getElementById('viewerDiv');
-            var view;
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            let view;
 
             function readCOGURL() {
-                var url = document.getElementById('cog_url').value || new URLSearchParams(window.location.search).get('geotiff');
+                const url = document.getElementById('cog_url').value
+                    || new URLSearchParams(window.location.search).get('geotiff');
 
                 if (url) {
                     loadCOG(url);
@@ -68,24 +72,14 @@
             }
 
             function loadRGBSample() {
-                document.getElementById('cog_url').value = 'https://cdn.jsdelivr.net/gh/iTowns/iTowns2-sample-data/cog/nantes/nantes.tif';
+                document.getElementById('cog_url').value =
+                    'https://cdn.jsdelivr.net/gh/iTowns/iTowns2-sample-data/cog/nantes/nantes.tif';
                 readCOGURL();
-            }
-
-            function load1BandSample() {
-                document.getElementById('cog_url').value = 'https://oin-hotosm.s3.amazonaws.com/60fbca155a90f10006fd2fc3/0/60fbca155a90f10006fd2fc4.tif';
-                readCOGURL();
-            }
-
-            function removeAllChildNodes(parent) {
-                while (parent.firstChild) {
-                    parent.removeChild(parent.firstChild);
-                }
             }
 
             function loadCOG(url) {
                 // create a source from a Cloud Optimized GeoTiff
-                var cogSource = new COGSource({
+                const cogSource = new itowns.CogSource({
                     url: url,
                     crs: "EPSG:2154",
                     // Default resample method is 'nearest', 'bilinear' looks better when zoomed
@@ -95,30 +89,42 @@
                 cogSource.whenReady.then(() => {
                     if (view !== undefined) {
                         view.dispose(true);
-                        removeAllChildNodes(viewerDiv);
+                        while (viewerDiv.firstChild) {
+                            viewerDiv.removeChild(viewerDiv.firstChild);
+                        }
                     }
-                    view = new itowns.PlanarView(viewerDiv, cogSource.extent, {
-                        // Default maxSubdivisionLevel is 5, so with huge geotiff it's not enough to see details when zoomed
-                        maxSubdivisionLevel: 10,
-                        disableSkirt: true,
-                        placement: { tilt: 90 }
-                    });
+
+                    view = new itowns.PlanarView(
+                        viewerDiv,
+                        cogSource.extent,
+                        {
+                            maxSubdivisionLevel: 10,
+                            placement: { tilt: 90 }
+                        },
+                    );
+                    view.camera.camera3D.far = 1000000;
+
                     setupLoadingScreen(viewerDiv, view);
-                    var cogLayer = new itowns.ColorLayer('cog', {
+                    const debugMenu = new GuiTools('menuDiv', view);
+                    debug.createTileDebugUI(debugMenu.gui, view);
+
+                    const cogLayer = new itowns.ColorLayer('cog', {
                         source: cogSource,
                     });
-                    view.addLayer(cogLayer);
+
+                    view.addLayer(cogLayer)
+                        .then(debugMenu.addLayerGUI.bind(debugMenu));
                 });
             }
 
             readCOGURL();
+
             const loadRGBSampleButton = document.getElementById('loadRGBSampleButton');
-            const load1BandSampleButton = document.getElementById('load1BandSampleButton');
             const readCOGURLButton = document.getElementById('readCOGURLButton');
 
             loadRGBSampleButton.addEventListener('click', loadRGBSample);
-            load1BandSampleButton.addEventListener('click', load1BandSample);
             readCOGURLButton.addEventListener('click', readCOGURL);
+
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;

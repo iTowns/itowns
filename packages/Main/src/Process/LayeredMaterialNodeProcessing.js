@@ -97,7 +97,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
         // The two-step allows you to filter out unnecessary requests
         // Indeed in the second pass, their state (not visible or not displayed) can block them to fetch
-        if (nodeLayer.level >= layer.source.zoom.min) {
+        if (nodeLayer.level >= layer.source.zoom?.min) {
             context.view.notifyChange(node, false);
             return;
         }
