@@ -234,6 +234,9 @@ class Potree2Source extends Source {
                 this.extension = 'bin';
                 this.parser = Potree2BinParser.parse;
 
+                this.zmin = metadata.attributes.filter(attributes => attributes.name === 'position')[0].min[2];
+                this.zmax = metadata.attributes.filter(attributes => attributes.name === 'position')[0].max[2];
+
                 this.spacing = metadata.spacing;
 
                 return metadata;

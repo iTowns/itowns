@@ -83,11 +83,11 @@ class PotreeNode extends PointCloudNode {
         childNode.clampOBB.copy(childNode.voxelOBB);
         const childClampBBox = childNode.clampOBB.box3D;
 
-        if (childClampBBox.min.z < this.layer.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.layer.zmax);
+        if (childClampBBox.min.z < this.source.zmax) {
+            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
         }
-        if (childClampBBox.max.z > this.layer.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.layer.zmin);
+        if (childClampBBox.max.z > this.source.zmin) {
+            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
         }
 
         childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;

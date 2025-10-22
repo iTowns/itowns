@@ -58,9 +58,6 @@ class PotreeLayer extends PointCloudLayer {
 
             this.supportsProgressiveDisplay = (this.source.extension === 'cin');
 
-            this.zmin = cloud.tightBoundingBox.lz;
-            this.zmax = cloud.tightBoundingBox.uz;
-
             this.setElevationRange();
 
             this.root = new PotreeNode(0, 0, this.source);

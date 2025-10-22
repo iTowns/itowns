@@ -92,9 +92,6 @@ class Potree2Layer extends PointCloudLayer {
                 this.material.defines[normal.name] = 1;
             }
 
-            this.zmin = metadata.attributes.filter(attributes => attributes.name === 'position')[0].min[2];
-            this.zmax = metadata.attributes.filter(attributes => attributes.name === 'position')[0].max[2];
-
             this.setElevationRange();
 
             const root = new Potree2Node(0, 0, this.source);

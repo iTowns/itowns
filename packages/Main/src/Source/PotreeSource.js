@@ -91,6 +91,9 @@ class PotreeSource extends Source {
                 this.parse = this.extension === 'cin' ? PotreeCinParser.parse : PotreeBinParser.parse;
                 this.scale = cloud.scale;
 
+                this.zmin = cloud.tightBoundingBox.lz;
+                this.zmax = cloud.tightBoundingBox.uz;
+
                 this.spacing = cloud.spacing;
                 this.hierarchyStepSize = cloud.hierarchyStepSize;
 
