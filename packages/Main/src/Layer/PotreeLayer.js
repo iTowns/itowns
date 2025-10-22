@@ -58,6 +58,7 @@ class PotreeLayer extends PointCloudLayer {
             this.setElevationRange();
 
             this.root = new PotreeNode(0, 0, this.source);
+            this.root.crs = this.crs;
 
             this.setRootBbox([cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz],
                 [cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz]);

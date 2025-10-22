@@ -84,6 +84,7 @@ class Potree2Node extends PotreeNode {
                     numPoints: this.numPoints,
                 },
                 out: {
+                    crs: this.crs,
                     origin: this.origin,
                     rotation,
                 },
@@ -166,6 +167,7 @@ class Potree2Node extends PotreeNode {
                 }
 
                 const child = new Potree2Node(numPoints, childMask, this.source);
+                child.crs = this.crs;
 
                 current.add(child, childIndex);
                 stack.push(child);

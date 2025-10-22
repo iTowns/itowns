@@ -99,12 +99,15 @@ class PotreeNode extends PointCloudNode {
         if (!this.octreeIsLoaded) {
             this.loadOctree();
         }
+        // console.log(this.source);
+        // return super.load();
         // to refacto : can we use node instead of layer in options.out ?
         const rotation = this.getLocalRotation();
         return this.source.fetcher(this.url, this.source.networkOptions)
             .then(file => this.source.parse(file, {
                 in: this.source,
                 out: {
+                    crs: this.crs,
                     origin: this.origin,
                     rotation,
                     offset: this.offsetBBox,
@@ -135,6 +138,8 @@ class PotreeNode extends PointCloudNode {
                         const childrenBitField = view.getUint8(offset); offset += 1;
                         const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
                         const child = new PotreeNode(numPoints, childrenBitField, this.source);
+                        child.crs = this.crs;
+
                         snode.add(child, indexChild);
                         child.offsetBBox = computeChildBBox(child.parent.offsetBBox, indexChild);// For Potree1 Parser
                         if ((child.depth % this.source.hierarchyStepSize) == 0) {

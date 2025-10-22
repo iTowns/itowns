@@ -59,6 +59,7 @@ export default {
 
         const origin = options.out.origin;
         const quaternion = options.out.rotation;
+
         const data = await decode(Transfer(buffer), {
             in: {
                 crs: options.in.source.crs,
