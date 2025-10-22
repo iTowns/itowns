@@ -33,7 +33,6 @@ of the authors and should not be interpreted as representing official policies,
     either expressed or implied, of the FreeBSD Project.
  */
 
-import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import Potree2Node from 'Core/Potree2Node';
 
@@ -83,7 +82,6 @@ class Potree2Layer extends PointCloudLayer {
 
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then((metadata) => {
-            this.scale = new THREE.Vector3(1, 1, 1);
             this.metadata = metadata;
 
             const normal = Array.isArray(metadata.attributes) &&
