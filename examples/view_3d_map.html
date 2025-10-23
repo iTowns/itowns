@@ -140,30 +140,10 @@
                 position: 'top-right',
             });
 
-
-
-            // ---------- DISPLAY ATMOSPHERIC LIGHTING : ----------
-
-            const atmosphere = view.getLayerById('atmosphere');
-            atmosphere.setRealisticOn(!view.isDebugMode);
-
-
-
-            // ---------- DEBUG TOOLS : ----------
-
-            // Toggle atmospheric lighting on/off.
-            const cRL = debugMenu.addGUI('RealisticLighting', !view.isDebugMode, function (v) {
-                atmosphere.setRealisticOn(v);
-                view.notifyChange(atmosphere);
-            });
-
-            debug.createTileDebugUI(debugMenu.gui, view);
-
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
             window.debugMenu = debugMenu;
-            window.cRL = cRL;
             window.minimap = minimap;
 
             window.navigation = navigation;

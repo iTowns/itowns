@@ -27,7 +27,6 @@ describe('GlobeControls with globe example', function _() {
                 };
 
             // Hide GUI :
-            debugMenu.gui.remove(cRL);
             minimap.hide();
             navigation.hide();
             searchbar.hide();
