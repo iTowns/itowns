@@ -1,0 +1,168 @@
+<html>
+    <head>
+        <title>Itowns - Vpc simple loader</title>
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "itowns": "../dist/itowns.js",
+                    "debug": "../dist/debug.js",
+                    "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                    "itowns_widgets": "../dist/itowns_widgets.js",
+                    "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+                    "lil": "https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.esm.js"
+                }
+            }
+        </script>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <style type="text/css">
+            #description {
+                z-index: 2;
+                left: 10px;
+            }
+        </style>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script>
+    </head>
+    <body>
+        <div id="description">Specify the URL of a VPC file to load:
+            <input type="text" id="copc_url" />
+            <button id="readUrlBtn">Load</button>
+            <div>
+                <button id="loadAmiensBtn">Load Amiens VPC (copc stack)</button>
+                <button id="loadRouenBtn">Load Rouen VPC (copc stack)</button>
+                <button id="loadOrleansBtn">Load Orleans VPC (ept stack)</button>
+            <div id="share"></div>
+            </div>
+        </div>
+        <div id="viewerDiv"></div>
+
+        <script type="module">
+            import lil from 'lil';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+
+            var debugGui = new lil();
+            var viewerDiv = document.getElementById('viewerDiv');
+            viewerDiv.style.display = 'block';
+
+            function readUrl() {
+                const urlParams = new URL(location).searchParams;
+                const url = urlParams.get('vpc');
+
+                const options = {};
+                urlParams.keys().forEach(key => {
+                    if (key !== 'vpc') {
+                        options[key] = parseInt(urlParams.get(key), 10);
+                    }
+                });
+                loadVPC(url, options);
+            }
+
+            readUrl();
+
+            let view;
+            let controls;
+            function setView(crs) {
+                viewerDiv.innerHTML = '';
+                view = new itowns.View(crs, viewerDiv);
+                controls = new itowns.PlanarControls(view);
+                view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
+            }
+
+            var vpcLayer, vpcSource;
+
+            function onLayerReady() {
+                var lookAt = new THREE.Vector3();
+                var size = new THREE.Vector3();
+
+                const rootBbox = vpcLayer.root.children[0].bbox;
+                rootBbox.getSize(size);
+                rootBbox.getCenter(lookAt);
+
+                view.camera3D.far = 20.0 * size.length();
+
+                controls.groundLevel = rootBbox.min.z;
+                var position = rootBbox.min.clone().add(
+                    size.multiply({ x: 0, y: 0, z: size.x / size.z })
+                );
+
+                view.camera3D.position.copy(position);
+                view.camera3D.lookAt(lookAt);
+                view.camera3D.updateProjectionMatrix();
+
+                view.notifyChange(vpcLayer);
+
+                debug.PointCloudDebug.initTools(view, vpcLayer, debugGui);
+            }
+
+            function loadVPC(url, options = {}) {
+                if(!url) return;
+
+                if (vpcLayer) {
+                    vpcLayer.debugUI.destroy()
+                    view.removeLayer('VPC');
+                    view.notifyChange();
+                }
+
+                const vpcSource = new itowns.VpcSource({ url });
+
+                const config = {
+                    source: vpcSource,
+                    sseThreshold: 2,
+                    pointBudget: 3000000,
+                    ...options,
+                };
+
+                vpcSource.whenReady.then(() => {
+                    setView(vpcSource.crs);
+                    vpcLayer = new itowns.VpcLayer('VPC', config);
+                    view.addLayer(vpcLayer).then(onLayerReady);
+                })
+            }
+
+            function loadAmiens() {
+                const options = {
+                    material: {mode: 2},
+                    opacity: 0.9,
+                }
+                loadVPC('https://data.geopf.fr/chunk/telechargement/download/LiDARHD-NUALID/VPC/amiens.vpc', options);
+            }
+
+            function loadRouen() {
+                const options = {
+                    material: {mode: 2},
+                    opacity: 0.9,
+                }
+                loadVPC('https://data.geopf.fr/chunk/telechargement/download/LiDARHD-NUALID/VPC/rouen.vpc', options);
+            }
+
+            function loadOrleans() {
+                const options = {
+                    material: {mode: 2},
+                    opacity: 0.9,
+                }
+                loadVPC('https://data.geopf.fr/chunk/telechargement/download/lidarhd_fxx_ept/vpc/index.vpc', options);
+            }
+
+            const readUrlBtn = document.getElementById('readUrlBtn');
+            const loadAmiensBtn = document.getElementById('loadAmiensBtn');
+            const loadRouenBtn = document.getElementById('loadRouenBtn');
+            const loadOrleansBtn = document.getElementById('loadOrleansBtn');
+
+            readUrlBtn.addEventListener('click', readUrl);
+            loadAmiensBtn.addEventListener('click', loadAmiens);
+            loadRouenBtn.addEventListener('click', loadRouen);
+            loadOrleansBtn.addEventListener('click', loadOrleans);
+
+        </script>
+    </body>
+</html>
