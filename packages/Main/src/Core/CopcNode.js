@@ -147,6 +147,7 @@ class CopcNode extends PointCloudNode {
             this.source,
             pointCount,
         );
+        child.crs = this.crs;
         this.add(child);
         stack.push(child);
     }
@@ -162,10 +163,7 @@ class CopcNode extends PointCloudNode {
 
         const buffer = await this._fetch(this.entryOffset, this.entryLength);
         const geometry = await this.source.parser(buffer, {
-            in: {
-                ...this.source,
-                pointCount: this.numPoints,
-            },
+            in: this,
         });
 
         return geometry;

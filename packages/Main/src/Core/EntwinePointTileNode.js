@@ -104,6 +104,7 @@ class EntwinePointTileNode extends PointCloudNode {
 
         if (typeof numPoints == 'number') {
             const child = new EntwinePointTileNode(depth, x, y, z, this.source, numPoints);
+            child.crs = this.crs;
             this.add(child);
             stack.push(child);
         }

@@ -54,6 +54,7 @@ class Potree2Node extends PotreeNode {
         const first = byteOffset;
         const last = first + byteSize - 1n;
 
+        const regex = /^https:\/\/(raw|media)\.githubusercontent\.com/;
         // When we specify 'multipart/byteranges' on headers request it trigger a preflight request
         // Actually github doesn't support it https://github.com/orgs/community/discussions/24659
         // But if we omit header parameter, github seems to know it's a 'multipart/byteranges' request (thanks to 'Range' parameter)
@@ -61,7 +62,7 @@ class Potree2Node extends PotreeNode {
             ...this.source.networkOptions,
             headers: {
                 ...this.source.networkOptions.headers,
-                ...(this.url.startsWith('https://raw.githubusercontent.com') ? {} : { 'content-type': 'multipart/byteranges' }),
+                ...(regex.test(this.url) ? {} : { 'content-type': 'multipart/byteranges' }),
                 Range: `bytes=${first}-${last}`,
             },
         };
@@ -77,11 +78,7 @@ class Potree2Node extends PotreeNode {
 
         return this.source.fetcher(this.url, this.networkOptions(this.byteOffset, this.byteSize))
             .then(file => this.source.parser(file, {
-                in: {
-                    source: this.source,
-                    bbox: this.bbox,
-                    numPoints: this.numPoints,
-                },
+                in: this,
             }))
             .then((data) => {
                 this.loaded = true;
@@ -161,6 +158,7 @@ class Potree2Node extends PotreeNode {
                 }
 
                 const child = new Potree2Node(numPoints, childMask, this.source);
+                child.crs = this.crs;
 
                 current.add(child, childIndex);
                 stack.push(child);

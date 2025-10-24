@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import CopcNode from 'Core/CopcNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 
@@ -42,15 +41,12 @@ class CopcLayer extends PointCloudLayer {
             const { cube } = source.info;
             const { pageOffset, pageLength } = source.info.rootHierarchyPage;
 
+            this.setElevationRange();
+
             this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, this.source, -1);
-            this.root.bbox.min.fromArray(cube, 0);
-            this.root.bbox.max.fromArray(cube, 3);
+            this.root.crs = this.crs;
 
-            this.minElevationRange = this.minElevationRange ?? source.header.min[2];
-            this.maxElevationRange = this.maxElevationRange ?? source.header.max[2];
-
-            this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
-            this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
+            this.setRootBbox(cube.slice(0, 3), cube.slice(3, 6));
 
             return this.root.loadOctree().then(resolve);
         });
