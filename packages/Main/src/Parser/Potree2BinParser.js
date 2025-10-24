@@ -44,10 +44,11 @@ export default {
      * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
      */
     parse: async function parse(buffer, options) {
-        const metadata = options.in.source.metadata;
-        const pointAttributes = options.in.source.pointAttributes;
+        const source = options.in.source;
+        const metadata = source.metadata;
+        const pointAttributes = source.pointAttributes;
         const scale = metadata.scale;
-        const box = options.in.bbox;
+        const box = options.in.voxelOBB.box3D;
         const min = box.min;
         const size = box.max.clone().sub(box.min);
         const max = box.max;
@@ -57,17 +58,17 @@ export default {
         const potreeLoader = await loader();
         const decode = decoder(potreeLoader, metadata);
 
-        const origin = options.out.origin;
-        const quaternion = options.out.rotation;
+        const origin = options.in.origin;
+        const quaternion = options.in.rotation;
 
         const data = await decode(Transfer(buffer), {
             in: {
-                crs: options.in.source.crs,
-                projDefs: proj4.defs(options.in.source.crs),
+                crs: source.crs,
+                projDefs: proj4.defs(source.crs),
             },
             out: {
-                crs: options.out.crs,
-                projDefs: proj4.defs(options.out.crs),
+                crs: options.in.crs,
+                projDefs: proj4.defs(options.in.crs),
                 origin: origin.toArray(),
                 rotation: quaternion.toArray(),
             },

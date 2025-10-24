@@ -105,20 +105,21 @@ export default {
      */
     async parseChunk(data, options = {}) {
         const lasLoader = await loader();
-        const origin = options.out.origin;
-        const quaternion = options.out.rotation;
+        const source = options.in.source;
+        const origin = options.in.origin;
+        const quaternion = options.in.rotation;
         const parsedData = await lasLoader.parseChunk(Transfer(data), {
-            pointCount: options.in.pointCount,
-            header: options.in.header,
-            eb: options.in.eb,
-            colorDepth: options.in.colorDepth,
+            pointCount: options.in.numPoints,
+            header: source.header,
+            eb: source.eb,
+            colorDepth: source.colorDepth,
             in: {
-                crs: options.in.crs,
-                projDefs: proj4.defs(options.in.crs),
+                crs: source.crs,
+                projDefs: proj4.defs(source.crs),
             },
             out: {
-                crs: options.out.crs,
-                projDefs: proj4.defs(options.out.crs),
+                crs: options.in.crs,
+                projDefs: proj4.defs(options.in.crs),
                 origin: origin.toArray(),
                 rotation: quaternion.toArray(),
             },
@@ -157,17 +158,18 @@ export default {
         }
 
         const lasLoader = await loader();
-        const origin = options.out.origin;
-        const quaternion = options.out.rotation;
+        const source = options.in.source;
+        const origin = options.in.origin;
+        const quaternion = options.in.rotation;
         const parsedData = await lasLoader.parseFile(Transfer(data), {
-            colorDepth: options.in.colorDepth,
+            colorDepth: source.colorDepth,
             in: {
-                crs: options.in.crs,
-                projDefs: proj4.defs(options.in.crs),
+                crs: source.crs,
+                projDefs: proj4.defs(source.crs),
             },
             out: {
-                crs: options.out.crs,
-                projDefs: proj4.defs(options.out.crs),
+                crs: options.in.crs,
+                projDefs: proj4.defs(options.in.crs),
                 origin: origin.toArray(),
                 rotation: quaternion.toArray(),
             },

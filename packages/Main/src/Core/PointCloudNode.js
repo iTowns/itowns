@@ -37,6 +37,37 @@ class PointCloudNode extends THREE.EventDispatcher {
         throw new Error('In extended PointCloudNode, you have to implement the getter id!');
     }
 
+    // get the center of the node i.e. the center of the bounding box.
+    get center() {
+        if (this._center != undefined) { return this._center; }
+        const centerBbox = new THREE.Vector3();
+        this.voxelOBB.box3D.getCenter(centerBbox);
+        this._center =  new Coordinates(this.crs).setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrixWorld));
+        return this._center;
+    }
+
+    // the origin is the center of the bounding box projected on the z=O local plan, in the world referential.
+    get origin() {
+        if (this._origin != undefined) { return this._origin; }
+        const centerCrsIn = proj4(this.crs, this.source.crs).forward(this.center);
+        this._origin =  new Coordinates(this.crs).setFromArray(proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
+        return this._origin;
+    }
+
+    /**
+     * get the rotation between the local referentiel and the geocentrique one (if appliable).
+     *
+     * @returns {THREE.Quaternion}
+     */
+    get rotation() {
+        if (this._rotation != undefined) { return this._rotation; }
+        this._rotation = new THREE.Quaternion();
+        if (proj4.defs(this.crs).projName === 'geocent') {
+            this._rotation = OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
+        }
+        return this._rotation;
+    }
+
     add(node, indexChild) {
         this.children.push(node);
         node.parent = this;
@@ -91,49 +122,10 @@ class PointCloudNode extends THREE.EventDispatcher {
         childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
-    // get the center of the node i.e. the center of the bounding box.
-    get center() {
-        let value;
-        if (value != undefined) { return value; }
-        const centerBbox = new THREE.Vector3();
-        this.voxelOBB.box3D.getCenter(centerBbox);
-        value =  new Coordinates(this.crs).setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrixWorld));
-        return value;
-    }
-
-    // the origin is the center of the bounding box projected on the z=O local plan, in the world referential.
-    get origin() {
-        let value;
-        if (value != undefined) { return value; }
-        const centerCrsIn = proj4(this.crs, this.source.crs).forward(this.center);
-        value =  new Coordinates(this.crs).setFromArray(proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
-        return value;
-    }
-
-    /**
-     * get the rotation between the local referentiel and the geocentrique one (if appliable).
-     *
-     * @returns {THREE.Quaternion}
-     */
-    getLocalRotation() {
-        const isGeocentric = proj4.defs(this.crs).projName === 'geocent';
-        let rotation = new THREE.Quaternion();
-        if (isGeocentric) {
-            rotation = OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
-        }
-        return rotation;
-    }
-
     load() {
-        const rotation = this.getLocalRotation();
         return this.source.fetcher(this.url, this.source.networkOptions)
             .then(file => this.source.parse(file, {
-                in: this.source,
-                out: {
-                    crs: this.crs,
-                    origin: this.origin,
-                    rotation,
-                },
+                in: this,
             }));
     }
 

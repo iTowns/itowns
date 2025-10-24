@@ -106,23 +106,24 @@ export default {
 
         const view = new DataView(buffer);
         // Format: X1,Y1,Z1,R1,G1,B1,A1,[...],XN,YN,ZN,RN,GN,BN,AN
-
-        const scale = options.in.scale;
+        const source = options.in.source;
+        const scale = source.scale;
+        const pointAttributes = source.pointAttributes;
 
         // find a methode by recursion to get offset from the node id ?
-        const offset = options.out.offset.min.toArray();
+        const offset = options.in.offsetBBox.min.toArray();
 
-        const forward = (options.in.crs !== options.out.crs) ?
-            proj4(options.in.crs, options.out.crs).forward :
+        const forward = (source.crs !== options.in.crs) ?
+            proj4(source.crs, options.in.crs).forward :
             (x => x);
-        const applyQuaternion = (options.in.crs !== options.out.crs) ?
+        const applyQuaternion = (source.crs !== options.in.crs) ?
             _applyQuaternion : (x => x);
 
-        const origin = options.out.origin.toArray();
-        const quaternion = options.out.rotation.toArray();
+        const origin = options.in.origin.toArray();
+        const quaternion = options.in.rotation.toArray();
 
         let pointByteSize = 0;
-        for (const potreeName of options.in.pointAttributes) {
+        for (const potreeName of pointAttributes) {
             pointByteSize += POINT_ATTRIBUTES[potreeName].byteSize;
         }
         const numPoints = Math.floor(buffer.byteLength / pointByteSize);
@@ -131,7 +132,7 @@ export default {
         let elemOffset = 0;
         let attrOffset = 0;
 
-        for (const potreeName of options.in.pointAttributes) {
+        for (const potreeName of pointAttributes) {
             const attr = POINT_ATTRIBUTES[potreeName];
             const arrayLength = attr.numElements * numPoints;
             const array = new attr.arrayType(arrayLength);
@@ -168,8 +169,8 @@ export default {
             geometry.setAttribute(attr.attributeName, new THREE.BufferAttribute(array, attr.numElements, attr.normalized));
         }
 
-        geometry.userData.origin = options.out.origin;
-        geometry.userData.rotation = options.out.rotation;
+        geometry.userData.origin = options.in.origin;
+        geometry.userData.rotation = options.in.rotation;
 
         geometry.computeBoundingBox();
 

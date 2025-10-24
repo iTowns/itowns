@@ -237,7 +237,7 @@ class PointCloudLayer extends GeometryLayer {
         // get center of box at altitude Z=0 and project it in view crs;
         const origin = forward([(min[0] + max[0]) * 0.5, (min[1] + max[1]) * 0.5, 0]);
 
-        // getLocalRotation()
+        // get LocalRotation
         const isGeocentric = proj4.defs(this.crs).projName === 'geocent';
         let rotation = new THREE.Quaternion();
         if (isGeocentric) {

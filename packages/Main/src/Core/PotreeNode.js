@@ -99,19 +99,10 @@ class PotreeNode extends PointCloudNode {
         if (!this.octreeIsLoaded) {
             this.loadOctree();
         }
-        // console.log(this.source);
-        // return super.load();
         // to refacto : can we use node instead of layer in options.out ?
-        const rotation = this.getLocalRotation();
         return this.source.fetcher(this.url, this.source.networkOptions)
             .then(file => this.source.parse(file, {
-                in: this.source,
-                out: {
-                    crs: this.crs,
-                    origin: this.origin,
-                    rotation,
-                    offset: this.offsetBBox,
-                },
+                in: this,
             }));
     }
 
