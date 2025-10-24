@@ -109,6 +109,10 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
         return this._tms.get(tms);
     }
 
+    getZoomByProjection(crs) {
+        return this._tms.get(crs)[0].zoom;
+    }
+
     /**
      * Finds the common ancestor between this tile and another one. It goes
      * through parents on each side until one is found.
@@ -143,6 +147,12 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
      * @param renderer - The renderer used to render textures.
      */
     override onBeforeRender(renderer: THREE.WebGLRenderer) {
+        this.material.colorTiles.forEach((colorTile) => {
+            colorTile.load(this, renderer.view);
+        });
+
+        this.material.getElevationTile()?.load(this, renderer.view);
+
         if (this.material.layersNeedUpdate) {
             this.material.updateLayersUniforms(renderer);
         }
