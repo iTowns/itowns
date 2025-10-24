@@ -2,6 +2,12 @@ import * as THREE from 'three';
 import { Coordinates, CRS, Extent } from '@itowns/geographic';
 import { getInfoTms, getCountTiles } from './TileGrid';
 
+export interface TileLike {
+    zoom: number;
+    row: number;
+    col: number;
+}
+
 const _tmsCoord = new THREE.Vector2();
 const _dimensionTile = new THREE.Vector2();
 const r = { row: 0, col: 0, invDiff: 0 };

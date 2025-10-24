@@ -1,6 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 import assert from 'assert';
-import URLBuilder from 'Provider/URLBuilder';
+import * as URLBuilder from 'Provider/URLBuilder';
 import { Extent } from '@itowns/geographic';
 import Tile from 'Core/Tile/Tile';
 

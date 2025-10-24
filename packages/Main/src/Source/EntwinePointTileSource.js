@@ -31,6 +31,13 @@ class EntwinePointTileSource extends Source {
         this.isEntwinePointTileSource = true;
         this.colorDepth = config.colorDepth;
 
+        if (!config.url) {
+            throw new Error(`[${this.constructor.name}]: url is required`);
+        }
+
+        this.url = config.url;
+        this.networkOptions = config.networkOptions ?? {};
+
         // Necessary because we use the url without the ept.json part as a base
         this.url = this.url.replace('/ept.json', '');
 
