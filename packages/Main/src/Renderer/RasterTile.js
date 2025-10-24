@@ -75,6 +75,8 @@ export class RasterTile extends THREE.EventDispatcher {
         this.needsUpdate = false;
         this.state = new LayerUpdateState();
         this.lowestLevelError = Infinity;
+        this.history = [];
+
 
         this._handlerCBEvent = () => { this.needsUpdate = true; };
         layer.addEventListener('visible-property-changed', this._handlerCBEvent);
@@ -97,7 +99,10 @@ export class RasterTile extends THREE.EventDispatcher {
         if (this.state.canTryUpdate() && view) {
             this.state.newTry();
 
+
+
             const nextLevel = nextLevelToFetch(this);
+            this.history.push(`load - newTry for level ${nextLevel}`);
             const nextTiles = [];
 
             this.tiles.forEach((tile) => {
@@ -111,6 +116,7 @@ export class RasterTile extends THREE.EventDispatcher {
             });
 
             if (nextTiles.length == 0) {
+                this.history.push(`load - noMoreUpdatePossible no level ${nextLevel}`);
                 return this.state.noMoreUpdatePossible();
             }
 
@@ -120,8 +126,10 @@ export class RasterTile extends THREE.EventDispatcher {
                 this.setTextures(textures);
 
                 if (nextLevelToFetch(this) == this.level) {
+                    this.history.push(`load - noMoreUpdatePossible level loaded${nextLevel}`);
                     this.state.noMoreUpdatePossible();
                 } else {
+                    this.history.push(`load - success level loaded${nextLevel}`);
                     this.state.success();
                 }
 
@@ -147,6 +155,7 @@ export class RasterTile extends THREE.EventDispatcher {
 
             if (nextLevelToFetch(this) == this.level) {
                 this.state.noMoreUpdatePossible();
+                this.history.push('initFromParent - noMoreUpdatePossible');
             }
 
             if (__DEBUG__) {

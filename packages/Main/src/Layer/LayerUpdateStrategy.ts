@@ -113,11 +113,16 @@ export function chooseNextLevelToFetch(
     return nextLevelToFetch;
 }
 
-export const nextLevelToFetch = (t: RasterTile) =>
-    chooseNextLevelToFetch(
-        t.layer.updateStrategy.type,
+export const nextLevelToFetch = (t: RasterTile) => {
+    const zoom = {
+        min: Math.max(t.layer.zoom.min, t.layer.source.zoom.min),
+        max: Math.min(t.layer.zoom.max, t.layer.source.zoom.max),
+    };
+    return chooseNextLevelToFetch(
+        t.layer.updateStrategy,
         t.tiles[0].zoom,
         t.level,
         t.state.failureParams,
-        t.layer.zoom,
+        zoom,
     );
+};
