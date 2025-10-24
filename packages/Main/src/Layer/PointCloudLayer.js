@@ -2,72 +2,11 @@ import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
 import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
-import { OBBHelper } from '@itowns/debug';
 
 const point = new THREE.Vector3();
 const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
 bboxMesh.geometry.boundingBox = box3;
-
-
-/**
- * Generate the position array of the bbox corner form the bbox
- * Adapted from THREE.BoxHelper.js
- * https://github.com/mrdoob/three.js/blob/master/src/helpers/BoxHelper.js
- *
- * @param {THREE.box3} bbox - Box3 of the node
- * @returns {array}
- */
-function getCornerPosition(bbox) {
-    const array =  new Float32Array(8 * 3);
-
-    const min = bbox.min;
-    const max = bbox.max;
-
-    /*
-      5____4
-    1/___0/|
-    | 6__|_7
-    2/___3/
-
-    0: max.x, max.y, max.z
-    1: min.x, max.y, max.z
-    2: min.x, min.y, max.z
-    3: max.x, min.y, max.z
-    4: max.x, max.y, min.z
-    5: min.x, max.y, min.z
-    6: min.x, min.y, min.z
-    7: max.x, min.y, min.z
-    */
-    array[0] = max.x; array[1] = max.y; array[2] = max.z;
-    array[3] = min.x; array[4] = max.y; array[5] = max.z;
-    array[6] = min.x; array[7] = min.y; array[8] = max.z;
-    array[9] = max.x; array[10] = min.y; array[11] = max.z;
-    array[12] = max.x; array[13] = max.y; array[14] = min.z;
-    array[15] = min.x; array[16] = max.y; array[17] = min.z;
-    array[18] = min.x; array[19] = min.y; array[20] = min.z;
-    array[21] = max.x; array[22] = min.y; array[23] = min.z;
-    return array;
-}
-
-const red =  new THREE.Color(0xff0000);
-function initBoundingBox(elt, layer) {
-    // bbox in local ref -> cyan
-
-    // elt.obj.boxHelper = new THREE.Group();
-    const clampOBB = new OBBHelper(elt.clampOBB, elt.voxelKey, red);
-    elt.obj.boxHelper = clampOBB;
-    // elt.obj.boxHelper.add(clampOBB);
-    layer.bboxes.add(elt.obj.boxHelper);
-
-    // tightbbox in local ref -> blue
-    const tightboxHelper = new THREE.BoxHelper(undefined, 0x0000ff);
-    tightboxHelper.geometry.attributes.position.array = getCornerPosition(elt.obj.geometry.boundingBox);
-    tightboxHelper.applyMatrix4(elt.obj.matrixWorld);
-    elt.obj.tightboxHelper = tightboxHelper;
-    layer.bboxes.add(tightboxHelper);
-    tightboxHelper.updateMatrixWorld(true);
-}
 
 function computeSSEPerspective(context, pointSize, pointSpacing, distance) {
     if (distance <= 0) {
@@ -107,12 +46,6 @@ function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
 function markForDeletion(elt) {
     if (elt.obj) {
         elt.obj.visible = false;
-        if (__DEBUG__) {
-            if (elt.obj.boxHelper) {
-                elt.obj.boxHelper.visible = false;
-                elt.obj.tightboxHelper.visible = false;
-            }
-        }
     }
 
     if (!elt.notVisibleSince) {
@@ -354,19 +287,6 @@ class PointCloudLayer extends GeometryLayer {
         if (elt.numPoints !== 0) {
             if (elt.obj) {
                 elt.obj.visible = true;
-
-                if (__DEBUG__) {
-                    if (this.bboxes.visible) {
-                        if (!elt.obj.boxHelper) {
-                            initBoundingBox(elt, layer);
-                        }
-                        elt.obj.boxHelper.visible = true;
-                        elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                        elt.obj.boxHelper.material.color.g = elt.sse;
-
-                        elt.obj.tightboxHelper.visible = true;
-                    }
-                }
             } else if (!elt.promise) {
                 const distance = Math.max(0.001, distanceToCamera);
                 // Increase priority of nearest node
@@ -510,36 +430,7 @@ class PointCloudLayer extends GeometryLayer {
                 obj.material = null;
                 obj.geometry = null;
                 obj.userData.node.obj = null;
-
-                if (__DEBUG__) {
-                    if (obj.boxHelper) {
-                        obj.boxHelper.removeMe = true;
-                        if (Array.isArray(obj.boxHelper.material)) {
-                            for (const material of obj.boxHelper.material) {
-                                material.dispose();
-                            }
-                        } else {
-                            obj.boxHelper.material.dispose();
-                        }
-                        obj.boxHelper.geometry.dispose();
-                    }
-                    if (obj.tightboxHelper) {
-                        obj.tightboxHelper.removeMe = true;
-                        if (Array.isArray(obj.tightboxHelper.material)) {
-                            for (const material of obj.tightboxHelper.material) {
-                                material.dispose();
-                            }
-                        } else {
-                            obj.tightboxHelper.material.dispose();
-                        }
-                        obj.tightboxHelper.geometry.dispose();
-                    }
-                }
             }
-        }
-
-        if (__DEBUG__) {
-            this.bboxes.children = this.bboxes.children.filter(b => !b.removeMe);
         }
     }
 
