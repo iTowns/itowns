@@ -416,6 +416,7 @@ export function quaternionFromEnuToCRS(
         case 'Geocentric': return quaternionFromEnuToGeocent();
         case 'Lambert Tangential Conformal Conic Projection':
             return quaternionFromEnuToLCC(proj as LCCProjection);
+        case 'Universal Transverse Mercator System':
         case 'Fast_Transverse_Mercator': return quaternionFromEnuToTMerc(proj as TMercProjection);
         case 'longlat': return quaternionFromEnuToLongLat();
         default: return quaternionUnimplemented(proj);
@@ -453,6 +454,7 @@ export function quaternionFromCRSToEnu(
         case 'Geocentric': return quaternionFromGeocentToEnu();
         case 'Lambert Tangential Conformal Conic Projection':
             return quaternionFromLCCToEnu(proj as LCCProjection);
+        case 'Universal Transverse Mercator System':
         case 'Fast_Transverse_Mercator': return quaternionFromTMercToEnu(proj as TMercProjection);
         case 'longlat': return quaternionFromLongLatToEnu();
         default: return quaternionUnimplemented(proj);
