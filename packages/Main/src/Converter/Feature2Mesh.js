@@ -27,7 +27,7 @@ const crsWGS84 = 'EPSG:4326';
 
 // radial segments in a circle - used to model cylinders and spheres
 // Must be an even number for cylinder joints to look good
-const SEGMENTS = 6;
+const SEGMENTS = 8;
 
 class FeatureMesh extends THREE.Group {
     #currentCrs;
@@ -363,17 +363,6 @@ function featureToExtrudedLine(feature, options) {
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
 
-    let featureId = 0;
-
-    // Build one cylinder per line segment
-    let vertOffset = 0;
-    for (const geometry of feature.geometries) {
-        context.setGeometry(geometry);
-        const id = batchIdFn(geometry.properties, featureId);
-        vertOffset = updateExtrudedLineVertices({ feature }, vertices, vertOffset, colors, batchIds, id);
-        featureId++;
-    }
-
     let totalSegments = 0;
     let totalJoints = 0;
     for (const g of feature.geometries) {
@@ -382,36 +371,22 @@ function featureToExtrudedLine(feature, options) {
     }
     const totalQuads = totalSegments * SEGMENTS + totalJoints * (SEGMENTS / 2 + 1);
     const indices = getIntArrayFromSize(6 * totalQuads, vertices.length / 3);
-    let vertexBaseIndex = 0;
-    let iIndices = 0;
-    featureId = 0;
+    const buffers = {
+        vertices,
+        colors,
+        batchIds,
+        vertPtr: 0,
+
+        indices,
+        indexPtr: 0,
+    };
+    let featureId = 0;
+
+    // Build one cylinder per line segment
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
-        const start = geometry.indices[0].offset;
-        const count = geometry.indices[0].count;
-        const end = start + count;
-        for (let j = start; j < end - 1; j++) {
-            // Indices for cylindrical side quads
-            // Connect them in an order such that normals face outwards
-            for (let k = 0; k < SEGMENTS - 1; k++) {
-                const v = vertexBaseIndex + k * 2;
-                indices.set([v, v + 2, v + 1, v + 1, v + 2, v + 3], iIndices);
-                iIndices += 6;
-            }
-            const v = vertexBaseIndex + 2 * SEGMENTS - 2;
-            indices.set([v, vertexBaseIndex, v + 1, v + 1, vertexBaseIndex, vertexBaseIndex + 1], iIndices);
-            iIndices += 6;
-            vertexBaseIndex += SEGMENTS * 2;
-
-            if (j === start) { continue; }
-            for (let k = 0; k < SEGMENTS / 2; k++) {
-                const v = vertexBaseIndex + k * 2;
-                indices.set([v, v + 2, v + 1, v + 1, v + 2, v + 3], iIndices);
-                iIndices += 6;
-            }
-            vertexBaseIndex += (SEGMENTS / 2 + 1) * 2;
-        }
-        featureId++;
+        const id = batchIdFn(geometry.properties, featureId++);
+        updateExtrudedLineVertices({ feature }, buffers, id);
     }
 
     const geom = new THREE.BufferGeometry();
@@ -747,7 +722,15 @@ function updateLineVertices(featureMesh, vertices, colors, batchIds, id) {
     }
 }
 
-function updateExtrudedLineVertices(featureMesh, vertices, vertOffset, colors, batchIds, id) {
+/**
+ * Update vertex data for extruded LINE features (cylindrical tubes with spherical joints).
+ * Creates cylindrical geometry around line segments with spherical wedges at joints.
+ *
+ * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
+ * @param {Object} buffers - Buffer management object containing vertex, color, batch ID, and index data with write pointers.
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
+ */
+function updateExtrudedLineVertices(featureMesh, buffers, id) {
     const feature = featureMesh.feature;
     const ptsIn = feature.vertices;
     if (!ptsIn?.length) {
@@ -761,6 +744,7 @@ function updateExtrudedLineVertices(featureMesh, vertices, vertOffset, colors, b
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
+    const { vertices, colors, batchIds, indices } = buffers;
 
     // geometry range
     const geometry = context.getGeometry();
@@ -810,32 +794,37 @@ function updateExtrudedLineVertices(featureMesh, vertices, vertOffset, colors, b
         // Create ring vertices around both ends
         const meshColor = toColor(style.stroke.color).multiplyScalar(255);
         for (let k = 0; k < SEGMENTS; k++) {
+            const v = buffers.vertPtr;
             if (vertices) {
                 const theta = (k / SEGMENTS) * Math.PI * 2;
                 normal.copy(xAxis).multiplyScalar(Math.cos(theta))
                     .addScaledVector(yAxis, Math.sin(theta));
-                vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * vertOffset);
-                vertex.copy(topCoord).addScaledVector(normal, radius).toArray(vertices, 3 * (vertOffset + 1));
+                vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
+                vertex.copy(topCoord).addScaledVector(normal, radius).toArray(vertices, 3 * (v + 1));
             }
             if (batchIds) {
-                batchIds[vertOffset] = id;
-                batchIds[vertOffset + 1] = id;
+                batchIds[v] = id;
+                batchIds[v + 1] = id;
             }
             if (colors) {
-                meshColor.toArray(colors, 3 * vertOffset);
-                meshColor.toArray(colors, 3 * (vertOffset + 1));
+                meshColor.toArray(colors, 3 * v);
+                meshColor.toArray(colors, 3 * (v + 1));
             }
-            vertOffset += 2;
+            if (indices) {
+                const v0 = v;
+                const v1 = v + ((k + 1) % SEGMENTS - k) * 2;
+                indices.set([v0, v1, v0 + 1, v0 + 1, v1, v1 + 1], buffers.indexPtr);
+                buffers.indexPtr += 6;
+            }
+            buffers.vertPtr += 2;
         }
 
         if (i !== start) {
-            makeSphericalWedgeVertices(baseCoord, radius, prevZAxis, zAxis, vertices, vertOffset, colors, batchIds, id);
-            vertOffset += 2 * (SEGMENTS / 2 + 1);
+            makeSphericalWedgeVertices(baseCoord, radius, prevZAxis, zAxis, buffers, id);
         }
 
         prevZAxis.copy(zAxis);
     }
-    return vertOffset;
 }
 
 /**
@@ -844,18 +833,16 @@ function updateExtrudedLineVertices(featureMesh, vertices, vertOffset, colors, b
  * @param {number} radius - Radius of the spherical wedge
  * @param {THREE.Vector3} prevZAxis - Normal vector of the first half-circle (negated)
  * @param {THREE.Vector3} zAxis - Normal vector of the second half-circle
- * @param {Float32Array} [vertices] - Target positions buffer (xyz) to write into
- * @param {number} vertOffset - Current vertex offset (will be advanced as vertices are written)
- * @param {Uint8Array} [colors] - Target colors buffer (rgb, Uint8, normalized)
- * @param {Uint32Array} [batchIds] - Target per-vertex batch id buffer
- * @param {number} [id] - Batch id value assigned when batchIds is provided
+ * @param {Object} buffers - Contains vertex, color, batch ID, and index buffers with current write offsets
+ * @param {number} id - Batch ID value to assign to written vertices if batchIds is provided
  */
-function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, vertices, vertOffset, colors, batchIds, id) {
+function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, id) {
     if (Number.isNaN(prevZAxis.x)) { return; } // prevZAxis hasn't been set yet
 
     let xAxis;
     let yAxisBase;
     let yAxisTop;
+    const { vertices, colors, batchIds, indices } = buffers;
     if (vertices) {
         // Create orthonormal basis for the plane containing both normals
         xAxis = new THREE.Vector3().crossVectors(prevZAxis, zAxis).normalize();
@@ -867,23 +854,28 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, vertices, 
     const normalXComp = new THREE.Vector3();
     const vertex = new THREE.Vector3();
     for (let k = 0; k <= SEGMENTS / 2; k++) {
+        const v = buffers.vertPtr;
         if (vertices) {
             const theta = (k / SEGMENTS) * Math.PI * 2;
             normalXComp.copy(xAxis).multiplyScalar(Math.cos(theta));
             normal.copy(normalXComp).addScaledVector(yAxisBase, Math.sin(theta));
-            vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * vertOffset);
+            vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
             normal.copy(normalXComp).addScaledVector(yAxisTop, Math.sin(theta));
-            vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * (vertOffset + 1));
+            vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * (v + 1));
         }
         if (batchIds) {
-            batchIds[vertOffset] = id;
-            batchIds[vertOffset + 1] = id;
+            batchIds[v] = id;
+            batchIds[v + 1] = id;
         }
         if (colors) {
-            meshColor.toArray(colors, 3 * vertOffset);
-            meshColor.toArray(colors, 3 * (vertOffset + 1));
+            meshColor.toArray(colors, 3 * v);
+            meshColor.toArray(colors, 3 * (v + 1));
         }
-        vertOffset += 2;
+        if (indices && k < SEGMENTS / 2) {
+            indices.set([v, v + 2, v + 1, v + 1, v + 2, v + 3], buffers.indexPtr);
+            buffers.indexPtr += 6;
+        }
+        buffers.vertPtr += 2;
     }
 }
 
@@ -1114,7 +1106,11 @@ export default {
             featureMesh.oldExtrusionHeight = newExtrusionHeight;
         }
         const vertices = posAttr?.array;
-        let vertOffset = 0;
+        const buffers = {
+            vertices,
+            colors,
+            vertPtr: 0,
+        };
         for (const geometry of feature.geometries) {
             context.setGeometry(geometry);
             switch (feature.type) {
@@ -1126,7 +1122,7 @@ export default {
                 }
                 case FEATURE_TYPES.LINE: {
                     if (newExtrusionHeight !== null) {
-                        vertOffset = updateExtrudedLineVertices(featureMesh, vertices, vertOffset, colors);
+                        updateExtrudedLineVertices(featureMesh, buffers);
                     } else {
                         updateLineVertices(featureMesh, vertices, colors);
                     }
