@@ -27,30 +27,17 @@ void main() {
 
 #else
 
-    gl_FragColor = vec4(diffuse, opacity);
+  gl_FragColor = vec4(diffuse, opacity);
 
-    uvs[0] = vec3(vUv.xy, 0.);
-
-#if NUM_CRS > 1
-    uvs[1] = vec3(vUv.x, fract(vUv.z), floor(vUv.z));
-#endif
-
-    vec4 color;
-    #pragma unroll_loop
-    for ( int i = 0; i < NUM_FS_TEXTURES; i ++ ) {
-        color = getLayerColor( i , colorTextures, colorOffsetScales[ i ], colorLayers[ i ]);
-        gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
-    }
+  vec4 color = texture(map, pitUV(vUv.xy, colorOffsetScales));
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
 
   #if DEBUG == 1
     if (showOutline) {
-        #pragma unroll_loop
-        for ( int i = 0; i < NUM_CRS; i ++) {
-            color = getOutlineColor( outlineColors[ i ], uvs[ i ].xy);
-            gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
-        }
+        color = getOutlineColor( outlineColors[ 0 ], vUv.xy);
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
     }
-  #endif
+    #endif
 
     #include <fog_fragment>
     #include <itowns/lighting_fragment>
