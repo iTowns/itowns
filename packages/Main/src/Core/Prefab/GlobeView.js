@@ -149,7 +149,7 @@ class GlobeView extends View {
                 fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
             });
 
-            this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
+            // this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
         }
 
         this.addLayer(new Atmosphere('atmosphere', options.atmosphere));

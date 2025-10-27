@@ -138,6 +138,17 @@ class TMSSource extends Source {
         }
     }
 
+    tileInsideLimit(tile) {
+        const limit = this.tileMatrixSetLimits && this.tileMatrixSetLimits[tile.zoom];
+
+        return tile.zoom >= this.zoom.min && tile.zoom <= this.zoom.max && (
+            !limit ||
+            (tile.row >= limit.MinTileRow &&
+                tile.col >= limit.MinTileCol &&
+                tile.row <= limit.MaxTileRow &&
+                tile.col <= limit.MaxTileCol));
+    }
+
     extentInsideLimit(extent, zoom) {
         // This layer provides data starting at level = layer.source.zoom.min
         // (the zoom.max property is used when building the url to make
