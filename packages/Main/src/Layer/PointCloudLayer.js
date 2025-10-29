@@ -220,8 +220,7 @@ class PointCloudLayer extends GeometryLayer {
             this.material = new PointsMaterial(this.material);
         }
 
-        this.mode = mode || PNTS_MODE.COLOR;
-
+        this.material.mode = mode || PNTS_MODE.COLOR;
         /**
          * @type {PointCloudNode | undefined}
          */
