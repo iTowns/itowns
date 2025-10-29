@@ -81,11 +81,13 @@
                 view.addLayer(layer);
             });
 
-            // Donnees geocentrique -> probleme pour le placement camera
-            // name = 'eglise_saint_blaise_arles';
-            // const url = 'https://raw.githubusercontent.com/gmaillet/dataset/master/';
-            // const file = 'eglise_saint_blaise_arles.js';
-            // const crs = 'EPSG:4978';
+            /* OTHER dataset
+            Donnees geocentrique -> probleme pour le placement camera
+            name = 'eglise_saint_blaise_arles';
+            const url = 'https://raw.githubusercontent.com/gmaillet/dataset/master/';
+            const file = 'eglise_saint_blaise_arles.js';
+            const crs = 'EPSG:4978';
+            */
 
             itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
             name = 'TempleSagradaFamilia';

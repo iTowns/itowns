@@ -34,8 +34,8 @@
     </head>
     <body>
         <div id="description">Specify the URL of a COPC file to load:
-            <input type="text" id="copc_url" />
-            <button id='loadUrlBtn'>Load</button>
+            <input type="text" id="loadUrl" />
+            <button id="loadUrlBtn">Load</button>
             <button id='loadLidarHDBtn'>Load LiDAR HD dataset</button>
             <div id="share"></div>
         </div>
@@ -80,28 +80,17 @@
 
             var layer;
 
+            // Check if an url had been given as an argument
+            // and parse to get url and options.
             const urlParams = new URL(location.href).searchParams
-            var url = urlParams.get('copc');
+            let url = urlParams.get('copc');
+            urlParams.delete('copc');
 
             const options = {};
-            urlParams.keys().forEach(key => {
-                if (key !== 'copc') {
-                    if (key.includes('.')) {
-                        params = key.split('.');
-                        let object = options;
-                        params.forEach((subKey, index) => {
-                            if (!object[subKey]) { object[subKey] = {}; }
-                            if (index === params.length - 1) {
-                                object[subKey] = parseFloat(urlParams.get(key));
-                            }
-                            object = object[subKey];
-                        })
-                    } else {
-                        options[key] = parseFloat(urlParams.get(key));
-                    }
-                    
-                }
-            });
+            for (const [k, v] of urlParams) {
+                options[k] = isNaN(parseFloat(v, 10)) ? v : parseFloat(v, 10);
+            }
+
             loadCopc(url, options);
 
             function onLayerReady() {
@@ -119,6 +108,8 @@
 
             function loadCopc(url, options) {
                 if(!url) return;
+
+                // Share the view
                 document.getElementById('share').innerHTML = '<a href="' +
                     location.href.replace(location.search, '?copc=' + url) +
                     '" target="_blank">Link to share this view</a>';
@@ -150,20 +141,19 @@
 
             const loadUrlBtn = document.getElementById('loadUrlBtn');
             loadUrlBtn.addEventListener('click', () => {
-                const url = document.getElementById('copc_url').value;
-                loadCopc(url);
+                const url = document.getElementById('loadUrl').value;
+                if (url) { loadCopc(url); }
             });
 
             const loadLidarHDBtn = document.getElementById('loadLidarHDBtn');
             loadLidarHDBtn.addEventListener('click', () => {
                 const url ="https://dl-lidar.ign.fr/ppk-lidar/ML/LHD_FXX_0746_6509_PTS_C_LAMB93_IGN69.copc.laz" // fixed with proxy
                 const options = {
-                    material: {mode: 2},
+                    mode: 2,
                     opacity: 0.5,
                 }
                 loadCopc(url, options);
             });
-
         </script>
     </body>
 </html>

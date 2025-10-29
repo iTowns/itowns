@@ -65,16 +65,19 @@
                 var view;
                 var controls;
 
-                // const name = 'eglise_saint_blaise_arles';
-                // const url = 'https://raw.githubusercontent.com/gmaillet/dataset/master/';
-                // const file = 'eglise_saint_blaise_arles.js';
-                // const crs = 'EPSG:4978';
+                /* OTHER available dataset
+                const name = 'eglise_saint_blaise_arles';
+                const url = 'https://raw.githubusercontent.com/gmaillet/dataset/master/';
+                const file = 'eglise_saint_blaise_arles.js';
+                const crs = 'EPSG:4978';
+                => Geocentric
 
-                // Most probaly a projection centered on the center of acquisition... 
-                // Probleme de CORS if 'Allow CORS' plugin off
-                // const url = 'https://cors-anywhere.herokuapp.com/https://viz.lib.vt.edu/thessaloniki/resources/pointclouds/thessaloniki';
-                // const file = 'cloud.js';
-                // const crs = 'EPSG:3857';// unknown
+                Probleme de CORS if 'Allow CORS' plugin off
+                const url = 'https://cors-anywhere.herokuapp.com/https://viz.lib.vt.edu/thessaloniki/resources/pointclouds/thessaloniki';
+                const file = 'cloud.js';
+                const crs = 'EPSG:3857';
+                => crs unknown. Most probaly a projection centered on the center of acquisition... 
+                */
 
                 itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
                 const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia';

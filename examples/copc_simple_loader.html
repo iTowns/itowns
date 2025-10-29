@@ -32,8 +32,8 @@
     </head>
     <body>
         <div id="description">Specify the URL of a COPC file to load:
-            <input type="text" id="copc_url" />
-            <button onclick="load()">Load</button>
+            <input type="text" id="loadUrl" />
+            <button id="loadUrlBtn">Load</button>
             <div>
                 <button id="loadAutzenBtn">Load Autzen Stadium (80mb)</button>
                 <button id="loadSofiBtn">Load SoFI Stadium (2.3gb)</button>
@@ -56,25 +56,26 @@
             const viewerDiv = document.getElementById('viewerDiv');
             const gui = new lil();
 
+            const view = new itowns.View('EPSG:4326', viewerDiv);
+            const controls = new itowns.PlanarControls(view);
+            view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
+
+            // Check if an url had been given as an argument
+            // and parse to get url and options.
             const urlParams = new URL(location).searchParams;
             let url = urlParams.get('copc');
+            urlParams.delete('copc');
 
             const options = {};
-            urlParams.keys().forEach(key => {
-                if (key !== 'copc') {
-                    options[key] = parseInt(urlParams.get(key), 10);
-                }
-            });
-            
+            for (const [k, v] of urlParams) {
+                options[k] = isNaN(parseFloat(v, 10)) ? v : parseFloat(v, 10);
+            }
+
             loadCopc(url, options)
 
-            let view;
-            let controls;
-            function setView(crs) {
-                // viewerDiv.innerHTML = '';
-                view = new itowns.View(crs, viewerDiv);
-                controls = new itowns.PlanarControls(view);
-                view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
+            function changeViewCrs(crs) {
+                view.referenceCrs = crs;
+                view.camera.crs = crs;
             }
 
             function onLayerReady(layer) {
@@ -100,6 +101,8 @@
 
             function loadCopc(url, options) {
                 if(!url) return;
+
+                // Share the view
                 document.getElementById('share').innerHTML = '<a href="' +
                     location.href.replace(location.search, '') +
                     '?copc=' + url
@@ -115,7 +118,11 @@
                 };
 
                 source.whenReady.then(() => {
-                    setView(source.crs);
+                    changeViewCrs(source.crs);
+                    if (layer) {
+                        layer.debugUI.destroy();
+                        view.removeLayer('COPC', true);
+                    }
                     layer = new itowns.CopcLayer('COPC', config);
                     view.addLayer(layer).then(onLayerReady);
                     layer.whenReady
@@ -123,22 +130,16 @@
                 })
             }
 
-            function setUrl(urlCopc) {
-                const url = location.href.replace(location.search, '') +
-                    '?copc=' + urlCopc;
-                location.assign(url);
-            }
-
             function loadAutzen() {
-                setUrl("https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz");
+                loadCopc("https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz");
             }
 
             function loadSofi() {
-                setUrl("https://s3.amazonaws.com/hobu-lidar/sofi.copc.laz");
+                loadCopc("https://s3.amazonaws.com/hobu-lidar/sofi.copc.laz");
             }
 
             function loadMillsite() {
-                setUrl("https://s3.amazonaws.com/data.entwine.io/millsite.copc.laz");
+                loadCopc("https://s3.amazonaws.com/data.entwine.io/millsite.copc.laz");
             }
 
             const loadAutzenBtn = document.getElementById('loadAutzenBtn');
@@ -154,11 +155,11 @@
             window.THREE = THREE;
 
             function load() {
-                const url = document.getElementById('copc_url').value;
-                if (url) {
-                    setUrl(url);
-                }
+                const url = document.getElementById('loadUrl').value;
+                if (url) { loadCopc(url); }
             }
+            const loadUrlBtn = document.getElementById('loadUrlBtn');
+            loadUrlBtn.addEventListener('click', load);
 
         </script>
     </body>

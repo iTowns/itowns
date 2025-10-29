@@ -30,7 +30,7 @@
     </head>
     <body>
         <div id="description">Specify the URL of a Entwine Point Tree to load:
-            <input type="text" id="ept_url" />
+            <input type="text" id="loadUrl" />
             <button id="loadUrlBtn">Load</button>
             <button id="loadLyonBtn">Load the Grand Lyon dataset</button>
             <div id="share"></div>
@@ -54,17 +54,23 @@
 
             var eptLayer;
 
-            //check if an ept url had been given as an argument
+            const view = new itowns.View('EPSG:4326', viewerDiv);
+            const controls = new itowns.PlanarControls(view);
+            view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
+
+            view.domElement.addEventListener('dblclick', dblClickHandler);
+
+            // Check if an url had been given as an argument
+            // and parse to get url and options.
             const uri = new URL(location.href);
             const urlParams = uri.searchParams;
             let url = urlParams.get('ept');
+            urlParams.delete('ept');
 
             const options = {};
-            urlParams.keys().forEach(key => {
-                if (key !== 'ept') {
-                    options[key] = parseInt(urlParams.get(key), 10);
-                }
-            });
+            for (const [k, v] of urlParams) {
+                options[k] = isNaN(parseFloat(v, 10)) ? v : parseFloat(v, 10);
+            }
 
             loadEPT(url, options);
 
@@ -80,15 +86,9 @@
                 }
             }
 
-            let view;
-            let controls;
-            function setView(crs) {
-                viewerDiv.innerHTML = '';
-                view = new itowns.View(crs, viewerDiv);
-                controls = new itowns.PlanarControls(view);
-                view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
-
-                view.domElement.addEventListener('dblclick', dblClickHandler);
+            function changeViewCrs(crs) {
+                view.referenceCrs = crs;
+                view.camera.crs = crs;
             }
 
             function onLayerReady() {
@@ -114,8 +114,11 @@
                 debug.PointCloudDebug.initTools(view, eptLayer, debugGui)
             }
 
+            let eptName
             function loadEPT(url, options) {
                 if(!url) return;
+
+                // Share the view
                 document.getElementById('share').innerHTML = '<a href="' +
                         location.href.replace(location.search, '') +
                         '?ept=' + url
@@ -129,15 +132,16 @@
                 };
 
                 eptSource.whenReady.then(() => {
-                    setView(eptSource.crs);
-                    view.notifyChange;
+                    changeViewCrs(eptSource.crs);
                     if (eptLayer) {
                         eptLayer.debugUI.destroy();
+                        console.log(eptName)
+                        view.removeLayer(eptName, true);
                     }
 
                     if(url.slice(-1) === '/') url = url.slice(0, -1);
 
-                    let eptName = url.split('/').pop()
+                    eptName = url.split('/').pop()
                     eptName = eptName[0].toUpperCase() + eptName.slice(1);
                     eptLayer = new itowns.EntwinePointTileLayer(eptName, config);
                     view.addLayer(eptLayer).then(onLayerReady);
@@ -147,8 +151,8 @@
 
             const loadUrlBtn = document.getElementById('loadUrlBtn');
             loadUrlBtn.addEventListener('click', () => {
-                url = document.getElementById('ept_url').value;
-                loadEPT(url);
+                url = document.getElementById('loadUrl').value;
+                if (url) { loadEPT(url); }
             });
 
             const loadLyonBtn = document.getElementById('loadLyonBtn');
@@ -159,17 +163,6 @@
 
             window.itowns = itowns;
             window.THREE = THREE;
-
-            function load() {
-                urlEpt = document.getElementById('ept_url').value;
-                if (urlEpt) {
-                    url = location.href.replace(location.search, '') +
-                        '?ept=' + urlEpt;
-
-                    location.assign(url);
-                }
-            }
-
         </script>
     </body>
 </html>
