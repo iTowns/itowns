@@ -1,11 +1,11 @@
-import proj4 from 'proj4';
+import { CRS } from '@itowns/geographic';
 import LASParser from 'Parser/LASParser';
 import Fetcher from 'Provider/Fetcher';
 import Source from 'Source/Source';
 import { CopcSource, EntwinePointTileSource } from 'Main';
 import { LRUCache } from 'lru-cache';
 
-const cachedSrc = new LRUCache({ max: 500 });
+const cachedSources = new LRUCache({ max: 500 });
 
 /**
  * An object defining the source of Entwine Point Tile data. It fetches and
@@ -47,8 +47,9 @@ class VpcSource extends Source {
         this.whenReady = Fetcher.json(this.url, this.networkOptions)
             .then((metadata) => {
                 this.metadata = metadata;
-                const boundsConformings = metadata.features.map(f => f.properties['proj:bbox']);
 
+                // Set boundsConformings (the bbox) of the VPC Layer
+                const boundsConformings = metadata.features.map(f => f.properties['proj:bbox']);
                 this.boundsConforming = [
                     Math.min(...boundsConformings.map(b => b[0])),
                     Math.min(...boundsConformings.map(b => b[1])),
@@ -58,35 +59,32 @@ class VpcSource extends Source {
                     Math.max(...boundsConformings.map(b => b[5])),
                 ];
 
+                // Set the zmin and zmax from the source
                 this.minElevation = this.boundsConforming[2];
                 this.maxElevation = this.boundsConforming[5];
 
-                // Crs
+                // Set the Crs of the VPC Layer (currently we only use the first)
                 const projsWkt2 = [...new Set(metadata.features.map(f => f.properties['proj:wkt2']))];
                 if (projsWkt2.length !== 1) {
                     console.warn('Only 1 crs is currently supported for 1 vpc. The extra crs will not be considered');
                 }
-                proj4.defs('unknown', projsWkt2[0]);
-                let projCS;
-                if (proj4.defs('unknown').type === 'COMPD_CS') {
-                    console.warn('CopcSource: compound coordinate system is not yet supported.');
-                    projCS = proj4.defs('unknown').PROJCS;
-                } else {
-                    projCS = proj4.defs('unknown');
-                }
-                this.crs = projCS.title || projCS.name || 'EPSG:4326';
-                if (!(this.crs in proj4.defs)) {
-                    proj4.defs(this.crs, projCS);
-                }
+                this.crs = CRS.defsFromWkt(projsWkt2[0]);
 
-                // Creation of 1 mockSource for each item in the stack (that will be replace when instanciate)
+                /* Set  several object (MockSource) to mock the source that will need to be instantiated.
+                 We don't want all child source to be instantiated at once as it will send the fetch request
+                 (current architectural choice) thus we want to delay the instanciation of the child source
+                 when the data need to be load on a particular node.
+                 Creation of 1 mockSource for each item in the stack (that will be replace by a real source
+                 when needed, when we will call the load on a node depending of that source).
+                */
                 this._promises = [];
                 this.urls = metadata.features.map(f => f.assets.data.href);
                 this.urls.forEach((url, i) => {
                     const whenReady = new Promise((re, rj) => {
-                        // waiting for this.instanciate(source);
+                        // waiting for this.instantiate(source);
                         this._promises.push({ resolve: re, reject: rj });
                     }).then((res) => {
+                        // replace the mock source by the real source (instantiated)
                         this.sources[i] = res;
                         return res;
                     }).catch((err) => {
@@ -107,24 +105,35 @@ class VpcSource extends Source {
             });
     }
 
-    instanciate(source) {
+    /**
+     * We created several objects mocking a source at the intantiation of the vpc layer.
+     * The following method will be called when we need to instantiate the real source (COPC or EPT).
+     * The mock source contain the url to instantiate the source as well as a promise that
+     * will be resolve when the source.whenReady promise will resolve.
+     * To avoid instanciating several time the same source, we use a cache to store the
+     * whenReady promise of the source (cachedSources).
+     *
+     * @param {object} source - The mock source used to instantiate the real source.
+     * @param {object} source.url - The url of the source to instanciate.
+     */
+    instantiate(source) {
         let newSource;
         const url = source.url;
-        let srcWhenReady = cachedSrc.get(url);
-        if (!srcWhenReady) {
+        let cachedSrc = cachedSources.get(url);
+        if (!cachedSrc) {
             if (url.includes('.copc')) {
                 newSource = new CopcSource({ url });
             } else if (url.includes('.json')) {
                 newSource = new EntwinePointTileSource({ url });
             } else {
-                const msg = 'Error: Stack format not supported';
+                const msg = '[VPCLayer]: stack point cloud format not supporter';
                 console.warn(msg);
                 this.handlingError(msg);
             }
-            srcWhenReady = newSource.whenReady;
-            cachedSrc.set(url, srcWhenReady);
+            cachedSrc = newSource;
+            cachedSources.set(url, cachedSrc);
         }
-        this._promises[source.sId].resolve(srcWhenReady);
+        this._promises[source.sId].resolve(cachedSrc.whenReady);
     }
 }
 

@@ -1,6 +1,6 @@
-import proj4 from 'proj4';
+// import proj4 from 'proj4';
 import { Binary, Info, Las } from 'copc';
-import { Extent } from '@itowns/geographic';
+import { CRS, Extent } from '@itowns/geographic';
 import Fetcher from 'Provider/Fetcher';
 import LASParser from 'Parser/LASParser';
 import Source from 'Source/Source';
@@ -106,20 +106,7 @@ class CopcSource extends Source {
 
             this.spacing = this.info.spacing;
 
-            proj4.defs('unknown', metadata.wkt);
-            let projCS;
-
-            if (proj4.defs('unknown').type === 'COMPD_CS') {
-                console.warn('CopcSource: compound coordinate system is not yet supported.');
-                projCS = proj4.defs('unknown').PROJCS;
-            } else {
-                projCS = proj4.defs('unknown');
-            }
-
-            this.crs = projCS.title || projCS.name || 'EPSG:4326';
-            if (!(this.crs in proj4.defs)) {
-                proj4.defs(this.crs, projCS);
-            }
+            this.crs = CRS.defsFromWkt(metadata.wkt);
 
             const bbox = new THREE.Box3();
             bbox.min.fromArray(this.info.cube, 0);

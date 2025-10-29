@@ -8,7 +8,7 @@ const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
 bboxMesh.geometry.boundingBox = box3;
 
-export function initBoundingBox(elt, layer) {
+function initBoundingBox(elt, layer) {
     elt.tightbbox.getSize(box3.max);
     box3.max.multiplyScalar(0.5);
     box3.min.copy(box3.max).negate();
@@ -53,7 +53,7 @@ function computeSSEOrthographic(context, pointSize, pointSpacing) {
     return Math.max(0.0, distance - pointSize);
 }
 
-export function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
+function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
     if (context.camera.camera3D.isOrthographicCamera) {
         return computeSSEOrthographic(context, pointSize, pointSpacing);
     }
@@ -279,7 +279,20 @@ class PointCloudLayer extends GeometryLayer {
         return [this.root];
     }
 
-    // PointCloudLayer.update separate in 2 parts: update and loadData
+    /**
+     * Load the data of a node.
+     * Send a promise to get the data (if not already sent)
+     * and add the result to the node when resolve.
+     * Check the visiblility of children to see if the need to be updated
+     * as well.
+     *
+     * @param {PointCloudNode} elt - The element (node) to load data.
+     * @param {Object} context - The context.
+     * @param {PointCloudLayer} layer - The layer on wich the node is attach.
+     * @param {THREE.Box3} bbox - bbox of the node.
+     *
+     * @return {pointCloudNode[]} The child nodes to update (if needed).
+     */
     loadData(elt, context, layer, bbox) {
         elt.notVisibleSince = undefined;
         point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
@@ -344,6 +357,16 @@ class PointCloudLayer extends GeometryLayer {
         }
     }
 
+    /**
+     * Check if the node need to be rendered. In that case it call the
+     * node.loadData() on it.
+     *
+     * @param {Object} context - The context.
+     * @param {PointCloudLayer} layer - The layer on wich the node is attach.
+     * @param {PointCloudNode} elt - The element (node) to render.
+     *
+     * @return {pointCloudNode[]} The child nodes to update or [] if ther is none.
+     */
     update(context, layer, elt) {
         elt.visible = false;
 

@@ -1,8 +1,8 @@
-import proj4 from 'proj4';
 import LASParser from 'Parser/LASParser';
 import PotreeBinParser from 'Parser/PotreeBinParser';
 import Fetcher from 'Provider/Fetcher';
 import Source from 'Source/Source';
+import { CRS } from 'Main';
 
 /**
  * An object defining the source of Entwine Point Tile data. It fetches and
@@ -43,16 +43,11 @@ class EntwinePointTileSource extends Source {
             if (metadata.srs) {
                 if (metadata.srs.authority && metadata.srs.horizontal) {
                     this.crs = `${metadata.srs.authority}:${metadata.srs.horizontal}`;
-                    if (!proj4.defs(this.crs)) {
-                        proj4.defs(this.crs, metadata.srs.wkt);
+                    if (!CRS.defs(this.crs)) {
+                        CRS.defs(this.crs, metadata.srs.wkt);
                     }
                 } else if (metadata.srs.wkt) {
-                    proj4.defs('unknown', metadata.srs.wkt);
-                    const projCS = proj4.defs('unknown');
-                    this.crs = projCS.title || projCS.name;
-                    if (!(this.crs in proj4.defs)) {
-                        proj4.defs(this.crs, projCS);
-                    }
+                    this.crs = CRS.defsFromWkt(metadata.srs.wkt);
                 }
                 if (metadata.srs.vertical && metadata.srs.vertical !== metadata.srs.horizontal) {
                     console.warn('EntwinePointTileSource: Vertical coordinates system code is not yet supported.');

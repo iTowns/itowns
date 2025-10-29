@@ -4,27 +4,7 @@ import CopcNode from 'Core/CopcNode';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 
-function markForDeletion(elt) {
-    if (elt.obj) {
-        elt.obj.visible = false;
-        if (__DEBUG__) {
-            if (elt.obj.boxHelper) {
-                elt.obj.boxHelper.visible = false;
-            }
-        }
-    }
-
-    if (!elt.notVisibleSince) {
-        elt.notVisibleSince = Date.now();
-        // Set .sse to an invalid value
-        elt.sse = -1;
-    }
-    for (const child of elt.children) {
-        markForDeletion(child);
-    }
-}
-
-function _intanciateNode(source) {
+function _instantiateRootNode(source) {
     let root;
     if (source.isCopcSource) {
         const { info } = source;
@@ -37,7 +17,7 @@ function _intanciateNode(source) {
         root.bbox.min.fromArray(source.boundsConforming, 0);
         root.bbox.max.fromArray(source.boundsConforming, 3);
     } else {
-        const msg = 'Error: Stack format not supported';
+        const msg = '[VPCLayer]: stack point cloud format not supporter';
         console.warn(msg);
         PointCloudLayer.handlingError(msg);
     }
@@ -88,6 +68,7 @@ class VpcLayer extends PointCloudLayer {
 
         const resolve = this.addInitializationStep();
 
+        // a Vpc layer should be ready when all the child sources are
         this.whenReady = this.source.whenReady.then((/** @type {VpcSource} */ sources) => {
             this.minElevationRange = this.minElevationRange ?? this.source.minElevation;
             this.maxElevationRange = this.maxElevationRange ?? this.source.maxElevation;
@@ -108,17 +89,20 @@ class VpcLayer extends PointCloudLayer {
                     source,
                 };
 
-                // We need to wait for the source to be instanciate to be able
-                // to instanciate a node and load the Octree associated.
+                // As we delayed the intanciation of the source to the moment we need to render a particular node,
+                // we need to wait for the source to be instantiate to be able
+                // to instantiate a node and load the Octree associated.
                 const promise =
                     source.whenReady.then((src) => {
-                        const root = _intanciateNode(src);
+                        const root = _instantiateRootNode(src);
                         this.root.children[i] = root;
                         return root.loadOctree().then(resolve)
                             .then(() => root);
                     });
 
                 mockRoot.loadOctree = promise;
+                // when load() is called on the mockRoot, we need the associated source to be loaded
+                // as well as the octree, before calling load() on the real root.
                 mockRoot.load = () => promise.then(root => root.load());
                 this.root.children.push(mockRoot);
             });
@@ -126,28 +110,14 @@ class VpcLayer extends PointCloudLayer {
         });
     }
 
-    update(context, layer, elt) {
-        elt.visible = false;
-
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
-            return [];
-        }
-
-        // pick the best bounding box
-        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return [];
-        }
-
+    loadData(elt, context, layer, bbox) {
         if (elt.waitingForSource) {
-            layer.source.instanciate(elt.source);
+            layer.source.instantiate(elt.source);
             elt.loadOctree
-                .then(eltLoaded => this.loadData(eltLoaded, context, layer, bbox));
+                .then(eltLoaded => super.loadData(eltLoaded, context, layer, bbox))
+                .then(() => context.view.notifyChange(layer));
         } else {
-            return this.loadData(elt, context, layer, bbox);
+            return super.loadData(elt, context, layer, bbox);
         }
     }
 }
