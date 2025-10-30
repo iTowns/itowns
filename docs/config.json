@@ -76,6 +76,7 @@
                 "Potree2Source",
                 "VectorTilesSource",
                 "EntwinePointTileSource",
+                "CogSource",
                 "CopcSource",
                 "OGC3DTilesSource",
                 "OGC3DTilesIonSource",
@@ -126,9 +127,7 @@
             "Plugins": [
                 "DragNDrop",
                 "FeatureToolTip",
-                "TIFFParser",
-                "COGSource",
-                "COGParser"
+                "TIFFParser"
             ],
 
             "Widgets": [
