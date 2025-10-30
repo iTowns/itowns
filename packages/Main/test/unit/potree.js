@@ -160,8 +160,7 @@ describe('Potree', function () {
             });
 
             it('load child node', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
-                root.crs = 'EPSG:4978';
+                const root = new PotreeNode(numPoints, childrenBitField, potreeSource, 'EPSG:4978');
                 root.loadOctree()
                     .then(() => root.children[0].load()
                         .then(() => {

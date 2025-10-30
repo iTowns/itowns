@@ -52,7 +52,7 @@ class EntwinePointTileSource extends Source {
                 + Math.abs(this.bounds[4] - this.bounds[1])) / (2 * this.span);
 
             // Set parser and its configuration from schema
-            this.parse = metadata.dataType === 'laszip' ? LASParser.parse : PotreeBinParser.parse;
+            this.parser = metadata.dataType === 'laszip' ? LASParser.parse : PotreeBinParser.parse;
             this.extension = metadata.dataType === 'laszip' ? 'laz' : 'bin';
 
             if (metadata.srs) {

@@ -212,7 +212,7 @@ class PointCloudLayer extends GeometryLayer {
         this.root = undefined;
     }
 
-    setRootBbox(min, max) {
+    setRootOBBes(min, max) {
         let forward = (x => x);
         if (this.source.crs !== this.crs) {
             try {

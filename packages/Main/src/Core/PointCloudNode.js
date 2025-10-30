@@ -10,6 +10,7 @@ const translation = new THREE.Vector3();
 /**
  * @property {number} numPoints - The number of points in this node.
  * @property {PointCloudSource} source - Data source of the node.
+ * @property {string} crs - The crs of the node.
  * @property {PointCloudNode[]} children - The children nodes of this node.
  * @property {OBB} voxelOBB - The node cubique obb.
  * @property {OBB} clampOBB - The cubique obb clamped to zmin and zmax.
@@ -122,9 +123,9 @@ class PointCloudNode extends THREE.EventDispatcher {
         childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
-    load() {
-        return this.source.fetcher(this.url, this.source.networkOptions)
-            .then(file => this.source.parse(file, {
+    load(networkOptions = this.source.networkOptions) {
+        return this.source.fetcher(this.url, networkOptions)
+            .then(file => this.source.parser(file, {
                 in: this,
             }));
     }

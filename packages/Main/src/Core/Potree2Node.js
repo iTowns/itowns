@@ -42,8 +42,8 @@ const NODE_TYPE = {
 };
 
 class Potree2Node extends PotreeNode {
-    constructor(numPoints = 0, childrenBitField = 0, source) {
-        super(numPoints, childrenBitField, source);
+    constructor(numPoints = 0, childrenBitField = 0, source, crs) {
+        super(numPoints, childrenBitField, source, crs);
     }
 
     get url() {
@@ -70,16 +70,8 @@ class Potree2Node extends PotreeNode {
         return networkOptions;
     }
 
-    async load() {
-        // Query octree if we don't have children potreeNode yet.
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
-        }
-
-        return this.source.fetcher(this.url, this.networkOptions(this.byteOffset, this.byteSize))
-            .then(file => this.source.parser(file, {
-                in: this,
-            }))
+    load() {
+        return super.load(this.networkOptions(this.byteOffset, this.byteSize))
             .then((data) => {
                 this.loaded = true;
                 this.loading = false;
@@ -87,7 +79,7 @@ class Potree2Node extends PotreeNode {
             });
     }
 
-    async loadOctree() {
+    loadOctree() {
         if (this.loaded || this.loading) {
             return;
         }
@@ -157,8 +149,7 @@ class Potree2Node extends PotreeNode {
                     continue;
                 }
 
-                const child = new Potree2Node(numPoints, childMask, this.source);
-                child.crs = this.crs;
+                const child = new Potree2Node(numPoints, childMask, this.source, this.crs);
 
                 current.add(child, childIndex);
                 stack.push(child);

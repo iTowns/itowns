@@ -47,7 +47,7 @@ function computeChildBBox(voxelBBox, childIndex) {
 }
 
 class PotreeNode extends PointCloudNode {
-    constructor(numPoints = 0, childrenBitField = 0, source) {
+    constructor(numPoints = 0, childrenBitField = 0, source, crs) {
         super(numPoints, source);
         this.childrenBitField = childrenBitField;
 
@@ -56,6 +56,8 @@ class PotreeNode extends PointCloudNode {
         this.hierarchyKey = 'r';
 
         this.baseurl = source.baseurl;
+
+        this.crs = crs;
     }
 
     get octreeIsLoaded() {
@@ -94,16 +96,12 @@ class PotreeNode extends PointCloudNode {
         childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
-    load() {
+    load(networkOptions) {
         // Query octree/HRC if we don't have children potreeNode yet.
         if (!this.octreeIsLoaded) {
             this.loadOctree();
         }
-        // to refacto : can we use node instead of layer in options.out ?
-        return this.source.fetcher(this.url, this.source.networkOptions)
-            .then(file => this.source.parse(file, {
-                in: this,
-            }));
+        return super.load(networkOptions);
     }
 
     loadOctree() {
@@ -128,8 +126,7 @@ class PotreeNode extends PointCloudNode {
                     if (snode.childrenBitField & (1 << indexChild) && (offset + 5) <= blob.byteLength) {
                         const childrenBitField = view.getUint8(offset); offset += 1;
                         const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
-                        const child = new PotreeNode(numPoints, childrenBitField, this.source);
-                        child.crs = this.crs;
+                        const child = new PotreeNode(numPoints, childrenBitField, this.source, this.crs);
 
                         snode.add(child, indexChild);
                         child.offsetBBox = computeChildBBox(child.parent.offsetBBox, indexChild);// For Potree1 Parser

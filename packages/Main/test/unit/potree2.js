@@ -109,8 +109,7 @@ describe('Potree2', function () {
         });
 
         it('load child node', function (done) {
-            const root = new Potree2Node(numPoints, childrenBitField, potree2Source);
-            root.crs = 'EPSG:4978';
+            const root = new Potree2Node(numPoints, childrenBitField, potree2Source, 'EPSG:4978');
             root.nodeType = 2;
             root.hierarchyByteOffset = 0n;
             root.hierarchyByteSize = 12650n;
