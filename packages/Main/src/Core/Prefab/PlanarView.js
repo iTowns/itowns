@@ -25,6 +25,7 @@ class PlanarView extends View {
      * @param {CameraUtils~CameraTransformOptions|Extent} [options.placement] - The
      * {@link CameraUtils~CameraTransformOptions} to apply to view's camera or the extent it must display at
      * initialization. By default, camera will display the view's extent (given in `extent` parameter).
+     * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
      * @param {number} [options.farFactor=20] - Controls how far the camera can see.
      * The maximum view distance is this factor times the camera’s altitude (above sea level).
      * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
@@ -46,51 +47,53 @@ class PlanarView extends View {
 
         this.addLayer(tileLayer);
 
-        this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
-            // update camera's near and far
+        if (options.dynamicCameraNearFar || options.dynamicCameraNearFar === undefined) {
+            this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
+                // update camera's near and far
 
-            // compute layer's bounding box
-            if (!this.tileLayer) { return; }
-            const obj = this.tileLayer.object3d;
-            const box = new THREE.Box3();
-            obj.traverse((child) => {
-                if (child.isMesh && child.geometry) {
-                    child.geometry.computeBoundingBox();
-                    const childBox = new THREE.Box3().copy(child.geometry.boundingBox)
-                        .applyMatrix4(child.matrixWorld);
-                    box.union(childBox);
-                }
-            });
-            if (box.isEmpty()) { return; }
+                // compute layer's bounding box
+                if (!this.tileLayer) { return; }
+                const obj = this.tileLayer.object3d;
+                const box = new THREE.Box3();
+                obj.traverse((child) => {
+                    if (child.isMesh && child.geometry) {
+                        child.geometry.computeBoundingBox();
+                        const childBox = new THREE.Box3().copy(child.geometry.boundingBox)
+                            .applyMatrix4(child.matrixWorld);
+                        box.union(childBox);
+                    }
+                });
+                if (box.isEmpty()) { return; }
 
-            // calculate the greatest distance to the corners of the box
-            let maxDistSq = 0;
-            const camPos = this.camera3D.position;
-            for (const x of [box.min.x, box.max.x]) {
-                for (const y of [box.min.y, box.max.y]) {
-                    for (const z of [box.min.z, box.max.z]) {
-                        const distSq = camPos.distanceToSquared({ x, y, z });
-                        if (distSq > maxDistSq) {
-                            maxDistSq = distSq;
+                // calculate the greatest distance to the corners of the box
+                let maxDistSq = 0;
+                const camPos = this.camera3D.position;
+                for (const x of [box.min.x, box.max.x]) {
+                    for (const y of [box.min.y, box.max.y]) {
+                        for (const z of [box.min.z, box.max.z]) {
+                            const distSq = camPos.distanceToSquared({ x, y, z });
+                            if (distSq > maxDistSq) {
+                                maxDistSq = distSq;
+                            }
                         }
                     }
                 }
-            }
-            const maxDist = Math.sqrt(maxDistSq);
+                const maxDist = Math.sqrt(maxDistSq);
 
-            const camToGroundDistMin = this.camera3D.position.z - View.ALTITUDE_MAX;
-            this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
+                const camToGroundDistMin = this.camera3D.position.z - View.ALTITUDE_MAX;
+                this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
 
-            const boxBottomToCam = camPos.z - box.min.z;
-            const far = this.farFactor * boxBottomToCam;
-            this.camera3D.far = Math.min(far, maxDist);
-            this.camera3D.updateProjectionMatrix();
+                const boxBottomToCam = camPos.z - box.min.z;
+                const far = this.farFactor * boxBottomToCam;
+                this.camera3D.far = Math.min(far, maxDist);
+                this.camera3D.updateProjectionMatrix();
 
-            const fog = this.scene.fog;
-            if (!fog) { return; }
-            fog.far = far;
-            fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
-        });
+                const fog = this.scene.fog;
+                if (!fog) { return; }
+                fog.far = far;
+                fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
+            });
+        }
 
         // Configure camera
         const placement = options.placement || {};
