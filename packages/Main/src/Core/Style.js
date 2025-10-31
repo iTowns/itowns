@@ -138,9 +138,6 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
             },
             set: (v) => {
                 property = v;
-                if (parameter == 'extrusion_height') {
-                    style[category].extrusionHeightSet = v != undefined;
-                }
             },
         });
 }
@@ -466,7 +463,27 @@ class Style {
         defineStyleProperty(this, 'fill', 'opacity', params.fill.opacity, 1.0);
         defineStyleProperty(this, 'fill', 'pattern', params.fill.pattern);
         defineStyleProperty(this, 'fill', 'base_altitude', params.fill.base_altitude, baseAltitudeDefault);
-        defineStyleProperty(this, 'fill', 'extrusion_height', params.fill.extrusion_height);
+
+        // define a special case for extrusion_height
+        // to be able to know if user set it or not without calling the getter
+        this._extrusionHeight = params.fill.extrusion_height;
+        Object.defineProperty(
+            this.fill,
+            'extrusion_height',
+            {
+                get: () => {
+                    if (this._extrusionHeight != undefined) {
+                        return readExpression(this._extrusionHeight, this.context);
+                    }
+                    const dataValue = this.context.featureStyle?.fill?.extrusion_height;
+                    if (dataValue != undefined) { return readExpression(dataValue, this.context); }
+                    return undefined;
+                },
+                set: (v) => {
+                    this._extrusionHeight = v;
+                },
+            },
+        );
 
         this.stroke = {};
         defineStyleProperty(this, 'stroke', 'color', params.stroke.color);
@@ -677,6 +694,14 @@ class Style {
         } else {
             return this.text.anchor;
         }
+    }
+
+    /**
+     * Checks if the style has an extrusion height defined.
+     * @returns {boolean} True if extrusion is enabled, false otherwise.
+     */
+    isExtruded() {
+        return this._extrusionHeight != undefined;
     }
 }
 
