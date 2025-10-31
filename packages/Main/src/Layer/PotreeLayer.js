@@ -64,15 +64,17 @@ class PotreeLayer extends PointCloudLayer {
 
             this.supportsProgressiveDisplay = (this.source.extension === 'cin');
 
-            this.root = new PotreeNode(0, 0, this.source);
-            this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
-            this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
+            const root = new PotreeNode(0, 0, this.source);
+            root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
+            root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
+
+            this.root = root;
 
             this.minElevationRange = this.minElevationRange ?? cloud.boundingBox.lz;
             this.maxElevationRange = this.maxElevationRange ?? cloud.boundingBox.uz;
 
-            this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', this.root.bbox);
-            return this.root.loadOctree().then(resolve);
+            this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', root.bbox);
+            return root.loadOctree().then(resolve);
         });
     }
 }
