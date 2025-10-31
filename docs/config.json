@@ -76,7 +76,6 @@
                 "Potree2Source",
                 "VectorTilesSource",
                 "EntwinePointTileSource",
-                "CogSource",
                 "CopcSource",
                 "OGC3DTilesSource",
                 "OGC3DTilesIonSource",
@@ -97,7 +96,6 @@
                 "B3dmParser",
                 "ShapefileParser",
                 "LASParser",
-                "GeotiffParser",
                 "GTXParser",
                 "GDFParser",
                 "ISGParser"
