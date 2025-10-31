@@ -217,6 +217,10 @@ class Potree2Source extends Source {
         if (!source.file) {
             throw new Error('New Potree2Source: file is required');
         }
+        if (!source.crs) {
+            // with better data and the spec this might be removed
+            throw new Error('New PotreeSource: crs is required');
+        }
 
         super(source);
         this.file = source.file;
@@ -229,6 +233,9 @@ class Potree2Source extends Source {
                 this.baseurl = `${this.url}`;
                 this.extension = 'bin';
                 this.parser = Potree2BinParser.parse;
+
+                this.zmin = metadata.attributes.filter(attributes => attributes.name === 'position')[0].min[2];
+                this.zmax = metadata.attributes.filter(attributes => attributes.name === 'position')[0].max[2];
 
                 this.spacing = metadata.spacing;
 

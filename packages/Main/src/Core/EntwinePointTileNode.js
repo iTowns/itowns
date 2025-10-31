@@ -48,8 +48,9 @@ class EntwinePointTileNode extends PointCloudNode {
      * @param {number} [numPoints=0] - The number of points in this node. If
      * `-1`, it means that the octree hierarchy associated to this node needs to
      * be loaded.
+     * @param {string} crs - The crs of the node.
      */
-    constructor(depth, x, y, z, source, numPoints = 0) {
+    constructor(depth, x, y, z, source, numPoints = 0, crs) {
         super(numPoints, source);
         this.isEntwinePointTileNode = true;
 
@@ -61,6 +62,8 @@ class EntwinePointTileNode extends PointCloudNode {
         this.voxelKey = buildVoxelKey(depth, x, y, z);
 
         this.url = `${this.source.url}/ept-data/${this.voxelKey}.${this.source.extension}`;
+
+        this.crs = crs;
     }
 
     get octreeIsLoaded() {
@@ -103,7 +106,7 @@ class EntwinePointTileNode extends PointCloudNode {
         const numPoints = hierarchy[voxelKey];
 
         if (typeof numPoints == 'number') {
-            const child = new EntwinePointTileNode(depth, x, y, z, this.source, numPoints);
+            const child = new EntwinePointTileNode(depth, x, y, z, this.source, numPoints, this.crs);
             this.add(child);
             stack.push(child);
         }

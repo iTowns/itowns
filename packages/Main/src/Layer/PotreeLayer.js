@@ -1,11 +1,5 @@
-import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 import PotreeNode from 'Core/PotreeNode';
-import { Extent } from '@itowns/geographic';
-
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
 
 /**
  * @property {boolean} isPotreeLayer - Used to checkout whether this layer
@@ -52,10 +46,7 @@ class PotreeLayer extends PointCloudLayer {
         this.isPotreeLayer = true;
 
         const resolve = this.addInitializationStep();
-
-        this.source.whenReady.then((cloud) => {
-            this.scale = new THREE.Vector3().addScalar(cloud.scale);
-
+        this.whenReady = this.source.whenReady.then((cloud) => {
             const normal = Array.isArray(cloud.pointAttributes) &&
                 cloud.pointAttributes.find(elem => elem.startsWith('NORMAL'));
             if (normal) {
@@ -64,14 +55,13 @@ class PotreeLayer extends PointCloudLayer {
 
             this.supportsProgressiveDisplay = (this.source.extension === 'cin');
 
-            this.root = new PotreeNode(0, 0, this.source);
-            this.root.bbox.min.set(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz);
-            this.root.bbox.max.set(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz);
+            this.setElevationRange();
 
-            this.minElevationRange = this.minElevationRange ?? cloud.boundingBox.lz;
-            this.maxElevationRange = this.maxElevationRange ?? cloud.boundingBox.uz;
+            this.root = new PotreeNode(0, 0, this.source, this.crs);
 
-            this.extent = Extent.fromBox3(this.source.crs || 'EPSG:4326', this.root.bbox);
+            this.setRootOBBes([cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz],
+                [cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz]);
+
             return this.root.loadOctree().then(resolve);
         });
     }
