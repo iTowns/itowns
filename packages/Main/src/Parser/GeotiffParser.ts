@@ -13,6 +13,8 @@ import {
     Vector2,
 } from 'three';
 
+import { TEXTURE_TILE_DIM } from 'Provider/Fetcher';
+
 import type { TextureDataType } from 'three';
 import type { Extent } from '@itowns/geographic';
 import type {
@@ -293,19 +295,13 @@ async function parse(data: GeoTIFFImage, options: any) {
     const image = data;
     const {
         in: {
-            crs,
             defaultAlpha,
             resampleMethod,
         },
         extent,
     } = options;
 
-    const tileExtent = extent.isExtent ? extent.as(crs) : extent.toExtent(crs);
-    const tileWorldDimensions = tileExtent.planarDimensions();
-    const tileRasterDimensions = new Vector2(
-        255,
-        Math.round(255 * tileWorldDimensions.y / tileWorldDimensions.x),
-    );
+    const tileRasterDimensions = new Vector2(TEXTURE_TILE_DIM, TEXTURE_TILE_DIM);
 
     const geotiffNode = new GeotiffNode({ image });
 

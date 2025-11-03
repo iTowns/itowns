@@ -1,7 +1,7 @@
 import { TextureLoader, DataTexture, RedFormat, FloatType } from 'three';
 import * as GeoTIFF from 'geotiff';
 
-const TEXTURE_TILE_DIM = 256;
+export const TEXTURE_TILE_DIM = 256;
 const TEXTURE_TILE_SIZE = TEXTURE_TILE_DIM * TEXTURE_TILE_DIM;
 
 const textureLoader = new TextureLoader();
