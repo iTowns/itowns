@@ -1,0 +1,110 @@
+<html>
+    <head>
+        <title>GeoTiff</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js"
+            }
+        }
+        </script>
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+
+
+
+            // ---------- CREATE A GlobeView TO SUPPORT DATA VISUALIZATION: ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.444717, 43.012076),
+                range: 10000,
+                heading: -40,
+                tilt: 20,
+            };
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewContainer = document.getElementById('viewerDiv');
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewContainer, placement);
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+
+
+            // ---------- DISPLAY ORTHO IMAGES: ----------
+
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then((config) => {
+                const colorLayer = new itowns.ColorLayer(
+                    'Ortho',
+                    {
+                        ...config,
+                        source: new itowns.WMTSSource(config.source),
+                    },
+                );
+                view.addLayer(colorLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
+            });
+
+
+
+            // ---------- DISPLAY GEOTIFF ELEVATION DATA: ----------
+
+            const extent = new itowns.Extent(
+                'EPSG:4326',
+                -179.90000000000001, 179.90000000000001,
+                -80, 80,
+            );
+
+            const elevationSource = new itowns.WMSSource({
+                crs: 'EPSG:4326',
+                extent: extent,
+                url: 'https://data.geopf.fr/wms-r/wms',
+                name: 'IGNF_LIDAR-HD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.WGS84G',
+                version: '1.3.0',
+                format: 'image/geotiff',
+            });
+
+            const elevationLayer = new itowns.ElevationLayer(
+                'elevation',
+                {
+                    source: elevationSource,
+                    clampValues: {
+                        min: -10,
+                    },
+                },
+            );
+
+            view.addLayer(elevationLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
+
+
+
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
+        </script>
+    </body>
+</html>

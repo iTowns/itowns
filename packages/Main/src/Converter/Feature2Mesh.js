@@ -611,7 +611,7 @@ function featureToMesh(feature, options) {
             mesh = featureToLine(feature, options);
             break;
         case FEATURE_TYPES.POLYGON:
-            if (style.fill && Object.keys(style.fill).includes('extrusion_height')) {
+            if (style.isExtruded()) {
                 mesh = featureToExtrudedPolygon(feature, options);
             } else {
                 mesh = featureToPolygon(feature, options);
