@@ -524,7 +524,7 @@ function updateExtrudedPolygonVertices(featureMesh, options, vertices, colors, b
     coord.setCrs(context.collection.crs);
 
     // geometry range
-    const geometry = context.getGeometry();
+    const geometry = context.geometry;
     const start = geometry.indices[0].offset;
     const lastIndex = geometry.indices.slice(-1)[0];
     const end = lastIndex.offset + lastIndex.count;
