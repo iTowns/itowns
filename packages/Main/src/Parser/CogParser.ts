@@ -5,9 +5,9 @@ import {
 } from 'three';
 
 import { TEXTURE_TILE_DIM } from 'Provider/Fetcher';
-import { GeotiffNode } from './GeotiffParser';
+import { GeotiffNode } from 'Parser/GeotiffParser';
 
-import type { TextureWithExtent } from './GeotiffParser';
+import type { TextureWithExtent } from 'Parser/GeotiffParser';
 
 
 const DEFAULT_MAX_TEXTURE_SIZE = 10 * 1024 * 1024;
