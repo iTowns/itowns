@@ -85,6 +85,18 @@ describe('Potree', function () {
         });
 
         describe('potree Layer', function () {
+            it('no crs -> should fail', function () {
+                try {
+                    // eslint-disable-next-line no-unused-vars
+                    const source = new PotreeSource({
+                        file: fileName,
+                        url: baseurl,
+                    });
+                } catch (err) {
+                    assert.ok(err instanceof Error);
+                    assert.equal(err.message, 'New PotreeSource: crs is required');
+                }
+            });
             it('Add point potree layer', function (done) {
                 View.prototype.addLayer.call(viewer, potreeLayer)
                     .then(() => {
@@ -148,7 +160,7 @@ describe('Potree', function () {
             });
 
             it('load child node', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
+                const root = new PotreeNode(numPoints, childrenBitField, potreeSource, 'EPSG:4978');
                 root.loadOctree()
                     .then(() => root.children[0].load()
                         .then(() => {

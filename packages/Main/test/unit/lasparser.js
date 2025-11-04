@@ -2,8 +2,11 @@ import assert from 'assert';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import LASParser from 'Parser/LASParser';
 import Fetcher from 'Provider/Fetcher';
+import * as THREE from 'three';
 import proj4 from 'proj4';
+import { OrientationUtils, Coordinates } from '@itowns/geographic';
 import { compareWithEpsilon } from './utils';
+
 
 const baseurl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds';
 const lasUrl = `${baseurl}/data_test.las`;
@@ -34,16 +37,26 @@ describe('LASParser', function () {
         const epsilon = 0.1;
         LASParser.enableLazPerf('../../examples/libs/laz-perf');
 
+        const rotation = new THREE.Quaternion();
+
+        afterEach(async function () {
+            await LASParser.terminate();
+        });
+
         it('parses a las file to a THREE.BufferGeometry (with reprojection)', async function () {
             if (!lasData) { this.skip(); }
             proj4.defs('EPSG:2994', '+proj=lcc +lat_0=41.75 +lon_0=-120.5 +lat_1=43 +lat_2=45.5 +x_0=399999.9999984 +y_0=0 +ellps=GRS80 +towgs84=-0.991,1.9072,0.5129,-1.25033e-07,-4.6785e-08,-5.6529e-08,0 +units=ft +no_defs +type=crs');
+            const coordinates = new Coordinates('EPSG:2994', -2505146.7021798044, -3847441.7959745415, 4412576.847879505);
+            const rotation = OrientationUtils.quaternionFromCRSToCRS('EPSG:2994', 'EPSG:4978')(coordinates);
+
             const options = {
                 in: {
-                    crs: 'EPSG:2994',
-                },
-                out: {
+                    source: {
+                        crs: 'EPSG:2994',
+                    },
                     crs: 'EPSG:4978',
-                    origin: { x: -2505146.7021798044, y: -3847441.7959745415, z: 4412576.847879505 },
+                    origin: coordinates,
+                    rotation,
                 },
             };
             const bufferGeometry = await LASParser.parse(lasData, options);
@@ -52,22 +65,23 @@ describe('LASParser', function () {
             assert.strictEqual(bufferGeometry.attributes.position.count, header.pointCount);
             assert.strictEqual(bufferGeometry.attributes.intensity.count, header.pointCount);
             assert.strictEqual(bufferGeometry.attributes.classification.count, header.pointCount);
-            assert.strictEqual(bufferGeometry.attributes.color, undefined);
+            assert.strictEqual(bufferGeometry.attributes.color, undefined, 'bufferGeometry.attributes.color');
 
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z, header.min[2], epsilon));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z, header.max[2], epsilon));
-            await LASParser.terminate();
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z, -176.9, epsilon), 'bufferGeometry.boundingBox.min.z');
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z, 780.2, epsilon), 'bufferGeometry.boundingBox.max.z');
         });
 
         it('parses a laz file to a THREE.BufferGeometry', async function () {
             if (!lazV14Data) { this.skip(); }
+            const coordinates = new Coordinates('EPSG:3857', 746000, 6508000, 1000);
             const options = {
                 in: {
+                    source: {
+                        crs: 'EPSG:3857',
+                    },
                     crs: 'EPSG:3857',
-                },
-                out: {
-                    crs: 'EPSG:3857',
-                    origin: { x: 746000, y: 6508000, z: 1000 },
+                    origin: coordinates,
+                    rotation,
                 },
             };
             const bufferGeometry = await LASParser.parse(lazV14Data, options);
@@ -85,7 +99,6 @@ describe('LASParser', function () {
             assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x + origin.x, header.max[0], epsilon));
             assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y + origin.y, header.max[1], epsilon));
             assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z + origin.z, header.max[2], epsilon));
-            await LASParser.terminate();
         });
 
         it('parses a copc chunk to a THREE.BufferGeometry', async function _it() {
@@ -121,16 +134,18 @@ describe('LASParser', function () {
                 evlrOffset: 630520,
                 evlrCount: 1,
             };
+            const coordinates = new Coordinates('EPSG:3857', 746000, 6508000, 1000);
             const options = {
                 in: {
-                    pointCount: header.pointCount,
-                    header,
+                    source: {
+                        crs: 'EPSG:3857',
+                        header,
+                    },
+                    numPoints: header.pointCount,
                     // eb,
                     crs: 'EPSG:3857',
-                },
-                out: {
-                    crs: 'EPSG:3857',
-                    origin: { x: 746000, y: 6508000, z: 1000 },
+                    origin: coordinates,
+                    rotation,
                 },
             };
             const bufferGeometry = await LASParser.parseChunk(copcData, options);
@@ -139,7 +154,6 @@ describe('LASParser', function () {
             assert.strictEqual(bufferGeometry.attributes.intensity.count, header.pointCount);
             assert.strictEqual(bufferGeometry.attributes.classification.count, header.pointCount);
             assert.strictEqual(bufferGeometry.attributes.color.count, header.pointCount);
-            await LASParser.terminate();
         });
     });
 });
