@@ -4,9 +4,10 @@ import {
     Vector2,
 } from 'three';
 
-import { GeotiffNode } from './GeotiffParser';
+import { TEXTURE_TILE_DIM } from 'Provider/Fetcher';
+import { GeotiffNode } from 'Parser/GeotiffParser';
 
-import type { TextureWithExtent } from './GeotiffParser';
+import type { TextureWithExtent } from 'Parser/GeotiffParser';
 
 
 const DEFAULT_MAX_TEXTURE_SIZE = 10 * 1024 * 1024;
@@ -76,10 +77,7 @@ async function parse(data: any, options: any) {
 
     const tileExtent = extent.isExtent ? extent.as(crs) : extent.toExtent(crs);
     const tileWorldDimensions = tileExtent.planarDimensions();
-    const tileRasterDimensions = new Vector2(
-        255,
-        Math.round(255 * tileWorldDimensions.y / tileWorldDimensions.x),
-    );
+    const tileRasterDimensions = new Vector2(TEXTURE_TILE_DIM, TEXTURE_TILE_DIM);
 
     // GeoTIFFBase has an experimental readRasters method that has an
     // `bbox` parameter we could use instead of implementing our own

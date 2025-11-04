@@ -1,9 +1,9 @@
 import * as GeoTIFF from 'geotiff';
 import { Extent } from '@itowns/geographic';
 
-import { selectDataType, GeotiffNode } from '../Parser/GeotiffParser';
-import COGParser from '../Parser/CogParser';
-import Source from './Source';
+import { selectDataType, GeotiffNode } from 'Parser/GeotiffParser';
+import COGParser from 'Parser/CogParser';
+import Source from 'Source/Source';
 
 
 type CogSourceConfig = {
