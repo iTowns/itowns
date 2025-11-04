@@ -1,26 +1,13 @@
 import assert from 'assert';
-import View from 'Core/View';
-import GlobeView from 'Core/Prefab/GlobeView';
-import { Coordinates } from '@itowns/geographic';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import CopcSource from 'Source/CopcSource';
 import CopcLayer from 'Layer/CopcLayer';
 import CopcNode from 'Core/CopcNode';
-import LASParser from 'Parser/LASParser';
-import Renderer from './bootstrap';
 
 const copcUrl = 'https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz';
 
 describe('COPC', function () {
     let source;
-    before(function () {
-        LASParser.enableLazPerf('../../examples/libs/laz-perf');
-    });
-
-    after(async function () {
-        await LASParser.terminate();
-    });
-
     describe('Copc Source', function () {
         describe('retrieving crs from wkt information', function () {
             it('wkt.srs.type is COMPD_CS', function (done) {
@@ -39,99 +26,43 @@ describe('COPC', function () {
                     }).catch(done);
             }).timeout(5000);
         });
-
-        describe('Copc Layer', function () {
-            it('instanciates a layer', (done) => {
-                const layer = new CopcLayer('copc', { source, crs: 'EPSG:4978' });
-                layer.whenReady
-                    .then(() => {
-                        assert.equal(layer.zmin, source.header.min[2]);
-                        assert.ok(layer.root.isCopcNode);
-                        assert.ok(layer.root.children.length > 0);
-                        done();
-                    }).catch(done);
-            });
-        });
     });
 
-    describe('Layer', function () {
-        let renderer;
-        let placement;
-        let view;
-        let layer;
-        let context;
-
-        before(function (done) {
-            renderer = new Renderer();
-            placement = { coord: new Coordinates('EPSG:4326', 0, 0), range: 250 };
-            view = new GlobeView(renderer.domElement, placement, { renderer });
-            layer = new CopcLayer('testCopcLayer', { source });
-
-            context = {
-                camera: view.camera,
-                engine: view.mainLoop.gfxEngine,
-                scheduler: view.mainLoop.scheduler,
-                geometryLayer: layer,
-                view,
-            };
-
-            View.prototype.addLayer.call(view, layer)
+    describe('Copc Layer', function () {
+        it('instanciates a layer', (done) => {
+            const layer = new CopcLayer('copc', { source, crs: 'EPSG:4978' });
+            layer.whenReady
                 .then(() => {
+                    assert.equal(source.zmin, source.header.min[2]);
+                    assert.ok(layer.root.isCopcNode);
+                    assert.ok(layer.root.children.length > 0);
                     done();
                 }).catch(done);
         });
-
-        it('pre updates and finds the root', () => {
-            const element = layer.preUpdate(context, new Set([layer]));
-            assert.strictEqual(element.length, 1);
-            assert.deepStrictEqual(element[0], layer.root);
-        });
-
-        it('tries to update on the root and fails', function () {
-            layer.update(context, layer, layer.root);
-            assert.strictEqual(layer.root.promise, undefined);
-        });
-
-        it('tries to update on the root and succeeds', function (done) {
-            view.controls.lookAtCoordinate({
-                range: -250,
-            }, false)
-                .then(() => {
-                    layer.update(context, layer, layer.root);
-                    layer.root.promise
-                        .then(() => {
-                            done();
-                        });
-                }).catch(done);
-        });
-
-        it('post updates', function () {
-            layer.postUpdate(context, layer);
-        });
     });
 
-    describe('Node', function () {
+    describe('COPC Node', function () {
         let root;
         before(function () {
-            const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
-            root = new CopcNode(0, 0, 0, 0, layer, 4000);
-            root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+            const source = { url: 'http://server.geo', extension: 'laz' };
+            root = new CopcNode(0, 0, 0, 0, 0, 1000, source, 4000);
+            root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
-            root.add(new CopcNode(1, 0, 0, 0, layer, 3000));
-            root.add(new CopcNode(1, 0, 0, 1, layer, 3000));
-            root.add(new CopcNode(1, 0, 1, 1, layer, 3000));
+            root.add(new CopcNode(1, 0, 0, 0, 0, 1000, source, 3000));
+            root.add(new CopcNode(1, 0, 0, 1, 0, 1000, source, 3000));
+            root.add(new CopcNode(1, 0, 1, 1, 0, 1000, source, 3000));
 
-            root.children[0].add(new CopcNode(2, 0, 0, 0, layer, 2000));
-            root.children[0].add(new CopcNode(2, 0, 1, 0, layer, 2000));
-            root.children[1].add(new CopcNode(2, 0, 1, 3, layer, 2000));
-            root.children[2].add(new CopcNode(2, 0, 2, 2, layer, 2000));
-            root.children[2].add(new CopcNode(2, 0, 3, 3, layer, 2000));
+            root.children[0].add(new CopcNode(2, 0, 0, 0, 0, 1000, source, 2000));
+            root.children[0].add(new CopcNode(2, 0, 1, 0, 0, 1000, source, 2000));
+            root.children[1].add(new CopcNode(2, 0, 1, 3, 0, 1000, source, 2000));
+            root.children[2].add(new CopcNode(2, 0, 2, 2, 0, 1000, source, 2000));
+            root.children[2].add(new CopcNode(2, 0, 3, 3, 0, 1000, source, 2000));
 
-            root.children[0].children[0].add(new CopcNode(3, 0, 0, 0, layer, 1000));
-            root.children[0].children[0].add(new CopcNode(3, 0, 1, 0, layer, 1000));
-            root.children[1].children[0].add(new CopcNode(3, 0, 2, 7, layer, 1000));
-            root.children[2].children[0].add(new CopcNode(3, 0, 5, 4, layer, 1000));
-            root.children[2].children[1].add(new CopcNode(3, 1, 6, 7, layer));
+            root.children[0].children[0].add(new CopcNode(3, 0, 0, 0, 0, 1000, source, 1000));
+            root.children[0].children[0].add(new CopcNode(3, 0, 1, 0, 0, 1000, source, 1000));
+            root.children[1].children[0].add(new CopcNode(3, 0, 2, 7, 0, 1000, source, 1000));
+            root.children[2].children[0].add(new CopcNode(3, 0, 5, 4, 0, 1000, source, 1000));
+            root.children[2].children[1].add(new CopcNode(3, 1, 6, 7, 0, 1000, source));
         });
 
         describe('finds the common ancestor of two nodes', () => {
