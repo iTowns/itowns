@@ -106,6 +106,12 @@ class SkyManager {
         skyMaterial.needsUpdate = true; // useless?
 
         this.aerialPerspective.sunDirection.copy(sunDirection);
+
+        // attenuate aerial perspective when far away.
+        // value determined experimentally
+        const cam = camera as THREE.PerspectiveCamera | THREE.OrthographicCamera;
+        this.aerialPerspective.blendMode.opacity.value = Math.max(1 - 2e-7 * cam.near, 0);
+
         // The changes to the camera's near/far must be manually updated
         // to the uniforms used in post-processing effects
         (this.effectPass.fullscreenMaterial as EffectMaterial).adoptCameraSettings(camera);
