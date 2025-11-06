@@ -96,6 +96,10 @@
 
             var menuGlobe = new GuiTools('menuDiv', view);
 
+            const cRL = menuGlobe.addGUI('RealisticLighting', true, function (v) {
+                view.skyManager.enabled = v;
+            });
+
             debug.createTileDebugUI(menuGlobe.gui, view);
             window.view = view;
             window.itowns = itowns;

@@ -75,6 +75,9 @@
             view.camera3D.fov = 75;
             view.camera3D.updateProjectionMatrix();
 
+            // disable atmosphere
+            view.skyManager.enabled = false;
+
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.

@@ -58,6 +58,9 @@
             // Define poles texture
             view.tileLayer.noTextureColor = new THREE.Color(0x95c1e1);
 
+            // Disable atmosphere lighting
+            view.skyManager.enabled = false;
+
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
             const debugMenu = new GuiTools('menuDiv', view, 300);
