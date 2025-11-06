@@ -401,6 +401,7 @@ class Renderer {
             isWebGL2: true,
         };
         this.debug = {};
+        this.shadowMap = {};
     }
 
     getSize() { return new THREE.Vector2(4, 4); } // arbitrary size
@@ -414,6 +415,8 @@ class Renderer {
     readRenderTargetPixelsAsync() { }
     getContext() { return this.context; }
     getDrawingBufferSize() { return new THREE.Vector2(4, 4); } // arbitrary size
+    getClearAlpha() { return 1; }
+    setClearAlpha() {}
 }
 
 export default Renderer;
