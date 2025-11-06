@@ -53,6 +53,8 @@
             // define pole texture
             view.tileLayer.noTextureColor = new THREE.Color(0x95c1e1);
 
+            view.skyManager.enabled = false;
+
             setupLoadingScreen(viewerDiv, view);
 
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {

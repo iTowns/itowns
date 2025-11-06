@@ -71,6 +71,9 @@
             // Define poles texture
             view.tileLayer.noTextureColor = new THREE.Color(0x95c1e1);
 
+            // Disable atmosphere lighting
+            view.skyManager.enabled = false;
+
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
             const debugMenu = new GuiTools('menuDiv', view, 300);
@@ -87,7 +90,7 @@
                     return view.addLayer(layer);
                 });
 
-            // Add an elevation layer, whose properties are defined in a json
+            // Add an elevation layer, whose properties are defined in a json 
             // file.
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
@@ -96,7 +99,7 @@
             }
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json')
                 .then(addElevationLayerFromConfig);
-
+            
 
 
             // ---------- DISPLAY VECTOR TILED BUILDING DATA AS 3D MESHES : ----------

@@ -144,6 +144,23 @@
                 position: 'top-right',
             });
 
+
+
+            // ---------- DISPLAY ATMOSPHERIC LIGHTING : ----------
+
+            view.skyManager.enabled = !view.isDebugMode;
+
+
+
+            // ---------- DEBUG TOOLS : ----------
+
+            // Toggle atmospheric lighting on/off.
+            const cRL = debugMenu.addGUI('RealisticLighting', !view.isDebugMode, function (v) {
+                view.skyManager.enabled = v;
+            });
+
+            debug.createTileDebugUI(debugMenu.gui, view);
+
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;

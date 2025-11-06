@@ -15,6 +15,7 @@ import {
     FXAAEffect,
     ToneMappingMode,
     EffectMaterial,
+    EffectComposer,
 } from 'postprocessing';
 import View from 'Core/View';
 
@@ -24,26 +25,31 @@ class SkyManager {
     sunLight: SunDirectionalLight;
     aerialPerspective: AerialPerspectiveEffect;
     effectPass: EffectPass;
+    scene: THREE.Scene;
+    composer: EffectComposer;
+    fog: THREE.Fog;
+    view: View;
 
     public date: Date;
 
     constructor(view: View) {
+        this.view = view;
         const scene = view.scene;
+        this.scene = scene;
         const camera = view.camera3D;
         const composer = view.mainLoop.gfxEngine.composer;
+        this.composer = composer;
 
         // SkyMaterial disables projection.
         // Provide a plane that covers clip space.
         const skyMaterial = new SkyMaterial();
         this.sky = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), skyMaterial);
         this.sky.frustumCulled = false;
-        scene.add(this.sky);
 
         // SkyLightProbe computes sky irradiance of its position.
         this.skyLight = new SkyLightProbe();
         this.skyLight.intensity = 1;
         this.skyLight.position.copy(camera.position);
-        scene.add(this.skyLight);
 
         this.date = new Date(); // now
 
@@ -54,9 +60,6 @@ class SkyManager {
         this.sunLight = new SunDirectionalLight({ distance: 300 });
         this.sunLight.intensity = 0.2;
         this.sunLight.target.position.copy(camera.position);
-
-        scene.add(this.sunLight);
-        scene.add(this.sunLight.target); // to update matrixWorld at each frame
 
         this.aerialPerspective = new AerialPerspectiveEffect(camera);
         this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
@@ -70,7 +73,6 @@ class SkyManager {
             this.aerialPerspective,
             new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
         );
-        composer.addPass(this.effectPass);
         composer.addPass(new EffectPass(camera, new FXAAEffect())); // anti-aliasing
 
         // Generate precomputed textures.
@@ -83,12 +85,29 @@ class SkyManager {
         this.skyLight.irradianceTexture = textures.irradianceTexture;
         Object.assign(this.aerialPerspective, textures);
 
-        scene.fog = null;
+        this.fog = scene.fog;
 
-        scene.onBeforeRender = () => { this.update(camera); };
+        this.enable();
+
+        // actually only useful if Sun or Moon direction has changed
+        // which is currently always the case because based on current time,
+        // or if camera has moved.
+        scene.onBeforeRender = () => {
+            // disable fog only during render
+            // to let its parameters be modified elsewhere
+            if (this.enabled) { this.scene.fog = null; }
+            this.update(camera);
+        };
+        scene.onAfterRender = () => {
+            if (this.enabled) { this.scene.fog = this.fog; }
+        };
+
+        this.composer.render();
     }
 
     update(camera: THREE.Camera) {
+        if (!this.enabled) { return; }
+
         const sunDirection = new THREE.Vector3();
         const moonDirection = new THREE.Vector3();
 
@@ -127,6 +146,30 @@ class SkyManager {
         this.sunLight.updateMatrixWorld();
         this.sunLight.target.updateMatrixWorld();
         this.skyLight.updateMatrixWorld();
+    }
+
+    get enabled() {
+        return !!this.sky.parent; // sky has a parent (the scene)
+    }
+
+    set enabled(on: boolean) {
+        if (this.enabled == on) { return; }
+        if (on) { this.enable(); } else { this.disable(); }
+        this.composer.render();
+    }
+
+    enable() {
+        this.scene.add(
+            this.sky,
+            this.sunLight,
+            this.sunLight.target, // to update matrixWorld at each frame
+            this.skyLight);
+        this.composer.addPass(this.effectPass, 1);
+    }
+
+    disable() {
+        this.scene.remove(this.sky, this.sunLight, this.sunLight.target, this.skyLight);
+        this.composer.removePass(this.effectPass);
     }
 }
 
