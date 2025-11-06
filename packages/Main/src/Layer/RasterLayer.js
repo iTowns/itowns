@@ -67,7 +67,7 @@ class RasterLayer extends Layer {
 
         // fix(ElevationLayer): don't assume Layer's Source has a TMS-like structure
         // if (nodeLayer.level >= layer.source.zoom?.min) {
-        return !rasterTile && !(zoom < this.source.zoom.min || zoom < this.zoom.min);
+        return !rasterTile && !(zoom < this.source.zoom?.min || zoom < this.zoom.min);
     }
 
     update(context, layer, node) {
