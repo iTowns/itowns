@@ -155,6 +155,11 @@ class SkyManager {
     set enabled(on: boolean) {
         if (this.enabled == on) { return; }
         if (on) { this.enable(); } else { this.disable(); }
+
+        // force internally calling state.buffers.color.setClear
+        // to get a correct background color
+        this.view.renderer.setClearAlpha(this.view.renderer.getClearAlpha());
+
         this.composer.render();
     }
 
