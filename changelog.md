@@ -1,3 +1,83 @@
+<a name="2.46.1-next.9"></a>
+## [2.46.1-next.9](https://github.com/iTowns/itowns/compare/v2.46.0...v2.46.1-next.9) (2025-11-07)
+
+
+### Features
+
+* Add support for Cloud Optimized Geotiff ([4933b31](https://github.com/iTowns/itowns/commit/4933b31))
+* Add support for Geotiff ([a0b18a8](https://github.com/iTowns/itowns/commit/a0b18a8))
+* allow assigning a funcion to a style property after its declaration ([01be54d](https://github.com/iTowns/itowns/commit/01be54d))
+* **camera:** calculate dynamic, optimized camera near/far and fog ([56b722b](https://github.com/iTowns/itowns/commit/56b722b))
+* **deps:** bump proj4 from 2.9.3 to 2.9.10 ([16cf342](https://github.com/iTowns/itowns/commit/16cf342))
+* **geographic:** let user import single modules ([f160270](https://github.com/iTowns/itowns/commit/f160270))
+
+
+### Bug Fixes
+
+* **camera:** don't add default fog in views where camera has static near/far ([a969ced](https://github.com/iTowns/itowns/commit/a969ced))
+* **ci:** fix missing env variable for release ([e548cf0](https://github.com/iTowns/itowns/commit/e548cf0))
+* **Cog-Geotiff:** Fix tile raster dimensions ([3fedcae](https://github.com/iTowns/itowns/commit/3fedcae))
+* **doc:** remove typescript doc for COG/Geotiff ([8bc6ed3](https://github.com/iTowns/itowns/commit/8bc6ed3))
+* **ElevationLayer:** don't assume Layer's Source has a TMS-like structure ([502c20b](https://github.com/iTowns/itowns/commit/502c20b))
+* **example:** fix copc_simple_loader example ([adc7d7b](https://github.com/iTowns/itowns/commit/adc7d7b))
+* fix wrong install path for dependencies ([c6f5964](https://github.com/iTowns/itowns/commit/c6f5964))
+* **Potree2BinParser:** fix error in pointAttributes property ([9b24c35](https://github.com/iTowns/itowns/commit/9b24c35))
+* **TileBuilder:** resolve computeExtraOffset type pain ([05d9e5f](https://github.com/iTowns/itowns/commit/05d9e5f))
+* **TileLayer:** fix material opacity ([71fa255](https://github.com/iTowns/itowns/commit/71fa255))
+
+
+### Examples
+
+* **Potree:** remove the extra '/' in url ([c0118ec](https://github.com/iTowns/itowns/commit/c0118ec))
+
+
+### Code Refactoring
+
+* **geographic:** don't use three default import ([be2ec44](https://github.com/iTowns/itowns/commit/be2ec44))
+* migrate OBB to typescript ([7aaf134](https://github.com/iTowns/itowns/commit/7aaf134))
+* migrate TileMesh to typescript ([31a364f](https://github.com/iTowns/itowns/commit/31a364f))
+* **PointCloudNode:** remove reference to layer in Node (use source directly) ([662f273](https://github.com/iTowns/itowns/commit/662f273))
+* rewrite code checking extrusion height was set, defining setter/getter separately ([6a6ee3b](https://github.com/iTowns/itowns/commit/6a6ee3b))
+
+
+### Workflow and chores
+
+* **Cog-Geotiff:** rewrite relative imports ([67832d6](https://github.com/iTowns/itowns/commit/67832d6))
+* **geographic:** mark module-levels function as pure ([872baed](https://github.com/iTowns/itowns/commit/872baed))
+* **integration:** update job names to match Node version ([00e8ead](https://github.com/iTowns/itowns/commit/00e8ead))
+* migrate convertToTile to typescript ([c6e9175](https://github.com/iTowns/itowns/commit/c6e9175))
+* **node:** update to node 24 ([d01b83f](https://github.com/iTowns/itowns/commit/d01b83f))
+* **TileMesh:** remove dynamically added zoom property ([30c7728](https://github.com/iTowns/itowns/commit/30c7728))
+* update caniuse-lite ([e9c0786](https://github.com/iTowns/itowns/commit/e9c0786))
+
+
+### Documentation
+
+* **ColorLayer:** rewrote ambiguous documentation ([fd85969](https://github.com/iTowns/itowns/commit/fd85969))
+* **LayerUpdateState:** update and refine documentation ([33d8dc7](https://github.com/iTowns/itowns/commit/33d8dc7))
+* **OBB:** update and refine documentation ([6bc71c9](https://github.com/iTowns/itowns/commit/6bc71c9))
+* **TileMesh:** update and refine documentation ([0e90f3e](https://github.com/iTowns/itowns/commit/0e90f3e))
+
+
+### Tests
+
+* **Potree:** unit test ([3c93bbe](https://github.com/iTowns/itowns/commit/3c93bbe))
+
+
+### Others
+
+* 2.46.1-next.8 ([f750422](https://github.com/iTowns/itowns/commit/f750422))
+* 2.46.1-next.7 ([17d66f0](https://github.com/iTowns/itowns/commit/17d66f0))
+* 2.46.1-next.6 ([05e6354](https://github.com/iTowns/itowns/commit/05e6354))
+* 2.46.1-next.5 ([7ea8130](https://github.com/iTowns/itowns/commit/7ea8130))
+* 2.46.1-next.4 ([ba8afee](https://github.com/iTowns/itowns/commit/ba8afee))
+* 2.46.1-next.3 ([1c6f83c](https://github.com/iTowns/itowns/commit/1c6f83c))
+* 2.46.1-next.2 ([9884dbf](https://github.com/iTowns/itowns/commit/9884dbf))
+* 2.46.1-next.1 ([2e1d0ae](https://github.com/iTowns/itowns/commit/2e1d0ae))
+* 2.46.1-next.0 ([d9faec7](https://github.com/iTowns/itowns/commit/d9faec7))
+
+
+
 <a name="2.46.1-next.8"></a>
 ## [2.46.1-next.8](https://github.com/iTowns/itowns/compare/v2.46.0...v2.46.1-next.8) (2025-11-04)
 
