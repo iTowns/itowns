@@ -84,6 +84,7 @@ class GlobeView extends View {
      * enable WebXR to switch on VR visualization.
      * @param {function} [options.webXR.callback] - WebXR rendering callback.
      * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling.
+     * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
      * @param {number} [options.farFactor=20] - Controls how far the camera can see.
      * The maximum view distance is this factor times the camera’s altitude (above sea level).
      * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
@@ -124,30 +125,32 @@ class GlobeView extends View {
 
             const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
 
-            this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
-                // update camera's near and far
-                const originToCamSq = this.camera3D.position.lengthSq();
+            if (options.dynamicCameraNearFar || options.dynamicCameraNearFar === undefined) {
+                this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
+                    // update camera's near and far
+                    const originToCamSq = this.camera3D.position.lengthSq();
 
-                // maximum possible distance from ground to camera
-                const camCoordinates = new Coordinates(this.referenceCrs)
-                    .setFromVector3(this.camera3D.position);
-                camCoordinates.as(this.tileLayer.extent.crs, camCoordinates);
-                const camToSeaLevel = camCoordinates.z;
+                    // maximum possible distance from ground to camera
+                    const camCoordinates = new Coordinates(this.referenceCrs)
+                        .setFromVector3(this.camera3D.position);
+                    camCoordinates.as(this.tileLayer.extent.crs, camCoordinates);
+                    const camToSeaLevel = camCoordinates.z;
 
-                const camToGroundDistMin = camToSeaLevel - View.ALTITUDE_MAX;
-                this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
+                    const camToGroundDistMin = camToSeaLevel - View.ALTITUDE_MAX;
+                    this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
 
-                // distance from camera to the horizon
-                const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
+                    // distance from camera to the horizon
+                    const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
 
-                this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
-                this.camera3D.updateProjectionMatrix();
+                    this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
+                    this.camera3D.updateProjectionMatrix();
 
-                const fog = this.scene.fog;
-                if (!fog) { return; }
-                fog.far = this.camera3D.far;
-                fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
-            });
+                    const fog = this.scene.fog;
+                    if (!fog) { return; }
+                    fog.far = this.camera3D.far;
+                    fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
+                });
+            }
 
             this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
         }

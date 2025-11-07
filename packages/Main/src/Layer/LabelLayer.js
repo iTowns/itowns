@@ -66,7 +66,7 @@ class LabelsNode extends THREE.Group {
         this.needsUpdate = true;
     }
 
-    // instanciate dom elements
+    // instantiate dom elements
     initializeDom() {
         // create root dom
         this.domElements = new DomNode();

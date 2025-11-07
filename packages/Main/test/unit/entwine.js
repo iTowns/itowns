@@ -89,7 +89,7 @@ describe('Entwine Point Tile', function () {
             renderer = new Renderer();
             placement = { coord: new Coordinates('EPSG:4326', 0, 0), range: 250 };
             view = new GlobeView(renderer.domElement, placement, { renderer });
-            layer = new EntwinePointTileLayer('test', { source }, view);
+            layer = new EntwinePointTileLayer('testEptLayer', { source });
 
             context = {
                 camera: view.camera,

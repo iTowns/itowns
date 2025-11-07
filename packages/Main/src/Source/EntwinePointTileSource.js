@@ -1,4 +1,4 @@
-import proj4 from 'proj4';
+import { CRS } from '@itowns/geographic';
 import LASParser from 'Parser/LASParser';
 import PotreeBinParser from 'Parser/PotreeBinParser';
 import Fetcher from 'Provider/Fetcher';
@@ -21,9 +21,9 @@ class EntwinePointTileSource extends Source {
     /**
      * @param {Object} config - The configuration, see {@link Source} for
      * available values.
-     * @param {number|string} [config.colorDepth='auto'] - Does the color
-     * encoding is known ? Is it `8` or `16` bits ? By default it is to
-     * `'auto'`, but it will be more performant if a specific value is set.
+     * @param {number} [config.colorDepth] - Color depth (in bits).
+     * Either 8 or 16 bits. By defaults it will be set to 8 bits for LAS 1.2 and
+     * 16 bits for later versions (as mandatory by the specification).
      */
     constructor(config) {
         super(config);
@@ -43,16 +43,11 @@ class EntwinePointTileSource extends Source {
             if (metadata.srs) {
                 if (metadata.srs.authority && metadata.srs.horizontal) {
                     this.crs = `${metadata.srs.authority}:${metadata.srs.horizontal}`;
-                    if (!proj4.defs(this.crs)) {
-                        proj4.defs(this.crs, metadata.srs.wkt);
+                    if (!CRS.defs(this.crs)) {
+                        CRS.defs(this.crs, metadata.srs.wkt);
                     }
                 } else if (metadata.srs.wkt) {
-                    proj4.defs('unknown', metadata.srs.wkt);
-                    const projCS = proj4.defs('unknown');
-                    this.crs = projCS.title || projCS.name;
-                    if (!(this.crs in proj4.defs)) {
-                        proj4.defs(this.crs, projCS);
-                    }
+                    this.crs = CRS.defsFromWkt(metadata.srs.wkt);
                 }
                 if (metadata.srs.vertical && metadata.srs.vertical !== metadata.srs.horizontal) {
                     console.warn('EntwinePointTileSource: Vertical coordinates system code is not yet supported.');

@@ -25,7 +25,8 @@
         "laz_dragndrop": "LAS/LAZ viewer",
         "entwine_simple_loader": "Entwine loader",
         "entwine_3d_loader": "Entwine 3D loader",
-        "copc_simple_loader": "COPC loader"
+        "copc_simple_loader": "COPC loader",
+        "vpc_simple_loader": "VPC loader"
     },
 
     "Vector tiles": {

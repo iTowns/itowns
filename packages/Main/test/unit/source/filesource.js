@@ -48,7 +48,7 @@ describe('FileSource', function () {
     it('should instance FileSource with source.fetchedData and parse data with a layer', function (done) {
         // TO DO need cleareance: what is this test for ?
         //  - testing instanceation Filesource when fetchedData and source.feature is already available ?
-        //  - testing instanciate Layer ?
+        //  - testing instantiate Layer ?
         //  - testing source.onLayerAdded ?
         //  - testing souce.loadData ?
         const source = new FileSource({

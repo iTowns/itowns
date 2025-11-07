@@ -150,7 +150,6 @@ class Source {
     loadData(extent, out) {
         const cache = this._featuresCaches[out.crs];
         const key = this.getDataKey(extent);
-        // console.log('Source.loadData', key);
         // try to get parsed data from cache
         let features = cache.get(key);
         if (!features) {

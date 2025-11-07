@@ -279,22 +279,21 @@ class PointCloudLayer extends GeometryLayer {
         return [this.root];
     }
 
-    update(context, layer, elt) {
-        elt.visible = false;
-
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
-            return;
-        }
-
-        // pick the best bounding box
-        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return;
-        }
-
+    /**
+     * Load the data of a node.
+     * Send a promise to get the data (if not already sent)
+     * and add the result to the node when resolve.
+     * Check the visiblility of children to see if the need to be updated
+     * as well.
+     *
+     * @param {PointCloudNode} elt - The element (node) to load data.
+     * @param {Object} context - The context.
+     * @param {PointCloudLayer} layer - The layer on wich the node is attach.
+     * @param {THREE.Box3} bbox - bbox of the node.
+     *
+     * @return {pointCloudNode[]} The child nodes to update (if needed).
+     */
+    loadData(elt, context, layer, bbox) {
         elt.notVisibleSince = undefined;
         point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
         point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
@@ -353,8 +352,38 @@ class PointCloudLayer extends GeometryLayer {
                 for (const child of elt.children) {
                     markForDeletion(child);
                 }
+                return [];
             }
         }
+    }
+
+    /**
+     * Check if the node need to be rendered. In that case it call the
+     * node.loadData() on it.
+     *
+     * @param {Object} context - The context.
+     * @param {PointCloudLayer} layer - The layer on wich the node is attach.
+     * @param {PointCloudNode} elt - The element (node) to render.
+     *
+     * @return {pointCloudNode[]} The child nodes to update or [] if ther is none.
+     */
+    update(context, layer, elt) {
+        elt.visible = false;
+
+        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
+            markForDeletion(elt);
+            return [];
+        }
+
+        // pick the best bounding box
+        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
+        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
+        if (!elt.visible) {
+            markForDeletion(elt);
+            return [];
+        }
+
+        return this.loadData(elt, context, layer, bbox);
     }
 
     postUpdate() {

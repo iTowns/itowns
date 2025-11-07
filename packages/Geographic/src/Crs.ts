@@ -1,6 +1,13 @@
 import proj4 from 'proj4';
-
 import type { ProjectionDefinition } from 'proj4/dist/lib/defs';
+
+type proj4Def = {
+    type: string,
+    PROJCS: proj4Def,
+    unknown?: string,
+    (alias: string): proj4Def & { name: string },
+    title: string,
+}
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
@@ -174,3 +181,21 @@ export function axisOrder(crs: ProjectionLike) {
  * @param proj4def - Proj4 or WKT string of the defined projection.
  */
 export const defs = (code: string, proj4def: string) => proj4.defs(code, proj4def);
+
+export function defsFromWkt(wkt: string) {
+    proj4.defs('unknown', wkt);
+    const proj4Defs = proj4.defs as unknown as proj4Def;
+    let projCS;
+    if (proj4Defs('unknown').type === 'COMPD_CS') {
+        console.warn('Compound coordinate system is not yet supported.');
+        projCS = proj4Defs('unknown').PROJCS;
+    } else {
+        projCS = proj4Defs('unknown');
+    }
+    const crsAlias = projCS.title || projCS.name || 'EPSG:XXXX';
+    if (!(crsAlias in proj4.defs)) {
+        proj4.defs(crsAlias, projCS);
+    }
+    delete proj4Defs.unknown;
+    return crsAlias;
+}
