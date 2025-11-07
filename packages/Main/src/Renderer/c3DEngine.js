@@ -57,6 +57,10 @@ class c3DEngine {
         this.fullSizeRenderTarget.depthTexture.type = THREE.UnsignedShortType;
 
         this.renderView = function _(view) {
+            // force internally calling state.buffers.color.setClear
+            // to get a correct background color
+            this.renderer.setClearAlpha(this.renderer.getClearAlpha());
+
             this.renderer.clear();
             if (view._camXR) {
                 this.renderer.render(view.scene, view._camXR);
@@ -209,10 +213,6 @@ class c3DEngine {
         this.renderer.clear(true, true, false);
         this.renderer.render(view.scene, view.camera.camera3D);
         this.renderer.setRenderTarget(current);
-
-        // force internally calling state.buffers.color.setClear
-        // to get a correct background color
-        this.renderer.setClearAlpha(this.renderer.getClearAlpha());
 
         this.fullSizeRenderTarget.scissorTest = false;
         return target;
