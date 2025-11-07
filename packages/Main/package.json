@@ -16,7 +16,7 @@
     "types": "tsc && tsc-alias",
     "transpile": "npm run types && cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib --extensions .js,.ts",
     "test-unit": "npm run base-test-unit test/unit",
-    "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --timeout 5000 --file test/unit/bootstrap.js --import=../../config/babel-register/register.mjs",
+    "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 NODE_OPTIONS=--no-experimental-strip-types mocha --timeout 5000 --file test/unit/bootstrap.js --import=../../config/babel-register/register.mjs",
     "test-with-coverage": "c8 -n src -r html cross-env npm run test-unit",
     "test-with-coverage_lcov": "c8 -n src --reporter=lcov cross-env npm run test-unit",
     "watch": "npm run transpile -- --watch",

@@ -18,11 +18,11 @@ jobs:
     steps:
 
       # Use specific Node.js version
-      - uses: actions/checkout@v4
-      - name: Use Node.js 22.17
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 22.17
+          node-version: 24
           cache: 'npm'
 
       # Install packages
@@ -90,11 +90,11 @@ jobs:
     steps:
 
       # Use specific Node.js version
-      - uses: actions/checkout@v4
-      - name: Use Node.js 22.17
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 22.17
+          node-version: 24
           cache: 'npm'
 
       # Install packages
@@ -106,7 +106,7 @@ jobs:
         run: npm run transpile
 
       - name: Test ${{ matrix.package }}
-        run: npm run test-with-coverage_lcov --workspace ${{ matrix.package}}
+        run: npm run test-with-coverage_lcov --workspace packages/${{ matrix.path }}
       - name: Coveralls Parallel
         uses: coverallsapp/github-action@v2
         with:
@@ -136,11 +136,11 @@ jobs:
     steps:
 
       # Use specific Node.js version
-      - uses: actions/checkout@v4
-      - name: Use Node.js 22.17
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 22.17
+          node-version: 24
           cache: 'npm'
 
       # Install packages
@@ -149,7 +149,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: dist-itowns
 
@@ -171,17 +171,17 @@ jobs:
         contents: write
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # fetch all branches
           fetch-depth: 0
 
       # Configure git user for later command induced commits
-      - uses: fregante/setup-git-user@v1
+      - uses: fregante/setup-git-user@v2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22.17
+          node-version: 24
           registry-url: https://registry.npmjs.org/
 
       - run: npm ci
@@ -227,7 +227,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: dist-itowns
 
@@ -253,7 +253,7 @@ jobs:
       # Deploy to itowns.github.io LTS
       - name: Deploy LTS to itowns.github.io
         if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           external_repository: iTowns/itowns.github.io
@@ -268,7 +268,7 @@ jobs:
         # since it is not possible to use the same deploy key to simultaneously deploy two different
         # folders on iTowns/itowns.github.io (the release bundle on previous step and this one.
         if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           external_repository: iTowns/itowns.github.io
@@ -286,12 +286,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Use Node.js 22.17
-        uses: actions/setup-node@v4
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 22.17
+          node-version: 24
 
       - name: Message commit
         run: echo "is RELEASE => ${{ github.event.head_commit.message }} !!"
@@ -313,7 +313,7 @@ jobs:
 
       # Download artifact from build
       - name: Download itowns bundle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: dist-itowns
 
