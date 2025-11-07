@@ -15,7 +15,7 @@ noMask.needsUpdate = true;
 const noTexture = new THREE.Texture();
 
 const shaderMaterial = new THREE.ShaderMaterial();
-shaderMaterial.name = 'OrientedImage';
+if (__DEBUG__) { shaderMaterial.name = 'OrientedImage'; }
 /**
  * OrientedImageMaterial is a custom shader material used to do projective texture mapping.<br/>
  *
@@ -68,7 +68,7 @@ class OrientedImageMaterial extends THREE.ShaderMaterial {
             }
         }
         super(shaderMaterialOptions);
-        this.name = 'OrientedImageMaterial';
+        if (__DEBUG__) { this.name = 'OrientedImageMaterial'; }
 
         this.defines.ORIENTED_IMAGES_COUNT = options.OrientedImagesCount ?? cameras.length;
 
