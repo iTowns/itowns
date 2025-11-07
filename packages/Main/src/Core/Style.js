@@ -192,6 +192,10 @@ export class StyleContext {
         return this.#localCoordinates.setFromArray(vertices, offset);
     }
 
+    get geometry() {
+        return this.#geometry;
+    }
+
     get properties() {
         return this.#geometry.properties;
     }
