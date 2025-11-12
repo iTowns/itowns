@@ -3,19 +3,18 @@ import PointCloudNode from 'Core/PointCloudNode';
 import CopcNode from 'Core/CopcNode';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
+import OBB from 'Renderer/OBB';
 
-function _instantiateRootNode(source) {
+function _instantiateRootNode(source, crs) {
     let root;
     if (source.isCopcSource) {
         const { info } = source;
         const { pageOffset, pageLength } = info.rootHierarchyPage;
-        root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, source, -1);
-        root.bbox.min.fromArray(info.cube, 0);
-        root.bbox.max.fromArray(info.cube, 3);
+        root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, source, -1, crs);
+        root.setOBBes(info.cube.slice(0, 3), info.cube.slice(3, 6));
     } else if (source.isEntwinePointTileSource) {
-        root = new EntwinePointTileNode(0, 0, 0, 0, source, -1);
-        root.bbox.min.fromArray(source.boundsConforming, 0);
-        root.bbox.max.fromArray(source.boundsConforming, 3);
+        root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, crs);
+        root.setOBBes(source.boundsConforming.slice(0, 3), source.boundsConforming.slice(3, 6));
     } else {
         const msg = '[VPCLayer]: stack point cloud format not supporter';
         console.warn(msg);
@@ -70,31 +69,32 @@ class VpcLayer extends PointCloudLayer {
 
         // a Vpc layer should be ready when all the child sources are
         this.whenReady = this.source.whenReady.then((/** @type {VpcSource} */ sources) => {
-            this.minElevationRange = this.minElevationRange ?? this.source.minElevation;
-            this.maxElevationRange = this.maxElevationRange ?? this.source.maxElevation;
+            this.setElevationRange();
 
             const boundsConforming = this.source.boundsConforming;
             this.root = new PointCloudNode(0, this.source);
-            this.root.bbox.min.fromArray(boundsConforming, 0);
-            this.root.bbox.max.fromArray(boundsConforming, 3);
+            this.root.crs = this.crs;
+            this.root.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
             this.root.depth = 0;
 
             sources.forEach((source, i) => {
                 const boundsConforming = source.boundsConforming;
-                const bbox = new THREE.Box3().setFromArray(boundsConforming);
                 const mockRoot = {
-                    bbox,
+                    voxelOBB: new OBB(),
+                    clampOBB: new OBB(),
                     children: [],
                     waitingForSource: true,
                     source,
+                    crs: this.crs,
                 };
+                PointCloudNode.prototype.setOBBes.call(mockRoot, boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
 
                 // As we delayed the intanciation of the source to the moment we need to render a particular node,
                 // we need to wait for the source to be instantiate to be able
                 // to instantiate a node and load the Octree associated.
                 const promise =
                     source.whenReady.then((src) => {
-                        const root = _instantiateRootNode(src);
+                        const root = _instantiateRootNode(src, this.crs);
                         this.root.children[i] = root;
                         return root.loadOctree().then(resolve)
                             .then(() => root);

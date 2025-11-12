@@ -81,18 +81,16 @@
             var vpcLayer, vpcSource;
 
             function onLayerReady() {
-                var lookAt = new THREE.Vector3();
+                var lookAt = vpcLayer.root.origin.toVector3();
+
                 var size = new THREE.Vector3();
+                vpcLayer.root.voxelOBB.box3D.getSize(size);
+                view.camera3D.far = 10.0 * size.length();
 
-                const rootBbox = vpcLayer.root.children[0].bbox;
-                rootBbox.getSize(size);
-                rootBbox.getCenter(lookAt);
-
-                view.camera3D.far = 20.0 * size.length();
-
-                controls.groundLevel = rootBbox.min.z;
-                var position = rootBbox.min.clone().add(
-                    size.multiply({ x: 0, y: 0, z: size.x / size.z })
+                controls.groundLevel = vpcLayer.minElevationRange;
+                var corner = new THREE.Vector3(...vpcLayer.source.sources[0].boundsConforming.slice(0, 3));
+                var position = corner.clone().add(
+                    size.multiply({ x: 0, y: 0, z: (size.x / size.z) })
                 );
 
                 view.camera3D.position.copy(position);
@@ -131,7 +129,7 @@
 
             function loadAmiens() {
                 const options = {
-                    material: {mode: 2},
+                    mode: 2,
                     opacity: 0.9,
                 }
                 loadVPC('https://data.geopf.fr/chunk/telechargement/download/LiDARHD-NUALID/VPC/amiens.vpc', options);
@@ -139,7 +137,7 @@
 
             function loadRouen() {
                 const options = {
-                    material: {mode: 2},
+                    mode: 2,
                     opacity: 0.9,
                 }
                 loadVPC('https://data.geopf.fr/chunk/telechargement/download/LiDARHD-NUALID/VPC/rouen.vpc', options);
@@ -147,7 +145,7 @@
 
             function loadOrleans() {
                 const options = {
-                    material: {mode: 2},
+                    mode: 2,
                     opacity: 0.9,
                 }
                 loadVPC('https://data.geopf.fr/chunk/telechargement/download/lidarhd_fxx_ept/vpc/index.vpc', options);
