@@ -1,13 +1,14 @@
 import assert from 'assert';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
-import { Coordinates } from '@itowns/geographic';
+import { Coordinates, CRS } from '@itowns/geographic';
 import VpcSource from 'Source/VpcSource';
 import VpcLayer from 'Layer/VpcLayer';
 import Renderer from './bootstrap';
 
 const vpcEptUrl = 'https://data.geopf.fr/chunk/telechargement/download/lidarhd_fxx_ept/vpc/index.vpc';
 const vpcCopcUrl = 'https://data.geopf.fr/chunk/telechargement/download/LiDARHD-NUALID/VPC/amiens.vpc';
+CRS.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
 describe('VPC', function () {
     let vpcEptSource;
@@ -24,8 +25,8 @@ describe('VPC', function () {
             it('whenReady', function (done) {
                 vpcEptSource.whenReady
                     .then(() => {
-                        assert.ok(vpcEptSource.minElevation);
-                        assert.ok(vpcEptSource.maxElevation);
+                        assert.ok(vpcEptSource.zmin);
+                        assert.ok(vpcEptSource.zmax);
                         assert.ok(vpcEptSource.sources.length > 0);
                         done();
                     }).catch(done);
@@ -42,8 +43,8 @@ describe('VPC', function () {
             it('whenReady', function (done) {
                 vpcCopcSource.whenReady
                     .then(() => {
-                        assert.ok(vpcCopcSource.minElevation);
-                        assert.ok(vpcCopcSource.maxElevation);
+                        assert.ok(vpcCopcSource.zmin);
+                        assert.ok(vpcCopcSource.zmax);
                         assert.ok(vpcCopcSource.sources.length > 0);
                         done();
                     }).catch(done);
@@ -75,19 +76,17 @@ describe('VPC', function () {
     });
 
     describe('Layer', function () {
-        let renderer;
-        let placement;
         let view;
         let vpcLayer;
 
         before(function () {
-            renderer = new Renderer();
-            placement = { coord: new Coordinates('EPSG:4326', 0, 0), range: 250 };
+            const renderer = new Renderer();
+            const placement = { coord: new Coordinates('EPSG:4326', 0, 0), range: 250 };
             view = new GlobeView(renderer.domElement, placement, { renderer });
         });
 
         it('instantiate', () => {
-            vpcLayer = new VpcLayer('testVpcLayer', { source: vpcEptSource });
+            vpcLayer = new VpcLayer('testVpcLayer', { source: vpcEptSource, crs: view.referenceCrs });
             assert.ok(vpcLayer.isVpcLayer);
         });
 

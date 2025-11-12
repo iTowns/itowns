@@ -49,8 +49,19 @@ class VpcSource extends Source {
             .then((metadata) => {
                 this.metadata = metadata;
 
+                // Set the Crs of the VPC Layer.
+                const projsWkt2 = metadata.features.map(f => f.properties['proj:wkt2']);
+                const crs = [...new Set(projsWkt2)];
+                if (crs.length !== 1) {
+                    console.warn('Only 1 crs is supported for 1 vpc.');
+                }
+                this.crs = CRS.defsFromWkt(projsWkt2[0]);
+
                 // Set boundsConformings (the bbox) of the VPC Layer
-                const boundsConformings = metadata.features.map(f => f.properties['proj:bbox']);
+                const boundsConformings = metadata.features
+                    .filter(f => f.properties['proj:wkt2'] === projsWkt2[0])
+                    .map(f => f.properties['proj:bbox']);
+
                 this.boundsConforming = [
                     Math.min(...boundsConformings.map(b => b[0])),
                     Math.min(...boundsConformings.map(b => b[1])),
@@ -61,15 +72,8 @@ class VpcSource extends Source {
                 ];
 
                 // Set the zmin and zmax from the source
-                this.minElevation = this.boundsConforming[2];
-                this.maxElevation = this.boundsConforming[5];
-
-                // Set the Crs of the VPC Layer (currently we only use the first)
-                const projsWkt2 = [...new Set(metadata.features.map(f => f.properties['proj:wkt2']))];
-                if (projsWkt2.length !== 1) {
-                    console.warn('Only 1 crs is currently supported for 1 vpc. The extra crs will not be considered');
-                }
-                this.crs = CRS.defsFromWkt(projsWkt2[0]);
+                this.zmin = this.boundsConforming[2];
+                this.zmax = this.boundsConforming[5];
 
                 /* Set  several object (MockSource) to mock the source that will need to be instantiated.
                  We don't want all child source to be instantiated at once as it will send the fetch request
@@ -97,6 +101,7 @@ class VpcSource extends Source {
                         url,
                         boundsConforming: boundsConformings[i],
                         whenReady,
+                        crs: CRS.defsFromWkt(projsWkt2[i]),
                         sId: i,
                     };
                     this.sources.push(mockSource);
