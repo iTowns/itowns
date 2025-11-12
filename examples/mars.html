@@ -96,12 +96,8 @@
 
             var menuGlobe = new GuiTools('menuDiv', view);
 
-            const atmosphere = view.getLayerById('atmosphere');
-            atmosphere.setRealisticOn(true);
-
             const cRL = menuGlobe.addGUI('RealisticLighting', true, function (v) {
-                atmosphere.setRealisticOn(v);
-                view.notifyChange(atmosphere);
+                view.skyManager.enabled = v;
             });
 
             debug.createTileDebugUI(menuGlobe.gui, view);
