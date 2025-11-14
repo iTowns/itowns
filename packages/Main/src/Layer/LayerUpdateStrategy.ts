@@ -1,4 +1,4 @@
-import { EMPTY_TEXTURE_ZOOM } from 'Renderer/RasterTile';
+import { EMPTY_TEXTURE_ZOOM, RasterTile } from 'Renderer/RasterTile';
 /**
  * This modules implements various layer update strategies.
  *
@@ -112,3 +112,17 @@ export function chooseNextLevelToFetch(
     }
     return nextLevelToFetch;
 }
+
+export const nextLevelToFetch = (t: RasterTile) => {
+    const zoom = {
+        min: Math.max(t.layer.zoom.min, t.layer.source.zoom?.min),
+        max: Math.min(t.layer.zoom.max, t.layer.source.zoom?.max),
+    };
+    return chooseNextLevelToFetch(
+        t.layer.updateStrategy,
+        t.tiles[0].zoom,
+        t.level,
+        t.state.failureParams,
+        zoom,
+    );
+};
