@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Itowns - Globe</title>
+
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "itowns": "../../dist/itowns.js",
+                    "debug": "../../dist/debug.js",
+                    "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                    "GuiTools": "../jsm/GUI/GuiTools.js",
+                    "LoadingScreen": "../jsm/GUI/LoadingScreen.js",
+                    "itowns_widgets": "../../dist/itowns_widgets.js",
+                    "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+                }
+            }
+        </script>
+
+        <link rel="stylesheet" type="text/css" href="../css/example.css" />
+        <link rel="stylesheet" type="text/css" href="../css/LoadingScreen.css" />
+        <link rel="stylesheet" type="text/css" href="../css/widgets.css" />
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script type="module">
+            import GuiTools from "GuiTools";
+            import setupLoadingScreen from "LoadingScreen";
+            import * as THREE from "three";
+            import * as itowns from "itowns";
+            import * as debug from "debug";
+            import * as itowns_widgets from "itowns_widgets";
+            import { Empty } from "./scenes/Empty.js";
+            import { Default } from "./scenes/Default.js";
+            import { Scene1 } from "./scenes/Scene1.js";
+            import { transitionToScene } from "./Utils/transitionToScene.js";
+
+            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
+
+            // Define camera initial position
+            const placement = {
+                coord: new itowns.Coordinates("EPSG:4326", 80, 50),
+                range: 25000000,
+            };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById("viewerDiv");
+
+            // Create a GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // Setup loading screen
+            setupLoadingScreen(viewerDiv, view);
+
+            await itowns.Fetcher.json("../layers/JSONLayers/Ortho.json").then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(new itowns.ColorLayer("Ortho", config));
+            });
+                        
+            // Deactivate camera controls
+            view.controls.states.enabled = false;
+
+            transitionToScene(view, Empty, Default);
+
+            setTimeout(() => {
+                transitionToScene(view, Default, Scene1);
+            }, 10000);
+
+            // // ---------- ADD SOME WIDGETS : ----------
+
+            // // ADD A SCALE :
+            // const scale = new itowns_widgets.Scale(view, {
+            //     position: "bottom-right",
+            //     translate: { x: -80 },
+            // });
+
+            // // ADD A MINIMAP :
+            // const minimap = new itowns_widgets.Minimap(
+            //     view,
+            //     new itowns.ColorLayer("minimap", {
+            //         source: new itowns.VectorTilesSource({
+            //             style: "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
+            //             // We don't display mountains and plot related data to ease visualisation
+            //             filter: (layer) =>
+            //                 !layer["source-layer"].includes("oro_") &&
+            //                 !layer["source-layer"].includes("parcellaire"),
+            //         }),
+            //         addLabelLayer: { performance: true },
+            //     }),
+            //     { cursor: "+" }
+            // );
+
+            // // ---------- DISPLAY ATMOSPHERIC LIGHTING : ----------
+
+            // const atmosphere = view.getLayerById("atmosphere");
+            // atmosphere.setRealisticOn(true);
+
+
+        </script>
+    </body>
+</html>

@@ -1,4 +1,7 @@
 {
+    "Demo": {
+        "demo/index": "demonstration"
+    },
     "View": {
         "view_3d_map": "3D map",
         "view_25d_map": "2.5D map",
