@@ -1,3 +1,4 @@
+import * as itowns from 'itowns';
 import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
 import * as OrthoLayer from '../Layers/OrthoLayer';
@@ -6,19 +7,29 @@ import type { Scene as SceneType } from './Scene';
 
 export const Scene: SceneType = {
     placement: {
-        coord: { long: 9, lat: 44.5 },
+        coord: new itowns.Coordinates('EPSG:4326', 9, 44.5),
         range: 300000,
         tilt: 0,
         heading: 0,
     },
     layers: [],
     view: new View3D(),
-    onEnter: () => {
-    },
-    onExit: () => {
+    ready: false,
+    onCreate: async () => {
+        const view = Scene.view.getView();
+
+        const orthoLayer = await OrthoLayer.getLayer();
+        const ignMntLayer = await IgnMntLayer.getLayer();
+        const ignMntHighResLayer = await IgnMntHighResLayer.getLayer();
+
+        Scene.layers.push(orthoLayer);
+        Scene.layers.push(ignMntLayer);
+        Scene.layers.push(ignMntHighResLayer);
+
+        await view.addLayer(orthoLayer);
+        await view.addLayer(ignMntLayer);
+        await view.addLayer(ignMntHighResLayer);
+
+        Scene.ready = true;
     },
 };
-
-Scene.layers.push(await OrthoLayer.getLayer());
-Scene.layers.push(await IgnMntLayer.getLayer());
-Scene.layers.push(await IgnMntHighResLayer.getLayer());
