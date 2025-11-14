@@ -12,12 +12,22 @@ const moveCameraTo = (view: itowns.View, placement: Scene['placement']) => itown
     });
 
 export const transitionToScene = async (scene1: Scene, scene2: Scene) => {
+    const view1 = scene1.view.getView();
+    const view2 = scene2.view.getView();
+
     // disable camera controls during transition
-    // scene2.view.getView().controls.states.enabled = false;
+    // @ts-expect-error controls and states property possibly undefined
+    if (view2.controls && view2.controls.states) {
+        // @ts-expect-error controls and states property possibly undefined
+        view2.controls.states.enabled = false;
+    }
 
     // stop any ongoing camera animation
-    // scene1.view.getView().controls.player.stop();
-
+    // @ts-expect-error controls and player property possibly undefined
+    if (view1.controls && view1.controls.player) {
+        // @ts-expect-error controls and states property possibly undefined
+        view1.controls.player.stop();
+    }
 
     if (!scene2.ready) {
         await scene2.onCreate();
@@ -58,6 +68,9 @@ export const transitionToScene = async (scene1: Scene, scene2: Scene) => {
     // load layers and move camera in parallel
     await Promise.all([...cameraPromises, layerPromise]);
 
-    // scene2.view.getView().controls.states.enabled = true;
+    // @ts-expect-error controls and states property possibly undefined
+    if (view2.controls && view2.controls.states) {
+        // @ts-expect-error controls and states property possibly undefined
+        view2.controls!.states.enabled = true;
+    }
 };
-
