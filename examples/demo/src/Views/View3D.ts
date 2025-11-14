@@ -1,4 +1,6 @@
 import * as itowns from 'itowns';
+// @ts-expect-error setupLoadingScreen imported from import-map
+import setupLoadingScreen from "LoadingScreen";
 import View from './View';
 
 class View3D extends View {
@@ -25,6 +27,8 @@ class View3D extends View {
         this.view = new itowns.GlobeView(this.viewerDiv, placement);
 
         this.setVisible(false);
+
+        setupLoadingScreen(this.viewerDiv, this.view);
 
         View3D._instance = this;
     }

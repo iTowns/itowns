@@ -6,6 +6,9 @@ import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
 import type { Scene as SceneType } from './Scene';
 
 export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
+    title: 'Immersive View',
+    description: 'Scene demonstrating immersive view with oriented images '
+    + 'and textured 3D buildings.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 2.33481381, 48.85060296),
         range: 25,
