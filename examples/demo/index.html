@@ -74,7 +74,8 @@
                 }
             }
             scenes[0].view.setVisible(true);
-            scenes[0].onEnter();
+            await scenes[0].onCreate();
+            scenes[0].onEnter?.();
 
 
             let currentIndex = 0;
