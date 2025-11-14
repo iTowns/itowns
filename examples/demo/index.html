@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Itowns - Globe</title>
+        <title>Itowns - Demonstration</title>
 
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,7 +22,11 @@
         </script>
 
         <link rel="stylesheet" type="text/css" href="../css/example.css" />
-        <link rel="stylesheet" type="text/css" href="../css/LoadingScreen.css" />
+        <link
+            rel="stylesheet"
+            type="text/css"
+            href="../css/LoadingScreen.css"
+        />
         <link rel="stylesheet" type="text/css" href="../css/widgets.css" />
     </head>
     <body>
@@ -34,9 +38,9 @@
             import * as itowns from "itowns";
             import * as debug from "debug";
             import * as itowns_widgets from "itowns_widgets";
-            import { Empty } from "./scenes/Empty.js";
-            import { Default } from "./scenes/Default.js";
             import { Scene1 } from "./scenes/Scene1.js";
+            import { Scene2 } from "./scenes/Scene2.js";
+            import { Scene3 } from "./scenes/Scene3.js";
             import { transitionToScene } from "./Utils/transitionToScene.js";
 
             // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
@@ -56,19 +60,92 @@
             // Setup loading screen
             setupLoadingScreen(viewerDiv, view);
 
-            await itowns.Fetcher.json("../layers/JSONLayers/Ortho.json").then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                view.addLayer(new itowns.ColorLayer("Ortho", config));
-            });
-                        
             // Deactivate camera controls
             view.controls.states.enabled = false;
 
-            transitionToScene(view, Empty, Default);
+            const orthoSource = new itowns.WMTSSource({
+                url: "https://data.geopf.fr/wmts?",
+                crs: "EPSG:3857",
+                name: "ORTHOIMAGERY.ORTHOPHOTOS",
+                tileMatrixSet: "PM",
+                format: "image/jpeg",
+            });
+            const orthoLayer = new itowns.ColorLayer("Ortho", {
+                source: orthoSource,
+            });
+            view.addLayer(orthoLayer);
 
-            setTimeout(() => {
-                transitionToScene(view, Default, Scene1);
-            }, 10000);
+            const elevationSource = new itowns.WMTSSource({
+                url: "https://data.geopf.fr/wmts?",
+                crs: "EPSG:4326",
+                name: "ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3",
+                tileMatrixSet: "WGS84G",
+                format: "image/x-bil;bits=32",
+                zoom: { min: 3, max: 10 },
+            });
+            const elevationLayer = new itowns.ElevationLayer("DEM", {
+                source: elevationSource,
+            });
+            view.addLayer(elevationLayer);
+
+
+            transitionToScene(view, null, Scene1);
+
+            const scenes = [Scene1, Scene2, Scene3];
+            let currentIndex = 0;
+
+            const SceneManager = {
+                next() {
+                    const newIndex = (currentIndex + 1) % scenes.length;
+                    transitionToScene(
+                        view,
+                        scenes[currentIndex],
+                        scenes[newIndex]
+                    );
+                    currentIndex = newIndex;
+                },
+                previous() {
+                    const newIndex =
+                        (currentIndex - 1 + scenes.length) % scenes.length;
+                    transitionToScene(
+                        view,
+                        scenes[currentIndex],
+                        scenes[newIndex]
+                    );
+                    currentIndex = newIndex;
+                },
+            };
+
+            // setTimeout(() => {
+            //     SceneManager.next();
+            //     setTimeout(() => {
+            //         SceneManager.next();
+            //         setTimeout(() => {
+            //             SceneManager.next();
+            //             setTimeout(() => {
+            //                 SceneManager.previous();
+            //             }, 5000);
+            //         });
+            //     }, 5000);
+            // });
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.position = 'absolute';
+            buttonContainer.style.top = '20px';
+            buttonContainer.style.right = '20px';
+            buttonContainer.style.zIndex = '1000';
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Previous Scene';
+            prevButton.onclick = () => SceneManager.previous();
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next Scene';
+            nextButton.onclick = () => SceneManager.next();
+
+            buttonContainer.appendChild(prevButton);
+            buttonContainer.appendChild(nextButton);
+            document.body.appendChild(buttonContainer);
 
             // // ---------- ADD SOME WIDGETS : ----------
 
@@ -98,8 +175,6 @@
 
             // const atmosphere = view.getLayerById("atmosphere");
             // atmosphere.setRealisticOn(true);
-
-
         </script>
     </body>
 </html>
