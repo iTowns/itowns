@@ -1,8 +1,24 @@
 import Layer from 'Layer/Layer';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
-import { removeLayeredMaterialNodeTile } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+
+export function removeLayeredMaterialNodeTile(tileId) {
+    /**
+     * @param {TileMesh} node - The node to udpate.
+     */
+    return function removeLayeredMaterialNodeTile(node) {
+        if (node.material?.removeTile) {
+            if (node.material.elevationTile !== undefined) {
+                node.setBBoxZ({ min: 0, max: 0 });
+            }
+            node.material.removeTile(tileId);
+        }
+        if (node.layerUpdateState && node.layerUpdateState[tileId]) {
+            delete node.layerUpdateState[tileId];
+        }
+    };
+}
 
 class RasterLayer extends Layer {
     constructor(id, config) {
@@ -19,6 +35,7 @@ class RasterLayer extends Layer {
             cacheLifeTime,
         });
 
+        this.visible = true;
         this.minFilter = minFilter;
         this.magFilter = magFilter;
 
@@ -42,6 +59,30 @@ class RasterLayer extends Layer {
         }
         for (const root of this.parent.level0Nodes) {
             root.traverse(removeLayeredMaterialNodeTile(this.id));
+        }
+    }
+
+    shouldCreateRasterTile(node) {
+        const zoom = node.getZoomByProjection(this.crs);
+
+        // fix(ElevationLayer): don't assume Layer's Source has a TMS-like structure
+        // if (nodeLayer.level >= layer.source.zoom?.min) {
+        return !(zoom < this.source.zoom?.min || zoom < this.zoom.min);
+    }
+
+    update(context, layer, node) {
+        if (layer.visible && !layer.freeze) {
+            let rasterTile = node.material.getTile(this.id);
+
+            if (!rasterTile && this.shouldCreateRasterTile(node)) {
+                rasterTile = this.setupRasterNode(node);
+
+                rasterTile.addEventListener('nextTry', () => context.view.notifyChange(node, false));
+            } else {
+                return;
+            }
+
+            rasterTile.load(node, context.view);
         }
     }
 }
