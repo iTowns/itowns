@@ -110,7 +110,7 @@ export class TileGeometry extends THREE.BufferGeometry {
      * @param keys - The [south, level, epsg] key of this geometry.
      */
     public initRefCount(
-        cacheTile: LRUCache<string, Promise<this>>,
+        cacheTile: LRUCache<string, this>,
         key: string,
     ): void {
         if (this._refCount !== null) {
@@ -127,6 +127,7 @@ export class TileGeometry extends THREE.BufferGeometry {
                     // Could be removed if the attribute buffer deleting is
                     //  taken into account in the buffer binding state
                     //  (in THREE.WebGLBindingStates code).
+                    //  IN THIS PR, new issue, cached geometry without index
                     this.index = null;
                     delete this.attributes.uv;
                     cacheTile.delete(key);

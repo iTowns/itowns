@@ -62,38 +62,37 @@ export default {
             hideSkirt: layer.hideSkirt,
         };
 
-        return newTileGeometry(builder, paramsGeometry).then((result) => {
-            // build tile mesh
-            result.geometry.increaseRefCount();
-            const crsCount = layer.tileMatrixSets.length;
-            const material = new LayeredMaterial(layer.materialOptions, crsCount);
-            ReferLayerProperties(material, layer);
+        const { geometry, quaternion, position } = newTileGeometry(builder, paramsGeometry);
+        // build tile mesh
+        geometry.increaseRefCount();
+        const crsCount = layer.tileMatrixSets.length;
+        const material = new LayeredMaterial(layer.materialOptions, crsCount);
+        ReferLayerProperties(material, layer);
 
-            const tile = new TileMesh(result.geometry, material, layer, extent, level);
+        const tile = new TileMesh(geometry, material, layer, extent, level);
 
-            if (parent && parent.isTileMesh) {
-                // get parent extent transformation
-                const pTrans = builder.computeShareableExtent(parent.extent);
-                // place relative to his parent
-                result.position.sub(pTrans.position).applyQuaternion(pTrans.quaternion.invert());
-                result.quaternion.premultiply(pTrans.quaternion);
-            }
+        if (parent && parent.isTileMesh) {
+            // get parent extent transformation
+            const pTrans = builder.computeShareableExtent(parent.extent);
+            // place relative to his parent
+            position.sub(pTrans.position).applyQuaternion(pTrans.quaternion.invert());
+            quaternion.premultiply(pTrans.quaternion);
+        }
 
-            tile.position.copy(result.position);
-            tile.quaternion.copy(result.quaternion);
-            tile.visible = false;
-            tile.updateMatrix();
+        tile.position.copy(position);
+        tile.quaternion.copy(quaternion);
+        tile.visible = false;
+        tile.updateMatrix();
 
-            setTileFromTiledLayer(tile, layer);
+        setTileFromTiledLayer(tile, layer);
 
-            if (parent) {
-                tile.geoidHeight = parent.geoidHeight;
-                const geoidHeight = geoidLayerIsVisible(layer) ? tile.geoidHeight : 0;
-                tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max, geoidHeight });
-                tile.material.setUniform('geoidHeight', geoidHeight);
-            }
+        if (parent) {
+            tile.geoidHeight = parent.geoidHeight;
+            const geoidHeight = geoidLayerIsVisible(layer) ? tile.geoidHeight : 0;
+            tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max, geoidHeight });
+            tile.material.setUniform('geoidHeight', geoidHeight);
+        }
 
-            return tile;
-        });
+        return tile;
     },
 };
