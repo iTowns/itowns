@@ -50,7 +50,7 @@
             import * as itowns from "itowns";
             import * as debug from "debug";
             import * as itowns_widgets from "itowns_widgets";
-            import { transitionToScene } from "./dist/Utils/transitionToScene.js";
+            import { transitionToScene, updateUIForScene } from "./dist/Utils/transitionToScene.js";
             import { Scene as Globe3D } from "./dist/Scenes/Globe3D.js";
             import { Scene as Terrain3D } from "./dist/Scenes/Terrain3D.js";
             import { Scene as ProjectedData2D } from "./dist/Scenes/ProjectedData2D.js";
@@ -69,11 +69,7 @@
 
             const scenes = [Globe3D, Terrain3D, ProjectedData2D, ExtrudedData3D, InstancedData, PointCloudView, ImmersiveView];
 
-            const title = document.getElementById('sceneTitle');
-            title.textContent = scenes[0].title;
-
-            const description = document.getElementById('sceneDescription');
-            description.textContent = scenes[0].description;
+            updateUIForScene(scenes[0]);
 
             for (const layer of scenes[0].layers) {
                 scenes[0].view.getView().addLayer(layer);
