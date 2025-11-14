@@ -5,13 +5,14 @@ import * as OrthoLayer from '../Layers/OrthoLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
 import type { Scene as SceneType } from './Scene';
 
-export const Scene: SceneType = {
+export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 2.33481381, 48.85060296),
         range: 25,
         tilt: 0,
         heading: 180,
     },
+    immersivePlacement: null,
     layers: [],
     view: new ImmersiveView(),
     ready: false,
@@ -155,14 +156,19 @@ export const Scene: SceneType = {
         // Wait until we have a current pano, then set the camera
         await panoReady;
 
+        // @ts-expect-error setCameraToCurrentPosition method undefined
+        view.controls!.setCameraToCurrentPosition();
+        view.notifyChange(view.camera3D);
+
+        Scene.immersivePlacement = view.camera3D.position.clone();
+
         Scene.ready = true;
     },
     onEnter: () => {
         const view = Scene.view.getView() as itowns.GlobeView;
 
         // Ensure pose is correct on every entry
-        // @ts-expect-error immersive control helper
-        view.controls!.setCameraToCurrentPosition();
+        view.camera3D.position.copy(Scene.immersivePlacement!);
         view.notifyChange(view.camera3D);
 
         Scene.view.getView().addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
