@@ -1,35 +1,41 @@
 #menu {
+    display: flex;
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 1vh;
+    left: 1vh;
+    width: 50vh;
     color: white;
     font-family:'Courier New', Courier, monospace;
-    /* background-color: white; */
     border-radius: 10%;
-    padding: 2vh;
+    padding: 1vh;
     z-index: 100;
     background-color: rgba(255,255,255,0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(0.5vh);
+    -webkit-backdrop-filter: blur(0.5vh);
+}
+
+#textContainer {
+    padding:1vh;
 }
 
 #buttonContainer {
     display: flex;
+    flex-direction: column;
     justify-content: right;
     align-items: center;
     gap: 2vh;
-    margin-top: 1vh;
+    padding:1vh;
 }
 
 button {
-    border: none;
+    border: 1px solid black;
     color: black;
     padding: 0.5vh 2vh;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-size: 1.5vh;
-    border-radius: 12%;
+    border-radius: 10%;
     cursor: pointer;
 }
 
@@ -44,7 +50,5 @@ button:active {
 }
 
 p {
-    margin: 0;
-    padding: 0;
     color: black;
 }
