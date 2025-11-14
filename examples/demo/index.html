@@ -38,13 +38,14 @@
             import * as itowns from "itowns";
             import * as debug from "debug";
             import * as itowns_widgets from "itowns_widgets";
+            import { transitionToScene } from "./dist/Utils/transitionToScene.js";
             import { Scene as Globe3D } from "./dist/Scenes/Globe3D.js";
             import { Scene as Terrain3D } from "./dist/Scenes/Terrain3D.js";
             import { Scene as ProjectedData2D } from "./dist/Scenes/ProjectedData2D.js";
             import { Scene as ExtrudedData3D } from "./dist/Scenes/ExtrudedData3D.js";
             import { Scene as ImmersiveView } from "./dist/Scenes/ImmersiveView.js";
+            import { Scene as PointCloudView } from "./dist/Scenes/PointCloud.js";
             import { Scene as InstancedData } from "./dist/Scenes/InstancedData.js";
-            import { transitionToScene } from "./dist/Utils/transitionToScene.js";
 
             // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
 
@@ -54,7 +55,7 @@
                 range: 25000000,
             };
 
-            const scenes = [Globe3D, Terrain3D, ProjectedData2D, ExtrudedData3D, InstancedData, ImmersiveView];
+            const scenes = [Globe3D, Terrain3D, ProjectedData2D, ExtrudedData3D, InstancedData, PointCloudView, ImmersiveView];
 
             for (const layer of scenes[0].layers) {
                 if (!scenes[0].view.getView().getLayerById(layer.id)) {
@@ -91,7 +92,7 @@
             };
 
             const buttonContainer = document.createElement('div');
-            buttonContainer.style.position = 'absolute';
+            buttonContainer.style.position = 'fixed';
             buttonContainer.style.top = '20px';
             buttonContainer.style.right = '20px';
             buttonContainer.style.zIndex = '1000';

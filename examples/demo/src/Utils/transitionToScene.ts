@@ -48,8 +48,11 @@ export const transitionToScene = async (scene1: Scene, scene2: Scene) => {
         scene1.view.setVisible(false);
         scene2.view.setVisible(true);
     }
-    cameraPromises.push(moveCameraTo(scene2.view.getView(),
-        scene2.placement).catch(console.error));
+
+    if (scene2.view.id === 'View3D') {
+        cameraPromises.push(moveCameraTo(scene2.view.getView(),
+            scene2.placement).catch(console.error));
+    }
 
     const layerPromise = (async () => {
         for (const layer of scene1.layers) {
