@@ -33,16 +33,17 @@
     </head>
     <body>
         <div id="menu">
-            <h1 id="sceneTitle"></h1>
-            <p id="sceneDescription"></p>
+            <div id="textContainer">
+                <h1 id="sceneTitle"></h1>
+                <p id="sceneDescription"></p>
+            </div>
             <div id="buttonContainer">
                 <button id="resetDemo">R</button>
-                <button id="resetScene">o</button>
                 <button id="prevButton"><</button>
+                <button id="resetScene">o</button>
                 <button id="nextButton">></button>
             </div>
         </div>
-        <!-- <div id="viewerDiv"></div> -->
         <script type="module">
             import GuiTools from "GuiTools";
             import * as THREE from "three";
@@ -67,6 +68,12 @@
             };
 
             const scenes = [Globe3D, Terrain3D, ProjectedData2D, ExtrudedData3D, InstancedData, PointCloudView, ImmersiveView];
+
+            const title = document.getElementById('sceneTitle');
+            title.textContent = scenes[0].title;
+
+            const description = document.getElementById('sceneDescription');
+            description.textContent = scenes[0].description;
 
             for (const layer of scenes[0].layers) {
                 scenes[0].view.getView().addLayer(layer);

@@ -31,6 +31,17 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
     const view2 = nextScene.view.getView();
     const transitionView = new View3D();
 
+    const title = document.getElementById('sceneTitle');
+    if (!title) {
+        throw new Error('No element with id "sceneTitle" found in the document.');
+    }
+    title.textContent = nextScene.title;
+    const description = document.getElementById('sceneDescription');
+    if (!description) {
+        throw new Error('No element with id "sceneDescription" found in the document.');
+    }
+    description.textContent = nextScene.description;
+
     // disable camera controls during transition
     // @ts-expect-error controls and states property possibly undefined
     if (view2.controls && view2.controls.states) {
@@ -109,15 +120,5 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
     if (view2.controls && view2.controls.states) {
         // @ts-expect-error controls and states property possibly undefined
         view2.controls!.states.enabled = true;
-    }
-
-    const title = document.getElementById('sceneTitle');
-    if (title) {
-        title.textContent = nextScene.title;
-    }
-
-    const description = document.getElementById('sceneDescription');
-    if (description) {
-        description.textContent = nextScene.description;
     }
 };
