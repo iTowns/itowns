@@ -4,26 +4,26 @@ import type { Scene } from '../Scenes/Scene';
 import View3D from '../Views/View3D';
 
 /**
- * 
- * @param view current view whose camera will be moved
- * @param placement @see Scene.placement - tilt and heading are optional
- * @param duration 
+ *
+ * @param view - current view whose camera will be moved
+ * @param placement - @see Scene.placement - tilt and heading are optional
+ * @param duration - duration of the animation in ms
  * @returns Promise<any>
  */
-const moveCameraTo = (view: itowns.View, placement: Scene['placement'], duration=config.DURATION) => {
-    return itowns.CameraUtils.animateCameraToLookAtTarget(view, view.camera3D, {
+const moveCameraTo = (view: itowns.View, placement: Scene['placement'],
+    duration = config.DURATION) =>
+    itowns.CameraUtils.animateCameraToLookAtTarget(view, view.camera3D, {
         coord: placement.coord,
         range: placement.range,
         time: duration,
         tilt: placement.tilt,
         heading: placement.heading,
     });
-};
 
 /**
- * 
- * @param currentScene
- * @param nextScene
+ *
+ * @param currentScene - current scene that is being transitioned from
+ * @param nextScene - next scene that is being transitioned to
  * @returns Promise<void>
  */
 export const transitionToScene = async (currentScene: Scene, nextScene: Scene) => {
@@ -50,7 +50,7 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
     }
 
     // if scenes require any action on exit/enter, call them
-    currentScene.onExit?.(); 
+    currentScene.onExit?.();
     nextScene.onEnter?.();
 
     let cameraPromise: Promise<void>;
@@ -75,11 +75,12 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
                 tilt: 89.5,
             },
             config.DURATION / 2) // half duration since there are two steps in this case
-        .catch(console.error).then(() => {
-            return moveCameraTo(transitionView.getView(), nextScene.placement, config.DURATION / 2).catch(console.error);
-        });
+            .catch(console.error).then(() =>
+                moveCameraTo(transitionView.getView(),
+                    nextScene.placement, config.DURATION / 2).catch(console.error));
     } else {
-        cameraPromise = moveCameraTo(transitionView.getView(), nextScene.placement).catch(console.error);
+        cameraPromise = moveCameraTo(transitionView.getView(),
+            nextScene.placement).catch(console.error);
     }
 
     cameraPromise.then(() => {
@@ -108,5 +109,15 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
     if (view2.controls && view2.controls.states) {
         // @ts-expect-error controls and states property possibly undefined
         view2.controls!.states.enabled = true;
+    }
+
+    const title = document.getElementById('sceneTitle');
+    if (title) {
+        title.textContent = nextScene.title;
+    }
+
+    const description = document.getElementById('sceneDescription');
+    if (description) {
+        description.textContent = nextScene.description;
     }
 };

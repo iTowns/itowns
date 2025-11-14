@@ -1,4 +1,6 @@
 import * as itowns from 'itowns';
+// @ts-expect-error setupLoadingScreen imported from import-map
+import setupLoadingScreen from "LoadingScreen";
 import View from './View';
 
 class ImmersiveView extends View {
@@ -50,6 +52,8 @@ class ImmersiveView extends View {
         this.view.camera3D.updateProjectionMatrix();
 
         this.setVisible(false);
+
+        setupLoadingScreen(this.viewerDiv, this.view);
 
         ImmersiveView._instance = this;
     }

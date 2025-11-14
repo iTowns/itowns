@@ -1,5 +1,11 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
+// @ts-expect-error debug imported from import-map
+// eslint-disable-next-line import/no-unresolved
+import * as debug from 'debug';
+// @ts-expect-error lil imported from import-map
+// eslint-disable-next-line import/no-unresolved
+import lil from 'lil';
 import * as OrthoLayer from '../Layers/OrthoLayer';
 import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
@@ -8,7 +14,12 @@ import * as FlatBuildingsLayer from '../Layers/FlatBuildingsLayer';
 import PointCloudView from '../Views/PointCloudView';
 import type { Scene as SceneType } from './Scene';
 
+const gui = new lil();
+gui.hide();
+
 export const Scene: SceneType = {
+    title: 'Point Cloud Visualization',
+    description: 'Scene demonstrating point cloud visualization using COPC format.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.828, 45.7254),
         range: 2000,
@@ -45,12 +56,13 @@ export const Scene: SceneType = {
         const config = {
             source,
             crs: view.referenceCrs,
-            sseThreshold: 16,
+            sseThreshold: 0,
             pointBudget: 3000000,
         };
         const pointCloudLayer = new itowns.CopcLayer('PointCloudLayer', config);
         Scene.layers.push(pointCloudLayer as unknown as itowns.Layer);
         await view.addLayer(pointCloudLayer);
+
         Scene.ready = true;
     },
     onEnter: async () => {
@@ -62,13 +74,15 @@ export const Scene: SceneType = {
         const size = new THREE.Vector3();
         layer.root.bbox.getSize(size);
         layer.root.bbox.getCenter(lookAt);
+        lookAt.x += size.x / 2;
+        lookAt.y += size.y / 2;
 
         // @ts-expect-error camera.far undefined
-        camera.far = 2.0 * size.length();
+        camera.far = 3.0 * size.length();
         const controls = (Scene.view as PointCloudView).getControls();
         controls.groundLevel = layer.root.bbox.min.z;
         const position = layer.root.bbox.min.clone().add(
-            size.multiply({ x: 1, y: 1, z: size.x / size.z }),
+            size.multiply({ x: 1.5, y: 1.5, z: size.x / size.z }),
         );
 
         // @ts-expect-error camera.position undefined
@@ -79,7 +93,12 @@ export const Scene: SceneType = {
         camera.updateProjectionMatrix();
 
         view.notifyChange(camera);
+        gui.show();
+
+        debug.PointCloudDebug.initTools(view, layer, gui);
     },
     onExit: async () => {
+        gui.reset();
+        gui.hide();
     },
 };
