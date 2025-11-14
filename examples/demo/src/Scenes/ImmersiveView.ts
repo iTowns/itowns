@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import * as itowns from 'itowns';
-import ImmersiveView from '../Views/ImmersiveView.js';
-import * as OrthoLayer from '../Layers/OrthoLayer.js';
-import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer.js';
+import ImmersiveView from '../Views/ImmersiveView';
+import * as OrthoLayer from '../Layers/OrthoLayer';
+import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
+import type { Scene as SceneType } from './Scene';
 
-export const Scene = {
+export const Scene: SceneType = {
     placement: {
         coord: { long: 2.33481381, lat: 48.85060296 },
         range: 25,
@@ -20,30 +21,28 @@ export const Scene = {
     },
 };
 
-itowns.CRS.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+itowns.CRS.defs('EPSG:2154',
+    '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 '
+  + '+x_0=700000 +y_0=6600000 +ellps=GRS80 '
+  + '+towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
-const view = Scene.view.getView();
+const view = Scene.view.getView() as itowns.GlobeView;
 
 Scene.layers.push(await OrthoLayer.getLayer());
 Scene.layers.push(await IgnMntHighResLayer.getLayer());
 
-function altitudeBuildings(properties) {
-    // I set altitude building 3 meters down, to be sure building is anchored in the ground
+function altitudeBuildings(properties: any) {
     return properties.altitude_minimale_sol - 3;
 }
 
-function extrudeBuildings(properties) {
-    // As I've set altitude building 3 meters down, I have to make 3 meters high.
+function extrudeBuildings(properties: any) {
     return properties.hauteur + 3;
 }
 
 // Prepare oriented image source
 const orientedImageSource = new itowns.OrientedImageSource({
     url: 'http://www.itowns-project.org/itowns-sample-data-small/images/140616/Paris-140616_0740-{cameraId}-00001_0000{panoId}.jpg',
-    // Url to a GEOJSON file describing feature points. It describre position and orientation of each panoramic.
     orientationsUrl: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson',
-    // Url of a a JSON file with calibration for all cameras. see [CameraCalibrationParser]{@link module:CameraCalibrationParser.parse}
-    // in this example, we have the ladybug, it's a set of 6 cameras
     calibrationUrl: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/cameraCalibration.json',
 });
 
@@ -54,16 +53,21 @@ const olayer = new itowns.OrientedImageLayer('demo_orientedImage', {
     backgroundDistance: 1200,
     source: orientedImageSource,
     crs: view.referenceCrs,
+    // @ts-expect-error useMask property used but not defined in OrientedImageLayerOptions
     useMask: false,
-    onPanoChanged: (e) => {
-        view.controls.setPreviousPosition(e.previousPanoPosition);
-        view.controls.setCurrentPosition(e.currentPanoPosition);
-        view.controls.setNextPosition(e.nextPanoPosition);
+    onPanoChanged: (e:any) => {
+        // @ts-expect-error setPreviousPosition method undefined
+        view.controls!.setPreviousPosition(e.previousPanoPosition);
+        // @ts-expect-error setCurrentPosition method undefined
+        view.controls!.setCurrentPosition(e.currentPanoPosition);
+        // @ts-expect-error setNextPosition method undefined
+        view.controls!.setNextPosition(e.nextPanoPosition);
     },
 });
 
 // when oriented image layer is ready..
-view.addLayer(olayer, view.tileLayer).then((orientedImageLayer) => {
+// @ts-expect-error addLayer expects single argument
+view.addLayer(olayer, view.tileLayer).then((orientedImageLayer:any) => {
     // prepare WFS source for the buildings
     const wfsBuildingSource = new itowns.WFSSource({
         url: 'https://data.geopf.fr/wfs/ows?',
@@ -82,6 +86,7 @@ view.addLayer(olayer, view.tileLayer).then((orientedImageLayer) => {
 
     // create geometry layer for the buildings
     const wfsBuildingLayer = new itowns.FeatureGeometryLayer('Buildings', {
+        // @ts-expect-error 'style' property used but not defined in FeatureGeometryLayerOptions
         style: {
             fill: {
                 base_altitude: altitudeBuildings,
@@ -89,19 +94,21 @@ view.addLayer(olayer, view.tileLayer).then((orientedImageLayer) => {
             },
         },
         // when a building is created, it get the projective texture mapping, from oriented image layer.
-        onMeshCreated: mesh => mesh.traverse(object => object.material = orientedImageLayer.material),
+        onMeshCreated: (mesh:any) => mesh.traverse((object:any) => object.material = orientedImageLayer.material),
         source: wfsBuildingSource,
         zoom: { min: 15 },
     });
 
     // add the created building layer, and debug UI
-    view.addLayer(wfsBuildingLayer).then((buildingLayer) => {
-        view.controls.buildingsLayer = buildingLayer.id;
+    view.addLayer(wfsBuildingLayer).then((buildingLayer:any) => {
+        // @ts-expect-error buildingsLayer property undefined
+        view.controls!.buildingsLayer = buildingLayer.id;
     });
 
     const altitude = new THREE.Vector3();
 
-    view.controls.transformationPositionPickOnTheGround = (position) => {
+    // @ts-expect-error transformationPositionPickOnTheGround property undefined
+    view!.controls!.transformationPositionPickOnTheGround = (position: any) => {
         position.copy(orientedImageLayer.mostNearPano(position).position);
         altitude.copy(position).normalize().multiplyScalar(3);
         return position.sub(altitude);
@@ -113,6 +120,7 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
     console.info('Globe initialized');
 
     // set camera to current panoramic
-    view.controls.setCameraToCurrentPosition();
+    // @ts-expect-error setCameraToCurrentPosition method undefined
+    view.controls!.setCameraToCurrentPosition();
     view.notifyChange(view.camera3D);
 });
