@@ -60,9 +60,6 @@
             // Setup loading screen
             setupLoadingScreen(viewerDiv, view);
 
-            // Deactivate camera controls
-            view.controls.states.enabled = false;
-
             const orthoSource = new itowns.WMTSSource({
                 url: "https://data.geopf.fr/wmts?",
                 crs: "EPSG:3857",
@@ -115,19 +112,6 @@
                     currentIndex = newIndex;
                 },
             };
-
-            // setTimeout(() => {
-            //     SceneManager.next();
-            //     setTimeout(() => {
-            //         SceneManager.next();
-            //         setTimeout(() => {
-            //             SceneManager.next();
-            //             setTimeout(() => {
-            //                 SceneManager.previous();
-            //             }, 5000);
-            //         });
-            //     }, 5000);
-            // });
 
             const buttonContainer = document.createElement('div');
             buttonContainer.style.position = 'absolute';
