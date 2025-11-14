@@ -9,34 +9,45 @@ const moveCameraTo = (view, placement) => {
             coord: targetCoord,
             range: placement.range,
             time: config.DURATION,
-            tilt: placement.tilt 
+            tilt: placement.tilt,
+            heading: placement.heading,
         });
 };
 
 export const transitionToScene = async (view, scene1, scene2) => {
+    // disable camera controls during transition
+    view.controls.states.enabled = false;
+
+    // stop any ongoing camera animation
+    view.controls.player.stop();
+
     const cameraPromise = moveCameraTo(view, scene2.placement).catch(console.error);
 
     const layersPromise = (async () => {
         if (scene1) {
-            for (let layer of scene1.layers) {
+            scene1.onExit(view);
+
+            for (const layer of scene1.layers) {
                 if (scene2.layers.find(l => l.id === layer.id) == null) {
-                    view.removeLayer(layer.id, true);
+                    layer.visible = false;
                 }
             }
-            scene1.onExit(view);
         }
 
-        for (let layer of scene2.layers) {
+        for (const layer of scene2.layers) {
             if (!view.getLayerById(layer.id)) {
                 view.addLayer(layer);
+            } else {
+                layer.visible = true;
             }
         }
         scene2.onEnter(view);
         view.notifyChange();
-
-        console.log('Current layers:', view.getLayers());
     })();
 
+    // load layers and move camera in parallel
     await Promise.all([cameraPromise, layersPromise]);
+
+    view.controls.states.enabled = true;
 };
 
