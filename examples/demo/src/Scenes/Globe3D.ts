@@ -4,6 +4,8 @@ import View3D from '../Views/View3D';
 import type { Scene as SceneType } from './Scene';
 
 export const Scene: SceneType = {
+    title: '3D Globe',
+    description: 'Scene demonstrating a 3D globe view with orthophoto layer.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
         range: 25000000,
