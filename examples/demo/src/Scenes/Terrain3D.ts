@@ -6,6 +6,8 @@ import View3D from '../Views/View3D';
 import type { Scene as SceneType } from './Scene';
 
 export const Scene: SceneType = {
+    title: 'Terrain 3D',
+    description: 'Scene demonstrating 3D terrain with orthophoto and elevation layers.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 9, 44.5),
         range: 300000,

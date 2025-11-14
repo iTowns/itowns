@@ -1,4 +1,6 @@
 import * as itowns from 'itowns';
+// @ts-expect-error setupLoadingScreen imported from import-map
+import setupLoadingScreen from "LoadingScreen";
 import View from './View';
 
 class PointCloudView extends View {
@@ -25,6 +27,8 @@ class PointCloudView extends View {
         this.view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
 
         this.setVisible(false);
+        
+        setupLoadingScreen(this.viewerDiv, this.view);
 
         PointCloudView._instance = this;
     }

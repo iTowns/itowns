@@ -11,6 +11,7 @@
                 "imports": {
                     "itowns": "../../dist/itowns.js",
                     "debug": "../../dist/debug.js",
+                    "lil": "https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.esm.js",
                     "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
                     "GuiTools": "../jsm/GUI/GuiTools.js",
                     "LoadingScreen": "../jsm/GUI/LoadingScreen.js",
@@ -28,12 +29,22 @@
             href="../css/LoadingScreen.css"
         />
         <link rel="stylesheet" type="text/css" href="../css/widgets.css" />
+        <link rel="stylesheet" type="text/css" href="css/demo.css" />
     </head>
     <body>
+        <div id="menu">
+            <h1 id="sceneTitle"></h1>
+            <p id="sceneDescription"></p>
+            <div id="buttonContainer">
+                <button id="resetDemo">R</button>
+                <button id="resetScene">o</button>
+                <button id="prevButton"><</button>
+                <button id="nextButton">></button>
+            </div>
+        </div>
         <!-- <div id="viewerDiv"></div> -->
         <script type="module">
             import GuiTools from "GuiTools";
-            import setupLoadingScreen from "LoadingScreen";
             import * as THREE from "three";
             import * as itowns from "itowns";
             import * as debug from "debug";
@@ -58,11 +69,7 @@
             const scenes = [Globe3D, Terrain3D, ProjectedData2D, ExtrudedData3D, InstancedData, PointCloudView, ImmersiveView];
 
             for (const layer of scenes[0].layers) {
-                if (!scenes[0].view.getView().getLayerById(layer.id)) {
-                    scenes[0].view.getView().addLayer(layer);
-                } else {
-                    layer.visible = true;
-                }
+                scenes[0].view.getView().addLayer(layer);
             }
             scenes[0].view.setVisible(true);
             await scenes[0].onCreate();
@@ -91,23 +98,26 @@
                 },
             };
 
-            const buttonContainer = document.createElement('div');
-            buttonContainer.style.position = 'fixed';
-            buttonContainer.style.top = '20px';
-            buttonContainer.style.right = '20px';
-            buttonContainer.style.zIndex = '1000';
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            const resetSceneButton = document.getElementById('resetScene');
+            const resetDemoButton = document.getElementById('resetDemo');
 
-            const prevButton = document.createElement('button');
-            prevButton.textContent = 'Previous Scene';
             prevButton.onclick = () => SceneManager.previous();
-
-            const nextButton = document.createElement('button');
-            nextButton.textContent = 'Next Scene';
             nextButton.onclick = () => SceneManager.next();
-
-            buttonContainer.appendChild(prevButton);
-            buttonContainer.appendChild(nextButton);
-            document.body.appendChild(buttonContainer);
+            resetSceneButton.onclick = () => {
+                transitionToScene(
+                    scenes[currentIndex],
+                    scenes[currentIndex]
+                );
+            };
+            resetDemoButton.onclick = () => {
+                transitionToScene(
+                    scenes[currentIndex],
+                    scenes[0]
+                );
+                currentIndex = 0;
+            };
         </script>
     </body>
 </html>

@@ -10,7 +10,9 @@ import * as TreesLayer from '../Layers/TreesLayer';
 import View3D from '../Views/View3D';
 import type { Scene as SceneType } from './Scene';
 
-export const Scene: SceneType & { meshes: THREE.Object3D<THREE.Object3DEventMap>[] } = {
+export const Scene: SceneType = {
+    title: 'Extruded Data 3D with Trees',
+    description: 'Scene demonstrating extruded 3D data with animated growth effect and 3D trees.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.828, 45.7254),
         range: 2000,
@@ -19,18 +21,18 @@ export const Scene: SceneType & { meshes: THREE.Object3D<THREE.Object3DEventMap>
     },
     layers: [],
     view: new View3D(),
-    ready: false,
     meshes: [],
+    ready: false,
     event: function update(/* dt */) {
-        if (Scene.meshes.length) {
-            for (let i = 0; i < Scene.meshes.length; i++) {
-                const mesh = Scene.meshes[i];
+        if (Scene.meshes!.length) {
+            for (let i = 0; i < Scene.meshes!.length; i++) {
+                const mesh = Scene.meshes![i];
                 if (mesh && mesh.scale.z < 1) {
                     mesh.scale.z = Math.min(1.0, mesh.scale.z + 0.005);
                     mesh.updateMatrixWorld(true);
                 }
             }
-            Scene.meshes = Scene.meshes.filter(m => m.scale.z < 1);
+            Scene.meshes = Scene.meshes!.filter(m => m.scale.z < 1);
             Scene.view.getView().notifyChange(Scene.view.getView().camera3D, true);
         }
     },
@@ -42,7 +44,7 @@ export const Scene: SceneType & { meshes: THREE.Object3D<THREE.Object3DEventMap>
         function scaleZ(mesh: THREE.Mesh) {
             mesh.children.forEach((c) => {
                 c.scale.z = 0.01;
-                Scene.meshes.push(c);
+                Scene.meshes!.push(c);
             });
         }
 

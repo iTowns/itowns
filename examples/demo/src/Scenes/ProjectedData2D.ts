@@ -8,6 +8,8 @@ import View3D from '../Views/View3D';
 import type { Scene as SceneType } from './Scene';
 
 export const Scene: SceneType = {
+    title: 'Projected Data 2D',
+    description: 'Scene demonstrating projected 2D data with orthophoto and vector layers.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.828, 45.7254),
         range: 2000,
@@ -40,4 +42,10 @@ export const Scene: SceneType = {
 
         Scene.ready = true;
     },
+    onEnter() {
+        
+    },
+    onExit() {
+        
+    }
 };
