@@ -33,6 +33,7 @@ of the authors and should not be interpreted as representing official policies,
     either expressed or implied, of the FreeBSD Project.
  */
 
+import proj4 from 'proj4';
 import { PointAttribute, PointAttributeTypes } from 'Core/Potree2PointAttributes';
 
 const typedArrayMapping = {
@@ -48,10 +49,50 @@ const typedArrayMapping = {
     double: Float64Array,
 };
 
+/**
+ * Applies the given Quaternion to this vector.
+ * @param {Array} v - The array depicting the position [x, y, z].
+ * @param {Array} q - The Array depicting the Quaternion. [x, y, z, w]
+ *
+ * @return {Vector3} A reference to this vector.
+ */
+function _applyQuaternion(v, q) {
+    // quaternion q is assumed to have unit length
+    const vx = v[0];
+    const vy = v[1];
+    const vz = v[2];
+    const qx = q[0];
+    const qy = q[1];
+    const qz = q[2];
+    const qw = q[3];
+
+    // t = 2 * cross( q.xyz, v );
+    const tx = 2 * (qy * vz - qz * vy);
+    const ty = 2 * (qz * vx - qx * vz);
+    const tz = 2 * (qx * vy - qy * vx);
+
+    const res = [];
+    // v + q.w * t + cross( q.xyz, t );
+    res[0] = vx + qw * tx + qy * tz - qz * ty;
+    res[1] = vy + qw * ty + qz * tx - qx * tz;
+    res[2] = vz + qw * tz + qx * ty - qy * tx;
+
+    return res;
+}
+
 export default function load(buffer, options) {
-    const { pointAttributes, scale, min, size, offset, numPoints } = options;
+    const { pointAttributes, scale, size, offset, numPoints } = options;
 
     const view = new DataView(buffer);
+
+    const forward = (options.in.crs !== options.out.crs) ?
+        proj4(options.in.projDefs, options.out.projDefs).forward :
+        (x => x);
+    const applyQuaternion = (options.in.crs !== options.out.crs) ?
+        _applyQuaternion : (x => x);
+
+    const origin = options.out.origin;
+    const quaternion = options.out.rotation;
 
     const attributeBuffers = {};
     let attributeOffset = 0;
@@ -87,19 +128,31 @@ export default function load(buffer, options) {
             for (let j = 0; j < numPoints; j++) {
                 const pointOffset = j * bytesPerPoint;
 
-                const x = (view.getInt32(pointOffset + attributeOffset + 0, true) * scale[0]) + offset[0] - min.x;
-                const y = (view.getInt32(pointOffset + attributeOffset + 4, true) * scale[1]) + offset[1] - min.y;
-                const z = (view.getInt32(pointOffset + attributeOffset + 8, true) * scale[2]) + offset[2] - min.z;
+                const point = [
+                    (view.getInt32(pointOffset + attributeOffset + 0, true) * scale[0]) + offset[0],
+                    (view.getInt32(pointOffset + attributeOffset + 4, true) * scale[1]) + offset[1],
+                    (view.getInt32(pointOffset + attributeOffset + 8, true) * scale[2]) + offset[2],
+                ];
 
-                const index = toIndex(x, y, z);
+                const [x, y, z] = forward(point);
+
+                const position = applyQuaternion([
+                    x - origin[0],
+                    y - origin[1],
+                    z - origin[2],
+                ], quaternion);
+
+                // Ask what is it doign exactly ?
+                // const index = toIndex(x, y, z);
+                const index = toIndex(position.x, position.y, position.z);
                 const count = grid[index]++;
                 if (count === 0) {
                     numOccupiedCells++;
                 }
 
-                positions[3 * j + 0] = x;
-                positions[3 * j + 1] = y;
-                positions[3 * j + 2] = z;
+                positions[3 * j + 0] = position[0];
+                positions[3 * j + 1] = position[1];
+                positions[3 * j + 2] = position[2];
             }
 
             attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };

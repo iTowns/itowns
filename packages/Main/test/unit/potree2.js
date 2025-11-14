@@ -18,7 +18,7 @@ describe('Potree2', function () {
 
     before(function () {
         renderer = new Renderer();
-        viewer = new View('EPSG:3946', renderer.domElement, { renderer });
+        viewer = new View('EPSG:4978', renderer.domElement, { renderer });
         viewer.camera.camera3D.position.copy(new Vector3(0, 0, 10));
 
         // Configure Point Cloud layer
@@ -26,10 +26,10 @@ describe('Potree2', function () {
             file: 'metadata.json',
             url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
+            crs: viewer.referenceCrs,
         });
         potree2Layer = new Potree2Layer('lion', {
             source: potree2Source,
-            crs: viewer.referenceCrs,
         });
 
         context = {
@@ -41,12 +41,26 @@ describe('Potree2', function () {
         };
     });
 
+    it('no crs -> should fail', function () {
+        try {
+            // eslint-disable-next-line no-unused-vars
+            const source = new Potree2Source({
+                file: 'metadata.json',
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
+                networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
+            });
+        } catch (err) {
+            assert.ok(err instanceof Error);
+            assert.equal(err.message, 'New PotreeSource: crs is required');
+        }
+    });
+
     it('Add point potree2 layer', function (done) {
         View.prototype.addLayer.call(viewer, potree2Layer)
-            .then((layer) => {
+            .then(() => {
                 context.camera.camera3D.updateMatrixWorld();
-                assert.equal(layer.root.children.length, 6);
-                layer.bboxes.visible = true;
+                assert.equal(potree2Layer.root.children.length, 6);
+                potree2Layer.bboxes.visible = true;
                 done();
             }).catch(done);
     });
@@ -64,7 +78,7 @@ describe('Potree2', function () {
                 assert.equal(potree2Layer.group.children.length, 1);
                 done();
             }).catch(done);
-    }).timeout(5000);
+    }).timeout(10000);
 
     it('postUpdate potree2 layer', function () {
         potree2Layer.postUpdate(context, potree2Layer);
@@ -95,7 +109,7 @@ describe('Potree2', function () {
         });
 
         it('load child node', function (done) {
-            const root = new Potree2Node(numPoints, childrenBitField, potree2Source);
+            const root = new Potree2Node(numPoints, childrenBitField, potree2Source, 'EPSG:4978');
             root.nodeType = 2;
             root.hierarchyByteOffset = 0n;
             root.hierarchyByteSize = 12650n;

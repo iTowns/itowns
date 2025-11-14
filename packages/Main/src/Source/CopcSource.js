@@ -1,9 +1,8 @@
 import { Binary, Info, Las } from 'copc';
-import { CRS, Extent } from '@itowns/geographic';
+import { CRS } from '@itowns/geographic';
 import Fetcher from 'Provider/Fetcher';
 import LASParser from 'Parser/LASParser';
 import Source from 'Source/Source';
-import * as THREE from 'three';
 
 /**
  * @param {function(number, number):Promise<Uint8Array>} fetcher
@@ -98,19 +97,18 @@ class CopcSource extends Source {
                     range: `bytes=${begin}-${end - 1}`,
                 },
             }).then(buffer => new Uint8Array(buffer));
+
         this.whenReady = getHeaders(get).then((metadata) => {
             this.header = metadata.header;
             this.info = metadata.info;
             this.eb = metadata.eb;
 
+            this.zmin = this.header.min[2];
+            this.zmax = this.header.max[2];
+
             this.spacing = this.info.spacing;
 
             this.crs = CRS.defsFromWkt(metadata.wkt);
-
-            const bbox = new THREE.Box3();
-            bbox.min.fromArray(this.info.cube, 0);
-            bbox.max.fromArray(this.info.cube, 3);
-            this.extent = Extent.fromBox3(this.crs, bbox);
 
             return this;
         });

@@ -1,11 +1,5 @@
-import * as THREE from 'three';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
-import { Extent } from '@itowns/geographic';
-
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
 
 /**
  * @property {boolean} isEntwinePointTileLayer - Used to checkout whether this
@@ -37,9 +31,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name. See the list of properties to know which one can be specified.
-     * @param {string} [config.crs='ESPG:4326'] - The CRS of the {@link View} this
-     * layer will be attached to. This is used to determine the extent of this
-     * layer. Default to `EPSG:4326`.
      */
     constructor(id, config) {
         super(id, config);
@@ -53,23 +44,16 @@ class EntwinePointTileLayer extends PointCloudLayer {
         /**
          * @type {THREE.Vector3}
          */
-        this.scale = new THREE.Vector3(1, 1, 1);
 
         const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then(() => {
-            const root = new EntwinePointTileNode(0, 0, 0, 0, this.source, -1);
+            this.setElevationRange();
 
-            root.bbox.min.fromArray(this.source.boundsConforming, 0);
-            root.bbox.max.fromArray(this.source.boundsConforming, 3);
+            this.root = new EntwinePointTileNode(0, 0, 0, 0, this.source, -1, this.crs);
+            const { bounds } = this.source;
+            this.root.setOBBes(bounds.slice(0, 3), bounds.slice(3, 6));
 
-            this.minElevationRange = this.minElevationRange ?? this.source.boundsConforming[2];
-            this.maxElevationRange = this.maxElevationRange ?? this.source.boundsConforming[5];
-
-            this.extent = Extent.fromBox3(config.crs || 'EPSG:4326', root.bbox);
-
-            this.root = root;
-
-            return root.loadOctree().then(resolve);
+            return this.root.loadOctree().then(resolve);
         });
     }
 }

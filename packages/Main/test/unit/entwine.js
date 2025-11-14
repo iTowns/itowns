@@ -1,13 +1,14 @@
 import assert from 'assert';
+import { Vector3 } from 'three';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates } from '@itowns/geographic';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import EntwinePointTileLayer from 'Layer/EntwinePointTileLayer';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
-import LASParser from 'Parser/LASParser';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
+import LASParser from 'Parser/LASParser';
 import Renderer from './bootstrap';
 
 import eptFile from '../data/entwine/ept.json';
@@ -78,17 +79,15 @@ describe('Entwine Point Tile', function () {
         });
     });
 
-    describe('Layer', function () {
+    describe('Entwine Point Tile Layer', function () {
         let renderer;
-        let placement;
         let view;
         let layer;
         let context;
 
         before(function (done) {
             renderer = new Renderer();
-            placement = { coord: new Coordinates('EPSG:4326', 0, 0), range: 250 };
-            view = new GlobeView(renderer.domElement, placement, { renderer });
+            view = new GlobeView(renderer.domElement, {}, { renderer });
             layer = new EntwinePointTileLayer('testEptLayer', { source });
 
             context = {
@@ -117,7 +116,10 @@ describe('Entwine Point Tile', function () {
         });
 
         it('tries to update on the root and succeeds', function (done) {
+            const lookAt = new Vector3();
+            const coord = new Coordinates(view.referenceCrs).setFromVector3(layer.root.voxelOBB.box3D.getCenter(lookAt));
             view.controls.lookAtCoordinate({
+                coord,
                 range: -250,
             }, false)
                 .then(() => {
@@ -134,28 +136,28 @@ describe('Entwine Point Tile', function () {
         });
     });
 
-    describe('Node', function () {
+    describe('Entwine Point Tile Node', function () {
         let root;
         before(function () {
-            const layer = { source: { url: 'http://server.geo', extension: 'laz' } };
-            root = new EntwinePointTileNode(0, 0, 0, 0, layer, 4000);
-            root.bbox.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+            const source = { url: 'http://server.geo', extension: 'laz' };
+            root = new EntwinePointTileNode(0, 0, 0, 0, source, 4000);
+            root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
-            root.add(new EntwinePointTileNode(1, 0, 0, 0, layer, 3000));
-            root.add(new EntwinePointTileNode(1, 0, 0, 1, layer, 3000));
-            root.add(new EntwinePointTileNode(1, 0, 1, 1, layer, 3000));
+            root.add(new EntwinePointTileNode(1, 0, 0, 0, source, 3000));
+            root.add(new EntwinePointTileNode(1, 0, 0, 1, source, 3000));
+            root.add(new EntwinePointTileNode(1, 0, 1, 1, source, 3000));
 
-            root.children[0].add(new EntwinePointTileNode(2, 0, 0, 0, layer, 2000));
-            root.children[0].add(new EntwinePointTileNode(2, 0, 1, 0, layer, 2000));
-            root.children[1].add(new EntwinePointTileNode(2, 0, 1, 3, layer, 2000));
-            root.children[2].add(new EntwinePointTileNode(2, 0, 2, 2, layer, 2000));
-            root.children[2].add(new EntwinePointTileNode(2, 0, 3, 3, layer, 2000));
+            root.children[0].add(new EntwinePointTileNode(2, 0, 0, 0, source, 2000));
+            root.children[0].add(new EntwinePointTileNode(2, 0, 1, 0, source, 2000));
+            root.children[1].add(new EntwinePointTileNode(2, 0, 1, 3, source, 2000));
+            root.children[2].add(new EntwinePointTileNode(2, 0, 2, 2, source, 2000));
+            root.children[2].add(new EntwinePointTileNode(2, 0, 3, 3, source, 2000));
 
-            root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 0, 0, layer, 1000));
-            root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 1, 0, layer, 1000));
-            root.children[1].children[0].add(new EntwinePointTileNode(3, 0, 2, 7, layer, 1000));
-            root.children[2].children[0].add(new EntwinePointTileNode(3, 0, 5, 4, layer, 1000));
-            root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, layer));
+            root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 0, 0, source, 1000));
+            root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 1, 0, source, 1000));
+            root.children[1].children[0].add(new EntwinePointTileNode(3, 0, 2, 7, source, 1000));
+            root.children[2].children[0].add(new EntwinePointTileNode(3, 0, 5, 4, source, 1000));
+            root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, source));
         });
 
         describe('finds the common ancestor of two nodes', () => {

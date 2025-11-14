@@ -8,24 +8,6 @@ const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
 bboxMesh.geometry.boundingBox = box3;
 
-function initBoundingBox(elt, layer) {
-    elt.tightbbox.getSize(box3.max);
-    box3.max.multiplyScalar(0.5);
-    box3.min.copy(box3.max).negate();
-    elt.obj.boxHelper = new THREE.BoxHelper(bboxMesh);
-    elt.obj.boxHelper.geometry = elt.obj.boxHelper.geometry.toNonIndexed();
-    elt.obj.boxHelper.computeLineDistances();
-    elt.obj.boxHelper.material = elt.childrenBitField ? new THREE.LineDashedMaterial({ dashSize: 0.25, gapSize: 0.25 }) : new THREE.LineBasicMaterial();
-    elt.obj.boxHelper.material.color.setHex(0);
-    elt.obj.boxHelper.material.linewidth = 2;
-    elt.obj.boxHelper.frustumCulled = false;
-    elt.obj.boxHelper.position.copy(elt.tightbbox.min).add(box3.max);
-    elt.obj.boxHelper.autoUpdateMatrix = false;
-    layer.bboxes.add(elt.obj.boxHelper);
-    elt.obj.boxHelper.updateMatrix();
-    elt.obj.boxHelper.updateMatrixWorld();
-}
-
 function computeSSEPerspective(context, pointSize, pointSpacing, distance) {
     if (distance <= 0) {
         return Infinity;
@@ -64,11 +46,6 @@ function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
 function markForDeletion(elt) {
     if (elt.obj) {
         elt.obj.visible = false;
-        if (__DEBUG__) {
-            if (elt.obj.boxHelper) {
-                elt.obj.boxHelper.visible = false;
-            }
-        }
     }
 
     if (!elt.notVisibleSince) {
@@ -124,6 +101,8 @@ function changeAngleRange(layer) {
  * @property {number} [maxIntensityRange=1] - The maximal intensity of the
  * layer. Changing this value will affect the material, if it has the
  * corresponding uniform. The value is normalized between 0 and 1.
+ * @property {number} zmin - The minimal value for elevation (read from the metadata).
+ * @property {number} zmax - The maximal value for elevation (read from the metadata).
  *
  * @extends GeometryLayer
  */
@@ -175,10 +154,14 @@ class PointCloudLayer extends GeometryLayer {
         this.protocol = 'pointcloud';
 
         this.group = group;
+        this.group.name = 'points';
         this.object3d.add(this.group);
-        this.bboxes = bboxes || new THREE.Group();
+
+        this.bboxes = bboxes;
+        this.bboxes.name = 'bboxes';
         this.bboxes.visible = false;
         this.object3d.add(this.bboxes);
+
         this.group.updateMatrixWorld();
 
         // default config
@@ -220,12 +203,16 @@ class PointCloudLayer extends GeometryLayer {
             this.material = new PointsMaterial(this.material);
         }
 
-        this.mode = mode || PNTS_MODE.COLOR;
-
+        this.material.mode = mode || PNTS_MODE.COLOR;
         /**
          * @type {PointCloudNode | undefined}
          */
         this.root = undefined;
+    }
+
+    setElevationRange() {
+        this.minElevationRange = this.minElevationRange ?? this.source.zmin;
+        this.maxElevationRange = this.maxElevationRange ?? this.source.zmax;
     }
 
     preUpdate(context, changeSources) {
@@ -289,32 +276,19 @@ class PointCloudLayer extends GeometryLayer {
      * @param {PointCloudNode} elt - The element (node) to load data.
      * @param {Object} context - The context.
      * @param {PointCloudLayer} layer - The layer on wich the node is attach.
-     * @param {THREE.Box3} bbox - bbox of the node.
+     * @param {THREE.Box3} distanceToCamera - The distance between the camera and the node.
      *
      * @return {pointCloudNode[]} The child nodes to update (if needed).
      */
-    loadData(elt, context, layer, bbox) {
+    loadData(elt, context, layer, distanceToCamera) {
         elt.notVisibleSince = undefined;
-        point.copy(context.camera.camera3D.position).sub(this.object3d.getWorldPosition(new THREE.Vector3()));
-        point.applyQuaternion(this.object3d.getWorldQuaternion(new THREE.Quaternion()).invert());
 
         // only load geometry if this elements has points
         if (elt.numPoints !== 0) {
             if (elt.obj) {
                 elt.obj.visible = true;
-
-                if (__DEBUG__) {
-                    if (this.bboxes.visible) {
-                        if (!elt.obj.boxHelper) {
-                            initBoundingBox(elt, layer);
-                        }
-                        elt.obj.boxHelper.visible = true;
-                        elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                        elt.obj.boxHelper.material.color.g = elt.sse;
-                    }
-                }
             } else if (!elt.promise) {
-                const distance = Math.max(0.001, bbox.distanceToPoint(point));
+                const distance = Math.max(0.001, distanceToCamera);
                 // Increase priority of nearest node
                 const priority = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distance) / distance;
                 elt.promise = context.scheduler.execute({
@@ -326,8 +300,6 @@ class PointCloudLayer extends GeometryLayer {
                     earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
                 }).then((pts) => {
                     elt.obj = pts;
-                    // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
-                    elt.tightbbox = pts.tightbbox;
 
                     // make sure to add it here, otherwise it might never
                     // be added nor cleaned
@@ -344,8 +316,7 @@ class PointCloudLayer extends GeometryLayer {
         }
 
         if (elt.children && elt.children.length) {
-            const distance = bbox.distanceToPoint(point);
-            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distance) / this.sseThreshold;
+            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distanceToCamera) / this.sseThreshold;
             if (elt.sse >= 1) {
                 return elt.children;
             } else {
@@ -375,15 +346,28 @@ class PointCloudLayer extends GeometryLayer {
             return [];
         }
 
-        // pick the best bounding box
-        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return [];
+        // get object on which to measure distance
+        let bbox;
+        let object3d;
+        if (elt.obj) {
+            object3d = elt.obj;
+            bbox = object3d.geometry.boundingBox;
+        } else {
+            object3d = elt.clampOBB;
+            bbox = object3d.box3D;
         }
 
-        return this.loadData(elt, context, layer, bbox);
+        elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
+
+        if (!elt.visible) {
+            markForDeletion(elt);
+            return;
+        }
+
+        point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorldInverse);
+        const distanceToCamera = bbox.distanceToPoint(point);
+
+        return this.loadData(elt, context, layer, distanceToCamera);
     }
 
     postUpdate() {
@@ -446,25 +430,7 @@ class PointCloudLayer extends GeometryLayer {
                 obj.material = null;
                 obj.geometry = null;
                 obj.userData.node.obj = null;
-
-                if (__DEBUG__) {
-                    if (obj.boxHelper) {
-                        obj.boxHelper.removeMe = true;
-                        if (Array.isArray(obj.boxHelper.material)) {
-                            for (const material of obj.boxHelper.material) {
-                                material.dispose();
-                            }
-                        } else {
-                            obj.boxHelper.material.dispose();
-                        }
-                        obj.boxHelper.geometry.dispose();
-                    }
-                }
             }
-        }
-
-        if (__DEBUG__) {
-            this.bboxes.children = this.bboxes.children.filter(b => !b.removeMe);
         }
     }
 

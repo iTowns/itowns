@@ -61,6 +61,7 @@ describe('Potree', function () {
             potreeSource = new PotreeSource({
                 file: fileName,
                 url: baseurl,
+                crs: 'EPSG:4978',
             });
 
             // Configure Point Cloud layer
@@ -84,12 +85,24 @@ describe('Potree', function () {
         });
 
         describe('potree Layer', function () {
+            it('no crs -> should fail', function () {
+                try {
+                    // eslint-disable-next-line no-unused-vars
+                    const source = new PotreeSource({
+                        file: fileName,
+                        url: baseurl,
+                    });
+                } catch (err) {
+                    assert.ok(err instanceof Error);
+                    assert.equal(err.message, 'New PotreeSource: crs is required');
+                }
+            });
             it('Add point potree layer', function (done) {
                 View.prototype.addLayer.call(viewer, potreeLayer)
-                    .then((layer) => {
+                    .then(() => {
                         context.camera.camera3D.updateMatrixWorld();
-                        assert.equal(layer.root.children.length, 6);
-                        layer.bboxes.visible = true;
+                        assert.equal(potreeLayer.root.children.length, 6);
+                        potreeLayer.bboxes.visible = true;
                         done();
                     }).catch(done);
             });
@@ -147,7 +160,7 @@ describe('Potree', function () {
             });
 
             it('load child node', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
+                const root = new PotreeNode(numPoints, childrenBitField, potreeSource, 'EPSG:4978');
                 root.loadOctree()
                     .then(() => root.children[0].load()
                         .then(() => {
