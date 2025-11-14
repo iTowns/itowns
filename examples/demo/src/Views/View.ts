@@ -1,4 +1,10 @@
+import * as itowns from 'itowns';
+
 class View {
+    id: string;
+    view: itowns.View | null;
+    viewerDiv: HTMLDivElement | null;
+
     constructor() {
         this.id = '';
         this.view = null;
@@ -9,12 +15,19 @@ class View {
         return this.id;
     }
 
-    setVisible(visible) {
+    setVisible(visible: boolean) {
+        if (!this.viewerDiv) {
+            throw new Error('viewerDiv is not defined');
+        }
+
         this.viewerDiv.setAttribute('id', visible ? 'viewerDiv' : this.id);
         this.viewerDiv.style.display = visible ? 'block' : 'none';
     }
 
     getView() {
+        if (!this.view) {
+            throw new Error('view is not defined');
+        }
         return this.view;
     }
 }

@@ -1,7 +1,9 @@
 import * as itowns from 'itowns';
-import View from './View.js';
+import View from './View';
 
 class View3D extends View {
+    static _instance: View3D;
+
     constructor() {
         super();
         this.id = 'View3D';
