@@ -1,7 +1,9 @@
 import * as itowns from 'itowns';
-import View from '../Views/View.js';
+import View from './View';
 
 class ImmersiveView extends View {
+    static _instance: ImmersiveView;
+
     constructor() {
         super();
         this.id = 'ImmersiveView';
@@ -20,23 +22,31 @@ class ImmersiveView extends View {
         };
 
         this.view = new itowns.GlobeView(this.viewerDiv, placement, {
+            // @ts-expect-error noControls property undefined
             noControls: true,
             handleCollision: false,
-            // Change the subdisvision threshold to get better performances and avoid requesting many unnecessary tiles
+            // Change the subdisvision threshold to get better performances
+            // and avoid requesting many unnecessary tiles
             sseSubdivisionThreshold: 10,
         });
 
         // create Immersive control
+        // @ts-expect-error controls property requires more parameters
         this.view.controls = new itowns.StreetControls(this.view, {
+            // @ts-expect-error animationDuration property undefined
             animationDuration: 50,
         });
 
         // limit camera far, to increase performance
+        // @ts-expect-error camera3D far property undefined
         this.view.camera3D.far = 10000;
+        // @ts-expect-error camera3D near property undefined
         this.view.camera3D.near = 0.1;
 
         // open camera fov
+        // @ts-expect-error camera3D fov property undefined
         this.view.camera3D.fov = 75;
+        // @ts-expect-error camera3D updateProjectionMatrix method undefined
         this.view.camera3D.updateProjectionMatrix();
 
         this.setVisible(false);
