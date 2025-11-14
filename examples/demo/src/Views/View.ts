@@ -30,6 +30,13 @@ class View {
         }
         return this.view;
     }
+
+    getViewerDiv() {
+        if (!this.viewerDiv) {
+            throw new Error('viewerDiv is not defined');
+        }
+        return this.viewerDiv;
+    }
 }
 
 export default View;

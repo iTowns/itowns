@@ -1,0 +1,50 @@
+#menu {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family:'Courier New', Courier, monospace;
+    /* background-color: white; */
+    border-radius: 10%;
+    padding: 2vh;
+    z-index: 100;
+    background-color: rgba(255,255,255,0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+#buttonContainer {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    gap: 2vh;
+    margin-top: 1vh;
+}
+
+button {
+    border: none;
+    color: black;
+    padding: 0.5vh 2vh;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1.5vh;
+    border-radius: 12%;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #E5E5E5;
+    color: black;
+}
+
+button:active {
+    background-color: #404E73;
+    color: white;
+}
+
+p {
+    margin: 0;
+    padding: 0;
+    color: black;
+}
