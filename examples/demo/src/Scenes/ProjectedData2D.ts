@@ -1,5 +1,6 @@
 import * as itowns from 'itowns';
 import * as OrthoLayer from '../Layers/OrthoLayer';
+import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
 import * as ParksLayer from '../Layers/ParksLayer';
 import * as FlatBuildingsLayer from '../Layers/FlatBuildingsLayer';
@@ -20,16 +21,19 @@ export const Scene: SceneType = {
         const view = Scene.view.getView();
 
         const orthoLayer = await OrthoLayer.getLayer();
+        const ignMntLayer = await IgnMntLayer.getLayer();
         const ignMntHighResLayer = await IgnMntHighResLayer.getLayer();
         const flatBuildingsLayer = await FlatBuildingsLayer.getLayer();
         const parksLayer = await ParksLayer.getLayer();
 
         Scene.layers.push(orthoLayer);
+        Scene.layers.push(ignMntLayer);
         Scene.layers.push(ignMntHighResLayer);
         Scene.layers.push(flatBuildingsLayer);
         Scene.layers.push(parksLayer);
 
         await view.addLayer(orthoLayer);
+        await view.addLayer(ignMntLayer);
         await view.addLayer(ignMntHighResLayer);
         await view.addLayer(flatBuildingsLayer);
         await view.addLayer(parksLayer);
