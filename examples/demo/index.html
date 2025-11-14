@@ -30,7 +30,7 @@
         <link rel="stylesheet" type="text/css" href="../css/widgets.css" />
     </head>
     <body>
-        <div id="viewerDiv"></div>
+        <!-- <div id="viewerDiv"></div> -->
         <script type="module">
             import GuiTools from "GuiTools";
             import setupLoadingScreen from "LoadingScreen";
@@ -38,9 +38,11 @@
             import * as itowns from "itowns";
             import * as debug from "debug";
             import * as itowns_widgets from "itowns_widgets";
-            import { Scene1 } from "./scenes/Scene1.js";
-            import { Scene2 } from "./scenes/Scene2.js";
-            import { Scene3 } from "./scenes/Scene3.js";
+            import { Scene as Globe3D } from "./Scenes/Globe3D.js";
+            import { Scene as Terrain3D } from "./Scenes/Terrain3D.js";
+            import { Scene as ImmersiveView } from "./Scenes/ImmersiveView.js";
+            // import { Scene3 } from "./Scenes/Scene3.js";
+            // import { Scene4 } from "./Scenes/Scene4.js";
             import { transitionToScene } from "./Utils/transitionToScene.js";
 
             // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
@@ -52,50 +54,37 @@
             };
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
-            const viewerDiv = document.getElementById("viewerDiv");
+            // const viewerDiv = document.getElementById("viewerDiv");
 
             // Create a GlobeView
-            const view = new itowns.GlobeView(viewerDiv, placement);
+            // const view = new itowns.GlobeView(viewerDiv, placement);
 
             // Setup loading screen
-            setupLoadingScreen(viewerDiv, view);
+            // setupLoadingScreen(viewerDiv, view);
 
-            const orthoSource = new itowns.WMTSSource({
-                url: "https://data.geopf.fr/wmts?",
-                crs: "EPSG:3857",
-                name: "ORTHOIMAGERY.ORTHOPHOTOS",
-                tileMatrixSet: "PM",
-                format: "image/jpeg",
-            });
-            const orthoLayer = new itowns.ColorLayer("Ortho", {
-                source: orthoSource,
-            });
-            view.addLayer(orthoLayer);
+            
 
-            const elevationSource = new itowns.WMTSSource({
-                url: "https://data.geopf.fr/wmts?",
-                crs: "EPSG:4326",
-                name: "ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3",
-                tileMatrixSet: "WGS84G",
-                format: "image/x-bil;bits=32",
-                zoom: { min: 3, max: 10 },
-            });
-            const elevationLayer = new itowns.ElevationLayer("DEM", {
-                source: elevationSource,
-            });
-            view.addLayer(elevationLayer);
+            // transitionToScene(null, Globe3D);
+
+            const scenes = [Globe3D, Terrain3D, ImmersiveView];
+
+            for (const layer of scenes[0].layers) {
+                if (!scenes[0].view.getView().getLayerById(layer.id)) {
+                    scenes[0].view.getView().addLayer(layer);
+                } else {
+                    layer.visible = true;
+                }
+            }
+            scenes[0].view.setVisible(true);
+            scenes[0].onEnter();
 
 
-            transitionToScene(view, null, Scene1);
-
-            const scenes = [Scene1, Scene2, Scene3];
             let currentIndex = 0;
 
             const SceneManager = {
                 next() {
                     const newIndex = (currentIndex + 1) % scenes.length;
                     transitionToScene(
-                        view,
                         scenes[currentIndex],
                         scenes[newIndex]
                     );
@@ -105,7 +94,6 @@
                     const newIndex =
                         (currentIndex - 1 + scenes.length) % scenes.length;
                     transitionToScene(
-                        view,
                         scenes[currentIndex],
                         scenes[newIndex]
                     );
@@ -130,35 +118,6 @@
             buttonContainer.appendChild(prevButton);
             buttonContainer.appendChild(nextButton);
             document.body.appendChild(buttonContainer);
-
-            // // ---------- ADD SOME WIDGETS : ----------
-
-            // // ADD A SCALE :
-            // const scale = new itowns_widgets.Scale(view, {
-            //     position: "bottom-right",
-            //     translate: { x: -80 },
-            // });
-
-            // // ADD A MINIMAP :
-            // const minimap = new itowns_widgets.Minimap(
-            //     view,
-            //     new itowns.ColorLayer("minimap", {
-            //         source: new itowns.VectorTilesSource({
-            //             style: "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
-            //             // We don't display mountains and plot related data to ease visualisation
-            //             filter: (layer) =>
-            //                 !layer["source-layer"].includes("oro_") &&
-            //                 !layer["source-layer"].includes("parcellaire"),
-            //         }),
-            //         addLabelLayer: { performance: true },
-            //     }),
-            //     { cursor: "+" }
-            // );
-
-            // // ---------- DISPLAY ATMOSPHERIC LIGHTING : ----------
-
-            // const atmosphere = view.getLayerById("atmosphere");
-            // atmosphere.setRealisticOn(true);
         </script>
     </body>
 </html>
