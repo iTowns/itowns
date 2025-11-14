@@ -5,7 +5,7 @@ export const Scene3 = {
     placement: {
         coord: { long: 3.05, lat: 48.97 },
         range: 30000,
-        tilt: 90,
+        tilt: 89.5,
         heading: 0,
     },
     layers: [],
