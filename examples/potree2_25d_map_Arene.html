@@ -1,0 +1,132 @@
+<html>
+    <head>
+        <title>Point Cloud Viewer</title>
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "itowns": "../dist/itowns.js",
+                    "debug": "../dist/debug.js",
+                    "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                    "itowns_widgets": "../dist/itowns_widgets.js",
+                    "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+                    "lil": "https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.esm.min.js"
+                }
+            }
+        </script>
+
+        <style type="text/css">
+            #info {
+                color: #7ad7ff;
+                font-family: 'Open Sans', sans-serif;
+                position: absolute;
+                top: 0;
+                left: 0;
+                padding: 0.3rem;
+                background-color: #404040;
+                z-index: 1;
+            }
+            @media (max-width: 600px) {
+                #info,
+                .dg {
+                    display: none;
+                }
+            }
+        </style>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="viewerDiv">
+            <div id="info"></div>
+        </div>
+
+        <script type="module">
+
+            import lil from 'lil';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+
+            // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
+            itowns.CRS.defs('EPSG:2154', '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+
+            const viewerDiv = document.getElementById('viewerDiv');
+            viewerDiv.style.display = 'block';
+
+            const debugGui = new lil();
+
+            const view = new itowns.View('EPSG:2154', viewerDiv);
+            const controls = new itowns.PlanarControls(view);
+            setupLoadingScreen(viewerDiv, view);
+            view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
+
+            // Configure Point Cloud layer
+            const source = new itowns.Potree2Source({
+                    url: 'https://media.githubusercontent.com/media/itowns/iTowns2-sample-data/potreeData/pointclouds/potree2.0/Arene-1_L93/metadata.json',
+                    crs: 'EPSG:2154',
+                });
+
+            const name = source.url.split('/').pop();
+            const potreeLayer = new itowns.Potree2Layer(name, {
+                source,
+            });
+
+            // point selection on double-click
+            function dblClickHandler(event) {
+                var pick = view.pickObjectsAt(event, 5, potreeLayer);
+
+                for (const p of pick) {
+                    console.info('Selected point #' + p.index + ' in position (' +
+                        p.object.position.x + ', ' +
+                        p.object.position.y + ', ' +
+                        p.object.position.z +
+                        ') in Points ' + p.object.layer.id);
+                }
+            }
+            view.domElement.addEventListener('dblclick', dblClickHandler);
+
+            function onLayerReady() {
+                var lookAt = potreeLayer.root.clampOBB.position;
+
+                var size = new THREE.Vector3();
+                potreeLayer.root.voxelOBB.box3D.getSize(size);
+                view.camera3D.far = 10.0 * size.length();
+
+                controls.groundLevel = potreeLayer.minElevationRange;
+                var corner = new THREE.Vector3(...potreeLayer.metadata.boundingBox.min);
+                var position = corner.clone().add(
+                    size.multiply({ x: 0, y: 0, z: (size.x / size.z) })
+                );
+
+                view.camera3D.position.copy(position);
+                view.camera3D.lookAt(lookAt);
+                view.camera3D.updateProjectionMatrix();
+
+                view.notifyChange(view.camera3D);
+
+                // Add debug
+                debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);
+
+                // update stats window
+                var info = document.getElementById('info');
+                view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, () => {
+                    info.textContent = potreeLayer.displayedCount.toLocaleString() + ' points';
+                });
+            }
+
+            view.addLayer(potreeLayer).then(onLayerReady);
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+        </script>
+    </body>
+</html>
+
