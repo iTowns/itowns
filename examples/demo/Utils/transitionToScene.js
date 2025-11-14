@@ -1,32 +1,42 @@
-// import { moveCameraTo } from "./moveCameraTo";
-import * as itowns from "itowns";
+import * as itowns from 'itowns';
+import * as config from '../Config/config.js';
 
 const moveCameraTo = (view, placement) => {
-    const duration = 2000 ;
-    
-    const targetCoord = new itowns.Coordinates('EPSG:4326', placement.coord.lon, placement.coord.lat);
+    const targetCoord = new itowns.Coordinates('EPSG:4326', placement.coord.long, placement.coord.lat);
 
     return itowns.CameraUtils
-        .sequenceAnimationsToLookAtTarget(view, view.camera3D, [{
+        .animateCameraToLookAtTarget(view, view.camera3D, {
             coord: targetCoord,
             range: placement.range,
-            time: duration
-        }]);
+            time: config.DURATION,
+            tilt: placement.tilt 
+        });
 };
 
 export const transitionToScene = async (view, scene1, scene2) => {
     const cameraPromise = moveCameraTo(view, scene2.placement).catch(console.error);
 
     const layersPromise = (async () => {
-        for (let layer of scene1.layers) {
-            view.removeLayer(layer.id);
+        if (scene1) {
+            for (let layer of scene1.layers) {
+                if (scene2.layers.find(l => l.id === layer.id) == null) {
+                    view.removeLayer(layer.id, true);
+                }
+            }
+            scene1.onExit(view);
         }
+
         for (let layer of scene2.layers) {
-            view.addLayer(layer);
+            if (!view.getLayerById(layer.id)) {
+                view.addLayer(layer);
+            }
         }
-        scene1.onExit(view);
         scene2.onEnter(view);
+        view.notifyChange();
+
+        console.log('Current layers:', view.getLayers());
     })();
 
     await Promise.all([cameraPromise, layersPromise]);
 };
+
