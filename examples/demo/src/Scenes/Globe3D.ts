@@ -1,7 +1,9 @@
-import * as OrthoLayer from '../Layers/OrthoLayer.js';
-import View3D from '../Views/View3D.js';
+import * as OrthoLayer from '../Layers/OrthoLayer';
+import View3D from '../Views/View3D';
+import type { Scene as SceneType } from './Scene';
 
-export const Scene = {
+
+export const Scene: SceneType = {
     placement: {
         coord: { long: 2.351323, lat: 48.856712 },
         range: 25000000,

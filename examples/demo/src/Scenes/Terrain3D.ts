@@ -1,9 +1,10 @@
-import * as IgnMntLayer from '../Layers/IgnMntLayer.js';
-import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer.js';
-import * as OrthoLayer from '../Layers/OrthoLayer.js';
-import View3D from '../Views/View3D.js';
+import * as IgnMntLayer from '../Layers/IgnMntLayer';
+import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
+import * as OrthoLayer from '../Layers/OrthoLayer';
+import View3D from '../Views/View3D';
+import type { Scene as SceneType } from './Scene';
 
-export const Scene = {
+export const Scene: SceneType = {
     placement: {
         coord: { long: 9, lat: 44.5 },
         range: 300000,

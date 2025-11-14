@@ -1,7 +1,12 @@
 import * as itowns from 'itowns';
-import * as config from '../Config/config.js';
+import * as config from '../Config/config';
 
-const moveCameraTo = (view, placement) => {
+const moveCameraTo = (view: itowns.View, placement: {
+    coord: { long: number, lat: number },
+    range: number,
+    tilt: number,
+    heading: number,
+}) => {
     if (!placement) { return Promise.resolve(); }
 
     const targetCoord = new itowns.Coordinates('EPSG:4326', placement.coord.long, placement.coord.lat);
@@ -16,7 +21,7 @@ const moveCameraTo = (view, placement) => {
         });
 };
 
-export const transitionToScene = async (scene1, scene2) => {
+export const transitionToScene = async (scene1: any, scene2: any) => {
     // disable camera controls during transition
     // scene2.view.getView().controls.states.enabled = false;
 
@@ -50,7 +55,7 @@ export const transitionToScene = async (scene1, scene2) => {
         scene1.onExit();
 
         for (const layer of scene1.layers) {
-            if (scene2.layers.find(l => l.id === layer.id) == null) {
+            if (scene2.layers.find((l: any) => l.id === layer.id) == null) {
                 layer.visible = false;
             }
         }
