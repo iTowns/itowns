@@ -3,13 +3,16 @@ import View from '../Views/View';
 
 export type Scene = {
     placement: {
-        coord: { long: number, lat: number },
+        coord: itowns.Coordinates,
         range: number,
-        tilt: number,
-        heading: number,
+        tilt?: number,
+        heading?: number,
     },
     layers: itowns.Layer[],
     view: View,
-    onEnter: () => void,
-    onExit: () => void,
+    ready: boolean,
+    event?: () => void,
+    onCreate: () => Promise<void>,
+    onEnter?: () => void,
+    onExit?: () => void,
 };
