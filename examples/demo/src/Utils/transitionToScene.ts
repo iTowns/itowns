@@ -126,23 +126,20 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
         nextScene.view.setVisible(true);
     });
 
-    const layerPromise = (async () => {
-        for (const layer of currentScene.layers) {
-            if (nextScene.layers.find(l => l.id === layer.id) == null) {
-                // @ts-expect-error visible property undefined
-                layer.visible = false;
-            }
-        }
-
-        for (const layer of nextScene.layers) {
-            // @ts-expect-error visible property undefined
-            layer.visible = true;
-        }
-    })();
+    for (const layer of nextScene.layers) {
+        // @ts-expect-error visible property undefined
+        layer.visible = true;
+    }
 
     // load layers and move camera in parallel
-    await Promise.all([cameraPromise, layerPromise,
-        currentScene.onExit?.(), nextScene.onEnter?.()]);
+    await Promise.all([cameraPromise, currentScene.onExit?.(), nextScene.onEnter?.()]);
+
+    for (const layer of currentScene.layers) {
+        if (nextScene.layers.find(l => l.id === layer.id) == null) {
+            // @ts-expect-error visible property undefined
+            layer.visible = false;
+        }
+    }
 
     // @ts-expect-error controls and states property possibly undefined
     if (nextView.controls && nextView.controls.states) {
