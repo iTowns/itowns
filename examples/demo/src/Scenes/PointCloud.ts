@@ -51,8 +51,8 @@ export const Scene: SceneType = {
         const config = {
             source,
             crs: view.referenceCrs,
-            sseThreshold: 2,
-            pointBudget: 3000000,
+            sseThreshold: 4,
+            pointBudget: 1000000,
             ...options,
         };
         const pointCloudLayer = new itowns.CopcLayer('PointCloudLayer', config);
