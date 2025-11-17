@@ -43,9 +43,7 @@ export const Scene: SceneType = {
         Scene.ready = true;
     },
     onEnter() {
-        
     },
     onExit() {
-        
-    }
+    },
 };
