@@ -1,19 +1,20 @@
 import * as itowns from 'itowns';
 // @ts-expect-error setupLoadingScreen imported from import-map
-import setupLoadingScreen from "LoadingScreen";
+// eslint-disable-next-line import/no-unresolved
+import setupLoadingScreen from 'LoadingScreen';
 import View from './View';
 
-class PointCloudView extends View {
-    static _instance: PointCloudView;
+class PlanarView extends View {
+    static _instance: PlanarView;
     controls: itowns.PlanarControls | null;
 
     constructor() {
         super();
-        this.id = 'PointCloudView';
+        this.id = 'PlanarView';
         this.controls = null;
 
-        if (PointCloudView._instance) {
-            return PointCloudView._instance;
+        if (PlanarView._instance) {
+            return PlanarView._instance;
         }
 
 
@@ -27,18 +28,18 @@ class PointCloudView extends View {
         this.view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
 
         this.setVisible(false);
-        
+
         setupLoadingScreen(this.viewerDiv, this.view);
 
-        PointCloudView._instance = this;
+        PlanarView._instance = this;
     }
 
     getControls(): itowns.PlanarControls {
         if (!this.controls) {
-            throw new Error('PointCloudView controls undefined');
+            throw new Error('PlanarView controls undefined');
         }
         return this.controls;
     }
 }
 
-export default PointCloudView;
+export default PlanarView;
