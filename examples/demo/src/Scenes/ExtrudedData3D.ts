@@ -36,8 +36,6 @@ export const Scene: SceneType = {
         }
     },
     onCreate: async () => {
-        const view = Scene.view.getView();
-
         function scaleZ(mesh: THREE.Mesh) {
             for (let i = 0; i < mesh.children.length; i++) {
                 const c = mesh.children[i];
@@ -46,26 +44,14 @@ export const Scene: SceneType = {
             }
         }
 
-        const orthoLayer = await OrthoLayer.getLayer();
-        const ignMntLayer = await IgnMntLayer.getLayer();
-        const ignMntHighResLayer = await IgnMntHighResLayer.getLayer();
-        const flatBuildingsLayer = await FlatBuildingsLayer.getLayer();
-        const parksLayer = await ParksLayer.getLayer();
-        const buildingsLayer3D = await BuildingsLayer3D.getLayer(scaleZ);
+        Scene.layers.push(await OrthoLayer.getLayer());
+        Scene.layers.push(await IgnMntLayer.getLayer());
+        Scene.layers.push(await IgnMntHighResLayer.getLayer());
+        Scene.layers.push(await FlatBuildingsLayer.getLayer());
+        Scene.layers.push(await ParksLayer.getLayer());
+        Scene.layers.push(await BuildingsLayer3D.getLayer(scaleZ) as unknown as itowns.Layer);
 
-        Scene.layers.push(orthoLayer);
-        Scene.layers.push(ignMntLayer);
-        Scene.layers.push(ignMntHighResLayer);
-        Scene.layers.push(flatBuildingsLayer);
-        Scene.layers.push(parksLayer);
-        Scene.layers.push(buildingsLayer3D as unknown as itowns.Layer);
-
-        await view.addLayer(orthoLayer);
-        await view.addLayer(ignMntLayer);
-        await view.addLayer(ignMntHighResLayer);
-        await view.addLayer(flatBuildingsLayer);
-        await view.addLayer(parksLayer);
-        await view.addLayer(buildingsLayer3D);
+        await Scene.view.addLayers(Scene.layers);
 
         Scene.ready = true;
     },

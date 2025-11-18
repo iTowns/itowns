@@ -34,14 +34,8 @@ export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
 
         const view = Scene.view.getView() as itowns.GlobeView;
 
-        const orthoLayer = await OrthoLayer.getLayer();
-        const ignMntHighResLayer = await IgnMntHighResLayer.getLayer();
-
-        Scene.layers.push(orthoLayer);
-        Scene.layers.push(ignMntHighResLayer);
-
-        await view.addLayer(orthoLayer);
-        await view.addLayer(ignMntHighResLayer);
+        Scene.layers.push(await OrthoLayer.getLayer());
+        Scene.layers.push(await IgnMntHighResLayer.getLayer());
 
         function altitudeBuildings(properties: {
             altitude_minimale_sol: number,
@@ -96,9 +90,6 @@ export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
 
         Scene.layers.push(olayer);
 
-        // @ts-expect-error addLayer expects single argument
-        await view.addLayer(olayer, view.tileLayer);
-
         const wfsBuildingSource = new itowns.WFSSource({
             url: 'https://data.geopf.fr/wfs/ows?',
             version: '2.0.0',
@@ -139,8 +130,7 @@ export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
 
         Scene.layers.push(wfsBuildingLayer as unknown as itowns.Layer);
 
-        // add the created building layer, and debug UI
-        await view.addLayer(wfsBuildingLayer);
+        await Scene.view.addLayers(Scene.layers);
 
         // @ts-expect-error buildingsLayer property undefined
         view.controls!.buildingsLayer = wfsBuildingLayer.id;

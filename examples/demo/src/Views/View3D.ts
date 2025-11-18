@@ -15,7 +15,6 @@ class View3D extends View {
             return View3D._instance;
         }
 
-
         const div = document.createElement('div');
         this.viewerDiv = document.body.appendChild(div);
         this.viewerDiv.setAttribute('id', 'viewerDiv');
@@ -27,9 +26,9 @@ class View3D extends View {
 
         this.view = new itowns.GlobeView(this.viewerDiv, placement);
 
-        this.setVisible(false);
-
         setupLoadingScreen(this.viewerDiv, this.view);
+
+        this.setVisible(false);
 
         View3D._instance = this;
     }
