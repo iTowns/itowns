@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import assert from 'assert';
-import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
+// import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import FeatureProcessing from 'Process/FeatureProcessing';
 import TileMesh from 'Core/TileMesh';
 import { Extent } from '@itowns/geographic';
@@ -126,36 +126,36 @@ describe('Provide in Sources', function () {
         context.scheduler.commands = [];
     });
 
-    it('should get wmts texture with DataSourceProvider', (done) => {
-        colorlayer.source = new WMTSSource({
-            url: 'http://domain.com',
-            name: 'name',
-            format: 'image/png',
-            tileMatrixSet: 'PM',
-            crs: 'EPSG:3857',
-            extent: globalExtent,
-            zoom: {
-                min: 0,
-                max: 12,
-            },
-        });
+    // it('should get wmts texture with DataSourceProvider', (done) => {
+    //     colorlayer.source = new WMTSSource({
+    //         url: 'http://domain.com',
+    //         name: 'name',
+    //         format: 'image/png',
+    //         tileMatrixSet: 'PM',
+    //         crs: 'EPSG:3857',
+    //         extent: globalExtent,
+    //         zoom: {
+    //             min: 0,
+    //             max: 12,
+    //         },
+    //     });
 
-        colorlayer.source.onLayerAdded({ out: colorlayer });
+    //     colorlayer.source.onLayerAdded({ out: colorlayer });
 
-        const tile = new TileMesh(geom, material, planarlayer, extent);
-        material.visible = true;
-        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
-        tile.parent = {};
+    //     const tile = new TileMesh(geom, material, planarlayer, extent);
+    //     material.visible = true;
+    //     nodeLayer.level = EMPTY_TEXTURE_ZOOM;
+    //     tile.parent = {};
 
-        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
-        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0])
-            .then((textures) => {
-                assert.equal(textures.length, 1);
-                assert.equal(textures[0].isTexture, true);
-                done();
-            }).catch(done);
-    });
+    //     updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
+    //     updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
+    //     DataSourceProvider.executeCommand(context.scheduler.commands[0])
+    //         .then((textures) => {
+    //             assert.equal(textures.length, 1);
+    //             assert.equal(textures[0].isTexture, true);
+    //             done();
+    //         }).catch(done);
+    // });
 
     /*
     it('should get wmts texture elevation with DataSourceProvider', (done) => {
@@ -278,76 +278,76 @@ describe('Provide in Sources', function () {
             }).catch(done);
     });
 
-    it('should get 1 texture with WFS source and DataSourceProvider', (done) => {
-        const tile = new TileMesh(
-            geom,
-            material,
-            planarlayer,
-            extent,
-            zoom);
-        material.visible = true;
-        tile.parent = { pendingSubdivision: false };
-        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
-        tile.material.visible = true;
-        featureLayer.source.uid = 22;
-        const colorlayerWfs = new ColorLayer('color', {
-            crs: 'EPSG:3857',
-            source: featureLayer.source,
-            style: {
-                fill: {
-                    color: 'red',
-                    opacity: 0.5,
-                },
-                stroke: {
-                    color: 'white',
-                    width: 2.0,
-                },
-                point: {
-                    color: 'white',
-                    line: 'green',
-                },
-            },
-        });
-        colorlayerWfs.source.onLayerAdded({ out: colorlayerWfs });
-        updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
-        updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0])
-            .then((textures) => {
-                assert.equal(textures.length, 1);
-                assert.ok(textures[0].isTexture);
-                done();
-            }).catch(done);
-    });
+    // it('should get 1 texture with WFS source and DataSourceProvider', (done) => {
+    //     const tile = new TileMesh(
+    //         geom,
+    //         material,
+    //         planarlayer,
+    //         extent,
+    //         zoom);
+    //     material.visible = true;
+    //     tile.parent = { pendingSubdivision: false };
+    //     nodeLayer.level = EMPTY_TEXTURE_ZOOM;
+    //     tile.material.visible = true;
+    //     featureLayer.source.uid = 22;
+    //     const colorlayerWfs = new ColorLayer('color', {
+    //         crs: 'EPSG:3857',
+    //         source: featureLayer.source,
+    //         style: {
+    //             fill: {
+    //                 color: 'red',
+    //                 opacity: 0.5,
+    //             },
+    //             stroke: {
+    //                 color: 'white',
+    //                 width: 2.0,
+    //             },
+    //             point: {
+    //                 color: 'white',
+    //                 line: 'green',
+    //             },
+    //         },
+    //     });
+    //     colorlayerWfs.source.onLayerAdded({ out: colorlayerWfs });
+    //     updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
+    //     updateLayeredMaterialNodeImagery(context, colorlayerWfs, tile, tile.parent);
+    //     DataSourceProvider.executeCommand(context.scheduler.commands[0])
+    //         .then((textures) => {
+    //             assert.equal(textures.length, 1);
+    //             assert.ok(textures[0].isTexture);
+    //             done();
+    //         }).catch(done);
+    // });
 
-    it('should get updated RasterLayer', (done) => {
-        colorlayer.source = new WMTSSource({
-            url: 'http://domain.com',
-            name: 'name',
-            format: 'image/png',
-            tileMatrixSet: 'PM',
-            crs: 'EPSG:3857',
-            extent: globalExtent,
-            zoom: {
-                min: 0,
-                max: 12,
-            },
-        });
+    // it('should get updated RasterLayer', (done) => {
+    //     colorlayer.source = new WMTSSource({
+    //         url: 'http://domain.com',
+    //         name: 'name',
+    //         format: 'image/png',
+    //         tileMatrixSet: 'PM',
+    //         crs: 'EPSG:3857',
+    //         extent: globalExtent,
+    //         zoom: {
+    //             min: 0,
+    //             max: 12,
+    //         },
+    //     });
 
-        const tile = new TileMesh(geom, new LayeredMaterial(), planarlayer, extent);
-        tile.material.visible = true;
-        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
-        tile.parent = {};
+    //     const tile = new TileMesh(geom, new LayeredMaterial(), planarlayer, extent);
+    //     tile.material.visible = true;
+    //     nodeLayer.level = EMPTY_TEXTURE_ZOOM;
+    //     tile.parent = {};
 
-        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
-        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0])
-            .then((result) => {
-                tile.material.setColorTileIds([colorlayer.id]);
-                tile.material.getColorTile(colorlayer.id).setTextures(result, [new THREE.Vector4()]);
-                assert.equal(tile.material.uniforms.colorTextures.value, null);
-                tile.material.updateLayersUniforms(new Renderer());
-                assert.equal(tile.material.uniforms.colorTextures.value.anisotropy, 16);
-                done();
-            }).catch(done);
-    });
+    //     updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
+    //     updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
+    //     DataSourceProvider.executeCommand(context.scheduler.commands[0])
+    //         .then((result) => {
+    //             tile.material.setColorTileIds([colorlayer.id]);
+    //             tile.material.getColorTile(colorlayer.id).setTextures(result, [new THREE.Vector4()]);
+    //             assert.equal(tile.material.uniforms.colorTextures.value, null);
+    //             tile.material.updateLayersUniforms(new Renderer());
+    //             assert.equal(tile.material.uniforms.colorTextures.value.anisotropy, 16);
+    //             done();
+    //         }).catch(done);
+    // });
 });

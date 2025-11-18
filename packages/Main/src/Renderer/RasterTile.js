@@ -98,21 +98,7 @@ export class RasterTile extends THREE.EventDispatcher {
             this.state.newTry();
 
             const nextLevel = nextLevelToFetch(this);
-            const nextTiles = [];
-
-            this.tiles.forEach((tile) => {
-                const { source } = this.layer;
-                const nextTile = tile.tiledExtentParent(nextLevel);
-
-                if ((source.tileInsideLimit && source.tileInsideLimit(nextTile)) ||
-                    source.extentInsideLimit(nextTile.toExtent(source.crs))) {
-                    nextTiles.push(nextTile);
-                }
-            });
-
-            if (nextTiles.length == 0) {
-                return this.state.noMoreUpdatePossible();
-            }
+            const nextTiles = this.tiles.map(tile => tile.tiledExtentParent(nextLevel));
 
             const command = buildCommand(this, nextTiles, requester, view);
 
@@ -126,7 +112,7 @@ export class RasterTile extends THREE.EventDispatcher {
                 }
 
                 return textures;
-            }).catch(err => handlingError(err, this, nextLevel));
+            }).catch(err => handlingError(err, requester, this.layer, nextLevel, view));
         }
     }
 
