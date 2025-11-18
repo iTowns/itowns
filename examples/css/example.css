@@ -42,6 +42,13 @@ body {
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
 /* MAIN SECTION (RIGHT) */
 #main {
     width: calc(100% * 9 / 16);
@@ -64,7 +71,7 @@ body {
     transition-duration: 200ms;
 }
 
-/* NAVIGATION (LEFT) */
+/* EDITOR (LEFT) */
 #editor-panel {
     background-color: light-dark(white, #202030);
     width: calc(100% * 7 / 16);
@@ -83,6 +90,22 @@ body {
 
 #editor-panel>hr {
     margin: 0 1em;
+}
+
+#editor-collapse {
+    display: flex;
+    position: absolute;
+    background-color: #0023;
+    border-width: 0;
+    left: calc(100% * 7 / 16 - 1%);
+    width: 1%;
+    aspect-ratio: 1 / 2;
+    flex-direction: row;
+    flex: 0;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition-duration: 200ms;
 }
 
 .switch input {
