@@ -74,9 +74,15 @@
             <textarea id="code-editor"></textarea>
         </div>
     </div>
+    <button id="editor-collapse">
+        <svg height="10" width="10">
+            <polygon points="0,5 10,0 10,10" style="fill:white" />
+        </svg>
+    </button>
 
     <script type="text/javascript">
         const iframe = document.getElementById("content");
+        const editorPanel = document.getElementById("editor-panel");
         const exampleSelector = document.getElementById("example-selector");
         const codeEditorTextArea = document.getElementById("code-editor");
 
@@ -170,6 +176,25 @@
         }
         fontSizeSelector.value = getEditorFontSize();
         fontSizeSelector.onchange = (event) => setEditorFontSize(event.target.value || 13);
+
+        let editorHidden = false;
+        const editorCollapse = document.getElementById("editor-collapse");
+        editorCollapse.onclick = () => {
+            if (!editorHidden) {
+                editorCollapse.style.left = "0";
+                editorCollapse.style.transform = "scaleX(-1)";
+                editorPanel.style.left = "calc(-100% * 7 / 16)";
+                iframe.style.left = "0";
+                iframe.style.width = "100%";
+            } else {
+                editorCollapse.style.left = "calc(100% * 7 / 16 - 1%)";
+                editorCollapse.style.transform = "scaleX(1)";
+                editorPanel.style.left = "0";
+                iframe.style.left = "";
+                iframe.style.width = "calc(100% * 9 / 16)";
+            }
+            editorHidden = !editorHidden;
+        };
 
         /** @param {string} slug - An example's slug */
         function cacheExample(slug) {
