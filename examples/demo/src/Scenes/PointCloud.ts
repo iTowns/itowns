@@ -29,17 +29,11 @@ export const Scene: SceneType = {
     onCreate: async () => {
         const view = Scene.view.getView();
 
-        const orthoLayer = await OrthoLayer.getLayer();
-        const ignMntLayer = await IgnMntLayer.getLayer();
-        const ignMntHighResLayer = await IgnMntHighResLayer.getLayer();
+        Scene.layers.push(await OrthoLayer.getLayer());
+        Scene.layers.push(await IgnMntLayer.getLayer());
+        Scene.layers.push(await IgnMntHighResLayer.getLayer());
 
-        Scene.layers.push(orthoLayer);
-        Scene.layers.push(ignMntLayer);
-        Scene.layers.push(ignMntHighResLayer);
-
-        await view.addLayer(orthoLayer);
-        await view.addLayer(ignMntLayer);
-        await view.addLayer(ignMntHighResLayer);
+        await Scene.view.addLayers(Scene.layers);
 
         const source = new itowns.CopcSource({
             url: 'https://data.geopf.fr/telechargement/download/LiDARHD-NUALID/NUALHD_1-0__LAZ_LAMB93_OL_2025-02-20/LHD_FXX_0844_6520_PTS_LAMB93_IGN69.copc.laz',

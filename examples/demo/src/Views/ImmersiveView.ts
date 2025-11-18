@@ -52,9 +52,9 @@ class ImmersiveView extends View {
         // @ts-expect-error camera3D updateProjectionMatrix method undefined
         this.view.camera3D.updateProjectionMatrix();
 
-        this.setVisible(false);
-
         setupLoadingScreen(this.viewerDiv, this.view);
+
+        this.setVisible(false);
 
         ImmersiveView._instance = this;
     }
