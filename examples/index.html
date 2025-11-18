@@ -64,7 +64,12 @@
                 <select id="example-selector" class="selector"></select>
                 <input id="font-size-selector" class="selector" type="number" min="8" step="1" />
                 <div>
-                    <button type="button" id="run-button" class="header-button" />
+                    <div class="tooltip">
+                        <button type="button" id="run-button" class="header-button"></button>
+                        <div class="tooltip-text">
+                            Run the code
+                        </div>
+                    </div>
                     <button type="button" id="share-button" class="header-button" />
                 </div>
             </div>
@@ -195,6 +200,19 @@
             }
             editorHidden = !editorHidden;
         };
+        const searchParams = new URL(
+            document.location.toString(),
+        ).searchParams;
+        const hide_editor = searchParams.get("hide_editor");
+        if (!!hide_editor) {
+            editorCollapse.style["transition-duration"] = "";
+            editorPanel.style["transition-duration"] = "";
+            iframe.style["transition-duration"] = "";
+            editorCollapse.click();
+            editorCollapse.style["transition-duration"] = "200ms";
+            editorPanel.style["transition-duration"] = "200ms";
+            iframe.style["transition-duration"] = "200ms";
+        }
 
         /** @param {string} slug - An example's slug */
         function cacheExample(slug) {
