@@ -27,9 +27,9 @@ class PlanarView extends View {
 
         this.view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
 
-        this.setVisible(false);
-
         setupLoadingScreen(this.viewerDiv, this.view);
+
+        this.setVisible(false);
 
         PlanarView._instance = this;
     }

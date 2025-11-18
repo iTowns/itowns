@@ -16,14 +16,8 @@ export const Scene: SceneType = {
     view: new View3D(),
     ready: false,
     onCreate: async () => {
-        const view = Scene.view.getView();
+        Scene.layers.push(await OrthoLayer.getLayer());
 
-        const orthoLayer = await OrthoLayer.getLayer();
-
-        Scene.layers.push(orthoLayer);
-
-        await view.addLayer(orthoLayer);
-
-        Scene.ready = true;
+        await Scene.view.addLayers(Scene.layers);
     },
 };

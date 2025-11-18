@@ -18,19 +18,11 @@ export const Scene: SceneType = {
     view: new View3D(),
     ready: false,
     onCreate: async () => {
-        const view = Scene.view.getView();
+        Scene.layers.push(await OrthoLayer.getLayer());
+        Scene.layers.push(await IgnMntLayer.getLayer());
+        Scene.layers.push(await IgnMntHighResLayer.getLayer());
 
-        const orthoLayer = await OrthoLayer.getLayer();
-        const ignMntLayer = await IgnMntLayer.getLayer();
-        const ignMntHighResLayer = await IgnMntHighResLayer.getLayer();
-
-        Scene.layers.push(orthoLayer);
-        Scene.layers.push(ignMntLayer);
-        Scene.layers.push(ignMntHighResLayer);
-
-        await view.addLayer(orthoLayer);
-        await view.addLayer(ignMntLayer);
-        await view.addLayer(ignMntHighResLayer);
+        await Scene.view.addLayers(Scene.layers);
 
         Scene.ready = true;
     },
