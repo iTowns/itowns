@@ -417,52 +417,24 @@ body {
     user-select: none;
 }
 
+/* Tooltip container */
 .tooltip {
-    display: none;
-    background-image: linear-gradient(rgba(167, 164, 164, 0.95),
-            rgba(60, 60, 60, 0.95));
-    box-shadow: -1px 2px 5px 1px rgba(0, 0, 0, 0.5);
-    margin-top: 20px;
-    margin-left: 20px;
-    padding: 10px;
-    position: absolute;
-    z-index: 1000;
-    color: #cecece;
-    font-family: "Open Sans", sans-serif;
-    font-size: 14px;
-    line-height: 18px;
-    text-align: left;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
 }
 
-.tooltip li,
-.coord {
-    font-size: 12px;
-    padding-left: 20px;
-    color: #93b7c0;
-    text-shadow:
-        0px 1px 0px rgba(200, 200, 200, 0.3),
-        0px -1px 0px rgba(30, 30, 30, 0.7);
+.tooltip-text {
+    visibility: hidden;
+    width: 130px;
+    background-color: #1127;
+    color: #fff;
+    padding: .5em 0;
+    border-radius: .2em;
+    position: absolute;
+    z-index: 1;
 }
 
-/* Circle for Sse helper */
-.circleBase {
-    display: none;
-    border-radius: 50%;
-    margin-top: 0px;
-    margin-left: 0px;
-    padding: 0px;
-    position: absolute;
-    z-index: 9;
-    font-family: "Open Sans", sans-serif;
-    font-size: 20px;
-    line-height: 0px;
-    text-align: center;
-    pointer-events: none;
-    width: 10px;
-    height: 10px;
-    background: rgba(170, 170, 170, 0.4);
-    border: 2px solid #7ad7ff;
-    color: #b5e8ff;
-    vertical-align: middle;
-    text-shadow: 0px 0px 3px black;
+.tooltip>button:hover tooltip-text {
+    visibility: visible;
 }
