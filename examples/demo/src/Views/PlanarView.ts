@@ -29,6 +29,7 @@ class PlanarView extends View {
 
         setupLoadingScreen(this.viewerDiv, this.view);
 
+        this.setupUI();
         this.setVisible(false);
 
         PlanarView._instance = this;

@@ -1,5 +1,8 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
+// @ts-expect-error FeatureToolTip imported from import-map
+// eslint-disable-next-line import/no-unresolved
+import * as debug from 'debug';
 import * as OrthoLayer from '../Layers/OrthoLayer';
 import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
@@ -52,16 +55,29 @@ export const Scene: SceneType = {
         Scene.layers.push(await IgnMntLayer.getLayer());
         Scene.layers.push(await IgnMntHighResLayer.getLayer());
         Scene.layers.push(await FlatBuildingsLayer.getLayer());
+        Scene.layers.push(await ParksLayer.getLayer());
         Scene.layers.push(await BuildingsLayer3D.getLayer(scaleZ) as unknown as itowns.Layer);
         Scene.layers.push(await TreesLayer.getLayer() as unknown as itowns.Layer);
-        Scene.layers.push(await ParksLayer.getLayer());
 
         await Scene.view.addLayers(Scene.layers);
 
         Scene.ready = true;
     },
     onEnter: () => {
-        Scene.view.getView().addFrameRequester(
+        const view = Scene.view.getView();
+        const gui = Scene.view.getGuiTools().gui;
+
+        debug.GeometryDebug.createGeometryDebugUI(
+            gui, view, Scene.layers[5]);
+        const subfolder = gui.hasFolder(`Layer ${Scene.layers[5].id}`);
+        debug.GeometryDebug.addWireFrameCheckbox(
+            subfolder || gui,
+            view, Scene.layers[5]);
+
+        debug.GeometryDebug.createGeometryDebugUI(
+            gui, view, Scene.layers[6]);
+
+        view.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, Scene.event);
     },
     onExit: () => {

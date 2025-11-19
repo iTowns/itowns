@@ -28,6 +28,7 @@ class View3D extends View {
 
         setupLoadingScreen(this.viewerDiv, this.view);
 
+        this.setupUI();
         this.setVisible(false);
 
         View3D._instance = this;
