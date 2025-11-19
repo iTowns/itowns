@@ -5,6 +5,7 @@
     top: 1vh;
     left: 1vh;
     width: 50vh;
+    min-height: 20vh;
     color: white;
     font-family:'Courier New', Courier, monospace;
     border-radius: 10%;
@@ -16,7 +17,8 @@
 }
 
 #textContainer {
-    padding:1vh;
+    padding: 1vh;
+    width: 90%;
 }
 
 #buttonContainer {
@@ -25,7 +27,7 @@
     justify-content: right;
     align-items: center;
     gap: 2vh;
-    padding:1vh;
+    padding: 1vh;
 }
 
 button {
