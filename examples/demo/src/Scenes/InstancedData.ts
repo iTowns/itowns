@@ -13,6 +13,8 @@ import * as TreesLayer from '../Layers/TreesLayer';
 import View3D from '../Views/View3D';
 import type { Scene as SceneType } from './Scene';
 
+const ambLight = new THREE.AmbientLight(0xffffff, 0.3);
+
 export const Scene: SceneType = {
     title: 'Extruded Data 3D with Trees',
     description: 'Scene demonstrating extruded 3D data with animated growth effect and 3D trees.',
@@ -40,10 +42,6 @@ export const Scene: SceneType = {
         }
     },
     onCreate: async () => {
-        const view = Scene.view.getView();
-        const ambLight = new THREE.AmbientLight(0xffffff, 0.3);
-        view.scene.add(ambLight);
-
         function scaleZ(mesh: THREE.Mesh) {
             mesh.children.forEach((c) => {
                 c.scale.z = 0.01;
@@ -67,6 +65,8 @@ export const Scene: SceneType = {
         const view = Scene.view.getView();
         const gui = Scene.view.getGuiTools().gui;
 
+        view.scene.add(ambLight);
+
         debug.GeometryDebug.createGeometryDebugUI(
             gui, view, Scene.layers[5]);
         const subfolder = gui.hasFolder(`Layer ${Scene.layers[5].id}`);
@@ -81,7 +81,11 @@ export const Scene: SceneType = {
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, Scene.event);
     },
     onExit: () => {
-        Scene.view.getView().removeFrameRequester(
+        const view = Scene.view.getView();
+
+        view.scene.remove(ambLight);
+
+        view.removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, Scene.event);
     },
 };
