@@ -1,4 +1,6 @@
 import * as itowns from 'itowns';
+import * as IgnMntLayer from '../Layers/IgnMntLayer';
+import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
 import * as OrthoLayer from '../Layers/OrthoLayer';
 import View3D from '../Views/View3D';
 import type { Scene as SceneType } from './Scene';
@@ -17,6 +19,8 @@ export const Scene: SceneType = {
     ready: false,
     onCreate: async () => {
         Scene.layers.push(await OrthoLayer.getLayer());
+        Scene.layers.push(await IgnMntLayer.getLayer());
+        Scene.layers.push(await IgnMntHighResLayer.getLayer());
 
         await Scene.view.addLayers(Scene.layers);
     },
