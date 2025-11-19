@@ -11,10 +11,7 @@ import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
 import type { Scene as SceneType } from './Scene';
 
-const gui = new lil();
-gui.hide();
-
-export const Scene: SceneType = {
+export const Scene: SceneType & { gui: lil } = {
     title: 'Point Cloud Visualization',
     description: 'Scene demonstrating point cloud visualization using COPC format.',
     placement: {
@@ -25,6 +22,7 @@ export const Scene: SceneType = {
     },
     layers: [],
     view: new View3D(),
+    gui: new lil(),
     ready: false,
     onCreate: async () => {
         const view = Scene.view.getView();
@@ -53,14 +51,17 @@ export const Scene: SceneType = {
         Scene.layers.push(pointCloudLayer as unknown as itowns.Layer);
         await itowns.View.prototype.addLayer.call(view, pointCloudLayer);
 
-        debug.PointCloudDebug.initTools(view, pointCloudLayer, gui);
+        debug.PointCloudDebug.initTools(view, pointCloudLayer, Scene.gui);
         Scene.ready = true;
     },
     onEnter: async () => {
-        gui.show();
+        Scene.view.getGuiTools().gui.hide();
+        Scene.gui.show();
     },
     onExit: async () => {
-        gui.reset();
-        gui.hide();
+        Scene.gui.reset();
+        Scene.gui.hide();
     },
 };
+
+Scene.gui.hide();

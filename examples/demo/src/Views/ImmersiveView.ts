@@ -54,6 +54,7 @@ class ImmersiveView extends View {
 
         setupLoadingScreen(this.viewerDiv, this.view);
 
+        this.setupUI();
         this.setVisible(false);
 
         ImmersiveView._instance = this;
