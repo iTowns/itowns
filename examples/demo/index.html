@@ -15,6 +15,7 @@
                     "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
                     "GuiTools": "../jsm/GUI/GuiTools.js",
                     "LoadingScreen": "../jsm/GUI/LoadingScreen.js",
+                    "FeatureToolTip": "../jsm/plugins/FeatureToolTip.js",
                     "itowns_widgets": "../../dist/itowns_widgets.js",
                     "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
                     "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
@@ -76,8 +77,9 @@
             }
             scenes[0].view.setVisible(true);
             await scenes[0].onCreate();
-            scenes[0].onEnter?.();
-
+            await scenes[0].onEnter?.();
+            scenes[0].view.getGuiTools().addLayersGUI(scenes[0].layers);
+            scenes[0].view.getGuiTools().gui.show();
 
             let currentIndex = 0;
 

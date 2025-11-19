@@ -1,3 +1,4 @@
+/*** Navigation Menu ***/
 #menu {
     display: flex;
     position: absolute;
@@ -51,4 +52,19 @@ button:active {
 
 p {
     color: black;
+}
+
+/*** Config GUI ***/
+#menuDiv {
+    position: fixed;
+    top: 1vh;
+    right: 1vh;              
+    display: flex;
+    justify-content: flex-end;
+    z-index: 100;
+}
+
+.lil-gui.root {
+    top: 1vh;
+    right: 1vh;
 }
