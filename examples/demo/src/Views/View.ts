@@ -92,6 +92,12 @@ class View {
     }
 
     setupUI() {
+        if (!document.getElementById('featureInfo')) {
+            const featureInfo = document.createElement('div');
+            featureInfo.setAttribute('id', 'featureInfo');
+            document.body.appendChild(featureInfo);
+        }
+
         this.guiTools = new GuiTools('menuDiv', this.view);
         this.guiTools.gui.hide();
     }
