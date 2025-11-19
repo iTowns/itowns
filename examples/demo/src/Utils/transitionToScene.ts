@@ -131,6 +131,19 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
         layer.visible = true;
     }
 
+    const currentGuiTools = currentScene.view.getGuiTools();
+    const nextGuiTools = nextScene.view.getGuiTools();
+
+    currentGuiTools.gui.hide();
+
+    for (const layer of currentScene.layers) {
+        currentGuiTools.gui.removeFolder(layer);
+        currentGuiTools.gui.removeFolder(`Layer ${layer.id}`);
+    }
+
+    nextGuiTools.addLayersGUI(nextScene.layers);
+    nextGuiTools.gui.show();
+
     // load layers and move camera in parallel
     await Promise.all([cameraPromise, currentScene.onExit?.(), nextScene.onEnter?.()]);
 
