@@ -1,9 +1,16 @@
 import * as itowns from 'itowns';
+// @ts-expect-error FeatureToolTip imported from import-map
+// eslint-disable-next-line import/no-unresolved
+import FeatureToolTip from 'FeatureToolTip';
+// @ts-expect-error GuiTools imported from import-map
+// eslint-disable-next-line import/no-unresolved
+import GuiTools from 'GuiTools';
 
 class View {
     id: string;
     view: itowns.View | null;
     viewerDiv: HTMLDivElement | null;
+    guiTools: GuiTools | null = null;
 
     constructor() {
         this.id = '';
@@ -13,15 +20,6 @@ class View {
 
     getId() {
         return this.id;
-    }
-
-    setVisible(visible: boolean) {
-        if (!this.viewerDiv) {
-            throw new Error('viewerDiv is not defined');
-        }
-
-        this.viewerDiv.setAttribute('id', visible ? 'viewerDiv' : this.id);
-        this.viewerDiv.style.display = visible ? 'block' : 'none';
     }
 
     getView() {
@@ -36,6 +34,26 @@ class View {
             throw new Error(`viewerDiv of view '${this.id}' is not defined`);
         }
         return this.viewerDiv;
+    }
+
+    getGuiTools() {
+        if (!this.guiTools) {
+            throw new Error(`guiTools of view '${this.id}' is not defined`);
+        }
+        return this.guiTools;
+    }
+
+    setVisible(visible: boolean) {
+        if (!this.viewerDiv) {
+            throw new Error('viewerDiv is not defined');
+        }
+
+        this.viewerDiv.setAttribute('id', visible ? 'viewerDiv' : this.id);
+        this.viewerDiv.style.display = visible ? 'block' : 'none';
+
+        if (visible) {
+            FeatureToolTip.init(this.viewerDiv, this.view);
+        }
     }
 
     addLayer(layer: itowns.Layer) {
@@ -71,6 +89,11 @@ class View {
         });
 
         return Promise.all(layerPromises);
+    }
+
+    setupUI() {
+        this.guiTools = new GuiTools('menuDiv', this.view);
+        this.guiTools.gui.hide();
     }
 }
 
