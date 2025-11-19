@@ -70,7 +70,7 @@ export const Scene: SceneType = {
             subfolder || gui,
             view, Scene.layers[5]);
 
-        Scene.view.getView().addFrameRequester(
+        view.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, Scene.event);
     },
     onExit: () => {
