@@ -54,6 +54,7 @@
             import * as itowns_widgets from "itowns_widgets";
             import { transitionToScene, updateUIForScene } from "./dist/Utils/transitionToScene.js";
             import { Scene as Globe3D } from "./dist/Scenes/Globe3D.js";
+            import { Scene as PlanarView } from "./dist/Scenes/PlanarView.js";
             import { Scene as Terrain3D } from "./dist/Scenes/Terrain3D.js";
             import { Scene as ProjectedData2D } from "./dist/Scenes/ProjectedData2D.js";
             import { Scene as ExtrudedData3D } from "./dist/Scenes/ExtrudedData3D.js";
@@ -70,7 +71,7 @@
                 range: 25000000,
             };
 
-            const scenes = [Globe3D, Terrain3D, ProjectedData2D, ExtrudedData3D, InstancedData, PointCloud, TexturedMeshes3D, ImmersiveView];
+            const scenes = [Globe3D, Terrain3D, ProjectedData2D, ExtrudedData3D, InstancedData, PointCloud, PlanarView, TexturedMeshes3D, ImmersiveView];
 
             updateUIForScene(scenes[0]);
 
