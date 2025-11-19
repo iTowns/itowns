@@ -64,12 +64,7 @@
                 <select id="example-selector" class="selector"></select>
                 <input id="font-size-selector" class="selector" type="number" min="8" step="1" />
                 <div>
-                    <div class="tooltip">
-                        <button type="button" id="run-button" class="header-button"></button>
-                        <div class="tooltip-text">
-                            Run the code
-                        </div>
-                    </div>
+                    <button type="button" id="run-button" class="header-button"></button>
                     <button type="button" id="share-button" class="header-button" />
                 </div>
             </div>
@@ -80,7 +75,7 @@
         </div>
     </div>
     <button id="editor-collapse">
-        <svg height="10" width="10">
+        <svg viewBox="0 0 10 10">
             <polygon points="0,5 10,0 10,10" style="fill:white" />
         </svg>
     </button>
@@ -188,23 +183,26 @@
             if (!editorHidden) {
                 editorCollapse.style.left = "0";
                 editorCollapse.style.transform = "scaleX(-1)";
+                setTimeout(() => editorCollapse.style.opacity = "0", 1000);
                 editorPanel.style.left = "calc(-100% * 7 / 16)";
                 iframe.style.left = "0";
                 iframe.style.width = "100%";
             } else {
-                editorCollapse.style.left = "calc(100% * 7 / 16 - 1%)";
+                editorCollapse.style.left = "calc(100% * 7 / 16 - 1em)";
                 editorCollapse.style.transform = "scaleX(1)";
+                editorCollapse.style.opacity = "";
                 editorPanel.style.left = "0";
                 iframe.style.left = "";
                 iframe.style.width = "calc(100% * 9 / 16)";
             }
             editorHidden = !editorHidden;
         };
+        editorCollapse.onhover = () => console.log("toto");
         const searchParams = new URL(
             document.location.toString(),
         ).searchParams;
-        const hide_editor = searchParams.get("hide_editor");
-        if (!!hide_editor) {
+        const hideEditor = parseInt(searchParams.get("hide_editor"));
+        if (hideEditor) {
             editorCollapse.style["transition-duration"] = "";
             editorPanel.style["transition-duration"] = "";
             iframe.style["transition-duration"] = "";
@@ -212,6 +210,9 @@
             editorCollapse.style["transition-duration"] = "200ms";
             editorPanel.style["transition-duration"] = "200ms";
             iframe.style["transition-duration"] = "200ms";
+
+            setTimeout(() => editorCollapse.style.opacity = "1", 1000);
+            setTimeout(() => {if (editorHidden) {editorCollapse.style.opacity = "0";} }, 5000);
         }
 
         /** @param {string} slug - An example's slug */

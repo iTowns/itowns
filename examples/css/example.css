@@ -66,9 +66,8 @@ body {
     width: calc(100% * 9 / 16);
 }
 
-/* Makes the iframe canvas bouncy on resize. No practical reason but it sure looks neat. */
 #viewerDiv>canvas:nth-child(2) {
-    transition-duration: 200ms;
+    transition-duration: 0ms;
 }
 
 /* EDITOR (LEFT) */
@@ -95,10 +94,11 @@ body {
 #editor-collapse {
     display: flex;
     position: absolute;
-    background-color: #0023;
+    background-color: #0027;
     border-width: 0;
-    left: calc(100% * 7 / 16 - 1%);
-    width: 1%;
+    top: 49%;
+    left: calc(100% * 7 / 16 - 1em);
+    width: 1em;
     aspect-ratio: 1 / 2;
     flex-direction: row;
     flex: 0;
@@ -106,6 +106,17 @@ body {
     justify-content: center;
     user-select: none;
     transition-duration: 200ms;
+    padding: 1px;
+}
+
+#editor-collapse:hover {
+    opacity: 1 !important;
+    transition-duration: 100ms;
+}
+
+#editor-collapse>svg {
+    width: 5em;
+    height: 5em;
 }
 
 .switch input {
@@ -415,26 +426,4 @@ body {
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
-
-/* Tooltip container */
-.tooltip {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-}
-
-.tooltip-text {
-    visibility: hidden;
-    width: 130px;
-    background-color: #1127;
-    color: #fff;
-    padding: .5em 0;
-    border-radius: .2em;
-    position: absolute;
-    z-index: 1;
-}
-
-.tooltip>button:hover tooltip-text {
-    visibility: visible;
 }
