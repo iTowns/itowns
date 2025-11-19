@@ -169,9 +169,6 @@ export default {
             geometry.setAttribute(attr.attributeName, new THREE.BufferAttribute(array, attr.numElements, attr.normalized));
         }
 
-        geometry.userData.origin = options.in.origin;
-        geometry.userData.rotation = options.in.rotation;
-
         geometry.computeBoundingBox();
 
         return Promise.resolve(geometry);
