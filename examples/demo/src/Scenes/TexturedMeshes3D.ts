@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 // eslint-disable-next-line import/no-unresolved
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-// @ts-expect-error FeatureToolTip imported from import-map
+// @ts-expect-error debug imported from import-map
 // eslint-disable-next-line import/no-unresolved
 import * as debug from 'debug';
 import {

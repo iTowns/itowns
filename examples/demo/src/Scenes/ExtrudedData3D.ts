@@ -1,6 +1,6 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-// @ts-expect-error FeatureToolTip imported from import-map
+// @ts-expect-error debug imported from import-map
 // eslint-disable-next-line import/no-unresolved
 import * as debug from 'debug';
 import * as OrthoLayer from '../Layers/OrthoLayer';
