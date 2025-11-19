@@ -4,28 +4,27 @@ import * as itowns from 'itowns';
 import setupLoadingScreen from 'LoadingScreen';
 import View from './View';
 
+// store record of instances per extent
+const PlanarViewInstances: { [key: string]: PlanarView } = {};
+
 class PlanarView extends View {
     static _instance: PlanarView;
-    controls: itowns.PlanarControls | null;
 
-    constructor() {
+    constructor(extent: itowns.Extent) {
         super();
         this.id = 'PlanarView';
-        this.controls = null;
 
-        if (PlanarView._instance) {
-            return PlanarView._instance;
+        const extentKey = extent.crs + extent.toString();
+        if (PlanarViewInstances[extentKey]) {
+            return PlanarViewInstances[extentKey];
         }
-
+        PlanarViewInstances[extentKey] = this;
 
         const div = document.createElement('div');
         this.viewerDiv = document.body.appendChild(div);
         this.viewerDiv.setAttribute('id', 'viewerDiv');
 
-        this.view = new itowns.View('EPSG:4326', this.viewerDiv);
-        this.controls = new itowns.PlanarControls(this.view);
-
-        this.view.mainLoop.gfxEngine.renderer.setClearColor(0xdddddd);
+        this.view = new itowns.PlanarView(this.viewerDiv, extent);
 
         setupLoadingScreen(this.viewerDiv, this.view);
 
@@ -33,13 +32,6 @@ class PlanarView extends View {
         this.setVisible(false);
 
         PlanarView._instance = this;
-    }
-
-    getControls(): itowns.PlanarControls {
-        if (!this.controls) {
-            throw new Error('PlanarView controls undefined');
-        }
-        return this.controls;
     }
 }
 
