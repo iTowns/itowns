@@ -11,7 +11,7 @@ import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
 import type { Scene as SceneType } from './Scene';
 
-export const Scene: SceneType & { gui: lil } = {
+export const Scene: SceneType = {
     title: 'Point Cloud Visualization',
     description: 'Scene demonstrating point cloud visualization using COPC format.',
     placement: {
@@ -55,7 +55,6 @@ export const Scene: SceneType & { gui: lil } = {
         Scene.ready = true;
     },
     onEnter: async () => {
-        Scene.view.getGuiTools().gui.hide();
         Scene.gui.show();
     },
     onExit: async () => {
