@@ -48,7 +48,7 @@ export const Scene: SceneType & { gui: lil } = {
             ...options,
         };
         const pointCloudLayer = new itowns.CopcLayer('PointCloudLayer', config);
-        Scene.layers.push(pointCloudLayer as unknown as itowns.Layer);
+        Scene.layers.push(pointCloudLayer);
         await itowns.View.prototype.addLayer.call(view, pointCloudLayer);
 
         debug.PointCloudDebug.initTools(view, pointCloudLayer, Scene.gui);
