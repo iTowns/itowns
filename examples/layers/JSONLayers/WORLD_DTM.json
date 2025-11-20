@@ -16,52 +16,52 @@
         "tileMatrixSet": "WGS84G",
         "tileMatrixSetLimits": {
             "3": {
-                "minTileRow": 1,
-                "maxTileRow": 6,
-                "minTileCol": 0,
-                "maxTileCol": 16
+                "MinTileRow": 1,
+                "MaxTileRow": 6,
+                "MinTileCol": 0,
+                "MaxTileCol": 16
             },
             "4": {
-                "minTileRow": 2,
-                "maxTileRow": 12,
-                "minTileCol": 0,
-                "maxTileCol": 32
+                "MinTileRow": 2,
+                "MaxTileRow": 12,
+                "MinTileCol": 0,
+                "MaxTileCol": 32
             },
             "5": {
-                "minTileRow": 5,
-                "maxTileRow": 25,
-                "minTileCol": 0,
-                "maxTileCol": 64
+                "MinTileRow": 5,
+                "MaxTileRow": 25,
+                "MinTileCol": 0,
+                "MaxTileCol": 64
             },
             "6": {
-                "minTileRow": 10,
-                "maxTileRow": 51,
-                "minTileCol": 0,
-                "maxTileCol": 128
+                "MinTileRow": 10,
+                "MaxTileRow": 51,
+                "MinTileCol": 0,
+                "MaxTileCol": 128
             },
             "7": {
-                "minTileRow": 20,
-                "maxTileRow": 103,
-                "minTileCol": 0,
-                "maxTileCol": 256
+                "MinTileRow": 20,
+                "MaxTileRow": 103,
+                "MinTileCol": 0,
+                "MaxTileCol": 256
             },
             "8": {
-                "minTileRow": 41,
-                "maxTileRow": 207,
-                "minTileCol": 0,
-                "maxTileCol": 512
+                "MinTileRow": 41,
+                "MaxTileRow": 207,
+                "MinTileCol": 0,
+                "MaxTileCol": 512
             },
             "9": {
-                "minTileRow": 82,
-                "maxTileRow": 415,
-                "minTileCol": 0,
-                "maxTileCol": 1024
+                "MinTileRow": 82,
+                "MaxTileRow": 415,
+                "MinTileCol": 0,
+                "MaxTileCol": 1024
             },
             "10": {
-                "minTileRow": 164,
-                "maxTileRow": 830,
-                "minTileCol": 0,
-                "maxTileCol": 2048
+                "MinTileRow": 164,
+                "MaxTileRow": 830,
+                "MinTileCol": 0,
+                "MaxTileCol": 2048
             }
         }
     }

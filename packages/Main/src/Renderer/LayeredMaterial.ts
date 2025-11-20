@@ -130,7 +130,7 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
             if (!texture) { continue; }
 
             textureSetId += `${texture.id}.`;
-            uOffsetScales[count] = tile.offsetScales[i];
+            uOffsetScales[count] = tile.offsetScales[i] || uOffsetScales[count];
             uLayers[count] = tile;
 
             const img = texture.image;
@@ -482,33 +482,35 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
     }
 
     public updateLayersUniforms(renderer: THREE.WebGLRenderer): void {
-        const colorlayers = this.colorTiles
-            .filter(rt => rt.visible && rt.opacity > 0);
-        colorlayers.sort((a, b) =>
-            this.colorTileIds.indexOf(a.id) - this.colorTileIds.indexOf(b.id),
-        );
+        if (this.layersNeedUpdate) {
+            const colorlayers = this.colorTiles
+                .filter(rt => rt.visible && rt.opacity > 0);
+            colorlayers.sort((a, b) =>
+                this.colorTileIds.indexOf(a.id) - this.colorTileIds.indexOf(b.id),
+            );
 
-        updateLayersUniforms(
-            this.getLayerUniforms('color'),
-            colorlayers,
-            this.defines.NUM_FS_TEXTURES,
-            'c',
-            renderer,
-        );
+            updateLayersUniforms(
+                this.getLayerUniforms('color'),
+                colorlayers,
+                this.defines.NUM_FS_TEXTURES,
+                'c',
+                renderer,
+            );
 
-        if (this.elevationTileId !== undefined && this.getElevationTile()) {
-            if (this.elevationTile !== undefined) {
-                updateLayersUniforms(
-                    this.getLayerUniforms('elevation'),
-                    [this.elevationTile],
-                    this.defines.NUM_VS_TEXTURES,
-                    'e',
-                    renderer,
-                );
+            if (this.elevationTileId !== undefined && this.getElevationTile()) {
+                if (this.elevationTile !== undefined) {
+                    updateLayersUniforms(
+                        this.getLayerUniforms('elevation'),
+                        [this.elevationTile],
+                        this.defines.NUM_VS_TEXTURES,
+                        'e',
+                        renderer,
+                    );
+                }
             }
-        }
 
-        this.layersNeedUpdate = false;
+            this.layersNeedUpdate = false;
+        }
     }
 
     public dispose(): void {
