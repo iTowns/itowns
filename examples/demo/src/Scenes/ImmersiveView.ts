@@ -128,7 +128,7 @@ export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
             zoom: { min: 15 },
         });
 
-        Scene.layers.push(wfsBuildingLayer as unknown as itowns.Layer);
+        Scene.layers.push(wfsBuildingLayer);
 
         await Scene.view.addLayers(Scene.layers);
 
