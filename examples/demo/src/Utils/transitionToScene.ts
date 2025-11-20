@@ -126,33 +126,48 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
         nextScene.view.setVisible(true);
     });
 
-    for (const layer of nextScene.layers) {
-        // @ts-expect-error visible property undefined
-        layer.visible = true;
-    }
+    const sceneEventPromise = Promise.all([currentScene.onExit?.(), nextScene.onEnter?.()]);
 
-    const currentGuiTools = currentScene.view.getGuiTools();
-    const nextGuiTools = nextScene.view.getGuiTools();
+    const layerPromise = new Promise<void>((resolve) => {
+        const currentGuiTools = currentScene.view.getGuiTools();
+        const nextGuiTools = nextScene.view.getGuiTools();
 
-    currentGuiTools.gui.hide();
+        // currentGuiTools.gui.reset();
+        if (currentGuiTools !== nextGuiTools || nextScene.gui) {
+            currentGuiTools.gui.hide();
+        }
 
-    for (const layer of currentScene.layers) {
-        currentGuiTools.gui.removeFolder(layer);
-        currentGuiTools.gui.removeFolder(`Layer ${layer.id}`);
-    }
+        if (!nextScene.gui) {
+            nextGuiTools.gui.show();
+        }
 
-    nextGuiTools.addLayersGUI(nextScene.layers);
-    nextGuiTools.gui.show();
+        for (const layer of currentScene.layers) {
+            if (nextScene.layers.find(l => l.id === layer.id) == null) {
+                currentGuiTools.gui.removeFolder(layer.id);
+                currentGuiTools.gui.removeFolder(`Layer ${layer.id}`);
+                currentGuiTools.gui.hasFolder('Color Layers').removeFolder(layer.id);
+                currentGuiTools.gui.hasFolder('Color Layers').removeFolder(`Layer ${layer.id}`);
+                currentGuiTools.gui.hasFolder('Elevation Layers').removeFolder(layer.id);
+                currentGuiTools.gui.hasFolder('Elevation Layers').removeFolder(`Layer ${layer.id}`);
+                currentGuiTools.gui.hasFolder('Geoid Layers').removeFolder(layer.id);
+                currentGuiTools.gui.hasFolder('Geoid Layers').removeFolder(`Layer ${layer.id}`);
+                // @ts-expect-error visible property undefined
+                layer.visible = false;
+            } else {
+                nextGuiTools.addLayerGUI(layer);
+            }
+        }
+
+        for (const layer of nextScene.layers) {
+            // @ts-expect-error visible property undefined
+            layer.visible = true;
+            nextGuiTools.addLayerGUI(layer);
+        }
+        resolve();
+    });
 
     // load layers and move camera in parallel
-    await Promise.all([cameraPromise, currentScene.onExit?.(), nextScene.onEnter?.()]);
-
-    for (const layer of currentScene.layers) {
-        if (nextScene.layers.find(l => l.id === layer.id) == null) {
-            // @ts-expect-error visible property undefined
-            layer.visible = false;
-        }
-    }
+    await Promise.all([cameraPromise, layerPromise, sceneEventPromise]);
 
     // @ts-expect-error controls and states property possibly undefined
     if (nextView.controls && nextView.controls.states) {

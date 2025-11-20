@@ -62,13 +62,18 @@ export const Scene: SceneType = {
         const view = Scene.view.getView();
         const gui = Scene.view.getGuiTools().gui;
 
-        debug.GeometryDebug.createGeometryDebugUI(
-            gui, view, Scene.layers[5]);
+        const guiHasLayer = gui.hasFolder(Scene.layers[5]) ||
+            gui.hasFolder(`Layer ${Scene.layers[5].id}`);
 
-        const subfolder = gui.hasFolder(`Layer ${Scene.layers[5].id}`);
-        debug.GeometryDebug.addWireFrameCheckbox(
-            subfolder || gui,
-            view, Scene.layers[5]);
+        if (!guiHasLayer) {
+            debug.GeometryDebug.createGeometryDebugUI(
+                gui, view, Scene.layers[5]);
+
+            const subfolder = gui.hasFolder(`Layer ${Scene.layers[5].id}`);
+            debug.GeometryDebug.addWireFrameCheckbox(
+                subfolder || gui,
+                view, Scene.layers[5]);
+        }
 
         view.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, Scene.event);
