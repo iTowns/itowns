@@ -54,8 +54,8 @@ export const Scene: SceneType = {
         Scene.layers.push(await IgnMntHighResLayer.getLayer());
         Scene.layers.push(await FlatBuildingsLayer.getLayer());
         Scene.layers.push(await ParksLayer.getLayer());
-        Scene.layers.push(await BuildingsLayer3D.getLayer(scaleZ) as unknown as itowns.Layer);
-        Scene.layers.push(await TreesLayer.getLayer() as unknown as itowns.Layer);
+        Scene.layers.push(await BuildingsLayer3D.getLayer(scaleZ));
+        Scene.layers.push(await TreesLayer.getLayer());
 
         await Scene.view.addLayers(Scene.layers);
 
