@@ -91,7 +91,7 @@ export const Scene: SceneType = {
 
         Scene.layers.push(imageryLayer);
         Scene.layers.push(elevationLayer);
-        Scene.layers.push(cartoLayer as unknown as itowns.Layer);
+        Scene.layers.push(cartoLayer);
 
         await Scene.view.addLayers(Scene.layers);
 

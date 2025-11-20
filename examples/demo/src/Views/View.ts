@@ -5,6 +5,7 @@ import FeatureToolTip from 'FeatureToolTip';
 // @ts-expect-error GuiTools imported from import-map
 // eslint-disable-next-line import/no-unresolved
 import GuiTools from 'GuiTools';
+import type { Layer } from '../Types/Layer';
 
 class View {
     id: string;
@@ -56,7 +57,7 @@ class View {
         }
     }
 
-    addLayer(layer: itowns.Layer) {
+    addLayer(layer: Layer) {
         if (!this.view) {
             throw new Error(`view '${this.id}' is not defined`);
         }
@@ -72,7 +73,7 @@ class View {
         }
     }
 
-    addLayers(layers: itowns.Layer[]) {
+    addLayers(layers: Layer[]) {
         if (!this.view) {
             throw new Error(`view '${this.id}' is not defined`);
         }
