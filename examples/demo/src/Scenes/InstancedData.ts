@@ -67,15 +67,25 @@ export const Scene: SceneType = {
 
         view.scene.add(ambLight);
 
-        debug.GeometryDebug.createGeometryDebugUI(
-            gui, view, Scene.layers[5]);
-        const subfolder = gui.hasFolder(`Layer ${Scene.layers[5].id}`);
-        debug.GeometryDebug.addWireFrameCheckbox(
-            subfolder || gui,
-            view, Scene.layers[5]);
+        const guiHasBuildingsLayer3D = gui.hasFolder(Scene.layers[5]) ||
+            gui.hasFolder(`Layer ${Scene.layers[5].id}`);
 
-        debug.GeometryDebug.createGeometryDebugUI(
-            gui, view, Scene.layers[6]);
+        if (!guiHasBuildingsLayer3D) {
+            debug.GeometryDebug.createGeometryDebugUI(
+                gui, view, Scene.layers[5]);
+            const subfolder = gui.hasFolder(`Layer ${Scene.layers[5].id}`);
+            debug.GeometryDebug.addWireFrameCheckbox(
+                subfolder || gui,
+                view, Scene.layers[5]);
+        }
+
+        const guiHasTreesLayer = gui.hasFolder(Scene.layers[6]) ||
+            gui.hasFolder(`Layer ${Scene.layers[6].id}`);
+
+        if (!guiHasTreesLayer) {
+            debug.GeometryDebug.createGeometryDebugUI(
+                gui, view, Scene.layers[6]);
+        }
 
         view.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, Scene.event);
