@@ -20,6 +20,7 @@ The following people have contributed to iTowns.
   * [Jonathan Garnier](https://github.com/jogarnier)
   * [Irénée Dubourg](https://github.com/airnez)
   * [Victor Ripplinger](https://github.com/neptilo)
+  * [Moncef Hassani](https://github.com/Nynjin)
 
 * [Oslandia](http://www.oslandia.com)
   * [Vincent Picavet](https://github.com/vpicavet)
