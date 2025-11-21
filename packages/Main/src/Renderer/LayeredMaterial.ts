@@ -78,9 +78,17 @@ const defaultStructLayers: Readonly<{
     },
 };
 
+// Deferred disposal data structures
+const pendingRtDisposal = new Map<string, THREE.WebGLArrayRenderTarget>();
+const viewRtUsage = new Map<number, Set<string>>();
+
+let currentRenderingViewId: number | undefined;
+
 const rtCache = new LRUCache<string, THREE.WebGLArrayRenderTarget>({
     max: 200,
-    dispose: (rt) => { rt.dispose(); },
+    dispose: (rt, key) => {
+        pendingRtDisposal.set(key, rt);
+    },
 });
 
 /**
@@ -149,15 +157,22 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
         }
     }
 
-    const cachedRT = rtCache.get(textureSetId);
+    let cachedRT = rtCache.get(textureSetId);
+
+    if (!cachedRT) {
+        cachedRT = pendingRtDisposal.get(textureSetId);
+        if (cachedRT) {
+            rtCache.set(textureSetId, cachedRT);
+            pendingRtDisposal.delete(textureSetId);
+        }
+    }
+
     if (cachedRT) {
         uTextures.value = cachedRT.texture;
         uTextureCount.value = count;
         return;
     }
 
-    // Memory management of these textures is only done by `textureArraysCache`,
-    // so we don't have to dispose of them manually.
     const rt = makeDataArrayRenderTarget(width, height, count, tiles, max, renderer);
     if (!rt) {
         uTextureCount.value = 0;
@@ -165,6 +180,7 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
     }
 
     rtCache.set(textureSetId, rt);
+    rt.texture.userData = { textureSetId };
     uniforms.textures.value = rt.texture;
 
     if (count > max) {
@@ -174,6 +190,38 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
         );
     }
     uTextureCount.value = count;
+}
+
+/**
+ * Set the current view being rendered and
+ * initialize its render target usage tracking.
+ * @param viewId - The ID of the view currently being rendered
+ */
+export function setCurrentRenderingView(viewId: number) {
+    currentRenderingViewId = viewId;
+
+    const viewUsage = viewRtUsage.get(viewId);
+    if (viewUsage) { viewUsage.clear(); }
+}
+
+/**
+ * Disposes render targets that are queued for disposal and not used by any view
+ */
+export function cleanupRts() {
+    for (const [id, renderTarget] of pendingRtDisposal) {
+        let usedByAnyView = false;
+        for (const [, usedRts] of viewRtUsage) {
+            if (usedRts.has(id)) {
+                usedByAnyView = true;
+                break;
+            }
+        }
+
+        if (!usedByAnyView) {
+            renderTarget.dispose();
+            pendingRtDisposal.delete(id);
+        }
+    }
 }
 
 export const ELEVATION_MODES = {
@@ -515,6 +563,29 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         }
 
         this.layersNeedUpdate = false;
+    }
+
+    /**
+     * Track usage of current render targets for deferred disposal.
+     * Should be called every time this material is rendered.
+     */
+    public trackCurrentRenderTargetUsage(): void {
+        if (currentRenderingViewId === undefined) { return; }
+
+        if (!viewRtUsage.has(currentRenderingViewId)) {
+            viewRtUsage.set(currentRenderingViewId, new Set<string>());
+        }
+        const viewUsage = viewRtUsage.get(currentRenderingViewId)!;
+
+        const colorTextures = this.getUniform('colorTextures');
+        if (colorTextures?.userData?.textureSetId) {
+            viewUsage.add(colorTextures.userData.textureSetId);
+        }
+
+        const elevationTextures = this.getUniform('elevationTextures');
+        if (elevationTextures?.userData?.textureSetId) {
+            viewUsage.add(elevationTextures.userData.textureSetId);
+        }
     }
 
     public dispose(): void {

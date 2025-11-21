@@ -1,4 +1,5 @@
 import { EventDispatcher } from 'three';
+import { cleanupRts, setCurrentRenderingView } from 'Renderer/LayeredMaterial';
 
 export const RENDERING_PAUSED = 0;
 export const RENDERING_SCHEDULED = 1;
@@ -227,6 +228,8 @@ class MainLoop extends EventDispatcher {
     }
 
     #renderView(view, dt) {
+        setCurrentRenderingView(view.id); // to track render target usage
+
         view.execFrameRequesters(MAIN_LOOP_EVENTS.BEFORE_RENDER, dt, this.#updateLoopRestarted);
 
         if (view.render) {
@@ -237,6 +240,8 @@ class MainLoop extends EventDispatcher {
         }
 
         view.execFrameRequesters(MAIN_LOOP_EVENTS.AFTER_RENDER, dt, this.#updateLoopRestarted);
+
+        cleanupRts();
     }
 }
 
