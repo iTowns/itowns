@@ -382,6 +382,7 @@ class Renderer {
             deleteShader: () => { },
             shaderSource: () => { },
             compileShader: () => { },
+            viewport: () => { },
         };
         this.capabilities = {
             logarithmicDepthBuffer: true,
