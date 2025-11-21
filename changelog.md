@@ -1,3 +1,107 @@
+<a name="2.46.1-next.14"></a>
+## [2.46.1-next.14](https://github.com/iTowns/itowns/compare/v2.46.0...v2.46.1-next.14) (2025-11-21)
+
+
+### Features
+
+* Add support for Cloud Optimized Geotiff ([4933b31](https://github.com/iTowns/itowns/commit/4933b31))
+* Add support for Geotiff ([a0b18a8](https://github.com/iTowns/itowns/commit/a0b18a8))
+* allow assigning a funcion to a style property after its declaration ([01be54d](https://github.com/iTowns/itowns/commit/01be54d))
+* **camera:** calculate dynamic, optimized camera near/far and fog ([56b722b](https://github.com/iTowns/itowns/commit/56b722b))
+* **deps:** bump proj4 from 2.9.3 to 2.9.10 ([16cf342](https://github.com/iTowns/itowns/commit/16cf342))
+* **geographic:** let user import single modules ([f160270](https://github.com/iTowns/itowns/commit/f160270))
+* **PointCloudNode:** generate bbox in a referentiel local (view Crs tranformed to z normal) ([77163e3](https://github.com/iTowns/itowns/commit/77163e3))
+* **Vpc:** add VpcSource/Layer as COPC or EPT MultiSource/Layer ([ebbdfa0](https://github.com/iTowns/itowns/commit/ebbdfa0))
+
+
+### Bug Fixes
+
+* **camera:** don't add default fog in views where camera has static near/far ([a969ced](https://github.com/iTowns/itowns/commit/a969ced))
+* **ci:** fix missing env variable for release ([e548cf0](https://github.com/iTowns/itowns/commit/e548cf0))
+* **Cog-Geotiff:** Fix tile raster dimensions ([3fedcae](https://github.com/iTowns/itowns/commit/3fedcae))
+* **Crs:** add 'ft' as possible unit ([01dedb6](https://github.com/iTowns/itowns/commit/01dedb6))
+* **doc:** remove typescript doc for COG/Geotiff ([8bc6ed3](https://github.com/iTowns/itowns/commit/8bc6ed3))
+* **ElevationLayer:** don't assume Layer's Source has a TMS-like structure ([502c20b](https://github.com/iTowns/itowns/commit/502c20b))
+* **example:** fix copc_simple_loader example ([adc7d7b](https://github.com/iTowns/itowns/commit/adc7d7b))
+* fix wrong install path for dependencies ([c6f5964](https://github.com/iTowns/itowns/commit/c6f5964))
+* **OrientationUtils:** add UTM support ([b5b6e9a](https://github.com/iTowns/itowns/commit/b5b6e9a))
+* **PlanarView:** Add option in planarView to prevent dynamic near/far calculation ([2c83b28](https://github.com/iTowns/itowns/commit/2c83b28))
+* **PointCloudLayer:** move debug functions to Debug/PointCloudDebug ([43eaeaf](https://github.com/iTowns/itowns/commit/43eaeaf))
+* **PointCloudNode:** fix mode in material ([d8ee5fb](https://github.com/iTowns/itowns/commit/d8ee5fb))
+* **PointVS:** fix for pointCloud elevation display ([4d52ac8](https://github.com/iTowns/itowns/commit/4d52ac8))
+* **Potree2:** add reprojection in Potree2BrotliLoader ([cdd2013](https://github.com/iTowns/itowns/commit/cdd2013))
+* **Potree2BinParser:** fix error in pointAttributes property ([9b24c35](https://github.com/iTowns/itowns/commit/9b24c35))
+* **test:** add test for CRS.defsFromWkt() ([86bbbbb](https://github.com/iTowns/itowns/commit/86bbbbb))
+* **test:** vpc test time out ([6646776](https://github.com/iTowns/itowns/commit/6646776))
+* **TileBuilder:** resolve computeExtraOffset type pain ([05d9e5f](https://github.com/iTowns/itowns/commit/05d9e5f))
+* **TileLayer:** fix material opacity ([71fa255](https://github.com/iTowns/itowns/commit/71fa255))
+* **VPC:** reprojection for VPC layer ([e05324e](https://github.com/iTowns/itowns/commit/e05324e))
+
+
+### Examples
+
+* add copc_3d_loader to example menu ([628f03e](https://github.com/iTowns/itowns/commit/628f03e))
+* **PointCloudLayer:** add copc_3D_loader example and new dataset ([618d989](https://github.com/iTowns/itowns/commit/618d989))
+* **Potree:** remove the extra '/' in url ([c0118ec](https://github.com/iTowns/itowns/commit/c0118ec))
+
+
+### Code Refactoring
+
+* **geographic:** don't use three default import ([be2ec44](https://github.com/iTowns/itowns/commit/be2ec44))
+* **LASParser:** reproj data during parsing ([43290af](https://github.com/iTowns/itowns/commit/43290af))
+* migrate OBB to typescript ([7aaf134](https://github.com/iTowns/itowns/commit/7aaf134))
+* migrate TileMesh to typescript ([31a364f](https://github.com/iTowns/itowns/commit/31a364f))
+* **PointCloudNode:** remove reference to layer in Node (use source directly) ([662f273](https://github.com/iTowns/itowns/commit/662f273))
+* rewrite code checking extrusion height was set, defining setter/getter separately ([6a6ee3b](https://github.com/iTowns/itowns/commit/6a6ee3b))
+
+
+### Workflow and chores
+
+* **Cog-Geotiff:** rewrite relative imports ([67832d6](https://github.com/iTowns/itowns/commit/67832d6))
+* **geographic:** mark module-levels function as pure ([872baed](https://github.com/iTowns/itowns/commit/872baed))
+* **integration:** update job names to match Node version ([00e8ead](https://github.com/iTowns/itowns/commit/00e8ead))
+* migrate convertToTile to typescript ([c6e9175](https://github.com/iTowns/itowns/commit/c6e9175))
+* **node:** update to node 24 ([d01b83f](https://github.com/iTowns/itowns/commit/d01b83f))
+* **TileMesh:** remove dynamically added zoom property ([30c7728](https://github.com/iTowns/itowns/commit/30c7728))
+* update caniuse-lite ([e9c0786](https://github.com/iTowns/itowns/commit/e9c0786))
+
+
+### Documentation
+
+* **ColorLayer:** rewrote ambiguous documentation ([fd85969](https://github.com/iTowns/itowns/commit/fd85969))
+* **LayerUpdateState:** update and refine documentation ([33d8dc7](https://github.com/iTowns/itowns/commit/33d8dc7))
+* **OBB:** update and refine documentation ([6bc71c9](https://github.com/iTowns/itowns/commit/6bc71c9))
+* **TileMesh:** update and refine documentation ([0e90f3e](https://github.com/iTowns/itowns/commit/0e90f3e))
+
+
+### Tests
+
+* **functional:** modif in hook for better message ([0be9910](https://github.com/iTowns/itowns/commit/0be9910))
+* **PointCloud:** improve unit tests (copc and ept) ([209cb76](https://github.com/iTowns/itowns/commit/209cb76))
+* **PointCloud:** update linked to reprojection ([3c1ccb3](https://github.com/iTowns/itowns/commit/3c1ccb3))
+* **Potree:** unit test ([3c93bbe](https://github.com/iTowns/itowns/commit/3c93bbe))
+* **vpc:** add unit tests ([8de95be](https://github.com/iTowns/itowns/commit/8de95be))
+
+
+### Others
+
+* 2.46.1-next.13 ([18eb19e](https://github.com/iTowns/itowns/commit/18eb19e))
+* 2.46.1-next.12 ([0daeb94](https://github.com/iTowns/itowns/commit/0daeb94))
+* 2.46.1-next.11 ([690db27](https://github.com/iTowns/itowns/commit/690db27))
+* 2.46.1-next.10 ([58c3a97](https://github.com/iTowns/itowns/commit/58c3a97))
+* 2.46.1-next.9 ([1a28e4c](https://github.com/iTowns/itowns/commit/1a28e4c))
+* 2.46.1-next.8 ([f750422](https://github.com/iTowns/itowns/commit/f750422))
+* 2.46.1-next.7 ([17d66f0](https://github.com/iTowns/itowns/commit/17d66f0))
+* 2.46.1-next.6 ([05e6354](https://github.com/iTowns/itowns/commit/05e6354))
+* 2.46.1-next.5 ([7ea8130](https://github.com/iTowns/itowns/commit/7ea8130))
+* 2.46.1-next.4 ([ba8afee](https://github.com/iTowns/itowns/commit/ba8afee))
+* 2.46.1-next.3 ([1c6f83c](https://github.com/iTowns/itowns/commit/1c6f83c))
+* 2.46.1-next.2 ([9884dbf](https://github.com/iTowns/itowns/commit/9884dbf))
+* 2.46.1-next.1 ([2e1d0ae](https://github.com/iTowns/itowns/commit/2e1d0ae))
+* 2.46.1-next.0 ([d9faec7](https://github.com/iTowns/itowns/commit/d9faec7))
+
+
+
 <a name="2.46.1-next.13"></a>
 ## [2.46.1-next.13](https://github.com/iTowns/itowns/compare/v2.46.0...v2.46.1-next.13) (2025-11-20)
 
