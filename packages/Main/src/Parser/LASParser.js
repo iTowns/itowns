@@ -23,29 +23,29 @@ async function loader() {
 function buildBufferGeometry(attributes) {
     const geometry = new THREE.BufferGeometry();
 
-    const positionBuffer = new THREE.BufferAttribute(attributes.position, 3);
+    const positionBuffer = new THREE.BufferAttribute(attributes.positions, 3);
     geometry.setAttribute('position', positionBuffer);
 
-    const intensityBuffer = new THREE.BufferAttribute(attributes.intensity, 1);
+    const intensityBuffer = new THREE.BufferAttribute(attributes.Intensity, 1);
     geometry.setAttribute('intensity', intensityBuffer);
 
-    const returnNumber = new THREE.BufferAttribute(attributes.returnNumber, 1);
+    const returnNumber = new THREE.BufferAttribute(attributes.ReturnNumber, 1);
     geometry.setAttribute('returnNumber', returnNumber);
 
-    const numberOfReturns = new THREE.BufferAttribute(attributes.numberOfReturns, 1);
+    const numberOfReturns = new THREE.BufferAttribute(attributes.NumberOfReturns, 1);
     geometry.setAttribute('numberOfReturns', numberOfReturns);
 
-    const classBuffer = new THREE.BufferAttribute(attributes.classification, 1);
+    const classBuffer = new THREE.BufferAttribute(attributes.Classification, 1);
     geometry.setAttribute('classification', classBuffer);
 
-    const pointSourceID = new THREE.BufferAttribute(attributes.pointSourceID, 1);
+    const pointSourceID = new THREE.BufferAttribute(attributes.PointSourceId, 1);
     geometry.setAttribute('pointSourceID', pointSourceID);
 
-    if (attributes.color) {
-        const colorBuffer = new THREE.BufferAttribute(attributes.color, 4, true);
+    if (attributes.colors) {
+        const colorBuffer = new THREE.BufferAttribute(attributes.colors, 4, true);
         geometry.setAttribute('color', colorBuffer);
     }
-    const scanAngle = new THREE.BufferAttribute(attributes.scanAngle, 1);
+    const scanAngle = new THREE.BufferAttribute(attributes.ScanAngle, 1);
     geometry.setAttribute('scanAngle', scanAngle);
 
     return geometry;
@@ -126,9 +126,7 @@ export default {
         });
 
         const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.boundingBox = new THREE.Box3().setFromArray(parsedData.attributes.bbox);
-        geometry.userData.origin = origin;
-        geometry.userData.rotation = quaternion;
+        geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.attributes.box);
         return geometry;
     },
 
@@ -159,8 +157,7 @@ export default {
 
         const lasLoader = await loader();
         const source = options.in.source;
-        const origin = options.in.origin;
-        const quaternion = options.in.rotation;
+
         const parsedData = await lasLoader.parseFile(Transfer(data), {
             colorDepth: source.colorDepth,
             in: {
@@ -170,15 +167,13 @@ export default {
             out: {
                 crs: options.in.crs,
                 projDefs: proj4.defs(options.in.crs),
-                origin: origin.toArray(),
-                rotation: quaternion.toArray(),
+                origin: options.in.origin.toArray(),
+                rotation: options.in.rotation.toArray(),
             },
         });
 
         const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.boundingBox = new THREE.Box3().setFromArray(parsedData.attributes.bbox);
-        geometry.userData.origin = origin;
-        geometry.userData.rotation = quaternion;
+        geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.attributes.box);
         geometry.userData.header = parsedData.header;
 
         return geometry;
