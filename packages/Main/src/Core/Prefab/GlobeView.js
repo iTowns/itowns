@@ -4,9 +4,9 @@ import View, { VIEW_EVENTS } from 'Core/View';
 import GlobeControls from 'Controls/GlobeControls';
 import { Coordinates, ellipsoidSizes } from '@itowns/geographic';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
-import Atmosphere from 'Core/Prefab/Globe/Atmosphere';
 import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
+import SkyManager from 'Core/Prefab/Globe/SkyManager';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -111,7 +111,7 @@ class GlobeView extends View {
             placement.range = placement.range || ellipsoidSizes.x * 2.0;
         }
 
-        this.farFactor = options.farFactor ?? 20;
+        this.farFactor = options.farFactor ?? 40;
         this.fogSpread = options.fogSpread ?? 0.5;
 
         if (options.noControls) {
@@ -155,8 +155,6 @@ class GlobeView extends View {
             this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
         }
 
-        this.addLayer(new Atmosphere('atmosphere', options.atmosphere));
-
         // GlobeView needs this.camera.resize to set perpsective matrix camera
         this.camera.resize(viewerDiv.clientWidth, viewerDiv.clientHeight);
 
@@ -164,6 +162,8 @@ class GlobeView extends View {
             this.webXR = new WebXR(this, typeof options.webXR === 'boolean' ? {} : options.webXR);
             this.webXR.initializeWebXR();
         }
+
+        this.skyManager = new SkyManager(this);
     }
 
     /**
