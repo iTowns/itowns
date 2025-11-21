@@ -111,8 +111,12 @@ describe('Entwine Point Tile', function () {
         });
 
         it('tries to update on the root and fails', function () {
+            const cam = context.camera.camera3D;
+            const originalQuaternion = cam.quaternion.clone();
+            cam.quaternion.identity(); // look away from dataset
             layer.update(context, layer, layer.root);
             assert.strictEqual(layer.root.promise, undefined);
+            cam.quaternion.copy(originalQuaternion);
         });
 
         it('tries to update on the root and succeeds', function (done) {
