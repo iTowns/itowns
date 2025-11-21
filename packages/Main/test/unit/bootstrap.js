@@ -395,6 +395,7 @@ class Renderer {
                 xrCompatible: false,
             }),
             getExtension: () => null,
+            viewport: () => { },
         };
         this.capabilities = {
             logarithmicDepthBuffer: true,
