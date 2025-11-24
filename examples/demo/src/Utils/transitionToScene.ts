@@ -132,7 +132,6 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
         const currentGuiTools = currentScene.view.getGuiTools();
         const nextGuiTools = nextScene.view.getGuiTools();
 
-        // currentGuiTools.gui.reset();
         if (currentGuiTools !== nextGuiTools || nextScene.gui) {
             currentGuiTools.gui.hide();
         }
@@ -166,8 +165,28 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
         resolve();
     });
 
+    // handle atmosphere transition
+    const atmospherePromise = new Promise<void>((resolve) => {
+        const startRange = currentScene.placement.range;
+        const endRange = nextScene.placement.range;
+        const rangeDiff = endRange - startRange;
+
+        const zoomingOut = (rangeDiff < 0) ? -1 : 1;
+
+        const intensity = Math.min(Math.max(Math.abs(rangeDiff) / config.MAX_RANGE, 0.1), 1.0);
+
+        const divisor = Math.max(1.5 + zoomingOut * intensity, 1.5);
+
+        setTimeout(() => {
+            if (nextView instanceof itowns.GlobeView) {
+                nextView.skyManager.enabled = nextScene.atmosphere;
+            }
+            resolve();
+        }, config.DURATION / divisor);
+    });
+
     // load layers and move camera in parallel
-    await Promise.all([cameraPromise, layerPromise, sceneEventPromise]);
+    await Promise.all([cameraPromise, layerPromise, sceneEventPromise, atmospherePromise]);
 
     // @ts-expect-error controls and states property possibly undefined
     if (nextView.controls && nextView.controls.states) {

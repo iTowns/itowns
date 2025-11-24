@@ -18,6 +18,7 @@ export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
     immersivePlacement: null,
     layers: [],
     view: new ImmersiveView(),
+    atmosphere: false,
     ready: false,
     event: () => {
         const view = Scene.view.getView() as itowns.GlobeView;
