@@ -1,4 +1,4 @@
-#ifdef USE_LOGDEPTHBUF
+#ifdef USE_LOGARITHMIC_DEPTH_BUFFER
 
     uniform float logDepthBufFC;
     varying float vFragDepth;
@@ -18,7 +18,7 @@ float noiseScale = 0.005;
 
 void main()
 {
-#if defined(USE_LOGDEPTHBUF)
+#if defined(USE_LOGARITHMIC_DEPTH_BUFFER)
     gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
 #endif
 
