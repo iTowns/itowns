@@ -30,6 +30,7 @@ export const Scene: SceneType = {
     },
     layers: [],
     view: new PlanarView(extent),
+    atmosphere: false,
     ready: false,
     onCreate: async () => {
         const wmsImagerySource = new itowns.WMSSource({

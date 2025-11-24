@@ -18,8 +18,6 @@ import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
 import View3D from '../Views/View3D';
 import type { Scene as SceneType } from './Scene';
 
-const ambLight = new THREE.AmbientLight(0x404040, 40);
-
 export const Scene: SceneType = {
     title: 'Textured Meshes 3D',
     description: 'Scene demonstrating textured 3D meshes.',
@@ -32,6 +30,7 @@ export const Scene: SceneType = {
     layers: [],
     view: new View3D(),
     meshes: [],
+    atmosphere: false,
     ready: false,
     onCreate: async () => {
         const view = Scene.view.getView();
@@ -72,8 +71,6 @@ export const Scene: SceneType = {
         const view = Scene.view.getView();
         const gui = Scene.view.getGuiTools().gui;
 
-        view.scene.add(ambLight);
-
         debug.createOGC3DTilesDebugUI(gui, view, Scene.layers[3]);
 
         window.addEventListener('click', event =>
@@ -85,8 +82,6 @@ export const Scene: SceneType = {
     },
     onExit: () => {
         const view = Scene.view.getView();
-
-        view.scene.remove(ambLight);
 
         window.removeEventListener('click', event =>
             fillHTMLWithPickingInfo(event, {

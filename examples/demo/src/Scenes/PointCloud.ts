@@ -23,6 +23,7 @@ export const Scene: SceneType = {
     layers: [],
     view: new View3D(),
     gui: new lil(),
+    atmosphere: false,
     ready: false,
     onCreate: async () => {
         const view = Scene.view.getView();

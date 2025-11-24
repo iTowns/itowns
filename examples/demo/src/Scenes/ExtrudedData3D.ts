@@ -24,6 +24,7 @@ export const Scene: SceneType = {
     layers: [],
     view: new View3D(),
     meshes: [],
+    atmosphere: false,
     ready: false,
     event: function update(/* dt */) {
         if (Scene.meshes!.length) {
