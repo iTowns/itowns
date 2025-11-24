@@ -1,7 +1,4 @@
 import * as itowns from 'itowns';
-// @ts-expect-error FeatureToolTip imported from import-map
-// eslint-disable-next-line import/no-unresolved
-import FeatureToolTip from 'FeatureToolTip';
 
 let layerPromise: Promise<itowns.ColorLayer>;
 let cachedLayer: itowns.ColorLayer | undefined;
@@ -29,7 +26,6 @@ export async function getLayer() {
                 },
             });
 
-            FeatureToolTip.addLayer(cachedLayer);
             return cachedLayer;
         })();
     }
