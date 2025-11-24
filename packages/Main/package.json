@@ -68,7 +68,7 @@
   },
   "peerDependencies": {
     "proj4": "^2.19.10",
-    "three": "^0.174.0"
+    "three": "^0.181.0"
   },
   "devDependencies": {
     "chalk": "^5.4.1",
