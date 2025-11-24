@@ -19,6 +19,7 @@ export type Scene = {
     view: View,
     meshes?: THREE.Object3D<THREE.Object3DEventMap>[],
     gui?: lil,
+    atmosphere: boolean,
     ready: boolean,
     event?: () => void,
     onCreate: () => Promise<void>,
