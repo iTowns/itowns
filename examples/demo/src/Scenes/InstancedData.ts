@@ -1,8 +1,5 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-// @ts-expect-error debug imported from import-map
-// eslint-disable-next-line import/no-unresolved
-import * as debug from 'debug';
 // eslint-disable-next-line import/no-unresolved
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as OrthoLayer from '../Layers/OrthoLayer';
@@ -73,27 +70,6 @@ export const Scene: SceneType = {
     },
     onEnter: () => {
         const view = Scene.view.getView();
-        const gui = Scene.view.getGuiTools().gui;
-
-        const guiHasBuildingsLayer3D = gui.hasFolder(Scene.layers[5]) ||
-            gui.hasFolder(`Layer ${Scene.layers[5].id}`);
-
-        if (!guiHasBuildingsLayer3D) {
-            debug.GeometryDebug.createGeometryDebugUI(
-                gui, view, Scene.layers[5]);
-            const subfolder = gui.hasFolder(`Layer ${Scene.layers[5].id}`);
-            debug.GeometryDebug.addWireFrameCheckbox(
-                subfolder || gui,
-                view, Scene.layers[5]);
-        }
-
-        const guiHasTreesLayer = gui.hasFolder(Scene.layers[6]) ||
-            gui.hasFolder(`Layer ${Scene.layers[6].id}`);
-
-        if (!guiHasTreesLayer) {
-            debug.GeometryDebug.createGeometryDebugUI(
-                gui, view, Scene.layers[6]);
-        }
 
         view.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, Scene.event);
