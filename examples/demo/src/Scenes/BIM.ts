@@ -1,12 +1,12 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
+// eslint-disable-next-line import/no-unresolved
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as OrthoLayer from '../Layers/OrthoLayer';
 import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
 import View3D from '../Views/View3D';
 import type { Scene as SceneType } from './Scene';
-
-const ambLight = new THREE.AmbientLight(0x404040, 40);
 
 export const Scene: SceneType & { model: THREE.Object3D | null } = {
     title: 'BIM',
@@ -19,10 +19,18 @@ export const Scene: SceneType & { model: THREE.Object3D | null } = {
     },
     layers: [],
     view: new View3D(),
+    atmosphere: false,
     ready: false,
     model: null,
     onCreate: async () => {
         const view = Scene.view.getView();
+
+        // Set the environment map for all physical materials in the scene.
+        // Otherwise, mesh with only diffuse colors will appear black.
+        const environment = new RoomEnvironment();
+        const pmremGenerator = new THREE.PMREMGenerator(view.renderer);
+        view.scene.environment = pmremGenerator.fromScene(environment).texture;
+        pmremGenerator.dispose();
 
         Scene.layers.push(await OrthoLayer.getLayer());
         Scene.layers.push(await IgnMntLayer.getLayer());
@@ -85,12 +93,10 @@ export const Scene: SceneType & { model: THREE.Object3D | null } = {
     },
     onEnter: async () => {
         const view = Scene.view.getView();
-        view.scene.add(ambLight);
         view.scene.add(Scene.model!);
     },
     onExit: () => {
         const view = Scene.view.getView();
-        view.scene.remove(ambLight);
         view.scene.remove(Scene.model!);
     },
 };

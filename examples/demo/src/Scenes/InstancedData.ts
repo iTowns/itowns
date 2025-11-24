@@ -3,6 +3,8 @@ import * as THREE from 'three';
 // @ts-expect-error debug imported from import-map
 // eslint-disable-next-line import/no-unresolved
 import * as debug from 'debug';
+// eslint-disable-next-line import/no-unresolved
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as OrthoLayer from '../Layers/OrthoLayer';
 import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
@@ -12,8 +14,6 @@ import * as BuildingsLayer3D from '../Layers/BuildingsLayer3D';
 import * as TreesLayer from '../Layers/TreesLayer';
 import View3D from '../Views/View3D';
 import type { Scene as SceneType } from './Scene';
-
-const ambLight = new THREE.AmbientLight(0xffffff, 0.3);
 
 export const Scene: SceneType = {
     title: 'Extruded Data 3D with Trees',
@@ -27,6 +27,7 @@ export const Scene: SceneType = {
     layers: [],
     view: new View3D(),
     meshes: [],
+    atmosphere: false,
     ready: false,
     event: function update(/* dt */) {
         if (Scene.meshes!.length) {
@@ -42,6 +43,15 @@ export const Scene: SceneType = {
         }
     },
     onCreate: async () => {
+        const view = Scene.view.getView();
+
+        // Set the environment map for all physical materials in the scene.
+        // Otherwise, mesh with only diffuse colors will appear black.
+        const environment = new RoomEnvironment();
+        const pmremGenerator = new THREE.PMREMGenerator(view.renderer);
+        view.scene.environment = pmremGenerator.fromScene(environment).texture;
+        pmremGenerator.dispose();
+
         function scaleZ(mesh: THREE.Mesh) {
             mesh.children.forEach((c) => {
                 c.scale.z = 0.01;
@@ -64,8 +74,6 @@ export const Scene: SceneType = {
     onEnter: () => {
         const view = Scene.view.getView();
         const gui = Scene.view.getGuiTools().gui;
-
-        view.scene.add(ambLight);
 
         const guiHasBuildingsLayer3D = gui.hasFolder(Scene.layers[5]) ||
             gui.hasFolder(`Layer ${Scene.layers[5].id}`);
@@ -92,8 +100,6 @@ export const Scene: SceneType = {
     },
     onExit: () => {
         const view = Scene.view.getView();
-
-        view.scene.remove(ambLight);
 
         view.removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, Scene.event);
