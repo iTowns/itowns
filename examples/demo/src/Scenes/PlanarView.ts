@@ -10,9 +10,6 @@ itowns.CRS.defs(
     + ' +units=m +no_defs',
 );
 
-// 844594
-// 6519549
-
 const extent = new itowns.Extent(
     'EPSG:2154',
     834594.0, 854594,
