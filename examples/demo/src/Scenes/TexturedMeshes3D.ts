@@ -4,14 +4,6 @@ import * as THREE from 'three';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 // eslint-disable-next-line import/no-unresolved
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-// @ts-expect-error debug imported from import-map
-// eslint-disable-next-line import/no-unresolved
-import * as debug from 'debug';
-import {
-    fillHTMLWithPickingInfo,
-// @ts-expect-error OGC3DTilesHelper imported from import-map
-// eslint-disable-next-line import/no-unresolved
-} from 'OGC3DTilesHelper';
 import * as OrthoLayer from '../Layers/OrthoLayer';
 import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
@@ -66,28 +58,5 @@ export const Scene: SceneType = {
         await Scene.view.addLayers(Scene.layers);
 
         Scene.ready = true;
-    },
-    onEnter: async () => {
-        const view = Scene.view.getView();
-        const gui = Scene.view.getGuiTools().gui;
-
-        debug.createOGC3DTilesDebugUI(gui, view, Scene.layers[3]);
-
-        window.addEventListener('click', event =>
-            fillHTMLWithPickingInfo(event, {
-                htmlDiv: document.getElementById('featureInfo'),
-                view,
-                layer: Scene.layers[3],
-            }), false);
-    },
-    onExit: () => {
-        const view = Scene.view.getView();
-
-        window.removeEventListener('click', event =>
-            fillHTMLWithPickingInfo(event, {
-                htmlDiv: document.getElementById('featureInfo'),
-                view,
-                layer: Scene.layers[3],
-            }), false);
     },
 };

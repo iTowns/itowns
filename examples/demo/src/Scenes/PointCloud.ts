@@ -1,10 +1,4 @@
 import * as itowns from 'itowns';
-// @ts-expect-error debug imported from import-map
-// eslint-disable-next-line import/no-unresolved
-import * as debug from 'debug';
-// @ts-expect-error lil imported from import-map
-// eslint-disable-next-line import/no-unresolved
-import lil from 'lil';
 import View3D from '../Views/View3D';
 import * as OrthoLayer from '../Layers/OrthoLayer';
 import * as IgnMntLayer from '../Layers/IgnMntLayer';
@@ -22,7 +16,6 @@ export const Scene: SceneType = {
     },
     layers: [],
     view: new View3D(),
-    gui: new lil(),
     atmosphere: false,
     ready: false,
     onCreate: async () => {
@@ -52,16 +45,6 @@ export const Scene: SceneType = {
         Scene.layers.push(pointCloudLayer);
         await itowns.View.prototype.addLayer.call(view, pointCloudLayer);
 
-        debug.PointCloudDebug.initTools(view, pointCloudLayer, Scene.gui);
         Scene.ready = true;
     },
-    onEnter: async () => {
-        Scene.gui.show();
-    },
-    onExit: async () => {
-        Scene.gui.reset();
-        Scene.gui.hide();
-    },
 };
-
-Scene.gui.hide();

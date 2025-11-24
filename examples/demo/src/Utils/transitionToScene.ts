@@ -129,38 +129,16 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
     const sceneEventPromise = Promise.all([currentScene.onExit?.(), nextScene.onEnter?.()]);
 
     const layerPromise = new Promise<void>((resolve) => {
-        const currentGuiTools = currentScene.view.getGuiTools();
-        const nextGuiTools = nextScene.view.getGuiTools();
-
-        if (currentGuiTools !== nextGuiTools || nextScene.gui) {
-            currentGuiTools.gui.hide();
-        }
-
-        if (!nextScene.gui) {
-            nextGuiTools.gui.show();
-        }
-
         for (const layer of currentScene.layers) {
             if (nextScene.layers.find(l => l.id === layer.id) == null) {
-                currentGuiTools.gui.removeFolder(layer.id);
-                currentGuiTools.gui.removeFolder(`Layer ${layer.id}`);
-                currentGuiTools.gui.hasFolder('Color Layers').removeFolder(layer.id);
-                currentGuiTools.gui.hasFolder('Color Layers').removeFolder(`Layer ${layer.id}`);
-                currentGuiTools.gui.hasFolder('Elevation Layers').removeFolder(layer.id);
-                currentGuiTools.gui.hasFolder('Elevation Layers').removeFolder(`Layer ${layer.id}`);
-                currentGuiTools.gui.hasFolder('Geoid Layers').removeFolder(layer.id);
-                currentGuiTools.gui.hasFolder('Geoid Layers').removeFolder(`Layer ${layer.id}`);
                 // @ts-expect-error visible property undefined
                 layer.visible = false;
-            } else {
-                nextGuiTools.addLayerGUI(layer);
             }
         }
 
         for (const layer of nextScene.layers) {
             // @ts-expect-error visible property undefined
             layer.visible = true;
-            nextGuiTools.addLayerGUI(layer);
         }
         resolve();
     });

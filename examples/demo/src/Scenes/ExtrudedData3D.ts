@@ -1,8 +1,5 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-// @ts-expect-error debug imported from import-map
-// eslint-disable-next-line import/no-unresolved
-import * as debug from 'debug';
 import * as OrthoLayer from '../Layers/OrthoLayer';
 import * as IgnMntLayer from '../Layers/IgnMntLayer';
 import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
@@ -61,20 +58,6 @@ export const Scene: SceneType = {
     },
     onEnter: () => {
         const view = Scene.view.getView();
-        const gui = Scene.view.getGuiTools().gui;
-
-        const guiHasLayer = gui.hasFolder(Scene.layers[5]) ||
-            gui.hasFolder(`Layer ${Scene.layers[5].id}`);
-
-        if (!guiHasLayer) {
-            debug.GeometryDebug.createGeometryDebugUI(
-                gui, view, Scene.layers[5]);
-
-            const subfolder = gui.hasFolder(`Layer ${Scene.layers[5].id}`);
-            debug.GeometryDebug.addWireFrameCheckbox(
-                subfolder || gui,
-                view, Scene.layers[5]);
-        }
 
         view.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, Scene.event);

@@ -76,7 +76,6 @@
             const scenes = [
                 Globe3D, 
                 Terrain3D, 
-                PlanarView, 
                 ProjectedData2D, 
                 ExtrudedData3D, 
                 InstancedData,
@@ -84,6 +83,7 @@
                 TexturedMeshes3D, 
                 BIM,
                 ImmersiveView, 
+                PlanarView, 
             ];
 
             updateUIForScene(scenes[0]);
@@ -94,8 +94,6 @@
             scenes[0].view.setVisible(true);
             await scenes[0].onCreate();
             await scenes[0].onEnter?.();
-            scenes[0].view.getGuiTools().addLayersGUI(scenes[0].layers);
-            scenes[0].view.getGuiTools().gui.show();
 
             let currentIndex = 0;
 
