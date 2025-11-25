@@ -132,14 +132,14 @@ describe('Potree', function () {
             const childrenBitField = 5;
 
             it('instance', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
+                const root = new PotreeNode(0, numPoints, childrenBitField, potreeSource);
                 assert.equal(root.numPoints, numPoints);
                 assert.equal(root.childrenBitField, childrenBitField);
                 done();
             });
 
             it('construct a correct URL', function () {
-                const node = new PotreeNode(0, 0, {
+                const node = new PotreeNode(0, 0, 0, {
                     baseurl,
                     extension: 'bin',
                 });
@@ -151,7 +151,7 @@ describe('Potree', function () {
             });
 
             it('load octree', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
+                const root = new PotreeNode(0, numPoints, childrenBitField, potreeSource);
                 root.loadOctree()
                     .then(() => {
                         assert.equal(6, root.children.length);
@@ -160,7 +160,7 @@ describe('Potree', function () {
             });
 
             it('load child node', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeSource, 'EPSG:4978');
+                const root = new PotreeNode(0, numPoints, childrenBitField, potreeSource, 'EPSG:4978');
                 root.loadOctree()
                     .then(() => root.children[0].load()
                         .then(() => {
