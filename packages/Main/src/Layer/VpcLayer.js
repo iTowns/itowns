@@ -72,10 +72,9 @@ class VpcLayer extends PointCloudLayer {
             this.setElevationRange();
 
             const boundsConforming = this.source.boundsConforming;
-            this.root = new PointCloudNode(0, this.source);
+            this.root = new PointCloudNode(0, 0, this.source);
             this.root.crs = this.crs;
             this.root.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
-            this.root.depth = 0;
 
             sources.forEach((source, i) => {
                 const boundsConforming = source.boundsConforming;
