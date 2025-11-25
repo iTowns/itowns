@@ -43,7 +43,11 @@ class PlanarView extends View {
     clearInstance() {
         for (const key of Object.keys(PlanarViewInstances)) {
             const instance = PlanarViewInstances[key];
-            instance.view!.dispose();
+            try {
+                instance.view!.dispose();
+            } catch (e) {
+                console.error('Error disposing PlanarView instance:', e);
+            }
             const div = instance.getViewerDiv();
             if (div.parentNode) {
                 div.parentNode.removeChild(div);

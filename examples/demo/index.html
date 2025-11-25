@@ -55,6 +55,9 @@
             import { transitionToScene, updateUIForScene, resetScene, hardResetScene, moveCameraTo } from "./dist/Utils/SceneTransitionUtils.js";
             import { SceneRepository } from "./dist/Repositories/SceneRepository.js";
 
+            const resetSceneButton = document.getElementById("resetScene");
+            const hardResetSceneButton = document.getElementById("hardResetScene");
+
             updateUIForScene(SceneRepository[0]);
             SceneRepository[0].view.setVisible(true);
             await SceneRepository[0].onCreate();
@@ -76,20 +79,31 @@
                     const to = SceneRepository[index];
                     currentIndex = index;
                     updateActiveDot();
+
+                    resetSceneButton.disabled = true;
+                    hardResetSceneButton.disabled = true;
                     await transitionToScene(from, to);
+                    resetSceneButton.disabled = false;
+                    hardResetSceneButton.disabled = false;
                 },
                 async softReset() {
+                    resetSceneButton.disabled = true;
+                    hardResetSceneButton.disabled = true;
                     await resetScene(SceneRepository[currentIndex]);
+                    resetSceneButton.disabled = false;
+                    hardResetSceneButton.disabled = false;
                 },
                 async hardReset() {
+                    resetSceneButton.disabled = true;
+                    hardResetSceneButton.disabled = true;
                     await hardResetScene(SceneRepository[currentIndex]);
+                    resetSceneButton.disabled = false;
+                    hardResetSceneButton.disabled = false;
                 },
             };
 
             // ---- Build the dots UI ----
             const dotsContainer = document.getElementById("sceneDots");
-            const resetSceneButton = document.getElementById("resetScene");
-            const hardResetSceneButton = document.getElementById("hardResetScene");
 
             const dots = SceneRepository.map((scene, index) => {
                 const dot = document.createElement("div");
