@@ -1,6 +1,6 @@
 import * as itowns from 'itowns';
 import PlanarView from '../Views/PlanarView';
-import type { Scene as SceneType } from './Scene';
+import type { SceneType } from '../Types/SceneType';
 
 // Define the view geographic extent
 itowns.CRS.defs(
@@ -16,7 +16,7 @@ const extent = new itowns.Extent(
     6509549.0, 6529549.99,
 );
 
-export const Scene: SceneType = {
+export const PlanarViewScene: SceneType = {
     title: 'Planar View',
     description: 'Scene demonstrating Planar View.',
     placement: {
@@ -27,9 +27,12 @@ export const Scene: SceneType = {
     },
     layers: [],
     view: new PlanarView(extent),
+    cameraPlacement: null,
     atmosphere: false,
     ready: false,
     onCreate: async () => {
+        PlanarViewScene.view = new PlanarView(extent);
+
         const wmsImagerySource = new itowns.WMSSource({
             extent,
             name: 'OI.OrthoimageCoverage.HR',
@@ -87,12 +90,21 @@ export const Scene: SceneType = {
             style: wfsCartoStyle,
         });
 
-        Scene.layers.push(imageryLayer);
-        Scene.layers.push(elevationLayer);
-        Scene.layers.push(cartoLayer);
+        PlanarViewScene.layers.push(imageryLayer);
+        PlanarViewScene.layers.push(elevationLayer);
+        PlanarViewScene.layers.push(cartoLayer);
 
-        await Scene.view.addLayers(Scene.layers);
+        await PlanarViewScene.view.addLayers(PlanarViewScene.layers);
 
-        Scene.ready = true;
+        PlanarViewScene.cameraPlacement = PlanarViewScene.view.getView().camera3D.position.clone();
+
+        PlanarViewScene.ready = true;
+    },
+    onEnter: () => {
+        const view = PlanarViewScene.view.getView();
+
+        view.camera3D.position.copy(PlanarViewScene.cameraPlacement!);
+        view.camera3D.updateMatrixWorld(true);
+        view.notifyChange(view.camera3D);
     },
 };

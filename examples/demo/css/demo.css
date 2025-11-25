@@ -1,7 +1,7 @@
 /*** Navigation Menu ***/
 #menu {
     display: flex;
-    position: absolute;
+    position: fixed;
     top: 1vh;
     left: 1vh;
     width: 50vh;
@@ -13,7 +13,6 @@
     z-index: 100;
     background-color: rgba(255,255,255,0.6);
     backdrop-filter: blur(0.5vh);
-    -webkit-backdrop-filter: blur(0.5vh);
 }
 
 #textContainer {

@@ -4,13 +4,11 @@ import * as THREE from 'three';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 // eslint-disable-next-line import/no-unresolved
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import * as OrthoLayer from '../Layers/OrthoLayer';
-import * as IgnMntLayer from '../Layers/IgnMntLayer';
-import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
+import { LayerRepository } from '../Repositories/LayerRepository';
 import View3D from '../Views/View3D';
-import type { Scene as SceneType } from './Scene';
+import type { SceneType } from '../Types/SceneType';
 
-export const Scene: SceneType = {
+export const TexturedMeshes3dScene: SceneType = {
     title: 'Textured Meshes 3D',
     description: 'Scene demonstrating textured 3D meshes.',
     placement: {
@@ -25,7 +23,9 @@ export const Scene: SceneType = {
     atmosphere: false,
     ready: false,
     onCreate: async () => {
-        const view = Scene.view.getView();
+        TexturedMeshes3dScene.view = new View3D();
+
+        const view = TexturedMeshes3dScene.view.getView();
 
         // Enable various compression support for 3D Tiles tileset:
         itowns.enableDracoLoader('./libs/draco/');
@@ -50,13 +50,13 @@ export const Scene: SceneType = {
             pntsSizeMode: itowns.PNTS_SIZE_MODE.ATTENUATED,
         });
 
-        Scene.layers.push(await OrthoLayer.getLayer());
-        Scene.layers.push(await IgnMntLayer.getLayer());
-        Scene.layers.push(await IgnMntHighResLayer.getLayer());
-        Scene.layers.push(tiles3DLayer);
+        TexturedMeshes3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(tiles3DLayer);
 
-        await Scene.view.addLayers(Scene.layers);
+        await TexturedMeshes3dScene.view.addLayers(TexturedMeshes3dScene.layers);
 
-        Scene.ready = true;
+        TexturedMeshes3dScene.ready = true;
     },
 };

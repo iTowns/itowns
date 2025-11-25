@@ -8,17 +8,17 @@ import View from './View';
 const PlanarViewInstances: { [key: string]: PlanarView } = {};
 
 class PlanarView extends View {
-    static _instance: PlanarView;
+    extentKey: string;
 
     constructor(extent: itowns.Extent) {
         super();
         this.id = 'PlanarView';
+        this.extentKey = extent.crs + extent.toString();
 
-        const extentKey = extent.crs + extent.toString();
-        if (PlanarViewInstances[extentKey]) {
-            return PlanarViewInstances[extentKey];
+        if (PlanarViewInstances[this.extentKey]) {
+            return PlanarViewInstances[this.extentKey];
         }
-        PlanarViewInstances[extentKey] = this;
+        PlanarViewInstances[this.extentKey] = this;
 
         const div = document.createElement('div');
         this.viewerDiv = document.body.appendChild(div);
@@ -29,8 +29,27 @@ class PlanarView extends View {
         setupLoadingScreen(this.viewerDiv, this.view);
 
         this.setVisible(false);
+    }
 
-        PlanarView._instance = this;
+    override setVisible(visible: boolean) {
+        if (!this.viewerDiv) {
+            throw new Error('viewerDiv is not defined');
+        }
+
+        this.viewerDiv.setAttribute('id', visible ? 'viewerDiv' : this.id + this.extentKey);
+        this.viewerDiv.style.display = visible ? 'block' : 'none';
+    }
+
+    clearInstance() {
+        for (const key of Object.keys(PlanarViewInstances)) {
+            const instance = PlanarViewInstances[key];
+            instance.view!.dispose();
+            const div = instance.getViewerDiv();
+            if (div.parentNode) {
+                div.parentNode.removeChild(div);
+            }
+            delete PlanarViewInstances[key];
+        }
     }
 }
 

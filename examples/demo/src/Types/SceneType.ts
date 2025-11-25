@@ -1,12 +1,9 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-// @ts-expect-error lil imported from import-map
-// eslint-disable-next-line import/no-unresolved
-import lil from 'lil';
-import View from '../Views/View';
-import type { Layer } from '../Types/Layer';
+import type { LayerType } from './LayerType';
+import type { ViewType } from './ViewType';
 
-export type Scene = {
+export type SceneType = {
     title: string,
     description: string,
     placement: {
@@ -15,10 +12,10 @@ export type Scene = {
         tilt?: number,
         heading?: number,
     },
-    layers: Layer[],
-    view: View,
+    layers: LayerType[],
+    view: ViewType,
     meshes?: THREE.Object3D<THREE.Object3DEventMap>[],
-    gui?: lil,
+    cameraPlacement?: THREE.Vector3 | null,
     atmosphere: boolean,
     ready: boolean,
     event?: () => void,
