@@ -1,7 +1,16 @@
 /*** Navigation Menu ***/
-#menu {
+#demoUI {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    padding: 1vh;
+    z-index: 100;
+}
+
+#textContainer {
     display: flex;
     position: fixed;
+    flex-direction: column;
     top: 1vh;
     left: 1vh;
     width: 50vh;
@@ -10,23 +19,19 @@
     font-family:'Courier New', Courier, monospace;
     border-radius: 10%;
     padding: 1vh;
-    z-index: 100;
     background-color: rgba(255,255,255,0.6);
     backdrop-filter: blur(0.5vh);
 }
 
-#textContainer {
-    padding: 1vh;
-    width: 90%;
-}
-
-#buttonContainer {
+#navigationContainer {
     display: flex;
-    flex-direction: column;
-    justify-content: right;
+    position: fixed;
+    flex-direction: row;
+    justify-content: center;
     align-items: center;
+    width: 100%;
+    bottom: 1vh;
     gap: 2vh;
-    padding: 1vh;
 }
 
 button {
@@ -55,17 +60,28 @@ p {
     color: black;
 }
 
-/*** Config GUI ***/
-#menuDiv {
-    position: fixed;
-    top: 1vh;
-    right: 1vh;              
+#sceneDots {
     display: flex;
-    justify-content: flex-end;
-    z-index: 100;
+    flex-direction: row;
+    gap: 1vh;
+    align-items: center;
 }
 
-.lil-gui.root {
-    top: 1vh;
-    right: 1vh;
+.scene-dot {
+    width: 1.5vh;
+    height: 1.5vh;
+    border-radius: 50%;
+    border: 1px solid #000;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.scene-dot.active {
+    background-color: #7EA8C5;
+    transform: scale(1.4);
+}
+
+.scene-dot:hover {
+    background-color: #E5E5E5;
 }
