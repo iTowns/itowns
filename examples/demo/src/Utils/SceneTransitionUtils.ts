@@ -1,13 +1,15 @@
 import * as itowns from 'itowns';
 import config from '../Config/config';
-import type { Scene } from '../Scenes/Scene';
+import type { SceneType } from '../Types/SceneType';
 import View3D from '../Views/View3D';
+import { SceneRepository } from '../Repositories/SceneRepository';
+import { LayerRepository } from '../Repositories/LayerRepository';
 
 /**
  * Updates the UI elements with the title and description of the given scene.
  * @param scene - scene whose title and description will be displayed
  */
-export const updateUIForScene = (scene: Scene) => {
+export const updateUIForScene = (scene: SceneType) => {
     const title = document.getElementById('sceneTitle');
     if (!title) {
         throw new Error('No element with id "sceneTitle" found in the document.');
@@ -36,11 +38,11 @@ const cameraWorldToCoordinates = (view: itowns.View, targetCrs: string) => {
 /**
  * Moves the camera of a view to a given placement over a specified duration.
  * @param view - current view whose camera will be moved
- * @param placement - @see Scene.placement - tilt and heading are optional
+ * @param placement - @see SceneType.placement - tilt and heading are optional
  * @param duration - duration of the animation in ms
  * @returns Promise<any>
  */
-const moveCameraTo = (view: itowns.View, placement: Scene['placement'],
+export const moveCameraTo = (view: itowns.View, placement: SceneType['placement'],
     duration = config.DURATION) =>
     itowns.CameraUtils.animateCameraToLookAtTarget(view, view.camera3D, {
         coord: placement.coord,
@@ -56,7 +58,7 @@ const moveCameraTo = (view: itowns.View, placement: Scene['placement'],
  * @param nextScene - next scene that is being transitioned to
  * @returns Promise<void>
  */
-export const transitionToScene = async (currentScene: Scene, nextScene: Scene) => {
+export const transitionToScene = async (currentScene: SceneType, nextScene: SceneType) => {
     const currentView = currentScene.view.getView();
     const nextView = nextScene.view.getView();
     const transitionView = new View3D();
@@ -68,6 +70,13 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
     if (nextView.controls && nextView.controls.states) {
         // @ts-expect-error controls and states property possibly undefined
         nextView.controls.states.enabled = false;
+    }
+
+    // disable camera controls during transition
+    // @ts-expect-error controls and states property possibly undefined
+    if (transitionView.getView().controls && transitionView.getView().controls.states) {
+        // @ts-expect-error controls and states property possibly undefined
+        transitionView.getView().controls.states.enabled = false;
     }
 
     // stop any ongoing camera animation
@@ -87,7 +96,7 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
     transitionView.setVisible(true);
 
     // set transition view camera to current scene location if possible
-    if (currentScene.view.id === 'View3D') {
+    if (currentScene.view instanceof View3D) {
         transitionView.getView().camera3D.position.copy(currentView.camera3D.position);
     } else {
         await moveCameraTo(transitionView.getView(),
@@ -170,5 +179,87 @@ export const transitionToScene = async (currentScene: Scene, nextScene: Scene) =
     if (nextView.controls && nextView.controls.states) {
         // @ts-expect-error controls and states property possibly undefined
         nextView.controls!.states.enabled = true;
+    }
+};
+
+/**
+ * Resets the given scene by disposing and recreating its view and layers.
+ * As well as updating other scenes that share the same view.
+ * @param scene - current scene to reset
+ * @returns Promise<void>
+ */
+export const hardResetScene = async (scene: SceneType) => {
+    await scene.onExit?.();
+
+    const layers = Object.values(LayerRepository);
+    for (const layer of layers) {
+        layer.layerPromise = undefined;
+        layer.cachedLayer = undefined;
+    }
+
+    for (const s of SceneRepository) {
+        if (s.view.id === scene.view.id) {
+            scene.ready = false;
+            scene.layers = [];
+        }
+    }
+
+    scene.view.clearInstance();
+    await scene.onCreate();
+    scene.view.setVisible(true);
+    await scene.onEnter?.();
+
+    const view = scene.view.getView();
+    if (view instanceof itowns.GlobeView) {
+        view.skyManager.enabled = scene.atmosphere;
+    }
+    await moveCameraTo(view, scene.placement, 0.1);
+};
+
+/**
+ * Resets the given scene by hiding and showing appropriate layers
+ * @param scene - scene to reset
+ * @returns Promise<void>
+ */
+export const resetScene = async (scene: SceneType) => {
+    const view = scene.view.getView();
+    try {
+        for (const layer of scene.layers) {
+            // @ts-expect-error visible property undefined
+            layer.visible = false;
+        }
+        await scene.onExit?.();
+        scene.view.setVisible(false);
+
+        scene.view.setVisible(true);
+        for (const layer of scene.layers) {
+            // @ts-expect-error visible property undefined
+            layer.visible = true;
+        }
+        scene.onEnter?.();
+
+        if (!(scene.view instanceof View3D)) {
+            return;
+        }
+
+        // disable camera controls during transition
+        // @ts-expect-error controls and states property possibly undefined
+        if (view.controls && view.controls.states && view.controls.player) {
+            // @ts-expect-error states property possibly undefined
+            view.controls.states.enabled = false;
+            // @ts-expect-error controls and player property possibly undefined
+            view.controls.player.stop();
+        }
+
+        await moveCameraTo(view, scene.placement);
+
+        // @ts-expect-error controls and states property possibly undefined
+        if (view.controls && view.controls.states) {
+            // @ts-expect-error states property possibly undefined
+            view.controls!.states.enabled = true;
+        }
+    } catch (error) {
+        console.error('Error during scene reset, performing hard reset instead:', error);
+        await hardResetScene(scene).catch(console.error);
     }
 };

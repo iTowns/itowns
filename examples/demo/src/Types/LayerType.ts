@@ -1,6 +1,6 @@
 import * as itowns from 'itowns';
 
-export type Layer = (
+export type LayerType = (
     itowns.ColorLayer |
     itowns.FeatureGeometryLayer |
     itowns.ElevationLayer |

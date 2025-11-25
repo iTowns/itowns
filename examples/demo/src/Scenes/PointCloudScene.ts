@@ -1,11 +1,9 @@
 import * as itowns from 'itowns';
 import View3D from '../Views/View3D';
-import * as OrthoLayer from '../Layers/OrthoLayer';
-import * as IgnMntLayer from '../Layers/IgnMntLayer';
-import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
-import type { Scene as SceneType } from './Scene';
+import { LayerRepository } from '../Repositories/LayerRepository';
+import type { SceneType } from '../Types/SceneType';
 
-export const Scene: SceneType = {
+export const PointCloudScene: SceneType = {
     title: 'Point Cloud Visualization',
     description: 'Scene demonstrating point cloud visualization using COPC format.',
     placement: {
@@ -19,13 +17,15 @@ export const Scene: SceneType = {
     atmosphere: false,
     ready: false,
     onCreate: async () => {
-        const view = Scene.view.getView();
+        PointCloudScene.view = new View3D();
 
-        Scene.layers.push(await OrthoLayer.getLayer());
-        Scene.layers.push(await IgnMntLayer.getLayer());
-        Scene.layers.push(await IgnMntHighResLayer.getLayer());
+        const view = PointCloudScene.view.getView();
 
-        await Scene.view.addLayers(Scene.layers);
+        PointCloudScene.layers.push(await LayerRepository.orthoLayer.getLayer());
+        PointCloudScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        PointCloudScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
+
+        await PointCloudScene.view.addLayers(PointCloudScene.layers);
 
         const source = new itowns.CopcSource({
             url: 'https://data.geopf.fr/telechargement/download/LiDARHD-NUALID/NUALHD_1-0__LAZ_LAMB93_OL_2025-02-20/LHD_FXX_0844_6520_PTS_LAMB93_IGN69.copc.laz',
@@ -42,9 +42,9 @@ export const Scene: SceneType = {
             ...options,
         };
         const pointCloudLayer = new itowns.CopcLayer('PointCloudLayer', config);
-        Scene.layers.push(pointCloudLayer);
+        PointCloudScene.layers.push(pointCloudLayer);
         await itowns.View.prototype.addLayer.call(view, pointCloudLayer);
 
-        Scene.ready = true;
+        PointCloudScene.ready = true;
     },
 };
