@@ -67,13 +67,6 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
 
     // disable camera controls during transition
     // @ts-expect-error controls and states property possibly undefined
-    if (nextView.controls && nextView.controls.states) {
-        // @ts-expect-error controls and states property possibly undefined
-        nextView.controls.states.enabled = false;
-    }
-
-    // disable camera controls during transition
-    // @ts-expect-error controls and states property possibly undefined
     if (transitionView.getView().controls && transitionView.getView().controls.states) {
         // @ts-expect-error controls and states property possibly undefined
         transitionView.getView().controls.states.enabled = false;
@@ -152,28 +145,12 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
         resolve();
     });
 
-    // handle atmosphere transition
-    const atmospherePromise = new Promise<void>((resolve) => {
-        const startRange = currentScene.placement.range;
-        const endRange = nextScene.placement.range;
-        const rangeDiff = endRange - startRange;
-
-        const zoomingOut = (rangeDiff < 0) ? -1 : 1;
-
-        const intensity = Math.min(Math.max(Math.abs(rangeDiff) / config.MAX_RANGE, 0.1), 1.0);
-
-        const divisor = Math.max(1.5 + zoomingOut * intensity, 1.5);
-
-        setTimeout(() => {
-            if (nextView instanceof itowns.GlobeView) {
-                nextView.skyManager.enabled = nextScene.atmosphere;
-            }
-            resolve();
-        }, config.DURATION / divisor);
-    });
-
     // load layers and move camera in parallel
-    await Promise.all([cameraPromise, layerPromise, sceneEventPromise, atmospherePromise]);
+    await Promise.all([cameraPromise, layerPromise, sceneEventPromise]);
+
+    if (nextView instanceof itowns.GlobeView) {
+        nextView.skyManager.enabled = nextScene.placement.range > config.ATMOSPHERE_THRESHOLD;
+    }
 
     // @ts-expect-error controls and states property possibly undefined
     if (nextView.controls && nextView.controls.states) {
@@ -211,7 +188,7 @@ export const hardResetScene = async (scene: SceneType) => {
 
     const view = scene.view.getView();
     if (view instanceof itowns.GlobeView) {
-        view.skyManager.enabled = scene.atmosphere;
+        view.skyManager.enabled = scene.placement.range > config.ATMOSPHERE_THRESHOLD;
     }
     await moveCameraTo(view, scene.placement, 0.1);
 };

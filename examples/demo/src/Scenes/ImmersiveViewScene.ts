@@ -22,7 +22,6 @@ export const ImmersiveViewScene: SceneType = {
     cameraPlacement: null,
     layers: [],
     view: new ImmersiveView(),
-    atmosphere: false,
     ready: false,
     event: () => {
         const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;

@@ -18,7 +18,6 @@ export const InstancedDataScene: SceneType = {
     layers: [],
     view: new View3D(),
     meshes: [],
-    atmosphere: false,
     ready: false,
     event: function update(/* dt */) {
         if (InstancedDataScene.meshes!.length) {
