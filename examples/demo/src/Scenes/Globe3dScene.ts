@@ -14,7 +14,6 @@ export const Globe3dScene: SceneType = {
     },
     layers: [],
     view: new View3D(),
-    atmosphere: true,
     ready: false,
     onCreate: async () => {
         Globe3dScene.view = new View3D();

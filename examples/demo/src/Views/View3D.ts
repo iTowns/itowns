@@ -3,9 +3,11 @@ import * as itowns from 'itowns';
 // eslint-disable-next-line import/no-unresolved
 import setupLoadingScreen from 'LoadingScreen';
 import View from './View';
+import config from '../Config/config';
 
 class View3D extends View {
     static _instance: View3D | undefined;
+    atmosphereFrameRequester: (() => void) | undefined;
 
     constructor() {
         super();
@@ -28,12 +30,24 @@ class View3D extends View {
 
         setupLoadingScreen(this.viewerDiv, this.view);
 
+        this.atmosphereFrameRequester = () => {
+            const view = this.view as itowns.GlobeView;
+            view.skyManager.enabled = view.getDistanceFromCamera() > config.ATMOSPHERE_THRESHOLD;
+        };
+        this.view.addFrameRequester(
+            itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
+            this.atmosphereFrameRequester,
+        );
         this.setVisible(false);
 
         View3D._instance = this;
     }
 
     clearInstance() {
+        View3D._instance!.view!.removeFrameRequester(
+            itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
+            this.atmosphereFrameRequester,
+        );
         View3D._instance!.view!.dispose();
         const div = View3D._instance!.getViewerDiv();
         if (div.parentNode) {

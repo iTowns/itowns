@@ -28,7 +28,6 @@ export const PlanarViewScene: SceneType = {
     layers: [],
     view: new PlanarView(extent),
     cameraPlacement: null,
-    atmosphere: false,
     ready: false,
     onCreate: async () => {
         PlanarViewScene.view = new PlanarView(extent);

@@ -20,7 +20,6 @@ export const TexturedMeshes3dScene: SceneType = {
     layers: [],
     view: new View3D(),
     meshes: [],
-    atmosphere: false,
     ready: false,
     onCreate: async () => {
         TexturedMeshes3dScene.view = new View3D();
