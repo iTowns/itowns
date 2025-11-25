@@ -2,13 +2,11 @@ import * as itowns from 'itowns';
 import * as THREE from 'three';
 // eslint-disable-next-line import/no-unresolved
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import * as OrthoLayer from '../Layers/OrthoLayer';
-import * as IgnMntLayer from '../Layers/IgnMntLayer';
-import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
+import { LayerRepository } from '../Repositories/LayerRepository';
 import View3D from '../Views/View3D';
-import type { Scene as SceneType } from './Scene';
+import type { SceneType } from '../Types/SceneType';
 
-export const Scene: SceneType & { model: THREE.Object3D | null } = {
+export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
     title: 'BIM',
     description: 'Scene demonstrating BIM visualization.',
     placement: {
@@ -23,7 +21,9 @@ export const Scene: SceneType & { model: THREE.Object3D | null } = {
     ready: false,
     model: null,
     onCreate: async () => {
-        const view = Scene.view.getView();
+        BIMScene.view = new View3D();
+
+        const view = BIMScene.view.getView();
 
         // Set the environment map for all physical materials in the scene.
         // Otherwise, mesh with only diffuse colors will appear black.
@@ -32,11 +32,11 @@ export const Scene: SceneType & { model: THREE.Object3D | null } = {
         view.scene.environment = pmremGenerator.fromScene(environment).texture;
         pmremGenerator.dispose();
 
-        Scene.layers.push(await OrthoLayer.getLayer());
-        Scene.layers.push(await IgnMntLayer.getLayer());
-        Scene.layers.push(await IgnMntHighResLayer.getLayer());
+        BIMScene.layers.push(await LayerRepository.orthoLayer.getLayer());
+        BIMScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        BIMScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
 
-        await Scene.view.addLayers(Scene.layers);
+        await BIMScene.view.addLayers(BIMScene.layers);
 
         // Load a glTF resource
         const gltfLoader = new itowns.iGLTFLoader();
@@ -48,18 +48,18 @@ export const Scene: SceneType & { model: THREE.Object3D | null } = {
 
                 // called when the resource is loaded
                 (gltf: { scene: THREE.Scene }) => {
-                    Scene.model = gltf.scene;
+                    BIMScene.model = gltf.scene;
 
-                    Scene.model.scale.set(4, 4, 4);
+                    BIMScene.model.scale.set(4, 4, 4);
 
-                    const coord = Scene.placement.coord.clone();
+                    const coord = BIMScene.placement.coord.clone();
                     coord.z = 240; // elevation offset
 
                     // Position in the view CRS
-                    Scene.model!.position.copy(coord.as(view.referenceCrs).toVector3());
+                    BIMScene.model!.position.copy(coord.as(view.referenceCrs).toVector3());
 
                     // Align glTF's Y-up to the local ground normal
-                    Scene.model!.quaternion.setFromUnitVectors(
+                    BIMScene.model!.quaternion.setFromUnitVectors(
                         new THREE.Vector3(0, 1, 0),
                         coord.geodesicNormal,
                     );
@@ -70,11 +70,12 @@ export const Scene: SceneType & { model: THREE.Object3D | null } = {
                         -THREE.MathUtils.degToRad(rotation[1]),
                         -THREE.MathUtils.degToRad(rotation[0]), 'ZYX',
                     );
-                    Scene.model!.quaternion.multiply(new THREE.Quaternion().setFromEuler(eulerRot));
+                    BIMScene.model!.quaternion.multiply(
+                        new THREE.Quaternion().setFromEuler(eulerRot));
 
                     // Notify that the model has been updated
-                    Scene.model!.updateMatrixWorld(true);
-                    resolve(Scene.model!);
+                    BIMScene.model!.updateMatrixWorld(true);
+                    resolve(BIMScene.model!);
                 },
 
                 // called while loading is progressing
@@ -89,14 +90,14 @@ export const Scene: SceneType & { model: THREE.Object3D | null } = {
 
         await modelLoaderPromise;
 
-        Scene.ready = true;
+        BIMScene.ready = true;
     },
     onEnter: async () => {
-        const view = Scene.view.getView();
-        view.scene.add(Scene.model!);
+        const view = BIMScene.view.getView();
+        view.scene.add(BIMScene.model!);
     },
     onExit: () => {
-        const view = Scene.view.getView();
-        view.scene.remove(Scene.model!);
+        const view = BIMScene.view.getView();
+        view.scene.remove(BIMScene.model!);
     },
 };

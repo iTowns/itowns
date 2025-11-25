@@ -1,5 +1,5 @@
 import * as itowns from 'itowns';
-import type { Layer } from '../Types/Layer';
+import type { LayerType } from '../Types/LayerType';
 
 class View {
     id: string;
@@ -39,7 +39,7 @@ class View {
         this.viewerDiv.style.display = visible ? 'block' : 'none';
     }
 
-    addLayer(layer: Layer) {
+    addLayer(layer: LayerType) {
         if (!this.view) {
             throw new Error(`view '${this.id}' is not defined`);
         }
@@ -55,7 +55,7 @@ class View {
         }
     }
 
-    addLayers(layers: Layer[]) {
+    addLayers(layers: LayerType[]) {
         if (!this.view) {
             throw new Error(`view '${this.id}' is not defined`);
         }
