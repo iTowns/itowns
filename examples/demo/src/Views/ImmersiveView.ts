@@ -5,7 +5,7 @@ import setupLoadingScreen from 'LoadingScreen';
 import View from './View';
 
 class ImmersiveView extends View {
-    static _instance: ImmersiveView;
+    static _instance: ImmersiveView | undefined;
 
     constructor() {
         super();
@@ -57,6 +57,15 @@ class ImmersiveView extends View {
         this.setVisible(false);
 
         ImmersiveView._instance = this;
+    }
+
+    clearInstance() {
+        ImmersiveView._instance!.view!.dispose();
+        const div = ImmersiveView._instance!.getViewerDiv();
+        if (div.parentNode) {
+            div.parentNode.removeChild(div);
+        }
+        ImmersiveView._instance = undefined;
     }
 }
 
