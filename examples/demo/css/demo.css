@@ -5,6 +5,7 @@
     height: 100%;
     padding: 1vh;
     z-index: 100;
+    pointer-events: none;
 }
 
 #textContainer {
@@ -21,6 +22,7 @@
     padding: 1vh;
     background-color: rgba(255,255,255,0.6);
     backdrop-filter: blur(0.5vh);
+    pointer-events: auto;
 }
 
 #navigationContainer {
@@ -32,6 +34,7 @@
     width: 100%;
     bottom: 1vh;
     gap: 2vh;
+    pointer-events: auto;
 }
 
 button {
