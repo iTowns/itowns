@@ -14,7 +14,6 @@ export const Terrain3dScene: SceneType = {
     },
     layers: [],
     view: new View3D(),
-    atmosphere: false,
     ready: false,
     onCreate: async () => {
         Terrain3dScene.view = new View3D();
