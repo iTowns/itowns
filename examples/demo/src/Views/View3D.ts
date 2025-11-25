@@ -48,7 +48,11 @@ class View3D extends View {
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
             this.atmosphereFrameRequester,
         );
-        View3D._instance!.view!.dispose();
+        try {
+            View3D._instance!.view!.dispose();
+        } catch (e) {
+            console.error('Error disposing View3D instance:', e);
+        }
         const div = View3D._instance!.getViewerDiv();
         if (div.parentNode) {
             div.parentNode.removeChild(div);
