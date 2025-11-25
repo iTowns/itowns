@@ -42,8 +42,8 @@ const NODE_TYPE = {
 };
 
 class Potree2Node extends PotreeNode {
-    constructor(numPoints = 0, childrenBitField = 0, source, crs) {
-        super(numPoints, childrenBitField, source, crs);
+    constructor(depth, numPoints = 0, childrenBitField = 0, source, crs) {
+        super(depth, numPoints, childrenBitField, source, crs);
     }
 
     get url() {
@@ -149,8 +149,7 @@ class Potree2Node extends PotreeNode {
                     continue;
                 }
 
-                const child = new Potree2Node(numPoints, childMask, this.source, this.crs);
-
+                const child = new Potree2Node(current.depth + 1, numPoints, childMask, this.source, this.crs);
                 current.add(child, childIndex);
                 stack.push(child);
             }

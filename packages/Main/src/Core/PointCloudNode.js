@@ -17,9 +17,10 @@ const translation = new THREE.Vector3();
  * @property {number} sse - The sse of the node set at an nitial value of -1.
  */
 class PointCloudNode extends THREE.EventDispatcher {
-    constructor(numPoints = 0, source) {
+    constructor(depth, numPoints = 0, source) {
         super();
 
+        this.depth = depth;
         this.numPoints = numPoints;
 
         this.source = source;
