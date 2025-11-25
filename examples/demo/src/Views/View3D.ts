@@ -5,7 +5,7 @@ import setupLoadingScreen from 'LoadingScreen';
 import View from './View';
 
 class View3D extends View {
-    static _instance: View3D;
+    static _instance: View3D | undefined;
 
     constructor() {
         super();
@@ -31,6 +31,15 @@ class View3D extends View {
         this.setVisible(false);
 
         View3D._instance = this;
+    }
+
+    clearInstance() {
+        View3D._instance!.view!.dispose();
+        const div = View3D._instance!.getViewerDiv();
+        if (div.parentNode) {
+            div.parentNode.removeChild(div);
+        }
+        View3D._instance = undefined;
     }
 }
 

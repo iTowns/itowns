@@ -1,11 +1,15 @@
 import * as THREE from 'three';
 import * as itowns from 'itowns';
 import ImmersiveView from '../Views/ImmersiveView';
-import * as OrthoLayer from '../Layers/OrthoLayer';
-import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
-import type { Scene as SceneType } from './Scene';
+import { LayerRepository } from '../Repositories/LayerRepository';
+import type { SceneType } from '../Types/SceneType';
 
-export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
+itowns.CRS.defs('EPSG:2154',
+    '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 '
+    + '+x_0=700000 +y_0=6600000 +ellps=GRS80 '
+    + '+towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+
+export const ImmersiveViewScene: SceneType = {
     title: 'Immersive View',
     description: 'Scene demonstrating immersive view with oriented images '
     + 'and textured 3D buildings.',
@@ -15,28 +19,25 @@ export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
         tilt: 0,
         heading: 180,
     },
-    immersivePlacement: null,
+    cameraPlacement: null,
     layers: [],
     view: new ImmersiveView(),
     atmosphere: false,
     ready: false,
     event: () => {
-        const view = Scene.view.getView() as itowns.GlobeView;
+        const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;
         // set camera to current panoramic
         // @ts-expect-error setCameraToCurrentPosition method undefined
         view.controls!.setCameraToCurrentPosition();
         view.notifyChange(view.camera3D);
     },
     onCreate: async () => {
-        itowns.CRS.defs('EPSG:2154',
-            '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 '
-        + '+x_0=700000 +y_0=6600000 +ellps=GRS80 '
-        + '+towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+        ImmersiveViewScene.view = new ImmersiveView();
 
-        const view = Scene.view.getView() as itowns.GlobeView;
+        const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;
 
-        Scene.layers.push(await OrthoLayer.getLayer());
-        Scene.layers.push(await IgnMntHighResLayer.getLayer());
+        ImmersiveViewScene.layers.push(await LayerRepository.orthoLayer.getLayer());
+        ImmersiveViewScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
 
         function altitudeBuildings(properties: {
             altitude_minimale_sol: number,
@@ -89,7 +90,7 @@ export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
             },
         });
 
-        Scene.layers.push(olayer);
+        ImmersiveViewScene.layers.push(olayer);
 
         const wfsBuildingSource = new itowns.WFSSource({
             url: 'https://data.geopf.fr/wfs/ows?',
@@ -129,9 +130,9 @@ export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
             zoom: { min: 15 },
         });
 
-        Scene.layers.push(wfsBuildingLayer);
+        ImmersiveViewScene.layers.push(wfsBuildingLayer);
 
-        await Scene.view.addLayers(Scene.layers);
+        await ImmersiveViewScene.view.addLayers(ImmersiveViewScene.layers);
 
         // @ts-expect-error buildingsLayer property undefined
         view.controls!.buildingsLayer = wfsBuildingLayer.id;
@@ -154,22 +155,25 @@ export const Scene: SceneType & { immersivePlacement: THREE.Vector3 | null } = {
         view.controls!.setCameraToCurrentPosition();
         view.notifyChange(view.camera3D);
 
-        Scene.immersivePlacement = view.camera3D.position.clone();
+        ImmersiveViewScene.cameraPlacement = view.camera3D.position.clone();
 
-        Scene.ready = true;
+        ImmersiveViewScene.ready = true;
     },
     onEnter: () => {
-        const view = Scene.view.getView() as itowns.GlobeView;
+        const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;
 
         // Ensure pose is correct on every entry
-        view.camera3D.position.copy(Scene.immersivePlacement!);
+        view.camera3D.position.copy(ImmersiveViewScene.cameraPlacement!);
+        view.camera3D.updateMatrixWorld(true);
         view.notifyChange(view.camera3D);
 
-        Scene.view.getView().addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
-            Scene.event!);
+        ImmersiveViewScene.view.getView()
+            .addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
+            ImmersiveViewScene.event!);
     },
     onExit: () => {
-        Scene.view.getView().removeEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
-            Scene.event!);
+        ImmersiveViewScene.view.getView()
+            .removeEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
+            ImmersiveViewScene.event!);
     },
 };

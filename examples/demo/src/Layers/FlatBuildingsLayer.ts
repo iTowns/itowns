@@ -1,27 +1,29 @@
 import * as itowns from 'itowns';
+import type { LayerPromiseType } from '../Types/LayerPromiseType';
 import { getSource } from '../Sources/BuildingsSource';
 
-let layerPromise: Promise<itowns.ColorLayer>;
-let cachedLayer: itowns.ColorLayer | undefined;
-
-export async function getLayer() {
-    if (cachedLayer) {
-        return Promise.resolve(cachedLayer);
-    }
-    if (!layerPromise) {
-        layerPromise = (async () => {
-            const source = await getSource();
-            cachedLayer = new itowns.ColorLayer('VTBuilding2D', {
-                source,
-                // @ts-expect-error style property undefined
-                style: {
-                    fill: {
-                        opacity: 0.3,
+export const FlatBuildingsLayer: LayerPromiseType = {
+    id: 'VTBuilding2D',
+    layerPromise: undefined,
+    cachedLayer: undefined,
+    getLayer: () => {
+        if (FlatBuildingsLayer.cachedLayer) {
+            return Promise.resolve(FlatBuildingsLayer.cachedLayer);
+        }
+        if (!FlatBuildingsLayer.layerPromise) {
+            FlatBuildingsLayer.layerPromise = (async () => {
+                FlatBuildingsLayer.cachedLayer = new itowns.ColorLayer(FlatBuildingsLayer.id, {
+                    source: await getSource(),
+                    // @ts-expect-error style property undefined
+                    style: {
+                        fill: {
+                            opacity: 0.3,
+                        },
                     },
-                },
-            });
-            return cachedLayer;
-        })();
-    }
-    return layerPromise;
-}
+                });
+                return FlatBuildingsLayer.cachedLayer;
+            })();
+        }
+        return FlatBuildingsLayer.layerPromise;
+    },
+};

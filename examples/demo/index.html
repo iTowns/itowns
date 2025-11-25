@@ -43,7 +43,7 @@
             <div id="buttonContainer">
                 <button id="resetDemo">R</button>
                 <button id="prevButton"><</button>
-                <button id="resetScene">o</button>
+                <button id="resetScene">r</button>
                 <button id="nextButton">></button>
             </div>
         </div>
@@ -53,65 +53,36 @@
             import * as itowns from "itowns";
             import * as debug from "debug";
             import * as itowns_widgets from "itowns_widgets";
-            import { transitionToScene, updateUIForScene } from "./dist/Utils/transitionToScene.js";
-            import { Scene as Globe3D } from "./dist/Scenes/Globe3D.js";
-            import { Scene as Terrain3D } from "./dist/Scenes/Terrain3D.js";
-            import { Scene as ProjectedData2D } from "./dist/Scenes/ProjectedData2D.js";
-            import { Scene as ImmersiveView } from "./dist/Scenes/ImmersiveView.js";
-            import { Scene as ExtrudedData3D } from "./dist/Scenes/ExtrudedData3D.js";
-            import { Scene as PointCloud } from "./dist/Scenes/PointCloud.js";
-            import { Scene as InstancedData } from "./dist/Scenes/InstancedData.js";
-            import { Scene as TexturedMeshes3D } from "./dist/Scenes/TexturedMeshes3D.js";
-            import { Scene as PlanarView } from "./dist/Scenes/PlanarView.js";
-            import { Scene as BIM } from "./dist/Scenes/BIM.js";
+            import { transitionToScene, updateUIForScene, resetScene, hardResetScene, moveCameraTo } from "./dist/Utils/SceneTransitionUtils.js";
+            import { SceneRepository } from "./dist/Repositories/SceneRepository.js";
 
-            // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
-
-            // Define camera initial position
-            const placement = {
-                coord: new itowns.Coordinates("EPSG:4326", 80, 50),
-                range: 25000000,
-            };
-
-            const scenes = [
-                Globe3D, 
-                Terrain3D, 
-                ProjectedData2D, 
-                ExtrudedData3D, 
-                InstancedData,
-                PointCloud,
-                TexturedMeshes3D, 
-                BIM,
-                ImmersiveView, 
-                PlanarView, 
-            ];
-
-            updateUIForScene(scenes[0]);
-
-            for (const layer of scenes[0].layers) {
-                scenes[0].view.getView().addLayer(layer);
+            updateUIForScene(SceneRepository[0]);
+            SceneRepository[0].view.setVisible(true);
+            await SceneRepository[0].onCreate();
+            await SceneRepository[0].onEnter?.();
+            const view = SceneRepository[0].view.getView();
+            if (view instanceof itowns.GlobeView) {
+                view.skyManager.enabled = SceneRepository[0].atmosphere;
             }
-            scenes[0].view.setVisible(true);
-            await scenes[0].onCreate();
-            await scenes[0].onEnter?.();
+            await moveCameraTo(view, SceneRepository[0].placement, 0.1);
 
             let currentIndex = 0;
 
             const SceneManager = {
                 next() {
-                    const newIndex = (currentIndex + 1) % scenes.length;
+                    const newIndex = (currentIndex + 1) % SceneRepository.length;
                     transitionToScene(
-                        scenes[currentIndex],
-                        scenes[newIndex]
+                        SceneRepository[currentIndex],
+                        SceneRepository[newIndex]
                     );
                     currentIndex = newIndex;
                 },
                 previous() {
                     const newIndex =
-                        (currentIndex - 1 + scenes.length) % scenes.length;
+                        (currentIndex - 1 + SceneRepository.length) % SceneRepository.length;
                     transitionToScene(
-                        scenes[currentIndex],
-                        scenes[newIndex]
+                        SceneRepository[currentIndex],
+                        SceneRepository[newIndex]
                     );
                     currentIndex = newIndex;
                 },
@@ -120,22 +91,15 @@
             const prevButton = document.getElementById('prevButton');
             const nextButton = document.getElementById('nextButton');
             const resetSceneButton = document.getElementById('resetScene');
-            const resetDemoButton = document.getElementById('resetDemo');
+            const hardResetSceneButton = document.getElementById('resetDemo');
 
             prevButton.onclick = () => SceneManager.previous();
             nextButton.onclick = () => SceneManager.next();
             resetSceneButton.onclick = () => {
-                transitionToScene(
-                    scenes[currentIndex],
-                    scenes[currentIndex]
-                );
+                resetScene(SceneRepository[currentIndex]);
             };
-            resetDemoButton.onclick = () => {
-                transitionToScene(
-                    scenes[currentIndex],
-                    scenes[0]
-                );
-                currentIndex = 0;
+            hardResetSceneButton.onclick = () => {
+                hardResetScene(SceneRepository[currentIndex]);
             };
         </script>
     </body>

@@ -1,11 +1,9 @@
 import * as itowns from 'itowns';
-import * as IgnMntLayer from '../Layers/IgnMntLayer';
-import * as IgnMntHighResLayer from '../Layers/IgnMntHighResLayer';
-import * as OrthoLayer from '../Layers/OrthoLayer';
+import { LayerRepository } from '../Repositories/LayerRepository';
 import View3D from '../Views/View3D';
-import type { Scene as SceneType } from './Scene';
+import type { SceneType } from '../Types/SceneType';
 
-export const Scene: SceneType = {
+export const Terrain3dScene: SceneType = {
     title: 'Terrain 3D',
     description: 'Scene demonstrating 3D terrain with orthophoto and elevation layers.',
     placement: {
@@ -19,12 +17,14 @@ export const Scene: SceneType = {
     atmosphere: false,
     ready: false,
     onCreate: async () => {
-        Scene.layers.push(await OrthoLayer.getLayer());
-        Scene.layers.push(await IgnMntLayer.getLayer());
-        Scene.layers.push(await IgnMntHighResLayer.getLayer());
+        Terrain3dScene.view = new View3D();
 
-        await Scene.view.addLayers(Scene.layers);
+        Terrain3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
+        Terrain3dScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        Terrain3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
 
-        Scene.ready = true;
+        await Terrain3dScene.view.addLayers(Terrain3dScene.layers);
+
+        Terrain3dScene.ready = true;
     },
 };
