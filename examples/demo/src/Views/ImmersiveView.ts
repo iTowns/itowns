@@ -60,7 +60,11 @@ class ImmersiveView extends View {
     }
 
     clearInstance() {
-        ImmersiveView._instance!.view!.dispose();
+        try {
+            ImmersiveView._instance!.view!.dispose();
+        } catch (e) {
+            console.error('Error disposing ImmersiveView instance:', e);
+        }
         const div = ImmersiveView._instance!.getViewerDiv();
         if (div.parentNode) {
             div.parentNode.removeChild(div);
