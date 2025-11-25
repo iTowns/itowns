@@ -35,16 +35,15 @@
         <link rel="stylesheet" type="text/css" href="css/demo.css" />
     </head>
     <body>
-        <div id="menu">
+        <div id="demoUI">
             <div id="textContainer">
                 <h1 id="sceneTitle"></h1>
                 <p id="sceneDescription"></p>
             </div>
-            <div id="buttonContainer">
-                <button id="resetDemo">R</button>
-                <button id="prevButton"><</button>
-                <button id="resetScene">r</button>
-                <button id="nextButton">></button>
+            <div id="navigationContainer">
+                <div id="sceneDots"></div>
+                <button id="resetScene">reset camera</button>
+                <button id="hardResetScene">reset scene</button>
             </div>
         </div>
         <script type="module">
@@ -69,37 +68,56 @@
             let currentIndex = 0;
 
             const SceneManager = {
-                next() {
-                    const newIndex = (currentIndex + 1) % SceneRepository.length;
-                    transitionToScene(
-                        SceneRepository[currentIndex],
-                        SceneRepository[newIndex]
-                    );
-                    currentIndex = newIndex;
+                async goTo(index) {
+                    if (index === currentIndex || index < 0 || index >= SceneRepository.length) {
+                        return;
+                    }
+                    const from = SceneRepository[currentIndex];
+                    const to = SceneRepository[index];
+                    currentIndex = index;
+                    updateActiveDot();
+                    await transitionToScene(from, to);
                 },
-                previous() {
-                    const newIndex =
-                        (currentIndex - 1 + SceneRepository.length) % SceneRepository.length;
-                    transitionToScene(
-                        SceneRepository[currentIndex],
-                        SceneRepository[newIndex]
-                    );
-                    currentIndex = newIndex;
+                async softReset() {
+                    await resetScene(SceneRepository[currentIndex]);
+                },
+                async hardReset() {
+                    await hardResetScene(SceneRepository[currentIndex]);
                 },
             };
 
-            const prevButton = document.getElementById('prevButton');
-            const nextButton = document.getElementById('nextButton');
-            const resetSceneButton = document.getElementById('resetScene');
-            const hardResetSceneButton = document.getElementById('resetDemo');
+            // ---- Build the dots UI ----
+            const dotsContainer = document.getElementById("sceneDots");
+            const resetSceneButton = document.getElementById("resetScene");
+            const hardResetSceneButton = document.getElementById("hardResetScene");
 
-            prevButton.onclick = () => SceneManager.previous();
-            nextButton.onclick = () => SceneManager.next();
-            resetSceneButton.onclick = () => {
-                resetScene(SceneRepository[currentIndex]);
+            const dots = SceneRepository.map((scene, index) => {
+                const dot = document.createElement("div");
+                dot.classList.add("scene-dot");
+                dot.title = scene.title ?? `Scene ${index + 1}`;
+                dot.addEventListener("click", () => {
+                    SceneManager.goTo(index);
+                });
+                dotsContainer.appendChild(dot);
+                return dot;
+            });
+
+            function updateActiveDot() {
+                dots.forEach((dot, i) => {
+                    if (i === currentIndex) {
+                        dot.classList.add("active");
+                    } else {
+                        dot.classList.remove("active");
+                    }
+                });
+            }
+
+            updateActiveDot();
+            resetSceneButton.onclick = async () => {
+                await SceneManager.softReset();
             };
-            hardResetSceneButton.onclick = () => {
-                hardResetScene(SceneRepository[currentIndex]);
+            hardResetSceneButton.onclick = async () => {
+                await SceneManager.hardReset();
             };
         </script>
     </body>
