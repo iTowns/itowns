@@ -16,7 +16,6 @@ export type SceneType = {
     view: ViewType,
     meshes?: THREE.Object3D<THREE.Object3DEventMap>[],
     cameraPlacement?: THREE.Vector3 | null,
-    atmosphere: boolean,
     ready: boolean,
     event?: () => void,
     onCreate: () => Promise<void>,

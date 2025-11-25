@@ -1,5 +1,5 @@
 import { Globe3dScene } from '../Scenes/Globe3dScene';
-import { Terrain3dScene } from '../Scenes/Terrain3D';
+import { Terrain3dScene } from '../Scenes/Terrain3dScene';
 import { ProjectedData2dScene } from '../Scenes/ProjectedData2dScene';
 import { ImmersiveViewScene  } from '../Scenes/ImmersiveViewScene';
 import { ExtrudedData3dScene  } from '../Scenes/ExtrudedData3dScene';
