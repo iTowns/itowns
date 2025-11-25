@@ -17,7 +17,6 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
     },
     layers: [],
     view: new View3D(),
-    atmosphere: false,
     ready: false,
     model: null,
     onCreate: async () => {

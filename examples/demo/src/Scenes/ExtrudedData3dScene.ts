@@ -16,7 +16,6 @@ export const ExtrudedData3dScene: SceneType = {
     layers: [],
     view: new View3D(),
     meshes: [],
-    atmosphere: false,
     ready: false,
     event: function update(/* dt */) {
         if (ExtrudedData3dScene.meshes!.length) {

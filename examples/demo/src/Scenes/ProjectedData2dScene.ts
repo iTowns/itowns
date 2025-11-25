@@ -14,7 +14,6 @@ export const ProjectedData2dScene: SceneType = {
     },
     layers: [],
     view: new View3D(),
-    atmosphere: false,
     ready: false,
     onCreate: async () => {
         ProjectedData2dScene.view = new View3D();
