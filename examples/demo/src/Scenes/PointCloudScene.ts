@@ -25,7 +25,7 @@ export const PointCloudScene: SceneType = {
         const view = PointCloudScene.view.getView();
 
         PointCloudScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        PointCloudScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        PointCloudScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
         PointCloudScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
 
         await PointCloudScene.view.addLayers(PointCloudScene.layers);

@@ -23,7 +23,7 @@ export const Globe3dScene: SceneType = {
         Globe3dScene.view = new View3D();
 
         Globe3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        Globe3dScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        Globe3dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
         Globe3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
 
         await Globe3dScene.view.addLayers(Globe3dScene.layers);
