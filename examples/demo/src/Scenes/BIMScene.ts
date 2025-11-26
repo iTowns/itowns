@@ -12,9 +12,9 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
     + 'Load glTF models to combine architectural and geographic data.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.76633, 45.706118),
-        range: 1000,
-        tilt: 45,
-        heading: 0,
+        range: 300,
+        tilt: 20,
+        heading: 90,
     },
     layers: [],
     view: new View3D(),
@@ -36,7 +36,7 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
         pmremGenerator.dispose();
 
         BIMScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        BIMScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        BIMScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
         BIMScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
 
         await BIMScene.view.addLayers(BIMScene.layers);

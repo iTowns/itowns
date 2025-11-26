@@ -23,7 +23,7 @@ export const Terrain3dScene: SceneType = {
         Terrain3dScene.view = new View3D();
 
         Terrain3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        Terrain3dScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        Terrain3dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
         Terrain3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
 
         await Terrain3dScene.view.addLayers(Terrain3dScene.layers);
