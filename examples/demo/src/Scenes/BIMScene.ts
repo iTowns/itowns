@@ -7,8 +7,9 @@ import View3D from '../Views/View3D';
 import type { SceneType } from '../Types/SceneType';
 
 export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
-    title: 'BIM',
-    description: 'Scene demonstrating BIM visualization.',
+    title: 'From Building to Territory',
+    description: 'Integrate Building Information Models into your geospatial context. '
+    + 'Load glTF models to combine architectural and geographic data.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.76633, 45.706118),
         range: 1000,

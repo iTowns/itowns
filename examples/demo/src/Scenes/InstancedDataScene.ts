@@ -7,8 +7,9 @@ import View3D from '../Views/View3D';
 import type { SceneType } from '../Types/SceneType';
 
 export const InstancedDataScene: SceneType = {
-    title: 'Extruded Data 3D with Trees',
-    description: 'Scene demonstrating extruded 3D data with animated growth effect and 3D trees.',
+    title: 'Populate Your City Model',
+    description: 'Add thousands of 3D objects efficiently using instancing. '
+    + 'Perfect for trees, street furniture, or any repeating elements.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.828, 45.7254),
         range: 2000,
