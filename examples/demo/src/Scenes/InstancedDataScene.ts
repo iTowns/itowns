@@ -34,6 +34,9 @@ export const InstancedDataScene: SceneType = {
         }
     },
     onCreate: async () => {
+        if (InstancedDataScene.ready) {
+            return;
+        }
         InstancedDataScene.view = new View3D();
 
         const view = InstancedDataScene.view.getView();
@@ -64,11 +67,11 @@ export const InstancedDataScene: SceneType = {
 
         InstancedDataScene.ready = true;
     },
-    onEnter: () => {
+    onEnter: async () => {
         InstancedDataScene.view.getView().addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, InstancedDataScene.event);
     },
-    onExit: () => {
+    onExit: async () => {
         InstancedDataScene.view.getView().removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, InstancedDataScene.event);
     },
