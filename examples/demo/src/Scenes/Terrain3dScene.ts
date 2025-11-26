@@ -16,6 +16,9 @@ export const Terrain3dScene: SceneType = {
     view: new View3D(),
     ready: false,
     onCreate: async () => {
+        if (Terrain3dScene.ready) {
+            return;
+        }
         Terrain3dScene.view = new View3D();
 
         Terrain3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());

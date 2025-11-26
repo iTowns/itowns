@@ -30,6 +30,9 @@ export const PlanarViewScene: SceneType = {
     cameraPlacement: null,
     ready: false,
     onCreate: async () => {
+        if (PlanarViewScene.ready) {
+            return;
+        }
         PlanarViewScene.view = new PlanarView(extent);
 
         const wmsImagerySource = new itowns.WMSSource({
@@ -99,7 +102,7 @@ export const PlanarViewScene: SceneType = {
 
         PlanarViewScene.ready = true;
     },
-    onEnter: () => {
+    onEnter: async () => {
         const view = PlanarViewScene.view.getView();
 
         view.camera3D.position.copy(PlanarViewScene.cameraPlacement!);

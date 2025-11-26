@@ -32,6 +32,9 @@ export const ExtrudedData3dScene: SceneType = {
         }
     },
     onCreate: async () => {
+        if (ExtrudedData3dScene.ready) {
+            return;
+        }
         ExtrudedData3dScene.view = new View3D();
 
         function scaleZ(mesh: THREE.Mesh) {
@@ -53,11 +56,11 @@ export const ExtrudedData3dScene: SceneType = {
 
         ExtrudedData3dScene.ready = true;
     },
-    onEnter: () => {
+    onEnter: async () => {
         ExtrudedData3dScene.view.getView().addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
     },
-    onExit: () => {
+    onExit: async () => {
         ExtrudedData3dScene.view.getView().removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
     },
