@@ -17,8 +17,9 @@ const extent = new itowns.Extent(
 );
 
 export const PlanarViewScene: SceneType = {
-    title: 'Planar View',
-    description: 'Scene demonstrating Planar View.',
+    title: 'Go Local',
+    description: 'Seamlessly transition between global and local coordinate systems. '
+    + 'Support for national projections like Lambert-93 (EPSG:2154).',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.860377, 45.760213),
         range: 30000,

@@ -5,8 +5,9 @@ import View3D from '../Views/View3D';
 import type { SceneType } from '../Types/SceneType';
 
 export const ExtrudedData3dScene: SceneType = {
-    title: 'Extruded Data 3D',
-    description: 'Scene demonstrating extruded 3D data with animated growth effect.',
+    title: 'Build Cities in Seconds',
+    description: 'Bring your city to life by extruding building footprints '
+    + 'based on height attributes. Create realistic urban landscapes in real-time.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.828, 45.7254),
         range: 2000,
