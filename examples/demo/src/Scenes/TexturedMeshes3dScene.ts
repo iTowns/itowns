@@ -54,7 +54,7 @@ export const TexturedMeshes3dScene: SceneType = {
         });
 
         TexturedMeshes3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        TexturedMeshes3dScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
         TexturedMeshes3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
         TexturedMeshes3dScene.layers.push(tiles3DLayer);
 

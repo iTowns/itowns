@@ -23,7 +23,7 @@ export const ProjectedData2dScene: SceneType = {
         ProjectedData2dScene.view = new View3D();
 
         ProjectedData2dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        ProjectedData2dScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        ProjectedData2dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
         ProjectedData2dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
         ProjectedData2dScene.layers.push(await LayerRepository.flatBuildingsLayer.getLayer());
         ProjectedData2dScene.layers.push(await LayerRepository.parksLayer.getLayer());
