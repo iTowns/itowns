@@ -47,7 +47,7 @@ export const ExtrudedData3dScene: SceneType = {
         }
 
         ExtrudedData3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        ExtrudedData3dScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        ExtrudedData3dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
         ExtrudedData3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
         ExtrudedData3dScene.layers.push(await LayerRepository.flatBuildingsLayer.getLayer());
         ExtrudedData3dScene.layers.push(await LayerRepository.parksLayer.getLayer());
