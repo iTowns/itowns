@@ -57,7 +57,7 @@ export const InstancedDataScene: SceneType = {
         }
 
         InstancedDataScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        InstancedDataScene.layers.push(await LayerRepository.ignMntLayer.getLayer());
+        InstancedDataScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
         InstancedDataScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
         InstancedDataScene.layers.push(await LayerRepository.flatBuildingsLayer.getLayer());
         InstancedDataScene.layers.push(await LayerRepository.parksLayer.getLayer());

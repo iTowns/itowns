@@ -1,5 +1,5 @@
 import { OrthoLayer } from '../Layers/OrthoLayer';
-import { IgnMntLayer } from '../Layers/IgnMntLayer';
+import { WordDTMLayer } from '../Layers/WorldDTMLayer';
 import { IgnMntHighResLayer } from '../Layers/IgnMntHighResLayer';
 import { ParksLayer } from '../Layers/ParksLayer';
 import { FlatBuildingsLayer } from '../Layers/FlatBuildingsLayer';
@@ -8,7 +8,7 @@ import { TreesLayer } from '../Layers/TreesLayer';
 
 export const LayerRepository = {
     orthoLayer: OrthoLayer,
-    ignMntLayer: IgnMntLayer,
+    worldDTMLayer: WordDTMLayer,
     ignMntHighResLayer: IgnMntHighResLayer,
     parksLayer: ParksLayer,
     flatBuildingsLayer: FlatBuildingsLayer,
