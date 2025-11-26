@@ -1,4 +1,4 @@
-import View3D from '..//Views/View3D';
+import View3D from '../Views/View3D';
 import ImmersiveView from '../Views/ImmersiveView';
 import PlanarView from '../Views/PlanarView';
 

@@ -16,6 +16,9 @@ export const Globe3dScene: SceneType = {
     view: new View3D(),
     ready: false,
     onCreate: async () => {
+        if (Globe3dScene.ready) {
+            return;
+        }
         Globe3dScene.view = new View3D();
 
         Globe3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
@@ -23,5 +26,7 @@ export const Globe3dScene: SceneType = {
         Globe3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
 
         await Globe3dScene.view.addLayers(Globe3dScene.layers);
+
+        Globe3dScene.ready = true;
     },
 };

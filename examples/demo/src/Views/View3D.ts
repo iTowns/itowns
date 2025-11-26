@@ -7,7 +7,7 @@ import config from '../Config/config';
 
 class View3D extends View {
     static _instance: View3D | undefined;
-    atmosphereFrameRequester: (() => void) | undefined;
+    protected atmosphereFrameRequester: (() => void) | undefined;
 
     constructor() {
         super();
