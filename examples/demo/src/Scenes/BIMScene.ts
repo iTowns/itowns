@@ -20,6 +20,9 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
     ready: false,
     model: null,
     onCreate: async () => {
+        if (BIMScene.ready) {
+            return;
+        }
         BIMScene.view = new View3D();
 
         const view = BIMScene.view.getView();
@@ -95,7 +98,7 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
         const view = BIMScene.view.getView();
         view.scene.add(BIMScene.model!);
     },
-    onExit: () => {
+    onExit: async () => {
         const view = BIMScene.view.getView();
         view.scene.remove(BIMScene.model!);
     },

@@ -1,9 +1,9 @@
-import * as itowns from 'itowns';
+import type { ItownsViewType } from '../Types/ItownsViewType';
 import type { LayerType } from '../Types/LayerType';
 
-class View {
+abstract class View {
     id: string;
-    view: itowns.View | null;
+    view: ItownsViewType | null;
     viewerDiv: HTMLDivElement | null;
 
     constructor() {

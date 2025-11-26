@@ -9,4 +9,6 @@ export type LayerType = (
     itowns.CopcLayer |
     itowns.OrientedImageLayer |
     itowns.LabelLayer
-);
+) & {
+    visible?: boolean,
+}

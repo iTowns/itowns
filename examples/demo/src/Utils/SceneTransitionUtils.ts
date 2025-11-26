@@ -4,6 +4,7 @@ import type { SceneType } from '../Types/SceneType';
 import View3D from '../Views/View3D';
 import { SceneRepository } from '../Repositories/SceneRepository';
 import { LayerRepository } from '../Repositories/LayerRepository';
+import { Globe3dScene } from '../Scenes/Globe3dScene';
 
 /**
  * Updates the UI elements with the title and description of the given scene.
@@ -59,46 +60,33 @@ export const moveCameraTo = (view: itowns.View, placement: SceneType['placement'
  * @returns Promise<void>
  */
 export const transitionToScene = async (currentScene: SceneType, nextScene: SceneType) => {
-    const currentView = currentScene.view.getView();
-    const nextView = nextScene.view.getView();
-    const transitionView = new View3D();
+    const transitionView = Globe3dScene.view.getView();
 
     updateUIForScene(nextScene);
 
+    const controls = transitionView.controls as itowns.GlobeControls
+    & { states: { enabled: boolean }; };
+
     // disable camera controls during transition
-    // @ts-expect-error controls and states property possibly undefined
-    if (transitionView.getView().controls && transitionView.getView().controls.states) {
-        // @ts-expect-error controls and states property possibly undefined
-        transitionView.getView().controls.states.enabled = false;
-    }
+    controls.states.enabled = false;
 
     // stop any ongoing camera animation
-    // @ts-expect-error controls and player property possibly undefined
-    if (currentView.controls && currentView.controls.player) {
-        // @ts-expect-error controls and states property possibly undefined
-        currentView.controls.player.stop();
-    }
+    controls.player.stop();
 
-    if (!nextScene.ready) {
-        await nextScene.onCreate(); // only called once per scene
-    }
+    await nextScene.onCreate(); // only called once per scene
 
     let cameraPromise: Promise<void>;
 
     currentScene.view.setVisible(false);
-    transitionView.setVisible(true);
+    Globe3dScene.view.setVisible(true);
 
-    // set transition view camera to current scene location if possible
-    if (currentScene.view instanceof View3D) {
-        transitionView.getView().camera3D.position.copy(currentView.camera3D.position);
-    } else {
-        await moveCameraTo(transitionView.getView(),
-            currentScene.placement, 1).catch(console.error);
-    }
+    // set transition view camera to current scene location
+    await moveCameraTo(transitionView,
+        currentScene.placement, 0.1).catch(console.error);
 
     // Compute current coordinate from camera position
     const camCoords = cameraWorldToCoordinates(
-        transitionView.getView(), nextScene.placement.coord.crs);
+        transitionView, nextScene.placement.coord.crs);
 
     // compute minimum range based on distance
     // between camera coordinates and next scene coordinates
@@ -109,22 +97,22 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
     // to make transition smoother
     if (currentScene.placement.range < minRange && nextScene.placement.range < minRange) {
         cameraPromise = moveCameraTo(
-            transitionView.getView(), {
+            transitionView, {
                 coord: camCoords,
                 range: minRange,
                 tilt: 89.5,
             },
             config.DURATION / 2) // half duration since there are two steps in this case
             .catch(console.error).then(() =>
-                moveCameraTo(transitionView.getView(),
+                moveCameraTo(transitionView,
                     nextScene.placement, config.DURATION / 2).catch(console.error));
     } else {
-        cameraPromise = moveCameraTo(transitionView.getView(),
+        cameraPromise = moveCameraTo(transitionView,
             nextScene.placement).catch(console.error);
     }
 
     cameraPromise.then(() => {
-        transitionView.setVisible(false);
+        Globe3dScene.view.setVisible(false);
         nextScene.view.setVisible(true);
     });
 
@@ -133,30 +121,30 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
     const layerPromise = new Promise<void>((resolve) => {
         for (const layer of currentScene.layers) {
             if (nextScene.layers.find(l => l.id === layer.id) == null) {
-                // @ts-expect-error visible property undefined
                 layer.visible = false;
             }
         }
 
         for (const layer of nextScene.layers) {
-            // @ts-expect-error visible property undefined
             layer.visible = true;
         }
         resolve();
     });
 
+    for (const layer of Globe3dScene.layers) {
+        layer.visible = true;
+    }
+
     // load layers and move camera in parallel
     await Promise.all([cameraPromise, layerPromise, sceneEventPromise]);
 
-    if (nextView instanceof itowns.GlobeView) {
-        nextView.skyManager.enabled = nextScene.placement.range > config.ATMOSPHERE_THRESHOLD;
+    for (const layer of Globe3dScene.layers) {
+        if (!nextScene.layers.find(l => l.id === layer.id)) {
+            layer.visible = false;
+        }
     }
 
-    // @ts-expect-error controls and states property possibly undefined
-    if (nextView.controls && nextView.controls.states) {
-        // @ts-expect-error controls and states property possibly undefined
-        nextView.controls!.states.enabled = true;
-    }
+    controls.states.enabled = true;
 };
 
 /**
@@ -183,14 +171,11 @@ export const hardResetScene = async (scene: SceneType) => {
 
     scene.view.clearInstance();
     await scene.onCreate();
+    await Globe3dScene.onCreate();
     scene.view.setVisible(true);
     await scene.onEnter?.();
 
-    const view = scene.view.getView();
-    if (view instanceof itowns.GlobeView) {
-        view.skyManager.enabled = scene.placement.range > config.ATMOSPHERE_THRESHOLD;
-    }
-    await moveCameraTo(view, scene.placement, 0.1);
+    await moveCameraTo(scene.view.getView(), scene.placement, 0.1);
 };
 
 /**
@@ -202,7 +187,6 @@ export const resetScene = async (scene: SceneType) => {
     const view = scene.view.getView();
     try {
         for (const layer of scene.layers) {
-            // @ts-expect-error visible property undefined
             layer.visible = false;
         }
         await scene.onExit?.();
@@ -210,31 +194,24 @@ export const resetScene = async (scene: SceneType) => {
 
         scene.view.setVisible(true);
         for (const layer of scene.layers) {
-            // @ts-expect-error visible property undefined
             layer.visible = true;
         }
-        scene.onEnter?.();
+        await scene.onEnter?.();
 
         if (!(scene.view instanceof View3D)) {
             return;
         }
 
+        const controls = view.controls as itowns.GlobeControls
+        & { states: { enabled: boolean }; };
+
         // disable camera controls during transition
-        // @ts-expect-error controls and states property possibly undefined
-        if (view.controls && view.controls.states && view.controls.player) {
-            // @ts-expect-error states property possibly undefined
-            view.controls.states.enabled = false;
-            // @ts-expect-error controls and player property possibly undefined
-            view.controls.player.stop();
-        }
+        controls.states.enabled = false;
+        controls.player.stop();
 
         await moveCameraTo(view, scene.placement);
 
-        // @ts-expect-error controls and states property possibly undefined
-        if (view.controls && view.controls.states) {
-            // @ts-expect-error states property possibly undefined
-            view.controls!.states.enabled = true;
-        }
+        controls.states.enabled = true;
     } catch (error) {
         console.error('Error during scene reset, performing hard reset instead:', error);
         await hardResetScene(scene).catch(console.error);

@@ -80,25 +80,34 @@
                     currentIndex = index;
                     updateActiveDot();
 
-                    resetSceneButton.disabled = true;
-                    hardResetSceneButton.disabled = true;
-                    await transitionToScene(from, to);
-                    resetSceneButton.disabled = false;
-                    hardResetSceneButton.disabled = false;
+                    toggleEnableButtons(false);
+                    toggleEnableDots(false);
+                    try {
+                        await transitionToScene(from, to);
+                    } finally {
+                        toggleEnableButtons(true);
+                        toggleEnableDots(true);
+                    }
                 },
                 async softReset() {
-                    resetSceneButton.disabled = true;
-                    hardResetSceneButton.disabled = true;
-                    await resetScene(SceneRepository[currentIndex]);
-                    resetSceneButton.disabled = false;
-                    hardResetSceneButton.disabled = false;
+                    toggleEnableButtons(false);
+                    toggleEnableDots(false);
+                    try {
+                        await resetScene(SceneRepository[currentIndex]);
+                    } finally {
+                        toggleEnableButtons(true);
+                        toggleEnableDots(true);
+                    }
                 },
                 async hardReset() {
-                    resetSceneButton.disabled = true;
-                    hardResetSceneButton.disabled = true;
-                    await hardResetScene(SceneRepository[currentIndex]);
-                    resetSceneButton.disabled = false;
-                    hardResetSceneButton.disabled = false;
+                    toggleEnableButtons(false);
+                    toggleEnableDots(false);
+                    try {
+                        await hardResetScene(SceneRepository[currentIndex]);
+                    } finally {
+                        toggleEnableButtons(true);
+                        toggleEnableDots(true);
+                    }
                 },
             };
 
@@ -115,6 +124,20 @@
                 dotsContainer.appendChild(dot);
                 return dot;
             });
+
+            function toggleEnableButtons(enable) {
+                resetSceneButton.style.pointerEvents = enable ? "auto" : "none";
+                hardResetSceneButton.style.pointerEvents = enable ? "auto" : "none";
+                resetSceneButton.disabled = !enable;
+                hardResetSceneButton.disabled = !enable;
+            }
+
+            function toggleEnableDots(enable) {
+                dots.forEach((dot) => {
+                    dot.style.pointerEvents = enable ? "auto" : "none";
+                    dot.style.opacity = enable ? "1.0" : "0.5";
+                });
+            }
 
             function updateActiveDot() {
                 dots.forEach((dot, i) => {

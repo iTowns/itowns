@@ -16,6 +16,9 @@ export const ProjectedData2dScene: SceneType = {
     view: new View3D(),
     ready: false,
     onCreate: async () => {
+        if (ProjectedData2dScene.ready) {
+            return;
+        }
         ProjectedData2dScene.view = new View3D();
 
         ProjectedData2dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
@@ -26,9 +29,5 @@ export const ProjectedData2dScene: SceneType = {
         await ProjectedData2dScene.view.addLayers(ProjectedData2dScene.layers);
 
         ProjectedData2dScene.ready = true;
-    },
-    onEnter() {
-    },
-    onExit() {
     },
 };

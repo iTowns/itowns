@@ -31,6 +31,9 @@ export const ImmersiveViewScene: SceneType = {
         view.notifyChange(view.camera3D);
     },
     onCreate: async () => {
+        if (ImmersiveViewScene.ready) {
+            return;
+        }
         ImmersiveViewScene.view = new ImmersiveView();
 
         const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;
@@ -158,7 +161,7 @@ export const ImmersiveViewScene: SceneType = {
 
         ImmersiveViewScene.ready = true;
     },
-    onEnter: () => {
+    onEnter: async () => {
         const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;
 
         // Ensure pose is correct on every entry
@@ -170,7 +173,7 @@ export const ImmersiveViewScene: SceneType = {
             .addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
             ImmersiveViewScene.event!);
     },
-    onExit: () => {
+    onExit: async () => {
         ImmersiveViewScene.view.getView()
             .removeEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
             ImmersiveViewScene.event!);
