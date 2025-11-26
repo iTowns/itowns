@@ -169,13 +169,19 @@ export const hardResetScene = async (scene: SceneType) => {
         }
     }
 
+    Globe3dScene.ready = false;
+    Globe3dScene.layers = [];
+
     scene.view.clearInstance();
+    Globe3dScene.view.clearInstance();
     await scene.onCreate();
     await Globe3dScene.onCreate();
     scene.view.setVisible(true);
     await scene.onEnter?.();
 
-    await moveCameraTo(scene.view.getView(), scene.placement, 0.1);
+    if (scene.view instanceof View3D) {
+        await moveCameraTo(scene.view.getView(), scene.placement, 0.1);
+    }
 };
 
 /**
