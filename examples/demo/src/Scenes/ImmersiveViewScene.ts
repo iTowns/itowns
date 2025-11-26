@@ -10,9 +10,9 @@ itowns.CRS.defs('EPSG:2154',
     + '+towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
 export const ImmersiveViewScene: SceneType = {
-    title: 'Immersive View',
-    description: 'Scene demonstrating immersive view with oriented images '
-    + 'and textured 3D buildings.',
+    title: 'Walk Your Data',
+    description: 'Experience your data at ground level with first-person navigation. '
+    + 'Perfect for street-level visualization and immersive exploration.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 2.33481381, 48.85060296),
         range: 25,

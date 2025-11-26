@@ -4,8 +4,9 @@ import View3D from '../Views/View3D';
 import type { SceneType } from '../Types/SceneType';
 
 export const Terrain3dScene: SceneType = {
-    title: 'Terrain 3D',
-    description: 'Scene demonstrating 3D terrain with orthophoto and elevation layers.',
+    title: 'Feel the Relief',
+    description: 'Add realistic relief to your maps with elevation data. '
+    + 'iTowns supports multiple terrain formats such as WMTS with images and COG.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 9, 44.5),
         range: 300000,

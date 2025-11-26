@@ -4,8 +4,9 @@ import { LayerRepository } from '../Repositories/LayerRepository';
 import type { SceneType } from '../Types/SceneType';
 
 export const PointCloudScene: SceneType = {
-    title: 'Point Cloud Visualization',
-    description: 'Scene demonstrating point cloud visualization using COPC format.',
+    title: 'Handle Billions of Points',
+    description: 'Display massive LiDAR datasets with optimized streaming. '
+    + 'Supports EPT, COPC, LAS and 3D Tiles with various rendering styles.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.860377, 45.760213),
         range: 2000,
