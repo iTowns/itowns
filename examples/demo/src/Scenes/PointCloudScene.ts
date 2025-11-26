@@ -16,6 +16,9 @@ export const PointCloudScene: SceneType = {
     view: new View3D(),
     ready: false,
     onCreate: async () => {
+        if (PointCloudScene.ready) {
+            return;
+        }
         PointCloudScene.view = new View3D();
 
         const view = PointCloudScene.view.getView();

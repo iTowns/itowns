@@ -22,6 +22,9 @@ export const TexturedMeshes3dScene: SceneType = {
     meshes: [],
     ready: false,
     onCreate: async () => {
+        if (TexturedMeshes3dScene.ready) {
+            return;
+        }
         TexturedMeshes3dScene.view = new View3D();
 
         const view = TexturedMeshes3dScene.view.getView();

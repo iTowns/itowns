@@ -19,6 +19,6 @@ export type SceneType = {
     ready: boolean,
     event?: () => void,
     onCreate: () => Promise<void>,
-    onEnter?: () => void,
-    onExit?: () => void,
+    onEnter?: () => Promise<void>,
+    onExit?: () => Promise<void>,
 };
