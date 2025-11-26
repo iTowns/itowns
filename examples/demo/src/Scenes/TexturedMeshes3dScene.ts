@@ -9,8 +9,9 @@ import View3D from '../Views/View3D';
 import type { SceneType } from '../Types/SceneType';
 
 export const TexturedMeshes3dScene: SceneType = {
-    title: 'Textured Meshes 3D',
-    description: 'Scene demonstrating textured 3D meshes.',
+    title: 'Stream Entire Cities',
+    description: 'Load and navigate detailed 3D city models using 3D Tiles. '
+    + 'Stream only what you need for optimal performance.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 3.0270044, 50.6273158),
         range: 2000,

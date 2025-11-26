@@ -16,8 +16,8 @@ export const SceneRepository = [
     ExtrudedData3dScene,
     InstancedDataScene,
     PointCloudScene,
-    BIMScene,
     TexturedMeshes3dScene,
-    ImmersiveViewScene,
+    BIMScene,
     PlanarViewScene,
+    ImmersiveViewScene,
 ];
