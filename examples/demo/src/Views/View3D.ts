@@ -44,16 +44,20 @@ class View3D extends View {
     }
 
     clearInstance() {
-        View3D._instance!.view!.removeFrameRequester(
+        if (!View3D._instance) {
+            return;
+        }
+
+        View3D._instance.view!.removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
             this.atmosphereFrameRequester,
         );
         try {
-            View3D._instance!.view!.dispose();
+            View3D._instance.view!.dispose();
         } catch (e) {
             console.error('Error disposing View3D instance:', e);
         }
-        const div = View3D._instance!.getViewerDiv();
+        const div = View3D._instance.getViewerDiv();
         if (div.parentNode) {
             div.parentNode.removeChild(div);
         }
