@@ -15,11 +15,11 @@
     top: 1vh;
     left: 1vh;
     width: 50vh;
-    min-height: 20vh;
-    color: white;
+    min-height: 15vh;
+    color: black;
     font-family:'Courier New', Courier, monospace;
     border-radius: 10%;
-    padding: 1vh;
+    padding: 2vh;
     background-color: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(0.5vh);
     pointer-events: auto;
@@ -57,10 +57,6 @@ button:hover {
 button:active {
     background-color: #7EA8C5;
     color: white;
-}
-
-p {
-    color: black;
 }
 
 #sceneDots {
