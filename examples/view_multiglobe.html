@@ -63,11 +63,14 @@
 
             // Create the first globe
             object3d = new THREE.Object3D();
-            var view = new itowns.GlobeView(viewerDiv, placement, { noControls: true, object3d });
+            var view = new itowns.GlobeView(viewerDiv, placement, {
+                noControls: true,
+                object3d,
+                realisticLighting: false
+            });
             var cameraThree = view.camera3D;
             setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
-            view.skyManager.enabled = false;
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);

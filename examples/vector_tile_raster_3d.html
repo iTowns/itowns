@@ -48,12 +48,10 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, placement);
+            const view = new itowns.GlobeView(viewerDiv, placement, { realisticLighting: false });
 
             // define pole texture
             view.tileLayer.noTextureColor = new THREE.Color(0x95c1e1);
-
-            view.skyManager.enabled = false;
 
             setupLoadingScreen(viewerDiv, view);
 

@@ -86,9 +86,11 @@ class GlobeView extends View {
      * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling.
      * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
      * @param {number} [options.farFactor=20] - Controls how far the camera can see.
-     * The maximum view distance is this factor times the camera’s altitude (above sea level).
+     * The maximum view distance is this factor times the camera's altitude (above sea level).
      * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
      * Between 0 and 1.
+     * @param {boolean} [options.realisticLighting=true] - Enable realistic lighting with sky management.
+     * If false, it will be impossible to enable it later on.
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -163,7 +165,9 @@ class GlobeView extends View {
             this.webXR.initializeWebXR();
         }
 
-        this.skyManager = new SkyManager(this);
+        if (options.realisticLighting || options.realisticLighting === undefined) {
+            this.skyManager = new SkyManager(this);
+        }
     }
 
     /**
