@@ -49,13 +49,13 @@ describe('material state vs layer state', function () {
         stubFetcherTexture.restore();
     });
 
-    // it('should correctly initialize opacity & visibility', () => {
-    //     updateLayeredMaterialNodeImagery(context, layer, node, node.parent);
-    //     const nodeLayer = material.getTile(layer.id);
-    //     nodeLayer.textures.push(new THREE.Texture());
-    //     assert.equal(nodeLayer.opacity, layer.opacity);
-    //     assert.equal(nodeLayer.visible, layer.visible);
-    // });
+    it('should correctly initialize opacity & visibility', () => {
+        layer.update(context, layer, node, node.parent);
+        const nodeLayer = material.getTile(layer.id);
+        nodeLayer.textures.push(new THREE.Texture());
+        assert.equal(nodeLayer.opacity, layer.opacity);
+        assert.equal(nodeLayer.visible, layer.visible);
+    });
 
     it('should update material opacity & visibility', () => {
         layer.opacity = 0.5;
