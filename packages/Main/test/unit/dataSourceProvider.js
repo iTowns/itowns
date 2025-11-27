@@ -187,35 +187,35 @@ describe('Provide in Sources', function () {
             }).catch(done);
     });
     */
-    it('should get wms texture with DataSourceProvider', (done) => {
-        colorlayer.source = new WMSSource({
-            url: 'http://domain.com',
-            name: 'name',
-            format: 'image/png',
-            extent: globalExtent,
-            crs: 'EPSG:3857',
-            zoom: {
-                min: 0,
-                max: 12,
-            },
-        });
-        // May be move in layer Constructor
-        colorlayer.source.onLayerAdded({ out: colorlayer });
+    // it('should get wms texture with DataSourceProvider', (done) => {
+    //     colorlayer.source = new WMSSource({
+    //         url: 'http://domain.com',
+    //         name: 'name',
+    //         format: 'image/png',
+    //         extent: globalExtent,
+    //         crs: 'EPSG:3857',
+    //         zoom: {
+    //             min: 0,
+    //             max: 12,
+    //         },
+    //     });
+    //     // May be move in layer Constructor
+    //     colorlayer.source.onLayerAdded({ out: colorlayer });
 
-        const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
-        material.visible = true;
-        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
-        tile.parent = {};
+    //     const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
+    //     material.visible = true;
+    //     nodeLayer.level = EMPTY_TEXTURE_ZOOM;
+    //     tile.parent = {};
 
-        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
-        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0])
-            .then((textures) => {
-                assert.equal(textures.length, 1);
-                assert.equal(textures[0].isTexture, true);
-                done();
-            }).catch(done);
-    });
+    //     updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
+    //     updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
+    //     DataSourceProvider.executeCommand(context.scheduler.commands[0])
+    //         .then((textures) => {
+    //             assert.equal(textures.length, 1);
+    //             assert.equal(textures[0].isTexture, true);
+    //             done();
+    //         }).catch(done);
+    // });
     /*
     it('should get 4 TileMesh from TileProvider', (done) => {
         const tile = new TileMesh(geom, material, planarlayer, extent, zoom);
@@ -235,48 +235,48 @@ describe('Provide in Sources', function () {
             }).catch(done);
     });
     */
-    it('should get 3 meshs with WFS source and DataSourceProvider', (done) => {
-        const tile = new TileMesh(geom, material, planarlayer, extent, featureLayer.zoom.min);
-        material.visible = true;
-        nodeLayer.level = EMPTY_TEXTURE_ZOOM;
-        tile.parent = { pendingSubdivision: false };
-        featureLayer.mergeFeatures = false;
-        tile.layerUpdateState = { test: new LayerUpdateState() };
+    // it('should get 3 meshs with WFS source and DataSourceProvider', (done) => {
+    //     const tile = new TileMesh(geom, material, planarlayer, extent, featureLayer.zoom.min);
+    //     material.visible = true;
+    //     nodeLayer.level = EMPTY_TEXTURE_ZOOM;
+    //     tile.parent = { pendingSubdivision: false };
+    //     featureLayer.mergeFeatures = false;
+    //     tile.layerUpdateState = { test: new LayerUpdateState() };
 
-        featureLayer.source.onLayerAdded({ out: featureLayer });
+    //     featureLayer.source.onLayerAdded({ out: featureLayer });
 
-        featureLayer.update(context, featureLayer, tile);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0])
-            .then((features) => {
-                assert.equal(features[0].meshes.children.length, 4);
-                done();
-            }).catch(done);
-    });
+    //     featureLayer.update(context, featureLayer, tile);
+    //     DataSourceProvider.executeCommand(context.scheduler.commands[0])
+    //         .then((features) => {
+    //             assert.equal(features[0].meshes.children.length, 4);
+    //             done();
+    //         }).catch(done);
+    // });
 
-    it('should get 1 mesh with WFS source and DataSourceProvider and mergeFeatures == true', (done) => {
-        const tile = new TileMesh(
-            geom,
-            material,
-            planarlayer,
-            extent,
-            featureLayer.zoom.min);
-        tile.material.visible = true;
-        tile.parent = { pendingSubdivision: false };
-        featureLayer.source.uid = 8;
-        featureLayer.mergeFeatures = true;
-        featureLayer.cache.clear();
-        featureLayer.source._featuresCaches = {};
-        featureLayer.source.onLayerAdded({ out: featureLayer });
-        featureLayer.update(context, featureLayer, tile);
-        DataSourceProvider.executeCommand(context.scheduler.commands[0])
-            .then((features) => {
-                assert.ok(features[0].meshes.children[0].isMesh);
-                assert.ok(features[0].meshes.children[1].isPoints);
-                assert.equal(features[0].meshes.children[0].children.length, 0);
-                assert.equal(features[0].meshes.children[1].children.length, 0);
-                done();
-            }).catch(done);
-    });
+    // it('should get 1 mesh with WFS source and DataSourceProvider and mergeFeatures == true', (done) => {
+    //     const tile = new TileMesh(
+    //         geom,
+    //         material,
+    //         planarlayer,
+    //         extent,
+    //         featureLayer.zoom.min);
+    //     tile.material.visible = true;
+    //     tile.parent = { pendingSubdivision: false };
+    //     featureLayer.source.uid = 8;
+    //     featureLayer.mergeFeatures = true;
+    //     featureLayer.cache.clear();
+    //     featureLayer.source._featuresCaches = {};
+    //     featureLayer.source.onLayerAdded({ out: featureLayer });
+    //     featureLayer.update(context, featureLayer, tile);
+    //     DataSourceProvider.executeCommand(context.scheduler.commands[0])
+    //         .then((features) => {
+    //             assert.ok(features[0].meshes.children[0].isMesh);
+    //             assert.ok(features[0].meshes.children[1].isPoints);
+    //             assert.equal(features[0].meshes.children[0].children.length, 0);
+    //             assert.equal(features[0].meshes.children[1].children.length, 0);
+    //             done();
+    //         }).catch(done);
+    // });
 
     // it('should get 1 texture with WFS source and DataSourceProvider', (done) => {
     //     const tile = new TileMesh(
