@@ -1,51 +1,60 @@
 /*** Navigation Menu ***/
 #demoUI {
     position: fixed;
-    width: 100%;
-    height: 100%;
-    padding: 1vh;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 1vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: min(80vw, 70vh); 
+    max-height: 40vh;
+    padding: 2vh 3vh;
+    border-radius: 3rem;
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(0.5vh);
     z-index: 100;
-    pointer-events: none;
 }
 
 #textContainer {
+    position: static;
+
     display: flex;
-    position: fixed;
     flex-direction: column;
-    top: 1vh;
-    left: 1vh;
-    width: 50vh;
-    min-height: 15vh;
+
     color: black;
+    text-align: center;
     font-family:'Courier New', Courier, monospace;
-    border-radius: 10%;
-    padding: 2vh;
-    background-color: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(0.5vh);
-    pointer-events: auto;
 }
 
 #navigationContainer {
+    position: static;
+
     display: flex;
-    position: fixed;
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    
     width: 100%;
-    bottom: 1vh;
     gap: 2vh;
-    pointer-events: auto;
+    margin-top: 2vh;
 }
 
 button {
+    display: inline-block;
+
     border: 1px solid black;
-    color: black;
+    border-radius: 10%;
     padding: 0.5vh 2vh;
+    
+    color: black;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
-    font-size: 1.5vh;
-    border-radius: 10%;
+    font-size: min(1vh, 1.5vw);
+    font-family:'Courier New', Courier, monospace;
+
     cursor: pointer;
 }
 
@@ -62,13 +71,13 @@ button:active {
 #sceneDots {
     display: flex;
     flex-direction: row;
-    gap: 1vh;
+    gap: min(1vh, 1.5vw);
     align-items: center;
 }
 
 .scene-dot {
-    width: 1.5vh;
-    height: 1.5vh;
+    width: min(1.5vh, 2vw);
+    height: min(1.5vh, 2vw);
     border-radius: 50%;
     border: 1px solid #000;
     background-color: #ffffff;
