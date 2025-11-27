@@ -14,7 +14,7 @@ export const TexturedMeshes3dScene: SceneType = {
     + 'Stream only what you need for optimal performance.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 3.0270044, 50.6273158),
-        range: 2000,
+        range: 800,
         tilt: 45,
         heading: 0,
     },
