@@ -89,7 +89,8 @@ class GlobeView extends View {
      * The maximum view distance is this factor times the camera's altitude (above sea level).
      * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
      * Between 0 and 1.
-     * @param {boolean} [options.realisticLighting=true] - Enable realistic lighting with sky management.
+     * @param {boolean} [options.realisticLighting=true] - Enable realistic lighting.
+     * If true, it can later be switched by setting this.skyManager.enabled to true/false.
      * If false, it will be impossible to enable it later on.
      */
     constructor(viewerDiv, placement = {}, options = {}) {
