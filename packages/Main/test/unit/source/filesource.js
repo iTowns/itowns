@@ -35,7 +35,7 @@ describe('FileSource', function () {
             .then(() => {
                 const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
                 assert.ok(source.urlFromExtent());
-                assert.ok(source.extentInsideLimit(extent));
+                assert.ok(source.anyVisibleData(extent));
                 assert.ok(source.fetchedData);
                 assert.ok(!source.features);
                 assert.ok(source.isFileSource);

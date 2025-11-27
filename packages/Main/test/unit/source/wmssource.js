@@ -20,7 +20,7 @@ describe('WMSSource', function () {
         const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
         assert.ok(source.isWMSSource);
         assert.ok(source.urlFromExtent(extent));
-        assert.ok(source.extentInsideLimit(extent));
+        assert.ok(source.anyVisibleData(extent));
     });
 
     it('should set the correct axisOrder', function () {
