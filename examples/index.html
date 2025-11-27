@@ -44,7 +44,7 @@
             var url = document.location.href.replace('#', '') + '.html';
             goTo(url);
         } else {
-            goTo('view_3d_map.html');
+            goTo('demo/index.html');
         }
     }
 
@@ -55,7 +55,7 @@
         iframe.focus();
 
         let viewSrc = `https://github.com/iTowns/itowns/blob/master/examples/${
-            window.location.hash.substr(1) || 'view_3d_map'
+            window.location.hash.substr(1) || 'demo/index'
         }.html`;
         document.getElementById('view-source').onclick = () => { window.open(viewSrc); };
     }
