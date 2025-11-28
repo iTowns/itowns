@@ -141,9 +141,9 @@ class ElevationLayer extends RasterLayer {
         return rasterElevationNode;
     }
 
-    shouldCreateRasterTile(node) {
+    anyVisibleData(node) {
         // NOTE : le bug d'affichage des tuiles peut etre que les parametres de calques elevations sont mauvaises;
-        return super.shouldCreateRasterTile(node)
+        return super.anyVisibleData(node)
             && this.source.zoom.min > (node.material.getElevationTile()?.layer.source.zoom.max || -1);
     }
 }

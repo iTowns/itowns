@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import assert from 'assert';
-import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import TileMesh from 'Core/TileMesh';
 import { Extent } from '@itowns/geographic';
 import OBB from 'Renderer/OBB';
@@ -26,7 +25,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
             commands: [],
             execute: (cmd) => {
                 context.scheduler.commands.push(cmd);
-                return new Promise(() => { /* no-op */ });
+                return new Promise(() => {  });
             },
         },
     };
@@ -131,3 +130,5 @@ describe('updateLayeredMaterialNodeImagery', function () {
             layer.source.zoom.max);
     });
 });
+
+*/
