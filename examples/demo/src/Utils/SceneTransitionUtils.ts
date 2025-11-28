@@ -81,9 +81,11 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
     currentScene.view.setVisible(false);
     Globe3dScene.view.setVisible(true);
 
-    // set transition view camera to current scene location
-    await moveCameraTo(transitionView,
-        currentScene.placement, 0.1).catch(console.error);
+    // set transition view camera to current scene location if not already there
+    if (!(currentScene.view instanceof View3D)) {
+        await moveCameraTo(transitionView,
+            currentScene.placement, 0.1).catch(console.error);
+    }
 
     // Compute current coordinate from camera position
     const camCoords = cameraWorldToCoordinates(
