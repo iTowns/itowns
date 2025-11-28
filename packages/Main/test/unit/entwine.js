@@ -110,6 +110,8 @@ describe('Entwine Point Tile', function () {
             assert.deepStrictEqual(element[0], layer.root);
         });
 
+        // The 2 following tests are fragile and their intentions are unclear.
+        // They should be rewritten - see issue #2645.
         it('tries to update on the root and fails', function () {
             const cam = context.camera.camera3D;
             const originalQuaternion = cam.quaternion.clone();
