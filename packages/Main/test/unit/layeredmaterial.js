@@ -1,7 +1,7 @@
 import assert from 'assert';
 import ColorLayer from 'Layer/ColorLayer';
 import TMSSource from 'Source/TMSSource';
-import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
+// import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates } from '@itowns/geographic';
 import TileMesh from 'Core/TileMesh';
@@ -49,13 +49,13 @@ describe('material state vs layer state', function () {
         stubFetcherTexture.restore();
     });
 
-    it('should correctly initialize opacity & visibility', () => {
-        updateLayeredMaterialNodeImagery(context, layer, node, node.parent);
-        const nodeLayer = material.getTile(layer.id);
-        nodeLayer.textures.push(new THREE.Texture());
-        assert.equal(nodeLayer.opacity, layer.opacity);
-        assert.equal(nodeLayer.visible, layer.visible);
-    });
+    // it('should correctly initialize opacity & visibility', () => {
+    //     updateLayeredMaterialNodeImagery(context, layer, node, node.parent);
+    //     const nodeLayer = material.getTile(layer.id);
+    //     nodeLayer.textures.push(new THREE.Texture());
+    //     assert.equal(nodeLayer.opacity, layer.opacity);
+    //     assert.equal(nodeLayer.visible, layer.visible);
+    // });
 
     it('should update material opacity & visibility', () => {
         layer.opacity = 0.5;

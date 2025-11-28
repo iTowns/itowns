@@ -202,6 +202,11 @@ class Source {
     extentInsideLimit(extent) {
         throw new Error('In extented Source, you have to implement the method extentInsideLimit!');
     }
+
+    // eslint-disable-next-line
+    anyVisibleData(extent) {
+        throw new Error('In extented Source, you have to implement the method isVisibleData!');
+    }
 }
 
 export default Source;
