@@ -1,10 +1,11 @@
 import * as itowns from 'itowns';
-import config from '../Config/config';
+import Config from '../Config/Config';
 import type { SceneType } from '../Types/SceneType';
 import View3D from '../Views/View3D';
 import { SceneRepository } from '../Repositories/SceneRepository';
 import { LayerRepository } from '../Repositories/LayerRepository';
 import { Globe3dScene } from '../Scenes/Globe3dScene';
+import FeaturePickerService from '../Services/FeaturePickerService';
 
 /**
  * Updates the UI elements with the title and description of the given scene.
@@ -44,7 +45,7 @@ const cameraWorldToCoordinates = (view: itowns.View, targetCrs: string) => {
  * @returns Promise<any>
  */
 export const moveCameraTo = (view: itowns.View, placement: SceneType['placement'],
-    duration = config.DURATION) =>
+    duration = Config.DURATION) =>
     itowns.CameraUtils.animateCameraToLookAtTarget(view, view.camera3D, {
         coord: placement.coord,
         range: placement.range,
@@ -91,7 +92,7 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
     // compute minimum range based on distance
     // between camera coordinates and next scene coordinates
     const distance = camCoords.planarDistanceTo(nextScene.placement.coord);
-    const minRange = Math.min(Math.round(distance * config.DISTANCE_SCALER), config.MAX_RANGE);
+    const minRange = Math.min(Math.round(distance * Config.DISTANCE_SCALER), Config.MAX_RANGE);
 
     // if current range is less than minimum range, unzoom first then move
     // to make transition smoother
@@ -102,10 +103,10 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
                 range: minRange,
                 tilt: 89.5,
             },
-            config.DURATION / 2) // half duration since there are two steps in this case
+            Config.DURATION / 2) // half duration since there are two steps in this case
             .catch(console.error).then(() =>
                 moveCameraTo(transitionView,
-                    nextScene.placement, config.DURATION / 2).catch(console.error));
+                    nextScene.placement, Config.DURATION / 2).catch(console.error));
     } else {
         cameraPromise = moveCameraTo(transitionView,
             nextScene.placement).catch(console.error);
@@ -127,6 +128,10 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
 
         for (const layer of nextScene.layers) {
             layer.visible = true;
+            if (FeaturePickerService.layers.find(l => l.id === layer.id) &&
+            nextScene.view instanceof View3D) {
+                FeaturePickerService.enable(nextScene.view);
+            }
         }
         resolve();
     });
@@ -169,6 +174,7 @@ export const hardResetScene = async (scene: SceneType) => {
         }
     }
 
+    // reset Globe3dScene as well since it's used for transitions
     Globe3dScene.ready = false;
     Globe3dScene.layers = [];
 
@@ -178,6 +184,16 @@ export const hardResetScene = async (scene: SceneType) => {
     await Globe3dScene.onCreate();
     scene.view.setVisible(true);
     await scene.onEnter?.();
+
+    // show layers and enable feature picking if applicable
+    for (const layer of scene.layers) {
+        layer.visible = true;
+
+        if (FeaturePickerService.layers.find(l => l.id === layer.id) &&
+        scene.view instanceof View3D) {
+            FeaturePickerService.enable(scene.view);
+        }
+    }
 
     if (scene.view instanceof View3D) {
         await moveCameraTo(scene.view.getView(), scene.placement, 0.1);
@@ -204,6 +220,7 @@ export const resetScene = async (scene: SceneType) => {
         }
         await scene.onEnter?.();
 
+        // non-View3D scenes handle their own camera placement
         if (!(scene.view instanceof View3D)) {
             return;
         }

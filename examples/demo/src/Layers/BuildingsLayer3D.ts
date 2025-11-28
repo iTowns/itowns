@@ -32,4 +32,33 @@ export const BuildingsLayer3D: LayerPromiseType = {
         }
         return BuildingsLayer3D.layerPromise;
     },
+    getPickingInfo(feature) {
+        const properties = feature as {
+            object: {
+                feature: {
+                    id: string,
+                    geometries: {
+                        properties: {
+                            alti_sol: string,
+                            hauteur: string,
+                            isole: string,
+                            niveau: string,
+                            symbo: string,
+                            territoire: string,
+                        }
+                    }[]
+                }
+            }
+        };
+
+        return {
+            ID: properties.object.feature.id,
+            'Ground altitude': properties.object.feature.geometries[0].properties.alti_sol,
+            Height: properties.object.feature.geometries[0].properties.hauteur,
+            Isolated: properties.object.feature.geometries[0].properties.isole,
+            Level: properties.object.feature.geometries[0].properties.niveau,
+            Symbol: properties.object.feature.geometries[0].properties.symbo,
+            Territory: properties.object.feature.geometries[0].properties.territoire,
+        };
+    },
 };
