@@ -1,6 +1,5 @@
 import * as itowns from 'itowns';
 import { LayerRepository } from '../Repositories/LayerRepository';
-import Config from '../Config/Config';
 import { LayerPromiseType } from '../Types/LayerPromiseType';
 import View3D from '../Views/View3D';
 
@@ -35,7 +34,7 @@ const FeaturePickerService = {
         const dx = event.clientX - FeaturePickerService.mouseDownPos.x;
         const dy = event.clientY - FeaturePickerService.mouseDownPos.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > Config.DRAG_THRESHOLD) {
+        if (dist > 5) {
             return;
         }
 

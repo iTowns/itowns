@@ -1,5 +1,4 @@
 import * as itowns from 'itowns';
-import Config from '../Config/Config';
 import type { SceneType } from '../Types/SceneType';
 import View3D from '../Views/View3D';
 import { SceneRepository } from '../Repositories/SceneRepository';
@@ -45,7 +44,7 @@ const cameraWorldToCoordinates = (view: itowns.View, targetCrs: string) => {
  * @returns Promise<any>
  */
 export const moveCameraTo = (view: itowns.View, placement: SceneType['placement'],
-    duration = Config.DURATION) =>
+    duration = 2000) =>
     itowns.CameraUtils.animateCameraToLookAtTarget(view, view.camera3D, {
         coord: placement.coord,
         range: placement.range,
@@ -94,7 +93,7 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
     // compute minimum range based on distance
     // between camera coordinates and next scene coordinates
     const distance = camCoords.planarDistanceTo(nextScene.placement.coord);
-    const minRange = Math.min(Math.round(distance * Config.DISTANCE_SCALER), Config.MAX_RANGE);
+    const minRange = Math.min(Math.round(distance * 150000), 25000000);
 
     // if current range is less than minimum range, unzoom first then move
     // to make transition smoother
@@ -105,10 +104,10 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
                 range: minRange,
                 tilt: 89.5,
             },
-            Config.DURATION / 2) // half duration since there are two steps in this case
+            2000 / 2) // half duration since there are two steps in this case
             .catch(console.error).then(() =>
                 moveCameraTo(transitionView,
-                    nextScene.placement, Config.DURATION / 2).catch(console.error));
+                    nextScene.placement, 2000 / 2).catch(console.error));
     } else {
         cameraPromise = moveCameraTo(transitionView,
             nextScene.placement).catch(console.error);
