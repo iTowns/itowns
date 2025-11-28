@@ -116,13 +116,11 @@ class SkyManager {
         // This creates a white disk at the Sun's position
         sunDirection.multiplyScalar(1.00002);
 
-        this.sky.position.copy(camera.position); // what does it change?
         this.sky.updateMatrixWorld();
 
         const skyMaterial = <SkyMaterial> this.sky.material;
         skyMaterial.sunDirection.copy(sunDirection);
         skyMaterial.moonDirection.copy(moonDirection);
-        skyMaterial.needsUpdate = true; // useless?
 
         this.aerialPerspective.sunDirection.copy(sunDirection);
 
