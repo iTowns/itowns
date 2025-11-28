@@ -33,4 +33,27 @@ export const ParksLayer: LayerPromiseType = {
         }
         return ParksLayer.layerPromise;
     },
+    getPickingInfo(feature) {
+        const properties = feature as {
+            geometry: {
+                properties: {
+                    nom: string,
+                    voie: string,
+                    commune: string,
+                    surf_tot_m2: string,
+                    codepost: string,
+                    code_insee: string,
+                }
+            }
+        };
+
+        return {
+            Name: properties.geometry.properties.nom,
+            Street: properties.geometry.properties.voie,
+            City: properties.geometry.properties.commune,
+            'Total area (m²)': properties.geometry.properties.surf_tot_m2,
+            'Postal code': properties.geometry.properties.codepost,
+            'INSEE code': properties.geometry.properties.code_insee,
+        };
+    },
 };

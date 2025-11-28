@@ -7,4 +7,5 @@ export type LayerPromiseType = {
     cachedLayer: LayerType | undefined,
     getLayer:
         ((meshCallback?: (mesh: THREE.Mesh) => void) => Promise<LayerType>),
+    getPickingInfo?:(feature: unknown) => Record<string, string> | null,
 };
