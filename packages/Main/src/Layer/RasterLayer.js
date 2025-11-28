@@ -62,25 +62,18 @@ class RasterLayer extends Layer {
         }
     }
 
-    shouldCreateRasterTile(node) {
-        const zoom = node.getZoomByProjection(this.crs);
+    anyVisibleData(node) {
+        const maxZoom = Math.min(this.source.zoom.max, this.zoom.max);
 
-        // fix(ElevationLayer): don't assume Layer's Source has a TMS-like structure
-        // if (nodeLayer.level >= layer.source.zoom?.min) {
-        return !(zoom < this.source.zoom?.min || zoom < this.zoom.min);
+        const extents  = node.getExtentsByProjection(this.crs)
+            .map(e => e.tiledExtentParent(maxZoom));
+
+        return extents.find(e => this.source.anyVisibleData(e) && e.zoom >= this.zoom.min);
     }
 
     update(context, layer, node) {
-        if (layer.visible && !layer.freeze) {
-            let rasterTile = node.material.getTile(this.id);
-
-            if (!rasterTile && this.shouldCreateRasterTile(node)) {
-                rasterTile = this.setupRasterNode(node);
-
-                rasterTile.addEventListener('nextTry', () => context.view.notifyChange(node, false));
-            } else {
-                return;
-            }
+        if (layer.visible && !layer.freeze && this.anyVisibleData(node)) {
+            const rasterTile = node.material.getTile(this.id) || this.setupRasterNode(node);
 
             rasterTile.load(node, context.view);
         }

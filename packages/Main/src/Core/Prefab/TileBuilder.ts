@@ -101,22 +101,17 @@ export function newTileGeometry(
         // depend on the # of triangles)
         let cachedBuffers = cacheBuffer.get(bufferKey);
 
-        let buffers;
-        try {
-            buffers = computeBuffers(
-                builder,
-                { ...params, center },
-                cachedBuffers !== undefined
-                    ? {
-                        index: cachedBuffers.index.array as
-                            Uint8Array | Uint16Array | Uint32Array,
-                        uv: cachedBuffers.uv.array as Float32Array,
-                    }
-                    : undefined,
-            );
-        } catch (e) {
-            throw new Error('e');
-        }
+        const buffers = computeBuffers(
+            builder,
+            { ...params, center },
+            cachedBuffers !== undefined
+                ? {
+                    index: cachedBuffers.index.array as
+                        Uint8Array | Uint16Array | Uint32Array,
+                    uv: cachedBuffers.uv.array as Float32Array,
+                }
+                : undefined,
+        );
 
         if (!cachedBuffers) {
             // We know the fields will exist due to the condition
