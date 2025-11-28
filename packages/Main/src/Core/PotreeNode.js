@@ -47,11 +47,11 @@ function computeChildBBox(voxelBBox, childIndex) {
 }
 
 class PotreeNode extends PointCloudNode {
-    constructor(depth, numPoints = 0, childrenBitField = 0, source, crs) {
+    constructor(depth, index, numPoints = 0, childrenBitField = 0, source, crs) {
         super(depth, numPoints, source);
         this.childrenBitField = childrenBitField;
 
-        this.hierarchyKey = 'r';
+        this.index = index;
 
         this.baseurl = source.baseurl;
 
@@ -70,9 +70,14 @@ class PotreeNode extends PointCloudNode {
         return this.hierarchyKey;
     }
 
-    add(node, indexChild) {
-        node.hierarchyKey = this.hierarchyKey + indexChild;
-        super.add(node, indexChild);
+    get hierarchyKey() {
+        if (this._hierarchyKey != undefined) { return this._hierarchyKey; }
+        if (this.depth === 0) {
+            this._hierarchyKey = 'r';
+        } else {
+            this._hierarchyKey = this.parent.hierarchyKey + this.index;
+        }
+        return this._hierarchyKey;
     }
 
     createChildAABB(childNode, childIndex) {
@@ -119,8 +124,7 @@ class PotreeNode extends PointCloudNode {
                         if (snode.childrenBitField & (1 << indexChild) && (offset + 5) <= blob.byteLength) {
                             const childrenBitField = view.getUint8(offset); offset += 1;
                             const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
-                            const child = new PotreeNode(snode.depth + 1, numPoints, childrenBitField, this.source, this.crs);
-
+                            const child = new PotreeNode(snode.depth + 1, indexChild, numPoints, childrenBitField, this.source, this.crs);
                             snode.add(child, indexChild);
                             child.offsetBBox = computeChildBBox(child.parent.offsetBBox, indexChild);// For Potree1 Parser
                             if ((child.depth % this.source.hierarchyStepSize) == 0) {
