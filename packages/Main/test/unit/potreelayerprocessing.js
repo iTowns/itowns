@@ -9,40 +9,40 @@ describe('preUpdate PotreeLayer', function () {
         source: { baseurl: 'server.geo' },
         hierarchyStepSize: 1,
     };
-    layer.root = new PotreeNode(0, 4000, 0, layer);
+    layer.root = new PotreeNode(0, -1, 4000, 0, layer);
     layer.root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
-    layer.root.add(new PotreeNode(1, 3000, 0, layer), 1, layer.root);
+    layer.root.add(new PotreeNode(1, 0, 3000, 0, layer), 1, layer.root);
     layer.root.children[0].obj = { layer, isPoints: true };
-    layer.root.add(new PotreeNode(1, 3000, 0, layer), 2, layer.root);
+    layer.root.add(new PotreeNode(1, 1, 3000, 0, layer), 2, layer.root);
     layer.root.children[1].obj = { layer, isPoints: true };
-    layer.root.add(new PotreeNode(1, 3000, 0, layer), 3, layer.root);
+    layer.root.add(new PotreeNode(1, 2, 3000, 0, layer), 3, layer.root);
     layer.root.children[2].obj = { layer, isPoints: true };
 
-    layer.root.children[0].add(new PotreeNode(2, 2000, 0, layer), 1, layer.root);
+    layer.root.children[0].add(new PotreeNode(2, 0, 2000, 0, layer), 1, layer.root);
     layer.root.children[0].children[0].obj = { layer, isPoints: true };
-    layer.root.children[0].add(new PotreeNode(2, 2000, 0, layer), 2, layer.root);
+    layer.root.children[0].add(new PotreeNode(2, 1, 2000, 0, layer), 2, layer.root);
     layer.root.children[0].children[1].obj = { layer, isPoints: true };
-    layer.root.children[1].add(new PotreeNode(2, 2000, 0, layer), 1, layer.root);
+    layer.root.children[1].add(new PotreeNode(2, 2, 2000, 0, layer), 1, layer.root);
     layer.root.children[1].children[0].obj = { layer, isPoints: true };
-    layer.root.children[2].add(new PotreeNode(2, 2000, 0, layer), 2, layer.root);
+    layer.root.children[2].add(new PotreeNode(2, 3, 2000, 0, layer), 2, layer.root);
     layer.root.children[2].children[0].obj = { layer, isPoints: true };
-    layer.root.children[2].add(new PotreeNode(2, 2000, 0, layer), 3, layer.root);
+    layer.root.children[2].add(new PotreeNode(2, 4, 2000, 0, layer), 3, layer.root);
     layer.root.children[2].children[1].obj = { layer, isPoints: true };
 
-    layer.root.children[0].children[0].add(new PotreeNode(3, 1000, 0, layer), 1, layer.root);
+    layer.root.children[0].children[0].add(new PotreeNode(3, 0, 1000, 0, layer), 1, layer.root);
     layer.root.children[0].children[0].children[0].obj = { layer, isPoints: true };
-    layer.root.children[0].children[0].add(new PotreeNode(3, 1000, 0, layer), 5, layer.root);
+    layer.root.children[0].children[0].add(new PotreeNode(3, 1, 1000, 0, layer), 5, layer.root);
     layer.root.children[0].children[0].children[1].obj = { layer, isPoints: true };
-    layer.root.children[0].children[1].add(new PotreeNode(3, 1000, 0, layer), 4, layer.root);
+    layer.root.children[0].children[1].add(new PotreeNode(3, 2, 1000, 0, layer), 4, layer.root);
     layer.root.children[0].children[1].children[0].obj = { layer, isPoints: true };
-    layer.root.children[2].children[1].add(new PotreeNode(3, 1000, 0, layer), 1, layer.root);
+    layer.root.children[2].children[1].add(new PotreeNode(3, 3, 1000, 0, layer), 1, layer.root);
     layer.root.children[2].children[1].children[0].obj = { layer, isPoints: true };
-    layer.root.children[2].children[1].add(new PotreeNode(3, 1000, 0, layer), 2, layer.root);
+    layer.root.children[2].children[1].add(new PotreeNode(3, 4, 1000, 0, layer), 2, layer.root);
     layer.root.children[2].children[1].children[1].obj = { layer, isPoints: true };
-    layer.root.children[2].children[1].add(new PotreeNode(3, 1000, 0, layer), 3, layer.root);
+    layer.root.children[2].children[1].add(new PotreeNode(3, 5, 1000, 0, layer), 3, layer.root);
     layer.root.children[2].children[1].children[2].obj = { layer, isPoints: true };
-    layer.root.children[2].children[1].add(new PotreeNode(3, 1000, 0, layer), 4, layer.root);
+    layer.root.children[2].children[1].add(new PotreeNode(3, 6, 1000, 0, layer), 4, layer.root);
     layer.root.children[2].children[1].children[3].obj = { layer, isPoints: true };
 
     it('should return root if no change source', () => {
