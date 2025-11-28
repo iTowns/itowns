@@ -18,7 +18,7 @@ const FeaturePickerService = {
     pickingContent: [] as Record<string, unknown>[],
     container: null as HTMLDivElement | null,
     view: null as itowns.GlobeView | null,
-    onClick: (event: Event) => {
+    onClick: async (event: Event) => {
         if (!(event instanceof MouseEvent)) {
             return;
         }
@@ -44,7 +44,19 @@ const FeaturePickerService = {
             y: event.clientY,
         };
 
-        const layerIds = FeaturePickerService.layers.map(layer => layer.id);
+        const layers = await Promise.all(
+            FeaturePickerService.layers.map(async layerPromise => layerPromise.getLayer()),
+        );
+
+        const layerIds = layers
+            .filter(layer => layer.visible)
+            .map(layer => layer.id);
+
+        if (layerIds.length === 0) {
+            FeaturePickerService.container.innerHTML =
+                'Click on a feature to display informations.';
+            return;
+        }
 
         const results = FeaturePickerService.view.pickFeaturesAt(
             coords,
