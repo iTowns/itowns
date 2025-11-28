@@ -87,7 +87,7 @@ describe('Entwine Point Tile', function () {
 
         before(function (done) {
             renderer = new Renderer();
-            view = new GlobeView(renderer.domElement, {}, { renderer });
+            view = new GlobeView(renderer.domElement, {}, { renderer }, { realisticLighting: false });
             layer = new EntwinePointTileLayer('testEptLayer', { source });
 
             context = {
@@ -124,7 +124,7 @@ describe('Entwine Point Tile', function () {
             const coord = new Coordinates(view.referenceCrs).setFromVector3(layer.root.voxelOBB.box3D.getCenter(lookAt));
             view.controls.lookAtCoordinate({
                 coord,
-                range: -250,
+                range: 2e7,
             }, false)
                 .then(() => {
                     layer.update(context, layer, layer.root);
