@@ -27,7 +27,8 @@
         "entwine_3d_loader": "Entwine 3D loader",
         "copc_simple_loader": "COPC loader",
         "copc_3d_loader": "COPC 3D loader",
-        "vpc_simple_loader": "VPC loader"
+        "vpc_simple_loader": "VPC loader",
+        "vpc_3d_loader": "VPC 3D loader"
     },
 
     "Vector tiles": {
