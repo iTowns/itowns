@@ -46,7 +46,7 @@ button {
     display: inline-block;
 
     border: 1px solid black;
-    border-radius: 10%;
+    border-radius: 0.5rem;
     padding: 0.5vh 2vh;
     
     color: black;
@@ -64,6 +64,11 @@ button:hover {
 }
 
 button:active {
+    background-color: #7EA8C5;
+    color: white;
+}
+
+button.active {
     background-color: #7EA8C5;
     color: white;
 }
@@ -115,4 +120,48 @@ button:active {
     z-index: 100;
 
     pointer-events: auto;
+}
+
+/*** Point Cloud Config ***/
+#point-cloud-config {
+    position: fixed;
+    top: 1vh;
+    right: 1vh;
+    padding: 1vh 1.5vh;
+    border-radius: 1vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    font-family:'Courier New', Courier, monospace;
+    font-size: min(1.5vh, 2vw);
+    color: black;
+
+    width: 25vw;
+    max-height: 45vh;
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(0.5vh);
+
+    z-index: 100;
+}
+
+#point-cloud-buttons {
+    width: 100%;
+    display: flex;
+    justify-self: center;
+}
+
+#point-cloud-config button {
+    width: 50%;
+}
+
+#point-cloud-config button:first-child {
+    border-right: none;
+    border-radius: 0.5rem 0 0 0.5rem;
+}
+
+#point-cloud-config button:last-child {
+    border-left: none;
+    border-radius: 0 0.5rem 0.5rem 0;
 }

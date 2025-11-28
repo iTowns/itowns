@@ -3,6 +3,25 @@ import View3D from '../Views/View3D';
 import { LayerRepository } from '../Repositories/LayerRepository';
 import type { SceneType } from '../Types/SceneType';
 
+const configContainer = document.createElement('div');
+configContainer.id = 'point-cloud-config';
+
+const configText = document.createElement('p');
+configText.textContent = 'Instantly switch between rendering styles';
+configContainer.appendChild(configText);
+
+const buttonsContainer = document.createElement('div');
+buttonsContainer.id = 'point-cloud-buttons';
+configContainer.appendChild(buttonsContainer);
+
+const colorButton = document.createElement('button');
+colorButton.textContent = 'Color';
+buttonsContainer.appendChild(colorButton);
+
+const classificationButton = document.createElement('button');
+classificationButton.textContent = 'Classification';
+buttonsContainer.appendChild(classificationButton);
+
 export const PointCloudScene: SceneType = {
     title: 'Handle Billions of Points',
     description: 'Display massive LiDAR datasets with optimized streaming. '
@@ -48,6 +67,34 @@ export const PointCloudScene: SceneType = {
         PointCloudScene.layers.push(pointCloudLayer);
         await itowns.View.prototype.addLayer.call(view, pointCloudLayer);
 
+        colorButton.addEventListener('click', () => {
+            // @ts-expect-error material.mode undefined
+            pointCloudLayer.material.mode = itowns.PNTS_MODE.COLOR;
+            colorButton.classList.add('active');
+            classificationButton.classList.remove('active');
+            view.notifyChange(pointCloudLayer, true);
+        });
+
+        classificationButton.addEventListener('click', () => {
+            // @ts-expect-error material.mode undefined
+            pointCloudLayer.material.mode = itowns.PNTS_MODE.CLASSIFICATION;
+            classificationButton.classList.add('active');
+            colorButton.classList.remove('active');
+            view.notifyChange(pointCloudLayer, true);
+        });
+
+        classificationButton.classList.add('active');
+        colorButton.classList.remove('active');
+
+        const viewerDiv = PointCloudScene.view.getViewerDiv();
+        viewerDiv.appendChild(configContainer);
+
         PointCloudScene.ready = true;
+    },
+    onEnter: async () => {
+        configContainer.style.display = 'block';
+    },
+    onExit: async () => {
+        configContainer.style.display = 'none';
     },
 };
