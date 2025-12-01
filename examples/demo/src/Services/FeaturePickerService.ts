@@ -3,6 +3,7 @@ import { LayerRepository } from '../Repositories/LayerRepository';
 import Config from '../Config/Config';
 import { LayerPromiseType } from '../Types/LayerPromiseType';
 import View3D from '../Views/View3D';
+import blockEventsIfFromPanel from '../Utils/BlockEventsIfFromPanel';
 
 /**
  * FeaturePicker module to handle feature picking on specified layers
@@ -127,19 +128,7 @@ const FeaturePickerService = {
 
             // Prevent interaction with the viewer
             // when interacting with the feature info panel
-            const blockIfFromPanel = (e: Event) => {
-                if (
-                    FeaturePickerService.container &&
-                    e.target instanceof Node &&
-                    FeaturePickerService.container.contains(e.target)
-                ) {
-                    e.stopImmediatePropagation();
-                }
-            };
-            viewerDiv.addEventListener('pointerdown', blockIfFromPanel, true);
-            viewerDiv.addEventListener('pointermove', blockIfFromPanel, true);
-            viewerDiv.addEventListener('pointerup', blockIfFromPanel, true);
-            viewerDiv.addEventListener('wheel', blockIfFromPanel, true);
+            blockEventsIfFromPanel(viewerDiv, container);
         }
         FeaturePickerService.container = container;
         FeaturePickerService.container.innerHTML = 'Click on a feature to display informations.';

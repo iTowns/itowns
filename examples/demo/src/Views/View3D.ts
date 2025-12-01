@@ -26,18 +26,26 @@ class View3D extends View {
             range: 25000000,
         };
 
-        this.view = new itowns.GlobeView(this.viewerDiv, placement);
+        this.view = new itowns.GlobeView(
+            this.viewerDiv,
+            placement,
+        );
 
         setupLoadingScreen(this.viewerDiv, this.view);
 
+        const view = this.view as itowns.GlobeView;
+
         this.atmosphereFrameRequester = () => {
-            const view = this.view as itowns.GlobeView;
-            view.skyManager.enabled = view.getDistanceFromCamera() > Config.ATMOSPHERE_THRESHOLD;
+            if (view.skyManager && view.skyManager.enabled !== undefined) {
+                view.skyManager.enabled =
+                    view.getDistanceFromCamera() > Config.ATMOSPHERE_THRESHOLD;
+            }
         };
         this.view.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
             this.atmosphereFrameRequester,
         );
+
         this.setVisible(false);
 
         View3D._instance = this;

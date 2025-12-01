@@ -2,6 +2,7 @@ import * as itowns from 'itowns';
 import View3D from '../Views/View3D';
 import { LayerRepository } from '../Repositories/LayerRepository';
 import type { SceneType } from '../Types/SceneType';
+import blockEventsIfFromPanel from '../Utils/BlockEventsIfFromPanel';
 
 const configContainer = document.createElement('div');
 configContainer.id = 'point-cloud-config';
@@ -88,6 +89,8 @@ export const PointCloudScene: SceneType = {
 
         const viewerDiv = PointCloudScene.view.getViewerDiv();
         viewerDiv.appendChild(configContainer);
+
+        blockEventsIfFromPanel(viewerDiv, configContainer);
 
         PointCloudScene.ready = true;
     },
