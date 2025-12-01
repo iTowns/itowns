@@ -256,7 +256,7 @@ function updatePointVertices(featureMesh, vertices, colors, batchIds, id) {
     const count = geometry.indices[0].count;
     const end = start + count;
 
-    for (let v = start * 3, j = start; j < end; v += 3, j += 1) {
+    for (let v = start * 3, j = start; j < end; v += 3, j++) {
         if (vertices) {
             if (feature.normals) {
                 up.fromArray(feature.normals, v).multiply(inverseScale);
@@ -351,8 +351,9 @@ function featureToLine(feature, options) {
 }
 
 function featureToExtrudedLine(feature, options) {
+    const maxVertsPerJoint = (SEGMENTS / 2 + 1) * SEGMENTS / 2;
     const vertSize = (feature.vertices.length - 3 * feature.geometries.length) * 2 * SEGMENTS + // cylinders
-        (feature.vertices.length - 6 * feature.geometries.length) * (SEGMENTS / 2 + 1) * 2; // joints
+        (feature.vertices.length - 6 * feature.geometries.length) * maxVertsPerJoint; // joints
     const vertices = new Float32Array(vertSize);
     const colors = new Uint8Array(vertSize);
     const batchIdFn = options.batchId || ((p, id) => id);
@@ -369,7 +370,8 @@ function featureToExtrudedLine(feature, options) {
         totalSegments += Math.max(0, g.indices[0].count - 1);
         totalJoints += Math.max(0, g.indices[0].count - 2);
     }
-    const totalQuads = totalSegments * SEGMENTS + totalJoints * (SEGMENTS / 2 + 1);
+    const maxQuadsPerJoint = SEGMENTS / 2 * (SEGMENTS / 2 - 1);
+    const totalQuads = totalSegments * SEGMENTS + totalJoints * maxQuadsPerJoint;
     const indices = getIntArrayFromSize(6 * totalQuads, vertices.length / 3);
     const buffers = {
         vertices,
@@ -479,7 +481,7 @@ function updatePolygonVertices(featureMesh, vertices, colors, batchIds, id) {
     const lastIndex = geometry.indices.slice(-1)[0];
     const end = lastIndex.offset + lastIndex.count;
 
-    for (let v = start * 3, j = start; j < end; v += 3, j += 1) {
+    for (let v = start * 3, j = start; j < end; v += 3, j++) {
         if (vertices) {
             if (feature.normals) {
                 up.fromArray(feature.normals, v).multiply(inverseScale);
@@ -651,7 +653,7 @@ function updateExtrudedPolygonVertices(featureMesh, vertices, colors, batchIds, 
             }
             baseCoord.copy(up)
                 .multiplyScalar(base_altitude - worldCoord.z).add(localCoord)
-            // and update the geometry buffer (vertices).
+                // and update the geometry buffer (vertices).
                 .toArray(vertices, i);
 
             // populate top geometry buffers
@@ -694,7 +696,7 @@ function updateLineVertices(featureMesh, vertices, colors, batchIds, id) {
     const count = geometry.indices[0].count;
     const end = start + count;
     const base_altitude = style.stroke.base_altitude;
-    for (let v = start * 3, j = start; j < end; v += 3, j += 1) {
+    for (let v = start * 3, j = start; j < end; v += 3, j++) {
         if (vertices) {
             if (feature.normals) {
                 up.fromArray(feature.normals, v).multiply(inverseScale);
@@ -839,43 +841,80 @@ function updateExtrudedLineVertices(featureMesh, buffers, id) {
 function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, id) {
     if (Number.isNaN(prevZAxis.x)) { return; } // prevZAxis hasn't been set yet
 
-    let xAxis;
-    let yAxisBase;
-    let yAxisTop;
     const { vertices, colors, batchIds, indices } = buffers;
-    if (vertices) {
-        // Create orthonormal basis for the plane containing both normals
-        xAxis = new THREE.Vector3().crossVectors(prevZAxis, zAxis).normalize();
-        yAxisBase = new THREE.Vector3().crossVectors(prevZAxis, xAxis);
-        yAxisTop = new THREE.Vector3().crossVectors(zAxis, xAxis);
-    }
+
+    // Create orthonormal basis for the plane containing both normals
+    const xAxis = new THREE.Vector3().crossVectors(prevZAxis, zAxis).normalize();
+    const yAxisBase = new THREE.Vector3().crossVectors(prevZAxis, xAxis);
+    const yAxisTop = new THREE.Vector3().crossVectors(zAxis, xAxis);
+
     const meshColor = toColor(style.stroke.color).multiplyScalar(255);
     const normal = new THREE.Vector3();
     const normalXComp = new THREE.Vector3();
     const vertex = new THREE.Vector3();
-    for (let k = 0; k <= SEGMENTS / 2; k++) {
-        const v = buffers.vertPtr;
-        if (vertices) {
-            const theta = (k / SEGMENTS) * Math.PI * 2;
-            normalXComp.copy(xAxis).multiplyScalar(Math.cos(theta));
-            normal.copy(normalXComp).addScaledVector(yAxisBase, Math.sin(theta));
-            vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
-            normal.copy(normalXComp).addScaledVector(yAxisTop, Math.sin(theta));
-            vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * (v + 1));
+    const yAxisInterpolated = new THREE.Vector3();
+
+    // Calculate number of intermediate steps based on angle between axes
+    const angle = Math.acos(Math.max(-1, Math.min(1, prevZAxis.dot(zAxis))));
+    const numSteps = Math.max(1, Math.round(angle * SEGMENTS / (2 * Math.PI)));
+
+    // let theta be the angle between the y axes
+    const cosTheta = Math.max(-1, Math.min(1, yAxisBase.dot(yAxisTop)));
+
+    // don't generate anything if axes are nearly aligned
+    if (Math.abs(cosTheta) >= 0.9995) { return; }
+
+    // Generate vertices for all intermediate rings
+    const ringVertices = [];
+    if (vertices || batchIds || colors) {
+        const theta = Math.acos(cosTheta);
+        const sinTheta = Math.sin(theta);
+        for (let step = 0; step <= numSteps; step++) {
+            const t = step / numSteps;
+
+            // Interpolate between yAxisBase and yAxisTop using slerp
+            const weight1 = Math.sin((1 - t) * theta) / sinTheta;
+            const weight2 = Math.sin(t * theta) / sinTheta;
+
+            yAxisInterpolated.copy(yAxisBase).multiplyScalar(weight1)
+                .addScaledVector(yAxisTop, weight2);
+
+            const ringStart = buffers.vertPtr;
+            ringVertices.push(ringStart);
+
+            // Create vertices for this ring
+            for (let k = 0; k <= SEGMENTS / 2; k++) {
+                const v = buffers.vertPtr;
+                if (vertices) {
+                    const angle = (k / SEGMENTS) * Math.PI * 2;
+                    normalXComp.copy(xAxis).multiplyScalar(Math.cos(angle));
+                    normal.copy(normalXComp).addScaledVector(yAxisInterpolated, Math.sin(angle));
+                    vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
+                }
+                if (batchIds) {
+                    batchIds[v] = id;
+                }
+                if (colors) {
+                    meshColor.toArray(colors, 3 * v);
+                }
+                buffers.vertPtr++;
+            }
         }
-        if (batchIds) {
-            batchIds[v] = id;
-            batchIds[v + 1] = id;
+    }
+
+    // Generate faces between consecutive rings
+    if (indices) {
+        for (let step = 0; step < numSteps; step++) {
+            const currentRingStart = ringVertices[step];
+            const nextRingStart = ringVertices[step + 1];
+
+            for (let k = 0; k < SEGMENTS / 2; k++) {
+                const v0 = currentRingStart + k;
+                const v1 = nextRingStart + k;
+                indices.set([v0, v0 + 1, v1, v1, v0 + 1, v1 + 1], buffers.indexPtr);
+                buffers.indexPtr += 6;
+            }
         }
-        if (colors) {
-            meshColor.toArray(colors, 3 * v);
-            meshColor.toArray(colors, 3 * (v + 1));
-        }
-        if (indices && k < SEGMENTS / 2) {
-            indices.set([v, v + 2, v + 1, v + 1, v + 2, v + 3], buffers.indexPtr);
-            buffers.indexPtr += 6;
-        }
-        buffers.vertPtr += 2;
     }
 }
 
@@ -1034,7 +1073,7 @@ export default {
             // style properties (@link StyleOptions) using options.style.
             // This is usually done in some tests and if you want to use Feature2Mesh.convert()
             // as in examples/source_file_gpx_3d.html.
-            style = this?.style || (options.style ? new Style(options.style) :  defaultStyle);
+            style = this?.style || (options.style ? new Style(options.style) : defaultStyle);
 
             context.setCollection(collection);
 
