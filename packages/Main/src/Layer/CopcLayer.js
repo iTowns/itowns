@@ -40,11 +40,8 @@ class CopcLayer extends PointCloudLayer {
         this.whenReady = this.source.whenReady.then((/** @type {CopcSource} */ source) => {
             this.setElevationRange();
 
-            const { cube, rootHierarchyPage } = source.info;
-            const { pageOffset, pageLength } = rootHierarchyPage;
+            const { pageOffset, pageLength } = source.info.rootHierarchyPage;
             this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, source, -1, this.crs);
-            this.root.voxelOBB.setFromArray(cube).projOBB(source.crs, this.crs);
-            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(source.zmin, source.zmax);
 
             return this.root.loadOctree().then(resolve);
         });
