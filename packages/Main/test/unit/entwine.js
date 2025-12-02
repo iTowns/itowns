@@ -12,10 +12,8 @@ import LASParser from 'Parser/LASParser';
 import Renderer from './bootstrap';
 
 import eptFile from '../data/entwine/ept.json';
-import eptHierarchyFile from '../data/entwine/ept-hierarchy/0-0-0-0.json';
-
-// LASParser need to be mocked instead of calling it
-LASParser.enableLazPerf('./examples/libs/laz-perf');
+import eptHierarchy0000File from '../data/entwine/ept-hierarchy/0-0-0-0.json';
+import eptHierarchy1001File from '../data/entwine/ept-hierarchy/1-0-0-1.json';
 
 const baseurl = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/entwine';
 
@@ -27,7 +25,8 @@ eptSsAuthority.srs = {
 const resources = {
     [`${baseurl}/ept.json`]: JSON.parse(eptFile),
     'withoutAutority/ept.json': eptSsAuthority,
-    [`${baseurl}/ept-hierarchy/0-0-0-0.json`]: JSON.parse(eptHierarchyFile),
+    [`${baseurl}/ept-hierarchy/0-0-0-0.json`]: JSON.parse(eptHierarchy0000File),
+    [`${baseurl}/ept-hierarchy/1-0-0-1.json`]: JSON.parse(eptHierarchy1001File),
 };
 
 describe('Entwine Point Tile', function () {
@@ -48,7 +47,6 @@ describe('Entwine Point Tile', function () {
     after(async function () {
         stubFetcherJson.restore();
         stubFetcherArrayBuf.restore();
-        await LASParser.terminate();
     });
 
     describe('Entwine Point Tile Source', function () {
@@ -139,28 +137,62 @@ describe('Entwine Point Tile', function () {
     describe('Entwine Point Tile Node', function () {
         let root;
         before(function () {
-            const source = { url: 'http://server.geo', extension: 'laz' };
-            root = new EntwinePointTileNode(0, 0, 0, 0, source, 4000);
-            root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+            root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, 'EPSG:3857');
+        });
 
-            root.add(new EntwinePointTileNode(1, 0, 0, 0, source, 3000));
-            root.add(new EntwinePointTileNode(1, 0, 0, 1, source, 3000));
-            root.add(new EntwinePointTileNode(1, 0, 1, 1, source, 3000));
+        after(async function () {
+            await LASParser.terminate();
+        });
 
-            root.children[0].add(new EntwinePointTileNode(2, 0, 0, 0, source, 2000));
-            root.children[0].add(new EntwinePointTileNode(2, 0, 1, 0, source, 2000));
-            root.children[1].add(new EntwinePointTileNode(2, 0, 1, 3, source, 2000));
-            root.children[2].add(new EntwinePointTileNode(2, 0, 2, 2, source, 2000));
-            root.children[2].add(new EntwinePointTileNode(2, 0, 3, 3, source, 2000));
+        describe('load()', () => {
+            it('load the root load', async () => {
+                const spyLoadOctree = sinon.spy(root, 'loadOctree');
+                const mockParser = sinon.mock(source);
+                mockParser.expects('parser')
+                    .once();
+                await root.load();
+                mockParser.verify();
+                mockParser.restore();
+                assert.ok(spyLoadOctree.calledOnce);
+            });
+            it('load a sub-node not yet loaded', async () => {
+                const node = root.children.filter(node => node.numPoints === -1)[0];
 
-            root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 0, 0, source, 1000));
-            root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 1, 0, source, 1000));
-            root.children[1].children[0].add(new EntwinePointTileNode(3, 0, 2, 7, source, 1000));
-            root.children[2].children[0].add(new EntwinePointTileNode(3, 0, 5, 4, source, 1000));
-            root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, source));
+                const spyLoadOctree = sinon.spy(node, 'loadOctree');
+                const mockParser = sinon.mock(source);
+                mockParser.expects('parser')
+                    .once();
+                await node.load();
+                mockParser.verify();
+                mockParser.restore();
+                assert.ok(spyLoadOctree.calledOnce);
+            });
         });
 
         describe('finds the common ancestor of two nodes', () => {
+            let root;
+            before(function () {
+                const source = { url: 'http://server.geo', extension: 'laz' };
+                root = new EntwinePointTileNode(0, 0, 0, 0, source, 4000);
+                root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+
+                root.add(new EntwinePointTileNode(1, 0, 0, 0, source, 3000));
+                root.add(new EntwinePointTileNode(1, 0, 0, 1, source, 3000));
+                root.add(new EntwinePointTileNode(1, 0, 1, 1, source, 3000));
+
+                root.children[0].add(new EntwinePointTileNode(2, 0, 0, 0, source, 2000));
+                root.children[0].add(new EntwinePointTileNode(2, 0, 1, 0, source, 2000));
+                root.children[1].add(new EntwinePointTileNode(2, 0, 1, 3, source, 2000));
+                root.children[2].add(new EntwinePointTileNode(2, 0, 2, 2, source, 2000));
+                root.children[2].add(new EntwinePointTileNode(2, 0, 3, 3, source, 2000));
+
+                root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 0, 0, source, 1000));
+                root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 1, 0, source, 1000));
+                root.children[1].children[0].add(new EntwinePointTileNode(3, 0, 2, 7, source, 1000));
+                root.children[2].children[0].add(new EntwinePointTileNode(3, 0, 5, 4, source, 1000));
+                root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, source));
+            });
+
             let ancestor;
             it('cousins => grand parent', () => {
                 ancestor = root.children[2].children[1].children[0].findCommonAncestor(root.children[2].children[0].children[0]);

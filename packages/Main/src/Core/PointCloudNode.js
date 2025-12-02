@@ -198,7 +198,15 @@ class PointCloudNode extends THREE.EventDispatcher {
         childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
-    load(networkOptions = this.source.networkOptions) {
+    async loadOctree() {
+        throw new Error('In extended PointCloudNode, you have to implement the method loadOctree!');
+    }
+
+    async load(networkOptions = this.source.networkOptions) {
+        // Query octree/HRC if we don't have children yet.
+        if (!this.octreeIsLoaded) {
+            await this.loadOctree();
+        }
         return this.source.fetcher(this.url, networkOptions)
             .then(file => this.source.parser(file, {
                 in: this,
