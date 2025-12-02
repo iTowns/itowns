@@ -31,20 +31,20 @@ class View3D extends View {
             placement,
         );
 
-        setupLoadingScreen(this.viewerDiv, this.view);
-
-        const view = this.view as itowns.GlobeView;
+        const view = this.view as itowns.GlobeView & { skyManager: { enabled: boolean } };
 
         this.atmosphereFrameRequester = () => {
             if (view.skyManager && view.skyManager.enabled !== undefined) {
                 view.skyManager.enabled =
-                    view.getDistanceFromCamera() > Config.ATMOSPHERE_THRESHOLD;
+                view.getDistanceFromCamera() > Config.ATMOSPHERE_THRESHOLD;
             }
         };
         this.view.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
             this.atmosphereFrameRequester,
         );
+
+        setupLoadingScreen(this.viewerDiv, this.view);
 
         this.setVisible(false);
 
