@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@itowns/debug",
-  "version": "2.46.1-next.14",
+  "version": "2.46.1-next.15",
   "type": "module",
   "main": "lib/Main.js",
   "exports": {
