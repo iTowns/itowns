@@ -26,8 +26,7 @@ class PointCloudNode extends THREE.EventDispatcher {
         this.source = source;
 
         this.children = [];
-        this.voxelOBB = new OBB();
-        this.clampOBB = new OBB();
+
         this.sse = -1;
     }
 
@@ -43,11 +42,35 @@ class PointCloudNode extends THREE.EventDispatcher {
         return this.numPoints >= 0;
     }
 
+    get voxelOBB() {
+        if (this._voxelOBB != undefined) { return this._voxelOBB; }
+        this._voxelOBB = new OBB();
+        if (this.depth === 0) {
+            this._voxelOBB.setFromArray(this.source.bounds).projOBB(this.source.crs, this.crs);
+        } else {
+            this.setVoxelOBBFromParent();
+        }
+        return this._voxelOBB;
+    }
+
+    get clampOBB() {
+    // Will be set from the boundingConforming metadata for the root node (if available)
+    // or from the Voxel OBB clamped to the zmin and zmax value.
+        if (this._clampOBB != undefined) { return this._clampOBB; }
+        this._clampOBB = new OBB();
+        if (this.depth === 0 && this.source.boundsConforming) {
+            this._clampOBB.setFromArray(this.source.boundsConforming).projOBB(this.source.crs, this.crs);
+        } else {
+            this._clampOBB.copy(this.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
+        }
+        return this._clampOBB;
+    }
+
     // get the center of the node i.e. the center of the bounding box.
     get center() {
         if (this._center != undefined) { return this._center; }
         const centerBbox = new THREE.Vector3();
-        this.voxelOBB.box3D.getCenter(centerBbox);
+        this.clampOBB.box3D.getCenter(centerBbox);
         this._center =  new Coordinates(this.crs).setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrixWorld));
         return this._center;
     }
@@ -74,25 +97,22 @@ class PointCloudNode extends THREE.EventDispatcher {
         return this._rotation;
     }
 
-    add(node, indexChild) {
+    add(node) {
         this.children.push(node);
         node.parent = this;
-        this.createChildAABB(node, indexChild);
     }
 
     /**
-     * Create an (A)xis (A)ligned (B)ounding (B)ox for the given node given
-     * `this` is its parent.
-     * @param {CopcNode} childNode - The child node
+     * Set the voxelOBB (cubic (O)riented (B)ounding (B)ox for this node.
+     * It needs to have a parent.
      */
-    createChildAABB(childNode) {
+    setVoxelOBBFromParent() {
         // initialize the child node obb
-        childNode.voxelOBB.copy(this.voxelOBB);
-        const voxelBBox = this.voxelOBB.box3D;
-        const childVoxelBBox = childNode.voxelOBB.box3D;
+        this._voxelOBB.copy(this.parent.voxelOBB);
+        const voxelBBox = this._voxelOBB.box3D;
 
         // factor to apply, based on the depth difference (can be > 1)
-        const f = 2 ** (childNode.depth - this.depth);
+        const f = 2 ** (this.depth - this.parent.depth);
 
         // size of the child node bbox (Vector3), based on the size of the
         // parent node, and divided by the factor
@@ -100,29 +120,17 @@ class PointCloudNode extends THREE.EventDispatcher {
 
         // position of the parent node, if it was at the same depth as the
         // child, found by multiplying the tree position by the factor
-        position.copy(this).multiplyScalar(f);
+        position.copy(this.parent).multiplyScalar(f);
 
         // difference in position between the two nodes, at child depth, and
         // scale it using the size
-        translation.subVectors(childNode, position).multiply(size);
+        translation.subVectors(this, position).multiply(size);
 
         // apply the translation to the child node bbox
-        childVoxelBBox.min.add(translation);
+        voxelBBox.min.add(translation);
 
         // use the size computed above to set the max
-        childVoxelBBox.max.copy(childVoxelBBox.min).add(size);
-
-        // get a clamped bbox from the voxel bbox
-        childNode.clampOBB.copy(childNode.voxelOBB);
-
-        const childClampBBox = childNode.clampOBB.box3D;
-
-        if (childClampBBox.min.z < this.source.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
-        }
-        if (childClampBBox.max.z > this.source.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
-        }
+        voxelBBox.max.copy(voxelBBox.min).add(size);
     }
 
     async loadOctree() {

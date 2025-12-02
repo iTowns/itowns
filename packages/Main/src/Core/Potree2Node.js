@@ -150,7 +150,7 @@ class Potree2Node extends PotreeNode {
                 }
 
                 const child = new Potree2Node(current.depth + 1, childIndex, numPoints, childMask, this.source, this.crs);
-                current.add(child, childIndex);
+                current.add(child);
                 stack.push(child);
             }
         }

@@ -85,6 +85,8 @@ class PotreeSource extends Source {
                     cloud.tightBoundingBox.uy,
                     cloud.tightBoundingBox.uz,
                 ];
+                const { lx, ly, lz, ux, uy, uz } = cloud.boundingBox;
+                this.bounds = [lx, ly, lz, ux, uy, uz];
                 this.pointAttributes = cloud.pointAttributes;
                 this.baseurl = `${this.url}/${cloud.octreeDir}/r`;
                 this.extension = cloud.pointAttributes === 'CIN' ? 'cin' : 'bin';
