@@ -29,7 +29,7 @@ export default {
 
                 // update existing features
                 for (const featureMesh of f.meshes.children) {
-                    Feature2Mesh.updateStyle(featureMesh, { style: layer.style });
+                    Feature2Mesh.updateStyle(featureMesh, f.collection, layer.style);
                 }
             });
             return;

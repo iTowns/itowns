@@ -83,9 +83,9 @@ function replaceWhitePxl(imgd, color, id) {
         const colorToChange = new Color('white');
         for (let i = 0, n = pix.length; i < n; i += 4) {
             const d = deltaE(pix.slice(i, i + 3), colorToChange) / 100;
-            pix[i] = (pix[i] * d +  newColor.r * 255 * (1 - d));
-            pix[i + 1] = (pix[i + 1] * d +  newColor.g * 255 * (1 - d));
-            pix[i + 2] = (pix[i + 2] * d +  newColor.b * 255 * (1 - d));
+            pix[i] = (pix[i] * d + newColor.r * 255 * (1 - d));
+            pix[i + 1] = (pix[i + 1] * d + newColor.g * 255 * (1 - d));
+            pix[i + 2] = (pix[i + 2] * d + newColor.b * 255 * (1 - d));
         }
         cachedImg.set(`${id}_${color}`, imgd);
         return imgd;
@@ -138,6 +138,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
             },
             set: (v) => {
                 property = v;
+                style.propVersions[parameter] = (style.propVersions[parameter] ?? 0) + 1;
             },
         });
 }
@@ -458,6 +459,8 @@ class Style {
         params.text = params.text || {};
         params.icon = params.icon || {};
 
+        this.propVersions = {};
+
         this.zoom = {};
         defineStyleProperty(this, 'zoom', 'min', params.zoom.min);
         defineStyleProperty(this, 'zoom', 'max', params.zoom.max);
@@ -485,6 +488,7 @@ class Style {
                 },
                 set: (v) => {
                     this._extrusionHeight = v;
+                    this.propVersions.extrusion_height = (this.propVersions.extrusion_height ?? 0) + 1;
                 },
             },
         );
@@ -495,9 +499,29 @@ class Style {
         defineStyleProperty(this, 'stroke', 'width', params.stroke.width, 1.0);
         defineStyleProperty(this, 'stroke', 'dasharray', params.stroke.dasharray, []);
         defineStyleProperty(this, 'stroke', 'base_altitude', params.stroke.base_altitude, baseAltitudeDefault);
-        if (params.stroke.extrusion_radius) {
-            defineStyleProperty(this, 'stroke', 'extrusion_radius', params.stroke.extrusion_radius);
-        }
+
+        // define a special case for extrusion_radius
+        // to be able to know if user set it or not without calling the getter
+        this._extrusionRadius = params.stroke.extrusion_radius;
+        Object.defineProperty(
+            this.stroke,
+            'extrusion_radius',
+            {
+                enumerable: true,
+                get: () => {
+                    if (this._extrusionRadius != undefined) {
+                        return readExpression(this._extrusionRadius, this.context);
+                    }
+                    const dataValue = this.context.featureStyle?.stroke?.extrusion_radius;
+                    if (dataValue != undefined) { return readExpression(dataValue, this.context); }
+                    return undefined;
+                },
+                set: (v) => {
+                    this._extrusionRadius = v;
+                    this.propVersions.extrusion_radius = (this.propVersions.extrusion_radius ?? 0) + 1;
+                },
+            },
+        );
 
         this.point = {};
         defineStyleProperty(this, 'point', 'color', params.point.color);
@@ -658,7 +682,7 @@ class Style {
             icon = document.createElement('img');
         }
 
-        const iconPromise  = new Promise((resolve, reject) => {
+        const iconPromise = new Promise((resolve, reject) => {
             const opt = {
                 size: this.icon.size,
                 color: this.icon.color,
@@ -708,7 +732,7 @@ class Style {
      * @returns {boolean} True if extrusion is enabled, false otherwise.
      */
     isExtruded() {
-        return this._extrusionHeight != undefined;
+        return this._extrusionHeight != undefined || this.stroke.extrusion_radius != undefined;
     }
 }
 

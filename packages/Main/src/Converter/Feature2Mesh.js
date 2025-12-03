@@ -42,9 +42,9 @@ class FeatureMesh extends THREE.Group {
         this.#collection = new THREE.Group().add(this.meshes);
         this.#collection.quaternion.copy(collection.quaternion);
         this.#collection.position.copy(collection.position);
-
         this.#collection.scale.copy(collection.scale);
-        this.#collection.updateMatrix();
+        this.#collection.matrixWorldInverse = this.#collection.matrixWorld.clone().invert();
+        this.#collection.crs = collection.crs;
 
         this.#originalCrs = collection.crs;
         this.#currentCrs = this.#originalCrs;
@@ -52,6 +52,10 @@ class FeatureMesh extends THREE.Group {
         this.isFeatureMesh = true;
 
         this.add(this.#place.add(this.#collection));
+    }
+
+    get collection() {
+        return this.#collection;
     }
 
     as(crs) {
@@ -201,7 +205,8 @@ function featureToPoint(feature, options) {
         const id = batchId(geometry.properties, featureId);
         context.setGeometry(geometry);
 
-        updatePointVertices({ feature }, vertices, colors, batchIds, id);
+        const buffers = { vertices, colors, batchIds };
+        updatePointBuffers({ feature }, buffers, id);
 
         // collect point size for this geometry
         const { radius } = style.point;
@@ -230,12 +235,13 @@ function featureToPoint(feature, options) {
  * Update vertex data for POINT features.
  *
  * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
- * @param {Float32Array} [vertices] - Target positions buffer to write into.
- * @param {Uint8Array} [colors] - Target color buffer (rgb Uint8, normalized).
- * @param {Uint32Array} [batchIds] - Target per-vertex batch id buffer.
- * @param {number} [id] - Batch id for batchIds when provided.
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
+ * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
  */
-function updatePointVertices(featureMesh, vertices, colors, batchIds, id) {
+function updatePointBuffers(featureMesh, buffers, id) {
     const feature = featureMesh.feature;
     const ptsIn = feature.vertices;
     if (!ptsIn?.length) {
@@ -249,6 +255,8 @@ function updatePointVertices(featureMesh, vertices, colors, batchIds, id) {
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
+
+    const { vertices, colors, batchIds } = buffers;
 
     // geometry range
     const geometry = context.getGeometry();
@@ -299,41 +307,33 @@ function featureToLine(feature, options) {
     const lineMaterialWidth = [];
     context.setFeature(feature);
 
-    const countIndices = (count - feature.geometries.length) * 2;
-    const indices = getIntArrayFromSize(countIndices, count);
-
-    let i = 0;
+    // total number of line segments across all geometries
+    let totalSegments = 0;
+    for (const g of feature.geometries) {
+        totalSegments += Math.max(0, g.indices[0].count - 1);
+    }
+    const indices = getIntArrayFromSize(totalSegments * 2, count);
+    const buffers = {
+        vertices,
+        colors,
+        batchIds,
+        indices,
+        vertPtr: 0, // not used but kept for signature parity
+        indexPtr: 0,
+    };
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     up.set(0, 0, 1).multiply(inverseScale);
     // Multi line case
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
-        const id = batchId(geometry.properties, featureId);
-
-        const start = geometry.indices[0].offset;
-        // To avoid integer overflow with index value (16 bits)
-        if (start > 0xffff) {
-            console.warn('Feature to Line: integer overflow, too many points in lines');
-            break;
-        }
-        const count = geometry.indices[0].count;
-        const end = start + count;
-
-        for (let j = start; j < end - 1; j++) {
-            if (j >= 0xffff) { break; }
-            indices[i++] = j;
-            indices[i++] = j + 1;
-        }
-
-        updateLineVertices({ feature }, vertices, colors, batchIds, id);
+        const id = batchId(geometry.properties, featureId++);
+        updateLineBuffers({ feature }, buffers, id);
 
         // collect line width for this geometry
         const { width } = style.stroke;
         if (!lineMaterialWidth.includes(width)) {
             lineMaterialWidth.push(width);
         }
-
-        featureId++;
     }
 
     options.lineMaterial.linewidth = lineMaterialWidth[0];
@@ -388,7 +388,7 @@ function featureToExtrudedLine(feature, options) {
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
         const id = batchIdFn(geometry.properties, featureId++);
-        updateExtrudedLineVertices({ feature }, buffers, id);
+        updateExtrudedLineBuffers({ feature }, buffers, id);
     }
 
     const geom = new THREE.BufferGeometry();
@@ -415,31 +415,17 @@ function featureToPolygon(feature, options) {
 
     for (const geometry of feature.geometries) {
         const start = geometry.indices[0].offset;
+
         // To avoid integer overflow with index value (32 bits)
         if (start > maxValueUint32) {
             console.warn('Feature to Polygon: integer overflow, too many points in polygons');
             break;
         }
+
         context.setGeometry(geometry);
-
-        const lastIndice = geometry.indices.slice(-1)[0];
-        const end = lastIndice.offset + lastIndice.count;
-        const id = batchId(geometry.properties, featureId);
-
-        updatePolygonVertices({ feature }, vertices, colors, batchIds, id);
-
-        featureId++;
-
-        const geomVertices = vertices.slice(start * 3, end * 3);
-        const holesOffsets = geometry.indices.map(i => i.offset - start).slice(1);
-        const triangles = Earcut(geomVertices, holesOffsets, 3);
-
-        const startIndice = indices.length;
-        indices.length += triangles.length;
-
-        for (let i = 0; i < triangles.length; i++) {
-            indices[startIndice + i] = triangles[i] + start;
-        }
+        const id = batchId(geometry.properties, featureId++);
+        const buffers = { vertices, colors, batchIds, indices };
+        updatePolygonBuffers({ feature }, buffers, id);
     }
 
     const geom = new THREE.BufferGeometry();
@@ -452,15 +438,17 @@ function featureToPolygon(feature, options) {
 }
 
 /**
- * Update base (non-extruded) polygon vertex data.
+ * Update base (non-extruded) polygon vertex and index data.
  *
  * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
- * @param {Float32Array} [vertices] - Target positions buffer to write into.
- * @param {Uint8Array} [colors] - Target color buffer (rgb Uint8, normalized).
- * @param {Uint32Array} [batchIds] - Target per-vertex batch id buffer.
- * @param {number} [id] - Batch id value written when batchIds is provided.
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
+ * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {number[]} [buffers.indices] - Target index array to append triangulated indices to.
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
  */
-function updatePolygonVertices(featureMesh, vertices, colors, batchIds, id) {
+function updatePolygonBuffers(featureMesh, buffers, id) {
     const feature = featureMesh.feature;
     const ptsIn = feature.vertices;
     if (!ptsIn?.length) {
@@ -474,6 +462,7 @@ function updatePolygonVertices(featureMesh, vertices, colors, batchIds, id) {
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
+    const { vertices, colors, batchIds, indices } = buffers;
 
     // geometry range
     const geometry = context.getGeometry();
@@ -510,6 +499,18 @@ function updatePolygonVertices(featureMesh, vertices, colors, batchIds, id) {
 
         if (batchIds) { batchIds[j] = id; }
     }
+
+    // triangulate this geometry range and append indices
+    if (indices) {
+        const geomVertices = vertices.slice(start * 3, end * 3);
+        const holesOffsets = geometry.indices.map(i => i.offset - start).slice(1);
+        const triangles = Earcut(geomVertices, holesOffsets, 3);
+        const startIndice = indices.length;
+        indices.length += triangles.length;
+        for (let i = 0; i < triangles.length; i++) {
+            indices[startIndice + i] = triangles[i] + start;
+        }
+    }
 }
 
 function area(contour, offset, count) {
@@ -527,7 +528,6 @@ function area(contour, offset, count) {
 function featureToExtrudedPolygon(feature, options) {
     const ptsIn = feature.vertices;
     const vertices = new Float32Array(ptsIn.length * 2);
-    const totalVertices = ptsIn.length / 3;
 
     const colors = new Uint8Array(ptsIn.length * 2);
 
@@ -546,49 +546,9 @@ function featureToExtrudedPolygon(feature, options) {
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
 
-        const start = geometry.indices[0].offset;
-        const lastIndice = geometry.indices.slice(-1)[0];
-        const end = lastIndice.offset + lastIndice.count;
-        const count = end - start;
-        const isClockWise = geometry.indices[0].ccw ?? (area(ptsIn, start, count) < 0);
-
-        const startTop = start + totalVertices;
-        const id = batchId(geometry.properties, featureId);
-        updateExtrudedPolygonVertices({ feature }, vertices, colors, batchIds, id);
-
-        featureId++;
-
-        const endTop = end + totalVertices;
-
-        const geomVertices = vertices.slice(startTop * 3, endTop * 3);
-        const holesOffsets = geometry.indices.map(i => i.offset - start).slice(1);
-        const triangles = Earcut(geomVertices, holesOffsets, 3);
-
-        const startIndice = indices.length;
-        indices.length += triangles.length;
-
-        for (let i = 0; i < triangles.length; i++) {
-            indices[startIndice + i] = triangles[i] + startTop;
-        }
-
-        // add extruded contour
-        addExtrudedPolygonSideFaces(
-            indices,
-            totalVertices,
-            geometry.indices[0].offset,
-            geometry.indices[0].count,
-            isClockWise);
-
-        // add extruded holes
-        for (let i = 1; i < geometry.indices.length; i++) {
-            const index = geometry.indices[i];
-            addExtrudedPolygonSideFaces(
-                indices,
-                totalVertices,
-                index.offset,
-                index.count,
-                !(index.ccw ?? isClockWise));
-        }
+        const id = batchId(geometry.properties, featureId++);
+        const buffers = { vertices, colors, batchIds, indices };
+        updateExtrudedPolygonBuffers({ feature }, buffers, id);
     }
 
     const geom = new THREE.BufferGeometry();
@@ -602,15 +562,17 @@ function featureToExtrudedPolygon(feature, options) {
 }
 
 /**
- * Update base and top vertex data for extruded polygons.
+ * Update base and top vertex data for extruded polygons, including indices.
  *
  * @param {Object} featureMesh - The feature mesh providing feature and collection context.
- * @param {Float32Array} [vertices] - Target positions buffer (xyz) to write into.
- * @param {Uint8Array} [colors] - Target colors buffer (rgb, Uint8, normalized) to write into.
- * @param {Uint32Array} [batchIds] - Target per-vertex batch id buffer.
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer (xyz) to write into.
+ * @param {Uint8Array} [buffers.colors] - Target colors buffer (rgb, Uint8, normalized) to write into.
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {number[]} [buffers.indices] - Target index array to append triangulated indices and side faces to.
  * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
  */
-function updateExtrudedPolygonVertices(featureMesh, vertices, colors, batchIds, id) {
+function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
     const feature = featureMesh.feature;
     const numVertices = feature.vertices?.length;
     if (!numVertices) {
@@ -624,6 +586,7 @@ function updateExtrudedPolygonVertices(featureMesh, vertices, colors, batchIds, 
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
+    const { vertices, colors, batchIds, indices } = buffers;
 
     // geometry range
     const geometry = context.getGeometry();
@@ -631,11 +594,19 @@ function updateExtrudedPolygonVertices(featureMesh, vertices, colors, batchIds, 
     const lastIndex = geometry.indices.slice(-1)[0];
     const end = lastIndex.offset + lastIndex.count;
     const count = end - start;
+    const isClockWise = geometry.indices[0].ccw ?? (area(feature.vertices, start, count) < 0);
+    const totalVertices = numVertices / 3;
+
     const startIn = start * 3;
+    const startTop = start + numVertices / 3;
     const endIn = startIn + count * 3;
     const { base_altitude, extrusion_height, color } = style.fill;
-    let meshColor;
-    if (colors) { meshColor = toColor(color).multiplyScalar(255); }
+    let topColor;
+    let baseColor;
+    if (colors) {
+        topColor = toColor(color).multiplyScalar(255).clone();
+        baseColor = topColor.clone().multiplyScalar(0.5); // base is half-dark
+    }
 
     for (let i = startIn; i < endIn; i += 3) {
         const t = numVertices + i;
@@ -669,70 +640,59 @@ function updateExtrudedPolygonVertices(featureMesh, vertices, colors, batchIds, 
 
         // coloring base and top mesh
         if (colors) {
-            meshColor.toArray(colors, t); // top
-            meshColor.multiplyScalar(0.5).toArray(colors, i); // base is half-dark
+            topColor.toArray(colors, t);
+            baseColor.toArray(colors, i);
         }
     }
-}
 
-function updateLineVertices(featureMesh, vertices, colors, batchIds, id) {
-    const feature = featureMesh.feature;
-    const ptsIn = feature.vertices;
-    if (!ptsIn?.length) {
-        console.error('Feature has no vertices');
-        return;
-    }
+    // Triangulate top face and add side faces indices
+    if (indices) {
+        const endTop = end + totalVertices;
+        const geomVertices = vertices.slice(startTop * 3, endTop * 3);
+        const holesOffsets = geometry.indices.map(i => i.offset - start).slice(1);
+        const triangles = Earcut(geomVertices, holesOffsets, 3);
 
-    // context setup
-    context.setFeature(feature);
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-    style.setContext(context);
+        const startIndex = indices.length;
+        indices.length += triangles.length;
 
-    // geometry range
-    const geometry = context.getGeometry();
-    const start = geometry.indices[0].offset;
-    const count = geometry.indices[0].count;
-    const end = start + count;
-    const base_altitude = style.stroke.base_altitude;
-    for (let v = start * 3, j = start; j < end; v += 3, j++) {
-        if (vertices) {
-            if (feature.normals) {
-                up.fromArray(feature.normals, v).multiply(inverseScale);
-            }
-
-            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
-
-            coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
-            if (coord.crs == 'EPSG:4978') {
-                // altitude conversion from geocentered to elevation (from ground)
-                coord.as('EPSG:4326', coord);
-            }
-
-            // Calculate the new coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(up)
-                .multiplyScalar(base_altitude - coord.z).add(localCoord)
-                // and update the geometry buffer (vertices).
-                .toArray(vertices, v);
+        for (let i = 0; i < triangles.length; i++) {
+            indices[startIndex + i] = triangles[i] + startTop;
         }
 
-        if (colors) { toColor(style.stroke.color).multiplyScalar(255).toArray(colors, v); }
+        // add extruded contour
+        addExtrudedPolygonSideFaces(
+            indices,
+            totalVertices,
+            geometry.indices[0].offset,
+            geometry.indices[0].count,
+            isClockWise);
 
-        if (batchIds) { batchIds[j] = id; }
+        // add extruded holes
+        for (let i = 1; i < geometry.indices.length; i++) {
+            const index = geometry.indices[i];
+            addExtrudedPolygonSideFaces(
+                indices,
+                totalVertices,
+                index.offset,
+                index.count,
+                !(index.ccw ?? isClockWise));
+        }
     }
 }
 
 /**
- * Update vertex data for extruded LINE features (cylindrical tubes with spherical joints).
- * Creates cylindrical geometry around line segments with spherical wedges at joints.
+ * Update vertex and index data for LINE features.
  *
  * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
- * @param {Object} buffers - Buffer management object containing vertex, color, batch ID, and index data with write pointers.
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
+ * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {TypedArray} [buffers.indices] - Target index buffer to write line segment indices to.
+ * @param {number} buffers.indexPtr - Current write position in index buffer (incremented by function).
  * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
  */
-function updateExtrudedLineVertices(featureMesh, buffers, id) {
+function updateLineBuffers(featureMesh, buffers, id) {
     const feature = featureMesh.feature;
     const ptsIn = feature.vertices;
     if (!ptsIn?.length) {
@@ -753,6 +713,86 @@ function updateExtrudedLineVertices(featureMesh, buffers, id) {
     const start = geometry.indices[0].offset;
     const count = geometry.indices[0].count;
     const end = start + count;
+
+    // avoid integer overflow with 16-bit index buffers
+    if (indices instanceof Uint16Array && end - 1 > 0xffff) {
+        console.warn('Feature to Line: integer overflow, too many points in lines');
+        return;
+    }
+
+    const base_altitude = style.stroke.base_altitude;
+    for (let v = start * 3, j = start; j < end; v += 3, j++) {
+        if (vertices) {
+            if (feature.normals) {
+                up.fromArray(feature.normals, v).multiply(inverseScale);
+            }
+
+            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
+
+            coord.copy(localCoord)
+                .applyMatrix4(context.collection.matrixWorld);
+            if (coord.crs == 'EPSG:4978') {
+                // altitude conversion from geocentered to elevation (from ground)
+                coord.as('EPSG:4326', coord);
+            }
+
+            baseCoord.copy(up)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
+                .toArray(vertices, v);
+        }
+
+        if (colors) { toColor(style.stroke.color).multiplyScalar(255).toArray(colors, v); }
+        if (batchIds) { batchIds[j] = id; }
+
+        if (indices && j < end - 1) {
+            indices[buffers.indexPtr++] = j;
+            indices[buffers.indexPtr++] = j + 1;
+        }
+    }
+}
+
+/**
+ * Update vertex data for extruded LINE features (cylindrical tubes with spherical joints).
+ * Creates cylindrical geometry around line segments with spherical wedges at joints.
+ *
+ * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
+ * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {TypedArray} [buffers.indices] - Target index buffer to write triangle indices to.
+ * @param {number} buffers.vertPtr - Current write position in vertex buffers (incremented by function).
+ * @param {number} buffers.indexPtr - Current write position in index buffer (incremented by function).
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
+ */
+function updateExtrudedLineBuffers(featureMesh, buffers, id) {
+    const feature = featureMesh.feature;
+    const ptsIn = feature.vertices;
+    if (!ptsIn?.length) {
+        console.error('Feature has no vertices');
+        return;
+    }
+
+    // context setup
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+    style.setContext(context);
+    const { vertices, colors, batchIds, indices } = buffers;
+
+    // geometry range
+    const geometry = context.getGeometry();
+    const start = geometry.indices[0].offset;
+    const count = geometry.indices[0].count;
+    const end = start + count;
+
+    // avoid integer overflow with 16-bit index buffers
+    if (buffers.indices instanceof Uint16Array && end - 1 > 0xffff) {
+        console.warn('Feature to Extruded Line: integer overflow, too many points in lines');
+        return;
+    }
+
     const { base_altitude, extrusion_radius: radius } = style.stroke;
 
     // pre-allocated vectors
@@ -992,7 +1032,7 @@ function featureToMesh(feature, options) {
             }
             break;
         case FEATURE_TYPES.LINE:
-            if (style.stroke && Object.keys(style.stroke).includes('extrusion_radius')) {
+            if (style.isExtruded()) {
                 mesh = featureToExtrudedLine(feature, options);
             } else {
                 mesh = featureToLine(feature, options);
@@ -1091,87 +1131,84 @@ export default {
         };
     },
 
-    updateStyle(featureMesh, options = {}) {
+    /**
+     * Updates the visual properties of a feature mesh using the given collection context and style.
+     *
+     * @param {THREE.Mesh} featureMesh - The mesh to update.
+     * @param {THREE.Group} collection - The collection providing matrix/world context.
+     * @param {Style} styleIn - The style to apply.
+     */
+    updateStyle(featureMesh, collection, styleIn) {
+        style = styleIn;
         const feature = featureMesh.feature;
+        if (!collection) {
+            console.error('Cannot update style: collection not provided');
+            return;
+        }
+
+        context.setCollection(collection);
+
         let vertSize = feature.vertices?.length;
         if (!vertSize) { return; }
 
         // only define attributes that need an update
-        let newColor;
-        let newExtrusionHeight = null;
         switch (feature.type) {
-            case FEATURE_TYPES.POINT: {
-                const pointStyle = options.style.point;
-                if (pointStyle?.model?.object) { break; } // instanced mesh
-                newColor = pointStyle?.color;
+            case FEATURE_TYPES.POINT:
                 break;
-            }
             case FEATURE_TYPES.LINE: {
-                const strokeStyle = options.style?.stroke;
-                newColor = strokeStyle?.color;
-                if (strokeStyle && 'extrusion_radius' in strokeStyle) {
+                if (style.isExtruded()) {
                     vertSize = SEGMENTS * 2 * (vertSize - 3 * feature.geometries.length);
-                    newExtrusionHeight = strokeStyle.extrusion_radius;
                 }
                 break;
             }
             case FEATURE_TYPES.POLYGON: {
-                const fillStyle = options.style?.fill;
-                newColor = fillStyle?.color;
-                if (fillStyle && 'extrusion_height' in fillStyle) {
-                    vertSize *= 2;
-                    newExtrusionHeight = fillStyle.extrusion_height;
-                }
+                if (style.isExtruded()) { vertSize *= 2; }
                 break;
             }
             default:
                 console.error(`Trying to update style of unsupported feature type: ${feature.type}`);
                 return;
         }
+        featureMesh.stylePropVersions ||= {};
+        const spv = featureMesh.stylePropVersions;
         let colors;
-        if (newColor) {
-            if (featureMesh.oldColor && !featureMesh.oldColor.equals(newColor)) {
-                colors = new Uint8Array(vertSize);
-                featureMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-            }
-            featureMesh.oldColor = newColor;
+        if ((spv.color ?? 0) < (style.propVersions.color ?? 0)) {
+            spv.color = style.propVersions.color;
+            colors = new Uint8Array(vertSize);
+            featureMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
         }
         let posAttr;
-        if (newExtrusionHeight !== undefined) {
-            if (featureMesh.oldExtrusionHeight !== undefined && featureMesh.oldExtrusionHeight !== newExtrusionHeight) {
-                posAttr = featureMesh.geometry.getAttribute('position');
-                posAttr.needsUpdate = true;
-            }
-            featureMesh.oldExtrusionHeight = newExtrusionHeight;
+        if ((spv.extrusion_height ?? 0) < (style.propVersions.extrusion_height ?? 0) ||
+            (spv.base_altitude ?? 0) < (style.propVersions.base_altitude ?? 0)) {
+            spv.extrusion_height = style.propVersions.extrusion_height;
+            spv.base_altitude = style.propVersions.base_altitude;
+            posAttr = featureMesh.geometry.getAttribute('position');
+            posAttr.needsUpdate = true;
         }
         const vertices = posAttr?.array;
-        const buffers = {
-            vertices,
-            colors,
-            vertPtr: 0,
-        };
+        const buffers = { vertices, colors, vertPtr: 0 };
         for (const geometry of feature.geometries) {
             context.setGeometry(geometry);
             switch (feature.type) {
                 case FEATURE_TYPES.POINT: {
-                    const pointStyle = options.style.point;
+                    const pointStyle = style.point;
                     if (pointStyle?.model?.object) { break; } // instanced mesh
-                    updatePointVertices(featureMesh, vertices, colors);
+                    updatePointBuffers(featureMesh, buffers);
                     break;
                 }
                 case FEATURE_TYPES.LINE: {
-                    if (newExtrusionHeight !== null) {
-                        updateExtrudedLineVertices(featureMesh, buffers);
+                    if (style.isExtruded()) {
+                        updateExtrudedLineBuffers(featureMesh, buffers);
                     } else {
-                        updateLineVertices(featureMesh, vertices, colors);
+                        updateLineBuffers(featureMesh, buffers);
                     }
                     break;
                 }
                 case FEATURE_TYPES.POLYGON: {
-                    if (newExtrusionHeight !== null) {
-                        updateExtrudedPolygonVertices(featureMesh, vertices, colors);
+                    if (style.isExtruded()) {
+                        updateExtrudedPolygonBuffers(featureMesh, buffers);
                     } else {
-                        updatePolygonVertices(featureMesh, vertices, colors);
+                        updatePolygonBuffers(featureMesh, buffers);
                     }
                     break;
                 }
