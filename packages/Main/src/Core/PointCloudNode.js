@@ -38,6 +38,10 @@ class PointCloudNode extends THREE.EventDispatcher {
         throw new Error('In extended PointCloudNode, you have to implement the getter id!');
     }
 
+    get octreeIsLoaded() {
+        return this.numPoints >= 0;
+    }
+
     get voxelOBB() {
         if (this._voxelOBB != undefined) { return this._voxelOBB; }
         this._voxelOBB = new OBB();
