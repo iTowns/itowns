@@ -306,7 +306,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         shaderMaterialParams.uniforms = shaderMaterialParams.uniforms ?? {};
         Object.assign(shaderMaterialParams.uniforms, lambertUniforms);
         super(shaderMaterialParams);
-        this.name = 'LayeredMaterial';
+        if (__DEBUG__) { this.name = 'LayeredMaterial'; }
 
         nbSamplers ??= [samplersElevationCount, getMaxColorSamplerUnitsCount()];
 
