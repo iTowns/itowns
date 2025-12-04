@@ -500,29 +500,6 @@ class Style {
         defineStyleProperty(this, 'stroke', 'dasharray', params.stroke.dasharray, []);
         defineStyleProperty(this, 'stroke', 'base_altitude', params.stroke.base_altitude, baseAltitudeDefault);
 
-        // define a special case for extrusion_radius
-        // to be able to know if user set it or not without calling the getter
-        this._extrusionRadius = params.stroke.extrusion_radius;
-        Object.defineProperty(
-            this.stroke,
-            'extrusion_radius',
-            {
-                enumerable: true,
-                get: () => {
-                    if (this._extrusionRadius != undefined) {
-                        return readExpression(this._extrusionRadius, this.context);
-                    }
-                    const dataValue = this.context.featureStyle?.stroke?.extrusion_radius;
-                    if (dataValue != undefined) { return readExpression(dataValue, this.context); }
-                    return undefined;
-                },
-                set: (v) => {
-                    this._extrusionRadius = v;
-                    this.propVersions.extrusion_radius = (this.propVersions.extrusion_radius ?? 0) + 1;
-                },
-            },
-        );
-
         this.point = {};
         defineStyleProperty(this, 'point', 'color', params.point.color);
         defineStyleProperty(this, 'point', 'line', params.point.line);
@@ -732,7 +709,7 @@ class Style {
      * @returns {boolean} True if extrusion is enabled, false otherwise.
      */
     isExtruded() {
-        return this._extrusionHeight != undefined || this.stroke.extrusion_radius != undefined;
+        return this._extrusionHeight != undefined;
     }
 }
 
