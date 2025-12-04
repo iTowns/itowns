@@ -66,10 +66,16 @@ export function makeDataArrayRenderTarget(
         quad = new THREE.Mesh(geometry, material);
     }
 
+    // Store renderer state and temporarily disable VR
+    const previousRenderTarget = renderer.getRenderTarget();
+    const gl = renderer.getContext();
+    const glViewport = gl.getParameter(gl.VIEWPORT);
+    const wasVREnabled = renderer.xr.enabled;
+    if (wasVREnabled) { renderer.xr.enabled = false; }
+
     // loop through each tile and its textures
     // to render them into DataArrayTexture layers
     let currentLayerIndex = 0;
-    const previousRenderTarget = renderer.getRenderTarget();
     for (const tile of tiles) {
         for (
             let i = 0;
@@ -100,7 +106,12 @@ export function makeDataArrayRenderTarget(
             renderer.render(quad, quadCam);
         }
     }
+
+    // Restore renderer state
     renderer.setRenderTarget(previousRenderTarget);
+    // renderer.setViewport is not enough to update internal GL state
+    gl.viewport(glViewport[0], glViewport[1], glViewport[2], glViewport[3]);
+    if (wasVREnabled) { renderer.xr.enabled = true; }
 
     return renderTarget;
 }
