@@ -350,56 +350,6 @@ function featureToLine(feature, options) {
     return new THREE.LineSegments(geom, options.lineMaterial);
 }
 
-function featureToExtrudedLine(feature, options) {
-    const maxVertsPerJoint = (SEGMENTS / 2 + 1) * SEGMENTS / 2;
-    const vertSize = (feature.vertices.length - 3 * feature.geometries.length) * 2 * SEGMENTS + // cylinders
-        (feature.vertices.length - 6 * feature.geometries.length) * maxVertsPerJoint; // joints
-    const vertices = new Float32Array(vertSize);
-    const colors = new Uint8Array(vertSize);
-    const batchIdFn = options.batchId || ((p, id) => id);
-    const batchIds = new Uint32Array(vertices.length / 3);
-
-    context.setFeature(feature);
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-
-    let totalSegments = 0;
-    let totalJoints = 0;
-    for (const g of feature.geometries) {
-        totalSegments += Math.max(0, g.indices[0].count - 1);
-        totalJoints += Math.max(0, g.indices[0].count - 2);
-    }
-    const maxQuadsPerJoint = SEGMENTS / 2 * (SEGMENTS / 2 - 1);
-    const totalQuads = totalSegments * SEGMENTS + totalJoints * maxQuadsPerJoint;
-    const indices = getIntArrayFromSize(6 * totalQuads, vertices.length / 3);
-    const buffers = {
-        vertices,
-        colors,
-        batchIds,
-        vertPtr: 0,
-
-        indices,
-        indexPtr: 0,
-    };
-    let featureId = 0;
-
-    // Build one cylinder per line segment
-    for (const geometry of feature.geometries) {
-        context.setGeometry(geometry);
-        const id = batchIdFn(geometry.properties, featureId++);
-        updateExtrudedLineBuffers({ feature }, buffers, id);
-    }
-
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geom.setAttribute('color', new THREE.Uint8BufferAttribute(colors, 3, true));
-    geom.setAttribute('batchId', new THREE.Uint32BufferAttribute(batchIds, 1));
-    geom.setIndex(new THREE.BufferAttribute(indices, 1));
-
-    return new THREE.Mesh(geom, options.polygonMaterial);
-}
-
 function featureToPolygon(feature, options) {
     const vertices = new Float32Array(feature.vertices);
     const colors = new Uint8Array(feature.vertices.length);
@@ -752,213 +702,6 @@ function updateLineBuffers(featureMesh, buffers, id) {
 }
 
 /**
- * Update vertex data for extruded LINE features (cylindrical tubes with spherical joints).
- * Creates cylindrical geometry around line segments with spherical wedges at joints.
- *
- * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
- * @param {Object} buffers - Buffer management object.
- * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
- * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
- * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
- * @param {TypedArray} [buffers.indices] - Target index buffer to write triangle indices to.
- * @param {number} buffers.vertPtr - Current write position in vertex buffers (incremented by function).
- * @param {number} buffers.indexPtr - Current write position in index buffer (incremented by function).
- * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
- */
-function updateExtrudedLineBuffers(featureMesh, buffers, id) {
-    const feature = featureMesh.feature;
-    const ptsIn = feature.vertices;
-    if (!ptsIn?.length) {
-        console.error('Feature has no vertices');
-        return;
-    }
-
-    // context setup
-    context.setFeature(feature);
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-    style.setContext(context);
-    const { vertices, colors, batchIds, indices } = buffers;
-
-    // geometry range
-    const geometry = context.getGeometry();
-    const start = geometry.indices[0].offset;
-    const count = geometry.indices[0].count;
-    const end = start + count;
-
-    // avoid integer overflow with 16-bit index buffers
-    if (buffers.indices instanceof Uint16Array && end - 1 > 0xffff) {
-        console.warn('Feature to Extruded Line: integer overflow, too many points in lines');
-        return;
-    }
-
-    const { base_altitude, extrusion_radius: radius } = style.stroke;
-
-    // pre-allocated vectors
-    const xAxis = new THREE.Vector3();
-    const yAxis = new THREE.Vector3();
-    const zAxis = new THREE.Vector3();
-    const prevZAxis = new THREE.Vector3(NaN, NaN, NaN);
-    const normal = new THREE.Vector3();
-    const vertex = new THREE.Vector3();
-
-    // For each consecutive pair of points, make a cylinder centered on the segment
-    for (let i = start; i < end - 1; i++) {
-        const iVertIn = i * 3;
-
-        // Base and top points in layer-local space with altitude shift
-        if (feature.normals) {
-            up.fromArray(feature.normals, iVertIn).multiply(inverseScale);
-        }
-
-        const p0Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn).clone();
-        coord.copy(p0Local).applyMatrix4(context.collection.matrixWorld);
-        if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
-        baseCoord.copy(up).multiplyScalar(base_altitude - coord.z).add(p0Local);
-
-        const p1Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn + 3).clone();
-        coord.copy(p1Local).applyMatrix4(context.collection.matrixWorld);
-        if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
-        topCoord.copy(up).multiplyScalar(base_altitude - coord.z).add(p1Local);
-
-        // Axis vector
-        zAxis.subVectors(topCoord, baseCoord);
-        const axisLen = zAxis.length();
-        if (axisLen === 0) { continue; } // start and end are the same
-        zAxis.divideScalar(axisLen);
-
-        // Build a local frame: choose an arbitrary vector not parallel to Z axis
-        if (Math.abs(zAxis.z) > 0.9) { xAxis.set(1, 0, 0); } else { xAxis.set(0, 0, 1); }
-        yAxis.crossVectors(zAxis, xAxis).normalize();
-        xAxis.crossVectors(yAxis, zAxis);
-
-        // Create ring vertices around both ends
-        const meshColor = toColor(style.stroke.color).multiplyScalar(255);
-        for (let k = 0; k < SEGMENTS; k++) {
-            const v = buffers.vertPtr;
-            if (vertices) {
-                const theta = (k / SEGMENTS) * Math.PI * 2;
-                normal.copy(xAxis).multiplyScalar(Math.cos(theta))
-                    .addScaledVector(yAxis, Math.sin(theta));
-                vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
-                vertex.copy(topCoord).addScaledVector(normal, radius).toArray(vertices, 3 * (v + 1));
-            }
-            if (batchIds) {
-                batchIds[v] = id;
-                batchIds[v + 1] = id;
-            }
-            if (colors) {
-                meshColor.toArray(colors, 3 * v);
-                meshColor.toArray(colors, 3 * (v + 1));
-            }
-            if (indices) {
-                const v0 = v;
-                const v1 = v + ((k + 1) % SEGMENTS - k) * 2;
-                indices.set([v0, v1, v0 + 1, v0 + 1, v1, v1 + 1], buffers.indexPtr);
-                buffers.indexPtr += 6;
-            }
-            buffers.vertPtr += 2;
-        }
-
-        if (i !== start) {
-            makeSphericalWedgeVertices(baseCoord, radius, prevZAxis, zAxis, buffers, id);
-        }
-
-        prevZAxis.copy(zAxis);
-    }
-}
-
-/**
- * Generate vertices for a spherical wedge between two half-circles
- * @param {THREE.Vector3} origin - Center of the spherical wedge
- * @param {number} radius - Radius of the spherical wedge
- * @param {THREE.Vector3} prevZAxis - Normal vector of the first half-circle (negated)
- * @param {THREE.Vector3} zAxis - Normal vector of the second half-circle
- * @param {Object} buffers - Contains vertex, color, batch ID, and index buffers with current write offsets
- * @param {number} id - Batch ID value to assign to written vertices if batchIds is provided
- */
-function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, id) {
-    if (Number.isNaN(prevZAxis.x)) { return; } // prevZAxis hasn't been set yet
-
-    const { vertices, colors, batchIds, indices } = buffers;
-
-    // Create orthonormal basis for the plane containing both normals
-    const xAxis = new THREE.Vector3().crossVectors(prevZAxis, zAxis).normalize();
-    const yAxisBase = new THREE.Vector3().crossVectors(prevZAxis, xAxis);
-    const yAxisTop = new THREE.Vector3().crossVectors(zAxis, xAxis);
-
-    const meshColor = toColor(style.stroke.color).multiplyScalar(255);
-    const normal = new THREE.Vector3();
-    const normalXComp = new THREE.Vector3();
-    const vertex = new THREE.Vector3();
-    const yAxisInterpolated = new THREE.Vector3();
-
-    // Calculate number of intermediate steps based on angle between axes
-    const angle = Math.acos(Math.max(-1, Math.min(1, prevZAxis.dot(zAxis))));
-    const numSteps = Math.max(1, Math.round(angle * SEGMENTS / (2 * Math.PI)));
-
-    // let theta be the angle between the y axes
-    const cosTheta = Math.max(-1, Math.min(1, yAxisBase.dot(yAxisTop)));
-
-    // don't generate anything if axes are nearly aligned
-    if (Math.abs(cosTheta) >= 0.9995) { return; }
-
-    // Generate vertices for all intermediate rings
-    const ringVertices = [];
-    if (vertices || batchIds || colors) {
-        const theta = Math.acos(cosTheta);
-        const sinTheta = Math.sin(theta);
-        for (let step = 0; step <= numSteps; step++) {
-            const t = step / numSteps;
-
-            // Interpolate between yAxisBase and yAxisTop using slerp
-            const weight1 = Math.sin((1 - t) * theta) / sinTheta;
-            const weight2 = Math.sin(t * theta) / sinTheta;
-
-            yAxisInterpolated.copy(yAxisBase).multiplyScalar(weight1)
-                .addScaledVector(yAxisTop, weight2);
-
-            const ringStart = buffers.vertPtr;
-            ringVertices.push(ringStart);
-
-            // Create vertices for this ring
-            for (let k = 0; k <= SEGMENTS / 2; k++) {
-                const v = buffers.vertPtr;
-                if (vertices) {
-                    const angle = (k / SEGMENTS) * Math.PI * 2;
-                    normalXComp.copy(xAxis).multiplyScalar(Math.cos(angle));
-                    normal.copy(normalXComp).addScaledVector(yAxisInterpolated, Math.sin(angle));
-                    vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
-                }
-                if (batchIds) {
-                    batchIds[v] = id;
-                }
-                if (colors) {
-                    meshColor.toArray(colors, 3 * v);
-                }
-                buffers.vertPtr++;
-            }
-        }
-    }
-
-    // Generate faces between consecutive rings
-    if (indices) {
-        for (let step = 0; step < numSteps; step++) {
-            const currentRingStart = ringVertices[step];
-            const nextRingStart = ringVertices[step + 1];
-
-            for (let k = 0; k < SEGMENTS / 2; k++) {
-                const v0 = currentRingStart + k;
-                const v1 = nextRingStart + k;
-                indices.set([v0, v0 + 1, v1, v1, v0 + 1, v1 + 1], buffers.indexPtr);
-                buffers.indexPtr += 6;
-            }
-        }
-    }
-}
-
-/**
  * Created Instanced object from mesh
  *
  * @param {THREE.MESH} mesh Model 3D to instanciate
@@ -1032,11 +775,7 @@ function featureToMesh(feature, options) {
             }
             break;
         case FEATURE_TYPES.LINE:
-            if (style.isExtruded()) {
-                mesh = featureToExtrudedLine(feature, options);
-            } else {
-                mesh = featureToLine(feature, options);
-            }
+            mesh = featureToLine(feature, options);
             break;
         case FEATURE_TYPES.POLYGON:
             if (style.isExtruded()) {
@@ -1197,11 +936,7 @@ export default {
                     break;
                 }
                 case FEATURE_TYPES.LINE: {
-                    if (style.isExtruded()) {
-                        updateExtrudedLineBuffers(featureMesh, buffers);
-                    } else {
-                        updateLineBuffers(featureMesh, buffers);
-                    }
+                    updateLineBuffers(featureMesh, buffers);
                     break;
                 }
                 case FEATURE_TYPES.POLYGON: {
