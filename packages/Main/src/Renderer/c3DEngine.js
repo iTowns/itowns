@@ -11,6 +11,7 @@ import Label2DRenderer from 'Renderer/Label2DRenderer';
 import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
 // eslint-disable-next-line import/extensions, import/no-unresolved
 import WEBGL from 'three/addons/capabilities/WebGL.js';
+import { EffectComposer } from 'postprocessing';
 
 const depthRGBA = new THREE.Vector4();
 class c3DEngine {
@@ -56,9 +57,15 @@ class c3DEngine {
         this.fullSizeRenderTarget.depthTexture.type = THREE.UnsignedShortType;
 
         this.renderView = function _(view) {
+            // force internally calling state.buffers.color.setClear
+            // to get a correct background color
+            this.renderer.setClearAlpha(this.renderer.getClearAlpha());
+
             this.renderer.clear();
             if (view._camXR) {
                 this.renderer.render(view.scene, view._camXR);
+            } else if (this.composer.passes.length) {
+                this.composer.render();
             } else {
                 this.renderer.render(view.scene, view.camera3D);
             }
@@ -123,6 +130,12 @@ class c3DEngine {
             this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
             viewerDiv.appendChild(this.renderer.domElement);
         }
+
+        // Use floating-point render buffer, as radiance/luminance will be stored here.
+        /** @type {EffectComposer} */
+        this.composer = new EffectComposer(this.renderer, {
+            frameBufferType: THREE.HalfFloatType,
+        });
     }
 
     getWindowSize() {

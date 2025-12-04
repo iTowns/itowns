@@ -3,7 +3,12 @@ import assert from 'assert';
 describe('view_multiglobe', function _() {
     let result;
     before(async () => {
+        await enableGLForTest();
         result = await loadExample('examples/view_multiglobe.html', this.fullTitle());
+    });
+
+    after(async () => {
+        disableGLForTest();
     });
 
     it('should run', async () => {

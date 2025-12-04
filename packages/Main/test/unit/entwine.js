@@ -85,7 +85,7 @@ describe('Entwine Point Tile', function () {
 
         before(function (done) {
             renderer = new Renderer();
-            view = new GlobeView(renderer.domElement, {}, { renderer });
+            view = new GlobeView(renderer.domElement, {}, { renderer }, { realisticLighting: false });
             layer = new EntwinePointTileLayer('testEptLayer', { source });
 
             context = {
@@ -108,9 +108,15 @@ describe('Entwine Point Tile', function () {
             assert.deepStrictEqual(element[0], layer.root);
         });
 
+        // The 2 following tests are fragile and their intentions are unclear.
+        // They should be rewritten - see issue #2645.
         it('tries to update on the root and fails', function () {
+            const cam = context.camera.camera3D;
+            const originalQuaternion = cam.quaternion.clone();
+            cam.quaternion.identity(); // look away from dataset
             layer.update(context, layer, layer.root);
             assert.strictEqual(layer.root.promise, undefined);
+            cam.quaternion.copy(originalQuaternion);
         });
 
         it('tries to update on the root and succeeds', function (done) {
@@ -118,7 +124,7 @@ describe('Entwine Point Tile', function () {
             const coord = new Coordinates(view.referenceCrs).setFromVector3(layer.root.voxelOBB.box3D.getCenter(lookAt));
             view.controls.lookAtCoordinate({
                 coord,
-                range: -250,
+                range: 2e7,
             }, false)
                 .then(() => {
                     layer.update(context, layer, layer.root);

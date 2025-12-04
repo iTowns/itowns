@@ -60,6 +60,7 @@
                 handleCollision: false,
                 // Change the subdisvision threshold to get better performances and avoid requesting many unnecessary tiles
                 sseSubdivisionThreshold: 10,
+                realisticLighting: false // disable atmosphere
             });
 
             // create Immersive control
@@ -74,9 +75,6 @@
             // open camera fov
             view.camera3D.fov = 75;
             view.camera3D.updateProjectionMatrix();
-
-            // disable atmosphere
-            view.getLayerById('atmosphere').visible = false;
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js

@@ -71,7 +71,7 @@ function createBackground(radius) {
     });
     const sphere = new THREE.Mesh(geometry, material);
     sphere.visible = true;
-    sphere.name = 'OrientedImageBackground';
+    if (__DEBUG__) { sphere.name = 'OrientedImageBackground'; }
     return sphere;
 }
 

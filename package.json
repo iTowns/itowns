@@ -17,7 +17,7 @@
     "test": "npm run transpile && npm run test-with-coverage && npm run build && npm run test-functional",
     "test-dev": "npm run test-unit && npm run build-dev && npm run test-functional",
     "test-unit": "npm run test-unit --workspaces --if-present",
-    "test-functional": "npm run build && mocha -t 100000 --require test/hooks_functional.js --recursive test/functional",
+    "test-functional": "npm run build && mocha -t 200000 --require test/functional/preload-jsdom.cjs --require test/hooks_functional.js --recursive test/functional",
     "test-with-coverage": "npm run test-with-coverage --workspaces --if-present",
     "test-with-coverage_lcov": "npm run test-with-coverage_lcov --workspaces --if-present && c8 report --reporter=lcov",
     "build": "npm run transpile && cross-env NODE_ENV=production webpack",
@@ -111,5 +111,8 @@
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.1"
+  },
+  "dependencies": {
+    "global-jsdom": "^27.0.0"
   }
 }

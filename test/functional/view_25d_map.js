@@ -3,7 +3,12 @@ import assert from 'assert';
 describe('view_25d_map', function _() {
     let result;
     before(async () => {
+        await enableGLForTest();
         result = await loadExample('examples/view_25d_map.html', this.fullTitle());
+    });
+
+    after(async () => {
+        disableGLForTest();
     });
 
     it('should run', async () => {
