@@ -38,6 +38,10 @@ class PointCloudNode extends THREE.EventDispatcher {
         throw new Error('In extended PointCloudNode, you have to implement the getter id!');
     }
 
+    get octreeIsLoaded() {
+        return this.numPoints >= 0;
+    }
+
     // get the center of the node i.e. the center of the bounding box.
     get center() {
         if (this._center != undefined) { return this._center; }

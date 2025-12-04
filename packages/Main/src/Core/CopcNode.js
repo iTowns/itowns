@@ -53,10 +53,6 @@ class CopcNode extends PointCloudNode {
         this.crs = crs;
     }
 
-    get octreeIsLoaded() {
-        return this.numPoints >= 0;
-    }
-
     get id() {
         return `${this.depth}${this.x}${this.y}${this.z}`;
     }
