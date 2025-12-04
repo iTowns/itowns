@@ -318,7 +318,7 @@ function featureToLine(feature, options) {
         colors,
         batchIds,
         indices,
-        vertPtr: 0, // not used but kept for signature parity
+        vertPtr: 0,
         indexPtr: 0,
     };
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
@@ -412,6 +412,7 @@ function updatePolygonBuffers(featureMesh, buffers, id) {
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
+
     const { vertices, colors, batchIds, indices } = buffers;
 
     // geometry range
@@ -536,6 +537,7 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
+
     const { vertices, colors, batchIds, indices } = buffers;
 
     // geometry range
@@ -656,6 +658,7 @@ function updateLineBuffers(featureMesh, buffers, id) {
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
+
     const { vertices, colors, batchIds, indices } = buffers;
 
     // geometry range
