@@ -128,6 +128,7 @@ describe('Potree', function () {
         });
 
         describe('potree Node', function () {
+            // done in potreenode
             const numPoints = 1000;
             const childrenBitField = 5;
             let root;
