@@ -229,6 +229,8 @@ class Potree2Source extends Source {
         this.whenReady = (source.metadata ? Promise.resolve(source.metadata) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
             .then((metadata) => {
                 this.metadata = metadata;
+                const { boundingBox } = metadata;
+                this.bounds = [...boundingBox.min, ...boundingBox.max];
                 this.pointAttributes = parseAttributes(metadata.attributes);
                 this.baseurl = `${this.url}`;
                 this.extension = 'bin';

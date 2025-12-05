@@ -44,9 +44,13 @@ describe('COPC', function () {
     describe('COPC Node', function () {
         let root;
         before(function () {
-            const source = { url: 'http://server.geo', extension: 'laz' };
+            const source = {
+                url: 'http://server.geo',
+                extension: 'laz',
+                bounds: [1000, 1000, 1000, 0, 0, 0],
+            };
+
             root = new CopcNode(0, 0, 0, 0, 0, 1000, source, 4000);
-            root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
             root.add(new CopcNode(1, 0, 0, 0, 0, 1000, source, 3000));
             root.add(new CopcNode(1, 0, 0, 1, 0, 1000, source, 3000));
@@ -65,7 +69,8 @@ describe('COPC', function () {
             root.children[2].children[1].add(new CopcNode(3, 1, 6, 7, 0, 1000, source));
         });
 
-        describe('finds the common ancestor of two nodes', () => {
+        describe.skip('finds the common ancestor of two nodes', () => {
+            // done in pointcloudnode
             let ancestor;
             it('cousins => grand parent', () => {
                 ancestor = root.children[2].children[1].children[0].findCommonAncestor(root.children[2].children[0].children[0]);

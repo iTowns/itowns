@@ -175,12 +175,16 @@ describe('Entwine Point Tile', function () {
             });
         });
 
-        describe('finds the common ancestor of two nodes', () => {
+        describe.skip('finds the common ancestor of two nodes', () => {
+            // done in pointcloudnode
             let root;
             before(function () {
-                const source = { url: 'http://server.geo', extension: 'laz' };
+                const source = {
+                    url: 'http://server.geo',
+                    extension: 'laz',
+                    bounds: [1000, 1000, 1000, 0, 0, 0],
+                };
                 root = new EntwinePointTileNode(0, 0, 0, 0, source, 4000);
-                root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
                 root.add(new EntwinePointTileNode(1, 0, 0, 0, source, 3000));
                 root.add(new EntwinePointTileNode(1, 0, 0, 1, source, 3000));

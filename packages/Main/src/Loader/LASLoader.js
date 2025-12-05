@@ -1,6 +1,10 @@
 import { LazPerf } from 'laz-perf';
 import { Las } from 'copc';
 import proj4 from 'proj4';
+// import { Vector3, Quaternion, Box3 } from 'three';
+
+// const position2 = new Vector3();
+// const quaternion2 = new Quaternion();
 
 /**
  * @typedef {Object} Header - Partial LAS header.
@@ -79,9 +83,10 @@ class LASLoader {
     }
 
     _parseView(view, options) {
+        const reproj = (options.in.crs !== options.out.crs);
         const colorDepth = options.colorDepth ?? defaultColorEncoding(options.header);
 
-        const forward = (options.in.crs !== options.out.crs) ?
+        const forward = reproj ?
             proj4(options.in.projDefs, options.out.projDefs).forward :
             (x => x);
         const applyQuaternion = (options.in.crs !== options.out.crs) ?
@@ -114,8 +119,11 @@ class LASLoader {
         */
         const scanAngles = new Float32Array(view.pointCount);
 
+        // const origin = new Vector3().fromArray(options.out.origin);
         const origin = options.out.origin;
+        // const quaternion = new Quaternion().fromArray(options.out.rotation);
         const quaternion = options.out.rotation;
+        // const box = new Box3();
         let minX = Infinity; let minY = Infinity; let minZ = Infinity;
         let maxX = -Infinity; let maxY = -Infinity; let maxZ = -Infinity;
         for (let i = 0; i < view.pointCount; i++) {
@@ -123,18 +131,28 @@ class LASLoader {
             // values. See https://github.com/connormanning/copc.js/blob/master/src/las/extractor.ts.
             // we thus apply the projection to get values in the Crs of the view.
             const point = getPosition.map(f => f(i));
-            const [x, y, z] = forward(point);
 
+            // position
+            //     .fromArray(forward(point))
+            //     .sub(origin);
+
+            // if (reproj) {
+            //     position.applyQuaternion(quaternion);
+            // }
+
+            const [x, y, z] = forward(point);
             const position = applyQuaternion([
                 x - origin[0],
                 y - origin[1],
                 z - origin[2],
             ], quaternion);
 
+            // position.toArray(positions, i);
             positions[i * 3] = position[0];
             positions[i * 3 + 1] = position[1];
             positions[i * 3 + 2] = position[2];
 
+            // box.expandByPoint(position);
             minX = Math.min(minX, position[0]);
             minY = Math.min(minY, position[1]);
             minZ = Math.min(minZ, position[2]);
@@ -178,6 +196,7 @@ class LASLoader {
             pointSourceID: pointSourceIDs,
             color: colors,
             scanAngle: scanAngles,
+            // bbox: box.toJSON(),
             bbox: [minX, minY, minZ, maxX, maxY, maxZ],
         };
     }

@@ -102,6 +102,7 @@ class CopcSource extends Source {
             this.header = metadata.header;
             this.info = metadata.info;
             this.eb = metadata.eb;
+            this.bounds = metadata.info.cube;
 
             this.zmin = this.header.min[2];
             this.zmax = this.header.max[2];
