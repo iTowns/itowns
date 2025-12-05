@@ -39,6 +39,7 @@ class PotreeNode extends PointCloudNode {
     }
 
     setVoxelOBBFromParent() {
+        // for potree the voxelOBB.natBox is updated as well
         this._voxelOBB.copy(this.parent.voxelOBB);
 
         // Code inspired from potree
