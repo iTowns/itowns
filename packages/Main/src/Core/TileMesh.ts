@@ -109,6 +109,12 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
         return this._tms.get(tms);
     }
 
+    getZoomByProjection(tms: string) {
+        const extents = this.getExtentsByProjection(tms);
+
+        return extents ? extents[0].zoom : -1;
+    }
+
     /**
      * Finds the common ancestor between this tile and another one. It goes
      * through parents on each side until one is found.
@@ -136,6 +142,7 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
         }
     }
 
+    /* eslint-disable padded-blocks */
     /**
      * An optional callback that is executed immediately before a 3D object
      * is rendered.
@@ -143,9 +150,9 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
      * @param renderer - The renderer used to render textures.
      */
     override onBeforeRender(renderer: THREE.WebGLRenderer) {
-        if (this.material.layersNeedUpdate) {
-            this.material.updateLayersUniforms(renderer);
-        }
+
+        this.material.updateLayersUniforms(renderer);
+
     }
 }
 

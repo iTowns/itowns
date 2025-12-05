@@ -43,7 +43,7 @@ export default {
         // if ((zoomDest < layer.zoom.min && zoomDest > layer.zoom.max) ||
         if (zoomDest != layer.zoom.min ||
         // check if there's data in extent tile.
-            !this.source.extentInsideLimit(node.extent, zoomDest) ||
+            !this.source.anyVisibleData(node.extent, zoomDest) ||
         // In FileSource case, check if the feature center is in extent tile.
             (layer.source.isFileSource && !node.extent.isPointInside(layer.source.extent.center(coord)))) {
         // if not, there's not data to add at this tile.
