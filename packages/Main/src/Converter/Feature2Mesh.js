@@ -44,6 +44,8 @@ class FeatureMesh extends THREE.Group {
         this.#collection.position.copy(collection.position);
         this.#collection.scale.copy(collection.scale);
         this.#collection.matrixWorldInverse = this.#collection.matrixWorld.clone().invert();
+        this.#collection.origMatrixWorld = collection.matrixWorld.clone();
+
         this.#collection.crs = collection.crs;
 
         this.#originalCrs = collection.crs;
@@ -889,6 +891,8 @@ export default {
         }
 
         context.setCollection(collection);
+        collection.updateMatrixWorld(true);
+        collection.matrixWorld.copy(collection.origMatrixWorld);
 
         let vertSize = feature.vertices?.length;
         if (!vertSize) { return; }
