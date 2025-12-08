@@ -432,8 +432,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource> ex
         }
 
         if (elt.children && elt.children.length) {
-            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distanceToCamera) / this.sseThreshold;
-            if (elt.sse >= 1) {
+            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distanceToCamera);
+            if (elt.sse >= this.sseThreshold) {
                 return elt.children;
             } else {
                 for (const child of elt.children) {
