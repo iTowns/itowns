@@ -8,7 +8,7 @@ function addPickingAttribute(points) {
     const baseId = nextuuid++;
     if (numPoints > 0xffff || baseId > 0xffff) {
         // TODO: fixme
-        console.warn('Currently picking is limited to Points with less than 65535 elements and less than 65535 Points instances');
+        // console.warn('Currently picking is limited to Points with less than 65535 elements and less than 65535 Points instances');
         return points;
     }
     for (let i = 0; i < numPoints; i++) {
