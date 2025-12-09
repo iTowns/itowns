@@ -33,9 +33,8 @@ of the authors and should not be interpreted as representing official policies,
     either expressed or implied, of the FreeBSD Project.
  */
 
-import PointCloudNode from 'Core/PointCloudNode';
 import type Potree2Source from 'Source/Potree2Source';
-import { computeChildBBox } from 'Core/PotreeNode';
+import { PotreeNodeBase } from 'Core/PotreeNode';
 
 const NODE_TYPE = {
     NORMAL: 0,
@@ -45,13 +44,8 @@ const NODE_TYPE = {
 
 type NodeType = typeof NODE_TYPE[keyof typeof NODE_TYPE];
 
-class Potree2Node extends PointCloudNode {
+class Potree2Node extends PotreeNodeBase {
     source: Potree2Source;
-
-    childrenBitField: number;
-    hierarchyKey: string;
-    baseurl: string;
-    crs: string;
 
     loaded: boolean;
     loading: boolean;
@@ -64,58 +58,15 @@ class Potree2Node extends PointCloudNode {
     nodeType!: NodeType;
 
     constructor(numPoints = 0, childrenBitField = 0, source: Potree2Source, crs: string) {
-        super(numPoints);
+        super(numPoints, childrenBitField, source, crs);
         this.source = source;
-
-        this.depth = 0;
-
-        this.hierarchyKey = 'r';
-
-        this.childrenBitField = childrenBitField;
-
-        this.baseurl = source.baseurl;
-
-        this.crs = crs;
 
         this.loaded = false;
         this.loading = false;
     }
 
-    get octreeIsLoaded() {
-        return !(this.childrenBitField && this.children.length === 0);
-    }
-
     get url() {
         return `${this.baseurl}/octree.bin`;
-    }
-
-    // Beware: you should call this method after the hierarchy is loaded
-    get id() {
-        return this.hierarchyKey;
-    }
-
-    add(node: this, indexChild: number) {
-        node.hierarchyKey = this.hierarchyKey + indexChild;
-        node.depth = this.depth + 1;
-        super.add(node, indexChild);
-    }
-
-    createChildAABB(childNode: Potree2Node, childIndex: number) {
-        childNode.voxelOBB.copy(this.voxelOBB);
-        childNode.voxelOBB.box3D = computeChildBBox(this.voxelOBB.box3D, childIndex);
-
-        childNode.clampOBB.copy(childNode.voxelOBB);
-        const childClampBBox = childNode.clampOBB.box3D;
-
-        if (childClampBBox.min.z < this.source.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
-        }
-        if (childClampBBox.max.z > this.source.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
-        }
-
-        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
-        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
     networkOptions(byteOffset = this.byteOffset, byteSize = this.byteSize) {

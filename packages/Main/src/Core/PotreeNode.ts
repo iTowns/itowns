@@ -47,17 +47,15 @@ export function computeChildBBox(voxelBBox: THREE.Box3, childIndex: number) {
     return childVoxelBBox;
 }
 
-class PotreeNode extends PointCloudNode {
-    source: PotreeSource;
-
+export abstract class PotreeNodeBase extends PointCloudNode {
     childrenBitField: number;
     hierarchyKey: string;
     baseurl: string;
     offsetBBox?: THREE.Box3;
     crs: string;
-    constructor(numPoints = 0, childrenBitField = 0, source: PotreeSource, crs: string) {
+
+    constructor(numPoints = 0, childrenBitField = 0, source: { baseurl: string }, crs: string) {
         super(numPoints);
-        this.source = source;
 
         this.childrenBitField = childrenBitField;
 
@@ -74,10 +72,6 @@ class PotreeNode extends PointCloudNode {
         return !(this.childrenBitField && this.children.length === 0);
     }
 
-    get url() {
-        return `${this.baseurl}/${this.hierarchyKey}.${this.source.extension}`;
-    }
-
     get id() {
         return this.hierarchyKey;
     }
@@ -88,7 +82,7 @@ class PotreeNode extends PointCloudNode {
         super.add(node, indexChild);
     }
 
-    createChildAABB(childNode: PotreeNode, childIndex: number) {
+    createChildAABB(childNode: this, childIndex: number) {
         childNode.voxelOBB.copy(this.voxelOBB);
         childNode.voxelOBB.box3D = computeChildBBox(this.voxelOBB.box3D, childIndex);
 
@@ -104,6 +98,19 @@ class PotreeNode extends PointCloudNode {
 
         childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
         childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
+    }
+}
+
+class PotreeNode extends PotreeNodeBase {
+    source: PotreeSource;
+
+    constructor(numPoints = 0, childrenBitField = 0, source: PotreeSource, crs: string) {
+        super(numPoints, childrenBitField, source, crs);
+        this.source = source;
+    }
+
+    get url() {
+        return `${this.baseurl}/${this.hierarchyKey}.${this.source.extension}`;
     }
 
     async load(networkOptions = this.source.networkOptions) {
