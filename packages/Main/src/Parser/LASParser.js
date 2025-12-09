@@ -177,8 +177,6 @@ export default {
 
         const geometry = buildBufferGeometry(parsedData.attributes);
         geometry.boundingBox = new THREE.Box3().setFromArray(parsedData.attributes.bbox);
-        geometry.userData.origin = origin;
-        geometry.userData.rotation = quaternion;
         geometry.userData.header = parsedData.header;
 
         return geometry;
