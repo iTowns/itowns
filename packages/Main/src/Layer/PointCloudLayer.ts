@@ -3,7 +3,7 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
 import type OBB from 'Renderer/OBB';
-
+import TinyQueue from 'tinyqueue';
 import type PointCloudNode from 'Core/PointCloudNode';
 
 const point = new THREE.Vector3();
@@ -490,29 +490,46 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource> ex
     update(context: Context, layer: this, root: PointCloudNode) {
         root.traverse((node) => { node.visible = false; });
 
-        const stack = [root];
+        const rootWithWeight = { node: root, weight: Infinity };
+        const stack = new TinyQueue([rootWithWeight], (a, b) => {
+            if (b.weight < a.weight) {
+                return -1;
+            }
+            if (b.weight > a.weight) {
+                return 1;
+            }
+            return 0;
+        });
         let numVisiblePoints = 0;
         while (stack.length > 0) {
-            const node = stack.pop() as PointCloudNode;
+            const { node } = stack.pop() as { node: PointCloudNode };
+            // console.log('node 1', node.id);
             if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < node.depth) {
                 markForDeletion(node);
                 continue;
             }
+            // console.log('node 2', node.id, node.depth);
 
             const bbox = node.voxelOBB.box3D;
             const object3d = node.voxelOBB;
 
             node.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
+            // console.log('node 3', node.id, node.visible);
             node.visible = node.visible && numVisiblePoints + node.numPoints <= this.pointBudget;
+            // console.log('node 4', node.id, node.visible);
 
             if (numVisiblePoints + node.numPoints > this.pointBudget) {
                 break;
             }
 
+            // console.log('node 5', node.id, node.visible);
+
             if (!node.visible) {
                 markForDeletion(node);
                 continue;
             }
+
+            // console.log('node 6', node.id, node.visible);
 
             numVisiblePoints += node.numPoints;
 
@@ -521,16 +538,9 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource> ex
 
             this.loadData(node, context, layer, distanceToCamera);
 
-            if (node.children && node.children.length) {
-                const weight = computeObjectScreenSpace(context, node.voxelOBB);
-                console.log(node.id, weight);
-                if (weight >= this.sseThreshold) {
-                    stack.push(...node.children);
-                } else {
-                    for (const child of node.children) {
-                        markForDeletion(child);
-                    }
-                }
+            for (const child of node.children) {
+                const childWeight = computeObjectScreenSpace(context, child.voxelOBB);
+                stack.push({ node: child, weight: childWeight });
             }
         }
     }
