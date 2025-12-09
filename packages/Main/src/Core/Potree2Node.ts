@@ -33,17 +33,56 @@ of the authors and should not be interpreted as representing official policies,
     either expressed or implied, of the FreeBSD Project.
  */
 
-import PotreeNode from 'Core/PotreeNode';
+import PointCloudNode from 'Core/PointCloudNode';
+import type Potree2Source from 'Source/Potree2Source';
+import { computeChildBBox } from 'Core/PotreeNode';
 
 const NODE_TYPE = {
     NORMAL: 0,
     LEAF: 1,
     PROXY: 2,
-};
+} as const;
 
-class Potree2Node extends PotreeNode {
-    constructor(numPoints = 0, childrenBitField = 0, source, crs) {
-        super(numPoints, childrenBitField, source, crs);
+type NodeType = typeof NODE_TYPE[keyof typeof NODE_TYPE];
+
+class Potree2Node extends PointCloudNode {
+    source: Potree2Source;
+
+    childrenBitField: number;
+    hierarchyKey: string;
+    baseurl: string;
+    crs: string;
+
+    loaded: boolean;
+    loading: boolean;
+
+    // Properties initialized after loading hierarchy
+    byteOffset!: bigint;
+    byteSize!: bigint;
+    hierarchyByteOffset!: bigint;
+    hierarchyByteSize!: bigint;
+    nodeType!: NodeType;
+
+    constructor(numPoints = 0, childrenBitField = 0, source: Potree2Source, crs: string) {
+        super(numPoints);
+        this.source = source;
+
+        this.depth = 0;
+
+        this.hierarchyKey = 'r';
+
+        this.childrenBitField = childrenBitField;
+
+        this.baseurl = source.baseurl;
+
+        this.crs = crs;
+
+        this.loaded = false;
+        this.loading = false;
+    }
+
+    get octreeIsLoaded() {
+        return !(this.childrenBitField && this.children.length === 0);
     }
 
     get url() {
@@ -51,6 +90,34 @@ class Potree2Node extends PotreeNode {
     }
 
     // Beware: you should call this method after the hierarchy is loaded
+    get id() {
+        return this.hierarchyKey;
+    }
+
+    add(node: this, indexChild: number) {
+        node.hierarchyKey = this.hierarchyKey + indexChild;
+        node.depth = this.depth + 1;
+        super.add(node, indexChild);
+    }
+
+    createChildAABB(childNode: Potree2Node, childIndex: number) {
+        childNode.voxelOBB.copy(this.voxelOBB);
+        childNode.voxelOBB.box3D = computeChildBBox(this.voxelOBB.box3D, childIndex);
+
+        childNode.clampOBB.copy(childNode.voxelOBB);
+        const childClampBBox = childNode.clampOBB.box3D;
+
+        if (childClampBBox.min.z < this.source.zmax) {
+            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
+        }
+        if (childClampBBox.max.z > this.source.zmin) {
+            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
+        }
+
+        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
+        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
+    }
+
     networkOptions(byteOffset = this.byteOffset, byteSize = this.byteSize) {
         const first = byteOffset;
         const last = first + byteSize - 1n;
@@ -71,12 +138,16 @@ class Potree2Node extends PotreeNode {
     }
 
     async load() {
-        return super.load()
-            .then((data) => {
-                this.loaded = true;
-                this.loading = false;
-                return data.geometry;
-            });
+        // Query octree/HRC if we don't have children yet.
+        if (!this.octreeIsLoaded) {
+            await this.loadOctree();
+        }
+
+        const file = await this.source.fetcher(this.url, this.networkOptions());
+        const data = await this.source.parser(file, { in: this });
+        this.loaded = true;
+        this.loading = false;
+        return data.geometry;
     }
 
     loadOctree() {
@@ -93,7 +164,7 @@ class Potree2Node extends PotreeNode {
         this.parseHierarchy(buffer);
     }
 
-    parseHierarchy(buffer) {
+    parseHierarchy(buffer: ArrayBuffer) {
         const view = new DataView(buffer);
 
         const bytesPerNode = 22;
@@ -103,10 +174,10 @@ class Potree2Node extends PotreeNode {
         stack.push(this);
 
         for (let indexNode = 0; indexNode < numNodes; indexNode++) {
-            const current = stack.shift();
+            const current = stack.shift() as Potree2Node;
             const offset = indexNode * bytesPerNode;
 
-            const type = view.getUint8(offset + 0);
+            const type = view.getUint8(offset + 0) as NodeType;
             const childMask = view.getUint8(offset + 1);
             const numPoints = view.getUint32(offset + 2, true);
             const byteOffset = view.getBigInt64(offset + 6, true);
