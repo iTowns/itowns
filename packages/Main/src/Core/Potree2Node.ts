@@ -33,10 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     policies, either expressed or implied, of the FreeBSD Project.
  */
 
-import PointCloudNode from 'Core/PointCloudNode';
 import type Potree2Source from 'Source/Potree2Source';
-import { computeChildBBox } from 'Core/PotreeNode';
 import type { BufferGeometry } from 'three';
+import PotreeNodeBase from 'Core/PotreeNodeBase';
 
 const NODE_TYPE = {
     NORMAL: 0,
@@ -46,15 +45,8 @@ const NODE_TYPE = {
 
 type NodeType = typeof NODE_TYPE[keyof typeof NODE_TYPE];
 
-class Potree2Node extends PointCloudNode {
+class Potree2Node extends PotreeNodeBase {
     source: Potree2Source;
-
-    index: number;
-
-    childrenBitField: number;
-    hierarchyKey: string;
-    baseurl: string;
-    crs: string;
 
     loaded: boolean;
     loading: boolean;
@@ -74,60 +66,15 @@ class Potree2Node extends PointCloudNode {
         source: Potree2Source,
         crs: string,
     ) {
-        super(depth, numPoints);
+        super(depth, index, numPoints, childrenBitField, source, crs);
         this.source = source;
-
-        this.depth = 0;
-
-        this.index = index;
-
-        this.hierarchyKey = 'r';
-
-        this.childrenBitField = childrenBitField;
-
-        this.baseurl = source.baseurl;
-
-        this.crs = crs;
 
         this.loaded = false;
         this.loading = false;
     }
 
-    override get octreeIsLoaded(): boolean {
-        return !(this.childrenBitField && this.children.length === 0);
-    }
-
     override get url(): string {
         return `${this.baseurl}/octree.bin`;
-    }
-
-    // Beware: you should call this method after the hierarchy is loaded
-    override get id(): string {
-        return this.hierarchyKey;
-    }
-
-    override add(node: this, indexChild: number): void {
-        node.hierarchyKey = this.hierarchyKey + indexChild;
-        node.depth = this.depth + 1;
-        super.add(node, indexChild);
-    }
-
-    override createChildAABB(childNode: Potree2Node, childIndex: number): void {
-        childNode.voxelOBB.copy(this.voxelOBB);
-        childNode.voxelOBB.box3D = computeChildBBox(this.voxelOBB.box3D, childIndex);
-
-        childNode.clampOBB.copy(childNode.voxelOBB);
-        const childClampBBox = childNode.clampOBB.box3D;
-
-        if (childClampBBox.min.z < this.source.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
-        }
-        if (childClampBBox.max.z > this.source.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
-        }
-
-        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
-        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
     networkOptions(byteOffset = this.byteOffset, byteSize = this.byteSize): RequestInit {
