@@ -1,5 +1,5 @@
-import View3D from '../Views/View3D';
-import ImmersiveView from '../Views/ImmersiveView';
-import PlanarView from '../Views/PlanarView';
+import { View3D, ImmersiveView, PlanarView } from '../Views';
 
-export type ViewType = View3D | ImmersiveView | PlanarView;
+type ViewType = View3D | ImmersiveView | PlanarView;
+
+export default ViewType;

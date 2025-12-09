@@ -1,7 +1,7 @@
 import * as itowns from 'itowns';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import View3D from '../Views/View3D';
-import type { SceneType } from '../Types/SceneType';
+import * as Layers from '../Layers';
+import { View3D } from '../Views';
+import type { SceneType } from '../Types';
 
 export const Terrain3dScene: SceneType = {
     title: 'Feel the Relief',
@@ -22,9 +22,9 @@ export const Terrain3dScene: SceneType = {
         }
         Terrain3dScene.view = new View3D();
 
-        Terrain3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        Terrain3dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
-        Terrain3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
+        Terrain3dScene.layers.push(await Layers.OrthoLayer.getLayer());
+        Terrain3dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
+        Terrain3dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
 
         await Terrain3dScene.view.addLayers(Terrain3dScene.layers);
 
