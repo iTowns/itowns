@@ -1,5 +1,5 @@
 import * as itowns from 'itowns';
-import type { LayerPromiseType } from '../Types/LayerPromiseType';
+import type { LayerPromiseType } from '../Types';
 
 export const ParksLayer: LayerPromiseType = {
     id: 'parks',

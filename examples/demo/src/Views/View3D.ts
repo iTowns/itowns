@@ -1,9 +1,8 @@
 import * as itowns from 'itowns';
-// @ts-expect-error setupLoadingScreen imported from import-map
-// eslint-disable-next-line import/no-unresolved
-import setupLoadingScreen from 'LoadingScreen';
+import { Config } from '../Config';
 import View from './View';
-import Config from '../Config/Config';
+// eslint-disable-next-line import/no-relative-packages
+import setupLoadingScreen from '../../../jsm/GUI/LoadingScreen';
 
 class View3D extends View {
     static _instance: View3D | undefined;

@@ -1,6 +1,6 @@
 import * as itowns from 'itowns';
 
-export type FetcherConfigType = {
+type FetcherConfigType = {
     id: string;
     source: itowns.WMTSSource;
     noDataValue?: number | undefined;
@@ -9,3 +9,5 @@ export type FetcherConfigType = {
         max?: number | undefined;
     } | undefined;
 };
+
+export default FetcherConfigType;

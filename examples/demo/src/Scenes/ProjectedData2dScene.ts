@@ -1,7 +1,7 @@
 import * as itowns from 'itowns';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import View3D from '../Views/View3D';
-import type { SceneType } from '../Types/SceneType';
+import * as Layers from '../Layers';
+import { View3D } from '../Views';
+import type { SceneType } from '../Types';
 
 export const ProjectedData2dScene: SceneType = {
     title: 'Bring Your Data to Life',
@@ -22,11 +22,11 @@ export const ProjectedData2dScene: SceneType = {
         }
         ProjectedData2dScene.view = new View3D();
 
-        ProjectedData2dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        ProjectedData2dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
-        ProjectedData2dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
-        ProjectedData2dScene.layers.push(await LayerRepository.flatBuildingsLayer.getLayer());
-        ProjectedData2dScene.layers.push(await LayerRepository.parksLayer.getLayer());
+        ProjectedData2dScene.layers.push(await Layers.OrthoLayer.getLayer());
+        ProjectedData2dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
+        ProjectedData2dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        ProjectedData2dScene.layers.push(await Layers.FlatBuildingsLayer.getLayer());
+        ProjectedData2dScene.layers.push(await Layers.ParksLayer.getLayer());
         await ProjectedData2dScene.view.addLayers(ProjectedData2dScene.layers);
 
         ProjectedData2dScene.ready = true;

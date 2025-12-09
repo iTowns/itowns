@@ -3,7 +3,7 @@ import * as itowns from 'itowns';
 let sourcePromise: Promise<itowns.VectorTilesSource>;
 let cachedSource: itowns.VectorTilesSource | undefined;
 
-export function getSource() {
+export async function getSource() {
     if (cachedSource) {
         return Promise.resolve(cachedSource);
     }

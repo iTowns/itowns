@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import type { LayerType } from './LayerType';
+import type LayerType from './LayerType';
 
-export type LayerPromiseType = {
+type LayerPromiseType = {
     id: string,
     layerPromise: Promise<LayerType> | undefined,
     cachedLayer: LayerType | undefined,
@@ -9,3 +9,5 @@ export type LayerPromiseType = {
         ((meshCallback?: (mesh: THREE.Mesh) => void) => Promise<LayerType>),
     getPickingInfo?:(feature: unknown) => Record<string, string> | null,
 };
+
+export default LayerPromiseType;

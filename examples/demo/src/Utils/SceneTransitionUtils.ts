@@ -1,11 +1,11 @@
 import * as itowns from 'itowns';
-import Config from '../Config/Config';
-import type { SceneType } from '../Types/SceneType';
-import View3D from '../Views/View3D';
-import { SceneRepository } from '../Repositories/SceneRepository';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import { Globe3dScene } from '../Scenes/Globe3dScene';
-import FeaturePickerService from '../Services/FeaturePickerService';
+import { Config } from '../Config';
+import type { SceneType } from '../Types';
+import { View3D } from '../Views';
+import { SceneRepository } from '../Repositories';
+import * as Layers from '../Layers';
+import { Globe3dScene } from '../Scenes';
+import { FeaturePickerService } from '../Services';
 
 /**
  * Updates the UI elements with the title and description of the given scene.
@@ -163,7 +163,7 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
 export const hardResetScene = async (scene: SceneType) => {
     await scene.onExit?.();
 
-    const layers = Object.values(LayerRepository);
+    const layers = Object.values(Layers);
     for (const layer of layers) {
         layer.layerPromise = undefined;
         layer.cachedLayer = undefined;

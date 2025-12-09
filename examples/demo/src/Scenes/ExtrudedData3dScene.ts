@@ -1,8 +1,8 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import View3D from '../Views/View3D';
-import type { SceneType } from '../Types/SceneType';
+import * as Layers from '../Layers';
+import { View3D } from '../Views';
+import type { SceneType } from '../Types';
 
 export const ExtrudedData3dScene: SceneType = {
     title: 'Build Cities in Seconds',
@@ -46,13 +46,12 @@ export const ExtrudedData3dScene: SceneType = {
             }
         }
 
-        ExtrudedData3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        ExtrudedData3dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
-        ExtrudedData3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
-        ExtrudedData3dScene.layers.push(await LayerRepository.flatBuildingsLayer.getLayer());
-        ExtrudedData3dScene.layers.push(await LayerRepository.parksLayer.getLayer());
-        ExtrudedData3dScene.layers.push(await LayerRepository.buildingsLayer3D.getLayer(scaleZ));
-
+        ExtrudedData3dScene.layers.push(await Layers.OrthoLayer.getLayer());
+        ExtrudedData3dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
+        ExtrudedData3dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        ExtrudedData3dScene.layers.push(await Layers.FlatBuildingsLayer.getLayer());
+        ExtrudedData3dScene.layers.push(await Layers.ParksLayer.getLayer());
+        ExtrudedData3dScene.layers.push(await Layers.BuildingsLayer3D.getLayer(scaleZ));
         await ExtrudedData3dScene.view.addLayers(ExtrudedData3dScene.layers);
 
         ExtrudedData3dScene.ready = true;

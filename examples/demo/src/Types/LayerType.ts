@@ -1,6 +1,6 @@
 import * as itowns from 'itowns';
 
-export type LayerType = (
+type LayerType = (
     itowns.ColorLayer |
     itowns.FeatureGeometryLayer |
     itowns.ElevationLayer |
@@ -12,3 +12,5 @@ export type LayerType = (
 ) & {
     visible?: boolean,
 }
+
+export default LayerType;

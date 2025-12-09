@@ -1,5 +1,4 @@
-import type { ItownsViewType } from '../Types/ItownsViewType';
-import type { LayerType } from '../Types/LayerType';
+import type { ItownsViewType, LayerType } from '../Types';
 
 abstract class View {
     id: string;

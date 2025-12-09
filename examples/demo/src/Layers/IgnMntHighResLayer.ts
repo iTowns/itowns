@@ -1,6 +1,5 @@
 import * as itowns from 'itowns';
-import type { LayerPromiseType } from '../Types/LayerPromiseType';
-import type { FetcherConfigType } from '../Types/FetcherConfigType';
+import type { LayerPromiseType, FetcherConfigType } from '../Types';
 
 export const IgnMntHighResLayer: LayerPromiseType = {
     id: 'IGN_MNT_HIGHRES',
