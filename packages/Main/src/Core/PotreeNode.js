@@ -96,11 +96,8 @@ class PotreeNode extends PointCloudNode {
         childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
-    networkOptions() {
-    }
-
     load() {
-        return super.load(this.networkOptions());
+        return super.load();
     }
 
     loadOctree() {
