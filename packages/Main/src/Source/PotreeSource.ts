@@ -3,11 +3,48 @@ import Fetcher from 'Provider/Fetcher';
 import PotreeBinParser from 'Parser/PotreeBinParser';
 import PotreeCinParser from 'Parser/PotreeCinParser';
 
+type PotreeBBox = {
+    lx: number; ly: number; lz: number;
+    ux: number; uy: number; uz: number;
+}
+
+interface PotreeCloud {
+    boundingBox: PotreeBBox;
+    tightBoundingBox: PotreeBBox;
+    pointAttributes: string[];
+    spacing: number;
+    scale: number;
+    hierarchyStepSize: number;
+    octreeDir: string;
+}
+
+interface PotreeSourceParameters {
+    url: string;
+    file: string;
+    crs: string;
+    cloud?: PotreeCloud;
+    networkOptions?: RequestInit;
+}
+
 /**
  * PotreeSource are object containing informations on how to fetch points cloud resources.
  */
 
 class PotreeSource extends Source {
+    file: string;
+    extensionOctree: 'hrc';
+
+    // Properties initialized after fetching cloud file
+    boundsConforming!: [number, number, number, number, number, number];
+    pointAttributes!: string[];
+    baseurl!: string;
+    extension!: 'cin' | 'bin';
+    scale!: number;
+    zmin!: number;
+    zmax!: number;
+    spacing!: number;
+    hierarchyStepSize!: number;
+
     /**
      * @param {Object} source - An object that can contain all properties of a
      * PotreeSource
@@ -59,7 +96,7 @@ class PotreeSource extends Source {
      *
      * @extends Source
      */
-    constructor(source) {
+    constructor(source: PotreeSourceParameters) {
         if (!source.file) {
             throw new Error('New PotreeSource: file is required');
         }
@@ -75,7 +112,7 @@ class PotreeSource extends Source {
 
         // For cloud specification visit:
         // https://github.com/PropellerAero/potree-propeller-private/blob/master/docs/file_format.md#cloudjs
-        this.whenReady = (source.cloud ? Promise.resolve(source.cloud) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
+        this.whenReady = (source.cloud ? Promise.resolve(source.cloud) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions) as Promise<PotreeCloud>)
             .then((cloud) => {
                 this.boundsConforming = [
                     cloud.tightBoundingBox.lx,
@@ -87,6 +124,7 @@ class PotreeSource extends Source {
                 ];
                 this.pointAttributes = cloud.pointAttributes;
                 this.baseurl = `${this.url}/${cloud.octreeDir}/r`;
+                // @ts-expect-error non-standard CIN extension, shall be removed
                 this.extension = cloud.pointAttributes === 'CIN' ? 'cin' : 'bin';
                 this.parser = this.extension === 'cin' ? PotreeCinParser.parse : PotreeBinParser.parse;
                 this.scale = cloud.scale;

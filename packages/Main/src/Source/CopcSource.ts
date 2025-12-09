@@ -4,10 +4,14 @@ import Fetcher from 'Provider/Fetcher';
 import LASParser from 'Parser/LASParser';
 import Source from 'Source/Source';
 
-/**
- * @param {function(number, number):Promise<Uint8Array>} fetcher
- */
-async function getHeaders(fetcher) {
+interface COPCSourceParameters {
+    url: string;
+    crs: string;
+    colorDepth?: 8 | 16;
+    networkOptions?: RequestInit;
+}
+
+async function getHeaders(fetcher: (begin: number, end: number) => Promise<Uint8Array>) {
     const header =
         Las.Header.parse(await fetcher(0, Las.Constants.minHeaderLength));
     const vlrs = await Las.Vlr.walk(fetcher, header);
@@ -65,6 +69,21 @@ async function getHeaders(fetcher) {
  * and maximum values of attribute `gpsTime`.
  */
 class CopcSource extends Source {
+    readonly isCopcSource: true;
+
+    colorDepth: 8 | 16;
+
+    // Properties initialized after fetching header portion of the file
+    header!: Las.Header;
+    info!: Info;
+    eb!: Las.ExtraBytes[];
+    spacing!: number;
+    zmin!: number;
+    zmax!: number;
+
+    fetcher: (url: string, options?: RequestInit) => Promise<ArrayBuffer>;
+    parser: typeof LASParser.parseChunk;
+
     /**
      * @param {Object} config - Source configuration
      * @param {string} config.url - URL of the COPC resource.
@@ -79,7 +98,7 @@ class CopcSource extends Source {
      * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      * @param {Object} [config.attribution] - Attribution of the data.
      */
-    constructor(config) {
+    constructor(config: COPCSourceParameters) {
         super(config);
 
         this.isCopcSource = true;
@@ -89,7 +108,7 @@ class CopcSource extends Source {
 
         this.colorDepth = config.colorDepth ?? 16;
 
-        const get = (/** @type {number} */ begin, /** @type {number} */ end) =>
+        const get = (begin: number, end: number) =>
             this.fetcher(this.url, {
                 ...this.networkOptions,
                 headers: {

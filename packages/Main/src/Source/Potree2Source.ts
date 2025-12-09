@@ -4,6 +4,47 @@ import Potree2BinParser from 'Parser/Potree2BinParser';
 
 import { PointAttribute, Potree2PointAttributes, PointAttributeTypes } from 'Core/Potree2PointAttributes';
 
+interface Potree2Attribute {
+    name: string;
+    description: string;
+    size: number;
+    numElements: number;
+    elementSize: number;
+    type: keyof typeof typeNameAttributeMap;
+    min: number[];
+    max: number[];
+}
+
+interface Potree2Metadata {
+    version: string;
+    name: string;
+    description: string;
+    points: number;
+    projection: string;
+    hierarchy: {
+        firstChunkSize: number;
+        stepSize: number;
+        depth: number;
+    };
+    offset: [number, number, number];
+    scale: [number, number, number];
+    spacing: number;
+    boundingBox: {
+        min: [number, number, number];
+        max: [number, number, number];
+    };
+    encoding: 'BROTLI' | 'DEFAULT';
+    attributes: Potree2Attribute[];
+}
+
+interface Potree2SourceParameters {
+    url: string;
+    file: string;
+    crs: string;
+    metadata?: Potree2Metadata;
+    networkOptions?: RequestInit;
+}
+
 const typeNameAttributeMap = {
     double: PointAttributeTypes.DATA_TYPE_DOUBLE,
     float: PointAttributeTypes.DATA_TYPE_FLOAT,
@@ -15,12 +56,12 @@ const typeNameAttributeMap = {
     uint32: PointAttributeTypes.DATA_TYPE_UINT32,
     int64: PointAttributeTypes.DATA_TYPE_INT64,
     uint64: PointAttributeTypes.DATA_TYPE_UINT64,
-};
+} as const;
 
-function parseAttributes(jsonAttributes) {
+function parseAttributes(jsonAttributes: Potree2Metadata['attributes']) {
     const attributes = new Potree2PointAttributes();
 
-    const replacements = {
+    const replacements : Record<string, string> = {
         rgb: 'rgba',
     };
 
@@ -36,6 +77,7 @@ function parseAttributes(jsonAttributes) {
         if (numElements === 1) {
             attribute.range = [min[0], max[0]];
         } else {
+            // @ts-expect-error PointAttribute.range is not typed
             attribute.range = [min, max];
         }
 
@@ -45,6 +87,7 @@ function parseAttributes(jsonAttributes) {
             }
         }
 
+        // @ts-expect-error PointAttribute.initialRange is not typed
         attribute.initialRange = attribute.range;
 
         attributes.add(attribute);
@@ -73,6 +116,19 @@ function parseAttributes(jsonAttributes) {
  */
 
 class Potree2Source extends Source {
+    file: string;
+    fetcher: (url: string, options?: RequestInit) => Promise<ArrayBuffer>;
+    parser: typeof Potree2BinParser.parse;
+    extension: 'bin';
+
+    // Properties initialized after fetching metadata
+    metadata!: Potree2Metadata;
+    pointAttributes!: Potree2PointAttributes;
+    baseurl!: string;
+    zmin!: number;
+    zmax!: number;
+    spacing!: number;
+
     /**
      * @param {Object} source - An object that can contain all properties of a
      * Potree2Source
@@ -213,7 +269,7 @@ class Potree2Source extends Source {
      *
      * @extends Source
      */
-    constructor(source) {
+    constructor(source: Potree2SourceParameters) {
         if (!source.file) {
             throw new Error('New Potree2Source: file is required');
         }
@@ -225,14 +281,14 @@ class Potree2Source extends Source {
         super(source);
         this.file = source.file;
         this.fetcher = Fetcher.arrayBuffer;
+        this.parser = Potree2BinParser.parse;
+        this.extension = 'bin';
 
-        this.whenReady = (source.metadata ? Promise.resolve(source.metadata) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions))
+        this.whenReady = (source.metadata ? Promise.resolve(source.metadata) : Fetcher.json(`${this.url}/${this.file}`, this.networkOptions) as Promise<Potree2Metadata>)
             .then((metadata) => {
                 this.metadata = metadata;
                 this.pointAttributes = parseAttributes(metadata.attributes);
                 this.baseurl = `${this.url}`;
-                this.extension = 'bin';
-                this.parser = Potree2BinParser.parse;
 
                 this.zmin = metadata.attributes.filter(attributes => attributes.name === 'position')[0].min[2];
                 this.zmax = metadata.attributes.filter(attributes => attributes.name === 'position')[0].max[2];
