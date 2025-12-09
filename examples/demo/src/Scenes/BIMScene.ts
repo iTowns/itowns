@@ -2,9 +2,9 @@ import * as itowns from 'itowns';
 import * as THREE from 'three';
 // eslint-disable-next-line import/no-unresolved
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import View3D from '../Views/View3D';
-import type { SceneType } from '../Types/SceneType';
+import * as Layers from '../Layers';
+import { View3D } from '../Views';
+import type { SceneType } from '../Types';
 
 export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
     title: 'From Building to Territory',
@@ -35,9 +35,9 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
         view.scene.environment = pmremGenerator.fromScene(environment).texture;
         pmremGenerator.dispose();
 
-        BIMScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        BIMScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
-        BIMScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
+        BIMScene.layers.push(await Layers.OrthoLayer.getLayer());
+        BIMScene.layers.push(await Layers.WorldDTMLayer.getLayer());
+        BIMScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
 
         await BIMScene.view.addLayers(BIMScene.layers);
 

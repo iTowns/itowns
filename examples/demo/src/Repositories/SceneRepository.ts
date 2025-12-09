@@ -1,23 +1,14 @@
-import { Globe3dScene } from '../Scenes/Globe3dScene';
-import { Terrain3dScene } from '../Scenes/Terrain3dScene';
-import { ProjectedData2dScene } from '../Scenes/ProjectedData2dScene';
-import { ImmersiveViewScene  } from '../Scenes/ImmersiveViewScene';
-import { ExtrudedData3dScene  } from '../Scenes/ExtrudedData3dScene';
-import { PointCloudScene  } from '../Scenes/PointCloudScene';
-import { InstancedDataScene } from '../Scenes/InstancedDataScene';
-import { TexturedMeshes3dScene } from '../Scenes/TexturedMeshes3dScene';
-import { PlanarViewScene } from '../Scenes/PlanarViewScene';
-import { BIMScene } from '../Scenes/BIMScene';
+import * as Scenes from '../Scenes';
 
 export const SceneRepository = [
-    Globe3dScene,
-    Terrain3dScene,
-    ProjectedData2dScene,
-    ExtrudedData3dScene,
-    InstancedDataScene,
-    PointCloudScene,
-    TexturedMeshes3dScene,
-    BIMScene,
-    PlanarViewScene,
-    ImmersiveViewScene,
+    Scenes.Globe3dScene,
+    Scenes.Terrain3dScene,
+    Scenes.ProjectedData2dScene,
+    Scenes.ExtrudedData3dScene,
+    Scenes.InstancedDataScene,
+    Scenes.PointCloudScene,
+    Scenes.TexturedMeshes3dScene,
+    Scenes.BIMScene,
+    Scenes.PlanarViewScene,
+    Scenes.ImmersiveViewScene,
 ];

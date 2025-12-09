@@ -1,6 +1,6 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-import type { LayerPromiseType } from '../Types/LayerPromiseType';
+import type { LayerPromiseType } from '../Types';
 
 export const TreesLayer: LayerPromiseType = {
     id: 'Trees3D',

@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/itowns/itowns/issues"
   },
-  "homepage": "https://itowns.github.io/"
+  "homepage": "https://itowns.github.io/",
+  "dependencies": {
+    "itowns": "^2.46.0"
+  }
 }

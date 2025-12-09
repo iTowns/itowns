@@ -2,9 +2,9 @@ import * as itowns from 'itowns';
 import * as THREE from 'three';
 // eslint-disable-next-line import/no-unresolved
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import View3D from '../Views/View3D';
-import type { SceneType } from '../Types/SceneType';
+import * as Layers from '../Layers';
+import { View3D } from '../Views';
+import type { SceneType } from '../Types';
 
 export const InstancedDataScene: SceneType = {
     title: 'Populate Your City Model',
@@ -56,13 +56,13 @@ export const InstancedDataScene: SceneType = {
             });
         }
 
-        InstancedDataScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        InstancedDataScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
-        InstancedDataScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
-        InstancedDataScene.layers.push(await LayerRepository.flatBuildingsLayer.getLayer());
-        InstancedDataScene.layers.push(await LayerRepository.parksLayer.getLayer());
-        InstancedDataScene.layers.push(await LayerRepository.buildingsLayer3D.getLayer(scaleZ));
-        InstancedDataScene.layers.push(await LayerRepository.treesLayer.getLayer());
+        InstancedDataScene.layers.push(await Layers.OrthoLayer.getLayer());
+        InstancedDataScene.layers.push(await Layers.WorldDTMLayer.getLayer());
+        InstancedDataScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        InstancedDataScene.layers.push(await Layers.FlatBuildingsLayer.getLayer());
+        InstancedDataScene.layers.push(await Layers.ParksLayer.getLayer());
+        InstancedDataScene.layers.push(await Layers.BuildingsLayer3D.getLayer(scaleZ));
+        InstancedDataScene.layers.push(await Layers.TreesLayer.getLayer());
 
         await InstancedDataScene.view.addLayers(InstancedDataScene.layers);
 

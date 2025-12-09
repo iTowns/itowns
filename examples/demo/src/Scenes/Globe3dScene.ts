@@ -1,7 +1,7 @@
 import * as itowns from 'itowns';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import View3D from '../Views/View3D';
-import type { SceneType } from '../Types/SceneType';
+import * as Layers from '../Layers';
+import { View3D } from '../Views';
+import type { SceneType } from '../Types';
 
 export const Globe3dScene: SceneType = {
     title: 'Explore the World in 3D',
@@ -22,9 +22,9 @@ export const Globe3dScene: SceneType = {
         }
         Globe3dScene.view = new View3D();
 
-        Globe3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        Globe3dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
-        Globe3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
+        Globe3dScene.layers.push(await Layers.OrthoLayer.getLayer());
+        Globe3dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
+        Globe3dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
 
         await Globe3dScene.view.addLayers(Globe3dScene.layers);
 

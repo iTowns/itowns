@@ -1,6 +1,6 @@
 import * as itowns from 'itowns';
-import type { LayerPromiseType } from '../Types/LayerPromiseType';
-import { getSource } from '../Sources/BuildingsSource';
+import type { LayerPromiseType } from '../Types';
+import { BuildingsSource } from '../Sources';
 
 export const FlatBuildingsLayer: LayerPromiseType = {
     id: 'VTBuilding2D',
@@ -13,7 +13,7 @@ export const FlatBuildingsLayer: LayerPromiseType = {
         if (!FlatBuildingsLayer.layerPromise) {
             FlatBuildingsLayer.layerPromise = (async () => {
                 FlatBuildingsLayer.cachedLayer = new itowns.ColorLayer(FlatBuildingsLayer.id, {
-                    source: await getSource(),
+                    source: await BuildingsSource.getSource(),
                     // @ts-expect-error style property undefined
                     style: {
                         fill: {

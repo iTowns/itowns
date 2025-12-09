@@ -4,9 +4,9 @@ import * as THREE from 'three';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 // eslint-disable-next-line import/no-unresolved
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import View3D from '../Views/View3D';
-import type { SceneType } from '../Types/SceneType';
+import * as Layers from '../Layers';
+import { View3D } from '../Views';
+import type { SceneType } from '../Types';
 
 export const TexturedMeshes3dScene: SceneType = {
     title: 'Stream Entire Cities',
@@ -53,9 +53,9 @@ export const TexturedMeshes3dScene: SceneType = {
             pntsSizeMode: itowns.PNTS_SIZE_MODE.ATTENUATED,
         });
 
-        TexturedMeshes3dScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        TexturedMeshes3dScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
-        TexturedMeshes3dScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(await Layers.OrthoLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
         TexturedMeshes3dScene.layers.push(tiles3DLayer);
 
         await TexturedMeshes3dScene.view.addLayers(TexturedMeshes3dScene.layers);

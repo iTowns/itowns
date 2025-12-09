@@ -10,14 +10,6 @@
             {
                 "imports": {
                     "itowns": "../../dist/itowns.js",
-                    "debug": "../../dist/debug.js",
-                    "lil": "https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.esm.js",
-                    "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
-                    "GuiTools": "../jsm/GUI/GuiTools.js",
-                    "LoadingScreen": "../jsm/GUI/LoadingScreen.js",
-                    "OGC3DTilesHelper": "../jsm/OGC3DTilesHelper.js",
-                    "FeatureToolTip": "../jsm/plugins/FeatureToolTip.js",
-                    "itowns_widgets": "../../dist/itowns_widgets.js",
                     "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
                     "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
                     "OrbitControls": "https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js"
@@ -47,18 +39,27 @@
             </div>
         </div>
         <script type="module">
-            import GuiTools from "GuiTools";
             import * as THREE from "three";
             import * as itowns from "itowns";
-            import * as debug from "debug";
-            import * as itowns_widgets from "itowns_widgets";
-            import { transitionToScene, updateUIForScene, resetScene, hardResetScene, moveCameraTo } from "./dist/Utils/SceneTransitionUtils.js";
-            import { SceneRepository } from "./dist/Repositories/SceneRepository.js";
+            
+            let SceneTransitionUtils, SceneRepository;
+
+            try {
+                // If webpack served, import from global build
+                const mod1 = await import("../../dist/demo.js");
+                SceneTransitionUtils = mod1.SceneTransitionUtils;
+                SceneRepository = mod1.SceneRepository;
+            } catch (e) {
+                // Otherwise, import from local build
+                const mod2 = await import("./dist/index.js");
+                SceneTransitionUtils = mod2.SceneTransitionUtils;
+                SceneRepository = mod2.SceneRepository;
+            }
 
             const resetSceneButton = document.getElementById("resetScene");
             const hardResetSceneButton = document.getElementById("hardResetScene");
 
-            updateUIForScene(SceneRepository[0]);
+            SceneTransitionUtils.updateUIForScene(SceneRepository[0]);
             SceneRepository[0].view.setVisible(true);
             await SceneRepository[0].onCreate();
             await SceneRepository[0].onEnter?.();
@@ -66,7 +67,7 @@
             if (view instanceof itowns.GlobeView) {
                 view.skyManager.enabled = SceneRepository[0].atmosphere;
             }
-            await moveCameraTo(view, SceneRepository[0].placement, 0.1);
+            await SceneTransitionUtils.moveCameraTo(view, SceneRepository[0].placement, 0.1);
 
             let currentIndex = 0;
 
@@ -83,7 +84,7 @@
                     toggleEnableButtons(false);
                     toggleEnableDots(false);
                     try {
-                        await transitionToScene(from, to);
+                        await SceneTransitionUtils.transitionToScene(from, to);
                     } finally {
                         toggleEnableButtons(true);
                         toggleEnableDots(true);
@@ -93,7 +94,7 @@
                     toggleEnableButtons(false);
                     toggleEnableDots(false);
                     try {
-                        await resetScene(SceneRepository[currentIndex]);
+                        await SceneTransitionUtils.resetScene(SceneRepository[currentIndex]);
                     } finally {
                         toggleEnableButtons(true);
                         toggleEnableDots(true);
@@ -103,7 +104,7 @@
                     toggleEnableButtons(false);
                     toggleEnableDots(false);
                     try {
-                        await hardResetScene(SceneRepository[currentIndex]);
+                        await SceneTransitionUtils.hardResetScene(SceneRepository[currentIndex]);
                     } finally {
                         toggleEnableButtons(true);
                         toggleEnableDots(true);

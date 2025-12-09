@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import * as itowns from 'itowns';
-import ImmersiveView from '../Views/ImmersiveView';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import type { SceneType } from '../Types/SceneType';
+import { ImmersiveView } from '../Views';
+import * as Layers from '../Layers';
+import type { SceneType } from '../Types';
 
 itowns.CRS.defs('EPSG:2154',
     '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 '
@@ -38,8 +38,8 @@ export const ImmersiveViewScene: SceneType = {
 
         const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;
 
-        ImmersiveViewScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        ImmersiveViewScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
+        ImmersiveViewScene.layers.push(await Layers.OrthoLayer.getLayer());
+        ImmersiveViewScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
 
         function altitudeBuildings(properties: {
             altitude_minimale_sol: number,

@@ -1,20 +1,20 @@
 import * as itowns from 'itowns';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import Config from '../Config/Config';
-import { LayerPromiseType } from '../Types/LayerPromiseType';
-import View3D from '../Views/View3D';
-import blockEventsIfFromPanel from '../Utils/BlockEventsIfFromPanel';
+import * as Layers from '../Layers';
+import { Config } from '../Config';
+import { LayerPromiseType } from '../Types';
+import { View3D } from '../Views';
+import { BlockEventsIfFromPanel } from '../Utils';
 
 /**
  * FeaturePicker module to handle feature picking on specified layers
  * and display their information in a container.
  */
-const FeaturePickerService = {
+export const FeaturePickerService = {
     mouseDownPos: null as { x: number; y: number } | null,
     // currently, featureGeometryLayer needs to be passed before ColorLayer
     layers: [
-        LayerRepository.buildingsLayer3D,
-        LayerRepository.parksLayer,
+        Layers.BuildingsLayer3D,
+        Layers.ParksLayer,
     ] as (LayerPromiseType)[],
     pickingContent: [] as Record<string, unknown>[],
     container: null as HTMLDivElement | null,
@@ -128,11 +128,9 @@ const FeaturePickerService = {
 
             // Prevent interaction with the viewer
             // when interacting with the feature info panel
-            blockEventsIfFromPanel(viewerDiv, container);
+            BlockEventsIfFromPanel(viewerDiv, container);
         }
         FeaturePickerService.container = container;
         FeaturePickerService.container.innerHTML = 'Click on a feature to display informations.';
     },
 };
-
-export default FeaturePickerService;

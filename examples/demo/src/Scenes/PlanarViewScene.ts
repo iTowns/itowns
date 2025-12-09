@@ -1,6 +1,6 @@
 import * as itowns from 'itowns';
-import PlanarView from '../Views/PlanarView';
-import type { SceneType } from '../Types/SceneType';
+import { PlanarView } from '../Views';
+import type { SceneType } from '../Types';
 
 // Define the view geographic extent
 itowns.CRS.defs(

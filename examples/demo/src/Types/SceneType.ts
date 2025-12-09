@@ -1,9 +1,9 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-import type { LayerType } from './LayerType';
-import type { ViewType } from './ViewType';
+import type LayerType from './LayerType';
+import type ViewType from './ViewType';
 
-export type SceneType = {
+type SceneType = {
     title: string,
     description: string,
     placement: {
@@ -22,3 +22,5 @@ export type SceneType = {
     onEnter?: () => Promise<void>,
     onExit?: () => Promise<void>,
 };
+
+export default SceneType;

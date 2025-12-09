@@ -1,3 +1,5 @@
 import * as itowns from 'itowns';
 
-export type ItownsViewType = itowns.GlobeView | itowns.PlanarView;
+type ItownsViewType = itowns.GlobeView | itowns.PlanarView;
+
+export default ItownsViewType;

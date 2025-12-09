@@ -1,8 +1,7 @@
 import * as itowns from 'itowns';
-// @ts-expect-error setupLoadingScreen imported from import-map
-// eslint-disable-next-line import/no-unresolved
-import setupLoadingScreen from 'LoadingScreen';
 import View from './View';
+// eslint-disable-next-line import/no-relative-packages
+import setupLoadingScreen from '../../../jsm/GUI/LoadingScreen';
 
 class ImmersiveView extends View {
     static _instance: ImmersiveView | undefined;
