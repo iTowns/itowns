@@ -101,30 +101,9 @@ function debugIdUpdate(context, layer, node) {
             helper = new THREE.Group();
 
             // node obbes
-            const obbHelper = new OBBHelper(node.clampOBB, node.voxelKey, red);
+            const obbHelper = new OBBHelper(node.voxelOBB, node.voxelKey, red);
             obbHelper.layer = layer;
             helper.add(obbHelper);
-
-            // point data boxes (in local ref)
-            const tightboxHelper = new THREE.BoxHelper(undefined, 0x0000ff);
-            if (node.obj) {
-                tightboxHelper.geometry.attributes.position.array = getCornerPosition(node.obj.geometry.boundingBox);
-                tightboxHelper.applyMatrix4(node.obj.matrixWorld);
-                node.obj.tightboxHelper = tightboxHelper;
-                helper.add(tightboxHelper);
-                tightboxHelper.updateMatrixWorld(true);
-            } else if (node.promise) {
-                // TODO rethink architecture of node.obj/node.promise ?
-                node.promise.then(() => {
-                    if (node.obj) {
-                        tightboxHelper.geometry.attributes.position.array = getCornerPosition(node.obj.geometry.boundingBox);
-                        tightboxHelper.applyMatrix4(node.obj.matrixWorld);
-                        node.obj.tightboxHelper = tightboxHelper;
-                        helper.add(tightboxHelper);
-                        tightboxHelper.updateMatrixWorld(true);
-                    }
-                });
-            }
 
             node.link[layer.id] = helper;
         } else {

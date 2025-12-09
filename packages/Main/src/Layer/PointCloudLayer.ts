@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
 import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
+import type OBB from 'Renderer/OBB';
 
 import type PointCloudNode from 'Core/PointCloudNode';
 
@@ -102,6 +103,50 @@ function computeScreenSpaceError(
     }
 
     return computeSSEPerspective(context, pointSize, pointSpacing, distance);
+}
+
+function computeObjectScreenSpace(context: Context, object: OBB) {
+    // Update camera matrices
+    context.camera.camera3D.updateMatrixWorld();
+
+    // Get bounding sphere from the OBB's box3D
+    const box3 = object.box3D;
+    const sphere = new THREE.Sphere();
+    box3.getBoundingSphere(sphere);
+
+    // Transform sphere center to world space using the OBB's matrixWorld
+    const sphereCenterWorld = new THREE.Vector3();
+    sphereCenterWorld.copy(sphere.center);
+    sphereCenterWorld.applyMatrix4(object.matrixWorld);
+
+    // Get camera position in world space
+    const cameraPos = context.camera.camera3D.position;
+
+    // Calculate distance from camera to sphere center
+    const dx = cameraPos.x - sphereCenterWorld.x;
+    const dy = cameraPos.y - sphereCenterWorld.y;
+    const dz = cameraPos.z - sphereCenterWorld.z;
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    // If camera is inside or very close to the sphere, return maximum weight
+    if (distance - sphere.radius < 0) {
+        return Infinity;
+    }
+
+    // Handle perspective camera (similar to Potree)
+    if (context.camera.camera3D instanceof THREE.PerspectiveCamera) {
+        const fov = (context.camera.camera3D.fov * Math.PI) / 180;
+        const slope = Math.tan(fov / 2);
+        const projFactor = (0.5 * context.camera.height) / (slope * distance);
+        const screenPixelRadius = sphere.radius * projFactor;
+
+        return screenPixelRadius;
+    } else {
+        // Handle orthographic camera
+        // For orthographic, we can use the diagonal of the box projected to screen
+        const diagonal = box3.max.clone().sub(box3.min).length();
+        return diagonal;
+    }
 }
 
 function markForDeletion(elt: PointCloudNode) {
@@ -430,18 +475,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource> ex
                 });
             }
         }
-
-        if (elt.children && elt.children.length) {
-            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distanceToCamera);
-            if (elt.sse >= this.sseThreshold) {
-                return elt.children;
-            } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
-                }
-                return [];
-            }
-        }
     }
 
     /**
@@ -454,37 +487,52 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource> ex
      *
      * @return {pointCloudNode[]} The child nodes to update or [] if ther is none.
      */
-    update(context: Context, layer: this, elt: PointCloudNode) {
-        elt.visible = false;
+    update(context: Context, layer: this, root: PointCloudNode) {
+        root.traverse((node) => { node.visible = false; });
 
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
-            return [];
+        const stack = [root];
+        let numVisiblePoints = 0;
+        while (stack.length > 0) {
+            const node = stack.pop() as PointCloudNode;
+            if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < node.depth) {
+                markForDeletion(node);
+                continue;
+            }
+
+            const bbox = node.voxelOBB.box3D;
+            const object3d = node.voxelOBB;
+
+            node.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
+            node.visible = node.visible && numVisiblePoints + node.numPoints <= this.pointBudget;
+
+            if (numVisiblePoints + node.numPoints > this.pointBudget) {
+                break;
+            }
+
+            if (!node.visible) {
+                markForDeletion(node);
+                continue;
+            }
+
+            numVisiblePoints += node.numPoints;
+
+            point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorldInverse);
+            const distanceToCamera = bbox.distanceToPoint(point);
+
+            this.loadData(node, context, layer, distanceToCamera);
+
+            if (node.children && node.children.length) {
+                const weight = computeObjectScreenSpace(context, node.voxelOBB);
+                console.log(node.id, weight);
+                if (weight >= this.sseThreshold) {
+                    stack.push(...node.children);
+                } else {
+                    for (const child of node.children) {
+                        markForDeletion(child);
+                    }
+                }
+            }
         }
-
-        // get object on which to measure distance
-        let bbox;
-        let object3d;
-        if (elt.obj) {
-            object3d = elt.obj;
-            bbox = object3d.geometry.boundingBox as THREE.Box3;
-        } else {
-            object3d = elt.clampOBB;
-            bbox = object3d.box3D;
-        }
-
-        elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
-
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return;
-        }
-
-        // @ts-expect-error matrixWorldInverse is not typable
-        point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorldInverse);
-        const distanceToCamera = bbox.distanceToPoint(point);
-
-        return this.loadData(elt, context, layer, distanceToCamera);
     }
 
     postUpdate() {
@@ -494,44 +542,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource> ex
                 const count = pts.geometry.attributes.position.count;
                 pts.geometry.setDrawRange(0, count);
                 this.displayedCount += count;
-            }
-        }
-
-        if (this.displayedCount > this.pointBudget) {
-            // 2 different point count limit implementation, depending on the potree source
-            if (this.supportsProgressiveDisplay) {
-                // In this format, points are evenly distributed within a node,
-                // so we can draw a percentage of each node and still get a correct
-                // representation
-                const reduction = this.pointBudget / this.displayedCount;
-                for (const pts of this.group.children as THREE.Points[]) {
-                    if (pts.visible) {
-                        const count = Math.floor(pts.geometry.drawRange.count * reduction);
-                        if (count > 0) {
-                            pts.geometry.setDrawRange(0, count);
-                        } else {
-                            pts.visible = false;
-                        }
-                    }
-                }
-                this.displayedCount *= reduction;
-            } else {
-                // This format doesn't require points to be evenly distributed, so
-                // we're going to sort the nodes by "importance" (= on screen size)
-                // and display only the first N nodes
-                this.group.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
-
-                let limitHit = false;
-                this.displayedCount = 0;
-                for (const pts of this.group.children as THREE.Points[]) {
-                    const count = pts.geometry.attributes.position.count;
-                    if (limitHit || (this.displayedCount + count) > this.pointBudget) {
-                        pts.visible = false;
-                        limitHit = true;
-                    } else {
-                        this.displayedCount += count;
-                    }
-                }
             }
         }
 
