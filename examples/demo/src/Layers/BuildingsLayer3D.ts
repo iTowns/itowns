@@ -1,7 +1,7 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-import type { LayerPromiseType } from '../Types/LayerPromiseType';
-import { getSource } from '../Sources/BuildingsSource';
+import type { LayerPromiseType } from '../Types';
+import { BuildingsSource } from '../Sources';
 
 export const BuildingsLayer3D: LayerPromiseType = {
     id: 'VTBuilding3D',
@@ -16,7 +16,7 @@ export const BuildingsLayer3D: LayerPromiseType = {
                 BuildingsLayer3D.cachedLayer = new itowns.FeatureGeometryLayer(
                     BuildingsLayer3D.id, {
                         // @ts-expect-error source property undefined
-                        source: await getSource(),
+                        source: await BuildingsSource.getSource(),
                         zoom: { min: 15 },
                         onMeshCreated: meshCallback,
                         accurate: false,

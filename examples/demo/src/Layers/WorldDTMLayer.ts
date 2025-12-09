@@ -1,25 +1,24 @@
 import * as itowns from 'itowns';
-import type { LayerPromiseType } from '../Types/LayerPromiseType';
-import type { FetcherConfigType } from '../Types/FetcherConfigType';
+import type { LayerPromiseType, FetcherConfigType } from '../Types';
 
-export const WordDTMLayer: LayerPromiseType = {
+export const WorldDTMLayer: LayerPromiseType = {
     id: 'WORLD_DTM',
     layerPromise: undefined,
     cachedLayer: undefined,
     getLayer: () => {
-        if (WordDTMLayer.cachedLayer) {
-            return Promise.resolve(WordDTMLayer.cachedLayer);
+        if (WorldDTMLayer.cachedLayer) {
+            return Promise.resolve(WorldDTMLayer.cachedLayer);
         }
-        if (!WordDTMLayer.layerPromise) {
-            WordDTMLayer.layerPromise =
+        if (!WorldDTMLayer.layerPromise) {
+            WorldDTMLayer.layerPromise =
             (itowns.Fetcher.json(
-                `../layers/JSONLayers/${WordDTMLayer.id}.json`) as Promise<FetcherConfigType>)
+                `../layers/JSONLayers/${WorldDTMLayer.id}.json`) as Promise<FetcherConfigType>)
                 .then((config) => {
                     config.source = new itowns.WMTSSource(config.source);
-                    WordDTMLayer.cachedLayer = new itowns.ElevationLayer(config.id, config);
-                    return WordDTMLayer.cachedLayer;
+                    WorldDTMLayer.cachedLayer = new itowns.ElevationLayer(config.id, config);
+                    return WorldDTMLayer.cachedLayer;
                 });
         }
-        return WordDTMLayer.layerPromise;
+        return WorldDTMLayer.layerPromise;
     },
 };

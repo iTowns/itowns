@@ -1,8 +1,8 @@
 import * as itowns from 'itowns';
-import View3D from '../Views/View3D';
-import { LayerRepository } from '../Repositories/LayerRepository';
-import type { SceneType } from '../Types/SceneType';
-import blockEventsIfFromPanel from '../Utils/BlockEventsIfFromPanel';
+import { View3D } from '../Views';
+import * as Layers from '../Layers';
+import type { SceneType } from '../Types';
+import { BlockEventsIfFromPanel } from '../Utils';
 
 const configContainer = document.createElement('div');
 configContainer.id = 'point-cloud-config';
@@ -44,9 +44,9 @@ export const PointCloudScene: SceneType = {
 
         const view = PointCloudScene.view.getView();
 
-        PointCloudScene.layers.push(await LayerRepository.orthoLayer.getLayer());
-        PointCloudScene.layers.push(await LayerRepository.worldDTMLayer.getLayer());
-        PointCloudScene.layers.push(await LayerRepository.ignMntHighResLayer.getLayer());
+        PointCloudScene.layers.push(await Layers.OrthoLayer.getLayer());
+        PointCloudScene.layers.push(await Layers.WorldDTMLayer.getLayer());
+        PointCloudScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
 
         await PointCloudScene.view.addLayers(PointCloudScene.layers);
 
@@ -90,7 +90,7 @@ export const PointCloudScene: SceneType = {
         const viewerDiv = PointCloudScene.view.getViewerDiv();
         viewerDiv.appendChild(configContainer);
 
-        blockEventsIfFromPanel(viewerDiv, configContainer);
+        BlockEventsIfFromPanel(viewerDiv, configContainer);
 
         PointCloudScene.ready = true;
     },
