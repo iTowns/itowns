@@ -128,13 +128,19 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
             }
         }
 
+        let featurePickingInScene = false;
         for (const layer of nextScene.layers) {
             layer.visible = true;
             if (FeaturePickerService.layers.find(l => l.id === layer.id) &&
             nextScene.view instanceof View3D) {
                 FeaturePickerService.enable(nextScene.view);
+                featurePickingInScene = true;
             }
         }
+
+        FeaturePickerService.container!.style.display =
+            (featurePickingInScene) ? 'block' : 'none';
+
         resolve();
     });
 
