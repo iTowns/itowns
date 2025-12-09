@@ -115,7 +115,7 @@ describe('Entwine Point Tile', function () {
             const originalQuaternion = cam.quaternion.clone();
             cam.quaternion.identity(); // look away from dataset
             layer.update(context, layer, layer.root);
-            assert.strictEqual(layer.root.promise, undefined);
+            assert.strictEqual(layer.root.promise, null);
             cam.quaternion.copy(originalQuaternion);
         });
 

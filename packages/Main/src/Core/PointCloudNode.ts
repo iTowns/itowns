@@ -7,70 +7,122 @@ const size = new THREE.Vector3();
 const position = new THREE.Vector3();
 const translation = new THREE.Vector3();
 
-/**
- * @property {number} numPoints - The number of points in this node.
- * @property {PointCloudSource} source - Data source of the node.
- * @property {string} crs - The crs of the node.
- * @property {PointCloudNode[]} children - The children nodes of this node.
- * @property {OBB} voxelOBB - The node cubique obb.
- * @property {OBB} clampOBB - The cubique obb clamped to zmin and zmax.
- * @property {number} sse - The sse of the node set at an nitial value of -1.
- */
-class PointCloudNode extends THREE.EventDispatcher {
-    constructor(depth, numPoints = 0, source) {
+export interface PointCloudSource {
+    spacing: number;
+    crs: string;
+    zmin: number;
+    zmax: number;
+}
+
+type ExtentedOBB = OBB & { matrixWorldInverse: THREE.Matrix4 };
+
+abstract class PointCloudNode extends THREE.EventDispatcher {
+    /** The crs of the node. */
+    abstract crs: string;
+    /** Data source of the node. */
+    abstract source: PointCloudSource;
+
+    /** X position within the octree */
+    x: number;
+    /** Y position within the octree */
+    y: number;
+    /** Z position within the octree */
+    z: number;
+    /** The depth of the node in the tree */
+    depth: number;
+
+    /** The number of points in this node. */
+    numPoints: number;
+    /** The children nodes of this node. */
+    children: this[];
+    parent: this | undefined;
+
+    /** The node cubique obb. */
+    voxelOBB: ExtentedOBB;
+    /** The cubique obb clamped to zmin and zmax. */
+    clampOBB: ExtentedOBB;
+
+    // Properties used internally by PointCloud layer
+    visible: boolean;
+    /** The sse of the node set at an nitial value of -1. */
+    sse: number;
+    notVisibleSince: number | undefined;
+    promise: Promise<unknown> | null;
+    obj: THREE.Points | undefined;
+
+    private _center: Coordinates | undefined;
+    private _origin: Coordinates | undefined;
+    private _rotation: THREE.Quaternion | undefined;
+
+    constructor(depth: number, numPoints = 0) {
         super();
 
         this.depth = depth;
+
+        this.x = 0;
+        this.y = 0;
+        this.z = 0;
+
         this.numPoints = numPoints;
 
-        this.source = source;
-
         this.children = [];
-        this.voxelOBB = new OBB();
-        this.clampOBB = new OBB();
+        this.parent = undefined;
+
+        this.voxelOBB = new OBB() as ExtentedOBB;
+        this.clampOBB = new OBB() as ExtentedOBB;
         this.sse = -1;
+
+        this.visible = false;
+        this.promise = null;
     }
 
-    get pointSpacing() {
+    abstract get octreeIsLoaded(): boolean;
+    abstract get id(): string;
+    abstract get url(): string;
+    abstract load(networkOptions?: RequestInit): Promise<THREE.BufferGeometry>;
+    abstract loadOctree(): Promise<void>;
+
+    get pointSpacing(): number {
         return this.source.spacing / 2 ** this.depth;
     }
 
-    get id() {
-        throw new Error('In extended PointCloudNode, you have to implement the getter id!');
-    }
-
     // get the center of the node i.e. the center of the bounding box.
-    get center() {
+    get center(): Coordinates {
         if (this._center != undefined) { return this._center; }
         const centerBbox = new THREE.Vector3();
         this.voxelOBB.box3D.getCenter(centerBbox);
-        this._center =  new Coordinates(this.crs).setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrixWorld));
+        this._center =  new Coordinates(this.crs)
+            .setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrixWorld));
         return this._center;
     }
 
-    // the origin is the center of the bounding box projected on the z=O local plan, in the world referential.
-    get origin() {
+    // the origin is the center of the bounding box projected on the z=O
+    // local plan,in the world referential.
+    get origin(): Coordinates {
         if (this._origin != undefined) { return this._origin; }
         const centerCrsIn = proj4(this.crs, this.source.crs).forward(this.center);
-        this._origin =  new Coordinates(this.crs).setFromArray(proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
+        this._origin =  new Coordinates(this.crs)
+            .setFromArray(
+                proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
         return this._origin;
     }
 
     /**
-     * get the rotation between the local referentiel and the geocentrique one (if appliable).
-     *
-     * @returns {THREE.Quaternion}
+     * get the rotation between the local referentiel and the geocentrique one
+     * (if appliable).
      */
-    get rotation() {
+    get rotation(): THREE.Quaternion {
         if (this._rotation != undefined) { return this._rotation; }
         this._rotation = new THREE.Quaternion();
         if (proj4.defs(this.crs).projName === 'geocent') {
-            this._rotation = OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
+            this._rotation =
+            OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
         }
         return this._rotation;
     }
 
-    setOBBes(min, max) {
+    setOBBes(min: number[], max: number[]): void {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const root = this;
         const crs = {
             in: root.source.crs,
@@ -79,7 +131,7 @@ class PointCloudNode extends THREE.EventDispatcher {
         const zmin = root.source.zmin;
         const zmax = root.source.zmax;
 
-        let forward = (x => x);
+        let forward = (x: [number, number, number]) => x;
         if (crs.in !== crs.out) {
             try {
                 forward = proj4(crs.in, crs.out).forward;
@@ -145,7 +197,7 @@ class PointCloudNode extends THREE.EventDispatcher {
         root.clampOBB.matrixWorldInverse = root.voxelOBB.matrixWorldInverse;
     }
 
-    add(node, indexChild) {
+    add(node: this, indexChild: number): void {
         this.children.push(node);
         node.parent = this;
         this.createChildAABB(node, indexChild);
@@ -154,9 +206,10 @@ class PointCloudNode extends THREE.EventDispatcher {
     /**
      * Create an (A)xis (A)ligned (B)ounding (B)ox for the given node given
      * `this` is its parent.
-     * @param {CopcNode} childNode - The child node
+     * @param childNode - The child node
      */
-    createChildAABB(childNode) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    createChildAABB(childNode: this, _indexChild: number): void {
         // initialize the child node obb
         childNode.voxelOBB.copy(this.voxelOBB);
         const voxelBBox = this.voxelOBB.box3D;
@@ -199,36 +252,17 @@ class PointCloudNode extends THREE.EventDispatcher {
         childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
-    async loadOctree() {
-        throw new Error('In extended PointCloudNode, you have to implement the method loadOctree!');
-    }
-
-    networkOptions() {
-        return this.source.networkOptions;
-    }
-
-    async load() {
-        // Query octree/HRC if we don't have children yet.
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
-        }
-        return this.source.fetcher(this.url, this.networkOptions())
-            .then(file => this.source.parser(file, {
-                in: this,
-            }));
-    }
-
-    findCommonAncestor(node) {
+    findCommonAncestor(node: this): this | undefined {
         if (node.depth == this.depth) {
             if (node.id == this.id) {
                 return node;
             } else if (node.depth != 0) {
-                return this.parent.findCommonAncestor(node.parent);
+                return (this.parent as this).findCommonAncestor(node.parent as this);
             }
         } else if (node.depth < this.depth) {
-            return this.parent.findCommonAncestor(node);
+            return (this.parent as this).findCommonAncestor(node);
         } else {
-            return this.findCommonAncestor(node.parent);
+            return this.findCommonAncestor(node.parent as this);
         }
     }
 }
