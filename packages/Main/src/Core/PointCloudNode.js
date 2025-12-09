@@ -202,12 +202,16 @@ class PointCloudNode extends THREE.EventDispatcher {
         throw new Error('In extended PointCloudNode, you have to implement the method loadOctree!');
     }
 
-    async load(networkOptions = this.source.networkOptions) {
+    networkOptions() {
+        return this.source.networkOptions;
+    }
+
+    async load() {
         // Query octree/HRC if we don't have children yet.
         if (!this.octreeIsLoaded) {
             await this.loadOctree();
         }
-        return this.source.fetcher(this.url, networkOptions)
+        return this.source.fetcher(this.url, this.networkOptions())
             .then(file => this.source.parser(file, {
                 in: this,
             }));

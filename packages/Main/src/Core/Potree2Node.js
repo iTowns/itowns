@@ -50,6 +50,7 @@ class Potree2Node extends PotreeNode {
         return `${this.baseurl}/octree.bin`;
     }
 
+    // Beware: you should call this method after the hierarchy is loaded
     networkOptions(byteOffset = this.byteOffset, byteSize = this.byteSize) {
         const first = byteOffset;
         const last = first + byteSize - 1n;
