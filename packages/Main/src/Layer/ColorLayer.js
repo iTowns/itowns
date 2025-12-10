@@ -144,7 +144,9 @@ class ColorLayer extends RasterLayer {
         this.defineLayerProperty('sequence', this.sequence);
 
         this.transparent = transparent || (this.opacity < 1.0);
-        this.noTextureParentOutsideLimit = config.source ? config.source.isFileSource : false;
+        // Use config value if explicitly set, otherwise fall back to source's isFileSource property
+        this.noTextureParentOutsideLimit = config.noTextureParentOutsideLimit ??
+            (config.source ? config.source.isFileSource : false);
 
         this.effect_type = effect_type;
         this.effect_parameter = effect_parameter;

@@ -1,0 +1,322 @@
+<html>
+    <head>
+        <title>Itowns - PMTiles Vector Source</title>
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+                "lil-gui": "https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.esm.js"
+            }
+        }
+        </script>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <style type="text/css">
+            #description {
+                z-index: 2;
+                left: 10px;
+                max-width: 400px;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 10px;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            }
+
+            #description .marg {
+                margin: 10px;
+            }
+
+            #layerInfo {
+                font-size: 12px;
+                color: #555;
+                margin-top: 10px;
+            }
+        </style>
+
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="description">
+            <h3>PMTiles Vector Source</h3>
+            <p>Load vector tiles from a PMTiles archive:</p>
+            <input type="text" id="url" style="width: 100%; box-sizing: border-box;" placeholder="Enter PMTiles URL" />
+            <button id="loadButton" style="margin-top: 5px;">Load PMTiles</button>
+
+            <!-- Info -->
+            <div id="layerInfo" class="marg"></div>
+        </div>
+
+        <script type="module">
+            import * as THREE from 'three';
+            import { GUI } from 'lil-gui';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as itowns from 'itowns';
+
+            const {
+                TMSSource, WMTSSource, PMTilesVectorSource,
+                ColorLayer, ElevationLayer,
+                GlobeView, Coordinates, Fetcher, Style,
+            } = itowns;
+
+            // ---- Create a GlobeView ----
+
+            // Define camera initial position (matching 3dtiles_loader.html)
+            const placement = {
+                coord: new Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 12500000,
+            };
+
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            const view = new GlobeView(viewerDiv, placement, {
+                controls: { minDistance: 100 },
+            });
+
+            setupLoadingScreen(viewerDiv, view);
+
+            // ---- Add a basemap ----
+
+            Fetcher.json('./layers/JSONLayers/OPENSM.json').then((config) => {
+                const colorLayer = new ColorLayer('Ortho', {
+                    ...config,
+                    source: new TMSSource(config.source),
+                });
+                view.addLayer(colorLayer);
+            });
+
+            // ---- Add 3D terrain ----
+
+            function addElevationLayerFromConfig(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                const elevationLayer = new itowns.ElevationLayer(config.id, config);
+                view.addLayer(elevationLayer);
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+
+            // ---- PMTiles Vector Layer ----
+
+            let pmtilesLayer = null;
+            let currentPmtilesSource = null;
+            let gui = null;
+            let layersFolder = null;
+
+            // User-controlled opacity (persists through layer refreshes)
+            let userOpacity = 0.5;
+
+            // Create a simple layer style
+            function createLayerStyle() {
+                return new Style({
+                    fill: {
+                        color: '#4682b4',
+                        opacity: 1.0,
+                    },
+                    stroke: {
+                        color: '#ffffff',
+                        width: 1,
+                    },
+                    point: {
+                        color: '#4682b4',
+                        radius: 4,
+                        line: '#ffffff',
+                    },
+                });
+            }
+
+            // Refresh the layer by removing and re-adding it
+            async function refreshLayer(pmtilesSource) {
+                if (!pmtilesLayer || !pmtilesSource) {
+                    return;
+                }
+
+                const opacityToUse = userOpacity;
+
+                pmtilesSource.clearCache();
+                view.removeLayer('pmtiles-vectors');
+
+                pmtilesLayer = new ColorLayer('pmtiles-vectors', {
+                    source: pmtilesSource,
+                    transparent: true,
+                    opacity: opacityToUse,
+                    noTextureParentOutsideLimit: true,
+                    style: createLayerStyle(),
+                });
+
+                await view.addLayer(pmtilesLayer);
+                pmtilesLayer.opacity = opacityToUse;
+                view.notifyChange(pmtilesLayer);
+            }
+
+            // Setup lil-gui controls
+            function setupGui(pmtilesSource, names) {
+                if (gui) {
+                    gui.destroy();
+                }
+
+                gui = new GUI({ title: 'PMTiles Controls' });
+
+                // Opacity control
+                const layerSettings = { opacity: userOpacity };
+                gui.add(layerSettings, 'opacity', 0, 1, 0.01)
+                    .name('Opacity')
+                    .onChange((value) => {
+                        userOpacity = value;
+                        if (pmtilesLayer) {
+                            pmtilesLayer.opacity = value;
+                            view.notifyChange(pmtilesLayer);
+                        }
+                    });
+
+                // Layer visibility controls
+                if (names.length > 0) {
+                    layersFolder = gui.addFolder('Source Layers');
+
+                    const allLayersObj = { visible: true };
+                    layersFolder.add(allLayersObj, 'visible')
+                        .name('All Layers')
+                        .onChange((value) => {
+                            pmtilesSource.setAllLayersVisibility(value);
+                            layerControllers.forEach((ctrl) => {
+                                ctrl.setValue(value);
+                            });
+                            refreshLayer(pmtilesSource);
+                        });
+
+                    const layerControllers = [];
+                    names.forEach((layerName) => {
+                        const layerObj = { visible: pmtilesSource.getLayerVisibility(layerName) };
+                        const ctrl = layersFolder.add(layerObj, 'visible')
+                            .name(layerName)
+                            .onChange((value) => {
+                                pmtilesSource.setLayerVisibility(layerName, value);
+                                refreshLayer(pmtilesSource);
+                            });
+                        layerControllers.push(ctrl);
+                    });
+
+                    layersFolder.open();
+                }
+            }
+
+            function loadPMTiles(url) {
+                if (!url) {
+                    console.warn('No PMTiles URL provided');
+                    return;
+                }
+
+                // Remove existing PMTiles layer and GUI
+                if (pmtilesLayer) {
+                    view.removeLayer('pmtiles-vectors');
+                    pmtilesLayer = null;
+                    currentPmtilesSource = null;
+                }
+                if (gui) {
+                    gui.destroy();
+                    gui = null;
+                }
+
+                console.log('Loading PMTiles from:', url);
+                document.getElementById('layerInfo').innerHTML = '<p>Loading PMTiles header...</p>';
+
+                const pmtilesSource = new PMTilesVectorSource({ url });
+
+                // IMPORTANT: Wait for header to load BEFORE adding the layer
+                // This ensures extentInsideLimit has the correct bounds
+                pmtilesSource.whenReady.then((header) => {
+                    console.log('PMTiles header:', header);
+                    console.log('PMTiles metadata:', pmtilesSource._metadata);
+
+                    const vectorLayers = pmtilesSource._metadata?.vector_layers || [];
+                    const names = vectorLayers.map((l) => l.id);
+
+                    document.getElementById('layerInfo').innerHTML = `
+                        <p><b>PMTiles Info:</b></p>
+                        <p>Zoom: ${header.minZoom} - ${header.maxZoom}</p>
+                        <p>Bounds: [${header.minLon?.toFixed(4)}, ${header.minLat?.toFixed(4)}] to [${header.maxLon?.toFixed(4)}, ${header.maxLat?.toFixed(4)}]</p>
+                        <p>Layers: ${names.length}</p>
+                    `;
+
+                    // Setup lil-gui after layer is ready
+                    setupGui(pmtilesSource, names);
+                    currentPmtilesSource = pmtilesSource;
+
+                    // NOW create and add the layer - after extent is set
+                    pmtilesLayer = new ColorLayer('pmtiles-vectors', {
+                        source: pmtilesSource,
+                        transparent: true,
+                        opacity: userOpacity,
+                        noTextureParentOutsideLimit: true,
+                        style: createLayerStyle(),
+                    });
+
+                    view.addLayer(pmtilesLayer).then(() => {
+                        console.log('PMTiles layer added');
+                        pmtilesLayer.opacity = userOpacity;
+                        view.notifyChange(pmtilesLayer);
+                    }).catch((err) => {
+                        console.error('Error adding layer:', err);
+                    });
+
+                    // Move camera to PMTiles extent (only for non-global datasets)
+                    if (header.minLon != null && header.minLat != null) {
+                        const centerLon = (header.minLon + header.maxLon) / 2;
+                        const centerLat = (header.minLat + header.maxLat) / 2;
+                        const extentWidth = Math.abs(header.maxLon - header.minLon);
+                        const extentHeight = Math.abs(header.maxLat - header.minLat);
+                        const maxExtent = Math.max(extentWidth, extentHeight);
+
+                        // Check if the extent is global (covers most of the world)
+                        const isGlobalExtent = extentWidth > 300 || extentHeight > 150;
+
+                        if (!isGlobalExtent) {
+                            // For regional datasets, zoom to the extent
+                            const range = maxExtent * 111000 * 2;
+
+                            view.controls.lookAtCoordinate({
+                                coord: new Coordinates('EPSG:4326', centerLon, centerLat),
+                                range: Math.max(range, 1000),
+                                tilt: 45,
+                                heading: 0,
+                            });
+                        }
+                        // For global datasets, keep the initial view (like 3dtiles_loader)
+                    }
+                }).catch((err) => {
+                    console.error('Error loading PMTiles:', err);
+                    document.getElementById('layerInfo').innerHTML =
+                        `<p style="color: red;">Error: ${err.message}</p>`;
+                });
+            }
+
+            // ---- Event Handlers ----
+
+            document.getElementById('loadButton').addEventListener('click', () => {
+                loadPMTiles(document.getElementById('url').value);
+            });
+
+            document.getElementById('url').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    loadPMTiles(e.target.value);
+                }
+            });
+
+            // Expose for debugging
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+            window.loadPMTiles = loadPMTiles;
+
+        </script>
+    </body>
+</html>

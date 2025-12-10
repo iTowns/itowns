@@ -98,6 +98,8 @@ export { default as EntwinePointTileSource } from 'Source/EntwinePointTileSource
 export { default as CopcSource } from 'Source/CopcSource';
 export { default as CogSource } from 'Source/CogSource';
 export { default as VpcSource } from 'Source/VpcSource';
+export { default as PMTilesSource } from 'Source/PMTilesSource';
+export { default as PMTilesVectorSource } from 'Source/PMTilesVectorSource';
 
 // Parsers provided by default in iTowns
 // Custom parser can be implemented as wanted, as long as the main function

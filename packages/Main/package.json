@@ -52,6 +52,7 @@
   "dependencies": {
     "@itowns/geographic": "^2.46.0",
     "@mapbox/vector-tile": "^2.0.3",
+    "pmtiles": "^4.0.0",
     "@maplibre/maplibre-gl-style-spec": "^23.1.0",
     "@tmcw/togeojson": "^7.0.0",
     "@tweenjs/tween.js": "^25.0.0",
