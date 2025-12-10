@@ -72,7 +72,8 @@ class VpcLayer extends PointCloudLayer {
             this.setElevationRange();
 
             const boundsConforming = this.source.boundsConforming;
-            this.root = new PointCloudNode(0, this.source);
+            this.root = new PointCloudNode(0);
+            this.root.source = this.source;
             this.root.crs = this.crs;
             this.root.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
             this.root.depth = 0;
@@ -83,9 +84,11 @@ class VpcLayer extends PointCloudLayer {
                     voxelOBB: new OBB(),
                     clampOBB: new OBB(),
                     children: [],
+                    numPoints: -1,
                     waitingForSource: true,
                     source,
                     crs: this.crs,
+                    id: `mockRoot-${i}`,
                 };
                 PointCloudNode.prototype.setOBBes.call(mockRoot, boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
 
@@ -110,7 +113,7 @@ class VpcLayer extends PointCloudLayer {
         });
     }
 
-    loadData(elt, context, layer, bbox) {
+    async loadData(elt, context, layer, bbox) {
         if (elt.waitingForSource) {
             layer.source.instantiate(elt.source);
             elt.loadOctree

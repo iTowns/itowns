@@ -1,7 +1,8 @@
 import Fetcher from 'Provider/Fetcher';
-import PointCloudNode from 'Core/PointCloudNode';
+import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
+import PointCloudNode from './PointCloudNode';
 
-function buildVoxelKey(depth, x, y, z) {
+function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
     return `${depth}-${x}-${y}-${z}`;
 }
 
@@ -27,6 +28,14 @@ function buildVoxelKey(depth, x, y, z) {
  * components: `depth-x-y-z`.
  */
 class EntwinePointTileNode extends PointCloudNode {
+    readonly isEntwinePointTileNode: true;
+
+    source: EntwinePointTileSource;
+
+    voxelKey: string;
+    crs: string;
+    url: string;
+
     /**
      * Constructs a new instance of EntwinePointTileNode.
      *
@@ -50,9 +59,10 @@ class EntwinePointTileNode extends PointCloudNode {
      * be loaded.
      * @param {string} crs - The crs of the node.
      */
-    constructor(depth, x, y, z, source, numPoints = 0, crs) {
-        super(numPoints, source);
+    constructor(depth: number, x: number, y: number, z: number, source: EntwinePointTileSource, numPoints: number = 0, crs: string) {
+        super(numPoints);
         this.isEntwinePointTileNode = true;
+        this.source = source;
 
         this.depth = depth;
         this.x = x;
@@ -74,40 +84,48 @@ class EntwinePointTileNode extends PointCloudNode {
         return `${this.depth}${this.x}${this.y}${this.z}`;
     }
 
-    loadOctree() {
+    async loadOctree() {
         const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
-        return Fetcher.json(hierarchyUrl, this.source.networkOptions).then((hierarchy) => {
-            this.numPoints = hierarchy[this.voxelKey];
+        const hierarchy = await Fetcher.json(hierarchyUrl, this.source.networkOptions) as Record<string, number>;
+        this.numPoints = hierarchy[this.voxelKey];
 
-            const stack = [];
-            stack.push(this);
+        const stack = [];
+        stack.push(this);
 
-            while (stack.length) {
-                const node = stack.shift();
-                const depth = node.depth + 1;
-                const x = node.x * 2;
-                const y = node.y * 2;
-                const z = node.z * 2;
+        while (stack.length) {
+            const node = stack.shift() as EntwinePointTileNode;
+            const depth = node.depth + 1;
+            const x = node.x * 2;
+            const y = node.y * 2;
+            const z = node.z * 2;
 
-                node.findAndCreateChild(depth, x,     y,     z,     hierarchy, stack);
-                node.findAndCreateChild(depth, x + 1, y,     z,     hierarchy, stack);
-                node.findAndCreateChild(depth, x,     y + 1, z,     hierarchy, stack);
-                node.findAndCreateChild(depth, x + 1, y + 1, z,     hierarchy, stack);
-                node.findAndCreateChild(depth, x,     y,     z + 1, hierarchy, stack);
-                node.findAndCreateChild(depth, x + 1, y,     z + 1, hierarchy, stack);
-                node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
-                node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
-            }
-        });
+            node.findAndCreateChild(depth, x,     y,     z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y,     z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x,     y + 1, z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y + 1, z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x,     y,     z + 1, hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y,     z + 1, hierarchy, stack);
+            node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
+        }
     }
 
-    findAndCreateChild(depth, x, y, z, hierarchy, stack) {
+    async load(networkOptions = this.source.networkOptions) {
+        if (!this.octreeIsLoaded) {
+            await this.loadOctree();
+        }
+
+        const file = await this.source.fetcher(this.url, networkOptions);
+        return this.source.parser(file, { in: this });
+    }
+
+    findAndCreateChild(depth: number, x: number, y: number, z: number, hierarchy: Record<string, number>, stack: EntwinePointTileNode[]) {
         const voxelKey = buildVoxelKey(depth, x, y, z);
         const numPoints = hierarchy[voxelKey];
 
         if (typeof numPoints == 'number') {
             const child = new EntwinePointTileNode(depth, x, y, z, this.source, numPoints, this.crs);
-            this.add(child);
+            this.add(child as this, 0);
             stack.push(child);
         }
     }

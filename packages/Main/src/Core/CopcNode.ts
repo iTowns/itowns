@@ -1,7 +1,8 @@
 import { Hierarchy } from 'copc';
 import PointCloudNode from 'Core/PointCloudNode';
+import type CopcSource from 'Source/CopcSource';
 
-function buildVoxelKey(depth, x, y, z) {
+function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
     return `${depth}-${x}-${y}-${z}`;
 }
 
@@ -22,6 +23,14 @@ function buildVoxelKey(depth, x, y, z) {
  * components: `depth-x-y-z`.
  */
 class CopcNode extends PointCloudNode {
+    readonly isCopcNode: true;
+
+    source: CopcSource;
+
+    crs: string;
+    entryOffset: number;
+    entryLength: number;
+    voxelKey: string;
     /**
      * Constructs a new instance of a COPC Octree node
      *
@@ -36,9 +45,21 @@ class CopcNode extends PointCloudNode {
      * @param {number} [numPoints=0] - Number of points given by this entry.
      * @param {string} crs - The crs of the node.
      */
-    constructor(depth, x, y, z, entryOffset, entryLength, source, numPoints = 0, crs) {
-        super(numPoints, source);
+    constructor(
+        depth: number,
+        x: number,
+        y: number,
+        z: number,
+        entryOffset: number,
+        entryLength: number,
+        source: CopcSource,
+        numPoints: number = 0,
+        crs: string,
+    ) {
+        super(numPoints);
         this.isCopcNode = true;
+
+        this.source = source;
 
         this.entryOffset = entryOffset;
         this.entryLength = entryLength;
@@ -58,14 +79,18 @@ class CopcNode extends PointCloudNode {
     }
 
     get id() {
-        return `${this.depth}${this.x}${this.y}${this.z}`;
+        return `${this.depth}-${this.x}-${this.y}-${this.z}`;
+    }
+
+    get url() {
+        return this.source.url;
     }
 
     /**
      * @param {number} offset
      * @param {number} size
      */
-    async _fetch(offset, size) {
+    private async _fetch(offset: number, size: number) {
         return this.source.fetcher(this.source.url, {
             ...this.source.networkOptions,
             headers: {
@@ -93,7 +118,7 @@ class CopcNode extends PointCloudNode {
         const stack = [];
         stack.push(this);
         while (stack.length) {
-            const node = stack.shift();
+            const node = stack.shift() as CopcNode;
             const depth = node.depth + 1;
             const x = node.x * 2;
             const y = node.y * 2;
@@ -120,12 +145,19 @@ class CopcNode extends PointCloudNode {
      * @param {Hierarchy.Subtree} hierarchy - Octree's subtree
      * @param {CopcNode[]} stack - Stack of node candidates for traversal
      */
-    findAndCreateChild(depth, x, y, z, hierarchy, stack) {
+    findAndCreateChild(
+        depth: number,
+        x: number,
+        y: number,
+        z: number,
+        hierarchy: Hierarchy.Subtree,
+        stack: CopcNode[],
+    ) {
         const voxelKey = buildVoxelKey(depth, x, y, z);
 
-        let pointCount;
-        let offset;
-        let byteSize;
+        let pointCount: number;
+        let offset: number;
+        let byteSize: number;
 
         const node = hierarchy.nodes[voxelKey];
         if (node) {
@@ -151,7 +183,7 @@ class CopcNode extends PointCloudNode {
             pointCount,
             this.crs,
         );
-        this.add(child);
+        this.add(child as this, 0);
         stack.push(child);
     }
 
