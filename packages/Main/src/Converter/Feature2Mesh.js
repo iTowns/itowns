@@ -917,12 +917,13 @@ export default {
         }
         featureMesh.stylePropVersions ||= {};
         const spv = featureMesh.stylePropVersions;
-        let colors;
+        let colorAttr;
         if ((spv.color ?? 0) < (style.propVersions.color ?? 0)) {
             spv.color = style.propVersions.color;
-            colors = new Uint8Array(vertSize);
-            featureMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+            colorAttr = featureMesh.geometry.getAttribute('color');
+            colorAttr.needsUpdate = true;
         }
+        const colors = colorAttr?.array;
         let posAttr;
         if ((spv.extrusion_height ?? 0) < (style.propVersions.extrusion_height ?? 0) ||
             (spv.base_altitude ?? 0) < (style.propVersions.base_altitude ?? 0)) {
