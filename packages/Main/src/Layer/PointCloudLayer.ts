@@ -479,8 +479,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             return [];
         }
 
-        // @ts-expect-error matrixWorldInverse is not typable
-        point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorldInverse);
+        // TODO: See if we can limit the calcul of the matrixWorlInverse.
+        point.copy(context.camera.camera3D.position)
+            .applyMatrix4(object3d.matrixWorld.clone().invert());
+
         const distanceToCamera = bbox.distanceToPoint(point);
 
         return this.loadData(elt, context, layer, distanceToCamera);

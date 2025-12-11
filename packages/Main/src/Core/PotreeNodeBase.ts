@@ -1,12 +1,12 @@
-import * as THREE from 'three';
+import { Vector3, type Box3, type Group } from 'three';
 import PointCloudNode from './PointCloudNode';
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex`
 // of one aabb. (PotreeConverter protocol builds implicit octree hierarchy
 // by applying the same subdivision algo recursively)
-const dHalfLength = new THREE.Vector3();
+const dHalfLength = new Vector3();
 
-export function computeChildBBox(voxelBBox: THREE.Box3, childIndex: number) {
+export function computeChildBBox(voxelBBox: Box3, childIndex: number) {
     // Code inspired from potree
     const childVoxelBBox = voxelBBox.clone();
     voxelBBox.getCenter(childVoxelBBox.max);
@@ -51,7 +51,7 @@ export abstract class PotreeNodeBase extends PointCloudNode {
 
     childrenBitField: number;
     baseurl: string;
-    offsetBBox?: THREE.Box3;
+    offsetBBox?: Box3;
     crs: string;
 
     private _hierarchyKey: string | undefined;
@@ -111,8 +111,8 @@ export abstract class PotreeNodeBase extends PointCloudNode {
             childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
         }
 
-        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
-        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
+        (this.clampOBB.parent as Group).add(childNode.clampOBB);
+        childNode.clampOBB.updateMatrixWorld(true);
     }
 }
 
