@@ -40,9 +40,6 @@ export default {
             const quaternion = node.rotation.clone().invert();
             points.quaternion.copy(quaternion);
             points.updateMatrix();
-            points.updateMatrixWorld(true);
-
-            points.matrixWorldInverse = points.matrixWorld.clone().invert();
 
             points.layer = layer;
             points.userData.node = node;
