@@ -5,9 +5,9 @@ function ReferLayerProperties(material, layer) {
         material.layer = layer;
 
         const getOpacity = (opacity) => {
-            const styleOpacity = material.layer.style?.fill?.opacity;
-            const layerOpacity = material.layer.opacity * opacity;
-            return styleOpacity ? styleOpacity * layerOpacity : layerOpacity;
+            const styleOpacity = material.layer.style?.fill?.opacity ?? 1;
+            const layerOpacity = material.layer.opacity;
+            return styleOpacity * layerOpacity * (opacity ?? 1);
         };
 
         let opacity;
@@ -18,7 +18,7 @@ function ReferLayerProperties(material, layer) {
             });
         } else if (material.opacity != undefined) {
             Object.defineProperty(material, 'opacity', {
-                get: () => getOpacity(),
+                get: () => getOpacity(opacity),
             });
         }
 
