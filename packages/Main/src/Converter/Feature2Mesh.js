@@ -25,10 +25,6 @@ const maxValueUint16 = 2 ** 16 - 1;
 const maxValueUint32 = 2 ** 32 - 1;
 const crsWGS84 = 'EPSG:4326';
 
-// radial segments in a circle - used to model cylinders and spheres
-// Must be an even number for cylinder joints to look good
-const SEGMENTS = 8;
-
 class FeatureMesh extends THREE.Group {
     #currentCrs;
     #originalCrs;
@@ -895,27 +891,7 @@ export default {
         collection.updateMatrixWorld(true);
         collection.matrixWorld.copy(collection.origMatrixWorld);
 
-        let vertSize = feature.vertices?.length;
-        if (!vertSize) { return; }
-
         // only define attributes that need an update
-        switch (feature.type) {
-            case FEATURE_TYPES.POINT:
-                break;
-            case FEATURE_TYPES.LINE: {
-                if (style.isExtruded()) {
-                    vertSize = SEGMENTS * 2 * (vertSize - 3 * feature.geometries.length);
-                }
-                break;
-            }
-            case FEATURE_TYPES.POLYGON: {
-                if (style.isExtruded()) { vertSize *= 2; }
-                break;
-            }
-            default:
-                console.error(`Trying to update style of unsupported feature type: ${feature.type}`);
-                return;
-        }
         featureMesh.stylePropVersions ||= {};
         const spv = featureMesh.stylePropVersions;
         let colorAttr;
