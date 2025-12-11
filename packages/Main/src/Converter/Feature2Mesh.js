@@ -43,6 +43,7 @@ class FeatureMesh extends THREE.Group {
         this.#collection.quaternion.copy(collection.quaternion);
         this.#collection.position.copy(collection.position);
         this.#collection.scale.copy(collection.scale);
+        this.#collection.updateMatrix();
         this.#collection.matrixWorldInverse = this.#collection.matrixWorld.clone().invert();
         this.#collection.origMatrixWorld = collection.matrixWorld.clone();
 
