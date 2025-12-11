@@ -95,6 +95,7 @@ class VpcLayer extends PointCloudLayer {
                 const promise =
                     source.whenReady.then((src) => {
                         const root = _instantiateRootNode(src, this.crs);
+                        this.object3d.add(root.clampOBB);
                         this.root.children[i] = root;
                         return root.loadOctree().then(resolve)
                             .then(() => root);

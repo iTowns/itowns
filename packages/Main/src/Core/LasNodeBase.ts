@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import { Vector3, type Group } from 'three';
 import type { Hierarchy } from 'copc';
 import PointCloudNode, { PointCloudSource } from 'Core/PointCloudNode';
 
@@ -106,8 +106,8 @@ abstract class LasNodeBase extends PointCloudNode {
             childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
         }
 
-        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
-        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
+        (this.clampOBB.parent as Group).add(childNode.clampOBB);
+        childNode.clampOBB.updateMatrixWorld(true);
     }
 }
 
