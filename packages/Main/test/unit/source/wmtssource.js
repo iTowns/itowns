@@ -25,25 +25,25 @@ describe('WMTSSource', function () {
         const extent = new Tile('TMS:3857', 5, 0, 0);
         assert.ok(source.isWMTSSource);
         assert.ok(source.urlFromExtent(extent));
-        assert.ok(source.extentInsideLimit(extent, 5));
+        assert.ok(source.anyVisibleData(extent, 5));
     });
 
     it('should instance with tileMatrixSet', function () {
         paramsWMTS.tileMatrixSet = 'PM';
         paramsWMTS.tileMatrixSetLimits = {
-            0: { minTileRow: 0, maxTileRow: 1, minTileCol: 0, maxTileCol: 1 },
-            1: { minTileRow: 0, maxTileRow: 2, minTileCol: 0, maxTileCol: 2 },
-            2: { minTileRow: 0, maxTileRow: 4, minTileCol: 0, maxTileCol: 4 },
-            3: { minTileRow: 0, maxTileRow: 8, minTileCol: 0, maxTileCol: 8 },
-            4: { minTileRow: 0, maxTileRow: 16, minTileCol: 0, maxTileCol: 16 },
-            5: { minTileRow: 0, maxTileRow: 32, minTileCol: 0, maxTileCol: 32 },
+            0: { MinTileRow: 0, MaxTileRow: 1, MinTileCol: 0, MaxTileCol: 1 },
+            1: { MinTileRow: 0, MaxTileRow: 2, MinTileCol: 0, MaxTileCol: 2 },
+            2: { MinTileRow: 0, MaxTileRow: 4, MinTileCol: 0, MaxTileCol: 4 },
+            3: { MinTileRow: 0, MaxTileRow: 8, MinTileCol: 0, MaxTileCol: 8 },
+            4: { MinTileRow: 0, MaxTileRow: 16, MinTileCol: 0, MaxTileCol: 16 },
+            5: { MinTileRow: 0, MaxTileRow: 32, MinTileCol: 0, MaxTileCol: 32 },
         };
         const source = new WMTSSource(paramsWMTS);
         const extent = new Tile('TMS:3857', 5, 0, 0);
         source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
         assert.ok(source.isWMTSSource);
         assert.ok(source.urlFromExtent(extent));
-        assert.ok(source.extentInsideLimit(extent, 5));
+        assert.ok(source.anyVisibleData(extent, 5));
     });
 
     it('should use vendor specific parameters for the creation of the WMTS url', function () {

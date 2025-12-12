@@ -155,7 +155,7 @@ class GlobeView extends View {
                 });
             }
 
-            this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
+            // this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
         }
 
         // GlobeView needs this.camera.resize to set perpsective matrix camera

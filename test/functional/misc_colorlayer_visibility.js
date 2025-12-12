@@ -13,7 +13,7 @@ describe('misc_colorlayer_visibility', function _() {
     it('should display correct count of tiles', async () => {
         // test displayed tile
         const count = await page.evaluate(() => view.tileLayer.info.displayed.tiles.size);
-        assert.equal(count, 20);
+        assert.equal(count, 28);
     });
 
     it('should display correct color layer', async () => {
