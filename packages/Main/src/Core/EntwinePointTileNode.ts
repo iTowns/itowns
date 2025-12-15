@@ -1,13 +1,13 @@
 import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import type { BufferGeometry } from 'three';
 import Fetcher from 'Provider/Fetcher';
-import PointCloudNode from './PointCloudNode';
+import LasNodeBase from 'Core/LasNodeBase';
 
 function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
     return `${depth}-${x}-${y}-${z}`;
 }
 
-class EntwinePointTileNode extends PointCloudNode {
+class EntwinePointTileNode extends LasNodeBase {
     /** Used to checkout whether this
     * node is a EntwinePointTileNode. Default is `true`. You should not change
     * this, as it is used internally for optimisation. */
@@ -15,9 +15,6 @@ class EntwinePointTileNode extends PointCloudNode {
 
     source: EntwinePointTileSource;
 
-    /** The id of the node, constituted of the four
-     * components: `depth-x-y-z`. */
-    voxelKey: string;
     crs: string;
     url: string;
 
@@ -45,27 +42,13 @@ class EntwinePointTileNode extends PointCloudNode {
         numPoints: number = 0,
         crs: string,
     ) {
-        super(depth, numPoints);
+        super(depth, x, y, z, source, numPoints, crs);
         this.isEntwinePointTileNode = true;
         this.source = source;
-
-        this.x = x;
-        this.y = y;
-        this.z = z;
-
-        this.voxelKey = buildVoxelKey(depth, x, y, z);
 
         this.url = `${this.source.url}/ept-data/${this.voxelKey}.${this.source.extension}`;
 
         this.crs = crs;
-    }
-
-    override get octreeIsLoaded(): boolean {
-        return this.numPoints >= 0;
-    }
-
-    override get id(): string {
-        return `${this.depth}${this.x}${this.y}${this.z}`;
     }
 
     override async loadOctree(): Promise<void> {
@@ -104,7 +87,7 @@ class EntwinePointTileNode extends PointCloudNode {
         return this.source.parser(file, { in: this });
     }
 
-    findAndCreateChild(
+    override findAndCreateChild(
         depth: number,
         x: number, y: number, z: number,
         hierarchy: Record<string, number>,
