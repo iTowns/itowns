@@ -1,5 +1,5 @@
 import { Hierarchy } from 'copc';
-import PointCloudNode from 'Core/PointCloudNode';
+import LasNodeBase from 'Core/LasNodeBase';
 import type CopcSource from 'Source/CopcSource';
 import type { BufferGeometry } from 'three';
 
@@ -7,7 +7,7 @@ function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
     return `${depth}-${x}-${y}-${z}`;
 }
 
-class CopcNode extends PointCloudNode {
+class CopcNode extends LasNodeBase {
     /**  Used to checkout whether this
      * node is a CopcNode. Default is `true`. You should not change
      * this, as it is used internally for optimisation. */
@@ -16,14 +16,12 @@ class CopcNode extends PointCloudNode {
     source: CopcSource;
 
     crs: string;
+    url: string;
     /** Offset from the beginning of the file of
      * the node entry */
     entryOffset: number;
     /** Size of the node entry */
     entryLength: number;
-    /** The id of the node, constituted of the four
-     * components: `depth-x-y-z`. */
-    voxelKey: string;
     /**
      * Constructs a new instance of a COPC Octree node
      *
@@ -40,42 +38,23 @@ class CopcNode extends PointCloudNode {
      */
     constructor(
         depth: number,
-        x: number,
-        y: number,
-        z: number,
+        x: number, y: number, z: number,
         entryOffset: number,
         entryLength: number,
         source: CopcSource,
         numPoints: number = 0,
         crs: string,
     ) {
-        super(depth, numPoints);
+        super(depth, x, y, z, source, numPoints, crs);
         this.isCopcNode = true;
-
         this.source = source;
+
+        this.url = this.source.url;
+
+        this.crs = crs;
 
         this.entryOffset = entryOffset;
         this.entryLength = entryLength;
-
-        this.x = x;
-        this.y = y;
-        this.z = z;
-
-        this.voxelKey = buildVoxelKey(depth, x, y, z);
-
-        this.crs = crs;
-    }
-
-    override get octreeIsLoaded(): boolean {
-        return this.numPoints >= 0;
-    }
-
-    override get id(): string {
-        return `${this.depth}-${this.x}-${this.y}-${this.z}`;
-    }
-
-    override get url(): string {
-        return this.source.url;
     }
 
     /**
@@ -137,11 +116,9 @@ class CopcNode extends PointCloudNode {
      * @param hierarchy - Octree's subtree
      * @param stack - Stack of node candidates for traversal
      */
-    findAndCreateChild(
+    override findAndCreateChild(
         depth: number,
-        x: number,
-        y: number,
-        z: number,
+        x: number, y: number, z: number,
         hierarchy: Hierarchy.Subtree,
         stack: CopcNode[],
     ): void {
@@ -166,9 +143,7 @@ class CopcNode extends PointCloudNode {
 
         const child = new CopcNode(
             depth,
-            x,
-            y,
-            z,
+            x, y, z,
             offset,
             byteSize,
             this.source,

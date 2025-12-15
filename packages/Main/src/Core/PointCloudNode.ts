@@ -3,10 +3,6 @@ import OBB from 'Renderer/OBB';
 import proj4 from 'proj4';
 import { OrientationUtils, Coordinates } from '@itowns/geographic';
 
-const size = new THREE.Vector3();
-const position = new THREE.Vector3();
-const translation = new THREE.Vector3();
-
 export interface PointCloudSource {
     spacing: number;
     crs: string;
@@ -22,13 +18,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     /** Data source of the node. */
     abstract source: PointCloudSource;
 
-    /** X position within the octree */
-    x: number;
-    /** Y position within the octree */
-    y: number;
-    /** Z position within the octree */
-    z: number;
-    /** The depth of the node in the tree */
     depth: number;
 
     /** The number of points in this node. */
@@ -59,10 +48,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
         this.depth = depth;
 
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
-
         this.numPoints = numPoints;
 
         this.children = [];
@@ -81,6 +66,7 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     abstract get url(): string;
     abstract load(networkOptions?: RequestInit): Promise<THREE.BufferGeometry>;
     abstract loadOctree(): Promise<void>;
+    abstract createChildAABB(node: PointCloudNode, indexChild: number): void;
 
     get pointSpacing(): number {
         return this.source.spacing / 2 ** this.depth;
@@ -96,8 +82,8 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         return this._center;
     }
 
-    // the origin is the center of the bounding box projected on the z=O
-    // local plan,in the world referential.
+    // the origin is the center of the bounding box projected
+    // on the z=O local plan, in the world referential.
     get origin(): Coordinates {
         if (this._origin != undefined) { return this._origin; }
         const centerCrsIn = proj4(this.crs, this.source.crs).forward(this.center);
@@ -108,8 +94,8 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     }
 
     /**
-     * get the rotation between the local referentiel and the geocentrique one
-     * (if appliable).
+     * get the rotation between the local referentiel and
+     * the geocentrique one (if appliable).
      */
     get rotation(): THREE.Quaternion {
         if (this._rotation != undefined) { return this._rotation; }
@@ -201,55 +187,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         this.children.push(node);
         node.parent = this;
         this.createChildAABB(node, indexChild);
-    }
-
-    /**
-     * Create an (A)xis (A)ligned (B)ounding (B)ox for the given node given
-     * `this` is its parent.
-     * @param childNode - The child node
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createChildAABB(childNode: this, _indexChild: number): void {
-        // initialize the child node obb
-        childNode.voxelOBB.copy(this.voxelOBB);
-        const voxelBBox = this.voxelOBB.box3D;
-        const childVoxelBBox = childNode.voxelOBB.box3D;
-
-        // factor to apply, based on the depth difference (can be > 1)
-        const f = 2 ** (childNode.depth - this.depth);
-
-        // size of the child node bbox (Vector3), based on the size of the
-        // parent node, and divided by the factor
-        voxelBBox.getSize(size).divideScalar(f);
-
-        // position of the parent node, if it was at the same depth as the
-        // child, found by multiplying the tree position by the factor
-        position.copy(this).multiplyScalar(f);
-
-        // difference in position between the two nodes, at child depth, and
-        // scale it using the size
-        translation.subVectors(childNode, position).multiply(size);
-
-        // apply the translation to the child node bbox
-        childVoxelBBox.min.add(translation);
-
-        // use the size computed above to set the max
-        childVoxelBBox.max.copy(childVoxelBBox.min).add(size);
-
-        // get a clamped bbox from the voxel bbox
-        childNode.clampOBB.copy(childNode.voxelOBB);
-
-        const childClampBBox = childNode.clampOBB.box3D;
-
-        if (childClampBBox.min.z < this.source.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
-        }
-        if (childClampBBox.max.z > this.source.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
-        }
-
-        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
-        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
     findCommonAncestor(node: this): this | undefined {
