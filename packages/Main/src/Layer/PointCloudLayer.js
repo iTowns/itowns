@@ -349,26 +349,22 @@ class PointCloudLayer extends GeometryLayer {
         // get object on which to measure distance
         let bbox;
         let object3d;
-        let matrixWorld;
         if (elt.obj) {
             object3d = elt.obj;
             bbox = object3d.geometry.boundingBox;
-            matrixWorld = object3d.matrixWorld;
         } else {
             object3d = elt.clampOBB;
             bbox = object3d.box3D;
-            matrixWorld = new THREE.Matrix4();
-            matrixWorld.multiplyMatrices(this.object3d.matrixWorld, object3d.matrixWorld);
         }
 
-        elt.visible = context.camera.isBox3Visible(bbox, matrixWorld);
+        elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
 
         if (!elt.visible) {
             markForDeletion(elt);
             return;
         }
 
-        point.copy(context.camera.camera3D.position).applyMatrix4(matrixWorld.clone().invert());
+        point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorld.clone().invert());
 
         const distanceToCamera = bbox.distanceToPoint(point);
 

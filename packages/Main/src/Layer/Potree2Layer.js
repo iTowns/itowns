@@ -96,6 +96,9 @@ class Potree2Layer extends PointCloudLayer {
             const { boundingBox, hierarchy } = metadata;
             this.root.setOBBes(boundingBox.min, boundingBox.max);
 
+            this.object3d.add(this.root.clampOBB);
+            this.root.clampOBB.updateMatrixWorld(true);
+
             this.root.nodeType = 2;
             this.root.hierarchyByteOffset = 0n;
             this.root.hierarchyByteSize = BigInt(hierarchy.firstChunkSize);

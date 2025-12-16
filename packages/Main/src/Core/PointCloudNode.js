@@ -43,7 +43,7 @@ class PointCloudNode extends THREE.EventDispatcher {
         if (this._center != undefined) { return this._center; }
         const centerBbox = new THREE.Vector3();
         this.voxelOBB.box3D.getCenter(centerBbox);
-        this._center =  new Coordinates(this.crs).setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrixWorld));
+        this._center =  new Coordinates(this.crs).setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrix));
         return this._center;
     }
 
@@ -127,9 +127,6 @@ class PointCloudNode extends THREE.EventDispatcher {
         root.voxelOBB.quaternion.copy(rotation).invert();
 
         root.voxelOBB.updateMatrix();
-        root.voxelOBB.updateMatrixWorld(true);
-
-        root.voxelOBB.matrixWorldInverse = root.voxelOBB.matrixWorld.clone().invert();
 
         root.clampOBB.copy(root.voxelOBB);
 
@@ -140,8 +137,6 @@ class PointCloudNode extends THREE.EventDispatcher {
         if (clampBBox.max.z > zmin) {
             clampBBox.min.z = Math.max(clampBBox.min.z, zmin);
         }
-
-        root.clampOBB.matrixWorldInverse = root.voxelOBB.matrixWorldInverse;
     }
 
     add(node, indexChild) {
@@ -194,8 +189,8 @@ class PointCloudNode extends THREE.EventDispatcher {
             childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
         }
 
-        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
-        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
+        this.clampOBB.parent.add(childNode.clampOBB);
+        childNode.clampOBB.updateMatrixWorld(true);
     }
 
     async loadOctree() {

@@ -45,6 +45,9 @@ class CopcLayer extends PointCloudLayer {
             const { cube } = source.info;
             this.root.setOBBes(cube.slice(0, 3), cube.slice(3, 6));
 
+            this.object3d.add(this.root.clampOBB);
+            this.root.clampOBB.updateMatrixWorld(true);
+
             return this.root.loadOctree().then(resolve);
         });
     }

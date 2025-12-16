@@ -62,6 +62,9 @@ class PotreeLayer extends PointCloudLayer {
             this.root.setOBBes([boundingBox.lx, boundingBox.ly, boundingBox.lz],
                 [boundingBox.ux, boundingBox.uy, boundingBox.uz]);
 
+            this.object3d.add(this.root.clampOBB);
+            this.root.clampOBB.updateMatrixWorld(true);
+
             return this.root.loadOctree().then(resolve);
         });
     }
