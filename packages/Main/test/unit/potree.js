@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import { Object3D } from 'three';
 import PotreeLayer from 'Layer/PotreeLayer';
 import PotreeSource from 'Source/PotreeSource';
 import View from 'Core/View';
@@ -11,6 +12,7 @@ import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 
 const resources = new Map();
+const object3d = new Object3D();
 
 // potree 1.7
 const baseurl = 'https://raw.githubusercontent.com/potree/potree/develop/pointclouds/lion_takanawa';
@@ -151,6 +153,7 @@ describe('Potree', function () {
                     baseurl,
                     extension,
                 });
+                object3d.add(root.clampOBB);
                 root.add(nodeChild);
                 nodeChild.add(nodeGChild);
 
@@ -159,6 +162,7 @@ describe('Potree', function () {
 
             it('load octree', function (done) {
                 const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource);
+                object3d.add(root.clampOBB);
                 root.loadOctree()
                     .then(() => {
                         assert.equal(6, root.children.length);
@@ -168,6 +172,7 @@ describe('Potree', function () {
 
             it('load child node', function (done) {
                 const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource, 'EPSG:4978');
+                object3d.add(root.clampOBB);
                 root.loadOctree()
                     .then(() => root.children[0].load()
                         .then(() => {

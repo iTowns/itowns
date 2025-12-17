@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { Vector3 } from 'three';
+import { Vector3, Object3D } from 'three';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates } from '@itowns/geographic';
@@ -142,8 +142,10 @@ describe('Entwine Point Tile', function () {
 
     describe('Entwine Point Tile Node', function () {
         let root;
+        const object3d = new Object3D();
         before(function () {
             root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, 'EPSG:3857');
+            object3d.add(root.clampOBB);
         });
 
         after(async function () {
@@ -161,6 +163,7 @@ describe('Entwine Point Tile', function () {
                 mockParser.restore();
                 assert.ok(spyLoadOctree.calledOnce);
             });
+
             it('load a sub-node not yet loaded', async () => {
                 const node = root.children.filter(node => node.numPoints === -1)[0];
 
@@ -177,10 +180,11 @@ describe('Entwine Point Tile', function () {
 
         describe('finds the common ancestor of two nodes', () => {
             let root;
-            before(function () {
+            before('create octree', function () {
                 const source = { url: 'http://server.geo', extension: 'laz' };
                 root = new EntwinePointTileNode(0, 0, 0, 0, source, 4000);
                 root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
+                object3d.add(root.clampOBB);
 
                 root.add(new EntwinePointTileNode(1, 0, 0, 0, source, 3000));
                 root.add(new EntwinePointTileNode(1, 0, 0, 1, source, 3000));

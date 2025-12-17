@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import { Object3D } from 'three';
 import CopcSource from 'Source/CopcSource';
 import CopcLayer from 'Layer/CopcLayer';
 import CopcNode from 'Core/CopcNode';
@@ -43,9 +44,11 @@ describe('COPC', function () {
 
     describe('COPC Node', function () {
         let root;
-        before(function () {
+        before('create octree', function () {
+            const object3d = new Object3D();
             const source = { url: 'http://server.geo', extension: 'laz' };
             root = new CopcNode(0, 0, 0, 0, 0, 1000, source, 4000);
+            object3d.add(root.clampOBB);
             root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
             root.add(new CopcNode(1, 0, 0, 0, 0, 1000, source, 3000));
