@@ -1,12 +1,14 @@
 import assert from 'assert';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { Vector3, Object3D } from 'three';
+import View from 'Core/View';
 import Potree2Layer from 'Layer/Potree2Layer';
 import Potree2Source from 'Source/Potree2Source';
 import Potree2BinParser from 'Parser/Potree2BinParser';
-import View from 'Core/View';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import Potree2Node from 'Core/Potree2Node';
-import { Vector3 } from 'three';
 import Renderer from './bootstrap';
+
+const object3d = new Object3D();
 
 describe('Potree2', function () {
     let renderer;
@@ -98,6 +100,7 @@ describe('Potree2', function () {
 
         it('load octree', function (done) {
             const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source);
+            object3d.add(root.clampOBB);
             root.nodeType = 2;
             root.hierarchyByteOffset = 0n;
             root.hierarchyByteSize = 12650n;
@@ -110,6 +113,7 @@ describe('Potree2', function () {
 
         it('load child node', function (done) {
             const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source, 'EPSG:4978');
+            object3d.add(root.clampOBB);
             root.nodeType = 2;
             root.hierarchyByteOffset = 0n;
             root.hierarchyByteSize = 12650n;
