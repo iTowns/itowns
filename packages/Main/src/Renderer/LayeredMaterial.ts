@@ -78,151 +78,6 @@ const defaultStructLayers: Readonly<{
     },
 };
 
-// Deferred disposal data structures
-const pendingRtDisposal = new Map<string, THREE.WebGLArrayRenderTarget>();
-const viewRtUsage = new Map<number, Set<string>>();
-
-let currentRenderingViewId: number | undefined;
-
-const rtCache = new LRUCache<string, THREE.WebGLArrayRenderTarget>({
-    max: 200,
-    dispose: (rt, key) => {
-        pendingRtDisposal.set(key, rt);
-    },
-});
-
-/**
- * Updates the uniforms for layered textures,
- * including populating the DataArrayTexture
- * with content from individual 2D textures on the GPU.
- *
- * @param uniforms - The uniforms object for your material.
- * @param tiles - An array of RasterTile objects, each containing textures.
- * @param max - The maximum number of layers for the DataArrayTexture.
- * @param type - Layer set identifier: 'c' for color, 'e' for elevation.
- * @param renderer - The renderer used to render textures.
- */
-function updateLayersUniforms<Type extends 'c' | 'e'>(
-    uniforms: { [name: string]: THREE.IUniform },
-    tiles: RasterTile[],
-    max: number,
-    type: Type,
-    renderer: THREE.WebGLRenderer) {
-    // Aliases for readability
-    const uLayers = uniforms.layers.value;
-    const uTextures = uniforms.textures;
-    const uOffsetScales = uniforms.offsetScales.value;
-    const uTextureCount = uniforms.textureCount;
-
-    // Flatten the 2d array: [i, j] -> layers[_layerIds[i]].textures[j]
-    let count = 0;
-    let width = 0;
-    let height = 0;
-
-    // Determine total count of textures and dimensions
-    // (assuming all textures are same size)
-    let textureSetId: string = type;
-    for (const tile of tiles) {
-        // FIXME: RasterElevationTile are always passed to this function alone
-        // so this works, but it's really not great even ignoring the dynamic
-        // addition of a field.
-        // @ts-expect-error: adding field to passed layer
-        tile.textureOffset = count;
-
-        for (
-            let i = 0;
-            i < tile.textures.length && count < max;
-            ++i, ++count
-        ) {
-            const texture = tile.textures[i];
-            if (!texture) { continue; }
-
-            textureSetId += `${texture.id}.`;
-            uOffsetScales[count] = tile.offsetScales[i];
-            uLayers[count] = tile;
-
-            const img = texture.image;
-            if (!img || img.width <= 0 || img.height <= 0) {
-                console.error('Texture image not loaded or has zero dimensions');
-                uTextureCount.value = 0;
-                return;
-            } else if (count == 0) {
-                width = img.width;
-                height = img.height;
-            } else if (width !== img.width || height !== img.height) {
-                console.error('Texture dimensions mismatch');
-                uTextureCount.value = 0;
-                return;
-            }
-        }
-    }
-
-    let cachedRT = rtCache.get(textureSetId);
-
-    if (!cachedRT) {
-        cachedRT = pendingRtDisposal.get(textureSetId);
-        if (cachedRT) {
-            rtCache.set(textureSetId, cachedRT);
-            pendingRtDisposal.delete(textureSetId);
-        }
-    }
-
-    if (cachedRT) {
-        uTextures.value = cachedRT.texture;
-        uTextureCount.value = count;
-        return;
-    }
-
-    const rt = makeDataArrayRenderTarget(width, height, count, tiles, max, renderer);
-    if (!rt) {
-        uTextureCount.value = 0;
-        return;
-    }
-
-    rtCache.set(textureSetId, rt);
-    rt.texture.userData = { textureSetId };
-    uniforms.textures.value = rt.texture;
-
-    if (count > max) {
-        console.warn(
-            `LayeredMaterial: Not enough texture units (${max} < ${count}), `
-            + 'excess textures have been discarded.',
-        );
-    }
-    uTextureCount.value = count;
-}
-
-/**
- * Set the current view being rendered and
- * initialize its render target usage tracking.
- * @param viewId - The ID of the view currently being rendered
- */
-export function setCurrentRenderingView(viewId: number) {
-    currentRenderingViewId = viewId;
-
-    const viewUsage = viewRtUsage.get(viewId);
-    if (viewUsage) { viewUsage.clear(); }
-}
-
-/**
- * Disposes render targets that are queued for disposal and not used by any view
- */
-export function cleanupRts() {
-    for (const [id, renderTarget] of pendingRtDisposal) {
-        let usedByAnyView = false;
-        for (const [, usedRts] of viewRtUsage) {
-            if (usedRts.has(id)) {
-                usedByAnyView = true;
-                break;
-            }
-        }
-
-        if (!usedByAnyView) {
-            renderTarget.dispose();
-            pendingRtDisposal.delete(id);
-        }
-    }
-}
 
 export const ELEVATION_MODES = {
     RGBA: 0,
@@ -345,6 +200,11 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
     public elevationTileId: string | undefined;
 
     public layersNeedUpdate: boolean;
+
+    // Deferred disposal data structures
+    public pendingRtDisposal: LRUCache<string, THREE.WebGLArrayRenderTarget> | undefined;
+    public usedRts: Set<string> | undefined;
+    public rtCache: LRUCache<string, THREE.WebGLArrayRenderTarget> | undefined;
 
     public override defines: LayeredMaterialDefines;
 
@@ -535,6 +395,113 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         };
     }
 
+    /**
+     * Updates the uniforms for layered textures of a specific type,
+     * including populating the DataArrayTexture
+     * with content from individual 2D textures on the GPU.
+     *
+     * @param uniforms - The uniforms object for your material.
+     * @param tiles - An array of RasterTile objects, each containing textures.
+     * @param max - The maximum number of layers for the DataArrayTexture.
+     * @param type - Layer set identifier: 'c' for color, 'e' for elevation.
+     * @param renderer - The renderer used to render textures.
+     */
+    private _updateLayersUniformsForType<Type extends 'c' | 'e'>(
+        uniforms: { [name: string]: THREE.IUniform },
+        tiles: RasterTile[],
+        max: number,
+        type: Type,
+        renderer: THREE.WebGLRenderer) {
+        // Aliases for readability
+        const uLayers = uniforms.layers.value;
+        const uTextures = uniforms.textures;
+        const uOffsetScales = uniforms.offsetScales.value;
+        const uTextureCount = uniforms.textureCount;
+
+        // Flatten the 2d array: [i, j] -> layers[_layerIds[i]].textures[j]
+        let count = 0;
+        let width = 0;
+        let height = 0;
+
+        // Determine total count of textures and dimensions
+        // (assuming all textures are same size)
+        let textureSetId: string = type;
+        for (const tile of tiles) {
+            // FIXME: RasterElevationTile are always passed to this function
+            // alone so this works, but it's really not great even ignoring
+            // the dynamic addition of a field.
+            // @ts-expect-error: adding field to passed layer
+            tile.textureOffset = count;
+
+            for (
+                let i = 0;
+                i < tile.textures.length && count < max;
+                ++i, ++count
+            ) {
+                const texture = tile.textures[i];
+                if (!texture) { continue; }
+
+                textureSetId += `${texture.id}.`;
+                uOffsetScales[count] = tile.offsetScales[i];
+                uLayers[count] = tile;
+
+                const img = texture.image;
+                if (!img || img.width <= 0 || img.height <= 0) {
+                    console.error('Texture image not loaded or has zero dimensions');
+                    uTextureCount.value = 0;
+                    return;
+                } else if (count == 0) {
+                    width = img.width;
+                    height = img.height;
+                } else if (width !== img.width || height !== img.height) {
+                    console.error('Texture dimensions mismatch');
+                    uTextureCount.value = 0;
+                    return;
+                }
+            }
+        }
+
+        let cachedRT = this.rtCache!.get(textureSetId);
+
+        if (!cachedRT) {
+            cachedRT = this.pendingRtDisposal!.get(textureSetId);
+            if (cachedRT) {
+                this.rtCache!.set(textureSetId, cachedRT);
+                this.pendingRtDisposal!.delete(textureSetId);
+            }
+        }
+
+        if (cachedRT) {
+            uTextures.value = cachedRT.texture;
+            uTextureCount.value = count;
+            return;
+        }
+
+        const rt = makeDataArrayRenderTarget(width, height, count, tiles, max, renderer);
+        if (!rt) {
+            uTextureCount.value = 0;
+            return;
+        }
+
+        this.rtCache!.set(textureSetId, rt);
+        rt.texture.userData = { textureSetId };
+        uniforms.textures.value = rt.texture;
+
+        if (count > max) {
+            console.warn(
+                `LayeredMaterial: Not enough texture units (${max} < ${count}), `
+                + 'excess textures have been discarded.',
+            );
+        }
+        uTextureCount.value = count;
+    }
+
+    /**
+     * Updates uniforms for both color and elevation layers.
+     * Orchestrates the processing of visible color layers and elevation tiles.
+     *
+     * @param renderer - The renderer used to render textures into arrays.
+     */
     public updateLayersUniforms(renderer: THREE.WebGLRenderer): void {
         const colorlayers = this.colorTiles
             .filter(rt => rt.visible && rt.opacity > 0);
@@ -542,7 +509,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             this.colorTileIds.indexOf(a.id) - this.colorTileIds.indexOf(b.id),
         );
 
-        updateLayersUniforms(
+        this._updateLayersUniformsForType(
             this.getLayerUniforms('color'),
             colorlayers,
             this.defines.NUM_FS_TEXTURES,
@@ -552,7 +519,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
 
         if (this.elevationTileId !== undefined && this.getElevationTile()) {
             if (this.elevationTile !== undefined) {
-                updateLayersUniforms(
+                this._updateLayersUniformsForType(
                     this.getLayerUniforms('elevation'),
                     [this.elevationTile],
                     this.defines.NUM_VS_TEXTURES,
@@ -570,21 +537,14 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
      * Should be called every time this material is rendered.
      */
     public trackCurrentRenderTargetUsage(): void {
-        if (currentRenderingViewId === undefined) { return; }
-
-        if (!viewRtUsage.has(currentRenderingViewId)) {
-            viewRtUsage.set(currentRenderingViewId, new Set<string>());
-        }
-        const viewUsage = viewRtUsage.get(currentRenderingViewId)!;
-
         const colorTextures = this.getUniform('colorTextures');
         if (colorTextures?.userData?.textureSetId) {
-            viewUsage.add(colorTextures.userData.textureSetId);
+            this.usedRts!.add(colorTextures.userData.textureSetId);
         }
 
         const elevationTextures = this.getUniform('elevationTextures');
         if (elevationTextures?.userData?.textureSetId) {
-            viewUsage.add(elevationTextures.userData.textureSetId);
+            this.usedRts!.add(elevationTextures.userData.textureSetId);
         }
     }
 
