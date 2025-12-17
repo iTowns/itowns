@@ -461,10 +461,10 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             }
         }
 
-        let cachedRT = this.rtCache!.get(textureSetId);
+        let cachedRT = this.rtCache?.get(textureSetId);
 
         if (!cachedRT) {
-            cachedRT = this.pendingRtDisposal!.get(textureSetId);
+            cachedRT = this.pendingRtDisposal?.get(textureSetId);
             if (cachedRT) {
                 this.rtCache!.set(textureSetId, cachedRT);
                 this.pendingRtDisposal!.delete(textureSetId);
@@ -483,7 +483,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             return;
         }
 
-        this.rtCache!.set(textureSetId, rt);
+        this.rtCache?.set(textureSetId, rt);
         rt.texture.userData = { textureSetId };
         uniforms.textures.value = rt.texture;
 

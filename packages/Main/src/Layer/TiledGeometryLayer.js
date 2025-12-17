@@ -380,9 +380,6 @@ class TiledGeometryLayer extends GeometryLayer {
 
     convert(requester, extent) {
         return convertToTile.convert(requester, extent, this).then((tileMesh) => {
-            if (this.level0Nodes.length && this.level0Nodes[0].material != tileMesh.material) {
-                console.error('Inconsistent tile material detected');
-            }
             tileMesh.material.rtCache = this.rtCache;
             tileMesh.material.usedRts = this.usedRts;
             tileMesh.material.pendingRtDisposal = this.pendingRtDisposal;
