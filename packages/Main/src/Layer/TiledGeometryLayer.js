@@ -275,7 +275,7 @@ class TiledGeometryLayer extends GeometryLayer {
         this.colorLayersOrder = getColorLayersIdOrderedBySequence(context.colorLayers);
 
         // Dispose render targets that are queued for disposal and not used by this view
-        if (this.usedRts.length) { // important: only clean up if last loop did rendering
+        if (this.usedRts.size) { // important: only clean up if last loop did rendering
             for (const [id, renderTarget] of this.pendingRtDisposal) {
                 if (this.usedRts.has(id)) { continue; }
                 renderTarget.dispose();
