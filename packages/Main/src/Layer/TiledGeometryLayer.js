@@ -6,6 +6,7 @@ import convertToTile from 'Converter/convertToTile';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { getColorLayersIdOrderedBySequence } from 'Layer/ImageryLayers';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+import { LRUCache } from 'lru-cache';
 
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
@@ -17,6 +18,9 @@ const boundingSphereCenter = new THREE.Vector3();
  * as it is used internally for optimisation.
  * @property {boolean} hideSkirt (default false) - Used to hide the skirt (tile borders).
  * Useful when the layer opacity < 1
+ * @property {Map<string, THREE.WebGLArrayRenderTarget>} pendingRtDisposal
+ * @property {Set<string>} usedRts
+ * @property {LRUCache<string, THREE.WebGLArrayRenderTarget>} rtCache
  *
  * @extends GeometryLayer
  */
@@ -148,6 +152,25 @@ class TiledGeometryLayer extends GeometryLayer {
          */
         this.diffuse = diffuse;
 
+        /**
+         * @type {Map<string, THREE.WebGLArrayRenderTarget>}
+         */
+        this.pendingRtDisposal = new Map();
+        /**
+         * @type {Set<string>}
+         */
+        this.usedRts = new Set();
+
+        /**
+         * @type {LRUCache<string, THREE.WebGLArrayRenderTarget>}
+         */
+        this.rtCache = new LRUCache({
+            max: 200,
+            dispose: (rt, key) => {
+                this.pendingRtDisposal.set(key, rt);
+            },
+        });
+
         this.level0Nodes = [];
         const promises = [];
 
@@ -251,6 +274,18 @@ class TiledGeometryLayer extends GeometryLayer {
         // In future, the sequence must be returned by parent geometry layer.
         this.colorLayersOrder = getColorLayersIdOrderedBySequence(context.colorLayers);
 
+        // Dispose render targets that are queued for disposal and not used by this view
+        if (this.usedRts.length) { // important: only clean up if last loop did rendering
+            for (const [id, renderTarget] of this.pendingRtDisposal) {
+                if (this.usedRts.has(id)) { continue; }
+                renderTarget.dispose();
+                this.pendingRtDisposal.delete(id);
+            }
+
+            // initialize render target usage tracking for next render
+            this.usedRts.clear();
+        }
+
         let commonAncestor;
         for (const source of sources.values()) {
             if (source.isCamera) {
@@ -344,7 +379,15 @@ class TiledGeometryLayer extends GeometryLayer {
     }
 
     convert(requester, extent) {
-        return convertToTile.convert(requester, extent, this);
+        return convertToTile.convert(requester, extent, this).then((tileMesh) => {
+            if (this.level0Nodes.length && this.level0Nodes[0].material != tileMesh.material) {
+                console.error('Inconsistent tile material detected');
+            }
+            tileMesh.material.rtCache = this.rtCache;
+            tileMesh.material.usedRts = this.usedRts;
+            tileMesh.material.pendingRtDisposal = this.pendingRtDisposal;
+            return tileMesh;
+        });
     }
 
     // eslint-disable-next-line
