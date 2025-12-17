@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import PotreeNodeBase, { computeChildBBox } from 'Core/PotreeNodeBase';
 import type PotreeSource from 'Source/PotreeSource';
-import type { BufferGeometry } from 'three';
 
 class PotreeNode extends PotreeNodeBase {
     source: PotreeSource;
@@ -22,21 +21,15 @@ class PotreeNode extends PotreeNodeBase {
         return `${this.baseurl}/${this.hierarchyKey}.${this.source.extension}`;
     }
 
-    override async load(networkOptions = this.source.networkOptions): Promise<BufferGeometry> {
-        // Query octree/HRC if we don't have children yet.
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
-        }
-
-        const file = await this.source.fetcher(this.url, networkOptions);
-        return this.source.parser(file, { in: this });
+    override get networkOptions(): RequestInit {
+        return this.source.networkOptions;
     }
 
     override async loadOctree(): Promise<void> {
         this.offsetBBox = new THREE.Box3()
             .setFromArray(this.source.boundsConforming);// Only for Potree1
         const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
-        const blob = await this.source.fetcher(octreeUrl, this.source.networkOptions);
+        const blob = await this.fetcher(octreeUrl, this.networkOptions);
         const view = new DataView(blob);
         const stack = [];
         let offset = 0;

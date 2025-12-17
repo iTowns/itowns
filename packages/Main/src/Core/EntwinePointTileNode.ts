@@ -1,5 +1,4 @@
 import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
-import type { BufferGeometry } from 'three';
 import Fetcher from 'Provider/Fetcher';
 import LasNodeBase from 'Core/LasNodeBase';
 
@@ -51,10 +50,14 @@ class EntwinePointTileNode extends LasNodeBase {
         this.crs = crs;
     }
 
+    override fetcher(url: string, networkOptions: RequestInit): Promise<ArrayBuffer> {
+        return this.source.fetcher(url, networkOptions);
+    }
+
     override async loadOctree(): Promise<void> {
         const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
         const hierarchy =
-        await Fetcher.json(hierarchyUrl, this.source.networkOptions) as Record<string, number>;
+        await Fetcher.json(hierarchyUrl, this.networkOptions) as Record<string, number>;
         this.numPoints = hierarchy[this.voxelKey];
 
         const stack = [];
@@ -76,15 +79,6 @@ class EntwinePointTileNode extends LasNodeBase {
             node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
             node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
         }
-    }
-
-    override async load(networkOptions = this.source.networkOptions): Promise<BufferGeometry> {
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
-        }
-
-        const file = await this.source.fetcher(this.url, networkOptions);
-        return this.source.parser(file, { in: this });
     }
 
     override findAndCreateChild(

@@ -13,13 +13,14 @@ interface EntwinePointTileSourceParameters {
     /** he URL of the directory containing the whole
      * Entwine Point Tile structure. */
     url: string;
+    crs: string;
     colorDepth: number;
     networkOptions?: RequestInit;
 }
 
 interface EntwinePointTileMetadata {
-    boundsConforming: [number, number, number, number, number, number];
     bounds: [number, number, number, number, number, number];
+    boundsConforming: [number, number, number, number, number, number];
     span: number;
     dataType: 'laszip' | 'bin';
     srs: {
