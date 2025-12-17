@@ -42,6 +42,10 @@ abstract class LasNodeBase extends PointCloudNode {
         this.crs = crs;
     }
 
+    override get networkOptions(): RequestInit {
+        return this.source.networkOptions;
+    }
+
     override get octreeIsLoaded(): boolean {
         return this.numPoints >= 0;
     }

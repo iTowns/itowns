@@ -77,7 +77,13 @@ class Potree2Node extends PotreeNodeBase {
         return `${this.baseurl}/octree.bin`;
     }
 
-    networkOptions(byteOffset = this.byteOffset, byteSize = this.byteSize): RequestInit {
+    override get networkOptions(): RequestInit {
+        let byteOffset = this.byteOffset;
+        let byteSize = this.byteSize;
+        if (this.nodeType === NODE_TYPE.PROXY) {
+            byteOffset = this.hierarchyByteOffset;
+            byteSize = this.hierarchyByteSize;
+        }
         const first = byteOffset;
         const last = first + byteSize - 1n;
 
@@ -98,16 +104,12 @@ class Potree2Node extends PotreeNodeBase {
     }
 
     override async load(): Promise<BufferGeometry> {
-        // Query octree/HRC if we don't have children yet.
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
-        }
-
-        const file = await this.source.fetcher(this.url, this.networkOptions());
-        const data = await this.source.parser(file, { in: this });
-        this.loaded = true;
-        this.loading = false;
-        return data.geometry;
+        return super.load()
+            .then((data) => {
+                this.loaded = true;
+                this.loading = false;
+                return data;
+            });
     }
 
     override loadOctree(): Promise<void> {
@@ -120,8 +122,7 @@ class Potree2Node extends PotreeNodeBase {
 
     async loadHierarchy(): Promise<void> {
         const hierarchyUrl = `${this.baseurl}/hierarchy.bin`;
-        const buffer = await this.source.fetcher(
-            hierarchyUrl, this.networkOptions(this.hierarchyByteOffset, this.hierarchyByteSize));
+        const buffer = await this.fetcher(hierarchyUrl, this.networkOptions);
         this.parseHierarchy(buffer);
     }
 

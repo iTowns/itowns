@@ -113,6 +113,6 @@ export default {
 
         geometry.computeBoundingBox();
 
-        return { geometry, density: data.density };
+        return geometry;
     },
 };

@@ -1,7 +1,6 @@
 import { Hierarchy } from 'copc';
 import LasNodeBase from 'Core/LasNodeBase';
 import type CopcSource from 'Source/CopcSource';
-import type { BufferGeometry } from 'three';
 
 function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
     return `${depth}-${x}-${y}-${z}`;
@@ -57,23 +56,19 @@ class CopcNode extends LasNodeBase {
         this.entryLength = entryLength;
     }
 
-    /**
-     * @param offset - offset of the entry to fetch.
-     * @param size - size of the entry
-     */
-    private async _fetch(offset: number, size: number): Promise<ArrayBuffer> {
-        return this.source.fetcher(this.source.url, {
-            ...this.source.networkOptions,
+    override fetcher(url: string, networkOptions: RequestInit): Promise<ArrayBuffer> {
+        return this.source.fetcher(url, {
+            ...networkOptions,
             headers: {
-                ...this.source.networkOptions.headers,
-                range: `bytes=${offset}-${offset + size - 1}`,
+                ...networkOptions.headers,
+                range: `bytes=${this.entryOffset}-${this.entryOffset + this.entryLength - 1}`,
             },
         });
     }
 
     override async loadOctree(): Promise<void> {
         // Load hierarchy
-        const buffer = await this._fetch(this.entryOffset, this.entryLength);
+        const buffer = await this.fetcher(this.source.url, this.networkOptions);
         const hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
 
         // Update current node entry from loaded subtree
@@ -152,22 +147,6 @@ class CopcNode extends LasNodeBase {
         );
         this.add(child as this, 0);
         stack.push(child);
-    }
-
-    /**
-     * Load the COPC Buffer geometry for this node.
-     */
-    override async load(): Promise<BufferGeometry> {
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
-        }
-
-        const buffer = await this._fetch(this.entryOffset, this.entryLength);
-        const geometry = await this.source.parser(buffer, {
-            in: this,
-        });
-
-        return geometry;
     }
 }
 

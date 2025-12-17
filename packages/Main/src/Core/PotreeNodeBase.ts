@@ -93,6 +93,10 @@ export abstract class PotreeNodeBase extends PointCloudNode {
         return this._hierarchyKey;
     }
 
+    override fetcher(url: string, networkOptions: RequestInit): Promise<ArrayBuffer> {
+        return this.source.fetcher(url, networkOptions);
+    }
+
     override createChildAABB(childNode: this, childIndex: number): void {
         childNode.voxelOBB.copy(this.voxelOBB);
         childNode.voxelOBB.box3D = computeChildBBox(this.voxelOBB.box3D, childIndex);

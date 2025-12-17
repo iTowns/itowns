@@ -98,9 +98,6 @@ class CopcSource extends Source {
     zmin!: number;
     zmax!: number;
 
-    fetcher: (url: string, options?: RequestInit) => Promise<ArrayBuffer>;
-    parser: typeof LASParser.parseChunk;
-
     /**
      * @param config - Source configuration
      */
@@ -121,7 +118,7 @@ class CopcSource extends Source {
                     ...this.networkOptions.headers,
                     range: `bytes=${begin}-${end - 1}`,
                 },
-            }).then(buffer => new Uint8Array(buffer));
+            }).then((buffer: ArrayBuffer) => new Uint8Array(buffer));
 
         this.whenReady = getHeaders(get).then((metadata) => {
             this.header = metadata.header;
