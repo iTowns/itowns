@@ -182,7 +182,7 @@
     },
     "source": {
         "include": [ "examples/jsm/plugins", "packages" ],
-        "excludePattern": "(^|\\/|\\\\)lib"
+        "excludePattern": "(^|\\/|\\\\)lib|node_modules"
     },
     "plugins": ["plugins/markdown"]
 }
