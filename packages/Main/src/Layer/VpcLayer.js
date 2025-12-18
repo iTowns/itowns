@@ -110,7 +110,7 @@ class VpcLayer extends PointCloudLayer {
 
     loadData(elt, context, layer, bbox) {
         if (elt.waitingForSource) {
-            layer.source.instantiate(elt.source);
+            layer.source.needInstantiate(elt.source);
             elt.loadOctree
                 .then(eltLoaded => super.loadData(eltLoaded, context, layer, bbox))
                 .then(() => context.view.notifyChange(layer));
