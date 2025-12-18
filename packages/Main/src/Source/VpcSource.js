@@ -8,6 +8,10 @@ import { LRUCache } from 'lru-cache';
 
 const cachedSources = new LRUCache({ max: 500 });
 
+let compteur = 0;
+const limit = 20;
+const queue = [];
+
 /**
  * An object defining the source of Entwine Point Tile data. It fetches and
  * parses the main configuration file of Entwine Point Tile format,
@@ -44,6 +48,8 @@ class VpcSource extends Source {
         this.colorDepth = config.colorDepth;
 
         this.spacing = Infinity;
+
+        this.emptyQueue.isRunning = false;
 
         this.whenReady = Fetcher.json(this.url, this.networkOptions)
             .then((metadata) => {
@@ -86,7 +92,7 @@ class VpcSource extends Source {
                 this.urls = metadata.features.map(f => f.assets.data.href);
                 this.urls.forEach((url, i) => {
                     const whenReady = new Promise((re, rj) => {
-                        // waiting for this.instantiate(source);
+                        // waiting for source to be instantiate;
                         this._promises.push({ resolve: re, reject: rj });
                     }).then((res) => {
                         // replace the mock source by the real source (instantiated)
@@ -106,7 +112,6 @@ class VpcSource extends Source {
                     };
                     this.sources.push(mockSource);
                 });
-
                 return this.sources;
             });
     }
@@ -122,24 +127,58 @@ class VpcSource extends Source {
      * @param {object} source - The mock source used to instantiate the real source.
      * @param {object} source.url - The url of the source to instanciate.
      */
-    instantiate(source) {
-        let newSource;
+    needInstantiate(source) {
         const url = source.url;
-        let cachedSrc = cachedSources.get(url);
+        const sId = source.sId;
+
+        const cachedSrc = cachedSources.get(url);
+
         if (!cachedSrc) {
-            if (url.includes('.copc')) {
-                newSource = new CopcSource({ url });
-            } else if (url.includes('.json')) {
-                newSource = new EntwinePointTileSource({ url });
-            } else {
-                const msg = '[VPCLayer]: stack point cloud format not supporter';
-                console.warn(msg);
-                this.handlingError(msg);
+            if (queue.map(elem => elem.url).includes(url)) {
+                return;
             }
-            cachedSrc = newSource;
-            cachedSources.set(url, cachedSrc);
+            queue.push({ url, sId });
+            if (this.emptyQueue.isRunning === false) {
+                this.emptyQueue.isRunning = true;
+                this.emptyQueue();
+            }
         }
-        this._promises[source.sId].resolve(cachedSrc.whenReady);
+    }
+
+    instantiate(url, sId) {
+        let newSource;
+        if (url.includes('.copc')) {
+            newSource = new CopcSource({ url });
+        } else if (url.includes('.json')) {
+            newSource = new EntwinePointTileSource({ url });
+        } else {
+            const msg = '[VPCLayer]: stack point cloud format not supporter';
+            console.warn(msg);
+            this.handlingError(msg);
+        }
+        cachedSources.set(url, newSource);
+        this._promises[sId].resolve(newSource.whenReady);
+        return newSource;
+    }
+
+    emptyQueue() {
+        setTimeout(() => {
+            let runLoop = true;
+            if (compteur < limit) {
+                compteur++;
+                const source = queue.shift();
+                if (source !== undefined) {
+                    const newSource = this.instantiate(source.url, source.sId);
+                    newSource.whenReady.then(() => {
+                        compteur--;
+                    });
+                } else {
+                    runLoop = false;
+                    this.emptyQueue.isRunning = false;
+                }
+            }
+            if (runLoop) { this.emptyQueue(); }
+        }, 0);
     }
 }
 
