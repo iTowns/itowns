@@ -125,7 +125,7 @@ iTowns EMS bundle must import in `importmap`  and use in `module` script.
 {
     "imports": {
         "itowns": "node_modules/itowns/dist/itowns.js",
-        "three": "https://unpkg.com/three@0.174.0/build/three.module.js"
+        "three": "https://unpkg.com/three@0.182.0/build/three.module.js"
     }
 }
 </script>
