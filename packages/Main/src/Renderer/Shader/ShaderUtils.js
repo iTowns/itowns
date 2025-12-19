@@ -6,7 +6,7 @@ const reMain = new RegExp(pattern_Main);
 export default {
     patchMaterialForLogDepthSupport(material) {
         // Check if the shader does not already use the log depth buffer
-        if (material.vertexShader.includes('USE_LOGDEPTHBUF')
+        if (material.vertexShader.includes('USE_LOGARITHMIC_DEPTH_BUFFER')
             || material.vertexShader.includes('logdepthbuf_pars_vertex')) {
             return;
         }
@@ -27,7 +27,7 @@ export default {
         material.fragmentShader = `${material.fragmentShader.slice(0, idx)}\n#include <logdepthbuf_fragment>\n${material.fragmentShader.slice(idx)}`;
 
         material.defines = {
-            USE_LOGDEPTHBUF: 1,
+            USE_LOGARITHMIC_DEPTH_BUFFER: 1,
             USE_LOGDEPTHBUF_EXT: 1,
         };
     },

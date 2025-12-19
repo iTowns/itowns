@@ -478,8 +478,6 @@ threeExamples.LegacyGLTFLoader = ( function () {
         6406: THREE.AlphaFormat,
         6407: THREE.RGBAFormat,
         6408: THREE.RGBAFormat,
-        6409: THREE.LuminanceFormat,
-        6410: THREE.LuminanceAlphaFormat
     };
 
     var WEBGL_TEXTURE_DATATYPES = {
