@@ -42,8 +42,6 @@ export default {
             points.updateMatrix();
             points.updateMatrixWorld(true);
 
-            points.matrixWorldInverse = points.matrixWorld.clone().invert();
-
             points.layer = layer;
             points.userData.node = node;
             return points;

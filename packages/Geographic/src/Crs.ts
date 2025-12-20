@@ -137,7 +137,7 @@ export function isGeocentric(crs: ProjectionLike) {
 export function isValid(crs: ProjectionLike) {
     const proj = proj4.defs(crs);
     if (!proj) {
-        throw new Error(`Undefined crs '${crs}'. Add it with proj4.defs('${crs}', string)`);
+        throw new Error(`Undefined crs '${crs}'. Add it with itowns.CRS.defs('${crs}', wktString)`);
     }
     if (!unitFromProj4Unit(proj)) {
         throw new Error(`No valid unit found for crs '${crs}', found ${proj.units}`);

@@ -364,7 +364,8 @@ class PointCloudLayer extends GeometryLayer {
             return;
         }
 
-        point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorldInverse);
+        point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorld.clone().invert());
+
         const distanceToCamera = bbox.distanceToPoint(point);
 
         return this.loadData(elt, context, layer, distanceToCamera);

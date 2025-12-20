@@ -1,49 +1,55 @@
 import assert from 'assert';
+import { Group } from 'three';
 import PotreeLayer from 'Layer/PotreeLayer';
 import PotreeNode from 'Core/PotreeNode';
 
 describe('preUpdate PotreeLayer', function () {
     const context = { camera: { height: 1, camera3D: { fov: 1 } } };
+    const source = { baseurl: 'server.geo' };
     const layer = {
         id: 'a',
-        source: { baseurl: 'server.geo' },
+        source,
         hierarchyStepSize: 1,
+        object3d: new Group(),
     };
-    layer.root = new PotreeNode(4000, 0, layer);
-    layer.root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
-    layer.root.add(new PotreeNode(3000, 0, layer), 1, layer.root);
-    layer.root.children[0].obj = { layer, isPoints: true };
-    layer.root.add(new PotreeNode(3000, 0, layer), 2, layer.root);
-    layer.root.children[1].obj = { layer, isPoints: true };
-    layer.root.add(new PotreeNode(3000, 0, layer), 3, layer.root);
-    layer.root.children[2].obj = { layer, isPoints: true };
+    before('create octree', () => {
+        layer.root = new PotreeNode(4000, 0, source);
+        layer.root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
-    layer.root.children[0].add(new PotreeNode(2000, 0, layer), 1, layer.root);
-    layer.root.children[0].children[0].obj = { layer, isPoints: true };
-    layer.root.children[0].add(new PotreeNode(2000, 0, layer), 2, layer.root);
-    layer.root.children[0].children[1].obj = { layer, isPoints: true };
-    layer.root.children[1].add(new PotreeNode(2000, 0, layer), 1, layer.root);
-    layer.root.children[1].children[0].obj = { layer, isPoints: true };
-    layer.root.children[2].add(new PotreeNode(2000, 0, layer), 2, layer.root);
-    layer.root.children[2].children[0].obj = { layer, isPoints: true };
-    layer.root.children[2].add(new PotreeNode(2000, 0, layer), 3, layer.root);
-    layer.root.children[2].children[1].obj = { layer, isPoints: true };
+        layer.root.add(new PotreeNode(3000, 0, source), 1);
+        layer.root.children[0].obj = { layer, isPoints: true };
+        layer.root.add(new PotreeNode(3000, 0, source), 2);
+        layer.root.children[1].obj = { layer, isPoints: true };
+        layer.root.add(new PotreeNode(3000, 0, source), 3);
+        layer.root.children[2].obj = { layer, isPoints: true };
 
-    layer.root.children[0].children[0].add(new PotreeNode(1000, 0, layer), 1, layer.root);
-    layer.root.children[0].children[0].children[0].obj = { layer, isPoints: true };
-    layer.root.children[0].children[0].add(new PotreeNode(1000, 0, layer), 5, layer.root);
-    layer.root.children[0].children[0].children[1].obj = { layer, isPoints: true };
-    layer.root.children[0].children[1].add(new PotreeNode(1000, 0, layer), 4, layer.root);
-    layer.root.children[0].children[1].children[0].obj = { layer, isPoints: true };
-    layer.root.children[2].children[1].add(new PotreeNode(1000, 0, layer), 1, layer.root);
-    layer.root.children[2].children[1].children[0].obj = { layer, isPoints: true };
-    layer.root.children[2].children[1].add(new PotreeNode(1000, 0, layer), 2, layer.root);
-    layer.root.children[2].children[1].children[1].obj = { layer, isPoints: true };
-    layer.root.children[2].children[1].add(new PotreeNode(1000, 0, layer), 3, layer.root);
-    layer.root.children[2].children[1].children[2].obj = { layer, isPoints: true };
-    layer.root.children[2].children[1].add(new PotreeNode(1000, 0, layer), 4, layer.root);
-    layer.root.children[2].children[1].children[3].obj = { layer, isPoints: true };
+        layer.root.children[0].add(new PotreeNode(2000, 0, source), 1);
+        layer.root.children[0].children[0].obj = { layer, isPoints: true };
+        layer.root.children[0].add(new PotreeNode(2000, 0, source), 2);
+        layer.root.children[0].children[1].obj = { layer, isPoints: true };
+        layer.root.children[1].add(new PotreeNode(2000, 0, source), 1);
+        layer.root.children[1].children[0].obj = { layer, isPoints: true };
+        layer.root.children[2].add(new PotreeNode(2000, 0, source), 2);
+        layer.root.children[2].children[0].obj = { layer, isPoints: true };
+        layer.root.children[2].add(new PotreeNode(2000, 0, source), 3);
+        layer.root.children[2].children[1].obj = { layer, isPoints: true };
+
+        layer.root.children[0].children[0].add(new PotreeNode(1000, 0, source), 1);
+        layer.root.children[0].children[0].children[0].obj = { layer, isPoints: true };
+        layer.root.children[0].children[0].add(new PotreeNode(1000, 0, source), 5);
+        layer.root.children[0].children[0].children[1].obj = { layer, isPoints: true };
+        layer.root.children[0].children[1].add(new PotreeNode(1000, 0, source), 4);
+        layer.root.children[0].children[1].children[0].obj = { layer, isPoints: true };
+        layer.root.children[2].children[1].add(new PotreeNode(1000, 0, source), 1);
+        layer.root.children[2].children[1].children[0].obj = { layer, isPoints: true };
+        layer.root.children[2].children[1].add(new PotreeNode(1000, 0, source), 2);
+        layer.root.children[2].children[1].children[1].obj = { layer, isPoints: true };
+        layer.root.children[2].children[1].add(new PotreeNode(1000, 0, source), 3);
+        layer.root.children[2].children[1].children[2].obj = { layer, isPoints: true };
+        layer.root.children[2].children[1].add(new PotreeNode(1000, 0, source), 4);
+        layer.root.children[2].children[1].children[3].obj = { layer, isPoints: true };
+    });
 
     it('should return root if no change source', () => {
         const sources = new Set();
