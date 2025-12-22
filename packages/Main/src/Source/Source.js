@@ -8,7 +8,6 @@ import GTXParser from 'Parser/GTXParser';
 import ISGParser from 'Parser/ISGParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
-// import Cache from 'Core/Scheduler/Cache';
 import { LRUCache } from 'lru-cache';
 
 /** @private */
@@ -202,6 +201,11 @@ class Source {
     // eslint-disable-next-line
     extentInsideLimit(extent) {
         throw new Error('In extented Source, you have to implement the method extentInsideLimit!');
+    }
+
+    // eslint-disable-next-line
+    anyVisibleData(extent) {
+        throw new Error('In extented Source, you have to implement the method isVisibleData!');
     }
 }
 
