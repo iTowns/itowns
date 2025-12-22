@@ -6,7 +6,6 @@ import { Coordinates, ellipsoidSizes } from '@itowns/geographic';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
-import SkyManager from 'Core/Prefab/Globe/SkyManager';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -164,10 +163,6 @@ class GlobeView extends View {
         if (options.webXR) {
             this.webXR = new WebXR(this, typeof options.webXR === 'boolean' ? {} : options.webXR);
             this.webXR.initializeWebXR();
-        }
-
-        if (options.realisticLighting || options.realisticLighting === undefined) {
-            this.skyManager = new SkyManager(this);
         }
     }
 

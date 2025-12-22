@@ -33,8 +33,14 @@ of the authors and should not be interpreted as representing official policies,
     either expressed or implied, of the FreeBSD Project.
  */
 
-import PointCloudLayer from 'Layer/PointCloudLayer';
+import PointCloudLayer, { type PointCloudLayerParameters } from 'Layer/PointCloudLayer';
 import Potree2Node from 'Core/Potree2Node';
+import type Potree2Source from 'Source/Potree2Source';
+
+interface Potree2LayerParameters extends PointCloudLayerParameters{
+    crs?: string;
+    source: Potree2Source;
+}
 
 /**
  * @property {boolean} isPotreeLayer - Used to checkout whether this layer
@@ -43,7 +49,10 @@ import Potree2Node from 'Core/Potree2Node';
  *
  * @extends PointCloudLayer
  */
-class Potree2Layer extends PointCloudLayer {
+class Potree2Layer extends PointCloudLayer<Potree2Source> {
+    readonly isPotree2Layer: true;
+    metadata?: unknown;
+
     /**
      * Constructs a new instance of Potree2 layer.
      *
@@ -59,25 +68,21 @@ class Potree2Layer extends PointCloudLayer {
      *
      * View.prototype.addLayer.call(view, points);
      *
-     * @param {string} id - The id of the layer, that should be unique. It is
+     * @param id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
-     * {@link View} that already has a layer going by that id.
-     * @param {Object} config - Configuration, all elements in it
+     * View that already has a layer going by that id.
+     * @param config - Configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name. See the list of properties to know which one can be specified.
-     * @param {string} [config.crs=ESPG:4326] - The CRS of the {@link View} this
+     * @param config.crs - The CRS of the View this
      * layer will be attached to. This is used to determine the extent of this
      * layer.  Default to `EPSG:4326`.
      */
-    constructor(id, config) {
+    constructor(id: string, config: Potree2LayerParameters) {
         super(id, config);
 
-        /**
-         * @type {boolean}
-         * @readonly
-         */
         this.isPotree2Layer = true;
 
         const resolve = this.addInitializationStep();
@@ -85,21 +90,24 @@ class Potree2Layer extends PointCloudLayer {
             this.metadata = metadata;
 
             const normal = Array.isArray(metadata.attributes) &&
-               metadata.attributes.find(elem => elem.name.startsWith('NORMAL'));
+               metadata.attributes.find((elem: { name: string }) => elem.name.startsWith('NORMAL'));
             if (normal) {
+                // @ts-expect-error PointsMaterial is not typed
                 this.material.defines[normal.name] = 1;
             }
 
             this.setElevationRange();
 
-            this.root = new Potree2Node(0, 0, this.source, this.crs);
+            const root = new Potree2Node(0, 0, this.source, this.crs);
             const { boundingBox, hierarchy } = metadata;
-            this.root.setOBBes(boundingBox.min, boundingBox.max);
+            root.setOBBes(boundingBox.min, boundingBox.max);
 
-            this.root.nodeType = 2;
-            this.root.hierarchyByteOffset = 0n;
-            this.root.hierarchyByteSize = BigInt(hierarchy.firstChunkSize);
-            this.root.byteOffset = 0;
+            root.nodeType = 2;
+            root.hierarchyByteOffset = 0n;
+            root.hierarchyByteSize = BigInt(hierarchy.firstChunkSize);
+            root.byteOffset = 0n;
+
+            this.root = root;
 
             return this.root.loadOctree().then(resolve);
         });

@@ -2,13 +2,66 @@ import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
 import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
+import type OBB from 'Renderer/OBB';
+import TinyQueue from 'tinyqueue';
+import type PointCloudNode from 'Core/PointCloudNode';
 
 const point = new THREE.Vector3();
 const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
 bboxMesh.geometry.boundingBox = box3;
 
-function computeSSEPerspective(context, pointSize, pointSpacing, distance) {
+export interface PointCloudSource {
+    zmin: number;
+    zmax: number;
+}
+
+export interface PointCloudLayerParameters {
+    source: PointCloudSource;
+    object3d?: THREE.Group;
+    group?: THREE.Group;
+    bboxes?: THREE.Group;
+    octreeDepthLimit?: number;
+    pointBudget?: number;
+    pointSize?: number;
+    sseThreshold?: number;
+    minIntensityRange?: number;
+    maxIntensityRange?: number;
+    minElevationRange?: number;
+    maxElevationRange?: number;
+    minAngleRange?: number;
+    maxAngleRange?: number;
+    material?: THREE.Material;
+    mode?: number;
+}
+
+interface Context {
+    camera: {
+        camera3D: THREE.PerspectiveCamera;
+        preSSE: number;
+        width: number;
+        height: number;
+        isBox3Visible: (bbox: THREE.Box3, matrixWorld: THREE.Matrix4) => boolean;
+    };
+    scheduler: {
+        execute: (command: {
+            layer: PointCloudLayer;
+            requester: PointCloudNode;
+            view: object;
+            priority: number;
+            redraw: boolean;
+            earlyDropFunction?: (cmd: { requester: PointCloudNode }) => boolean;
+        }) => Promise<THREE.Points>;
+    };
+    view: object;
+}
+
+function computeSSEPerspective(
+    context: Context,
+    pointSize: number,
+    pointSpacing: number,
+    distance: number,
+) {
     if (distance <= 0) {
         return Infinity;
     }
@@ -21,7 +74,11 @@ function computeSSEPerspective(context, pointSize, pointSpacing, distance) {
     return Math.max(0.0, onScreenSpacing - pointSize);
 }
 
-function computeSSEOrthographic(context, pointSize, pointSpacing) {
+function computeSSEOrthographic(
+    context: Context,
+    pointSize: number,
+    pointSpacing: number,
+) {
     // Given an identity view matrix, project pointSpacing from world space to
     // clip space. v' = vVP = vP
     const v = new THREE.Vector4(pointSpacing);
@@ -35,15 +92,64 @@ function computeSSEOrthographic(context, pointSize, pointSpacing) {
     return Math.max(0.0, distance - pointSize);
 }
 
-function computeScreenSpaceError(context, pointSize, pointSpacing, distance) {
-    if (context.camera.camera3D.isOrthographicCamera) {
+function computeScreenSpaceError(
+    context: Context,
+    pointSize: number,
+    pointSpacing: number,
+    distance: number,
+) {
+    if (context.camera.camera3D instanceof THREE.OrthographicCamera) {
         return computeSSEOrthographic(context, pointSize, pointSpacing);
     }
 
     return computeSSEPerspective(context, pointSize, pointSpacing, distance);
 }
 
-function markForDeletion(elt) {
+function computeObjectScreenSpace(context: Context, object: OBB) {
+    // Update camera matrices
+    context.camera.camera3D.updateMatrixWorld();
+
+    // Get bounding sphere from the OBB's box3D
+    const box3 = object.box3D;
+    const sphere = new THREE.Sphere();
+    box3.getBoundingSphere(sphere);
+
+    // Transform sphere center to world space using the OBB's matrixWorld
+    const sphereCenterWorld = new THREE.Vector3();
+    sphereCenterWorld.copy(sphere.center);
+    sphereCenterWorld.applyMatrix4(object.matrixWorld);
+
+    // Get camera position in world space
+    const cameraPos = context.camera.camera3D.position;
+
+    // Calculate distance from camera to sphere center
+    const dx = cameraPos.x - sphereCenterWorld.x;
+    const dy = cameraPos.y - sphereCenterWorld.y;
+    const dz = cameraPos.z - sphereCenterWorld.z;
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    // If camera is inside or very close to the sphere, return maximum weight
+    if (distance - sphere.radius < 0) {
+        return Infinity;
+    }
+
+    // Handle perspective camera (similar to Potree)
+    if (context.camera.camera3D instanceof THREE.PerspectiveCamera) {
+        const fov = (context.camera.camera3D.fov * Math.PI) / 180;
+        const slope = Math.tan(fov / 2);
+        const projFactor = (0.5 * context.camera.height) / (slope * distance);
+        const screenPixelRadius = sphere.radius * projFactor;
+
+        return screenPixelRadius;
+    } else {
+        // Handle orthographic camera
+        // For orthographic, we can use the diagonal of the box projected to screen
+        const diagonal = box3.max.clone().sub(box3.min).length();
+        return diagonal;
+    }
+}
+
+function markForDeletion(elt: PointCloudNode) {
     if (elt.obj) {
         elt.obj.visible = false;
     }
@@ -58,38 +164,24 @@ function markForDeletion(elt) {
     }
 }
 
-function changeIntensityRange(layer) {
+function changeIntensityRange(layer: PointCloudLayer) {
+    // @ts-expect-error PointsMaterial is not typed yet
     layer.material.intensityRange?.set(layer.minIntensityRange, layer.maxIntensityRange);
 }
 
-function changeElevationRange(layer) {
+function changeElevationRange(layer: PointCloudLayer) {
+    // @ts-expect-error PointsMaterial is not typed yet
     layer.material.elevationRange?.set(layer.minElevationRange, layer.maxElevationRange);
 }
 
-function changeAngleRange(layer) {
+function changeAngleRange(layer: PointCloudLayer) {
+    // @ts-expect-error PointsMaterial is not typed yet
     layer.material.angleRange?.set(layer.minAngleRange, layer.maxAngleRange);
 }
 
 /**
  * The basis for all point clouds related layers.
  *
- * @property {boolean} isPointCloudLayer - Used to checkout whether this layer
- * is a PointCloudLayer. Default is `true`. You should not change this, as it is
- * used internally for optimisation.
- * @property {THREE.Group|THREE.Object3D} group - Contains the created
- * `THREE.Points` meshes, usually with an instance of a `THREE.Points` per node.
- * @property {THREE.Group|THREE.Object3D} bboxes - Contains the bounding boxes
- * (`THREE.Box3`) of the tree, usually one per node.
- * @property {number} octreeDepthLimit - The depth limit at which to stop
- * browsing the octree. Can be used to limit the browsing, without having to
- * edit manually the source of the point cloud. No limit by default (`-1`).
- * @property {number} [pointBudget=2000000] - Maximum number of points to
- * display at the same time. This influences the performance of rendering.
- * Default to two millions points.
- * @property {number} [sseThreshold=2] - Threshold of the **S**creen **S**pace
- * **E**rror. Default to `2`.
- * @property {number} [pointSize=4] - The size (in pixels) of the points.
- * Default to `4`.
  * @property {THREE.Material|PointsMaterial} [material=new PointsMaterial] - The
  * material to use to display the points of the cloud. Be default it is a new
  * `PointsMaterial`.
@@ -106,7 +198,86 @@ function changeAngleRange(layer) {
  *
  * @extends GeometryLayer
  */
-class PointCloudLayer extends GeometryLayer {
+abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource> extends GeometryLayer {
+    /**
+     * Read-only flag to assert that a given object is of type PointCloudLayer.
+     * Used internally for optimisation.
+     */
+    readonly isPointCloudLayer: true;
+
+    /** Used internally for scheduling tasks. */
+    readonly protocol: 'pointcloud';
+
+    // @ts-expect-error Source is not typed yet
+    source: S;
+
+    /**
+     * Container group for the points.
+     * Add this to the three.js scene in order to render it.
+     */
+    readonly group: THREE.Group;
+
+    /**
+     * Container group for the points bounding boxes.
+     * Add this to the three.js scene in order to render it.
+     */
+    readonly bboxes: THREE.Group;
+
+    /**
+     * Maximum depth to which points will be loaded and rendered.
+     * Setting it to 1 will only render the root node.
+     * Default to `Infinity`.
+     */
+    octreeDepthLimit: number;
+
+    /**
+     * Maximum number of points to display at the same time.
+     * Defaults to 2 millions points.
+     */
+    pointBudget: number;
+
+    /**
+     * Size of the points (in pixels) rendered on the screen.
+     * In attenuated point size mode, this value is used as basis for the
+     * attenuation.
+     * Defaults to 2 pixels.
+     */
+    pointSize: number;
+
+    /**
+     * Screen space error (in pixels) to target when updating the geometry.
+     * Points below this threshold will not rendered.
+     * Defaults to 2 pixels.
+     */
+    sseThreshold: number;
+
+    /** Minimal intensity value of the layer. */
+    minIntensityRange!: number;
+    /** Maximal intensity value of the layer. */
+    maxIntensityRange!: number;
+    /** Minimal elevation value of the layer. */
+    minElevationRange!: number;
+    /** Maximal elevation value of the layer. */
+    maxElevationRange!: number;
+    /** Minimal angle value of the layer. */
+    minAngleRange!: number;
+    /** Maximal angle value of the layer. */
+    maxAngleRange!: number;
+
+    /** Number of points displayed in the last update. */
+    displayedCount: number;
+
+    /**
+     * @deprecated This property is no longer used and will be removed in
+     * a future version.
+     */
+    supportsProgressiveDisplay: boolean;
+
+    /** Root node of the point cloud tree. */
+    root: PointCloudNode | undefined;
+
+    material: THREE.PointsMaterial;
+
     /**
      * Constructs a new instance of point cloud layer.
      * Constructs a new instance of a Point Cloud Layer. This should not be used
@@ -124,7 +295,7 @@ class PointCloudLayer extends GeometryLayer {
      * @param {number}  [options.minElevationRange] - Min value for the elevation range (default value will be taken from the source.metadata).
      * @param {number}  [options.maxElevationRange] - Max value for the elevation range (default value will be taken from the source.metadata).
      */
-    constructor(id, config = {}) {
+    constructor(id: string, config: PointCloudLayerParameters) {
         const {
             object3d = new THREE.Group(),
             group = new THREE.Group(),
@@ -146,10 +317,6 @@ class PointCloudLayer extends GeometryLayer {
 
         super(id, object3d, geometryLayerConfig);
 
-        /**
-         * @type {boolean}
-         * @readonly
-         */
         this.isPointCloudLayer = true;
         this.protocol = 'pointcloud';
 
@@ -164,25 +331,9 @@ class PointCloudLayer extends GeometryLayer {
 
         this.group.updateMatrixWorld();
 
-        // default config
-        /**
-         * @type {number}
-         */
         this.octreeDepthLimit = octreeDepthLimit;
-
-        /**
-         * @type {number}
-         */
         this.pointBudget = pointBudget;
-
-        /**
-         * @type {number}
-         */
         this.pointSize = pointSize;
-
-        /**
-         * @type {number}
-         */
         this.sseThreshold = sseThreshold;
 
         this.defineLayerProperty('minIntensityRange', minIntensityRange, changeIntensityRange);
@@ -192,22 +343,28 @@ class PointCloudLayer extends GeometryLayer {
         this.defineLayerProperty('minAngleRange', minAngleRange, changeAngleRange);
         this.defineLayerProperty('maxAngleRange', maxAngleRange, changeAngleRange);
 
-        /**
-         * @type {THREE.Material}
-         */
+        // @ts-expect-error PointsMaterial is not typed yet
         this.material = material;
         if (!this.material.isMaterial) {
+            // @ts-expect-error PointsMaterial is not typed yet
             this.material.intensityRange = new THREE.Vector2(this.minIntensityRange, this.maxIntensityRange);
+            // @ts-expect-error PointsMaterial is not typed yet
             this.material.elevationRange = new THREE.Vector2(this.minElevationRange, this.maxElevationRange);
+            // @ts-expect-error PointsMaterial is not typed yet
             this.material.angleRange = new THREE.Vector2(this.minAngleRange, this.maxAngleRange);
+            // @ts-expect-error PointsMaterial is not typed yet
             this.material = new PointsMaterial(this.material);
         }
 
+        // @ts-expect-error PointsMaterial is not typed yet
         this.material.mode = mode || PNTS_MODE.COLOR;
         /**
          * @type {PointCloudNode | undefined}
          */
         this.root = undefined;
+
+        this.displayedCount = 0;
+        this.supportsProgressiveDisplay = false;
     }
 
     setElevationRange() {
@@ -215,7 +372,8 @@ class PointCloudLayer extends GeometryLayer {
         this.maxElevationRange = this.maxElevationRange ?? this.source.zmax;
     }
 
-    preUpdate(context, changeSources) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    preUpdate(context: Context, changeSources: any) {
         // See https://cesiumjs.org/hosted-apps/massiveworlds/downloads/Ring/WorldScaleTerrainRendering.pptx
         // slide 17
         context.camera.preSSE =
@@ -226,8 +384,11 @@ class PointCloudLayer extends GeometryLayer {
             this.material.visible = this.visible;
             this.material.opacity = this.opacity;
             this.material.size = this.pointSize;
+            // @ts-expect-error PointsMaterial is not typed yet
             this.material.scale = context.camera.preSSE;
+            // @ts-expect-error PointsMaterial is not typed yet
             if (this.material.updateUniforms) {
+                // @ts-expect-error PointsMaterial is not typed yet
                 this.material.updateUniforms();
             }
         }
@@ -280,7 +441,7 @@ class PointCloudLayer extends GeometryLayer {
      *
      * @return {pointCloudNode[]} The child nodes to update (if needed).
      */
-    loadData(elt, context, layer, distanceToCamera) {
+    loadData(elt: PointCloudNode, context: Context, layer: this, distanceToCamera: number) {
         elt.notVisibleSince = undefined;
 
         // only load geometry if this elements has points
@@ -298,32 +459,20 @@ class PointCloudLayer extends GeometryLayer {
                     priority,
                     redraw: true,
                     earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
-                }).then((pts) => {
+                }).then((pts: THREE.Points) => {
                     elt.obj = pts;
 
                     // make sure to add it here, otherwise it might never
                     // be added nor cleaned
                     this.group.add(elt.obj);
                     elt.obj.updateMatrixWorld(true);
-                }).catch((err) => {
+                }).catch((err: { isCancelledCommandException: boolean }) => {
                     if (!err.isCancelledCommandException) {
                         return err;
                     }
                 }).finally(() => {
                     elt.promise = null;
                 });
-            }
-        }
-
-        if (elt.children && elt.children.length) {
-            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distanceToCamera) / this.sseThreshold;
-            if (elt.sse >= 1) {
-                return elt.children;
-            } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
-                }
-                return [];
             }
         }
     }
@@ -338,41 +487,67 @@ class PointCloudLayer extends GeometryLayer {
      *
      * @return {pointCloudNode[]} The child nodes to update or [] if ther is none.
      */
-    update(context, layer, elt) {
-        elt.visible = false;
+    update(context: Context, layer: this, root: PointCloudNode) {
+        root.traverse((node) => { node.visible = false; });
 
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
-            return [];
+        const rootWithWeight = { node: root, weight: Infinity };
+        const stack = new TinyQueue([rootWithWeight], (a, b) => {
+            if (b.weight < a.weight) {
+                return -1;
+            }
+            if (b.weight > a.weight) {
+                return 1;
+            }
+            return 0;
+        });
+        let numVisiblePoints = 0;
+        while (stack.length > 0) {
+            const { node } = stack.pop() as { node: PointCloudNode };
+            // console.log('node 1', node.id);
+            if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < node.depth) {
+                markForDeletion(node);
+                continue;
+            }
+            // console.log('node 2', node.id, node.depth);
+
+            const bbox = node.voxelOBB.box3D;
+            const object3d = node.voxelOBB;
+
+            node.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
+            // console.log('node 3', node.id, node.visible);
+            node.visible = node.visible && numVisiblePoints + node.numPoints <= this.pointBudget;
+            // console.log('node 4', node.id, node.visible);
+
+            if (numVisiblePoints + node.numPoints > this.pointBudget) {
+                break;
+            }
+
+            // console.log('node 5', node.id, node.visible);
+
+            if (!node.visible) {
+                markForDeletion(node);
+                continue;
+            }
+
+            // console.log('node 6', node.id, node.visible);
+
+            numVisiblePoints += node.numPoints;
+
+            point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorldInverse);
+            const distanceToCamera = bbox.distanceToPoint(point);
+
+            this.loadData(node, context, layer, distanceToCamera);
+
+            for (const child of node.children) {
+                const childWeight = computeObjectScreenSpace(context, child.voxelOBB);
+                stack.push({ node: child, weight: childWeight });
+            }
         }
-
-        // get object on which to measure distance
-        let bbox;
-        let object3d;
-        if (elt.obj) {
-            object3d = elt.obj;
-            bbox = object3d.geometry.boundingBox;
-        } else {
-            object3d = elt.clampOBB;
-            bbox = object3d.box3D;
-        }
-
-        elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
-
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return;
-        }
-
-        point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorldInverse);
-        const distanceToCamera = bbox.distanceToPoint(point);
-
-        return this.loadData(elt, context, layer, distanceToCamera);
     }
 
     postUpdate() {
         this.displayedCount = 0;
-        for (const pts of this.group.children) {
+        for (const pts of this.group.children as THREE.Points[]) {
             if (pts.visible) {
                 const count = pts.geometry.attributes.position.count;
                 pts.geometry.setDrawRange(0, count);
@@ -380,64 +555,26 @@ class PointCloudLayer extends GeometryLayer {
             }
         }
 
-        if (this.displayedCount > this.pointBudget) {
-            // 2 different point count limit implementation, depending on the potree source
-            if (this.supportsProgressiveDisplay) {
-                // In this format, points are evenly distributed within a node,
-                // so we can draw a percentage of each node and still get a correct
-                // representation
-                const reduction = this.pointBudget / this.displayedCount;
-                for (const pts of this.group.children) {
-                    if (pts.visible) {
-                        const count = Math.floor(pts.geometry.drawRange.count * reduction);
-                        if (count > 0) {
-                            pts.geometry.setDrawRange(0, count);
-                        } else {
-                            pts.visible = false;
-                        }
-                    }
-                }
-                this.displayedCount *= reduction;
-            } else {
-                // This format doesn't require points to be evenly distributed, so
-                // we're going to sort the nodes by "importance" (= on screen size)
-                // and display only the first N nodes
-                this.group.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
-
-                let limitHit = false;
-                this.displayedCount = 0;
-                for (const pts of this.group.children) {
-                    const count = pts.geometry.attributes.position.count;
-                    if (limitHit || (this.displayedCount + count) > this.pointBudget) {
-                        pts.visible = false;
-                        limitHit = true;
-                    } else {
-                        this.displayedCount += count;
-                    }
-                }
-            }
-        }
-
         const now = Date.now();
         for (let i = this.group.children.length - 1; i >= 0; i--) {
-            const obj = this.group.children[i];
+            const obj = this.group.children[i] as THREE.Points;
             if (!obj.visible && (now - obj.userData.node.notVisibleSince) > 10000) {
                 // remove from group
                 this.group.children.splice(i, 1);
 
                 // no need to dispose obj.material, as it is shared by all objects of this layer
                 obj.geometry.dispose();
-                obj.material = null;
-                obj.geometry = null;
                 obj.userData.node.obj = null;
             }
         }
     }
 
+    // @ts-expect-error Layer and Picking are not typed yet
     pickObjectsAt(view, mouse, radius, target = []) {
         return Picking.pickPointsAt(view, mouse, radius, this, target);
     }
 
+    // @ts-expect-error Layer is not typed yet
     getObjectToUpdateForAttachedLayers(meta) {
         if (meta.obj) {
             const p = meta.parent;
