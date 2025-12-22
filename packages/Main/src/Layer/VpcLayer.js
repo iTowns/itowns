@@ -112,7 +112,19 @@ class VpcLayer extends PointCloudLayer {
 
     loadData(elt, context, layer, bbox) {
         if (elt.waitingForSource) {
-            layer.source.instantiate(elt.source);
+            // const cmd = {
+            //     layer,
+            //     callback: {
+            //         executeCommand: () => {
+            //             const source = layer.source.instantiate(elt.source.url, elt.source.sId);
+            //             return source.whenReady;
+            //         },
+            //     },
+            //     view: context.view,
+            // };
+            // context.scheduler.execute(cmd);
+
+            layer.source.needInstantiate(elt.source);
             elt.loadOctree
                 .then(eltLoaded => super.loadData(eltLoaded, context, layer, bbox))
                 .then(() => context.view.notifyChange(layer));
