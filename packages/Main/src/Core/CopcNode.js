@@ -37,13 +37,12 @@ class CopcNode extends PointCloudNode {
      * @param {string} crs - The crs of the node.
      */
     constructor(depth, x, y, z, entryOffset, entryLength, source, numPoints = 0, crs) {
-        super(numPoints, source);
+        super(depth, numPoints, source);
         this.isCopcNode = true;
 
         this.entryOffset = entryOffset;
         this.entryLength = entryLength;
 
-        this.depth = depth;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -51,10 +50,6 @@ class CopcNode extends PointCloudNode {
         this.voxelKey = buildVoxelKey(depth, x, y, z);
 
         this.crs = crs;
-    }
-
-    get octreeIsLoaded() {
-        return this.numPoints >= 0;
     }
 
     get id() {

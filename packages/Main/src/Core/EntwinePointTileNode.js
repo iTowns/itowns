@@ -51,10 +51,9 @@ class EntwinePointTileNode extends PointCloudNode {
      * @param {string} crs - The crs of the node.
      */
     constructor(depth, x, y, z, source, numPoints = 0, crs) {
-        super(numPoints, source);
+        super(depth, numPoints, source);
         this.isEntwinePointTileNode = true;
 
-        this.depth = depth;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -64,10 +63,6 @@ class EntwinePointTileNode extends PointCloudNode {
         this.url = `${this.source.url}/ept-data/${this.voxelKey}.${this.source.extension}`;
 
         this.crs = crs;
-    }
-
-    get octreeIsLoaded() {
-        return this.numPoints >= 0;
     }
 
     get id() {

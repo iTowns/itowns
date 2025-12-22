@@ -1,13 +1,10 @@
 import assert from 'assert';
 import PotreeBinParser from 'Parser/PotreeBinParser';
 import { Coordinates } from '@itowns/geographic';
+import OBB from 'Renderer/OBB';
 import * as THREE from 'three';
 
 describe('PotreeBinParser', function () {
-    const bBox = new THREE.Box3();
-    bBox.min.set(0, 0, 0);
-    bBox.max.set(10, 10, 10);
-
     it('should correctly parse position buffer', function (done) {
         const buffer = new ArrayBuffer(12 * 4);
         const dv = new DataView(buffer);
@@ -25,7 +22,7 @@ describe('PotreeBinParser', function () {
                 crs: 'EPSG:4978',
                 origin: new Coordinates('EPSG:4978', 0, 0, 0),
                 rotation: new THREE.Quaternion(),
-                offsetBBox: bBox,
+                voxelOBB: new OBB().setFromArray([0, 0, 0, 10, 10, 10]),
             },
         };
 
@@ -75,7 +72,7 @@ describe('PotreeBinParser', function () {
                 crs: 'EPSG:4978',
                 origin: new Coordinates('EPSG:4978', 0, 0, 0),
                 rotation: new THREE.Quaternion(),
-                offsetBBox: bBox,
+                voxelOBB: new OBB().setFromArray([0, 0, 0, 10, 10, 10]),
             },
         };
 

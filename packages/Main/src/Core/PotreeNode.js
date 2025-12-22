@@ -1,59 +1,15 @@
 import * as THREE from 'three';
 import PointCloudNode from 'Core/PointCloudNode';
 
-// Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
-// (PotreeConverter protocol builds implicit octree hierarchy by applying the same
-// subdivision algo recursively)
 const dHalfLength = new THREE.Vector3();
-
-function computeChildBBox(voxelBBox, childIndex) {
-    // Code inspired from potree
-    const childVoxelBBox = voxelBBox.clone();
-    voxelBBox.getCenter(childVoxelBBox.max);
-    dHalfLength.copy(childVoxelBBox.max).sub(voxelBBox.min);
-
-    if (childIndex === 1) {
-        childVoxelBBox.min.z += dHalfLength.z;
-        childVoxelBBox.max.z += dHalfLength.z;
-    } else if (childIndex === 3) {
-        childVoxelBBox.min.z += dHalfLength.z;
-        childVoxelBBox.max.z += dHalfLength.z;
-        childVoxelBBox.min.y += dHalfLength.y;
-        childVoxelBBox.max.y += dHalfLength.y;
-    } else if (childIndex === 0) {
-        //
-    } else if (childIndex === 2) {
-        childVoxelBBox.min.y += dHalfLength.y;
-        childVoxelBBox.max.y += dHalfLength.y;
-    } else if (childIndex === 5) {
-        childVoxelBBox.min.z += dHalfLength.z;
-        childVoxelBBox.max.z += dHalfLength.z;
-        childVoxelBBox.min.x += dHalfLength.x;
-        childVoxelBBox.max.x += dHalfLength.x;
-    } else if (childIndex === 7) {
-        childVoxelBBox.min.add(dHalfLength);
-        childVoxelBBox.max.add(dHalfLength);
-    } else if (childIndex === 4) {
-        childVoxelBBox.min.x += dHalfLength.x;
-        childVoxelBBox.max.x += dHalfLength.x;
-    } else if (childIndex === 6) {
-        childVoxelBBox.min.y += dHalfLength.y;
-        childVoxelBBox.max.y += dHalfLength.y;
-        childVoxelBBox.min.x += dHalfLength.x;
-        childVoxelBBox.max.x += dHalfLength.x;
-    }
-
-    return childVoxelBBox;
-}
+const dHalfLength2 = new THREE.Vector3();
 
 class PotreeNode extends PointCloudNode {
-    constructor(numPoints = 0, childrenBitField = 0, source, crs) {
-        super(numPoints, source);
+    constructor(depth, index, numPoints = 0, childrenBitField = 0, source, crs) {
+        super(depth, numPoints, source);
         this.childrenBitField = childrenBitField;
 
-        this.depth = 0;
-
-        this.hierarchyKey = 'r';
+        this.index = index;
 
         this.baseurl = source.baseurl;
 
@@ -72,28 +28,89 @@ class PotreeNode extends PointCloudNode {
         return this.hierarchyKey;
     }
 
-    add(node, indexChild) {
-        node.hierarchyKey = this.hierarchyKey + indexChild;
-        node.depth = this.depth + 1;
-        super.add(node, indexChild);
+    get hierarchyKey() {
+        if (this._hierarchyKey != undefined) { return this._hierarchyKey; }
+        if (this.depth === 0) {
+            this._hierarchyKey = 'r';
+        } else {
+            this._hierarchyKey = this.parent.hierarchyKey + this.index;
+        }
+        return this._hierarchyKey;
     }
 
-    createChildAABB(childNode, childIndex) {
-        childNode.voxelOBB.copy(this.voxelOBB);
-        childNode.voxelOBB.box3D = computeChildBBox(this.voxelOBB.box3D, childIndex);
+    setVoxelOBBFromParent() {
+        // for potree the voxelOBB.natBox is updated as well
+        this._voxelOBB.copy(this.parent.voxelOBB);
 
-        childNode.clampOBB.copy(childNode.voxelOBB);
-        const childClampBBox = childNode.clampOBB.box3D;
+        // Code inspired from potree
+        // (PotreeConverter protocol builds implicit octree hierarchy by applying the same
+        // subdivision algo recursively)
+        const voxelBBox = this._voxelOBB.box3D;
+        voxelBBox.getCenter(voxelBBox.max);
+        dHalfLength.copy(voxelBBox.max).sub(voxelBBox.min);
 
-        if (childClampBBox.min.z < this.source.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
+        const voxelNatbox = this._voxelOBB.natBox;
+        voxelNatbox.getCenter(voxelNatbox.max);
+        dHalfLength2.copy(voxelNatbox.max).sub(voxelNatbox.min);
+
+        const childIndex = this.index;
+        if (childIndex === 1) {
+            voxelBBox.min.z += dHalfLength.z;
+            voxelBBox.max.z += dHalfLength.z;
+
+            voxelNatbox.min.z += dHalfLength.z;
+            voxelNatbox.max.z += dHalfLength.z;
+        } else if (childIndex === 3) {
+            voxelBBox.min.z += dHalfLength.z;
+            voxelBBox.max.z += dHalfLength.z;
+            voxelBBox.min.y += dHalfLength.y;
+            voxelBBox.max.y += dHalfLength.y;
+
+            voxelNatbox.min.z += dHalfLength.z;
+            voxelNatbox.max.z += dHalfLength.z;
+            voxelNatbox.min.y += dHalfLength.y;
+            voxelNatbox.max.y += dHalfLength.y;
+        } else if (childIndex === 0) {
+            //
+        } else if (childIndex === 2) {
+            voxelBBox.min.y += dHalfLength.y;
+            voxelBBox.max.y += dHalfLength.y;
+
+            voxelNatbox.min.y += dHalfLength.y;
+            voxelNatbox.max.y += dHalfLength.y;
+        } else if (childIndex === 5) {
+            voxelBBox.min.z += dHalfLength.z;
+            voxelBBox.max.z += dHalfLength.z;
+            voxelBBox.min.x += dHalfLength.x;
+            voxelBBox.max.x += dHalfLength.x;
+
+            voxelNatbox.min.z += dHalfLength.z;
+            voxelNatbox.max.z += dHalfLength.z;
+            voxelNatbox.min.x += dHalfLength.x;
+            voxelNatbox.max.x += dHalfLength.x;
+        } else if (childIndex === 7) {
+            voxelBBox.min.add(dHalfLength);
+            voxelBBox.max.add(dHalfLength);
+
+            voxelNatbox.min.add(dHalfLength);
+            voxelNatbox.max.add(dHalfLength);
+        } else if (childIndex === 4) {
+            voxelBBox.min.x += dHalfLength.x;
+            voxelBBox.max.x += dHalfLength.x;
+
+            voxelNatbox.min.x += dHalfLength.x;
+            voxelNatbox.max.x += dHalfLength.x;
+        } else if (childIndex === 6) {
+            voxelBBox.min.y += dHalfLength.y;
+            voxelBBox.max.y += dHalfLength.y;
+            voxelBBox.min.x += dHalfLength.x;
+            voxelBBox.max.x += dHalfLength.x;
+
+            voxelNatbox.min.y += dHalfLength.y;
+            voxelNatbox.max.y += dHalfLength.y;
+            voxelNatbox.min.x += dHalfLength.x;
+            voxelNatbox.max.x += dHalfLength.x;
         }
-        if (childClampBBox.max.z > this.source.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
-        }
-
-        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
-        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
     }
 
     load() {
@@ -101,7 +118,6 @@ class PotreeNode extends PointCloudNode {
     }
 
     loadOctree() {
-        this.offsetBBox = new THREE.Box3().setFromArray(this.source.boundsConforming);// Only for Potree1
         const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
         return this.source.fetcher(octreeUrl, this.source.networkOptions)
             .then((blob) => {
@@ -122,10 +138,8 @@ class PotreeNode extends PointCloudNode {
                         if (snode.childrenBitField & (1 << indexChild) && (offset + 5) <= blob.byteLength) {
                             const childrenBitField = view.getUint8(offset); offset += 1;
                             const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
-                            const child = new PotreeNode(numPoints, childrenBitField, this.source, this.crs);
-
-                            snode.add(child, indexChild);
-                            child.offsetBBox = computeChildBBox(child.parent.offsetBBox, indexChild);// For Potree1 Parser
+                            const child = new PotreeNode(snode.depth + 1, indexChild, numPoints, childrenBitField, this.source, this.crs);
+                            snode.add(child);
                             if ((child.depth % this.source.hierarchyStepSize) == 0) {
                                 child.baseurl = `${this.baseurl}/${child.hierarchyKey.substring(1)}`;
                             } else {

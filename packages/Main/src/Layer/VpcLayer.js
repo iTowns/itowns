@@ -11,10 +11,8 @@ function _instantiateRootNode(source, crs) {
         const { info } = source;
         const { pageOffset, pageLength } = info.rootHierarchyPage;
         root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, source, -1, crs);
-        root.setOBBes(info.cube.slice(0, 3), info.cube.slice(3, 6));
     } else if (source.isEntwinePointTileSource) {
         root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, crs);
-        root.setOBBes(source.boundsConforming.slice(0, 3), source.boundsConforming.slice(3, 6));
     } else {
         const msg = '[VPCLayer]: stack point cloud format not supporter';
         console.warn(msg);
@@ -71,11 +69,8 @@ class VpcLayer extends PointCloudLayer {
         this.whenReady = this.source.whenReady.then((/** @type {VpcSource} */ sources) => {
             this.setElevationRange();
 
-            const boundsConforming = this.source.boundsConforming;
-            this.root = new PointCloudNode(0, this.source);
+            this.root = new PointCloudNode(0, 0, this.source);
             this.root.crs = this.crs;
-            this.root.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
-            this.root.depth = 0;
 
             sources.forEach((source, i) => {
                 const boundsConforming = source.boundsConforming;
@@ -87,7 +82,7 @@ class VpcLayer extends PointCloudLayer {
                     source,
                     crs: this.crs,
                 };
-                PointCloudNode.prototype.setOBBes.call(mockRoot, boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
+                mockRoot.clampOBB.setFromArray(boundsConforming).projOBB(source.crs, this.crs);
 
                 // As we delayed the intanciation of the source to the moment we need to render a particular node,
                 // we need to wait for the source to be instantiate to be able
