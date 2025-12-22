@@ -9,7 +9,7 @@ import { LRUCache } from 'lru-cache';
 const cachedSources = new LRUCache({ max: 500 });
 
 let compteur = 0;
-const limit = 20;
+const limit = 10;
 const queue = [];
 
 /**
