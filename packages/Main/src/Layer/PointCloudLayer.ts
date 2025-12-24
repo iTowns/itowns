@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import GeometryLayer from 'Layer/GeometryLayer';
-import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
+import PointsMaterial, { PNTS_MODE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
 
 import type PointCloudNode from 'Core/PointCloudNode';
@@ -535,6 +535,34 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 this.dispatchEvent({ type: 'dispose-model', scene: obj, tile: obj.userData.node });
             }
         }
+
+        // @ts-expect-error PointsMaterial is not typed yet
+        if (this.material.sizeMode === PNTS_SIZE_MODE.ADAPTIVE) {
+            const visibilityTextureData = this.computeVisibilityTextureData(this.group.children);
+
+            // @ts-expect-error PointsMaterial is not typed yet
+            const vnt = this.material.visibleNodes;
+            const data = vnt.image.data;
+            data.set(visibilityTextureData.data);
+            vnt.needsUpdate = true;
+
+            for (const pts of this.group.children) {
+                pts.onBeforeRender = (_renderer, _scene, _camera,
+                                      _geometry, material, _group) => {
+                    const nodeStartOffset = visibilityTextureData.offsets.get(pts.userData.node);
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.nodeStartOffset.value = nodeStartOffset;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.octreeSize.value = this.root.voxelOBB.box3D.getSize(new THREE.Vector3()).x;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.octreeSpacing.value = pts.userData.node.source.spacing;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.nodeDepth.value = pts.userData.node.depth;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniformsNeedUpdate = true;
+                };
+            }
+        }
     }
 
     // @ts-expect-error Layer and Picking are not typed yet
@@ -557,6 +585,65 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 };
             }
         }
+    }
+
+    computeVisibilityTextureData(children: THREE.Object3D[]) {
+        // copy array
+        const orderedChildren = children.slice();
+
+        // sort by level and y, x, z, e.g. 0-0-0, 0-0-1, 0-1-0, 0-1-1, 1-0-0 ...
+        const sort = function (a: THREE.Object3D, b: THREE.Object3D) {
+            const na = a.userData.node;
+            const nb = b.userData.node;
+
+            // Compare depth
+            if (na.depth !== nb.depth) { return na.depth - nb.depth; }
+
+            // Compare y
+            if (na.y !== nb.y) { return na.y - nb.y; }
+
+            // Compare x
+            return na.x - nb.x;
+        };
+        orderedChildren.sort(sort);
+
+        const data = new Uint8Array(orderedChildren.length * 4);
+        const visibleNodeTextureOffsets = new Map();
+        const offsetsToChild = new Array(orderedChildren.length).fill(Infinity);
+        let currentNodeDepth = 0;
+        let currentNodeIndex = 0;
+
+        for (let nodeIndex = 0; nodeIndex < orderedChildren.length; nodeIndex++) {
+            const node = orderedChildren[nodeIndex].userData.node;
+            visibleNodeTextureOffsets.set(node, nodeIndex);
+
+            if (node.depth !== currentNodeDepth) {
+                currentNodeDepth = node.depth;
+                currentNodeIndex = 0;
+            }
+
+            if (nodeIndex > 0) {
+                const index = currentNodeIndex;
+                const parentOffset = visibleNodeTextureOffsets.get(node.parent);
+
+                const parentOffsetToChild = (nodeIndex - parentOffset);
+
+                offsetsToChild[parentOffset] = Math.min(offsetsToChild[parentOffset], parentOffsetToChild);
+
+                data[parentOffset * 4 + 0] = data[parentOffset * 4 + 0] | (1 << index);
+                data[parentOffset * 4 + 1] = (offsetsToChild[parentOffset] >> 8);
+                data[parentOffset * 4 + 2] = (offsetsToChild[parentOffset] % 256);
+            }
+
+            currentNodeIndex++;
+
+            data[nodeIndex * 4 + 3] = 100;
+        }
+
+        return {
+            data,
+            offsets: visibleNodeTextureOffsets,
+        };
     }
 }
 
