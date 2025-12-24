@@ -25,6 +25,7 @@ export const PNTS_SHAPE = {
 export const PNTS_SIZE_MODE = {
     VALUE: 0,
     ATTENUATED: 1,
+    ADAPTIVE: 2,
 };
 
 const white = new THREE.Color(1.0,  1.0,  1.0);
@@ -245,6 +246,13 @@ class PointsMaterial extends THREE.ShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'gamma', gamma);
         CommonMaterial.setUniformProperty(this, 'ambientBoost', ambientBoost);
 
+        // Adaptive point size uniforms
+        CommonMaterial.setUniformProperty(this, 'octreeSpacing', 1.0);
+        CommonMaterial.setUniformProperty(this, 'octreeSize', 1.0);
+        CommonMaterial.setUniformProperty(this, 'nodeDepth', 0.0);
+        CommonMaterial.setUniformProperty(this, 'nodeStartOffset', 0.0);
+        CommonMaterial.setUniformProperty(this, 'nodeBBoxMin', new THREE.Vector3());
+
         // add classification texture to apply classification lut.
         const data = new Uint8Array(256 * 4);
         const texture = new THREE.DataTexture(data, 256, 1, THREE.RGBAFormat);
@@ -266,6 +274,12 @@ class PointsMaterial extends THREE.ShaderMaterial {
         textureVisi.needsUpdate = true;
         textureVisi.magFilter = THREE.NearestFilter;
         CommonMaterial.setUniformProperty(this, 'visibilityTexture', textureVisi);
+
+        const dataNodes = new Uint8Array(2048 * 4);
+        const visibleNodesTexture = new THREE.DataTexture(dataNodes, 2048, 1, THREE.RGBAFormat);
+        visibleNodesTexture.needsUpdate = true;
+        visibleNodesTexture.magFilter = THREE.NearestFilter;
+        CommonMaterial.setUniformProperty(this, 'visibleNodes', visibleNodesTexture);
 
         // Classification and other discrete values scheme
         this.classificationScheme = classificationScheme;
