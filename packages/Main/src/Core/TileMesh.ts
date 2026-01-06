@@ -146,6 +146,10 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
         if (this.material.layersNeedUpdate) {
             this.material.updateLayersUniforms(renderer);
         }
+
+        // Track actual usage every time this mesh is rendered
+        // Use global current rendering view ID set by MainLoop
+        this.material.trackCurrentRenderTargetUsage();
     }
 }
 
