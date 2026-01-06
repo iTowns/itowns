@@ -377,9 +377,9 @@ class TiledGeometryLayer extends GeometryLayer {
                 node.add(child);
                 child.updateMatrixWorld(true);
             });
+            context.view.notifyChange(node, true);
         }
 
-        context.view.notifyChange(node, true);
 
         return node.children;
     }
