@@ -106,8 +106,8 @@ abstract class LasNodeBase extends PointCloudNode {
             childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
         }
 
-        childNode.voxelOBB.matrixWorldInverse = this.voxelOBB.matrixWorldInverse;
-        childNode.clampOBB.matrixWorldInverse = this.clampOBB.matrixWorldInverse;
+        this.clampOBB.parent!.add(childNode.clampOBB);
+        childNode.clampOBB.updateMatrixWorld(true);
     }
 }
 
