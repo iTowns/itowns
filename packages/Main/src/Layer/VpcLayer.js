@@ -65,8 +65,6 @@ class VpcLayer extends PointCloudLayer {
         this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
         this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
 
-        const resolve = this.addInitializationStep();
-
         // a Vpc layer should be ready when all the child sources are
         this.whenReady = this.source.whenReady.then((/** @type {VpcSource} */ sources) => {
             this.setElevationRange();
@@ -96,7 +94,7 @@ class VpcLayer extends PointCloudLayer {
                     source.whenReady.then((src) => {
                         const root = _instantiateRootNode(src, this.crs);
                         this.root.children[i] = root;
-                        return root.loadOctree().then(resolve)
+                        return root.loadOctree()
                             .then(() => root);
                     });
 

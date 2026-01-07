@@ -150,7 +150,7 @@ class Layer extends THREE.EventDispatcher {
         this._promises = [];
 
         /**
-         * @type {Promise<this>}
+         * @type {Promise<void>}
          */
         this.whenReady = new Promise((re, rj) => {
             this._resolve = re;
@@ -158,7 +158,6 @@ class Layer extends THREE.EventDispatcher {
         }).then(() => {
             this.ready = true;
             this.source.onLayerAdded({ out: this });
-            return this;
         });
 
         this._promises.push(this.source.whenReady);
@@ -172,6 +171,7 @@ class Layer extends THREE.EventDispatcher {
         });
     }
 
+    // TODO: check if this is really needed and for what ?
     addInitializationStep() {
         // Possibility to add rejection handler, if it's necessary.
         let resolve;
