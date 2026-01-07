@@ -45,7 +45,6 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
 
         this.isPotreeLayer = true;
 
-        const resolve = this.addInitializationStep();
         this.whenReady = this.source.whenReady.then((cloud) => {
             const normal = Array.isArray(cloud.pointAttributes) &&
                 cloud.pointAttributes.find((elem: string) => elem.startsWith('NORMAL'));
@@ -66,7 +65,7 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
             this.object3d.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
 
-            return this.root.loadOctree().then(resolve);
+            return this.root.loadOctree();
         });
     }
 }
