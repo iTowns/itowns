@@ -5,12 +5,9 @@ import Fetcher from 'Provider/Fetcher';
 import assert from 'assert';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates, Extent } from '@itowns/geographic';
-import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 import TileMesh from 'Core/TileMesh';
 import OBB from 'Renderer/OBB';
-import LayerUpdateState from 'Layer/LayerUpdateState';
 import DEMUtils from 'Utils/DEMUtils';
-import { RasterElevationTile } from 'Renderer/RasterTile';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import sinon from 'sinon';
 import Renderer from './bootstrap';
@@ -27,7 +24,6 @@ describe('DemUtils', function () {
     const viewer = new GlobeView(renderer.domElement, placement, { renderer });
 
     let elevationlayer;
-    let context;
     let stubFetcherTextFloat;
     const ELEVATION = 300;
 
@@ -50,18 +46,6 @@ describe('DemUtils', function () {
         });
         source.url = 'https://github.com/iTowns/iTowns2-sample-data/blob/master/dem3_3_8.bil?raw=true';
         elevationlayer = new ElevationLayer('worldelevation', { source });
-
-        context = {
-            camera: viewer.camera,
-            engine: viewer.mainLoop.gfxEngine,
-            scheduler: {
-                execute: (command) => {
-                    const provider = viewer.mainLoop.scheduler.getProtocolProvider(command.layer.protocol);
-                    return provider.executeCommand(command);
-                },
-            },
-            view: viewer,
-        };
     });
 
     after(() => {
@@ -83,16 +67,16 @@ describe('DemUtils', function () {
         const geom = new THREE.BufferGeometry();
         geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
         const material = new LayeredMaterial();
-        const nodeLayer = new RasterElevationTile(elevationlayer);
-        material.getElevationTile = () => nodeLayer;
         const tile = new TileMesh(geom, material, viewer.tileLayer, extent, 5);
-        tile.layerUpdateState[elevationlayer.id] = new LayerUpdateState();
+        tile.parent = {};
         tiles.push(tile);
-        updateLayeredMaterialNodeElevation(context, elevationlayer, tile, {})
-            .then(() => {
-                assert.equal(nodeLayer.textures[0].image.data[0], ELEVATION);
-                done();
-            }).catch(done);
+        const nodeLayer = elevationlayer.setupRasterNode(tile);
+
+        material.getElevationTile = () => nodeLayer;
+        nodeLayer.load(tile, viewer).then(() => {
+            assert.equal(nodeLayer.textures[0].image.data[0], ELEVATION);
+            done();
+        }).catch(done);
     });
 
     it('get elevation value at center with PRECISE_READ_Z', () => {
