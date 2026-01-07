@@ -22,28 +22,28 @@
 		"tileMatrixSet": "WGS84G",
 		"tileMatrixSetLimits": {
 			"11": {
-				"minTileRow": 442,
-				"maxTileRow": 1267,
-				"minTileCol": 1344,
-				"maxTileCol": 2683
+				"MinTileRow": 442,
+				"MaxTileRow": 1267,
+				"MinTileCol": 1344,
+				"MaxTileCol": 2683
 			},
 			"12": {
-				"minTileRow": 885,
-				"maxTileRow": 2343,
-				"minTileCol": 3978,
-				"maxTileCol": 5126
+				"MinTileRow": 885,
+				"MaxTileRow": 2343,
+				"MinTileCol": 3978,
+				"MaxTileCol": 5126
 			},
 			"13": {
-				"minTileRow": 1770,
-				"maxTileRow": 4687,
-				"minTileCol": 7957,
-				"maxTileCol": 10253
+				"MinTileRow": 1770,
+				"MaxTileRow": 4687,
+				"MinTileCol": 7957,
+				"MaxTileCol": 10253
 			},
 			"14": {
-				"minTileRow": 3540,
-				"maxTileRow": 9375,
-				"minTileCol": 15914,
-				"maxTileCol": 20507
+				"MinTileRow": 3540,
+				"MaxTileRow": 9375,
+				"MinTileCol": 15914,
+				"MaxTileCol": 20507
 			}
 		}
 	}

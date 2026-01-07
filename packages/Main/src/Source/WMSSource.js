@@ -175,6 +175,10 @@ class WMSSource extends Source {
     extentInsideLimit(extent) {
         return this.extent.intersectsExtent(extent);
     }
+
+    anyVisibleData(extent) {
+        return this.extentInsideLimit(extent);
+    }
 }
 
 export default WMSSource;
