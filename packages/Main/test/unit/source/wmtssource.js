@@ -25,7 +25,7 @@ describe('WMTSSource', function () {
         const extent = new Tile('TMS:3857', 5, 0, 0);
         assert.ok(source.isWMTSSource);
         assert.ok(source.urlFromExtent(extent));
-        assert.ok(source.extentInsideLimit(extent, 5));
+        assert.ok(source.anyVisibleData(extent, 5));
     });
 
     it('should instance with tileMatrixSet', function () {
@@ -43,7 +43,7 @@ describe('WMTSSource', function () {
         source.onLayerAdded({ out: { crs: 'EPSG:4326' } });
         assert.ok(source.isWMTSSource);
         assert.ok(source.urlFromExtent(extent));
-        assert.ok(source.extentInsideLimit(extent, 5));
+        assert.ok(source.anyVisibleData(extent, 5));
     });
 
     it('should use vendor specific parameters for the creation of the WMTS url', function () {
