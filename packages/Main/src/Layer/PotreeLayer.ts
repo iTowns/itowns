@@ -45,7 +45,7 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
 
         this.isPotreeLayer = true;
 
-        this.whenReady = this.source.whenReady.then((cloud) => {
+        const loadOctree = this.source.whenReady.then((cloud) => {
             const normal = Array.isArray(cloud.pointAttributes) &&
                 cloud.pointAttributes.find((elem: string) => elem.startsWith('NORMAL'));
             if (normal) {
@@ -67,6 +67,8 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
 
             return this.root.loadOctree();
         });
+
+        this._promises.push(loadOctree);
     }
 }
 

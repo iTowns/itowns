@@ -37,7 +37,7 @@ class CopcLayer extends PointCloudLayer {
         this.isCopcLayer = true;
         this.source = config.source;
 
-        this.whenReady = this.source.whenReady.then((source) => {
+        const loadOctree = this.source.whenReady.then((source) => {
             this.setElevationRange();
 
             const { rootHierarchyPage, cube } = source.info;
@@ -50,6 +50,8 @@ class CopcLayer extends PointCloudLayer {
 
             return this.root.loadOctree();
         });
+
+        this._promises.push(loadOctree);
     }
 }
 

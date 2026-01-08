@@ -67,7 +67,7 @@ class VpcLayer extends PointCloudLayer {
         this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
 
         // a Vpc layer should be ready when all the child sources are
-        this.whenReady = this.source.whenReady.then((/** @type {VpcSource} */ sources) => {
+        const prepSubSource = this.source.whenReady.then((/** @type {VpcSource} */ sources) => {
             this.setElevationRange();
 
             const boundsConforming = this.source.boundsConforming;
@@ -109,6 +109,8 @@ class VpcLayer extends PointCloudLayer {
 
                 this.root.children[i] = mockSubRoot;
             });
+
+            this._promises.push(prepSubSource);
         });
     }
 
