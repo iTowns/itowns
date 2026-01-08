@@ -39,7 +39,7 @@ describe('VPC', function () {
                 .callsFake(url => Promise.resolve(resources[url]));
         });
 
-        after(async function () {
+        after(function () {
             stubFetcherJson.restore();
         });
 
@@ -83,24 +83,25 @@ describe('VPC', function () {
     describe('Stacked sources', function () {
         it('instantiate ept stacked source', function (done) {
             const eptMockSource = vpcEptSource.sources[0];
-            vpcEptSource.instantiate(eptMockSource);
+            const eptSource = eptMockSource.instantiate();
 
-            eptMockSource.whenReady
+            eptSource.whenReady
                 .then(() => {
                     assert.ok(vpcEptSource.sources[0].isEntwinePointTileSource);
                     done();
                 }).catch(done);
-        }).timeout(10000);
+        });
+
         it('instanciated copc stacked source', function (done) {
             const copcMockSource = vpcCopcSource.sources[0];
-            vpcCopcSource.instantiate(copcMockSource);
+            const copcSource = copcMockSource.instantiate();
 
-            copcMockSource.whenReady
+            copcSource.whenReady
                 .then(() => {
                     assert.ok(vpcCopcSource.sources[0].isCopcSource);
                     done();
                 }).catch(done);
-        }).timeout(10000);
+        });
     });
 
     describe('Layer', function () {
@@ -135,7 +136,7 @@ describe('VPC', function () {
                     .callsFake(url => Promise.resolve(resources[url]));
             });
 
-            after(async function () {
+            after(function () {
                 stubFetcherJson.restore();
             });
 
@@ -155,9 +156,14 @@ describe('VPC', function () {
 
                 await mockRoot.source.whenReady;
                 assert.ok(sources[1].isEntwinePointTileSource);
-                const root = await mockRoot.loadOctree;
-                node = root.children[0];
-                assert.ok(root.numPoints > 0);
+
+                await mockRoot.loadOctree;
+                const eptRoot = vpcLayer.root.children[1];
+                assert.ok(eptRoot.isEntwinePointTileNode);
+                assert.ok(eptRoot.numPoints > 0);
+
+                node = eptRoot.children[0];
+                assert.ok(node.numPoints > 0);
             });
 
             it('on a "commun" node', async function () {

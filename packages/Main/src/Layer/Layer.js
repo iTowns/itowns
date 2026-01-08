@@ -150,7 +150,7 @@ class Layer extends THREE.EventDispatcher {
         this._promises = [];
 
         /**
-         * @type {Promise<void>}
+         * @type {Promise<this>}
          */
         this.whenReady = new Promise((re, rj) => {
             this._resolve = re;
@@ -158,6 +158,7 @@ class Layer extends THREE.EventDispatcher {
         }).then(() => {
             this.ready = true;
             this.source.onLayerAdded({ out: this });
+            return this;
         });
 
         this._promises.push(this.source.whenReady);
