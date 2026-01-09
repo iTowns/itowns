@@ -44,7 +44,7 @@ describe('Entwine Point Tile', function () {
         LASParser.enableLazPerf('../../examples/libs/laz-perf');
     });
 
-    after(async function () {
+    after(function () {
         stubFetcherJson.restore();
         stubFetcherArrayBuf.restore();
     });
@@ -161,6 +161,7 @@ describe('Entwine Point Tile', function () {
                 mockParser.restore();
                 assert.ok(spyLoadOctree.calledOnce);
             });
+
             it('load a sub-node not yet loaded', async () => {
                 const node = root.children.filter(node => node.numPoints === -1)[0];
 
