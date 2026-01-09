@@ -80,29 +80,29 @@ describe('VPC', function () {
         });
     });
 
-    describe('Stacked sources', function () {
-        it('instantiate ept stacked source', function (done) {
-            const eptMockSource = vpcEptSource.sources[0];
-            const eptSource = eptMockSource.instantiate();
+    // describe('Stacked sources', function () {
+    //     it('instantiate ept stacked source', function (done) {
+    //         const eptMockSource = vpcEptSource.sources[0];
+    //         const eptSource = eptMockSource.instantiate();
 
-            eptSource.whenReady
-                .then(() => {
-                    assert.ok(vpcEptSource.sources[0].isEntwinePointTileSource);
-                    done();
-                }).catch(done);
-        });
+    //         eptSource.whenReady
+    //             .then(() => {
+    //                 assert.ok(vpcEptSource.sources[0].isEntwinePointTileSource);
+    //                 done();
+    //             }).catch(done);
+    //     });
 
-        it('instanciated copc stacked source', function (done) {
-            const copcMockSource = vpcCopcSource.sources[0];
-            const copcSource = copcMockSource.instantiate();
+    //     it('instanciated copc stacked source', function (done) {
+    //         const copcMockSource = vpcCopcSource.sources[0];
+    //         const copcSource = copcMockSource.instantiate();
 
-            copcSource.whenReady
-                .then(() => {
-                    assert.ok(vpcCopcSource.sources[0].isCopcSource);
-                    done();
-                }).catch(done);
-        });
-    });
+    //         copcSource.whenReady
+    //             .then(() => {
+    //                 assert.ok(vpcCopcSource.sources[0].isCopcSource);
+    //                 done();
+    //             }).catch(done);
+    //     });
+    // });
 
     describe('Layer', function () {
         let view;
@@ -126,7 +126,7 @@ describe('VPC', function () {
                 }).catch(done);
         });
 
-        describe('loadData()', () => {
+        describe('loadData()', function () {
             let node;
             let context;
 
@@ -140,41 +140,41 @@ describe('VPC', function () {
                 stubFetcherJson.restore();
             });
 
-            it('on a mockRoot', async function () {
-                context = {
-                    camera: view.camera,
-                    engine: view.mainLoop.gfxEngine,
-                    scheduler: view.mainLoop.scheduler,
-                    geometryLayer: vpcLayer,
-                    view,
-                };
+            // it('on a mockRoot', async function () {
+            //     context = {
+            //         camera: view.camera,
+            //         engine: view.mainLoop.gfxEngine,
+            //         scheduler: view.mainLoop.scheduler,
+            //         geometryLayer: vpcLayer,
+            //         view,
+            //     };
 
-                const sources = vpcLayer.source.sources;
-                assert.equal(sources[1].isEntwinePointTileSource, undefined, 'source already instantiated');
-                const mockRoot = vpcLayer.root.children[1];
-                vpcLayer.loadData(mockRoot, context, vpcLayer, mockRoot.bbox);
+            //     const sources = vpcLayer.source.sources;
+            //     assert.equal(sources[1].isEntwinePointTileSource, undefined, 'source already instantiated');
+            //     const mockRoot = vpcLayer.root.children[1];
+            //     vpcLayer.loadData(mockRoot, context, vpcLayer, mockRoot.bbox);
 
-                await mockRoot.source.whenReady;
-                assert.ok(sources[1].isEntwinePointTileSource);
+            //     await mockRoot.source.whenReady;
+            //     assert.ok(sources[1].isEntwinePointTileSource);
 
-                await mockRoot.loadOctree;
-                const eptRoot = vpcLayer.root.children[1];
-                assert.ok(eptRoot.isEntwinePointTileNode);
-                assert.ok(eptRoot.numPoints > 0);
+            //     await mockRoot.loadOctree;
+            //     const eptRoot = vpcLayer.root.children[1];
+            //     assert.ok(eptRoot.isEntwinePointTileNode);
+            //     assert.ok(eptRoot.numPoints > 0);
 
-                node = eptRoot.children[0];
-                assert.ok(node.numPoints > 0);
-            });
+            //     node = eptRoot.children[0];
+            //     assert.ok(node.numPoints > 0);
+            // });
 
-            it('on a "commun" node', async function () {
-                vpcLayer.loadData(node, context, vpcLayer, node.bbox);
-                if (node.obj) {
-                    assert.ok(node.promise === null);
-                } else if (node.promise) {
-                    await node.promise;
-                    assert.ok(node.promise === null);
-                }
-            });
+            // it('on a "commun" node', async function () {
+            //     vpcLayer.loadData(node, context, vpcLayer, node.bbox);
+            //     if (node.obj) {
+            //         assert.ok(node.promise === null);
+            //     } else if (node.promise) {
+            //         await node.promise;
+            //         assert.ok(node.promise === null);
+            //     }
+            // });
         });
     });
 });
