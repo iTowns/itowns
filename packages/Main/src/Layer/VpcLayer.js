@@ -67,7 +67,7 @@ class VpcLayer extends PointCloudLayer {
         this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
 
         // a Vpc layer should be ready when all the child sources are
-        const prepSubSource = this.source.whenReady.then((/** @type {VpcSource} */ sources) => {
+        const prepSubSource = this.source.whenReady.then((/** @type {VpcSource} */ source) => {
             this.setElevationRange();
 
             const boundsConforming = this.source.boundsConforming;
@@ -79,14 +79,14 @@ class VpcLayer extends PointCloudLayer {
             this.object3d.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
 
-            sources.forEach((source, i) => {
-                const boundsConforming = source.boundsConforming;
+            source.sources.forEach((src, i) => {
+                const boundsConforming = src.boundsConforming;
 
                 // As we delayed the intanciation of the source to the moment we need to render a particular node,
                 // we need to wait for the source to be instantiate to be able
                 // to instantiate a node and load the Octree associated.
                 // todo:  factorize _instantiateSubRoot in each source
-                const promisedRoot = _instantiateSubRoot(source, this.crs);
+                const promisedRoot = _instantiateSubRoot(src, this.crs);
 
                 promisedRoot.then((r) => {
                     this.object3d.add(r.clampOBB);
@@ -95,7 +95,7 @@ class VpcLayer extends PointCloudLayer {
                 });
 
                 const mockSubRoot = new PointCloudNode(0, 0);
-                mockSubRoot.source = source;
+                mockSubRoot.source = src;
                 mockSubRoot.crs = this.crs;
                 mockSubRoot.loadOctree = promisedRoot.then(root => root.loadOctree());
                 // when load() is called on the mockSubRoot, we need the associated source to be loaded
