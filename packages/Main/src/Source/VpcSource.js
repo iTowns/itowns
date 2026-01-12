@@ -1,5 +1,4 @@
 import { CRS } from '@itowns/geographic';
-import LASParser from 'Parser/LASParser';
 import Fetcher from 'Provider/Fetcher';
 import Source from 'Source/Source';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
@@ -34,9 +33,6 @@ class VpcSource extends Source {
 
         this.isVpcSource = true;
         this.sources = [];
-
-        this.parser = LASParser.parseChunk;
-        this.fetcher = Fetcher.arrayBuffer;
 
         this.colorDepth = config.colorDepth;
 
@@ -83,9 +79,11 @@ class VpcSource extends Source {
                 this.urls = metadata.features.map(f => f.assets.data.href);
                 this.urls.forEach((url, i) => {
                     let resolve;
-                    const whenReady = new Promise((re) => {
+                    let reject;
+                    const whenReady = new Promise((re, rj) => {
                         // waiting for source to be instantiate;
                         resolve = re;
+                        reject = rj;
                     }).catch((err) => {
                         console.warn(err);
                         this.handlingError(err);
@@ -103,9 +101,8 @@ class VpcSource extends Source {
                             } else if (url.includes('.json')) {
                                 newSource = new EntwinePointTileSource({ url });
                             } else {
-                                const msg = '[VPCLayer]: stack point cloud format not supporter';
-                                console.warn(msg);
-                                this.handlingError(msg);
+                                const err = new Error('[VPCLayer]: stack point cloud format not supporter');
+                                reject(err);
                             }
 
                             resolve(newSource.whenReady);
@@ -118,7 +115,7 @@ class VpcSource extends Source {
                     };
                     this.sources.push(mockSource);
                 });
-                return this.sources;
+                return this;
             });
     }
 }
