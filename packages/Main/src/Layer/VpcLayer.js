@@ -7,19 +7,22 @@ import OBB from 'Renderer/OBB';
 
 function _instantiateRootNode(source, crs) {
     let root;
+    let bounds;
     if (source.isCopcSource) {
         const { info } = source;
         const { pageOffset, pageLength } = info.rootHierarchyPage;
+        bounds = info.cube;
         root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, source, -1, crs);
-        root.setOBBes(info.cube.slice(0, 3), info.cube.slice(3, 6));
     } else if (source.isEntwinePointTileSource) {
+        bounds = source.boundsConforming;
         root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, crs);
-        root.setOBBes(source.boundsConforming.slice(0, 3), source.boundsConforming.slice(3, 6));
     } else {
         const msg = '[VPCLayer]: stack point cloud format not supporter';
         console.warn(msg);
         PointCloudLayer.handlingError(msg);
     }
+    root.voxelOBB.setFromArray(bounds).projOBB(source.crs, crs);
+    root.clampOBB.copy(root.voxelOBB).clampZ(source.zmin, source.zmax);
     return root;
 }
 
@@ -75,7 +78,8 @@ class VpcLayer extends PointCloudLayer {
             this.root = new PointCloudNode(0, 0);
             this.root.source = this.source;
             this.root.crs = this.crs;
-            this.root.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
+            this.root.voxelOBB.setFromArray(boundsConforming).projOBB(this.source.crs, this.crs);
+            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
 
             sources.forEach((source, i) => {
                 const boundsConforming = source.boundsConforming;
@@ -87,7 +91,8 @@ class VpcLayer extends PointCloudLayer {
                     source,
                     crs: this.crs,
                 };
-                PointCloudNode.prototype.setOBBes.call(mockRoot, boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
+                mockRoot.voxelOBB.setFromArray(boundsConforming).projOBB(source.crs, this.crs);
+                mockRoot.clampOBB.copy(mockRoot.voxelOBB).clampZ(source.zmin, source.zmax);
 
                 // As we delayed the intanciation of the source to the moment we need to render a particular node,
                 // we need to wait for the source to be instantiate to be able
