@@ -57,10 +57,11 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
 
             this.setElevationRange();
 
+            const { lx, ly, lz, ux, uy, uz } = cloud.boundingBox;
+            const bounds = [lx, ly, lz, ux, uy, uz];
             this.root = new PotreeNode(0, 0, -1, undefined, this.source, this.crs);
-            const { boundingBox } = cloud;
-            this.root.setOBBes([boundingBox.lx, boundingBox.ly, boundingBox.lz],
-                [boundingBox.ux, boundingBox.uy, boundingBox.uz]);
+            this.root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
+            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
 
             this.object3d.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);

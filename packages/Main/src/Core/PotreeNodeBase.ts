@@ -102,14 +102,7 @@ export abstract class PotreeNodeBase extends PointCloudNode {
         childNode.voxelOBB.box3D = computeChildBBox(this.voxelOBB.box3D, childIndex);
 
         childNode.clampOBB.copy(childNode.voxelOBB);
-        const childClampBBox = childNode.clampOBB.box3D;
-
-        if (childClampBBox.min.z < this.source.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
-        }
-        if (childClampBBox.max.z > this.source.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
-        }
+        childNode.clampOBB.clampZ(this.source.zmin, this.source.zmax);
 
         (this.clampOBB.parent as Group).add(childNode.clampOBB);
         childNode.clampOBB.updateMatrixWorld(true);
