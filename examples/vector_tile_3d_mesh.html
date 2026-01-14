@@ -53,9 +53,7 @@
             const viewerDiv = document.getElementById('viewerDiv');
 
             // Create a GlobeView
-            const view = new itowns.GlobeView(viewerDiv, placement, {
-                realisticLighting: false // disable atmosphere lighting
-            });
+            const view = new itowns.GlobeView(viewerDiv, placement);
 
             // Define poles texture
             view.tileLayer.noTextureColor = new THREE.Color(0x95c1e1);

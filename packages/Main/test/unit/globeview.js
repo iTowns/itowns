@@ -14,7 +14,10 @@ describe('GlobeView', function () {
     // 3919 is the approximate altitude giving a 1/25000 scale, on a screen with a
     // pitch of 0.28. The approximation is corrected below with an epsilon.
     const placement = { coord: new Coordinates('EPSG:4326', 4.631512, 43.675626), range: 3919 };
-    const viewer = new GlobeView(renderer.domElement, placement, { renderer });
+    const viewer = new GlobeView(renderer.domElement, placement, {
+        renderer,
+        realisticLighting: true,
+    });
     const pickedPosition = new THREE.Vector3();
     pickedPosition.copy(viewer.camera.position());
 

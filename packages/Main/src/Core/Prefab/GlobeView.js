@@ -89,7 +89,7 @@ class GlobeView extends View {
      * The maximum view distance is this factor times the camera's altitude (above sea level).
      * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
      * Between 0 and 1.
-     * @param {boolean} [options.realisticLighting=true] - Enable realistic lighting.
+     * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * If true, it can later be switched by setting this.skyManager.enabled to true/false.
      * If false, it will be impossible to enable it later on.
      */
@@ -166,7 +166,7 @@ class GlobeView extends View {
             this.webXR.initializeWebXR();
         }
 
-        if (options.realisticLighting || options.realisticLighting === undefined) {
+        if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
         }
     }

@@ -85,7 +85,7 @@ describe('Entwine Point Tile', function () {
 
         before(function (done) {
             renderer = new Renderer();
-            view = new GlobeView(renderer.domElement, {}, { renderer }, { realisticLighting: false });
+            view = new GlobeView(renderer.domElement, {}, { renderer });
             layer = new EntwinePointTileLayer('testEptLayer', { source });
 
             context = {
