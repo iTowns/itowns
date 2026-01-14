@@ -111,7 +111,7 @@ export default {
         const pointAttributes = source.pointAttributes;
 
         // find a methode by recursion to get offset from the node id ?
-        const offset = options.in.offsetBBox.min.toArray();
+        const offset = options.in.voxelOBB.natBox.min.toArray();
 
         const forward = (source.crs !== options.in.crs) ?
             proj4(source.crs, options.in.crs).forward :

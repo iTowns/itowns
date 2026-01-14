@@ -1,50 +1,10 @@
-import { Vector3, type Box3, type Group } from 'three';
-import PointCloudNode from './PointCloudNode';
+import { Vector3, type Box3 } from 'three';
+import PointCloudNode from 'Core/PointCloudNode';
 
-// Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex`
-// of one aabb. (PotreeConverter protocol builds implicit octree hierarchy
-// by applying the same subdivision algo recursively)
+import type OBB from 'Renderer/OBB';
+
 const dHalfLength = new Vector3();
-
-export function computeChildBBox(voxelBBox: Box3, childIndex: number) {
-    // Code inspired from potree
-    const childVoxelBBox = voxelBBox.clone();
-    childVoxelBBox.getCenter(childVoxelBBox.max);
-    dHalfLength.copy(childVoxelBBox.max).sub(childVoxelBBox.min);
-
-    if (childIndex === 1) {
-        childVoxelBBox.min.z += dHalfLength.z;
-        childVoxelBBox.max.z += dHalfLength.z;
-    } else if (childIndex === 3) {
-        childVoxelBBox.min.z += dHalfLength.z;
-        childVoxelBBox.max.z += dHalfLength.z;
-        childVoxelBBox.min.y += dHalfLength.y;
-        childVoxelBBox.max.y += dHalfLength.y;
-    } else if (childIndex === 0) {
-        //
-    } else if (childIndex === 2) {
-        childVoxelBBox.min.y += dHalfLength.y;
-        childVoxelBBox.max.y += dHalfLength.y;
-    } else if (childIndex === 5) {
-        childVoxelBBox.min.z += dHalfLength.z;
-        childVoxelBBox.max.z += dHalfLength.z;
-        childVoxelBBox.min.x += dHalfLength.x;
-        childVoxelBBox.max.x += dHalfLength.x;
-    } else if (childIndex === 7) {
-        childVoxelBBox.min.add(dHalfLength);
-        childVoxelBBox.max.add(dHalfLength);
-    } else if (childIndex === 4) {
-        childVoxelBBox.min.x += dHalfLength.x;
-        childVoxelBBox.max.x += dHalfLength.x;
-    } else if (childIndex === 6) {
-        childVoxelBBox.min.y += dHalfLength.y;
-        childVoxelBBox.max.y += dHalfLength.y;
-        childVoxelBBox.min.x += dHalfLength.x;
-        childVoxelBBox.max.x += dHalfLength.x;
-    }
-
-    return childVoxelBBox;
-}
+const dHalfLength2 = new Vector3();
 
 export abstract class PotreeNodeBase extends PointCloudNode {
     index: number;
@@ -97,49 +57,82 @@ export abstract class PotreeNodeBase extends PointCloudNode {
         return this.source.fetcher(url, networkOptions);
     }
 
-    computeBBoxFromParent(): Box3 {
+    override setVoxelOBBFromParent():void {
+        // for potree the voxelOBB.natBox is updated as well
+        const _voxelOBB = this._voxelOBB as OBB;
+        const parent = this.parent as this;
+
+        _voxelOBB.copy(parent.voxelOBB);
+
         // Code inspired from potree
-        const childVoxelBBox = this.parent.voxelOBB.box3D.clone();
-        childVoxelBBox.getCenter(childVoxelBBox.max);
-        dHalfLength.copy(childVoxelBBox.max).sub(childVoxelBBox.min);
+        // (PotreeConverter protocol builds implicit octree hierarchy
+        // by applying the same subdivision algo recursively)
+        const voxelBBox = _voxelOBB.box3D;
+        voxelBBox.getCenter(voxelBBox.max);
+        dHalfLength.copy(voxelBBox.max).sub(voxelBBox.min);
+
+        const voxelNatbox = _voxelOBB.natBox;
+        voxelNatbox.getCenter(voxelNatbox.max);
+        dHalfLength2.copy(voxelNatbox.max).sub(voxelNatbox.min);
+
         const childIndex = this.index;
         if (childIndex === 1) {
-            childVoxelBBox.min.z += dHalfLength.z;
-            childVoxelBBox.max.z += dHalfLength.z;
+            voxelBBox.min.z += dHalfLength.z;
+            voxelBBox.max.z += dHalfLength.z;
+
+            voxelNatbox.min.z += dHalfLength.z;
+            voxelNatbox.max.z += dHalfLength.z;
         } else if (childIndex === 3) {
-            childVoxelBBox.min.z += dHalfLength.z;
-            childVoxelBBox.max.z += dHalfLength.z;
-            childVoxelBBox.min.y += dHalfLength.y;
-            childVoxelBBox.max.y += dHalfLength.y;
+            voxelBBox.min.z += dHalfLength.z;
+            voxelBBox.max.z += dHalfLength.z;
+            voxelBBox.min.y += dHalfLength.y;
+            voxelBBox.max.y += dHalfLength.y;
+
+            voxelNatbox.min.z += dHalfLength.z;
+            voxelNatbox.max.z += dHalfLength.z;
+            voxelNatbox.min.y += dHalfLength.y;
+            voxelNatbox.max.y += dHalfLength.y;
         } else if (childIndex === 0) {
             //
         } else if (childIndex === 2) {
-            childVoxelBBox.min.y += dHalfLength.y;
-            childVoxelBBox.max.y += dHalfLength.y;
+            voxelBBox.min.y += dHalfLength.y;
+            voxelBBox.max.y += dHalfLength.y;
+
+            voxelNatbox.min.y += dHalfLength.y;
+            voxelNatbox.max.y += dHalfLength.y;
         } else if (childIndex === 5) {
-            childVoxelBBox.min.z += dHalfLength.z;
-            childVoxelBBox.max.z += dHalfLength.z;
-            childVoxelBBox.min.x += dHalfLength.x;
-            childVoxelBBox.max.x += dHalfLength.x;
+            voxelBBox.min.z += dHalfLength.z;
+            voxelBBox.max.z += dHalfLength.z;
+            voxelBBox.min.x += dHalfLength.x;
+            voxelBBox.max.x += dHalfLength.x;
+
+            voxelNatbox.min.z += dHalfLength.z;
+            voxelNatbox.max.z += dHalfLength.z;
+            voxelNatbox.min.x += dHalfLength.x;
+            voxelNatbox.max.x += dHalfLength.x;
         } else if (childIndex === 7) {
-            childVoxelBBox.min.add(dHalfLength);
-            childVoxelBBox.max.add(dHalfLength);
+            voxelBBox.min.add(dHalfLength);
+            voxelBBox.max.add(dHalfLength);
+
+            voxelNatbox.min.add(dHalfLength);
+            voxelNatbox.max.add(dHalfLength);
         } else if (childIndex === 4) {
-            childVoxelBBox.min.x += dHalfLength.x;
-            childVoxelBBox.max.x += dHalfLength.x;
+            voxelBBox.min.x += dHalfLength.x;
+            voxelBBox.max.x += dHalfLength.x;
+
+            voxelNatbox.min.x += dHalfLength.x;
+            voxelNatbox.max.x += dHalfLength.x;
         } else if (childIndex === 6) {
-            childVoxelBBox.min.y += dHalfLength.y;
-            childVoxelBBox.max.y += dHalfLength.y;
-            childVoxelBBox.min.x += dHalfLength.x;
-            childVoxelBBox.max.x += dHalfLength.x;
+            voxelBBox.min.y += dHalfLength.y;
+            voxelBBox.max.y += dHalfLength.y;
+            voxelBBox.min.x += dHalfLength.x;
+            voxelBBox.max.x += dHalfLength.x;
+
+            voxelNatbox.min.y += dHalfLength.y;
+            voxelNatbox.max.y += dHalfLength.y;
+            voxelNatbox.min.x += dHalfLength.x;
+            voxelNatbox.max.x += dHalfLength.x;
         }
-
-        return childVoxelBBox;
-    }
-
-    override setVoxelOBBFromParent(): void {
-        this._voxelOBB.copy(this.parent.voxelOBB);
-        this._voxelOBB.box3D = this.computeBBoxFromParent();
     }
 }
 
