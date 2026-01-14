@@ -57,7 +57,7 @@ class VpcSource extends Source {
                 }
                 this.crs = CRS.defsFromWkt(projsWkt2[0]);
 
-                // Set boundsConformings (the bbox) of the VPC Layer
+                // Set boundsConformings (the tight bbox) of the VPC Layer
                 const boundsConformings = metadata.features
                     .filter(f => f.properties['proj:wkt2'] === projsWkt2[0])
                     .map(f => f.properties['proj:bbox']);

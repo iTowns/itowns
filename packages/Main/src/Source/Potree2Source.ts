@@ -11,8 +11,8 @@ interface Potree2Attribute {
     numElements: number;
     elementSize: number;
     type: keyof typeof typeNameAttributeMap;
-    min: number[];
-    max: number[];
+    min: [number, number, number];
+    max: [number, number, number];
 }
 
 interface Potree2Metadata {
@@ -126,6 +126,8 @@ class Potree2Source extends Source {
 
     // Properties initialized after fetching metadata
     metadata!: Potree2Metadata;
+    bounds!: [number, number, number, number, number, number];
+    boundsConforming!: [number, number, number, number, number, number];
     pointAttributes!: Potree2PointAttributes;
     baseurl!: string;
     zmin!: number;
@@ -297,6 +299,12 @@ class Potree2Source extends Source {
                 this.networkOptions) as Promise<Potree2Metadata>)
             .then((metadata) => {
                 this.metadata = metadata;
+                const positionAttr = metadata.attributes
+                    .filter(attributes => attributes.name === 'position')[0];
+
+                const { boundingBox } = metadata;
+                this.bounds = [...boundingBox.min, ...boundingBox.max];
+                this.boundsConforming = [...positionAttr.min, ...positionAttr.max];
                 this.pointAttributes = parseAttributes(metadata.attributes);
                 this.baseurl = `${this.url}`;
 
