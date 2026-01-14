@@ -1,9 +1,10 @@
 import * as THREE from 'three';
+import proj4 from 'proj4';
 import { TileGeometry } from 'Core/TileGeometry';
 import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
-import { CRS, Coordinates } from '@itowns/geographic';
+import { CRS, Coordinates, OrientationUtils } from '@itowns/geographic';
 
-import type { Extent } from '@itowns/geographic';
+import type { Extent, ProjectionLike } from '@itowns/geographic';
 
 // get oriented bounding box of tile
 const builder = new GlobeTileBuilder({ uvCount: 1 });
@@ -21,6 +22,7 @@ class OBB extends THREE.Object3D {
     box3D: THREE.Box3;
     natBox: THREE.Box3;
     z: { min: number, max: number, scale: number, delta: number };
+    _matrixWorldInverse: undefined | THREE.Matrix4;
 
     /**
      * @param min - (optional) A {@link THREE.Vector3} representing the lower
@@ -35,9 +37,15 @@ class OBB extends THREE.Object3D {
         max = new THREE.Vector3(-Infinity, -Infinity, -Infinity),
     ) {
         super();
-        this.box3D = new THREE.Box3(min.clone(), max.clone());
-        this.natBox = this.box3D.clone();
+        this.natBox = new THREE.Box3(min.clone(), max.clone());
+        this.box3D = this.natBox.clone();
         this.z = { min: 0, max: 0, scale: 1.0, delta: 0 };
+    }
+
+    get matrixWorldInverse() {
+        if (this._matrixWorldInverse !== undefined) { return this._matrixWorldInverse; }
+        this._matrixWorldInverse = this.matrixWorld.clone().invert();
+        return this._matrixWorldInverse;
     }
 
     /**
@@ -147,6 +155,94 @@ class OBB extends THREE.Object3D {
             throw new Error('Unsupported extent crs');
         }
         return this;
+    }
+
+    setFromBox3(box3: THREE.Box3) {
+        this.natBox.copy(box3);
+        this.box3D = this.natBox.clone();
+        return this;
+    }
+
+    setFromArray(array: number[]) {
+        this.natBox.setFromArray(array);
+        this.box3D = this.natBox.clone();
+        return this;
+    }
+
+    /**
+     * Project the OBB in a specified crs.
+     * The OBB new position will be the initial OBB center
+     * projected at z=0 in the initial crs.
+     *
+     * @param crsIn - The initial crs (at the creation of the OBB)
+     * @param crsOut - The crs in which we want the obb to be projected
+     */
+    projOBB(crsIn: ProjectionLike, crsOut: ProjectionLike) {
+        let forward = ((coord: [number, number, number]) => coord);
+        if (crsIn !== crsOut) {
+            try {
+                forward = proj4(crsIn, crsOut).forward;
+            } catch (err) {
+                throw new Error(`${err} is not defined in proj4`);
+            }
+        }
+
+        const { min, max } = this.natBox;
+        const corners = [
+            ...forward([max.x, max.y, max.z]),
+            ...forward([min.x, max.y, max.z]),
+            ...forward([min.x, min.y, max.z]),
+            ...forward([max.x, min.y, max.z]),
+            ...forward([max.x, max.y, min.z]),
+            ...forward([min.x, max.y, min.z]),
+            ...forward([min.x, min.y, min.z]),
+            ...forward([max.x, min.y, min.z]),
+        ];
+
+        // get center of box at altitude Z=0 and project it in view crs;
+        const origin = forward([(min.x + max.x) * 0.5, (min.y + max.y) * 0.5, 0]);
+
+        // get LocalRotation
+        const isGeocentric = proj4.defs(crsOut).projName === 'geocent';
+        let rotation = new THREE.Quaternion();
+        if (isGeocentric) {
+            const coordOrigin = new Coordinates(crsOut).setFromArray(origin);
+            rotation = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coordOrigin);
+        }
+
+        // project corners in local referentiel
+        const cornersLocal = [];
+        for (let i = 0; i < 24; i += 3) {
+            const cornerLocal = new THREE.Vector3(
+                corners[i] - origin[0],
+                corners[i + 1] - origin[1],
+                corners[i + 2] - origin[2],
+            );
+            cornerLocal.applyQuaternion(rotation);
+            cornersLocal.push(...cornerLocal.toArray());
+        }
+
+        this.box3D.setFromArray(cornersLocal);
+        this.position.fromArray(origin);
+        this.quaternion.copy(rotation).invert();
+
+        this.updateMatrix();
+        this.updateMatrixWorld();
+    }
+    /**
+     * Clamped the OBB on the z axes of the OBB.box3D.
+     *
+     * @param zmin - The min z value for clamping.
+     * @param zmax - the max z value for clamping.
+     */
+    clampZ(zmin: number, zmax: number) {
+        const clampBBox = this.box3D;
+        if (clampBBox.min.z < zmax) {
+            clampBBox.max.z = Math.min(clampBBox.max.z, zmax);
+        }
+        if (clampBBox.max.z > zmin) {
+            clampBBox.min.z = Math.max(clampBBox.min.z, zmin);
+        }
     }
 }
 
