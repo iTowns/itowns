@@ -529,15 +529,19 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
      * Track usage of current render targets for deferred disposal.
      * Should be called every time this material is rendered.
      */
-    public trackCurrentRenderTargetUsage(): void {
+    public markAsRendered(): void {
+        if (!this.renderTargetCache) {
+            throw new Error('renderTargetCache is not initialized');
+        }
+
         const colorTextures = this.getUniform('colorTextures');
         if (colorTextures?.userData?.textureSetId) {
-            this.renderTargetCache!.markAsUsed(colorTextures.userData.textureSetId);
+            this.renderTargetCache.markAsUsed(colorTextures.userData.textureSetId);
         }
 
         const elevationTextures = this.getUniform('elevationTextures');
         if (elevationTextures?.userData?.textureSetId) {
-            this.renderTargetCache!.markAsUsed(elevationTextures.userData.textureSetId);
+            this.renderTargetCache.markAsUsed(elevationTextures.userData.textureSetId);
         }
     }
 

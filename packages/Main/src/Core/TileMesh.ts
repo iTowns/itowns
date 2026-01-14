@@ -149,7 +149,7 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
 
         // Track actual usage every time this mesh is rendered
         // Use global current rendering view ID set by MainLoop
-        this.material.trackCurrentRenderTargetUsage();
+        this.material.markAsRendered();
     }
 }
 

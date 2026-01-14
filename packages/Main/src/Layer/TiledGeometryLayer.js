@@ -360,6 +360,16 @@ class TiledGeometryLayer extends GeometryLayer {
         });
     }
 
+    /**
+     * All layer's 3D objects are removed from the scene and disposed from the video device.
+     * Also disposes the render target cache.
+     * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
+     */
+    delete(clearCache) {
+        super.delete(clearCache);
+        this.renderTargetCache.dispose();
+    }
+
     // eslint-disable-next-line
     culling(node, camera) {
         return !camera.isBox3Visible(node.obb.box3D, node.matrixWorld);

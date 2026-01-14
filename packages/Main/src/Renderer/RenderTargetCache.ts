@@ -38,18 +38,19 @@ export class RenderTargetCache {
      * Perform cleanup of render targets that are not used in this render cycle.
      */
     public cleanup(): void {
-        if (this._usedIds.size) { // important: only clean up if last loop did rendering
-            for (const [id, renderTarget] of this._pendingDisposal) {
-                if (this._usedIds.has(id)) {
-                    continue;
-                }
-                renderTarget.dispose();
-                this._pendingDisposal.delete(id);
-            }
+        // important: only clean up if last loop did rendering
+        if (!this._usedIds.size) { return; }
 
-            // initialize render target usage tracking for next render
-            this._usedIds.clear();
+        for (const [id, renderTarget] of this._pendingDisposal) {
+            if (this._usedIds.has(id)) {
+                continue;
+            }
+            renderTarget.dispose();
+            this._pendingDisposal.delete(id);
         }
+
+        // initialize render target usage tracking for next render
+        this._usedIds.clear();
     }
 
     /**
@@ -89,5 +90,22 @@ export class RenderTargetCache {
      */
     public set(id: string, rt: THREE.WebGLArrayRenderTarget): void {
         this._cache.set(id, rt);
+    }
+
+    /**
+     * Dispose all render targets and clear the cache completely.
+     */
+    public dispose(): void {
+        for (const [, renderTarget] of this._cache) {
+            renderTarget.dispose();
+        }
+        this._cache.clear();
+
+        for (const [, renderTarget] of this._pendingDisposal) {
+            renderTarget.dispose();
+        }
+        this._pendingDisposal.clear();
+
+        this._usedIds.clear();
     }
 }
