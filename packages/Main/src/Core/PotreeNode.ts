@@ -51,7 +51,7 @@ class PotreeNode extends PotreeNodeBase {
                         snode.depth + 1, indexChild,
                         numPoints, childrenBitField, this.source, this.crs);
 
-                    snode.add(child, indexChild);
+                    snode.add(child);
                     // For Potree1 Parser
                     child.offsetBBox = computeChildBBox(child.parent!.offsetBBox!, indexChild);
                     if ((child.depth % this.source.hierarchyStepSize) == 0) {

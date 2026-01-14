@@ -94,7 +94,7 @@ class EntwinePointTileNode extends LasNodeBase {
             const child = new EntwinePointTileNode(
                 depth, x, y, z,
                 this.source, numPoints, this.crs);
-            this.add(child as this, 0);
+            this.add(child as this);
             stack.push(child);
         }
     }

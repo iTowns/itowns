@@ -9,8 +9,8 @@ const dHalfLength = new Vector3();
 export function computeChildBBox(voxelBBox: Box3, childIndex: number) {
     // Code inspired from potree
     const childVoxelBBox = voxelBBox.clone();
-    voxelBBox.getCenter(childVoxelBBox.max);
-    dHalfLength.copy(childVoxelBBox.max).sub(voxelBBox.min);
+    childVoxelBBox.getCenter(childVoxelBBox.max);
+    dHalfLength.copy(childVoxelBBox.max).sub(childVoxelBBox.min);
 
     if (childIndex === 1) {
         childVoxelBBox.min.z += dHalfLength.z;
@@ -97,22 +97,49 @@ export abstract class PotreeNodeBase extends PointCloudNode {
         return this.source.fetcher(url, networkOptions);
     }
 
-    override createChildAABB(childNode: this, childIndex: number): void {
-        childNode.voxelOBB.copy(this.voxelOBB);
-        childNode.voxelOBB.box3D = computeChildBBox(this.voxelOBB.box3D, childIndex);
-
-        childNode.clampOBB.copy(childNode.voxelOBB);
-        const childClampBBox = childNode.clampOBB.box3D;
-
-        if (childClampBBox.min.z < this.source.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
+    computeBBoxFromParent(): Box3 {
+        // Code inspired from potree
+        const childVoxelBBox = this.parent.voxelOBB.box3D.clone();
+        childVoxelBBox.getCenter(childVoxelBBox.max);
+        dHalfLength.copy(childVoxelBBox.max).sub(childVoxelBBox.min);
+        const childIndex = this.index;
+        if (childIndex === 1) {
+            childVoxelBBox.min.z += dHalfLength.z;
+            childVoxelBBox.max.z += dHalfLength.z;
+        } else if (childIndex === 3) {
+            childVoxelBBox.min.z += dHalfLength.z;
+            childVoxelBBox.max.z += dHalfLength.z;
+            childVoxelBBox.min.y += dHalfLength.y;
+            childVoxelBBox.max.y += dHalfLength.y;
+        } else if (childIndex === 0) {
+            //
+        } else if (childIndex === 2) {
+            childVoxelBBox.min.y += dHalfLength.y;
+            childVoxelBBox.max.y += dHalfLength.y;
+        } else if (childIndex === 5) {
+            childVoxelBBox.min.z += dHalfLength.z;
+            childVoxelBBox.max.z += dHalfLength.z;
+            childVoxelBBox.min.x += dHalfLength.x;
+            childVoxelBBox.max.x += dHalfLength.x;
+        } else if (childIndex === 7) {
+            childVoxelBBox.min.add(dHalfLength);
+            childVoxelBBox.max.add(dHalfLength);
+        } else if (childIndex === 4) {
+            childVoxelBBox.min.x += dHalfLength.x;
+            childVoxelBBox.max.x += dHalfLength.x;
+        } else if (childIndex === 6) {
+            childVoxelBBox.min.y += dHalfLength.y;
+            childVoxelBBox.max.y += dHalfLength.y;
+            childVoxelBBox.min.x += dHalfLength.x;
+            childVoxelBBox.max.x += dHalfLength.x;
         }
-        if (childClampBBox.max.z > this.source.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
-        }
 
-        (this.clampOBB.parent as Group).add(childNode.clampOBB);
-        childNode.clampOBB.updateMatrixWorld(true);
+        return childVoxelBBox;
+    }
+
+    override setVoxelOBBFromParent(): void {
+        this._voxelOBB.copy(this.parent.voxelOBB);
+        this._voxelOBB.box3D = this.computeBBoxFromParent();
     }
 }
 

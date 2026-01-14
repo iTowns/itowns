@@ -469,6 +469,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             bbox = object3d.geometry.boundingBox as THREE.Box3;
         } else {
             object3d = elt.clampOBB;
+            this.object3d.add(elt.clampOBB);
+            elt.clampOBB.updateMatrixWorld(true);
             bbox = object3d.box3D;
         }
 

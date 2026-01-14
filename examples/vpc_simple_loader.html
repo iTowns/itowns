@@ -84,7 +84,7 @@
                 var lookAt = vpcLayer.root.origin.toVector3();
 
                 var size = new THREE.Vector3();
-                vpcLayer.root.voxelOBB.box3D.getSize(size);
+                vpcLayer.root.clampOBB.box3D.getSize(size);
                 view.camera3D.far = 10.0 * size.length();
 
                 controls.groundLevel = vpcLayer.minElevationRange;
