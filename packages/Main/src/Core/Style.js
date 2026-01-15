@@ -127,7 +127,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
         {
             enumerable: true,
             get: () => {
-                // != to check for 'undefined' and 'null' value)
+                // != to check for 'undefined' and 'null' value
                 if (property != undefined) { return readExpression(property, style.context); }
                 const dataValue = style.context.featureStyle?.[category]?.[parameter];
                 if (dataValue != undefined) { return readExpression(dataValue, style.context); }
