@@ -66,6 +66,8 @@ describe('material state vs layer state', function () {
     });
 
     it('should update material uniforms', () => {
+        node.material.renderTargetCache = view.tileLayer.renderTargetCache;
+
         layer.visible = false;
         node.material.layersNeedUpdate = true;
         node.onBeforeRender();
