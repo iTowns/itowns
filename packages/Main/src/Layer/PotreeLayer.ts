@@ -59,12 +59,6 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
             this.setElevationRange();
 
             this.root = new PotreeNode(0, -1, 0, 0, this.source, this.crs);
-            const { boundingBox } = cloud;
-            this.root.setOBBes([boundingBox.lx, boundingBox.ly, boundingBox.lz],
-                [boundingBox.ux, boundingBox.uy, boundingBox.uz]);
-
-            this.object3d.add(this.root.clampOBB);
-            this.root.clampOBB.updateMatrixWorld(true);
 
             return this.root.loadOctree().then(resolve);
         });

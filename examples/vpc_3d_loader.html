@@ -79,7 +79,7 @@
             function onLayerReady() {
                 var lookAt = vpcLayer.root.origin;
                 var size = new THREE.Vector3();
-                vpcLayer.root.voxelOBB.box3D.getSize(size);
+                vpcLayer.root.clampOBB.box3D.getSize(size);
 
                 view.controls.lookAtCoordinate({
                     coord: lookAt,

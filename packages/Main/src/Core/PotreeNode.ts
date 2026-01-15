@@ -1,5 +1,4 @@
-import * as THREE from 'three';
-import PotreeNodeBase, { computeChildBBox } from 'Core/PotreeNodeBase';
+import PotreeNodeBase from 'Core/PotreeNodeBase';
 import type PotreeSource from 'Source/PotreeSource';
 
 class PotreeNode extends PotreeNodeBase {
@@ -26,8 +25,6 @@ class PotreeNode extends PotreeNodeBase {
     }
 
     override async loadOctree(): Promise<void> {
-        this.offsetBBox = new THREE.Box3()
-            .setFromArray(this.source.boundsConforming);// Only for Potree1
         const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
         const blob = await this.fetcher(octreeUrl, this.networkOptions);
         const view = new DataView(blob);
@@ -51,9 +48,8 @@ class PotreeNode extends PotreeNodeBase {
                         snode.depth + 1, indexChild,
                         numPoints, childrenBitField, this.source, this.crs);
 
-                    snode.add(child, indexChild);
+                    snode.add(child);
                     // For Potree1 Parser
-                    child.offsetBBox = computeChildBBox(child.parent!.offsetBBox!, indexChild);
                     if ((child.depth % this.source.hierarchyStepSize) == 0) {
                         child.baseurl = `${this.baseurl}/${child.hierarchyKey.substring(1)}`;
                     } else {

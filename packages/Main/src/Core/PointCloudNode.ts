@@ -4,6 +4,8 @@ import proj4 from 'proj4';
 import { OrientationUtils, Coordinates } from '@itowns/geographic';
 
 export interface PointCloudSource {
+    bounds: [number, number, number, number, number, number];
+    boundsConforming: [number, number, number, number, number, number];
     spacing: number;
     crs: string;
     zmin: number;
@@ -12,8 +14,6 @@ export interface PointCloudSource {
     parser: (data: ArrayBuffer, options: { in: PointCloudNode }) => THREE.BufferGeometry;
     networkOptions: RequestInit;
 }
-
-type ExtentedOBB = OBB & { matrixWorldInverse: THREE.Matrix4 };
 
 abstract class PointCloudNode extends THREE.EventDispatcher {
     /** The crs of the node. */
@@ -29,11 +29,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     children: this[];
     parent: this | undefined;
 
-    /** The node cubique obb. */
-    voxelOBB: ExtentedOBB;
-    /** The cubique obb clamped to zmin and zmax. */
-    clampOBB: ExtentedOBB;
-
     // Properties used internally by PointCloud layer
     visible: boolean;
     /** The sse of the node set at an nitial value of -1. */
@@ -41,6 +36,9 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     notVisibleSince: number | undefined;
     promise: Promise<unknown> | null;
     obj: THREE.Points | undefined;
+
+    protected  _voxelOBB: OBB | undefined;
+    private _clampOBB: OBB | undefined;
 
     private _center: Coordinates | undefined;
     private _origin: Coordinates | undefined;
@@ -56,8 +54,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         this.children = [];
         this.parent = undefined;
 
-        this.voxelOBB = new OBB() as ExtentedOBB;
-        this.clampOBB = new OBB() as ExtentedOBB;
         this.sse = -1;
 
         this.visible = false;
@@ -69,18 +65,47 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     abstract get id(): string;
     abstract get url(): string;
     abstract loadOctree(): Promise<void>;
-    abstract createChildAABB(node: PointCloudNode, indexChild: number): void;
+    abstract setVoxelOBBFromParent(): void;
     abstract fetcher(url: string, networkOptions:  RequestInit): Promise<ArrayBuffer>;
 
     get pointSpacing(): number {
         return this.source.spacing / 2 ** this.depth;
     }
 
+    /** The node cubique obb. */
+    get voxelOBB() {
+        if (this._voxelOBB != undefined) { return this._voxelOBB; }
+        this._voxelOBB = new OBB();
+        if (this.depth === 0) {
+            this._voxelOBB.setFromArray(this.source.bounds)
+                .projOBB(this.source.crs, this.crs);
+        } else {
+            this.setVoxelOBBFromParent();
+        }
+        return this._voxelOBB;
+    }
+
+    /** A cubique obb closer to the data. */
+    get clampOBB() {
+    // For the root node:
+    // will be set from the boundingConforming metadata (if available)
+    // or from the Voxel OBB clamped to the zmin and zmax value.
+        if (this._clampOBB != undefined) { return this._clampOBB; }
+        this._clampOBB = new OBB();
+        if (this.depth === 0 && this.source.boundsConforming) {
+            this._clampOBB.setFromArray(this.source.boundsConforming)
+                .projOBB(this.source.crs, this.crs);
+        } else {
+            this._clampOBB.copy(this.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
+        }
+        return this._clampOBB;
+    }
+
     // get the center of the node i.e. the center of the bounding box.
     get center(): Coordinates {
         if (this._center != undefined) { return this._center; }
         const centerBbox = new THREE.Vector3();
-        this.voxelOBB.box3D.getCenter(centerBbox);
+        this.clampOBB.box3D.getCenter(centerBbox);
         this._center =  new Coordinates(this.crs)
             .setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrix));
         return this._center;
@@ -122,81 +147,9 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
             }));
     }
 
-    setOBBes(min: number[], max: number[]): void {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const root = this;
-        const crs = {
-            in: root.source.crs,
-            out: this.crs,
-        };
-        const zmin = root.source.zmin;
-        const zmax = root.source.zmax;
-
-        let forward = (x: [number, number, number]) => x;
-        if (crs.in !== crs.out) {
-            try {
-                forward = proj4(crs.in, crs.out).forward;
-            } catch (err) {
-                throw new Error(`${err} is not defined in proj4`);
-            }
-        }
-
-        const corners = [
-            ...forward([max[0], max[1], max[2]]),
-            ...forward([min[0], max[1], max[2]]),
-            ...forward([min[0], min[1], max[2]]),
-            ...forward([max[0], min[1], max[2]]),
-            ...forward([max[0], max[1], min[2]]),
-            ...forward([min[0], max[1], min[2]]),
-            ...forward([min[0], min[1], min[2]]),
-            ...forward([max[0], min[1], min[2]]),
-        ];
-
-        // get center of box at altitude Z=0 and project it in view crs;
-        const origin = forward([(min[0] + max[0]) * 0.5, (min[1] + max[1]) * 0.5, 0]);
-
-        // get LocalRotation
-        const isGeocentric = proj4.defs(crs.out).projName === 'geocent';
-        let rotation = new THREE.Quaternion();
-        if (isGeocentric) {
-            const coordOrigin = new Coordinates(crs.out).setFromArray(origin);
-            rotation = OrientationUtils.quaternionFromCRSToCRS(crs.out, crs.in)(coordOrigin);
-        }
-
-        // project corners in local referentiel
-        const cornersLocal = [];
-        for (let i = 0; i < 24; i += 3) {
-            const cornerLocal = new THREE.Vector3(
-                corners[i] - origin[0],
-                corners[i + 1] - origin[1],
-                corners[i + 2] - origin[2],
-            );
-            cornerLocal.applyQuaternion(rotation);
-            cornersLocal.push(...cornerLocal.toArray());
-        }
-
-        // get the bbox containing all cornersLocal => the bboxLocal
-        root.voxelOBB.box3D.setFromArray(cornersLocal);
-        root.voxelOBB.position.set(...origin);
-        root.voxelOBB.quaternion.copy(rotation).invert();
-
-        root.voxelOBB.updateMatrix();
-
-        root.clampOBB.copy(root.voxelOBB);
-
-        const clampBBox = root.clampOBB.box3D;
-        if (clampBBox.min.z < zmax) {
-            clampBBox.max.z = Math.min(clampBBox.max.z, zmax);
-        }
-        if (clampBBox.max.z > zmin) {
-            clampBBox.min.z = Math.max(clampBBox.min.z, zmin);
-        }
-    }
-
-    add(node: this, indexChild: number): void {
+    add(node: this): void {
         this.children.push(node);
         node.parent = this;
-        this.createChildAABB(node, indexChild);
     }
 
     findCommonAncestor(node: this): this | undefined {

@@ -39,6 +39,7 @@ class PotreeSource extends Source {
     extensionOctree: 'hrc';
 
     // Properties initialized after fetching cloud file
+    bounds!: [number, number, number, number, number, number];
     boundsConforming!: [number, number, number, number, number, number];
     pointAttributes!: string[];
     baseurl!: string;
@@ -123,6 +124,8 @@ class PotreeSource extends Source {
                 Promise.resolve(source.cloud) :
             Fetcher.json(`${this.url}/${this.file}`, this.networkOptions) as Promise<PotreeCloud>)
             .then((cloud) => {
+                const { lx, ly, lz, ux, uy, uz } = cloud.boundingBox;
+                this.bounds = [lx, ly, lz, ux, uy, uz];
                 this.boundsConforming = [
                     cloud.tightBoundingBox.lx,
                     cloud.tightBoundingBox.ly,
