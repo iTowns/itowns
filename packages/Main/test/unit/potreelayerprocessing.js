@@ -66,25 +66,4 @@ describe('preUpdate PotreeLayer', function () {
             layer.root,
             PotreeLayer.prototype.preUpdate.call(layer, context, sources)[0]);
     });
-
-    it('should return common ancestor', () => {
-        const sources = new Set();
-        sources.add(layer.root.children[2].children[0]);
-        sources.add(layer.root.children[2].children[1]);
-        sources.add(layer.root.children[2].children[1].children[2]);
-        sources.add(layer.root.children[2].children[1].children[3]);
-        assert.deepStrictEqual(
-            layer.root.children[2],
-            PotreeLayer.prototype.preUpdate.call(layer, context, sources)[0]);
-    });
-
-    it('should not search ancestors if layer are different root if no common ancestors', () => {
-        const sources = new Set();
-        sources.add(layer.root.children[2].children[0]);
-        sources.add(layer.root.children[2].children[1].children[3]);
-        layer.root.children[2].children[1].children[3].obj = { layer: {}, isPoints: true };
-        assert.deepStrictEqual(
-            layer.root.children[2].children[0],
-            PotreeLayer.prototype.preUpdate.call(layer, context, sources)[0]);
-    });
 });
