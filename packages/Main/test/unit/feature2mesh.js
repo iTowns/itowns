@@ -3,6 +3,7 @@ import { CRS } from '@itowns/geographic';
 import assert from 'assert';
 import GeoJsonParser from 'Parser/GeoJsonParser';
 import Feature2Mesh from 'Converter/Feature2Mesh';
+import Style from 'Core/Style';
 
 import geojson from '../data/geojson/holes.geojson';
 import geojson2 from '../data/geojson/simple.geojson';
@@ -116,6 +117,114 @@ describe('Feature2Mesh', function () {
                 );
                 assert.ok(isInstancedMesh);
                 assert.equal(mesh.children.length, 3);
+                done();
+            }).catch(done);
+    });
+
+    it('update polygon color and altitude', function (done) {
+        parsed
+            .then((collection) => {
+                const layer = {
+                    style: new Style(),
+                    convert: Feature2Mesh.convert(),
+                };
+                const featureNode = layer.convert.call(layer, collection);
+                const featureMesh = featureNode.meshes.children[0];
+
+                const colorAttr = featureMesh.geometry.getAttribute('color');
+                const posAttr = featureMesh.geometry.getAttribute('position');
+                const initialColorVersion = colorAttr.version;
+                const initialPosVersion = posAttr.version;
+
+                layer.style.fill.color = 'red';
+                layer.style.fill.base_altitude = 100;
+                Feature2Mesh.updateStyle(featureMesh, featureNode.collection, layer.style);
+
+                assert.equal(colorAttr.array[0], 255);
+                assert.equal(colorAttr.array[1], 0);
+                assert.equal(colorAttr.array[2], 0);
+                assert.equal(posAttr.array[2], 100);
+                assert.ok(colorAttr.version > initialColorVersion);
+                assert.ok(posAttr.version > initialPosVersion);
+                done();
+            }).catch(done);
+    });
+
+    it('update extruded polygon', function (done) {
+        parsed
+            .then((collection) => {
+                const layer = {
+                    style: new Style({
+                        fill: { extrusion_height: 50 },
+                    }),
+                    convert: Feature2Mesh.convert(),
+                };
+                const featureNode = layer.convert.call(layer, collection);
+                const featureMesh = featureNode.meshes.children[0];
+
+                const colorAttr = featureMesh.geometry.getAttribute('color');
+                const posAttr = featureMesh.geometry.getAttribute('position');
+                const initialColorVersion = colorAttr.version;
+                const initialPosVersion = posAttr.version;
+
+                const vertexCount = posAttr.count;
+                const halfCount = vertexCount / 2;
+                const topZ = posAttr.array[halfCount * 3 + 2];
+
+                layer.style.fill.extrusion_height = 150;
+                Feature2Mesh.updateStyle(featureMesh, featureNode.collection, layer.style);
+
+                const updatedTopZ = posAttr.array[halfCount * 3 + 2];
+                assert.equal(updatedTopZ - topZ, 100);
+                assert.ok(posAttr.version > initialPosVersion);
+                assert.equal(colorAttr.version, initialColorVersion);
+                done();
+            }).catch(done);
+    });
+
+    it('update point and line features', function (done) {
+        parsed2
+            .then((collection) => {
+                const layer = {
+                    style: new Style(),
+                    convert: Feature2Mesh.convert(),
+                };
+                const featureNode = layer.convert.call(layer, collection);
+
+                const pointMesh = featureNode.meshes.children[0];
+                const lineMesh = featureNode.meshes.children[1];
+
+                const pointColorAttr = pointMesh.geometry.getAttribute('color');
+                const lineColorAttr = lineMesh.geometry.getAttribute('color');
+                const pointPosAttr = pointMesh.geometry.getAttribute('position');
+                const linePosAttr = lineMesh.geometry.getAttribute('position');
+
+                const initialPointColorVersion = pointColorAttr.version;
+                const initialPointPosVersion = pointPosAttr.version;
+                const initialLineColorVersion = lineColorAttr.version;
+                const initialLinePosVersion = linePosAttr.version;
+
+                layer.style.point.color = 'lime'; // not 'green'
+                layer.style.point.base_altitude = 50;
+                Feature2Mesh.updateStyle(pointMesh, featureNode.collection, layer.style);
+
+                layer.style.stroke.color = 'blue';
+                layer.style.stroke.base_altitude = 75;
+                Feature2Mesh.updateStyle(lineMesh, featureNode.collection, layer.style);
+
+                assert.equal(pointColorAttr.array[0], 0);
+                assert.equal(pointColorAttr.array[1], 255);
+                assert.equal(pointColorAttr.array[2], 0);
+                assert.equal(pointPosAttr.array[2], 50);
+                assert.ok(pointColorAttr.version > initialPointColorVersion);
+                assert.ok(pointPosAttr.version > initialPointPosVersion);
+
+                assert.equal(lineColorAttr.array[0], 0);
+                assert.equal(lineColorAttr.array[1], 0);
+                assert.equal(lineColorAttr.array[2], 255);
+                assert.equal(linePosAttr.array[2], 75);
+                assert.ok(lineColorAttr.version > initialLineColorVersion);
+                assert.ok(linePosAttr.version > initialLinePosVersion);
                 done();
             }).catch(done);
     });
