@@ -67,7 +67,9 @@ interface Context {
             earlyDropFunction?: (cmd: { requester: PointCloudNode }) => boolean;
         }) => Promise<THREE.Points>;
     };
-    view: object;
+    view: {
+        notifyChange: (elt: PointCloudLayer) => void;
+    };
 }
 
 function computeSSEPerspective(
@@ -323,8 +325,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         this.maxElevationRange = this.maxElevationRange ?? this.source.zmax;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    preUpdate(context: Context, changeSources: any) {
+    preUpdate(context: Context) {
         // See https://cesiumjs.org/hosted-apps/massiveworlds/downloads/Ring/WorldScaleTerrainRendering.pptx
         // slide 17
         context.camera.preSSE =
@@ -342,36 +343,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 // @ts-expect-error PointsMaterial is not typed yet
                 this.material.updateUniforms();
             }
-        }
-
-        // lookup lowest common ancestor of changeSources
-        let commonAncestor;
-        for (const source of changeSources.values()) {
-            if (source.isCamera || source == this) {
-                // if the change is caused by a camera move, no need to bother
-                // to find common ancestor: we need to update the whole tree:
-                // some invisible tiles may now be visible
-                return [this.root];
-            }
-            if (source.obj === undefined) {
-                continue;
-            }
-            // filter sources that belong to our layer
-            if (source.obj.isPoints && source.obj.layer == this) {
-                if (!commonAncestor) {
-                    commonAncestor = source;
-                } else {
-                    commonAncestor = source.findCommonAncestor(commonAncestor);
-
-                    if (!commonAncestor) {
-                        return [this.root];
-                    }
-                }
-            }
-        }
-
-        if (commonAncestor) {
-            return [commonAncestor];
         }
 
         // Start updating from hierarchy root
@@ -414,11 +385,12 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                     earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
                 }).then((pts: THREE.Points) => {
                     elt.obj = pts;
-
+                    elt.obj.visible = false;
                     // make sure to add it here, otherwise it might never
                     // be added nor cleaned
                     this.group.add(elt.obj);
                     elt.obj.updateMatrixWorld(true);
+                    context.view.notifyChange(this);
                 }).catch((err: { isCancelledCommandException: boolean }) => {
                     if (!err.isCancelledCommandException) {
                         return err;
