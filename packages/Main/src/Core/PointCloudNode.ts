@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 import OBB from 'Renderer/OBB';
-import proj4 from 'proj4';
-import { OrientationUtils, Coordinates } from '@itowns/geographic';
 
 export interface PointCloudSource {
     bounds: [number, number, number, number, number, number];
@@ -11,7 +9,10 @@ export interface PointCloudSource {
     zmin: number;
     zmax: number;
     fetcher: (url: string, options?: RequestInit) => Promise<ArrayBuffer>;
-    parser: (data: ArrayBuffer, options: { in: PointCloudNode }) => THREE.BufferGeometry;
+    parser: (data: ArrayBuffer,
+            options: { in: PointCloudNode,
+                       out: { crs: string },
+                     }) => THREE.BufferGeometry;
     networkOptions: RequestInit;
 }
 
@@ -39,10 +40,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
     protected  _voxelOBB: OBB | undefined;
     private _clampOBB: OBB | undefined;
-
-    private _center: Coordinates | undefined;
-    private _origin: Coordinates | undefined;
-    private _rotation: THREE.Quaternion | undefined;
 
     constructor(depth: number, numPoints = 0) {
         super();
@@ -101,42 +98,7 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         return this._clampOBB;
     }
 
-    // get the center of the node i.e. the center of the bounding box.
-    get center(): Coordinates {
-        if (this._center != undefined) { return this._center; }
-        const centerBbox = new THREE.Vector3();
-        this.clampOBB.box3D.getCenter(centerBbox);
-        this._center =  new Coordinates(this.crs)
-            .setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrix));
-        return this._center;
-    }
-
-    // the origin is the center of the bounding box projected
-    // on the z=O local plan, in the world referential.
-    get origin(): Coordinates {
-        if (this._origin != undefined) { return this._origin; }
-        const centerCrsIn = proj4(this.crs, this.source.crs).forward(this.center);
-        this._origin =  new Coordinates(this.crs)
-            .setFromArray(
-                proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
-        return this._origin;
-    }
-
-    /**
-     * get the rotation between the local referentiel and
-     * the geocentrique one (if appliable).
-     */
-    get rotation(): THREE.Quaternion {
-        if (this._rotation != undefined) { return this._rotation; }
-        this._rotation = new THREE.Quaternion();
-        if (proj4.defs(this.crs).projName === 'geocent') {
-            this._rotation =
-            OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
-        }
-        return this._rotation;
-    }
-
-    async load(): Promise<THREE.BufferGeometry> {
+    async load(crs: string): Promise<THREE.BufferGeometry> {
         // Query octree/HRC if we don't have children yet.
         if (!this.octreeIsLoaded) {
             await this.loadOctree();
@@ -144,6 +106,7 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         return this.fetcher(this.url, this.networkOptions)
             .then(file => this.source.parser(file, {
                 in: this,
+                out: { crs },
             }));
     }
 

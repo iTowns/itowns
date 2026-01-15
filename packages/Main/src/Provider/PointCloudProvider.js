@@ -30,14 +30,15 @@ export default {
         const layer = command.layer;
         const node = command.requester;
 
-        return node.load().then((geometry) => {
+        return node.load(layer.crs).then((geometry) => {
             const points = new THREE.Points(geometry, layer.material);
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            points.position.copy(node.origin);
 
-            const quaternion = node.rotation.clone().invert();
+            points.position.copy(geometry.userData.position);
+
+            const quaternion = geometry.userData.quaternion.clone().invert();
             points.quaternion.copy(quaternion);
             points.updateMatrix();
 

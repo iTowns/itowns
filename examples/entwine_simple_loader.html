@@ -92,7 +92,10 @@
             }
 
             function onLayerReady() {
-                var lookAt = eptLayer.root.origin.toVector3();
+                // var lookAt = eptLayer.root.origin.toVector3();
+                var lookAt = new itowns.Coordinates(view.referenceCrs)
+                    .setFromVector3(eptLayer.root.clampOBB.center)
+                    .toVector3();
 
                 var size = new THREE.Vector3();
                 eptLayer.root.voxelOBB.box3D.getSize(size);

@@ -24,6 +24,8 @@ class OBB extends THREE.Object3D {
     z: { min: number, max: number, scale: number, delta: number };
     _matrixWorldInverse: undefined | THREE.Matrix4;
 
+    private _center: THREE.Vector3 | undefined;
+
     /**
      * @param min - (optional) A {@link THREE.Vector3} representing the lower
      * (x, y, z) boundary of the box.
@@ -46,6 +48,16 @@ class OBB extends THREE.Object3D {
         if (this._matrixWorldInverse !== undefined) { return this._matrixWorldInverse; }
         this._matrixWorldInverse = this.matrixWorld.clone().invert();
         return this._matrixWorldInverse;
+    }
+
+    get center(): THREE.Vector3 {
+        if (this._center != undefined) { return this._center; }
+        const centerBbox = new THREE.Vector3();
+        this.box3D.getCenter(centerBbox);
+        // this._center =  new Coordinates(this.crs)
+        //     .setFromVector3(centerBbox.applyMatrix4(this.matrix));
+        this._center = centerBbox.applyMatrix4(this.matrix);
+        return this._center;
     }
 
     /**
