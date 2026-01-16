@@ -210,7 +210,7 @@ class GlobeControls extends THREE.EventDispatcher {
             console.warn('Controls zoomSpeed parameter is deprecated. Use zoomFactor instead.');
             options.zoomFactor = options.zoomFactor || options.zoomSpeed;
         }
-        this.zoomFactor = options.zoomFactor || 1.1;
+        this.zoomFactor = options.zoomFactor || 1.3;
 
         // Limits to how far you can dolly in and out ( PerspectiveCamera only )
         this.minDistance = options.minDistance || 250;
