@@ -3,24 +3,25 @@ import PointCloudNode from 'Core/PointCloudNode';
 import CopcNode from 'Core/CopcNode';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import PointCloudLayer from 'Layer/PointCloudLayer';
-import OBB from 'Renderer/OBB';
 
-function _instantiateRootNode(source, crs) {
-    let root;
-    if (source.isCopcSource) {
-        const { info } = source;
-        const { pageOffset, pageLength } = info.rootHierarchyPage;
-        root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, source, -1, crs);
-        root.setOBBes(info.cube.slice(0, 3), info.cube.slice(3, 6));
-    } else if (source.isEntwinePointTileSource) {
-        root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, crs);
-        root.setOBBes(source.boundsConforming.slice(0, 3), source.boundsConforming.slice(3, 6));
-    } else {
-        const msg = '[VPCLayer]: stack point cloud format not supporter';
-        console.warn(msg);
-        PointCloudLayer.handlingError(msg);
-    }
-    return root;
+function _instantiateSubRoot(source, crs) {
+    return source.whenReady.then((src) => {
+        let root;
+        if (src.isCopcSource) {
+            const { info } = src;
+            const { pageOffset, pageLength } = info.rootHierarchyPage;
+            root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, src, -1, crs);
+            root.setOBBes(info.cube.slice(0, 3), info.cube.slice(3, 6));
+        } else if (src.isEntwinePointTileSource) {
+            root = new EntwinePointTileNode(0, 0, 0, 0, src, -1, crs);
+            root.setOBBes(src.boundsConforming.slice(0, 3), src.boundsConforming.slice(3, 6));
+        } else {
+            const msg = '[VPCLayer]: stack point cloud format not supporter';
+            console.warn(msg);
+            PointCloudLayer.handlingError(msg);
+        }
+        return root;
+    });
 }
 
 /**
@@ -65,10 +66,8 @@ class VpcLayer extends PointCloudLayer {
         this.scale = new THREE.Vector3(1.0, 1.0, 1.0);
         this.offset = new THREE.Vector3(0.0, 0.0, 0.0);
 
-        const resolve = this.addInitializationStep();
-
         // a Vpc layer should be ready when all the child sources are
-        this.whenReady = this.source.whenReady.then((/** @type {VpcSource} */ sources) => {
+        const prepSubSource = this.source.whenReady.then((/** @type {VpcSource} */ source) => {
             this.setElevationRange();
 
             const boundsConforming = this.source.boundsConforming;
@@ -77,48 +76,66 @@ class VpcLayer extends PointCloudLayer {
             this.root.crs = this.crs;
             this.root.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
 
-            sources.forEach((source, i) => {
-                const boundsConforming = source.boundsConforming;
-                const mockRoot = {
-                    voxelOBB: new OBB(),
-                    clampOBB: new OBB(),
-                    children: [],
-                    waitingForSource: true,
-                    source,
-                    crs: this.crs,
-                };
-                PointCloudNode.prototype.setOBBes.call(mockRoot, boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
+            this.object3d.add(this.root.clampOBB);
+            this.root.clampOBB.updateMatrixWorld(true);
+
+            source.sources.forEach((src, i) => {
+                const boundsConforming = src.boundsConforming;
 
                 // As we delayed the intanciation of the source to the moment we need to render a particular node,
                 // we need to wait for the source to be instantiate to be able
                 // to instantiate a node and load the Octree associated.
-                const promise =
-                    source.whenReady.then((src) => {
-                        const root = _instantiateRootNode(src, this.crs);
-                        this.object3d.add(root.clampOBB);
-                        this.root.children[i] = root;
-                        return root.loadOctree().then(resolve)
-                            .then(() => root);
-                    });
+                // todo:  factorize _instantiateSubRoot in each source
+                const promisedRoot = _instantiateSubRoot(src, this.crs);
 
-                mockRoot.loadOctree = promise;
-                // when load() is called on the mockRoot, we need the associated source to be loaded
+                promisedRoot.then((r) => {
+                    this.object3d.add(r.clampOBB);
+                    r.clampOBB.updateMatrixWorld(true);
+                    this.root.children[i] = r;
+                });
+
+                const mockSubRoot = new PointCloudNode(0, 0);
+                mockSubRoot.source = src;
+                mockSubRoot.crs = this.crs;
+                mockSubRoot.loadOctree = promisedRoot.then(root => root.loadOctree());
+                // when load() is called on the mockSubRoot, we need the associated source to be loaded
                 // as well as the octree, before calling load() on the real root.
-                mockRoot.load = () => promise.then(root => root.load());
-                this.root.children.push(mockRoot);
+                mockSubRoot.load = promisedRoot.then(root => root.load());
+
+                mockSubRoot.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
+
+                this.object3d.add(mockSubRoot.clampOBB);
+                mockSubRoot.clampOBB.updateMatrixWorld(true);
+
+                this.root.children[i] = mockSubRoot;
             });
-            this.ready = true;
+
+            this._promises.push(prepSubSource);
         });
     }
 
     loadData(elt, context, layer, bbox) {
-        if (elt.waitingForSource) {
-            layer.source.instantiate(elt.source);
-            elt.loadOctree
-                .then(eltLoaded => super.loadData(eltLoaded, context, layer, bbox))
-                .then(() => context.view.notifyChange(layer));
-        } else {
+        if (elt.source.isSource) {
             return super.loadData(elt, context, layer, bbox);
+        }
+
+        // elt is a mockSubRoot (its source is a mockSource)
+        if (elt.source.instantiation === false) {
+            elt.source.instantiation = true;
+            const cmd = {
+                layer,
+                callback: {
+                    executeCommand: () => elt.source.instantiate().whenReady,
+                },
+                view: context.view,
+            };
+            context.scheduler.execute(cmd);
+
+            elt.loadOctree
+                .then(() => {
+                    // after the octree is loaded we need to recall update
+                    context.view.notifyChange(layer);
+                });
         }
     }
 }
