@@ -142,10 +142,9 @@ class ElevationLayer extends RasterLayer {
     }
 
     anyVisibleData(node) {
-        // NOTE : le bug d'affichage des tuiles peut etre que les parametres de calques elevations sont mauvaises;
         const current = node.material.getElevationTile()?.layer;
         return super.anyVisibleData(node)
-            && (current.source == this.source || this.source.zoom.min > (current?.source.zoom.max || -1));
+            && (current?.source == this.source || this.source.zoom.min > (current?.source.zoom.max || -1));
     }
 }
 

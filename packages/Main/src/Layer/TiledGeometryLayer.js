@@ -333,10 +333,9 @@ class TiledGeometryLayer extends GeometryLayer {
     }
 
     convert(requester, extent) {
-        return convertToTile.convert(requester, extent, this).then((tileMesh) => {
-            tileMesh.material.renderTargetCache = this.renderTargetCache;
-            return tileMesh;
-        });
+        const tileMesh = convertToTile.convert(requester, extent, this);
+        tileMesh.material.renderTargetCache = this.renderTargetCache;
+        return tileMesh;
     }
 
     /**

@@ -507,7 +507,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
                 this.defines.NUM_FS_TEXTURES,
                 'c',
                 renderer,
-            	this.renderTargetCache,
+                this.renderTargetCache,
             );
 
             if (this.elevationTileId !== undefined && this.getElevationTile()) {
@@ -518,7 +518,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
                         this.defines.NUM_VS_TEXTURES,
                         'e',
                         renderer,
-            			this.renderTargetCache,
+                        this.renderTargetCache,
                     );
                 }
             }
