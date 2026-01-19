@@ -39,16 +39,43 @@ here](http://www.itowns-project.org/itowns/examples/). Some examples available:
 
 [![iTowns examples](http://www.itowns-project.org/images/montage.jpg)](http://www.itowns-project.org/itowns/examples/)
 
-## How to run it locally?
+## Running locally
 
-Clone the repo and then run:
+Examples can be run locally using either npm or Docker. Both methods serve them on port `8080`.
 
-```
+### Using npm
+
+Requires [Node.js](https://nodejs.org/) (LTS version recommended).
+
+```bash
+git clone https://github.com/itowns/itowns.git
+cd itowns
 npm install
 npm start
 ```
 
-Try out the examples at http://localhost:8080/examples
+### Using Docker
+
+Requires [Docker](https://www.docker.com/).
+
+```bash
+git clone https://github.com/itowns/itowns.git
+cd itowns
+docker build -t itowns .
+docker run -p 8080:8080 itowns
+```
+
+Alternatively, you can build and run directly from a remote branch of itowns in a single command:
+
+```bash
+docker run -p 8080:8080 $(docker build -q https://github.com/itowns/itowns.git#<branch>)
+```
+
+> Replace `<branch>` with the desired branch name (e.g. `master`, `dev`).
+
+### Accessing the examples
+
+Once the server is running, the examples are available at http://localhost:8080/
 
 ## How to use it in your project?
 
