@@ -4,9 +4,9 @@ import TileFS from 'Renderer/Shader/TileFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
-import { LRUCache } from 'lru-cache';
 import { RasterTile, RasterElevationTile, RasterColorTile } from './RasterTile';
 import { makeDataArrayRenderTarget } from './WebGLComposer';
+import { RenderTargetCache } from './RenderTargetCache';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
 
@@ -78,13 +78,8 @@ const defaultStructLayers: Readonly<{
     },
 };
 
-const rtCache = new LRUCache<string, THREE.WebGLArrayRenderTarget>({
-    max: 200,
-    dispose: (rt) => { rt.dispose(); },
-});
-
 /**
- * Updates the uniforms for layered textures,
+ * Updates the uniforms for layered textures of a specific type,
  * including populating the DataArrayTexture
  * with content from individual 2D textures on the GPU.
  *
@@ -93,13 +88,16 @@ const rtCache = new LRUCache<string, THREE.WebGLArrayRenderTarget>({
  * @param max - The maximum number of layers for the DataArrayTexture.
  * @param type - Layer set identifier: 'c' for color, 'e' for elevation.
  * @param renderer - The renderer used to render textures.
+ * @param renderTargetCache - Cache for managing render targets.
  */
-function updateLayersUniforms<Type extends 'c' | 'e'>(
+function updateLayersUniformsForType<Type extends 'c' | 'e'>(
     uniforms: { [name: string]: THREE.IUniform },
     tiles: RasterTile[],
     max: number,
     type: Type,
-    renderer: THREE.WebGLRenderer) {
+    renderer: THREE.WebGLRenderer,
+    renderTargetCache: RenderTargetCache | undefined,
+) {
     // Aliases for readability
     const uLayers = uniforms.layers.value;
     const uTextures = uniforms.textures;
@@ -115,9 +113,9 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
     // (assuming all textures are same size)
     let textureSetId: string = type;
     for (const tile of tiles) {
-        // FIXME: RasterElevationTile are always passed to this function alone
-        // so this works, but it's really not great even ignoring the dynamic
-        // addition of a field.
+        // FIXME: RasterElevationTile are always passed to this function
+        // alone so this works, but it's really not great even ignoring
+        // the dynamic addition of a field.
         // @ts-expect-error: adding field to passed layer
         tile.textureOffset = count;
 
@@ -149,22 +147,22 @@ function updateLayersUniforms<Type extends 'c' | 'e'>(
         }
     }
 
-    const cachedRT = rtCache.get(textureSetId);
+    const cachedRT = renderTargetCache?.get(textureSetId);
+
     if (cachedRT) {
         uTextures.value = cachedRT.texture;
         uTextureCount.value = count;
         return;
     }
 
-    // Memory management of these textures is only done by `textureArraysCache`,
-    // so we don't have to dispose of them manually.
     const rt = makeDataArrayRenderTarget(width, height, count, tiles, max, renderer);
     if (!rt) {
         uTextureCount.value = 0;
         return;
     }
 
-    rtCache.set(textureSetId, rt);
+    renderTargetCache?.set(textureSetId, rt);
+    rt.texture.userData = { textureSetId };
     uniforms.textures.value = rt.texture;
 
     if (count > max) {
@@ -298,10 +296,17 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
 
     public layersNeedUpdate: boolean;
 
+    public renderTargetCache: RenderTargetCache | undefined;
+
     public override defines: LayeredMaterialDefines;
 
     constructor(options: LayeredMaterialParameters = {}, crsCount: number) {
-        super(options);
+        const lambertUniforms = THREE.UniformsUtils.clone(THREE.ShaderLib.lambert.uniforms);
+        const shaderMaterialParams: THREE.ShaderMaterialParameters = { ...options };
+        shaderMaterialParams.uniforms = shaderMaterialParams.uniforms ?? {};
+        Object.assign(shaderMaterialParams.uniforms, lambertUniforms);
+        super(shaderMaterialParams);
+        if (__DEBUG__) { this.name = 'LayeredMaterial'; }
 
         nbSamplers ??= [samplersElevationCount, getMaxColorSamplerUnitsCount()];
 
@@ -330,6 +335,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         }
 
         this.defines = defines;
+        this.lights = true;
 
         this.fog = true; // receive the fog defined on the scene, if any
 
@@ -481,6 +487,12 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         };
     }
 
+    /**
+     * Updates uniforms for both color and elevation layers.
+     * Orchestrates the processing of visible color layers and elevation tiles.
+     *
+     * @param renderer - The renderer used to render textures into arrays.
+     */
     public updateLayersUniforms(renderer: THREE.WebGLRenderer): void {
         const colorlayers = this.colorTiles
             .filter(rt => rt.visible && rt.opacity > 0);
@@ -488,27 +500,49 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             this.colorTileIds.indexOf(a.id) - this.colorTileIds.indexOf(b.id),
         );
 
-        updateLayersUniforms(
+        updateLayersUniformsForType(
             this.getLayerUniforms('color'),
             colorlayers,
             this.defines.NUM_FS_TEXTURES,
             'c',
             renderer,
+            this.renderTargetCache,
         );
 
         if (this.elevationTileId !== undefined && this.getElevationTile()) {
             if (this.elevationTile !== undefined) {
-                updateLayersUniforms(
+                updateLayersUniformsForType(
                     this.getLayerUniforms('elevation'),
                     [this.elevationTile],
                     this.defines.NUM_VS_TEXTURES,
                     'e',
                     renderer,
+                    this.renderTargetCache,
                 );
             }
         }
 
         this.layersNeedUpdate = false;
+    }
+
+    /**
+     * Track usage of current render targets for deferred disposal.
+     * Should be called every time this material is rendered.
+     */
+    public markAsRendered(): void {
+        if (!this.renderTargetCache) {
+            throw new Error('renderTargetCache is not initialized');
+        }
+
+        const colorTextures = this.getUniform('colorTextures');
+        if (colorTextures?.userData?.textureSetId) {
+            this.renderTargetCache.markAsUsed(colorTextures.userData.textureSetId);
+        }
+
+        const elevationTextures = this.getUniform('elevationTextures');
+        if (elevationTextures?.userData?.textureSetId) {
+            this.renderTargetCache.markAsUsed(elevationTextures.userData.textureSetId);
+        }
     }
 
     public dispose(): void {

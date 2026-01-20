@@ -86,7 +86,7 @@ describe('LASParser', function () {
             };
             const bufferGeometry = await LASParser.parse(lazV14Data, options);
             const header = bufferGeometry.userData.header;
-            const origin = bufferGeometry.userData.origin;
+            const origin = options.in.origin;
             assert.strictEqual(header.pointCount, 100000);
             assert.strictEqual(bufferGeometry.attributes.position.count, header.pointCount);
             assert.strictEqual(bufferGeometry.attributes.intensity.count, header.pointCount);

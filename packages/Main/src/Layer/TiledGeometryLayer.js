@@ -6,6 +6,7 @@ import convertToTile from 'Converter/convertToTile';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { getColorLayersIdOrderedBySequence } from 'Layer/ImageryLayers';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+import { RenderTargetCache } from 'Renderer/RenderTargetCache';
 
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
@@ -17,6 +18,7 @@ const boundingSphereCenter = new THREE.Vector3();
  * as it is used internally for optimisation.
  * @property {boolean} hideSkirt (default false) - Used to hide the skirt (tile borders).
  * Useful when the layer opacity < 1
+ * @property {RenderTargetCache} renderTargetCache - Manages render target caching and disposal
  *
  * @extends GeometryLayer
  */
@@ -148,6 +150,11 @@ class TiledGeometryLayer extends GeometryLayer {
          */
         this.diffuse = diffuse;
 
+        /**
+         * @type {RenderTargetCache}
+         */
+        this.renderTargetCache = new RenderTargetCache();
+
         this.level0Nodes = [];
         const promises = [];
 
@@ -251,6 +258,9 @@ class TiledGeometryLayer extends GeometryLayer {
         // In future, the sequence must be returned by parent geometry layer.
         this.colorLayersOrder = getColorLayersIdOrderedBySequence(context.colorLayers);
 
+        // Dispose render targets that are queued for disposal and not used by this view
+        this.renderTargetCache.cleanup();
+
         let commonAncestor;
         for (const source of sources.values()) {
             if (source.isCamera) {
@@ -344,7 +354,20 @@ class TiledGeometryLayer extends GeometryLayer {
     }
 
     convert(requester, extent) {
-        return convertToTile.convert(requester, extent, this);
+        return convertToTile.convert(requester, extent, this).then((tileMesh) => {
+            tileMesh.material.renderTargetCache = this.renderTargetCache;
+            return tileMesh;
+        });
+    }
+
+    /**
+     * All layer's 3D objects are removed from the scene and disposed from the video device.
+     * Also disposes the render target cache.
+     * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
+     */
+    delete(clearCache) {
+        super.delete(clearCache);
+        this.renderTargetCache.dispose();
     }
 
     // eslint-disable-next-line

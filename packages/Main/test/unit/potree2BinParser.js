@@ -48,8 +48,8 @@ describe('Potree2BinParser', function () {
         };
 
         Potree2BinParser.parse(buffer, options)
-            .then((data) => {
-                const posAttr = data.geometry.getAttribute('position');
+            .then((geometry) => {
+                const posAttr = geometry.getAttribute('position');
                 assert.equal(posAttr.itemSize, 3);
                 assert.ok(posAttr.array instanceof Float32Array);
                 assert.equal(posAttr.array.length, nbPoints * 3);
@@ -150,8 +150,8 @@ describe('Potree2BinParser', function () {
         };
 
         Potree2BinParser.parse(buffer, options)
-            .then(function (data) {
-                const geom = data.geometry;
+            .then(function (geometry) {
+                const geom = geometry;
                 const posAttr = geom.getAttribute('position');
                 const intensityAttr = geom.getAttribute('intensity');
                 const colorAttr = geom.getAttribute('color');

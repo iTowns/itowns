@@ -285,6 +285,7 @@ function projectBox3PointsInCameraSpace(camera, box3, matrixWorld) {
     // Projects points in camera space
     // We don't project directly on screen to avoid artifacts when projecting
     // points behind the near plane.
+    camera.camera3D.updateMatrixWorld();
     let m = camera.camera3D.matrixWorldInverse;
     if (matrixWorld) {
         m = tmp.matrix.multiplyMatrices(camera.camera3D.matrixWorldInverse, matrixWorld);

@@ -96,7 +96,7 @@ class WebXR extends THREE.EventDispatcher {
 
             // To avoid controllers precision issues, headset should handle camera position
             const vrHeadSet = new THREE.Object3D();
-            vrHeadSet.name = 'xrHeadset';
+            if (__DEBUG__) { vrHeadSet.name = 'xrHeadset'; }
             this.view.scene.add(vrHeadSet);
 
             this.view.camera3D.getWorldPosition(vrHeadSet.position);

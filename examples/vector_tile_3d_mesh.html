@@ -11,8 +11,8 @@
                 "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
                 "itowns_widgets": "../dist/itowns_widgets.js",
-                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
             }
         }
         </script>
@@ -57,10 +57,6 @@
 
             // Define poles texture
             view.tileLayer.noTextureColor = new THREE.Color(0x95c1e1);
-
-            // Disable atmosphere lighting
-            view.getLayerById('atmosphere').visible = false;
-            view.getLayerById('atmosphere').fog.enable = false;
 
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);

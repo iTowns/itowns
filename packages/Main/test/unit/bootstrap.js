@@ -382,14 +382,30 @@ class Renderer {
             deleteShader: () => { },
             shaderSource: () => { },
             compileShader: () => { },
+            getContextAttributes: () => ({
+                alpha: true,
+                depth: true,
+                stencil: false,
+                antialias: true,
+                premultipliedAlpha: true,
+                preserveDrawingBuffer: false,
+                powerPreference: 'default',
+                failIfMajorPerformanceCaveat: false,
+                desynchronized: false,
+                xrCompatible: false,
+            }),
+            getExtension: () => null,
+            viewport: () => { },
         };
         this.capabilities = {
             logarithmicDepthBuffer: true,
             isWebGL2: true,
         };
         this.debug = {};
+        this.shadowMap = {};
     }
 
+    getSize() { return new THREE.Vector2(4, 4); } // arbitrary size
     setSize() {}
     setClearColor() {}
     getRenderTarget() {}
@@ -397,7 +413,11 @@ class Renderer {
     clear() {}
     render() {}
     readRenderTargetPixels() { }
+    readRenderTargetPixelsAsync() { }
     getContext() { return this.context; }
+    getDrawingBufferSize() { return new THREE.Vector2(4, 4); } // arbitrary size
+    getClearAlpha() { return 1; }
+    setClearAlpha() {}
 }
 
 export default Renderer;

@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import { Object3D } from 'three';
 import PotreeLayer from 'Layer/PotreeLayer';
 import PotreeSource from 'Source/PotreeSource';
 import View from 'Core/View';
@@ -11,9 +12,10 @@ import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 
 const resources = new Map();
+const object3d = new Object3D();
 
 // potree 1.7
-const baseurl = 'https://raw.githubusercontent.com/potree/potree/develop/pointclouds/lion_takanawa/';
+const baseurl = 'https://raw.githubusercontent.com/potree/potree/develop/pointclouds/lion_takanawa';
 const fileName = 'cloud.js';
 
 describe('Potree', function () {
@@ -130,28 +132,37 @@ describe('Potree', function () {
         describe('potree Node', function () {
             const numPoints = 1000;
             const childrenBitField = 5;
+            let root;
 
             it('instance', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
+                root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource);
                 assert.equal(root.numPoints, numPoints);
                 assert.equal(root.childrenBitField, childrenBitField);
                 done();
             });
 
             it('construct a correct URL', function () {
-                const node = new PotreeNode(0, 0, {
+                const indexChild = 7;
+                const indexGChild = 3;
+                const extension = 'bin';
+                const nodeChild = new PotreeNode(1, indexChild, 0, 0, {
                     baseurl,
-                    extension: 'bin',
+                    extension,
                 });
-                const hierarchyKey = '044';
+                const nodeGChild = new PotreeNode(2, indexGChild, 0, 0, {
+                    baseurl,
+                    extension,
+                });
+                object3d.add(root.clampOBB);
+                root.add(nodeChild);
+                nodeChild.add(nodeGChild);
 
-                node.hierarchyKey = hierarchyKey;
-
-                assert.equal(node.url, `${baseurl}/${hierarchyKey}.bin`);
+                assert.equal(nodeGChild.url, `${baseurl}/r${indexChild}${indexGChild}.${extension}`);
             });
 
             it('load octree', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeSource);
+                const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource);
+                object3d.add(root.clampOBB);
                 root.loadOctree()
                     .then(() => {
                         assert.equal(6, root.children.length);
@@ -160,7 +171,8 @@ describe('Potree', function () {
             });
 
             it('load child node', function (done) {
-                const root = new PotreeNode(numPoints, childrenBitField, potreeSource, 'EPSG:4978');
+                const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource, 'EPSG:4978');
+                object3d.add(root.clampOBB);
                 root.loadOctree()
                     .then(() => root.children[0].load()
                         .then(() => {

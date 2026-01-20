@@ -11,8 +11,8 @@
                 "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
                 "itowns_widgets": "../dist/itowns_widgets.js",
-                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
             }
         }
         </script>
@@ -162,9 +162,6 @@
 
             // Setup loading screen.
             setupLoadingScreen(viewerDiv, itownsViewer);
-
-            // Make atmosphere realistic.
-            itownsViewer.getLayerById('atmosphere').setRealisticOn(true);
 
             // Controls and camera specific setting.
             itownsViewer.controls.minDistanceCollision = 0.01;

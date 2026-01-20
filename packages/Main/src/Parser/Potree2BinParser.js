@@ -111,11 +111,8 @@ export default {
             }
         });
 
-        geometry.userData.origin = origin;
-        geometry.userData.rotation = quaternion;
-
         geometry.computeBoundingBox();
 
-        return { geometry, density: data.density };
+        return geometry;
     },
 };

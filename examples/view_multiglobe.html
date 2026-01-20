@@ -12,8 +12,8 @@
                 "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
                 "itowns_widgets": "../dist/itowns_widgets.js",
-                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
             }
         }
         </script>
@@ -63,12 +63,13 @@
 
             // Create the first globe
             object3d = new THREE.Object3D();
-            var view = new itowns.GlobeView(viewerDiv, placement, { noControls: true, object3d });
+            var view = new itowns.GlobeView(viewerDiv, placement, {
+                noControls: true,
+                object3d,
+            });
             var cameraThree = view.camera3D;
             setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
-
-            const atmosphere3D = view.getLayerById('atmosphere').object3d;
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);
@@ -108,10 +109,6 @@
 
                 object3ds[1 - front].position.y = THREE.MathUtils.lerp(front ? -10000000 : 10000000, 0, 1 - t);
                 object3ds[1 - front].scale.setScalar(THREE.MathUtils.lerp(0.3, 1, 1 - t));
-
-                atmosphere3D.position.y = object3ds[0].position.y;
-                atmosphere3D.scale.copy(object3ds[0].scale);
-                atmosphere3D.updateMatrixWorld(true);
 
                 object3ds[0].updateMatrixWorld(true);
                 object3ds[1].updateMatrixWorld(true);

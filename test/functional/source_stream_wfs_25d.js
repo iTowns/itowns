@@ -3,7 +3,12 @@ import assert from 'assert';
 describe('source_stream_wfs_25d', function _() {
     let result;
     before(async () => {
+        await enableGLForTest();
         result = await loadExample('examples/source_stream_wfs_25d.html', this.fullTitle());
+    });
+
+    after(async () => {
+        disableGLForTest();
     });
 
     it('should run', async () => {

@@ -22,7 +22,10 @@ const TIMEOUT = 50000;
 
 let itownsServer;
 let itownsPort;
+let browserWithoutGl;
+let browserWithGl; // Browser instance with full GL support
 let browser;
+
 // We could run 'npm start' to serve itowns for the tests,
 // but it's slow to start (so tests might fail on timeouts).
 // Since the 'test-examples' target depends on the 'run' target,
@@ -206,6 +209,45 @@ const waitUntilItownsIsIdle = async (screenshotName) => {
     return result;
 };
 
+// helper function to launch browser with GL enabled
+const launchBrowserWithGL = async () => {
+    const args = ['--no-sandbox'];
+
+    if (process.env.HTTPS_PROXY) {
+        args.push(`--proxy-server=${process.env.HTTPS_PROXY}`);
+    }
+
+    if (process.env.REMOTE_DEBUGGING) {
+        args.push(`--remote-debugging-port=${process.env.REMOTE_DEBUGGING}`);
+    }
+
+    if (!process.env.DEBUG) {
+        // use GPU acceleration to make tests faster in headless mode
+        args.push('--use-angle=default');
+    }
+
+    const headless = !process.env.DEBUG && 'new';
+    return puppeteer.launch({
+        executablePath: process.env.CHROME,
+        headless,
+        devtools: !!process.env.DEBUG,
+        defaultViewport: { width: 400, height: 300 },
+        args,
+    });
+};
+
+// helper function to switch browser instances
+const enableGLForTest = async () => {
+    if (!browserWithGl) {
+        browserWithGl = await launchBrowserWithGL();
+    }
+    browser = browserWithGl;
+};
+
+const disableGLForTest = () => {
+    browser = browserWithoutGl;
+};
+
 // eslint-disable-next-line import/prefer-default-export
 export const mochaHooks = {
     beforeAll: async () => {
@@ -240,22 +282,36 @@ export const mochaHooks = {
             args.push(`--remote-debugging-port=${process.env.REMOTE_DEBUGGING}`);
         }
 
+        if (!process.env.DEBUG) {
+            // use GPU acceleration to make tests faster in headless mode
+            args.push('--use-angle=default');
+
+            // disable GL when actual rendering is not needed,
+            // to make tests even faster
+            args.push('--disable-gl-drawing-for-tests');
+        }
+
         // https://developer.chrome.com/articles/new-headless/
         const headless = !process.env.DEBUG && 'new';
-        browser = await puppeteer.launch({
+        browserWithoutGl = await puppeteer.launch({
             executablePath: process.env.CHROME,
             headless,
             devtools: !!process.env.DEBUG,
             defaultViewport: { width: 400, height: 300 },
             args,
         });
+        browser = browserWithoutGl;
 
         // the page all tests will be tested in
-        global.page = await browser.newPage();
+        global.page = await browserWithoutGl.newPage();
     },
 
     afterAll(done) {
-        browser.close();
+        // Close both browser instances
+        browserWithoutGl.close();
+        if (browserWithGl) {
+            browserWithGl.close();
+        }
         if (itownsServer) {
             // stop server
             itownsServer.close(done);
@@ -286,6 +342,8 @@ export const mochaHooks = {
     },
 };
 
+global.enableGLForTest = enableGLForTest;
+global.disableGLForTest = disableGLForTest;
 global.loadExample = loadExample;
 global.waitUntilItownsIsIdle = waitUntilItownsIsIdle;
 

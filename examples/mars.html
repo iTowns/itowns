@@ -11,8 +11,8 @@
                 "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
                 "itowns_widgets": "../dist/itowns_widgets.js",
-                "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
             }
         }
         </script>
@@ -61,7 +61,8 @@
                     outerRadius: 6600000,
                     wavelength: [0.350, 0.470, 0.575],
                     scaleDepth: 0.38,
-                }
+                },
+                realisticLighting: true,
             });
             setupLoadingScreen(viewerDiv, view);
 
@@ -69,7 +70,8 @@
             var tmsMarsSource = new itowns.TMSSource({
                     // crs: 'EPSG:104905',
                     crs: 'EPSG:4326',
-                    url : 'https://api.nasa.gov/mars-wmts/catalog/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0//default/default028mm/${z}/${y}/${x}.jpg',
+                    url: 'https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/default028mm/${z}/${y}/${x}.jpg',
+                    // url : 'https://api.nasa.gov/mars-wmts/catalog/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0//default/default028mm/${z}/${y}/${x}.jpg',
                     zoom: { min: 0, max: 9 },
                 })
 
@@ -96,12 +98,8 @@
 
             var menuGlobe = new GuiTools('menuDiv', view);
 
-            const atmosphere = view.getLayerById('atmosphere');
-            atmosphere.setRealisticOn(true);
-
             const cRL = menuGlobe.addGUI('RealisticLighting', true, function (v) {
-                atmosphere.setRealisticOn(v);
-                view.notifyChange(atmosphere);
+                view.skyManager.enabled = v;
             });
 
             debug.createTileDebugUI(menuGlobe.gui, view);

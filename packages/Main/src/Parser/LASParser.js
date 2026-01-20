@@ -88,14 +88,15 @@ export default {
      * @param {ArrayBuffer} data - The file content to parse.
      * @param {Object} options
      * @param {Object} options.in - Options to give to the parser.
-     * @param {number} options.in.pointCount - Number of points encoded in this
+     * @param {number} options.in.numPoints - Number of points encoded in this
      * data chunk.
-     * @param {Object} options.in.header - Partial LAS file header.
-     * @param {number} options.in.header.pointDataRecordFormat - Type of Point
-     * Data Record contained in the LAS file.
-     * @param {number} options.in.header.pointDataRecordLength - Size (in bytes)
-     * of the Point Data Record.
-     * @param {Object} [options.eb] - Extra bytes LAS VLRs headers.
+     * @param {Object} options.in.source - Source information.
+     * @param {Object} options.in.source.header - Partial LAS file header.
+     * @param {number} options.in.source.header.pointDataRecordFormat - Type of
+     * Point Data Record contained in the LAS file.
+     * @param {number} options.in.source.header.pointDataRecordLength - Size
+     * (in bytes) of the Point Data Record.
+     * @param {Object} [options.in.source.eb] - Extra bytes LAS VLRs headers.
      * @param { 8 | 16 } [options.in.colorDepth] - Color depth (in bits).
      * Defaults to 8 bits for LAS 1.2 and 16 bits for later versions
      * (as mandatory by the specification)
@@ -177,8 +178,6 @@ export default {
 
         const geometry = buildBufferGeometry(parsedData.attributes);
         geometry.boundingBox = new THREE.Box3().setFromArray(parsedData.attributes.bbox);
-        geometry.userData.origin = origin;
-        geometry.userData.rotation = quaternion;
         geometry.userData.header = parsedData.header;
 
         return geometry;
