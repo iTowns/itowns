@@ -17,8 +17,6 @@ export interface PointCloudSource {
 }
 
 abstract class PointCloudNode extends THREE.EventDispatcher {
-    /** The crs of the node. */
-    abstract crs: string;
     /** Data source of the node. */
     abstract source: PointCloudSource;
 
@@ -74,10 +72,10 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         if (this._voxelOBB != undefined) { return this._voxelOBB; }
         this._voxelOBB = new OBB();
         if (this.depth === 0) {
-            this._voxelOBB.setFromArray(this.source.bounds)
-                .projOBB(this.source.crs, this.crs);
+            this._voxelOBB.setFromArray(this.source.bounds);
         } else {
             this.setVoxelOBBFromParent();
+            this._voxelOBB.name = `${this.id}_voxelOBB`;
         }
         return this._voxelOBB;
     }
@@ -90,10 +88,11 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         if (this._clampOBB != undefined) { return this._clampOBB; }
         this._clampOBB = new OBB();
         if (this.depth === 0 && this.source.boundsConforming) {
-            this._clampOBB.setFromArray(this.source.boundsConforming)
-                .projOBB(this.source.crs, this.crs);
+            this._clampOBB.setFromArray(this.source.boundsConforming);
         } else {
-            this._clampOBB.copy(this.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
+            this._clampOBB.copy(this.voxelOBB)
+                .clampZ(this.source.zmin, this.source.zmax);
+            this._clampOBB.name = `${this.id}_clampOBB`;
         }
         return this._clampOBB;
     }

@@ -21,8 +21,8 @@ export interface PointCloudLayerParameters {
     /** Description and options of the source See @Layer. */
     source: PointCloudSource;
     object3d?: THREE.Group;
-    group?: THREE.Group;
-    bboxes?: THREE.Group;
+    ptData?: THREE.Group;
+    obbes?: THREE.Group;
     octreeDepthLimit?: number;
     pointBudget?: number;
     pointSize?: number;
@@ -167,13 +167,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      * Container group for the points.
      * Add this to the three.js scene in order to render it.
      */
-    readonly group: THREE.Group;
-
-    /**
-     * Container group for the points bounding boxes.
-     * Add this to the three.js scene in order to render it.
-     */
-    readonly bboxes: THREE.Group;
+    readonly ptData: THREE.Group;
 
     /**
      * Maximum depth to which points will be loaded and rendered.
@@ -249,8 +243,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     constructor(id: string, config: PointCloudLayerParameters) {
         const {
             object3d = new THREE.Group(),
-            group = new THREE.Group(),
-            bboxes = new THREE.Group(),
+            ptData = new THREE.Group(),
             octreeDepthLimit = -1,
             pointBudget = 2000000,
             pointSize = 2,
@@ -271,16 +264,11 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         this.isPointCloudLayer = true;
         this.protocol = 'pointcloud';
 
-        this.group = group;
-        this.group.name = 'points';
-        this.object3d.add(this.group);
+        this.ptData = ptData;
+        this.ptData.name = 'points';
+        this.object3d.add(this.ptData);
 
-        this.bboxes = bboxes;
-        this.bboxes.name = 'bboxes';
-        this.bboxes.visible = false;
-        this.object3d.add(this.bboxes);
-
-        this.group.updateMatrixWorld();
+        // this.ptData.updateMatrixWorld();
 
         this.octreeDepthLimit = octreeDepthLimit;
         this.pointBudget = pointBudget;
@@ -415,10 +403,13 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 }).then((pts: THREE.Points) => {
                     elt.obj = pts;
 
+                    console.log('THEN', elt.id);
+
                     // make sure to add it here, otherwise it might never
                     // be added nor cleaned
-                    this.group.add(elt.obj);
+                    this.ptData.add(elt.obj);
                     elt.obj.updateMatrixWorld(true);
+                    console.log('THEN2', elt.id);
                 }).catch((err: { isCancelledCommandException: boolean }) => {
                     if (!err.isCancelledCommandException) {
                         return err;
@@ -468,10 +459,26 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             object3d = elt.obj;
             bbox = object3d.geometry.boundingBox as THREE.Box3;
         } else {
-            object3d = elt.clampOBB;
-            this.object3d.add(elt.clampOBB);
+            // console.log('add', elt.id);
+            if (elt.id === '0000') {
+                this.object3d.add(elt.clampOBB);
+            } else {
+                // add to bboxes
+                this.object3d.children[1].add(elt.clampOBB);
+            }
             elt.clampOBB.updateMatrixWorld(true);
+            console.log(elt.id, 'updateMatrixWorld');
+            object3d = elt.clampOBB;
             bbox = object3d.box3D;
+
+            // console.log('this.object3d', this.object3d.position, this.object3d.quaternion);
+            // console.log('this.object3d.chlidren');
+            // console.log(this.object3d.children.map(c => c.name));
+            // console.log(this.object3d.children.map(c => c.position), this.object3d.children.map(c => c.quaternion));
+            // console.log('this.object3d.bboxes');
+            // const bboxesG = this.object3d.children[1].children
+            // console.log(bboxesG.map(c => c.name));
+            // console.log(bboxesG.map(c => c.position), bboxesG.map(c => c.quaternion));
         }
 
         elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
@@ -492,7 +499,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
     postUpdate() {
         this.displayedCount = 0;
-        for (const pts of this.group.children as THREE.Points[]) {
+        for (const pts of this.ptData.children as THREE.Points[]) {
             if (pts.visible) {
                 const count = pts.geometry.attributes.position.count;
                 pts.geometry.setDrawRange(0, count);
@@ -507,7 +514,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 // so we can draw a percentage of each node and still get a
                 // correct representation
                 const reduction = this.pointBudget / this.displayedCount;
-                for (const pts of this.group.children as THREE.Points[]) {
+                for (const pts of this.ptData.children as THREE.Points[]) {
                     if (pts.visible) {
                         const count = Math.floor(pts.geometry.drawRange.count * reduction);
                         if (count > 0) {
@@ -522,11 +529,11 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 // This format doesn't require points to be evenly distributed,
                 // so we're going to sort the nodes by "importance"
                 // (= on screen size) and display only the first N nodes
-                this.group.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
+                this.ptData.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
 
                 let limitHit = false;
                 this.displayedCount = 0;
-                for (const pts of this.group.children as THREE.Points[]) {
+                for (const pts of this.ptData.children as THREE.Points[]) {
                     const count = pts.geometry.attributes.position.count;
                     if (limitHit || (this.displayedCount + count) > this.pointBudget) {
                         pts.visible = false;
@@ -539,11 +546,11 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         }
 
         const now = Date.now();
-        for (let i = this.group.children.length - 1; i >= 0; i--) {
-            const obj = this.group.children[i] as THREE.Points;
+        for (let i = this.ptData.children.length - 1; i >= 0; i--) {
+            const obj = this.ptData.children[i] as THREE.Points;
             if (!obj.visible && (now - obj.userData.node.notVisibleSince) > 10000) {
                 // remove from group
-                this.group.children.splice(i, 1);
+                this.ptData.children.splice(i, 1);
 
                 // no need to dispose obj.material, as it is shared by all objects of this layer
                 obj.geometry.dispose();

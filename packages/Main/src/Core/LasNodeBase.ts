@@ -25,13 +25,10 @@ abstract class LasNodeBase extends PointCloudNode {
      * components: `depth-x-y-z`. */
     voxelKey: string;
 
-    crs: string;
-
     constructor(depth: number,
         x: number, y: number, z: number,
         source: PointCloudSource,
         numPoints: number = 0,
-        crs: string,
     ) {
         super(depth, numPoints);
 
@@ -40,8 +37,6 @@ abstract class LasNodeBase extends PointCloudNode {
         this.z = z;
 
         this.voxelKey = buildVoxelKey(depth, x, y, z);
-
-        this.crs = crs;
     }
 
     override get networkOptions(): RequestInit {

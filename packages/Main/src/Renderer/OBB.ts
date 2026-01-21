@@ -56,7 +56,7 @@ class OBB extends THREE.Object3D {
         this.box3D.getCenter(centerBbox);
         // this._center =  new Coordinates(this.crs)
         //     .setFromVector3(centerBbox.applyMatrix4(this.matrix));
-        this._center = centerBbox.applyMatrix4(this.matrix);
+        this._center = centerBbox.applyMatrix4(this.matrixWorld);
         return this._center;
     }
 
@@ -234,12 +234,19 @@ class OBB extends THREE.Object3D {
             cornersLocal.push(...cornerLocal.toArray());
         }
 
-        this.box3D.setFromArray(cornersLocal);
-        this.position.fromArray(origin);
-        this.quaternion.copy(rotation).invert();
+        // console.log('this.natBox', this.natBox.min);
+        // console.log(cornersLocal, origin);
 
-        this.updateMatrix();
-        this.updateMatrixWorld();
+        this.box3D.setFromArray(cornersLocal);
+        // this.position.fromArray(origin);
+        // this.quaternion.copy(rotation).invert();
+
+        console.log('ProjOBB');
+
+        // this.updateMatrix();
+        // this.updateMatrixWorld(true);
+
+        return { origin, rotation };
     }
     /**
      * Clamped the OBB on the z axes of the OBB.box3D.

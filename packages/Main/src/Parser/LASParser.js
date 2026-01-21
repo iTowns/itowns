@@ -183,6 +183,8 @@ export default {
         const center = new Coordinates(options.out.crs)
             .setFromVector3(options.in.clampOBB.center);
 
+        // console.log(options.in.id, center);
+
         const centerZ0 = projZ0(center, source.crs, options.out.crs);
 
         const rotation = getRotation(centerZ0, source.crs, options.out.crs);

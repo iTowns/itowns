@@ -46,6 +46,42 @@ class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
             this.setElevationRange();
 
             this.root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, this.crs);
+            // const { origin, rotation } = this.root.voxelOBB.projOBB(this.source.crs, this.crs);
+            this.root.voxelOBB.projOBB(this.source.crs, this.crs);
+            this.root.voxelOBB.name = 'this.root.voxelOBB';
+
+            // this.root.voxelOBB.position.fromArray(origin);
+            // this.root.voxelOBB.quaternion.copy(rotation).invert();
+
+            this.root.voxelOBB.updateMatrix();
+            this.root.voxelOBB.updateMatrixWorld(true);
+
+
+
+            // this.bboxes.position.fromArray(origin);
+            // this.bboxes.quaternion.copy(rotation).invert();
+
+            // this.bboxes.updateMatrix();
+            // this.bboxes.updateMatrixWorld(true);
+
+
+
+
+            // this.bboxes.add(this.root.voxelOBB);
+            // this.root.voxelOBB.updateMatrix();
+            // this.root.voxelOBB.updateMatrixWorld(true);
+
+
+
+
+            const res = this.root.clampOBB.projOBB(this.source.crs, this.crs);
+            this.root.clampOBB.name = 'this.root.clampOBB';
+
+            this.root.clampOBB.position.fromArray(res.origin);
+            this.root.clampOBB.quaternion.copy(res.rotation).invert();
+
+            this.root.clampOBB.updateMatrix();
+            this.root.clampOBB.updateMatrixWorld(true);
 
             return this.root.loadOctree().then(resolve);
         });
