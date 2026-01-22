@@ -234,7 +234,7 @@ export default {
             height: 1 + radius * 2,
         };
         const pixels = view.mainLoop.gfxEngine.renderViewToBuffer(
-            { scene: object, camera: view.camera },
+            { scene: view.scene, camera: view.camera },
             zone);
 
         const clearColor = new THREE.Color();
