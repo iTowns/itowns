@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Itowns - Point cloud loader</title>
+        <title>Itowns - Point cloud loader (Globe)</title>
 
         <script type="importmap">
         {
@@ -48,12 +48,15 @@
         <div id="viewerDiv"></div>
 
         <script type="module">
-            import { Vector3 } from 'three';
+            import { WebGLRenderTarget, DepthTexture, FloatType } from 'three';
             import Stats from 'three/addons/libs/stats.module.js';
             import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+            import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+            import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
             import { getFormat, getPointCloudClass, zoomToLayerGlobe } from './jsm/PointCloudHelper.js';
+            import { EDLPass } from './jsm/postprocessing/EDLPass.js';
 
-            import { CRS, MAIN_LOOP_EVENTS, PlanarControls, View, GlobeView, Fetcher, TMSSource, ColorLayer, WMTSSource, ElevationLayer } from 'itowns';
+            import { CRS, MAIN_LOOP_EVENTS, View, GlobeView, Fetcher, TMSSource, ColorLayer, WMTSSource, ElevationLayer } from 'itowns';
             import { PointCloudDebug } from 'debug';
 
             const viewerDiv = document.getElementById('viewerDiv');
@@ -63,6 +66,24 @@
             const crsInput = document.getElementById('crs');
             const errorMessage = document.getElementById('error-message');
 
+            function withHidden(view, predicate, func) {
+                const visibilitySet = new Set();
+                const layers = view.getLayers(layer => {
+                    return layer.isGeometryLayer && predicate(layer) && layer.visible
+                });
+
+                layers.forEach(layer => {
+                    layer.object3d.visible = false;
+                    visibilitySet.add(layer.object3d);
+                });
+
+                func(view);
+
+                visibilitySet.forEach(object => {
+                    object.visible = true;
+                });
+            }
+
             async function load(url, options = {}) {
                 const { format = 'auto', crs } = options;
                 const { Source, Layer } = getPointCloudClass(format);
@@ -71,16 +92,43 @@
                     await CRS.fromEPSG(crs);
                 }
 
-                const source = new Source({ url, crs });
-                await source.whenReady;
-                const layer = new Layer('pointcloud', { source });
-                layer.crs = source.crs;
-
                 const view = new GlobeView(viewerDiv, {}, {
                     controls: {
                         minDistance: 5,
                     }
                 });
+
+                const gfxEngine = view.mainLoop.gfxEngine;
+                const renderer = gfxEngine.renderer;
+                const size = gfxEngine.getWindowSize();
+
+                const renderTarget = new WebGLRenderTarget(size.x, size.y);
+                renderTarget.depthTexture = new DepthTexture(size.x, size.y, FloatType);
+
+                const composer = new EffectComposer(renderer, renderTarget);
+                const renderPass = new RenderPass(view.scene, view.camera3D);
+                const edlPass = new EDLPass(view.camera3D, size.x, size.y);
+                composer.addPass(renderPass);
+                composer.addPass(edlPass);
+
+                view.render = function render() {
+                    // Render point cloud + EDL to screen
+                    withHidden(view, layer => !layer.isPointCloudLayer, () => {
+                        composer.render();
+                    });
+
+                    // Render globe with depth test
+                    withHidden(view, layer => layer.isPointCloudLayer, () => {
+                        renderer.render(view.scene, view.camera3D);
+                    });
+                };
+
+
+                const source = new Source({ url, crs });
+                await source.whenReady;
+
+                const layer = new Layer('pointcloud', { source });
+                layer.crs = source.crs;
                 View.prototype.addLayer.call(view, layer);
 
                 const openSMJSON = await Fetcher.json('./layers/JSONLayers/OPENSM.json');
@@ -99,17 +147,27 @@
                     }),
                 );
 
+                await layer.whenReady;
+                zoomToLayerGlobe(view, layer);
+
+                window.addEventListener('resize', () => {
+                    const newSize = gfxEngine.getWindowSize();
+                    composer.setSize(newSize.x, newSize.y);
+                });
+
                 const stats = new Stats();
                 document.body.appendChild(stats.dom);
                 view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_START, () => stats.begin());
                 view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, () => stats.end());
 
-
-                await layer.whenReady;
-                zoomToLayerGlobe(view, layer);
-
                 const gui = new GUI();
                 PointCloudDebug.initTools(view, layer, gui);
+
+                const edlFolder = gui.addFolder('Eye-Dome Lighting');
+                edlFolder.add(edlPass, 'enabled').name('Enabled').onChange(() => view.notifyChange());
+                edlFolder.add(edlPass, 'strength', 0, 10, 0.1).name('Strength').onChange(() => view.notifyChange());
+                edlFolder.add(edlPass, 'kernelRadius', 0.1, 5, 0.1).name('Radius').onChange(() => view.notifyChange());
+                edlFolder.open();
             }
 
             const params = new URLSearchParams(window.location.search);
