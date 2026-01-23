@@ -23,8 +23,7 @@ function subDomains(url) {
  * In an url, it is also possible to specify subdomains alternatives using the
  * `${u:a|b|c}` pattern, by separating differents options using `|`. It will go
  * through the following alternative each time (no random). For example
- * `https://${u:xyz.org|yzx.org|zxy.org}/${z}/${x}/${y}.png` or
- * `https://${u:a|b|c}.tile.openstreetmap.org/${z}/${x}/${y}.png`.
+ * `https://${u:xyz.org|yzx.org|zxy.org}/${z}/${x}/${y}.png`
  *
  * @module URLBuilder
  */
