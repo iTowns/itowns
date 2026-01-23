@@ -1,0 +1,80 @@
+:root {
+    --itowns-color-bg: #000000;
+    --itowns-color-bg-field: #232323;
+    --itowns-color-primary: #ffffff;
+    --itowns-color-muted: #bbbbbb;
+    --itowns-color-accent: #0077BB;
+    --itowns-color-red: #cc3311;
+
+    --itowns-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    --itowns-text-sm: 11px;
+
+    --itowns-spacing-xs: 8px;
+    --itowns-spacing-md: 16px;
+
+    --itowns-radius: 6px;
+}
+
+#load-form {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    left: var(--itowns-spacing-md);
+    bottom: var(--itowns-spacing-md);
+    gap: var(--itowns-spacing-xs);
+    padding: var(--itowns-spacing-xs);
+    width: 100%;
+    max-width: 245px;
+    background: var(--itowns-color-bg);
+    color: var(--itowns-color-primary);
+    border-radius: var(--itowns-radius);
+    font-family: var(--itowns-font);
+    font-size: var(--itowns-text-sm);
+}
+
+#load-form .form-text {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+#load-form label {
+    align-self: center;
+}
+
+#load-form input[type="text"],
+#load-form input[list],
+#load-form select {
+    background: var(--itowns-color-bg-field);
+    padding: var(--itowns-spacing-xs);
+    border: 0px;
+    border-radius: var(--itowns-radius);
+    color: var(--itowns-color-primary);
+    font: inherit;
+}
+
+#load-form input::placeholder {
+    color: var(--itowns-color-muted);
+}
+
+#load-form button {
+    grid-column: 1 / -1;
+    padding: var(--itowns-spacing-xs);
+    background: var(--itowns-color-accent);
+    border: 0;
+    border-radius: var(--itowns-radius);
+    color: var(--itowns-color-primary);
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#error-message {
+    display: none;
+    grid-column: 1 / -1;
+    color: var(--itowns-color-red);
+}
+
+#load-form.error #error-message {
+    display: block;
+}
