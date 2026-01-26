@@ -27,7 +27,7 @@ class PotreeNode extends PotreeNodeBase {
 
     override async loadOctree(): Promise<void> {
         this.offsetBBox = new THREE.Box3()
-            .setFromArray(this.source.boundsConforming);// Only for Potree1
+            .setFromArray(this.source.bounds);// Only for Potree1
         const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
         const blob = await this.fetcher(octreeUrl);
 
