@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { spawn, Thread, Transfer } from 'threads';
 import proj4 from 'proj4';
+import { OrientationUtils, Coordinates } from '@itowns/geographic';
 
 let _lazPerf;
 let _thread;
@@ -49,6 +50,24 @@ function buildBufferGeometry(attributes) {
     geometry.setAttribute('scanAngle', scanAngle);
 
     return geometry;
+}
+
+function projZ0(center, crsIn, crsOut) {
+    const centerCrsIn = proj4(crsOut, crsIn).forward(center);
+    // this._origin =  new Coordinates(this.crs)
+    //     .setFromArray(
+    //         proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
+    const centerZ0 = proj4(crsIn, crsOut).forward([centerCrsIn.x, centerCrsIn.y, 0]);
+    return centerZ0;
+}
+
+function getRotation(origin, crsIn, crsOut) {
+    let rotation = new THREE.Quaternion();
+    if (proj4.defs(crsOut).projName === 'geocent') {
+        const coord = new Coordinates(crsOut).setFromArray(origin);
+        rotation = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coord);
+    }
+    return rotation;
 }
 
 /** The LASParser module provides a [parse]{@link
@@ -159,9 +178,17 @@ export default {
         }
 
         const lasLoader = await loader();
-        const source = options.in.source;
-        const origin = options.in.origin;
-        const quaternion = options.in.rotation;
+        const { source } =  options.in;
+
+        const center = new Coordinates(options.out.crs)
+            .setFromVector3(options.in.clampOBB.center);
+
+        // console.log(options.in.id, center);
+
+        const centerZ0 = projZ0(center, source.crs, options.out.crs);
+
+        const rotation = getRotation(centerZ0, source.crs, options.out.crs);
+
         const parsedData = await lasLoader.parseFile(Transfer(data), {
             colorDepth: source.colorDepth,
             in: {
@@ -169,16 +196,18 @@ export default {
                 projDefs: proj4.defs(source.crs),
             },
             out: {
-                crs: options.in.crs,
-                projDefs: proj4.defs(options.in.crs),
-                origin: origin.toArray(),
-                rotation: quaternion.toArray(),
+                crs: options.out.crs,
+                projDefs: proj4.defs(options.out.crs),
+                origin: centerZ0,
+                rotation: rotation.toArray(),
             },
         });
 
         const geometry = buildBufferGeometry(parsedData.attributes);
         geometry.boundingBox = new THREE.Box3().setFromArray(parsedData.attributes.bbox);
         geometry.userData.header = parsedData.header;
+        geometry.userData.position = new Coordinates(options.out.crs).setFromArray(centerZ0);
+        geometry.userData.quaternion = rotation;
 
         return geometry;
     },

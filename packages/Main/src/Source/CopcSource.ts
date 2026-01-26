@@ -94,6 +94,8 @@ class CopcSource extends Source {
     info!: Info;
     /** List of headers of each Variable Length Records (VLRs). */
     eb!: Las.ExtraBytes[];
+    bounds!: [number, number, number, number, number, number];
+    boundsConforming!: [number, number, number, number, number, number];
     spacing!: number;
     zmin!: number;
     zmax!: number;
@@ -124,6 +126,8 @@ class CopcSource extends Source {
             this.header = metadata.header;
             this.info = metadata.info;
             this.eb = metadata.eb;
+            this.bounds = metadata.info.cube;
+            this.boundsConforming = [...metadata.header.min, ...metadata.header.max];
 
             this.zmin = this.header.min[2];
             this.zmax = this.header.max[2];

@@ -1,6 +1,8 @@
-import { Vector3, type Group } from 'three';
-import type { Hierarchy } from 'copc';
+import { Vector3 } from 'three';
 import PointCloudNode, { PointCloudSource } from 'Core/PointCloudNode';
+
+import type { Hierarchy } from 'copc';
+import type OBB from 'Renderer/OBB';
 
 const size = new Vector3();
 const position = new Vector3();
@@ -23,13 +25,10 @@ abstract class LasNodeBase extends PointCloudNode {
      * components: `depth-x-y-z`. */
     voxelKey: string;
 
-    crs: string;
-
     constructor(depth: number,
         x: number, y: number, z: number,
         source: PointCloudSource,
         numPoints: number = 0,
-        crs: string,
     ) {
         super(depth, numPoints);
 
@@ -38,8 +37,6 @@ abstract class LasNodeBase extends PointCloudNode {
         this.z = z;
 
         this.voxelKey = buildVoxelKey(depth, x, y, z);
-
-        this.crs = crs;
     }
 
     override get networkOptions(): RequestInit {
@@ -62,19 +59,19 @@ abstract class LasNodeBase extends PointCloudNode {
     ): void;
 
     /**
-     * Create an (A)xis (A)ligned (B)ounding (B)ox for the given node given
-     * `this` is its parent.
-     * @param childNode - The child node
+     * Set the voxelOBB (cubic (O)riented (B)ounding (B)ox for this node.
+     * It needs to have a parent.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    override createChildAABB(childNode: this, _indexChild: number): void {
+    override setVoxelOBBFromParent(): void {
         // initialize the child node obb
-        childNode.voxelOBB.copy(this.voxelOBB);
-        const voxelBBox = this.voxelOBB.box3D;
-        const childVoxelBBox = childNode.voxelOBB.box3D;
+        const _voxelOBB = this._voxelOBB as OBB;
+        const parent = this.parent as this;
+
+        _voxelOBB.copy(parent.voxelOBB);
+        const voxelBBox = _voxelOBB.box3D;
 
         // factor to apply, based on the depth difference (can be > 1)
-        const f = 2 ** (childNode.depth - this.depth);
+        const f = 2 ** (this.depth - parent.depth);
 
         // size of the child node bbox (Vector3), based on the size of the
         // parent node, and divided by the factor
@@ -82,32 +79,17 @@ abstract class LasNodeBase extends PointCloudNode {
 
         // position of the parent node, if it was at the same depth as the
         // child, found by multiplying the tree position by the factor
-        position.copy(this).multiplyScalar(f);
+        position.copy(parent).multiplyScalar(f);
 
         // difference in position between the two nodes, at child depth, and
         // scale it using the size
-        translation.subVectors(childNode, position).multiply(size);
+        translation.subVectors(this, position).multiply(size);
 
         // apply the translation to the child node bbox
-        childVoxelBBox.min.add(translation);
+        voxelBBox.min.add(translation);
 
         // use the size computed above to set the max
-        childVoxelBBox.max.copy(childVoxelBBox.min).add(size);
-
-        // get a clamped bbox from the voxel bbox
-        childNode.clampOBB.copy(childNode.voxelOBB);
-
-        const childClampBBox = childNode.clampOBB.box3D;
-
-        if (childClampBBox.min.z < this.source.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
-        }
-        if (childClampBBox.max.z > this.source.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
-        }
-
-        (this.clampOBB.parent as Group).add(childNode.clampOBB);
-        childNode.clampOBB.updateMatrixWorld(true);
+        voxelBBox.max.copy(voxelBBox.min).add(size);
     }
 }
 

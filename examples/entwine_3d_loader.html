@@ -54,7 +54,9 @@
             var debugGui = new lil();
             var viewerDiv = document.getElementById('viewerDiv');
 
-            var view = new itowns.GlobeView(viewerDiv);
+            var view = new itowns.GlobeView(viewerDiv, undefined,
+                {realisticLighting: false},
+            );
 
             // Add one imagery layer to the scene and the miniView
             // This layer is defined in a json file but it could be defined as a plain js
@@ -90,7 +92,9 @@
 
             var eptLayer;
             function onLayerReady() {
-                var lookAt = eptLayer.root.origin;
+                // var lookAt = eptLayer.root.origin;
+                var lookAt = new itowns.Coordinates(view.referenceCrs)
+                    .setFromVector3(eptLayer.root.clampOBB.center);
 
                 var size = new THREE.Vector3();
                 eptLayer.root.voxelOBB.box3D.getSize(size);

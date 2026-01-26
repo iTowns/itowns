@@ -14,7 +14,6 @@ class EntwinePointTileNode extends LasNodeBase {
 
     source: EntwinePointTileSource;
 
-    crs: string;
     url: string;
 
     /**
@@ -32,22 +31,18 @@ class EntwinePointTileNode extends LasNodeBase {
      * @param numPoints - The number of points in this node. If
      * `-1`, it means that the octree hierarchy associated to this node needs to
      * be loaded.
-     * @param crs - The crs of the node.
      */
     constructor(
         depth: number,
         x: number, y: number, z: number,
         source: EntwinePointTileSource,
         numPoints: number = 0,
-        crs: string,
     ) {
-        super(depth, x, y, z, source, numPoints, crs);
+        super(depth, x, y, z, source, numPoints);
         this.isEntwinePointTileNode = true;
         this.source = source;
 
         this.url = `${this.source.url}/ept-data/${this.voxelKey}.${this.source.extension}`;
-
-        this.crs = crs;
     }
 
     override fetcher(url: string, networkOptions: RequestInit): Promise<ArrayBuffer> {
@@ -57,7 +52,7 @@ class EntwinePointTileNode extends LasNodeBase {
     override async loadOctree(): Promise<void> {
         const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
         const hierarchy =
-        await Fetcher.json(hierarchyUrl, this.networkOptions) as Record<string, number>;
+            await Fetcher.json(hierarchyUrl, this.networkOptions) as Record<string, number>;
         this.numPoints = hierarchy[this.voxelKey];
 
         const stack = [];
@@ -93,8 +88,8 @@ class EntwinePointTileNode extends LasNodeBase {
         if (typeof numPoints == 'number') {
             const child = new EntwinePointTileNode(
                 depth, x, y, z,
-                this.source, numPoints, this.crs);
-            this.add(child as this, 0);
+                this.source, numPoints);
+            this.add(child as this);
             stack.push(child);
         }
     }

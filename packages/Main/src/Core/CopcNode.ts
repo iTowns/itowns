@@ -145,7 +145,7 @@ class CopcNode extends LasNodeBase {
             pointCount,
             this.crs,
         );
-        this.add(child as this, 0);
+        this.add(child as this);
         stack.push(child);
     }
 }
