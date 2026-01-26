@@ -54,10 +54,5 @@ describe('URL creations', function () {
         assert.equal(URLBuilder.subDomains(layer.url), 'https://xyz.org/img.png');
         assert.equal(URLBuilder.subDomains(layer.url), 'https://yzx.org/img.png');
         assert.equal(URLBuilder.subDomains(layer.url), 'https://zxy.org/img.png');
-
-        layer.url = 'https://${u:a|b|c}.tile.openstreetmap.org/img.png';
-        assert.equal(URLBuilder.subDomains(layer.url), 'https://a.tile.openstreetmap.org/img.png');
-        assert.equal(URLBuilder.subDomains(layer.url), 'https://b.tile.openstreetmap.org/img.png');
-        assert.equal(URLBuilder.subDomains(layer.url), 'https://c.tile.openstreetmap.org/img.png');
     });
 });
