@@ -1,0 +1,11 @@
+.dockerignore
+.git
+.github
+.gitignore
+.npm
+node_modules
+dist
+test
+**/coverage/
+**/lib/
+**/test/
