@@ -51,7 +51,6 @@ export abstract class PotreeNodeBase extends PointCloudNode {
 
     childrenBitField: number | undefined;
     baseurl: string;
-    offsetBBox?: Box3;
     crs: string;
 
     private _hierarchyKey: string | undefined;
@@ -98,8 +97,8 @@ export abstract class PotreeNodeBase extends PointCloudNode {
     }
 
     override createChildAABB(childNode: this, childIndex: number): void {
-        childNode.voxelOBB.copy(this.voxelOBB);
-        childNode.voxelOBB.box3D = computeChildBBox(this.voxelOBB.box3D, childIndex);
+        const childVoxelBBox = computeChildBBox(this.voxelOBB.natBox, childIndex);
+        childNode.voxelOBB.setFromBox3(childVoxelBBox).projOBB(this.source.crs, this.crs);
 
         childNode.clampOBB.copy(childNode.voxelOBB);
         childNode.clampOBB.clampZ(this.source.zmin, this.source.zmax);

@@ -44,6 +44,7 @@ class PotreeSource extends Source {
 
     // Properties initialized after fetching cloud file
     boundsConforming!: [number, number, number, number, number, number];
+    bounds!: [number, number, number, number, number, number];
     pointAttributes!: string[];
     baseurl!: string;
     scale!: number;
@@ -134,6 +135,8 @@ class PotreeSource extends Source {
                 Promise.resolve(source.cloud) :
             Fetcher.json(this.url, this.networkOptions) as Promise<PotreeCloud>)
             .then((cloud) => {
+                const { lx, ly, lz, ux, uy, uz } = cloud.boundingBox;
+                this.bounds = [lx, ly, lz, ux, uy, uz];
                 this.boundsConforming = [
                     cloud.tightBoundingBox.lx,
                     cloud.tightBoundingBox.ly,
