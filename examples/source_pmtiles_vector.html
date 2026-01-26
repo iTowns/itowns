@@ -115,26 +115,60 @@
             // User-controlled opacity (persists through layer refreshes)
             let userOpacity = 0.5;
 
-            // Create a simple layer style
-            function createLayerStyle() {
-                return new Style({
-                    fill: {
-                        color: '#4682b4',
-                        opacity: 1.0,
-                    },
-                    stroke: {
-                        color: '#ffffff',
-                        width: 1,
-                    },
-                    point: {
-                        color: '#4682b4',
-                        radius: 4,
-                        line: '#ffffff',
-                    },
+            // Layer visibility state (managed at example level per reviewer feedback)
+            let layerVisibility = {};
+            let originalLayers = {};
+
+            // Constant style (reviewer: instantiate once since it never changes)
+            const LAYER_STYLE = new Style({
+                fill: {
+                    color: '#4682b4',
+                    opacity: 1.0,
+                },
+                stroke: {
+                    color: '#ffffff',
+                    width: 1,
+                },
+                point: {
+                    color: '#4682b4',
+                    radius: 4,
+                    line: '#ffffff',
+                },
+            });
+
+            // Visibility helpers (moved from Source per reviewer feedback)
+            function setLayerVisibility(source, layerName, visible) {
+                layerVisibility[layerName] = visible;
+                if (originalLayers[layerName]) {
+                    if (visible) {
+                        source.layers[layerName] = [...originalLayers[layerName]];
+                    } else {
+                        source.layers[layerName] = [];
+                    }
+                }
+            }
+
+            function setAllLayersVisibility(source, visible) {
+                Object.keys(originalLayers).forEach((layerName) => {
+                    setLayerVisibility(source, layerName, visible);
+                });
+            }
+
+            function getLayerVisibility(layerName) {
+                return layerVisibility[layerName] !== false;
+            }
+
+            function initVisibilityState(source) {
+                layerVisibility = {};
+                originalLayers = {};
+                Object.keys(source.layers).forEach((name) => {
+                    layerVisibility[name] = true;
+                    originalLayers[name] = [...source.layers[name]];
                 });
             }
 
             // Refresh the layer by removing and re-adding it
+            // Note: clearCache() removed per reviewer feedback - not needed for layer refresh
             async function refreshLayer(pmtilesSource) {
                 if (!pmtilesLayer || !pmtilesSource) {
                     return;
@@ -142,7 +176,6 @@
 
                 const opacityToUse = userOpacity;
 
-                pmtilesSource.clearCache();
                 view.removeLayer('pmtiles-vectors');
 
                 pmtilesLayer = new ColorLayer('pmtiles-vectors', {
@@ -150,7 +183,7 @@
                     transparent: true,
                     opacity: opacityToUse,
                     noTextureParentOutsideLimit: true,
-                    style: createLayerStyle(),
+                    style: LAYER_STYLE,
                 });
 
                 await view.addLayer(pmtilesLayer);
@@ -178,7 +211,7 @@
                         }
                     });
 
-                // Layer visibility controls
+                // Layer visibility controls (using example-level helpers)
                 if (names.length > 0) {
                     layersFolder = gui.addFolder('Source Layers');
 
@@ -186,7 +219,7 @@
                     layersFolder.add(allLayersObj, 'visible')
                         .name('All Layers')
                         .onChange((value) => {
-                            pmtilesSource.setAllLayersVisibility(value);
+                            setAllLayersVisibility(pmtilesSource, value);
                             layerControllers.forEach((ctrl) => {
                                 ctrl.setValue(value);
                             });
@@ -195,11 +228,11 @@
 
                     const layerControllers = [];
                     names.forEach((layerName) => {
-                        const layerObj = { visible: pmtilesSource.getLayerVisibility(layerName) };
+                        const layerObj = { visible: getLayerVisibility(layerName) };
                         const ctrl = layersFolder.add(layerObj, 'visible')
                             .name(layerName)
                             .onChange((value) => {
-                                pmtilesSource.setLayerVisibility(layerName, value);
+                                setLayerVisibility(pmtilesSource, layerName, value);
                                 refreshLayer(pmtilesSource);
                             });
                         layerControllers.push(ctrl);
@@ -247,6 +280,9 @@
                         <p>Layers: ${names.length}</p>
                     `;
 
+                    // Initialize visibility state (managed at example level)
+                    initVisibilityState(pmtilesSource);
+
                     // Setup lil-gui after layer is ready
                     setupGui(pmtilesSource, names);
                     currentPmtilesSource = pmtilesSource;
@@ -257,7 +293,7 @@
                         transparent: true,
                         opacity: userOpacity,
                         noTextureParentOutsideLimit: true,
-                        style: createLayerStyle(),
+                        style: LAYER_STYLE,
                     });
 
                     view.addLayer(pmtilesLayer).then(() => {

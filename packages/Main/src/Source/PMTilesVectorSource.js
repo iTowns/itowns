@@ -1,6 +1,5 @@
 import PMTilesSource from 'Source/PMTilesSource';
-import VectorTileParser from 'Parser/VectorTileParser';
-import { LRUCache } from 'lru-cache';
+import { FeatureCollection } from 'Core/Feature';
 
 /**
  * An object defining the source of vector tile resources from a PMTiles archive.
@@ -73,7 +72,8 @@ class PMTilesVectorSource extends PMTilesSource {
         super(source);
 
         this.isPMTilesVectorSource = true;
-        this.isVectorSource = true;
+        // Note: isVectorSource is set by Source.js based on format
+        // Note: parser is set by Source.js from supportedParsers for this format
 
         // Y coordinate inversion (standard for web tiles)
         this.isInverted = source.isInverted !== undefined ? source.isInverted : true;
@@ -81,9 +81,6 @@ class PMTilesVectorSource extends PMTilesSource {
         // Initialize layer and style storage
         this.layers = source.layers || {};
         this.styles = source.styles || {};
-
-        // Parser for MVT tiles
-        this.parser = VectorTileParser.parse;
 
         // Chain onto whenReady to also parse metadata for layer info
         this.whenReady = this.whenReady.then(async (header) => {
@@ -123,64 +120,7 @@ class PMTilesVectorSource extends PMTilesSource {
                     filterExpression: { filter: () => true },
                 }];
             }
-            // Store original layer config for visibility toggling
-            if (!this._originalLayers) {
-                this._originalLayers = {};
-            }
-            this._originalLayers[layerId] = [...this.layers[layerId]];
         });
-
-        // Initialize visibility state
-        this._layerVisibility = {};
-        Object.keys(this.layers).forEach((name) => {
-            this._layerVisibility[name] = true;
-        });
-    }
-
-    /**
-     * Set visibility of a specific source layer.
-     *
-     * @param {string} layerName - The name of the source layer
-     * @param {boolean} visible - Whether the layer should be visible
-     */
-    setLayerVisibility(layerName, visible) {
-        if (!this._layerVisibility) {
-            this._layerVisibility = {};
-        }
-        this._layerVisibility[layerName] = visible;
-
-        // Update layers object based on visibility
-        if (this._originalLayers && this._originalLayers[layerName]) {
-            if (visible) {
-                this.layers[layerName] = [...this._originalLayers[layerName]];
-            } else {
-                // Set to empty array so parser skips this layer
-                this.layers[layerName] = [];
-            }
-        }
-    }
-
-    /**
-     * Set visibility of all source layers.
-     *
-     * @param {boolean} visible - Whether all layers should be visible
-     */
-    setAllLayersVisibility(visible) {
-        if (this._originalLayers) {
-            Object.keys(this._originalLayers).forEach((layerName) => {
-                this.setLayerVisibility(layerName, visible);
-            });
-        }
-    }
-
-    /**
-     * Get visibility state of a layer.
-     *
-     * @param {string} layerName - The name of the source layer
-     * @returns {boolean} Whether the layer is visible
-     */
-    getLayerVisibility(layerName) {
-        return this._layerVisibility ? this._layerVisibility[layerName] !== false : true;
     }
 
     /**
@@ -189,48 +129,7 @@ class PMTilesVectorSource extends PMTilesSource {
      * @returns {string[]} Array of layer names
      */
     getLayerNames() {
-        return this._originalLayers ? Object.keys(this._originalLayers) : Object.keys(this.layers);
-    }
-
-    /**
-     * Clear the feature cache. Call this after changing layer visibility
-     * to force tiles to be re-fetched and re-parsed.
-     */
-    clearCache() {
-        if (this._featuresCaches) {
-            Object.values(this._featuresCaches).forEach((cache) => {
-                if (cache.clear) {
-                    cache.clear();
-                }
-            });
-        }
-    }
-
-    /**
-     * Called when layer is added. Sets up caching.
-     *
-     * @param {Object} options - Options
-     */
-    onLayerAdded(options) {
-        super.onLayerAdded(options);
-
-        // Setup cache for features
-        if (!this._featuresCaches[options.out.crs]) {
-            this._featuresCaches[options.out.crs] = new LRUCache({ max: 500 });
-        }
-    }
-
-    /**
-     * Generate a cache key for a tile.
-     *
-     * @param {Extent|Object} extent - The extent or tile coordinates
-     * @returns {string} Cache key
-     */
-    getDataKey(extent) {
-        if (extent.isTile) {
-            return `z${extent.zoom}r${extent.row}c${extent.col}`;
-        }
-        return `z${extent.zoom}r${extent.row}c${extent.col}`;
+        return Object.keys(this.layers);
     }
 
     /**
@@ -259,8 +158,8 @@ class PMTilesVectorSource extends PMTilesSource {
         features = this.getTile(z, x, y)
             .then((data) => {
                 if (!data) {
-                    // No tile data - return empty collection
-                    return Promise.resolve(null);
+                    // No tile data - return empty FeatureCollection
+                    return Promise.resolve(new FeatureCollection(out));
                 }
 
                 // Parse the MVT data
@@ -270,10 +169,7 @@ class PMTilesVectorSource extends PMTilesSource {
                     out,
                 });
             })
-            .catch((err) => {
-                console.error('PMTilesVectorSource: Error loading tile', z, x, y, err);
-                return null;
-            });
+            .catch(err => this.handlingError(err));
 
         // Cache the promise
         cache.set(key, features);
