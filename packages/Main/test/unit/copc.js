@@ -77,7 +77,8 @@ describe('COPC', function () {
             root.children[2].children[1].add(new CopcNode(3, 1, 6, 7, 0, 1000, source));
         });
 
-        describe('finds the common ancestor of two nodes', () => {
+        describe.skip('finds the common ancestor of two nodes', () => {
+            // done in pointcloudnode.js
             let ancestor;
             it('cousins => grand parent', () => {
                 ancestor = root.children[2].children[1].children[0].findCommonAncestor(root.children[2].children[0].children[0]);
