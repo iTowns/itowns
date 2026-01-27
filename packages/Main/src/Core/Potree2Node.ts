@@ -50,8 +50,6 @@ class Potree2Node extends PotreeNodeBase {
     // Properties initialized after loading hierarchy
     byteOffset!: bigint;
     byteSize!: bigint;
-    hierarchyByteOffset!: bigint;
-    hierarchyByteSize!: bigint;
     nodeType!: NodeType;
 
     constructor(
@@ -71,14 +69,8 @@ class Potree2Node extends PotreeNodeBase {
     }
 
     override get networkOptions(): RequestInit {
-        let byteOffset = this.byteOffset;
-        let byteSize = this.byteSize;
-        if (this.nodeType === NODE_TYPE.PROXY) {
-            byteOffset = this.hierarchyByteOffset;
-            byteSize = this.hierarchyByteSize;
-        }
-        const first = byteOffset;
-        const last = first + byteSize - 1n;
+        const first = this.byteOffset;
+        const last = first + this.byteSize - 1n;
 
         const regex = /^https:\/\/(raw|media)\.githubusercontent\.com/;
         // When we specify 'multipart/byteranges' on headers request it triggers
@@ -123,24 +115,18 @@ class Potree2Node extends PotreeNodeBase {
             const type = view.getUint8(offset + 0) as NodeType;
             const childMask = view.getUint8(offset + 1);
             const numPoints = view.getUint32(offset + 2, true);
-            const byteOffset = view.getBigInt64(offset + 6, true);
-            const byteSize = view.getBigInt64(offset + 14, true);
+
+            current.byteOffset = view.getBigInt64(offset + 6, true);
+            current.byteSize = view.getBigInt64(offset + 14, true);
 
             if (current.nodeType === NODE_TYPE.PROXY) {
                 // replace proxy with real node
-                current.byteOffset = byteOffset;
-                current.byteSize = byteSize;
                 current.numPoints = numPoints;
                 current.childrenBitField = childMask;
             } else if (type === NODE_TYPE.PROXY) {
                 // load proxy
-                current.hierarchyByteOffset = byteOffset;
-                current.hierarchyByteSize = byteSize;
-                current.numPoints = numPoints;
             } else {
                 // load real node
-                current.byteOffset = byteOffset;
-                current.byteSize = byteSize;
                 current.numPoints = numPoints;
                 current.childrenBitField = childMask;
             }

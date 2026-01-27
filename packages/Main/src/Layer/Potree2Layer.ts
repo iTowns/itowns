@@ -99,9 +99,7 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
             this.object3d.add(root.clampOBB);
             root.clampOBB.updateMatrixWorld(true);
 
-            root.nodeType = 2;
-            root.hierarchyByteOffset = 0n;
-            root.hierarchyByteSize = BigInt(hierarchy.firstChunkSize);
+            root.byteSize = BigInt(hierarchy.firstChunkSize);
             root.byteOffset = 0n;
 
             this.root = root;
