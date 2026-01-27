@@ -178,7 +178,8 @@ describe('Entwine Point Tile', function () {
             });
         });
 
-        describe('finds the common ancestor of two nodes', () => {
+        describe.skip('finds the common ancestor of two nodes', () => {
+            // done in pointcloudnode.js
             let root;
             const crs = 'EPSG:4978';
             before('create octree', function () {
