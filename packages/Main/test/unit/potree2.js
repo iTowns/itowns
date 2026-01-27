@@ -92,7 +92,6 @@ describe('Potree2', function () {
 
         it('instance', function (done) {
             const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source);
-            root.nodeType = 2;
             assert.equal(root.numPoints, numPoints);
             assert.equal(root.childrenBitField, childrenBitField);
             done();
@@ -101,9 +100,8 @@ describe('Potree2', function () {
         it('load octree', function (done) {
             const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source);
             object3d.add(root.clampOBB);
-            root.nodeType = 2;
-            root.hierarchyByteOffset = 0n;
-            root.hierarchyByteSize = 12650n;
+            root.byteOffset = 0n;
+            root.byteSize = 12650n;
             root.loadOctree()
                 .then(() => {
                     assert.equal(root.children.length, 6);
@@ -114,9 +112,8 @@ describe('Potree2', function () {
         it('load child node', function (done) {
             const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source, 'EPSG:4978');
             object3d.add(root.clampOBB);
-            root.nodeType = 2;
-            root.hierarchyByteOffset = 0n;
-            root.hierarchyByteSize = 12650n;
+            root.byteOffset = 0n;
+            root.byteSize = 12650n;
             root.loadOctree()
                 .then(() => root.children[0].load()
                     .then(() => {
