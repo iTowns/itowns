@@ -169,6 +169,9 @@
                 return properties.hauteur;
             }
 
+            var useFixedHeight = true;
+            var useFixedColor = true;
+
             function acceptFeature(properties) {
                 return !!properties.hauteur;
             }
@@ -218,18 +221,31 @@
                 filter: acceptFeature,
                 source: wfsBuildingSource,
                 zoom: { min: 14 },
-
-                style: {
-                    fill: {
-                        color: colorBuildings,
-                        base_altitude: altitudeBuildings,
-                        extrusion_height: extrudeBuildings,
-                    }
-                }
+                style: { fill: { base_altitude: altitudeBuildings } }
             });
             view.addLayer(wfsBuildingLayer);
 
             var menuGlobe = new GuiTools('menuDiv', view);
+
+            // Add buttons to toggle extrusion height and color
+            const extrusionToggle = {
+                toggleHeight: function () {
+                    useFixedHeight = !useFixedHeight;
+                    wfsBuildingLayer.style.fill.extrusion_height = useFixedHeight ? 8 : extrudeBuildings
+                    view.notifyChange(wfsBuildingLayer);
+                },
+                toggleColor: function () {
+                    useFixedColor = !useFixedColor;
+                    wfsBuildingLayer.style.fill.color = useFixedColor ? color.set(0x00cc00) : colorBuildings
+                    view.notifyChange(wfsBuildingLayer);
+                }
+            };
+            menuGlobe.gui.add(extrusionToggle, 'toggleHeight').name('Toggle Extrusion (Property/8)');
+            menuGlobe.gui.add(extrusionToggle, 'toggleColor').name('Toggle Color');
+
+            extrusionToggle.toggleHeight();
+            extrusionToggle.toggleColor();
+
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
