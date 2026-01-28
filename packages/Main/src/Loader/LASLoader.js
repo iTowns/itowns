@@ -1,6 +1,18 @@
+// Don’t import Three directly if you want to improve tree shaking.
+import { Vector3, Quaternion, Box3 } from 'three';
 import { LazPerf } from 'laz-perf';
 import { Las } from 'copc';
 import proj4 from 'proj4';
+// eslint-disable-next-line import/extensions
+import { LASAttributes } from './LASConstant.js';
+
+const LASAttributesName = LASAttributes.filter(a => a.size === undefined).map(a => a.name);
+
+const origin = /* @__PURE__ */ new Vector3();
+const quaternion = /* @__PURE__ */ new Quaternion();
+const box = /* @__PURE__ */ new Box3();
+const position = /* @__PURE__ */ new Vector3();
+const scalarDepth16 = 1 / 256;
 
 /**
  * @typedef {Object} Header - Partial LAS header.
@@ -18,37 +30,6 @@ import proj4 from 'proj4';
 
 function defaultColorEncoding(header) {
     return (header.majorVersion === 1 && header.minorVersion <= 2) ? 8 : 16;
-}
-
-/**
- * Applies the given Quaternion to this vector.
- * @param {Array} v - The array depicting the position [x, y, z].
- * @param {Array} q - The Array depicting the Quaternion. [x, y, z, w]
- *
- * @return {Vector3} A reference to this vector.
- */
-function _applyQuaternion(v, q) {
-    // quaternion q is assumed to have unit length
-    const vx = v[0];
-    const vy = v[1];
-    const vz = v[2];
-    const qx = q[0];
-    const qy = q[1];
-    const qz = q[2];
-    const qw = q[3];
-
-    // t = 2 * cross( q.xyz, v );
-    const tx = 2 * (qy * vz - qz * vy);
-    const ty = 2 * (qz * vx - qx * vz);
-    const tz = 2 * (qx * vy - qy * vx);
-
-    const res = [];
-    // v + q.w * t + cross( q.xyz, t );
-    res[0] = vx + qw * tx + qy * tz - qz * ty;
-    res[1] = vy + qw * ty + qz * tx - qx * tz;
-    res[2] = vz + qw * tz + qx * ty - qy * tx;
-
-    return res;
 }
 
 /**
@@ -79,32 +60,39 @@ class LASLoader {
     }
 
     _parseView(view, options) {
-        const colorDepth = options.colorDepth ?? defaultColorEncoding(options.header);
-
         const forward = (options.in.crs !== options.out.crs) ?
             proj4(options.in.projDefs, options.out.projDefs).forward :
             (x => x);
-        const applyQuaternion = (options.in.crs !== options.out.crs) ?
-            _applyQuaternion : (x => x);
 
         const getPosition = ['X', 'Y', 'Z'].map(view.getter);
-        const getIntensity = view.getter('Intensity');
-        const getReturnNumber = view.getter('ReturnNumber');
-        const getNumberOfReturns = view.getter('NumberOfReturns');
-        const getClassification = view.getter('Classification');
-        const getPointSourceID = view.getter('PointSourceId');
-        const getColor = view.dimensions.Red ?
-            ['Red', 'Green', 'Blue'].map(view.getter) : undefined;
-        const getScanAngle = view.getter('ScanAngle');
 
-        const positions = new Float32Array(view.pointCount * 3);
+        const attributes = {
+            positions: new Float32Array(view.pointCount * 3),
+        };
 
-        const intensities = new Uint16Array(view.pointCount);
-        const returnNumbers = new Uint8Array(view.pointCount);
-        const numberOfReturns = new Uint8Array(view.pointCount);
-        const classifications = new Uint8Array(view.pointCount);
-        const pointSourceIDs = new Uint16Array(view.pointCount);
-        const colors = getColor ? new Uint8Array(view.pointCount * 4) : undefined;
+        let getColor = () => {};
+        if (view.dimensions.Red) {
+            let readColor = ['Red', 'Green', 'Blue'].map(view.getter);
+            if ((options.colorDepth ?? defaultColorEncoding(options.header)) == 16) {
+                readColor = readColor.map(g => c => g(c) * scalarDepth16);
+            }
+            readColor.push(() => 255);
+            attributes.colors = new Uint8Array(view.pointCount * 4);
+            getColor = (i) => {
+                const c = i * 4;
+                readColor.forEach((f, j) => {
+                    attributes.colors[c + j] = f(i);
+                });
+            };
+        }
+
+        const getters = {};
+
+        LASAttributesName.forEach((a) => {
+            attributes[a] = new Uint16Array(view.pointCount);
+            getters[a] = view.getter(a);
+        });
+
         /*
         As described by the LAS spec, Scan Angle is encoded:
         - as signed char in a valid range from -90 to +90 (degrees) prior to the LAS 1.4 Point Data Record Formats (PDRF) 6
@@ -112,74 +100,24 @@ class LASLoader {
           degrees with an increment of 0.006 for PDRF >= 6.
         The copc.js library does the degree convertion and stores it as a `Float32`.
         */
-        const scanAngles = new Float32Array(view.pointCount);
 
-        const origin = options.out.origin;
-        const quaternion = options.out.rotation;
-        let minX = Infinity; let minY = Infinity; let minZ = Infinity;
-        let maxX = -Infinity; let maxY = -Infinity; let maxZ = -Infinity;
+        origin.fromArray(options.out.origin);
+        quaternion.fromArray(options.out.rotation);
+        box.makeEmpty();
+
         for (let i = 0; i < view.pointCount; i++) {
             // `getPosition` apply scale and offset transform to the X, Y, Z
             // values. See https://github.com/connormanning/copc.js/blob/master/src/las/extractor.ts.
             // we thus apply the projection to get values in the Crs of the view.
-            const point = getPosition.map(f => f(i));
-            const [x, y, z] = forward(point);
-
-            const position = applyQuaternion([
-                x - origin[0],
-                y - origin[1],
-                z - origin[2],
-            ], quaternion);
-
-            positions[i * 3] = position[0];
-            positions[i * 3 + 1] = position[1];
-            positions[i * 3 + 2] = position[2];
-
-            minX = Math.min(minX, position[0]);
-            minY = Math.min(minY, position[1]);
-            minZ = Math.min(minZ, position[2]);
-            maxX = Math.max(maxX, position[0]);
-            maxY = Math.max(maxY, position[1]);
-            maxZ = Math.max(maxZ, position[2]);
-
-            intensities[i] = getIntensity(i);
-            returnNumbers[i] = getReturnNumber(i);
-            numberOfReturns[i] = getNumberOfReturns(i);
-
-            if (getColor) {
-                // Note that we do not infer color depth as it is expensive
-                // (i.e. traverse the whole view to check if there exists a red,
-                // green or blue value > 255).
-                let [r, g, b] = getColor.map(f => f(i));
-
-                if (colorDepth === 16) {
-                    r /= 256;
-                    g /= 256;
-                    b /= 256;
-                }
-
-                colors[i * 4] = r;
-                colors[i * 4 + 1] = g;
-                colors[i * 4 + 2] = b;
-                colors[i * 4 + 3] = 255;
-            }
-
-            classifications[i] = getClassification(i);
-            pointSourceIDs[i] = getPointSourceID(i);
-            scanAngles[i] = getScanAngle(i);
+            position.fromArray(forward(getPosition.map(f => f(i))));
+            position.sub(origin).applyQuaternion(quaternion);
+            position.toArray(attributes.positions, i * 3);
+            box.expandByPoint(position);
+            LASAttributesName.forEach((a) => { attributes[a][i] = getters[a](i); });
+            getColor(i);
         }
 
-        return {
-            position: positions,
-            intensity: intensities,
-            returnNumber: returnNumbers,
-            numberOfReturns,
-            classification: classifications,
-            pointSourceID: pointSourceIDs,
-            color: colors,
-            scanAngle: scanAngles,
-            bbox: [minX, minY, minZ, maxX, maxY, maxZ],
-        };
+        return { attributes, box: box.toJSON() };
     }
 
     /**
@@ -217,8 +155,7 @@ class LASLoader {
         }, this._initDecoder());
 
         const view = Las.View.create(pointData, header, eb);
-        const attributes = this._parseView(view, options);
-        return { attributes };
+        return this._parseView(view, options);
     }
 
     /**
@@ -244,10 +181,10 @@ class LASLoader {
         const eb = ebVlr && Las.ExtraBytes.parse(await Las.Vlr.fetch(getter, ebVlr));
 
         const view = Las.View.create(pointData, header, eb);
-        const attributes = this._parseView(view, options);
+
         return {
+            ...this._parseView(view, options),
             header,
-            attributes,
         };
     }
 }

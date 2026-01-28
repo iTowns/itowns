@@ -29,6 +29,9 @@ const include = [
     path.resolve(__dirname, 'packages/Widgets/src'),
 ];
 
+// excludes path to externalize
+const excludesToExternals = [path.resolve(__dirname, 'packages/Main/src/Loader')];
+
 const exclude = [
     path.resolve(__dirname, '.git'),
     path.resolve(__dirname, 'node_modules'),
@@ -153,9 +156,14 @@ module.exports = () => {
         experiments: {
             outputModule: true,
         },
-        externals: {
-            three: 'three',
-        },
+        externals: [
+            ({ context, request }, callback) => {
+                if (request === 'three' && !excludesToExternals.find(p => context.includes(p))) {
+                    return callback(null, 'three');
+                }
+                callback();
+            },
+        ],
     };
 
     if (process.env.WEBPACK_SERVE) {
