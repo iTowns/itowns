@@ -583,7 +583,13 @@ class OGC3DTilesLayer extends GeometryLayer {
                     new THREE.BufferAttribute(classificationData, 1),
                 );
             }
+        } else if (model.isMesh && geometry) {
+            geometry.computeVertexNormals();
+            geometry.needsUpdate = true;
         }
+
+        model.castShadow = true;
+        model.receiveShadow = true;
     }
 
     handleTasks() {

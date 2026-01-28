@@ -20,15 +20,15 @@ import {
 import View from 'Core/View';
 
 class SkyManager {
-    sky: THREE.Mesh;
-    skyLight: SkyLightProbe;
-    sunLight: SunDirectionalLight;
-    aerialPerspective: AerialPerspectiveEffect;
+    private readonly sky: THREE.Mesh;
+    private readonly skyLight: SkyLightProbe;
+    private readonly sunLight: SunDirectionalLight;
+    private readonly aerialPerspective: AerialPerspectiveEffect;
     effectPass: EffectPass;
     scene: THREE.Scene;
     composer: EffectComposer;
     fog: THREE.Fog;
-    view: View;
+    private readonly view: View;
 
     public date: Date;
 
@@ -57,15 +57,22 @@ class SkyManager {
         // to its target position.
         // Only creating a sky light probe *and* a sunlight
         // (without adding them to the scene) is enough to render a sky.
-        this.sunLight = new SunDirectionalLight({ distance: 300 });
+        this.sunLight = new SunDirectionalLight();
         this.sunLight.intensity = 0.2;
         this.sunLight.target.position.copy(camera.position);
+
+        // shadow support
+        this.sunLight.castShadow = true;
+        this.sunLight.shadow.mapSize.set(4096, 4096);
+
 
         this.aerialPerspective = new AerialPerspectiveEffect(camera);
         this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
 
         const renderer = view.renderer;
         renderer.toneMappingExposure = 10;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         composer.addPass(new RenderPass(scene, camera));
         this.effectPass = new EffectPass(
@@ -96,7 +103,7 @@ class SkyManager {
             // disable fog only during render
             // to let its parameters be modified elsewhere
             if (this.enabled) { this.scene.fog = null; }
-            this.update(camera);
+            this.update();
         };
         scene.onAfterRender = () => {
             if (this.enabled) { this.scene.fog = this.fog; }
@@ -105,7 +112,8 @@ class SkyManager {
         this.composer.render();
     }
 
-    update(camera: THREE.Camera) {
+    update() {
+        const camera = this.view.camera3D as THREE.PerspectiveCamera | THREE.OrthographicCamera;
         if (!this.enabled) { return; }
 
         const sunDirection = new THREE.Vector3();
@@ -133,8 +141,24 @@ class SkyManager {
         // to the uniforms used in post-processing effects
         (this.effectPass.fullscreenMaterial as EffectMaterial).adoptCameraSettings(camera);
 
+        // Center the shadow around the view center
+        // Use depth buffer picking at screen center
+        const screenCenterPos = this.view.getPickingPositionFromDepth(null);
+        if (screenCenterPos) {
+            this.sunLight.target.position.copy(screenCenterPos);
+        }
+
         this.sunLight.sunDirection.copy(sunDirection);
+        const shadowHalfSide = 0.017 * camera.far + 200; // determined empirically
+        this.sunLight.distance = shadowHalfSide;
         this.sunLight.update();
+        const shadowCam = this.sunLight.shadow.camera;
+        shadowCam.far = 2 * shadowHalfSide;
+        shadowCam.left = -shadowHalfSide;
+        shadowCam.right = shadowHalfSide;
+        shadowCam.top = shadowHalfSide;
+        shadowCam.bottom = -shadowHalfSide;
+        shadowCam.updateProjectionMatrix();
 
         this.skyLight.sunDirection.copy(sunDirection);
         this.skyLight.position.copy(camera.position); // position must not be the origin
