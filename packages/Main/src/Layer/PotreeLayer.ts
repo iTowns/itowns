@@ -53,8 +53,6 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
                 this.material.defines[normal] = 1;
             }
 
-            this.supportsProgressiveDisplay = (this.source.extension === 'cin');
-
             this.setElevationRange();
 
             this.root = new PotreeNode(0, -1, 0, 0, this.source, this.crs);
