@@ -172,6 +172,7 @@ class Layer extends THREE.EventDispatcher {
         });
     }
 
+    // TODO: check if this is really needed and for what ?
     addInitializationStep() {
         // Possibility to add rejection handler, if it's necessary.
         let resolve;

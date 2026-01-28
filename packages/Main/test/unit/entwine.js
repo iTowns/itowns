@@ -44,7 +44,7 @@ describe('Entwine Point Tile', function () {
         LASParser.enableLazPerf('../../examples/libs/laz-perf');
     });
 
-    after(async function () {
+    after(function () {
         stubFetcherJson.restore();
         stubFetcherArrayBuf.restore();
     });
