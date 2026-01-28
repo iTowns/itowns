@@ -32,7 +32,8 @@ class CopcNode extends LasNodeBase {
      * the node entry.
      * @param entryLength - Size of the node entry.
      * @param source - Data source (COPC) of the node.
-     * @param numPoints - Number of points given by this entry.
+     * @param numPoints - Number of points of the node.
+     * Set to -1 when we don't have the information yet.
      * @param crs - The crs of the node.
      */
     constructor(
@@ -41,7 +42,7 @@ class CopcNode extends LasNodeBase {
         entryOffset: number,
         entryLength: number,
         source: CopcSource,
-        numPoints: number = 0,
+        numPoints: number,
         crs: string,
     ) {
         super(depth, x, y, z, source, numPoints, crs);
@@ -67,7 +68,6 @@ class CopcNode extends LasNodeBase {
     }
 
     override async loadOctree(): Promise<void> {
-        // Load hierarchy
         const buffer = await this.fetcher(this.source.url, this.networkOptions);
         const hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
 
@@ -119,19 +119,19 @@ class CopcNode extends LasNodeBase {
     ): void {
         const voxelKey = buildVoxelKey(depth, x, y, z);
 
-        let pointCount: number;
+        let numPoints: number;
         let offset: number;
         let byteSize: number;
 
         const node = hierarchy.nodes[voxelKey];
         if (node) {
-            pointCount = node.pointCount;
+            numPoints = node.pointCount;
             offset = node.pointDataOffset;
             byteSize = node.pointDataLength;
         } else {
             const page = hierarchy.pages[voxelKey];
             if (!page) { return; }
-            pointCount = -1;
+            numPoints = -1;
             offset = page.pageOffset;
             byteSize = page.pageLength;
         }
@@ -142,7 +142,7 @@ class CopcNode extends LasNodeBase {
             offset,
             byteSize,
             this.source,
-            pointCount,
+            numPoints,
             this.crs,
         );
         this.add(child as this, 0);

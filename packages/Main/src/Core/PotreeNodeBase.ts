@@ -59,7 +59,7 @@ export abstract class PotreeNodeBase extends PointCloudNode {
     constructor(
         depth: number,
         index: number,
-        numPoints = 0,
+        numPoints: number,
         childrenBitField = 0,
         source: { baseurl: string },
         crs: string,

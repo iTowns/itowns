@@ -8,7 +8,7 @@ class PotreeNode extends PotreeNodeBase {
     constructor(
         depth: number,
         index: number,
-        numPoints = 0,
+        numPoints: number,
         childrenBitField = 0,
         source: PotreeSource,
         crs: string,
@@ -46,7 +46,7 @@ class PotreeNode extends PotreeNodeBase {
                 // does snode have a #indexChild child ?
                 if (snode.childrenBitField & (1 << indexChild) && (offset + 5) <= blob.byteLength) {
                     const childrenBitField = view.getUint8(offset); offset += 1;
-                    const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
+                    const numPoints = view.getUint32(offset, true); offset += 4;
                     const child = new PotreeNode(
                         snode.depth + 1, indexChild,
                         numPoints, childrenBitField, this.source, this.crs);

@@ -61,7 +61,7 @@ class Potree2Node extends PotreeNodeBase {
     constructor(
         depth: number,
         index: number,
-        numPoints = 0,
+        numPoints: number,
         childrenBitField = 0,
         source: Potree2Source,
         crs: string,
