@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Point Cloud on globe</title>
+        <title>iTowns - Potree 3d loader</title>
 
         <script type="importmap">
         {
@@ -90,7 +90,7 @@
             */
 
             itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
-            name = 'TempleSagradaFamilia';
+            name = 'Sagrada Familia';
             const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js';
             const crs = 'EPSG:25831';
 
@@ -112,8 +112,6 @@
 
                 var size = new THREE.Vector3();
                 potreeLayer.root.voxelOBB.box3D.getSize(size);
-
-                console.log(coordLookAt);
 
                 view.controls.lookAtCoordinate({
                     coord: coordLookAt,

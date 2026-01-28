@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Itowns - Entwine 3D loader</title>
+        <title>iTowns - Entwine 3D loader</title>
 
         <script type="importmap">
         {
@@ -86,7 +86,7 @@
                 options[k] = isNaN(parseFloat(v, 10)) ? v : parseFloat(v, 10);
             }
 
-            loadEPT(url);
+            loadEPT(url, options);
 
             var eptLayer;
             function onLayerReady() {
@@ -102,7 +102,7 @@
                 }, false);
             }
 
-            function loadEPT(url) {
+            function loadEPT(url, options) {
                 if(!url) return;
                 document.getElementById('share').innerHTML = '<a href="' +
                     location.href.replace(location.search, '?ept=' + url) +
@@ -117,10 +117,13 @@
                     eptLayer.delete();
                 }
 
-                eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', {
+                const config = {
                     source: eptSource,
                     crs: view.referenceCrs,
-                });
+                    ...options,
+                };
+
+                eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', config);
 
                 itowns.View.prototype.addLayer.call(view, eptLayer).then(onLayerReady);
 
