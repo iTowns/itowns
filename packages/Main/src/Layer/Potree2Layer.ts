@@ -81,8 +81,7 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
         this.isPotree2Layer = true;
 
-        const resolve = this.addInitializationStep();
-        this.whenReady = this.source.whenReady.then((metadata) => {
+        const setRootNode =  this.source.whenReady.then((metadata) => {
             this.metadata = metadata;
 
             const normal = Array.isArray(metadata.attributes) &&
@@ -94,7 +93,7 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
             this.setElevationRange();
 
-            const root = new Potree2Node(0, -1, -1, undefined, this.source, this.crs);
+            const root = new Potree2Node(0, 0, -1, undefined, this.source, this.crs);
             const { boundingBox, hierarchy } = metadata;
             root.setOBBes(boundingBox.min, boundingBox.max);
             this.object3d.add(root.clampOBB);
@@ -106,9 +105,9 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
             root.byteOffset = 0n;
 
             this.root = root;
-
-            return this.root.loadOctree().then(resolve);
         });
+
+        this._promises.push(setRootNode);
     }
 }
 
