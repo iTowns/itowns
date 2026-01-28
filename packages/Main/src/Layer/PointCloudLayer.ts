@@ -221,12 +221,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     /** Number of points displayed in the last update. */
     displayedCount: number;
 
-    /**
-     * @deprecated This property is no longer used and will be removed in
-     * a future version.
-     */
-    supportsProgressiveDisplay: boolean;
-
     /** Root node of the point cloud tree. */
     root: PointCloudNode | undefined;
 
@@ -317,7 +311,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         this.root = undefined;
 
         this.displayedCount = 0;
-        this.supportsProgressiveDisplay = false;
     }
 
     setElevationRange() {
@@ -483,40 +476,20 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         }
 
         if (this.displayedCount > this.pointBudget) {
-            // 2 different point count limit implementation, depending on the
-            // potree source
-            if (this.supportsProgressiveDisplay) {
-                // In this format, points are evenly distributed within a node,
-                // so we can draw a percentage of each node and still get a
-                // correct representation
-                const reduction = this.pointBudget / this.displayedCount;
-                for (const pts of this.group.children as THREE.Points[]) {
-                    if (pts.visible) {
-                        const count = Math.floor(pts.geometry.drawRange.count * reduction);
-                        if (count > 0) {
-                            pts.geometry.setDrawRange(0, count);
-                        } else {
-                            pts.visible = false;
-                        }
-                    }
-                }
-                this.displayedCount *= reduction;
-            } else {
-                // This format doesn't require points to be evenly distributed,
-                // so we're going to sort the nodes by "importance"
-                // (= on screen size) and display only the first N nodes
-                this.group.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
+            // This format doesn't require points to be evenly distributed,
+            // so we're going to sort the nodes by "importance"
+            // (= on screen size) and display only the first N nodes
+            this.group.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
 
-                let limitHit = false;
-                this.displayedCount = 0;
-                for (const pts of this.group.children as THREE.Points[]) {
-                    const count = pts.geometry.attributes.position.count;
-                    if (limitHit || (this.displayedCount + count) > this.pointBudget) {
-                        pts.visible = false;
-                        limitHit = true;
-                    } else {
-                        this.displayedCount += count;
-                    }
+            let limitHit = false;
+            this.displayedCount = 0;
+            for (const pts of this.group.children as THREE.Points[]) {
+                const count = pts.geometry.attributes.position.count;
+                if (limitHit || (this.displayedCount + count) > this.pointBudget) {
+                    pts.visible = false;
+                    limitHit = true;
+                } else {
+                    this.displayedCount += count;
                 }
             }
         }
