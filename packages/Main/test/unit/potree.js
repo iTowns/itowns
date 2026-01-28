@@ -101,8 +101,10 @@ describe('Potree', function () {
                 View.prototype.addLayer.call(viewer, potreeLayer)
                     .then(() => {
                         context.camera.camera3D.updateMatrixWorld();
-                        assert.equal(potreeLayer.root.children.length, 6);
-                        potreeLayer.obbes.visible = true;
+                        // loadOctree() is now called during the load
+                        // assert.equal(potreeLayer.root.children.length, 6);
+                        assert.ok(potreeLayer.root instanceof PotreeNode);
+                        assert.ok(potreeLayer.object3d.children.indexOf(potreeLayer.root.clampOBB) >= 0);
                         done();
                     }).catch(done);
             });

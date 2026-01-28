@@ -41,7 +41,7 @@ class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
 
         this.isEntwinePointTileLayer = true;
 
-        const loadOctree = this.source.whenReady.then((source) => {
+        const setRootNode = this.source.whenReady.then((source) => {
             this.setElevationRange();
 
             const { bounds } = source;
@@ -53,10 +53,10 @@ class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
             this.obbes.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
 
-            return this.root.loadOctree();
+            return this.root;
         });
 
-        this._promises.push(loadOctree);
+        this._promises.push(setRootNode);
     }
 }
 

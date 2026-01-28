@@ -81,7 +81,7 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
         this.isPotree2Layer = true;
 
-        const loadOctree = this.source.whenReady.then((metadata) => {
+        const setRootNode =  this.source.whenReady.then((metadata) => {
             this.metadata = metadata;
 
             const normal = Array.isArray(metadata.attributes) &&
@@ -109,10 +109,10 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
             this.root = root;
 
-            return this.root.loadOctree();
+            return this.root;
         });
 
-        this._promises.push(loadOctree);
+        this._promises.push(setRootNode);
     }
 }
 
