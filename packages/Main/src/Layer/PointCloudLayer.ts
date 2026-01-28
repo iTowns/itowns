@@ -67,7 +67,9 @@ interface Context {
             earlyDropFunction?: (cmd: { requester: PointCloudNode }) => boolean;
         }) => Promise<THREE.Points>;
     };
-    view: object;
+    view: {
+        notifyChange: (elt: PointCloudLayer) => void;
+    };
 }
 
 function computeSSEPerspective(
@@ -394,7 +396,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      */
     loadData(
         elt: PointCloudNode, context: Context, layer: this, distanceToCamera: number,
-    ): [] | PointCloudNode[] {
+    ): void {
         elt.notVisibleSince = undefined;
 
         // only load geometry if this elements has points
@@ -414,11 +416,13 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                     earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
                 }).then((pts: THREE.Points) => {
                     elt.obj = pts;
+                    elt.obj.visible = false;
 
                     // make sure to add it here, otherwise it might never
                     // be added nor cleaned
                     this.group.add(elt.obj);
                     elt.obj.updateMatrixWorld(true);
+                    context.view.notifyChange(this);
                 }).catch((err: { isCancelledCommandException: boolean }) => {
                     if (!err.isCancelledCommandException) {
                         return err;
@@ -428,19 +432,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 });
             }
         }
-
-        if (elt.children && elt.children.length) {
-            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distanceToCamera) / this.sseThreshold;
-            if (elt.sse >= 1) {
-                return elt.children;
-            } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
-                }
-                return [];
-            }
-        }
-        return [];
     }
 
     /**
@@ -485,7 +476,21 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
         const distanceToCamera = bbox.distanceToPoint(point);
 
-        return this.loadData(elt, context, layer, distanceToCamera);
+        this.loadData(elt, context, layer, distanceToCamera);
+
+        if (elt.children && elt.children.length) {
+            elt.sse = computeScreenSpaceError(context, layer.pointSize, elt.pointSpacing, distanceToCamera);
+            if (elt.sse >= this.sseThreshold) {
+                return elt.children;
+            } else {
+                for (const child of elt.children) {
+                    markForDeletion(child);
+                }
+                return [];
+            }
+        }
+
+        return [];
     }
 
     postUpdate() {

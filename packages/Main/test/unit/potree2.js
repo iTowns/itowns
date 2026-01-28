@@ -61,8 +61,10 @@ describe('Potree2', function () {
         View.prototype.addLayer.call(viewer, potree2Layer)
             .then(() => {
                 context.camera.camera3D.updateMatrixWorld();
-                assert.equal(potree2Layer.root.children.length, 6);
-                potree2Layer.bboxes.visible = true;
+                // loadOctree() is now called during the load
+                // assert.equal(potree2Layer.root.children.length, 6);
+                assert.ok(potree2Layer.root instanceof Potree2Node);
+                assert.ok(potree2Layer.object3d.children.indexOf(potree2Layer.root.clampOBB) >= 0);
                 done();
             }).catch(done);
     });
@@ -92,7 +94,6 @@ describe('Potree2', function () {
 
         it('instance', function (done) {
             const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source);
-            root.nodeType = 2;
             assert.equal(root.numPoints, numPoints);
             assert.equal(root.childrenBitField, childrenBitField);
             done();
@@ -101,9 +102,8 @@ describe('Potree2', function () {
         it('load octree', function (done) {
             const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source);
             object3d.add(root.clampOBB);
-            root.nodeType = 2;
-            root.hierarchyByteOffset = 0n;
-            root.hierarchyByteSize = 12650n;
+            root.byteOffset = 0n;
+            root.byteSize = 12650n;
             root.loadOctree()
                 .then(() => {
                     assert.equal(root.children.length, 6);
@@ -114,9 +114,8 @@ describe('Potree2', function () {
         it('load child node', function (done) {
             const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source, 'EPSG:4978');
             object3d.add(root.clampOBB);
-            root.nodeType = 2;
-            root.hierarchyByteOffset = 0n;
-            root.hierarchyByteSize = 12650n;
+            root.byteOffset = 0n;
+            root.byteSize = 12650n;
             root.loadOctree()
                 .then(() => root.children[0].load()
                     .then(() => {

@@ -37,20 +37,20 @@ class CopcLayer extends PointCloudLayer {
         this.isCopcLayer = true;
         this.source = config.source;
 
-        const resolve = super.addInitializationStep();
-        this.whenReady = this.source.whenReady.then((source) => {
+        const setRootNode = this.source.whenReady.then((source) => {
             this.setElevationRange();
 
             const { rootHierarchyPage, cube } = source.info;
             const { pageOffset, pageLength } = rootHierarchyPage;
-            this.root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, source, -1, this.crs);
+            this.root = new CopcNode(0, 0, 0, 0,
+                pageOffset, pageLength, source, -1, this.crs);
             this.root.setOBBes(cube.slice(0, 3), cube.slice(3, 6));
 
             this.object3d.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
-
-            return this.root.loadOctree().then(resolve);
         });
+
+        this._promises.push(setRootNode);
     }
 }
 
