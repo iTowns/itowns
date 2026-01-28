@@ -23,7 +23,8 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
     depth: number;
 
-    /** The number of points in this node. */
+    /** The number of points in this node.
+     * '-1' is the node has been loaded yet */
     numPoints: number;
     /** The children nodes of this node. */
     children: this[];
@@ -46,7 +47,7 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     private _origin: Coordinates | undefined;
     private _rotation: THREE.Quaternion | undefined;
 
-    constructor(depth: number, numPoints = 0) {
+    constructor(depth: number, numPoints: number) {
         super();
 
         this.depth = depth;
@@ -106,13 +107,12 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         this._rotation = new THREE.Quaternion();
         if (proj4.defs(this.crs).projName === 'geocent') {
             this._rotation =
-            OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
+                OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
         }
         return this._rotation;
     }
 
     async load(): Promise<THREE.BufferGeometry> {
-        // Query octree/HRC if we don't have children yet.
         if (!this.octreeIsLoaded) {
             await this.loadOctree();
         }

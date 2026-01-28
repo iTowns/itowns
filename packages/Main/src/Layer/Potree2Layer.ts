@@ -93,7 +93,7 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
             this.setElevationRange();
 
-            const root = new Potree2Node(0, -1, 0, 0, this.source, this.crs);
+            const root = new Potree2Node(0, -1, -1, undefined, this.source, this.crs);
             const { boundingBox, hierarchy } = metadata;
             root.setOBBes(boundingBox.min, boundingBox.max);
             this.object3d.add(root.clampOBB);
