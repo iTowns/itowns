@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Point Cloud Viewer</title>
+        <title>iTowns - Potree simple loader</title>
 
         <script type="importmap">
         {
@@ -80,6 +80,7 @@
                 */
 
                 itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+                const name = 'Sagrada Familia';
                 const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia';
                 const file = 'cloud.js';
                 const crs = 'EPSG:25831';
@@ -101,7 +102,7 @@
                     crs,
                 });
 
-                potreeLayer = new itowns.PotreeLayer('eglise_saint_blaise_arles', {
+                potreeLayer = new itowns.PotreeLayer(name, {
                     source: potreeSource,
                 });
 
