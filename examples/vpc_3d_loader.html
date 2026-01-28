@@ -77,7 +77,7 @@
 
             var vpcLayer;
             function onLayerReady() {
-                var lookAt = vpcLayer.root.origin;
+                var lookAt = new itowns.Coordinates(vpcLayer.crs).setFromVector3(vpcLayer.root.clampOBB.position);
                 var size = new THREE.Vector3();
                 vpcLayer.root.voxelOBB.box3D.getSize(size);
 
