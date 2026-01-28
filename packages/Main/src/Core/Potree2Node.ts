@@ -34,7 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 import type Potree2Source from 'Source/Potree2Source';
-import type { BufferGeometry } from 'three';
 import PotreeNodeBase from 'Core/PotreeNodeBase';
 
 const NODE_TYPE = {
@@ -48,9 +47,6 @@ type NodeType = typeof NODE_TYPE[keyof typeof NODE_TYPE];
 class Potree2Node extends PotreeNodeBase {
     source: Potree2Source;
 
-    loaded: boolean;
-    loading: boolean;
-
     // Properties initialized after loading hierarchy
     byteOffset!: bigint;
     byteSize!: bigint;
@@ -62,15 +58,12 @@ class Potree2Node extends PotreeNodeBase {
         depth: number,
         index: number,
         numPoints: number,
-        childrenBitField = 0,
+        childrenBitField: number | undefined,
         source: Potree2Source,
         crs: string,
     ) {
         super(depth, index, numPoints, childrenBitField, source, crs);
         this.source = source;
-
-        this.loaded = false;
-        this.loading = false;
     }
 
     override get url(): string {
@@ -104,26 +97,13 @@ class Potree2Node extends PotreeNodeBase {
         return networkOptions;
     }
 
-    override async load(): Promise<BufferGeometry> {
-        return super.load()
-            .then((data) => {
-                this.loaded = true;
-                this.loading = false;
-                return data;
-            });
-    }
-
     override loadOctree(): Promise<void> {
-        if (this.loaded || this.loading) {
-            return Promise.resolve();
-        }
-        this.loading = true;
-        return (this.nodeType === NODE_TYPE.PROXY) ? this.loadHierarchy() : Promise.resolve();
+        return this.loadHierarchy();
     }
 
     async loadHierarchy(): Promise<void> {
         const hierarchyUrl = `${this.baseurl}/hierarchy.bin`;
-        const buffer = await this.fetcher(hierarchyUrl, this.networkOptions);
+        const buffer = await this.fetcher(hierarchyUrl);
         this.parseHierarchy(buffer);
     }
 
@@ -151,6 +131,7 @@ class Potree2Node extends PotreeNodeBase {
                 current.byteOffset = byteOffset;
                 current.byteSize = byteSize;
                 current.numPoints = numPoints;
+                current.childrenBitField = childMask;
             } else if (type === NODE_TYPE.PROXY) {
                 // load proxy
                 current.hierarchyByteOffset = byteOffset;
@@ -161,10 +142,11 @@ class Potree2Node extends PotreeNodeBase {
                 current.byteOffset = byteOffset;
                 current.byteSize = byteSize;
                 current.numPoints = numPoints;
+                current.childrenBitField = childMask;
             }
 
             if (current.byteSize === 0n) {
-                // workaround for issue potree/potree#1125
+                // workaround for issue potree/potree/issues/1125
                 // some inner nodes erroneously report >0 points even though
                 // have 0 points however, they still report a byteSize of 0,
                 // so based on that we now set node.numPoints to 0.
@@ -185,7 +167,7 @@ class Potree2Node extends PotreeNodeBase {
                 }
 
                 const child = new Potree2Node(
-                    current.depth + 1, childIndex, numPoints, childMask, this.source, this.crs);
+                    current.depth + 1, childIndex, -1, undefined, this.source, this.crs);
                 current.add(child, childIndex);
                 stack.push(child);
             }
