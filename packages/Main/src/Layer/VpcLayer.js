@@ -76,6 +76,8 @@ class VpcLayer extends PointCloudLayer {
             this.root.source = this.source;
             this.root.crs = this.crs;
             this.root.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
+            this.object3d.add(this.root.clampOBB);
+            this.root.clampOBB.updateMatrixWorld(true);
 
             sources.forEach((source, i) => {
                 const boundsConforming = source.boundsConforming;
@@ -88,6 +90,8 @@ class VpcLayer extends PointCloudLayer {
                     crs: this.crs,
                 };
                 PointCloudNode.prototype.setOBBes.call(mockRoot, boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
+                this.object3d.add(mockRoot.clampOBB);
+                mockRoot.clampOBB.updateMatrixWorld(true);
 
                 // As we delayed the intanciation of the source to the moment we need to render a particular node,
                 // we need to wait for the source to be instantiate to be able
@@ -96,6 +100,7 @@ class VpcLayer extends PointCloudLayer {
                     source.whenReady.then((src) => {
                         const root = _instantiateRootNode(src, this.crs);
                         this.object3d.add(root.clampOBB);
+                        root.clampOBB.updateMatrixWorld(true);
                         this.root.children[i] = root;
                         return root.loadOctree().then(resolve)
                             .then(() => root);
