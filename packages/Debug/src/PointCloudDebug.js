@@ -127,6 +127,7 @@ class DebugLayer extends GeometryLayer {
         this.update = debugIdUpdate;
         this.isDebugLayer = true;
         this.layer = options.layer;
+        this.layer.object3d.add(this.object3d);
     }
 
     preUpdate(context, sources) {
