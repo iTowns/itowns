@@ -75,7 +75,6 @@ class VpcLayer extends PointCloudLayer {
             this.root.source = this.source;
             this.root.crs = this.crs;
             this.root.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
-
             this.object3d.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
 
@@ -103,7 +102,6 @@ class VpcLayer extends PointCloudLayer {
                 mockSubRoot.load = promisedRoot.then(root => root.load());
 
                 mockSubRoot.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
-
                 this.object3d.add(mockSubRoot.clampOBB);
                 mockSubRoot.clampOBB.updateMatrixWorld(true);
 
