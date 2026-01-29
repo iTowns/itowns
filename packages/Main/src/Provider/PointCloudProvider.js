@@ -37,8 +37,7 @@ export default {
             points.matrixAutoUpdate = false;
             points.position.copy(node.origin);
 
-            const quaternion = node.rotation.clone().invert();
-            points.quaternion.copy(quaternion);
+            points.quaternion.copy(node.rotation).invert();
             points.updateMatrix();
 
             points.layer = layer;

@@ -86,19 +86,19 @@ describe('LASParser', function () {
             };
             const bufferGeometry = await LASParser.parse(lazV14Data, options);
             const header = bufferGeometry.userData.header;
-            const origin = options.in.origin;
+
             assert.strictEqual(header.pointCount, 100000);
             assert.strictEqual(bufferGeometry.attributes.position.count, header.pointCount);
             assert.strictEqual(bufferGeometry.attributes.intensity.count, header.pointCount);
             assert.strictEqual(bufferGeometry.attributes.classification.count, header.pointCount);
             assert.strictEqual(bufferGeometry.attributes.color.count, header.pointCount);
 
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x + origin.x, header.min[0], epsilon));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y + origin.y, header.min[1], epsilon));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z + origin.z, header.min[2], epsilon));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x + origin.x, header.max[0], epsilon));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y + origin.y, header.max[1], epsilon));
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z + origin.z, header.max[2], epsilon));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x + coordinates.x, header.min[0], epsilon));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y + coordinates.y, header.min[1], epsilon));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z + coordinates.z, header.min[2], epsilon));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x + coordinates.x, header.max[0], epsilon));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y + coordinates.y, header.max[1], epsilon));
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z + coordinates.z, header.max[2], epsilon));
         });
 
         it('parses a copc chunk to a THREE.BufferGeometry', async function _it() {
