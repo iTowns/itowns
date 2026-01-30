@@ -98,6 +98,7 @@ class c3DEngine {
                 antialias: options.antialias,
                 alpha: options.alpha,
                 logarithmicDepthBuffer: options.logarithmicDepthBuffer,
+                preserveDrawingBuffer: true,
             });
             this.renderer.domElement.style.position = 'relative';
             this.renderer.domElement.style.zIndex = 0;
