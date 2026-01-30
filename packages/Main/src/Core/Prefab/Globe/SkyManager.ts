@@ -23,10 +23,10 @@ class SkyManager {
     private readonly skyLight: SkyLightProbe;
     private readonly sunLight: THREE.DirectionalLight;
     private readonly aerialPerspective: AerialPerspectiveEffect;
-    effectPass: EffectPass;
-    scene: THREE.Scene;
-    composer: EffectComposer;
-    fog: THREE.Fog;
+    private readonly effectPass: EffectPass;
+    private readonly scene: THREE.Scene;
+    private readonly composer: EffectComposer;
+    private readonly fog: THREE.Fog;
     private readonly view: View;
 
     public date: Date;
