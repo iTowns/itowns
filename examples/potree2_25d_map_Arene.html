@@ -95,7 +95,7 @@
             view.domElement.addEventListener('dblclick', dblClickHandler);
 
             function onLayerReady() {
-                var lookAt = potreeLayer.root.center.toVector3();
+                var lookAt = potreeLayer.root.clampOBB.position;
 
                 var size = new THREE.Vector3();
                 potreeLayer.root.voxelOBB.box3D.getSize(size);
