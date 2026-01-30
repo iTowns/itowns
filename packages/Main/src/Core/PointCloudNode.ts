@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 import OBB from 'Renderer/OBB';
-import proj4 from 'proj4';
-import { OrientationUtils, Coordinates } from '@itowns/geographic';
 
 export interface PointCloudSource {
     spacing: number;
@@ -41,9 +39,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     promise: Promise<unknown> | null;
     obj: THREE.Points | undefined;
 
-    private _origin: Coordinates | undefined;
-    private _rotation: THREE.Quaternion | undefined;
-
     constructor(depth: number, numPoints: number) {
         super();
 
@@ -72,32 +67,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
     get pointSpacing(): number {
         return this.source.spacing / 2 ** this.depth;
-    }
-
-    // the origin is the center of the clamped OBB projected
-    // on the z=O local plan, in the world referential.
-    get origin(): Coordinates {
-        if (this._origin != undefined) { return this._origin; }
-        const center = this.clampOBB.center;
-        const centerCrsIn = proj4(this.crs, this.source.crs).forward(center);
-        this._origin =  new Coordinates(this.crs)
-            .setFromArray(
-                proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
-        return this._origin;
-    }
-
-    /**
-     * get the rotation between the local referentiel and
-     * the geocentrique one (if appliable).
-     */
-    get rotation(): THREE.Quaternion {
-        if (this._rotation != undefined) { return this._rotation; }
-        this._rotation = new THREE.Quaternion();
-        if (proj4.defs(this.crs).projName === 'geocent') {
-            this._rotation =
-                OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
-        }
-        return this._rotation;
     }
 
     async load(): Promise<THREE.BufferGeometry> {

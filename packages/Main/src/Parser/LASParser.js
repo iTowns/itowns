@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { spawn, Thread, Transfer } from 'threads';
 import proj4 from 'proj4';
+import { OrientationUtils, Coordinates } from '@itowns/geographic';
 import { LASAttributes } from 'Loader/LASConstant';
 
 let _lazPerf;
@@ -25,6 +26,11 @@ async function parse(data, options, type = 'parseFile') {
     const lasLoader = await loader();
     const source = options.in.source;
 
+    const center = new Coordinates(options.in.crs)
+        .setFromVector3(options.in.clampOBB.center);
+    const centerZ0 = projZ0(center, source.crs, options.in.crs);
+    const quaternion = getQuaternion(centerZ0, source.crs, options.in.crs);
+
     const config = {
         colorDepth: source.colorDepth,
         in: {
@@ -32,10 +38,10 @@ async function parse(data, options, type = 'parseFile') {
             projDefs: proj4.defs(source.crs),
         },
         out: {
-            crs: options.in.crs,
+            crs: options.in.crs, // move crs to out ?
             projDefs: proj4.defs(options.in.crs),
-            origin: options.in.origin.toArray(),
-            rotation: options.in.rotation.toArray(),
+            origin: centerZ0,
+            rotation: quaternion.toArray(),
         },
     };
 
@@ -49,7 +55,9 @@ async function parse(data, options, type = 'parseFile') {
 
     const geometry = buildBufferGeometry(parsedData.attributes);
     geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.box);
-    geometry.userData.header = parsedData.header;
+    // geometry.userData.header = parsedData.header;
+    geometry.userData.position = new Coordinates(options.in.crs).setFromArray(centerZ0);
+    geometry.userData.quaternion = quaternion.clone().invert();
 
     return geometry;
 }
@@ -63,6 +71,22 @@ function buildBufferGeometry(attributes) {
     });
 
     return geometry;
+}
+
+// get the projection of a point at Z=0
+function projZ0(center, crsIn, crsOut) {
+    const centerCrsIn = proj4(crsOut, crsIn).forward(center);
+    const centerZ0 = proj4(crsIn, crsOut).forward([centerCrsIn.x, centerCrsIn.y, 0]);
+    return centerZ0;
+}
+
+function getQuaternion(origin, crsIn, crsOut) {
+    let quaternion = new THREE.Quaternion();
+    if (proj4.defs(crsOut).projName === 'geocent') {
+        const coord = new Coordinates(crsOut).setFromArray(origin);
+        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coord);
+    }
+    return quaternion;
 }
 
 /** The LASParser module provides a [parse]{@link
