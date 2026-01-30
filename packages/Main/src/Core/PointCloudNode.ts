@@ -40,7 +40,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     promise: Promise<unknown> | null;
     obj: THREE.Points | undefined;
 
-    private _center: Coordinates | undefined;
     private _origin: Coordinates | undefined;
     private _rotation: THREE.Quaternion | undefined;
 
@@ -74,21 +73,12 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         return this.source.spacing / 2 ** this.depth;
     }
 
-    // get the center of the node i.e. the center of the bounding box.
-    get center(): Coordinates {
-        if (this._center != undefined) { return this._center; }
-        const centerBbox = new THREE.Vector3();
-        this.voxelOBB.box3D.getCenter(centerBbox);
-        this._center =  new Coordinates(this.crs)
-            .setFromVector3(centerBbox.applyMatrix4(this.clampOBB.matrix));
-        return this._center;
-    }
-
-    // the origin is the center of the bounding box projected
+    // the origin is the center of the clamped OBB projected
     // on the z=O local plan, in the world referential.
     get origin(): Coordinates {
         if (this._origin != undefined) { return this._origin; }
-        const centerCrsIn = proj4(this.crs, this.source.crs).forward(this.center);
+        const center = this.clampOBB.center;
+        const centerCrsIn = proj4(this.crs, this.source.crs).forward(center);
         this._origin =  new Coordinates(this.crs)
             .setFromArray(
                 proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
