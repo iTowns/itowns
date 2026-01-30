@@ -22,7 +22,9 @@ class OBB extends THREE.Object3D {
     box3D: THREE.Box3;
     natBox: THREE.Box3;
     z: { min: number, max: number, scale: number, delta: number };
-    _matrixWorldInverse: undefined | THREE.Matrix4;
+
+    private _center: undefined | THREE.Vector3;
+    private _matrixWorldInverse: undefined | THREE.Matrix4;
 
     /**
      * @param min - (optional) A {@link THREE.Vector3} representing the lower
@@ -42,10 +44,23 @@ class OBB extends THREE.Object3D {
         this.z = { min: 0, max: 0, scale: 1.0, delta: 0 };
     }
 
+    get center(): THREE.Vector3 {
+        if (this._center != undefined) { return this._center; }
+        const centerBbox = new THREE.Vector3();
+        this.box3D.getCenter(centerBbox);
+        this._center = centerBbox.applyMatrix4(this.matrix);
+        return this._center;
+    }
+
     get matrixWorldInverse() {
         if (this._matrixWorldInverse !== undefined) { return this._matrixWorldInverse; }
         this._matrixWorldInverse = this.matrixWorld.clone().invert();
         return this._matrixWorldInverse;
+    }
+
+    override updateMatrixWorld(force?: boolean) {
+        this._matrixWorldInverse = undefined;
+        super.updateMatrixWorld(force);
     }
 
     /**
@@ -228,6 +243,9 @@ class OBB extends THREE.Object3D {
 
         this.updateMatrix();
         this.updateMatrixWorld();
+
+        // reset center
+        this._center = undefined;
     }
     /**
      * Clamped the OBB on the z axes of the OBB.box3D.
