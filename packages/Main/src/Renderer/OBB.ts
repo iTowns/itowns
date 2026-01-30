@@ -40,7 +40,7 @@ class OBB extends THREE.Object3D {
     z: { min: number, max: number, scale: number, delta: number };
 
     private _center: undefined | THREE.Vector3;
-    private matrixWorldInverse: THREE.Matrix4;
+    matrixWorldInverse: THREE.Matrix4;
 
     /**
      * @param min - (optional) A {@link THREE.Vector3} representing the lower
